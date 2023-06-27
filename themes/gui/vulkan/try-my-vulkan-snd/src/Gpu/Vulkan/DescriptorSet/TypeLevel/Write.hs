@@ -84,7 +84,7 @@ data WriteSources arg where
 		HeteroParList.PL (U4 Descriptor.ImageInfo) ssfmtnmsis ->
 		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
 	BufferInfosNew ::
-		HeteroParList.PL (U4 Descriptor.BufferInfoNew) smsbnmobjs ->
+		HeteroParList.PL (U4 Descriptor.BufferInfo) smsbnmobjs ->
 		WriteSources ('WriteSourcesArgBufferNew smsbnmobjs)
 	TexelBufferViews ::
 		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
@@ -95,7 +95,7 @@ data WriteSources arg where
 
 class BufferInfoListToMiddleNew smsbnmobjs where
 	bufferInfoListToMiddleNew ::
-		HeteroParList.PL (U4 Descriptor.BufferInfoNew) smsbnmobjs ->
+		HeteroParList.PL (U4 Descriptor.BufferInfo) smsbnmobjs ->
 		[Descriptor.M.BufferInfo]
 
 instance BufferInfoListToMiddleNew '[] where

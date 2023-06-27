@@ -1454,7 +1454,7 @@ descriptorWrite0 ub dscs = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo
 	}
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->

@@ -1359,7 +1359,7 @@ descriptorWrite0 ub dscs tp = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeDescriptorTypeNew = tp,
 	Vk.DscSet.writeSourcesNew= Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 data BindedGcd smsb where
 	BindedGcd ::

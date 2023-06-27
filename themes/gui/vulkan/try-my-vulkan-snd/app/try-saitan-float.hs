@@ -620,8 +620,8 @@ bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Show (HeteroParList.PL VObj.ObjectLength objs),
 	VObj.Offset (VObj.List 256 t "") objs ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
-	Vk.Dsc.BufferInfoNew sm sb nm (VObj.List 256 t "")
-bufferInfoList = Vk.Dsc.BufferInfoNew
+	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "")
+bufferInfoList = Vk.Dsc.BufferInfo
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew
 	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]

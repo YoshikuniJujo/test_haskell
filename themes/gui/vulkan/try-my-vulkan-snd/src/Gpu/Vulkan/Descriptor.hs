@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Descriptor (
 
-	BufferInfoNew(..), BufferInfoArgNew, bufferInfoToMiddleNew,
+	BufferInfo(..), BufferInfoArgNew,
 
 	ImageInfo(..),
 

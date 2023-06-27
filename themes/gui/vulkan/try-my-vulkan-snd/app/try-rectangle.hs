@@ -914,7 +914,7 @@ descriptorWrite ub dscs = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo
 	}
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 class Update smsbs slbtss where
 	update :: Vk.Dvc.D sd -> HeteroParList.PL BindedUbo smsbs ->

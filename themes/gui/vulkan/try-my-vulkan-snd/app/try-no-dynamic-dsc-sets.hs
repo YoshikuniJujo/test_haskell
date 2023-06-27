@@ -348,8 +348,8 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 		Show (HeteroParList.PL VObj.ObjectLength objs),
 		VObj.Offset (VObj.List 256 t "") objs ) =>
 		Vk.Bffr.Binded sm sb nm objs ->
-		Vk.Dsc.BufferInfoNew sm sb nm (VObj.List 256 t "")
-	bil = Vk.Dsc.BufferInfoNew
+		Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "")
+	bil = Vk.Dsc.BufferInfo
 
 writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds . (
 	Show (HeteroParList.PL VObj.ObjectLength objs),
@@ -364,7 +364,7 @@ writeDscSet2 ds bx = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
-		U4 (Vk.Dsc.BufferInfoNew bx) :** HeteroParList.Nil }
+		U4 (Vk.Dsc.BufferInfo bx) :** HeteroParList.Nil }
 
 calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Word32 -> Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->

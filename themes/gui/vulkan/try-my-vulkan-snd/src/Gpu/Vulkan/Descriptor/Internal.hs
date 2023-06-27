@@ -10,7 +10,7 @@
 
 module Gpu.Vulkan.Descriptor.Internal (
 
-	BufferInfoNew(..), BufferInfoArgNew, bufferInfoToMiddleNew,
+	BufferInfo(..), BufferInfoArgNew, bufferInfoToMiddleNew,
 	BufferInfoListToLengthNew(..),
 
 	ImageInfo(..), imageInfoToMiddle,
@@ -32,21 +32,21 @@ import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView as ImageView
 
-data BufferInfoNew sm sb nm obj = forall objs .
+data BufferInfo sm sb nm obj = forall objs .
 	(Show (Buffer.Binded sm sb nm objs), VObj.Offset obj objs) =>
-	BufferInfoNew (Buffer.Binded sm sb nm objs)
+	BufferInfo (Buffer.Binded sm sb nm objs)
 
-deriving instance Show (BufferInfoNew sm sb nm obj)
+deriving instance Show (BufferInfo sm sb nm obj)
 
 type BufferInfoArgNew = (Type, Type, Symbol, VObj.Object)
 
-bufferInfoToLengthNew :: BufferInfoNew sb sm nm obj -> VObj.ObjectLength obj
-bufferInfoToLengthNew (BufferInfoNew (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
+bufferInfoToLengthNew :: BufferInfo sb sm nm obj -> VObj.ObjectLength obj
+bufferInfoToLengthNew (BufferInfo (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
 
 class BufferInfoListToLengthNew sbsmobjsobjs where
 	type BufferInfoListToLengthObjsNew sbsmobjsobjs :: [VObj.Object]
 	bufferInfoListToLengthNew ::
-		HeteroParList.PL (U4 BufferInfoNew) sbsmobjsobjs ->
+		HeteroParList.PL (U4 BufferInfo) sbsmobjsobjs ->
 		HeteroParList.PL VObj.ObjectLength
 			(BufferInfoListToLengthObjsNew sbsmobjsobjs)
 
@@ -63,8 +63,8 @@ instance (
 		bufferInfoToLengthNew bi :** bufferInfoListToLengthNew bis
 
 bufferInfoToMiddleNew :: forall sb sm nm obj .
-	BufferInfoNew sm sb nm obj -> M.BufferInfo
-bufferInfoToMiddleNew (BufferInfoNew (Buffer.Binded lns b)) = M.BufferInfo {
+	BufferInfo sm sb nm obj -> M.BufferInfo
+bufferInfoToMiddleNew (BufferInfo (Buffer.Binded lns b)) = M.BufferInfo {
 	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }

@@ -1341,7 +1341,7 @@ descriptorWrite dscs ub tp = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = tp,
 	Vk.DscSet.writeSourcesNew =
-		Vk.DscSet.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfoNew ub }
+		Vk.DscSet.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
 
 writeTexture1 ::
 	Vk.Dvc.D sd -> Vk.DscSet.D sds lyt -> Vk.ImgVw.INew ifmt "texture" siv -> (

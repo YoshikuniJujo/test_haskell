@@ -1272,7 +1272,7 @@ descriptorWrite dscs ub tp = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = tp,
 	Vk.DscSet.writeSourcesNew =
-		Vk.DscSet.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfoNew ub }
+		Vk.DscSet.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
 
 createVertexBuffer :: forall sd sc nm a . Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> V.Vector Vertex -> (forall sm sb .

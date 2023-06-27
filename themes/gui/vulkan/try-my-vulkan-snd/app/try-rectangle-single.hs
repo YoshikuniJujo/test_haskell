@@ -881,7 +881,7 @@ descriptorWrite ub dscs = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
