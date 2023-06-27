@@ -43,7 +43,6 @@ import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M

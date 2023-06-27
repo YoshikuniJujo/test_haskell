@@ -33,7 +33,7 @@ import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView as ImageView
 
 data BufferInfoNew sm sb nm obj = forall objs .
-	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
+	(Show (Buffer.Binded sm sb nm objs), VObj.Offset obj objs) =>
 	BufferInfoNew (Buffer.Binded sm sb nm objs)
 
 deriving instance Show (BufferInfoNew sm sb nm obj)
@@ -41,7 +41,7 @@ deriving instance Show (BufferInfoNew sm sb nm obj)
 type BufferInfoArgNew = (Type, Type, Symbol, VObj.Object)
 
 bufferInfoToLengthNew :: BufferInfoNew sb sm nm obj -> VObj.ObjectLength obj
-bufferInfoToLengthNew (BufferInfoNew (Buffer.Binded lns _)) = VObj.typeIndex lns
+bufferInfoToLengthNew (BufferInfoNew (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
 
 class BufferInfoListToLengthNew sbsmobjsobjs where
 	type BufferInfoListToLengthObjsNew sbsmobjsobjs :: [VObj.Object]

@@ -14,7 +14,6 @@ import GHC.TypeLits
 import Control.Arrow
 import Data.Kind
 import Data.Kind.Object qualified as KObj
-import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -22,7 +21,6 @@ import Data.HeteroParList (pattern (:**))
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 
 import qualified Gpu.Vulkan.TypeEnum as T
-import qualified Gpu.Vulkan.Descriptor as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 
 type LayoutArg = (Type, [Layout.BindingType])

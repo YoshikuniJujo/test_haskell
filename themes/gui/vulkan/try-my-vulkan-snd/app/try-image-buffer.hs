@@ -109,8 +109,8 @@ datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 calc :: forall w1 w2 w3 . (
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
-	VObj.OffsetRange (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3),
-	VObj.OffsetRange (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3),
+	VObj.Offset (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3),
+	VObj.Offset (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3),
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 	) =>
@@ -323,8 +323,8 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
-	VObj.OffsetRange (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
-	VObj.OffsetRange (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
+	VObj.Offset (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
+	VObj.Offset (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]

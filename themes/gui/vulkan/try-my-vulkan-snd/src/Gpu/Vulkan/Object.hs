@@ -158,15 +158,13 @@ instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
 		go p n = (:) <$> (Just <$> K.loadObject p kln) <*> go (nextObject p kln) (n - 1)
 	objectLength = ObjectLengthDynamic . K.objectLength . fromJust . head
 
-class (Offset obj objs, TypeIndex obj objs) =>
-	OffsetRange (obj :: Object) objs where
-	offset :: Int -> HeteroParList.PL ObjectLength objs -> Int
-	range :: HeteroParList.PL ObjectLength objs -> Int
+offset :: forall (obj :: Object) objs .
+	Offset obj objs => Int -> HeteroParList.PL ObjectLength objs -> Int
+offset _ = fromIntegral . offsetNew @obj
 
-	offset _ = fromIntegral . offsetNew @obj
-	range = fromIntegral . rangeNew @obj
-
-instance (Offset obj objs, TypeIndex obj objs) => OffsetRange obj objs
+range :: forall (obj :: Object) objs .
+	Offset obj objs => HeteroParList.PL ObjectLength objs -> Int
+range = fromIntegral . rangeNew @obj
 
 class OnlyDynamicLengths (os :: [Object]) where
 	type OnlyDynamics os :: [K.Object]
@@ -191,15 +189,6 @@ instance OnlyDynamicLengths '[ 'Dummy] where
 	type OnlyDynamics '[ 'Dummy] = '[]
 	onlyDynamicLength _ = HeteroParList.Nil
 
-class TypeIndex (obj :: k) objs where
-	typeIndex :: HeteroParList.PL t objs -> t obj
-
-instance TypeIndex obj (obj ': objs) where typeIndex (ln :** _lns) = ln
-
-instance {-# OVERLAPPABLE #-} TypeIndex obj objs =>
-	TypeIndex obj (obj' ': objs) where
-	typeIndex (_ :** lns) = typeIndex @_ @obj @objs lns
-
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
@@ -212,7 +201,7 @@ rangeNew :: forall obj objs . Offset obj objs =>
 rangeNew = snd . offsetFromSizeAlignmentList @obj 0 . sizeAlignmentList
 
 class (
-	SizeAlignmentList vs, TypeIndex v vs ) =>
+	SizeAlignmentList vs, HeteroParList.TypeIndex v vs ) =>
 	Offset (v :: Object) (vs :: [Object]) where
 	offsetFromSizeAlignmentList ::
 		Int -> HeteroParList.PL SizeAlignmentOfObj vs ->
