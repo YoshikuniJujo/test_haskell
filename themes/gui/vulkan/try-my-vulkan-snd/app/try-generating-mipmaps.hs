@@ -1535,7 +1535,7 @@ createDescriptorSets :: (
 	Vk.ImgVw.I 'Vk.T.FormatR8g8b8a8Srgb "texture" siv -> Vk.Smplr.S ssmp ->
 	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp f =
-	Vk.DscSet.allocateSsNew dvc allocInfo \dscss -> do
+	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do
 	update dvc ubs dscss tximgvw txsmp
 	f dscss
 	where

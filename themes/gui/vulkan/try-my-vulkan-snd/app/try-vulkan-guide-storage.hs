@@ -1217,8 +1217,8 @@ createDescriptorSets ::
 		HL.PL (Vk.DscSet.D sds) lyts ->
 		HL.PL (Vk.DscSet.D sds') lytods -> IO a) -> IO a
 createDescriptorSets dv dscp cmbs lyts odbs lytods scnb f =
-	Vk.DscSet.allocateSsNew dv allocInfo \dscss ->
-	Vk.DscSet.allocateSsNew dv allocInfoOd \dscsods -> do
+	Vk.DscSet.allocateDs dv allocInfo \dscss ->
+	Vk.DscSet.allocateDs dv allocInfoOd \dscsods -> do
 	update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 	f dscss dscsods
 	where

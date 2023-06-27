@@ -1274,8 +1274,8 @@ createDescriptorSets ::
 		HL.PL (Vk.DscSet.D sds) lyts ->
 		HL.PL (Vk.DscSet.D sds') lytods -> IO a) -> IO a
 createDescriptorSets dv dscp cmbs lyts odbs lytods scnb f =
-	Vk.DscSet.allocateSsNew dv allocInfo \dscss ->
-	Vk.DscSet.allocateSsNew dv allocInfoOd \dscsods -> do
+	Vk.DscSet.allocateDs dv allocInfo \dscss ->
+	Vk.DscSet.allocateDs dv allocInfoOd \dscsods -> do
 	update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 	f dscss dscsods
 	where
@@ -1294,7 +1294,7 @@ allocateTextureDescriptorSets :: forall slyt foo sd sp a .
 	Vk.DscSetLyt.L slyt foo ->
 	(forall sds . Vk.DscSet.D sds '(slyt, foo) -> IO a) -> IO a
 allocateTextureDescriptorSets dv dscpl lyt f =
-	Vk.DscSet.allocateSsNew dv Vk.DscSet.AllocateInfo {
+	Vk.DscSet.allocateDs dv Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscpl,
 		Vk.DscSet.allocateInfoSetLayouts = HL.Singleton $ U2 lyt

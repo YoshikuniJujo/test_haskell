@@ -1305,7 +1305,7 @@ createDescriptorSets :: (
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
 	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSets dvc dscp ubs dscslyts scnb f =
-	Vk.DscSet.allocateSsNew dvc allocInfo \dscss -> do
+	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do
 	update dvc ubs dscss scnb 0
 	f dscss
 	where

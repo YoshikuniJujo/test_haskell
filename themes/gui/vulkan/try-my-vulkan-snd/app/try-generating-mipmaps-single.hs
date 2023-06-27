@@ -1414,7 +1414,7 @@ createDescriptorSet ::
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
 createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
-	Vk.DscSet.allocateSsNew dvc allocInfo \(HeteroParList.Singleton dscs) -> do
+	Vk.DscSet.allocateDs dvc allocInfo \(HeteroParList.Singleton dscs) -> do
 	Vk.DscSet.updateDsNewNew dvc (
 		U4 (descriptorWrite0 ub dscs) :**
 		U4 (descriptorWrite1 dscs tximgvw txsmp) :**

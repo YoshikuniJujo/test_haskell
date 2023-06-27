@@ -1102,7 +1102,7 @@ createDescriptorSets ::
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->
 	(forall sds . HL.PL (Vk.DscSet.D sds) lyts -> IO a) -> IO a
 createDescriptorSets dv dscp cmbs lyts scnb f =
-	Vk.DscSet.allocateSsNew dv allocInfo \dscss -> do
+	Vk.DscSet.allocateDs dv allocInfo \dscss -> do
 	update dv dscss cmbs scnb
 	f dscss
 	where allocInfo = Vk.DscSet.AllocateInfo {

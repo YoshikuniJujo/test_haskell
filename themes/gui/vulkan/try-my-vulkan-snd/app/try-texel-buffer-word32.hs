@@ -304,7 +304,7 @@ prepareMems ::
 		IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc dd _mxx f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
-	Vk.DscSet.allocateSsNew dvc (dscSetInfo dscPool dscSetLyt)
+	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(dscSet :** HeteroParList.Nil) ->
 	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc
 		(bd :: Vk.Buffer.Binded sm sb nm '[VObj.List 256 MyPixel ""]) _md ->

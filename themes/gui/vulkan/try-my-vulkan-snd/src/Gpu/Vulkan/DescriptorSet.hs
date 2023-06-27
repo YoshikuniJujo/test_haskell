@@ -14,7 +14,7 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- * ALLOCATE
 
-	allocateSsNew, D, AllocateInfo(..),
+	allocateDs, D, AllocateInfo(..), SListFromMiddleNew,
 
 	-- * UPDATE
 
@@ -22,7 +22,7 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- * OTHERS
 
-	Layout, SListFromMiddleNew
+	Layout
 
 	) where
 
@@ -99,10 +99,10 @@ instance (
 		_ -> error "bad"
 
 
-allocateSsNew :: (WithPoked (TMaybe.M n), SListFromMiddleNew slbtss) =>
+allocateDs :: (WithPoked (TMaybe.M n), SListFromMiddleNew slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	(forall s . HeteroParList.PL (D s) slbtss -> IO a) -> IO a
-allocateSsNew (Device.D dvc) ai f = do
+allocateDs (Device.D dvc) ai f = do
 	dsm <- M.allocateDs dvc (allocateInfoToMiddle ai)
 	ds <- sListFromMiddleNew dsm
 	f ds <* M.freeDs dvc
