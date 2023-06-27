@@ -10,7 +10,21 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet where
+module Gpu.Vulkan.DescriptorSet (
+
+	-- * ALLOCATE
+
+	allocateSsNew, D, AllocateInfo(..),
+
+	-- * UPDATE
+
+	updateDsNewNew, WriteNew(..), CopyNew(..),
+
+	-- * OTHERS
+
+	Layout, SListFromMiddleNew
+
+	) where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
@@ -28,6 +42,7 @@ import Data.HeteroParList (pattern (:**))
 import qualified Data.HeteroParList.Tuple as HeteroParList
 
 import Gpu.Vulkan.Buffer.Type qualified as Buffer
+import Gpu.Vulkan.DescriptorSet.Type
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Write
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
@@ -64,11 +79,6 @@ allocateInfoToMiddle AllocateInfo {
 		M.allocateInfoDescriptorPool = dp,
 		M.allocateInfoSetLayouts =
 			HeteroParList.toList layoutToMiddle dscsls }
-
-data D s (slbts :: LayoutArg) = D
-	(IORef (HeteroParList.PL2 KObj.ObjectLength
-		(LayoutArgOnlyDynamics slbts)))
-	M.D
 
 class SListFromMiddleNew slbtss where
 	sListFromMiddleNew :: [M.D] -> IO (HeteroParList.PL (D s) slbtss)
