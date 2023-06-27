@@ -104,7 +104,7 @@ instance BufferInfoListToMiddleNew '[] where
 instance BufferInfoListToMiddleNew smsbnmobjs =>
 	BufferInfoListToMiddleNew ('(sm, sb, nm, obj) ': smsbnmobjs) where
 	bufferInfoListToMiddleNew (U4 bi :** bis) =
-		Descriptor.bufferInfoToMiddleNew bi :
+		Descriptor.bufferInfoToMiddle bi :
 		bufferInfoListToMiddleNew bis
 
 data WriteSourcesArg
