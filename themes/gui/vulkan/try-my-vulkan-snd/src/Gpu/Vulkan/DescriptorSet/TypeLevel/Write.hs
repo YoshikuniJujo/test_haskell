@@ -109,7 +109,7 @@ instance BufferInfoListToMiddleNew smsbnmobjs =>
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
-	| WriteSourcesArgBufferNew [Descriptor.BufferInfoArgNew]
+	| WriteSourcesArgBufferNew [Descriptor.BufferInfoArgs]
 	| WriteSourcesArgBufferView [(Symbol, Type)]
 	| WriteSourcesArgOther
 

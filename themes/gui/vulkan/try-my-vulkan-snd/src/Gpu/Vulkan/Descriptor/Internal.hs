@@ -10,7 +10,7 @@
 
 module Gpu.Vulkan.Descriptor.Internal (
 
-	BufferInfo(..), BufferInfoArgNew, bufferInfoToMiddleNew,
+	BufferInfo(..), BufferInfoArgs, bufferInfoToMiddleNew,
 	BufferInfoListToLengthNew(..),
 
 	ImageInfo(..), imageInfoToMiddle,
@@ -38,7 +38,7 @@ data BufferInfo sm sb nm obj = forall objs .
 
 deriving instance Show (BufferInfo sm sb nm obj)
 
-type BufferInfoArgNew = (Type, Type, Symbol, VObj.Object)
+type BufferInfoArgs = (Type, Type, Symbol, VObj.Object)
 
 bufferInfoToLengthNew :: BufferInfo sb sm nm obj -> VObj.ObjectLength obj
 bufferInfoToLengthNew (BufferInfo (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
