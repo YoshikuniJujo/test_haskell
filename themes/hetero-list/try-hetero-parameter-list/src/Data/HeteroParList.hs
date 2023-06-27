@@ -52,7 +52,7 @@ module Data.HeteroParList (
 
 	-- * Index
 
-	index, homoListIndex,
+	TypeIndex(..), index, homoListIndex,
 
 	-- * Map and ReplicateM
 
@@ -237,6 +237,13 @@ instance HomoList s ss => HomoList s (s ': ss) where
 	homoListToList (x :** xs) = x : homoListToList xs
 
 -- Index
+
+class TypeIndex (obj :: k) objs where typeIndex :: PL t objs -> t obj
+instance TypeIndex obj (obj ': objs) where typeIndex (ln :** _lns) = ln
+
+instance {-# OVERLAPPABLE #-} TypeIndex obj objs =>
+	TypeIndex obj (obj' ': objs) where
+	typeIndex (_ :** lns) = typeIndex @_ @obj @objs lns
 
 index :: Integral i => PL t ss -> i -> (forall s . t s -> a) -> a
 index Nil _ _ = error "index too large"
