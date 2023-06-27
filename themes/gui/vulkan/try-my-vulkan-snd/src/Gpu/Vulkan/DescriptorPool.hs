@@ -6,12 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorPool (
-	P, create, M.CreateInfo(..), M.Size(..),
 
-	M.CreateFlags,
-	pattern M.CreateFreeDescriptorSetBit, pattern M.CreateUpdateAfterBindBit,
-	pattern M.CreateHostOnlyBitValve, pattern M.CreateUpdateAfterBindBitExt,
-	pattern M.CreateFlagBitsMaxEnum ) where
+	-- * CREATE
+
+	create, P, M.CreateInfo(..), M.Size(..)
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -25,7 +25,6 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Middle as M
-import qualified Gpu.Vulkan.DescriptorPool.Enum as M
 
 create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> M.CreateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
