@@ -9,8 +9,8 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet.TypeLevel.Write (
-	module Gpu.Vulkan.DescriptorSet.TypeLevel.Write,
+module Gpu.Vulkan.DescriptorSet.Write.Sources (
+	module Gpu.Vulkan.DescriptorSet.Write.Sources,
 	module Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 	) where
 
@@ -53,6 +53,20 @@ instance (
 			@(TMapIndex.M3_4 smsbnmobjs) @0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddleNew bis )
 
+class BufferInfoListToMiddleNew smsbnmobjs where
+	bufferInfoListToMiddleNew ::
+		HeteroParList.PL (U4 Descriptor.BufferInfo) smsbnmobjs ->
+		[Descriptor.M.BufferInfo]
+
+instance BufferInfoListToMiddleNew '[] where
+	bufferInfoListToMiddleNew HeteroParList.Nil = []
+
+instance BufferInfoListToMiddleNew smsbnmobjs =>
+	BufferInfoListToMiddleNew ('(sm, sb, nm, obj) ': smsbnmobjs) where
+	bufferInfoListToMiddleNew (U4 bi :** bis) =
+		Descriptor.bufferInfoToMiddle bi :
+		bufferInfoListToMiddleNew bis
+
 instance (
 	BindingAndArrayElemImage bts ssfmtnmsis,
 	ImageInfosToMiddle ssfmtnmsis ) =>
@@ -93,20 +107,6 @@ data WriteSources arg where
 type DstBinding = Word32
 type DstArrayElement = Word32
 type DescriptorCount = Word32
-
-class BufferInfoListToMiddleNew smsbnmobjs where
-	bufferInfoListToMiddleNew ::
-		HeteroParList.PL (U4 Descriptor.BufferInfo) smsbnmobjs ->
-		[Descriptor.M.BufferInfo]
-
-instance BufferInfoListToMiddleNew '[] where
-	bufferInfoListToMiddleNew HeteroParList.Nil = []
-
-instance BufferInfoListToMiddleNew smsbnmobjs =>
-	BufferInfoListToMiddleNew ('(sm, sb, nm, obj) ': smsbnmobjs) where
-	bufferInfoListToMiddleNew (U4 bi :** bis) =
-		Descriptor.bufferInfoToMiddle bi :
-		bufferInfoListToMiddleNew bis
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]

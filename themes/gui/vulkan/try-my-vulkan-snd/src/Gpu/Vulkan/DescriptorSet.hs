@@ -36,7 +36,6 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.DescriptorSet.Type
-import Gpu.Vulkan.DescriptorSet.TypeLevel.Write
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
 import qualified Gpu.Vulkan.Device.Type as Device
@@ -45,6 +44,8 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
 import qualified Gpu.Vulkan.DescriptorSet.Write as Write
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
+
+import Gpu.Vulkan.DescriptorSet.Write.Sources
 
 import Gpu.Vulkan.Misc
 

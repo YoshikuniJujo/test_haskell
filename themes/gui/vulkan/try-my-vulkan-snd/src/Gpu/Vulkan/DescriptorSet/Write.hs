@@ -31,12 +31,13 @@ import qualified Data.HeteroParList.Tuple as HeteroParList
 
 import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.DescriptorSet.Type
-import Gpu.Vulkan.DescriptorSet.TypeLevel.Write
 
 import qualified Gpu.Vulkan.Descriptor.Internal as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
+
+import Gpu.Vulkan.DescriptorSet.Write.Sources
 
 data Write n s (slbts :: (Type, [Layout.BindingType]))
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
