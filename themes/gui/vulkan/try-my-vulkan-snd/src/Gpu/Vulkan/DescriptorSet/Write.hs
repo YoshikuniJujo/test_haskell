@@ -19,6 +19,7 @@ module Gpu.Vulkan.DescriptorSet.Write (
 	) where
 
 import Foreign.Storable.PeekPoke
+import Data.Kind
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.IORef
 import Gpu.Vulkan.Object qualified as VObj
@@ -35,8 +36,9 @@ import Gpu.Vulkan.DescriptorSet.TypeLevel.Write
 import qualified Gpu.Vulkan.Descriptor.Internal as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
+import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 
-data Write n s (slbts :: LayoutArg)
+data Write n s (slbts :: (Type, [Layout.BindingType]))
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
 	writeNext :: TMaybe.M n,
 	writeDstSet :: D s slbts,
