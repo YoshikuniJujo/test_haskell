@@ -59,15 +59,15 @@ writeUpdateLengthNew Write {
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
 class M.WriteListToCore (TMapIndex.M0_4 writeArgs) => WriteListToMiddle writeArgs where
-	writeListToMiddleNewNew ::
+	writeListToMiddle ::
 		HeteroParList.PL (U4 Write) writeArgs ->
 		HeteroParList.PL M.Write (TMapIndex.M0_4 writeArgs)
-	writeListUpdateLengthNewNew ::
+	writeListUpdateLength ::
 		HeteroParList.PL (U4 Write) writeArgs -> IO ()
 
 instance WriteListToMiddle '[] where
-	writeListToMiddleNewNew HeteroParList.Nil = HeteroParList.Nil
-	writeListUpdateLengthNewNew HeteroParList.Nil = pure ()
+	writeListToMiddle HeteroParList.Nil = HeteroParList.Nil
+	writeListUpdateLength HeteroParList.Nil = pure ()
 
 instance (
 	WithPoked (TMaybe.M n),
@@ -77,10 +77,10 @@ instance (
 	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa) 0,
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa) ) =>
 	WriteListToMiddle ('(n, s, '(sl, bts), wsa) ': writeArgs) where
-	writeListToMiddleNewNew (U4 w :** ws) =
-		writeToMiddleNew w :** writeListToMiddleNewNew ws
-	writeListUpdateLengthNewNew (U4 w :** ws) =
-		writeUpdateLengthNew w >> writeListUpdateLengthNewNew ws
+	writeListToMiddle (U4 w :** ws) =
+		writeToMiddleNew w :** writeListToMiddle ws
+	writeListUpdateLength (U4 w :** ws) =
+		writeUpdateLengthNew w >> writeListUpdateLength ws
 
 writeToMiddleNew :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n s slbts wsa -> M.Write n

@@ -162,5 +162,5 @@ updateDs :: (Write.WriteListToMiddle writeArgs, CopyListToMiddle copyArgs) =>
 	HeteroParList.PL (U4 Write.Write) writeArgs ->
 	HeteroParList.PL (U8 Copy) copyArgs  -> IO ()
 updateDs (Device.D dvc) ws cs =
-	Write.writeListUpdateLengthNewNew ws >> M.updateDs dvc ws' cs'
-	where ws' = Write.writeListToMiddleNewNew ws; cs' = copyListToMiddleNew cs
+	Write.writeListUpdateLength ws >> M.updateDs dvc ws' cs'
+	where ws' = Write.writeListToMiddle ws; cs' = copyListToMiddleNew cs
