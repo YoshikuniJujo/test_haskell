@@ -51,13 +51,6 @@ pushGen psh xys xs ks xss = closedTypeFamilyD psh
 		`appT` promotedTupleFromList (varT <$> xss)
 	rgt = promotedTupleFromList $ zipWith promotedCons (varT <$> xs) (varT <$> xss)
 
-{-
-type family Zip xs ys where
-	Zip '[] _ys = '[]
-	Zip _xs '[] = '[]
-	Zip (x ': xs) (y ': ys) = '(x, y) ': Zip xs ys
-	-}
-
 tupleFromList :: Quote m => [m Type] -> m Type
 tupleFromList ts = foldl appT (tupleT $ length ts) ts
 
@@ -69,3 +62,36 @@ promotedCons x y = promotedConsT `appT` x `appT` y
 
 varNames :: [String]
 varNames = ((: []) <$> ['a' .. 'z']) ++ [ cs ++ [c] | cs <- varNames, c <- ['a' .. 'z'] ]
+
+mkZip :: Int -> DecQ
+mkZip n = do
+	xys <- newName `mapM` take n varNames
+	nus <- newName `mapM` take n (('_' :) <$> varNames)
+	xsys <- newName `mapM` take n ((++ "s") <$> varNames)
+	mkBar (mkName $ "Zip" ++ show n) xys nus xsys
+
+bar :: DecQ
+bar = mkBar (mkName "Zip2") [mkName "x", mkName "y"] [mkName "_x", mkName "_y"] [mkName "xs", mkName "ys"]
+
+mkBar :: Name -> [Name] -> [Name] -> [Name] -> DecQ
+mkBar tn xy nus xsys = closedTypeFamilyD tn (plainTV <$> xy) NoSig Nothing $
+	 (mkNil <$> [0 .. length nus - 1]) ++ [
+	tySynEqn Nothing
+		(foldl appT (conT tn) $ zipWith mkPat xy xsys)
+		((promotedTupleFromList (varT <$> xy) `promotedCons`
+			(foldl appT (conT tn) $ varT <$> xsys)))
+	]
+	where
+	mkNil i = tySynEqn Nothing
+		(foldl appT (conT tn) $ emptyOne nus i) promotedNilT
+	mkPat x xs = varT x `promotedCons` varT xs
+
+emptyOne :: [Name] -> Int -> [TypeQ]
+emptyOne ns i = (varT <$> take i ns) ++ [promotedNilT] ++ (varT <$> drop (i + 1) ns)
+
+foo :: DecsQ
+foo = [d|
+	type family Zip2 xs ys where
+		Zip2 '[] _ys = '[]
+		Zip2 _xs '[] = '[]
+		Zip2 (x ': xs) (y ': ys) = '(x, y) ': Zip2 xs ys |]

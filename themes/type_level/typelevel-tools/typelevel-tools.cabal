@@ -30,6 +30,7 @@ library
       Data.TypeLevel.List.Push
       Data.TypeLevel.List.TH
       Data.TypeLevel.List.Unzip
+      Data.TypeLevel.List.Zip
       Data.TypeLevel.Maybe
       Data.TypeLevel.ParMaybe
       Data.TypeLevel.Tuple.MapIndex
