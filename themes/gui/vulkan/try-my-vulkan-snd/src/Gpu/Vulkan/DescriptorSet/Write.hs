@@ -58,12 +58,12 @@ writeUpdateLengthNew Write {
 			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
-class M.WriteListToCore (TMapIndex.M0_4 nsdspslbtswsas) => WriteListToMiddle nsdspslbtswsas where
+class M.WriteListToCore (TMapIndex.M0_4 writeArgs) => WriteListToMiddle writeArgs where
 	writeListToMiddleNewNew ::
-		HeteroParList.PL (U4 Write) nsdspslbtswsas ->
-		HeteroParList.PL M.Write (TMapIndex.M0_4 nsdspslbtswsas)
+		HeteroParList.PL (U4 Write) writeArgs ->
+		HeteroParList.PL M.Write (TMapIndex.M0_4 writeArgs)
 	writeListUpdateLengthNewNew ::
-		HeteroParList.PL (U4 Write) nsdspslbtswsas -> IO ()
+		HeteroParList.PL (U4 Write) writeArgs -> IO ()
 
 instance WriteListToMiddle '[] where
 	writeListToMiddleNewNew HeteroParList.Nil = HeteroParList.Nil
@@ -72,11 +72,11 @@ instance WriteListToMiddle '[] where
 instance (
 	WithPoked (TMaybe.M n),
 	WriteSourcesToMiddle '(sl, bts) wsa,
-	WriteListToMiddle nsdspslbtswsas,
+	WriteListToMiddle writeArgs,
 	WriteSourcesToLengthList wsa,
 	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa) 0,
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa) ) =>
-	WriteListToMiddle ('(n, s, '(sl, bts), wsa) ': nsdspslbtswsas) where
+	WriteListToMiddle ('(n, s, '(sl, bts), wsa) ': writeArgs) where
 	writeListToMiddleNewNew (U4 w :** ws) =
 		writeToMiddleNew w :** writeListToMiddleNewNew ws
 	writeListUpdateLengthNewNew (U4 w :** ws) =
