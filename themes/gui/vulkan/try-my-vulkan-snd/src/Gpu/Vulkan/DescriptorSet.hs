@@ -264,8 +264,8 @@ instance WriteSourcesToLengthList ('WriteSourcesArgBufferView foo) where
 		('WriteSourcesArgBufferView foo) = '[]
 	writeSourcesToLengthList (TexelBufferViews _) = Nothing
 
-instance WriteSourcesToLengthList 'WriteSourcesArgOther where
-	type WriteSourcesToLengthListObj 'WriteSourcesArgOther = '[]
+instance WriteSourcesToLengthList 'WriteSourcesArgInNext where
+	type WriteSourcesToLengthListObj 'WriteSourcesArgInNext = '[]
 	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
 
 updateDs :: (WriteListToMiddle writeArgs, CopyListToMiddle copyArgs) =>

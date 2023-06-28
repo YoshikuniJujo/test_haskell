@@ -71,14 +71,15 @@ instance (
 		bindingAndArrayElemBufferView @bts @bvs @0 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
 
-instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
-	type WriteSourcesObjs 'WriteSourcesArgOther = '[]
+instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
+	type WriteSourcesObjs 'WriteSourcesArgInNext = '[]
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
 
 data WriteSources arg where
 	WriteSourcesInNext ::
-		Word32 -> Word32 -> Word32 -> WriteSources 'WriteSourcesArgOther
+		DstBinding -> DstArrayElement -> DescriptorCount ->
+		WriteSources 'WriteSourcesArgInNext
 	ImageInfos ::
 		HeteroParList.PL (U4 Descriptor.ImageInfo) ssfmtnmsis ->
 		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
@@ -88,6 +89,10 @@ data WriteSources arg where
 	TexelBufferViews ::
 		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
 		WriteSources ('WriteSourcesArgBufferView nmts)
+
+type DstBinding = Word32
+type DstArrayElement = Word32
+type DescriptorCount = Word32
 
 class BufferInfoListToMiddleNew smsbnmobjs where
 	bufferInfoListToMiddleNew ::
@@ -107,7 +112,7 @@ data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
 	| WriteSourcesArgBufferNew [Descriptor.BufferInfoArgs]
 	| WriteSourcesArgBufferView [(Symbol, Type)]
-	| WriteSourcesArgOther
+	| WriteSourcesArgInNext
 
 class ImageInfosToMiddle ssfmtnmsis where
 	imageInfosToMiddle ::
