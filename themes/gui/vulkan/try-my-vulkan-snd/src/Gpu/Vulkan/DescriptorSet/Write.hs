@@ -19,7 +19,6 @@ module Gpu.Vulkan.DescriptorSet.Write (
 	) where
 
 import Foreign.Storable.PeekPoke
-import Data.Kind
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.IORef
 import Gpu.Vulkan.Object qualified as VObj
@@ -59,16 +58,14 @@ writeUpdateLengthNew Write {
 			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
-class M.WriteListToCore (WriteNextsNew nsdspslbtswsas) => WriteListToMiddle nsdspslbtswsas where
-	type WriteNextsNew nsdspslbtswsas :: [Maybe Type]
+class M.WriteListToCore (TMapIndex.M0_4 nsdspslbtswsas) => WriteListToMiddle nsdspslbtswsas where
 	writeListToMiddleNewNew ::
 		HeteroParList.PL (U4 Write) nsdspslbtswsas ->
-		HeteroParList.PL M.Write (WriteNextsNew nsdspslbtswsas)
+		HeteroParList.PL M.Write (TMapIndex.M0_4 nsdspslbtswsas)
 	writeListUpdateLengthNewNew ::
 		HeteroParList.PL (U4 Write) nsdspslbtswsas -> IO ()
 
 instance WriteListToMiddle '[] where
-	type WriteNextsNew '[] = '[]
 	writeListToMiddleNewNew HeteroParList.Nil = HeteroParList.Nil
 	writeListUpdateLengthNewNew HeteroParList.Nil = pure ()
 
@@ -80,8 +77,6 @@ instance (
 	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa) 0,
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa) ) =>
 	WriteListToMiddle ('(n, s, '(sl, bts), wsa) ': nsdspslbtswsas) where
-	type WriteNextsNew ('(n, s, '(sl, bts), wsa) ': nsdspslbtswsas) =
-		n ': WriteNextsNew nsdspslbtswsas
 	writeListToMiddleNewNew (U4 w :** ws) =
 		writeToMiddleNew w :** writeListToMiddleNewNew ws
 	writeListUpdateLengthNewNew (U4 w :** ws) =
