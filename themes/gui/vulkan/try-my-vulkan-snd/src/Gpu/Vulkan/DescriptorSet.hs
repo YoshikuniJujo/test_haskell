@@ -18,7 +18,7 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- * UPDATE
 
-	updateDsNewNew, WriteNew(..), CopyNew(..),
+	updateDs, WriteNew(..), CopyNew(..),
 
 	) where
 
@@ -264,7 +264,7 @@ instance WriteSourcesToLengthList 'WriteSourcesArgOther where
 	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
 	writeSourcesToLengthList (TexelBufferViewsOld _ _ _) = Nothing
 
-updateDsNewNew :: (
+updateDs :: (
 	WriteListToMiddleNewNew sdspslbtssbsmobjsobjs,
 	M.WriteListToCore (WriteNextsNew sdspslbtssbsmobjsobjs),
 	CopyListToMiddleNew copyArgs,
@@ -272,6 +272,6 @@ updateDsNewNew :: (
 	Device.D sd ->
 	HeteroParList.PL (U4 WriteNew) sdspslbtssbsmobjsobjs ->
 	HeteroParList.PL (U8 CopyNew) copyArgs  -> IO ()
-updateDsNewNew (Device.D dvc) ws cs =
+updateDs (Device.D dvc) ws cs =
 	writeListUpdateLengthNewNew ws >> M.updateDs dvc ws' cs'
 	where ws' = writeListToMiddleNewNew ws; cs' = copyListToMiddleNew cs

@@ -323,7 +323,7 @@ prepareMems phdvc dvc dscSetLyt da db dc dd _mxx f =
 				Vk.Dsc.TypeStorageTexelBuffer,
 			Vk.DscSet.writeSourcesNew = Vk.DscSet.TexelBufferViews
 				. HeteroParList.Singleton $ U2 bv }
-	Vk.DscSet.updateDsNewNew dvc (
+	Vk.DscSet.updateDs dvc (
 		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds' :**
 		HeteroParList.Nil )
 		HeteroParList.Nil

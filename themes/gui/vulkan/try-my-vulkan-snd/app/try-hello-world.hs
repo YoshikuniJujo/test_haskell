@@ -144,8 +144,8 @@ prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
 	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(HL.Singleton ds) ->
 	storageBufferNew pd dv \b m ->
---	Vk.DS.updateDsNewNew @_ @'Nothing dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
-	Vk.DS.updateDsNewNew dv (HL.Singleton . U4 $ writeDscSet ds b) HL.Nil >>
+--	Vk.DS.updateDs @_ @'Nothing dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
+	Vk.DS.updateDs dv (HL.Singleton . U4 $ writeDscSet ds b) HL.Nil >>
 	f ds m
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing

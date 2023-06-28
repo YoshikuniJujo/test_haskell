@@ -932,7 +932,7 @@ instance (
 	Update ubs dscss ) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss ) where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) = do
-		Vk.DscSet.updateDsNewNew dvc
+		Vk.DscSet.updateDs dvc
 			(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) HeteroParList.Nil
 		update dvc ubs dscss
 

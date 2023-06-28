@@ -301,7 +301,7 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 
 	allocateTextureDescriptorSets dv dp dslyttx \dscstx ->
 	writeTexture1 dv dscstx timgvw \wtx ->
-	Vk.DscSet.updateDsNewNew dv (HL.Singleton $ U4 wtx) HL.Nil >>
+	Vk.DscSet.updateDs dv (HL.Singleton $ U4 wtx) HL.Nil >>
 
 	createDescriptorSets @sbsmods @slytods dv dp cmbs lyts odbs lytods scnb \dss dssod ->
 
@@ -1321,7 +1321,7 @@ instance (
 		(odb ': odbs) ('(slytod, bods) ': lytods) where
 	update dv (dscs :** dscss) (BindedCamera cmb :** cmbs)
 		(dscsod :** dscsods) (BindedObjData odb :** odbs) scnb = do
-		Vk.DscSet.updateDsNewNew dv (
+		Vk.DscSet.updateDs dv (
 			U4 (descriptorWrite @CameraObj
 				dscs cmb Vk.Dsc.TypeUniformBuffer) :**
 			U4 (descriptorWrite @SceneObj

@@ -861,7 +861,7 @@ createDescriptorSet ::
 		Vk.DscSet.D sds '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]]) -> IO a) -> IO a
 createDescriptorSet dvc dscp ub dscslyt f =
 	Vk.DscSet.allocateDs dvc allocInfo \(HeteroParList.Singleton dscs) -> do
-	Vk.DscSet.updateDsNewNew dvc
+	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) HeteroParList.Nil
 	f dscs
 	where

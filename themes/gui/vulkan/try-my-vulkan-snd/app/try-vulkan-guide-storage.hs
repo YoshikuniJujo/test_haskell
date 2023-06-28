@@ -1252,7 +1252,7 @@ instance (
 		(odb ': odbs) ('(slytod, bods) ': lytods) where
 	update dv (dscs :** dscss) (BindedCamera cmb :** cmbs)
 		(dscsod :** dscsods) (BindedObjData odb :** odbs) scnb = do
-		Vk.DscSet.updateDsNewNew dv (
+		Vk.DscSet.updateDs dv (
 			U4 (descriptorWrite @CameraObj
 				dscs cmb Vk.Dsc.TypeUniformBuffer) :**
 			U4 (descriptorWrite @SceneObj

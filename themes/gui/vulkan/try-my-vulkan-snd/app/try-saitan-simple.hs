@@ -170,7 +170,7 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	storageBufferNew dvc phdvc da \ba ma ->
 	storageBufferNew dvc phdvc db \bb mb ->
 	storageBufferNew dvc phdvc dc \bc mc ->
-	Vk.DscSet.updateDsNewNew dvc
+	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U4 $ writeDscSet dscSet ba bb bc)
 		HeteroParList.Nil >>
 	f dscSet ma mb mc
