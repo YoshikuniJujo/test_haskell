@@ -259,10 +259,10 @@ writeDscSet ::
 		'(sm1, sb1, "", VObj.List 256 W1 ""), '(sm2, sb2, "", VObj.List 256 W2 ""),
 		'(sm3, sb3, "", VObj.List 256 W3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
-	Vk.DscSet.writeNextNew = TMaybe.N,
-	Vk.DscSet.writeDstSetNew = ds,
-	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
+	Vk.DscSet.writeNext = TMaybe.N,
+	Vk.DscSet.writeDstSet = ds,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfosNew $
 		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
 		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
 		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**

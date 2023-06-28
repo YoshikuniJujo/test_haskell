@@ -909,10 +909,10 @@ descriptorWrite ::
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
 		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing )])
 descriptorWrite ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNextNew = TMaybe.N,
-	Vk.DscSet.writeDstSetNew = dscs,
-	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
+	Vk.DscSet.writeNext = TMaybe.N,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo
 	}
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub

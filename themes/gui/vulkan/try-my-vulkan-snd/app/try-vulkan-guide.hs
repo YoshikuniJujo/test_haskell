@@ -1355,10 +1355,10 @@ descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
 		sm, sb, nm, VObj.Atom 256 tp objnm )])
 descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
-	Vk.DscSet.writeNextNew = TMaybe.N,
-	Vk.DscSet.writeDstSetNew = dscs,
-	Vk.DscSet.writeDescriptorTypeNew = tp,
-	Vk.DscSet.writeSourcesNew= Vk.DscSet.BufferInfosNew $
+	Vk.DscSet.writeNext = TMaybe.N,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = tp,
+	Vk.DscSet.writeSources= Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 

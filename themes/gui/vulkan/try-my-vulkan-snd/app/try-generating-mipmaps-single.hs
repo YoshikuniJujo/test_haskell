@@ -1434,10 +1434,10 @@ descriptorWrite0 ::
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
 		sm, sb, nm, VObj.Atom 256 UniformBufferObject  'Nothing)])
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNextNew = TMaybe.N,
-	Vk.DscSet.writeDstSetNew = dscs,
-	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $ HeteroParList.Singleton bufferInfo }
+	Vk.DscSet.writeNext = TMaybe.N,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfosNew $ HeteroParList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite1 ::
@@ -1445,10 +1445,10 @@ descriptorWrite1 ::
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
 descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
-	Vk.DscSet.writeNextNew = TMaybe.N,
-	Vk.DscSet.writeDstSetNew = dscs,
-	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeCombinedImageSampler,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.ImageInfos . HeteroParList.Singleton
+	Vk.DscSet.writeNext = TMaybe.N,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
+	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HeteroParList.Singleton
 		$ U4 Vk.Dsc.ImageInfo {
 			Vk.Dsc.imageInfoImageLayout =
 				Vk.Img.LayoutShaderReadOnlyOptimal,

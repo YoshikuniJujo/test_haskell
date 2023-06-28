@@ -38,10 +38,10 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 data Write n s (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
-	writeNextNew :: TMaybe.M n,
-	writeDstSetNew :: D s slbts,
-	writeDescriptorTypeNew :: Descriptor.Type,
-	writeSourcesNew :: WriteSources sbsmobjsobjs }
+	writeNext :: TMaybe.M n,
+	writeDstSet :: D s slbts,
+	writeDescriptorType :: Descriptor.Type,
+	writeSources :: WriteSources sbsmobjsobjs }
 
 writeUpdateLengthNew :: forall sbsmobjsobjs n s sl bts . (
 	WriteSourcesToLengthList sbsmobjsobjs,
@@ -50,8 +50,8 @@ writeUpdateLengthNew :: forall sbsmobjsobjs n s sl bts . (
 	) =>
 	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
 writeUpdateLengthNew Write {
-	writeDstSetNew = D rlns _,
-	writeSourcesNew = ws } = do
+	writeDstSet = D rlns _,
+	writeSources = ws } = do
 	lns <- readIORef rlns
 	maybe	(pure ())
 		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesToLengthListObj sbsmobjsobjs) @0 lns
@@ -85,10 +85,10 @@ instance (
 writeToMiddleNew :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n s slbts wsa -> M.Write n
 writeToMiddleNew Write {
-	writeNextNew = mnxt,
-	writeDstSetNew = D _ ds,
-	writeDescriptorTypeNew = dt,
-	writeSourcesNew = srcs
+	writeNext = mnxt,
+	writeDstSet = D _ ds,
+	writeDescriptorType = dt,
+	writeSources = srcs
 	} = M.Write {
 		M.writeNext = mnxt,
 		M.writeDstSet = ds,

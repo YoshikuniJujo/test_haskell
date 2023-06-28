@@ -1338,10 +1338,10 @@ descriptorWrite :: forall obj slbts sb sm nm objs sds . (
 	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBufferNew '[ '(sm, sb, nm, obj)])
 descriptorWrite dscs ub tp = Vk.DscSet.Write {
-	Vk.DscSet.writeNextNew = TMaybe.N,
-	Vk.DscSet.writeDstSetNew = dscs,
-	Vk.DscSet.writeDescriptorTypeNew = tp,
-	Vk.DscSet.writeSourcesNew =
+	Vk.DscSet.writeNext = TMaybe.N,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = tp,
+	Vk.DscSet.writeSources =
 		Vk.DscSet.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
 
 writeTexture1 ::
@@ -1361,10 +1361,10 @@ writeDescriptorImage :: Vk.Dsc.Type ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si)])
 writeDescriptorImage tp dscs ii = Vk.DscSet.Write {
-	Vk.DscSet.writeNextNew = TMaybe.N,
-	Vk.DscSet.writeDstSetNew = dscs,
-	Vk.DscSet.writeDescriptorTypeNew = tp,
-	Vk.DscSet.writeSourcesNew =
+	Vk.DscSet.writeNext = TMaybe.N,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = tp,
+	Vk.DscSet.writeSources =
 		Vk.DscSet.ImageInfos . HL.Singleton $ U4 ii }
 
 textureImageBufferInfo :: Vk.ImgVw.I fmt nm si ->
