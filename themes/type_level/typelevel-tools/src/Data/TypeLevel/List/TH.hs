@@ -63,18 +63,22 @@ promotedCons x y = promotedConsT `appT` x `appT` y
 varNames :: [String]
 varNames = ((: []) <$> ['a' .. 'z']) ++ [ cs ++ [c] | cs <- varNames, c <- ['a' .. 'z'] ]
 
+kindNames :: [String]
+kindNames = ('k' :) . show <$> [0 :: Int ..]
+
 mkZip :: Int -> DecQ
 mkZip n = do
 	xys <- newName `mapM` take n varNames
 	nus <- newName `mapM` take n (('_' :) <$> varNames)
 	xsys <- newName `mapM` take n ((++ "s") <$> varNames)
-	mkBar (mkName $ "Zip" ++ show n) xys nus xsys
+	ks <- newName `mapM` take n kindNames
+	mkBar (mkName $ "Zip" ++ show n) xys nus xsys ks
 
 bar :: DecQ
-bar = mkBar (mkName "Zip2") [mkName "x", mkName "y"] [mkName "_x", mkName "_y"] [mkName "xs", mkName "ys"]
+bar = mkBar (mkName "Zip2") [mkName "x", mkName "y"] [mkName "_x", mkName "_y"] [mkName "xs", mkName "ys"] [mkName "k0", mkName "k1"]
 
-mkBar :: Name -> [Name] -> [Name] -> [Name] -> DecQ
-mkBar tn xy nus xsys = closedTypeFamilyD tn (plainTV <$> xy) NoSig Nothing $
+mkBar :: Name -> [Name] -> [Name] -> [Name] -> [Name] -> DecQ
+mkBar tn xy nus xsys ks = closedTypeFamilyD tn (zipWith kindedTV xy $ (listK `appK`) . varK <$> ks) NoSig Nothing $
 	 (mkNil <$> [0 .. length nus - 1]) ++ [
 	tySynEqn Nothing
 		(foldl appT (conT tn) $ zipWith mkPat xy xsys)
@@ -91,7 +95,7 @@ emptyOne ns i = (varT <$> take i ns) ++ [promotedNilT] ++ (varT <$> drop (i + 1)
 
 foo :: DecsQ
 foo = [d|
-	type family Zip2 xs ys where
+	type family Zip2 (xs :: [k0]) (ys :: [k1]) where
 		Zip2 '[] _ys = '[]
 		Zip2 _xs '[] = '[]
 		Zip2 (x ': xs) (y ': ys) = '(x, y) ': Zip2 xs ys |]
