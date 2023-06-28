@@ -256,9 +256,9 @@ writeDscSet :: forall slbts sb sm os sds . (
 	Show (HL.PL Obj.ObjectLength os),
 	Obj.Offset (Obj.List 256 Word32 "") os ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
-	Vk.DS.WriteNew 'Nothing sds slbts
+	Vk.DS.Write 'Nothing sds slbts
 		('Vk.DS.WriteSourcesArgBufferNew '[ '(sm, sb, "", Word32List)])
-writeDscSet ds ba = Vk.DS.WriteNew {
+writeDscSet ds ba = Vk.DS.Write {
 	Vk.DS.writeNextNew = TMaybe.N,
 	Vk.DS.writeDstSetNew = ds,
 	Vk.DS.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,

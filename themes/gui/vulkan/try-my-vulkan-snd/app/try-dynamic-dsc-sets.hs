@@ -260,10 +260,10 @@ writeDscSet ::
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
-	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[
+	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[
 		'(sm1, sb1, "", VObj.DynList 2 256 W1 ""), '(sm2, sb2, "", VObj.DynList 2 256 W2 ""),
 		'(sm3, sb3, "", VObj.DynList 2 256 W3 "") ])
-writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
+writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBufferDynamic,

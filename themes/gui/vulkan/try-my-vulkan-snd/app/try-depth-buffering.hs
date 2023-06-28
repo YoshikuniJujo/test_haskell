@@ -1427,9 +1427,9 @@ createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp f =
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds '(sl, bts) ->
-	Vk.DscSet.WriteNew 'Nothing sds '(sl, bts) ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
+	Vk.DscSet.Write 'Nothing sds '(sl, bts) ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
 		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing )])
-descriptorWrite0 ub dscs = Vk.DscSet.WriteNew {
+descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
@@ -1440,9 +1440,9 @@ descriptorWrite0 ub dscs = Vk.DscSet.WriteNew {
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds '(sl, bts) -> Vk.ImgVw.I fmt nm si -> Vk.Smplr.S ss ->
-	Vk.DscSet.WriteNew 'Nothing sds '(sl, bts)
+	Vk.DscSet.Write 'Nothing sds '(sl, bts)
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
-descriptorWrite1 dscs tiv tsmp = Vk.DscSet.WriteNew {
+descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeCombinedImageSampler,

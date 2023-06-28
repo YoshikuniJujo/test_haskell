@@ -1335,9 +1335,9 @@ instance (
 descriptorWrite :: forall obj slbts sb sm nm objs sds . (
 	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
-	Vk.Dsc.Type -> Vk.DscSet.WriteNew 'Nothing sds slbts
+	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBufferNew '[ '(sm, sb, nm, obj)])
-descriptorWrite dscs ub tp = Vk.DscSet.WriteNew {
+descriptorWrite dscs ub tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = tp,
@@ -1347,7 +1347,7 @@ descriptorWrite dscs ub tp = Vk.DscSet.WriteNew {
 writeTexture1 ::
 	Vk.Dvc.D sd -> Vk.DscSet.D sds lyt -> Vk.ImgVw.I ifmt "texture" siv -> (
 		forall ss . 
-		Vk.DscSet.WriteNew 'Nothing sds lyt
+		Vk.DscSet.Write 'Nothing sds lyt
 			('Vk.DscSet.WriteSourcesArgImage '[ '(ss, ifmt, "texture", siv)]) ->
 		IO a) -> IO a
 writeTexture1 dv dscs tiv f =
@@ -1358,9 +1358,9 @@ writeTexture1 dv dscs tiv f =
 
 writeDescriptorImage :: Vk.Dsc.Type ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.ImageInfo ss fmt nm si ->
-	Vk.DscSet.WriteNew 'Nothing sds slbts
+	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si)])
-writeDescriptorImage tp dscs ii = Vk.DscSet.WriteNew {
+writeDescriptorImage tp dscs ii = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = tp,

@@ -18,7 +18,9 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- * UPDATE
 
-	updateDs, WriteNew(..), CopyNew(..),
+	updateDs,
+	Write(..), WriteListToMiddle,
+	Copy(..), CopyListToMiddle
 
 	) where
 
@@ -107,34 +109,36 @@ allocateDs (Device.D dvc) ai f = do
 		((\(Descriptor.Pool.P p) -> p) $ allocateInfoDescriptorPool ai)
 		dsm
 
-data WriteNew n s (slbts :: LayoutArg)
-	(sbsmobjsobjs :: WriteSourcesArg) = WriteNew {
+data Write n s (slbts :: LayoutArg)
+	(sbsmobjsobjs :: WriteSourcesArg) = Write {
 	writeNextNew :: TMaybe.M n,
 	writeDstSetNew :: D s slbts,
 	writeDescriptorTypeNew :: Descriptor.Type,
 	writeSourcesNew :: WriteSources sbsmobjsobjs }
 
-data CopyNew n sdss (slbtss :: LayoutArg) sdsd (slbtsd :: LayoutArg)
-	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = CopyNew {
+data Copy n sdss (slbtss :: LayoutArg) sdsd (slbtsd :: LayoutArg)
+	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = Copy {
 	copyNextNew :: TMaybe.M n,
 	copySrcSetNew :: D sdss slbtss,
 	copyDstSetNew :: D sdsd slbtsd }
 
-class CopyListToMiddleNew copyArgs where
+class M.CopyListToCore (CopyNextsNew copyArgs) =>
+	CopyListToMiddle copyArgs where
 	type CopyNextsNew copyArgs :: [Maybe Type]
 	copyListToMiddleNew ::
-		HeteroParList.PL (U8 CopyNew) copyArgs ->
+		HeteroParList.PL (U8 Copy) copyArgs ->
 		HeteroParList.PL M.Copy (CopyNextsNew copyArgs)
 
-instance CopyListToMiddleNew '[] where
+instance CopyListToMiddle '[] where
 	type CopyNextsNew '[] = '[]
 	copyListToMiddleNew HeteroParList.Nil = HeteroParList.Nil
 
 instance (
+	WithPoked (TMaybe.M n),
 	Copy.BindingAndArrayElement btss bts is,
 	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts,
-	CopyListToMiddleNew copyArgs ) =>
-	CopyListToMiddleNew (
+	CopyListToMiddle copyArgs ) =>
+	CopyListToMiddle (
 		'(n, sdss, '(sls, btss), sdsd, '(sld, btsd), bts, is, id) ':
 		copyArgs) where
 	type CopyNextsNew (
@@ -145,8 +149,8 @@ instance (
 copyToMiddleNew :: (
 	Copy.BindingAndArrayElement btss bts is,
 	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
-	CopyNew n sdss '(sls, btss) sdsd '(sld, btsd) bts is id -> M.Copy n
-copyToMiddleNew c@CopyNew {
+	Copy n sdss '(sls, btss) sdsd '(sld, btsd) bts is id -> M.Copy n
+copyToMiddleNew c@Copy {
 	copyNextNew = mnxt, copySrcSetNew = D _ ss, copyDstSetNew = D _ ds } = let
 	(sb, sae, db, dae, cnt) = getCopyArgsNew c in
 	M.Copy {
@@ -161,7 +165,7 @@ getCopyArgsNew :: forall n sdss sls btss sdsd sld btsd bts is id . (
 	Copy.BindingAndArrayElement btss bts is,
 	Copy.BindingAndArrayElement btsd bts id,
 	Copy.BindingLength bts ) =>
-	CopyNew n sdss '(sls, btss) sdsd '(sld, btsd) bts is id ->
+	Copy n sdss '(sls, btss) sdsd '(sld, btsd) bts is id ->
 	(Word32, Word32, Word32, Word32, Word32)
 getCopyArgsNew _ = let
 	(sb, sae) = Copy.bindingAndArrayElement @btss @bts @is
@@ -173,8 +177,8 @@ writeUpdateLengthNew :: forall sbsmobjsobjs n s sl bts . (
 	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs) 0,
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj sbsmobjsobjs)
 	) =>
-	WriteNew n s '(sl, bts) sbsmobjsobjs -> IO ()
-writeUpdateLengthNew WriteNew {
+	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
+writeUpdateLengthNew Write {
 	writeDstSetNew = D rlns _,
 	writeSourcesNew = ws } = do
 	lns <- readIORef rlns
@@ -183,26 +187,27 @@ writeUpdateLengthNew WriteNew {
 			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
-class WriteListToMiddleNewNew nsdspslbtswsas where
+class M.WriteListToCore (WriteNextsNew nsdspslbtswsas) => WriteListToMiddle nsdspslbtswsas where
 	type WriteNextsNew nsdspslbtswsas :: [Maybe Type]
 	writeListToMiddleNewNew ::
-		HeteroParList.PL (U4 WriteNew) nsdspslbtswsas ->
+		HeteroParList.PL (U4 Write) nsdspslbtswsas ->
 		HeteroParList.PL M.Write (WriteNextsNew nsdspslbtswsas)
 	writeListUpdateLengthNewNew ::
-		HeteroParList.PL (U4 WriteNew) nsdspslbtswsas -> IO ()
+		HeteroParList.PL (U4 Write) nsdspslbtswsas -> IO ()
 
-instance WriteListToMiddleNewNew '[] where
+instance WriteListToMiddle '[] where
 	type WriteNextsNew '[] = '[]
 	writeListToMiddleNewNew HeteroParList.Nil = HeteroParList.Nil
 	writeListUpdateLengthNewNew HeteroParList.Nil = pure ()
 
 instance (
+	WithPoked (TMaybe.M n),
 	WriteSourcesToMiddle '(sl, bts) wsa,
-	WriteListToMiddleNewNew nsdspslbtswsas,
+	WriteListToMiddle nsdspslbtswsas,
 	WriteSourcesToLengthList wsa,
 	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa) 0,
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa) ) =>
-	WriteListToMiddleNewNew ('(n, s, '(sl, bts), wsa) ': nsdspslbtswsas) where
+	WriteListToMiddle ('(n, s, '(sl, bts), wsa) ': nsdspslbtswsas) where
 	type WriteNextsNew ('(n, s, '(sl, bts), wsa) ': nsdspslbtswsas) =
 		n ': WriteNextsNew nsdspslbtswsas
 	writeListToMiddleNewNew (U4 w :** ws) =
@@ -211,8 +216,8 @@ instance (
 		writeUpdateLengthNew w >> writeListUpdateLengthNewNew ws
 
 writeToMiddleNew :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
-	WriteNew n s slbts wsa -> M.Write n
-writeToMiddleNew WriteNew {
+	Write n s slbts wsa -> M.Write n
+writeToMiddleNew Write {
 	writeNextNew = mnxt,
 	writeDstSetNew = D _ ds,
 	writeDescriptorTypeNew = dt,
@@ -264,14 +269,10 @@ instance WriteSourcesToLengthList 'WriteSourcesArgOther where
 	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
 	writeSourcesToLengthList (TexelBufferViewsOld _ _ _) = Nothing
 
-updateDs :: (
-	WriteListToMiddleNewNew sdspslbtssbsmobjsobjs,
-	M.WriteListToCore (WriteNextsNew sdspslbtssbsmobjsobjs),
-	CopyListToMiddleNew copyArgs,
-	M.CopyListToCore (CopyNextsNew copyArgs) ) =>
+updateDs :: (WriteListToMiddle writeArgs, CopyListToMiddle copyArgs) =>
 	Device.D sd ->
-	HeteroParList.PL (U4 WriteNew) sdspslbtssbsmobjsobjs ->
-	HeteroParList.PL (U8 CopyNew) copyArgs  -> IO ()
+	HeteroParList.PL (U4 Write) writeArgs ->
+	HeteroParList.PL (U8 Copy) copyArgs  -> IO ()
 updateDs (Device.D dvc) ws cs =
 	writeListUpdateLengthNewNew ws >> M.updateDs dvc ws' cs'
 	where ws' = writeListToMiddleNewNew ws; cs' = copyListToMiddleNew cs

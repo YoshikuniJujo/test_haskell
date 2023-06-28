@@ -333,12 +333,12 @@ writeDscSet :: forall sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 	Vk.Bffr.Binded sm1 sb1 nm1 '[ListW1] ->
 	Vk.Bffr.Binded sm2 sb2 nm2 '[ListW2] ->
 	Vk.Bffr.Binded sm3 sb3 nm3 '[ListW3] ->
-	Vk.DscSet.WriteNew 'Nothing sds '(sl, DscSetLytLstW123) (
+	Vk.DscSet.Write 'Nothing sds '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBufferNew '[
 			'(sm1, sb1, nm1, ListW1),
 			'(sm2, sb2, nm2, ListW2),
 			'(sm3, sb3, nm3, ListW3) ] )
-writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
+writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
@@ -357,10 +357,10 @@ writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds . (
 	VObj.Offset (VObj.Atom 256 Word32 ('Just nm)) objs ) =>
 	Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
-	Vk.DscSet.WriteNew 'Nothing sds '(sl, DscSetLytLstW123) (
+	Vk.DscSet.Write 'Nothing sds '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBufferNew '[
 			'(sm4, sb4, nm4, VObj.Atom 256 Word32 ('Just nm)) ] )
-writeDscSet2 ds bx = Vk.DscSet.WriteNew {
+writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,

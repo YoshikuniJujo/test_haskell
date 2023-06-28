@@ -1266,9 +1266,9 @@ instance (
 descriptorWrite :: forall obj slbts sb sm nm objs sds . (
 	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
-	Vk.Dsc.Type -> Vk.DscSet.WriteNew 'Nothing sds slbts
+	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBufferNew '[ '(sm, sb, nm, obj)])
-descriptorWrite dscs ub tp = Vk.DscSet.WriteNew {
+descriptorWrite dscs ub tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = tp,
