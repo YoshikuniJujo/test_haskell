@@ -60,7 +60,7 @@ layoutToMiddle (U2 (Layout.L l)) = l
 data AllocateInfo mn sp slbtss = AllocateInfo {
 	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts :: HeteroParList.PL Layout slbtss }
+	allocateInfoSetLayouts :: HeteroParList.PL (U2 Layout.L) slbtss }
 
 deriving instance (Show (TMaybe.M n), Show (HeteroParList.PL Layout slbtss)) =>
 	Show (AllocateInfo n sp slbtss)
