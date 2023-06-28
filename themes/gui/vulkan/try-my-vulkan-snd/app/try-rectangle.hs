@@ -838,7 +838,7 @@ createUniformBuffers ::
 		HeteroParList.FromList slyts,
 		Update smsbs slyts,
 		HeteroParList.HomoList (AtomUbo sdsc) slyts) =>
-		HeteroParList.PL Vk.DscSet.Layout slyts ->
+		HeteroParList.PL (U2 Vk.DscSetLyt.L) slyts ->
 		HeteroParList.PL BindedUbo smsbs ->
 		HeteroParList.PL MemoryUbo smsbs -> IO a) -> IO a
 createUniformBuffers _ _ _ 0 f = f HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
@@ -891,7 +891,7 @@ createDescriptorSets :: (
 	Vk.DscSet.DListFromMiddle ss,
 	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedUbo smsbs ->
-	HeteroParList.PL Vk.DscSet.Layout ss ->
+	HeteroParList.PL (U2 Vk.DscSetLyt.L) ss ->
 	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSets dvc dscp ubs dscslyts f =
 	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do

@@ -1005,7 +1005,7 @@ createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sdsc Buffers ->
 	Int -> (forall slyts sbsms . (
 		Vk.DscSet.DListFromMiddle slyts, HL.FromList slyts,
 		Update sbsms slyts, HL.HomoList '(sdsc, Buffers) slyts ) =>
-		HL.PL Vk.DscSet.Layout slyts ->
+		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
 		HL.PL BindedCamera sbsms -> HL.PL MemoryCamera sbsms ->
 		IO a) -> IO a
 createCameraBuffers _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil
@@ -1098,7 +1098,7 @@ createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil'
 createDescriptorSets ::
 	(Vk.DscSet.DListFromMiddle lyts, HL.FromList lyts, Update cmbs lyts) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	HL.PL BindedCamera cmbs -> HL.PL Vk.DscSet.Layout lyts ->
+	HL.PL BindedCamera cmbs -> HL.PL (U2 Vk.DscSetLyt.L) lyts ->
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->
 	(forall sds . HL.PL (Vk.DscSet.D sds) lyts -> IO a) -> IO a
 createDescriptorSets dv dscp cmbs lyts scnb f =

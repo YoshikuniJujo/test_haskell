@@ -1135,7 +1135,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
-		HeteroParList.PL Vk.DscSet.Layout slyts ->
+		HeteroParList.PL (U2 Vk.DscSetLyt.L) slyts ->
 		HeteroParList.PL BindedGcd sbsms ->
 		HeteroParList.PL MemoryGcd sbsms -> IO a) -> IO a
 createCameraBuffers _ _ _ n f | n < 1 = f HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
@@ -1299,7 +1299,7 @@ createDescriptorSets :: (
 	Vk.DscSet.DListFromMiddle ss,
 	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
-	HeteroParList.PL Vk.DscSet.Layout ss ->
+	HeteroParList.PL (U2 Vk.DscSetLyt.L) ss ->
 	Vk.Bffr.Binded sm sb "scene-buffer" '[
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->

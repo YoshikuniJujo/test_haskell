@@ -20,10 +20,6 @@ module Gpu.Vulkan.DescriptorSet (
 
 	updateDsNewNew, WriteNew(..), CopyNew(..),
 
-	-- * OTHERS
-
-	Layout
-
 	) where
 
 import GHC.TypeLits

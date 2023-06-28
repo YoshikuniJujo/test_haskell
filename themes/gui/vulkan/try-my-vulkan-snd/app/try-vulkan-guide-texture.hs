@@ -289,7 +289,7 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 
 	createCameraObjDataBuffers pd dv dslyt dslyto maxFramesInFlight
 		\lyts cmbs cmms
-			(lytods :: HL.PL Vk.DscSet.Layout slytods)
+			(lytods :: HL.PL (U2 Vk.DscSetLyt.L) slytods)
 			(odbs :: HL.PL BindedObjData sbsmods) odms ->
 
 	createTextureImage pd dv gq cp "assets/lost_empire-RGBA.png" \timg ->
@@ -1100,7 +1100,7 @@ createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sdsc Buffers ->
 	Int -> (forall slyts sbsms . (
 		Vk.DscSet.SListFromMiddle slyts, HL.FromList slyts,
 		Update sbsms slyts odbs slytods, HL.HomoList '(sdsc, Buffers) slyts ) =>
-		HL.PL Vk.DscSet.Layout slyts ->
+		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
 		HL.PL BindedCamera sbsms -> HL.PL MemoryCamera sbsms ->
 		IO a) -> IO a
 createCameraBuffers _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil
@@ -1119,9 +1119,9 @@ createCameraObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
 		HL.HomoList '(sdsc, Buffers) slyts,
 		HL.HomoList '(sodlyt, ObjDataBuffers) slytods
 		) =>
-		HL.PL Vk.DscSet.Layout slyts ->
+		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
 		HL.PL BindedCamera sbsms -> HL.PL MemoryCamera sbsms ->
-		HL.PL Vk.DscSet.Layout slytods ->
+		HL.PL (U2 Vk.DscSetLyt.L) slytods ->
 		HL.PL BindedObjData sbsmods -> HL.PL MemoryObjData sbsmods ->
 		IO a) -> IO a
 createCameraObjDataBuffers _ _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil HL.Nil HL.Nil HL.Nil
@@ -1219,7 +1219,7 @@ createObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
 --		Update sbsms slyts,
 		HL.HomoList
 			'(sdsc, '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]]) slyts ) =>
-		HL.PL Vk.DscSet.Layout slyts ->
+		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
 		HL.PL BindedObjData sbsms -> HL.PL MemoryObjData sbsms ->
 		IO a) -> IO a
 createObjDataBuffers _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil
@@ -1267,8 +1267,8 @@ createDescriptorSets ::
 	HL.FromList lyts,
 	Update cmbs lyts odbs lytods) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	HL.PL BindedCamera cmbs -> HL.PL Vk.DscSet.Layout lyts ->
-	HL.PL BindedObjData odbs -> HL.PL Vk.DscSet.Layout lytods ->
+	HL.PL BindedCamera cmbs -> HL.PL (U2 Vk.DscSetLyt.L) lyts ->
+	HL.PL BindedObjData odbs -> HL.PL (U2 Vk.DscSetLyt.L) lytods ->
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->
 	(forall sds sds' .
 		HL.PL (Vk.DscSet.D sds) lyts ->
