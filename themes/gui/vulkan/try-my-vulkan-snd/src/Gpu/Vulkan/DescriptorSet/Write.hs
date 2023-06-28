@@ -31,6 +31,7 @@ import qualified Data.HeteroParList.Tuple as HeteroParList
 
 import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.DescriptorSet.Type
+import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 
 import qualified Gpu.Vulkan.Descriptor.Internal as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor

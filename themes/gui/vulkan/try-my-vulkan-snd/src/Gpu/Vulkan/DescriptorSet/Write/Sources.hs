@@ -10,9 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Write.Sources (
-	module Gpu.Vulkan.DescriptorSet.Write.Sources,
-	module Gpu.Vulkan.DescriptorSet.TypeLevel.Common
-	) where
+	module Gpu.Vulkan.DescriptorSet.Write.Sources ) where
 
 import GHC.TypeLits
 import Data.Kind

@@ -144,7 +144,7 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.Write.Sources as Vk.DscSet
 
-import qualified Gpu.Vulkan.DescriptorSet.Write.Sources as Vk.DscSet.T
+import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Common as Vk.DscSet.T
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Dvc.Mem.ImageBuffer.K
 
