@@ -308,8 +308,7 @@ prepareMems phdvc dvc dscSetLyt da db dc dd _mxx f =
 		\(dscSet :** HeteroParList.Nil) ->
 	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc
 		(bd :: Vk.Buffer.Binded sm sb nm '[VObj.List 256 MyPixel ""]) _md ->
-	let	Vk.Buffer.Binded _ _mbd = bd
-		bufferViewInfo' :: Vk.BufferView.CreateInfo 'Nothing MyPixel ""
+	let	bufferViewInfo' :: Vk.BufferView.CreateInfo 'Nothing MyPixel ""
 			'(sm, sb, nm, '[VObj.List 256 MyPixel ""])
 		bufferViewInfo' = Vk.BufferView.CreateInfo {
 			Vk.BufferView.createInfoNext = TMaybe.N,

@@ -75,7 +75,6 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 	type WriteSourcesObjs 'WriteSourcesArgOther = '[]
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
-		TexelBufferViewsOld bdg ae bvs -> ((bdg, ae), M.WriteSourcesBufferView bvs)
 
 data WriteSources arg where
 	WriteSourcesInNext ::
@@ -89,9 +88,6 @@ data WriteSources arg where
 	TexelBufferViews ::
 		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
 		WriteSources ('WriteSourcesArgBufferView nmts)
-	TexelBufferViewsOld ::
-		Word32 -> Word32 -> [BufferView.M.B] ->
-		WriteSources 'WriteSourcesArgOther
 
 class BufferInfoListToMiddleNew smsbnmobjs where
 	bufferInfoListToMiddleNew ::

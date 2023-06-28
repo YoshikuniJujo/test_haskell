@@ -267,7 +267,6 @@ instance WriteSourcesToLengthList ('WriteSourcesArgBufferView foo) where
 instance WriteSourcesToLengthList 'WriteSourcesArgOther where
 	type WriteSourcesToLengthListObj 'WriteSourcesArgOther = '[]
 	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
-	writeSourcesToLengthList (TexelBufferViewsOld _ _ _) = Nothing
 
 updateDs :: (WriteListToMiddle writeArgs, CopyListToMiddle copyArgs) =>
 	Device.D sd ->

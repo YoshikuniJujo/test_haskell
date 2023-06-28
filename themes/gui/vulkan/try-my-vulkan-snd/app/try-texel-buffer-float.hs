@@ -15,6 +15,8 @@
 
 module Main where
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Data.Kind
 import Data.Kind.Object qualified as KObj
@@ -25,7 +27,7 @@ import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
-import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 
@@ -44,8 +46,6 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.Device.Type as Vk.Dvc
-import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Dvc.M
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Buffer
@@ -69,15 +69,16 @@ import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
-import qualified Gpu.Vulkan.Buffer.Type as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
-import qualified Gpu.Vulkan.BufferView.Middle as Vk.BufferView.M
+import qualified Gpu.Vulkan.BufferView as Vk.BufferView
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
+
+import Gpu.Vulkan.TypeEnum qualified as Vk.TEnum
 
 main :: IO ()
 main = do
@@ -103,8 +104,10 @@ calc da db dc = withDevice \phdvc qFam dvc mxx ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil' \dscSetLyt ->
 	let	n = fromIntegral mxx
 		da' = V.take n da; db' = V.take n db; dc' = V.take n dc
-		dd = V.fromList . take (fromIntegral mxx * 4) $ cycle [123 :: Float, 321, 111, 333, 555]
-	in
+		dd = V.fromList . take (fromIntegral mxx) $ cycle [
+			MyPixel 123 321 111 333,
+			MyPixel 555 444 333 222,
+			MyPixel 999 888 777 666 ] in
 	prepareMems phdvc dvc dscSetLyt da' db' dc' dd mxx \dscSet
 		(ma :: MemoryList sm1 sb1 nm1 w1)
 		(mb :: MemoryList sm2 sb2 nm2 w2)
@@ -150,7 +153,7 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
-		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[Word32, Word32])
+		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[Float, Float])
 		'(sl, sbtss, '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
@@ -159,7 +162,7 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
-shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]
+shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Float, Float]
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,
@@ -197,7 +200,8 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
 	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
 	InfixIndex '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
+	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
@@ -262,8 +266,7 @@ findQueueFamily phdvc qb = do
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
 	'Vk.DscSetLyt.Buffer '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	'Vk.DscSetLyt.Other
-	]
+	'Vk.DscSetLyt.BufferView '[ '("", MyPixel)] ]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = TMaybe.N,
 	Vk.DscSetLyt.createInfoFlags = def,
@@ -274,61 +277,67 @@ binding0 = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
 
--- binding1 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
-binding1 :: Vk.DscSetLyt.Binding 'Vk.DscSetLyt.Other
-binding1 = Vk.DscSetLyt.BindingOther {
-	Vk.DscSetLyt.bindingOtherDescriptorType =
+binding1 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.BufferView '[ '("", MyPixel) ])
+binding1 = Vk.DscSetLyt.BindingBufferView {
+	Vk.DscSetLyt.bindingBufferViewDescriptorType =
 		Vk.Dsc.TypeStorageTexelBuffer,
-	Vk.DscSetLyt.bindingOtherDescriptorCountOrImmutableSamplers =
-		Left 1,
-	Vk.DscSetLyt.bindingOtherStageFlags = Vk.ShaderStageComputeBit }
+	Vk.DscSetLyt.bindingBufferViewStageFlags = Vk.ShaderStageComputeBit }
 
 prepareMems ::
-	forall bts w1 w2 w3 w4 sd sl nm1 nm2 nm3 a . (
+	forall bts w1 w2 w3 sd sl nm1 nm2 nm3 a . (
 	Default (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Storable w1, Storable w2, Storable w3, Storable w4
+	Storable w1, Storable w2, Storable w3,
+	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)] 0
 	) =>
 	Vk.DscSet.BindingAndArrayElem bts
 		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0 =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> Word32 -> (
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector MyPixel -> Word32 -> (
 		forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.K.Buffer nm1 '[VObj.List 256 w1 ""])] ->
 		Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.Buffer nm2 '[VObj.List 256 w2 ""])] ->
 		Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[VObj.List 256 w3 ""])] ->
 		IO a) -> IO a
-prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
+prepareMems phdvc dvc dscSetLyt da db dc dd _mxx f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(dscSet :** HeteroParList.Nil) ->
-	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc bd md -> do
-	let	Vk.Buffer.Binded _ mbd = bd
-		bufferViewInfo = Vk.BufferView.M.CreateInfo {
-			Vk.BufferView.M.createInfoNext = TMaybe.N,
-			Vk.BufferView.M.createInfoFlags = zeroBits,
-			Vk.BufferView.M.createInfoBuffer = mbd,
-			Vk.BufferView.M.createInfoFormat =
-				Vk.FormatR32g32b32a32Sfloat,
-			Vk.BufferView.M.createInfoOffset = 0,
-			Vk.BufferView.M.createInfoRange =
-				Vk.Dvc.M.Size $ 4 * 4 * fromIntegral mxx }
-		Vk.Dvc.D mdvc = dvc
-	bv <- Vk.BufferView.M.create mdvc bufferViewInfo nil'
-	let	wds = Vk.DscSet.Write {
+	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc
+		(bd :: Vk.Buffer.Binded sm sb nm '[VObj.List 256 MyPixel ""]) _md ->
+	let	bufferViewInfo' :: Vk.BufferView.CreateInfo 'Nothing MyPixel ""
+			'(sm, sb, nm, '[VObj.List 256 MyPixel ""])
+		bufferViewInfo' = Vk.BufferView.CreateInfo {
+			Vk.BufferView.createInfoNext = TMaybe.N,
+			Vk.BufferView.createInfoFlags = zeroBits,
+			Vk.BufferView.createInfoBuffer = U4 bd } in
+	Vk.BufferView.create dvc bufferViewInfo' nil' \bv -> do
+	let	wds' = Vk.DscSet.Write {
 			Vk.DscSet.writeNextNew = TMaybe.N,
 			Vk.DscSet.writeDstSetNew = dscSet,
 			Vk.DscSet.writeDescriptorTypeNew =
 				Vk.Dsc.TypeStorageTexelBuffer,
-			Vk.DscSet.writeSourcesNew =
-				Vk.DscSet.TexelBufferViewsOld 1 0 [bv] }
+			Vk.DscSet.writeSourcesNew = Vk.DscSet.TexelBufferViews
+				. HeteroParList.Singleton $ U2 bv }
 	Vk.DscSet.updateDs dvc (
-		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds :**
+		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds' :**
 		HeteroParList.Nil )
 		HeteroParList.Nil
 	f dscSet ma mb mc
+
+data MyPixel = MyPixel Float Float Float Float deriving Show
+
+type instance Vk.BufferView.FormatOf MyPixel = 'Vk.TEnum.FormatR32g32b32a32Sfloat
+
+instance Storable MyPixel where
+	sizeOf _ = 4 * sizeOf @Float undefined
+	alignment _ = alignment @Float undefined
+	peek p = do
+		[r, g, b, a] <- peekArray 4 $ castPtr p
+		pure $ MyPixel r g b a
+	poke p (MyPixel r g b a) = pokeArray (castPtr p) [r, g, b, a]
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
 dscPoolInfo = Vk.DscPool.CreateInfo {
