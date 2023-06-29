@@ -46,8 +46,6 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
 import qualified Gpu.Vulkan.DescriptorSet.Write as Write
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
-import Gpu.Vulkan.DescriptorSet.Write.Sources
-
 import Gpu.Vulkan.Misc
 
 layoutToMiddle :: U2 Layout.L slbts -> Layout.M.L
