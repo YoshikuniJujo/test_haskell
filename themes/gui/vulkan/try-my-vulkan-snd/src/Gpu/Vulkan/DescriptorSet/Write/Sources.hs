@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -40,10 +40,14 @@ data WriteSources arg where
 		HeteroParList.PL (U4 Descriptor.BufferInfo) bufferInfoArgs ->
 		WriteSources ('WriteSourcesArgBuffer bufferInfoArgs)
 	TexelBufferViews ::
-		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
+		HeteroParList.PL (U3 BufferView.B) nmts ->
 		WriteSources ('WriteSourcesArgBufferView nmts)
 	WriteSourcesInNext :: DstBinding -> DstArrayElement ->
 		DescriptorCount -> WriteSources 'WriteSourcesArgInNext
+
+type DstBinding = Word32
+type DstArrayElement = Word32
+type DescriptorCount = Word32
 
 class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 	writeSourcesToMiddle ::
@@ -84,25 +88,25 @@ instance (
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 
 instance (
-	BindingAndArrayElemBufferView bts bvs 0,
+	BindingAndArrayElemBufferView bts (TMapIndexM1'2_3 bvs) 0,
 	BufferViewsToMiddle bvs ) =>
 	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgBufferView bvs) where
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
-		bindingAndArrayElemBufferView @bts @bvs @0 0 0,
+		bindingAndArrayElemBufferView @bts @(TMapIndexM1'2_3 bvs) @0 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
+
+type family TMapIndexM1'2_3 (xyzs :: [(k0, k1, k2)]) where
+	TMapIndexM1'2_3 '[] = '[]
+	TMapIndexM1'2_3 ('(x, y, z) ': xyzs) = '(y, z) ': TMapIndexM1'2_3 xyzs
 
 instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
 
-type DstBinding = Word32
-type DstArrayElement = Word32
-type DescriptorCount = Word32
-
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
 	| WriteSourcesArgBuffer [Descriptor.BufferInfoArgs]
-	| WriteSourcesArgBufferView [(Symbol, Type)]
+	| WriteSourcesArgBufferView [(Type, Symbol, Type)]
 	| WriteSourcesArgInNext
 
 class ImageInfosToMiddle ssfmtnmsis where
@@ -119,12 +123,12 @@ instance ImageInfosToMiddle ssfmtnmsis =>
 
 class BufferViewsToMiddle bvs where
 	bufferViewsToMiddle ::
-		HeteroParList.PL (U2 (BufferView.B s)) bvs -> [BufferView.M.B]
+		HeteroParList.PL (U3 BufferView.B) bvs -> [BufferView.M.B]
 
 instance BufferViewsToMiddle '[] where
 	bufferViewsToMiddle HeteroParList.Nil = []
 
 instance BufferViewsToMiddle bvs =>
 	BufferViewsToMiddle (bv ': bvs) where
-	bufferViewsToMiddle (U2 (BufferView.B mbv) :** bvs) =
+	bufferViewsToMiddle (U3 (BufferView.B mbv) :** bvs) =
 		mbv : bufferViewsToMiddle bvs
