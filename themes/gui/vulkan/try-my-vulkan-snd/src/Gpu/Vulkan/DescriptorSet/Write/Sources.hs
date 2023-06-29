@@ -21,7 +21,6 @@ import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
 import Gpu.Vulkan.TypeEnum qualified as T
-import Gpu.Vulkan.Object qualified as VObj
 
 import Gpu.Vulkan.Descriptor.Internal qualified as Descriptor
 import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
@@ -33,7 +32,6 @@ import Gpu.Vulkan.BufferView.Internal qualified as BufferView
 import Gpu.Vulkan.BufferView.Middle qualified as BufferView.M
 
 class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
-	type WriteSourcesObjs wsarg :: [VObj.Object]
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
@@ -43,8 +41,6 @@ instance (
 		(TMapIndex.M3_4 smsbnmobjs) 0,
 	BufferInfoListToMiddleNew smsbnmobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBufferNew smsbnmobjs) where
-	type WriteSourcesObjs ('WriteSourcesArgBufferNew smsbnmobjs) =
-		TMapIndex.M3_4 smsbnmobjs
 	writeSourcesToMiddle (BufferInfosNew bis) = (
 		bindingAndArrayElem
 			@(BindingTypesFromLayoutArg slbts)
@@ -69,7 +65,6 @@ instance (
 	BindingAndArrayElemImage bts ssfmtnmsis,
 	ImageInfosToMiddle ssfmtnmsis ) =>
 	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgImage ssfmtnmsis) where
-	type WriteSourcesObjs ('WriteSourcesArgImage ssfmtnmsis) = '[]
 	writeSourcesToMiddle (ImageInfos iis) = (
 		bindingAndArrayElemImage @bts @ssfmtnmsis 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
@@ -78,13 +73,11 @@ instance (
 	BindingAndArrayElemBufferView bts bvs 0,
 	BufferViewsToMiddle bvs ) =>
 	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgBufferView bvs) where
-	type WriteSourcesObjs ('WriteSourcesArgBufferView bvs) = '[]
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
 		bindingAndArrayElemBufferView @bts @bvs @0 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
 
 instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
-	type WriteSourcesObjs 'WriteSourcesArgInNext = '[]
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
 
