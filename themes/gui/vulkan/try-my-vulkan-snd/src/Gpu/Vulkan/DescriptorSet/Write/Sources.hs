@@ -88,16 +88,12 @@ instance (
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 
 instance (
-	BindingAndArrayElemBufferView bts (TMapIndexM1'2_3 bvs) 0,
+	BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvs) 0,
 	BufferViewsToMiddle bvs ) =>
 	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgBufferView bvs) where
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
-		bindingAndArrayElemBufferView @bts @(TMapIndexM1'2_3 bvs) @0 0 0,
+		bindingAndArrayElemBufferView @bts @(TMapIndex.M1'2_3 bvs) @0 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
-
-type family TMapIndexM1'2_3 (xyzs :: [(k0, k1, k2)]) where
-	TMapIndexM1'2_3 '[] = '[]
-	TMapIndexM1'2_3 ('(x, y, z) ': xyzs) = '(y, z) ': TMapIndexM1'2_3 xyzs
 
 instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
 	writeSourcesToMiddle = \case

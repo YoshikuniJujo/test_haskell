@@ -7,7 +7,6 @@ module Glfw.Middle where
 
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 
 import Gpu.Vulkan.Exception.Middle
