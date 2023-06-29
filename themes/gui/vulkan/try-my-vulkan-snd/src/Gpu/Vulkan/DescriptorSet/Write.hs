@@ -44,22 +44,8 @@ data Write mn sds slbts writeSourcesArg = Write {
 	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources writeSourcesArg }
 
-writeUpdateLengthNew :: forall sbsmobjsobjs n s sl bts . (
-	WriteSourcesToLengthList sbsmobjsobjs,
-	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs) 0,
-	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj sbsmobjsobjs)
-	) =>
-	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
-writeUpdateLengthNew Write {
-	writeDstSet = D rlns _,
-	writeSources = ws } = do
-	lns <- readIORef rlns
-	maybe	(pure ())
-		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesToLengthListObj sbsmobjsobjs) @0 lns
-			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
-		(writeSourcesToLengthList @sbsmobjsobjs ws)
-
-class M.WriteListToCore (TMapIndex.M0_4 writeArgs) => WriteListToMiddle writeArgs where
+class M.WriteListToCore (TMapIndex.M0_4 writeArgs) =>
+	WriteListToMiddle writeArgs where
 	writeListToMiddle ::
 		HeteroParList.PL (U4 Write) writeArgs ->
 		HeteroParList.PL M.Write (TMapIndex.M0_4 writeArgs)
@@ -79,13 +65,13 @@ instance (
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa) ) =>
 	WriteListToMiddle ('(n, s, '(sl, bts), wsa) ': writeArgs) where
 	writeListToMiddle (U4 w :** ws) =
-		writeToMiddleNew w :** writeListToMiddle ws
+		writeToMiddle w :** writeListToMiddle ws
 	writeListUpdateLength (U4 w :** ws) =
-		writeUpdateLengthNew w >> writeListUpdateLength ws
+		writeUpdateLength w >> writeListUpdateLength ws
 
-writeToMiddleNew :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
+writeToMiddle :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n s slbts wsa -> M.Write n
-writeToMiddleNew Write {
+writeToMiddle Write {
 	writeNext = mnxt,
 	writeDstSet = D _ ds,
 	writeDescriptorType = dt,
@@ -98,6 +84,21 @@ writeToMiddleNew Write {
 		M.writeDescriptorType = dt,
 		M.writeSources = srcs' }
 	where ((bdg, ae), srcs') = writeSourcesToMiddle @slbts srcs
+
+writeUpdateLength :: forall sbsmobjsobjs n s sl bts . (
+	WriteSourcesToLengthList sbsmobjsobjs,
+	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs) 0,
+	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj sbsmobjsobjs)
+	) =>
+	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
+writeUpdateLength Write {
+	writeDstSet = D rlns _,
+	writeSources = ws } = do
+	lns <- readIORef rlns
+	maybe	(pure ())
+		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesToLengthListObj sbsmobjsobjs) @0 lns
+			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
+		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
 class WriteSourcesToLengthList arg where
 	type WriteSourcesToLengthListObj arg :: [VObj.Object]
@@ -112,15 +113,15 @@ instance
 		('WriteSourcesArgBuffer sbsmobjsobjs) =
 		TMapIndex.M3_4 sbsmobjsobjs
 	writeSourcesToLengthList (BufferInfos bis) =
-		Just $ bufferInfoListToLengthNew bis
+		Just $ bufferInfoListToLength bis
 
-bufferInfoListToLengthNew :: HeteroParList.Map3_4 sbsmobjsobjs =>
+bufferInfoListToLength :: HeteroParList.Map3_4 sbsmobjsobjs =>
 	HeteroParList.PL (U4 Descriptor.BufferInfo) sbsmobjsobjs ->
 	HeteroParList.PL VObj.ObjectLength (TMapIndex.M3_4 sbsmobjsobjs)
-bufferInfoListToLengthNew = HeteroParList.map3_4 $ bufferInfoToLengthNew . unU4
+bufferInfoListToLength = HeteroParList.map3_4 $ bufferInfoToLength . unU4
 
-bufferInfoToLengthNew :: Descriptor.BufferInfo sb sm nm obj -> VObj.ObjectLength obj
-bufferInfoToLengthNew (Descriptor.BufferInfo (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
+bufferInfoToLength :: Descriptor.BufferInfo sb sm nm obj -> VObj.ObjectLength obj
+bufferInfoToLength (Descriptor.BufferInfo (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
 
 instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
 	type WriteSourcesToLengthListObj
