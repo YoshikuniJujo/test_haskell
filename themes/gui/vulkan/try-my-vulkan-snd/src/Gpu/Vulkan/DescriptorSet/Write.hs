@@ -110,11 +110,11 @@ class WriteSourcesToLengthList arg where
 
 instance
 	HeteroParList.Map3_4 sbsmobjsobjs =>
-	WriteSourcesToLengthList ('WriteSourcesArgBufferNew sbsmobjsobjs) where
+	WriteSourcesToLengthList ('WriteSourcesArgBuffer sbsmobjsobjs) where
 	type WriteSourcesToLengthListObj
-		('WriteSourcesArgBufferNew sbsmobjsobjs) =
+		('WriteSourcesArgBuffer sbsmobjsobjs) =
 		TMapIndex.M3_4 sbsmobjsobjs
-	writeSourcesToLengthList (BufferInfosNew bis) =
+	writeSourcesToLengthList (BufferInfos bis) =
 		Just $ bufferInfoListToLengthNew bis
 
 bufferInfoListToLengthNew :: HeteroParList.Map3_4 sbsmobjsobjs =>

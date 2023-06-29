@@ -259,13 +259,13 @@ writeDscSet :: forall slbts sb sm os sds . (
 	) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.Write 'Nothing sds slbts
-		('Vk.DS.WriteSourcesArgBufferNew '[ '(sm, sb, "", Word32List)])
+		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List)])
 writeDscSet ds ba = Vk.DS.Write {
 	Vk.DS.writeNext = TMaybe.N,
 	Vk.DS.writeDstSet = ds,
 	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSources =
-		Vk.DS.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ba }
+		Vk.DS.BufferInfos . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ba }
 
 -- CALC
 

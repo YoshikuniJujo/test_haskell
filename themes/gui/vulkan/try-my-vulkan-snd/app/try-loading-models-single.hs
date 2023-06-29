@@ -146,7 +146,6 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.Write.Sources as Vk.DscSet
-import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Common as Vk.DscSet
 
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
 import qualified Gpu.Vulkan.Sampler.Enum as Vk.Smplr
@@ -1325,13 +1324,13 @@ createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
+	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sm, sb, nm, VObj.Atom 256 UniformBufferObject  'Nothing)])
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfosNew $ HeteroParList.Singleton bufferInfo }
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ HeteroParList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite1 ::

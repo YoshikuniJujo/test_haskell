@@ -256,14 +256,14 @@ writeDscSet ::
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[
+	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sm1, sb1, "", VObj.List 256 W1 ""), '(sm2, sb2, "", VObj.List 256 W2 ""),
 		'(sm3, sb3, "", VObj.List 256 W3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfosNew $
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
 		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
 		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**

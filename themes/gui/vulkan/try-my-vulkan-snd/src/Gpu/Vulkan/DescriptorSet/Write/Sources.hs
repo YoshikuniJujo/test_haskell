@@ -10,7 +10,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Write.Sources (
-	WriteSources(..), WriteSourcesArg(..), WriteSourcesToMiddle(..) ) where
+	WriteSources(..), DstBinding, DstArrayElement, DescriptorCount,
+	WriteSourcesArg(..), WriteSourcesToMiddle(..) ) where
 
 import GHC.TypeLits
 import Data.Kind
@@ -31,6 +32,19 @@ import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 import Gpu.Vulkan.BufferView.Internal qualified as BufferView
 import Gpu.Vulkan.BufferView.Middle qualified as BufferView.M
 
+data WriteSources arg where
+	ImageInfos ::
+		HeteroParList.PL (U4 Descriptor.ImageInfo) imageInfoArgs ->
+		WriteSources ('WriteSourcesArgImage imageInfoArgs)
+	BufferInfos ::
+		HeteroParList.PL (U4 Descriptor.BufferInfo) bufferInfoArgs ->
+		WriteSources ('WriteSourcesArgBuffer bufferInfoArgs)
+	TexelBufferViews ::
+		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
+		WriteSources ('WriteSourcesArgBufferView nmts)
+	WriteSourcesInNext :: DstBinding -> DstArrayElement ->
+		DescriptorCount -> WriteSources 'WriteSourcesArgInNext
+
 class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
@@ -40,8 +54,8 @@ instance (
 		(BindingTypesFromLayoutArg slbts)
 		(TMapIndex.M3_4 smsbnmobjs) 0,
 	BufferInfoListToMiddleNew smsbnmobjs ) =>
-	WriteSourcesToMiddle slbts ('WriteSourcesArgBufferNew smsbnmobjs) where
-	writeSourcesToMiddle (BufferInfosNew bis) = (
+	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer smsbnmobjs) where
+	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem
 			@(BindingTypesFromLayoutArg slbts)
 			@(TMapIndex.M3_4 smsbnmobjs) @0 0,
@@ -81,27 +95,13 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
 
-data WriteSources arg where
-	WriteSourcesInNext ::
-		DstBinding -> DstArrayElement -> DescriptorCount ->
-		WriteSources 'WriteSourcesArgInNext
-	ImageInfos ::
-		HeteroParList.PL (U4 Descriptor.ImageInfo) ssfmtnmsis ->
-		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
-	BufferInfosNew ::
-		HeteroParList.PL (U4 Descriptor.BufferInfo) smsbnmobjs ->
-		WriteSources ('WriteSourcesArgBufferNew smsbnmobjs)
-	TexelBufferViews ::
-		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
-		WriteSources ('WriteSourcesArgBufferView nmts)
-
 type DstBinding = Word32
 type DstArrayElement = Word32
 type DescriptorCount = Word32
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
-	| WriteSourcesArgBufferNew [Descriptor.BufferInfoArgs]
+	| WriteSourcesArgBuffer [Descriptor.BufferInfoArgs]
 	| WriteSourcesArgBufferView [(Symbol, Type)]
 	| WriteSourcesArgInNext
 

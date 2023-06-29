@@ -1336,13 +1336,13 @@ descriptorWrite :: forall obj slbts sb sm nm objs sds . (
 	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgBufferNew '[ '(sm, sb, nm, obj)])
+		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)])
 descriptorWrite dscs ub tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources =
-		Vk.DscSet.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
+		Vk.DscSet.BufferInfos . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
 
 writeTexture1 ::
 	Vk.Dvc.D sd -> Vk.DscSet.D sds lyt -> Vk.ImgVw.I ifmt "texture" siv -> (

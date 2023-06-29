@@ -215,13 +215,13 @@ writeDscSet :: forall slbts sb sm os sds . (
 	Obj.Offset ('Obj.Static (KObj.List 256 Word32 "")) os ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.Write 'Nothing sds slbts
-		('Vk.DS.WriteSourcesArgBufferNew '[ '(sm, sb, "", Word32List)])
+		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List)])
 writeDscSet ds ba = Vk.DS.Write {
 	Vk.DS.writeNext = TMaybe.N,
 	Vk.DS.writeDstSet = ds,
 	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSources =
-		Vk.DS.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ba }
+		Vk.DS.BufferInfos . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ba }
 
 copyDscSet :: Vk.DS.D sds slbts -> Vk.DS.D sds' slbts -> Vk.DS.Copy
 	'Nothing sds slbts sds' slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0

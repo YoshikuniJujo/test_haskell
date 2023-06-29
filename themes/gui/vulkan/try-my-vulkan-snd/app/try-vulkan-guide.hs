@@ -1352,13 +1352,13 @@ descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
 	VObj.Offset (VObj.Atom 256 tp objnm) objs ) =>
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
+	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sm, sb, nm, VObj.Atom 256 tp objnm )])
 descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = tp,
-	Vk.DscSet.writeSources= Vk.DscSet.BufferInfosNew $
+	Vk.DscSet.writeSources= Vk.DscSet.BufferInfos $
 		HeteroParList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
