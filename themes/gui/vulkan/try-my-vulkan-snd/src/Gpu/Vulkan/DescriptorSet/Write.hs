@@ -14,7 +14,7 @@ module Gpu.Vulkan.DescriptorSet.Write (
 
 	-- * WRITE
 
-	Write(..), WriteListToMiddle(..),
+	Write(..), WriteListToMiddle(..), WriteSources(..), WriteSourcesArg(..)
 
 	) where
 
@@ -40,9 +40,9 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 
 import Gpu.Vulkan.DescriptorSet.Write.Sources
 
-data Write n s (slbts :: (Type, [Layout.BindingType]))
+data Write mn s (slbts :: (Type, [Layout.BindingType]))
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
-	writeNext :: TMaybe.M n,
+	writeNext :: TMaybe.M mn,
 	writeDstSet :: D s slbts,
 	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources sbsmobjsobjs }

@@ -19,7 +19,14 @@ module Gpu.Vulkan.DescriptorSet (
 	-- * UPDATE
 
 	updateDs,
+
+	-- ** Write
+
 	Write.Write(..), Write.WriteListToMiddle,
+	Write.WriteSources(..), Write.WriteSourcesArg(..),
+
+	-- ** Copy
+
 	Copy(..), CopyListToMiddle
 
 	) where
