@@ -54,8 +54,10 @@ type DstBinding = Word32
 type DstArrayElement = Word32
 type DescriptorCount = Word32
 
+type family Snd (ab :: (k0, k1)) where Snd '(a, b) = b
+
 class (
-	BindingAndArrayElem (BindingTypesFromLayoutArg slbts) (WriteSourcesToLengthListObj wsarg) 0,
+	BindingAndArrayElem (Snd slbts) (WriteSourcesToLengthListObj wsarg) 0,
 	WriteSourcesToLengthList wsarg ) =>
 	WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 	writeSourcesToMiddle ::
@@ -64,13 +66,13 @@ class (
 instance (
 	HeteroParList.Map3_4 smsbnmobjs,
 	BindingAndArrayElem
-		(BindingTypesFromLayoutArg slbts)
+		(Snd slbts)
 		(TMapIndex.M3_4 smsbnmobjs) 0,
 	BufferInfoListToMiddleNew smsbnmobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer smsbnmobjs) where
 	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem
-			@(BindingTypesFromLayoutArg slbts)
+			@(Snd slbts)
 			@(TMapIndex.M3_4 smsbnmobjs) @0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddleNew bis )
 
