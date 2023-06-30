@@ -33,6 +33,8 @@ library
       Data.TypeLevel.List.Zip
       Data.TypeLevel.Maybe
       Data.TypeLevel.ParMaybe
+      Data.TypeLevel.Tuple.Index
+      Data.TypeLevel.Tuple.Index.TH
       Data.TypeLevel.Tuple.MapIndex
       Data.TypeLevel.Tuple.MapIndex.TH
       Data.TypeLevel.Tuple.Uncurry
