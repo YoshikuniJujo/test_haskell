@@ -59,6 +59,10 @@ class VObj.OnlyDynamicLengths objs =>
 	BindingAndArrayElem
 	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
+
+class VObj.OnlyDynamicLengths objs =>
+	BindingAndArrayElemFoo
+	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
 	updateDynamicLength ::
 		HeteroParList.PL
 			(HeteroParList.PL KObj.ObjectLength)
@@ -71,6 +75,8 @@ class VObj.OnlyDynamicLengths objs =>
 
 instance BindingAndArrayElem _bts '[] i where
 	bindingAndArrayElem _ = error "badbadbad"
+
+instance BindingAndArrayElemFoo _bts '[] i where
 	updateDynamicLength a _ = a
 
 instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
@@ -78,6 +84,11 @@ instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 		('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
 		(VObj.Atom algn t ('Just nm) ': os) 0 where
 	bindingAndArrayElem _ = (0, 0)
+
+instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
+		(VObj.Atom algn t ('Just nm) ': os) 0 where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
@@ -86,32 +97,24 @@ instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 		('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
 		(VObj.Atom algn t 'Nothing ': os) 0 where
 	bindingAndArrayElem _ = (0, 0)
+
+instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
+		(VObj.Atom algn t 'Nothing ': os) 0 where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
-
-{-
-instance IsPrefix os os' =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.DynAtom n algn t 'Nothing ': os') ': bts)
-		(VObj.DynAtom n algn t ('Just nm) ': os) where
-	bindingAndArrayElem _ = (0, 0)
-	updateDynamicLength (lns' :** lnss) (ln :** lns) =
-		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
-
-instance IsPrefix os os' =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.DynAtom n algn t ('Just nm) ': os') ': bts)
-		(VObj.DynAtom n algn t 'Nothing ': os) where
-	bindingAndArrayElem _ = (0, 0)
-	updateDynamicLength (lns' :** lnss) (ln :** lns) =
-		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
--}
 
 instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)
 		(VObj.Static o ': os) 0 where
 	bindingAndArrayElem _ = (0, 0)
+
+instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)
+		(VObj.Static o ': os) 0 where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
@@ -120,6 +123,11 @@ instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts)
 		(VObj.Dynamic n o ': os) 0 where
 	bindingAndArrayElem _ = (0, 0)
+
+instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts)
+		(VObj.Dynamic n o ': os) 0 where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
 		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
 
@@ -132,6 +140,13 @@ instance {-# OVERLAPPABLE #-} (
 	bindingAndArrayElem c = (+ 1) `second`
 		(bindingAndArrayElem
 			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @(i - 1) $ c + 1)
+
+instance {-# OVERLAPPABLE #-} (
+	VObj.OnlyDynamicLengths (oo : os),
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) (i - 1) ) =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer (oo ': os') ': bts) (oo ': os) i where
 	updateDynamicLength _lnss _lns = error "not implemented"
 
 instance {-# OVERLAPPABLE #-}
@@ -142,6 +157,12 @@ instance {-# OVERLAPPABLE #-}
 	bindingAndArrayElem c = (+ 1) `second`
 		(bindingAndArrayElem
 			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @i $ c + 1)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) i =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) i where
 	updateDynamicLength lnss lns =
 		updateDynamicLength
 			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @i lnss lns
@@ -154,6 +175,12 @@ instance {-# OVERLAPPABLE #-}
 	bindingAndArrayElem c = (+ 1) `second`
 		(bindingAndArrayElem
 			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @i $ c + 1)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) i =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) i where
 	updateDynamicLength ((ln :** lns') :** lnss) lns = let
 		ls' :** lss = updateDynamicLength
 			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @i (lns' :** lnss) lns in
@@ -164,6 +191,11 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer '[] ': bts) (oo ': os) i where
 	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @(oo ': os) @i 0
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemFoo bts (oo ': os) i =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Buffer '[] ': bts) (oo ': os) i where
 	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
 		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) @i lnss lns
 
@@ -173,6 +205,11 @@ instance {-# OVERLAPPABLE #-}
 		('DescriptorSetLayout.Other ': bts) (oo ': os) i where
 	bindingAndArrayElem c = (a + 1, b - c)
 		where (a, b) = bindingAndArrayElem @bts @(oo ': os) @i 0
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemFoo bts (oo ': os) i =>
+	BindingAndArrayElemFoo
+		('DescriptorSetLayout.Other ': bts) (oo ': os) i where
 	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
 		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) @i lnss lns
 

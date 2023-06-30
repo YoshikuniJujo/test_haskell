@@ -1123,6 +1123,12 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
 		'[SceneObj] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo
+		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		'[CameraObj] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo
+		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		'[SceneObj] 0,
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
 		Vk.DscSet.updateDs dv (

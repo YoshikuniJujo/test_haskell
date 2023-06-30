@@ -928,6 +928,9 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo
+		(Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs))
+		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
 	Update ubs dscss ) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss ) where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) = do

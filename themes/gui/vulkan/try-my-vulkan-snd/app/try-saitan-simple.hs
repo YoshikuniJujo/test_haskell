@@ -155,6 +155,8 @@ prepareMems :: (
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscSet.BindingAndArrayElem bts '[
+		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ] 0,
+	Vk.DscSet.BindingAndArrayElemFoo bts '[
 		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ] 0
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->

@@ -56,7 +56,8 @@ type DstArrayElement = Word32
 type DescriptorCount = Word32
 
 class (
-	BindingAndArrayElem (TIndex.I1_2 slbts) (WriteSourcesToLengthListObj wsarg) 0,
+--	BindingAndArrayElem (TIndex.I1_2 slbts) (WriteSourcesObjectList wsarg) 0,
+	BindingAndArrayElemFoo (TIndex.I1_2 slbts) (WriteSourcesObjectList wsarg) 0,
 	WriteSourcesToLengthList wsarg ) =>
 	WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 	writeSourcesToMiddle ::
@@ -65,6 +66,9 @@ class (
 instance (
 	HeteroParList.Map3_4 smsbnmobjs,
 	BindingAndArrayElem
+		(TIndex.I1_2 slbts)
+		(TMapIndex.M3_4 smsbnmobjs) 0,
+	BindingAndArrayElemFoo
 		(TIndex.I1_2 slbts)
 		(TMapIndex.M3_4 smsbnmobjs) 0,
 	BufferInfoListToMiddleNew smsbnmobjs ) =>
@@ -140,15 +144,15 @@ instance BufferViewsToMiddle bvs =>
 		mbv : bufferViewsToMiddle bvs
 
 class WriteSourcesToLengthList arg where
-	type WriteSourcesToLengthListObj arg :: [VObj.Object]
+	type WriteSourcesObjectList arg :: [VObj.Object]
 	writeSourcesToLengthList :: WriteSources arg ->
 		Maybe (HeteroParList.PL
-			VObj.ObjectLength (WriteSourcesToLengthListObj arg))
+			VObj.ObjectLength (WriteSourcesObjectList arg))
 
 instance
 	HeteroParList.Map3_4 sbsmobjsobjs =>
 	WriteSourcesToLengthList ('WriteSourcesArgBuffer sbsmobjsobjs) where
-	type WriteSourcesToLengthListObj
+	type WriteSourcesObjectList
 		('WriteSourcesArgBuffer sbsmobjsobjs) =
 		TMapIndex.M3_4 sbsmobjsobjs
 	writeSourcesToLengthList (BufferInfos bis) =
@@ -160,15 +164,15 @@ instance
 			HeteroParList.typeIndex lns
 
 instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
-	type WriteSourcesToLengthListObj
+	type WriteSourcesObjectList
 		('WriteSourcesArgImage ssfmtnmsis) = '[]
 	writeSourcesToLengthList (ImageInfos _bis) = Nothing
 
 instance WriteSourcesToLengthList ('WriteSourcesArgBufferView foo) where
-	type WriteSourcesToLengthListObj
+	type WriteSourcesObjectList
 		('WriteSourcesArgBufferView foo) = '[]
 	writeSourcesToLengthList (TexelBufferViews _) = Nothing
 
 instance WriteSourcesToLengthList 'WriteSourcesArgInNext where
-	type WriteSourcesToLengthListObj 'WriteSourcesArgInNext = '[]
+	type WriteSourcesObjectList 'WriteSourcesArgInNext = '[]
 	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing

@@ -1315,6 +1315,13 @@ instance (
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
 		'[SceneObj] 0,
 	Vk.DscSet.T.BindingAndArrayElem bods '[ObjDataList] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo
+		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		'[CameraObj] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo
+		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		'[SceneObj] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo bods '[ObjDataList] 0,
 	Update cmbs lyts odbs lytods ) =>
 	Update (cmb ': cmbs) ('(slyt, bs) ': lyts)
 		(odb ': odbs) ('(slytod, bods) ': lytods) where
