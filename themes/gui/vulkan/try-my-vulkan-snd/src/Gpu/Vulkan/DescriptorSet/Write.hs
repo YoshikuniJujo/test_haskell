@@ -59,7 +59,7 @@ instance (
 	WriteSourcesToMiddle '(sl, bts) writeSourcesArg,
 	WriteListToMiddle writeArgs ) =>
 	WriteListToMiddle
-		('(mn, s, '(sl, bts), writeSourcesArg) ': writeArgs) where
+		('(mn, sds, '(sl, bts), writeSourcesArg) ': writeArgs) where
 	writeListToMiddle (U4 w :** ws) =
 		writeToMiddle w :** writeListToMiddle ws
 	writeListUpdateDynamicLength (U4 w :** ws) =

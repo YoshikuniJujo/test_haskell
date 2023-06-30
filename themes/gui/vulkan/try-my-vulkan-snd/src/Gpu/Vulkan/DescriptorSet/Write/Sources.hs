@@ -45,8 +45,8 @@ data WriteSources arg where
 		HeteroParList.PL (U4 Descriptor.BufferInfo) bufferInfoArgs ->
 		WriteSources ('WriteSourcesArgBuffer bufferInfoArgs)
 	TexelBufferViews ::
-		HeteroParList.PL (U3 BufferView.B) nmts ->
-		WriteSources ('WriteSourcesArgBufferView nmts)
+		HeteroParList.PL (U3 BufferView.B) texelBufferViewsArgs ->
+		WriteSources ('WriteSourcesArgBufferView texelBufferViewsArgs)
 	WriteSourcesInNext :: DstBinding -> DstArrayElement ->
 		DescriptorCount -> WriteSources 'WriteSourcesArgInNext
 
@@ -110,7 +110,7 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
-	| WriteSourcesArgBuffer [Descriptor.BufferInfoArgs]
+	| WriteSourcesArgBuffer [(Type, Type, Symbol, VObj.Object)]
 	| WriteSourcesArgBufferView [(Type, Symbol, Type)]
 	| WriteSourcesArgInNext
 

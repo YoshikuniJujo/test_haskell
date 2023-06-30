@@ -13,7 +13,7 @@ module Gpu.Vulkan.Descriptor.Internal (
 
 	-- * BUFFER INFO
 
-	BufferInfo(..), BufferInfoArgs, bufferInfoToMiddle,
+	BufferInfo(..), bufferInfoToMiddle,
 
 	-- * IMAGE INFO
 
@@ -21,8 +21,6 @@ module Gpu.Vulkan.Descriptor.Internal (
 
 	) where
 
-import GHC.TypeLits
-import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
 
 import qualified Gpu.Vulkan.Buffer as Buffer
@@ -38,8 +36,6 @@ data BufferInfo sm sb nm obj = forall objs .
 	BufferInfo (Buffer.Binded sm sb nm objs)
 
 deriving instance Show (BufferInfo sm sb nm obj)
-
-type BufferInfoArgs = (Type, Type, Symbol, VObj.Object)
 
 bufferInfoToMiddle :: forall sb sm nm obj .
 	BufferInfo sm sb nm obj -> M.BufferInfo

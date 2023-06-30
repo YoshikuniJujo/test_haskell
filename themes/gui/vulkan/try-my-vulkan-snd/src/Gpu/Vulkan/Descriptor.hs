@@ -4,11 +4,11 @@ module Gpu.Vulkan.Descriptor (
 
 	-- * BUFFER INFO
 
-	BufferInfo(..), BufferInfoArgs,
+	BufferInfo(..),
 
 	-- * IMAGE INFO
 
-	ImageInfo(..),
+	ImageInfo(..)
 
 	) where
 
