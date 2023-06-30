@@ -17,6 +17,7 @@ module Gpu.Vulkan.DescriptorSet.Write.Sources (
 import GHC.TypeLits
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
@@ -54,10 +55,8 @@ type DstBinding = Word32
 type DstArrayElement = Word32
 type DescriptorCount = Word32
 
-type family Snd (ab :: (k0, k1)) where Snd '(a, b) = b
-
 class (
-	BindingAndArrayElem (Snd slbts) (WriteSourcesToLengthListObj wsarg) 0,
+	BindingAndArrayElem (TIndex.I1_2 slbts) (WriteSourcesToLengthListObj wsarg) 0,
 	WriteSourcesToLengthList wsarg ) =>
 	WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 	writeSourcesToMiddle ::
@@ -66,13 +65,13 @@ class (
 instance (
 	HeteroParList.Map3_4 smsbnmobjs,
 	BindingAndArrayElem
-		(Snd slbts)
+		(TIndex.I1_2 slbts)
 		(TMapIndex.M3_4 smsbnmobjs) 0,
 	BufferInfoListToMiddleNew smsbnmobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer smsbnmobjs) where
 	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem
-			@(Snd slbts)
+			@(TIndex.I1_2 slbts)
 			@(TMapIndex.M3_4 smsbnmobjs) @0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddleNew bis )
 
