@@ -22,8 +22,8 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- ** Write
 
-	Write.Write(..), Write.WriteListToMiddle,
-	Write.WriteSources(..), Write.WriteSourcesArg(..),
+	W.Write(..), W.WriteListToMiddle,
+	W.WriteSources(..), W.WriteSourcesArg(..), W.WriteSourcesToMiddle,
 
 	-- ** Copy
 
@@ -50,7 +50,7 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
-import qualified Gpu.Vulkan.DescriptorSet.Write as Write
+import qualified Gpu.Vulkan.DescriptorSet.Write as W
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 import Gpu.Vulkan.Misc
@@ -164,10 +164,10 @@ getCopyArgsNew _ = let
 	(db, dae) = Copy.bindingAndArrayElement @btsd @bts @id in
 	(sb, sae, db, dae, Copy.bindingLength @bts)
 
-updateDs :: (Write.WriteListToMiddle writeArgs, CopyListToMiddle copyArgs) =>
+updateDs :: (W.WriteListToMiddle writeArgs, CopyListToMiddle copyArgs) =>
 	Device.D sd ->
-	HeteroParList.PL (U4 Write.Write) writeArgs ->
+	HeteroParList.PL (U4 W.Write) writeArgs ->
 	HeteroParList.PL (U8 Copy) copyArgs  -> IO ()
 updateDs (Device.D dvc) ws cs =
-	Write.writeListUpdateLength ws >> M.updateDs dvc ws' cs'
-	where ws' = Write.writeListToMiddle ws; cs' = copyListToMiddleNew cs
+	W.writeListUpdateDynamicLength ws >> M.updateDs dvc ws' cs'
+	where ws' = W.writeListToMiddle ws; cs' = copyListToMiddleNew cs

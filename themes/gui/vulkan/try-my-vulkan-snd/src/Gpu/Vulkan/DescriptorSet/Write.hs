@@ -14,7 +14,8 @@ module Gpu.Vulkan.DescriptorSet.Write (
 
 	-- * WRITE
 
-	Write(..), WriteListToMiddle(..), WriteSources(..), WriteSourcesArg(..)
+	Write(..), WriteListToMiddle(..),
+	WriteSources(..), WriteSourcesArg(..), WriteSourcesToMiddle,
 
 	) where
 
@@ -26,13 +27,10 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
-import qualified Data.HeteroParList.Tuple as HeteroParList
 
-import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.DescriptorSet.Type
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 
-import qualified Gpu.Vulkan.Descriptor.Internal as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
@@ -49,25 +47,24 @@ class M.WriteListToCore (TMapIndex.M0_4 writeArgs) =>
 	writeListToMiddle ::
 		HeteroParList.PL (U4 Write) writeArgs ->
 		HeteroParList.PL M.Write (TMapIndex.M0_4 writeArgs)
-	writeListUpdateLength ::
+	writeListUpdateDynamicLength ::
 		HeteroParList.PL (U4 Write) writeArgs -> IO ()
 
 instance WriteListToMiddle '[] where
 	writeListToMiddle HeteroParList.Nil = HeteroParList.Nil
-	writeListUpdateLength HeteroParList.Nil = pure ()
+	writeListUpdateDynamicLength HeteroParList.Nil = pure ()
 
 instance (
-	WithPoked (TMaybe.M n),
+	WithPoked (TMaybe.M mn),
 	WriteSourcesToMiddle '(sl, bts) wsa,
-	WriteListToMiddle writeArgs,
-	WriteSourcesToLengthList wsa,
-	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa) 0,
-	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa) ) =>
-	WriteListToMiddle ('(n, s, '(sl, bts), wsa) ': writeArgs) where
+
+	WriteListToMiddle writeArgs
+	) =>
+	WriteListToMiddle ('(mn, s, '(sl, bts), wsa) ': writeArgs) where
 	writeListToMiddle (U4 w :** ws) =
 		writeToMiddle w :** writeListToMiddle ws
-	writeListUpdateLength (U4 w :** ws) =
-		writeUpdateLength w >> writeListUpdateLength ws
+	writeListUpdateDynamicLength (U4 w :** ws) =
+		writeUpdateDynamicLength w >> writeListUpdateDynamicLength ws
 
 writeToMiddle :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n s slbts wsa -> M.Write n
@@ -85,13 +82,12 @@ writeToMiddle Write {
 		M.writeSources = srcs' }
 	where ((bdg, ae), srcs') = writeSourcesToMiddle @slbts srcs
 
-writeUpdateLength :: forall sbsmobjsobjs n s sl bts . (
+writeUpdateDynamicLength :: forall sbsmobjsobjs n s sl bts . (
 	WriteSourcesToLengthList sbsmobjsobjs,
-	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs) 0,
-	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj sbsmobjsobjs)
+	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs) 0
 	) =>
 	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
-writeUpdateLength Write {
+writeUpdateDynamicLength Write {
 	writeDstSet = D rlns _,
 	writeSources = ws } = do
 	lns <- readIORef rlns
@@ -99,40 +95,3 @@ writeUpdateLength Write {
 		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesToLengthListObj sbsmobjsobjs) @0 lns
 			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
-
-class WriteSourcesToLengthList arg where
-	type WriteSourcesToLengthListObj arg :: [VObj.Object]
-	writeSourcesToLengthList :: WriteSources arg ->
-		Maybe (HeteroParList.PL
-			VObj.ObjectLength (WriteSourcesToLengthListObj arg))
-
-instance
-	HeteroParList.Map3_4 sbsmobjsobjs =>
-	WriteSourcesToLengthList ('WriteSourcesArgBuffer sbsmobjsobjs) where
-	type WriteSourcesToLengthListObj
-		('WriteSourcesArgBuffer sbsmobjsobjs) =
-		TMapIndex.M3_4 sbsmobjsobjs
-	writeSourcesToLengthList (BufferInfos bis) =
-		Just $ bufferInfoListToLength bis
-
-bufferInfoListToLength :: HeteroParList.Map3_4 sbsmobjsobjs =>
-	HeteroParList.PL (U4 Descriptor.BufferInfo) sbsmobjsobjs ->
-	HeteroParList.PL VObj.ObjectLength (TMapIndex.M3_4 sbsmobjsobjs)
-bufferInfoListToLength = HeteroParList.map3_4 $ bufferInfoToLength . unU4
-
-bufferInfoToLength :: Descriptor.BufferInfo sb sm nm obj -> VObj.ObjectLength obj
-bufferInfoToLength (Descriptor.BufferInfo (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
-
-instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
-	type WriteSourcesToLengthListObj
-		('WriteSourcesArgImage ssfmtnmsis) = '[]
-	writeSourcesToLengthList (ImageInfos _bis) = Nothing
-
-instance WriteSourcesToLengthList ('WriteSourcesArgBufferView foo) where
-	type WriteSourcesToLengthListObj
-		('WriteSourcesArgBufferView foo) = '[]
-	writeSourcesToLengthList (TexelBufferViews _) = Nothing
-
-instance WriteSourcesToLengthList 'WriteSourcesArgInNext where
-	type WriteSourcesToLengthListObj 'WriteSourcesArgInNext = '[]
-	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing

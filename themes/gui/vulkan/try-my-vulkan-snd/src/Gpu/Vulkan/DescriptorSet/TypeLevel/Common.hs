@@ -55,7 +55,8 @@ instance IsPrefix os os' =>
 	isPrefixUpdateDynamicLength (_ln :** lns') (ln :** lns) =
 		ln :** isPrefixUpdateDynamicLength @os @os' lns' lns
 
-class BindingAndArrayElem
+class VObj.OnlyDynamicLengths objs =>
+	BindingAndArrayElem
 	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 	updateDynamicLength ::
@@ -72,7 +73,7 @@ instance BindingAndArrayElem _bts '[] i where
 	bindingAndArrayElem _ = error "badbadbad"
 	updateDynamicLength a _ = a
 
-instance IsPrefix os os' =>
+instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
 		(VObj.Atom algn t ('Just nm) ': os) 0 where
@@ -80,7 +81,7 @@ instance IsPrefix os os' =>
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
-instance IsPrefix os os' =>
+instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
 		(VObj.Atom algn t 'Nothing ': os) 0 where
@@ -106,7 +107,7 @@ instance IsPrefix os os' =>
 		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
 -}
 
-instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
+instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)
 		(VObj.Static o ': os) 0 where
@@ -114,7 +115,7 @@ instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
-instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
+instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts)
 		(VObj.Dynamic n o ': os) 0 where
@@ -122,9 +123,10 @@ instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
 		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
 
-instance {-# OVERLAPPABLE #-}
+instance {-# OVERLAPPABLE #-} (
+	VObj.OnlyDynamicLengths (oo : os),
 	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) (i - 1) =>
+		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) (i - 1) ) =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer (oo ': os') ': bts) (oo ': os) i where
 	bindingAndArrayElem c = (+ 1) `second`

@@ -11,7 +11,8 @@
 
 module Gpu.Vulkan.DescriptorSet.Write.Sources (
 	WriteSources(..), DstBinding, DstArrayElement, DescriptorCount,
-	WriteSourcesArg(..), WriteSourcesToMiddle(..) ) where
+	WriteSourcesArg(..),
+	WriteSourcesToMiddle(..), WriteSourcesToLengthList(..) ) where
 
 import GHC.TypeLits
 import Data.Kind
@@ -19,7 +20,10 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList.Tuple qualified as HeteroParList
 import Data.Word
+
+import Gpu.Vulkan.Object qualified as VObj
 
 import Gpu.Vulkan.TypeEnum qualified as T
 
@@ -29,6 +33,7 @@ import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 
+import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.BufferView.Internal qualified as BufferView
 import Gpu.Vulkan.BufferView.Middle qualified as BufferView.M
 
@@ -49,11 +54,15 @@ type DstBinding = Word32
 type DstArrayElement = Word32
 type DescriptorCount = Word32
 
-class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
+class (
+	BindingAndArrayElem (BindingTypesFromLayoutArg slbts) (WriteSourcesToLengthListObj wsarg) 0,
+	WriteSourcesToLengthList wsarg ) =>
+	WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
 instance (
+	HeteroParList.Map3_4 smsbnmobjs,
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg slbts)
 		(TMapIndex.M3_4 smsbnmobjs) 0,
@@ -128,3 +137,37 @@ instance BufferViewsToMiddle bvs =>
 	BufferViewsToMiddle (bv ': bvs) where
 	bufferViewsToMiddle (U3 (BufferView.B mbv) :** bvs) =
 		mbv : bufferViewsToMiddle bvs
+
+class WriteSourcesToLengthList arg where
+	type WriteSourcesToLengthListObj arg :: [VObj.Object]
+	writeSourcesToLengthList :: WriteSources arg ->
+		Maybe (HeteroParList.PL
+			VObj.ObjectLength (WriteSourcesToLengthListObj arg))
+
+instance
+	HeteroParList.Map3_4 sbsmobjsobjs =>
+	WriteSourcesToLengthList ('WriteSourcesArgBuffer sbsmobjsobjs) where
+	type WriteSourcesToLengthListObj
+		('WriteSourcesArgBuffer sbsmobjsobjs) =
+		TMapIndex.M3_4 sbsmobjsobjs
+	writeSourcesToLengthList (BufferInfos bis) =
+		Just $ HeteroParList.map3_4 (toLength . unU4) bis
+		where
+		toLength :: Descriptor.BufferInfo sm sb nm obj ->
+			VObj.ObjectLength obj
+		toLength (Descriptor.BufferInfo (Buffer.Binded lns _)) =
+			HeteroParList.typeIndex lns
+
+instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
+	type WriteSourcesToLengthListObj
+		('WriteSourcesArgImage ssfmtnmsis) = '[]
+	writeSourcesToLengthList (ImageInfos _bis) = Nothing
+
+instance WriteSourcesToLengthList ('WriteSourcesArgBufferView foo) where
+	type WriteSourcesToLengthListObj
+		('WriteSourcesArgBufferView foo) = '[]
+	writeSourcesToLengthList (TexelBufferViews _) = Nothing
+
+instance WriteSourcesToLengthList 'WriteSourcesArgInNext where
+	type WriteSourcesToLengthListObj 'WriteSourcesArgInNext = '[]
+	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
