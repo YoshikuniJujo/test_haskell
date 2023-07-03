@@ -33,6 +33,7 @@ import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
 
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
+import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 
 import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.BufferView.Internal qualified as BufferView
@@ -56,10 +57,9 @@ type DstArrayElement = Word32
 type DescriptorCount = Word32
 
 class (
---	BindingAndArrayElem (TIndex.I1_2 slbts) (WriteSourcesObjectList wsarg) 0,
 	BindingAndArrayElemFoo (TIndex.I1_2 slbts) (WriteSourcesObjectList wsarg) 0,
 	WriteSourcesToLengthList wsarg ) =>
-	WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
+	WriteSourcesToMiddle (slbts :: (Type, [Layout.BindingType])) wsarg where
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 

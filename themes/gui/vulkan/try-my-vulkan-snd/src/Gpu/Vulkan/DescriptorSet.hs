@@ -44,7 +44,6 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.DescriptorSet.Type
-import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
 import qualified Gpu.Vulkan.Device.Type as Device
@@ -109,7 +108,9 @@ allocateDs (Device.D dvc) ai f = do
 		((\(Descriptor.Pool.P p) -> p) $ allocateInfoDescriptorPool ai)
 		dsm
 
-data Copy n sdss (slbtss :: LayoutArg) sdsd (slbtsd :: LayoutArg)
+data Copy n sdss
+	(slbtss :: (Type, [Layout.BindingType])) sdsd
+	(slbtsd :: (Type, [Layout.BindingType]))
 	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = Copy {
 	copyNextNew :: TMaybe.M n,
 	copySrcSetNew :: D sdss slbtss,

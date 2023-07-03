@@ -24,8 +24,6 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 
-type LayoutArg = (Type, [Layout.BindingType])
-
 type family LayoutArgListOnlyDynamics las where
 	LayoutArgListOnlyDynamics '[] = '[]
 	LayoutArgListOnlyDynamics (la ': las) =
