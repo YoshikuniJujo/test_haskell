@@ -29,6 +29,7 @@ import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
@@ -1483,8 +1484,8 @@ class Update smsbs slbtss ssmp siv where
 instance Update '[] '[] ssmp siv where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
-	Vk.DscSet.T.BindingAndArrayElemFoo (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
+	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
+	Vk.DscSet.T.BindingAndArrayElemFoo (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
 	Update ubs dscss ssmp siv,
 	Vk.DscSet.WriteSourcesToMiddle '(ds, cs)
 		('Vk.DscSet.WriteSourcesArgImage

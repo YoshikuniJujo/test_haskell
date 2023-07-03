@@ -14,6 +14,7 @@ import GHC.TypeLits
 import Control.Arrow
 import Data.Kind
 import Data.Kind.Object qualified as KObj
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -25,18 +26,11 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 
 type LayoutArg = (Type, [Layout.BindingType])
 
-type family LayoutArgOnlyDynamics la where
-	LayoutArgOnlyDynamics '(_t, bts) =
-		Layout.BindingTypeListBufferOnlyDynamics bts
-
 type family LayoutArgListOnlyDynamics las where
 	LayoutArgListOnlyDynamics '[] = '[]
 	LayoutArgListOnlyDynamics (la ': las) =
-		LayoutArgOnlyDynamics la ': LayoutArgListOnlyDynamics las
-
-type family BindingTypesFromLayoutArg (tbts :: LayoutArg) ::
-	[DescriptorSetLayout.BindingType] where
-	BindingTypesFromLayoutArg '(t, bts) = bts
+		Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 la) ':
+			LayoutArgListOnlyDynamics las
 
 class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
 	isPrefixUpdateDynamicLength ::

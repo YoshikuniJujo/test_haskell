@@ -59,6 +59,7 @@ import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -77,6 +78,7 @@ import qualified Gpu.Vulkan.PipelineLayout.Type as PipelineLayout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSet.Type as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Common as DescriptorSet
+import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Internal as Buffer.I
@@ -216,7 +218,7 @@ instance GetDynamicLength spslbtss =>
 
 getDscSetLengthsNew :: DescriptorSet.D s slbts ->
 	IO (HeteroParList.PL2 KObj.ObjectLength
-		(DescriptorSet.LayoutArgOnlyDynamics slbts))
+		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts)))
 getDscSetLengthsNew (DescriptorSet.D lns _) = readIORef lns
 
 bindVertexBuffers :: forall sg vibs slbtss smsbnmts .

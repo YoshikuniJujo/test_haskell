@@ -28,6 +28,7 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Bool qualified as TBool
 import Data.HeteroParList qualified as HL
@@ -1118,16 +1119,16 @@ instance Update '[] '[] where update _ HL.Nil HL.Nil _ = pure ()
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj],
 	Vk.DscSet.T.BindingAndArrayElem
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj],
 	Vk.DscSet.T.BindingAndArrayElemFoo
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj] 0,
 	Vk.DscSet.T.BindingAndArrayElemFoo
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj] 0,
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do

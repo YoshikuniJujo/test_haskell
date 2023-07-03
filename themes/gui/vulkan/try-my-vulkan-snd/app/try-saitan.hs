@@ -23,6 +23,7 @@ import Data.Default
 import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
 import qualified Data.HeteroParList as HeteroParList
@@ -162,7 +163,7 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sm1 sm
 	slbts ~ '(sl, bts),
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
-		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
@@ -186,11 +187,11 @@ type ListBuffer3Memory3 w1 w2 w3 = '[ '[VObj.List 256 w1 ""], '[VObj.List 256 w2
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
 	objss1 objss2 objss3 slbts sbtss sd sc sg sl sm1 sm2 sm3 sds . (
-	Vk.DscSet.LayoutArgOnlyDynamics slbts ~ '[ '[]],
+	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[]],
 	sbtss ~ '[slbts],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
-		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,

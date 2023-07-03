@@ -39,6 +39,7 @@ import Data.Word
 import Data.Kind.Object qualified as KObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
@@ -96,7 +97,7 @@ instance (
 type DefaultDynamicLengths slbts = Default
 	(HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
-		(LayoutArgOnlyDynamics slbts))
+		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts)))
 
 allocateDs :: (WithPoked (TMaybe.M mn), DListFromMiddle slbtss) =>
 	Device.D sd -> AllocateInfo mn sp slbtss ->

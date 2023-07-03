@@ -29,6 +29,7 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Bool qualified as TBool
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HL
@@ -1288,7 +1289,8 @@ createDescriptorSets dv dscp cmbs lyts odbs lytods scnb f =
 		Vk.DscSet.allocateInfoSetLayouts = lytods }
 
 allocateTextureDescriptorSets :: forall slyt foo sd sp a .
-	Default (HL.PL (HL.PL KObj.ObjectLength) (Vk.DscSet.T.LayoutArgOnlyDynamics '(slyt, foo))) =>
+	Default (HL.PL (HL.PL KObj.ObjectLength)
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics foo)) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	Vk.DscSetLyt.L slyt foo ->
 	(forall sds . Vk.DscSet.D sds '(slyt, foo) -> IO a) -> IO a
@@ -1309,17 +1311,17 @@ instance Update '[] '[] '[] '[] where update _ HL.Nil HL.Nil HL.Nil HL.Nil _ = p
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj],
 	Vk.DscSet.T.BindingAndArrayElem
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj],
 	Vk.DscSet.T.BindingAndArrayElem bods '[ObjDataList],
 	Vk.DscSet.T.BindingAndArrayElemFoo
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj] 0,
 	Vk.DscSet.T.BindingAndArrayElemFoo
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
+		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj] 0,
 	Vk.DscSet.T.BindingAndArrayElemFoo bods '[ObjDataList] 0,
 	Update cmbs lyts odbs lytods ) =>

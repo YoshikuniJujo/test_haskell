@@ -27,6 +27,7 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
 import Data.TypeLevel.List qualified as TpLvlLst
@@ -1325,12 +1326,12 @@ class Update smsbs slbtss where
 instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing],
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")],
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],
-	Vk.DscSet.T.BindingAndArrayElemFoo (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
-	Vk.DscSet.T.BindingAndArrayElemFoo (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
-	Vk.DscSet.T.BindingAndArrayElemFoo (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
+	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing],
+	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")],
+	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],
+	Vk.DscSet.T.BindingAndArrayElemFoo (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
+	Vk.DscSet.T.BindingAndArrayElemFoo (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
 	Update ubs dscss
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) where

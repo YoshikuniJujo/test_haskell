@@ -26,6 +26,7 @@ import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
 import Data.TypeLevel.List qualified as TpLvlLst
@@ -926,10 +927,10 @@ instance Update '[t] '[] where update _ (HeteroParList.Singleton _) HeteroParLis
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs))
+		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Vk.DscSet.T.BindingAndArrayElemFoo
-		(Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs))
+		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
 	Update ubs dscss ) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss ) where

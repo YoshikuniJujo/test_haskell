@@ -24,6 +24,7 @@ import Data.Default
 import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
 import qualified Data.HeteroParList as HeteroParList
@@ -140,7 +141,7 @@ calc' :: (
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
-		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	InfixIndex '[slbts] '[ '(sl, bts)],
 	slbts ~ '(sl, bts) ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
@@ -164,7 +165,7 @@ run :: forall w1 w2 w3 slbts sbtss sd sc sg sl m1 m2 m3 sds . (
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
-		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> (
