@@ -19,7 +19,6 @@ newtype L s (bts :: [BindingType]) = L { unL :: M.L } deriving Show
 data BindingType
 	= Image [(Symbol, T.Format)] | ImageSampler [(T.Format, Type)]
 	| Buffer [VObj.Object] | BufferView [(Symbol, Type)]
-	| Other
 
 type family BindingTypeBufferObjects bt where
 	BindingTypeBufferObjects (Buffer os) = os

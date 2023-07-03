@@ -43,7 +43,6 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
-import qualified Gpu.Vulkan.Sampler.Middle as Sampler.M
 
 create :: (
 	WithPoked (TMaybe.M mn), BindingsToMiddle bts,
@@ -75,12 +74,6 @@ data Binding (bt :: BindingType) where
 		bindingImageSamplerImmutableSamplers ::
 			HeteroParList.PL Sampler.S (MapSnd (fmtss :: [(T.Format, Type)]))
 		} -> Binding ('ImageSampler fmtss)
-	BindingOther :: {
-		bindingOtherDescriptorType :: Descriptor.Type,
-		bindingOtherDescriptorCountOrImmutableSamplers ::
-			Either Word32 [Sampler.M.S],
-		bindingOtherStageFlags :: ShaderStageFlags
-		} -> Binding 'Other
 
 class BindingToMiddle bt where
 	bindingToMiddle :: Binding bt -> Word32 -> M.Binding
@@ -126,16 +119,6 @@ instance BindingToMiddle ('ImageSampler fmtss) where
 				$ HeteroParList.toList Sampler.sToMiddle iss,
 			M.bindingStageFlags = sfs
 			}
-
-instance BindingToMiddle 'Other where
-	bindingToMiddle BindingOther {
-		bindingOtherDescriptorType = dt,
-		bindingOtherDescriptorCountOrImmutableSamplers = cois,
-		bindingOtherStageFlags = sfs } bb = M.Binding {
-			M.bindingBinding = bb,
-			M.bindingDescriptorType = dt,
-			M.bindingDescriptorCountOrImmutableSamplers = cois,
-			M.bindingStageFlags = sfs }
 
 class BindingsToMiddle bts where
 	bindingsToMiddle :: HeteroParList.PL Binding bts -> Word32 -> [M.Binding]

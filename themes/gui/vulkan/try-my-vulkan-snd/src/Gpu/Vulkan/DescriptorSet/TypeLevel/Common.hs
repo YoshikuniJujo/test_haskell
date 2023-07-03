@@ -34,36 +34,28 @@ class BindingAndArrayElem
 	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 
-instance BindingAndArrayElem _bts '[] where
-	bindingAndArrayElem _ = error "badbadbad"
-
-instance TList.IsPrefixOf os os' =>
-	BindingAndArrayElem
+instance TList.IsPrefixOf os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.Atom _algn t 'Nothing ': os') ': bts)
 		(VObj.Atom algn t ('Just _nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance TList.IsPrefixOf os os' =>
-	BindingAndArrayElem
+instance TList.IsPrefixOf os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.Atom _algn t ('Just _nm) ': os') ': bts)
 		(VObj.Atom algn t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance {-# OVERLAPPABLE #-} TList.IsPrefixOf os os' =>
-	BindingAndArrayElem
+instance {-# OVERLAPPABLE #-} TList.IsPrefixOf os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.Static o ': os') ': bts)
 		(VObj.Static o ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance {-# OVERLAPPABLE #-} TList.IsPrefixOf os os' =>
-	BindingAndArrayElem
+instance {-# OVERLAPPABLE #-} TList.IsPrefixOf os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts)
 		(VObj.Dynamic n o ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem
-		('Layout.Buffer os' ': bts) (oo ': os) =>
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) (oo ': os) =>
 	BindingAndArrayElem
 		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) where
 	bindingAndArrayElem c = (+ 1) `second`
@@ -71,8 +63,7 @@ instance {-# OVERLAPPABLE #-}
 			@('Layout.Buffer os' ': bts) @(oo ': os) $ c + 1)
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem
-		('Layout.Buffer os' ': bts) (oo ': os) =>
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) (oo ': os) =>
 	BindingAndArrayElem
 		('Layout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) where
 	bindingAndArrayElem c = (+ 1) `second`
@@ -81,16 +72,9 @@ instance {-# OVERLAPPABLE #-}
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem bts (oo ': os) =>
-	BindingAndArrayElem
-		('Layout.Buffer '[] ': bts) (oo ': os) where
-	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @(oo ': os) 0
-
-instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem bts (oo ': os) =>
-	BindingAndArrayElem
-		('Layout.Other ': bts) (oo ': os) where
-	bindingAndArrayElem c = (a + 1, b - c)
-		where (a, b) = bindingAndArrayElem @bts @(oo ': os) 0
+	BindingAndArrayElem ('Layout.Buffer '[] ': bts) (oo ': os) where
+	bindingAndArrayElem c = (a + 1, b - c) where
+		(a, b) = bindingAndArrayElem @bts @(oo ': os) 0
 
 class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
 	isPrefixUpdateDynamicLength ::
@@ -184,13 +168,6 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemFoo bts (oo ': os) i =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer '[] ': bts) (oo ': os) i where
-	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
-		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) @i lnss lns
-
-instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElemFoo bts (oo ': os) i =>
-	BindingAndArrayElemFoo
-		('Layout.Other ': bts) (oo ': os) i where
 	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
 		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) @i lnss lns
 
