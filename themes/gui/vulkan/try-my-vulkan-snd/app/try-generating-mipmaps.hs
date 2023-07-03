@@ -146,7 +146,6 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
-import qualified Gpu.Vulkan.DescriptorSet.Write.Sources as Vk.DscSet
 
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Common as Vk.DscSet.T
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
@@ -1584,7 +1583,7 @@ class Update smsbs slbtss ssmp siv where
 instance Update '[] '[] ssmp siv where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Vk.DscSet.T.BindingAndArrayElemFoo (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
 	Update ubs dscss ssmp siv,
 	Vk.DscSet.WriteSourcesToMiddle '(ds, cs)

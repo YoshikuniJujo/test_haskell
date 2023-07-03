@@ -21,9 +21,9 @@ class BindingAndArrayElement
 	(bt :: Layout.BindingType) (i :: Nat) where
 	bindingAndArrayElement :: Integral n => (n, n)
 
-instance Common.BindingAndArrayElem bts vobjs i =>
-	BindingAndArrayElement bts (Layout.Buffer vobjs) i where
-	bindingAndArrayElement = Common.bindingAndArrayElem @bts @vobjs @i 0
+instance Common.BindingAndArrayElem bts vobjs =>
+	BindingAndArrayElement bts (Layout.Buffer vobjs) 0 where
+	bindingAndArrayElement = Common.bindingAndArrayElem @bts @vobjs 0
 
 class BindingLength (bt :: Layout.BindingType) where
 	bindingLength :: Integral n => n

@@ -67,7 +67,7 @@ instance (
 	HeteroParList.Map3_4 smsbnmobjs,
 	BindingAndArrayElem
 		(TIndex.I1_2 slbts)
-		(TMapIndex.M3_4 smsbnmobjs) 0,
+		(TMapIndex.M3_4 smsbnmobjs),
 	BindingAndArrayElemFoo
 		(TIndex.I1_2 slbts)
 		(TMapIndex.M3_4 smsbnmobjs) 0,
@@ -76,7 +76,7 @@ instance (
 	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem
 			@(TIndex.I1_2 slbts)
-			@(TMapIndex.M3_4 smsbnmobjs) @0 0,
+			@(TMapIndex.M3_4 smsbnmobjs) 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddleNew bis )
 
 class BufferInfoListToMiddleNew smsbnmobjs where

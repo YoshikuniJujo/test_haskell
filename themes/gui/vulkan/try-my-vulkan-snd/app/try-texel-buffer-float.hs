@@ -292,7 +292,7 @@ prepareMems ::
 	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)] 0,
 
 	Vk.DscSet.BindingAndArrayElem bts
-		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
+		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 
 	Vk.DscSet.BindingAndArrayElemFoo bts
 		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0 ) =>

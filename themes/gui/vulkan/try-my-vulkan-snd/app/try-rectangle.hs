@@ -927,7 +927,7 @@ instance Update '[t] '[] where update _ (HeteroParList.Singleton _) HeteroParLis
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs))
-		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
+		'[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Vk.DscSet.T.BindingAndArrayElemFoo
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,

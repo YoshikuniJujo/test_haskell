@@ -1119,10 +1119,10 @@ instance Update '[] '[] where update _ HL.Nil HL.Nil _ = pure ()
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
-		'[CameraObj] 0,
+		'[CameraObj],
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
-		'[SceneObj] 0,
+		'[SceneObj],
 	Vk.DscSet.T.BindingAndArrayElemFoo
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
 		'[CameraObj] 0,

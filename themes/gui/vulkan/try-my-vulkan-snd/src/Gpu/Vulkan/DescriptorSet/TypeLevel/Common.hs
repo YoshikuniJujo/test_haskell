@@ -55,10 +55,67 @@ instance IsPrefix os os' =>
 	isPrefixUpdateDynamicLength (_ln :** lns') (ln :** lns) =
 		ln :** isPrefixUpdateDynamicLength @os @os' lns' lns
 
-class VObj.OnlyDynamicLengths objs =>
-	BindingAndArrayElem
-	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
+class BindingAndArrayElem
+	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
+
+instance BindingAndArrayElem _bts '[] where
+	bindingAndArrayElem _ = error "badbadbad"
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
+		(VObj.Atom algn t ('Just nm) ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
+		(VObj.Atom algn t 'Nothing ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)
+		(VObj.Static o ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts)
+		(VObj.Dynamic n o ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) where
+	bindingAndArrayElem c = (+ 1) `second`
+		(bindingAndArrayElem
+			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) $ c + 1)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) where
+	bindingAndArrayElem c = (+ 1) `second`
+		(bindingAndArrayElem
+			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) $ c + 1)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElem bts (oo ': os) =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer '[] ': bts) (oo ': os) where
+	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @(oo ': os) 0
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElem bts (oo ': os) =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Other ': bts) (oo ': os) where
+	bindingAndArrayElem c = (a + 1, b - c)
+		where (a, b) = bindingAndArrayElem @bts @(oo ': os) 0
 
 class VObj.OnlyDynamicLengths objs =>
 	BindingAndArrayElemFoo
@@ -73,30 +130,15 @@ class VObj.OnlyDynamicLengths objs =>
 			(HeteroParList.PL KObj.ObjectLength)
 			(Layout.BindingTypeListBufferOnlyDynamics bts)
 
-instance BindingAndArrayElem _bts '[] i where
-	bindingAndArrayElem _ = error "badbadbad"
-
 instance BindingAndArrayElemFoo _bts '[] i where
 	updateDynamicLength a _ = a
 
 instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
-		(VObj.Atom algn t ('Just nm) ': os) 0 where
-	bindingAndArrayElem _ = (0, 0)
-
-instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
 		(VObj.Atom algn t ('Just nm) ': os) 0 where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
-
-instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
-		(VObj.Atom algn t 'Nothing ': os) 0 where
-	bindingAndArrayElem _ = (0, 0)
 
 instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
@@ -106,23 +148,11 @@ instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
 instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)
-		(VObj.Static o ': os) 0 where
-	bindingAndArrayElem _ = (0, 0)
-
-instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)
 		(VObj.Static o ': os) 0 where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
-
-instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts)
-		(VObj.Dynamic n o ': os) 0 where
-	bindingAndArrayElem _ = (0, 0)
 
 instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
@@ -133,30 +163,11 @@ instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 
 instance {-# OVERLAPPABLE #-} (
 	VObj.OnlyDynamicLengths (oo : os),
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) (i - 1) ) =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (oo ': os') ': bts) (oo ': os) i where
-	bindingAndArrayElem c = (+ 1) `second`
-		(bindingAndArrayElem
-			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @(i - 1) $ c + 1)
-
-instance {-# OVERLAPPABLE #-} (
-	VObj.OnlyDynamicLengths (oo : os),
 	BindingAndArrayElemFoo
 		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) (i - 1) ) =>
 	BindingAndArrayElemFoo
 		('DescriptorSetLayout.Buffer (oo ': os') ': bts) (oo ': os) i where
 	updateDynamicLength _lnss _lns = error "not implemented"
-
-instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) i =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) i where
-	bindingAndArrayElem c = (+ 1) `second`
-		(bindingAndArrayElem
-			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @i $ c + 1)
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemFoo
@@ -166,15 +177,6 @@ instance {-# OVERLAPPABLE #-}
 	updateDynamicLength lnss lns =
 		updateDynamicLength
 			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @i lnss lns
-
-instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer os' ': bts) (oo ': os) i =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) i where
-	bindingAndArrayElem c = (+ 1) `second`
-		(bindingAndArrayElem
-			@('DescriptorSetLayout.Buffer os' ': bts) @(oo ': os) @i $ c + 1)
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemFoo
@@ -187,12 +189,6 @@ instance {-# OVERLAPPABLE #-}
 		(ln :** ls') :** lss
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem bts (oo ': os) i =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer '[] ': bts) (oo ': os) i where
-	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @(oo ': os) @i 0
-
-instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemFoo bts (oo ': os) i =>
 	BindingAndArrayElemFoo
 		('DescriptorSetLayout.Buffer '[] ': bts) (oo ': os) i where
@@ -200,35 +196,11 @@ instance {-# OVERLAPPABLE #-}
 		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) @i lnss lns
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem bts (oo ': os) i =>
-	BindingAndArrayElem
-		('DescriptorSetLayout.Other ': bts) (oo ': os) i where
-	bindingAndArrayElem c = (a + 1, b - c)
-		where (a, b) = bindingAndArrayElem @bts @(oo ': os) @i 0
-
-instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemFoo bts (oo ': os) i =>
 	BindingAndArrayElemFoo
 		('DescriptorSetLayout.Other ': bts) (oo ': os) i where
 	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
 		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) @i lnss lns
-
-{-
-type SampleBts0 = '[
-	'DescriptorSetLayout.Buffer '[ ],
-	'DescriptorSetLayout.Buffer '[ 'N.Atom 256 Double 'Nothing, 'N.List 256 () "", 'N.Atom 256 Bool 'Nothing],
-	'DescriptorSetLayout.Other,
-	'DescriptorSetLayout.Buffer
-		'[ 'N.Atom 256 Bool 'Nothing, 'N.List 256 () "", 'N.Atom 256 Int 'Nothing, 'N.List 256 Double "", 'N.Atom 256 Double 'Nothing]]
-
-type SampleObjs0 = '[ 'N.Atom 256 Int 'Nothing, 'N.List 256 Double ""]
-
-type SampleBts1 = '[
-	'DescriptorSetLayout.Buffer '[ 'N.List 256 Double "", 'N.List 256 Double "", 'N.List 256 Double ""],
-	'DescriptorSetLayout.Buffer '[ 'N.Atom 256 Double 'Nothing ] ]
-
-type SampleObj1 = '[ 'N.Atom 256 Double 'Nothing]
--}
 
 class IsPrefixImage
 	(sais :: [(Type, T.Format, Symbol, Type)])
