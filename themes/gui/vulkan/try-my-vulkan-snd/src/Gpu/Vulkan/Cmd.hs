@@ -49,7 +49,11 @@ pipelineBarrier,
 
 resetQueryPool,
 beginQuery,
-writeTimestamp
+writeTimestamp,
+
+-- * OTHERS
+
+LayoutArgListOnlyDynamics
 
 ) where
 
@@ -77,7 +81,6 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.PipelineLayout.Type as PipelineLayout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSet.Type as DescriptorSet
-import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Common as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Buffer as Buffer
@@ -150,7 +153,7 @@ type GroupCountZ = Word32
 
 bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	TMapIndex.M1_2 dss ~ dsls',
-	DescriptorSet.LayoutArgListOnlyDynamics dsls' ~ dyns,
+	LayoutArgListOnlyDynamics dsls' ~ dyns,
 	InfixIndex dsls' dsls, GetDynamicLength dss,
 	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
 	CommandBuffer.GBinded sgbnd vibs '(sl, dsls, pcs) ->
@@ -170,7 +173,7 @@ bindDescriptorSetsGraphics
 
 bindDescriptorSetsCompute :: forall scbnd sl dsls pcs dss dsls' dyns . (
 	TMapIndex.M1_2 dss ~ dsls',
-	DescriptorSet.LayoutArgListOnlyDynamics dsls' ~ dyns,
+	LayoutArgListOnlyDynamics dsls' ~ dyns,
 	InfixIndex dsls' dsls, GetDynamicLength dss,
 	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
 	CommandBuffer.CBinded scbnd '(sl, dsls, pcs) ->
@@ -206,7 +209,13 @@ class GetDynamicLength sspslbtss where
 	getDynamicLength ::
 		HeteroParList.PL (U2 DescriptorSet.D) sspslbtss ->
 		IO (HeteroParList.PL3 KObj.ObjectLength
-			(DescriptorSet.LayoutArgListOnlyDynamics (TMapIndex.M1_2 sspslbtss)))
+			(LayoutArgListOnlyDynamics (TMapIndex.M1_2 sspslbtss)))
+
+type family LayoutArgListOnlyDynamics las where
+	LayoutArgListOnlyDynamics '[] = '[]
+	LayoutArgListOnlyDynamics (la ': las) =
+		Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 la) ':
+			LayoutArgListOnlyDynamics las
 
 instance GetDynamicLength '[] where
 	getDynamicLength HeteroParList.Nil = pure HeteroParList.Nil

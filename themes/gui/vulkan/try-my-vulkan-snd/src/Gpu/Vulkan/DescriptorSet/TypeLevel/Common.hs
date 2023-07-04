@@ -11,10 +11,8 @@
 module Gpu.Vulkan.DescriptorSet.TypeLevel.Common where
 
 import GHC.TypeLits
-import Control.Arrow
 import Data.Kind
 import Data.Kind.Object qualified as KObj
-import Data.TypeLevel.List qualified as TList
 import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
@@ -24,28 +22,13 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 
 import qualified Gpu.Vulkan.TypeEnum as T
 
-class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
-	isPrefixUpdateDynamicLength ::
-		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs') ->
-		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs) ->
-		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs')
-
-instance IsPrefix '[] objs where isPrefixUpdateDynamicLength lns _ = lns
-
-instance IsPrefix os os' =>
-	IsPrefix (VObj.Static o : os) (VObj.Static o : os') where
-	isPrefixUpdateDynamicLength lns' lns  = isPrefixUpdateDynamicLength @os @os' lns' lns
-
-instance IsPrefix os os' =>
-	IsPrefix (VObj.Dynamic n o : os) (VObj.Dynamic n o : os') where
-	isPrefixUpdateDynamicLength (_ln :** lns') (ln :** lns) =
-		ln :** isPrefixUpdateDynamicLength @os @os' lns' lns
-
+{-
 type family LayoutArgListOnlyDynamics las where
 	LayoutArgListOnlyDynamics '[] = '[]
 	LayoutArgListOnlyDynamics (la ': las) =
 		Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 la) ':
 			LayoutArgListOnlyDynamics las
+			-}
 
 class VObj.OnlyDynamicLengths objs =>
 	BindingAndArrayElemFoo
@@ -62,28 +45,28 @@ class VObj.OnlyDynamicLengths objs =>
 
 instance BindingAndArrayElemFoo _bts '[] where updateDynamicLength a _ = a
 
-instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
 		(VObj.Atom algn t ('Just nm) ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
-instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
 		(VObj.Atom algn t 'Nothing ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
-instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+instance {-# OVERLAPPABLE #-} (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Static o ': os') ': bts)
 		(VObj.Static o ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
-instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
+instance {-# OVERLAPPABLE #-} (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts)
 		(VObj.Dynamic n o ': os) where
@@ -115,6 +98,23 @@ instance {-# OVERLAPPABLE #-}
 		('Layout.Buffer '[] ': bts) (oo ': os) where
 	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
 		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) lnss lns
+
+class UpdateDynamicLengthPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
+	isPrefixUpdateDynamicLength ::
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs') ->
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs) ->
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs')
+
+instance UpdateDynamicLengthPrefix '[] objs where isPrefixUpdateDynamicLength lns _ = lns
+
+instance UpdateDynamicLengthPrefix os os' =>
+	UpdateDynamicLengthPrefix (VObj.Static o : os) (VObj.Static o : os') where
+	isPrefixUpdateDynamicLength lns' lns  = isPrefixUpdateDynamicLength @os @os' lns' lns
+
+instance UpdateDynamicLengthPrefix os os' =>
+	UpdateDynamicLengthPrefix (VObj.Dynamic n o : os) (VObj.Dynamic n o : os') where
+	isPrefixUpdateDynamicLength (_ln :** lns') (ln :** lns) =
+		ln :** isPrefixUpdateDynamicLength @os @os' lns' lns
 
 class IsPrefixImage
 	(sais :: [(Type, T.Format, Symbol, Type)])

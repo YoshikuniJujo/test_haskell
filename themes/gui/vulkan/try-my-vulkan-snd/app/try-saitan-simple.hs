@@ -314,7 +314,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 
 run :: forall slbts sbtss sd sc sg sl sds . (
 	sbtss ~ '[slbts],
-	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
+	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
@@ -328,7 +328,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 			Vk.Cmd.bindDescriptorSetsCompute ccb
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
-					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))
+					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss))
 			Vk.Cmd.dispatch ccb dsz 1 1
 	Vk.Queue.submit q (HeteroParList.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q

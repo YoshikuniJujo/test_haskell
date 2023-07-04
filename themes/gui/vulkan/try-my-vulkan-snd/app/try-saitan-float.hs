@@ -188,7 +188,7 @@ type ListBuffer3Memory3 w1 w2 w3 = '[ '[VObj.List 256 w1 ""], '[VObj.List 256 w2
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
 	objss1 objss2 objss3 slbts sbtss sd sc sg sl sm1 sm2 sm3 sds . (
-	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
+	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	sbtss ~ '[slbts],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)

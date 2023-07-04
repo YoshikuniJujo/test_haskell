@@ -304,7 +304,7 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 run :: forall slbts sd sq sq' tp sc sg sl sds . (
-	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
+	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	InfixIndex '[slbts] '[slbts] ) =>
 	Vk.QFm.Index -> Vk.Dv.D sd ->
 	Vk.QP.Q sq tp -> Vk.QP.Q sq' Vk.QP.Timestamp ->

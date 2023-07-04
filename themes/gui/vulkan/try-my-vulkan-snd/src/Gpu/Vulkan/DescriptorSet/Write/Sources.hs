@@ -150,8 +150,7 @@ class WriteSourcesToLengthList arg where
 		Maybe (HeteroParList.PL
 			VObj.ObjectLength (WriteSourcesObjectList arg))
 
-instance
-	HeteroParList.Map3_4 sbsmobjsobjs =>
+instance HeteroParList.Map3_4 sbsmobjsobjs =>
 	WriteSourcesToLengthList ('WriteSourcesArgBuffer sbsmobjsobjs) where
 	type WriteSourcesObjectList
 		('WriteSourcesArgBuffer sbsmobjsobjs) =
