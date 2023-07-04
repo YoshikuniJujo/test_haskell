@@ -34,6 +34,8 @@ module Gpu.Vulkan.Object (
 
 	-- * SYNONYMS
 
+	StaticObject, DynamicObject,
+
 	Atom, List, ObjImage, DynAtom, DynList,
 	pattern ObjectLengthAtom,
 	pattern ObjectLengthList,
@@ -55,7 +57,7 @@ import Data.Maybe
 import Foreign.Storable
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 
-data Object = Static K.Object | Dynamic Nat K.Object | Dummy
+data Object = Static K.Object | Dynamic Nat K.Object
 
 type List algn t nm = Static (K.List algn t nm)
 type Atom algn t mnm = Static (K.Atom algn t mnm)
@@ -63,6 +65,9 @@ type ObjImage algn t nm = Static (K.Image algn t nm)
 
 type DynList n algn t nm = Dynamic n (K.List algn t nm)
 type DynAtom n algn t nm = Dynamic n (K.Atom algn t nm)
+
+type StaticObject algn mnm ot t = Static ('K.Object algn mnm ot t)
+type DynamicObject n algn mnm ot t = Dynamic n ('K.Object algn mnm ot t)
 
 data ObjectLength obj where
 	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static kobj)
@@ -215,10 +220,6 @@ instance OnlyDynamicLengths os => OnlyDynamicLengths ('Dynamic _n ko ': os) wher
 	type OnlyDynamics ('Dynamic _n ko ': os) = ko ': OnlyDynamics os
 	onlyDynamicLength (ObjectLengthDynamic kln :** os) =
 		kln :** onlyDynamicLength os
-
-instance OnlyDynamicLengths '[ 'Dummy] where
-	type OnlyDynamics '[ 'Dummy] = '[]
-	onlyDynamicLength _ = HeteroParList.Nil
 
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn

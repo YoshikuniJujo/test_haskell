@@ -18,6 +18,8 @@ module Data.Kind.Object (
 	StoreObject(..),
 
 	IsImage(..),
+
+	Atom, List, Image
 	) where
 
 import GHC.TypeLits
@@ -35,28 +37,31 @@ import qualified Data.Sequences as Seq
 
 import Gpu.Vulkan.TypeEnum qualified as T
 
-data Object =
-	Atom Alignment Type (Maybe Symbol) |
-	List Alignment Type Symbol |
-	Image Alignment Type Symbol
+data Object = Object Alignment (Maybe Symbol) ObjectType Type
+
+data ObjectType = AtomT | ListT | ImageT deriving Show
+
+type Atom algn t mnm = 'Object algn mnm AtomT t
+type List algn t nm = 'Object algn ('Just nm) ListT t
+type Image algn t nm = 'Object algn ('Just nm) ImageT t
 
 type Alignment = Nat
 
 data ObjectLength (obj :: Object) where
-	ObjectLengthAtom :: ObjectLength ('Atom _algn t nm)
-	ObjectLengthList :: Int -> ObjectLength ('List _algn t nm)
+	ObjectLengthAtom :: ObjectLength (Atom _algn t nm)
+	ObjectLengthList :: Int -> ObjectLength (List _algn t nm)
 	ObjectLengthImage :: {
 		objectLengthImageRow :: Int,
 		objectLengthImageWidth :: Int,
 		objectLengthImageHeight :: Int,
-		objectLengthImageDepth :: Int } -> ObjectLength ('Image algn t nm)
+		objectLengthImageDepth :: Int } -> ObjectLength (Image algn t nm)
 
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
 type family TypeOfObject obj where
-	TypeOfObject (('Atom _algn t _nm)) = t
-	TypeOfObject (('List _algn t _nm)) = t
+	TypeOfObject ((Atom _algn t _nm)) = t
+	TypeOfObject ((List _algn t _nm)) = t
 
 instance Default (ObjectLength (Atom algn t mnm)) where def = ObjectLengthAtom
 instance Default (ObjectLength (List algn t nm)) where def = ObjectLengthList 0
@@ -68,21 +73,6 @@ data SizeAlignmentOfObj (obj :: Object) =
 type Size = Int
 type ObjAlignment = Int
 
-{-
-class SizeAlignmentList objs where
-	sizeAlignmentList :: HeteroParList.PL ObjectLength objs ->
-		HeteroParList.PL SizeAlignmentOfObj objs
-
-instance SizeAlignmentList '[] where
-	sizeAlignmentList HeteroParList.Nil = HeteroParList.Nil
-
-instance (SizeAlignment obj, SizeAlignmentList objs) =>
-	SizeAlignmentList (obj ': objs) where
-	sizeAlignmentList (ln :** lns) =
-		SizeAlignmentOfObj (objectSize ln) (objectAlignment @obj) :**
-		sizeAlignmentList lns
-		-}
-
 class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
 	objectAlignment :: Int
@@ -91,23 +81,23 @@ applyAlign :: Integral n => n -> n -> n
 applyAlign algn ofst = ((ofst - 1) `div` algn + 1) * algn
 
 instance (KnownNat algn, Storable t) =>
-	SizeAlignment (('Atom algn t _nm)) where
+	SizeAlignment ((Atom algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
 	objectSize (ObjectLengthAtom) = applyAlign algn $ sizeOf @t undefined
-		where algn = objectAlignment @(('Atom algn t _nm))
+		where algn = objectAlignment @((Atom algn t _nm))
 
 instance (KnownNat algn, Storable t) =>
-	SizeAlignment (('List algn t _nm)) where
+	SizeAlignment ((List algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
 	objectSize ((ObjectLengthList n)) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @t undefined
 		algn = alignment @t undefined
-		algn' = objectAlignment @(('List algn t _nm))
+		algn' = objectAlignment @((List algn t _nm))
 
-instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment (('Image algn img nm)) where
+instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment ((Image algn img nm)) where
 	objectAlignment =fromIntegral (natVal (Proxy :: Proxy algn))
 		`lcm`
 		alignment @(IsImagePixel img) undefined
@@ -115,14 +105,14 @@ instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment (('Image 
 		r * h * d * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @(IsImagePixel img) undefined
-		algn = objectAlignment @(('Image algn img nm))
+		algn = objectAlignment @((Image algn img nm))
 
 class StoreObject v (obj :: Object) where
 	storeObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
 	loadObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
 	objectLength :: v -> ObjectLength obj
 
-instance Storable t => StoreObject t (('Atom _algn t _nm)) where
+instance Storable t => StoreObject t ((Atom _algn t _nm)) where
 	storeObject p (ObjectLengthAtom) x = poke p x
 	loadObject p (ObjectLengthAtom) = peek p
 	objectLength _ = ObjectLengthAtom
@@ -130,7 +120,7 @@ instance Storable t => StoreObject t (('Atom _algn t _nm)) where
 instance (
 	MonoFoldable v, Seq.IsSequence v,
 	Storable t, Element v ~ t ) =>
-	StoreObject v (('List _algn t _nm)) where
+	StoreObject v ((List _algn t _nm)) where
 	storeObject p ((ObjectLengthList n)) xs =
 		pokeArray p . take n $ otoList xs
 	loadObject p ((ObjectLengthList n)) =
@@ -138,7 +128,7 @@ instance (
 	objectLength = ObjectLengthList . olength
 
 instance (IsImage img, Storable (IsImagePixel img)) =>
-	StoreObject img (('Image algn img nm)) where
+	StoreObject img ((Image algn img nm)) where
 	storeObject p0 (ObjectLengthImage r w _h _d) img =
 		for_ (zip (iterate (`plusPtr` s) p0) $ isImageBody img)
 			\(p, take w -> rw) -> pokeArray (castPtr p) $ take w rw
