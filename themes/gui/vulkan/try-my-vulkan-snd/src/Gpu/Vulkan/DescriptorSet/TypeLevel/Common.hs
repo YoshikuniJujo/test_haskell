@@ -109,21 +109,12 @@ instance UpdateDynamicLengthPrefix os os' =>
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns) =
 		ln :** updateDynamicLengthPrefix @os @os' lns' lns
 
-class IsPrefixImage
-	(sais :: [(Type, Symbol, T.Format, Type)])
-	(btis :: [(Symbol, T.Format)])
-
-instance IsPrefixImage '[] bit
-
-instance IsPrefixImage sais btis =>
-	IsPrefixImage ('(a, nm, fmt, b) ': sais) ('(nm, fmt) ': btis)
-
 class BindingAndArrayElemImage
 	(bts :: [Layout.BindingType])
 	(imgs :: [(Type, Symbol, T.Format, Type)]) where
 	bindingAndArrayElemImage :: Integral n => n -> n -> (n, n)
 
-instance IsPrefixImage sais nmfmts =>
+instance TList.IsPrefixOf (TMapIndex.M1'2_4 sais) nmfmts =>
 	BindingAndArrayElemImage
 		('Layout.Image ('(nm, fmt) ': nmfmts) : bts)
 		('(a, nm, fmt, b) ': sais) where
