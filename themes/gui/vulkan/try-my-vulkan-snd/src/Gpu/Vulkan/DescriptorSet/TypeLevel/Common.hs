@@ -49,7 +49,7 @@ type family LayoutArgListOnlyDynamics las where
 
 class VObj.OnlyDynamicLengths objs =>
 	BindingAndArrayElemFoo
-	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
+	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) where
 	updateDynamicLength ::
 		HeteroParList.PL
 			(HeteroParList.PL KObj.ObjectLength)
@@ -60,70 +60,61 @@ class VObj.OnlyDynamicLengths objs =>
 			(HeteroParList.PL KObj.ObjectLength)
 			(Layout.BindingTypeListBufferOnlyDynamics bts)
 
-instance BindingAndArrayElemFoo _bts '[] i where
-	updateDynamicLength a _ = a
+instance BindingAndArrayElemFoo _bts '[] where updateDynamicLength a _ = a
 
 instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
-		(VObj.Atom algn t ('Just nm) ': os) 0 where
+		(VObj.Atom algn t ('Just nm) ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
 instance (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
-		(VObj.Atom algn t 'Nothing ': os) 0 where
+		(VObj.Atom algn t 'Nothing ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
 instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Static o ': os') ': bts)
-		(VObj.Static o ': os) 0 where
+		(VObj.Static o ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
 instance {-# OVERLAPPABLE #-} (IsPrefix os os', VObj.OnlyDynamicLengths os) =>
 	BindingAndArrayElemFoo
 		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts)
-		(VObj.Dynamic n o ': os) 0 where
+		(VObj.Dynamic n o ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
 		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
 
-instance {-# OVERLAPPABLE #-} (
-	VObj.OnlyDynamicLengths (oo : os),
-	BindingAndArrayElemFoo
-		('Layout.Buffer os' ': bts) (oo ': os) (i - 1) ) =>
-	BindingAndArrayElemFoo
-		('Layout.Buffer (oo ': os') ': bts) (oo ': os) i where
-	updateDynamicLength _lnss _lns = error "not implemented"
-
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemFoo
-		('Layout.Buffer os' ': bts) (oo ': os) i =>
+		('Layout.Buffer os' ': bts) (oo ': os) =>
 	BindingAndArrayElemFoo
-		('Layout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) i where
+		('Layout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) where
 	updateDynamicLength lnss lns =
 		updateDynamicLength
-			@('Layout.Buffer os' ': bts) @(oo ': os) @i lnss lns
+			@('Layout.Buffer os' ': bts) @(oo ': os) lnss lns
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemFoo
-		('Layout.Buffer os' ': bts) (oo ': os) i =>
+		('Layout.Buffer os' ': bts) (oo ': os) =>
 	BindingAndArrayElemFoo
-		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) i where
+		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) where
 	updateDynamicLength ((ln :** lns') :** lnss) lns = let
 		ls' :** lss = updateDynamicLength
-			@('Layout.Buffer os' ': bts) @(oo ': os) @i (lns' :** lnss) lns in
+			@('Layout.Buffer os' ': bts) @(oo ': os) (lns' :** lnss) lns in
 		(ln :** ls') :** lss
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElemFoo bts (oo ': os) i =>
+	BindingAndArrayElemFoo bts (oo ': os) =>
 	BindingAndArrayElemFoo
-		('Layout.Buffer '[] ': bts) (oo ': os) i where
+		('Layout.Buffer '[] ': bts) (oo ': os) where
 	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
-		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) @i lnss lns
+		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) lnss lns
 
 class IsPrefixImage
 	(sais :: [(Type, T.Format, Symbol, Type)])

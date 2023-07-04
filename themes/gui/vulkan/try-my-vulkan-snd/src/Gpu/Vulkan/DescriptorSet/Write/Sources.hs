@@ -58,7 +58,7 @@ type DstArrayElement = Word32
 type DescriptorCount = Word32
 
 class (
-	BindingAndArrayElemFoo (TIndex.I1_2 slbts) (WriteSourcesObjectList wsarg) 0,
+	BindingAndArrayElemFoo (TIndex.I1_2 slbts) (WriteSourcesObjectList wsarg),
 	WriteSourcesToLengthList wsarg ) =>
 	WriteSourcesToMiddle (slbts :: (Type, [Layout.BindingType])) wsarg where
 	writeSourcesToMiddle ::
@@ -71,7 +71,7 @@ instance (
 		(TMapIndex.M3_4 smsbnmobjs),
 	BindingAndArrayElemFoo
 		(TIndex.I1_2 slbts)
-		(TMapIndex.M3_4 smsbnmobjs) 0,
+		(TMapIndex.M3_4 smsbnmobjs),
 	BufferInfoListToMiddleNew smsbnmobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer smsbnmobjs) where
 	writeSourcesToMiddle (BufferInfos bis) = (

@@ -1320,11 +1320,11 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem bods '[ObjDataList],
 	Vk.DscSet.T.BindingAndArrayElemFoo
 		(TIndex.I1_2 '(slyt, bs))
-		'[CameraObj] 0,
+		'[CameraObj],
 	Vk.DscSet.T.BindingAndArrayElemFoo
 		(TIndex.I1_2 '(slyt, bs))
-		'[SceneObj] 0,
-	Vk.DscSet.T.BindingAndArrayElemFoo bods '[ObjDataList] 0,
+		'[SceneObj],
+	Vk.DscSet.T.BindingAndArrayElemFoo bods '[ObjDataList],
 	Update cmbs lyts odbs lytods ) =>
 	Update (cmb ': cmbs) ('(slyt, bs) ': lyts)
 		(odb ': odbs) ('(slytod, bods) ': lytods) where

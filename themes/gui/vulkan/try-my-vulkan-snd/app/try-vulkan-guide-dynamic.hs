@@ -1127,10 +1127,10 @@ instance (
 		'[SceneObj],
 	Vk.DscSet.T.BindingAndArrayElemFoo
 		(TIndex.I1_2 '(slyt, bs))
-		'[CameraObj] 0,
+		'[CameraObj],
 	Vk.DscSet.T.BindingAndArrayElemFoo
 		(TIndex.I1_2 '(slyt, bs))
-		'[SceneObj] 0,
+		'[SceneObj],
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
 		Vk.DscSet.updateDs dv (

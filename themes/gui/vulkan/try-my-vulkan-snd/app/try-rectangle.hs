@@ -932,7 +932,7 @@ instance (
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Vk.DscSet.T.BindingAndArrayElemFoo
 		(TIndex.I1_2 '(ds, cs))
-		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
+		'[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss ) where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) = do

@@ -83,7 +83,7 @@ writeToMiddle Write {
 
 writeUpdateDynamicLength :: forall sbsmobjsobjs n s sl bts . (
 	WriteSourcesToLengthList sbsmobjsobjs,
-	BindingAndArrayElemFoo bts (WriteSourcesObjectList sbsmobjsobjs) 0
+	BindingAndArrayElemFoo bts (WriteSourcesObjectList sbsmobjsobjs)
 	) =>
 	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
 writeUpdateDynamicLength Write {
@@ -91,6 +91,6 @@ writeUpdateDynamicLength Write {
 	writeSources = ws } = do
 	lns <- readIORef rlns
 	maybe	(pure ())
-		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesObjectList sbsmobjsobjs) @0 lns
+		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesObjectList sbsmobjsobjs) lns
 			. (VObj.onlyDynamicLength @(WriteSourcesObjectList sbsmobjsobjs)))
 		(writeSourcesToLengthList @sbsmobjsobjs ws)

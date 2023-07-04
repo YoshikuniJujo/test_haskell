@@ -281,7 +281,7 @@ prepareMems33 ::
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	Vk.DscSet.BindingAndArrayElemFoo bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0
+	Vk.DscSet.BindingAndArrayElemFoo bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm1 sm2 sm3 sb1 sb2 sb3 .
@@ -305,7 +305,7 @@ prepareMems31 ::
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	Vk.DscSet.BindingAndArrayElemFoo bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0
+	Vk.DscSet.BindingAndArrayElemFoo bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm sb1 sb2 sb3 .
@@ -333,7 +333,7 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 	VObj.Offset (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
 	VObj.Offset (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	Vk.DscSet.BindingAndArrayElemFoo bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
+	Vk.DscSet.BindingAndArrayElemFoo bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 	) =>
