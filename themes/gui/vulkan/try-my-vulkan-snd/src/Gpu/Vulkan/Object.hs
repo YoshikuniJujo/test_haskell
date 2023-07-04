@@ -170,7 +170,7 @@ class OnlyDynamicLengths (os :: [Object]) where
 	type OnlyDynamics os :: [K.Object]
 	onlyDynamicLength ::
 		HeteroParList.PL ObjectLength os ->
-		HeteroParList.PL K.ObjectLength (OnlyDynamics os)
+		HeteroParList.PL K.NObjectLength (OnlyDynamics os)
 
 instance OnlyDynamicLengths '[] where
 	type OnlyDynamics '[] = '[]

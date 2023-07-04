@@ -1289,7 +1289,7 @@ createDescriptorSets dv dscp cmbs lyts odbs lytods scnb f =
 		Vk.DscSet.allocateInfoSetLayouts = lytods }
 
 allocateTextureDescriptorSets :: forall slyt foo sd sp a .
-	Default (HL.PL (HL.PL KObj.ObjectLength)
+	Default (HL.PL (HL.PL KObj.NObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics foo)) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	Vk.DscSetLyt.L slyt foo ->

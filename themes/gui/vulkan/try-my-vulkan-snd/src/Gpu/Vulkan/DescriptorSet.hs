@@ -95,7 +95,7 @@ instance (
 
 type DefaultDynamicLengths slbts = Default
 	(HeteroParList.PL
-		(HeteroParList.PL KObj.ObjectLength)
+		(HeteroParList.PL KObj.NObjectLength)
 		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts)))
 
 allocateDs :: (WithPoked (TMaybe.M mn), DListFromMiddle slbtss) =>

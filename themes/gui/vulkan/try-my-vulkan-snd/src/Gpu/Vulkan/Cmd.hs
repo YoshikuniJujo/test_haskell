@@ -198,14 +198,14 @@ getOffset' ln (DynamicIndex i) = fromIntegral sz * i
 	algn = KObj.objectAlignment @obj
 
 getOffsetListNew :: HeteroParList.ZipListWithC3 KObj.SizeAlignment osss =>
-		HeteroParList.PL3 KObj.ObjectLength osss ->
+		HeteroParList.PL3 KObj.NObjectLength osss ->
 		HeteroParList.PL3 DynamicIndex osss -> [[[Word32]]]
 getOffsetListNew = HeteroParList.zipListWithC3 @KObj.SizeAlignment getOffset'
 
 class GetDynamicLength sspslbtss where
 	getDynamicLength ::
 		HeteroParList.PL (U2 DescriptorSet.D) sspslbtss ->
-		IO (HeteroParList.PL3 KObj.ObjectLength
+		IO (HeteroParList.PL3 KObj.NObjectLength
 			(DescriptorSet.LayoutArgListOnlyDynamics (TMapIndex.M1_2 sspslbtss)))
 
 instance GetDynamicLength '[] where
@@ -217,7 +217,7 @@ instance GetDynamicLength spslbtss =>
 		(:**) <$> getDscSetLengthsNew ds <*> getDynamicLength dss
 
 getDscSetLengthsNew :: DescriptorSet.D s slbts ->
-	IO (HeteroParList.PL2 KObj.ObjectLength
+	IO (HeteroParList.PL2 KObj.NObjectLength
 		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts)))
 getDscSetLengthsNew (DescriptorSet.D lns _) = readIORef lns
 

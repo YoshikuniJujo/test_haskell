@@ -123,7 +123,7 @@ calc' :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3 sm1 sm2 sm3
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	slbts ~ '(sl, bts),
 	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.ObjectLength)
+		(HeteroParList.PL KObj.NObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
@@ -194,7 +194,7 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
 	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.ObjectLength)
+		(HeteroParList.PL KObj.NObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
@@ -287,7 +287,7 @@ binding1 = Vk.DscSetLyt.BindingBufferView {
 prepareMems ::
 	forall bts w1 w2 w3 sd sl nm1 nm2 nm3 a . (
 	Default (HeteroParList.PL
-		(HeteroParList.PL KObj.ObjectLength)
+		(HeteroParList.PL KObj.NObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)] 0,

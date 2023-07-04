@@ -11,7 +11,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Kind.Object (
-	Object(..), ObjectLength(..), ObjectType, ObjectAlignment,
+	Object(..), NObjectLength(..), ObjectType, ObjectAlignment, ObjectLength,
 
 	SizeAlignment(..), wholeSizeNew,
 
@@ -57,19 +57,19 @@ data NObjectLength (obj :: Object) where
 deriving instance Eq (NObjectLength obj)
 deriving instance Show (NObjectLength obj)
 
-data ObjectLength obj = ObjectLengthObject (NObjectLength obj)
+type ObjectLength obj = NObjectLength obj
 
 pattern ObjectLengthAtom :: ObjectLength (('Atom _algn t nm))
-pattern ObjectLengthAtom <- ObjectLengthObject NObjectLengthAtom where
-	ObjectLengthAtom = ObjectLengthObject NObjectLengthAtom
+pattern ObjectLengthAtom <- NObjectLengthAtom where
+	ObjectLengthAtom = NObjectLengthAtom
 
 pattern ObjectLengthList :: Int -> ObjectLength (('List _algn t nm))
-pattern ObjectLengthList n <- ObjectLengthObject (NObjectLengthList n) where
-	ObjectLengthList n = ObjectLengthObject $ NObjectLengthList n
+pattern ObjectLengthList n <- (NObjectLengthList n) where
+	ObjectLengthList n = NObjectLengthList n
 
 pattern ObjectLengthImageNew :: Int -> Int -> Int -> Int -> ObjectLength (('Image _algn t nm))
-pattern ObjectLengthImageNew r w h d <- ObjectLengthObject (NObjectLengthImage r w h d) where
-	ObjectLengthImageNew r w h d = ObjectLengthObject (NObjectLengthImage r w h d)
+pattern ObjectLengthImageNew r w h d <- NObjectLengthImage r w h d where
+	ObjectLengthImageNew r w h d = NObjectLengthImage r w h d
 
 type family ObjectType obj where
 	ObjectType (('Atom _algn t _nm)) = t
@@ -79,12 +79,8 @@ instance Default (ObjectLength (Atom algn t mnm)) where def = ObjectLengthAtom
 instance Default (ObjectLength (List algn t nm)) where def = ObjectLengthList 0
 instance Default (ObjectLength (Image algn t nm)) where def = ObjectLengthImageNew 0 0 0 0
 
-deriving instance Eq (ObjectLength obj)
-
-deriving instance Show (ObjectLength obj)
-
 wholeSizeNew :: SizeAlignmentList objs =>
-	HeteroParList.PL ObjectLength objs -> Size
+	HeteroParList.PL NObjectLength objs -> Size
 wholeSizeNew = wholeSizeFromSizeAlignmentList 0 . sizeAlignmentList
 
 wholeSizeFromSizeAlignmentList ::
@@ -101,7 +97,7 @@ type Size = Int
 type ObjAlignment = Int
 
 class SizeAlignmentList objs where
-	sizeAlignmentList :: HeteroParList.PL ObjectLength objs ->
+	sizeAlignmentList :: HeteroParList.PL NObjectLength objs ->
 		HeteroParList.PL SizeAlignmentOfObj objs
 
 instance SizeAlignmentList '[] where
@@ -124,14 +120,14 @@ instance (KnownNat algn, Storable t) =>
 	SizeAlignment (('Atom algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
-	objectSize (ObjectLengthObject NObjectLengthAtom) = applyAlign algn $ sizeOf @t undefined
+	objectSize (NObjectLengthAtom) = applyAlign algn $ sizeOf @t undefined
 		where algn = objectAlignment @(('Atom algn t _nm))
 
 instance (KnownNat algn, Storable t) =>
 	SizeAlignment (('List algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
-	objectSize (ObjectLengthObject (NObjectLengthList n)) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
+	objectSize ((NObjectLengthList n)) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @t undefined
 		algn = alignment @t undefined
@@ -153,19 +149,19 @@ class StoreObject v (obj :: Object) where
 	objectLength :: v -> ObjectLength obj
 
 instance Storable t => StoreObject t (('Atom _algn t _nm)) where
-	storeObject p (ObjectLengthObject NObjectLengthAtom) x = poke p x
-	loadObject p (ObjectLengthObject NObjectLengthAtom) = peek p
-	objectLength _ = ObjectLengthObject NObjectLengthAtom
+	storeObject p (NObjectLengthAtom) x = poke p x
+	loadObject p (NObjectLengthAtom) = peek p
+	objectLength _ = NObjectLengthAtom
 
 instance (
 	MonoFoldable v, Seq.IsSequence v,
 	Storable t, Element v ~ t ) =>
 	StoreObject v (('List _algn t _nm)) where
-	storeObject p (ObjectLengthObject (NObjectLengthList n)) xs =
+	storeObject p ((NObjectLengthList n)) xs =
 		pokeArray p . take n $ otoList xs
-	loadObject p (ObjectLengthObject (NObjectLengthList n)) =
+	loadObject p ((NObjectLengthList n)) =
 		Seq.fromList <$> peekArray n p
-	objectLength = ObjectLengthObject . NObjectLengthList . olength
+	objectLength = NObjectLengthList . olength
 
 instance (IsImage img, Storable (IsImagePixel img)) =>
 	StoreObject img (('Image algn img nm)) where
