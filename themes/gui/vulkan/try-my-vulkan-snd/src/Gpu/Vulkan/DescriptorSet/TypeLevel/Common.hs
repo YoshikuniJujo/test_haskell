@@ -28,6 +28,11 @@ class BindingAndArrayElem
 	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 
+instance BindingAndArrayElem bts (oo ': os) =>
+	BindingAndArrayElem ('Layout.Buffer '[] ': bts) (oo ': os) where
+	bindingAndArrayElem c = (a + 1, b - c) where
+		(a, b) = bindingAndArrayElem @bts @(oo ': os) 0
+
 instance TList.IsPrefixOf os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.StaticObject algn 'Nothing ot t ': os') ': bts)
 		(VObj.StaticObject algn ('Just _nm) ot t ': os) where
@@ -36,11 +41,6 @@ instance TList.IsPrefixOf os os' => BindingAndArrayElem
 instance TList.IsPrefixOf os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.StaticObject algn ('Just _nm) ot t ': os') ': bts)
 		(VObj.StaticObject algn 'Nothing ot t ': os) where
-	bindingAndArrayElem _ = (0, 0)
-
-instance {-# OVERLAPPABLE #-} TList.IsPrefixOf os os' => BindingAndArrayElem
-		('Layout.Buffer (VObj.Static o ': os') ': bts)
-		(VObj.Static o ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance TList.IsPrefixOf os os' => BindingAndArrayElem
@@ -53,29 +53,14 @@ instance TList.IsPrefixOf os os' => BindingAndArrayElem
 		(VObj.DynamicObject n algn 'Nothing ot t ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance {-# OVERLAPPABLE #-} TList.IsPrefixOf os os' => BindingAndArrayElem
-		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts)
-		(VObj.Dynamic n o ': os) where
+instance TList.IsPrefixOf os os' => BindingAndArrayElem
+		('Layout.Buffer (o ': os') ': bts) (o ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem bts (oo ': os) =>
-	BindingAndArrayElem ('Layout.Buffer '[] ': bts) (oo ': os) where
-	bindingAndArrayElem c = (a + 1, b - c) where
-		(a, b) = bindingAndArrayElem @bts @(oo ': os) 0
-
-instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem ('Layout.Buffer os' ': bts) (oo ': os) =>
 	BindingAndArrayElem
-		('Layout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) where
-	bindingAndArrayElem c = (+ 1) `second`
-		(bindingAndArrayElem
-			@('Layout.Buffer os' ': bts) @(oo ': os) $ c + 1)
-
-instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem ('Layout.Buffer os' ': bts) (oo ': os) =>
-	BindingAndArrayElem
-		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) where
+		('Layout.Buffer (o ': os') ': bts) (oo ': os) where
 	bindingAndArrayElem c = (+ 1) `second`
 		(bindingAndArrayElem
 			@('Layout.Buffer os' ': bts) @(oo ': os) $ c + 1)
