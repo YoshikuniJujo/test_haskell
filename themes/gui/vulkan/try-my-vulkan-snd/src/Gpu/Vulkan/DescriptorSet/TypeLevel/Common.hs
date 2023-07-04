@@ -78,9 +78,9 @@ instance {-# OVERLAPPABLE #-}
 
 class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
 	isPrefixUpdateDynamicLength ::
-		HeteroParList.PL KObj.NObjectLength (VObj.OnlyDynamics objs') ->
-		HeteroParList.PL KObj.NObjectLength (VObj.OnlyDynamics objs) ->
-		HeteroParList.PL KObj.NObjectLength (VObj.OnlyDynamics objs')
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs') ->
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs) ->
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs')
 
 instance IsPrefix '[] objs where isPrefixUpdateDynamicLength lns _ = lns
 
@@ -98,12 +98,12 @@ class VObj.OnlyDynamicLengths objs =>
 	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
 	updateDynamicLength ::
 		HeteroParList.PL
-			(HeteroParList.PL KObj.NObjectLength)
+			(HeteroParList.PL KObj.ObjectLength)
 			(Layout.BindingTypeListBufferOnlyDynamics bts) ->
-		HeteroParList.PL KObj.NObjectLength
+		HeteroParList.PL KObj.ObjectLength
 			(VObj.OnlyDynamics objs) ->
 		HeteroParList.PL
-			(HeteroParList.PL KObj.NObjectLength)
+			(HeteroParList.PL KObj.ObjectLength)
 			(Layout.BindingTypeListBufferOnlyDynamics bts)
 
 instance BindingAndArrayElemFoo _bts '[] i where

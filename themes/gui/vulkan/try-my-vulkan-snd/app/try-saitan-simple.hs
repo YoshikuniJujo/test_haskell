@@ -153,7 +153,7 @@ binding = Vk.DscSetLyt.BindingBuffer {
 
 prepareMems :: (
 	Default (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscSet.BindingAndArrayElem bts '[
 		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ],
@@ -277,7 +277,7 @@ calc :: forall slbts sl bts sd sds . (
 	slbts ~ '(sl, bts),
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	InfixIndex '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
@@ -315,7 +315,7 @@ run :: forall slbts sbtss sd sc sg sl sds . (
 	sbtss ~ '[slbts],
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->

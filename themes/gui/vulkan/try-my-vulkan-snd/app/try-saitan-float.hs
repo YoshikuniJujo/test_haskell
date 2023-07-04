@@ -162,7 +162,7 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sm1 sm
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	slbts ~ '(sl, bts),
 	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
@@ -190,7 +190,7 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	sbtss ~ '[slbts],
 	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
@@ -273,7 +273,7 @@ binding0 = Vk.DscSetLyt.BindingBuffer {
 prepareMems ::
 	forall bts w1 w2 w3 sd sl nm1 nm2 nm3 a . (
 	Default (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
 
@@ -298,7 +298,7 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 prepareMems' ::
 	forall bts w1 w2 w3 sd sl a . (
 	Default (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
@@ -322,7 +322,7 @@ prepareMems' phdvc dvc dscSetLyt da db dc f =
 
 prepareMems'' :: forall w1 w2 w3 sd sl bts nm a . (
 	Default (HeteroParList.PL
-		(HeteroParList.PL KObj.NObjectLength)
+		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
 	VObj.Offset (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],

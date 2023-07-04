@@ -178,7 +178,7 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 -- PREPARE MEMORIES
 
 prepareMems :: (
-	Default (HL.PL (HL.PL KObj.NObjectLength)
+	Default (HL.PL (HL.PL KObj.ObjectLength)
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DS.BindingAndArrayElem bts '[Word32List],
 	Vk.DS.BindingAndArrayElemFoo bts '[Word32List] 0 ) =>

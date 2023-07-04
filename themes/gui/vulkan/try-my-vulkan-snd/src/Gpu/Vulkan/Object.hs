@@ -45,8 +45,8 @@ deriving instance Show (ObjectLength obj)
 
 pattern ObjectLengthImage ::
 	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.Image algn t nm))
-pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImageNew kr kw kh kd))
-	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImageNew kr kw kh kd)
+pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
+	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
 
 pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn t nm))
 pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
@@ -170,7 +170,7 @@ class OnlyDynamicLengths (os :: [Object]) where
 	type OnlyDynamics os :: [K.Object]
 	onlyDynamicLength ::
 		HeteroParList.PL ObjectLength os ->
-		HeteroParList.PL K.NObjectLength (OnlyDynamics os)
+		HeteroParList.PL K.ObjectLength (OnlyDynamics os)
 
 instance OnlyDynamicLengths '[] where
 	type OnlyDynamics '[] = '[]
