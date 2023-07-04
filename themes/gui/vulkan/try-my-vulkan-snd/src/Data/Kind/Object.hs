@@ -17,7 +17,7 @@ module Data.Kind.Object (
 
 	StoreObject(..),
 
-	IsImage(..), Atom, List, Image,
+	IsImage(..),
 	pattern ObjectLengthAtom, pattern ObjectLengthList, pattern ObjectLengthImageNew
 	) where
 
@@ -38,33 +38,42 @@ import qualified Data.Sequences as Seq
 
 import Gpu.Vulkan.TypeEnum qualified as T
 
-data Object = ObjObject NObject
+data Object =
+	Atom Alignment Type (Maybe Symbol) |
+	List Alignment Type Symbol |
+	Image Alignment Type Symbol
 
-type family ObjectAlignment obj where
-	ObjectAlignment (ObjObject nobj) = NObjectAlignment nobj
+type Alignment = Nat
 
-type Atom algn t mnm = 'ObjObject ('NAtom algn t mnm)
-type List algn t nm = 'ObjObject ('NList algn t nm)
-type Image algn t nm = 'ObjObject ('NImage algn t nm)
+data NObjectLength (obj :: Object) where
+	NObjectLengthAtom :: NObjectLength ('Atom _algn t nm)
+	NObjectLengthList :: Int -> NObjectLength ('List _algn t nm)
+	NObjectLengthImage :: {
+		objectLengthImageRow :: Int,
+		objectLengthImageWidth :: Int,
+		objectLengthImageHeight :: Int,
+		objectLengthImageDepth :: Int } -> NObjectLength ('Image algn t nm)
 
-pattern ObjectLengthAtom :: ObjectLength (ObjObject ('NAtom _algn t nm))
+deriving instance Eq (NObjectLength obj)
+deriving instance Show (NObjectLength obj)
+
+data ObjectLength obj = ObjectLengthObject (NObjectLength obj)
+
+pattern ObjectLengthAtom :: ObjectLength (('Atom _algn t nm))
 pattern ObjectLengthAtom <- ObjectLengthObject NObjectLengthAtom where
 	ObjectLengthAtom = ObjectLengthObject NObjectLengthAtom
 
-pattern ObjectLengthList :: Int -> ObjectLength (ObjObject ('NList _algn t nm))
+pattern ObjectLengthList :: Int -> ObjectLength (('List _algn t nm))
 pattern ObjectLengthList n <- ObjectLengthObject (NObjectLengthList n) where
 	ObjectLengthList n = ObjectLengthObject $ NObjectLengthList n
 
-pattern ObjectLengthImageNew :: Int -> Int -> Int -> Int -> ObjectLength (ObjObject ('NImage _algn t nm))
+pattern ObjectLengthImageNew :: Int -> Int -> Int -> Int -> ObjectLength (('Image _algn t nm))
 pattern ObjectLengthImageNew r w h d <- ObjectLengthObject (NObjectLengthImage r w h d) where
 	ObjectLengthImageNew r w h d = ObjectLengthObject (NObjectLengthImage r w h d)
 
 type family ObjectType obj where
-	ObjectType ('ObjObject ('NAtom _algn t _nm)) = t
-	ObjectType ('ObjObject ('NList _algn t _nm)) = t
-
-data ObjectLength (obj :: Object) where
-	ObjectLengthObject :: NObjectLength obj -> ObjectLength (ObjObject obj)
+	ObjectType (('Atom _algn t _nm)) = t
+	ObjectType (('List _algn t _nm)) = t
 
 instance Default (ObjectLength (Atom algn t mnm)) where def = ObjectLengthAtom
 instance Default (ObjectLength (List algn t nm)) where def = ObjectLengthList 0
@@ -112,23 +121,23 @@ applyAlign :: Integral n => n -> n -> n
 applyAlign algn ofst = ((ofst - 1) `div` algn + 1) * algn
 
 instance (KnownNat algn, Storable t) =>
-	SizeAlignment ('ObjObject ('NAtom algn t _nm)) where
+	SizeAlignment (('Atom algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
 	objectSize (ObjectLengthObject NObjectLengthAtom) = applyAlign algn $ sizeOf @t undefined
-		where algn = objectAlignment @('ObjObject ('NAtom algn t _nm))
+		where algn = objectAlignment @(('Atom algn t _nm))
 
 instance (KnownNat algn, Storable t) =>
-	SizeAlignment ('ObjObject ('NList algn t _nm)) where
+	SizeAlignment (('List algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
 	objectSize (ObjectLengthObject (NObjectLengthList n)) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @t undefined
 		algn = alignment @t undefined
-		algn' = objectAlignment @('ObjObject ('NList algn t _nm))
+		algn' = objectAlignment @(('List algn t _nm))
 
-instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment ('ObjObject ('NImage algn img nm)) where
+instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment (('Image algn img nm)) where
 	objectAlignment =fromIntegral (natVal (Proxy :: Proxy algn))
 		`lcm`
 		alignment @(IsImagePixel img) undefined
@@ -136,14 +145,14 @@ instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment ('ObjObje
 		r * h * d * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @(IsImagePixel img) undefined
-		algn = objectAlignment @('ObjObject ('NImage algn img nm))
+		algn = objectAlignment @(('Image algn img nm))
 
 class StoreObject v (obj :: Object) where
 	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()
 	loadObject :: Ptr (ObjectType obj) -> ObjectLength obj -> IO v
 	objectLength :: v -> ObjectLength obj
 
-instance Storable t => StoreObject t ('ObjObject ('NAtom _algn t _nm)) where
+instance Storable t => StoreObject t (('Atom _algn t _nm)) where
 	storeObject p (ObjectLengthObject NObjectLengthAtom) x = poke p x
 	loadObject p (ObjectLengthObject NObjectLengthAtom) = peek p
 	objectLength _ = ObjectLengthObject NObjectLengthAtom
@@ -151,7 +160,7 @@ instance Storable t => StoreObject t ('ObjObject ('NAtom _algn t _nm)) where
 instance (
 	MonoFoldable v, Seq.IsSequence v,
 	Storable t, Element v ~ t ) =>
-	StoreObject v ('ObjObject ('NList _algn t _nm)) where
+	StoreObject v (('List _algn t _nm)) where
 	storeObject p (ObjectLengthObject (NObjectLengthList n)) xs =
 		pokeArray p . take n $ otoList xs
 	loadObject p (ObjectLengthObject (NObjectLengthList n)) =
@@ -159,7 +168,7 @@ instance (
 	objectLength = ObjectLengthObject . NObjectLengthList . olength
 
 instance (IsImage img, Storable (IsImagePixel img)) =>
-	StoreObject img ('ObjObject ('NImage algn img nm)) where
+	StoreObject img (('Image algn img nm)) where
 	storeObject p0 (ObjectLengthImageNew r w _h _d) img =
 		for_ (zip (iterate (`plusPtr` s) p0) $ isImageBody img)
 			\(p, take w -> rw) -> pokeArray (castPtr p) $ take w rw
@@ -180,26 +189,7 @@ class IsImage img where
 	isImageBody :: img -> [[IsImagePixel img]]
 	isImageMake :: Int -> Int -> Int -> [[IsImagePixel img]] -> img
 
-data NObject =
-	NAtom Alignment Type (Maybe Symbol) |
-	NList Alignment Type Symbol |
-	NImage Alignment Type Symbol
-
-type Alignment = Nat
-
-type family NObjectAlignment obj where
-	NObjectAlignment (NAtom algn t nm) = algn
-	NObjectAlignment (NList algn t nm) = algn
-	NObjectAlignment (NImage algn t nm) = algn
-
-data NObjectLength (obj :: NObject) where
-	NObjectLengthAtom :: NObjectLength ('NAtom _algn t nm)
-	NObjectLengthList :: Int -> NObjectLength ('NList _algn t nm)
-	NObjectLengthImage :: {
-		objectLengthImageRow :: Int,
-		objectLengthImageWidth :: Int,
-		objectLengthImageHeight :: Int,
-		objectLengthImageDepth :: Int } -> NObjectLength ('NImage algn t nm)
-
-deriving instance Eq (NObjectLength obj)
-deriving instance Show (NObjectLength obj)
+type family ObjectAlignment obj where
+	ObjectAlignment (Atom algn t nm) = algn
+	ObjectAlignment (List algn t nm) = algn
+	ObjectAlignment (Image algn t nm) = algn
