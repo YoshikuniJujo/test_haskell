@@ -163,11 +163,11 @@ class CopyInfo (area :: [VObj.Object]) (src :: [VObj.Object]) (dst :: [VObj.Obje
 	copyDstOffset :: Word64 -> HeteroParList.PL VObj.ObjectLength dst -> Word64
 	copySize :: HeteroParList.PL VObj.ObjectLength src -> Word64
 
-type OT o = VObj.ObjectType o
+type OT o = VObj.TypeOfObject o
 
 instance (
-	WithPoked (VObj.ObjectType a),
-	Sizable (VObj.ObjectType a),
+	WithPoked (VObj.TypeOfObject a),
+	Sizable (VObj.TypeOfObject a),
 	CopyPrefix (a ': as) (a ': ss) (a ': ds) ) => CopyInfo (a ': as) (a ': ss) (a ': ds) where
 	copyCheckLength = copyCheckLengthPrefix @(a ': as) @(a ': ss) @(a ': ds)
 	copySrcOffset ost _ = ((ost - 1) `div` algn + 1) * algn

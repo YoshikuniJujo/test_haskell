@@ -66,9 +66,9 @@ pattern ObjectLengthDynList :: Int -> ObjectLength ('Dynamic n (K.List algn t nm
 pattern ObjectLengthDynList n <- ObjectLengthDynamic (K.ObjectLengthList n) where
 	ObjectLengthDynList n = ObjectLengthDynamic (K.ObjectLengthList n)
 
-type family ObjectType obj where
-	ObjectType (Static kobj) = K.ObjectType kobj
-	ObjectType (Dynamic n kobj) = K.ObjectType kobj
+type family TypeOfObject obj where
+	TypeOfObject (Static kobj) = K.TypeOfObject kobj
+	TypeOfObject (Dynamic n kobj) = K.TypeOfObject kobj
 
 wholeSizeNew :: SizeAlignmentList objs =>
 	HeteroParList.PL ObjectLength objs -> Size
@@ -121,15 +121,15 @@ instance (KnownNat n, K.SizeAlignment kobj) =>
 	objectAlignment = K.objectAlignment @kobj
 
 nextObject :: forall kobj . K.SizeAlignment kobj =>
-	Ptr (K.ObjectType kobj) -> K.ObjectLength kobj -> Ptr (K.ObjectType kobj)
+	Ptr (K.TypeOfObject kobj) -> K.ObjectLength kobj -> Ptr (K.TypeOfObject kobj)
 nextObject p ln = p `plusPtr` n
 	where
 	n = ((K.objectSize ln - 1) `div` algn + 1) * algn
 	algn = K.objectAlignment @kobj
 
 class StoreObject v obj where
-	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()
-	loadObject :: Ptr (ObjectType obj) -> ObjectLength obj -> IO v
+	storeObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
+	loadObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
 	objectLength :: v -> ObjectLength obj
 
 instance K.StoreObject v kobj => StoreObject v (Static kobj) where

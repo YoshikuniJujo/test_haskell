@@ -396,7 +396,7 @@ write :: forall nm obj sd sm sibfoss v .
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> v -> IO ()
 write dvc mem flgs v = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
-	(\(ptr :: Ptr (VObj.ObjectType obj)) -> do
+	(\(ptr :: Ptr (VObj.TypeOfObject obj)) -> do
 		ln <- offsetSizeLength @nm @obj mem
 		VObj.storeObject @_ @obj ptr ln v)
 
@@ -405,11 +405,11 @@ read :: forall nm obj v sd sm sibfoss .
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO v
 read dvc mem flgs = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
-	(\(ptr :: Ptr (VObj.ObjectType obj)) ->
+	(\(ptr :: Ptr (VObj.TypeOfObject obj)) ->
 		VObj.loadObject @_ @obj ptr =<< offsetSizeLength @nm @obj mem)
 
 map :: forall nm obj sd sm sibfoss . OffsetSize' nm obj sibfoss =>
-	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (VObj.ObjectType obj))
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (VObj.TypeOfObject obj))
 map dvc@(Device.D mdvc) m flgs = do
 	(_, mm) <- readM'' m
 	(ost, sz) <- offsetSize @nm @obj dvc m 0

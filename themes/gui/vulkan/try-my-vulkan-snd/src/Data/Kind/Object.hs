@@ -11,7 +11,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Kind.Object (
-	Object(..), ObjectLength(..), ObjectType,
+	Object(..), ObjectLength(..), TypeOfObject,
 
 	SizeAlignment(..),
 
@@ -54,9 +54,9 @@ data ObjectLength (obj :: Object) where
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
-type family ObjectType obj where
-	ObjectType (('Atom _algn t _nm)) = t
-	ObjectType (('List _algn t _nm)) = t
+type family TypeOfObject obj where
+	TypeOfObject (('Atom _algn t _nm)) = t
+	TypeOfObject (('List _algn t _nm)) = t
 
 instance Default (ObjectLength (Atom algn t mnm)) where def = ObjectLengthAtom
 instance Default (ObjectLength (List algn t nm)) where def = ObjectLengthList 0
@@ -118,8 +118,8 @@ instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment (('Image 
 		algn = objectAlignment @(('Image algn img nm))
 
 class StoreObject v (obj :: Object) where
-	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()
-	loadObject :: Ptr (ObjectType obj) -> ObjectLength obj -> IO v
+	storeObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
+	loadObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
 	objectLength :: v -> ObjectLength obj
 
 instance Storable t => StoreObject t (('Atom _algn t _nm)) where
