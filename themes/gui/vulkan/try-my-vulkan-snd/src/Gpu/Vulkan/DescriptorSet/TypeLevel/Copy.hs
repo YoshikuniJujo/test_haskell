@@ -14,6 +14,7 @@ import GHC.TypeLits
 
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
+import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem qualified as Common
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Common qualified as Common
 
 class BindingAndArrayElement

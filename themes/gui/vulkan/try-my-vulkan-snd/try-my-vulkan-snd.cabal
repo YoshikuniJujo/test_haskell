@@ -70,6 +70,7 @@ library
       Gpu.Vulkan.DescriptorPool.Enum
       Gpu.Vulkan.DescriptorPool.Type
       Gpu.Vulkan.DescriptorSet
+      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
       Gpu.Vulkan.DescriptorSet.Type
       Gpu.Vulkan.DescriptorSet.TypeLevel.Common
       Gpu.Vulkan.DescriptorSet.TypeLevel.Copy
