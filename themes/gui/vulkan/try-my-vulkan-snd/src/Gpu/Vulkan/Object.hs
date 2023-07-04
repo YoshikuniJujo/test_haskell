@@ -28,7 +28,7 @@ data Object = Static K.Object | Dynamic Nat K.Object | Dummy
 
 type List algn t nm = Static (K.List algn t nm)
 type Atom algn t mnm = Static (K.Atom algn t mnm)
-type ObjImage algn t nm = Static (K.ObjImage algn t nm)
+type ObjImage algn t nm = Static (K.Image algn t nm)
 
 type DynList n algn t nm = Dynamic n (K.List algn t nm)
 type DynAtom n algn t nm = Dynamic n (K.Atom algn t nm)
@@ -44,9 +44,9 @@ deriving instance Show (ObjectLength obj)
 {-# COMPLETE ObjectLengthImage #-}
 
 pattern ObjectLengthImage ::
-	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.ObjImage algn t nm))
-pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
-	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
+	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.Image algn t nm))
+pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImageNew kr kw kh kd))
+	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImageNew kr kw kh kd)
 
 pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn t nm))
 pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where

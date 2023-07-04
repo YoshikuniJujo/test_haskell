@@ -36,7 +36,6 @@ library
       Codec.Wavefront.ReadOld
       Data.Bits.Utils
       Data.Kind.Object
-      Data.Kind.ObjectNew
       Data.Traversable.Utils
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
