@@ -9,7 +9,38 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Object where
+module Gpu.Vulkan.Object (
+
+	-- * TYPE
+
+	Object(..), ObjectLength, TypeOfObject,
+
+	-- * STORE
+
+	StoreObject(..),
+
+	-- * OBJECT LENGTH
+
+	ObjectLengthOf(..), ObjectLengthForTypeName(..),
+
+	-- * DYNAMIC LENGTHS
+
+	OnlyDynamicLengths(..),
+
+	-- * SIZE, ALIGNMENT AND OFFSET
+
+	SizeAlignment(..), SizeAlignmentList(..), wholeSizeNew,
+	OffsetOfList(..), Offset, offset, offsetNew, offsetOfList, range,
+
+	-- * SYNONYMS
+
+	Atom, List, ObjImage, DynAtom, DynList,
+	pattern ObjectLengthAtom,
+	pattern ObjectLengthList,
+	pattern ObjectLengthImage,
+	pattern ObjectLengthDynAtom,
+	pattern ObjectLengthDynList,
+	) where
 
 import GHC.TypeLits (Symbol)
 import GHC.TypeNats
