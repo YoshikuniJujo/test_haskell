@@ -14,6 +14,7 @@ import GHC.TypeLits
 import Data.Kind
 import Data.Kind.Object qualified as KObj
 import Data.TypeLevel.List qualified as TList
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -109,23 +110,23 @@ instance UpdateDynamicLengthPrefix os os' =>
 		ln :** updateDynamicLengthPrefix @os @os' lns' lns
 
 class IsPrefixImage
-	(sais :: [(Type, T.Format, Symbol, Type)])
+	(sais :: [(Type, Symbol, T.Format, Type)])
 	(btis :: [(Symbol, T.Format)])
 
 instance IsPrefixImage '[] bit
 
 instance IsPrefixImage sais btis =>
-	IsPrefixImage ('(a, fmt, nm, b) ': sais) ('(nm, fmt) ': btis)
+	IsPrefixImage ('(a, nm, fmt, b) ': sais) ('(nm, fmt) ': btis)
 
 class BindingAndArrayElemImage
 	(bts :: [Layout.BindingType])
-	(imgs :: [(Type, T.Format, Symbol, Type)]) where
+	(imgs :: [(Type, Symbol, T.Format, Type)]) where
 	bindingAndArrayElemImage :: Integral n => n -> n -> (n, n)
 
 instance IsPrefixImage sais nmfmts =>
 	BindingAndArrayElemImage
 		('Layout.Image ('(nm, fmt) ': nmfmts) : bts)
-		('(a, fmt, nm, b) ': sais) where
+		('(a, nm, fmt, b) ': sais) where
 	bindingAndArrayElemImage b a = (b, a)
 
 instance BindingAndArrayElemImage bts sais =>

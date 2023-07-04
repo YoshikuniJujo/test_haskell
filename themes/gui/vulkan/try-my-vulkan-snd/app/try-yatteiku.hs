@@ -439,7 +439,7 @@ instance KObj.IsImage MyImage where
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded sm si nm fmt ->
-	(forall s . Vk.ImgView.I Vk.T.FormatR8g8b8a8Unorm nm s -> IO a) -> IO a
+	(forall s . Vk.ImgView.I nm Vk.T.FormatR8g8b8a8Unorm s -> IO a) -> IO a
 makeImageView dvc bimg f =
 	Vk.ImgView.createNew dvc imgViewCreateInfo nil' \imgView -> do
 		putStrLn $ "imgView: " ++ show imgView
@@ -470,7 +470,7 @@ makeImageView dvc bimg f =
 						0,
 					Vk.Img.subresourceRangeLayerCount = 1 } }
 
-makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I fmt nm si ->
+makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I nm fmt si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
 makeFramebuffer dvc rp iv f =
 	Vk.Framebuffer.createNew @'Nothing dvc frameBufCreateInfo nil' f

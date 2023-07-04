@@ -505,14 +505,14 @@ chooseSwapExtent win caps
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
-	(forall si . HeteroParList.PL (Vk.ImgVw.I fmt nm) si -> IO a) -> IO a
+	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
 createImageViews _dvc [] f = f HeteroParList.Nil
 createImageViews dvc (sci : scis) f =
 	createImageView dvc sci Vk.Img.AspectColorBit 1 \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :** scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis -> IO ()
+	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil' iv >>
@@ -524,14 +524,14 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags -> Word32 ->
-	(forall siv . Vk.ImgVw.I ivfmt nm siv -> IO a) -> IO a
+	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg asps mplvs f =
 	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps mplvs) nil' f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
-	Vk.ImgVw.I ivfmt nm s -> Word32 -> IO ()
+	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO ()
 recreateImageView dvc timg asps iv mplvs =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps mplvs) nil' iv
 
@@ -832,7 +832,7 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I fmt nm) sis ->
+	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.ImgVw.I dptfmt dptnm siv ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
@@ -843,7 +843,7 @@ createFramebuffers dvc sce rp (iv :** ivs) divw f =
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 		Vk.ImgVw.I dptfmt dptnm sdiv ->
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO ()
 
@@ -858,11 +858,11 @@ instance RecreateFramebuffers sis sfs =>
 		recreateFramebuffers dvc sce rp scivs divw fbs
 
 mkFramebufferCreateInfo ::
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I fmt nm si ->
-	Vk.ImgVw.I dptfmt dptnm sdiv ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
+	Vk.ImgVw.I dptnm dptfmt sdiv ->
 	Vk.Frmbffr.CreateInfoNew 'Nothing sr
-		'[ '(fmt, nm, si), '(dptfmt, dptnm, sdiv)]
---	Vk.Frmbffr.CreateInfoNew () sr fmt nm '[si, sdiv]
+		'[ '(nm, fmt, si), '(dptnm, dptfmt, sdiv)]
+--	Vk.Frmbffr.CreateInfoNew () sr nm fmt '[si, sdiv]
 mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
 	Vk.Frmbffr.createInfoNextNew = TMaybe.N,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
@@ -891,7 +891,7 @@ createDepthResources ::
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
-		Vk.ImgVw.I fmt nm siv ->
+		Vk.ImgVw.I nm fmt siv ->
 		IO a) -> IO a
 createDepthResources phdvc dvc gq cp ext f = do
 	fmt <- findDepthFormat phdvc
@@ -915,7 +915,7 @@ recreateDepthResources :: Vk.T.FormatToValue fmt =>
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] ->
-	Vk.ImgVw.I fmt nm sdiv -> IO ()
+	Vk.ImgVw.I nm fmt sdiv -> IO ()
 recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 	print ext
 	recreateImage phdvc dvc
@@ -1406,7 +1406,7 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 
 createDescriptorSet ::
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.ImgVw.I 'Vk.T.FormatR8g8b8a8Srgb "texture" siv  -> Vk.Smplr.S ss ->
+	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss ->
 	Vk.DscSetLyt.L sdsc '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
@@ -1441,9 +1441,9 @@ descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite1 ::
-	Vk.DscSet.D sds slbts -> Vk.ImgVw.I fmt nm si -> Vk.Smplr.S ss ->
+	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
 	Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
+		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ])
 descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1646,7 +1646,7 @@ mainLoop :: (
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.Extent2d ->
-	HeteroParList.PL (Vk.ImgVw.I scfmt nm) ss ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1657,7 +1657,7 @@ mainLoop :: (
 	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I dptfmt "depth-buffer" sdiv ->
+	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word32 ""] ->
@@ -1684,7 +1684,7 @@ runLoop :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.Extent2d ->
-	HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
@@ -1692,7 +1692,7 @@ runLoop :: (
 	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I dptfmt "depth-buffer" sdiv ->
+	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPool.C sc ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
@@ -1794,7 +1794,7 @@ catchAndRecreate :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
-	HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1803,7 +1803,7 @@ catchAndRecreate :: (
 	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I dptfmt "depth-buffer" sdiv ->
+	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPool.C sc ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
@@ -1821,7 +1821,7 @@ recreateSwapChainEtc :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.SNew ssc scfmt -> HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+	Vk.Khr.Swapchain.SNew ssc scfmt -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1830,7 +1830,7 @@ recreateSwapChainEtc :: (
 	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I dptfmt "depth-buffer" sdiv ->
+	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPool.C sc ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	IO Vk.Extent2d

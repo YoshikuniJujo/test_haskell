@@ -453,7 +453,7 @@ chooseSwapSurfaceFormat = \case
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
-	(forall s . HL.PL (Vk.ImgVw.I fmt nm) s -> IO a) -> IO a
+	(forall s . HL.PL (Vk.ImgVw.I nm fmt) s -> IO a) -> IO a
 createImageViews _ [] f = f HL.Nil
 createImageViews dv (sci : scis) f =
 	createImageView dv sci Vk.Img.AspectColorBit \sciv ->
@@ -462,13 +462,13 @@ createImageViews dv (sci : scis) f =
 createImageView :: forall ivfmt sd si sm nm ifmt a . Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
-	(forall siv . Vk.ImgVw.I ivfmt nm siv -> IO a) -> IO a
+	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dv img asps =
 	Vk.ImgVw.createNew dv (imageViewCreateInfo img asps) nil'
 
 recreateImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
-	HL.PL (Vk.ImgVw.I fmt nm) sis -> IO ()
+	HL.PL (Vk.ImgVw.I nm fmt) sis -> IO ()
 recreateImageViews _dv [] HL.Nil = pure ()
 recreateImageViews dv (sci : scis) (iv :** ivs) =
 	recreateImageView dv sci Vk.Img.AspectColorBit iv >>
@@ -478,7 +478,7 @@ recreateImageViews _ _ _ =
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
-	Vk.Img.AspectFlags -> Vk.ImgVw.I ivfmt nm s -> IO ()
+	Vk.Img.AspectFlags -> Vk.ImgVw.I nm ivfmt s -> IO ()
 recreateImageView dv img asps iv =
 	Vk.ImgVw.recreateNew dv (imageViewCreateInfo img asps) nil' iv
 
@@ -775,7 +775,7 @@ createCommandPool dv qfs = Vk.CmdPl.create dv crInfo nil'
 type DepthResources sb sm nm fmt sdiv = (
 	Vk.Img.Binded sm sb nm fmt,
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)],
-	Vk.ImgVw.I fmt nm sdiv )
+	Vk.ImgVw.I nm fmt sdiv )
 
 createDepthResources :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
@@ -961,7 +961,7 @@ beginSingleTimeCommands dv gq cp cmds =
 		Vk.submitInfoSignalSemaphores = HL.Nil }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HL.PL (Vk.ImgVw.I fmt nm) sis ->
+	Vk.RndrPss.R sr -> HL.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.ImgVw.I dfmt dnm siv ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HL.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
@@ -972,7 +972,7 @@ createFramebuffers dv sce rp (iv :** ivs) dptiv f =
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPss.R sr -> HL.PL (Vk.ImgVw.I scfmt nm) sis ->
+		Vk.RndrPss.R sr -> HL.PL (Vk.ImgVw.I nm scfmt) sis ->
 		Vk.ImgVw.I dfmt dnm sdiv -> HL.PL Vk.Frmbffr.F sfs ->
 		IO ()
 
@@ -987,9 +987,9 @@ instance RecreateFramebuffers sis sfs =>
 		recreateFramebuffers dv sce rp scivs dptiv fbs
 
 framebufferInfo ::
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I fmt nm si ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.ImgVw.I dfmt dnm sdiv ->
-	Vk.Frmbffr.CreateInfoNew 'Nothing sr '[ '(fmt, nm, si), '(dfmt, dnm, sdiv)]
+	Vk.Frmbffr.CreateInfoNew 'Nothing sr '[ '(nm, fmt, si), '(dfmt, dnm, sdiv)]
 framebufferInfo Vk.Extent2d {
 	Vk.extent2dWidth = w, Vk.extent2dHeight = h } rp attch dpt =
 	Vk.Frmbffr.CreateInfoNew {
@@ -1208,7 +1208,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d ->
-	HL.PL (Vk.ImgVw.I scfmt nm) sis -> Vk.RndrPss.R sr ->
+	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
@@ -1237,7 +1237,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d ->
-	HL.PL (Vk.ImgVw.I scfmt nm) sis -> Vk.RndrPss.R sr ->
+	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
@@ -1264,7 +1264,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
-	HL.PL (Vk.ImgVw.I scfmt nm) sis -> Vk.RndrPss.R sr ->
+	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(s, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1284,7 +1284,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
-	HL.PL (Vk.ImgVw.I scfmt nm) sis -> Vk.RndrPss.R sr ->
+	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]

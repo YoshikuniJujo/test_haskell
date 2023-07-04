@@ -28,7 +28,7 @@ import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.ImageView.Middle as M
 
-newtype I (fmt :: T.Format) (nm :: Symbol) si = I M.I deriving Show
+newtype I (nm :: Symbol) (fmt :: T.Format) si = I M.I deriving Show
 
 data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M n,
@@ -61,7 +61,7 @@ createNew :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall siv . I ivfmt nm siv -> IO a) -> IO a
+	(forall siv . I nm ivfmt siv -> IO a) -> IO a
 createNew (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
@@ -72,7 +72,7 @@ recreateNew :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	I ivfmt nm s -> IO ()
+	I nm ivfmt s -> IO ()
 recreateNew (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (I i) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macc i

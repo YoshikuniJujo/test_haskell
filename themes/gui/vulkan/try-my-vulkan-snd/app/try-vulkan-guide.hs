@@ -491,14 +491,14 @@ chooseSwapExtent win caps
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
-	(forall si . HeteroParList.PL (Vk.ImgVw.I fmt nm) si -> IO a) -> IO a
+	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
 createImageViews _dvc [] f = f HeteroParList.Nil
 createImageViews dvc (sci : scis) f =
 	createImageView dvc sci Vk.Img.AspectColorBit \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :** scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis -> IO ()
+	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit) nil' iv >>
@@ -510,14 +510,14 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
-	(forall siv . Vk.ImgVw.I ivfmt nm siv -> IO a) -> IO a
+	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg asps f =
 	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps) nil' f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
-	Vk.ImgVw.I ivfmt nm s -> IO ()
+	Vk.ImgVw.I nm ivfmt s -> IO ()
 recreateImageView dvc timg asps iv =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps) nil' iv
 
@@ -815,7 +815,7 @@ createDepthResources ::
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mem.M sm
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
-		Vk.ImgVw.I fmt nm siv ->
+		Vk.ImgVw.I nm fmt siv ->
 		IO a) -> IO a
 createDepthResources phdvc dvc gq cp ext f = do
 	fmt <- findDepthFormat phdvc
@@ -839,7 +839,7 @@ recreateDepthResources :: Vk.T.FormatToValue fmt =>
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] ->
-	Vk.ImgVw.I fmt nm sdiv -> IO ()
+	Vk.ImgVw.I nm fmt sdiv -> IO ()
 recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 	print ext
 	recreateImage phdvc dvc
@@ -854,7 +854,7 @@ type DepthResources sb sm nm fmt sdiv = (
 	Vk.Img.Binded sm sb nm fmt,
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)],
-	Vk.ImgVw.I fmt nm sdiv )
+	Vk.ImgVw.I nm fmt sdiv )
 
 findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
 findDepthFormat phdvc = findSupportedFormat phdvc
@@ -1056,7 +1056,7 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I fmt nm) sis ->
+	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.ImgVw.I dptfmt dptnm siv ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
@@ -1067,7 +1067,7 @@ createFramebuffers dvc sce rp (iv :** ivs) dptiv f =
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 		Vk.ImgVw.I dptfmt dptnm sdiv ->
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO ()
 
@@ -1082,10 +1082,10 @@ instance RecreateFramebuffers sis sfs =>
 		recreateFramebuffers dvc sce rp scivs dptiv fbs
 
 mkFramebufferCreateInfo ::
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I fmt nm si ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.ImgVw.I dptfmt dptnm sdiv ->
 	Vk.Frmbffr.CreateInfoNew 'Nothing sr
-		'[ '(fmt, nm, si), '(dptfmt, dptnm, sdiv)]
+		'[ '(nm, fmt, si), '(dptfmt, dptnm, sdiv)]
 mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
 	Vk.Frmbffr.createInfoNextNew = TMaybe.N,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
@@ -1592,7 +1592,7 @@ mainLoop :: (
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.Extent2d ->
-	HeteroParList.PL (Vk.ImgVw.I scfmt nm) ss ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[ '(s, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1649,7 +1649,7 @@ runLoop :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.Extent2d ->
-	HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
@@ -1777,7 +1777,7 @@ catchAndRecreate :: (
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
-	HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
@@ -1813,7 +1813,7 @@ recreateSwapchainEtc :: (
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
-	HeteroParList.PL (Vk.ImgVw.I scfmt nm) sis ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[

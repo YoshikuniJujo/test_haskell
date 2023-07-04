@@ -115,7 +115,7 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
 
 data WriteSourcesArg
-	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
+	= WriteSourcesArgImage [(Type, Symbol, T.Format, Type)]
 	| WriteSourcesArgBuffer [(Type, Type, Symbol, VObj.Object)]
 	| WriteSourcesArgBufferView [(Type, Symbol, Type)]
 	| WriteSourcesArgInNext
