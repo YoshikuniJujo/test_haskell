@@ -18,6 +18,8 @@ import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 
+-- * BUFFER
+
 class BindingAndArrayElem
 	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
@@ -27,27 +29,27 @@ instance BindingAndArrayElem bts (oo ': os) =>
 	bindingAndArrayElem c = (a + 1, b - c) where
 		(a, b) = bindingAndArrayElem @bts @(oo ': os) 0
 
-instance TList.IsPrefixOf os os' => BindingAndArrayElem
+instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.StaticObject algn 'Nothing ot t ': os') ': bts)
 		(VObj.StaticObject algn ('Just _nm) ot t ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance TList.IsPrefixOf os os' => BindingAndArrayElem
+instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.StaticObject algn ('Just _nm) ot t ': os') ': bts)
 		(VObj.StaticObject algn 'Nothing ot t ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance TList.IsPrefixOf os os' => BindingAndArrayElem
+instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.DynamicObject n algn 'Nothing ot t ': os') ': bts)
 		(VObj.DynamicObject n algn ('Just _nm) ot t ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance TList.IsPrefixOf os os' => BindingAndArrayElem
+instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.DynamicObject n algn ('Just _nm) ot t ': os') ': bts)
 		(VObj.DynamicObject n algn 'Nothing ot t ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance TList.IsPrefixOf os os' => BindingAndArrayElem
+instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (o ': os') ': bts) (o ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
@@ -58,6 +60,31 @@ instance {-# OVERLAPPABLE #-}
 	bindingAndArrayElem c = (+ 1) `second`
 		(bindingAndArrayElem
 			@('Layout.Buffer os' ': bts) @(oo ': os) $ c + 1)
+
+class IsPrefixObject (objs :: [VObj.Object]) (objs' :: [VObj.Object])
+
+instance IsPrefixObject '[] objs'
+
+instance IsPrefixObject objs objs' => IsPrefixObject
+		(VObj.StaticObject algn 'Nothing ot t ': objs)
+		(VObj.StaticObject algn ('Just _nm) ot t ': objs')
+
+instance IsPrefixObject objs objs' => IsPrefixObject
+		(VObj.StaticObject algn ('Just _nm) ot t ': objs)
+		(VObj.StaticObject algn 'Nothing ot t ': objs')
+
+instance IsPrefixObject objs objs' => IsPrefixObject
+		(VObj.DynamicObject n algn 'Nothing ot t ': objs)
+		(VObj.DynamicObject n algn ('Just _nm) ot t ': objs')
+
+instance IsPrefixObject objs objs' => IsPrefixObject
+		(VObj.DynamicObject n algn ('Just _nm) ot t ': objs)
+		(VObj.DynamicObject n algn 'Nothing ot t ': objs')
+
+instance IsPrefixObject objs objs' =>
+	IsPrefixObject (obj ': objs) (obj ': objs')
+
+-- * IMAGE
 
 class BindingAndArrayElemImage
 	(bts :: [Layout.BindingType])
@@ -88,6 +115,8 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemImage bts sais =>
 	BindingAndArrayElemImage (bt ': bts) sais where
 	bindingAndArrayElemImage b _ = bindingAndArrayElemImage @bts @sais (b + 1) 0
+
+-- * BUFFER VIEW
 
 class BindingAndArrayElemBufferView
 	(bt :: [Layout.BindingType])
