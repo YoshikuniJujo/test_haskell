@@ -17,7 +17,7 @@ module Gpu.Vulkan.DescriptorSet.Write (
 	Write(..), WriteListToMiddle(..), WriteListUpdateDynamicLengths(..),
 	WriteSources(..), WriteSourcesArg(..), WriteSourcesToMiddle,
 
-	WriteUpdateDynamicLengths
+	WriteSourcesUpdateDynamicLengths
 
 	) where
 
@@ -89,27 +89,31 @@ instance WriteListUpdateDynamicLengths '[] where
 instance (
 	WriteListUpdateDynamicLengths writeArgs,
 
-	WriteUpdateDynamicLengths slbts writeSourcesArg
+	WriteSourcesUpdateDynamicLengths slbts writeSourcesArg
 	) =>
 	WriteListUpdateDynamicLengths
 		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
 	writeListUpdateDynamicLength (U4 w :** ws) =
 		writeUpdateDynamicLength w >> writeListUpdateDynamicLength ws
 
-class WriteUpdateDynamicLengths slbts sbsmobjsobjs where
-	writeUpdateDynamicLength :: Write n s slbts sbsmobjsobjs -> IO ()
+writeUpdateDynamicLength ::
+	WriteSourcesUpdateDynamicLengths slbts sbsmobjsobjs =>
+	Write n s slbts sbsmobjsobjs -> IO ()
+writeUpdateDynamicLength Write { writeDstSet = ds, writeSources = ws } =
+	writeSourcesUpdateDynamicLength ds ws
+
+class WriteSourcesUpdateDynamicLengths slbts arg where
+	writeSourcesUpdateDynamicLength :: D sds slbts -> WriteSources arg -> IO ()
 
 instance (
 	UpdateDynamicLength (TIndex.I1_2 slbts) (TMapIndex.M3_4 foo),
 	HeteroParList.Map3_4 foo ) =>
-	WriteUpdateDynamicLengths slbts (WriteSourcesArgBuffer foo) where
-	writeUpdateDynamicLength Write {
-		writeDstSet = D rlns _,
-		writeSources = (BufferInfos bis) } = do
+	WriteSourcesUpdateDynamicLengths slbts (WriteSourcesArgBuffer foo) where
+	writeSourcesUpdateDynamicLength (D rlns _) (BufferInfos bis) = do
 		lns <- readIORef rlns
 		(writeIORef rlns . updateDynamicLength @(TIndex.I1_2 slbts) @(TMapIndex.M3_4 foo) lns
 			. (VObj.onlyDynamicLength @(TMapIndex.M3_4 foo)))
 			(writeSourcesToLengthListBuffer @foo bis)
 
-instance {-# OVERLAPPABLE #-} WriteUpdateDynamicLengths slbts foo where
-	writeUpdateDynamicLength _ = pure ()
+instance {-# OVERLAPPABLE #-} WriteSourcesUpdateDynamicLengths slbts foo where
+	writeSourcesUpdateDynamicLength _ _ = pure ()
