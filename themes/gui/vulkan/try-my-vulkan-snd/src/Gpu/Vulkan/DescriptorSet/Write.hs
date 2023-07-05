@@ -29,7 +29,7 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.DescriptorSet.Type
-import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
+import Gpu.Vulkan.DescriptorSet.UpdateDynamicLengths
 
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M

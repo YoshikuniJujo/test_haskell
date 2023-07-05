@@ -31,8 +31,8 @@ import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Descriptor.Internal qualified as Descriptor
 import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
 
-import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
+import Gpu.Vulkan.DescriptorSet.UpdateDynamicLengths
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 

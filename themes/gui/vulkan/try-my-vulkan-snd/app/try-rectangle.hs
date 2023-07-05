@@ -139,7 +139,7 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
-import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Common as Vk.DscSet.T
+import qualified Gpu.Vulkan.DescriptorSet.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem as Vk.DscSet.T
 
 import Tools
