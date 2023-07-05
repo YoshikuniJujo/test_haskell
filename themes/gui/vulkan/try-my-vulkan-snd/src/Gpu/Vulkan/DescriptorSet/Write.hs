@@ -23,17 +23,12 @@ module Gpu.Vulkan.DescriptorSet.Write (
 
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
-import Data.IORef
-import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Tuple.Index qualified as TIndex
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList.Tuple as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.DescriptorSet.Type
-import Gpu.Vulkan.DescriptorSet.UpdateDynamicLengths
 
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
@@ -101,19 +96,3 @@ writeUpdateDynamicLength ::
 	Write n s slbts sbsmobjsobjs -> IO ()
 writeUpdateDynamicLength Write { writeDstSet = ds, writeSources = ws } =
 	writeSourcesUpdateDynamicLength ds ws
-
-class WriteSourcesUpdateDynamicLengths slbts arg where
-	writeSourcesUpdateDynamicLength :: D sds slbts -> WriteSources arg -> IO ()
-
-instance (
-	UpdateDynamicLength (TIndex.I1_2 slbts) (TMapIndex.M3_4 foo),
-	HeteroParList.Map3_4 foo ) =>
-	WriteSourcesUpdateDynamicLengths slbts (WriteSourcesArgBuffer foo) where
-	writeSourcesUpdateDynamicLength (D rlns _) (BufferInfos bis) = do
-		lns <- readIORef rlns
-		(writeIORef rlns . updateDynamicLength @(TIndex.I1_2 slbts) @(TMapIndex.M3_4 foo) lns
-			. (VObj.onlyDynamicLength @(TMapIndex.M3_4 foo)))
-			(writeSourcesToLengthListBuffer @foo bis)
-
-instance {-# OVERLAPPABLE #-} WriteSourcesUpdateDynamicLengths slbts foo where
-	writeSourcesUpdateDynamicLength _ _ = pure ()

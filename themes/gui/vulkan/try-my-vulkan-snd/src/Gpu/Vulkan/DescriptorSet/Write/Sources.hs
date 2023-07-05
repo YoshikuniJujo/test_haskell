@@ -16,7 +16,7 @@ module Gpu.Vulkan.DescriptorSet.Write.Sources (
 
 	BufferInfoListToMiddleNew,
 
-	writeSourcesToLengthListBuffer
+	WriteSourcesUpdateDynamicLengths(..),
 
 	) where
 
@@ -29,6 +29,7 @@ import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList.Tuple qualified as HeteroParList
 import Data.Word
+import Data.IORef
 
 import Gpu.Vulkan.Object qualified as VObj
 
@@ -37,6 +38,7 @@ import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Descriptor.Internal qualified as Descriptor
 import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
 
+import Gpu.Vulkan.DescriptorSet.Type
 import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
 import Gpu.Vulkan.DescriptorSet.UpdateDynamicLengths
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
@@ -147,13 +149,29 @@ instance BufferViewsToMiddle bvs =>
 	bufferViewsToMiddle (U3 (BufferView.B mbv) :** bvs) =
 		mbv : bufferViewsToMiddle bvs
 
-writeSourcesToLengthListBuffer :: HeteroParList.Map3_4 ss =>
+writeSourcesUpdateDynamicLengths :: HeteroParList.Map3_4 ss =>
 	HeteroParList.PL (U4 Descriptor.BufferInfo) ss ->
 	HeteroParList.PL VObj.ObjectLength (TMapIndex.M3_4 ss)
-writeSourcesToLengthListBuffer bis =
+writeSourcesUpdateDynamicLengths bis =
 	HeteroParList.map3_4 (toLength . unU4) bis
 	where
 	toLength :: Descriptor.BufferInfo sm sb nm obj ->
 		VObj.ObjectLength obj
 	toLength (Descriptor.BufferInfo (Buffer.Binded lns _)) =
 		HeteroParList.typeIndex lns
+
+class WriteSourcesUpdateDynamicLengths slbts arg where
+	writeSourcesUpdateDynamicLength :: D sds slbts -> WriteSources arg -> IO ()
+
+instance (
+	UpdateDynamicLength (TIndex.I1_2 slbts) (TMapIndex.M3_4 foo),
+	HeteroParList.Map3_4 foo ) =>
+	WriteSourcesUpdateDynamicLengths slbts (WriteSourcesArgBuffer foo) where
+	writeSourcesUpdateDynamicLength (D rlns _) (BufferInfos bis) = do
+		lns <- readIORef rlns
+		(writeIORef rlns . updateDynamicLength @(TIndex.I1_2 slbts) @(TMapIndex.M3_4 foo) lns
+			. (VObj.onlyDynamicLength @(TMapIndex.M3_4 foo)))
+			(writeSourcesUpdateDynamicLengths @foo bis)
+
+instance {-# OVERLAPPABLE #-} WriteSourcesUpdateDynamicLengths slbts foo where
+	writeSourcesUpdateDynamicLength _ _ = pure ()
