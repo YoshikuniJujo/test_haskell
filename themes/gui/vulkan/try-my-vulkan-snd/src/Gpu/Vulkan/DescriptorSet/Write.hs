@@ -82,10 +82,8 @@ instance WriteListUpdateDynamicLengths '[] where
 	writeListUpdateDynamicLength HeteroParList.Nil = pure ()
 
 instance (
-	WriteListUpdateDynamicLengths writeArgs,
-
-	WriteSourcesUpdateDynamicLengths slbts writeSourcesArg
-	) =>
+	WriteSourcesUpdateDynamicLengths slbts writeSourcesArg,
+	WriteListUpdateDynamicLengths writeArgs ) =>
 	WriteListUpdateDynamicLengths
 		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
 	writeListUpdateDynamicLength (U4 w :** ws) =
