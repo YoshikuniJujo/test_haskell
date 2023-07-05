@@ -12,7 +12,11 @@
 module Gpu.Vulkan.DescriptorSet.Write.Sources (
 	WriteSources(..), DstBinding, DstArrayElement, DescriptorCount,
 	WriteSourcesArg(..),
-	WriteSourcesToMiddle(..), WriteSourcesToLengthList(..) ) where
+	WriteSourcesToMiddle(..), WriteSourcesToLengthList(..),
+
+	BufferInfoListToMiddleNew
+
+	) where
 
 import GHC.TypeLits
 import Data.Kind
