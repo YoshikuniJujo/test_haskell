@@ -166,7 +166,10 @@ getCopyArgsNew _ = let
 	(db, dae) = Copy.bindingAndArrayElement @btsd @bts @id in
 	(sb, sae, db, dae, Copy.bindingLength @bts)
 
-updateDs :: (W.WriteListToMiddle writeArgs, CopyListToMiddle copyArgs) =>
+updateDs :: (
+	W.WriteListToMiddle writeArgs,
+	W.WriteListToMiddleFoo writeArgs,
+	CopyListToMiddle copyArgs) =>
 	Device.D sd ->
 	HeteroParList.PL (U4 W.Write) writeArgs ->
 	HeteroParList.PL (U8 Copy) copyArgs  -> IO ()

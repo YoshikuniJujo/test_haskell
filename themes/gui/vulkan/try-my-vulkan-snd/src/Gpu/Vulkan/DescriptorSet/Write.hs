@@ -14,7 +14,7 @@ module Gpu.Vulkan.DescriptorSet.Write (
 
 	-- * WRITE
 
-	Write(..), WriteListToMiddle(..),
+	Write(..), WriteListToMiddle(..), WriteListToMiddleFoo(..),
 	WriteSources(..), WriteSourcesArg(..), WriteSourcesToMiddle,
 
 	) where
@@ -25,7 +25,9 @@ import Data.IORef
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList.Tuple as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.DescriptorSet.Type
@@ -47,24 +49,17 @@ class M.WriteListToCore (TMapIndex.M0_4 writeArgs) =>
 	writeListToMiddle ::
 		HeteroParList.PL (U4 Write) writeArgs ->
 		HeteroParList.PL M.Write (TMapIndex.M0_4 writeArgs)
-	writeListUpdateDynamicLength ::
-		HeteroParList.PL (U4 Write) writeArgs -> IO ()
 
 instance WriteListToMiddle '[] where
 	writeListToMiddle HeteroParList.Nil = HeteroParList.Nil
-	writeListUpdateDynamicLength HeteroParList.Nil = pure ()
 
 instance (
-	WithPoked (TMaybe.M mn),
-	WriteSourcesToMiddle '(sl, bts) writeSourcesArg,
-	UpdateDynamicLength bts (WriteSourcesObjectList writeSourcesArg),
+	WithPoked (TMaybe.M mn), WriteSourcesToMiddle slbts writeSourcesArg,
 	WriteListToMiddle writeArgs ) =>
 	WriteListToMiddle
-		('(mn, sds, '(sl, bts), writeSourcesArg) ': writeArgs) where
+		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
 	writeListToMiddle (U4 w :** ws) =
 		writeToMiddle w :** writeListToMiddle ws
-	writeListUpdateDynamicLength (U4 w :** ws) =
-		writeUpdateDynamicLength w >> writeListUpdateDynamicLength ws
 
 writeToMiddle :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n s slbts wsa -> M.Write n
@@ -82,16 +77,37 @@ writeToMiddle Write {
 		M.writeSources = srcs' }
 	where ((bdg, ae), srcs') = writeSourcesToMiddle @slbts srcs
 
-writeUpdateDynamicLength :: forall sbsmobjsobjs n s sl bts . (
-	WriteSourcesToLengthList sbsmobjsobjs,
-	UpdateDynamicLength bts (WriteSourcesObjectList sbsmobjsobjs)
+class WriteListToMiddleFoo writeArgs where
+	writeListUpdateDynamicLength ::
+		HeteroParList.PL (U4 Write) writeArgs -> IO ()
+
+instance WriteListToMiddleFoo '[] where
+	writeListUpdateDynamicLength HeteroParList.Nil = pure ()
+
+instance (
+	WriteListToMiddleFoo writeArgs,
+
+	WriteUpdateDynamicLengths slbts writeSourcesArg
 	) =>
-	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
-writeUpdateDynamicLength Write {
-	writeDstSet = D rlns _,
-	writeSources = ws } = do
-	lns <- readIORef rlns
-	maybe	(pure ())
-		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesObjectList sbsmobjsobjs) lns
-			. (VObj.onlyDynamicLength @(WriteSourcesObjectList sbsmobjsobjs)))
-		(writeSourcesToLengthList @sbsmobjsobjs ws)
+	WriteListToMiddleFoo
+		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
+	writeListUpdateDynamicLength (U4 w :** ws) =
+		writeUpdateDynamicLength w >> writeListUpdateDynamicLength ws
+
+class WriteUpdateDynamicLengths slbts sbsmobjsobjs where
+	writeUpdateDynamicLength :: Write n s slbts sbsmobjsobjs -> IO ()
+
+instance (
+	UpdateDynamicLength (TIndex.I1_2 slbts) (TMapIndex.M3_4 foo),
+	HeteroParList.Map3_4 foo ) =>
+	WriteUpdateDynamicLengths slbts (WriteSourcesArgBuffer foo) where
+	writeUpdateDynamicLength Write {
+		writeDstSet = D rlns _,
+		writeSources = (BufferInfos bis) } = do
+		lns <- readIORef rlns
+		(writeIORef rlns . updateDynamicLength @(TIndex.I1_2 slbts) @(TMapIndex.M3_4 foo) lns
+			. (VObj.onlyDynamicLength @(TMapIndex.M3_4 foo)))
+			(writeSourcesToLengthListBuffer @foo bis)
+
+instance {-# OVERLAPPABLE #-} WriteUpdateDynamicLengths slbts foo where
+	writeUpdateDynamicLength _ = pure ()
