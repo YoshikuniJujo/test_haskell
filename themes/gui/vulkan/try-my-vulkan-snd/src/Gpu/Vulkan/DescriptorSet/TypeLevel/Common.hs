@@ -23,9 +23,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 
 import qualified Gpu.Vulkan.TypeEnum as T
 
-class VObj.OnlyDynamicLengths objs =>
-	UpdateDynamicLength
-		(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) where
+class VObj.OnlyDynamicLengths objs => UpdateDynamicLength bts objs where
 	updateDynamicLength ::
 		HeteroParList.PL
 			(HeteroParList.PL KObj.ObjectLength)
@@ -36,30 +34,49 @@ class VObj.OnlyDynamicLengths objs =>
 			(HeteroParList.PL KObj.ObjectLength)
 			(Layout.BindingTypeListBufferOnlyDynamics bts)
 
-instance UpdateDynamicLength _bts '[] where updateDynamicLength a _ = a
+instance UpdateDynamicLength _bts '[] where updateDynamicLength x _ = x
+
+instance UpdateDynamicLength bts (o ': os) =>
+	UpdateDynamicLength ('Layout.Buffer '[] ': bts) (o ': os) where
+	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
+		HeteroParList.Nil :** updateDynamicLength @bts @(o ': os) lnss lns
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
-		('Layout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
-		(VObj.Atom algn t ('Just nm) ': os) where
+		('Layout.Buffer (VObj.StaticObject algn 'Nothing ot t ': os') ': bts)
+		(VObj.StaticObject algn ('Just _nm) ot t ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
-		('Layout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
-		(VObj.Atom algn t 'Nothing ': os) where
+		('Layout.Buffer (VObj.StaticObject algn ('Just _nm) ot t ': os') ': bts)
+		(VObj.StaticObject algn 'Nothing ot t ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
-instance {-# OVERLAPPABLE #-} (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
+instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
+	UpdateDynamicLength
+		('Layout.Buffer (VObj.DynamicObject n algn 'Nothing ot t ': os') ': bts)
+		(VObj.DynamicObject n algn ('Just _nm) ot t ': os) where
+	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
+		(KObj.adjustDynamicLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
+
+instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
+	UpdateDynamicLength
+		('Layout.Buffer (VObj.DynamicObject n algn ('Just _nm) ot t ': os') ': bts)
+		(VObj.DynamicObject n algn 'Nothing ot t ': os) where
+	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
+		(KObj.adjustDynamicLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
+
+instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
 		('Layout.Buffer (VObj.Static o ': os') ': bts)
 		(VObj.Static o ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
-instance {-# OVERLAPPABLE #-} (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
+instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
 		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts)
 		(VObj.Dynamic n o ': os) where
@@ -85,27 +102,24 @@ instance {-# OVERLAPPABLE #-}
 			@('Layout.Buffer os' ': bts) @(oo ': os) (lns' :** lnss) lns in
 		(ln :** ls') :** lss
 
-instance {-# OVERLAPPABLE #-}
-	UpdateDynamicLength bts (oo ': os) =>
-	UpdateDynamicLength
-		('Layout.Buffer '[] ': bts) (oo ': os) where
-	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
-		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) lnss lns
-
 class UpdateDynamicLengthPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
 	updateDynamicLengthPrefix ::
 		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs') ->
 		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs) ->
 		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs')
 
-instance UpdateDynamicLengthPrefix '[] objs where updateDynamicLengthPrefix lns _ = lns
+instance UpdateDynamicLengthPrefix '[] objs where
+	updateDynamicLengthPrefix lns _ = lns
 
 instance UpdateDynamicLengthPrefix os os' =>
-	UpdateDynamicLengthPrefix (VObj.Static o : os) (VObj.Static o : os') where
-	updateDynamicLengthPrefix lns' lns  = updateDynamicLengthPrefix @os @os' lns' lns
+	UpdateDynamicLengthPrefix
+		(VObj.Static o : os) (VObj.Static o : os') where
+	updateDynamicLengthPrefix lns' lns  =
+		updateDynamicLengthPrefix @os @os' lns' lns
 
 instance UpdateDynamicLengthPrefix os os' =>
-	UpdateDynamicLengthPrefix (VObj.Dynamic n o : os) (VObj.Dynamic n o : os') where
+	UpdateDynamicLengthPrefix
+		(VObj.Dynamic n o : os) (VObj.Dynamic n o : os') where
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns) =
 		ln :** updateDynamicLengthPrefix @os @os' lns' lns
 

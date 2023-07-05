@@ -19,7 +19,9 @@ module Data.Kind.Object (
 
 	IsImage(..),
 
-	Atom, List, Image
+	Atom, List, Image,
+
+	adjustDynamicLength
 	) where
 
 import GHC.TypeLits
@@ -48,16 +50,22 @@ type Image algn t nm = 'Object algn ('Just nm) ImageT t
 type Alignment = Nat
 
 data ObjectLength (obj :: Object) where
-	ObjectLengthAtom :: ObjectLength (Atom _algn t nm)
-	ObjectLengthList :: Int -> ObjectLength (List _algn t nm)
+	ObjectLengthAtom :: ObjectLength (Atom algn t nm)
+	ObjectLengthList :: Int -> ObjectLength ('Object algn mnm ListT t)
 	ObjectLengthImage :: {
 		objectLengthImageRow :: Int,
 		objectLengthImageWidth :: Int,
 		objectLengthImageHeight :: Int,
-		objectLengthImageDepth :: Int } -> ObjectLength (Image algn t nm)
+		objectLengthImageDepth :: Int } -> ObjectLength ('Object algn mnm ImageT t)
 
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
+
+adjustDynamicLength :: ObjectLength ('Object algn mnm ot t) ->
+	ObjectLength ('Object algn mnm' ot t)
+adjustDynamicLength ObjectLengthAtom = ObjectLengthAtom
+adjustDynamicLength (ObjectLengthList n) = ObjectLengthList n
+adjustDynamicLength (ObjectLengthImage r w h d) = ObjectLengthImage r w h d
 
 type family TypeOfObject obj where
 	TypeOfObject ((Atom _algn t _nm)) = t
