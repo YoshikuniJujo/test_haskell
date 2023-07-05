@@ -24,7 +24,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.TypeEnum as T
 
 class VObj.OnlyDynamicLengths objs =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) where
 	updateDynamicLength ::
 		HeteroParList.PL
@@ -36,49 +36,49 @@ class VObj.OnlyDynamicLengths objs =>
 			(HeteroParList.PL KObj.ObjectLength)
 			(Layout.BindingTypeListBufferOnlyDynamics bts)
 
-instance BindingAndArrayElemFoo _bts '[] where updateDynamicLength a _ = a
+instance UpdateDynamicLength _bts '[] where updateDynamicLength a _ = a
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
 		(VObj.Atom algn t ('Just nm) ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
 		(VObj.Atom algn t 'Nothing ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
 instance {-# OVERLAPPABLE #-} (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer (VObj.Static o ': os') ': bts)
 		(VObj.Static o ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
 instance {-# OVERLAPPABLE #-} (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts)
 		(VObj.Dynamic n o ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
 		(ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer os' ': bts) (oo ': os) =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer (VObj.Static o ': os') ': bts) (oo ': os) where
 	updateDynamicLength lnss lns =
 		updateDynamicLength
 			@('Layout.Buffer os' ': bts) @(oo ': os) lnss lns
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer os' ': bts) (oo ': os) =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength
 		('Layout.Buffer (VObj.Dynamic n o ': os') ': bts) (oo ': os) where
 	updateDynamicLength ((ln :** lns') :** lnss) lns = let
 		ls' :** lss = updateDynamicLength
@@ -86,8 +86,8 @@ instance {-# OVERLAPPABLE #-}
 		(ln :** ls') :** lss
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElemFoo bts (oo ': os) =>
-	BindingAndArrayElemFoo
+	UpdateDynamicLength bts (oo ': os) =>
+	UpdateDynamicLength
 		('Layout.Buffer '[] ': bts) (oo ': os) where
 	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
 		HeteroParList.Nil :** updateDynamicLength @bts @(oo ': os) lnss lns

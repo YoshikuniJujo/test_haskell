@@ -158,7 +158,7 @@ prepareMems :: (
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscSet.BindingAndArrayElem bts '[
 		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ],
-	Vk.DscSet.BindingAndArrayElemFoo bts '[
+	Vk.DscSet.UpdateDynamicLength bts '[
 		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->

@@ -930,7 +930,7 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],
-	Vk.DscSet.T.BindingAndArrayElemFoo
+	Vk.DscSet.T.UpdateDynamicLength
 		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ) =>

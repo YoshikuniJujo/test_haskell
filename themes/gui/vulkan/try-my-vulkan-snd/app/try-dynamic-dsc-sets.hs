@@ -164,7 +164,7 @@ prepareMems :: (
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscSet.BindingAndArrayElem bts '[
 		VObj.DynList 2 256 W1 "",VObj.DynList 2 256 W2 "",VObj.DynList 2 256 W3 "" ],
-	Vk.DscSet.BindingAndArrayElemFoo bts '[
+	Vk.DscSet.UpdateDynamicLength bts '[
 		VObj.DynList 2 256 W1 "",VObj.DynList 2 256 W2 "",VObj.DynList 2 256 W3 "" ] ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .

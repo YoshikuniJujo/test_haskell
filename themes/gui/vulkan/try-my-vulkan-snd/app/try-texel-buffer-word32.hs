@@ -294,7 +294,7 @@ prepareMems ::
 	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)] 0,
 	Vk.DscSet.BindingAndArrayElem bts
 		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	Vk.DscSet.BindingAndArrayElemFoo bts
+	Vk.DscSet.UpdateDynamicLength bts
 		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector MyPixel -> Word32 -> (

@@ -1315,7 +1315,7 @@ instance Update '[] '[] ssmp siv where update _ HeteroParList.Nil HeteroParList.
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
-	Vk.DscSet.T.BindingAndArrayElemFoo (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
+	Vk.DscSet.T.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ssmp siv,
 	Vk.DscSet.WriteSourcesToMiddle '(ds, cs)
 		('Vk.DscSet.WriteSourcesArgImage

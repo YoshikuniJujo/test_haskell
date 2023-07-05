@@ -1318,13 +1318,13 @@ instance (
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj],
 	Vk.DscSet.T.BindingAndArrayElem bods '[ObjDataList],
-	Vk.DscSet.T.BindingAndArrayElemFoo
+	Vk.DscSet.T.UpdateDynamicLength
 		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj],
-	Vk.DscSet.T.BindingAndArrayElemFoo
+	Vk.DscSet.T.UpdateDynamicLength
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj],
-	Vk.DscSet.T.BindingAndArrayElemFoo bods '[ObjDataList],
+	Vk.DscSet.T.UpdateDynamicLength bods '[ObjDataList],
 	Update cmbs lyts odbs lytods ) =>
 	Update (cmb ': cmbs) ('(slyt, bs) ': lyts)
 		(odb ': odbs) ('(slytod, bods) ': lytods) where

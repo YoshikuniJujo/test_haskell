@@ -180,7 +180,7 @@ prepareMems :: (
 	Default (HL.PL (HL.PL KObj.ObjectLength)
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DS.BindingAndArrayElem bts '[Word32List],
-	Vk.DS.BindingAndArrayElemFoo bts '[Word32List] ) =>
+	Vk.DS.UpdateDynamicLength bts '[Word32List] ) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
 	(forall sds sm sb .
 		Vk.DS.D sds '(sl, bts) ->

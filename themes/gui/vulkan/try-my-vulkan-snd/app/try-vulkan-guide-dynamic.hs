@@ -1125,10 +1125,10 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj],
-	Vk.DscSet.T.BindingAndArrayElemFoo
+	Vk.DscSet.T.UpdateDynamicLength
 		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj],
-	Vk.DscSet.T.BindingAndArrayElemFoo
+	Vk.DscSet.T.UpdateDynamicLength
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj],
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where

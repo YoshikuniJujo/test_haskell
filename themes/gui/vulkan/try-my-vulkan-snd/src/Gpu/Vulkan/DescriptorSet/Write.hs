@@ -57,6 +57,7 @@ instance WriteListToMiddle '[] where
 instance (
 	WithPoked (TMaybe.M mn),
 	WriteSourcesToMiddle '(sl, bts) writeSourcesArg,
+	UpdateDynamicLength bts (WriteSourcesObjectList writeSourcesArg),
 	WriteListToMiddle writeArgs ) =>
 	WriteListToMiddle
 		('(mn, sds, '(sl, bts), writeSourcesArg) ': writeArgs) where
@@ -83,7 +84,7 @@ writeToMiddle Write {
 
 writeUpdateDynamicLength :: forall sbsmobjsobjs n s sl bts . (
 	WriteSourcesToLengthList sbsmobjsobjs,
-	BindingAndArrayElemFoo bts (WriteSourcesObjectList sbsmobjsobjs)
+	UpdateDynamicLength bts (WriteSourcesObjectList sbsmobjsobjs)
 	) =>
 	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
 writeUpdateDynamicLength Write {
