@@ -168,7 +168,7 @@ getCopyArgsNew _ = let
 
 updateDs :: (
 	W.WriteListToMiddle writeArgs,
-	W.WriteListToMiddleFoo writeArgs,
+	W.WriteListUpdateDynamicLengths writeArgs,
 	CopyListToMiddle copyArgs) =>
 	Device.D sd ->
 	HeteroParList.PL (U4 W.Write) writeArgs ->

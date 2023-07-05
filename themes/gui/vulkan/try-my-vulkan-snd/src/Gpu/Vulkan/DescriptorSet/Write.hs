@@ -14,8 +14,10 @@ module Gpu.Vulkan.DescriptorSet.Write (
 
 	-- * WRITE
 
-	Write(..), WriteListToMiddle(..), WriteListToMiddleFoo(..),
+	Write(..), WriteListToMiddle(..), WriteListUpdateDynamicLengths(..),
 	WriteSources(..), WriteSourcesArg(..), WriteSourcesToMiddle,
+
+	WriteUpdateDynamicLengths
 
 	) where
 
@@ -77,19 +79,19 @@ writeToMiddle Write {
 		M.writeSources = srcs' }
 	where ((bdg, ae), srcs') = writeSourcesToMiddle @slbts srcs
 
-class WriteListToMiddleFoo writeArgs where
+class WriteListUpdateDynamicLengths writeArgs where
 	writeListUpdateDynamicLength ::
 		HeteroParList.PL (U4 Write) writeArgs -> IO ()
 
-instance WriteListToMiddleFoo '[] where
+instance WriteListUpdateDynamicLengths '[] where
 	writeListUpdateDynamicLength HeteroParList.Nil = pure ()
 
 instance (
-	WriteListToMiddleFoo writeArgs,
+	WriteListUpdateDynamicLengths writeArgs,
 
 	WriteUpdateDynamicLengths slbts writeSourcesArg
 	) =>
-	WriteListToMiddleFoo
+	WriteListUpdateDynamicLengths
 		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
 	writeListUpdateDynamicLength (U4 w :** ws) =
 		writeUpdateDynamicLength w >> writeListUpdateDynamicLength ws
