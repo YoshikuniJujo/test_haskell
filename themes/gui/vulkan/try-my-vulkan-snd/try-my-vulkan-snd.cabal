@@ -73,11 +73,11 @@ library
       Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
       Gpu.Vulkan.DescriptorSet.Type
       Gpu.Vulkan.DescriptorSet.TypeLevel.Copy
-      Gpu.Vulkan.DescriptorSet.UpdateDynamicLengths
       Gpu.Vulkan.DescriptorSet.Write
       Gpu.Vulkan.DescriptorSet.Write.Sources
       Gpu.Vulkan.DescriptorSetLayout
       Gpu.Vulkan.DescriptorSetLayout.Type
+      Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
       Gpu.Vulkan.Device
       Gpu.Vulkan.Device.Type
       Gpu.Vulkan.Enum

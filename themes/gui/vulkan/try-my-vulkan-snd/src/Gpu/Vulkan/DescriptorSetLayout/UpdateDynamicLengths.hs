@@ -8,7 +8,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet.UpdateDynamicLengths where
+module Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths where
 
 import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
