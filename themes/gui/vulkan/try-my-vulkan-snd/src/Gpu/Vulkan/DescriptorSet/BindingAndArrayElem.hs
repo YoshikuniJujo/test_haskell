@@ -9,7 +9,6 @@
 module Gpu.Vulkan.DescriptorSet.BindingAndArrayElem where
 
 import GHC.TypeLits
-import Control.Arrow
 import Data.Kind
 import Data.TypeLevel.List qualified as TList
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
@@ -21,47 +20,91 @@ import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 -- * BUFFER
 
 class BindingAndArrayElem
-	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) where
+	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
 	bindingAndArrayElem :: Integral n => n -> n -> (n, n)
-
-instance BindingAndArrayElem bts (oo ': os) =>
-	BindingAndArrayElem ('Layout.Buffer '[] ': bts) (oo ': os) where
-	bindingAndArrayElem c d = bindingAndArrayElem @bts @(oo ': os) (c + 1) 0
 
 instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.StaticObject algn 'Nothing ot t ': os') ': bts)
-		(VObj.StaticObject algn ('Just _nm) ot t ': os) where
+		(VObj.StaticObject algn ('Just _nm) ot t ': os) 0 where
 	bindingAndArrayElem c d = (c, d)
 
 instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.StaticObject algn ('Just _nm) ot t ': os') ': bts)
-		(VObj.StaticObject algn 'Nothing ot t ': os) where
+		(VObj.StaticObject algn 'Nothing ot t ': os) 0 where
 	bindingAndArrayElem c d = (c, d)
 
 instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.DynamicObject n algn 'Nothing ot t ': os') ': bts)
-		(VObj.DynamicObject n algn ('Just _nm) ot t ': os) where
+		(VObj.DynamicObject n algn ('Just _nm) ot t ': os) 0 where
 	bindingAndArrayElem c d = (c, d)
 
 instance IsPrefixObject os os' => BindingAndArrayElem
 		('Layout.Buffer (VObj.DynamicObject n algn ('Just _nm) ot t ': os') ': bts)
-		(VObj.DynamicObject n algn 'Nothing ot t ': os) where
+		(VObj.DynamicObject n algn 'Nothing ot t ': os) 0 where
 	bindingAndArrayElem c d = (c, d)
 
 instance IsPrefixObject os os' => BindingAndArrayElem
-		('Layout.Buffer (o ': os') ': bts) (o ': os) where
+		('Layout.Buffer (o ': os') ': bts) (o ': os) 0 where
 	bindingAndArrayElem c d = (c, d)
 
-instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem ('Layout.Buffer os' ': bts) (oo ': os) =>
+instance {-# OVERLAPPABLE #-} (
+	IsPrefixObject os os',
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) os (i - 1) ) =>
 	BindingAndArrayElem
-		('Layout.Buffer (o ': os') ': bts) (oo ': os) where
-	bindingAndArrayElem c d = bindingAndArrayElem @('Layout.Buffer os' ': bts) @(oo ': os) c (d + 1) 
+		('Layout.Buffer (VObj.StaticObject algn 'Nothing ot t ': os') ': bts)
+		(VObj.StaticObject algn ('Just _nm) ot t ': os) i where
+	bindingAndArrayElem c d =
+		bindingAndArrayElem @('Layout.Buffer os' ': bts) @os @(i - 1) c d
+
+instance {-# OVERLAPPABLE #-} (
+	IsPrefixObject os os',
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) os (i - 1) ) =>
+	BindingAndArrayElem
+		('Layout.Buffer (VObj.StaticObject algn ('Just _nm) ot t ': os') ': bts)
+		(VObj.StaticObject algn 'Nothing ot t ': os) i where
+	bindingAndArrayElem c d =
+		bindingAndArrayElem @('Layout.Buffer os' ': bts) @os @(i - 1) c d
+
+instance {-# OVERLAPPABLE #-} (
+	IsPrefixObject os os',
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) os (i - 1) ) =>
+	BindingAndArrayElem
+		('Layout.Buffer (VObj.DynamicObject n algn 'Nothing ot t ': os') ': bts)
+		(VObj.DynamicObject n algn ('Just _nm) ot t ': os) i where
+	bindingAndArrayElem c d =
+		bindingAndArrayElem @('Layout.Buffer os' ': bts) @os @(i - 1) c d
+
+instance {-# OVERLAPPABLE #-} (
+	IsPrefixObject os os',
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) os (i - 1) ) =>
+	BindingAndArrayElem
+		('Layout.Buffer (VObj.DynamicObject n algn ('Just _nm) ot t ': os') ': bts)
+		(VObj.DynamicObject n algn 'Nothing ot t ': os) i where
+	bindingAndArrayElem c d =
+		bindingAndArrayElem @('Layout.Buffer os' ': bts) @os @(i - 1) c d
+
+instance {-# OVERLAPPABLE #-} (
+	IsPrefixObject os os',
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) os (i - 1) ) =>
+	BindingAndArrayElem
+		('Layout.Buffer (o ': os') ': bts) (o ': os) i where
+	bindingAndArrayElem c d =
+		bindingAndArrayElem @('Layout.Buffer os' ': bts) @os @(i - 1) c d
+
+instance BindingAndArrayElem bts (oo ': os) i =>
+	BindingAndArrayElem ('Layout.Buffer '[] ': bts) (oo ': os) i where
+	bindingAndArrayElem c _d = bindingAndArrayElem @bts @(oo ': os) @i (c + 1) 0
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElem bts (oo ': os) =>
-	BindingAndArrayElem (bt ': bts) (oo ': os) where
-	bindingAndArrayElem c d = bindingAndArrayElem @bts @(oo ': os) (c + 1) 0
+	BindingAndArrayElem ('Layout.Buffer os' ': bts) (oo ': os) i =>
+	BindingAndArrayElem
+		('Layout.Buffer (o ': os') ': bts) (oo ': os) i where
+	bindingAndArrayElem c d = bindingAndArrayElem @('Layout.Buffer os' ': bts) @(oo ': os) @i c (d + 1) 
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElem bts (oo ': os) i =>
+	BindingAndArrayElem (bt ': bts) (oo ': os) i where
+	bindingAndArrayElem c _d = bindingAndArrayElem @bts @(oo ': os) @i (c + 1) 0
 
 class IsPrefixObject (objs :: [VObj.Object]) (objs' :: [VObj.Object])
 

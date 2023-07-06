@@ -69,11 +69,11 @@ class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg where
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
 instance (
-	BindingAndArrayElem bts (TMapIndex.M3_4 wsbarg),
+	BindingAndArrayElem bts (TMapIndex.M3_4 wsbarg) 0,
 	BufferInfoListToMiddle wsbarg ) =>
 	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer wsbarg) where
 	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) 0 0,
+		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) @0 0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddle bis )
 
 class BufferInfoListToMiddle smsbnmobjs where

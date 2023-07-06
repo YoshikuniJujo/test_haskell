@@ -929,7 +929,7 @@ instance Update '[t] '[] where update _ (HeteroParList.Singleton _) HeteroParLis
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(TIndex.I1_2 '(ds, cs))
-		'[VObj.Atom 256 UniformBufferObject 'Nothing],
+		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
 	Vk.DscSet.T.UpdateDynamicLength
 		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],
