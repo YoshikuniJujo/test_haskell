@@ -14,7 +14,7 @@ module Gpu.Vulkan.DescriptorSet.Write.Sources (
 	WriteSourcesArg(..),
 	WriteSourcesToMiddle(..),
 
-	BufferInfoListToMiddleNew,
+	BufferInfoListToMiddle,
 
 	WriteSourcesUpdateDynamicLengths(..),
 
@@ -77,27 +77,27 @@ instance (
 	UpdateDynamicLength
 		(TIndex.I1_2 slbts)
 		(TMapIndex.M3_4 smsbnmobjs),
-	BufferInfoListToMiddleNew smsbnmobjs ) =>
+	BufferInfoListToMiddle smsbnmobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer smsbnmobjs) where
 	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem
 			@(TIndex.I1_2 slbts)
 			@(TMapIndex.M3_4 smsbnmobjs) 0,
-		M.WriteSourcesBufferInfo $ bufferInfoListToMiddleNew bis )
+		M.WriteSourcesBufferInfo $ bufferInfoLIstToMiddle bis )
 
-class BufferInfoListToMiddleNew smsbnmobjs where
-	bufferInfoListToMiddleNew ::
+class BufferInfoListToMiddle smsbnmobjs where
+	bufferInfoLIstToMiddle ::
 		HeteroParList.PL (U4 Descriptor.BufferInfo) smsbnmobjs ->
 		[Descriptor.M.BufferInfo]
 
-instance BufferInfoListToMiddleNew '[] where
-	bufferInfoListToMiddleNew HeteroParList.Nil = []
+instance BufferInfoListToMiddle '[] where
+	bufferInfoLIstToMiddle HeteroParList.Nil = []
 
-instance BufferInfoListToMiddleNew smsbnmobjs =>
-	BufferInfoListToMiddleNew ('(sm, sb, nm, obj) ': smsbnmobjs) where
-	bufferInfoListToMiddleNew (U4 bi :** bis) =
+instance BufferInfoListToMiddle smsbnmobjs =>
+	BufferInfoListToMiddle ('(sm, sb, nm, obj) ': smsbnmobjs) where
+	bufferInfoLIstToMiddle (U4 bi :** bis) =
 		Descriptor.bufferInfoToMiddle bi :
-		bufferInfoListToMiddleNew bis
+		bufferInfoLIstToMiddle bis
 
 instance (
 	BindingAndArrayElemImage bts ssfmtnmsis,
