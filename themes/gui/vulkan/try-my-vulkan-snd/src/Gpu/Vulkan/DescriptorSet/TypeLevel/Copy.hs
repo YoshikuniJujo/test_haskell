@@ -23,7 +23,7 @@ class BindingAndArrayElement
 
 instance Common.BindingAndArrayElem bts vobjs =>
 	BindingAndArrayElement bts (Layout.Buffer vobjs) 0 where
-	bindingAndArrayElement = Common.bindingAndArrayElem @bts @vobjs 0
+	bindingAndArrayElement = Common.bindingAndArrayElem @bts @vobjs 0 0
 
 class BindingLength (bt :: Layout.BindingType) where
 	bindingLength :: Integral n => n

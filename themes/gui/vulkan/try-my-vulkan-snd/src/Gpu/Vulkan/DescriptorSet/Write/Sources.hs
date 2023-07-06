@@ -73,7 +73,7 @@ instance (
 	BufferInfoListToMiddle wsbarg ) =>
 	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer wsbarg) where
 	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) 0,
+		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) 0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddle bis )
 
 class BufferInfoListToMiddle smsbnmobjs where
