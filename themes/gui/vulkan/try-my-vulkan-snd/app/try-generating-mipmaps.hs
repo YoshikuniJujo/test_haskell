@@ -1588,9 +1588,9 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Vk.DscSet.T.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ssmp siv,
-	Vk.DscSet.WriteSourcesToMiddle '(ds, cs)
-		('Vk.DscSet.WriteSourcesArgImage
-			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)])
+	Vk.DscSet.WriteSourcesToMiddle cs (
+		'Vk.DscSet.WriteSourcesArgImage
+			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)] )
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) ssmp siv where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) tximgvw txsmp = do

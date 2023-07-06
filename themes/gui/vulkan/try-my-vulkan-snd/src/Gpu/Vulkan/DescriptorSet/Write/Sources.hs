@@ -23,7 +23,6 @@ module Gpu.Vulkan.DescriptorSet.Write.Sources (
 import GHC.TypeLits
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
@@ -65,17 +64,16 @@ type DstBinding = Word32
 type DstArrayElement = Word32
 type DescriptorCount = Word32
 
-class WriteSourcesToMiddle (slbts :: (Type, [Layout.BindingType])) wsarg where
+class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg where
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
 instance (
-	BindingAndArrayElem (TIndex.I1_2 slbts) (TMapIndex.M3_4 wsbarg),
+	BindingAndArrayElem bts (TMapIndex.M3_4 wsbarg),
 	BufferInfoListToMiddle wsbarg ) =>
-	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer wsbarg) where
+	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer wsbarg) where
 	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElem
-			@(TIndex.I1_2 slbts) @(TMapIndex.M3_4 wsbarg) 0,
+		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddle bis )
 
 class BufferInfoListToMiddle smsbnmobjs where
@@ -95,7 +93,7 @@ instance BufferInfoListToMiddle smsbnmobjs =>
 instance (
 	BindingAndArrayElemImage bts ssfmtnmsis,
 	ImageInfosToMiddle ssfmtnmsis ) =>
-	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgImage ssfmtnmsis) where
+	WriteSourcesToMiddle bts ('WriteSourcesArgImage ssfmtnmsis) where
 	writeSourcesToMiddle (ImageInfos iis) = (
 		bindingAndArrayElemImage @bts @ssfmtnmsis 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
@@ -103,13 +101,13 @@ instance (
 instance (
 	BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvs) 0,
 	BufferViewsToMiddle bvs ) =>
-	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgBufferView bvs) where
+	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvs) where
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
 		bindingAndArrayElemBufferView
 			@bts @(TMapIndex.M1'2_3 bvs) @0 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
 
-instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
+instance WriteSourcesToMiddle bts 'WriteSourcesArgInNext where
 	writeSourcesToMiddle (WriteSourcesInNext bdg ae cnt) =
 		((bdg, ae), M.WriteSourcesInNext cnt)
 
@@ -154,18 +152,18 @@ writeSourcesUpdateDynamicLengths bis =
 	toLength (Descriptor.BufferInfo (Buffer.Binded lns _)) =
 		HeteroParList.typeIndex lns
 
-class WriteSourcesUpdateDynamicLengths slbts arg where
-	writeSourcesUpdateDynamicLength :: D sds slbts -> WriteSources arg -> IO ()
+class WriteSourcesUpdateDynamicLengths bts arg where
+	writeSourcesUpdateDynamicLength :: D sds '(sl, bts) -> WriteSources arg -> IO ()
 
 instance (
-	UpdateDynamicLength (TIndex.I1_2 slbts) (TMapIndex.M3_4 foo),
+	UpdateDynamicLength bts (TMapIndex.M3_4 foo),
 	HeteroParList.Map3_4 foo ) =>
-	WriteSourcesUpdateDynamicLengths slbts (WriteSourcesArgBuffer foo) where
+	WriteSourcesUpdateDynamicLengths bts (WriteSourcesArgBuffer foo) where
 	writeSourcesUpdateDynamicLength (D rlns _) (BufferInfos bis) = do
 		lns <- readIORef rlns
-		(writeIORef rlns . updateDynamicLength @(TIndex.I1_2 slbts) @(TMapIndex.M3_4 foo) lns
+		(writeIORef rlns . updateDynamicLength @bts @(TMapIndex.M3_4 foo) lns
 			. (VObj.onlyDynamicLength @(TMapIndex.M3_4 foo)))
 			(writeSourcesUpdateDynamicLengths @foo bis)
 
-instance {-# OVERLAPPABLE #-} WriteSourcesUpdateDynamicLengths slbts foo where
+instance {-# OVERLAPPABLE #-} WriteSourcesUpdateDynamicLengths bts foo where
 	writeSourcesUpdateDynamicLength _ _ = pure ()

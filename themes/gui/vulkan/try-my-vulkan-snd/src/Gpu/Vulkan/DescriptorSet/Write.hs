@@ -23,6 +23,7 @@ module Gpu.Vulkan.DescriptorSet.Write (
 	) where
 
 import Foreign.Storable.PeekPoke
+import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
@@ -52,14 +53,14 @@ instance WriteListToMiddle '[] where
 	writeListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
 instance (
-	WithPoked (TMaybe.M mn), WriteSourcesToMiddle slbts writeSourcesArg,
+	WithPoked (TMaybe.M mn), WriteSourcesToMiddle (TIndex.I1_2 slbts) writeSourcesArg,
 	WriteListToMiddle writeArgs ) =>
 	WriteListToMiddle
 		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
 	writeListToMiddle (U4 w :** ws) =
 		writeToMiddle w :** writeListToMiddle ws
 
-writeToMiddle :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
+writeToMiddle :: forall n s slbts wsa . WriteSourcesToMiddle (TIndex.I1_2 slbts) wsa =>
 	Write n s slbts wsa -> M.Write n
 writeToMiddle Write {
 	writeNext = mnxt,
@@ -73,7 +74,7 @@ writeToMiddle Write {
 		M.writeDstArrayElement = ae,
 		M.writeDescriptorType = dt,
 		M.writeSources = srcs' }
-	where ((bdg, ae), srcs') = writeSourcesToMiddle @slbts srcs
+	where ((bdg, ae), srcs') = writeSourcesToMiddle @(TIndex.I1_2 slbts) srcs
 
 class WriteListUpdateDynamicLengths writeArgs where
 	writeListUpdateDynamicLength ::
@@ -83,15 +84,15 @@ instance WriteListUpdateDynamicLengths '[] where
 	writeListUpdateDynamicLength HeteroParList.Nil = pure ()
 
 instance (
-	WriteSourcesUpdateDynamicLengths slbts writeSourcesArg,
+	WriteSourcesUpdateDynamicLengths bts writeSourcesArg,
 	WriteListUpdateDynamicLengths writeArgs ) =>
 	WriteListUpdateDynamicLengths
-		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
+		('(mn, sds, '(sl, bts), writeSourcesArg) ': writeArgs) where
 	writeListUpdateDynamicLength (U4 w :** ws) =
 		writeUpdateDynamicLength w >> writeListUpdateDynamicLength ws
 
 writeUpdateDynamicLength ::
-	WriteSourcesUpdateDynamicLengths slbts sbsmobjsobjs =>
-	Write n s slbts sbsmobjsobjs -> IO ()
+	WriteSourcesUpdateDynamicLengths bts sbsmobjsobjs =>
+	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
 writeUpdateDynamicLength Write { writeDstSet = ds, writeSources = ws } =
 	writeSourcesUpdateDynamicLength ds ws
