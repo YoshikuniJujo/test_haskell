@@ -70,34 +70,27 @@ class WriteSourcesToMiddle (slbts :: (Type, [Layout.BindingType])) wsarg where
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
 instance (
-	HeteroParList.Map3_4 smsbnmobjs,
-	BindingAndArrayElem
-		(TIndex.I1_2 slbts)
-		(TMapIndex.M3_4 smsbnmobjs),
-	UpdateDynamicLength
-		(TIndex.I1_2 slbts)
-		(TMapIndex.M3_4 smsbnmobjs),
-	BufferInfoListToMiddle smsbnmobjs ) =>
-	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer smsbnmobjs) where
+	BindingAndArrayElem (TIndex.I1_2 slbts) (TMapIndex.M3_4 wsbarg),
+	BufferInfoListToMiddle wsbarg ) =>
+	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer wsbarg) where
 	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem
-			@(TIndex.I1_2 slbts)
-			@(TMapIndex.M3_4 smsbnmobjs) 0,
-		M.WriteSourcesBufferInfo $ bufferInfoLIstToMiddle bis )
+			@(TIndex.I1_2 slbts) @(TMapIndex.M3_4 wsbarg) 0,
+		M.WriteSourcesBufferInfo $ bufferInfoListToMiddle bis )
 
 class BufferInfoListToMiddle smsbnmobjs where
-	bufferInfoLIstToMiddle ::
+	bufferInfoListToMiddle ::
 		HeteroParList.PL (U4 Descriptor.BufferInfo) smsbnmobjs ->
 		[Descriptor.M.BufferInfo]
 
 instance BufferInfoListToMiddle '[] where
-	bufferInfoLIstToMiddle HeteroParList.Nil = []
+	bufferInfoListToMiddle HeteroParList.Nil = []
 
 instance BufferInfoListToMiddle smsbnmobjs =>
 	BufferInfoListToMiddle ('(sm, sb, nm, obj) ': smsbnmobjs) where
-	bufferInfoLIstToMiddle (U4 bi :** bis) =
+	bufferInfoListToMiddle (U4 bi :** bis) =
 		Descriptor.bufferInfoToMiddle bi :
-		bufferInfoLIstToMiddle bis
+		bufferInfoListToMiddle bis
 
 instance (
 	BindingAndArrayElemImage bts ssfmtnmsis,
@@ -112,12 +105,13 @@ instance (
 	BufferViewsToMiddle bvs ) =>
 	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgBufferView bvs) where
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
-		bindingAndArrayElemBufferView @bts @(TMapIndex.M1'2_3 bvs) @0 0 0,
+		bindingAndArrayElemBufferView
+			@bts @(TMapIndex.M1'2_3 bvs) @0 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
 
 instance WriteSourcesToMiddle slbts 'WriteSourcesArgInNext where
-	writeSourcesToMiddle = \case
-		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
+	writeSourcesToMiddle (WriteSourcesInNext bdg ae cnt) =
+		((bdg, ae), M.WriteSourcesInNext cnt)
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, Symbol, T.Format, Type)]

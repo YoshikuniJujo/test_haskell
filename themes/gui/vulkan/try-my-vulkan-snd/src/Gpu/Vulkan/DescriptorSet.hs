@@ -23,7 +23,8 @@ module Gpu.Vulkan.DescriptorSet (
 	-- ** Write
 
 	W.Write(..), W.WriteListToMiddle,
-	W.WriteSources(..), W.WriteSourcesArg(..), W.WriteSourcesToMiddle,
+	W.WriteSources(..), W.WriteSourcesArg(..),
+	W.WriteSourcesToMiddle, W.BufferInfoListToMiddle,
 
 	-- ** Copy
 
