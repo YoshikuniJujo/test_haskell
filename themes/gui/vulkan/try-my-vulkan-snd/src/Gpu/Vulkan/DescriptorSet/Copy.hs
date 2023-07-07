@@ -24,7 +24,6 @@ import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer qualified as Common
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
-import Data.Kind
 import Data.Word
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
@@ -38,11 +37,9 @@ import Gpu.Vulkan.DescriptorSet.Type
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
-data Copy n sdss
-	(slbtss :: (Type, [Layout.BindingType])) sdsd
-	(slbtsd :: (Type, [Layout.BindingType]))
-	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = Copy {
-	copyNextNew :: TMaybe.M n,
+data Copy mn sdss slbtss (is :: Nat) sdsd slbtsd (id :: Nat)
+	(bts :: Layout.BindingType) = Copy {
+	copyNextNew :: TMaybe.M mn,
 	copySrcSetNew :: D sdss slbtss,
 	copyDstSetNew :: D sdsd slbtsd }
 
@@ -61,14 +58,14 @@ instance (
 	BindingAndArrayElement (TIndex.I1_2 slbtsd) bts id,
 	BindingLength bts, CopyListToMiddle copyArgs ) =>
 	CopyListToMiddle (
-		'(n, sdss, slbtss, sdsd, slbtsd, bts, is, id) ':
+		'(n, sdss, slbtss, is, sdsd, slbtsd, id, bts) ':
 		copyArgs) where
 	copyListToMiddleNew (U8 c :** cs) = copyToMiddleNew c :** copyListToMiddleNew cs
 
 copyToMiddleNew :: (
 	BindingAndArrayElement (TIndex.I1_2 slbtss) bts is,
 	BindingAndArrayElement (TIndex.I1_2 slbtsd) bts id, BindingLength bts ) =>
-	Copy n sdss slbtss sdsd slbtsd bts is id -> M.Copy n
+	Copy n sdss slbtss is sdsd slbtsd id bts -> M.Copy n
 copyToMiddleNew c@Copy {
 	copyNextNew = mnxt, copySrcSetNew = D _ ss, copyDstSetNew = D _ ds } = let
 	(sb, sae, db, dae, cnt) = getCopyArgsNew c in
@@ -84,7 +81,7 @@ getCopyArgsNew :: forall n sdss slbtss sdsd slbtsd bts is id . (
 	BindingAndArrayElement (TIndex.I1_2 slbtss) bts is,
 	BindingAndArrayElement (TIndex.I1_2 slbtsd) bts id,
 	BindingLength bts ) =>
-	Copy n sdss slbtss sdsd slbtsd bts is id ->
+	Copy n sdss slbtss is sdsd slbtsd id bts ->
 	(Word32, Word32, Word32, Word32, Word32)
 getCopyArgsNew _ = let
 	(sb, sae) = bindingAndArrayElement @(TIndex.I1_2 slbtss) @bts @is

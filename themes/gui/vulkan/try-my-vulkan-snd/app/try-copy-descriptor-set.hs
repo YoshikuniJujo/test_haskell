@@ -225,7 +225,7 @@ writeDscSet ds ba = Vk.DS.Write {
 		Vk.DS.BufferInfos . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ba }
 
 copyDscSet :: Vk.DS.D sds slbts -> Vk.DS.D sds' slbts -> Vk.DS.Copy
-	'Nothing sds slbts sds' slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0
+	'Nothing sds slbts 0 sds' slbts 0 (Vk.DSLyt.Buffer '[Word32List])
 copyDscSet s d = Vk.DS.Copy
 	{ Vk.DS.copyNextNew = TMaybe.N, Vk.DS.copySrcSetNew = s, Vk.DS.copyDstSetNew = d }
 
