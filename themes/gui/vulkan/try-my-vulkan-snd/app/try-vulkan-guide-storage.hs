@@ -146,6 +146,7 @@ import qualified "try-my-vulkan-snd" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem as Vk.DscSet.T
+import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
 import qualified Codec.Wavefront.ReadOld as Wv
 import Tools

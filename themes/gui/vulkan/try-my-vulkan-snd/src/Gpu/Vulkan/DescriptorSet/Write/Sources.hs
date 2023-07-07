@@ -39,6 +39,7 @@ import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
 
 import Gpu.Vulkan.DescriptorSet.Type
 import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
+import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 import Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
