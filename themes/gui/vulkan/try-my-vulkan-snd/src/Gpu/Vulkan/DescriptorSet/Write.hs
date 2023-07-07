@@ -18,8 +18,6 @@ module Gpu.Vulkan.DescriptorSet.Write (
 	WriteSources(..), WriteSourcesArg(..), WriteSourcesToMiddle,
 
 	WriteSourcesUpdateDynamicLengths,
-	BufferInfoListToMiddle,
-	BufferViewListToMiddle
 
 	) where
 
