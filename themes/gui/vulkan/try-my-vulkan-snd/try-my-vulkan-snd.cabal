@@ -72,6 +72,7 @@ library
       Gpu.Vulkan.DescriptorSet
       Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
       Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer
+      Gpu.Vulkan.DescriptorSet.Copy
       Gpu.Vulkan.DescriptorSet.Type
       Gpu.Vulkan.DescriptorSet.TypeLevel.Copy
       Gpu.Vulkan.DescriptorSet.Write

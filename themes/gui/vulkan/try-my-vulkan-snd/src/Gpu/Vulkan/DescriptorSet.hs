@@ -32,11 +32,8 @@ module Gpu.Vulkan.DescriptorSet (
 
 	) where
 
-import GHC.TypeLits
 import Foreign.Storable.PeekPoke
-import Data.Kind
 import Data.Default
-import Data.Word
 import Data.Kind.Object qualified as KObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
@@ -45,7 +42,6 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.DescriptorSet.Type
-import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
@@ -54,6 +50,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
 import qualified Gpu.Vulkan.DescriptorSet.Write as W
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
+import Gpu.Vulkan.DescriptorSet.Copy
 import Gpu.Vulkan.Misc
 
 layoutToMiddle :: U2 Layout.L slbts -> Layout.M.L
@@ -108,64 +105,6 @@ allocateDs (Device.D dvc) ai f = do
 	f ds <* M.freeDs dvc
 		((\(Descriptor.Pool.P p) -> p) $ allocateInfoDescriptorPool ai)
 		dsm
-
-data Copy n sdss
-	(slbtss :: (Type, [Layout.BindingType])) sdsd
-	(slbtsd :: (Type, [Layout.BindingType]))
-	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = Copy {
-	copyNextNew :: TMaybe.M n,
-	copySrcSetNew :: D sdss slbtss,
-	copyDstSetNew :: D sdsd slbtsd }
-
-class M.CopyListToCore (CopyNextsNew copyArgs) =>
-	CopyListToMiddle copyArgs where
-	type CopyNextsNew copyArgs :: [Maybe Type]
-	copyListToMiddleNew ::
-		HeteroParList.PL (U8 Copy) copyArgs ->
-		HeteroParList.PL M.Copy (CopyNextsNew copyArgs)
-
-instance CopyListToMiddle '[] where
-	type CopyNextsNew '[] = '[]
-	copyListToMiddleNew HeteroParList.Nil = HeteroParList.Nil
-
-instance (
-	WithPoked (TMaybe.M n),
-	Copy.BindingAndArrayElement btss bts is,
-	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts,
-	CopyListToMiddle copyArgs ) =>
-	CopyListToMiddle (
-		'(n, sdss, '(sls, btss), sdsd, '(sld, btsd), bts, is, id) ':
-		copyArgs) where
-	type CopyNextsNew (
-		'(n, sdss, '(sls, btss), sdsd, '(sld, btsd), bts, is, id) ':
-		copyArgs ) = n ': CopyNextsNew copyArgs
-	copyListToMiddleNew (U8 c :** cs) = copyToMiddleNew c :** copyListToMiddleNew cs
-
-copyToMiddleNew :: (
-	Copy.BindingAndArrayElement btss bts is,
-	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
-	Copy n sdss '(sls, btss) sdsd '(sld, btsd) bts is id -> M.Copy n
-copyToMiddleNew c@Copy {
-	copyNextNew = mnxt, copySrcSetNew = D _ ss, copyDstSetNew = D _ ds } = let
-	(sb, sae, db, dae, cnt) = getCopyArgsNew c in
-	M.Copy {
-		M.copyNext = mnxt,
-		M.copySrcSet = ss,
-		M.copySrcBinding = sb,
-		M.copySrcArrayElement = sae, M.copyDstSet = ds,
-		M.copyDstBinding = db,
-		M.copyDstArrayElement = dae, M.copyDescriptorCount = cnt }
-
-getCopyArgsNew :: forall n sdss sls btss sdsd sld btsd bts is id . (
-	Copy.BindingAndArrayElement btss bts is,
-	Copy.BindingAndArrayElement btsd bts id,
-	Copy.BindingLength bts ) =>
-	Copy n sdss '(sls, btss) sdsd '(sld, btsd) bts is id ->
-	(Word32, Word32, Word32, Word32, Word32)
-getCopyArgsNew _ = let
-	(sb, sae) = Copy.bindingAndArrayElement @btss @bts @is
-	(db, dae) = Copy.bindingAndArrayElement @btsd @bts @id in
-	(sb, sae, db, dae, Copy.bindingLength @bts)
 
 updateDs :: (
 	W.WriteListToMiddle writeArgs,
