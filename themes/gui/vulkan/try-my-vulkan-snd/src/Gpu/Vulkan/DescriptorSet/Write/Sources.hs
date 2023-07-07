@@ -93,11 +93,11 @@ instance BufferInfoListToMiddle smsbnmobjs =>
 		bufferInfoListToMiddle bis
 
 instance (
-	BindingAndArrayElemImage bts ssfmtnmsis i,
+	BindingAndArrayElemImage bts (TMapIndex.M1'2_4 ssfmtnmsis) i,
 	ImageInfosToMiddle ssfmtnmsis ) =>
 	WriteSourcesToMiddle bts ('WriteSourcesArgImage ssfmtnmsis) i where
 	writeSourcesToMiddle (ImageInfos iis) = (
-		bindingAndArrayElemImage @bts @ssfmtnmsis @i 0 0,
+		bindingAndArrayElemImage @bts @(TMapIndex.M1'2_4 ssfmtnmsis) @i 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 
 instance (

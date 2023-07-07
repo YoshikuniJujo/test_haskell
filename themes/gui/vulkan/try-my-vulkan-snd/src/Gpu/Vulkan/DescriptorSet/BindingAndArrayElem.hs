@@ -11,7 +11,6 @@ module Gpu.Vulkan.DescriptorSet.BindingAndArrayElem where
 import GHC.TypeLits
 import Data.Kind
 import Data.TypeLevel.List qualified as TList
-import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
@@ -20,22 +19,22 @@ import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 
 class BindingAndArrayElemImage
 	(bts :: [Layout.BindingType])
-	(imgs :: [(Type, Symbol, T.Format, Type)]) (i :: Nat) where
+	(imgs :: [(Symbol, T.Format)]) (i :: Nat) where
 	bindingAndArrayElemImage :: Integral n => n -> n -> (n, n)
 
-instance TList.IsPrefixOf (TMapIndex.M1'2_4 sais) nmfmts =>
+instance TList.IsPrefixOf sais nmfmts =>
 	BindingAndArrayElemImage
 		('Layout.Image ('(nm, fmt) ': nmfmts) : bts)
-		('(a, nm, fmt, b) ': sais) 0 where
+		('(nm, fmt) ': sais) 0 where
 	bindingAndArrayElemImage b a = (b, a)
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemImage
-		('Layout.Image sfs2 ': bts) ('(a, nm, fmt, b) ': sfs1) (i - 1) =>
+		('Layout.Image sfs2 ': bts) ('(nm, fmt) ': sfs1) (i - 1) =>
 	BindingAndArrayElemImage
-		('Layout.Image ('(nm, fmt) ': sfs2) ': bts) ('(a, nm, fmt,b) ': sfs1) i where
+		('Layout.Image ('(nm, fmt) ': sfs2) ': bts) ('(nm, fmt) ': sfs1) i where
 	bindingAndArrayElemImage b ae = bindingAndArrayElemImage
-		@('Layout.Image sfs2 ': bts) @('(a, nm, fmt, b) ': sfs1) @(i - 1) b (ae + 1)
+		@('Layout.Image sfs2 ': bts) @('(nm, fmt) ': sfs1) @(i - 1) b (ae + 1)
 
 instance BindingAndArrayElemImage bts sais i =>
 	BindingAndArrayElemImage ('Layout.Image '[] ': bts)
