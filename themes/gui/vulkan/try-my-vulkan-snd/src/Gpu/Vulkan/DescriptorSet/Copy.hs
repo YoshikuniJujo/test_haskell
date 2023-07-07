@@ -39,9 +39,8 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 data Copy mn sdss slbtss (is :: Nat) sdsd slbtsd (id :: Nat)
 	(bts :: Layout.BindingType) = Copy {
-	copyNextNew :: TMaybe.M mn,
-	copySrcSetNew :: D sdss slbtss,
-	copyDstSetNew :: D sdsd slbtsd }
+	copyNext :: TMaybe.M mn,
+	copySrcSet :: D sdss slbtss, copyDstSet :: D sdsd slbtsd }
 
 class M.CopyListToCore (TMapIndex.M0_8 copyArgs) =>
 	CopyListToMiddle copyArgs where
@@ -67,7 +66,7 @@ copyToMiddleNew :: (
 	BindingAndArrayElem (TIndex.I1_2 slbtsd) bts id, BindingLength bts ) =>
 	Copy n sdss slbtss is sdsd slbtsd id bts -> M.Copy n
 copyToMiddleNew c@Copy {
-	copyNextNew = mnxt, copySrcSetNew = D _ ss, copyDstSetNew = D _ ds } = let
+	copyNext = mnxt, copySrcSet = D _ ss, copyDstSet = D _ ds } = let
 	(sb, sae, db, dae, cnt) = getCopyArgsNew c in
 	M.Copy {
 		M.copyNext = mnxt,
@@ -84,28 +83,28 @@ getCopyArgsNew :: forall n sdss slbtss sdsd slbtsd bts is id . (
 	Copy n sdss slbtss is sdsd slbtsd id bts ->
 	(Word32, Word32, Word32, Word32, Word32)
 getCopyArgsNew _ = let
-	(sb, sae) = bindingAndArrayElement @(TIndex.I1_2 slbtss) @bts @is
-	(db, dae) = bindingAndArrayElement @(TIndex.I1_2 slbtsd) @bts @id in
+	(sb, sae) = bindingAndArrayElem @(TIndex.I1_2 slbtss) @bts @is
+	(db, dae) = bindingAndArrayElem @(TIndex.I1_2 slbtsd) @bts @id in
 	(sb, sae, db, dae, bindingLength @bts)
 
 class BindingAndArrayElem
 	(bts :: [Layout.BindingType])
 	(bt :: Layout.BindingType) (i :: Nat) where
-	bindingAndArrayElement :: Integral n => (n, n)
+	bindingAndArrayElem :: Integral n => (n, n)
 
 instance Buffer.BindingAndArrayElemBuffer bts vobjs i =>
 	BindingAndArrayElem bts (Layout.Buffer vobjs) i where
-	bindingAndArrayElement = Buffer.bindingAndArrayElem @bts @vobjs @i 0 0
+	bindingAndArrayElem = Buffer.bindingAndArrayElem @bts @vobjs @i 0 0
 
 instance Common.BindingAndArrayElemBufferView bts nmts i =>
 	BindingAndArrayElem bts (Layout.BufferView nmts) i where
-	bindingAndArrayElement =
+	bindingAndArrayElem =
 		Common.bindingAndArrayElemBufferView @bts @nmts @i 0 0
 
 instance
 	Common.BindingAndArrayElemImage bts imgs i =>
 	BindingAndArrayElem bts (Layout.Image imgs) i where
-	bindingAndArrayElement = Common.bindingAndArrayElemImage @bts @imgs @i 0 0
+	bindingAndArrayElem = Common.bindingAndArrayElemImage @bts @imgs @i 0 0
 
 class BindingLength (bt :: Layout.BindingType) where
 	bindingLength :: Integral n => n
