@@ -18,6 +18,10 @@ module Gpu.Vulkan.DescriptorSet.Copy (
 
 	) where
 
+import Data.TypeLevel.List qualified as TypeLevel.Length
+import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem qualified as Common
+import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer qualified as Common
+
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Data.Kind
@@ -28,7 +32,7 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.DescriptorSet.Type
-import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
+-- import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
@@ -54,8 +58,8 @@ instance CopyListToMiddle '[] where
 
 instance (
 	WithPoked (TMaybe.M n),
-	Copy.BindingAndArrayElement btss bts is,
-	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts,
+	BindingAndArrayElement btss bts is,
+	BindingAndArrayElement btsd bts id, BindingLength bts,
 	CopyListToMiddle copyArgs ) =>
 	CopyListToMiddle (
 		'(n, sdss, '(sls, btss), sdsd, '(sld, btsd), bts, is, id) ':
@@ -66,8 +70,8 @@ instance (
 	copyListToMiddleNew (U8 c :** cs) = copyToMiddleNew c :** copyListToMiddleNew cs
 
 copyToMiddleNew :: (
-	Copy.BindingAndArrayElement btss bts is,
-	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
+	BindingAndArrayElement btss bts is,
+	BindingAndArrayElement btsd bts id, BindingLength bts ) =>
 	Copy n sdss '(sls, btss) sdsd '(sld, btsd) bts is id -> M.Copy n
 copyToMiddleNew c@Copy {
 	copyNextNew = mnxt, copySrcSetNew = D _ ss, copyDstSetNew = D _ ds } = let
@@ -81,12 +85,38 @@ copyToMiddleNew c@Copy {
 		M.copyDstArrayElement = dae, M.copyDescriptorCount = cnt }
 
 getCopyArgsNew :: forall n sdss sls btss sdsd sld btsd bts is id . (
-	Copy.BindingAndArrayElement btss bts is,
-	Copy.BindingAndArrayElement btsd bts id,
-	Copy.BindingLength bts ) =>
+	BindingAndArrayElement btss bts is,
+	BindingAndArrayElement btsd bts id,
+	BindingLength bts ) =>
 	Copy n sdss '(sls, btss) sdsd '(sld, btsd) bts is id ->
 	(Word32, Word32, Word32, Word32, Word32)
 getCopyArgsNew _ = let
-	(sb, sae) = Copy.bindingAndArrayElement @btss @bts @is
-	(db, dae) = Copy.bindingAndArrayElement @btsd @bts @id in
-	(sb, sae, db, dae, Copy.bindingLength @bts)
+	(sb, sae) = bindingAndArrayElement @btss @bts @is
+	(db, dae) = bindingAndArrayElement @btsd @bts @id in
+	(sb, sae, db, dae, bindingLength @bts)
+
+class BindingAndArrayElement
+	(bts :: [Layout.BindingType])
+	(bt :: Layout.BindingType) (i :: Nat) where
+	bindingAndArrayElement :: Integral n => (n, n)
+
+instance Common.BindingAndArrayElem bts vobjs i =>
+	BindingAndArrayElement bts (Layout.Buffer vobjs) i where
+	bindingAndArrayElement = Common.bindingAndArrayElem @bts @vobjs @i 0 0
+
+instance Common.BindingAndArrayElemBufferView bts nmts i =>
+	BindingAndArrayElement bts (Layout.BufferView nmts) i where
+	bindingAndArrayElement =
+		Common.bindingAndArrayElemBufferView @bts @nmts @i 0 0
+
+instance
+	Common.BindingAndArrayElemImage bts imgs i =>
+	BindingAndArrayElement bts (Layout.Image imgs) i where
+	bindingAndArrayElement = Common.bindingAndArrayElemImage @bts @imgs @i 0 0
+
+class BindingLength (bt :: Layout.BindingType) where
+	bindingLength :: Integral n => n
+
+instance TypeLevel.Length.Length vobjs =>
+	BindingLength (Layout.Buffer vobjs) where
+	bindingLength = TypeLevel.Length.length @_ @vobjs
