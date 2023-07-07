@@ -71,11 +71,11 @@ class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg (i :: Nat) where
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
 instance (
-	BindingAndArrayElem bts (TMapIndex.M3_4 wsbarg) i,
-	BufferInfoListToMiddle wsbarg ) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer wsbarg) i where
+	BindingAndArrayElem bts (TMapIndex.M3_4 barg) i,
+	BufferInfoListToMiddle barg ) =>
+	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer barg) i where
 	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) @i 0 0,
+		bindingAndArrayElem @bts @(TMapIndex.M3_4 barg) @i 0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddle bis )
 
 class BufferInfoListToMiddle smsbnmobjs where
@@ -93,21 +93,21 @@ instance BufferInfoListToMiddle smsbnmobjs =>
 		bufferInfoListToMiddle bis
 
 instance (
-	BindingAndArrayElemImage bts ssfmtnmsis,
+	BindingAndArrayElemImage bts ssfmtnmsis i,
 	ImageInfosToMiddle ssfmtnmsis ) =>
 	WriteSourcesToMiddle bts ('WriteSourcesArgImage ssfmtnmsis) i where
 	writeSourcesToMiddle (ImageInfos iis) = (
-		bindingAndArrayElemImage @bts @ssfmtnmsis 0 0,
+		bindingAndArrayElemImage @bts @ssfmtnmsis @i 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 
 instance (
-	BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvs) i,
-	BufferViewListToMiddle bvs ) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvs) i where
-	writeSourcesToMiddle (TexelBufferViews bvs) = (
+	BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvarg) i,
+	BufferViewListToMiddle bvarg ) =>
+	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvarg) i where
+	writeSourcesToMiddle (TexelBufferViews bvarg) = (
 		bindingAndArrayElemBufferView
-			@bts @(TMapIndex.M1'2_3 bvs) @i 0 0,
-		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
+			@bts @(TMapIndex.M1'2_3 bvarg) @i 0 0,
+		M.WriteSourcesBufferView $ bufferViewsToMiddle bvarg )
 
 instance WriteSourcesToMiddle bts 'WriteSourcesArgInNext i where
 	writeSourcesToMiddle (WriteSourcesInNext bdg ae cnt) =

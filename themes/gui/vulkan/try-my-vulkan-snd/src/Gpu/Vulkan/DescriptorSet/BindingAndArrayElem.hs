@@ -13,7 +13,6 @@ import Data.Kind
 import Data.TypeLevel.List qualified as TList
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 
-import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 
@@ -21,33 +20,41 @@ import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 
 class BindingAndArrayElemImage
 	(bts :: [Layout.BindingType])
-	(imgs :: [(Type, Symbol, T.Format, Type)]) where
+	(imgs :: [(Type, Symbol, T.Format, Type)]) (i :: Nat) where
 	bindingAndArrayElemImage :: Integral n => n -> n -> (n, n)
 
 instance TList.IsPrefixOf (TMapIndex.M1'2_4 sais) nmfmts =>
 	BindingAndArrayElemImage
 		('Layout.Image ('(nm, fmt) ': nmfmts) : bts)
-		('(a, nm, fmt, b) ': sais) where
+		('(a, nm, fmt, b) ': sais) 0 where
 	bindingAndArrayElemImage b a = (b, a)
 
-instance BindingAndArrayElemImage bts sais =>
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemImage
+		('Layout.Image sfs2 ': bts) ('(a, nm, fmt, b) ': sfs1) (i - 1) =>
+	BindingAndArrayElemImage
+		('Layout.Image ('(nm, fmt) ': sfs2) ': bts) ('(a, nm, fmt,b) ': sfs1) i where
+	bindingAndArrayElemImage b ae = bindingAndArrayElemImage
+		@('Layout.Image sfs2 ': bts) @('(a, nm, fmt, b) ': sfs1) @(i - 1) b (ae + 1)
+
+instance BindingAndArrayElemImage bts sais i =>
 	BindingAndArrayElemImage ('Layout.Image '[] ': bts)
-	sais where
+	sais i where
 	bindingAndArrayElemImage b _ =
-		bindingAndArrayElemImage @bts @sais (b + 1) 0
+		bindingAndArrayElemImage @bts @sais @i (b + 1) 0
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemImage
-		('Layout.Image nmfmts : bts) sais =>
+		('Layout.Image nmfmts : bts) sais i =>
 	BindingAndArrayElemImage
-		('Layout.Image (nmfmt ': nmfmts) ': bts) sais where
+		('Layout.Image (nmfmt ': nmfmts) ': bts) sais i where
 	bindingAndArrayElemImage b a = bindingAndArrayElemImage
-		@('Layout.Image nmfmts : bts) @sais b (a + 1)
+		@('Layout.Image nmfmts : bts) @sais @i b (a + 1)
 
 instance {-# OVERLAPPABLE #-}
-	BindingAndArrayElemImage bts sais =>
-	BindingAndArrayElemImage (bt ': bts) sais where
-	bindingAndArrayElemImage b _ = bindingAndArrayElemImage @bts @sais (b + 1) 0
+	BindingAndArrayElemImage bts sais i =>
+	BindingAndArrayElemImage (bt ': bts) sais i where
+	bindingAndArrayElemImage b _ = bindingAndArrayElemImage @bts @sais @i (b + 1) 0
 
 -- * BUFFER VIEW
 
