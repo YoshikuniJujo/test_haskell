@@ -148,7 +148,7 @@ prepareMems pd dv dslyt f =
 	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(ds :** ds' :** HL.Nil) ->
 	storageBufferNew pd dv \b m ->
 	Vk.DS.updateDs dv
-		(HL.Singleton . U4 $ writeDscSet ds b)
+		(HL.Singleton . U5 $ writeDscSet ds b)
 		(HL.Singleton . U8 $ copyDscSet ds ds') >>
 	f ds ds' m
 
@@ -216,7 +216,7 @@ writeDscSet :: forall slbts sb sm os sds . (
 	Obj.Offset ('Obj.Static (KObj.List 256 Word32 "")) os ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.Write 'Nothing sds slbts
-		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List)])
+		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List)]) 0
 writeDscSet ds ba = Vk.DS.Write {
 	Vk.DS.writeNext = TMaybe.N,
 	Vk.DS.writeDstSet = ds,

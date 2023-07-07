@@ -172,7 +172,7 @@ updateDs :: (
 	W.WriteListUpdateDynamicLengths writeArgs,
 	CopyListToMiddle copyArgs) =>
 	Device.D sd ->
-	HeteroParList.PL (U4 W.Write) writeArgs ->
+	HeteroParList.PL (U5 W.Write) writeArgs ->
 	HeteroParList.PL (U8 Copy) copyArgs  -> IO ()
 updateDs (Device.D dvc) ws cs =
 	W.writeListUpdateDynamicLength ws >> M.updateDs dvc ws' cs'

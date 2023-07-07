@@ -302,7 +302,7 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 
 	allocateTextureDescriptorSets dv dp dslyttx \dscstx ->
 	writeTexture1 dv dscstx timgvw \wtx ->
-	Vk.DscSet.updateDs dv (HL.Singleton $ U4 wtx) HL.Nil >>
+	Vk.DscSet.updateDs dv (HL.Singleton $ U5 wtx) HL.Nil >>
 
 	createDescriptorSets @sbsmods @slytods dv dp cmbs lyts odbs lytods scnb \dss dssod ->
 
@@ -1331,11 +1331,11 @@ instance (
 	update dv (dscs :** dscss) (BindedCamera cmb :** cmbs)
 		(dscsod :** dscsods) (BindedObjData odb :** odbs) scnb = do
 		Vk.DscSet.updateDs dv (
-			U4 (descriptorWrite @CameraObj
+			U5 (descriptorWrite @CameraObj
 				dscs cmb Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite @SceneObj
+			U5 (descriptorWrite @SceneObj
 				dscs scnb Vk.Dsc.TypeUniformBufferDynamic) :**
-			U4 (descriptorWrite @ObjDataList
+			U5 (descriptorWrite @ObjDataList
 				dscsod odb Vk.Dsc.TypeStorageBuffer) :**
 			HL.Nil )
 			HL.Nil
@@ -1345,7 +1345,7 @@ descriptorWrite :: forall obj slbts sb sm nm objs sds . (
 	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)])
+		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
 descriptorWrite dscs ub tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1357,7 +1357,7 @@ writeTexture1 ::
 	Vk.Dvc.D sd -> Vk.DscSet.D sds lyt -> Vk.ImgVw.I "texture" ifmt siv -> (
 		forall ss . 
 		Vk.DscSet.Write 'Nothing sds lyt
-			('Vk.DscSet.WriteSourcesArgImage '[ '(ss, "texture", ifmt, siv)]) ->
+			('Vk.DscSet.WriteSourcesArgImage '[ '(ss, "texture", ifmt, siv)]) 0 ->
 		IO a) -> IO a
 writeTexture1 dv dscs tiv f =
 	createTextureSampler dv \smplr ->
@@ -1368,7 +1368,7 @@ writeTexture1 dv dscs tiv f =
 writeDescriptorImage :: Vk.Dsc.Type ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.ImageInfo ss nm fmt si ->
 	Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si)])
+		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si)]) 0
 writeDescriptorImage tp dscs ii = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,

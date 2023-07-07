@@ -64,16 +64,16 @@ type DstBinding = Word32
 type DstArrayElement = Word32
 type DescriptorCount = Word32
 
-class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg where
+class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg (i :: Nat) where
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
 instance (
-	BindingAndArrayElem bts (TMapIndex.M3_4 wsbarg) 0,
+	BindingAndArrayElem bts (TMapIndex.M3_4 wsbarg) i,
 	BufferInfoListToMiddle wsbarg ) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer wsbarg) where
+	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer wsbarg) i where
 	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) @0 0 0,
+		bindingAndArrayElem @bts @(TMapIndex.M3_4 wsbarg) @i 0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddle bis )
 
 class BufferInfoListToMiddle smsbnmobjs where
@@ -93,21 +93,21 @@ instance BufferInfoListToMiddle smsbnmobjs =>
 instance (
 	BindingAndArrayElemImage bts ssfmtnmsis,
 	ImageInfosToMiddle ssfmtnmsis ) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgImage ssfmtnmsis) where
+	WriteSourcesToMiddle bts ('WriteSourcesArgImage ssfmtnmsis) i where
 	writeSourcesToMiddle (ImageInfos iis) = (
 		bindingAndArrayElemImage @bts @ssfmtnmsis 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 
 instance (
-	BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvs) 0,
+	BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvs) i,
 	BufferViewsToMiddle bvs ) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvs) where
+	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvs) i where
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
 		bindingAndArrayElemBufferView
-			@bts @(TMapIndex.M1'2_3 bvs) @0 0 0,
+			@bts @(TMapIndex.M1'2_3 bvs) @i 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
 
-instance WriteSourcesToMiddle bts 'WriteSourcesArgInNext where
+instance WriteSourcesToMiddle bts 'WriteSourcesArgInNext i where
 	writeSourcesToMiddle (WriteSourcesInNext bdg ae cnt) =
 		((bdg, ae), M.WriteSourcesInNext cnt)
 

@@ -1134,9 +1134,9 @@ instance (
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
 		Vk.DscSet.updateDs dv (
-			U4 (descriptorWrite @CameraObj
+			U5 (descriptorWrite @CameraObj
 				dscs csb Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite @SceneObj
+			U5 (descriptorWrite @SceneObj
 				dscs scnb Vk.Dsc.TypeUniformBufferDynamic) :**
 			HL.Nil )
 			HL.Nil
@@ -1146,7 +1146,7 @@ descriptorWrite :: forall obj slbts sb sm nm objs sds . (
 	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)])
+		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
 descriptorWrite dscs ub tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,

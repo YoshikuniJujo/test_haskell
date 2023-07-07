@@ -861,7 +861,7 @@ createDescriptorSet ::
 createDescriptorSet dvc dscp ub dscslyt f =
 	Vk.DscSet.allocateDs dvc allocInfo \(HeteroParList.Singleton dscs) -> do
 	Vk.DscSet.updateDs dvc
-		(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) HeteroParList.Nil
+		(HeteroParList.Singleton . U5 $ descriptorWrite ub dscs) HeteroParList.Nil
 	f dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
@@ -874,7 +874,7 @@ descriptorWrite ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing)])
+		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing)]) 0
 descriptorWrite ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,

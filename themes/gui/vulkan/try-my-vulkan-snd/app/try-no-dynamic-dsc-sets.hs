@@ -171,22 +171,22 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 		phdvc dvc 3 5 7 \bx _mx -> case arg of
 			"0" -> do
 				Vk.DscSet.updateDs dvc (
-					U4 (writeDscSet ds ba bb bc) :**
-					U4 (writeDscSet2 @"x0" ds bx) :**
+					U5 (writeDscSet ds ba bb bc) :**
+					U5 (writeDscSet2 @"x0" ds bx) :**
 					HeteroParList.Nil )
 					HeteroParList.Nil
 				f ds ma mb mc
 			"1" -> do
 				Vk.DscSet.updateDs dvc (
-					U4 (writeDscSet ds ba bb bc) :**
-					U4 (writeDscSet2 @"x1" ds bx) :**
+					U5 (writeDscSet ds ba bb bc) :**
+					U5 (writeDscSet2 @"x1" ds bx) :**
 					HeteroParList.Nil )
 					HeteroParList.Nil
 				f ds ma mb mc
 			"2" -> do
 				Vk.DscSet.updateDs dvc (
-					U4 (writeDscSet ds ba bb bc) :**
-					U4 (writeDscSet2 @"x2" ds bx) :**
+					U5 (writeDscSet ds ba bb bc) :**
+					U5 (writeDscSet2 @"x2" ds bx) :**
 					HeteroParList.Nil )
 					HeteroParList.Nil
 				f ds ma mb mc
@@ -336,7 +336,7 @@ writeDscSet :: forall sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sm1, sb1, nm1, ListW1),
 			'(sm2, sb2, nm2, ListW2),
-			'(sm3, sb3, nm3, ListW3) ] )
+			'(sm3, sb3, nm3, ListW3) ] ) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
@@ -358,7 +358,7 @@ writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds . (
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
 	Vk.DscSet.Write 'Nothing sds '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
-			'(sm4, sb4, nm4, VObj.Atom 256 Word32 ('Just nm)) ] )
+			'(sm4, sb4, nm4, VObj.Atom 256 Word32 ('Just nm)) ] ) 0
 writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,

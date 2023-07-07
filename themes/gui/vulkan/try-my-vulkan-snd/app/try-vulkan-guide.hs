@@ -1338,14 +1338,14 @@ instance (
 	Update (ub ': ubs) ('(ds, cs) ': dscss) where
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 0 = do
 		Vk.DscSet.updateDs dvc (
-			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HeteroParList.Nil ) HeteroParList.Nil
 		update dvc ubs dscss scnb 1
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 1 = do
 		Vk.DscSet.updateDs dvc (
-			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HeteroParList.Nil )
 			HeteroParList.Nil
 		update dvc ubs dscss scnb 2
@@ -1357,7 +1357,7 @@ descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom 256 tp objnm )])
+		sm, sb, nm, VObj.Atom 256 tp objnm )]) 0
 descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,

@@ -319,7 +319,8 @@ prepareMems phdvc dvc dscSetLyt da db dc dd _mxx f =
 			Vk.BufferView.createInfoFlags = zeroBits,
 			Vk.BufferView.createInfoBuffer = U4 bd } in
 	Vk.BufferView.create dvc bufferViewInfo' nil' \bv -> do
-	let	wds' = Vk.DscSet.Write {
+	let	wds' :: Vk.DscSet.Write _ _ _ _ 0
+		wds' = Vk.DscSet.Write {
 			Vk.DscSet.writeNext = TMaybe.N,
 			Vk.DscSet.writeDstSet = dscSet,
 			Vk.DscSet.writeDescriptorType =
@@ -327,7 +328,7 @@ prepareMems phdvc dvc dscSetLyt da db dc dd _mxx f =
 			Vk.DscSet.writeSources = Vk.DscSet.TexelBufferViews
 				. HeteroParList.Singleton $ U3 bv }
 	Vk.DscSet.updateDs dvc (
-		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds' :**
+		U5 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U5 wds' :**
 		HeteroParList.Nil )
 		HeteroParList.Nil
 	f dscSet ma mb mc
@@ -378,7 +379,7 @@ writeDscSet ::
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sm1, sb1, nm1, VObj.List 256 w1 ""), '(sm2, sb2, nm2, VObj.List 256 w2 ""),
-		'(sm3, sb3, nm3, VObj.List 256 w3 "") ])
+		'(sm3, sb3, nm3, VObj.List 256 w3 "") ]) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,

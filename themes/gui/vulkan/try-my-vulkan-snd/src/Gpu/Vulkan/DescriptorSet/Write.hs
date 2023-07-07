@@ -22,6 +22,7 @@ module Gpu.Vulkan.DescriptorSet.Write (
 
 	) where
 
+import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
@@ -37,31 +38,31 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 import Gpu.Vulkan.DescriptorSet.Write.Sources
 
-data Write mn sds slbts writeSourcesArg = Write {
+data Write mn sds slbts writeSourcesArg (i :: Nat) = Write {
 	writeNext :: TMaybe.M mn,
 	writeDstSet :: D sds slbts,
 	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources writeSourcesArg }
 
-class M.WriteListToCore (TMapIndex.M0_4 writeArgs) =>
+class M.WriteListToCore (TMapIndex.M0_5 writeArgs) =>
 	WriteListToMiddle writeArgs where
 	writeListToMiddle ::
-		HeteroParList.PL (U4 Write) writeArgs ->
-		HeteroParList.PL M.Write (TMapIndex.M0_4 writeArgs)
+		HeteroParList.PL (U5 Write) writeArgs ->
+		HeteroParList.PL M.Write (TMapIndex.M0_5 writeArgs)
 
 instance WriteListToMiddle '[] where
 	writeListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
 instance (
-	WithPoked (TMaybe.M mn), WriteSourcesToMiddle (TIndex.I1_2 slbts) writeSourcesArg,
+	WithPoked (TMaybe.M mn), WriteSourcesToMiddle (TIndex.I1_2 slbts) writeSourcesArg i,
 	WriteListToMiddle writeArgs ) =>
 	WriteListToMiddle
-		('(mn, sds, slbts, writeSourcesArg) ': writeArgs) where
-	writeListToMiddle (U4 w :** ws) =
+		('(mn, sds, slbts, writeSourcesArg, i) ': writeArgs) where
+	writeListToMiddle (U5 w :** ws) =
 		writeToMiddle w :** writeListToMiddle ws
 
-writeToMiddle :: forall n s slbts wsa . WriteSourcesToMiddle (TIndex.I1_2 slbts) wsa =>
-	Write n s slbts wsa -> M.Write n
+writeToMiddle :: forall n s slbts wsa i . WriteSourcesToMiddle (TIndex.I1_2 slbts) wsa i =>
+	Write n s slbts wsa i -> M.Write n
 writeToMiddle Write {
 	writeNext = mnxt,
 	writeDstSet = D _ ds,
@@ -74,11 +75,11 @@ writeToMiddle Write {
 		M.writeDstArrayElement = ae,
 		M.writeDescriptorType = dt,
 		M.writeSources = srcs' }
-	where ((bdg, ae), srcs') = writeSourcesToMiddle @(TIndex.I1_2 slbts) srcs
+	where ((bdg, ae), srcs') = writeSourcesToMiddle @(TIndex.I1_2 slbts) @_ @i srcs
 
 class WriteListUpdateDynamicLengths writeArgs where
 	writeListUpdateDynamicLength ::
-		HeteroParList.PL (U4 Write) writeArgs -> IO ()
+		HeteroParList.PL (U5 Write) writeArgs -> IO ()
 
 instance WriteListUpdateDynamicLengths '[] where
 	writeListUpdateDynamicLength HeteroParList.Nil = pure ()
@@ -87,12 +88,12 @@ instance (
 	WriteSourcesUpdateDynamicLengths bts writeSourcesArg,
 	WriteListUpdateDynamicLengths writeArgs ) =>
 	WriteListUpdateDynamicLengths
-		('(mn, sds, '(sl, bts), writeSourcesArg) ': writeArgs) where
-	writeListUpdateDynamicLength (U4 w :** ws) =
+		('(mn, sds, '(sl, bts), writeSourcesArg, i) ': writeArgs) where
+	writeListUpdateDynamicLength (U5 w :** ws) =
 		writeUpdateDynamicLength w >> writeListUpdateDynamicLength ws
 
 writeUpdateDynamicLength ::
 	WriteSourcesUpdateDynamicLengths bts sbsmobjsobjs =>
-	Write n s '(sl, bts) sbsmobjsobjs -> IO ()
+	Write n s '(sl, bts) sbsmobjsobjs i -> IO ()
 writeUpdateDynamicLength Write { writeDstSet = ds, writeSources = ws } =
 	writeSourcesUpdateDynamicLength ds ws

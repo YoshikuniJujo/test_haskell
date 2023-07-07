@@ -175,7 +175,7 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	storageBufferNew dvc phdvc db \bb mb ->
 	storageBufferNew dvc phdvc dc \bc mc ->
 	Vk.DscSet.updateDs dvc
-		(HeteroParList.Singleton . U4 $ writeDscSet dscSet ba bb bc)
+		(HeteroParList.Singleton . U5 $ writeDscSet dscSet ba bb bc)
 		HeteroParList.Nil >>
 	f dscSet ma mb mc
 
@@ -261,7 +261,7 @@ writeDscSet ::
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sm1, sb1, "", VObj.List 256 W1 ""), '(sm2, sb2, "", VObj.List 256 W2 ""),
-		'(sm3, sb3, "", VObj.List 256 W3 "") ])
+		'(sm3, sb3, "", VObj.List 256 W3 "") ]) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
