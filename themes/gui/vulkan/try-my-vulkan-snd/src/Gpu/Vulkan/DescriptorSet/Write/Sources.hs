@@ -85,11 +85,11 @@ instance (BindingAndArrayElem bts (TMapIndex.M3_4 barg) i) =>
 			Descriptor.bufferInfoToMiddle bi
 
 instance (
-	BindingAndArrayElemImage bts (TMapIndex.M1'2_4 ssfmtnmsis) i
+	BindingAndArrayElemImage bts (TMapIndex.M1'2_4 iarg) i
 	) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgImage ssfmtnmsis) i where
+	WriteSourcesToMiddle bts ('WriteSourcesArgImage iarg) i where
 	writeSourcesToMiddle (ImageInfos iis) = (
-		bindingAndArrayElemImage @bts @(TMapIndex.M1'2_4 ssfmtnmsis) @i 0 0,
+		bindingAndArrayElemImage @bts @(TMapIndex.M1'2_4 iarg) @i 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 		where
 		imageInfosToMiddle ::
