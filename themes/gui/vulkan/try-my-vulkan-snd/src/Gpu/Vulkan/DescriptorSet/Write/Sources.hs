@@ -15,6 +15,7 @@ module Gpu.Vulkan.DescriptorSet.Write.Sources (
 	WriteSourcesToMiddle(..),
 
 	BufferInfoListToMiddle,
+	BufferViewListToMiddle,
 
 	WriteSourcesUpdateDynamicLengths(..),
 
@@ -101,7 +102,7 @@ instance (
 
 instance (
 	BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvs) i,
-	BufferViewsToMiddle bvs ) =>
+	BufferViewListToMiddle bvs ) =>
 	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvs) i where
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
 		bindingAndArrayElemBufferView
@@ -130,15 +131,15 @@ instance ImageInfosToMiddle ssfmtnmsis =>
 	imageInfosToMiddle (U4 ii :** iis) =
 		Descriptor.imageInfoToMiddle ii : imageInfosToMiddle iis
 
-class BufferViewsToMiddle bvs where
+class BufferViewListToMiddle bvs where
 	bufferViewsToMiddle ::
 		HeteroParList.PL (U3 BufferView.B) bvs -> [BufferView.M.B]
 
-instance BufferViewsToMiddle '[] where
+instance BufferViewListToMiddle '[] where
 	bufferViewsToMiddle HeteroParList.Nil = []
 
-instance BufferViewsToMiddle bvs =>
-	BufferViewsToMiddle (bv ': bvs) where
+instance BufferViewListToMiddle bvs =>
+	BufferViewListToMiddle (bv ': bvs) where
 	bufferViewsToMiddle (U3 (BufferView.B mbv) :** bvs) =
 		mbv : bufferViewsToMiddle bvs
 
