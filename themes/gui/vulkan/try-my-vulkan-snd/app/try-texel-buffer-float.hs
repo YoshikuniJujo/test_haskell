@@ -294,7 +294,7 @@ prepareMems ::
 	Storable w1, Storable w2, Storable w3,
 	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)] 0,
 
-	Vk.DscSet.BindingAndArrayElem bts
+	Vk.DscSet.BindingAndArrayElemBuffer bts
 		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
 
 	Vk.DscSet.UpdateDynamicLength bts

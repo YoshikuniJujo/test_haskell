@@ -162,7 +162,7 @@ prepareMems :: (
 	Default (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Vk.DscSet.BindingAndArrayElem bts '[
+	Vk.DscSet.BindingAndArrayElemBuffer bts '[
 		VObj.DynList 2 256 W1 "",VObj.DynList 2 256 W2 "",VObj.DynList 2 256 W3 "" ] 0,
 	Vk.DscSet.UpdateDynamicLength bts '[
 		VObj.DynList 2 256 W1 "",VObj.DynList 2 256 W2 "",VObj.DynList 2 256 W3 "" ] ) =>

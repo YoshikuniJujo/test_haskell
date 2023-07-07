@@ -62,7 +62,7 @@ import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
-import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DS
+import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DS.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CBffr
@@ -179,7 +179,7 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 prepareMems :: (
 	Default (HL.PL (HL.PL KObj.ObjectLength)
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Vk.DS.BindingAndArrayElem bts '[Word32List] 0,
+	Vk.DS.Buffer.BindingAndArrayElemBuffer bts '[Word32List] 0,
 	Vk.DS.UpdateDynamicLength bts '[Word32List]
 	) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->

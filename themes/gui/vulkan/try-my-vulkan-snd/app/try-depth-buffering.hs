@@ -1466,7 +1466,7 @@ class Update smsbs slbtss ssmp siv where
 instance Update '[] '[] ssmp siv where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
+	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
 	Vk.DscSet.T.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ssmp siv,
 	Vk.DscSet.WriteSourcesToMiddle cs

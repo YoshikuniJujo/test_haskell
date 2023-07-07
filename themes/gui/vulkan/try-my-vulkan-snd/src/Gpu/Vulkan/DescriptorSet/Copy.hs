@@ -14,13 +14,13 @@ module Gpu.Vulkan.DescriptorSet.Copy (
 
 	-- ** Copy
 
-	Copy(..), CopyListToMiddle(..)
+	Copy(..), CopyListToMiddle(..), BindingAndArrayElem
 
 	) where
 
 import Data.TypeLevel.List qualified as TypeLevel.Length
 import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem qualified as Common
-import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer qualified as Common
+import Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer qualified as Buffer
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
@@ -54,8 +54,8 @@ instance CopyListToMiddle '[] where
 
 instance (
 	WithPoked (TMaybe.M n),
-	BindingAndArrayElement (TIndex.I1_2 slbtss) bts is,
-	BindingAndArrayElement (TIndex.I1_2 slbtsd) bts id,
+	BindingAndArrayElem (TIndex.I1_2 slbtss) bts is,
+	BindingAndArrayElem (TIndex.I1_2 slbtsd) bts id,
 	BindingLength bts, CopyListToMiddle copyArgs ) =>
 	CopyListToMiddle (
 		'(n, sdss, slbtss, is, sdsd, slbtsd, id, bts) ':
@@ -63,8 +63,8 @@ instance (
 	copyListToMiddleNew (U8 c :** cs) = copyToMiddleNew c :** copyListToMiddleNew cs
 
 copyToMiddleNew :: (
-	BindingAndArrayElement (TIndex.I1_2 slbtss) bts is,
-	BindingAndArrayElement (TIndex.I1_2 slbtsd) bts id, BindingLength bts ) =>
+	BindingAndArrayElem (TIndex.I1_2 slbtss) bts is,
+	BindingAndArrayElem (TIndex.I1_2 slbtsd) bts id, BindingLength bts ) =>
 	Copy n sdss slbtss is sdsd slbtsd id bts -> M.Copy n
 copyToMiddleNew c@Copy {
 	copyNextNew = mnxt, copySrcSetNew = D _ ss, copyDstSetNew = D _ ds } = let
@@ -78,8 +78,8 @@ copyToMiddleNew c@Copy {
 		M.copyDstArrayElement = dae, M.copyDescriptorCount = cnt }
 
 getCopyArgsNew :: forall n sdss slbtss sdsd slbtsd bts is id . (
-	BindingAndArrayElement (TIndex.I1_2 slbtss) bts is,
-	BindingAndArrayElement (TIndex.I1_2 slbtsd) bts id,
+	BindingAndArrayElem (TIndex.I1_2 slbtss) bts is,
+	BindingAndArrayElem (TIndex.I1_2 slbtsd) bts id,
 	BindingLength bts ) =>
 	Copy n sdss slbtss is sdsd slbtsd id bts ->
 	(Word32, Word32, Word32, Word32, Word32)
@@ -88,23 +88,23 @@ getCopyArgsNew _ = let
 	(db, dae) = bindingAndArrayElement @(TIndex.I1_2 slbtsd) @bts @id in
 	(sb, sae, db, dae, bindingLength @bts)
 
-class BindingAndArrayElement
+class BindingAndArrayElem
 	(bts :: [Layout.BindingType])
 	(bt :: Layout.BindingType) (i :: Nat) where
 	bindingAndArrayElement :: Integral n => (n, n)
 
-instance Common.BindingAndArrayElem bts vobjs i =>
-	BindingAndArrayElement bts (Layout.Buffer vobjs) i where
-	bindingAndArrayElement = Common.bindingAndArrayElem @bts @vobjs @i 0 0
+instance Buffer.BindingAndArrayElemBuffer bts vobjs i =>
+	BindingAndArrayElem bts (Layout.Buffer vobjs) i where
+	bindingAndArrayElement = Buffer.bindingAndArrayElem @bts @vobjs @i 0 0
 
 instance Common.BindingAndArrayElemBufferView bts nmts i =>
-	BindingAndArrayElement bts (Layout.BufferView nmts) i where
+	BindingAndArrayElem bts (Layout.BufferView nmts) i where
 	bindingAndArrayElement =
 		Common.bindingAndArrayElemBufferView @bts @nmts @i 0 0
 
 instance
 	Common.BindingAndArrayElemImage bts imgs i =>
-	BindingAndArrayElement bts (Layout.Image imgs) i where
+	BindingAndArrayElem bts (Layout.Image imgs) i where
 	bindingAndArrayElement = Common.bindingAndArrayElemImage @bts @imgs @i 0 0
 
 class BindingLength (bt :: Layout.BindingType) where

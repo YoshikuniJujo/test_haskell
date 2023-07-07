@@ -1327,9 +1327,9 @@ class Update smsbs slbtss where
 instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
-	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
-	Vk.DscSet.T.BindingAndArrayElem (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
+	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
+	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
+	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
 	Vk.DscSet.T.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing],
 	Vk.DscSet.T.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")],
 	Vk.DscSet.T.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],

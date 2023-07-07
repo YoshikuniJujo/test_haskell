@@ -927,7 +927,7 @@ instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil = pur
 instance Update '[t] '[] where update _ (HeteroParList.Singleton _) HeteroParList.Nil = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem
+	Vk.DscSet.T.BindingAndArrayElemBuffer
 		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
 	Vk.DscSet.T.UpdateDynamicLength

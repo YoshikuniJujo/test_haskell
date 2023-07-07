@@ -1119,10 +1119,10 @@ class Update csbs lyts where
 instance Update '[] '[] where update _ HL.Nil HL.Nil _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem
+	Vk.DscSet.T.BindingAndArrayElemBuffer
 		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj] 0,
-	Vk.DscSet.T.BindingAndArrayElem
+	Vk.DscSet.T.BindingAndArrayElemBuffer
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj] 0,
 	Vk.DscSet.T.UpdateDynamicLength

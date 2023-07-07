@@ -72,7 +72,7 @@ class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg (i :: Nat) where
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
-instance (BindingAndArrayElem bts (TMapIndex.M3_4 barg) i) =>
+instance (BindingAndArrayElemBuffer bts (TMapIndex.M3_4 barg) i) =>
 	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer barg) i where
 	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem @bts @(TMapIndex.M3_4 barg) @i 0 0,
