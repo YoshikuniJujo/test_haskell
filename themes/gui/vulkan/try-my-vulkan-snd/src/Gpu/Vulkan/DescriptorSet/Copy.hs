@@ -94,7 +94,7 @@ class BindingAndArrayElem
 
 instance Buffer.BindingAndArrayElemBuffer bts vobjs i =>
 	BindingAndArrayElem bts (Layout.Buffer vobjs) i where
-	bindingAndArrayElem = Buffer.bindingAndArrayElem @bts @vobjs @i 0 0
+	bindingAndArrayElem = Buffer.bindingAndArrayElemBuffer @bts @vobjs @i 0 0
 
 instance Common.BindingAndArrayElemBufferView bts nmts i =>
 	BindingAndArrayElem bts (Layout.BufferView nmts) i where
