@@ -15,6 +15,8 @@ import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
 
 -- * BUFFER
 
+-- ** BindingAndArrayElemBuffer
+
 class BindingAndArrayElemBuffer
 	(bts :: [Layout.BindingType]) (objs :: [VObj.Object]) (i :: Nat) where
 	bindingAndArrayElem :: Integral n => n -> n -> (n, n)
@@ -82,10 +84,6 @@ instance {-# OVERLAPPABLE #-} (
 	bindingAndArrayElem c d =
 		bindingAndArrayElem @('Layout.Buffer os' ': bts) @os @(i - 1) c d
 
-instance BindingAndArrayElemBuffer bts (oo ': os) i =>
-	BindingAndArrayElemBuffer ('Layout.Buffer '[] ': bts) (oo ': os) i where
-	bindingAndArrayElem c _d = bindingAndArrayElem @bts @(oo ': os) @i (c + 1) 0
-
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemBuffer ('Layout.Buffer os' ': bts) (oo ': os) i =>
 	BindingAndArrayElemBuffer
@@ -96,6 +94,8 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemBuffer bts (oo ': os) i =>
 	BindingAndArrayElemBuffer (bt ': bts) (oo ': os) i where
 	bindingAndArrayElem c _d = bindingAndArrayElem @bts @(oo ': os) @i (c + 1) 0
+
+-- ** IsPrefixObject
 
 class IsPrefixObject (objs :: [VObj.Object]) (objs' :: [VObj.Object])
 
