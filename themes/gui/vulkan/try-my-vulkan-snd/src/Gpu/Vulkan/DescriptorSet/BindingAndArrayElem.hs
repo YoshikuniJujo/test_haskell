@@ -43,11 +43,6 @@ instance {-# OVERLAPPABLE #-}
 	bindingAndArrayElemImage b ae = bindingAndArrayElemImage
 		@('Lyt.Image liargs ': bts) @(iarg ': iargs) @(i - 1) b (ae + 1)
 
-instance BindingAndArrayElemImage bts iargs i =>
-	BindingAndArrayElemImage ('Lyt.Image '[] ': bts) iargs i where
-	bindingAndArrayElemImage b _ =
-		bindingAndArrayElemImage @bts @iargs @i (b + 1) 0
-
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemImage ('Lyt.Image liargs : bts) iargs i =>
 	BindingAndArrayElemImage
@@ -64,37 +59,33 @@ instance {-# OVERLAPPABLE #-}
 -- * BUFFER VIEW
 
 class BindingAndArrayElemBufferView
-	(bt :: [Lyt.BindingType])
-	(bvs :: [(Symbol, Type)]) (i :: Nat) where
+	(bt :: [Lyt.BindingType]) (bvargs :: [(Symbol, Type)]) (i :: Nat) where
 	bindingAndArrayElemBufferView :: Integral n => n -> n -> (n, n)
 
-instance TList.IsPrefixOf bvs bvs' =>
-	BindingAndArrayElemBufferView
-		('Lyt.BufferView ('(nm, t) ': bvs') ': bts)
-		('(nm, t) ': bvs) 0 where
+instance TList.IsPrefixOf bvargs lbvargs => BindingAndArrayElemBufferView
+		('Lyt.BufferView (bvarg ': lbvargs) ': bts)
+		(bvarg ': bvargs) 0 where
 	bindingAndArrayElemBufferView b a = (b, a)
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemBufferView
-		('Lyt.BufferView bvs' ': bts)
-		('(nm, t) ': bvs) (i - 1) =>
+		('Lyt.BufferView lbvargs ': bts) (bvarg ': bvargs) (i - 1) =>
 	BindingAndArrayElemBufferView
-		('Lyt.BufferView ('(nm, t) ': bvs') ': bts)
-		('(nm, t) ': bvs) i where
+		('Lyt.BufferView (bvarg ': lbvargs) ': bts)
+		(bvarg ': bvargs) i where
 	bindingAndArrayElemBufferView b a = bindingAndArrayElemBufferView
-		@('Lyt.BufferView bvs' ': bts)
-		@('(nm, t) ': bvs) @(i - 1) b a
+		@('Lyt.BufferView lbvargs ': bts) @(bvarg ': bvargs) @(i - 1)
+		b a
 
 instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView
-	('Lyt.BufferView bvs' ': bts) bvs i =>
+	('Lyt.BufferView lbvargs ': bts) bvargs i =>
 	BindingAndArrayElemBufferView
-		('Lyt.BufferView (nmt ': bvs') ': bts) bvs i where
+		('Lyt.BufferView (bvarg ': lbvargs) ': bts) bvargs i where
 	bindingAndArrayElemBufferView b a = bindingAndArrayElemBufferView
-		@('Lyt.BufferView bvs' ': bts) @bvs @i b (a + 1)
+		@('Lyt.BufferView lbvargs ': bts) @bvargs @i b (a + 1)
 
-instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView bts bvs i =>
+instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView bts bvargs i =>
 	BindingAndArrayElemBufferView
---	('Lyt.BufferView '[] ': bts) bvs where
-		(bt ': bts) bvs i where
+		(bt ': bts) bvargs i where
 	bindingAndArrayElemBufferView b _a =
-		bindingAndArrayElemBufferView @bts @bvs @i (b + 1) 0
+		bindingAndArrayElemBufferView @bts @bvargs @i (b + 1) 0
