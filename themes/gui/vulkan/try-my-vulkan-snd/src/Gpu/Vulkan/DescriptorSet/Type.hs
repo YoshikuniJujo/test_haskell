@@ -3,7 +3,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet.Type where
+module Gpu.Vulkan.DescriptorSet.Type (D(..)) where
 
 import Data.Kind
 import Data.Kind.Object qualified as KObj
@@ -12,9 +12,9 @@ import Data.IORef
 import Data.HeteroParList qualified as HeteroParList
 
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
-import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Layout
+import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Lyt
 
-data D s (slbts :: (Type, [Layout.BindingType])) = D
+data D s (slbts :: (Type, [Lyt.BindingType])) = D
 	(IORef (HeteroParList.PL2 KObj.ObjectLength
-		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))))
+		(Lyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))))
 	M.D
