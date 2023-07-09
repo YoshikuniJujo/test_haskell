@@ -34,7 +34,7 @@ module Gpu.Vulkan.Object (
 
 	-- * SYNONYMS
 
-	StaticObject, DynamicObject,
+	StObj, DynObj,
 
 	Atom, List, ObjImage, DynAtom, DynList,
 	pattern ObjectLengthAtom,
@@ -66,8 +66,8 @@ type ObjImage algn t nm = Static (K.Image algn t nm)
 type DynList n algn t nm = Dynamic n (K.List algn t nm)
 type DynAtom n algn t nm = Dynamic n (K.Atom algn t nm)
 
-type StaticObject algn mnm ot t = Static ('K.Object algn mnm ot t)
-type DynamicObject n algn mnm ot t = Dynamic n ('K.Object algn mnm ot t)
+type StObj algn mnm ot t = Static ('K.Object algn mnm ot t)
+type DynObj n algn mnm ot t = Dynamic n ('K.Object algn mnm ot t)
 
 data ObjectLength obj where
 	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static kobj)
