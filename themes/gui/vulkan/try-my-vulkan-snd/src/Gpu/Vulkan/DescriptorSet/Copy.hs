@@ -124,3 +124,6 @@ instance TList.Length iargs => BindingLength (Lyt.Image iargs) where
 
 instance TList.Length bvargs => BindingLength (Lyt.BufferView bvargs) where
 	bindingLength = TList.length @_ @bvargs
+
+instance TList.Length isargs => BindingLength (Lyt.ImageSampler isargs) where
+	bindingLength = TList.length @_ @isargs

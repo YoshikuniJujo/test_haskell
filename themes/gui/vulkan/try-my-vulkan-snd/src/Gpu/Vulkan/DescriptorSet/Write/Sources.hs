@@ -64,11 +64,11 @@ data WriteSources arg where
 		HeteroParList.PL (U4 Descriptor.ImageInfo) iiargs ->
 		WriteSources ('WriteSourcesArgImage iiargs)
 	BufferInfos ::
-		HeteroParList.PL (U4 Descriptor.BufferInfo) bufferInfoArgs ->
-		WriteSources ('WriteSourcesArgBuffer bufferInfoArgs)
+		HeteroParList.PL (U4 Descriptor.BufferInfo) biargs ->
+		WriteSources ('WriteSourcesArgBuffer biargs)
 	TexelBufferViews ::
-		HeteroParList.PL (U3 BufferView.B) texelBufferViewsArgs ->
-		WriteSources ('WriteSourcesArgBufferView texelBufferViewsArgs)
+		HeteroParList.PL (U3 BufferView.B) tbvargs ->
+		WriteSources ('WriteSourcesArgBufferView tbvargs)
 	WriteSourcesInNext :: DstBinding -> DstArrayElement ->
 		DescriptorCount -> WriteSources 'WriteSourcesArgInNext
 
