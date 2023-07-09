@@ -10,9 +10,19 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Write.Sources (
-	WriteSources(..), DstBinding, DstArrayElement, DescriptorCount,
-	WriteSourcesArg(..),
+
+	-- * WRITE SOURCES
+
+	-- ** Types
+
+	WriteSources(..), WriteSourcesArg(..),
+	DstBinding, DstArrayElement, DescriptorCount,
+
+	-- ** WriteSourcesToMiddle
+
 	WriteSourcesToMiddle(..),
+
+	-- ** WriteSourcesUpdateDynamicLengths
 
 	WriteSourcesUpdateDynamicLengths(..),
 
@@ -45,10 +55,14 @@ import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.BufferView.Internal qualified as BufferView
 import Gpu.Vulkan.BufferView.Middle qualified as BufferView.M
 
+-- * WRITE SOURCES
+
+-- ** Types
+
 data WriteSources arg where
 	ImageInfos ::
-		HeteroParList.PL (U4 Descriptor.ImageInfo) imageInfoArgs ->
-		WriteSources ('WriteSourcesArgImage imageInfoArgs)
+		HeteroParList.PL (U4 Descriptor.ImageInfo) iiargs ->
+		WriteSources ('WriteSourcesArgImage iiargs)
 	BufferInfos ::
 		HeteroParList.PL (U4 Descriptor.BufferInfo) bufferInfoArgs ->
 		WriteSources ('WriteSourcesArgBuffer bufferInfoArgs)
@@ -58,15 +72,17 @@ data WriteSources arg where
 	WriteSourcesInNext :: DstBinding -> DstArrayElement ->
 		DescriptorCount -> WriteSources 'WriteSourcesArgInNext
 
-type DstBinding = Word32
-type DstArrayElement = Word32
-type DescriptorCount = Word32
-
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, Symbol, T.Format, Type)]
 	| WriteSourcesArgBuffer [(Type, Type, Symbol, VObj.Object)]
 	| WriteSourcesArgBufferView [(Type, Symbol, Type)]
 	| WriteSourcesArgInNext
+
+type DstBinding = Word32
+type DstArrayElement = Word32
+type DescriptorCount = Word32
+
+-- ** WriteSourcesToMiddle
 
 class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg (i :: Nat) where
 	writeSourcesToMiddle ::
@@ -113,6 +129,8 @@ instance (BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvarg) i) =>
 instance WriteSourcesToMiddle bts 'WriteSourcesArgInNext i where
 	writeSourcesToMiddle (WriteSourcesInNext bdg ae cnt) =
 		((bdg, ae), M.WriteSourcesInNext cnt)
+
+-- ** WriteSourcesUpdateDynamicLengths
 
 class WriteSourcesUpdateDynamicLengths bts arg where
 	writeSourcesUpdateDynamicLength ::
