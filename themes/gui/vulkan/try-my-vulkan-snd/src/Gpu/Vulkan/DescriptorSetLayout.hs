@@ -21,6 +21,7 @@ module Gpu.Vulkan.DescriptorSetLayout (
 
 import Prelude hiding (length)
 
+import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
@@ -28,6 +29,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
@@ -72,7 +74,7 @@ data Binding (bt :: BindingType) where
 		bindingImageSamplerDescriptorType :: Descriptor.Type,
 		bindingImageSamplerStageFlags :: ShaderStageFlags,
 		bindingImageSamplerImmutableSamplers ::
-			HeteroParList.PL Sampler.S (MapSnd (fmtss :: [(T.Format, Type)]))
+			HeteroParList.PL Sampler.S (TMapIndex.M2_3 (fmtss :: [(Symbol, T.Format, Type)]))
 		} -> Binding ('ImageSampler fmtss)
 
 class BindingToMiddle bt where

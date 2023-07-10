@@ -17,7 +17,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
 newtype L s (bts :: [BindingType]) = L { unL :: M.L } deriving Show
 
 data BindingType
-	= Image [(Symbol, T.Format)] | ImageSampler [(T.Format, Type)]
+	= Image [(Symbol, T.Format)] | ImageSampler [(Symbol, T.Format, Type)]
 	| Buffer [VObj.Object] | BufferView [(Symbol, Type)]
 
 type family BindingTypeBufferObjects bt where

@@ -8,7 +8,7 @@ module Gpu.Vulkan.Descriptor (
 
 	-- * IMAGE INFO
 
-	ImageInfo(..)
+	ImageInfo(..), ImageInfoNoSampler(..)
 
 	) where
 

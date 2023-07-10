@@ -107,6 +107,11 @@ instance BindingAndArrayElemImage lbts iargs i =>
 	BindingAndArrayElem lbts (Lyt.Image iargs) i where
 	bindingAndArrayElem = bindingAndArrayElemImage @lbts @iargs @i 0 0
 
+instance BindingAndArrayElemImageWithImmutableSampler lbts (TMapIndex.M0'1_3 iargs) i =>
+	BindingAndArrayElem lbts (Lyt.ImageSampler iargs) i where
+	bindingAndArrayElem =
+		bindingAndArrayElemImageWithImmutableSampler @lbts @(TMapIndex.M0'1_3 iargs) @i 0 0
+
 instance BindingAndArrayElemBufferView lbts bvargs i =>
 	BindingAndArrayElem lbts (Lyt.BufferView bvargs) i where
 	bindingAndArrayElem = bindingAndArrayElemBufferView @lbts @bvargs @i 0 0

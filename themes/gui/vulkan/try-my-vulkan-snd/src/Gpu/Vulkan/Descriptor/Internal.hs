@@ -18,6 +18,7 @@ module Gpu.Vulkan.Descriptor.Internal (
 	-- * IMAGE INFO
 
 	ImageInfo(..), imageInfoToMiddle,
+	ImageInfoNoSampler(..), imageInfoNoSamplerToMiddle
 
 	) where
 
@@ -30,6 +31,8 @@ import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView as ImageView
+
+import Gpu.Vulkan.Sampler.Middle as Sampler.M
 
 data BufferInfo sm sb nm obj = forall objs .
 	(Show (Buffer.Binded sm sb nm objs), VObj.Offset obj objs) =>
@@ -57,5 +60,19 @@ imageInfoToMiddle ImageInfo {
 	imageInfoImageView = ImageView.I iv,
 	imageInfoImageLayout = lyt } = M.ImageInfo {
 	M.imageInfoSampler = Sampler.sToMiddle s,
+	M.imageInfoImageView = iv,
+	M.imageInfoImageLayout = lyt }
+
+data ImageInfoNoSampler fmt nm si = ImageInfoNoSampler {
+	imageInfoNoSamplerImageView :: ImageView.I fmt nm si,
+	imageInfoNoSamplerImageLayout :: Image.Layout }
+	deriving Show
+
+imageInfoNoSamplerToMiddle ::
+	ImageInfoNoSampler fmt nm si -> M.ImageInfo
+imageInfoNoSamplerToMiddle ImageInfoNoSampler {
+	imageInfoNoSamplerImageView = ImageView.I iv,
+	imageInfoNoSamplerImageLayout = lyt } = M.ImageInfo {
+	M.imageInfoSampler = Sampler.M.Null,
 	M.imageInfoImageView = iv,
 	M.imageInfoImageLayout = lyt }

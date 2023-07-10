@@ -11,6 +11,7 @@ module Gpu.Vulkan.DescriptorSet.BindingAndArrayElem (
 	-- * IMAGE
 
 	BindingAndArrayElemImage(..),
+	BindingAndArrayElemImageWithImmutableSampler(..),
 
 	-- * BUFFER VIEW
 
@@ -19,11 +20,14 @@ module Gpu.Vulkan.DescriptorSet.BindingAndArrayElem (
 import GHC.TypeLits
 import Data.Kind
 import Data.TypeLevel.List qualified as TList
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Lyt
 
 -- * IMAGE
+
+-- ** Image
 
 class BindingAndArrayElemImage
 	(lbts :: [Lyt.BindingType])
@@ -55,6 +59,41 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemImage (bt ': lbts) iargs i where
 	bindingAndArrayElemImage b _ =
 		bindingAndArrayElemImage @lbts @iargs @i (b + 1) 0
+
+-- ** Image With Immutable Sampler
+
+class BindingAndArrayElemImageWithImmutableSampler
+	(lbts :: [Lyt.BindingType])
+	(iargs :: [(Symbol, T.Format)]) (i :: Nat) where
+	bindingAndArrayElemImageWithImmutableSampler :: Integral n => n -> n -> (n, n)
+
+instance TList.IsPrefixOf iargs (TMapIndex.M0'1_3 liargs) =>
+	BindingAndArrayElemImageWithImmutableSampler
+		('Lyt.ImageSampler ('(nm, fmt, ss) ': liargs) : lbts) ('(nm, fmt) ': iargs) 0 where
+	bindingAndArrayElemImageWithImmutableSampler b ae = (b, ae)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemImageWithImmutableSampler
+		('Lyt.ImageSampler liargs ': lbts) ('(nm, fmt) ': iargs) (i - 1) =>
+	BindingAndArrayElemImageWithImmutableSampler
+		('Lyt.ImageSampler ('(nm, fmt, ss) ': liargs) ': lbts) ('(nm, fmt) ': iargs) i where
+	bindingAndArrayElemImageWithImmutableSampler b ae =
+		bindingAndArrayElemImageWithImmutableSampler
+			@('Lyt.ImageSampler liargs ': lbts) @('(nm, fmt) ': iargs)
+			@(i - 1) b (ae + 1)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemImageWithImmutableSampler ('Lyt.ImageSampler liargs : lbts) iargs i =>
+	BindingAndArrayElemImageWithImmutableSampler
+		('Lyt.ImageSampler (liarg ': liargs) ': lbts) iargs i where
+	bindingAndArrayElemImageWithImmutableSampler b a = bindingAndArrayElemImageWithImmutableSampler
+		@('Lyt.ImageSampler liargs : lbts) @iargs @i b (a + 1)
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElemImageWithImmutableSampler lbts iargs i =>
+	BindingAndArrayElemImageWithImmutableSampler (bt ': lbts) iargs i where
+	bindingAndArrayElemImageWithImmutableSampler b _ =
+		bindingAndArrayElemImageWithImmutableSampler @lbts @iargs @i (b + 1) 0
 
 -- * BUFFER VIEW
 

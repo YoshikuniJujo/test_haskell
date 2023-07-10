@@ -63,6 +63,9 @@ data WriteSources arg where
 	ImageInfos ::
 		HeteroParList.PL (U4 Descriptor.ImageInfo) iiargs ->
 		WriteSources ('WriteSourcesArgImage iiargs)
+	ImageInfosNoSampler ::
+		HeteroParList.PL (U3 Descriptor.ImageInfoNoSampler) iiargs ->
+		WriteSources ('WriteSourcesArgImageNoSampler iiargs)
 	BufferInfos ::
 		HeteroParList.PL (U4 Descriptor.BufferInfo) biargs ->
 		WriteSources ('WriteSourcesArgBuffer biargs)
@@ -74,6 +77,7 @@ data WriteSources arg where
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, Symbol, T.Format, Type)]
+	| WriteSourcesArgImageNoSampler [(Symbol, T.Format, Type)]
 	| WriteSourcesArgBuffer [(Type, Type, Symbol, VObj.Object)]
 	| WriteSourcesArgBufferView [(Type, Symbol, Type)]
 	| WriteSourcesArgInNext
@@ -113,6 +117,20 @@ instance (
 			[Descriptor.M.ImageInfo]
 		imageInfosToMiddle = HeteroParList.toList \(U4 ii) ->
 			Descriptor.imageInfoToMiddle ii
+
+instance (
+	BindingAndArrayElemImageWithImmutableSampler bts (TMapIndex.M0'1_3 iarg) i
+	) =>
+	WriteSourcesToMiddle bts ('WriteSourcesArgImageNoSampler iarg) i where
+	writeSourcesToMiddle (ImageInfosNoSampler iis) = (
+		bindingAndArrayElemImageWithImmutableSampler @bts @(TMapIndex.M0'1_3 iarg) @i 0 0,
+		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
+		where
+		imageInfosToMiddle ::
+			HeteroParList.PL (U3 Descriptor.ImageInfoNoSampler) iiargs ->
+			[Descriptor.M.ImageInfo]
+		imageInfosToMiddle = HeteroParList.toList \(U3 ii) ->
+			Descriptor.imageInfoNoSamplerToMiddle ii
 
 instance (BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvarg) i) =>
 	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvarg) i where
