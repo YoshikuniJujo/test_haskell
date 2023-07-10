@@ -17,7 +17,7 @@ module Gpu.Vulkan.DescriptorSetLayout (
 
 	-- ** Binding
 
-	Binding(..), BindingListToMiddle, BindingToMiddle,
+	Binding(..), BindingListToMiddle,
 
 	-- ** BindingType
 
