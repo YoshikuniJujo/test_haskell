@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -27,6 +27,10 @@ import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Sampler.Core as C
 
 newtype S = S C.S deriving Show
+
+pattern Null :: S
+pattern Null <- S NullHandle where
+	Null = S NullHandle
 
 data CreateInfo mn = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
