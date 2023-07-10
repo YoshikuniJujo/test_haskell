@@ -74,7 +74,6 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
-import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 

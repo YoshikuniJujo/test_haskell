@@ -20,20 +20,16 @@ data BindingType
 	= Image [(Symbol, T.Format)] | ImageSampler [(Symbol, T.Format, Type)]
 	| Buffer [VObj.Object] | BufferView [(Symbol, Type)]
 
-type family BindingTypeBufferObjects bt where
-	BindingTypeBufferObjects (Buffer os) = os
-	BindingTypeBufferObjects _ = '[]
-
-type family BindingTypeBufferOnlyDynamics bt where
-	BindingTypeBufferOnlyDynamics bt =
-		VObj.OnlyDynamics (BindingTypeBufferObjects bt)
-
 type family BindingTypeListBufferOnlyDynamics bts where
 	BindingTypeListBufferOnlyDynamics '[] = '[]
 	BindingTypeListBufferOnlyDynamics (bt ': bts) =
 		BindingTypeBufferOnlyDynamics bt ':
 		BindingTypeListBufferOnlyDynamics bts
 
-type family MapSnd (tpls :: [(t, u)]) where
-	MapSnd '[] = '[]
-	MapSnd ('(_, s) ': tpls) = s ': MapSnd tpls
+type family BindingTypeBufferOnlyDynamics bt where
+	BindingTypeBufferOnlyDynamics bt =
+		VObj.OnlyDynamics (BindingTypeBufferObjects bt)
+
+type family BindingTypeBufferObjects bt where
+	BindingTypeBufferObjects (Buffer os) = os
+	BindingTypeBufferObjects _ = '[]

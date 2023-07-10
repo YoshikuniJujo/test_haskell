@@ -77,6 +77,7 @@ library
       Gpu.Vulkan.DescriptorSet.Write
       Gpu.Vulkan.DescriptorSet.Write.Sources
       Gpu.Vulkan.DescriptorSetLayout
+      Gpu.Vulkan.DescriptorSetLayout.Enum
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
       Gpu.Vulkan.Device

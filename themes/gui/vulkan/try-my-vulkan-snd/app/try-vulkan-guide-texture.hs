@@ -140,7 +140,6 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
-import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
