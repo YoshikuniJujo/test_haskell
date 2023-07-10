@@ -88,14 +88,14 @@ type DescriptorCount = Word32
 
 -- ** WriteSourcesToMiddle
 
-class WriteSourcesToMiddle (bts :: [Layout.BindingType]) wsarg (i :: Nat) where
+class WriteSourcesToMiddle (lbts :: [Layout.BindingType]) wsarg (i :: Nat) where
 	writeSourcesToMiddle ::
 		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
 
-instance (BindingAndArrayElemBuffer bts (TMapIndex.M3_4 barg) i) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgBuffer barg) i where
+instance (BindingAndArrayElemBuffer lbts (TMapIndex.M3_4 barg) i) =>
+	WriteSourcesToMiddle lbts ('WriteSourcesArgBuffer barg) i where
 	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElemBuffer @bts @(TMapIndex.M3_4 barg) @i 0 0,
+		bindingAndArrayElemBuffer @lbts @(TMapIndex.M3_4 barg) @i 0 0,
 		M.WriteSourcesBufferInfo $ bufferInfoListToMiddle bis )
 		where
 		bufferInfoListToMiddle ::
@@ -104,12 +104,10 @@ instance (BindingAndArrayElemBuffer bts (TMapIndex.M3_4 barg) i) =>
 		bufferInfoListToMiddle = HeteroParList.toList \(U4 bi) ->
 			Descriptor.bufferInfoToMiddle bi
 
-instance (
-	BindingAndArrayElemImage bts (TMapIndex.M1'2_4 iarg) i
-	) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgImage iarg) i where
+instance BindingAndArrayElemImage lbts (TMapIndex.M1'2_4 iarg) i =>
+	WriteSourcesToMiddle lbts ('WriteSourcesArgImage iarg) i where
 	writeSourcesToMiddle (ImageInfos iis) = (
-		bindingAndArrayElemImage @bts @(TMapIndex.M1'2_4 iarg) @i 0 0,
+		bindingAndArrayElemImage @lbts @(TMapIndex.M1'2_4 iarg) @i 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 		where
 		imageInfosToMiddle ::
@@ -118,62 +116,59 @@ instance (
 		imageInfosToMiddle = HeteroParList.toList \(U4 ii) ->
 			Descriptor.imageInfoToMiddle ii
 
-instance (
-	BindingAndArrayElemImageWithImmutableSampler bts (TMapIndex.M0'1_3 iarg) i
-	) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgImageNoSampler iarg) i where
+instance BindingAndArrayElemImageWithImmutableSampler
+		lbts (TMapIndex.M0'1_3 iarg) i =>
+	WriteSourcesToMiddle lbts ('WriteSourcesArgImageNoSampler iarg) i where
 	writeSourcesToMiddle (ImageInfosNoSampler iis) = (
-		bindingAndArrayElemImageWithImmutableSampler @bts @(TMapIndex.M0'1_3 iarg) @i 0 0,
+		bindingAndArrayElemImageWithImmutableSampler
+			@lbts @(TMapIndex.M0'1_3 iarg) @i 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 		where
 		imageInfosToMiddle ::
-			HeteroParList.PL (U3 Descriptor.ImageInfoNoSampler) iiargs ->
+			HeteroParList.PL
+				(U3 Descriptor.ImageInfoNoSampler) iiargs ->
 			[Descriptor.M.ImageInfo]
 		imageInfosToMiddle = HeteroParList.toList \(U3 ii) ->
 			Descriptor.imageInfoNoSamplerToMiddle ii
 
-instance (BindingAndArrayElemBufferView bts (TMapIndex.M1'2_3 bvarg) i) =>
-	WriteSourcesToMiddle bts ('WriteSourcesArgBufferView bvarg) i where
+instance BindingAndArrayElemBufferView lbts (TMapIndex.M1'2_3 bvarg) i =>
+	WriteSourcesToMiddle lbts ('WriteSourcesArgBufferView bvarg) i where
 	writeSourcesToMiddle (TexelBufferViews bvarg) = (
 		bindingAndArrayElemBufferView
-			@bts @(TMapIndex.M1'2_3 bvarg) @i 0 0,
+			@lbts @(TMapIndex.M1'2_3 bvarg) @i 0 0,
 		M.WriteSourcesBufferView $ bvsToMiddle bvarg )
 		where
 		bvsToMiddle :: HeteroParList.PL (U3 BufferView.B) bvs ->
 			[BufferView.M.B]
-		bvsToMiddle = HeteroParList.toList
-			\(U3 (BufferView.B mbv)) -> mbv
+		bvsToMiddle =
+			HeteroParList.toList \(U3 (BufferView.B mbv)) -> mbv
 
-instance WriteSourcesToMiddle bts 'WriteSourcesArgInNext i where
+instance WriteSourcesToMiddle lbts 'WriteSourcesArgInNext i where
 	writeSourcesToMiddle (WriteSourcesInNext bdg ae cnt) =
 		((bdg, ae), M.WriteSourcesInNext cnt)
 
 -- ** WriteSourcesUpdateDynamicLengths
 
-class WriteSourcesUpdateDynamicLengths bts arg where
+class WriteSourcesUpdateDynamicLengths lbts wsarg where
 	writeSourcesUpdateDynamicLength ::
-		D sds '(sl, bts) -> WriteSources arg -> IO ()
+		D sds '(sl, lbts) -> WriteSources wsarg -> IO ()
 
 instance (
-	UpdateDynamicLength bts (TMapIndex.M3_4 foo),
-	HeteroParList.Map3_4 foo ) =>
-	WriteSourcesUpdateDynamicLengths bts (WriteSourcesArgBuffer foo) where
+	TMapIndex.M3_4 bargs ~ objs, UpdateDynamicLength lbts objs,
+	HeteroParList.Map3_4 bargs ) =>
+	WriteSourcesUpdateDynamicLengths
+		lbts (WriteSourcesArgBuffer bargs) where
 	writeSourcesUpdateDynamicLength (D rlns _) (BufferInfos bis) = do
 		lns <- readIORef rlns
-		(writeIORef rlns
-			. updateDynamicLength @bts @(TMapIndex.M3_4 foo) lns
-			. (VObj.onlyDynamicLength @(TMapIndex.M3_4 foo)))
-			(updateDynamicLengthsBufferInfos @foo)
+		writeIORef rlns
+			. updateDynamicLength @lbts @objs lns
+			. VObj.onlyDynamicLength @objs
+			$ HeteroParList.map3_4 (toLength . unU4) bis
 		where
-		updateDynamicLengthsBufferInfos :: HeteroParList.Map3_4 ss =>
-			HeteroParList.PL VObj.ObjectLength (TMapIndex.M3_4 foo)
-		updateDynamicLengthsBufferInfos =
-			HeteroParList.map3_4 (toLength . unU4) bis
-			where
-			toLength :: Descriptor.BufferInfo sm sb nm obj ->
-				VObj.ObjectLength obj
-			toLength (Descriptor.BufferInfo (Buffer.Binded lns _)) =
-				HeteroParList.typeIndex lns
+		toLength :: Descriptor.BufferInfo sm sb nm obj ->
+			VObj.ObjectLength obj
+		toLength (Descriptor.BufferInfo (Buffer.Binded lns _)) =
+			HeteroParList.typeIndex lns
 
-instance {-# OVERLAPPABLE #-} WriteSourcesUpdateDynamicLengths bts foo where
+instance {-# OVERLAPPABLE #-} WriteSourcesUpdateDynamicLengths lbts wsarg where
 	writeSourcesUpdateDynamicLength _ _ = pure ()
