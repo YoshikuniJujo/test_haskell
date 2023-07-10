@@ -6,9 +6,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device (
-	D, create, M.CreateInfo(..), M.QueueCreateInfo(..), M.CreateFlags,
-	getQueue,
-	waitIdle
+
+	-- * CREATE
+
+	create, D, M.CreateInfo(..), M.CreateFlags, M.QueueCreateInfo(..),
+
+	-- * GET QUEUE AND WAIT IDLE
+
+	getQueue, waitIdle
+
 	) where
 
 import Foreign.Storable.PeekPoke
