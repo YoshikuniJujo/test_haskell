@@ -218,7 +218,7 @@ createInstance f = do
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
 			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
-				'Nothing '[] () () () ())) 'Nothing
+				'Nothing '[] ())) 'Nothing
 		createInfo = Vk.Ist.M.CreateInfo {
 			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
 			Vk.Ist.M.createInfoFlags = def,
@@ -237,7 +237,7 @@ setupDebugMessenger ::
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
 	debugMessengerCreateInfo nil' \m -> f m
 
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] () () () ()
+debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
 	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,

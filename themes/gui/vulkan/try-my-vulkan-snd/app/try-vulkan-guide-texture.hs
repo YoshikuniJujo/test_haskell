@@ -243,7 +243,7 @@ istCreateInfoNext :: Bool ->
 	(forall mn . WithPoked (TMaybe.M mn) => TMaybe.M mn -> b) -> b
 istCreateInfoNext = TBool.b @WithPoked TMaybe.N (TMaybe.J debugMessengerInfo)
 
-debugMessengerInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] () () () ()
+debugMessengerInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
 	Vk.Ext.DbgUtls.Msngr.createInfoFlags = zeroBits,

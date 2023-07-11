@@ -208,7 +208,7 @@ createInstance f = do
 	where
 	msg = "validation layers requested, but not available!"
 	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo
-		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] () () () ())) 'Nothing
+		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ())) 'Nothing
 	crInfo exts = Vk.Ist.M.CreateInfo {
 		Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
 		Vk.Ist.M.createInfoFlags = def,
@@ -235,7 +235,7 @@ setupDebugMessenger ::
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
 	debugMessengerCreateInfo nil' \m -> f m
 
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] () () () ()
+debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
 	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
