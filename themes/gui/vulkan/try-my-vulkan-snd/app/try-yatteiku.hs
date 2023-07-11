@@ -84,7 +84,7 @@ import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
-import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
