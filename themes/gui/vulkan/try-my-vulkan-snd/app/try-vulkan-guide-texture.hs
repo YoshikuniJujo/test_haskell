@@ -903,7 +903,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
 createImage pd dv ex tlng usg prs f =
-	Vk.Img.createNew @'Nothing dv (imageInfo ex tlng usg) nil' \i ->
+	Vk.Img.create @'Nothing dv (imageInfo ex tlng usg) nil' \i ->
 	imageMemoryInfo pd dv prs i >>= \ii -> imageAllocateBind dv i ii f
 
 recreateImage :: Vk.T.FormatToValue fmt =>
@@ -912,7 +912,7 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
 recreateImage pd dv ex tlng usg prs i m = do
-	Vk.Img.recreateNew @'Nothing dv (imageInfo ex tlng usg) nil' i
+	Vk.Img.recreate @'Nothing dv (imageInfo ex tlng usg) nil' i
 	imageMemoryInfoB pd dv prs i >>= \ii -> imageReallocateBind dv i ii m
 
 imageInfo :: Vk.Extent2d ->
@@ -937,7 +937,7 @@ imageInfo ex tlng usg = Vk.Img.CreateInfo {
 imageMemoryInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
 	Vk.Img.I s nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
 imageMemoryInfo pd dv prs i = do
-	rqs <- Vk.Img.getMemoryRequirementsNew dv i
+	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits rqs) prs
 	pure Vk.Dvc.Mem.AllocateInfo {
 		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
@@ -946,7 +946,7 @@ imageMemoryInfo pd dv prs i = do
 imageMemoryInfoB :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
 	Vk.Img.Binded sm si nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
 imageMemoryInfoB pd dv prs i = do
-	rqs <- Vk.Img.getMemoryRequirementsBindedNew dv i
+	rqs <- Vk.Img.getMemoryRequirementsBinded dv i
 	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits rqs) prs
 	pure Vk.Dvc.Mem.AllocateInfo {
 		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
@@ -2099,9 +2099,9 @@ createImage' :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 			'[ '(si, 'Vk.Mm.K.Image nm fmt) ] ->
 		IO a) -> IO a
 createImage' pd dvc wdt hgt tlng usg prps f =
-	Vk.Img.createNew @'Nothing
+	Vk.Img.create @'Nothing
 		dvc (imageInfo ext tlng usg) nil' \img -> do
-	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
+	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits reqs) prps
 	print mt

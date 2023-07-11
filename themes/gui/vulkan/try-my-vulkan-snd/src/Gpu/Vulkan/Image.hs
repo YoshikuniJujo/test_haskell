@@ -13,11 +13,11 @@ module Gpu.Vulkan.Image (
 
 	-- * CREATE
 
-	createNew, recreateNew, I, Binded, CreateInfo(..),
+	create, recreate, I, Binded, CreateInfo(..),
 
 	-- * GET MEMORY REQUIREMENTS
 
-	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
+	getMemoryRequirements, getMemoryRequirementsBinded,
 
 	-- * MEMORY BARRIER
 

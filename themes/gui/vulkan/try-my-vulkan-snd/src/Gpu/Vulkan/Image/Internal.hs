@@ -10,9 +10,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image.Internal (
-	I, Binded, createNew, recreateNew, CreateInfo(..),
+	I, Binded, create, recreate, CreateInfo(..),
 
-	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
+	getMemoryRequirements, getMemoryRequirementsBinded,
 	M.SubresourceRange(..), MemoryBarrier(..),
 	MemoryBarrierListToMiddle(..),
 
@@ -46,36 +46,36 @@ import qualified Gpu.Vulkan.Image.Middle as M
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 import qualified Gpu.Vulkan.Image.Enum as I
 
-createNew :: (
+create :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle msn2n2 ) =>
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn2n2 ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall s . I s nm fmt -> IO a) -> IO a
-createNew (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
+create (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
 	(M.create mdvc (createInfoToMiddle ci) macd)
 	(\i -> M.destroy mdvc i macd)
 	(f .I)
 
-recreateNew :: (
-	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc,
+recreate :: (
+	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
 	T.FormatToValue fmt ) =>
 	Device.D sd -> CreateInfo mn fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	Binded si sm nm fmt -> IO ()
-recreateNew (Device.D mdvc) ci
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	Binded sm si nm fmt -> IO ()
+recreate (Device.D mdvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (Binded i) =
 	M.recreate mdvc (createInfoToMiddle ci) macc macc i
 
-getMemoryRequirementsNew :: Device.D sd -> I s nm fmt -> IO Memory.Requirements
-getMemoryRequirementsNew (Device.D dvc) (I img) =
+getMemoryRequirements :: Device.D sd -> I si nm fmt -> IO Memory.Requirements
+getMemoryRequirements (Device.D dvc) (I img) =
 	M.getMemoryRequirements dvc img
 
-getMemoryRequirementsBindedNew :: Device.D sd -> Binded sm si nm fmt -> IO Memory.Requirements
-getMemoryRequirementsBindedNew (Device.D dvc) (Binded img) =
+getMemoryRequirementsBinded :: Device.D sd -> Binded sm si nm fmt -> IO Memory.Requirements
+getMemoryRequirementsBinded (Device.D dvc) (Binded img) =
 	M.getMemoryRequirements dvc img
 
-data MemoryBarrier mn si sm nm fmt = MemoryBarrier {
+data MemoryBarrier mn sm si nm fmt = MemoryBarrier {
 	memoryBarrierNext :: TMaybe.M mn,
 	memoryBarrierSrcAccessMask :: AccessFlags,
 	memoryBarrierDstAccessMask :: AccessFlags,
@@ -83,7 +83,7 @@ data MemoryBarrier mn si sm nm fmt = MemoryBarrier {
 	memoryBarrierNewLayout :: Layout,
 	memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
 	memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
-	memoryBarrierImage :: Binded si sm nm fmt,
+	memoryBarrierImage :: Binded sm si nm fmt,
 	memoryBarrierSubresourceRange :: M.SubresourceRange }
 
 memoryBarrierToMiddle :: MemoryBarrier n si sm nm fmt -> M.MemoryBarrier n
@@ -108,16 +108,16 @@ memoryBarrierToMiddle MemoryBarrier {
 	M.memoryBarrierSubresourceRange = srr }
 
 class MemoryBarrierListToMiddle
-	(nsismnmfmts :: [(Maybe Type, Type, Type, Symbol, T.Format)])  where
+	(mbargs :: [(Maybe Type, Type, Type, Symbol, T.Format)])  where
 	memoryBarrierListToMiddle ::
-		HeteroParList.PL (U5 MemoryBarrier) nsismnmfmts ->
-		HeteroParList.PL M.MemoryBarrier (TMapIndex.M0_5 nsismnmfmts)
+		HeteroParList.PL (U5 MemoryBarrier) mbargs ->
+		HeteroParList.PL M.MemoryBarrier (TMapIndex.M0_5 mbargs)
 
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
-instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle nsismnmfmts) =>
-	MemoryBarrierListToMiddle ('(mn, si, sm, nm, fmt) ': nsismnmfmts) where
+instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle mbargs) =>
+	MemoryBarrierListToMiddle ('(mn, si, sm, nm, fmt) ': mbargs) where
 	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
