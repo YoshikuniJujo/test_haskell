@@ -119,7 +119,7 @@ enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
 
 instance Default CreateFlags where def = zeroBits
 
-data CreateInfo mn cb ql cbl obj ud = CreateInfo {
+data CreateInfo mn cb ud = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoMessageSeverity :: MessageSeverityFlags,
@@ -127,19 +127,19 @@ data CreateInfo mn cb ql cbl obj ud = CreateInfo {
 	createInfoFnUserCallback :: FnCallback cb ud,
 	createInfoUserData :: Maybe ud }
 
-instance Sizable (CreateInfo n cb ql cbl obj ud) where
+instance Sizable (CreateInfo n cb ud) where
 	sizeOf' = sizeOf @C.CreateInfo undefined
 	alignment' = alignment @C.CreateInfo undefined
 
 instance (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud) =>
-	WithPoked (CreateInfo mn cb ql cbl obj ud) where
+	WithPoked (CreateInfo mn cb ud) where
 	withPoked' ci f = alloca \pcci -> do
 		createInfoToCore' ci $ \cci -> poke pcci cci
 		f . ptrS $ castPtr pcci
 
 createInfoToCore' :: (
 	WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud ) =>
-	CreateInfo mn cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO ()
+	CreateInfo mn cb ud -> (C.CreateInfo -> IO a) -> IO ()
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -161,7 +161,7 @@ createInfoToCore' CreateInfo {
 newtype M = M C.M deriving Show
 
 create :: (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud) =>
-	Instance.I -> CreateInfo mn cb ql cbl obj ud ->
+	Instance.I -> CreateInfo mn cb ud ->
 	TPMaybe.M AllocationCallbacks.A mc -> IO M
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do
 	createInfoToCore' ci \cci ->

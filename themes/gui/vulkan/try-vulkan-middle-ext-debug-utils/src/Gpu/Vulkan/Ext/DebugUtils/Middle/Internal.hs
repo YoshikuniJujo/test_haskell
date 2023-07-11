@@ -25,6 +25,7 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Foreign.C.String
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Maybe
 import Data.String
 import System.IO.Unsafe
@@ -64,21 +65,22 @@ labelFromCore C.Label {
 		labelColor = fromJust $ rgbaDouble r g b a }
 labelFromCore _ = error "C.labelColor should be [r, g, b, a]"
 
-data ObjectNameInfo n = ObjectNameInfo {
-	objectNameInfoNext :: Maybe n,
+data ObjectNameInfo mn = ObjectNameInfo {
+	objectNameInfoNext :: TMaybe.M mn,
 	objectNameInfoObjectType :: ObjectType,
 	objectNameInfoObjectHandle :: ObjectHandle,
 	objectNameInfoObjectName :: Maybe T.Text }
-	deriving Show
 
-objectNameInfoFromCore :: Peek n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
+deriving instance Show (TMaybe.M mn) => Show (ObjectNameInfo mn)
+
+objectNameInfoFromCore :: Peek (TMaybe.M mn) => C.ObjectNameInfo -> IO (ObjectNameInfo mn)
 objectNameInfoFromCore C.ObjectNameInfo {
 	C.objectNameInfoPNext = pnxt,
 	C.objectNameInfoObjectType = ot,
 	C.objectNameInfoObjectHandle = oh,
 	C.objectNameInfoPObjectName = con
 	} = do
-	mnxt <- peekMaybe $ castPtr pnxt
+	mnxt <- peek' $ castPtr pnxt
 	mon <- case con of
 		NullPtr -> pure Nothing
 		p -> Just <$> cStringToText p
