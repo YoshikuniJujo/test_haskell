@@ -1,5 +1,5 @@
 name:                try-vulkan-middle-ext-debug-utils
-version:             0.1.0.2
+version:             0.1.0.3
 github:              "YoshikuniJujo/try-vulkan-middle-ext-debug-utils"
 license:             BSD3
 author:              "Yoshikuni Jujo"
