@@ -66,7 +66,7 @@ data CallbackData ns = CallbackData {
 	callbackDataMessage :: T.Text,
 	callbackDataQueueLabels :: [Label],
 	callbackDataCmdBufLabels :: [Label],
-	callbackDataObjects :: [ObjectNameInfoResult] }
+	callbackDataObjects :: [ObjectNameInfoNoNext] }
 
 deriving instance Show (HeteroParList.PL Maybe ns) => Show (CallbackData ns)
 
@@ -93,7 +93,7 @@ callbackDataFromCore C.CallbackData {
 	ccbls <- peekArray' cblc pccbls
 	cbls <- labelFromCore `mapM` ccbls
 	cobjs <- peekArray' objc pcobjs
-	objs <- objectNameInfoResultFromCore `mapM` cobjs
+	objs <- objectNameInfoNoNextFromCore `mapM` cobjs
 	pure CallbackData {
 		callbackDataNext = mnxt,
 		callbackDataFlags = CallbackDataFlags flgs,

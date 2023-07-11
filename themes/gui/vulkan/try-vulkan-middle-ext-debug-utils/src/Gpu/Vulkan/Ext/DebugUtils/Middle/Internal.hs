@@ -13,7 +13,7 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 	-- * LABEL AND OBJECT NAME INFO
 
 	Label(..), labelFromCore,
-	ObjectNameInfo(..), ObjectNameInfoResult, objectNameInfoResultFromCore
+	ObjectNameInfo(..), ObjectNameInfoNoNext(..), objectNameInfoNoNextFromCore
 
 	) where
 
@@ -21,7 +21,7 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 	extensionName,
 	Label(..), labelFromCore,
 	ObjectNameInfo(..), objectNameInfoFromCore,
-	ObjectNameInfoResult(..), objectNameInfoResultFromCore ) where
+	ObjectNameInfoNoNext(..), objectNameInfoNoNextFromCore ) where
 	-}
 
 import Foreign.Ptr
@@ -88,14 +88,14 @@ objectNameInfoFromCore C.ObjectNameInfo {
 		objectNameInfoObjectHandle = ObjectHandle oh,
 		objectNameInfoObjectName = mon }
 
-data ObjectNameInfoResult = ObjectNameInfoResult {
-	objectNameInfoResultObjectType :: ObjectType,
-	objectNameInfoResultObjectHandle :: ObjectHandle,
-	objectNameInfoResultObjectName :: Maybe T.Text }
+data ObjectNameInfoNoNext = ObjectNameInfoNoNext {
+	objectNameInfoNoNextObjectType :: ObjectType,
+	objectNameInfoNoNextObjectHandle :: ObjectHandle,
+	objectNameInfoNoNextObjectName :: Maybe T.Text }
 	deriving Show
 
-objectNameInfoResultFromCore :: C.ObjectNameInfo -> IO ObjectNameInfoResult
-objectNameInfoResultFromCore C.ObjectNameInfo {
+objectNameInfoNoNextFromCore :: C.ObjectNameInfo -> IO ObjectNameInfoNoNext
+objectNameInfoNoNextFromCore C.ObjectNameInfo {
 	C.objectNameInfoPNext = _pnxt,
 	C.objectNameInfoObjectType = ot,
 	C.objectNameInfoObjectHandle = oh,
@@ -104,7 +104,7 @@ objectNameInfoResultFromCore C.ObjectNameInfo {
 	mon <- case con of
 		NullPtr -> pure Nothing
 		p -> Just <$> cStringToText p
-	pure ObjectNameInfoResult {
-		objectNameInfoResultObjectType = ObjectType ot,
-		objectNameInfoResultObjectHandle = ObjectHandle oh,
-		objectNameInfoResultObjectName = mon }
+	pure ObjectNameInfoNoNext {
+		objectNameInfoNoNextObjectType = ObjectType ot,
+		objectNameInfoNoNextObjectHandle = ObjectHandle oh,
+		objectNameInfoNoNextObjectName = mon }
