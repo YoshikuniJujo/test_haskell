@@ -99,6 +99,7 @@ library
       Gpu.Vulkan.Image.Internal
       Gpu.Vulkan.Image.Type
       Gpu.Vulkan.ImageView
+      Gpu.Vulkan.ImageView.Type
       Gpu.Vulkan.Instance
       Gpu.Vulkan.Instance.Type
       Gpu.Vulkan.Internal

@@ -32,6 +32,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
+import qualified Gpu.Vulkan.ImageView.Type as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
 data CreateInfo mn sr aargs = CreateInfo {

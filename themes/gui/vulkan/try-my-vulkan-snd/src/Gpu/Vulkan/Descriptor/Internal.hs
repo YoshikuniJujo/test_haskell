@@ -31,6 +31,7 @@ import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView as ImageView
+import qualified Gpu.Vulkan.ImageView.Type as ImageView
 
 import Gpu.Vulkan.Sampler.Middle as Sampler.M
 

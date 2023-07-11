@@ -8,7 +8,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImageView (
-	I(..), createNew, recreateNew, CreateInfoNew(..) ) where
+
+	-- * CREATE
+
+	createNew, recreateNew, I, CreateInfoNew(..)
+
+	) where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
@@ -17,6 +22,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 
+import Gpu.Vulkan.ImageView.Type
 import Gpu.Vulkan.ImageView.Enum
 
 import qualified Gpu.Vulkan.TypeEnum as T
@@ -27,8 +33,6 @@ import qualified Gpu.Vulkan.Component as Component
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.ImageView.Middle as M
-
-newtype I (nm :: Symbol) (fmt :: T.Format) si = I M.I deriving Show
 
 data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M n,
