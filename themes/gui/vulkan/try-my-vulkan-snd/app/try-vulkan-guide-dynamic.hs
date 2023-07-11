@@ -122,7 +122,7 @@ import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fnc
-import qualified Gpu.Vulkan.Fence.Enum as Vk.Fnc
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.Fence.Enum as Vk.Fnc
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
@@ -1332,7 +1332,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 	Vk.Mm.write @"camera-buffer" @CameraObj dv cmm zeroBits (cameraData ex)
 	Vk.Mm.write @"scene-buffer" @(SceneObj) dv scnm zeroBits . (!! ffn)
 		$ iterate (Nothing :) [Just $ sceneData fn]
-	Vk.Fnc.waitForFs dv siff True maxBound
+	Vk.Fnc.waitForFs dv siff True Nothing
 	iid <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dv sc uint64Max (Just ias) Nothing
 	Vk.Fnc.resetFs dv siff
