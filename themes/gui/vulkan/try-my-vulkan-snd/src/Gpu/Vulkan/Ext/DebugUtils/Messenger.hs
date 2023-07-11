@@ -6,7 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Messenger (
-	create, M, M.CreateInfo(..), M.FnCallback, M.CallbackData(..) ) where
+
+	-- * CREATE
+
+	create, M, M.CreateInfo(..), M.FnCallback, M.CallbackData(..)
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
