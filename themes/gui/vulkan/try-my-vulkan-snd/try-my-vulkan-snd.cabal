@@ -92,6 +92,7 @@ library
       Gpu.Vulkan.Fence.Enum
       Gpu.Vulkan.Fence.Type
       Gpu.Vulkan.Framebuffer
+      Gpu.Vulkan.Framebuffer.Enum
       Gpu.Vulkan.Framebuffer.Type
       Gpu.Vulkan.Image
       Gpu.Vulkan.Image.Enum
