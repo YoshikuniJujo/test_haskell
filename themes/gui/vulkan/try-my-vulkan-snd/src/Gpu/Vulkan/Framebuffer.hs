@@ -9,7 +9,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Framebuffer (
-	F, create, recreate, CreateInfo(..) ) where
+
+	-- * CREATE
+
+	create, recreate, F, CreateInfo(..)
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -29,11 +34,11 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
-data CreateInfo mn sr fmtnmsis = CreateInfo {
+data CreateInfo mn sr aargs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoRenderPass :: RenderPass.R sr,
-	createInfoAttachments :: HeteroParList.PL (U3 ImageView.I) fmtnmsis,
+	createInfoAttachments :: HeteroParList.PL (U3 ImageView.I) aargs,
 	createInfoWidth :: Word32,
 	createInfoHeight :: Word32,
 	createInfoLayers :: Word32 }
@@ -59,18 +64,18 @@ createInfoToMiddle CreateInfo {
 		M.createInfoHeight = h,
 		M.createInfoLayers = lyrs }
 
-create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
-	Device.D sd -> CreateInfo mn sr fmtnmsis ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac) =>
+	Device.D sd -> CreateInfo mn sr aargs ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall s . F s -> IO a) -> IO a
 create (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\fb -> M.destroy dvc fb macc) (f . F)
 
-recreate :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
-	Device.D sd -> CreateInfo mn sr fmtnmsis ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+recreate :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac) =>
+	Device.D sd -> CreateInfo mn sr aargs ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	F sf -> IO ()
 recreate (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (F fb) =
