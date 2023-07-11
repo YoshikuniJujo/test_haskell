@@ -117,6 +117,7 @@ library
       Gpu.Vulkan.VertexInput.Middle
   other-modules:
       Gpu.Vulkan.Attachment.Middle.Internal
+      Gpu.Vulkan.Base.Middle
       Gpu.Vulkan.Buffer.Middle.Internal
       Gpu.Vulkan.BufferView.Middle.Internal
       Gpu.Vulkan.CommandBuffer.Middle.Internal
