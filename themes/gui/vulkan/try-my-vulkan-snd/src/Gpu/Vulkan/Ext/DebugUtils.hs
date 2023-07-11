@@ -12,7 +12,7 @@ module Gpu.Vulkan.Ext.DebugUtils (
 
 	-- * OBJECT NAME INFO
 
-	ObjectNameInfo(..)
+	ObjectNameInfo(..), ObjectNameInfoNoNext(..), ObjectNameInfoResult(..)
 
 	) where
 
