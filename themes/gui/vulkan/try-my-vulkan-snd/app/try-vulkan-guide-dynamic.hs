@@ -822,8 +822,8 @@ recreateImage pd dv ex tlng usg prs i m = do
 	imageMemoryInfoB pd dv prs i >>= \ii -> imageReallocateBind dv i ii m
 
 imageInfo :: Vk.Extent2d ->
-	Vk.Img.Tiling -> Vk.Img.UsageFlags -> Vk.Img.CreateInfoNew 'Nothing fmt
-imageInfo ex tlng usg = Vk.Img.CreateInfoNew {
+	Vk.Img.Tiling -> Vk.Img.UsageFlags -> Vk.Img.CreateInfo 'Nothing fmt
+imageInfo ex tlng usg = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNextNew = TMaybe.N,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 		Vk.Img.createInfoExtentNew = Vk.Extent3d {

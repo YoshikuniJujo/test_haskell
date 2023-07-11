@@ -946,7 +946,7 @@ createImage pd dvc wdt hgt tlng usg prps f =
 		nil' \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd))) m -> do
 		f bnd m
 	where
-	imageInfo = Vk.Img.CreateInfoNew {
+	imageInfo = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNextNew = TMaybe.N,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 		Vk.Img.createInfoExtentNew = Vk.Extent3d {

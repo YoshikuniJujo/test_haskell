@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image.Internal (
-	I, Binded, createNew, recreateNew, CreateInfoNew(..),
+	I, Binded, createNew, recreateNew, CreateInfo(..),
 
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 	M.SubresourceRange(..), MemoryBarrier(..),
@@ -49,20 +49,23 @@ import qualified Gpu.Vulkan.Image.Enum as I
 createNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle msn2n2 ) =>
-	Device.D sd -> CreateInfoNew mn fmt ->
+	Device.D sd -> CreateInfo mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn2n2 ->
 	(forall s . I s nm fmt -> IO a) -> IO a
-createNew dvc@(Device.D mdvc) ci
-	macc@(AllocationCallbacks.toMiddle -> macd) f =
-	bracket (createNewM dvc ci macc) (\(I i) -> M.destroy mdvc i macd) f
+createNew (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
+	(M.create mdvc (createInfoToMiddle ci) macd)
+	(\i -> M.destroy mdvc i macd)
+	(f .I)
 
 recreateNew :: (
-	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd -> CreateInfoNew mn fmt ->
+	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc,
+	T.FormatToValue fmt ) =>
+	Device.D sd -> CreateInfo mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	Binded si sm nm fmt -> IO ()
-recreateNew dvc ci macc i = recreateNewM dvc ci macc macc i
+recreateNew (Device.D mdvc) ci
+	(AllocationCallbacks.toMiddle -> macc) (Binded i) =
+	M.recreate mdvc (createInfoToMiddle ci) macc macc i
 
 getMemoryRequirementsNew :: Device.D sd -> I s nm fmt -> IO Memory.Requirements
 getMemoryRequirementsNew (Device.D dvc) (I img) =
@@ -118,28 +121,7 @@ instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle nsismnmfmts) =>
 	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
-createNewM :: (
-	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle msn'n' ) =>
-	Device.D sd -> CreateInfoNew mn fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO (I si nm fmt)
-createNewM (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> mac) =
-	I <$> M.create mdvc (createInfoFromNew ci) mac
-
-recreateNewM :: (
-	T.FormatToValue fmt, WithPoked (TMaybe.M mn),
-	AllocationCallbacks.ToMiddle mscc,
-	AllocationCallbacks.ToMiddle msdd ) =>
-	Device.D sd -> CreateInfoNew mn fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msdd ->
-	Binded si sm nm fmt -> IO ()
-recreateNewM (Device.D mdvc) ci
-	(AllocationCallbacks.toMiddle -> macc)
-	(AllocationCallbacks.toMiddle -> macd) (Binded i) =
-	M.recreate mdvc (createInfoFromNew ci) macc macd i
-
-data CreateInfoNew mn (fmt :: T.Format) = CreateInfoNew {
+data CreateInfo mn (fmt :: T.Format) = CreateInfo {
 	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoImageTypeNew :: I.Type,
@@ -153,11 +135,11 @@ data CreateInfoNew mn (fmt :: T.Format) = CreateInfoNew {
 	createInfoQueueFamilyIndicesNew :: [Word32],
 	createInfoInitialLayoutNew :: Layout }
 
-deriving instance Show (TMaybe.M mn) => Show (CreateInfoNew mn fmt)
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn fmt)
 
-createInfoFromNew :: forall n fmt .
-	T.FormatToValue fmt => CreateInfoNew n fmt -> M.CreateInfo n
-createInfoFromNew CreateInfoNew {
+createInfoToMiddle :: forall n fmt .
+	T.FormatToValue fmt => CreateInfo n fmt -> M.CreateInfo n
+createInfoToMiddle CreateInfo {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
 	createInfoImageTypeNew = itp,

@@ -205,7 +205,7 @@ makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 		Vk.Memory.M sm '[ '(si, 'Vk.Memory.K.Image nm 'Vk.T.FormatR8g8b8a8Unorm)] -> IO a) ->
 	IO a
 makeImage' phdvc dvc f = do
-	let	imgCreateInfo = Vk.Img.CreateInfoNew {
+	let	imgCreateInfo = Vk.Img.CreateInfo {
 			Vk.Img.createInfoNextNew = TMaybe.N,
 			Vk.Img.createInfoFlagsNew = Vk.Img.CreateFlagsZero,
 			Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,

@@ -391,8 +391,8 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	f dscSet mib
 
 imageInfo ::
-	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfoNew 'Nothing 'Vk.T.FormatR8g8b8a8Srgb
-imageInfo wdt hgt tlng = Vk.Image.CreateInfoNew {
+	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfo 'Nothing 'Vk.T.FormatR8g8b8a8Srgb
+imageInfo wdt hgt tlng = Vk.Image.CreateInfo {
 	Vk.Image.createInfoNextNew = TMaybe.N,
 	Vk.Image.createInfoImageTypeNew = Vk.Image.Type2d,
 	Vk.Image.createInfoExtentNew = Vk.Extent3d {
