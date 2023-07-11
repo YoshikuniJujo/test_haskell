@@ -26,6 +26,7 @@ module Gpu.Vulkan.Image (
 	-- * BLIT
 
 	Blit(..), SubresourceLayers(..)
+
 	) where
 
 import Gpu.Vulkan.Image.Internal
