@@ -1201,7 +1201,7 @@ imageInfo wdt hgt tlng usg = Vk.Img.CreateInfoNew {
 		Vk.Img.createInfoFlagsNew = zeroBits,
 		Vk.Img.createInfoQueueFamilyIndicesNew = [] }
 
-imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
+imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
 	Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing -> (forall sm .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
@@ -1225,7 +1225,7 @@ imageReallocateBind dvc img memInfo m =
 
 imageMemoryInfo ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
-	Vk.Img.INew s nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
+	Vk.Img.I s nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
 imageMemoryInfo pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps

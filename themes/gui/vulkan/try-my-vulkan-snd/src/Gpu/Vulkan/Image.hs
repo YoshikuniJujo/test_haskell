@@ -13,7 +13,7 @@ module Gpu.Vulkan.Image (
 
 	-- * CREATE
 
-	createNew, recreateNew, INew, Binded, CreateInfoNew(..),
+	createNew, recreateNew, I, Binded, CreateInfoNew(..),
 
 	-- * GET MEMORY REQUIREMENTS
 

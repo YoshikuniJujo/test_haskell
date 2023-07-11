@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image.Internal (
-	INew, Binded, createNew, recreateNew, CreateInfoNew(..),
+	I, Binded, createNew, recreateNew, CreateInfoNew(..),
 
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 	M.SubresourceRange(..), MemoryBarrier(..),
@@ -51,10 +51,10 @@ createNew :: (
 	AllocationCallbacks.ToMiddle msn2n2 ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn2n2 ->
-	(forall s . INew s nm fmt -> IO a) -> IO a
+	(forall s . I s nm fmt -> IO a) -> IO a
 createNew dvc@(Device.D mdvc) ci
 	macc@(AllocationCallbacks.toMiddle -> macd) f =
-	bracket (createNewM dvc ci macc) (\(INew i) -> M.destroy mdvc i macd) f
+	bracket (createNewM dvc ci macc) (\(I i) -> M.destroy mdvc i macd) f
 
 recreateNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
@@ -64,8 +64,8 @@ recreateNew :: (
 	Binded si sm nm fmt -> IO ()
 recreateNew dvc ci macc i = recreateNewM dvc ci macc macc i
 
-getMemoryRequirementsNew :: Device.D sd -> INew s nm fmt -> IO Memory.Requirements
-getMemoryRequirementsNew (Device.D dvc) (INew img) =
+getMemoryRequirementsNew :: Device.D sd -> I s nm fmt -> IO Memory.Requirements
+getMemoryRequirementsNew (Device.D dvc) (I img) =
 	M.getMemoryRequirements dvc img
 
 getMemoryRequirementsBindedNew :: Device.D sd -> Binded sm si nm fmt -> IO Memory.Requirements
@@ -122,9 +122,9 @@ createNewM :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle msn'n' ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO (INew si nm fmt)
+	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO (I si nm fmt)
 createNewM (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> mac) =
-	INew <$> M.create mdvc (createInfoFromNew ci) mac
+	I <$> M.create mdvc (createInfoFromNew ci) mac
 
 recreateNewM :: (
 	T.FormatToValue fmt, WithPoked (TMaybe.M mn),

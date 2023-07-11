@@ -9,14 +9,6 @@ import GHC.TypeLits
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Image.Middle as M
 
-newtype I s = I M.I
-
-newtype INew s (nm :: Symbol) (fmt :: T.Format) = INew M.I
+newtype I s (nm :: Symbol) (fmt :: T.Format) = I M.I
 
 newtype Binded sm si (nm :: Symbol) (fmt :: T.Format) = Binded M.I
-
-iFromNew :: INew s nm fmt -> I s
-iFromNew (INew i) = I i
-
-iToNew :: I s -> INew s nm fmt
-iToNew (I i) = INew i

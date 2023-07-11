@@ -63,7 +63,7 @@ writeMBinded' :: M s sibfoss ->
 writeMBinded' (M rib _r) ibs = writeIORef rib (HeteroParList.map imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: U2 (ImageBufferBinded sm) sibfos -> U2 ImageBuffer sibfos
-imageBufferFromBinded (U2 (ImageBinded (Image.Binded i))) = U2 . Image $ Image.INew i
+imageBufferFromBinded (U2 (ImageBinded (Image.Binded i))) = U2 . Image $ Image.I i
 imageBufferFromBinded (U2 (BufferBinded (Buffer.Binded x b))) = U2 . Buffer $ Buffer.B x b
 
 newM2' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> M.M -> IO (M s sibfoss)
@@ -73,7 +73,7 @@ newM2' ibs mm = (`M` mm) <$> newIORef ibs
 --	Show (M s sibfoss)
 
 data ImageBuffer sib (ib :: K.ImageBuffer) where
-	Image :: Image.INew si nm fmt -> ImageBuffer si ('K.Image nm fmt)
+	Image :: Image.I si nm fmt -> ImageBuffer si ('K.Image nm fmt)
 	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('K.Buffer nm objs)
 
 class Alignments (ibs :: [(Type, K.ImageBuffer)]) where
@@ -89,7 +89,7 @@ instance (VObj.SizeAlignment obj, Alignments ibs) =>
 	Alignments ('(_s, 'K.Buffer _nm (obj ': _objs)) ': ibs) where
 	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
 
-deriving instance Show (Image.INew sib nm fmt) =>
+deriving instance Show (Image.I sib nm fmt) =>
 	Show (ImageBuffer sib ('K.Image nm fmt))
 
 deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
@@ -105,7 +105,7 @@ getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
 getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
 	Buffer.M.getMemoryRequirements dvc b
-getMemoryRequirements (Device.D dvc) (Image (Image.INew i)) =
+getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
 	Image.M.getMemoryRequirements dvc i
 
 getMemoryRequirementsBinded ::
@@ -269,9 +269,9 @@ instance (Offset' sb ('K.Buffer nm objs) sibfoss', BindAll fibfoss sibfoss') =>
 
 bindImage :: forall sd si nm fmt sm sibfoss .
 	Offset' si ('K.Image nm fmt) sibfoss =>
-	Device.D sd -> Image.INew si nm fmt -> M sm sibfoss ->
+	Device.D sd -> Image.I si nm fmt -> M sm sibfoss ->
 	IO (Image.Binded sm si nm fmt)
-bindImage dvc@(Device.D mdvc) (Image.INew i) m = do
+bindImage dvc@(Device.D mdvc) (Image.I i) m = do
 	(_, mm) <- readM'' m
 	ost <- offset @si @('K.Image nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i mm ost
