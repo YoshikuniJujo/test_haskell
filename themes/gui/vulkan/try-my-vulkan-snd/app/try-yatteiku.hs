@@ -206,24 +206,24 @@ makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	IO a
 makeImage' phdvc dvc f = do
 	let	imgCreateInfo = Vk.Img.CreateInfo {
-			Vk.Img.createInfoNextNew = TMaybe.N,
-			Vk.Img.createInfoFlagsNew = Vk.Img.CreateFlagsZero,
-			Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
-			Vk.Img.createInfoExtentNew =
+			Vk.Img.createInfoNext = TMaybe.N,
+			Vk.Img.createInfoFlags = Vk.Img.CreateFlagsZero,
+			Vk.Img.createInfoImageType = Vk.Img.Type2d,
+			Vk.Img.createInfoExtent =
 				Vk.Extent3d screenWidth screenHeight 1,
-			Vk.Img.createInfoMipLevelsNew = 1,
-			Vk.Img.createInfoArrayLayersNew = 1,
-			Vk.Img.createInfoTilingNew = Vk.Img.TilingLinear,
-			Vk.Img.createInfoInitialLayoutNew =
+			Vk.Img.createInfoMipLevels = 1,
+			Vk.Img.createInfoArrayLayers = 1,
+			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
+			Vk.Img.createInfoInitialLayout =
 				Vk.Img.LayoutUndefined,
 --				Vk.Img.LayoutTransferSrcOptimal,
-			Vk.Img.createInfoUsageNew =
+			Vk.Img.createInfoUsage =
 				Vk.Img.UsageColorAttachmentBit .|.
 				Vk.Img.UsageTransferSrcBit,
-			Vk.Img.createInfoSharingModeNew =
+			Vk.Img.createInfoSharingMode =
 				Vk.SharingModeExclusive,
-			Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
-			Vk.Img.createInfoQueueFamilyIndicesNew = [] }
+			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
+			Vk.Img.createInfoQueueFamilyIndices = [] }
 	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	print memProps
 	Vk.Img.createNew @'Nothing dvc imgCreateInfo nil' \image -> do

@@ -1033,21 +1033,21 @@ imageInfo ::
 	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
 	Vk.Img.CreateInfo 'Nothing fmt
 imageInfo wdt hgt tlng usg = Vk.Img.CreateInfo {
-		Vk.Img.createInfoNextNew = TMaybe.N,
-		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
-		Vk.Img.createInfoExtentNew = Vk.Extent3d {
+		Vk.Img.createInfoNext = TMaybe.N,
+		Vk.Img.createInfoImageType = Vk.Img.Type2d,
+		Vk.Img.createInfoExtent = Vk.Extent3d {
 			Vk.extent3dWidth = wdt,
 			Vk.extent3dHeight = hgt,
 			Vk.extent3dDepth = 1 },
-		Vk.Img.createInfoMipLevelsNew = 1,
-		Vk.Img.createInfoArrayLayersNew = 1,
-		Vk.Img.createInfoTilingNew = tlng,
-		Vk.Img.createInfoInitialLayoutNew = Vk.Img.LayoutUndefined,
-		Vk.Img.createInfoUsageNew = usg,
-		Vk.Img.createInfoSharingModeNew = Vk.SharingModeExclusive,
-		Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
-		Vk.Img.createInfoFlagsNew = zeroBits,
-		Vk.Img.createInfoQueueFamilyIndicesNew = [] }
+		Vk.Img.createInfoMipLevels = 1,
+		Vk.Img.createInfoArrayLayers = 1,
+		Vk.Img.createInfoTiling = tlng,
+		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined,
+		Vk.Img.createInfoUsage = usg,
+		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
+		Vk.Img.createInfoFlags = zeroBits,
+		Vk.Img.createInfoQueueFamilyIndices = [] }
 
 imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
 	Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing -> (forall sm .

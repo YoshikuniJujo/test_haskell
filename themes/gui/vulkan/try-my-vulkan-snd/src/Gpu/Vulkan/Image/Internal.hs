@@ -122,36 +122,36 @@ instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle nsismnmfmts) =>
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
 data CreateInfo mn (fmt :: T.Format) = CreateInfo {
-	createInfoNextNew :: TMaybe.M mn,
-	createInfoFlagsNew :: CreateFlags,
-	createInfoImageTypeNew :: I.Type,
-	createInfoExtentNew :: Extent3d,
-	createInfoMipLevelsNew :: Word32,
-	createInfoArrayLayersNew :: Word32,
-	createInfoSamplesNew :: Sample.CountFlagBits,
-	createInfoTilingNew :: Tiling,
-	createInfoUsageNew :: UsageFlags,
-	createInfoSharingModeNew :: SharingMode,
-	createInfoQueueFamilyIndicesNew :: [Word32],
-	createInfoInitialLayoutNew :: Layout }
+	createInfoNext :: TMaybe.M mn,
+	createInfoFlags :: CreateFlags,
+	createInfoImageType :: I.Type,
+	createInfoExtent :: Extent3d,
+	createInfoMipLevels :: Word32,
+	createInfoArrayLayers :: Word32,
+	createInfoSamples :: Sample.CountFlagBits,
+	createInfoTiling :: Tiling,
+	createInfoUsage :: UsageFlags,
+	createInfoSharingMode :: SharingMode,
+	createInfoQueueFamilyIndices :: [Word32],
+	createInfoInitialLayout :: Layout }
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn fmt)
 
 createInfoToMiddle :: forall n fmt .
 	T.FormatToValue fmt => CreateInfo n fmt -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
-	createInfoNextNew = mnxt,
-	createInfoFlagsNew = flgs,
-	createInfoImageTypeNew = itp,
-	createInfoExtentNew = ext,
-	createInfoMipLevelsNew = mls,
-	createInfoArrayLayersNew = als,
-	createInfoSamplesNew = smps,
-	createInfoTilingNew = tl,
-	createInfoUsageNew = usg,
-	createInfoSharingModeNew = sm,
-	createInfoQueueFamilyIndicesNew = qfis,
-	createInfoInitialLayoutNew =ilyt } = M.CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoImageType = itp,
+	createInfoExtent = ext,
+	createInfoMipLevels = mls,
+	createInfoArrayLayers = als,
+	createInfoSamples = smps,
+	createInfoTiling = tl,
+	createInfoUsage = usg,
+	createInfoSharingMode = sm,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoInitialLayout =ilyt } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,
 	M.createInfoImageType = itp,
