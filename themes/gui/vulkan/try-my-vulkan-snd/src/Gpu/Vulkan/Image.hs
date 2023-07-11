@@ -10,13 +10,22 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
-	INew, Binded, createNew, recreateNew, CreateInfoNew(..),
+
+	-- * CREATE
+
+	createNew, recreateNew, INew, Binded, CreateInfoNew(..),
+
+	-- * GET MEMORY REQUIREMENTS
 
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
-	SubresourceRange(..), MemoryBarrier(..),
-	MemoryBarrierListToMiddle,
 
-	SubresourceLayers(..), Blit(..)
+	-- * MEMORY BARRIER
+
+	MemoryBarrier(..), SubresourceRange(..), MemoryBarrierListToMiddle,
+
+	-- * BLIT
+
+	Blit(..), SubresourceLayers(..)
 	) where
 
 import Gpu.Vulkan.Image.Internal
