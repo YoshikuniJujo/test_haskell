@@ -22,7 +22,6 @@ import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
-import Data.Word
 
 import Gpu.Vulkan.Device.Type
 
@@ -36,17 +35,17 @@ import qualified Gpu.Vulkan.Queue as Queue
 import Data.HeteroParList qualified as HeteroParList
 
 create :: (
-	WithPoked (TMaybe.M mn), HeteroParList.ToListWithCM' WithPoked TMaybe.M mns,
-	AllocationCallbacks.ToMiddle msn3n3 ) =>
-	PhysicalDevice.P -> M.CreateInfo mn mns ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn3n3 ->
+	WithPoked (TMaybe.M mn),
+	HeteroParList.ToListWithCM' WithPoked TMaybe.M qcis,
+	AllocationCallbacks.ToMiddle mac ) =>
+	PhysicalDevice.P -> M.CreateInfo mn qcis ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall s . D s -> IO a) -> IO a
-create phdvc ci
-	(AllocationCallbacks.toMiddle -> macc) f =
-	bracket (M.create phdvc ci macc) (`M.destroy` macc) (f . D)
+create pd ci (AllocationCallbacks.toMiddle -> mac) f =
+	bracket (M.create pd ci mac) (`M.destroy` mac) (f . D)
 
-getQueue :: D s -> QueueFamily.Index -> Word32 -> IO Queue.Q
-getQueue (D dvc) (QueueFamily.Index qfi) qi = M.getQueue dvc qfi qi
+getQueue :: D sd -> QueueFamily.Index -> Queue.Index -> IO Queue.Q
+getQueue (D d) (QueueFamily.Index qfi) qi = M.getQueue d qfi qi
 
 waitIdle :: D s -> IO ()
 waitIdle (D d) = M.waitIdle d
