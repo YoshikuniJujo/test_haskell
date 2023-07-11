@@ -8,7 +8,8 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle (
 
 	-- * LABEL AND OBJECT NAME INFO
 
-	Label(..), ObjectNameInfo(..), ObjectNameInfoNoNext(..)
+	Label(..),
+	ObjectNameInfo(..), ObjectNameInfoNoNext(..), ObjectNameInfoResult(..)
 
 	) where
 

@@ -1,7 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
@@ -13,16 +16,11 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 	-- * LABEL AND OBJECT NAME INFO
 
 	Label(..), labelFromCore,
-	ObjectNameInfo(..), ObjectNameInfoNoNext(..), objectNameInfoNoNextFromCore
+	ObjectNameInfo(..), objectNameInfoFromCore,
+	ObjectNameInfoNoNext(..), objectNameInfoNoNextFromCore,
+	ObjectNameInfoResult(..), objectNameInfoResultFromCore
 
 	) where
-
-{-
-	extensionName,
-	Label(..), labelFromCore,
-	ObjectNameInfo(..), objectNameInfoFromCore,
-	ObjectNameInfoNoNext(..), objectNameInfoNoNextFromCore ) where
-	-}
 
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
@@ -38,9 +36,11 @@ import Data.Color
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Base.Middle.Internal
--- import Gpu.Vulkan.Misc.Middle
 
 import qualified Gpu.Vulkan.Ext.DebugUtils.Core as C
+
+import Data.HeteroParList qualified as HeteroParList
+import Gpu.Vulkan.PNext.Middle.Internal
 
 foreign import capi "vulkan/vulkan.h value VK_EXT_DEBUG_UTILS_EXTENSION_NAME"
 	c_extensionName :: CString
@@ -108,3 +108,30 @@ objectNameInfoNoNextFromCore C.ObjectNameInfo {
 		objectNameInfoNoNextObjectType = ObjectType ot,
 		objectNameInfoNoNextObjectHandle = ObjectHandle oh,
 		objectNameInfoNoNextObjectName = mon }
+
+data ObjectNameInfoResult ns = ObjectNameInfoResult {
+	objectNameInfoResultNextList :: HeteroParList.PL Maybe ns,
+	objectNameInfoResultObjectType :: ObjectType,
+	objectNameInfoResultObjectHandle :: ObjectHandle,
+	objectNameInfoResultObjectName :: Maybe T.Text }
+
+deriving instance Show (HeteroParList.PL Maybe ns) =>
+	Show (ObjectNameInfoResult ns)
+
+objectNameInfoResultFromCore ::
+	FindPNextChainAll ns => C.ObjectNameInfo -> IO (ObjectNameInfoResult ns)
+objectNameInfoResultFromCore C.ObjectNameInfo {
+	C.objectNameInfoPNext = pnxt,
+	C.objectNameInfoObjectType = ot,
+	C.objectNameInfoObjectHandle = oh,
+	C.objectNameInfoPObjectName = con
+	} = do
+	mon <- case con of
+		NullPtr -> pure Nothing
+		p -> Just <$> cStringToText p
+	nxts <- findPNextChainAll pnxt
+	pure ObjectNameInfoResult {
+		objectNameInfoResultNextList = nxts,
+		objectNameInfoResultObjectType = ObjectType ot,
+		objectNameInfoResultObjectHandle = ObjectHandle oh,
+		objectNameInfoResultObjectName = mon }
