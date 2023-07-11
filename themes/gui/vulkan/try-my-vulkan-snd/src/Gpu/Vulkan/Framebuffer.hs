@@ -9,7 +9,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Framebuffer (
-	F, createNew, recreateNew, CreateInfoNew(..) ) where
+	F, create, recreate, CreateInfo(..) ) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -29,28 +29,28 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
-data CreateInfoNew mn sr fmtnmsis = CreateInfoNew {
-	createInfoNextNew :: TMaybe.M mn,
-	createInfoFlagsNew :: CreateFlags,
-	createInfoRenderPassNew :: RenderPass.R sr,
-	createInfoAttachmentsNew :: HeteroParList.PL (U3 ImageView.I) fmtnmsis,
-	createInfoWidthNew :: Word32,
-	createInfoHeightNew :: Word32,
-	createInfoLayersNew :: Word32 }
+data CreateInfo mn sr fmtnmsis = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
+	createInfoFlags :: CreateFlags,
+	createInfoRenderPass :: RenderPass.R sr,
+	createInfoAttachments :: HeteroParList.PL (U3 ImageView.I) fmtnmsis,
+	createInfoWidth :: Word32,
+	createInfoHeight :: Word32,
+	createInfoLayers :: Word32 }
 
 type family MapThird (t :: [(j, k, l)]) where
 	MapThird '[] = '[]
 	MapThird ('(a, b, c) ': abcs) = c ': MapThird abcs
 
-createInfoToMiddleNew :: CreateInfoNew n sr fmtmnsis -> M.CreateInfo n
-createInfoToMiddleNew CreateInfoNew {
-	createInfoNextNew = mnxt,
-	createInfoFlagsNew = flgs,
-	createInfoRenderPassNew = RenderPass.R rp,
-	createInfoAttachmentsNew = HeteroParList.toList (\(U3 (ImageView.I iv)) -> iv) -> ivs,
-	createInfoWidthNew = w,
-	createInfoHeightNew = h,
-	createInfoLayersNew = lyrs } = M.CreateInfo {
+createInfoToMiddle :: CreateInfo n sr fmtmnsis -> M.CreateInfo n
+createInfoToMiddle CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoRenderPass = RenderPass.R rp,
+	createInfoAttachments = HeteroParList.toList (\(U3 (ImageView.I iv)) -> iv) -> ivs,
+	createInfoWidth = w,
+	createInfoHeight = h,
+	createInfoLayers = lyrs } = M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,
 		M.createInfoRenderPass = rp,
@@ -59,19 +59,19 @@ createInfoToMiddleNew CreateInfoNew {
 		M.createInfoHeight = h,
 		M.createInfoLayers = lyrs }
 
-createNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
-	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
+	Device.D sd -> CreateInfo mn sr fmtnmsis ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . F s -> IO a) -> IO a
-createNew (Device.D dvc) ci
+create (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) f = bracket
-	(M.create dvc (createInfoToMiddleNew ci) macc)
+	(M.create dvc (createInfoToMiddle ci) macc)
 	(\fb -> M.destroy dvc fb macc) (f . F)
 
-recreateNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
-	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
+recreate :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
+	Device.D sd -> CreateInfo mn sr fmtnmsis ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	F sf -> IO ()
-recreateNew (Device.D dvc) ci
+recreate (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (F fb) =
-	M.recreate dvc (createInfoToMiddleNew ci) macc macc fb
+	M.recreate dvc (createInfoToMiddle ci) macc macc fb

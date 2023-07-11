@@ -836,7 +836,7 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HeteroParList.Nil _ f = f HeteroParList.Nil
 createFramebuffers dvc sce rp (iv :** ivs) divw f =
-	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv divw) nil' \fb ->
+	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv divw) nil' \fb ->
 	createFramebuffers dvc sce rp ivs divw \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -851,24 +851,24 @@ instance RecreateFramebuffers '[] '[] where
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :** scivs) divw (fb :** fbs) =
-		Vk.Frmbffr.recreateNew dvc
+		Vk.Frmbffr.recreate dvc
 			(mkFramebufferCreateInfo sce rp sciv divw) nil' fb >>
 		recreateFramebuffers dvc sce rp scivs divw fbs
 
 mkFramebufferCreateInfo ::
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.ImgVw.I dptnm dptfmt sdiv ->
-	Vk.Frmbffr.CreateInfoNew 'Nothing sr
+	Vk.Frmbffr.CreateInfo 'Nothing sr
 		'[ '(nm, fmt, si), '(dptnm, dptfmt, sdiv)]
---	Vk.Frmbffr.CreateInfoNew () sr nm fmt '[si, sdiv]
-mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
-	Vk.Frmbffr.createInfoNextNew = TMaybe.N,
-	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
-	Vk.Frmbffr.createInfoRenderPassNew = rp,
-	Vk.Frmbffr.createInfoAttachmentsNew = U3 attch :** U3 dpt :** HeteroParList.Nil,
---	Vk.Frmbffr.createInfoAttachmentsNew = attch :** dpt :** HeteroParList.Nil,
-	Vk.Frmbffr.createInfoWidthNew = w, Vk.Frmbffr.createInfoHeightNew = h,
-	Vk.Frmbffr.createInfoLayersNew = 1 }
+--	Vk.Frmbffr.CreateInfo () sr nm fmt '[si, sdiv]
+mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfo {
+	Vk.Frmbffr.createInfoNext = TMaybe.N,
+	Vk.Frmbffr.createInfoFlags = zeroBits,
+	Vk.Frmbffr.createInfoRenderPass = rp,
+	Vk.Frmbffr.createInfoAttachments = U3 attch :** U3 dpt :** HeteroParList.Nil,
+--	Vk.Frmbffr.createInfoAttachments = attch :** dpt :** HeteroParList.Nil,
+	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
+	Vk.Frmbffr.createInfoLayers = 1 }
 	where
 	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
 

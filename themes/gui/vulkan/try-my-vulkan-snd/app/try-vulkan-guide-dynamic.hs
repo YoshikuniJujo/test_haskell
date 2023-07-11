@@ -966,7 +966,7 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
 		HL.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HL.Nil _ f = f HL.Nil
 createFramebuffers dv sce rp (iv :** ivs) dptiv f =
-	Vk.Frmbffr.createNew dv (framebufferInfo sce rp iv dptiv) nil' \fb ->
+	Vk.Frmbffr.create dv (framebufferInfo sce rp iv dptiv) nil' \fb ->
 	createFramebuffers dv sce rp ivs dptiv \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -981,25 +981,25 @@ instance RecreateFramebuffers '[] '[] where
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dv sce rp (sciv :** scivs) dptiv (fb :** fbs) =
-		Vk.Frmbffr.recreateNew dv
+		Vk.Frmbffr.recreate dv
 			(framebufferInfo sce rp sciv dptiv) nil' fb >>
 		recreateFramebuffers dv sce rp scivs dptiv fbs
 
 framebufferInfo ::
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.ImgVw.I dfmt dnm sdiv ->
-	Vk.Frmbffr.CreateInfoNew 'Nothing sr '[ '(nm, fmt, si), '(dfmt, dnm, sdiv)]
+	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si), '(dfmt, dnm, sdiv)]
 framebufferInfo Vk.Extent2d {
 	Vk.extent2dWidth = w, Vk.extent2dHeight = h } rp attch dpt =
-	Vk.Frmbffr.CreateInfoNew {
-		Vk.Frmbffr.createInfoNextNew = TMaybe.N,
-		Vk.Frmbffr.createInfoFlagsNew = zeroBits,
-		Vk.Frmbffr.createInfoRenderPassNew = rp,
-		Vk.Frmbffr.createInfoAttachmentsNew =
+	Vk.Frmbffr.CreateInfo {
+		Vk.Frmbffr.createInfoNext = TMaybe.N,
+		Vk.Frmbffr.createInfoFlags = zeroBits,
+		Vk.Frmbffr.createInfoRenderPass = rp,
+		Vk.Frmbffr.createInfoAttachments =
 			U3 attch :** U3 dpt :** HL.Nil,
-		Vk.Frmbffr.createInfoWidthNew = w,
-		Vk.Frmbffr.createInfoHeightNew = h,
-		Vk.Frmbffr.createInfoLayersNew = 1 }
+		Vk.Frmbffr.createInfoWidth = w,
+		Vk.Frmbffr.createInfoHeight = h,
+		Vk.Frmbffr.createInfoLayers = 1 }
 
 createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sdsc Buffers ->
 	Int -> (forall slyts sbsms . (

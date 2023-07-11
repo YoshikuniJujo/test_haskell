@@ -473,16 +473,16 @@ makeImageView dvc bimg f =
 makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I nm fmt si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
 makeFramebuffer dvc rp iv f =
-	Vk.Framebuffer.createNew @'Nothing dvc frameBufCreateInfo nil' f
-	where	frameBufCreateInfo = Vk.Framebuffer.CreateInfoNew {
-			Vk.Framebuffer.createInfoNextNew = TMaybe.N,
-			Vk.Framebuffer.createInfoFlagsNew =
+	Vk.Framebuffer.create @'Nothing dvc frameBufCreateInfo nil' f
+	where	frameBufCreateInfo = Vk.Framebuffer.CreateInfo {
+			Vk.Framebuffer.createInfoNext = TMaybe.N,
+			Vk.Framebuffer.createInfoFlags =
 				Vk.Framebuffer.CreateFlagsZero,
-			Vk.Framebuffer.createInfoRenderPassNew = rp,
-			Vk.Framebuffer.createInfoAttachmentsNew = U3 iv :** HeteroParList.Nil,
-			Vk.Framebuffer.createInfoWidthNew = screenWidth,
-			Vk.Framebuffer.createInfoHeightNew = screenHeight,
-			Vk.Framebuffer.createInfoLayersNew = 1 }
+			Vk.Framebuffer.createInfoRenderPass = rp,
+			Vk.Framebuffer.createInfoAttachments = U3 iv :** HeteroParList.Nil,
+			Vk.Framebuffer.createInfoWidth = screenWidth,
+			Vk.Framebuffer.createInfoHeight = screenHeight,
+			Vk.Framebuffer.createInfoLayers = 1 }
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
