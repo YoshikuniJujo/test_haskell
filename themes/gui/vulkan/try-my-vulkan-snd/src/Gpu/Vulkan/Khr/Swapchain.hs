@@ -40,7 +40,6 @@ import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 
@@ -54,18 +53,17 @@ createNew :: (
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall ssc . S fmt ssc -> IO a) -> IO a
-createNew (Device.D dvc) ci macc@(AllocationCallbacks.toMiddle -> macd) f =
-	bracket (createNewM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
+createNew (Device.D dvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
+	(M.create dvc (createInfoToMiddle ci) macd)
+	(\sc -> M.destroy dvc sc macd) (f . S)
 
 recreateNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> S fmt ssc -> IO ()
-recreateNew (Device.D dvc) ci macc (S sc) = recreateNewM dvc ci macc sc
-
-getImagesNew :: Device.D sd -> S fmt ss -> IO [Image.Binded ss ss nm fmt]
-getImagesNew (Device.D dvc) (S sc) = (Image.Binded <$>) <$> M.getImages dvc sc
+recreateNew (Device.D dvc) ci (AllocationCallbacks.toMiddle -> macc) (S sc) =
+	M.recreate dvc (createInfoToMiddle ci) macc sc
 
 data CreateInfoNew mn ss (fmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M mn,
@@ -86,12 +84,12 @@ data CreateInfoNew mn ss (fmt :: T.Format) = CreateInfoNew {
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfoNew mn ss fmt)
 
-createInfoFromNew :: forall n ss fmt . T.FormatToValue fmt =>
-	CreateInfoNew n ss fmt -> CreateInfo n ss
-createInfoFromNew CreateInfoNew {
+createInfoToMiddle :: forall n ss fmt . T.FormatToValue fmt =>
+	CreateInfoNew n ss fmt -> M.CreateInfo n
+createInfoToMiddle CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
-	createInfoSurfaceNew = sfc,
+	createInfoSurfaceNew = Surface.S sfc,
 	createInfoMinImageCountNew = mic,
 	createInfoImageColorSpaceNew = cs,
 	createInfoImageExtentNew = ext,
@@ -103,103 +101,23 @@ createInfoFromNew CreateInfoNew {
 	createInfoCompositeAlphaNew = calph,
 	createInfoPresentModeNew = pm,
 	createInfoClippedNew = clpd,
-	createInfoOldSwapchainNew = osc } = CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoSurface = sfc,
-	createInfoMinImageCount = mic,
-	createInfoImageFormat = T.formatToValue @fmt,
-	createInfoImageColorSpace = cs,
-	createInfoImageExtent = ext,
-	createInfoImageArrayLayers = ials,
-	createInfoImageUsage = usg,
-	createInfoImageSharingMode = sm,
-	createInfoQueueFamilyIndices = qfis,
-	createInfoPreTransform = ptfm,
-	createInfoCompositeAlpha = calph,
-	createInfoPresentMode = pm,
-	createInfoClipped = clpd,
-	createInfoOldSwapchain = osc }
-
-createNewM :: (
-	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle msn'n' ) =>
-	Device.M.D -> CreateInfoNew mn ss fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO M.S
-createNewM dvc ci mac = createM dvc (createInfoFromNew ci) mac
-
-recreateNewM :: (
-	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.M.D -> CreateInfoNew mn ss fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	M.S -> IO ()
-recreateNewM dvc ci mac = recreateM dvc (createInfoFromNew ci) mac
-
-data CreateInfo mn ss = CreateInfo {
-	createInfoNext :: TMaybe.M mn,
-	createInfoFlags :: CreateFlags,
-	createInfoSurface :: Surface.S ss,
-	createInfoMinImageCount :: Word32,
-	createInfoImageFormat :: Format,
-	createInfoImageColorSpace :: ColorSpace,
-	createInfoImageExtent :: C.Extent2d,
-	createInfoImageArrayLayers :: Word32,
-	createInfoImageUsage :: Image.UsageFlags,
-	createInfoImageSharingMode :: SharingMode,
-	createInfoQueueFamilyIndices :: [QueueFamily.Index],
-	createInfoPreTransform :: TransformFlagBits,
-	createInfoCompositeAlpha :: CompositeAlphaFlagBits,
-	createInfoPresentMode :: PresentMode,
-	createInfoClipped :: Bool,
-	createInfoOldSwapchain :: Maybe M.S }
-
-deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn ss)
-
-createM :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle msn'n') =>
-	Device.M.D -> CreateInfo mn ss ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO M.S
-createM dvc ci (AllocationCallbacks.toMiddle -> mac) =
-	M.create dvc (createInfoToMiddle ci) mac
-
-recreateM :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
-	Device.M.D -> CreateInfo mn ss ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M.S -> IO ()
-recreateM dvc ci (AllocationCallbacks.toMiddle -> mac) s =
-	M.recreate dvc (createInfoToMiddle ci) mac s
-
-createInfoToMiddle :: CreateInfo n ss -> M.CreateInfo n
-createInfoToMiddle CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoSurface = Surface.S sfc,
-	createInfoMinImageCount = mic,
-	createInfoImageFormat = ifmt,
-	createInfoImageColorSpace = ics,
-	createInfoImageExtent = iext,
-	createInfoImageArrayLayers = ials,
-	createInfoImageUsage = iusg,
-	createInfoImageSharingMode = ism,
-	createInfoQueueFamilyIndices = qfis,
-	createInfoPreTransform = ptfm,
-	createInfoCompositeAlpha = calp,
-	createInfoPresentMode = pm,
-	createInfoClipped = clpd,
-	createInfoOldSwapchain = osc
-	} = M.CreateInfo {
+	createInfoOldSwapchainNew = osc } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,
 	M.createInfoSurface = sfc,
 	M.createInfoMinImageCount = mic,
-	M.createInfoImageFormat = ifmt,
-	M.createInfoImageColorSpace = ics,
-	M.createInfoImageExtent = iext,
+	M.createInfoImageFormat = T.formatToValue @fmt,
+	M.createInfoImageColorSpace = cs,
+	M.createInfoImageExtent = ext,
 	M.createInfoImageArrayLayers = ials,
-	M.createInfoImageUsage = iusg,
-	M.createInfoImageSharingMode = ism,
+	M.createInfoImageUsage = usg,
+	M.createInfoImageSharingMode = sm,
 	M.createInfoQueueFamilyIndices = qfis,
 	M.createInfoPreTransform = ptfm,
-	M.createInfoCompositeAlpha = calp,
+	M.createInfoCompositeAlpha = calph,
 	M.createInfoPresentMode = pm,
 	M.createInfoClipped = clpd,
 	M.createInfoOldSwapchain = osc }
+
+getImagesNew :: Device.D sd -> S fmt ss -> IO [Image.Binded ss ss nm fmt]
+getImagesNew (Device.D dvc) (S sc) = (Image.Binded <$>) <$> M.getImages dvc sc
