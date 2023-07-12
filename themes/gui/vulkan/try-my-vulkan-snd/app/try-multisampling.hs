@@ -542,7 +542,7 @@ recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil' iv >>
+	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil' iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -553,25 +553,25 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.Img.AspectFlags -> Word32 ->
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg asps mplvs f =
-	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps mplvs) nil' f
+	Vk.ImgVw.create dvc (mkImageViewCreateInfo timg asps mplvs) nil' f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
 	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO ()
 recreateImageView dvc timg asps iv mplvs =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps mplvs) nil' iv
+	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo timg asps mplvs) nil' iv
 
 mkImageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
-	Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfo sci asps mplvs = Vk.ImgVw.CreateInfoNew {
-	Vk.ImgVw.createInfoNextNew = TMaybe.N,
-	Vk.ImgVw.createInfoFlagsNew = zeroBits,
-	Vk.ImgVw.createInfoImageNew = sci,
-	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponentsNew = components,
-	Vk.ImgVw.createInfoSubresourceRangeNew = subresourceRange }
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
+mkImageViewCreateInfo sci asps mplvs = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = sci,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = components,
+	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
 	where
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,

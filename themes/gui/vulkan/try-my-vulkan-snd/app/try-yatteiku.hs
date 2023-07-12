@@ -441,16 +441,16 @@ instance KObj.IsImage MyImage where
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded sm si nm fmt ->
 	(forall s . Vk.ImgView.I nm Vk.T.FormatR8g8b8a8Unorm s -> IO a) -> IO a
 makeImageView dvc bimg f =
-	Vk.ImgView.createNew dvc imgViewCreateInfo nil' \imgView -> do
+	Vk.ImgView.create dvc imgViewCreateInfo nil' \imgView -> do
 		putStrLn $ "imgView: " ++ show imgView
 		f imgView
-	where	imgViewCreateInfo = Vk.ImgView.CreateInfoNew {
-			Vk.ImgView.createInfoNextNew = TMaybe.N,
-			Vk.ImgView.createInfoFlagsNew =
+	where	imgViewCreateInfo = Vk.ImgView.CreateInfo {
+			Vk.ImgView.createInfoNext = TMaybe.N,
+			Vk.ImgView.createInfoFlags =
 				Vk.ImgView.CreateFlagsZero,
-			Vk.ImgView.createInfoImageNew = bimg,
-			Vk.ImgView.createInfoViewTypeNew = Vk.ImgView.Type2d,
-			Vk.ImgView.createInfoComponentsNew =
+			Vk.ImgView.createInfoImage = bimg,
+			Vk.ImgView.createInfoViewType = Vk.ImgView.Type2d,
+			Vk.ImgView.createInfoComponents =
 				Vk.Component.Mapping {
 					Vk.Component.mappingR =
 						Vk.Component.SwizzleIdentity,
@@ -460,7 +460,7 @@ makeImageView dvc bimg f =
 						Vk.Component.SwizzleIdentity,
 					Vk.Component.mappingA =
 						Vk.Component.SwizzleIdentity },
-			Vk.ImgView.createInfoSubresourceRangeNew =
+			Vk.ImgView.createInfoSubresourceRange =
 				Vk.Img.SubresourceRange {
 					Vk.Img.subresourceRangeAspectMask =
 						Vk.Img.AspectColorBit,

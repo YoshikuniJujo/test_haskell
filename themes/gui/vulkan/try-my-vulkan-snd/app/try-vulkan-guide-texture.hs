@@ -506,7 +506,7 @@ createImageView :: forall ivfmt sd si sm nm ifmt a . Vk.T.FormatToValue ivfmt =>
 	Vk.Img.AspectFlags ->
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dv img asps =
-	Vk.ImgVw.createNew dv (imageViewCreateInfo img asps) nil'
+	Vk.ImgVw.create dv (imageViewCreateInfo img asps) nil'
 
 recreateImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
@@ -522,18 +522,18 @@ recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags -> Vk.ImgVw.I nm ivfmt s -> IO ()
 recreateImageView dv img asps iv =
-	Vk.ImgVw.recreateNew dv (imageViewCreateInfo img asps) nil' iv
+	Vk.ImgVw.recreate dv (imageViewCreateInfo img asps) nil' iv
 
 imageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
-	Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ivfmt
-imageViewCreateInfo img asps = Vk.ImgVw.CreateInfoNew {
-	Vk.ImgVw.createInfoNextNew = TMaybe.N,
-	Vk.ImgVw.createInfoFlagsNew = zeroBits,
-	Vk.ImgVw.createInfoImageNew = img,
-	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponentsNew = components,
-	Vk.ImgVw.createInfoSubresourceRangeNew = subresourceRange }
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
+imageViewCreateInfo img asps = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = img,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = components,
+	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
 	where
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
@@ -2013,17 +2013,17 @@ createTextureImageView :: Vk.T.FormatToValue ifmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	(forall siv . Vk.ImgVw.I nm ifmt siv -> IO a) -> IO a
 createTextureImageView dv timg f =
-	Vk.ImgVw.createNew dv (textureImageViewCreateInfo timg) nil' f
+	Vk.ImgVw.create dv (textureImageViewCreateInfo timg) nil' f
 
 textureImageViewCreateInfo ::
-	Vk.Img.Binded sm si nm ifmt -> Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ifmt
-textureImageViewCreateInfo timg = Vk.ImgVw.CreateInfoNew {
-	Vk.ImgVw.createInfoNextNew = TMaybe.N,
-	Vk.ImgVw.createInfoFlagsNew = zeroBits,
-	Vk.ImgVw.createInfoImageNew = timg,
-	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponentsNew = components,
-	Vk.ImgVw.createInfoSubresourceRangeNew = srr }
+	Vk.Img.Binded sm si nm ifmt -> Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ifmt
+textureImageViewCreateInfo timg = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = timg,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = components,
+	Vk.ImgVw.createInfoSubresourceRange = srr }
 	where
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
