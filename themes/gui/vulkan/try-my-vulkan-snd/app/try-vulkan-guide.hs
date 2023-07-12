@@ -131,7 +131,6 @@ import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mem
-import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
@@ -812,7 +811,7 @@ createDepthResources ::
 	(forall si sm fmt siv . Vk.T.FormatToValue fmt =>
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mem.M sm
-			'[ '(si, 'Vk.Mem.K.ImageArg nm fmt) ] ->
+			'[ '(si, 'Vk.Mem.ImageArg nm fmt) ] ->
 		Vk.ImgVw.I nm fmt siv ->
 		IO a) -> IO a
 createDepthResources phdvc dvc gq cp ext f = do
@@ -836,7 +835,7 @@ recreateDepthResources :: Vk.T.FormatToValue fmt =>
 	Vk.Extent2d ->
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mem.M
-		sm '[ '(sb, 'Vk.Mem.K.ImageArg nm fmt)] ->
+		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] ->
 	Vk.ImgVw.I nm fmt sdiv -> IO ()
 recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 	print ext
@@ -851,7 +850,7 @@ recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 type DepthResources sb sm nm fmt sdiv = (
 	Vk.Img.Binded sm sb nm fmt,
 	Vk.Mem.M
-		sm '[ '(sb, 'Vk.Mem.K.ImageArg nm fmt)],
+		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)],
 	Vk.ImgVw.I nm fmt sdiv )
 
 findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
@@ -887,7 +886,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mem.M sm
-			'[ '(si, 'Vk.Mem.K.ImageArg nm fmt) ] ->
+			'[ '(si, 'Vk.Mem.ImageArg nm fmt) ] ->
 		IO a) -> IO a
 createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.create @'Nothing dvc
 		(imageInfo wdt hgt tlng usg) nil' \img -> do
@@ -899,7 +898,7 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mem.M
-		sm '[ '(sb, 'Vk.Mem.K.ImageArg nm fmt)] -> IO ()
+		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] -> IO ()
 recreateImage pd dvc wdt hgt tlng usg prps img mem = do
 	Vk.Img.recreate @'Nothing dvc
 		(imageInfo wdt hgt tlng usg) nil' img
@@ -930,7 +929,7 @@ imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
 	Vk.Mem.AllocateInfo 'Nothing -> (forall sm .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mem.M sm
-			'[ '(si, 'Vk.Mem.K.ImageArg nm fmt) ] ->
+			'[ '(si, 'Vk.Mem.ImageArg nm fmt) ] ->
 		IO a) -> IO a
 imageAllocateBind dvc img memInfo f =
 	Vk.Mem.allocateBind @'Nothing dvc
@@ -941,7 +940,7 @@ imageAllocateBind dvc img memInfo f =
 imageReallocateBind ::
 	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mem.AllocateInfo 'Nothing ->
-	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.ImageArg nm fmt)] -> IO ()
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
 	Vk.Mem.reallocateBind @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.ImageBinded img) memInfo
@@ -1115,7 +1114,7 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 			\b' (bm' :: Vk.Mem.M sm '[
-				'(sb, 'Vk.Mem.K.BufferArg vbnm '[VObj.List 256 Vertex ""])
+				'(sb, 'Vk.Mem.BufferArg vbnm '[VObj.List 256 Vertex ""])
 				]) -> do
 	Vk.Mem.write @vbnm @(VObj.List 256 Vertex "") dvc bm' zeroBits vtcs
 	copyBuffer dvc gq cp b' b
@@ -1147,7 +1146,7 @@ createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 GpuCameraData 'Nothing] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.BufferArg nm
+			'Vk.Mem.BufferArg nm
 				'[VObj.Atom 256 GpuCameraData 'Nothing]) ] ->
 		IO a) -> IO a
 createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HeteroParList.Singleton VObj.ObjectLengthAtom)
@@ -1160,7 +1159,7 @@ createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.BufferArg nm '[
+			'Vk.Mem.BufferArg nm '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ) ] ->
 		IO a) -> IO a
@@ -1172,14 +1171,14 @@ createBuffer :: forall obj nm sd a . (
 	VObj.SizeAlignmentList '[obj],
 	VObj.SizeAlignment obj
 --	Vk.Mem.Alignments '[
---		'(s, 'Vk.Mem.K.BufferArg nm objs) ]
+--		'(s, 'Vk.Mem.BufferArg nm objs) ]
 	) => -- VObj.SizeAlignment obj =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[obj] ->
 		Vk.Mem.M sm '[
-			'(sb, 'Vk.Mem.K.BufferArg nm '[obj])
+			'(sb, 'Vk.Mem.BufferArg nm '[obj])
 			] -> IO a ) -> IO a
 createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 		\b -> do
@@ -1206,14 +1205,14 @@ createBuffer2 :: forall obj obj2 nm sd a . (
 	VObj.SizeAlignmentList '[obj, obj2],
 	VObj.SizeAlignment obj, VObj.SizeAlignment obj2
 --	Vk.Mem.Alignments '[
---		'(s, 'Vk.Mem.K.BufferArg nm objs) ]
+--		'(s, 'Vk.Mem.BufferArg nm objs) ]
 	) => -- VObj.SizeAlignment obj =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj, obj2] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[obj, obj2] ->
 		Vk.Mem.M sm '[
-			'(sb, 'Vk.Mem.K.BufferArg nm '[obj, obj2])
+			'(sb, 'Vk.Mem.BufferArg nm '[obj, obj2])
 			] -> IO a ) -> IO a
 createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 		\b -> do
@@ -1373,7 +1372,7 @@ data MemoryGcd smsb where
 	MemoryGcd ::
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.BufferArg "camera-buffer"
+			'Vk.Mem.BufferArg "camera-buffer"
 				'[VObj.Atom 256 GpuCameraData 'Nothing] )] ->
 		MemoryGcd '(sm, sb)
 
@@ -1615,7 +1614,7 @@ mainLoop :: (
 	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
-		'[ '(sscnb, 'Vk.Mem.K.BufferArg
+		'[ '(sscnb, 'Vk.Mem.BufferArg
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
@@ -1672,7 +1671,7 @@ runLoop :: (
 	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
-		'[ '(sscnb, 'Vk.Mem.K.BufferArg
+		'[ '(sscnb, 'Vk.Mem.BufferArg
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
@@ -1717,7 +1716,7 @@ drawFrame ::
 	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
-		'[ '(sscnb, 'Vk.Mem.K.BufferArg
+		'[ '(sscnb, 'Vk.Mem.BufferArg
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->

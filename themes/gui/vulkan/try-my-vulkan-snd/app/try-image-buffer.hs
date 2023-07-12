@@ -84,7 +84,6 @@ import Sample.Image
 import Codec.Picture.Tools
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
-import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 main :: IO ()
@@ -126,9 +125,9 @@ calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 	case opt of
 		Buffer3Memory3 ->
 			prepareMems33 phdvc dvc dslyt da db dc \dsst
-				(ma :: Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.K.BufferArg nm1 '[VObj.List 256 w1 ""])])
-				(mb :: Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.BufferArg nm2 '[VObj.List 256 w2 ""])])
-				(mc :: Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.BufferArg nm3 '[VObj.List 256 w3 ""])]) ->
+				(ma :: Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])])
+				(mb :: Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])])
+				(mc :: Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])]) ->
 			calc' dvc qfam dslyt dsst maxX (readMemories @nm1 @nm2 @nm3) ma mb mc
 		Buffer3Memory1 ->
 			prepareMems31 phdvc dvc dslyt da db dc \dsst m ->
@@ -285,9 +284,9 @@ prepareMems33 ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm1 sm2 sm3 sb1 sb2 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
-		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
-		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
-		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.BufferArg nm3 '[VObj.List 256 w3 ""])] -> IO a) -> IO a
+		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
+		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
+		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] -> IO a) -> IO a
 prepareMems33 phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
@@ -310,9 +309,9 @@ prepareMems31 ::
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm sb1 sb2 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mem.M sm '[
-			'(sb1, 'Vk.Mem.K.BufferArg "buffer1" '[VObj.List 256 w1 ""]),
-			'(sb2, 'Vk.Mem.K.BufferArg "buffer2" '[VObj.List 256 w2 ""]),
-			'(sb3, 'Vk.Mem.K.BufferArg "buffer3" '[VObj.List 256 w3 ""])
+			'(sb1, 'Vk.Mem.BufferArg "buffer1" '[VObj.List 256 w1 ""]),
+			'(sb2, 'Vk.Mem.BufferArg "buffer2" '[VObj.List 256 w2 ""]),
+			'(sb3, 'Vk.Mem.BufferArg "buffer3" '[VObj.List 256 w3 ""])
 			] -> IO a) -> IO a
 prepareMems31 phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
@@ -341,8 +340,8 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm' si sb .
 		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mem.M sm' '[
-			'(si, 'Vk.Mem.K.ImageArg nmi 'Vk.T.FormatR8g8b8a8Srgb),
-			'(sb, 'Vk.Mem.K.BufferArg "hello" '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]) ] ->
+			'(si, 'Vk.Mem.ImageArg nmi 'Vk.T.FormatR8g8b8a8Srgb),
+			'(sb, 'Vk.Mem.BufferArg "hello" '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]) ] ->
 		IO a) -> IO a
 prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	readRgba8 ifp >>= \img_ ->
@@ -415,21 +414,21 @@ storageBufferNew3' :: (Storable w1, Storable w2, Storable w3) =>
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 .
 		Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
-		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
+		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
 		Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
-		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
+		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
 		Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
-		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.BufferArg nm3 '[VObj.List 256 w3 ""])] -> IO a) -> IO a
+		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] -> IO a) -> IO a
 storageBufferNew3' dvc phdvc x y z f =
 	storageBufferNews dvc phdvc (x :** y :** z :** HeteroParList.Nil) $ addArg3 f
 
 addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
 	Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
-	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
+	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
 	Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
-	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
+	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
 	Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
-	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.BufferArg nm3 '[VObj.List 256 w3 ""])] -> r) ->
+	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] -> r) ->
 	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
 addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
 
@@ -440,7 +439,7 @@ class StorageBufferNews f a where
 
 data Arg nm w f = Arg (forall sb sm .
 	Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""] ->
-	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.BufferArg nm '[VObj.List 256 w ""])] -> f)
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
 	type Vectors (IO a) = '[]
@@ -457,7 +456,7 @@ storageBufferNew :: forall sd w a nm . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
 		forall sb sm .
 		Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""]  ->
-		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.BufferArg nm '[VObj.List 256 w ""])] -> IO a ) -> IO a
+		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 w ""])] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil' \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
@@ -476,9 +475,9 @@ storage3BufferNew :: forall sd w1 w2 w3 a . (
 		Vk.Buffer.Binded sm sb2 "buffer2" '[VObj.List 256 w2 ""] ->
 		Vk.Buffer.Binded sm sb3 "buffer3" '[VObj.List 256 w3 ""] ->
 		Vk.Mem.M sm '[
-			'(sb1, 'Vk.Mem.K.BufferArg "buffer1" '[VObj.List 256 w1 ""]),
-			'(sb2, 'Vk.Mem.K.BufferArg "buffer2" '[VObj.List 256 w2 ""]),
-			'(sb3, 'Vk.Mem.K.BufferArg "buffer3" '[VObj.List 256 w3 ""]) ] -> IO a
+			'(sb1, 'Vk.Mem.BufferArg "buffer1" '[VObj.List 256 w1 ""]),
+			'(sb2, 'Vk.Mem.BufferArg "buffer2" '[VObj.List 256 w2 ""]),
+			'(sb3, 'Vk.Mem.BufferArg "buffer3" '[VObj.List 256 w3 ""]) ] -> IO a
 		) -> IO a
 storage3BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil' \buf1 -> do

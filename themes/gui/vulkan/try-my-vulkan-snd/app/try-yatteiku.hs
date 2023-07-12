@@ -58,7 +58,6 @@ import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory as Vk.Memory
-import qualified Gpu.Vulkan.Memory.Kind as Vk.Memory.K
 import qualified Gpu.Vulkan.Attachment as Vk.Attachment
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Attachment.Enum as Vk.Attachment
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
@@ -202,7 +201,7 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	(forall si sm .
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Unorm ->
-		Vk.Memory.M sm '[ '(si, 'Vk.Memory.K.ImageArg nm 'Vk.T.FormatR8g8b8a8Unorm)] -> IO a) ->
+		Vk.Memory.M sm '[ '(si, 'Vk.Memory.ImageArg nm 'Vk.T.FormatR8g8b8a8Unorm)] -> IO a) ->
 	IO a
 makeImage' phdvc dvc f = do
 	let	imgCreateInfo = Vk.Img.CreateInfo {
@@ -256,7 +255,7 @@ makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
 		Vk.Bffr.Binded sm sb "image-buffer" '[ VObj.ObjImage 1 MyImage ""] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.K.BufferArg "image-buffer" '[ VObj.ObjImage 1 MyImage ""])] ->
+			'Vk.Memory.BufferArg "image-buffer" '[ VObj.ObjImage 1 MyImage ""])] ->
 			IO a) -> IO a
 makeBuffer phdvc dvc wdt hgt f =
 	createBufferImage phdvc dvc
@@ -364,7 +363,7 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 		Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 t inm] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.K.BufferArg nm '[ VObj.ObjImage 1 t inm])] ->
+			'Vk.Memory.BufferArg nm '[ VObj.ObjImage 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer p dv (VObj.ObjectLengthImage r w h d) usg props
@@ -374,7 +373,7 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Memory.M sm
-			'[ '(sb, 'Vk.Memory.K.BufferArg nm '[o])] ->
+			'[ '(sb, 'Vk.Memory.BufferArg nm '[o])] ->
 		IO a) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b

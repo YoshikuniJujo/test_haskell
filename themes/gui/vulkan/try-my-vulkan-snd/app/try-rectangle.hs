@@ -123,7 +123,6 @@ import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mem
-import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Queue as Vk.Queue
@@ -869,7 +868,7 @@ createUniformBuffer1 phdvc dvc f = createBufferAtom' phdvc dvc
 
 type UniformBufferMemory sm sb nm = Vk.Mem.M sm '[ '(
 	sb,
-	'Vk.Mem.K.BufferArg nm '[VObj.Atom 256 UniformBufferObject 'Nothing]
+	'Vk.Mem.BufferArg nm '[VObj.Atom 256 UniformBufferObject 'Nothing]
 	)]
 
 createDescriptorPool ::
@@ -944,7 +943,7 @@ createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd 
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 a 'Nothing] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.BufferArg nm '[VObj.Atom 256 a 'Nothing] )] ->
+			'Vk.Mem.BufferArg nm '[VObj.Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
 createBufferAtom' p dv usg props = createBuffer' p dv VObj.ObjectLengthAtom usg props
 
@@ -954,7 +953,7 @@ createBufferList' :: forall sd nm t a . Storable t =>
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.BufferArg nm '[VObj.List 256 t ""] ) ] ->
+			'Vk.Mem.BufferArg nm '[VObj.List 256 t ""] ) ] ->
 		IO a) ->
 	IO a
 createBufferList' p dv ln usg props =
@@ -965,7 +964,7 @@ createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mem.M sm
-			'[ '(sb, 'Vk.Mem.K.BufferArg nm '[o])] ->
+			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
 createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
