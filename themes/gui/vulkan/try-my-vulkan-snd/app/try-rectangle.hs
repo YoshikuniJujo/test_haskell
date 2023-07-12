@@ -1216,13 +1216,13 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 					Vk.Ppl.StageColorAttachmentOutputBit,
 			Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
-				$ Vk.Khr.SwapchainImageIndex (Vk.Khr.Swapchain.sFromNew sc) imgIdx }
+		presentInfo = Vk.Khr.PresentInfoNew {
+			Vk.Khr.presentInfoNextNew = TMaybe.N,
+			Vk.Khr.presentInfoWaitSemaphoresNew = HeteroParList.Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndicesNew = HeteroParList.Singleton
+				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresentNew @'Nothing pq presentInfo
 	where	HeteroParList.Dummy cb = cbs `HeteroParList.homoListIndex` cf ::
 			HeteroParList.Dummy (Vk.CmdBffr.C scb) '()
 

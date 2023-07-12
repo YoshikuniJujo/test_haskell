@@ -1011,8 +1011,8 @@ drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff sl .
 drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc (Vk.Khr.Swapchain.sFromNew sc) uint64Max (Just ias) Nothing
+	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
+		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
@@ -1026,13 +1026,13 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 			Vk.submitInfoCommandBuffers =
 				HeteroParList.Singleton  cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
-				$ Vk.Khr.SwapchainImageIndex (Vk.Khr.Swapchain.sFromNew sc) imgIdx }
+		presentInfo = Vk.Khr.PresentInfoNew {
+			Vk.Khr.presentInfoNextNew = TMaybe.N,
+			Vk.Khr.presentInfoWaitSemaphoresNew = HeteroParList.Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndicesNew = HeteroParList.Singleton
+				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresentNew @'Nothing pq presentInfo
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =

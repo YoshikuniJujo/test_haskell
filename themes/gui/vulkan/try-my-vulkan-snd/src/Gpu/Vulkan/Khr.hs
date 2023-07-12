@@ -6,7 +6,21 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr where
+module Gpu.Vulkan.Khr (
+
+	-- * LAYER NAME
+
+	validationLayerName,
+
+	-- * QUEUE PRESENT
+
+	queuePresentNew, PresentInfoNew(..), SwapchainImageIndexNew(..),
+
+	-- * ACQUIRE NEXT IMAGE
+
+	acquireNextImageNew, acquireNextImageResultNew,
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -18,7 +32,6 @@ import qualified Data.Text as T
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Semaphore as Semaphore
 import qualified Gpu.Vulkan.Fence.Middle as Fence
 import qualified Gpu.Vulkan.Queue as Queue
@@ -29,35 +42,9 @@ import qualified Gpu.Vulkan.Khr.Middle as M
 validationLayerName :: T.Text
 validationLayerName = "VK_LAYER_KHRONOS_validation"
 
-acquireNextImageResultNew :: [Result] -> Device.D sd ->
-	Swapchain.SNew ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
-acquireNextImageResultNew sccs dvc (Swapchain.sFromNew -> sc) to msmp mfnc =
-	acquireNextImageResult sccs dvc sc to msmp mfnc
-
-acquireNextImage :: Device.D sd ->
-	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
-acquireNextImage = acquireNextImageResult [Success]
-
-acquireNextImageResult :: [Result] -> Device.D sd ->
-	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
-acquireNextImageResult sccs
-	(Device.D dvc) sc to msmp mfnc = acquireNextImageResultM sccs dvc sc to msmp mfnc
-
-data SwapchainImageIndexNew scfmt ssc =
-	SwapchainImageIndexNew (Swapchain.SNew ssc scfmt) Word32 deriving Show
-
-swapchainImageIndexFromNew ::
-	SwapchainImageIndexNew scfmt ssc -> SwapchainImageIndex ssc
-swapchainImageIndexFromNew (SwapchainImageIndexNew sc iix) =
-	SwapchainImageIndex (Swapchain.sFromNew sc) iix
-
-data SwapchainImageIndex ssc =
-	SwapchainImageIndex (Swapchain.S ssc) Word32 deriving Show
-
-swapchainImageIndexToMiddle ::
-	SwapchainImageIndex ssc -> (Swapchain.M.S, Word32)
-swapchainImageIndexToMiddle (SwapchainImageIndex (Swapchain.S sc) idx) =
-	(sc, idx)
+queuePresentNew :: WithPoked (TMaybe.M mn) =>
+	Queue.Q -> PresentInfoNew mn sws scfmt sscs -> IO ()
+queuePresentNew q = M.queuePresent q . presentInfoToMiddle
 
 data PresentInfoNew mn sws scfmt sscs = PresentInfoNew {
 	presentInfoNextNew :: TMaybe.M mn,
@@ -65,59 +52,32 @@ data PresentInfoNew mn sws scfmt sscs = PresentInfoNew {
 	presentInfoSwapchainImageIndicesNew ::
 		HeteroParList.PL (SwapchainImageIndexNew scfmt) sscs }
 
-
-presentInfoFromNew ::
-	PresentInfoNew mn sws scfmt sscs -> PresentInfo mn sws sscs
-presentInfoFromNew PresentInfoNew {
+presentInfoToMiddle :: PresentInfoNew mn sws scfmt sscs -> M.PresentInfo mn
+presentInfoToMiddle PresentInfoNew {
 	presentInfoNextNew = mnxt,
-	presentInfoWaitSemaphoresNew = wsmps,
-	presentInfoSwapchainImageIndicesNew = sciis } = PresentInfo {
-	presentInfoNext = mnxt,
-	presentInfoWaitSemaphores = wsmps,
-	presentInfoSwapchainImageIndices =
-		HeteroParList.map swapchainImageIndexFromNew sciis }
-
-data PresentInfo mn sws sscs = PresentInfo {
-	presentInfoNext :: TMaybe.M mn,
-	presentInfoWaitSemaphores :: HeteroParList.PL Semaphore.S sws,
-	presentInfoSwapchainImageIndices ::
-		HeteroParList.PL SwapchainImageIndex sscs }
-
-deriving instance (
-	Show (TMaybe.M mn), Show (HeteroParList.PL Semaphore.S sws),
-	Show (HeteroParList.PL SwapchainImageIndex sscs)) =>
-	Show (PresentInfo mn sws sscs)
-
-presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfo n
-presentInfoFromMiddle PresentInfo {
-	presentInfoNext = mnxt,
-	presentInfoWaitSemaphores =
+	presentInfoWaitSemaphoresNew =
 		HeteroParList.toList (\(Semaphore.S s) -> s) -> wss,
-	presentInfoSwapchainImageIndices =
+	presentInfoSwapchainImageIndicesNew =
 		HeteroParList.toList swapchainImageIndexToMiddle -> sciis
 	} = M.PresentInfo {
 		M.presentInfoNext = mnxt,
 		M.presentInfoWaitSemaphores = wss,
 		M.presentInfoSwapchainImageIndices = sciis }
 
-queuePresentNew ::
-	WithPoked (TMaybe.M mn) => Queue.Q -> PresentInfoNew mn sws scfmt sscs -> IO ()
-queuePresentNew q = queuePresent q . presentInfoFromNew
+data SwapchainImageIndexNew scfmt ssc =
+	SwapchainImageIndexNew (Swapchain.SNew ssc scfmt) Word32 deriving Show
 
-queuePresent :: WithPoked (TMaybe.M mn) => Queue.Q -> PresentInfo mn sws sscs -> IO ()
-queuePresent q = M.queuePresent q . presentInfoFromMiddle
+swapchainImageIndexToMiddle ::
+	SwapchainImageIndexNew scfmt ssc -> (Swapchain.M.S, Word32)
+swapchainImageIndexToMiddle (SwapchainImageIndexNew (Swapchain.SNew sc) idx) =
+	(sc, idx)
 
-acquireNextImageResultNewM :: [Result] -> Device.M.D ->
+acquireNextImageNew :: Device.D sd ->
 	Swapchain.SNew ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
-acquireNextImageResultNewM sccs dvc (Swapchain.sFromNew -> sc) to msmp mfnc =
-	acquireNextImageResultM sccs dvc sc to msmp mfnc
+acquireNextImageNew = acquireNextImageResultNew [Success]
 
-acquireNextImageM :: Device.M.D ->
-	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
-acquireNextImageM = acquireNextImageResultM [Success]
-
-acquireNextImageResultM :: [Result] -> Device.M.D -> Swapchain.S ssc ->
-	Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
-acquireNextImageResultM sccs dvc (Swapchain.S sc) to msmp mfnc =
+acquireNextImageResultNew :: [Result] -> Device.D sd ->
+	Swapchain.SNew ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+acquireNextImageResultNew sccs (Device.D mdvc) (Swapchain.SNew msc) to msmp mfnc =
 	M.acquireNextImageResult
-		sccs dvc sc to ((\(Semaphore.S smp) -> smp) <$> msmp) mfnc
+		sccs mdvc msc to ((\(Semaphore.S smp) -> smp) <$> msmp) mfnc
