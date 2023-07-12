@@ -12,17 +12,14 @@
 
 module Gpu.Vulkan.Memory.OffsetSize (
 
-	-- * OTHERS
+	-- * OFFSET
 
-	offset,
+	offset, Offset',
 
-	OffsetSize, OffsetSizeObject,
-	offsetSize,
-	Alignments(..),
+	-- * OFFSET SIZE
 
-	Offset',
-
-	offsetSizeLength
+	offsetSize, offsetSizeLength,
+	OffsetSize, OffsetSizeObject
 
 	) where
 
@@ -70,16 +67,16 @@ instance {-# OVERLAPPABLE #-} Offset' sib ib sibfoss =>
 		offset' @sib @ib dvc ibs
 			$ ((ost - 1) `div` algn + 1) * algn + sz
 
+getMemoryRequirements' ::
+	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
+getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
+
 getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
 getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
 	Buffer.M.getMemoryRequirements dvc b
 getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
 	Image.M.getMemoryRequirements dvc i
-
-getMemoryRequirements' ::
-	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
-getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
 
 offsetSize :: forall nm obj sibfoss sd sm . OffsetSize nm obj sibfoss =>
 	Device.D sd -> M sm sibfoss -> Device.M.Size ->
@@ -143,16 +140,3 @@ instance {-# OVERLAPPABLE #-} (
 		ost = ((n - 1) `div` algn + 1) * algn
 		algn = fromIntegral (VObj.objectAlignment @obj)
 	offsetSizeObjectLength (_ :** lns) = offsetSizeObjectLength @obj lns
-
-class Alignments (ibs :: [(Type, ImageBufferArg)]) where
-	alignments :: [Maybe Int]
-
-instance Alignments '[] where alignments = []
-
-instance Alignments ibs =>
-	Alignments ('(_s, 'ImageArg _nm _fmt) ': ibs) where
-	alignments = Nothing : alignments @ibs
-
-instance (VObj.SizeAlignment obj, Alignments ibs) =>
-	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
-	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs

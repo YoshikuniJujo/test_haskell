@@ -19,6 +19,7 @@ module Gpu.Vulkan.Memory.Types (
 	-- * IMAGE BUFFER
 
 	ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
+	Alignments(..)
 
 	) where
 
@@ -73,3 +74,16 @@ data ImageBufferBinded sm sib (ib :: ImageBufferArg) where
 		ImageBufferBinded sm sb ('BufferArg nm objs)
 
 data ImageBufferArg = ImageArg Symbol T.Format | BufferArg Symbol [VObj.Object]
+
+class Alignments (ibs :: [(Type, ImageBufferArg)]) where
+	alignments :: [Maybe Int]
+
+instance Alignments '[] where alignments = []
+
+instance Alignments ibs =>
+	Alignments ('(_s, 'ImageArg _nm _fmt) ': ibs) where
+	alignments = Nothing : alignments @ibs
+
+instance (VObj.SizeAlignment obj, Alignments ibs) =>
+	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
+	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
