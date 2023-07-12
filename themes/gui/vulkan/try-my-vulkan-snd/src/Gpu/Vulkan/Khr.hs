@@ -43,12 +43,12 @@ validationLayerName :: T.Text
 validationLayerName = "VK_LAYER_KHRONOS_validation"
 
 queuePresent :: WithPoked (TMaybe.M mn) =>
-	Queue.Q -> PresentInfo mn sws scfmt sscs -> IO ()
+	Queue.Q -> PresentInfo mn swss scfmt sscs -> IO ()
 queuePresent q = M.queuePresent q . presentInfoToMiddle
 
-data PresentInfo mn sws scfmt sscs = PresentInfo {
+data PresentInfo mn swss scfmt sscs = PresentInfo {
 	presentInfoNext :: TMaybe.M mn,
-	presentInfoWaitSemaphores :: HeteroParList.PL Semaphore.S sws,
+	presentInfoWaitSemaphores :: HeteroParList.PL Semaphore.S swss,
 	presentInfoSwapchainImageIndices ::
 		HeteroParList.PL (SwapchainImageIndex scfmt) sscs }
 
