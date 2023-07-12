@@ -11,21 +11,29 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Memory (
-	M, allocateBind, reallocateBind, read, write,
 
-	ImageBuffer(..), ImageBufferBinded(..),
+	-- * ALLOCATE AND BIND
 
-	OffsetSize'(..), OffsetSizeObject(..), getMemoryRequirementsList,
-	offsetSize,
-	Alignments,
+	allocateBind, reallocateBind, M, AllocateInfo(..),
+	ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
 
-	M.Requirements(..),
+	-- * GET REQUREMENTS
+
+	getRequirementsList, M.Requirements(..),
+
+	-- * READ AND WRITE
+
+	read, write,
+
+	-- * BARRIER
 
 	M.Barrier(..),
 
-	AllocateInfo(..),
+	-- * OTHERS
 
-	ImageBufferArg(..)
+	OffsetSize(..), OffsetSizeObject(..),
+	offsetSize,
+	Alignments,
 
 	) where
 
@@ -74,25 +82,19 @@ imageBufferFromBinded (U2 (BufferBinded (Buffer.Binded x b))) = U2 . Buffer $ Bu
 newM2' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> M.M -> IO (M s sibfoss)
 newM2' ibs mm = (`M` mm) <$> newIORef ibs
 
+data AllocateInfo n = AllocateInfo {
+	allocateInfoNext :: TMaybe.M n,
+	allocateInfoMemoryTypeIndex :: M.TypeIndex }
+
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn)
+deriving instance Eq (TMaybe.M mn) => Eq (AllocateInfo mn)
+
 -- deriving instance Show (HeteroParList.PL (U2 ImageBuffer) sibfoss) =>
 --	Show (M s sibfoss)
 
 data ImageBuffer sib (ib :: ImageBufferArg) where
 	Image :: Image.I si nm fmt -> ImageBuffer si ('ImageArg nm fmt)
 	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('BufferArg nm objs)
-
-class Alignments (ibs :: [(Type, ImageBufferArg)]) where
-	alignments :: [Maybe Int]
-
-instance Alignments '[] where alignments = []
-
-instance Alignments ibs =>
-	Alignments ('(_s, 'ImageArg _nm _fmt) ': ibs) where
-	alignments = Nothing : alignments @ibs
-
-instance (VObj.SizeAlignment obj, Alignments ibs) =>
-	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
-	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
 
 deriving instance Show (Image.I sib nm fmt) =>
 	Show (ImageBuffer sib ('ImageArg nm fmt))
@@ -105,6 +107,8 @@ data ImageBufferBinded sm sib (ib :: ImageBufferArg) where
 		ImageBufferBinded sm si ('ImageArg nm fmt)
 	BufferBinded :: Buffer.Binded sm sb nm objs ->
 		ImageBufferBinded sm sb ('BufferArg nm objs)
+
+data ImageBufferArg = ImageArg Symbol T.Format | BufferArg Symbol [VObj.Object]
 
 getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
@@ -128,14 +132,14 @@ getMemoryRequirementsBinded' ::
 	Device.D sd -> U2 (ImageBufferBinded sm) sibfos -> IO Memory.M.Requirements
 getMemoryRequirementsBinded' dvc (U2 bi) = getMemoryRequirementsBinded dvc bi
 
-getMemoryRequirementsList :: Device.D sd ->
+getRequirementsList :: Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
-getMemoryRequirementsList dvc bis =
+getRequirementsList dvc bis =
 	HeteroParList.toListM (getMemoryRequirements' dvc) bis
 
-getMemoryRequirementsListBinded :: Device.D sd ->
+getRequirementsListBinded :: Device.D sd ->
 	HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
-getMemoryRequirementsListBinded dvc bis =
+getRequirementsListBinded dvc bis =
 	HeteroParList.toListM (getMemoryRequirementsBinded' dvc) bis
 
 allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
@@ -144,7 +148,7 @@ allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
 allocateInfoToMiddle dvc ibs AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoMemoryTypeIndex = mti } = do
-	reqss <- getMemoryRequirementsList dvc ibs
+	reqss <- getRequirementsList dvc ibs
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
 		Memory.M.allocateInfoAllocationSize =
@@ -158,7 +162,7 @@ reallocateInfoToMiddle :: forall sd sm sibfoss n . Alignments sibfoss =>
 reallocateInfoToMiddle dvc ibs AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoMemoryTypeIndex = mti } = do
-	reqss <- getMemoryRequirementsListBinded dvc ibs
+	reqss <- getRequirementsListBinded dvc ibs
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
 		Memory.M.allocateInfoAllocationSize =
@@ -307,6 +311,38 @@ rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
 	ost <- offset @sb @('BufferArg nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc b mm ost
 
+write :: forall nm obj sd sm sibfoss v .
+	(VObj.StoreObject v obj, OffsetSize nm obj sibfoss) =>
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> v -> IO ()
+write dvc mem flgs v = bracket
+	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
+	(\(ptr :: Ptr (VObj.TypeOfObject obj)) -> do
+		ln <- offsetSizeLength @nm @obj mem
+		VObj.storeObject @_ @obj ptr ln v)
+
+read :: forall nm obj v sd sm sibfoss .
+	(VObj.StoreObject v obj, OffsetSize nm obj sibfoss) =>
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO v
+read dvc mem flgs = bracket
+	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
+	(\(ptr :: Ptr (VObj.TypeOfObject obj)) ->
+		VObj.loadObject @_ @obj ptr =<< offsetSizeLength @nm @obj mem)
+
+map :: forall nm obj sd sm sibfoss . OffsetSize nm obj sibfoss =>
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (VObj.TypeOfObject obj))
+map dvc@(Device.D mdvc) m flgs = do
+	(_, mm) <- readM'' m
+	(ost, sz) <- offsetSize @nm @obj dvc m 0
+--	putStrLn "Vk.Memory.map:"
+--	putStr "ost: "; print ost
+--	putStr "sz : "; print sz
+	Memory.M.map mdvc mm ost sz flgs
+
+unmap :: Device.D sd -> M sm sibfoss -> IO ()
+unmap (Device.D mdvc) m = do
+	(_, mm) <- readM'' m
+	Memory.M.unmap mdvc mm
+
 offset :: forall sib ib sibfoss sd sm . Offset' sib ib sibfoss =>
 	Device.D sd -> M sm sibfoss -> Device.M.Size -> IO Device.M.Size
 offset dvc m ost = do
@@ -333,26 +369,26 @@ instance {-# OVERLAPPABLE #-} Offset' sib ib sibfoss =>
 		offset' @sib @ib dvc ibs
 			$ ((ost - 1) `div` algn + 1) * algn + sz
 
-offsetSize :: forall nm obj sibfoss sd sm . OffsetSize' nm obj sibfoss =>
+offsetSize :: forall nm obj sibfoss sd sm . OffsetSize nm obj sibfoss =>
 	Device.D sd -> M sm sibfoss -> Device.M.Size ->
 	IO (Device.M.Size, Device.M.Size)
 offsetSize dvc m ost = do
 	(ibs, _m) <- readM'' m
 	offsetSize' @nm @obj @sibfoss dvc ibs ost
 
-offsetSizeLength :: forall nm obj sibfoss sm . OffsetSize' nm obj sibfoss =>
+offsetSizeLength :: forall nm obj sibfoss sm . OffsetSize nm obj sibfoss =>
 	M sm sibfoss -> IO (VObj.ObjectLength obj)
 offsetSizeLength m = do
 	(lns, _m) <- readM'' m
 	offsetSizeLength' @nm @obj @sibfoss lns
 
-class OffsetSize' (nm :: Symbol) (obj :: VObj.Object) sibfoss where
+class OffsetSize (nm :: Symbol) (obj :: VObj.Object) sibfoss where
 	offsetSize' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
 	offsetSizeLength' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO (VObj.ObjectLength obj)
 
 instance OffsetSizeObject obj objs =>
-	OffsetSize' nm obj ('(sib, 'BufferArg nm objs) ': sibfoss) where
+	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': sibfoss) where
 	offsetSize' dvc (ib@(U2 (Buffer (Buffer.B lns _))) :** _ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
@@ -362,8 +398,8 @@ instance OffsetSizeObject obj objs =>
 		pure $ offsetSizeObjectLength @obj lns
 
 instance {-# OVERLAPPABLE #-}
-	OffsetSize' nm obj sibfoss =>
-	OffsetSize' nm obj ('(sib, ib) ': sibfoss) where
+	OffsetSize nm obj sibfoss =>
+	OffsetSize nm obj ('(sib, ib) ': sibfoss) where
 	offsetSize' dvc (ib :** ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
@@ -396,43 +432,15 @@ instance {-# OVERLAPPABLE #-} (
 		algn = fromIntegral (VObj.objectAlignment @obj)
 	offsetSizeObjectLength (_ :** lns) = offsetSizeObjectLength @obj lns
 
-write :: forall nm obj sd sm sibfoss v .
-	(VObj.StoreObject v obj, OffsetSize' nm obj sibfoss) =>
-	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> v -> IO ()
-write dvc mem flgs v = bracket
-	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
-	(\(ptr :: Ptr (VObj.TypeOfObject obj)) -> do
-		ln <- offsetSizeLength @nm @obj mem
-		VObj.storeObject @_ @obj ptr ln v)
+class Alignments (ibs :: [(Type, ImageBufferArg)]) where
+	alignments :: [Maybe Int]
 
-read :: forall nm obj v sd sm sibfoss .
-	(VObj.StoreObject v obj, OffsetSize' nm obj sibfoss) =>
-	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO v
-read dvc mem flgs = bracket
-	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
-	(\(ptr :: Ptr (VObj.TypeOfObject obj)) ->
-		VObj.loadObject @_ @obj ptr =<< offsetSizeLength @nm @obj mem)
+instance Alignments '[] where alignments = []
 
-map :: forall nm obj sd sm sibfoss . OffsetSize' nm obj sibfoss =>
-	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (VObj.TypeOfObject obj))
-map dvc@(Device.D mdvc) m flgs = do
-	(_, mm) <- readM'' m
-	(ost, sz) <- offsetSize @nm @obj dvc m 0
---	putStrLn "Vk.Memory.map:"
---	putStr "ost: "; print ost
---	putStr "sz : "; print sz
-	Memory.M.map mdvc mm ost sz flgs
+instance Alignments ibs =>
+	Alignments ('(_s, 'ImageArg _nm _fmt) ': ibs) where
+	alignments = Nothing : alignments @ibs
 
-unmap :: Device.D sd -> M sm sibfoss -> IO ()
-unmap (Device.D mdvc) m = do
-	(_, mm) <- readM'' m
-	Memory.M.unmap mdvc mm
-
-data AllocateInfo n = AllocateInfo {
-	allocateInfoNext :: TMaybe.M n,
-	allocateInfoMemoryTypeIndex :: M.TypeIndex }
-
-deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn)
-deriving instance Eq (TMaybe.M mn) => Eq (AllocateInfo mn)
-
-data ImageBufferArg = ImageArg Symbol T.Format | BufferArg Symbol [VObj.Object]
+instance (VObj.SizeAlignment obj, Alignments ibs) =>
+	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
+	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs

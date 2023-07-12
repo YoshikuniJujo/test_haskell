@@ -165,9 +165,9 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sm1 sm
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
 	InfixIndex '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.D sds slbts -> Word32 ->
@@ -193,9 +193,9 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->

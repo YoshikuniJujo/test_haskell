@@ -194,9 +194,9 @@ readMemories :: forall (nm1 :: Symbol) (nm2 :: Symbol) (nm3 :: Symbol)
 --	Vk.Dvc.Mem.Buffer.OffsetSize (VObj.List 256 w1 "") objss1,
 --	Vk.Dvc.Mem.Buffer.OffsetSize (VObj.List 256 w2 "") objss2,
 --	Vk.Dvc.Mem.Buffer.OffsetSize (VObj.List 256 w3 "") objss3,
-	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
 	Storable w1, Storable w2, Storable w3
 	) =>
 	Vk.Dvc.D sd ->
@@ -209,9 +209,9 @@ readMemories dvc memA memB memC =
 		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @[w3] dvc memC def
 
 readMemories' :: forall nm1 nm2 nm3 sd sm1 sm2 sm3 objss1 objss2 objss3 w1 w2 w3 . (
-	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
 	Storable w1, Storable w2, Storable w3
 	) =>
 	Vk.Dvc.D sd ->
@@ -356,7 +356,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	let	imgbuf = U2 (Vk.Mem.Image img) :**
 			U2 (Vk.Mem.Buffer buf) :**
 			HeteroParList.Nil in
-	Vk.Mem.getMemoryRequirementsList dvc imgbuf >>= \reqs ->
+	Vk.Mem.getRequirementsList dvc imgbuf >>= \reqs ->
 	print reqs >>
 	Vk.PhDvc.getMemoryProperties phdvc >>= \mprops ->
 	print mprops >>
