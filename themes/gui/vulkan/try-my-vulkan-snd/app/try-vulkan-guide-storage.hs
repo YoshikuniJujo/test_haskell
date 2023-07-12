@@ -252,7 +252,7 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 	(print . Vk.Phd.limitsMinUniformBufferOffsetAlignment
 		. Vk.Phd.propertiesLimits =<< Vk.Phd.getProperties pd) >>
 	createDevice pd qfs \dv gq pq ->
-	createSwapchain w sfc pd qfs dv \(sc :: Vk.Khr.Swpch.SNew ss fmt) ex ->
+	createSwapchain w sfc pd qfs dv \(sc :: Vk.Khr.Swpch.S ss fmt) ex ->
 	Vk.Khr.Swpch.getImagesNew dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
 	findDepthFormat pd >>= \dfmt ->
@@ -373,7 +373,7 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 createSwapchain :: Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
-		Vk.Khr.Swpch.SNew ss scfmt -> Vk.Extent2d -> IO a) -> IO a
+		Vk.Khr.Swpch.S ss scfmt -> Vk.Extent2d -> IO a) -> IO a
 createSwapchain w sfc ph qfs dv f = getSwapchainSupport ph sfc >>= \spp -> do
 	ex <- chooseSwapExtent w $ capabilities spp
 	let	fmt = Vk.Khr.Sfc.M.formatFormat
@@ -384,7 +384,7 @@ createSwapchain w sfc ph qfs dv f = getSwapchainSupport ph sfc >>= \spp -> do
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.SNew ssc scfmt ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S ssc scfmt ->
 	IO Vk.Extent2d
 recreateSwapchain w sfc ph qfs dv sc = getSwapchainSupport ph sfc >>= \spp -> do
 	ex <- chooseSwapExtent w $ capabilities spp
@@ -1338,7 +1338,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	) =>
 	Glfw.Window -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d ->
+	Vk.Khr.Swpch.S ssc scfmt -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
@@ -1375,7 +1375,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	) =>
 	Glfw.Window -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d ->
+	Vk.Khr.Swpch.S ssc scfmt -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
@@ -1406,7 +1406,7 @@ step w frszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
 catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S ssc scfmt ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
 		'[ '(s, Buffers), '(sod, ObjDataBuffers)]
@@ -1429,7 +1429,7 @@ catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop act =
 recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S ssc scfmt ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
@@ -1463,7 +1463,7 @@ drawFrame ::
 	HL.HomoList '(slod, ObjDataBuffers) lytods
 	) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.Khr.Swpch.S ssc scfmt -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt
 		'[ '(sl, Buffers), '(slod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
@@ -1492,14 +1492,14 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 	Vk.Mm.write @"object-data-buffer" @ObjDataList dv odm zeroBits . map ObjData $
 		model (fromIntegral fn) : [ objectMatrix x y | x <- [- 20 .. 20], y <- [- 20 .. 20] ]
 	Vk.Fnc.waitForFs dv siff True Nothing
-	iid <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
+	iid <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dv sc uint64Max (Just ias) Nothing
 	Vk.Fnc.resetFs dv siff
 	Vk.CBffr.reset cb zeroBits
 	HL.index fbs iid \fb -> recordCommandBuffer
 		ex rp lyt gpl fb ds dsod vb vbtri cb vnsln (fromIntegral ffn) fn
 	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo ias rfs) $ Just iff
-	catchAndSerialize . Vk.Khr.queuePresentNew @'Nothing pq $ presentInfo rfs iid
+	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ presentInfo rfs iid
 	where
 	submitInfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
 		Vk.SubmitInfo 'Nothing '[ssi] '[scb] '[ssr]
@@ -1511,12 +1511,12 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 		Vk.submitInfoCommandBuffers = HL.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HL.Singleton rfs }
 	presentInfo :: Vk.Semaphore.S ssr -> Word32 ->
-		Vk.Khr.PresentInfoNew 'Nothing '[ssr] scfmt '[ssc]
-	presentInfo rfs iid = Vk.Khr.PresentInfoNew {
-		Vk.Khr.presentInfoNextNew = TMaybe.N,
-		Vk.Khr.presentInfoWaitSemaphoresNew = HL.Singleton rfs,
-		Vk.Khr.presentInfoSwapchainImageIndicesNew = HL.Singleton
-			$ Vk.Khr.SwapchainImageIndexNew sc iid }
+		Vk.Khr.PresentInfo 'Nothing '[ssr] scfmt '[ssc]
+	presentInfo rfs iid = Vk.Khr.PresentInfo {
+		Vk.Khr.presentInfoNext = TMaybe.N,
+		Vk.Khr.presentInfoWaitSemaphores = HL.Singleton rfs,
+		Vk.Khr.presentInfoSwapchainImageIndices = HL.Singleton
+			$ Vk.Khr.SwapchainImageIndex sc iid }
 	HL.Dummy cb = HL.homoListIndex @'() cbs ffn
 	ds = HL.homoListIndex @'(sl, Buffers) dss ffn
 	dsod = HL.homoListIndex @'(slod, ObjDataBuffers) dssod ffn

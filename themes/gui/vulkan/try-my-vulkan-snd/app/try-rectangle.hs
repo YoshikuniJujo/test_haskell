@@ -257,7 +257,7 @@ run w inst g =
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChainNew w sfc phdv qfis dv
-		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt) ext ->
+		\(sc :: Vk.Khr.Swapchain.S ss scifmt) ext ->
 	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
 	createImageViewsNew dv imgs \scivs ->
 	createRenderPassNew @scifmt dv \rp ->
@@ -392,7 +392,7 @@ mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 createSwapChainNew :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
-		Vk.Khr.Swapchain.SNew ss scfmt -> Vk.Extent2d -> IO a) ->
+		Vk.Khr.Swapchain.S ss scfmt -> Vk.Extent2d -> IO a) ->
 	IO a
 createSwapChainNew win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
@@ -443,7 +443,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
 recreateSwapChain :: Vk.T.FormatToValue fmt => Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.SNew ssc fmt ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc fmt ->
 	IO (Vk.Format, Vk.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
@@ -1118,7 +1118,7 @@ mainLoop :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.SNew ssc fmt -> Vk.Extent2d ->
+	Vk.Khr.Swapchain.S ssc fmt -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1150,7 +1150,7 @@ runLoop :: (
 	HeteroParList.HomoList (AtomUbo sdsc) slyts ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.SNew ssc fmt -> FramebufferResized -> Vk.Extent2d ->
+	Vk.Khr.Swapchain.S ssc fmt -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1179,7 +1179,7 @@ drawFrame :: forall sfs sd ssc fmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos v
 	HeteroParList.HomoList '() vss,
 	HeteroParList.HomoList (AtomUbo sdsc) slyts
 	) =>
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc fmt ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc fmt ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1201,7 +1201,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 	HeteroParList.index ubs cf \_ub -> HeteroParList.index ums cf \um ->
 	($ HeteroParList.homoListIndex dscss cf) \(dscs :: Vk.DscSet.D sds (AtomUbo sdsc)) -> do
 	Vk.Fence.waitForFs dvc siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
+	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
@@ -1216,13 +1216,13 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 					Vk.Ppl.StageColorAttachmentOutputBit,
 			Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
-		presentInfo = Vk.Khr.PresentInfoNew {
-			Vk.Khr.presentInfoNextNew = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphoresNew = HeteroParList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndicesNew = HeteroParList.Singleton
-				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
+		presentInfo = Vk.Khr.PresentInfo {
+			Vk.Khr.presentInfoNext = TMaybe.N,
+			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
+				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresentNew @'Nothing pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 	where	HeteroParList.Dummy cb = cbs `HeteroParList.homoListIndex` cf ::
 			HeteroParList.Dummy (Vk.CmdBffr.C scb) '()
 
@@ -1254,7 +1254,7 @@ catchAndRecreate :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.SNew ssc fmt ->
+	Vk.Khr.Swapchain.S ssc fmt ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1276,7 +1276,7 @@ recreateSwapChainEtc :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.SNew ssc fmt ->
+	Vk.Khr.Swapchain.S ssc fmt ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
