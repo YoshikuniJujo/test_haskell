@@ -49,26 +49,26 @@ import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
 create :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn ssfc fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall ssc . S fmt ssc -> IO a) -> IO a
-create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
-	(M.create dvc (createInfoToMiddle ci) macd)
-	(\sc -> M.destroy dvc sc macd) (f . S)
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall s . S fmt s -> IO a) -> IO a
+create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
+	(M.create dvc (createInfoToMiddle ci) mac)
+	(\sc -> M.destroy dvc sc mac) (f . S)
 
 recreate :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn ssfc fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> S fmt ssc -> IO ()
-recreate (Device.D dvc) ci (AllocationCallbacks.toMiddle -> macc) (S sc) =
-	M.recreate dvc (createInfoToMiddle ci) macc sc
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> S fmt ssc -> IO ()
+recreate (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) (S sc) =
+	M.recreate dvc (createInfoToMiddle ci) mac sc
 
-data CreateInfo mn ss (fmt :: T.Format) = CreateInfo {
+data CreateInfo mn ssfc (fmt :: T.Format) = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
-	createInfoSurface :: Surface.S ss,
+	createInfoSurface :: Surface.S ssfc,
 	createInfoMinImageCount :: Word32,
 	createInfoImageColorSpace :: ColorSpace,
 	createInfoImageExtent :: C.Extent2d,
@@ -120,4 +120,4 @@ createInfoToMiddle CreateInfo {
 	M.createInfoOldSwapchain = osc }
 
 getImages :: Device.D sd -> S fmt ss -> IO [Image.Binded ss ss nm fmt]
-getImages (Device.D dvc) (S sc) = (Image.Binded <$>) <$> M.getImages dvc sc
+getImages (Device.D d) (S sc) = (Image.Binded <$>) <$> M.getImages d sc
