@@ -9,7 +9,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Swapchain (
-	createNew, recreateNew, CreateInfoNew(..), getImagesNew ) where
+
+	-- * EXTENSION NAME
+
+	M.extensionName,
+
+	-- * CREATE
+
+	createNew, recreateNew, S, CreateInfoNew(..),
+
+	-- * GET IMAGES
+
+	getImagesNew ) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception

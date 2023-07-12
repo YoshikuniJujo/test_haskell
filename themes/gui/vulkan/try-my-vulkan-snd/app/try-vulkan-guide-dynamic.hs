@@ -83,8 +83,6 @@ import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Sfc.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.Phd
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swpch
-import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swpch
-import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swpch.M
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Image as Vk.Img.M
@@ -301,7 +299,7 @@ checkDeviceExtensionSupport dv = null
 		<$> Vk.Phd.enumerateExtensionProperties dv Nothing
 
 deviceExtensions :: [Txt.Text]
-deviceExtensions = [Vk.Khr.Swpch.M.extensionName]
+deviceExtensions = [Vk.Khr.Swpch.extensionName]
 
 findQueueFamilies :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
 findQueueFamilies dv sfc = Vk.Phd.getQueueFamilyProperties dv >>= \qfs ->
