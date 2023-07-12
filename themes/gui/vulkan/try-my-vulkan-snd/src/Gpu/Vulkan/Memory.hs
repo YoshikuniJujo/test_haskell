@@ -21,7 +21,9 @@ module Gpu.Vulkan.Memory (
 
 	M.Requirements(..),
 
-	M.Barrier(..)
+	M.Barrier(..),
+
+	AllocateInfo(..)
 	) where
 
 import Prelude hiding (map, read)
@@ -48,7 +50,6 @@ import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Kind as K
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Device.Memory.Buffer
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Memory.Middle as M
 
@@ -135,10 +136,10 @@ getMemoryRequirementsListBinded dvc bis =
 
 allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
 	Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-	Device.Memory.Buffer.AllocateInfo n -> IO (Memory.M.AllocateInfo n)
-allocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
-	Device.Memory.Buffer.allocateInfoNext = mnxt,
-	Device.Memory.Buffer.allocateInfoMemoryTypeIndex = mti } = do
+	AllocateInfo n -> IO (Memory.M.AllocateInfo n)
+allocateInfoToMiddle dvc ibs AllocateInfo {
+	allocateInfoNext = mnxt,
+	allocateInfoMemoryTypeIndex = mti } = do
 	reqss <- getMemoryRequirementsList dvc ibs
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
@@ -149,10 +150,10 @@ allocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
 
 reallocateInfoToMiddle :: forall sd sm sibfoss n . Alignments sibfoss =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
-	Device.Memory.Buffer.AllocateInfo n -> IO (Memory.M.AllocateInfo n)
-reallocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
-	Device.Memory.Buffer.allocateInfoNext = mnxt,
-	Device.Memory.Buffer.allocateInfoMemoryTypeIndex = mti } = do
+	AllocateInfo n -> IO (Memory.M.AllocateInfo n)
+reallocateInfoToMiddle dvc ibs AllocateInfo {
+	allocateInfoNext = mnxt,
+	allocateInfoMemoryTypeIndex = mti } = do
 	reqss <- getMemoryRequirementsListBinded dvc ibs
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
@@ -179,7 +180,7 @@ allocate :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-	Device.Memory.Buffer.AllocateInfo n ->
+	AllocateInfo n ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . M s sibfoss -> IO a) -> IO a
 allocate dvc@(Device.D mdvc) bs ai
@@ -193,7 +194,7 @@ reallocate :: (
 	WithPoked (TMaybe.M n), Alignments sibfoss,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
-	Device.Memory.Buffer.AllocateInfo n ->
+	AllocateInfo n ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
 reallocate dvc@(Device.D mdvc) bs ai
 	(AllocationCallbacks.toMiddle -> mac) mem = do
@@ -206,7 +207,7 @@ reallocateBind :: (
 	WithPoked (TMaybe.M n), RebindAll sibfoss sibfoss, Alignments sibfoss,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
-	Device.Memory.Buffer.AllocateInfo n ->
+	AllocateInfo n ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
 reallocateBind dvc bs ai macc mem = do
 	reallocate dvc bs ai macc mem
@@ -239,7 +240,7 @@ allocateBind :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-	Device.Memory.Buffer.AllocateInfo n ->
+	AllocateInfo n ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s .
 		HeteroParList.PL (U2 (ImageBufferBinded s)) sibfoss ->
@@ -422,3 +423,10 @@ unmap :: Device.D sd -> M sm sibfoss -> IO ()
 unmap (Device.D mdvc) m = do
 	(_, mm) <- readM'' m
 	Memory.M.unmap mdvc mm
+
+data AllocateInfo n = AllocateInfo {
+	allocateInfoNext :: TMaybe.M n,
+	allocateInfoMemoryTypeIndex :: M.TypeIndex }
+
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn)
+deriving instance Eq (TMaybe.M mn) => Eq (AllocateInfo mn)

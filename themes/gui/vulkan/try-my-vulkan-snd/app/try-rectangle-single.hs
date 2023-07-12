@@ -14,6 +14,8 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -121,7 +123,6 @@ import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
@@ -924,10 +925,10 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing
-	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
+	allcInfo mt = Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.M.TypeIndex

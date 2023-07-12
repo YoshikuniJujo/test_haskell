@@ -13,6 +13,8 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -128,7 +130,6 @@ import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.Queue as Vk.Queue
@@ -926,7 +927,7 @@ imageInfo wdt hgt tlng usg = Vk.Img.CreateInfo {
 		Vk.Img.createInfoQueueFamilyIndices = [] }
 
 imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
-	Vk.Dvc.Mem.AllocateInfo 'Nothing -> (forall sm .
+	Vk.Mem.AllocateInfo 'Nothing -> (forall sm .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mem.M sm
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
@@ -939,7 +940,7 @@ imageAllocateBind dvc img memInfo f =
 
 imageReallocateBind ::
 	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
-	Vk.Dvc.Mem.AllocateInfo 'Nothing ->
+	Vk.Mem.AllocateInfo 'Nothing ->
 	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
 	Vk.Mem.reallocateBind @'Nothing dvc
@@ -948,23 +949,23 @@ imageReallocateBind dvc img memInfo m =
 
 imageMemoryInfo ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
-	Vk.Img.I s nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
+	Vk.Img.I s nm fmt -> IO (Vk.Mem.AllocateInfo 'Nothing)
 imageMemoryInfo pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
-	pure Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
+	pure Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 imageMemoryInfoBinded ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
-	Vk.Img.Binded sm si nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
+	Vk.Img.Binded sm si nm fmt -> IO (Vk.Mem.AllocateInfo 'Nothing)
 imageMemoryInfoBinded pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirementsBinded dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
-	pure Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
+	pure Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
@@ -1196,10 +1197,10 @@ createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.AllocateInfo 'Nothing
-	allcInfo mt = Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
+	allcInfo mt = Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createBuffer2 :: forall obj obj2 nm sd a . (
 	VObj.SizeAlignmentList '[obj, obj2],
@@ -1230,10 +1231,10 @@ createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.AllocateInfo 'Nothing
-	allcInfo mt = Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
+	allcInfo mt = Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.M.TypeIndex

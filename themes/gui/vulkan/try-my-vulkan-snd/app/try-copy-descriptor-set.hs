@@ -15,6 +15,8 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+
 import Gpu.Vulkan.Object qualified as Obj
 import Data.Kind.Object qualified as KObj
 import Data.Default
@@ -63,7 +65,6 @@ import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CBffr
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dv.Mem.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DSLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
@@ -189,14 +190,14 @@ bufferInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 getMemoryInfo :: Vk.Phd.P -> Vk.Dv.D sd -> Vk.Bffr.B sb nm objs ->
-	IO (Vk.Dv.Mem.Buffer.AllocateInfo 'Nothing)
+	IO (Vk.Mem.AllocateInfo 'Nothing)
 getMemoryInfo pd dv bff = do
 	rqs <- Vk.Bffr.getMemoryRequirements dv bff
 	mti <- findMemoryTypeIndex pd rqs
 		$ Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit
-	pure Vk.Dv.Mem.Buffer.AllocateInfo {
-		Vk.Dv.Mem.Buffer.allocateInfoNext = TMaybe.N,
-		Vk.Dv.Mem.Buffer.allocateInfoMemoryTypeIndex = mti }
+	pure Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mti }
 
 findMemoryTypeIndex :: Vk.Phd.P ->
 	Vk.Mm.M.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.M.TypeIndex

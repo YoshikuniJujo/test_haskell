@@ -13,6 +13,8 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+
 import GHC.Generics
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -133,7 +135,6 @@ import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
@@ -1255,10 +1256,10 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing
-	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
+	allcInfo mt = Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
@@ -1306,7 +1307,7 @@ imageInfo wdt hgt mplvs tlng usg = Vk.Img.CreateInfo {
 		Vk.Img.createInfoQueueFamilyIndices = [] }
 
 imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
-	Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing -> (forall sm .
+	Vk.Mem.AllocateInfo 'Nothing -> (forall sm .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
@@ -1319,7 +1320,7 @@ imageAllocateBind dvc img memInfo f =
 
 imageReallocateBind ::
 	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
-	Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing ->
+	Vk.Mem.AllocateInfo 'Nothing ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
@@ -1329,23 +1330,23 @@ imageReallocateBind dvc img memInfo m =
 
 imageMemoryInfo ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
-	Vk.Img.I s nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
+	Vk.Img.I s nm fmt -> IO (Vk.Mem.AllocateInfo 'Nothing)
 imageMemoryInfo pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
-	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+	pure Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 imageMemoryInfoBinded ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
-	Vk.Img.Binded sm si nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
+	Vk.Img.Binded sm si nm fmt -> IO (Vk.Mem.AllocateInfo 'Nothing)
 imageMemoryInfoBinded pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirementsBinded dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
-	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+	pure Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 

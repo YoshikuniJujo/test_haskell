@@ -11,6 +11,8 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
@@ -57,7 +59,6 @@ import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Memory.K
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Memory
 import qualified Gpu.Vulkan.Attachment as Vk.Attachment
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Attachment.Enum as Vk.Attachment
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
@@ -91,7 +92,6 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Tools
@@ -391,10 +391,10 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Memory.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing
-	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+	allcInfo :: Vk.Memory.M.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
+	allcInfo mt = Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	IO Vk.Memory.M.TypeIndex

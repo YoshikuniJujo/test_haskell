@@ -15,6 +15,8 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+
 import GHC.Types
 import Foreign.Storable
 import Data.Kind.Object qualified as KObj
@@ -69,7 +71,6 @@ import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
@@ -362,10 +363,10 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	print mprops >>
 	let	memTypeIdx =
 			findMemoryTypeIndex reqs memoryPropertyBits mprops
-		memInfo :: Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing
-		memInfo = Vk.Dvc.Mem.Buffer.AllocateInfo {
-			Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
-			Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex =
+		memInfo :: Vk.Mem.AllocateInfo 'Nothing
+		memInfo = Vk.Mem.AllocateInfo {
+			Vk.Mem.allocateInfoNext = TMaybe.N,
+			Vk.Mem.allocateInfoMemoryTypeIndex =
 				memTypeIdx } in
 	print memInfo >>
 	Vk.Mem.allocateBind dvc imgbuf memInfo nil' \(
@@ -585,15 +586,15 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
-	IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
+	IO (Vk.Mem.AllocateInfo 'Nothing)
 getMemoryInfo phdvc dvc buffer = do
 	memTypeIdx <- findMemoryTypeIndex
 		<$> ((: []) <$> Vk.Buffer.getMemoryRequirements dvc buffer)
 		<*> pure memoryPropertyBits
 		<*> Vk.PhDvc.getMemoryProperties phdvc
-	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
-		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = memTypeIdx }
+	pure Vk.Mem.AllocateInfo {
+		Vk.Mem.allocateInfoNext = TMaybe.N,
+		Vk.Mem.allocateInfoMemoryTypeIndex = memTypeIdx }
 
 memoryPropertyBits :: Vk.Mem.PropertyFlagBits
 memoryPropertyBits =
