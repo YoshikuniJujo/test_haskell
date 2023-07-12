@@ -42,7 +42,7 @@ createNew :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall ssc . S ssc fmt -> IO a) -> IO a
+	(forall ssc . S fmt ssc -> IO a) -> IO a
 createNew (Device.D dvc) ci macc@(AllocationCallbacks.toMiddle -> macd) f =
 	bracket (createNewM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
 
@@ -50,10 +50,10 @@ recreateNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> S ssc fmt -> IO ()
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> S fmt ssc -> IO ()
 recreateNew (Device.D dvc) ci macc (S sc) = recreateNewM dvc ci macc sc
 
-getImagesNew :: Device.D sd -> S ss fmt -> IO [Image.Binded ss ss nm fmt]
+getImagesNew :: Device.D sd -> S fmt ss -> IO [Image.Binded ss ss nm fmt]
 getImagesNew (Device.D dvc) (S sc) = (Image.Binded <$>) <$> M.getImages dvc sc
 
 data CreateInfoNew mn ss (fmt :: T.Format) = CreateInfoNew {

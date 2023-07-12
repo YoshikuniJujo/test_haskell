@@ -65,7 +65,7 @@ presentInfoToMiddle PresentInfo {
 		M.presentInfoSwapchainImageIndices = sciis }
 
 data SwapchainImageIndex scfmt ssc =
-	SwapchainImageIndex (Swapchain.S ssc scfmt) Word32 deriving Show
+	SwapchainImageIndex (Swapchain.S scfmt ssc) Word32 deriving Show
 
 swapchainImageIndexToMiddle ::
 	SwapchainImageIndex scfmt ssc -> (Swapchain.M.S, Word32)
@@ -73,11 +73,11 @@ swapchainImageIndexToMiddle (SwapchainImageIndex (Swapchain.S sc) idx) =
 	(sc, idx)
 
 acquireNextImage :: Device.D sd ->
-	Swapchain.S ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+	Swapchain.S scfmt ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
 acquireNextImage = acquireNextImageResult [Success]
 
 acquireNextImageResult :: [Result] -> Device.D sd ->
-	Swapchain.S ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+	Swapchain.S scfmt ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
 acquireNextImageResult sccs (Device.D mdvc) (Swapchain.S msc) to msmp mfnc =
 	M.acquireNextImageResult
 		sccs mdvc msc to ((\(Semaphore.S smp) -> smp) <$> msmp) mfnc
