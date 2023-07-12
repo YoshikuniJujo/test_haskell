@@ -270,7 +270,7 @@ run w ist g obj = let
 	createDevice phdv qfis \dv gq pq ->
 	createSwapchain w sfc phdv qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
-	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
+	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
 	findDepthFormat phdv >>= \dptfmt ->
 	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
@@ -406,7 +406,7 @@ createSwapchain win sfc ph qfis dv f = do
 	let	fmt = Vk.Khr.Surface.M.formatFormat . chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @'Nothing @fmt
+		Vk.Khr.Swapchain.create @'Nothing @fmt
 			dv crInfo nil' \sc -> f sc ext
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
@@ -417,32 +417,32 @@ recreateSwapchain win sfc ph qfis0 dv sc = do
 	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfo sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreateNew @'Nothing dv crInfo nil' sc
+	ext <$ Vk.Khr.Swapchain.recreate @'Nothing dv crInfo nil' sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapchainSupportDetails -> Vk.Extent2d ->
-	Vk.Khr.Swapchain.CreateInfoNew 'Nothing ss fmt
+	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfo sfc qfis0 spp ext =
-	Vk.Khr.Swapchain.CreateInfoNew {
-		Vk.Khr.Swapchain.createInfoNextNew = TMaybe.N,
-		Vk.Khr.Swapchain.createInfoFlagsNew = zeroBits,
-		Vk.Khr.Swapchain.createInfoSurfaceNew = sfc,
-		Vk.Khr.Swapchain.createInfoMinImageCountNew = imgc,
-		Vk.Khr.Swapchain.createInfoImageColorSpaceNew =
+	Vk.Khr.Swapchain.CreateInfo {
+		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
+		Vk.Khr.Swapchain.createInfoFlags = zeroBits,
+		Vk.Khr.Swapchain.createInfoSurface = sfc,
+		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
+		Vk.Khr.Swapchain.createInfoImageColorSpace =
 			Vk.Khr.Surface.M.formatColorSpace fmt,
-		Vk.Khr.Swapchain.createInfoImageExtentNew = ext,
-		Vk.Khr.Swapchain.createInfoImageArrayLayersNew = 1,
-		Vk.Khr.Swapchain.createInfoImageUsageNew =
+		Vk.Khr.Swapchain.createInfoImageExtent = ext,
+		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
+		Vk.Khr.Swapchain.createInfoImageUsage =
 			Vk.Img.UsageColorAttachmentBit,
-		Vk.Khr.Swapchain.createInfoImageSharingModeNew = ism,
-		Vk.Khr.Swapchain.createInfoQueueFamilyIndicesNew = qfis,
-		Vk.Khr.Swapchain.createInfoPreTransformNew =
+		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
+		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
+		Vk.Khr.Swapchain.createInfoPreTransform =
 			Vk.Khr.Surface.M.capabilitiesCurrentTransform caps,
-		Vk.Khr.Swapchain.createInfoCompositeAlphaNew =
+		Vk.Khr.Swapchain.createInfoCompositeAlpha =
 			Vk.Khr.CompositeAlphaOpaqueBit,
-		Vk.Khr.Swapchain.createInfoPresentModeNew = presentMode,
-		Vk.Khr.Swapchain.createInfoClippedNew = True,
-		Vk.Khr.Swapchain.createInfoOldSwapchainNew = Nothing }
+		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
+		Vk.Khr.Swapchain.createInfoClipped = True,
+		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
 	fmt = chooseSwapSurfaceFormat $ formats spp
 	presentMode = chooseSwapPresentMode $ presentModes spp
@@ -1835,7 +1835,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp (
 
 	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
 	ext <$ do
-		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
+		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
 		recreateDepthResources phdvc dvc gq cp ext dimg dim divw
 		recreateGraphicsPipeline dvc ext rp ppllyt 0 gpl0
