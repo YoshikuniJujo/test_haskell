@@ -31,7 +31,7 @@ module Gpu.Vulkan.Memory (
 
 	-- * OTHERS
 
-	OffsetSize(..), OffsetSizeObject(..),
+	OffsetSize, OffsetSizeObject,
 	offsetSize,
 	Alignments,
 
