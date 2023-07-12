@@ -164,9 +164,9 @@ prepareMems :: (
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
-		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W1 ""])] ->
-		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W2 ""])] ->
-		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
+		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.K.BufferArg "" '[VObj.List 256 W1 ""])] ->
+		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.K.BufferArg "" '[VObj.List 256 W2 ""])] ->
+		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.K.BufferArg "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
@@ -200,7 +200,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (forall sb sm .
 		Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""]  ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[VObj.List 256 w ""])] ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.BufferArg nm '[VObj.List 256 w ""])] ->
 		IO a) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil' \bf ->

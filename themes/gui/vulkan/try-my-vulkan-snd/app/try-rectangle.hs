@@ -869,7 +869,7 @@ createUniformBuffer1 phdvc dvc f = createBufferAtom' phdvc dvc
 
 type UniformBufferMemory sm sb nm = Vk.Mem.M sm '[ '(
 	sb,
-	'Vk.Mem.K.Buffer nm '[VObj.Atom 256 UniformBufferObject 'Nothing]
+	'Vk.Mem.K.BufferArg nm '[VObj.Atom 256 UniformBufferObject 'Nothing]
 	)]
 
 createDescriptorPool ::
@@ -944,7 +944,7 @@ createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd 
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 a 'Nothing] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.Buffer nm '[VObj.Atom 256 a 'Nothing] )] ->
+			'Vk.Mem.K.BufferArg nm '[VObj.Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
 createBufferAtom' p dv usg props = createBuffer' p dv VObj.ObjectLengthAtom usg props
 
@@ -954,7 +954,7 @@ createBufferList' :: forall sd nm t a . Storable t =>
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.Buffer nm '[VObj.List 256 t ""] ) ] ->
+			'Vk.Mem.K.BufferArg nm '[VObj.List 256 t ""] ) ] ->
 		IO a) ->
 	IO a
 createBufferList' p dv ln usg props =
@@ -965,7 +965,7 @@ createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mem.M sm
-			'[ '(sb, 'Vk.Mem.K.Buffer nm '[o])] ->
+			'[ '(sb, 'Vk.Mem.K.BufferArg nm '[o])] ->
 		IO a) -> IO a
 createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b

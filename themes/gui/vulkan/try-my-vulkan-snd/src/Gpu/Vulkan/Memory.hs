@@ -53,7 +53,7 @@ import qualified Gpu.Vulkan.Memory.Kind as K
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Memory.Middle as M
 
-data M s (sibfoss :: [(Type, K.ImageBuffer)]) =
+data M s (sibfoss :: [(Type, K.ImageBufferArg)]) =
 	M (IORef (HeteroParList.PL (U2 ImageBuffer) sibfoss)) M.M
 
 readM'' :: M s sibfoss -> IO (HeteroParList.PL (U2 ImageBuffer) sibfoss, M.M)
@@ -73,34 +73,34 @@ newM2' ibs mm = (`M` mm) <$> newIORef ibs
 -- deriving instance Show (HeteroParList.PL (U2 ImageBuffer) sibfoss) =>
 --	Show (M s sibfoss)
 
-data ImageBuffer sib (ib :: K.ImageBuffer) where
-	Image :: Image.I si nm fmt -> ImageBuffer si ('K.Image nm fmt)
-	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('K.Buffer nm objs)
+data ImageBuffer sib (ib :: K.ImageBufferArg) where
+	Image :: Image.I si nm fmt -> ImageBuffer si ('K.ImageArg nm fmt)
+	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('K.BufferArg nm objs)
 
-class Alignments (ibs :: [(Type, K.ImageBuffer)]) where
+class Alignments (ibs :: [(Type, K.ImageBufferArg)]) where
 	alignments :: [Maybe Int]
 
 instance Alignments '[] where alignments = []
 
 instance Alignments ibs =>
-	Alignments ('(_s, 'K.Image _nm _fmt) ': ibs) where
+	Alignments ('(_s, 'K.ImageArg _nm _fmt) ': ibs) where
 	alignments = Nothing : alignments @ibs
 
 instance (VObj.SizeAlignment obj, Alignments ibs) =>
-	Alignments ('(_s, 'K.Buffer _nm (obj ': _objs)) ': ibs) where
+	Alignments ('(_s, 'K.BufferArg _nm (obj ': _objs)) ': ibs) where
 	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
 
 deriving instance Show (Image.I sib nm fmt) =>
-	Show (ImageBuffer sib ('K.Image nm fmt))
+	Show (ImageBuffer sib ('K.ImageArg nm fmt))
 
 deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
-	Show (ImageBuffer sib ('K.Buffer nm objs))
+	Show (ImageBuffer sib ('K.BufferArg nm objs))
 
-data ImageBufferBinded sm sib (ib :: K.ImageBuffer) where
+data ImageBufferBinded sm sib (ib :: K.ImageBufferArg) where
 	ImageBinded :: Image.Binded sm si nm fmt ->
-		ImageBufferBinded sm si ('K.Image nm fmt)
+		ImageBufferBinded sm si ('K.ImageArg nm fmt)
 	BufferBinded :: Buffer.Binded sm sb nm objs ->
-		ImageBufferBinded sm sb ('K.Buffer nm objs)
+		ImageBufferBinded sm sb ('K.BufferArg nm objs)
 
 getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
@@ -221,15 +221,15 @@ class RebindAll sibfoss sibfoss' where
 instance RebindAll '[] sibfoss' where rebindAll _ _ _ = pure ()
 
 instance (
-	Offset' si ('K.Image nm fmt) sibfoss', RebindAll fibfoss sibfoss' ) =>
-	RebindAll ('(si, 'K.Image nm fmt) ': fibfoss) sibfoss' where
+	Offset' si ('K.ImageArg nm fmt) sibfoss', RebindAll fibfoss sibfoss' ) =>
+	RebindAll ('(si, 'K.ImageArg nm fmt) ': fibfoss) sibfoss' where
 		rebindAll dvc (U2 (ImageBinded img) :** ibs) m = do
 			rebindImage dvc img m
 			rebindAll dvc ibs m
 
 instance (
-	Offset' sb ('K.Buffer nm objs) sibfoss', RebindAll sibfoss sibfoss' ) =>
-	RebindAll ('(sb, 'K.Buffer nm objs) ': sibfoss) sibfoss' where
+	Offset' sb ('K.BufferArg nm objs) sibfoss', RebindAll sibfoss sibfoss' ) =>
+	RebindAll ('(sb, 'K.BufferArg nm objs) ': sibfoss) sibfoss' where
 	rebindAll dvc (U2 (BufferBinded bf) :** ibs) m = do
 		rebindBuffer dvc bf m
 		rebindAll dvc ibs m
@@ -256,51 +256,51 @@ class BindAll sibfoss sibfoss' where
 
 instance BindAll '[] sibfoss' where bindAll _ _ _ = pure HeteroParList.Nil
 
-instance (Offset' si ('K.Image nm fmt) sibfoss', BindAll fibfoss sibfoss') =>
-	BindAll ('(si, ('K.Image nm fmt)) ': fibfoss) sibfoss' where
+instance (Offset' si ('K.ImageArg nm fmt) sibfoss', BindAll fibfoss sibfoss') =>
+	BindAll ('(si, ('K.ImageArg nm fmt)) ': fibfoss) sibfoss' where
 	bindAll dvc (U2 (Image img) :** ibs) m = (:**)
 		<$> (U2 . ImageBinded <$> bindImage dvc img m)
 		<*> bindAll dvc ibs m
 
-instance (Offset' sb ('K.Buffer nm objs) sibfoss', BindAll fibfoss sibfoss') =>
-	BindAll ('(sb, ('K.Buffer nm objs)) ': fibfoss) sibfoss' where
+instance (Offset' sb ('K.BufferArg nm objs) sibfoss', BindAll fibfoss sibfoss') =>
+	BindAll ('(sb, ('K.BufferArg nm objs)) ': fibfoss) sibfoss' where
 	bindAll dvc (U2 (Buffer bf) :** ibs) m = (:**)
 		<$> (U2 . BufferBinded <$> bindBuffer dvc bf m)
 		<*> bindAll dvc ibs m
 
 bindImage :: forall sd si nm fmt sm sibfoss .
-	Offset' si ('K.Image nm fmt) sibfoss =>
+	Offset' si ('K.ImageArg nm fmt) sibfoss =>
 	Device.D sd -> Image.I si nm fmt -> M sm sibfoss ->
 	IO (Image.Binded sm si nm fmt)
 bindImage dvc@(Device.D mdvc) (Image.I i) m = do
 	(_, mm) <- readM'' m
-	ost <- offset @si @('K.Image nm fmt) dvc m 0
+	ost <- offset @si @('K.ImageArg nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i mm ost
 	pure (Image.Binded i)
 
 rebindImage :: forall sd si sm nm fmt sibfoss .
-	Offset' si ('K.Image nm fmt) sibfoss =>
+	Offset' si ('K.ImageArg nm fmt) sibfoss =>
 	Device.D sd -> Image.Binded sm si nm fmt -> M sm sibfoss -> IO ()
 rebindImage dvc@(Device.D mdvc) (Image.Binded i) m = do
 	(_, mm) <- readM'' m
-	ost <- offset @si @('K.Image nm fmt) dvc m 0
+	ost <- offset @si @('K.ImageArg nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i mm ost
 
-bindBuffer :: forall sd sb nm objs sm sibfoss . Offset' sb ('K.Buffer nm objs) sibfoss =>
+bindBuffer :: forall sd sb nm objs sm sibfoss . Offset' sb ('K.BufferArg nm objs) sibfoss =>
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
 	IO (Buffer.Binded sm sb nm objs)
 bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m = do
 	(_, mm) <- readM'' m
-	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
+	ost <- offset @sb @('K.BufferArg nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc b mm ost
 	pure (Buffer.Binded lns b)
 
 rebindBuffer :: forall sd sb sm nm objs sibfoss .
-	Offset' sb ('K.Buffer nm objs) sibfoss =>
+	Offset' sb ('K.BufferArg nm objs) sibfoss =>
 	Device.D sd -> Buffer.Binded sm sb nm objs -> M sm sibfoss -> IO ()
 rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
 	(_, mm) <- readM'' m
-	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
+	ost <- offset @sb @('K.BufferArg nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc b mm ost
 
 offset :: forall sib ib sibfoss sd sm . Offset' sib ib sibfoss =>
@@ -310,7 +310,7 @@ offset dvc m ost = do
 	offset' @sib @ib @sibfoss dvc ibs ost
 
 class Offset'
-	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where
+	sib (ib :: K.ImageBufferArg) (sibfoss :: [(Type, K.ImageBufferArg)]) where
 	offset' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 		Device.M.Size -> IO Device.M.Size
 
@@ -348,7 +348,7 @@ class OffsetSize' (nm :: Symbol) (obj :: VObj.Object) sibfoss where
 	offsetSizeLength' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO (VObj.ObjectLength obj)
 
 instance OffsetSizeObject obj objs =>
-	OffsetSize' nm obj ('(sib, 'K.Buffer nm objs) ': sibfoss) where
+	OffsetSize' nm obj ('(sib, 'K.BufferArg nm objs) ': sibfoss) where
 	offsetSize' dvc (ib@(U2 (Buffer (Buffer.B lns _))) :** _ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs

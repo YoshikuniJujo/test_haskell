@@ -140,7 +140,7 @@ prepareMems :: (
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
 	(forall sds sm sb .
 		Vk.DS.D sds '(sl, bts) ->
-		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.Buffer "" '[Word32List])] ->
+		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.BufferArg "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
@@ -169,7 +169,7 @@ dscSetInfo pl lyt = Vk.DS.AllocateInfo {
 
 storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sm sb nm '[Word32List]  ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[Word32List])] -> IO a) -> IO a
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.BufferArg nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew pd dv f =
 	Vk.Bffr.create dv bufferInfo nil' \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->

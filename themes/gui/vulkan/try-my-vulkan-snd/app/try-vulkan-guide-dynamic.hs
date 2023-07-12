@@ -772,7 +772,7 @@ createCommandPool dv qfs = Vk.CmdPl.create dv crInfo nil'
 
 type DepthResources sb sm nm fmt sdiv = (
 	Vk.Img.Binded sm sb nm fmt,
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)],
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.ImageArg nm fmt)],
 	Vk.ImgVw.I nm fmt sdiv )
 
 createDepthResources :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
@@ -806,7 +806,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> (forall si sm .
 		Vk.Img.Binded sm si nm fmt ->
-		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
+		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.ImageArg nm fmt) ] -> IO a) -> IO a
 createImage pd dv ex tlng usg prs f =
 	Vk.Img.create @'Nothing dv (imageInfo ex tlng usg) nil' \i ->
 	imageMemoryInfo pd dv prs i >>= \ii -> imageAllocateBind dv i ii f
@@ -815,7 +815,7 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
 	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.ImageArg nm fmt)] -> IO ()
 recreateImage pd dv ex tlng usg prs i m = do
 	Vk.Img.recreate @'Nothing dv (imageInfo ex tlng usg) nil' i
 	imageMemoryInfoB pd dv prs i >>= \ii -> imageReallocateBind dv i ii m
@@ -871,14 +871,14 @@ findMemoryType pd ts prs0 =
 imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
 	Vk.Mem.AllocateInfo 'Nothing -> (forall sm .
 		Vk.Img.Binded sm si nm fmt ->
-		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
+		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.ImageArg nm fmt) ] -> IO a) -> IO a
 imageAllocateBind dv i mi f = Vk.Mm.allocateBind @'Nothing dv
 	(HL.Singleton . U2 $ Vk.Mm.Image i) mi nil'
 	\(HL.Singleton (U2 (Vk.Mm.ImageBinded b))) m -> f b m
 
 imageReallocateBind :: Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mem.AllocateInfo 'Nothing ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.ImageArg nm fmt)] -> IO ()
 imageReallocateBind dv i mi m = Vk.Mm.reallocateBind @'Nothing dv
 	(HL.Singleton . U2 $ Vk.Mm.ImageBinded i) mi nil' m
 
@@ -1019,12 +1019,12 @@ data BindedCamera smsb where
 data MemoryCamera smsb where
 	MemoryCamera ::
 		Vk.Mm.M sm '[
-			'(sb, 'Vk.Mm.K.Buffer "camera-buffer" '[CameraObj]) ] ->
+			'(sb, 'Vk.Mm.K.BufferArg "camera-buffer" '[CameraObj]) ] ->
 		MemoryCamera '(sm, sb)
 
 createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb . Vk.Bffr.Binded sm sb nm '[CameraObj] ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[CameraObj]) ] ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.BufferArg nm '[CameraObj]) ] ->
 		IO a) -> IO a
 createCameraBuffer pd dv = createBuffer pd dv
 	(HL.Singleton Obj.ObjectLengthAtom)
@@ -1035,7 +1035,7 @@ createBuffer :: forall objs nm sd a . (
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.ObjectLength objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm objs ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm objs)] -> IO a) ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.BufferArg nm objs)] -> IO a) ->
 	IO a
 createBuffer p dv lns usg prs f =
 	Vk.Bffr.create dv (bufferInfo lns usg) nil' \b ->
@@ -1045,10 +1045,10 @@ createBuffer p dv lns usg prs f =
 		(HL.Singleton . U2 $ Vk.Mm.Buffer b) (memoryInfo mt) nil'
 		$ f . \(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) -> bnd
 
-class Vk.Mm.Alignments '[ '(s, 'Vk.Mm.K.Buffer nm objs)] =>
+class Vk.Mm.Alignments '[ '(s, 'Vk.Mm.K.BufferArg nm objs)] =>
 	SizeAlignmentAll s nm (objs :: [Obj.Object])
 
-instance Vk.Mm.Alignments '[ '(s, 'Vk.Mm.K.Buffer nm '[obj])] =>
+instance Vk.Mm.Alignments '[ '(s, 'Vk.Mm.K.BufferArg nm '[obj])] =>
 	SizeAlignmentAll s nm '[obj]
 
 instance {-# OVERLAPPABLE #-} (
@@ -1072,7 +1072,7 @@ memoryInfo mt = Vk.Mem.AllocateInfo {
 
 createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Bffr.Binded sm sb nm '[SceneObj] ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[SceneObj])] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.BufferArg nm '[SceneObj])] ->
 	IO a) -> IO a
 createSceneBuffer pd dv = createBuffer pd dv
 	(HL.Singleton Obj.ObjectLengthDynAtom)
@@ -1164,7 +1164,7 @@ createVertexBuffer pd dv gq cp vs f =
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\b' (bm' :: Vk.Mm.M sm '[ '(s,
-			'Vk.Mm.K.Buffer nm '[Obj.List 256 Vertex ""])]) -> do
+			'Vk.Mm.K.BufferArg nm '[Obj.List 256 Vertex ""])]) -> do
 	Vk.Mm.write @nm @(Obj.List 256 Vertex "") dv bm' zeroBits vs
 	beginSingleTimeCommands dv gq cp \cb ->
 		Vk.Cmd.copyBuffer @'[ '[Obj.List 256 Vertex ""]] cb b' b
@@ -1213,7 +1213,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 		'(sl,	'[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> HL.PL MemoryCamera scms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.Buffer "scene-buffer" '[SceneObj])] ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.BufferArg "scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
@@ -1242,7 +1242,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 		'(sl, '[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> HL.PL MemoryCamera scms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.Buffer "scene-buffer" '[SceneObj])] ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.BufferArg "scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
@@ -1316,7 +1316,7 @@ drawFrame ::
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sl, Buffers)], '[WMeshPushConstants]) ->
 	HL.PL Vk.Frmbffr.F sfs -> HL.PL MemoryCamera scmmbs ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.Buffer "scene-buffer" '[SceneObj])] ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.BufferArg "scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->

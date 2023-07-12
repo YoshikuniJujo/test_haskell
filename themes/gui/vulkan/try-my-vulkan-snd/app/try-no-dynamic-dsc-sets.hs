@@ -157,9 +157,9 @@ prepDscSets ::
 	String -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sm2 sm3 sb1 sb2 sb3 .
 		Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
-		Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
-		Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
-		Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO a) -> IO a
+		Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm1 '[ListW1])] ->
+		Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm2 '[ListW2])] ->
+		Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm3 '[ListW3])] -> IO a) -> IO a
 prepDscSets arg phdvc dvc dslyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dp ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dp dslyt) \(HeteroParList.Singleton ds) ->
@@ -211,7 +211,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 
 type BffMem sm sb nm w = (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 w ""],
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[VObj.List 256 w ""])] )
+	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm '[VObj.List 256 w ""])] )
 
 storageBufferNew3 :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (
@@ -231,7 +231,7 @@ class StorageBufferNews f a where
 
 data Arg nm w f = Arg (forall sb sm .
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 w ""] ->
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[VObj.List 256 w ""])] -> f)
+	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm '[VObj.List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
 	type Vectors (IO a) = '[]; storageBufferNews _phdvc _dvc HeteroParList.Nil f = f
@@ -243,7 +243,7 @@ instance (Storable w, StorageBufferNews f a) =>
 		storageBufferNew phdvc dvc vs \buf mem ->
 		storageBufferNews @f @a phdvc dvc vss $ f buf mem
 
-type KBuffer = 'Vk.Dvc.Mem.ImgBffr.K.Buffer
+type KBuffer = 'Vk.Dvc.Mem.ImgBffr.K.BufferArg
 
 storageBufferNew :: forall {sd} v {nm} obj {a} . (
 	VObj.StoreObject v obj, VObj.SizeAlignment obj ) =>
@@ -368,9 +368,9 @@ writeDscSet2 ds bx = Vk.DscSet.Write {
 
 calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Word32 -> Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
-	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
+	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm1 '[ListW1])] ->
+	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm2 '[ListW2])] ->
+	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCsNew
@@ -431,9 +431,9 @@ run :: forall sd sc sg sl sdsl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 	Vk.Ppl.Cmpt.C sg '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) ->
 	Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.DscSet.D sds '(sdsl, DscSetLytLstW123)  -> Word32 ->
-	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] ->
+	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm1 '[ListW1])] ->
+	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm2 '[ListW2])] ->
+	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.BufferArg nm3 '[ListW3])] ->
 	IO ([W1], [W2], [W3])
 run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
