@@ -6,8 +6,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Instance (
-	I, create, M.CreateInfo(..),
-	M.enumerateLayerProperties, M.enumerateExtensionProperties ) where
+
+	-- * CREATE
+
+	create, I, M.CreateInfo(..),
+
+	-- * ENUMERATE
+
+	M.enumerateLayerProperties, M.enumerateExtensionProperties
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -22,10 +30,10 @@ import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle as M
 
 create :: (
-	WithPoked (TMaybe.M n), WithPoked (TMaybe.M n2),
-	AllocationCallbacks.ToMiddle msn3n3 ) =>
-	M.CreateInfo n n2 ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn3n3 ->
+	WithPoked (TMaybe.M mn), WithPoked (TMaybe.M ai),
+	AllocationCallbacks.ToMiddle mac ) =>
+	M.CreateInfo mn ai ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall s . I s -> IO a) -> IO a
 create ci (AllocationCallbacks.toMiddle -> mac) f =
 	bracket (M.create ci mac) (`M.destroy` mac) (f . I)
