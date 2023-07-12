@@ -33,10 +33,10 @@ import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.ImageView.Middle as M
 
-data CreateInfo n si sm nm ifmt (ivfmt :: T.Format) = CreateInfo {
+data CreateInfo n sm si nm ifmt (ivfmt :: T.Format) = CreateInfo {
 	createInfoNext :: TMaybe.M n,
 	createInfoFlags :: CreateFlags,
-	createInfoImage :: Image.Binded si sm nm ifmt,
+	createInfoImage :: Image.Binded sm si nm ifmt,
 	createInfoViewType :: Type,
 	createInfoComponents :: Component.Mapping,
 	createInfoSubresourceRange :: Image.M.SubresourceRange }
@@ -60,22 +60,20 @@ createInfoToMiddle CreateInfo {
 	where fmt = T.formatToValue @ivfmt
 
 create :: (
-	T.FormatToValue ivfmt, WithPoked (TMaybe.M n),
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd -> CreateInfo n si sm nm ifmt ivfmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall siv . I nm ivfmt siv -> IO a) -> IO a
-create (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle -> macc) f = bracket
-	(M.create dvc (createInfoToMiddle ci) macc)
-	(\i -> M.destroy dvc i macc) (f . I)
+	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> CreateInfo mn sm si nm ifmt ivfmt ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall s . I nm ivfmt s -> IO a) -> IO a
+create (Device.D d) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
+	(M.create d (createInfoToMiddle ci) mac)
+	(\i -> M.destroy d i mac) (f . I)
 
 recreate :: (
-	T.FormatToValue ivfmt, WithPoked (TMaybe.M n),
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd -> CreateInfo n si sm nm ifmt ivfmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	I nm ivfmt s -> IO ()
-recreate (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle -> macc) (I i) =
-	M.recreate dvc (createInfoToMiddle ci) macc macc i
+	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> CreateInfo mn sm si nm ifmt ivfmt ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> I nm ivfmt siv -> IO ()
+recreate (Device.D d) ci
+	(AllocationCallbacks.toMiddle -> mac) (I i) =
+	M.recreate d (createInfoToMiddle ci) mac mac i
