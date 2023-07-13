@@ -262,9 +262,12 @@ storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 	VObj.StoreObject v obj0, VObj.SizeAlignment obj0,
 	VObj.StoreObject v obj1, VObj.SizeAlignment obj1,
 	VObj.StoreObject v obj2, VObj.SizeAlignment obj2,
-	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj0 '[obj0, obj1, obj2],
-	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj1 '[obj0, obj1, obj2],
-	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj2 '[obj0, obj1, obj2]
+	VObj.Offset obj0 '[obj0, obj1, obj2],
+	VObj.Offset obj1 '[obj0, obj1, obj2],
+	VObj.Offset obj2 '[obj0, obj1, obj2],
+	VObj.ObjectLengthOf obj0 '[obj0, obj1, obj2],
+	VObj.ObjectLengthOf obj1 '[obj0, obj1, obj2],
+	VObj.ObjectLengthOf obj2 '[obj0, obj1, obj2]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> v -> v -> v -> (forall sb sm .
 		Vk.Bffr.Binded sm sb nm '[obj0, obj1, obj2]  ->

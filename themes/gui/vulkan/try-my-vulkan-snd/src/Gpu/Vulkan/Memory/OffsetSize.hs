@@ -19,7 +19,7 @@ module Gpu.Vulkan.Memory.OffsetSize (
 	-- * OFFSET SIZE
 
 	offsetSize, offsetSizeLength,
-	OffsetSize, OffsetSizeObject
+	OffsetSize,
 
 	) where
 
@@ -96,7 +96,9 @@ class OffsetSize (nm :: Symbol) (obj :: VObj.Object) sibfoss where
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
 	offsetSizeLength' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO (VObj.ObjectLength obj)
 
-instance OffsetSizeObject obj objs =>
+instance (
+	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs
+	) =>
 	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': sibfoss) where
 	offsetSize' dvc (ib@(U2 (Buffer (Buffer.B lns _))) :** _ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
@@ -104,7 +106,7 @@ instance OffsetSizeObject obj objs =>
 		pure $ offsetSizeObject @obj
 			(((ost - 1) `div` algn + 1) * algn) lns
 	offsetSizeLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
-		pure $ offsetSizeObjectLength @obj lns
+		pure $ VObj.objectLengthOf @obj lns
 
 instance {-# OVERLAPPABLE #-}
 	OffsetSize nm obj sibfoss =>
@@ -117,26 +119,9 @@ instance {-# OVERLAPPABLE #-}
 			$ ((ost - 1) `div` algn + 1) * algn + sz
 	offsetSizeLength' (_ :** lns) = offsetSizeLength' @nm @obj lns
 
-class OffsetSizeObject (obj :: VObj.Object) (objs :: [VObj.Object]) where
-	offsetSizeObject :: Device.M.Size -> HeteroParList.PL VObj.ObjectLength objs ->
+offsetSizeObject :: forall (obj :: VObj.Object) objs .
+	VObj.Offset obj objs =>
+	Device.M.Size -> HeteroParList.PL VObj.ObjectLength objs ->
 		(Device.M.Size, Device.M.Size)
-	offsetSizeObjectLength :: HeteroParList.PL VObj.ObjectLength objs ->
-		VObj.ObjectLength obj
-
-instance VObj.SizeAlignment obj => OffsetSizeObject obj (obj ': objs) where
-	offsetSizeObject n (ln :** _) = (ost, fromIntegral $ VObj.objectSize' ln)
-		where
-		ost = ((n - 1) `div` algn + 1) * algn
-		algn = fromIntegral (VObj.objectAlignment @obj)
-	offsetSizeObjectLength (ln :** _) = ln
-
-instance {-# OVERLAPPABLE #-} (
-	VObj.SizeAlignment obj, VObj.SizeAlignment obj',
-	OffsetSizeObject obj objs ) =>
-	OffsetSizeObject obj (obj' ': objs) where
-	offsetSizeObject n (ln :** lns) =
-		offsetSizeObject @obj (ost + fromIntegral (VObj.objectSize' ln)) lns
-		where
-		ost = ((n - 1) `div` algn + 1) * algn
-		algn = fromIntegral (VObj.objectAlignment @obj)
-	offsetSizeObjectLength (_ :** lns) = offsetSizeObjectLength @obj lns
+offsetSizeObject n = VObj.offsetFromSizeAlignmentList' @obj (fromIntegral n)
+	. VObj.sizeAlignmentList

@@ -42,6 +42,11 @@ module Gpu.Vulkan.Object (
 	pattern ObjectLengthImage,
 	pattern ObjectLengthDynAtom,
 	pattern ObjectLengthDynList,
+
+	-- * BUG FIX
+	offsetFromSizeAlignmentList,
+	offsetFromSizeAlignmentList'
+
 	) where
 
 import GHC.TypeLits (Symbol)
@@ -238,16 +243,23 @@ class (
 	offsetFromSizeAlignmentList ::
 		Int -> HeteroParList.PL SizeAlignmentOfObj vs ->
 		(Device.M.Size, Device.M.Size)
+	offsetFromSizeAlignmentList' ::
+		Int -> HeteroParList.PL SizeAlignmentOfObj vs ->
+		(Device.M.Size, Device.M.Size)
 
 instance (SizeAlignment v, SizeAlignmentList vs) =>
 	Offset v (v ': vs) where
-	offsetFromSizeAlignmentList ost (SizeAlignmentOfObj dn sz algn :** _) =
+	offsetFromSizeAlignmentList ost (SizeAlignmentOfObj _dn sz algn :** _) =
 		(fromIntegral $ adjust algn ost, fromIntegral sz)
+	offsetFromSizeAlignmentList' ost (SizeAlignmentOfObj dn sz algn :** _) =
+		(fromIntegral $ adjust algn ost, fromIntegral $ dn * sz)
 
 instance {-# OVERLAPPABLE #-} (SizeAlignment v', Offset v vs) =>
 	Offset v (v' ': vs) where
 	offsetFromSizeAlignmentList ost (SizeAlignmentOfObj dn sz algn :** sas) =
 		offsetFromSizeAlignmentList @v @vs (adjust algn ost + dn * sz) sas
+	offsetFromSizeAlignmentList' ost (SizeAlignmentOfObj dn sz algn :** sas) =
+		offsetFromSizeAlignmentList' @v @vs (adjust algn ost + dn * sz) sas
 
 class ObjectLengthOf (v :: Object) (vs :: [Object]) where
 	objectLengthOf :: HeteroParList.PL ObjectLength vs -> ObjectLength v
