@@ -14,8 +14,6 @@
 
 module Main where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
-
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke

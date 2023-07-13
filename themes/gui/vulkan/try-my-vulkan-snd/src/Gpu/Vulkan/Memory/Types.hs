@@ -19,7 +19,11 @@ module Gpu.Vulkan.Memory.Types (
 	-- * IMAGE BUFFER
 
 	ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
-	Alignments(..)
+	Alignments(..),
+
+	-- * OBJECT LENGTH
+
+	objectLength, ObjectLength
 
 	) where
 
@@ -28,7 +32,8 @@ import GHC.TypeLits
 import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Tuple.Uncurry
-import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
 import Data.IORef
 
 import qualified Gpu.Vulkan.Image.Type as Image
@@ -87,3 +92,20 @@ instance Alignments ibs =>
 instance (VObj.SizeAlignment obj, Alignments ibs) =>
 	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
 	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
+
+objectLength :: forall nm obj ibargs sm . ObjectLength nm obj ibargs =>
+	M sm ibargs -> IO (VObj.ObjectLength obj)
+objectLength m = (<$> readM m) \(ibs, _m) -> objectLength' @nm @obj @ibargs ibs
+
+class ObjectLength (nm :: Symbol) (obj :: VObj.Object) ibargs where
+	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
+		VObj.ObjectLength obj
+
+instance VObj.ObjectLengthOf obj objs =>
+	ObjectLength nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
+	objectLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
+		VObj.objectLengthOf @obj lns
+
+instance {-# OVERLAPPABLE #-} ObjectLength nm obj ibargs =>
+	ObjectLength nm obj (ibarg ': ibargs) where
+	objectLength' (_ :** lns) = objectLength' @nm @obj lns

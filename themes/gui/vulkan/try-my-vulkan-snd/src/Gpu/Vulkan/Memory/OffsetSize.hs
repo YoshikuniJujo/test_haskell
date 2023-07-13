@@ -14,12 +14,11 @@ module Gpu.Vulkan.Memory.OffsetSize (
 
 	-- * OFFSET
 
-	offset, Offset',
+	offset, Offset,
 
 	-- * OFFSET SIZE
 
-	offsetSize, objectLength,
-	OffsetSize,
+	offsetSize, OffsetSize,
 
 	) where
 
@@ -41,15 +40,57 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 import Gpu.Vulkan.Memory.Types
 
-offset :: forall sib ib sibfoss sd sm . Offset' sib ib sibfoss =>
-	Device.D sd -> M sm sibfoss -> Device.M.Size -> IO Device.M.Size
+offset :: forall ib ibargs sd sm . Offset ib ibargs =>
+	Device.D sd -> M sm ibargs -> Device.M.Size -> IO Device.M.Size
 offset dvc m ost = do
 	(ibs, _) <- readM m
-	offset' @sib @ib @sibfoss dvc ibs ost
+	offset' @ib @ibargs dvc ibs ost
 
-getMemoryRequirements' ::
-	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
-getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
+offsetSize :: forall nm obj ibargs sd sm . OffsetSize nm obj ibargs =>
+	Device.D sd -> M sm ibargs -> Device.M.Size ->
+	IO (Device.M.Size, Device.M.Size)
+offsetSize dvc m ost = do
+	(ibs, _m) <- readM m
+	offsetSize' @nm @obj @ibargs dvc ibs ost
+
+class Offset (ib :: ImageBufferArg) (ibargs :: [(Type, ImageBufferArg)]) where
+	offset' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
+		Device.M.Size -> IO Device.M.Size
+
+instance Offset ib ('(sib, ib) ': ibargs) where
+	offset' dvc (U2 ib :** _ibs) ost = fst <$> adjustOffsetSize dvc ib ost
+
+instance {-# OVERLAPPABLE #-} Offset ib ibargs =>
+	Offset ib ('(sib', ib') ': ibargs) where
+	offset' dvc (U2 ib :** ibs) ost = do
+		(ost', sz) <- adjustOffsetSize dvc ib ost
+		offset' @ib dvc ibs $ ost' + sz
+
+class ObjectLength nm obj ibargs => OffsetSize (nm :: Symbol) (obj :: VObj.Object) ibargs where
+	offsetSize' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
+		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
+
+instance (VObj.Offset obj objs, VObj.ObjectLengthOf obj objs) =>
+	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
+	offsetSize' dvc ((U2 ib@(Buffer (Buffer.B lns _))) :** _ibs) ost = do
+		(ost', _sz) <- adjustOffsetSize dvc ib ost
+		pure $ VObj.offsetFromSizeAlignmentList' @obj (fromIntegral ost')
+			$ VObj.sizeAlignmentList lns
+
+instance {-# OVERLAPPABLE #-}
+	OffsetSize nm obj ibargs =>
+	OffsetSize nm obj ('(sib, ib) ': ibargs) where
+	offsetSize' dvc (U2 ib :** ibs) ost = do
+		(ost', sz) <- adjustOffsetSize dvc ib ost
+		offsetSize' @nm @obj dvc ibs $ ost' + sz
+
+adjustOffsetSize :: Device.D sd -> ImageBuffer sib ibarg -> Device.M.Size ->
+	IO (Device.M.Size, Device.M.Size)
+adjustOffsetSize dvc ib ost = do
+	reqs <- getMemoryRequirements dvc ib
+	let	algn = Memory.M.requirementsAlignment reqs
+		sz = Memory.M.requirementsSize reqs
+	pure (((ost - 1) `div` algn + 1) * algn, sz)
 
 getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
@@ -57,76 +98,3 @@ getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
 	Buffer.M.getMemoryRequirements dvc b
 getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
 	Image.M.getMemoryRequirements dvc i
-
-offsetSize :: forall nm obj sibfoss sd sm . OffsetSize nm obj sibfoss =>
-	Device.D sd -> M sm sibfoss -> Device.M.Size ->
-	IO (Device.M.Size, Device.M.Size)
-offsetSize dvc m ost = do
-	(ibs, _m) <- readM m
-	offsetSize' @nm @obj @sibfoss dvc ibs ost
-
-class Offset'
-	sib (ib :: ImageBufferArg) (sibfoss :: [(Type, ImageBufferArg)]) where
-	offset' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-		Device.M.Size -> IO Device.M.Size
-
-instance Offset' sib ib ('(sib, ib) ': sibfoss) where
-	offset' dvc (ib :** _ibs) ost = do
-		reqs <- getMemoryRequirements' dvc ib
-		let	algn = Memory.M.requirementsAlignment reqs
-		pure $ ((ost - 1) `div` algn + 1) * algn
-
-instance {-# OVERLAPPABLE #-} Offset' sib ib sibfoss =>
-	Offset' sib ib ('(sib', ib') ': sibfoss) where
-	offset' dvc (ib :** ibs) ost = do
-		reqs <- getMemoryRequirements' dvc ib
-		let	sz = Memory.M.requirementsSize reqs
-			algn = Memory.M.requirementsAlignment reqs
-		offset' @sib @ib dvc ibs
-			$ ((ost - 1) `div` algn + 1) * algn + sz
-
-class ObjectLength nm obj sibfoss => OffsetSize (nm :: Symbol) (obj :: VObj.Object) sibfoss where
-	offsetSize' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
-
-instance (VObj.Offset obj objs, VObj.ObjectLengthOf obj objs) =>
-	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': sibfoss) where
-	offsetSize' dvc (ib@(U2 (Buffer (Buffer.B lns _))) :** _ibs) ost = do
-		reqs <- getMemoryRequirements' dvc ib
-		let	algn = Memory.M.requirementsAlignment reqs
-		pure $ offsetSizeObject @obj
-			(((ost - 1) `div` algn + 1) * algn) lns
-
-offsetSizeObject :: forall (obj :: VObj.Object) objs .
-	VObj.Offset obj objs =>
-	Device.M.Size -> HeteroParList.PL VObj.ObjectLength objs ->
-		(Device.M.Size, Device.M.Size)
-offsetSizeObject n = VObj.offsetFromSizeAlignmentList' @obj (fromIntegral n)
-	. VObj.sizeAlignmentList
-
-instance {-# OVERLAPPABLE #-}
-	OffsetSize nm obj sibfoss =>
-	OffsetSize nm obj ('(sib, ib) ': sibfoss) where
-	offsetSize' dvc (ib :** ibs) ost = do
-		reqs <- getMemoryRequirements' dvc ib
-		let	algn = Memory.M.requirementsAlignment reqs
-			sz = Memory.M.requirementsSize reqs
-		offsetSize' @nm @obj dvc ibs
-			$ ((ost - 1) `div` algn + 1) * algn + sz
-
-objectLength :: forall nm obj ibargs sm . ObjectLength nm obj ibargs =>
-	M sm ibargs -> IO (VObj.ObjectLength obj)
-objectLength m = (<$> readM m) \(ibs, _m) -> objectLength' @nm @obj @ibargs ibs
-
-class ObjectLength (nm :: Symbol) (obj :: VObj.Object) ibargs where
-	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
-		VObj.ObjectLength obj
-
-instance VObj.ObjectLengthOf obj objs =>
-	ObjectLength nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
-	objectLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
-		VObj.objectLengthOf @obj lns
-
-instance {-# OVERLAPPABLE #-} ObjectLength nm obj ibargs =>
-	ObjectLength nm obj (ibarg ': ibargs) where
-	objectLength' (_ :** lns) = objectLength' @nm @obj lns
