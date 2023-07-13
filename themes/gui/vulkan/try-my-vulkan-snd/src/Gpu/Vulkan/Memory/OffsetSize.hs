@@ -18,7 +18,7 @@ module Gpu.Vulkan.Memory.OffsetSize (
 
 	-- * OFFSET SIZE
 
-	offsetSize, offsetSizeLength,
+	offsetSize, objectLength,
 	OffsetSize,
 
 	) where
@@ -44,8 +44,26 @@ import Gpu.Vulkan.Memory.Types
 offset :: forall sib ib sibfoss sd sm . Offset' sib ib sibfoss =>
 	Device.D sd -> M sm sibfoss -> Device.M.Size -> IO Device.M.Size
 offset dvc m ost = do
-	(ibs, _) <- readM'' m
+	(ibs, _) <- readM m
 	offset' @sib @ib @sibfoss dvc ibs ost
+
+getMemoryRequirements' ::
+	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
+getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
+
+getMemoryRequirements ::
+	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
+getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
+	Buffer.M.getMemoryRequirements dvc b
+getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
+	Image.M.getMemoryRequirements dvc i
+
+offsetSize :: forall nm obj sibfoss sd sm . OffsetSize nm obj sibfoss =>
+	Device.D sd -> M sm sibfoss -> Device.M.Size ->
+	IO (Device.M.Size, Device.M.Size)
+offsetSize dvc m ost = do
+	(ibs, _m) <- readM m
+	offsetSize' @nm @obj @sibfoss dvc ibs ost
 
 class Offset'
 	sib (ib :: ImageBufferArg) (sibfoss :: [(Type, ImageBufferArg)]) where
@@ -67,46 +85,24 @@ instance {-# OVERLAPPABLE #-} Offset' sib ib sibfoss =>
 		offset' @sib @ib dvc ibs
 			$ ((ost - 1) `div` algn + 1) * algn + sz
 
-getMemoryRequirements' ::
-	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
-getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
-
-getMemoryRequirements ::
-	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
-getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
-	Buffer.M.getMemoryRequirements dvc b
-getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
-	Image.M.getMemoryRequirements dvc i
-
-offsetSize :: forall nm obj sibfoss sd sm . OffsetSize nm obj sibfoss =>
-	Device.D sd -> M sm sibfoss -> Device.M.Size ->
-	IO (Device.M.Size, Device.M.Size)
-offsetSize dvc m ost = do
-	(ibs, _m) <- readM'' m
-	offsetSize' @nm @obj @sibfoss dvc ibs ost
-
-offsetSizeLength :: forall nm obj sibfoss sm . OffsetSize nm obj sibfoss =>
-	M sm sibfoss -> IO (VObj.ObjectLength obj)
-offsetSizeLength m = do
-	(lns, _m) <- readM'' m
-	offsetSizeLength' @nm @obj @sibfoss lns
-
-class OffsetSize (nm :: Symbol) (obj :: VObj.Object) sibfoss where
+class ObjectLength nm obj sibfoss => OffsetSize (nm :: Symbol) (obj :: VObj.Object) sibfoss where
 	offsetSize' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
-	offsetSizeLength' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO (VObj.ObjectLength obj)
 
-instance (
-	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs
-	) =>
+instance (VObj.Offset obj objs, VObj.ObjectLengthOf obj objs) =>
 	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': sibfoss) where
 	offsetSize' dvc (ib@(U2 (Buffer (Buffer.B lns _))) :** _ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
 		pure $ offsetSizeObject @obj
 			(((ost - 1) `div` algn + 1) * algn) lns
-	offsetSizeLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
-		pure $ VObj.objectLengthOf @obj lns
+
+offsetSizeObject :: forall (obj :: VObj.Object) objs .
+	VObj.Offset obj objs =>
+	Device.M.Size -> HeteroParList.PL VObj.ObjectLength objs ->
+		(Device.M.Size, Device.M.Size)
+offsetSizeObject n = VObj.offsetFromSizeAlignmentList' @obj (fromIntegral n)
+	. VObj.sizeAlignmentList
 
 instance {-# OVERLAPPABLE #-}
 	OffsetSize nm obj sibfoss =>
@@ -117,11 +113,20 @@ instance {-# OVERLAPPABLE #-}
 			sz = Memory.M.requirementsSize reqs
 		offsetSize' @nm @obj dvc ibs
 			$ ((ost - 1) `div` algn + 1) * algn + sz
-	offsetSizeLength' (_ :** lns) = offsetSizeLength' @nm @obj lns
 
-offsetSizeObject :: forall (obj :: VObj.Object) objs .
-	VObj.Offset obj objs =>
-	Device.M.Size -> HeteroParList.PL VObj.ObjectLength objs ->
-		(Device.M.Size, Device.M.Size)
-offsetSizeObject n = VObj.offsetFromSizeAlignmentList' @obj (fromIntegral n)
-	. VObj.sizeAlignmentList
+objectLength :: forall nm obj ibargs sm . ObjectLength nm obj ibargs =>
+	M sm ibargs -> IO (VObj.ObjectLength obj)
+objectLength m = (<$> readM m) \(ibs, _m) -> objectLength' @nm @obj @ibargs ibs
+
+class ObjectLength (nm :: Symbol) (obj :: VObj.Object) ibargs where
+	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
+		VObj.ObjectLength obj
+
+instance VObj.ObjectLengthOf obj objs =>
+	ObjectLength nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
+	objectLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
+		VObj.objectLengthOf @obj lns
+
+instance {-# OVERLAPPABLE #-} ObjectLength nm obj ibargs =>
+	ObjectLength nm obj (ibarg ': ibargs) where
+	objectLength' (_ :** lns) = objectLength' @nm @obj lns

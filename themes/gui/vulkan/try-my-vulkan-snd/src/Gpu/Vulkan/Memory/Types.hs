@@ -14,7 +14,7 @@ module Gpu.Vulkan.Memory.Types (
 
 	-- * MEMORY
 
-	M(..), readM'', newM2', writeMBinded',
+	M(..), readM, newM2', writeMBinded',
 
 	-- * IMAGE BUFFER
 
@@ -40,8 +40,8 @@ import qualified Gpu.Vulkan.TypeEnum as T
 data M s (sibfoss :: [(Type, ImageBufferArg)]) =
 	M (IORef (HeteroParList.PL (U2 ImageBuffer) sibfoss)) M.M
 
-readM'' :: M s sibfoss -> IO (HeteroParList.PL (U2 ImageBuffer) sibfoss, M.M)
-readM'' (M ib m) = (, m) <$> readIORef ib
+readM :: M s sibfoss -> IO (HeteroParList.PL (U2 ImageBuffer) sibfoss, M.M)
+readM (M ib m) = (, m) <$> readIORef ib
 
 writeMBinded' :: M s sibfoss ->
 	HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss -> IO ()

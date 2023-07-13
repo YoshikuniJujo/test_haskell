@@ -170,7 +170,7 @@ reallocate :: (
 reallocate dvc@(Device.D mdvc) bs ai
 	(AllocationCallbacks.toMiddle -> mac) mem = do
 	mai <- reallocateInfoToMiddle dvc bs ai
-	(_, oldmem) <- readM'' mem
+	(_, oldmem) <- readM mem
 	Memory.M.reallocate mdvc mai mac oldmem
 	writeMBinded' mem bs
 
@@ -244,7 +244,7 @@ bindImage :: forall sd si nm fmt sm sibfoss .
 	Device.D sd -> Image.I si nm fmt -> M sm sibfoss ->
 	IO (Image.Binded sm si nm fmt)
 bindImage dvc@(Device.D mdvc) (Image.I i) m = do
-	(_, mm) <- readM'' m
+	(_, mm) <- readM m
 	ost <- offset @si @('ImageArg nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i mm ost
 	pure (Image.Binded i)
@@ -253,7 +253,7 @@ rebindImage :: forall sd si sm nm fmt sibfoss .
 	Offset' si ('ImageArg nm fmt) sibfoss =>
 	Device.D sd -> Image.Binded sm si nm fmt -> M sm sibfoss -> IO ()
 rebindImage dvc@(Device.D mdvc) (Image.Binded i) m = do
-	(_, mm) <- readM'' m
+	(_, mm) <- readM m
 	ost <- offset @si @('ImageArg nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i mm ost
 
@@ -261,7 +261,7 @@ bindBuffer :: forall sd sb nm objs sm sibfoss . Offset' sb ('BufferArg nm objs) 
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
 	IO (Buffer.Binded sm sb nm objs)
 bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m = do
-	(_, mm) <- readM'' m
+	(_, mm) <- readM m
 	ost <- offset @sb @('BufferArg nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc b mm ost
 	pure (Buffer.Binded lns b)
@@ -270,7 +270,7 @@ rebindBuffer :: forall sd sb sm nm objs sibfoss .
 	Offset' sb ('BufferArg nm objs) sibfoss =>
 	Device.D sd -> Buffer.Binded sm sb nm objs -> M sm sibfoss -> IO ()
 rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
-	(_, mm) <- readM'' m
+	(_, mm) <- readM m
 	ost <- offset @sb @('BufferArg nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc b mm ost
 
@@ -280,7 +280,7 @@ write :: forall nm obj sd sm sibfoss v .
 write dvc mem flgs v = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
 	(\(ptr :: Ptr (VObj.TypeOfObject obj)) -> do
-		ln <- offsetSizeLength @nm @obj mem
+		ln <- objectLength @nm @obj mem
 		VObj.storeObject @_ @obj ptr ln v)
 
 read :: forall nm obj v sd sm sibfoss .
@@ -289,12 +289,12 @@ read :: forall nm obj v sd sm sibfoss .
 read dvc mem flgs = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
 	(\(ptr :: Ptr (VObj.TypeOfObject obj)) ->
-		VObj.loadObject @_ @obj ptr =<< offsetSizeLength @nm @obj mem)
+		VObj.loadObject @_ @obj ptr =<< objectLength @nm @obj mem)
 
 map :: forall nm obj sd sm sibfoss . OffsetSize nm obj sibfoss =>
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (VObj.TypeOfObject obj))
 map dvc@(Device.D mdvc) m flgs = do
-	(_, mm) <- readM'' m
+	(_, mm) <- readM m
 	(ost, sz) <- offsetSize @nm @obj dvc m 0
 --	putStrLn "Vk.Memory.map:"
 --	putStr "ost: "; print ost
@@ -303,5 +303,5 @@ map dvc@(Device.D mdvc) m flgs = do
 
 unmap :: Device.D sd -> M sm sibfoss -> IO ()
 unmap (Device.D mdvc) m = do
-	(_, mm) <- readM'' m
+	(_, mm) <- readM m
 	Memory.M.unmap mdvc mm

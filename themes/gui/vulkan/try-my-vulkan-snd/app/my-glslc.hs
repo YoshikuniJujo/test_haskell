@@ -5,8 +5,6 @@
 
 module Main where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
-
 import Control.Monad
 import System.Environment
 import System.Exit
