@@ -23,7 +23,11 @@ module Gpu.Vulkan.Memory.Types (
 
 	-- * OBJECT LENGTH
 
-	objectLength, ObjectLength
+	objectLength, ObjectLength,
+
+	-- * OTHERS
+
+	adjustOffsetSize
 
 	) where
 
@@ -41,6 +45,15 @@ import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Memory.Middle as M
 
 import qualified Gpu.Vulkan.TypeEnum as T
+
+import qualified Gpu.Vulkan.Device.Type as Device
+import qualified Gpu.Vulkan.Device.Middle as Device.M
+
+import qualified Gpu.Vulkan.Image.Type as Image
+import qualified Gpu.Vulkan.Image.Middle as Image.M
+import qualified Gpu.Vulkan.Buffer.Type as Buffer
+import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
+import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 data M s (sibfoss :: [(Type, ImageBufferArg)]) =
 	M (IORef (HeteroParList.PL (U2 ImageBuffer) sibfoss)) M.M
@@ -109,3 +122,18 @@ instance VObj.ObjectLengthOf obj objs =>
 instance {-# OVERLAPPABLE #-} ObjectLength nm obj ibargs =>
 	ObjectLength nm obj (ibarg ': ibargs) where
 	objectLength' (_ :** lns) = objectLength' @nm @obj lns
+
+adjustOffsetSize :: Device.D sd -> ImageBuffer sib ibarg -> Device.M.Size ->
+	IO (Device.M.Size, Device.M.Size)
+adjustOffsetSize dvc ib ost = do
+	reqs <- getMemoryRequirements dvc ib
+	let	algn = Memory.M.requirementsAlignment reqs
+		sz = Memory.M.requirementsSize reqs
+	pure (((ost - 1) `div` algn + 1) * algn, sz)
+
+getMemoryRequirements ::
+	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
+getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
+	Buffer.M.getMemoryRequirements dvc b
+getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
+	Image.M.getMemoryRequirements dvc i

@@ -60,6 +60,7 @@ import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Memory.Middle as M
 
+import Gpu.Vulkan.Memory.Bind
 import Gpu.Vulkan.Memory.OffsetSize
 import Gpu.Vulkan.Memory.Types
 
