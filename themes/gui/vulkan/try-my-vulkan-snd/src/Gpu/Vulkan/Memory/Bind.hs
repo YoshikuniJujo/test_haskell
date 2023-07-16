@@ -31,6 +31,8 @@ import Gpu.Vulkan.Buffer.Middle qualified as Buffer.M
 import Gpu.Vulkan.Image.Type qualified as Image
 import Gpu.Vulkan.Image.Middle qualified as Image.M
 
+import Gpu.Vulkan.Memory.Type
+
 offset :: forall ib ibargs sd sm . Offset ib ibargs =>
 	Device.D sd -> M sm ibargs -> Device.M.Size -> IO Device.M.Size
 offset dvc m ost = do

@@ -112,6 +112,7 @@ library
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.Bind
       Gpu.Vulkan.Memory.OffsetSize
+      Gpu.Vulkan.Memory.Type
       Gpu.Vulkan.Memory.Types
       Gpu.Vulkan.Misc
       Gpu.Vulkan.Object

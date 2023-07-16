@@ -34,6 +34,7 @@ import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
+import Gpu.Vulkan.Memory.Type
 import Gpu.Vulkan.Memory.Types
 
 offsetSize :: forall nm obj ibargs sd sm . OffsetSize nm obj ibargs =>
