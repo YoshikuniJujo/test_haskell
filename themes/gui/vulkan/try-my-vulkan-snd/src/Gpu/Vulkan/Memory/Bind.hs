@@ -23,7 +23,7 @@ import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.Device.Middle qualified as Device.M
-import Gpu.Vulkan.Memory.Types
+import Gpu.Vulkan.Memory.ImageBuffer
 
 import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.Buffer.Middle qualified as Buffer.M

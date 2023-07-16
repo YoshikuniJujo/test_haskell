@@ -111,9 +111,9 @@ library
       Gpu.Vulkan.Khr.Swapchain.Type
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.Bind
+      Gpu.Vulkan.Memory.ImageBuffer
       Gpu.Vulkan.Memory.OffsetSize
       Gpu.Vulkan.Memory.Type
-      Gpu.Vulkan.Memory.Types
       Gpu.Vulkan.Misc
       Gpu.Vulkan.Object
       Gpu.Vulkan.PhysicalDevice

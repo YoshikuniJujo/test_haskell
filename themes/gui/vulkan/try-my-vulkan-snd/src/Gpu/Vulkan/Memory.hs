@@ -62,7 +62,7 @@ import qualified Gpu.Vulkan.Memory.Middle as M
 import Gpu.Vulkan.Memory.Bind
 import Gpu.Vulkan.Memory.OffsetSize
 import Gpu.Vulkan.Memory.Type
-import Gpu.Vulkan.Memory.Types
+import Gpu.Vulkan.Memory.ImageBuffer
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: TMaybe.M n,

@@ -10,7 +10,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Memory.Types (
+module Gpu.Vulkan.Memory.ImageBuffer (
 
 	-- * IMAGE BUFFER
 
@@ -27,23 +27,17 @@ import Prelude hiding (map, read)
 import GHC.TypeLits
 import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
-import Data.TypeLevel.Tuple.Uncurry
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:**))
-import Data.IORef
 
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
-import qualified Gpu.Vulkan.Memory.Middle as M
 
 import qualified Gpu.Vulkan.TypeEnum as T
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 
-import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
-import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
