@@ -19,13 +19,14 @@ module Gpu.Vulkan.Memory.ImageBuffer (
 
 	-- * OTHERS
 
-	adjustOffsetSize
+	adjustOffsetSize, getRequirementsList, getRequirementsListBinded
 
 	) where
 
 import Prelude hiding (map, read)
 import GHC.TypeLits
 import Data.Kind
+import Data.TypeLevel.Tuple.Uncurry
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
 
@@ -86,3 +87,28 @@ getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
 	Buffer.M.getMemoryRequirements dvc b
 getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
 	Image.M.getMemoryRequirements dvc i
+
+getMemoryRequirementsBinded ::
+	Device.D sd -> ImageBufferBinded sm sib fos -> IO Memory.M.Requirements
+getMemoryRequirementsBinded (Device.D dvc) (BufferBinded (Buffer.Binded _ b)) =
+	Buffer.M.getMemoryRequirements dvc b
+getMemoryRequirementsBinded (Device.D dvc) (ImageBinded (Image.Binded i)) =
+	Image.M.getMemoryRequirements dvc i
+
+getMemoryRequirements' ::
+	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
+getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
+
+getMemoryRequirementsBinded' ::
+	Device.D sd -> U2 (ImageBufferBinded sm) sibfos -> IO Memory.M.Requirements
+getMemoryRequirementsBinded' dvc (U2 bi) = getMemoryRequirementsBinded dvc bi
+
+getRequirementsList :: Device.D sd ->
+	HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
+getRequirementsList dvc bis =
+	HeteroParList.toListM (getMemoryRequirements' dvc) bis
+
+getRequirementsListBinded :: Device.D sd ->
+	HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
+getRequirementsListBinded dvc bis =
+	HeteroParList.toListM (getMemoryRequirementsBinded' dvc) bis

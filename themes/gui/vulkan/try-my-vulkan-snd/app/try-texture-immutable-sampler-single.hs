@@ -88,7 +88,6 @@ import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
-import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Image as Vk.Img.M

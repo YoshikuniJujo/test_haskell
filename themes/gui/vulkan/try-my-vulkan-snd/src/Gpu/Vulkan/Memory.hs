@@ -38,6 +38,7 @@ module Gpu.Vulkan.Memory (
 	) where
 
 import Prelude hiding (map, read)
+
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Control.Exception hiding (try)
@@ -52,10 +53,6 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
-import qualified Gpu.Vulkan.Image.Type as Image
-import qualified Gpu.Vulkan.Image.Middle as Image.M
-import qualified Gpu.Vulkan.Buffer.Type as Buffer
-import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Memory.Middle as M
 
@@ -64,8 +61,61 @@ import Gpu.Vulkan.Memory.OffsetSize
 import Gpu.Vulkan.Memory.Type
 import Gpu.Vulkan.Memory.ImageBuffer
 
-data AllocateInfo n = AllocateInfo {
-	allocateInfoNext :: TMaybe.M n,
+allocateBind :: (
+	WithPoked (TMaybe.M n),
+	BindAll sibfoss sibfoss, Alignments sibfoss,
+	AllocationCallbacks.ToMiddle mscc ) =>
+	Device.D sd ->
+	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
+	AllocateInfo n ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	(forall s .
+		HeteroParList.PL (U2 (ImageBufferBinded s)) sibfoss ->
+		M s sibfoss -> IO a) -> IO a
+allocateBind dvc bs ai macc f = allocate dvc bs ai macc \m -> do
+	bnds <- bindAll dvc bs m
+	f bnds m
+
+reallocateBind :: (
+	WithPoked (TMaybe.M n), RebindAll sibfoss sibfoss, Alignments sibfoss,
+	AllocationCallbacks.ToMiddle mscc ) =>
+	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
+	AllocateInfo n ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
+reallocateBind dvc bs ai macc mem = do
+	reallocate dvc bs ai macc mem
+	rebindAll dvc bs mem
+
+allocate :: (
+	WithPoked (TMaybe.M n), Alignments sibfoss,
+	AllocationCallbacks.ToMiddle mscc ) =>
+	Device.D sd ->
+	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
+	AllocateInfo n ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	(forall s . M s sibfoss -> IO a) -> IO a
+allocate dvc@(Device.D mdvc) bs ai
+	(AllocationCallbacks.toMiddle -> mac) f = bracket
+	do	mai <- allocateInfoToMiddle dvc bs ai
+		Memory.M.allocate mdvc mai mac
+	(\mem -> Memory.M.free mdvc mem mac)
+	\mem -> f =<< newM2' bs mem
+
+reallocate :: (
+	WithPoked (TMaybe.M n), Alignments sibfoss,
+	AllocationCallbacks.ToMiddle mscc ) =>
+	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
+	AllocateInfo n ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
+reallocate dvc@(Device.D mdvc) bs ai
+	(AllocationCallbacks.toMiddle -> mac) mem = do
+	mai <- reallocateInfoToMiddle dvc bs ai
+	(_, oldmem) <- readM mem
+	Memory.M.reallocate mdvc mai mac oldmem
+	writeMBinded' mem bs
+
+data AllocateInfo mn = AllocateInfo {
+	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoMemoryTypeIndex :: M.TypeIndex }
 
 deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn)
@@ -73,38 +123,6 @@ deriving instance Eq (TMaybe.M mn) => Eq (AllocateInfo mn)
 
 -- deriving instance Show (HeteroParList.PL (U2 ImageBuffer) sibfoss) =>
 --	Show (M s sibfoss)
-
-getMemoryRequirements ::
-	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
-getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
-	Buffer.M.getMemoryRequirements dvc b
-getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
-	Image.M.getMemoryRequirements dvc i
-
-getMemoryRequirementsBinded ::
-	Device.D sd -> ImageBufferBinded sm sib fos -> IO Memory.M.Requirements
-getMemoryRequirementsBinded (Device.D dvc) (BufferBinded (Buffer.Binded _ b)) =
-	Buffer.M.getMemoryRequirements dvc b
-getMemoryRequirementsBinded (Device.D dvc) (ImageBinded (Image.Binded i)) =
-	Image.M.getMemoryRequirements dvc i
-
-getMemoryRequirements' ::
-	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
-getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
-
-getMemoryRequirementsBinded' ::
-	Device.D sd -> U2 (ImageBufferBinded sm) sibfos -> IO Memory.M.Requirements
-getMemoryRequirementsBinded' dvc (U2 bi) = getMemoryRequirementsBinded dvc bi
-
-getRequirementsList :: Device.D sd ->
-	HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
-getRequirementsList dvc bis =
-	HeteroParList.toListM (getMemoryRequirements' dvc) bis
-
-getRequirementsListBinded :: Device.D sd ->
-	HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
-getRequirementsListBinded dvc bis =
-	HeteroParList.toListM (getMemoryRequirementsBinded' dvc) bis
 
 allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
 	Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
@@ -146,59 +164,6 @@ memoryRequirementsListToSize sz0 (malgn : malgns) (reqs : reqss) =
 --	algn = Memory.M.requirementsAlignment reqs
 	algn = fromIntegral (fromMaybe 1 malgn) `lcm`
 		Memory.M.requirementsAlignment reqs
-
-allocate :: (
-	WithPoked (TMaybe.M n), Alignments sibfoss,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd ->
-	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-	AllocateInfo n ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall s . M s sibfoss -> IO a) -> IO a
-allocate dvc@(Device.D mdvc) bs ai
-	(AllocationCallbacks.toMiddle -> mac) f = bracket
-	do	mai <- allocateInfoToMiddle dvc bs ai
-		Memory.M.allocate mdvc mai mac
-	(\mem -> Memory.M.free mdvc mem mac)
-	\mem -> f =<< newM2' bs mem
-
-reallocate :: (
-	WithPoked (TMaybe.M n), Alignments sibfoss,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
-	AllocateInfo n ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
-reallocate dvc@(Device.D mdvc) bs ai
-	(AllocationCallbacks.toMiddle -> mac) mem = do
-	mai <- reallocateInfoToMiddle dvc bs ai
-	(_, oldmem) <- readM mem
-	Memory.M.reallocate mdvc mai mac oldmem
-	writeMBinded' mem bs
-
-reallocateBind :: (
-	WithPoked (TMaybe.M n), RebindAll sibfoss sibfoss, Alignments sibfoss,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
-	AllocateInfo n ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
-reallocateBind dvc bs ai macc mem = do
-	reallocate dvc bs ai macc mem
-	rebindAll dvc bs mem
-
-allocateBind :: (
-	WithPoked (TMaybe.M n),
-	BindAll sibfoss sibfoss, Alignments sibfoss,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd ->
-	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-	AllocateInfo n ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall s .
-		HeteroParList.PL (U2 (ImageBufferBinded s)) sibfoss ->
-		M s sibfoss -> IO a) -> IO a
-allocateBind dvc bs ai macc f = allocate dvc bs ai macc \m -> do
-	bnds <- bindAll dvc bs m
-	f bnds m
 
 write :: forall nm obj sd sm sibfoss v .
 	(VObj.StoreObject v obj, OffsetSize nm obj sibfoss) =>
