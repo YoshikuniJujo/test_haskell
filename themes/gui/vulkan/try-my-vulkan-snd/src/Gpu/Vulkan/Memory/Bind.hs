@@ -32,48 +32,48 @@ import Gpu.Vulkan.Image.Middle qualified as Image.M
 
 import Gpu.Vulkan.Memory.Type
 
-class BindAll sibfoss sibfoss' where
-	bindAll :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
-		M sm sibfoss' -> Device.M.Size ->
-		IO (HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss)
+class BindAll ibargs mibargs where
+	bindAll :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
+		M sm mibargs -> Device.M.Size ->
+		IO (HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs)
 
-instance BindAll '[] sibfoss' where bindAll _ _ _ _ = pure HeteroParList.Nil
+instance BindAll '[] mibargs where bindAll _ _ _ _ = pure HeteroParList.Nil
 
-instance BindAll fibfoss sibfoss' =>
-	BindAll ('(si, ('ImageArg nm fmt)) ': fibfoss) sibfoss' where
+instance BindAll ibargs mibargs =>
+	BindAll ('(si, ('ImageArg nm fmt)) ': ibargs) mibargs where
 	bindAll dvc@(Device.D mdvc) (U2 ii@(Image (Image.I i)) :** ibs) m ost0 = do
 		(_, mm) <- readM m
-		(ost', sz) <- adjustOffsetSize dvc ii ost0
-		Image.M.bindMemory mdvc i mm ost'
+		(ost, sz) <- adjustOffsetSize dvc ii ost0
+		Image.M.bindMemory mdvc i mm ost
 		(:**)	<$> (pure . U2 . ImageBinded $ Image.Binded i)
-			<*> bindAll dvc ibs m (ost' + sz)
+			<*> bindAll dvc ibs m (ost + sz)
 
-instance BindAll fibfoss sibfoss' =>
-	BindAll ('(sb, ('BufferArg nm objs)) ': fibfoss) sibfoss' where
+instance BindAll ibargs mibargs =>
+	BindAll ('(sb, ('BufferArg nm objs)) ': ibargs) mibargs where
 	bindAll dvc@(Device.D mdvc) (U2 bb@(Buffer (Buffer.B lns b)) :** ibs) m ost0  = do
 		(_, mm) <- readM m
-		(ost', sz) <- adjustOffsetSize dvc bb ost0
-		Buffer.M.bindMemory mdvc b mm ost'
+		(ost, sz) <- adjustOffsetSize dvc bb ost0
+		Buffer.M.bindMemory mdvc b mm ost
 		(:**)	<$> (pure $ U2 . BufferBinded $ Buffer.Binded lns b)
-			<*> bindAll dvc ibs m (ost' + sz)
+			<*> bindAll dvc ibs m (ost + sz)
 
-class RebindAll sibfoss sibfoss' where
+class RebindAll ibargs mibargs where
 	rebindAll :: Device.D sd ->
-		HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
-		M sm sibfoss' -> Device.M.Size -> IO ()
+		HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
+		M sm mibargs -> Device.M.Size -> IO ()
 
-instance RebindAll '[] sibfoss' where rebindAll _ _ _ _ = pure ()
+instance RebindAll '[] mibargs where rebindAll _ _ _ _ = pure ()
 
-instance RebindAll fibfoss sibfoss' =>
-	RebindAll ('(si, 'ImageArg nm fmt) ': fibfoss) sibfoss' where
+instance RebindAll ibargs mibargs =>
+	RebindAll ('(si, 'ImageArg nm fmt) ': ibargs) mibargs where
 	rebindAll dvc@(Device.D mdvc) (U2 (ImageBinded (Image.Binded i)) :** ibs) m ost0 = do
 		(_, mm) <- readM m
 		(ost', sz) <- adjustOffsetSize dvc (Image $ Image.I i) ost0
 		Image.M.bindMemory mdvc i mm ost'
 		rebindAll dvc ibs m $ ost' + sz
 
-instance RebindAll sibfoss sibfoss' =>
-	RebindAll ('(sb, 'BufferArg nm objs) ': sibfoss) sibfoss' where
+instance RebindAll ibargs mibargs =>
+	RebindAll ('(sb, 'BufferArg nm objs) ': ibargs) mibargs where
 	rebindAll dvc@(Device.D mdvc) (U2 (BufferBinded (Buffer.Binded lns b)) :** ibs) m ost0 = do
 		(_, mm) <- readM m
 		(ost', sz) <- adjustOffsetSize dvc (Buffer $ Buffer.B lns b) ost0
