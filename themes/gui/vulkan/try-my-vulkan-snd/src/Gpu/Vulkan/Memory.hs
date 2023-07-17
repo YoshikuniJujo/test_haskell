@@ -73,7 +73,7 @@ allocateBind :: (
 		HeteroParList.PL (U2 (ImageBufferBinded s)) sibfoss ->
 		M s sibfoss -> IO a) -> IO a
 allocateBind dvc bs ai macc f = allocate dvc bs ai macc \m -> do
-	bnds <- bindAll dvc bs m
+	bnds <- bindAll dvc bs m 0
 	f bnds m
 
 reallocateBind :: (
