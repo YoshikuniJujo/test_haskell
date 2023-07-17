@@ -40,42 +40,23 @@ class BindAll sibfoss sibfoss' where
 
 instance BindAll '[] sibfoss' where bindAll _ _ _ _ = pure HeteroParList.Nil
 
-instance (Offset ('ImageArg nm fmt) sibfoss', BindAll fibfoss sibfoss') =>
+instance BindAll fibfoss sibfoss' =>
 	BindAll ('(si, ('ImageArg nm fmt)) ': fibfoss) sibfoss' where
-	bindAll dvc@(Device.D mdvc) (U2 (Image (Image.I i)) :** ibs) m _ = do
-		(ibs', mm) <- readM m
-		ost <- offset' @('ImageArg nm fmt) dvc ibs' 0
-		Image.M.bindMemory mdvc i mm ost
+	bindAll dvc@(Device.D mdvc) (U2 ii@(Image (Image.I i)) :** ibs) m ost0 = do
+		(_, mm) <- readM m
+		(ost', sz) <- adjustOffsetSize dvc ii ost0
+		Image.M.bindMemory mdvc i mm ost'
 		(:**)	<$> (pure . U2 . ImageBinded $ Image.Binded i)
-			<*> bindAll dvc ibs m 0
+			<*> bindAll dvc ibs m (ost' + sz)
 
-instance (Offset ('BufferArg nm objs) sibfoss', BindAll fibfoss sibfoss') =>
+instance BindAll fibfoss sibfoss' =>
 	BindAll ('(sb, ('BufferArg nm objs)) ': fibfoss) sibfoss' where
-	bindAll dvc@(Device.D mdvc) (U2 (Buffer (Buffer.B lns b)) :** ibs) m _  = do
-		(ibs', mm) <- readM m
-		ost <- offset' @('BufferArg nm objs) dvc ibs' 0
-		Buffer.M.bindMemory mdvc b mm ost
+	bindAll dvc@(Device.D mdvc) (U2 bb@(Buffer (Buffer.B lns b)) :** ibs) m ost0  = do
+		(_, mm) <- readM m
+		(ost', sz) <- adjustOffsetSize dvc bb ost0
+		Buffer.M.bindMemory mdvc b mm ost'
 		(:**)	<$> (pure $ U2 . BufferBinded $ Buffer.Binded lns b)
-			<*> bindAll dvc ibs m 0
-
-class Offset (ib :: ImageBufferArg) (ibargs :: [(Type, ImageBufferArg)]) where
-	offset' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
-		Device.M.Size -> IO Device.M.Size
-
-instance Offset ib ('(sib, ib) ': ibargs) where
-	offset' dvc (U2 ib :** _ibs) ost = fst <$> adjustOffsetSize dvc ib ost
-
-instance {-# OVERLAPPABLE #-} Offset ib ibargs =>
-	Offset ib ('(sib', ib') ': ibargs) where
-	offset' dvc (U2 ib :** ibs) ost = do
-		(ost', sz) <- adjustOffsetSize dvc ib ost
-		offset' @ib dvc ibs $ ost' + sz
-
-offset :: forall ib ibargs sd sm . Offset ib ibargs =>
-	Device.D sd -> M sm ibargs -> Device.M.Size -> IO Device.M.Size
-offset dvc m ost = do
-	(ibs, _) <- readM m
-	offset' @ib @ibargs dvc ibs ost
+			<*> bindAll dvc ibs m (ost' + sz)
 
 class RebindAll sibfoss sibfoss' where
 	rebindAll :: Device.D sd ->
@@ -113,3 +94,22 @@ rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
 	(_, mm) <- readM m
 	ost <- offset @('BufferArg nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc b mm ost
+
+class Offset (ib :: ImageBufferArg) (ibargs :: [(Type, ImageBufferArg)]) where
+	offset' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
+		Device.M.Size -> IO Device.M.Size
+
+instance Offset ib ('(sib, ib) ': ibargs) where
+	offset' dvc (U2 ib :** _ibs) ost = fst <$> adjustOffsetSize dvc ib ost
+
+instance {-# OVERLAPPABLE #-} Offset ib ibargs =>
+	Offset ib ('(sib', ib') ': ibargs) where
+	offset' dvc (U2 ib :** ibs) ost = do
+		(ost', sz) <- adjustOffsetSize dvc ib ost
+		offset' @ib dvc ibs $ ost' + sz
+
+offset :: forall ib ibargs sd sm . Offset ib ibargs =>
+	Device.D sd -> M sm ibargs -> Device.M.Size -> IO Device.M.Size
+offset dvc m ost = do
+	(ibs, _) <- readM m
+	offset' @ib @ibargs dvc ibs ost
