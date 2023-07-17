@@ -371,12 +371,6 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	Vk.Mem.allocateBind dvc imgbuf memInfo nil' \(
 		U2 (Vk.Mem.ImageBinded _imgb) :**
 		U2 (Vk.Mem.BufferBinded bufb) :** HeteroParList.Nil) mib ->
-	(print =<< Vk.Mem.offsetSize
-		@"hello" @(VObj.List 256 w1 "") dvc mib 0) >>
-	(print =<< Vk.Mem.offsetSize
-		@"hello" @(VObj.List 256 w2 "") dvc mib 0) >>
-	(print =<< Vk.Mem.offsetSize
-		@"hello" @(VObj.List 256 w3 "") dvc mib 0) >>
 	Vk.Mem.write @"hello" @(VObj.List 256 w1 "") dvc mib def da >>
 	Vk.Mem.write @"hello" @(VObj.List 256 w2 "") dvc mib def db >>
 	Vk.Mem.write @"hello" @(VObj.List 256 w3 "") dvc mib def dc >>

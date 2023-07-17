@@ -16,6 +16,7 @@ module Gpu.Vulkan.Memory (
 
 	allocateBind, reallocateBind, M, AllocateInfo(..),
 	ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
+	Alignments,
 
 	-- * GET REQUREMENTS
 
@@ -23,17 +24,11 @@ module Gpu.Vulkan.Memory (
 
 	-- * READ AND WRITE
 
-	read, write,
+	read, write, OffsetSize,
 
 	-- * BARRIER
 
 	M.Barrier(..),
-
-	-- * OTHERS
-
-	OffsetSize,
-	offsetSize,
-	Alignments,
 
 	) where
 
