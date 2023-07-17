@@ -84,7 +84,7 @@ reallocateBind :: (
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
 reallocateBind dvc bs ai macc mem = do
 	reallocate dvc bs ai macc mem
-	rebindAll dvc bs mem
+	rebindAll dvc bs mem 0
 
 allocate :: (
 	WithPoked (TMaybe.M n), Alignments sibfoss,
