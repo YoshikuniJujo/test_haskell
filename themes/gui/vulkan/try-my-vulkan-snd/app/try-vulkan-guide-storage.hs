@@ -16,6 +16,7 @@ module Main where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
+import GHC.TypeLits
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -1121,10 +1122,10 @@ createBuffer pd dv lns usg prs f =
 		(HL.Singleton . U2 $ Vk.Mm.Buffer b) (memoryInfo mt) nil'
 		$ f . \(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) -> bnd
 
-class Vk.Mm.Alignments '[ '(s, 'Vk.Mm.BufferArg nm objs)] =>
-	SizeAlignmentAll s nm (objs :: [Obj.Object])
+class Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm objs)] =>
+	SizeAlignmentAll s (nm :: Symbol) (objs :: [Obj.Object])
 
-instance Vk.Mm.Alignments '[ '(s, 'Vk.Mm.BufferArg nm '[obj])] =>
+instance Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm '[obj])] =>
 	SizeAlignmentAll s nm '[obj]
 
 instance {-# OVERLAPPABLE #-} (

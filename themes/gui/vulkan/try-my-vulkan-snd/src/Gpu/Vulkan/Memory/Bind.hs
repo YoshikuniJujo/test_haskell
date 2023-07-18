@@ -4,7 +4,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -12,7 +12,7 @@ module Gpu.Vulkan.Memory.Bind (
 
 	-- * BIND AND REBIND
 
-	BindAll(..), RebindAll(..)
+	Bindable, Rebindable, BindAll(..), RebindAll(..)
 
 	) where
 
@@ -31,6 +31,10 @@ import Gpu.Vulkan.Image.Type qualified as Image
 import Gpu.Vulkan.Image.Middle qualified as Image.M
 
 import Gpu.Vulkan.Memory.Type
+
+class (Alignments ibargs, BindAll ibargs ibargs) => Bindable ibargs
+
+instance (Alignments ibargs, BindAll ibargs ibargs) => Bindable ibargs
 
 class BindAll ibargs mibargs where
 	bindAll :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
@@ -63,6 +67,10 @@ class RebindAll ibargs mibargs where
 		M sm mibargs -> Device.M.Size -> IO ()
 
 instance RebindAll '[] mibargs where rebindAll _ _ _ _ = pure ()
+
+class (Alignments ibargs, RebindAll ibargs ibargs) => Rebindable ibargs
+
+instance (Alignments ibargs, RebindAll ibargs ibargs) => Rebindable ibargs
 
 instance RebindAll ibargs mibargs =>
 	RebindAll ('(si, 'ImageArg nm fmt) ': ibargs) mibargs where

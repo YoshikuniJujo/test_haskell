@@ -1044,10 +1044,10 @@ createBuffer p dv lns usg prs f =
 		(HL.Singleton . U2 $ Vk.Mm.Buffer b) (memoryInfo mt) nil'
 		$ f . \(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) -> bnd
 
-class Vk.Mm.Alignments '[ '(s, 'Vk.Mm.BufferArg nm objs)] =>
+class Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm objs)] =>
 	SizeAlignmentAll s nm (objs :: [Obj.Object])
 
-instance Vk.Mm.Alignments '[ '(s, 'Vk.Mm.BufferArg nm '[obj])] =>
+instance Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm '[obj])] =>
 	SizeAlignmentAll s nm '[obj]
 
 instance {-# OVERLAPPABLE #-} (

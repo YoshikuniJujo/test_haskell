@@ -5,8 +5,6 @@
 
 module Main where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
-
 import qualified Data.ByteString as BS
 
 import Shaderc

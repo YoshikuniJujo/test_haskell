@@ -16,7 +16,7 @@ module Gpu.Vulkan.Memory (
 
 	allocateBind, reallocateBind, M, AllocateInfo(..),
 	ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
-	Alignments,
+	Bindable, Rebindable,
 
 	-- * GET REQUREMENTS
 
@@ -58,7 +58,7 @@ import Gpu.Vulkan.Memory.ImageBuffer
 
 allocateBind :: (
 	WithPoked (TMaybe.M mn),
-	BindAll ibargs ibargs, Alignments ibargs,
+	Bindable ibargs,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
 	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
@@ -70,7 +70,7 @@ allocateBind dvc bs ai macc f = allocate dvc bs ai macc \m -> do
 	f bnds m
 
 reallocateBind :: (
-	WithPoked (TMaybe.M n), RebindAll ibargs ibargs, Alignments ibargs,
+	WithPoked (TMaybe.M n), Rebindable ibargs,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
 	AllocateInfo n ->
