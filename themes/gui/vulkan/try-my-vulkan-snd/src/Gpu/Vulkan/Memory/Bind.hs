@@ -44,21 +44,22 @@ instance BindAll '[] mibargs where bindAll _ _ _ _ = pure HeteroParList.Nil
 
 instance BindAll ibargs mibargs =>
 	BindAll ('(si, ('ImageArg nm fmt)) ': ibargs) mibargs where
-	bindAll dvc@(Device.D mdvc) (U2 ii@(Image (Image.I i)) :** ibs) m ost0 = do
+	bindAll dv@(Device.D mdv) (U2 ii@(Image (Image.I i)) :** ibs) m ost = do
 		(_, mm) <- readM m
-		(ost, sz) <- adjustOffsetSize dvc ii ost0
-		Image.M.bindMemory mdvc i mm ost
-		(:**)	<$> (pure . U2 . ImageBinded $ Image.Binded i)
-			<*> bindAll dvc ibs m (ost + sz)
+		(ost', sz) <- adjustOffsetSize dv ii ost
+		Image.M.bindMemory mdv i mm ost'
+		(U2 (ImageBinded $ Image.Binded i) :**)
+			<$> bindAll dv ibs m (ost' + sz)
 
 instance BindAll ibargs mibargs =>
 	BindAll ('(sb, ('BufferArg nm objs)) ': ibargs) mibargs where
-	bindAll dvc@(Device.D mdvc) (U2 bb@(Buffer (Buffer.B lns b)) :** ibs) m ost0  = do
+	bindAll dv@(Device.D mdv)
+		(U2 bb@(Buffer (Buffer.B lns b)) :** ibs) m ost  = do
 		(_, mm) <- readM m
-		(ost, sz) <- adjustOffsetSize dvc bb ost0
-		Buffer.M.bindMemory mdvc b mm ost
-		(:**)	<$> (pure $ U2 . BufferBinded $ Buffer.Binded lns b)
-			<*> bindAll dvc ibs m (ost + sz)
+		(ost', sz) <- adjustOffsetSize dv bb ost
+		Buffer.M.bindMemory mdv b mm ost'
+		(U2 (BufferBinded $ Buffer.Binded lns b) :**)
+			<$> bindAll dv ibs m (ost' + sz)
 
 class (RebindAll ibargs ibargs, Alignments ibargs) => Rebindable ibargs
 instance (RebindAll ibargs ibargs, Alignments ibargs) => Rebindable ibargs
@@ -72,16 +73,18 @@ instance RebindAll '[] mibargs where rebindAll _ _ _ _ = pure ()
 
 instance RebindAll ibargs mibargs =>
 	RebindAll ('(si, 'ImageArg nm fmt) ': ibargs) mibargs where
-	rebindAll dvc@(Device.D mdvc) (U2 (ImageBinded (Image.Binded i)) :** ibs) m ost0 = do
+	rebindAll dv@(Device.D mdv)
+		(U2 ii@(ImageBinded (Image.Binded i)) :** ibs) m ost = do
 		(_, mm) <- readM m
-		(ost', sz) <- adjustOffsetSize dvc (Image $ Image.I i) ost0
-		Image.M.bindMemory mdvc i mm ost'
-		rebindAll dvc ibs m $ ost' + sz
+		(ost', sz) <- adjustOffsetSizeBinded dv ii ost
+		Image.M.bindMemory mdv i mm ost'
+		rebindAll dv ibs m $ ost' + sz
 
 instance RebindAll ibargs mibargs =>
 	RebindAll ('(sb, 'BufferArg nm objs) ': ibargs) mibargs where
-	rebindAll dvc@(Device.D mdvc) (U2 (BufferBinded (Buffer.Binded lns b)) :** ibs) m ost0 = do
+	rebindAll dv@(Device.D mdv)
+		(U2 bb@(BufferBinded (Buffer.Binded _lns b)) :** ibs) m ost = do
 		(_, mm) <- readM m
-		(ost', sz) <- adjustOffsetSize dvc (Buffer $ Buffer.B lns b) ost0
-		Buffer.M.bindMemory mdvc b mm ost'
-		rebindAll dvc ibs m $ ost' + sz
+		(ost', sz) <- adjustOffsetSizeBinded dv bb ost
+		Buffer.M.bindMemory mdv b mm ost'
+		rebindAll dv ibs m $ ost' + sz

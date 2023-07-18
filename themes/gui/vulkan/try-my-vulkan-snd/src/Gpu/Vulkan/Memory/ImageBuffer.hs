@@ -22,7 +22,7 @@ module Gpu.Vulkan.Memory.ImageBuffer (
 
 	-- * ADJUST OFFSET AND GET SIZE
 
-	adjustOffsetSize,
+	adjustOffsetSize, adjustOffsetSizeBinded,
 
 	-- * FOR BIND
 
@@ -89,6 +89,14 @@ adjustOffsetSize :: Device.D sd -> ImageBuffer sib ibarg -> Device.M.Size ->
 	IO (Device.M.Size, Device.M.Size)
 adjustOffsetSize dvc ib ost = do
 	reqs <- getMemoryRequirements dvc ib
+	let	algn = Memory.M.requirementsAlignment reqs
+		sz = Memory.M.requirementsSize reqs
+	pure (((ost - 1) `div` algn + 1) * algn, sz)
+
+adjustOffsetSizeBinded :: Device.D sd -> ImageBufferBinded sm sib ibarg ->
+	Device.M.Size -> IO (Device.M.Size, Device.M.Size)
+adjustOffsetSizeBinded dvc ib ost = do
+	reqs <- getMemoryRequirementsBinded dvc ib
 	let	algn = Memory.M.requirementsAlignment reqs
 		sz = Memory.M.requirementsSize reqs
 	pure (((ost - 1) `div` algn + 1) * algn, sz)
