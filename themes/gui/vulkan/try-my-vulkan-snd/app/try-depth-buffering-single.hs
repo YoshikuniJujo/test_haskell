@@ -260,7 +260,7 @@ run w inst g =
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
-		\(sc :: Vk.Khr.Swapchain.S scifmt ss)  scifmt ext ->
+		\(sc :: Vk.Khr.Swapchain.S scifmt ss) scifmt ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
 	findDepthFormat phdv >>= \dptfmt ->

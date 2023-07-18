@@ -14,8 +14,18 @@ module Gpu.Vulkan.Memory (
 
 	-- * ALLOCATE AND BIND
 
-	allocateBind, reallocateBind, M, AllocateInfo(..),
-	ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
+	allocateBind, reallocateBind,
+
+	-- ** MEMORY
+
+	M, ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
+
+	-- ** ALLOCATE INFO
+
+	AllocateInfo(..),
+
+	-- ** BINDABLE AND REBINDABLE
+
 	Bindable, Rebindable,
 
 	-- * GET REQUREMENTS
@@ -57,35 +67,33 @@ import Gpu.Vulkan.Memory.Type
 import Gpu.Vulkan.Memory.ImageBuffer
 
 allocateBind :: (
-	WithPoked (TMaybe.M mn),
-	Bindable ibargs,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	WithPoked (TMaybe.M mn), Bindable ibargs,
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
-	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall s .
-		HeteroParList.PL (U2 (ImageBufferBinded s)) ibargs ->
+	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall s . HeteroParList.PL (U2 (ImageBufferBinded s)) ibargs ->
 		M s ibargs -> IO a) -> IO a
 allocateBind dvc bs ai macc f = allocate dvc bs ai macc \m -> do
 	bnds <- bindAll dvc bs m 0
 	f bnds m
 
 reallocateBind :: (
-	WithPoked (TMaybe.M n), Rebindable ibargs,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	WithPoked (TMaybe.M mn), Rebindable ibargs,
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
-	AllocateInfo n ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm ibargs -> IO ()
+	AllocateInfo mn ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> M sm ibargs -> IO ()
 reallocateBind dvc bs ai macc mem = do
 	reallocate dvc bs ai macc mem
 	rebindAll dvc bs mem 0
 
 allocate :: (
 	WithPoked (TMaybe.M n), Alignments ibargs,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) ibargs ->
 	AllocateInfo n ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall s . M s ibargs -> IO a) -> IO a
 allocate dvc@(Device.D mdvc) bs ai
 	(AllocationCallbacks.toMiddle -> mac) f = bracket
@@ -96,10 +104,10 @@ allocate dvc@(Device.D mdvc) bs ai
 
 reallocate :: (
 	WithPoked (TMaybe.M n), Alignments ibargs,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
 	AllocateInfo n ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm ibargs -> IO ()
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> M sm ibargs -> IO ()
 reallocate dvc@(Device.D mdvc) bs ai
 	(AllocationCallbacks.toMiddle -> mac) mem = do
 	mai <- reallocateInfoToMiddle dvc bs ai
