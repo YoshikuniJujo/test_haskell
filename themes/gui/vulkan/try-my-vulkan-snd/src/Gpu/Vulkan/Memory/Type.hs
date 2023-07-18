@@ -25,25 +25,22 @@ import Gpu.Vulkan.Image.Type qualified as Image
 import Gpu.Vulkan.Memory.ImageBuffer
 import Gpu.Vulkan.Memory.Middle qualified as M
 
-data M s (sibfoss :: [(Type, ImageBufferArg)]) =
-	M (IORef (HeteroParList.PL (U2 ImageBuffer) sibfoss)) M.M
+data M s (ibargs :: [(Type, ImageBufferArg)]) =
+	M (IORef (HeteroParList.PL (U2 ImageBuffer) ibargs)) M.M
 
-readM :: M s sibfoss -> IO (HeteroParList.PL (U2 ImageBuffer) sibfoss, M.M)
+readM :: M s ibargs -> IO (HeteroParList.PL (U2 ImageBuffer) ibargs, M.M)
 readM (M ib m) = (, m) <$> readIORef ib
 
-writeMBinded' :: M s sibfoss ->
-	HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss -> IO ()
+writeMBinded' :: M s ibargs ->
+	HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs -> IO ()
 writeMBinded' (M rib _r) ibs = writeIORef rib (HeteroParList.map imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: U2 (ImageBufferBinded sm) sibfos -> U2 ImageBuffer sibfos
 imageBufferFromBinded (U2 (ImageBinded (Image.Binded i))) = U2 . Image $ Image.I i
 imageBufferFromBinded (U2 (BufferBinded (Buffer.Binded x b))) = U2 . Buffer $ Buffer.B x b
 
-newM2' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> M.M -> IO (M s sibfoss)
+newM2' :: HeteroParList.PL (U2 ImageBuffer) ibargs -> M.M -> IO (M s ibargs)
 newM2' ibs mm = (`M` mm) <$> newIORef ibs
-
--- deriving instance Show (HeteroParList.PL (U2 ImageBuffer) sibfoss) =>
---	Show (M s sibfoss)
 
 objectLength :: forall nm obj ibargs sm . ObjectLength nm obj ibargs =>
 	M sm ibargs -> IO (VObj.ObjectLength obj)

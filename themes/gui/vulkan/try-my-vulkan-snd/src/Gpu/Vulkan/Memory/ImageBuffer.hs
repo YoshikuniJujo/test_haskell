@@ -42,7 +42,7 @@ import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
-data ImageBuffer sib (ib :: ImageBufferArg) where
+data ImageBuffer s (ibarg :: ImageBufferArg) where
 	Image :: Image.I si nm fmt -> ImageBuffer si ('ImageArg nm fmt)
 	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('BufferArg nm objs)
 
@@ -52,7 +52,7 @@ deriving instance Show (Image.I sib nm fmt) =>
 deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
 	Show (ImageBuffer sib ('BufferArg nm objs))
 
-data ImageBufferBinded sm sib (ib :: ImageBufferArg) where
+data ImageBufferBinded sm sib (ibarg :: ImageBufferArg) where
 	ImageBinded :: Image.Binded sm si nm fmt ->
 		ImageBufferBinded sm si ('ImageArg nm fmt)
 	BufferBinded :: Buffer.Binded sm sb nm objs ->
