@@ -92,7 +92,7 @@ allocate dvc@(Device.D mdvc) bs ai
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai mac
 	(\mem -> Memory.M.free mdvc mem mac)
-	\mem -> f =<< newM2' bs mem
+	\mem -> f =<< newM bs mem
 
 reallocateBind :: (
 	WithPoked (TMaybe.M mn), Rebindable ibargs,
@@ -115,7 +115,7 @@ reallocate dvc@(Device.D mdvc) bs ai
 	mai <- reallocateInfoToMiddle dvc bs ai
 	(_, oldmem) <- readM mem
 	Memory.M.reallocate mdvc mai mac oldmem
-	writeMBinded' mem bs
+	writeMBinded mem bs
 
 data AllocateInfo mn = AllocateInfo {
 	allocateInfoNext :: TMaybe.M mn,

@@ -10,9 +10,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Memory.Type (
+
+	-- * TYPE
+
 	M,
 
-	readM, newM2', writeMBinded',
+	-- * NEW, READ AND WRITE
+
+	newM, readM, writeMBinded,
+
+	-- * OBJECT LENGTH
 
 	objectLength
 	) where
@@ -35,16 +42,16 @@ data M s (ibargs :: [(Type, ImageBufferArg)]) =
 readM :: M s ibargs -> IO (HeteroParList.PL (U2 ImageBuffer) ibargs, M.M)
 readM (M ib m) = (, m) <$> readIORef ib
 
-writeMBinded' :: M s ibargs ->
+writeMBinded :: M s ibargs ->
 	HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs -> IO ()
-writeMBinded' (M rib _r) ibs = writeIORef rib (HeteroParList.map imageBufferFromBinded ibs)
+writeMBinded (M rib _r) ibs = writeIORef rib (HeteroParList.map imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: U2 (ImageBufferBinded sm) sibfos -> U2 ImageBuffer sibfos
 imageBufferFromBinded (U2 (ImageBinded (Image.Binded i))) = U2 . Image $ Image.I i
 imageBufferFromBinded (U2 (BufferBinded (Buffer.Binded x b))) = U2 . Buffer $ Buffer.B x b
 
-newM2' :: HeteroParList.PL (U2 ImageBuffer) ibargs -> M.M -> IO (M s ibargs)
-newM2' ibs mm = (`M` mm) <$> newIORef ibs
+newM :: HeteroParList.PL (U2 ImageBuffer) ibargs -> M.M -> IO (M s ibargs)
+newM ibs mm = (`M` mm) <$> newIORef ibs
 
 objectLength :: forall nm obj ibargs sm . ObjectLength nm obj ibargs =>
 	M sm ibargs -> IO (VObj.ObjectLength obj)
