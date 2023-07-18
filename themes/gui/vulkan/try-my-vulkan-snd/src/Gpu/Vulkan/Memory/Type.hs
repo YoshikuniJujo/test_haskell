@@ -9,13 +9,17 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Memory.Type where
+module Gpu.Vulkan.Memory.Type (
+	M,
 
-import GHC.TypeLits
+	readM, newM2', writeMBinded',
+
+	objectLength
+	) where
+
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:**))
 import Data.IORef
 
 import Gpu.Vulkan.Object qualified as VObj
@@ -45,16 +49,3 @@ newM2' ibs mm = (`M` mm) <$> newIORef ibs
 objectLength :: forall nm obj ibargs sm . ObjectLength nm obj ibargs =>
 	M sm ibargs -> IO (VObj.ObjectLength obj)
 objectLength m = (<$> readM m) \(ibs, _m) -> objectLength' @nm @obj @ibargs ibs
-
-class ObjectLength (nm :: Symbol) (obj :: VObj.Object) ibargs where
-	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
-		VObj.ObjectLength obj
-
-instance VObj.ObjectLengthOf obj objs =>
-	ObjectLength nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
-	objectLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
-		VObj.objectLengthOf @obj lns
-
-instance {-# OVERLAPPABLE #-} ObjectLength nm obj ibargs =>
-	ObjectLength nm obj (ibarg ': ibargs) where
-	objectLength' (_ :** lns) = objectLength' @nm @obj lns

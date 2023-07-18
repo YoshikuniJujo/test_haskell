@@ -15,11 +15,22 @@ module Gpu.Vulkan.Memory.ImageBuffer (
 	-- * IMAGE BUFFER
 
 	ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
+
+	-- * GET REQUIREMENTS LIST
+
+	getRequirementsList, getRequirementsListBinded,
+
+	-- * ADJUST OFFSET AND GET SIZE
+
+	adjustOffsetSize,
+
+	-- * FOR BIND
+
 	Alignments(..),
 
-	-- * OTHERS
+	-- * FOR READ AND WRITE
 
-	adjustOffsetSize, getRequirementsList, getRequirementsListBinded
+	ObjectLength(..)
 
 	) where
 
@@ -29,6 +40,7 @@ import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
 
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
@@ -112,3 +124,16 @@ getRequirementsListBinded :: Device.D sd ->
 	HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
 getRequirementsListBinded dvc bis =
 	HeteroParList.toListM (getMemoryRequirementsBinded' dvc) bis
+
+class ObjectLength (nm :: Symbol) (obj :: VObj.Object) ibargs where
+	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
+		VObj.ObjectLength obj
+
+instance VObj.ObjectLengthOf obj objs =>
+	ObjectLength nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
+	objectLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
+		VObj.objectLengthOf @obj lns
+
+instance {-# OVERLAPPABLE #-} ObjectLength nm obj ibargs =>
+	ObjectLength nm obj (ibarg ': ibargs) where
+	objectLength' (_ :** lns) = objectLength' @nm @obj lns
