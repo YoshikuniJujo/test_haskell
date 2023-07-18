@@ -32,9 +32,8 @@ import Gpu.Vulkan.Image.Middle qualified as Image.M
 
 import Gpu.Vulkan.Memory.Type
 
-class (Alignments ibargs, BindAll ibargs ibargs) => Bindable ibargs
-
-instance (Alignments ibargs, BindAll ibargs ibargs) => Bindable ibargs
+class (BindAll ibargs ibargs, Alignments ibargs) => Bindable ibargs
+instance (BindAll ibargs ibargs , Alignments ibargs) => Bindable ibargs
 
 class BindAll ibargs mibargs where
 	bindAll :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
@@ -61,16 +60,15 @@ instance BindAll ibargs mibargs =>
 		(:**)	<$> (pure $ U2 . BufferBinded $ Buffer.Binded lns b)
 			<*> bindAll dvc ibs m (ost + sz)
 
+class (RebindAll ibargs ibargs, Alignments ibargs) => Rebindable ibargs
+instance (RebindAll ibargs ibargs, Alignments ibargs) => Rebindable ibargs
+
 class RebindAll ibargs mibargs where
 	rebindAll :: Device.D sd ->
 		HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
 		M sm mibargs -> Device.M.Size -> IO ()
 
 instance RebindAll '[] mibargs where rebindAll _ _ _ _ = pure ()
-
-class (Alignments ibargs, RebindAll ibargs ibargs) => Rebindable ibargs
-
-instance (Alignments ibargs, RebindAll ibargs ibargs) => Rebindable ibargs
 
 instance RebindAll ibargs mibargs =>
 	RebindAll ('(si, 'ImageArg nm fmt) ': ibargs) mibargs where
