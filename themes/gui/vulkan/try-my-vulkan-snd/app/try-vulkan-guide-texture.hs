@@ -1995,8 +1995,8 @@ createTextureImage pd dv gq cp fp f =
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(sb :: Vk.Bffr.Binded
-			sm sb "texture-buffer" '[ Obj.ObjImage 1 a inm]) sbm ->
-		Vk.Dvc.Mem.write @"texture-buffer" @(Obj.ObjImage 1 MyImage inm)
+			sm sb "texture-buffer" '[ Obj.Image 1 a inm]) sbm ->
+		Vk.Dvc.Mem.write @"texture-buffer" @(Obj.Image 1 MyImage inm)
 			dv sbm zeroBits (MyImage img) >>
 		print sb >>
 		transitionImageLayout dv gq cp tximg Vk.Img.LayoutUndefined
@@ -2118,10 +2118,10 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ Obj.ObjImage 1 t inm] ->
+		Vk.Bffr.Binded sm sb nm '[ Obj.Image 1 t inm] ->
 		Vk.Dvc.Mem.M sm '[ '(
 			sb,
-			'Vk.Mm.BufferArg nm '[ Obj.ObjImage 1 t inm])] ->
+			'Vk.Mm.BufferArg nm '[ Obj.Image 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer p dv (HL.Singleton $ Obj.ObjectLengthImage r w h d) usg props
@@ -2129,7 +2129,7 @@ createBufferImage p dv (r, w, h, d) usg props =
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.IsImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ Obj.ObjImage 1 img inm]  ->
+	Vk.Bffr.Binded sm sb nm '[ Obj.Image 1 img inm]  ->
 --	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
