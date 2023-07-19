@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -54,12 +54,11 @@ import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
+-- IMAGE BUFFER
+
 data ImageBuffer s (ibarg :: ImageBufferArg) where
 	Image :: Image.I si nm fmt -> ImageBuffer si ('ImageArg nm fmt)
 	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('BufferArg nm objs)
-
-deriving instance Show (Image.I sib nm fmt) =>
-	Show (ImageBuffer sib ('ImageArg nm fmt))
 
 deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
 	Show (ImageBuffer sib ('BufferArg nm objs))
@@ -70,68 +69,69 @@ data ImageBufferBinded sm sib (ibarg :: ImageBufferArg) where
 	BufferBinded :: Buffer.Binded sm sb nm objs ->
 		ImageBufferBinded sm sb ('BufferArg nm objs)
 
+deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
+	Show (ImageBufferBinded sm sib ('BufferArg nm objs))
+
 data ImageBufferArg = ImageArg Symbol T.Format | BufferArg Symbol [VObj.Object]
+
+-- GET REQUIREMENTS LIST
+
+getRequirementsList :: Device.D sd ->
+	HeteroParList.PL (U2 ImageBuffer) ibargs -> IO [Memory.M.Requirements]
+getRequirementsList dv =
+	HeteroParList.toListM \(U2 bi) -> getMemoryRequirements dv bi
+
+getRequirementsListBinded ::
+	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
+	IO [Memory.M.Requirements]
+getRequirementsListBinded dv =
+	HeteroParList.toListM \(U2 bi) -> getMemoryRequirementsBinded dv bi
+
+getMemoryRequirements ::
+	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
+getMemoryRequirements (Device.D dv) = \case
+	Buffer (Buffer.B _ b) -> Buffer.M.getMemoryRequirements dv b
+	Image (Image.I i) -> Image.M.getMemoryRequirements dv i
+
+getMemoryRequirementsBinded ::
+	Device.D sd -> ImageBufferBinded sm sib fos -> IO Memory.M.Requirements
+getMemoryRequirementsBinded (Device.D dv) = \case
+	BufferBinded (Buffer.Binded _ b) -> Buffer.M.getMemoryRequirements dv b
+	ImageBinded (Image.Binded i) -> Image.M.getMemoryRequirements dv i
+
+-- ADJUST OFFSET AND GET SIZE
+
+adjustOffsetSize :: Device.D sd -> ImageBuffer sib ibarg -> Device.M.Size ->
+	IO (Device.M.Size, Device.M.Size)
+adjustOffsetSize dv ib ost = (<$> getMemoryRequirements dv ib) \rs -> (
+	adjust (Memory.M.requirementsAlignment rs) ost,
+	Memory.M.requirementsSize rs )
+
+adjustOffsetSizeBinded :: Device.D sd -> ImageBufferBinded sm sib ibarg ->
+	Device.M.Size -> IO (Device.M.Size, Device.M.Size)
+adjustOffsetSizeBinded dv ib ost =
+	(<$> getMemoryRequirementsBinded dv ib) \rs -> (
+		adjust (Memory.M.requirementsAlignment rs) ost,
+		Memory.M.requirementsSize rs )
+
+adjust :: Device.M.Size -> Device.M.Size -> Device.M.Size
+adjust algn ost = ((ost - 1) `div` algn + 1) * algn
+
+-- ALIGNMENTS
 
 class Alignments (ibs :: [(Type, ImageBufferArg)]) where
 	alignments :: [Maybe Int]
 
 instance Alignments '[] where alignments = []
 
-instance Alignments ibs =>
-	Alignments ('(_s, 'ImageArg _nm _fmt) ': ibs) where
+instance Alignments ibs => Alignments ('(_s, 'ImageArg _nm _fmt) ': ibs) where
 	alignments = Nothing : alignments @ibs
 
 instance (VObj.SizeAlignment obj, Alignments ibs) =>
 	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
 	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
 
-adjustOffsetSize :: Device.D sd -> ImageBuffer sib ibarg -> Device.M.Size ->
-	IO (Device.M.Size, Device.M.Size)
-adjustOffsetSize dvc ib ost = do
-	reqs <- getMemoryRequirements dvc ib
-	let	algn = Memory.M.requirementsAlignment reqs
-		sz = Memory.M.requirementsSize reqs
-	pure (((ost - 1) `div` algn + 1) * algn, sz)
-
-adjustOffsetSizeBinded :: Device.D sd -> ImageBufferBinded sm sib ibarg ->
-	Device.M.Size -> IO (Device.M.Size, Device.M.Size)
-adjustOffsetSizeBinded dvc ib ost = do
-	reqs <- getMemoryRequirementsBinded dvc ib
-	let	algn = Memory.M.requirementsAlignment reqs
-		sz = Memory.M.requirementsSize reqs
-	pure (((ost - 1) `div` algn + 1) * algn, sz)
-
-getMemoryRequirements ::
-	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
-getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
-	Buffer.M.getMemoryRequirements dvc b
-getMemoryRequirements (Device.D dvc) (Image (Image.I i)) =
-	Image.M.getMemoryRequirements dvc i
-
-getMemoryRequirementsBinded ::
-	Device.D sd -> ImageBufferBinded sm sib fos -> IO Memory.M.Requirements
-getMemoryRequirementsBinded (Device.D dvc) (BufferBinded (Buffer.Binded _ b)) =
-	Buffer.M.getMemoryRequirements dvc b
-getMemoryRequirementsBinded (Device.D dvc) (ImageBinded (Image.Binded i)) =
-	Image.M.getMemoryRequirements dvc i
-
-getMemoryRequirements' ::
-	Device.D sd -> U2 ImageBuffer sibfos -> IO Memory.M.Requirements
-getMemoryRequirements' dvc (U2 bi) = getMemoryRequirements dvc bi
-
-getMemoryRequirementsBinded' ::
-	Device.D sd -> U2 (ImageBufferBinded sm) sibfos -> IO Memory.M.Requirements
-getMemoryRequirementsBinded' dvc (U2 bi) = getMemoryRequirementsBinded dvc bi
-
-getRequirementsList :: Device.D sd ->
-	HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
-getRequirementsList dvc bis =
-	HeteroParList.toListM (getMemoryRequirements' dvc) bis
-
-getRequirementsListBinded :: Device.D sd ->
-	HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
-getRequirementsListBinded dvc bis =
-	HeteroParList.toListM (getMemoryRequirementsBinded' dvc) bis
+-- OBJECT LENGTH
 
 class ObjectLength (nm :: Symbol) (obj :: VObj.Object) ibargs where
 	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
