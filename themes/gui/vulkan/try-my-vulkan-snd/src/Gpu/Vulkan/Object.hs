@@ -13,17 +13,40 @@ module Gpu.Vulkan.Object (
 
 	-- * OBJECT
 
-	Object(..), TypeOfObject,
-	StObj, DynObj, Atom, List, Image, DynAtom, DynList,
+	Object(..),
+
+	-- ** Synonyms
+
+	StObj, DynObj,
+
+	-- *** static
+
+	Atom, List, Image,
+
+	-- *** dynamic
+
+	DynAtom, DynList, DynImage,
+
+	-- ** Type Of Object
+
+	TypeOfObject,
 
 	-- * OBJECT LENGTH
 
-	ObjectLength, ObjectLengthOf(..), ObjectLengthForTypeName(..),
+	ObjectLength,
+
+	-- ** Synonyms
+
 	pattern ObjectLengthAtom,
 	pattern ObjectLengthList,
 	pattern ObjectLengthImage,
 	pattern ObjectLengthDynAtom,
 	pattern ObjectLengthDynList,
+	pattern ObjectLengthDynImage,
+
+	-- ** Find Length
+
+	ObjectLengthOf(..), ObjectLengthForTypeName(..),
 
 	-- * ONLY DYNAMIC LENGTHS
 
@@ -36,7 +59,10 @@ module Gpu.Vulkan.Object (
 	-- * SIZE, ALIGNMENT AND OFFSET
 
 	SizeAlignment(..), SizeAlignmentList(..), wholeSizeNew,
-	OffsetOfList(..), Offset, offset, offsetNew, offsetOfList, range,
+	OffsetOfList(..), Offset,
+
+	offset,
+	offsetNew, offsetOfList, range,
 	offsetSize',
 
 	) where
@@ -62,6 +88,7 @@ type Image algn t nm = Static (K.Image algn t nm)
 
 type DynList n algn t nm = Dynamic n (K.List algn t nm)
 type DynAtom n algn t nm = Dynamic n (K.Atom algn t nm)
+type DynImage n algn t nm = Dynamic n (K.Image algn t nm)
 
 type StObj algn mnm ot t = Static ('K.Object algn mnm ot t)
 type DynObj n algn mnm ot t = Dynamic n ('K.Object algn mnm ot t)
@@ -80,6 +107,11 @@ pattern ObjectLengthImage ::
 	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.Image algn t nm))
 pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
 	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
+
+pattern ObjectLengthDynImage ::
+	Int -> Int -> Int -> Int -> ObjectLength ('Dynamic n (K.Image algn t nm))
+pattern ObjectLengthDynImage kr kw kh kd <- (ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd))
+	where ObjectLengthDynImage kr kw kh kd = ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd)
 
 pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn t nm))
 pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
