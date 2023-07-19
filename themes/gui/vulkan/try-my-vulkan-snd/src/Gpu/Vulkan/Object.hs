@@ -64,7 +64,7 @@ module Gpu.Vulkan.Object (
 
 	-- ** Offset
 
-	offsetNew, range, rangeNew, offsetSize, offsetSize', Offset,
+	offsetNew, range, rangeNew, offsetRange, offsetSize', Offset,
 
 	-- ** Offset Of List
 
@@ -250,7 +250,7 @@ wholeSizeFromSizeAlignmentList sz0 (SizeAlignmentOfObj dn sz algn :** saoo) =
 
 offsetNew :: forall v vs . Offset v vs =>
 	HeteroParList.PL ObjectLength vs -> Device.M.Size
-offsetNew = fst . offsetSize @v 0
+offsetNew = fst . offsetRange @v 0
 
 range :: forall (obj :: Object) objs .
 	Offset obj objs => HeteroParList.PL ObjectLength objs -> Int
@@ -258,11 +258,11 @@ range = fromIntegral . rangeNew @obj
 
 rangeNew :: forall obj objs . Offset obj objs =>
 	HeteroParList.PL ObjectLength objs -> Device.M.Size
-rangeNew = snd . offsetSize @obj 0
+rangeNew = snd . offsetRange @obj 0
 
-offsetSize :: forall obj objs . Offset obj objs => Device.M.Size ->
+offsetRange :: forall obj objs . Offset obj objs => Device.M.Size ->
 	HeteroParList.PL ObjectLength objs -> (Device.M.Size, Device.M.Size)
-offsetSize ost0 lns =
+offsetRange ost0 lns =
 	offsetFromSizeAlignmentList @obj (fromIntegral ost0) $ sizeAlignmentList lns
 
 offsetSize' :: forall obj objs . Offset obj objs => Device.M.Size ->
