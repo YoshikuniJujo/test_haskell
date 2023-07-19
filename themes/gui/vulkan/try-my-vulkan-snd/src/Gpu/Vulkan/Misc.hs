@@ -4,7 +4,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Misc (nil, nil', cstrToText, newDefaultIORef) where
+module Gpu.Vulkan.Misc (nil', cstrToText, newDefaultIORef) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -16,9 +16,6 @@ import Data.Text.Foreign qualified as Txt
 import Data.IORef
 
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
-
-nil :: Maybe (t ())
-nil = Nothing
 
 nil' :: TPMaybe.M (t :: k -> Type) 'Nothing
 nil' = TPMaybe.N
