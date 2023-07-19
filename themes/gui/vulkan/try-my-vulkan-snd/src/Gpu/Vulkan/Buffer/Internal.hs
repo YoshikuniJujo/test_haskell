@@ -292,8 +292,8 @@ instance ImageCopyListToMiddle algn objs img '[] where
 
 instance (
 	Storable (KObj.IsImagePixel img), KnownNat algn,
-	VObj.Offset (VObj.ObjImage algn img nm) objs,
-	VObj.ObjectLengthOf (VObj.ObjImage algn img nm) objs,
+	VObj.Offset (VObj.Image algn img nm) objs,
+	VObj.ObjectLengthOf (VObj.Image algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>
 	ImageCopyListToMiddle algn objs img (nm ': nms) where
 	imageCopyListToMiddle bf (ic :** ics) =
@@ -301,7 +301,7 @@ instance (
 		imageCopyListToMiddle @algn bf ics
 
 imageCopyToMiddle :: forall algn img inm sm sb nm obj objs . (
-	obj ~ VObj.ObjImage algn img inm, VObj.SizeAlignment obj,
+	obj ~ VObj.Image algn img inm, VObj.SizeAlignment obj,
 	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs ) =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
@@ -315,5 +315,5 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageOffset = iost,
 	M.imageCopyImageExtent = iext }
 	where
-	(ost, _) = offsetSize @(VObj.ObjImage algn img inm) lns 0
+	(ost, _) = offsetSize @(VObj.Image algn img inm) lns 0
 	VObj.ObjectLengthImage r _w h _d = VObj.objectLengthOf @obj lns

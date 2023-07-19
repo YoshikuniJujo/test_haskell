@@ -970,9 +970,9 @@ createTextureImage phdvc dvc gq cp f = do
 			(	Vk.Mem.PropertyHostVisibleBit .|.
 				Vk.Mem.PropertyHostCoherentBit )
 			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ VObj.ObjImage 1 a inm]) sbm -> do
+				sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
 			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-				@(VObj.ObjImage 1 MyImage inm) dvc sbm zeroBits (MyImage img)
+				@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
@@ -986,7 +986,7 @@ createTextureImage phdvc dvc gq cp f = do
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.IsImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
+	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
 --	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
@@ -1097,10 +1097,10 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 t inm] ->
+		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 			sb,
-			'Vk.Dvc.Mem.ImageBuffer.BufferArg nm '[ VObj.ObjImage 1 t inm])] ->
+			'Vk.Dvc.Mem.ImageBuffer.BufferArg nm '[ VObj.Image 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer' p dv (VObj.ObjectLengthImage r w h d) usg props

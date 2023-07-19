@@ -158,7 +158,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 				copyBufferToImage device gq cp bimg' b screenWidth screenHeight
 		print screenWidth
 		print screenHeight
-		MyImage img <- Vk.Memory.read @"image-buffer" @(VObj.ObjImage 1 MyImage "") device bm def
+		MyImage img <- Vk.Memory.read @"image-buffer" @(VObj.Image 1 MyImage "") device bm def
 		writePng "yatteiku.png" (img :: Image PixelRGBA8)
 
 makeCommandBufferEtc :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
@@ -252,10 +252,10 @@ makeImage' phdvc dvc f = do
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb "image-buffer" '[ VObj.ObjImage 1 MyImage ""] ->
+		Vk.Bffr.Binded sm sb "image-buffer" '[ VObj.Image 1 MyImage ""] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.BufferArg "image-buffer" '[ VObj.ObjImage 1 MyImage ""])] ->
+			'Vk.Memory.BufferArg "image-buffer" '[ VObj.Image 1 MyImage ""])] ->
 			IO a) -> IO a
 makeBuffer phdvc dvc wdt hgt f =
 	createBufferImage phdvc dvc
@@ -269,7 +269,7 @@ copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
 --	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
+	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp img bf wdt hgt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
@@ -360,10 +360,10 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 t inm] ->
+		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.BufferArg nm '[ VObj.ObjImage 1 t inm])] ->
+			'Vk.Memory.BufferArg nm '[ VObj.Image 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer p dv (VObj.ObjectLengthImage r w h d) usg props

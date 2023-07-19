@@ -11,45 +11,33 @@
 
 module Gpu.Vulkan.Object (
 
-	-- * TYPE
+	-- * OBJECT
 
-	Object(..), ObjectLength, TypeOfObject,
-
-	-- * STORE
-
-	StoreObject(..),
+	Object(..), TypeOfObject,
+	StObj, DynObj, Atom, List, Image, DynAtom, DynList,
 
 	-- * OBJECT LENGTH
 
-	ObjectLengthOf(..), ObjectLengthForTypeName(..),
-
-	-- * DYNAMIC LENGTHS
-
-	OnlyDynamicLengths(..),
-
-	-- * SIZE, ALIGNMENT AND OFFSET
-
-	SizeAlignment(..), SizeAlignmentList(..), wholeSizeNew,
-	OffsetOfList(..), Offset, offset, offsetNew, offsetOfList, range,
-
-	-- * SYNONYMS
-
-	StObj, DynObj,
-
-	Atom, List, ObjImage, DynAtom, DynList,
+	ObjectLength, ObjectLengthOf(..), ObjectLengthForTypeName(..),
 	pattern ObjectLengthAtom,
 	pattern ObjectLengthList,
 	pattern ObjectLengthImage,
 	pattern ObjectLengthDynAtom,
 	pattern ObjectLengthDynList,
 
-	-- * BUG FIX
-	offsetFromSizeAlignmentList,
-	offsetFromSizeAlignmentList',
+	-- * ONLY DYNAMIC LENGTHS
 
-	-- * OTHERS
+	OnlyDynamicLengths(..),
 
-	offsetSize'
+	-- * STORE
+
+	StoreObject(..),
+
+	-- * SIZE, ALIGNMENT AND OFFSET
+
+	SizeAlignment(..), SizeAlignmentList(..), wholeSizeNew,
+	OffsetOfList(..), Offset, offset, offsetNew, offsetOfList, range,
+	offsetSize',
 
 	) where
 
@@ -70,7 +58,7 @@ data Object = Static K.Object | Dynamic Nat K.Object
 
 type List algn t nm = Static (K.List algn t nm)
 type Atom algn t mnm = Static (K.Atom algn t mnm)
-type ObjImage algn t nm = Static (K.Image algn t nm)
+type Image algn t nm = Static (K.Image algn t nm)
 
 type DynList n algn t nm = Dynamic n (K.List algn t nm)
 type DynAtom n algn t nm = Dynamic n (K.Atom algn t nm)
@@ -190,12 +178,8 @@ instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
 		go _ _ [] = pure ()
 		go _ n _ | n < 1 = pure ()
 		go p n (Just x : xs) = do
---			putStrLn "Vk.Object.storeObject: go:"
---			print p
 			K.storeObject p kln x >> go (nextObject p kln) (n - 1) xs
 		go p n (Nothing : xs) = do
---			putStrLn "Vk.Object.storeObject: go:"
---			print p
 			go (nextObject p kln) (n - 1) xs
 	loadObject p0 (ObjectLengthDynamic kln) = go p0 (natVal (Proxy :: Proxy n))
 		where
