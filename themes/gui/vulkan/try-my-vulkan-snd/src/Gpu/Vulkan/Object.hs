@@ -58,12 +58,21 @@ module Gpu.Vulkan.Object (
 
 	-- * SIZE, ALIGNMENT AND OFFSET
 
-	SizeAlignment(..), SizeAlignmentList(..), wholeSizeNew,
-	OffsetOfList(..), Offset,
+	-- ** Whole Size
 
-	offset,
-	offsetNew, offsetOfList, range,
-	offsetSize',
+	wholeSizeNew,
+
+	-- ** Offset
+
+	offsetNew, range, rangeNew, offsetSize, offsetSize', Offset,
+
+	-- ** Offset Of List
+
+	offsetOfList, OffsetOfList(..),
+
+	-- ** Size AlignmentList
+
+	SizeAlignmentList(..), SizeAlignment(..),
 
 	) where
 
@@ -80,7 +89,12 @@ import Data.Maybe
 import Foreign.Storable
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 
+-- OBJECT
+
 data Object = Static K.Object | Dynamic Nat K.Object
+
+type StObj algn mnm ot t = Static ('K.Object algn mnm ot t)
+type DynObj n algn mnm ot t = Dynamic n ('K.Object algn mnm ot t)
 
 type List algn t nm = Static (K.List algn t nm)
 type Atom algn t mnm = Static (K.Atom algn t mnm)
@@ -90,8 +104,11 @@ type DynList n algn t nm = Dynamic n (K.List algn t nm)
 type DynAtom n algn t nm = Dynamic n (K.Atom algn t nm)
 type DynImage n algn t nm = Dynamic n (K.Image algn t nm)
 
-type StObj algn mnm ot t = Static ('K.Object algn mnm ot t)
-type DynObj n algn mnm ot t = Dynamic n ('K.Object algn mnm ot t)
+type family TypeOfObject obj where
+	TypeOfObject (Static kobj) = K.TypeOfObject kobj
+	TypeOfObject (Dynamic n kobj) = K.TypeOfObject kobj
+
+-- OBJECT LENGTH
 
 data ObjectLength obj where
 	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static kobj)
@@ -101,25 +118,9 @@ data ObjectLength obj where
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
-{-# COMPLETE ObjectLengthImage #-}
-
-pattern ObjectLengthImage ::
-	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.Image algn t nm))
-pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
-	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
-
-pattern ObjectLengthDynImage ::
-	Int -> Int -> Int -> Int -> ObjectLength ('Dynamic n (K.Image algn t nm))
-pattern ObjectLengthDynImage kr kw kh kd <- (ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd))
-	where ObjectLengthDynImage kr kw kh kd = ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd)
-
 pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn t nm))
 pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
 	ObjectLengthAtom = ObjectLengthStatic K.ObjectLengthAtom
-
-pattern ObjectLengthDynAtom :: ObjectLength ('Dynamic n (K.Atom algn t nm))
-pattern ObjectLengthDynAtom <- ObjectLengthDynamic K.ObjectLengthAtom where
-	ObjectLengthDynAtom = ObjectLengthDynamic K.ObjectLengthAtom
 
 {-# COMPLETE ObjectLengthList #-}
 
@@ -127,70 +128,74 @@ pattern ObjectLengthList :: Int -> ObjectLength ('Static (K.List algn t nm))
 pattern ObjectLengthList n <- ObjectLengthStatic (K.ObjectLengthList n) where
 	ObjectLengthList n = ObjectLengthStatic (K.ObjectLengthList n)
 
+{-# COMPLETE ObjectLengthImage #-}
+
+pattern ObjectLengthImage ::
+	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.Image algn t nm))
+pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
+	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
+
+pattern ObjectLengthDynAtom :: ObjectLength ('Dynamic n (K.Atom algn t nm))
+pattern ObjectLengthDynAtom <- ObjectLengthDynamic K.ObjectLengthAtom where
+	ObjectLengthDynAtom = ObjectLengthDynamic K.ObjectLengthAtom
+
 pattern ObjectLengthDynList :: Int -> ObjectLength ('Dynamic n (K.List algn t nm))
 pattern ObjectLengthDynList n <- ObjectLengthDynamic (K.ObjectLengthList n) where
 	ObjectLengthDynList n = ObjectLengthDynamic (K.ObjectLengthList n)
 
-type family TypeOfObject obj where
-	TypeOfObject (Static kobj) = K.TypeOfObject kobj
-	TypeOfObject (Dynamic n kobj) = K.TypeOfObject kobj
+pattern ObjectLengthDynImage ::
+	Int -> Int -> Int -> Int -> ObjectLength ('Dynamic n (K.Image algn t nm))
+pattern ObjectLengthDynImage kr kw kh kd <- (ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd))
+	where ObjectLengthDynImage kr kw kh kd = ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd)
 
-wholeSizeNew :: SizeAlignmentList objs =>
-	HeteroParList.PL ObjectLength objs -> Size
-wholeSizeNew = wholeSizeFromSizeAlignmentList 0 . sizeAlignmentList
+class ObjectLengthOf (v :: Object) (vs :: [Object]) where
+	objectLengthOf :: HeteroParList.PL ObjectLength vs -> ObjectLength v
 
-wholeSizeFromSizeAlignmentList ::
-	Size -> HeteroParList.PL SizeAlignmentOfObj objs -> Size
-wholeSizeFromSizeAlignmentList sz0 HeteroParList.Nil = sz0
-wholeSizeFromSizeAlignmentList sz0 (SizeAlignmentOfObj dn sz algn :** saoo) =
-	wholeSizeFromSizeAlignmentList
-		(((sz0 - 1) `div` algn + 1) * algn + dn * sz) saoo
+instance ObjectLengthOf v (v ': vs) where
+	objectLengthOf (ln :** _) = ln
 
-data SizeAlignmentOfObj (obj :: Object) =
-	SizeAlignmentOfObj DynNum Size ObjAlignment deriving Show
+instance {-# OVERLAPPABLE #-} ObjectLengthOf v vs =>
+	ObjectLengthOf v (v' ': vs) where
+	objectLengthOf (_ :** lns) = objectLengthOf @v lns
 
-type DynNum = Int
-type Size = Int
-type ObjAlignment = Int
+class ObjectLengthForTypeName t nm objs where
+	objectLengthForTypeName ::
+		HeteroParList.PL ObjectLength objs -> (
+			forall algn . KnownNat algn =>
+			ObjectLength (List algn t nm) -> a) -> a
 
-class SizeAlignmentList objs where
-	sizeAlignmentList :: HeteroParList.PL ObjectLength objs ->
-		HeteroParList.PL SizeAlignmentOfObj objs
+instance KnownNat algn =>
+	ObjectLengthForTypeName t nm (List algn t nm ': _objs) where
+	objectLengthForTypeName (ln :** _) = ($ ln)
 
-instance SizeAlignmentList '[] where
-	sizeAlignmentList HeteroParList.Nil = HeteroParList.Nil
+instance {-# OVERLAPPABLE #-}
+	ObjectLengthForTypeName t nm objs =>
+	ObjectLengthForTypeName t nm (_obj ': objs) where
+	objectLengthForTypeName (_ :** lns) f =
+		objectLengthForTypeName @t @nm @objs lns f
 
-instance (SizeAlignment obj, SizeAlignmentList objs) =>
-	SizeAlignmentList (obj ': objs) where
-	sizeAlignmentList (ln :** lns) =
-		SizeAlignmentOfObj (dynNum @obj) (objectSize ln) (objectAlignment @obj) :**
-		sizeAlignmentList lns
+-- ONLY DYNAMIC LENGTH
 
-class SizeAlignment obj where
-	objectSize :: ObjectLength obj -> Int
-	dynNum :: Int
-	objectSize' :: ObjectLength obj -> Int
-	objectAlignment :: Int
+class OnlyDynamicLengths (os :: [Object]) where
+	type OnlyDynamics os :: [K.Object]
+	onlyDynamicLength ::
+		HeteroParList.PL ObjectLength os ->
+		HeteroParList.PL K.ObjectLength (OnlyDynamics os)
 
-instance K.SizeAlignment kobj => SizeAlignment (Static kobj) where
-	objectSize (ObjectLengthStatic kln) = K.objectSize kln
-	dynNum = 1
-	objectSize' = objectSize
-	objectAlignment = K.objectAlignment @kobj
+instance OnlyDynamicLengths '[] where
+	type OnlyDynamics '[] = '[]
+	onlyDynamicLength HeteroParList.Nil = HeteroParList.Nil
 
-instance (KnownNat n, K.SizeAlignment kobj) =>
-	SizeAlignment (Dynamic n kobj) where
-	objectSize (ObjectLengthDynamic kln) = K.objectSize kln
-	dynNum = fromIntegral $ natVal (Proxy :: Proxy n)
-	objectSize' obj = fromIntegral (natVal (Proxy :: Proxy n)) * objectSize obj
-	objectAlignment = K.objectAlignment @kobj
+instance OnlyDynamicLengths os => OnlyDynamicLengths ('Static _o ': os) where
+	type OnlyDynamics ('Static _o ': os) = OnlyDynamics os
+	onlyDynamicLength (ObjectLengthStatic _ :** os) = onlyDynamicLength os
 
-nextObject :: forall kobj . K.SizeAlignment kobj =>
-	Ptr (K.TypeOfObject kobj) -> K.ObjectLength kobj -> Ptr (K.TypeOfObject kobj)
-nextObject p ln = p `plusPtr` n
-	where
-	n = ((K.objectSize ln - 1) `div` algn + 1) * algn
-	algn = K.objectAlignment @kobj
+instance OnlyDynamicLengths os => OnlyDynamicLengths ('Dynamic _n ko ': os) where
+	type OnlyDynamics ('Dynamic _n ko ': os) = ko ': OnlyDynamics os
+	onlyDynamicLength (ObjectLengthDynamic kln :** os) =
+		kln :** onlyDynamicLength os
+
+-- STORE
 
 class StoreObject v obj where
 	storeObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
@@ -219,43 +224,46 @@ instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
 		go p n = (:) <$> (Just <$> K.loadObject p kln) <*> go (nextObject p kln) (n - 1)
 	objectLength = ObjectLengthDynamic . K.objectLength . fromJust . head
 
-offset :: forall (obj :: Object) objs .
-	Offset obj objs => Int -> HeteroParList.PL ObjectLength objs -> Int
-offset _ = fromIntegral . offsetNew @obj
+nextObject :: forall kobj . K.SizeAlignment kobj =>
+	Ptr (K.TypeOfObject kobj) -> K.ObjectLength kobj -> Ptr (K.TypeOfObject kobj)
+nextObject p ln = p `plusPtr` n
+	where
+	n = ((K.objectSize ln - 1) `div` algn + 1) * algn
+	algn = K.objectAlignment @kobj
+
+-- SIZE, ALIGNMENT AND OFFSET
+
+-- WholeSize
+
+wholeSizeNew :: SizeAlignmentList objs =>
+	HeteroParList.PL ObjectLength objs -> Size
+wholeSizeNew = wholeSizeFromSizeAlignmentList 0 . sizeAlignmentList
+
+wholeSizeFromSizeAlignmentList ::
+	Size -> HeteroParList.PL SizeAlignmentOfObj objs -> Size
+wholeSizeFromSizeAlignmentList sz0 HeteroParList.Nil = sz0
+wholeSizeFromSizeAlignmentList sz0 (SizeAlignmentOfObj dn sz algn :** saoo) =
+	wholeSizeFromSizeAlignmentList
+		(((sz0 - 1) `div` algn + 1) * algn + dn * sz) saoo
+
+-- Offset
+
+offsetNew :: forall v vs . Offset v vs =>
+	HeteroParList.PL ObjectLength vs -> Device.M.Size
+offsetNew = fst . offsetSize @v 0
 
 range :: forall (obj :: Object) objs .
 	Offset obj objs => HeteroParList.PL ObjectLength objs -> Int
 range = fromIntegral . rangeNew @obj
 
-class OnlyDynamicLengths (os :: [Object]) where
-	type OnlyDynamics os :: [K.Object]
-	onlyDynamicLength ::
-		HeteroParList.PL ObjectLength os ->
-		HeteroParList.PL K.ObjectLength (OnlyDynamics os)
-
-instance OnlyDynamicLengths '[] where
-	type OnlyDynamics '[] = '[]
-	onlyDynamicLength HeteroParList.Nil = HeteroParList.Nil
-
-instance OnlyDynamicLengths os => OnlyDynamicLengths ('Static _o ': os) where
-	type OnlyDynamics ('Static _o ': os) = OnlyDynamics os
-	onlyDynamicLength (ObjectLengthStatic _ :** os) = onlyDynamicLength os
-
-instance OnlyDynamicLengths os => OnlyDynamicLengths ('Dynamic _n ko ': os) where
-	type OnlyDynamics ('Dynamic _n ko ': os) = ko ': OnlyDynamics os
-	onlyDynamicLength (ObjectLengthDynamic kln :** os) =
-		kln :** onlyDynamicLength os
-
-adjust :: Int -> Int -> Int
-adjust algn ost = ((ost - 1) `div` algn + 1) * algn
-
-offsetNew :: forall v vs . Offset v vs =>
-	HeteroParList.PL ObjectLength vs -> Device.M.Size
-offsetNew = fst . offsetFromSizeAlignmentList @v 0 . sizeAlignmentList
-
 rangeNew :: forall obj objs . Offset obj objs =>
 	HeteroParList.PL ObjectLength objs -> Device.M.Size
-rangeNew = snd . offsetFromSizeAlignmentList @obj 0 . sizeAlignmentList
+rangeNew = snd . offsetSize @obj 0
+
+offsetSize :: forall obj objs . Offset obj objs => Device.M.Size ->
+	HeteroParList.PL ObjectLength objs -> (Device.M.Size, Device.M.Size)
+offsetSize ost0 lns =
+	offsetFromSizeAlignmentList @obj (fromIntegral ost0) $ sizeAlignmentList lns
 
 offsetSize' :: forall obj objs . Offset obj objs => Device.M.Size ->
 	HeteroParList.PL ObjectLength objs -> (Device.M.Size, Device.M.Size)
@@ -286,31 +294,7 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment v', Offset v vs) =>
 	offsetFromSizeAlignmentList' ost (SizeAlignmentOfObj dn sz algn :** sas) =
 		offsetFromSizeAlignmentList' @v @vs (adjust algn ost + dn * sz) sas
 
-class ObjectLengthOf (v :: Object) (vs :: [Object]) where
-	objectLengthOf :: HeteroParList.PL ObjectLength vs -> ObjectLength v
-
-instance ObjectLengthOf v (v ': vs) where
-	objectLengthOf (ln :** _) = ln
-
-instance {-# OVERLAPPABLE #-} ObjectLengthOf v vs =>
-	ObjectLengthOf v (v' ': vs) where
-	objectLengthOf (_ :** lns) = objectLengthOf @v lns
-
-class ObjectLengthForTypeName t nm objs where
-	objectLengthForTypeName ::
-		HeteroParList.PL ObjectLength objs -> (
-			forall algn . KnownNat algn =>
-			ObjectLength (List algn t nm) -> a) -> a
-
-instance KnownNat algn =>
-	ObjectLengthForTypeName t nm (List algn t nm ': _objs) where
-	objectLengthForTypeName (ln :** _) = ($ ln)
-
-instance {-# OVERLAPPABLE #-}
-	ObjectLengthForTypeName t nm objs =>
-	ObjectLengthForTypeName t nm (_obj ': objs) where
-	objectLengthForTypeName (_ :** lns) f =
-		objectLengthForTypeName @t @nm @objs lns f
+-- OffsetOfList
 
 offsetOfList :: forall v onm vs . OffsetOfList v onm vs =>
 	HeteroParList.PL ObjectLength vs -> Device.M.Size
@@ -332,3 +316,49 @@ instance {-# OVERLAPPABLE #-}
 	OffsetOfList t nm (obj ': objs) where
 	offsetListFromSizeAlignmentList ost (SizeAlignmentOfObj dn sz algn :** sas) =
 		offsetListFromSizeAlignmentList @t @nm @objs (adjust algn ost + dn * sz) sas
+
+adjust :: Int -> Int -> Int
+adjust algn ost = ((ost - 1) `div` algn + 1) * algn
+
+-- SizeAlignmentList
+
+data SizeAlignmentOfObj (obj :: Object) =
+	SizeAlignmentOfObj DynNum Size ObjAlignment deriving Show
+
+type DynNum = Int
+type Size = Int
+type ObjAlignment = Int
+
+class SizeAlignmentList objs where
+	sizeAlignmentList :: HeteroParList.PL ObjectLength objs ->
+		HeteroParList.PL SizeAlignmentOfObj objs
+
+instance SizeAlignmentList '[] where
+	sizeAlignmentList HeteroParList.Nil = HeteroParList.Nil
+
+instance (SizeAlignment obj, SizeAlignmentList objs) =>
+	SizeAlignmentList (obj ': objs) where
+	sizeAlignmentList (ln :** lns) =
+		SizeAlignmentOfObj (dynNum @obj) (objectSize ln) (objectAlignment @obj) :**
+		sizeAlignmentList lns
+
+-- SizeAlignment
+
+class SizeAlignment obj where
+	objectSize :: ObjectLength obj -> Int
+	dynNum :: Int
+	objectSize' :: ObjectLength obj -> Int
+	objectAlignment :: Int
+
+instance K.SizeAlignment kobj => SizeAlignment (Static kobj) where
+	objectSize (ObjectLengthStatic kln) = K.objectSize kln
+	dynNum = 1
+	objectSize' = objectSize
+	objectAlignment = K.objectAlignment @kobj
+
+instance (KnownNat n, K.SizeAlignment kobj) =>
+	SizeAlignment (Dynamic n kobj) where
+	objectSize (ObjectLengthDynamic kln) = K.objectSize kln
+	dynNum = fromIntegral $ natVal (Proxy :: Proxy n)
+	objectSize' obj = fromIntegral (natVal (Proxy :: Proxy n)) * objectSize obj
+	objectAlignment = K.objectAlignment @kobj

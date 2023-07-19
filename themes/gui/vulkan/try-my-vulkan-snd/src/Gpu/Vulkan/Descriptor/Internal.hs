@@ -45,7 +45,7 @@ bufferInfoToMiddle :: forall sb sm nm obj .
 	BufferInfo sm sb nm obj -> M.BufferInfo
 bufferInfoToMiddle (BufferInfo (Buffer.Binded lns b)) = M.BufferInfo {
 	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
+	M.bufferInfoOffset = fromIntegral $ VObj.offsetNew @obj lns,
 	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
 
 data ImageInfo ss fmt nm si = ImageInfo {
