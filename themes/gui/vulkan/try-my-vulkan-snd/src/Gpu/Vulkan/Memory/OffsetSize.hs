@@ -44,11 +44,11 @@ class ObjectLength nm obj ibargs =>
 		Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
 
-instance (VObj.Offset obj objs, VObj.ObjectLengthOf obj objs) =>
+instance (VObj.OffsetRange obj objs, VObj.ObjectLengthOf obj objs) =>
 	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
 	offsetSize' dvc ((U2 ib@(Buffer (Buffer.B lns _))) :** _ibs) ost =
 		(<$> adjustOffsetSize dvc ib ost) \(ost', _sz) ->
-		VObj.offsetSize' @obj ost' lns
+		VObj.offsetSize @obj ost' lns
 
 instance {-# OVERLAPPABLE #-}
 	OffsetSize nm obj ibargs =>

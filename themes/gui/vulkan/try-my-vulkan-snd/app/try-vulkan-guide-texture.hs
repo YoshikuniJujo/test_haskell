@@ -1207,7 +1207,7 @@ createSceneBuffer pd dv = createBuffer pd dv
 	(HL.Singleton Obj.ObjectLengthDynAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
-maxObjects :: Int
+maxObjects :: Vk.Dvc.M.Size
 maxObjects = 10000
 
 createObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -1339,7 +1339,7 @@ instance (
 		update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 
 descriptorWrite :: forall obj slbts sb sm nm objs sds . (
-	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
+	Show (HL.PL Obj.ObjectLength objs), Obj.OffsetRange obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
@@ -1398,7 +1398,7 @@ createVertexBuffer pd dv gq cp vs f =
 	beginSingleTimeCommands dv gq cp \cb ->
 		Vk.Cmd.copyBuffer @'[ '[Obj.List 256 Vertex ""]] cb b' b
 	f b
-	where lns = HL.Singleton . Obj.ObjectLengthList $ V.length vs
+	where lns = HL.Singleton . Obj.ObjectLengthList . fromIntegral $ V.length vs
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
@@ -2079,14 +2079,14 @@ instance KObj.IsImage MyImage where
 	type IsImagePixel MyImage = MyRgba8
 	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
 	isImageRow = KObj.isImageWidth
-	isImageWidth (MyImage img) = imageWidth img
-	isImageHeight (MyImage img) = imageHeight img
+	isImageWidth (MyImage img) = fromIntegral $ imageWidth img
+	isImageHeight (MyImage img) = fromIntegral $ imageHeight img
 	isImageDepth _ = 1
 	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
 		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
 	isImageMake w h _d pss = MyImage
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
-		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
+		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 createImage' :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P ->
@@ -2115,7 +2115,7 @@ createImage' pd dvc wdt hgt tlng usg prps f =
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createBufferImage :: Storable (KObj.IsImagePixel t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ Obj.Image 1 t inm] ->

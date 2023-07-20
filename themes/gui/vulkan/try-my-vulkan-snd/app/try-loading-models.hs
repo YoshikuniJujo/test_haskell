@@ -1100,7 +1100,7 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createBufferImage :: Storable (KObj.IsImagePixel t) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
@@ -1122,7 +1122,7 @@ createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 createBufferAtom p dv usg props = createBuffer' p dv VObj.ObjectLengthAtom usg props
 
 createBufferList :: forall sd nm t a . Storable t =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
@@ -1269,14 +1269,14 @@ instance KObj.IsImage MyImage where
 	type IsImagePixel MyImage = MyRgba8
 	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
 	isImageRow = KObj.isImageWidth
-	isImageWidth (MyImage img) = imageWidth img
-	isImageHeight (MyImage img) = imageHeight img
+	isImageWidth (MyImage img) = fromIntegral $ imageWidth img
+	isImageHeight (MyImage img) = fromIntegral $ imageHeight img
 	isImageDepth _ = 1
 	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
 		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
 	isImageMake w h _d pss = MyImage
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
-		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
+		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 createTextureSampler ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
@@ -1325,10 +1325,10 @@ createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Vertex -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 Vertex ""] -> IO a) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBufferList phdvc dvc (V.length vtcs)
+	createBufferList phdvc dvc (fromIntegral $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList phdvc dvc (V.length vtcs)
+	createBufferList phdvc dvc (fromIntegral $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1345,10 +1345,10 @@ createIndexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "index-buffer" '[VObj.List 256 Word32 ""] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp idcs f =
-	createBufferList phdvc dvc (V.length idcs)
+	createBufferList phdvc dvc (fromIntegral $ V.length idcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList phdvc dvc (V.length idcs)
+	createBufferList phdvc dvc (fromIntegral $ V.length idcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )

@@ -120,7 +120,7 @@ adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 -- ALIGNMENTS
 
 class Alignments (ibs :: [(Type, ImageBufferArg)]) where
-	alignments :: [Maybe Int]
+	alignments :: [Maybe Device.M.Size]
 
 instance Alignments '[] where alignments = []
 

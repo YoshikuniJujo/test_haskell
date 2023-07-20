@@ -42,6 +42,7 @@ import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Instance as Vk.Instance
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.Device as Vk.Device
+import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
@@ -357,7 +358,7 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 
 createBufferImage :: Storable (KObj.IsImagePixel t) =>
-	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
+	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
@@ -428,14 +429,14 @@ instance KObj.IsImage MyImage where
 	type IsImagePixel MyImage = MyRgba8
 	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Unorm
 	isImageRow = KObj.isImageWidth
-	isImageWidth (MyImage img) = imageWidth img
-	isImageHeight (MyImage img) = imageHeight img
+	isImageWidth (MyImage img) = fromIntegral $ imageWidth img
+	isImageHeight (MyImage img) = fromIntegral $ imageHeight img
 	isImageDepth _ = 1
 	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
 		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
 	isImageMake w h _d pss = MyImage
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
-		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
+		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded sm si nm fmt ->
 	(forall s . Vk.ImgView.I nm Vk.T.FormatR8g8b8a8Unorm s -> IO a) -> IO a

@@ -36,7 +36,7 @@ import qualified Gpu.Vulkan.ImageView.Type as ImageView
 import Gpu.Vulkan.Sampler.Middle as Sampler.M
 
 data BufferInfo sm sb nm obj = forall objs .
-	(Show (Buffer.Binded sm sb nm objs), VObj.Offset obj objs) =>
+	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
 	BufferInfo (Buffer.Binded sm sb nm objs)
 
 deriving instance Show (BufferInfo sm sb nm obj)
@@ -45,8 +45,9 @@ bufferInfoToMiddle :: forall sb sm nm obj .
 	BufferInfo sm sb nm obj -> M.BufferInfo
 bufferInfoToMiddle (BufferInfo (Buffer.Binded lns b)) = M.BufferInfo {
 	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ VObj.offsetNew @obj lns,
-	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
+	M.bufferInfoOffset = ost,
+	M.bufferInfoRange = rng }
+	where (ost, rng) = VObj.offsetRange @obj 0 lns
 
 data ImageInfo ss fmt nm si = ImageInfo {
 	imageInfoSampler :: Sampler.S ss,

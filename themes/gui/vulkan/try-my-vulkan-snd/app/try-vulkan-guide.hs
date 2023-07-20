@@ -1104,10 +1104,10 @@ createVertexBuffer :: forall sd sc vbnm a . Vk.PhDvc.P ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb vbnm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList $ V.length vtcs)
+	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList . fromIntegral $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList $ V.length vtcs)
+	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList . fromIntegral $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1348,7 +1348,7 @@ instance (
 
 descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
 	Show (HeteroParList.PL VObj.ObjectLength objs),
-	VObj.Offset (VObj.Atom 256 tp objnm) objs ) =>
+	VObj.OffsetRange (VObj.Atom 256 tp objnm) objs ) =>
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(

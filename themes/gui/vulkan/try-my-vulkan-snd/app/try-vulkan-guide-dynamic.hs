@@ -1140,7 +1140,7 @@ instance (
 		update dv dscss csbs scnb
 
 descriptorWrite :: forall obj slbts sb sm nm objs sds . (
-	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
+	Show (HL.PL Obj.ObjectLength objs), Obj.OffsetRange obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
@@ -1168,7 +1168,7 @@ createVertexBuffer pd dv gq cp vs f =
 	beginSingleTimeCommands dv gq cp \cb ->
 		Vk.Cmd.copyBuffer @'[ '[Obj.List 256 Vertex ""]] cb b' b
 	f b
-	where lns = HL.Singleton . Obj.ObjectLengthList $ V.length vs
+	where lns = HL.Singleton . Obj.ObjectLengthList . fromIntegral $ V.length vs
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->

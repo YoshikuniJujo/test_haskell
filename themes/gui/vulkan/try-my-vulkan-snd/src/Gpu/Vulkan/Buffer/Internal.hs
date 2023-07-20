@@ -220,8 +220,9 @@ instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 	MakeCopies (as ': ass) ss ds where
 	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
 
+{-
 offsetSize :: forall v vs . (
-	VObj.Offset v vs, VObj.SizeAlignment v,
+	VObj.OffsetRange v vs, VObj.SizeAlignment v,
 	VObj.ObjectLengthOf v vs ) =>
 	HeteroParList.PL VObj.ObjectLength vs ->
 	Device.M.Size -> (Device.M.Size, Device.M.Size)
@@ -231,9 +232,10 @@ sizeNew :: forall v vs . (
 	VObj.SizeAlignment v, VObj.ObjectLengthOf v vs ) =>
 	HeteroParList.PL VObj.ObjectLength vs -> Device.M.Size
 sizeNew = fromIntegral . VObj.objectSize . VObj.objectLengthOf @v
+-}
 
 data MemoryBarrier mn sm sb nm obj = forall objs . (
-	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs ) =>
+	VObj.OffsetRange obj objs, VObj.ObjectLengthOf obj objs ) =>
 	MemoryBarrier {
 		memoryBarrierNext :: TMaybe.M mn,
 		memoryBarrierSrcAccessMask :: AccessFlags,
@@ -260,7 +262,7 @@ memoryBarrierToMiddle MemoryBarrier {
 		M.memoryBarrierBuffer = b,
 		M.memoryBarrierOffset = ost,
 		M.memoryBarrierSize = sz }
-	where (ost, sz) = offsetSize @obj lns 0
+	where (ost, sz) = VObj.offsetRange @obj 0 lns
 
 class MemoryBarrierListToMiddle nsmsbnmobjs where
 	memoryBarrierListToMiddle ::
@@ -292,7 +294,7 @@ instance ImageCopyListToMiddle algn objs img '[] where
 
 instance (
 	Storable (KObj.IsImagePixel img), KnownNat algn,
-	VObj.Offset (VObj.Image algn img nm) objs,
+	VObj.OffsetRange (VObj.Image algn img nm) objs,
 	VObj.ObjectLengthOf (VObj.Image algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>
 	ImageCopyListToMiddle algn objs img (nm ': nms) where
@@ -302,7 +304,7 @@ instance (
 
 imageCopyToMiddle :: forall algn img inm sm sb nm obj objs . (
 	obj ~ VObj.Image algn img inm, VObj.SizeAlignment obj,
-	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs ) =>
+	VObj.OffsetRange obj objs, VObj.ObjectLengthOf obj objs ) =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
@@ -315,5 +317,5 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageOffset = iost,
 	M.imageCopyImageExtent = iext }
 	where
-	(ost, _) = offsetSize @(VObj.Image algn img inm) lns 0
+	(ost, _) = VObj.offsetRange @(VObj.Image algn img inm) 0 lns
 	VObj.ObjectLengthImage r _w h _d = VObj.objectLengthOf @obj lns
