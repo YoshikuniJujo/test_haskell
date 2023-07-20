@@ -44,6 +44,7 @@ import Data.Bits
 import Data.List (genericLength)
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
+import Data.Ix
 
 import Data.Text qualified as T
 import Data.Text.Foreign.Misc
@@ -171,5 +172,5 @@ queueCreateInfoToCore QueueCreateInfo {
 			C.queueCreateInfoPQueuePriorities = pqps }
 
 enum "Size" ''#{type VkDeviceSize}
-		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral]
+		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral, ''Ix]
 	[("WholeSize", #{const VK_WHOLE_SIZE})]
