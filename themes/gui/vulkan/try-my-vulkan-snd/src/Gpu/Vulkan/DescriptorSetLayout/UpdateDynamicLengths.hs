@@ -41,15 +41,15 @@ instance UpdateDynamicLength bts (o ': os) =>
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
-		('Layout.Buffer (VObj.StObj algn 'Nothing ot t ': os') ': bts)
-		(VObj.StObj algn ('Just _nm) ot t ': os) where
+		('Layout.Buffer (VObj.Static algn 'Nothing ot t ': os') ': bts)
+		(VObj.Static algn ('Just _nm) ot t ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
-		('Layout.Buffer (VObj.StObj algn ('Just _nm) ot t ': os') ': bts)
-		(VObj.StObj algn 'Nothing ot t ': os) where
+		('Layout.Buffer (VObj.Static algn ('Just _nm) ot t ': os') ': bts)
+		(VObj.Static algn 'Nothing ot t ': os) where
 	updateDynamicLength (lns' :** lnss) lns =
 		updateDynamicLengthPrefix @os @os' lns' lns :** lnss
 
@@ -111,15 +111,15 @@ instance UpdateDynamicLengthPrefix '[] objs where
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix
-		(VObj.StObj algn 'Nothing ot t ': os)
-		(VObj.StObj algn ('Just _nm) ot t ': os') where
+		(VObj.Static algn 'Nothing ot t ': os)
+		(VObj.Static algn ('Just _nm) ot t ': os') where
 	updateDynamicLengthPrefix lns' lns  =
 		updateDynamicLengthPrefix @os @os' lns' lns
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix
-		(VObj.StObj algn ('Just _nm) ot t ': os)
-		(VObj.StObj algn 'Nothing ot t ': os') where
+		(VObj.Static algn ('Just _nm) ot t ': os)
+		(VObj.Static algn 'Nothing ot t ': os') where
 	updateDynamicLengthPrefix lns' lns  =
 		updateDynamicLengthPrefix @os @os' lns' lns
 
