@@ -1175,7 +1175,7 @@ createBuffer pd dv lns usg prs f =
 		$ f . \(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) -> bnd
 
 class Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm objs)] =>
-	SizeAlignmentAll s nm (objs :: [Obj.Object])
+	SizeAlignmentAll s nm (objs :: [Obj.O])
 
 instance Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm '[obj])] =>
 	SizeAlignmentAll s nm '[obj]

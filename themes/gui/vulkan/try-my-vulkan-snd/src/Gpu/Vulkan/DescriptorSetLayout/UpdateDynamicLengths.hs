@@ -100,7 +100,7 @@ instance {-# OVERLAPPABLE #-}
 			@('Layout.Buffer os' ': bts) @(oo ': os) (lns' :** lnss) lns in
 		(ln :** ls') :** lss
 
-class UpdateDynamicLengthPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
+class UpdateDynamicLengthPrefix (objs :: [VObj.O]) (objs' :: [VObj.O]) where
 	updateDynamicLengthPrefix ::
 		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs') ->
 		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs) ->

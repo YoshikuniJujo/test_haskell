@@ -72,7 +72,7 @@ data ImageBufferBinded sm sib (ibarg :: ImageBufferArg) where
 deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
 	Show (ImageBufferBinded sm sib ('BufferArg nm objs))
 
-data ImageBufferArg = ImageArg Symbol T.Format | BufferArg Symbol [VObj.Object]
+data ImageBufferArg = ImageArg Symbol T.Format | BufferArg Symbol [VObj.O]
 
 -- GET REQUIREMENTS LIST
 
@@ -133,7 +133,7 @@ instance (VObj.SizeAlignment obj, Alignments ibs) =>
 
 -- OBJECT LENGTH
 
-class ObjectLength (nm :: Symbol) (obj :: VObj.Object) ibargs where
+class ObjectLength (nm :: Symbol) (obj :: VObj.O) ibargs where
 	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
 		VObj.ObjectLength obj
 

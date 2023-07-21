@@ -39,7 +39,7 @@ offsetSize dvc m ost =
 	readM m >>= \(ibs, _mm) -> offsetSize' @nm @obj @ibargs dvc ibs ost
 
 class ObjectLength nm obj ibargs =>
-	OffsetSize (nm :: Symbol) (obj :: VObj.Object) ibargs where
+	OffsetSize (nm :: Symbol) (obj :: VObj.O) ibargs where
 	offsetSize' ::
 		Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)

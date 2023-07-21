@@ -134,7 +134,7 @@ indexedListToMiddles HeteroParList.Nil = []
 indexedListToMiddles (U5 il :** ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
-class CopyPrefix (area :: [VObj.Object]) (src :: [VObj.Object]) (dst :: [VObj.Object]) where
+class CopyPrefix (area :: [VObj.O]) (src :: [VObj.O]) (dst :: [VObj.O]) where
 	copyCheckLengthPrefix ::
 		HeteroParList.PL VObj.ObjectLength src ->
 		HeteroParList.PL VObj.ObjectLength dst -> Bool
@@ -155,7 +155,7 @@ instance (
 		lns
 		where algn = fromIntegral $ VObj.alignment @a
 
-class CopyInfo (area :: [VObj.Object]) (src :: [VObj.Object]) (dst :: [VObj.Object]) where
+class CopyInfo (area :: [VObj.O]) (src :: [VObj.O]) (dst :: [VObj.O]) where
 	copyCheckLength ::
 		HeteroParList.PL VObj.ObjectLength src ->
 		HeteroParList.PL VObj.ObjectLength dst -> Bool
@@ -200,7 +200,7 @@ instance {-# OVERLAPPABLE #-}
 	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
 	copySize (_ :** lns) = copySize @as @ss @ds lns
 
-makeCopy :: forall (as :: [VObj.Object]) ss ds . CopyInfo as ss ds =>
+makeCopy :: forall (as :: [VObj.O]) ss ds . CopyInfo as ss ds =>
 	HeteroParList.PL VObj.ObjectLength ss -> HeteroParList.PL VObj.ObjectLength ds -> C.Copy
 makeCopy src dst
 	| copyCheckLength @as src dst = C.Copy {
@@ -209,7 +209,7 @@ makeCopy src dst
 		C.copySize = copySize @as @ss @ds src }
 	| otherwise = error "List lengths are different"
 
-class MakeCopies (cpss :: [[VObj.Object]]) (ss :: [VObj.Object]) (ds :: [VObj.Object]) where
+class MakeCopies (cpss :: [[VObj.O]]) (ss :: [VObj.O]) (ds :: [VObj.O]) where
 	makeCopies ::
 		HeteroParList.PL VObj.ObjectLength ss ->
 		HeteroParList.PL VObj.ObjectLength ds -> [C.Copy]

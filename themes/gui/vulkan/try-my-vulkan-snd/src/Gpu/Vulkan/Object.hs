@@ -13,7 +13,7 @@ module Gpu.Vulkan.Object (
 
 	-- * OBJECT
 
-	Object(..),
+	O(..),
 
 	-- ** Synonyms
 
@@ -93,7 +93,7 @@ import Gpu.Vulkan.Device.Middle qualified as Device.M
 
 -- OBJECT
 
-data Object = Static K.Object | Dynamic Nat K.Object
+data O = Static K.Object | Dynamic Nat K.Object
 
 type StObj algn mnm ot v = Static ('K.Object algn mnm ot v)
 type DynObj n algn mnm ot v = Dynamic n ('K.Object algn mnm ot v)
@@ -150,7 +150,7 @@ pattern ObjectLengthDynImage ::
 pattern ObjectLengthDynImage kr kw kh kd <- (ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd))
 	where ObjectLengthDynImage kr kw kh kd = ObjectLengthDynamic (K.ObjectLengthImage kr kw kh kd)
 
-class ObjectLengthOf (obj :: Object) (objs :: [Object]) where
+class ObjectLengthOf (obj :: O) (objs :: [O]) where
 	objectLengthOf :: HeteroParList.PL ObjectLength objs -> ObjectLength obj
 
 instance ObjectLengthOf obj (obj ': objs) where
@@ -162,7 +162,7 @@ instance {-# OVERLAPPABLE #-} ObjectLengthOf obj objs =>
 
 -- ONLY DYNAMIC LENGTH
 
-class OnlyDynamicLengths (objs :: [Object]) where
+class OnlyDynamicLengths (objs :: [O]) where
 	type OnlyDynamics objs :: [K.Object]
 	onlyDynamicLength ::
 		HeteroParList.PL ObjectLength objs ->
@@ -241,7 +241,7 @@ offsetSize :: forall obj objs . OffsetRange obj objs => Device.M.Size ->
 offsetSize ost0 lns = offsetSizeFromSzAlgns @obj ost0 $ sizeAlignmentList lns
 
 class (SizeAlignmentList vs, HeteroParList.TypeIndex v vs) =>
-	OffsetRange (v :: Object) (vs :: [Object]) where
+	OffsetRange (v :: O) (vs :: [O]) where
 	offsetRangeFromSzAlgns ::
 		Device.M.Size -> HeteroParList.PL SizeAlignmentOf vs ->
 		(Device.M.Size, Device.M.Size)
@@ -270,7 +270,7 @@ offsetOfList :: forall v onm vs . OffsetOfList v onm vs =>
 offsetOfList = offsetRangeListFromSzAlgns @v @onm 0 . sizeAlignmentList
 
 class SizeAlignmentList objs =>
-	OffsetOfList v (nm :: Symbol) (objs :: [Object]) where
+	OffsetOfList v (nm :: Symbol) (objs :: [O]) where
 	offsetRangeListFromSzAlgns ::
 		Device.M.Size -> HeteroParList.PL SizeAlignmentOf objs ->
 		(Device.M.Size, Device.M.Size)
@@ -291,7 +291,7 @@ adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
 -- SizeAlignmentList
 
-data SizeAlignmentOf (obj :: Object) = SizeAlignmentOf DynNum Size ObjAlignment
+data SizeAlignmentOf (obj :: O) = SizeAlignmentOf DynNum Size ObjAlignment
 	deriving Show
 
 type DynNum = Device.M.Size

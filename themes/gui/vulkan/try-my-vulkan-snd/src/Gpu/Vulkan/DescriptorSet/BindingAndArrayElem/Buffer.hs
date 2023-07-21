@@ -18,7 +18,7 @@ import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Lyt
 -- ** BindingAndArrayElemBuffer
 
 class BindingAndArrayElemBuffer
-	(lbts :: [Lyt.BindingType]) (objs :: [VO.Object]) (i :: Nat) where
+	(lbts :: [Lyt.BindingType]) (objs :: [VO.O]) (i :: Nat) where
 	bindingAndArrayElemBuffer :: Integral n => n -> n -> (n, n)
 
 instance IsPrefixObject objs lobjs => BindingAndArrayElemBuffer
@@ -116,7 +116,7 @@ instance {-# OVERLAPPABLE #-}
 
 -- ** IsPrefixObject
 
-class IsPrefixObject (objs :: [VO.Object]) (objs' :: [VO.Object])
+class IsPrefixObject (objs :: [VO.O]) (objs' :: [VO.O])
 
 instance IsPrefixObject '[] objs'
 

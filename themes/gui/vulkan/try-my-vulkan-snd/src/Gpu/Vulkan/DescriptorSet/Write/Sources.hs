@@ -78,7 +78,7 @@ data WriteSources arg where
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, Symbol, T.Format, Type)]
 	| WriteSourcesArgImageNoSampler [(Symbol, T.Format, Type)]
-	| WriteSourcesArgBuffer [(Type, Type, Symbol, VObj.Object)]
+	| WriteSourcesArgBuffer [(Type, Type, Symbol, VObj.O)]
 	| WriteSourcesArgBufferView [(Type, Symbol, Type)]
 	| WriteSourcesArgInNext
 
