@@ -93,47 +93,47 @@ import Gpu.Vulkan.Device.Middle qualified as Device.M
 
 -- OBJECT
 
-data O = Static K.Object | Dynamic Nat K.Object
+data O = Static_ K.Object | Dynamic Nat K.Object
 
-type StObj algn mnm ot v = Static ('K.Object algn mnm ot v)
+type StObj algn mnm ot v = Static_ ('K.Object algn mnm ot v)
 type DynObj n algn mnm ot v = Dynamic n ('K.Object algn mnm ot v)
 
-type Atom algn v mnm = Static (K.Atom algn v mnm)
-type List algn v nm = Static (K.List algn v nm)
-type Image algn v nm = Static (K.Image algn v nm)
+type Atom algn v mnm = Static_ (K.Atom algn v mnm)
+type List algn v nm = Static_ (K.List algn v nm)
+type Image algn v nm = Static_ (K.Image algn v nm)
 
 type DynAtom n algn v nm = Dynamic n (K.Atom algn v nm)
 type DynList n algn v nm = Dynamic n (K.List algn v nm)
 type DynImage n algn v nm = Dynamic n (K.Image algn v nm)
 
 type family TypeOfObject obj where
-	TypeOfObject (Static kobj) = K.TypeOfObject kobj
+	TypeOfObject (Static_ kobj) = K.TypeOfObject kobj
 	TypeOfObject (Dynamic n kobj) = K.TypeOfObject kobj
 
 -- OBJECT LENGTH
 
 data ObjectLength obj where
-	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static kobj)
+	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static_ kobj)
 	ObjectLengthDynamic ::
 		K.ObjectLength kobj -> ObjectLength ('Dynamic n kobj)
 
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
-pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn v nm))
+pattern ObjectLengthAtom :: ObjectLength ('Static_ (K.Atom algn v nm))
 pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
 	ObjectLengthAtom = ObjectLengthStatic K.ObjectLengthAtom
 
 {-# COMPLETE ObjectLengthList #-}
 
-pattern ObjectLengthList :: Device.M.Size -> ObjectLength ('Static (K.List algn v nm))
+pattern ObjectLengthList :: Device.M.Size -> ObjectLength ('Static_ (K.List algn v nm))
 pattern ObjectLengthList n <- ObjectLengthStatic (K.ObjectLengthList n) where
 	ObjectLengthList n = ObjectLengthStatic (K.ObjectLengthList n)
 
 {-# COMPLETE ObjectLengthImage #-}
 
 pattern ObjectLengthImage ::
-	Device.M.Size -> Device.M.Size -> Device.M.Size -> Device.M.Size -> ObjectLength ('Static (K.Image algn v nm))
+	Device.M.Size -> Device.M.Size -> Device.M.Size -> Device.M.Size -> ObjectLength ('Static_ (K.Image algn v nm))
 pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
 	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
 
@@ -172,8 +172,8 @@ instance OnlyDynamicLengths '[] where
 	type OnlyDynamics '[] = '[]
 	onlyDynamicLength HeteroParList.Nil = HeteroParList.Nil
 
-instance OnlyDynamicLengths objs => OnlyDynamicLengths ('Static _o ': objs) where
-	type OnlyDynamics ('Static _o ': objs) = OnlyDynamics objs
+instance OnlyDynamicLengths objs => OnlyDynamicLengths ('Static_ _o ': objs) where
+	type OnlyDynamics ('Static_ _o ': objs) = OnlyDynamics objs
 	onlyDynamicLength (ObjectLengthStatic _ :** lns) = onlyDynamicLength lns
 
 instance OnlyDynamicLengths objs => OnlyDynamicLengths ('Dynamic _n o ': objs) where
@@ -188,7 +188,7 @@ class Store v obj where
 	load :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
 	length :: v -> ObjectLength obj
 
-instance K.StoreObject v bobj => Store v (Static bobj) where
+instance K.StoreObject v bobj => Store v (Static_ bobj) where
 	store p (ObjectLengthStatic kln) = K.storeObject p kln
 	load p (ObjectLengthStatic kln) = K.loadObject p kln
 	length = ObjectLengthStatic . K.objectLength
@@ -319,7 +319,7 @@ class SizeAlignment obj where
 	size :: ObjectLength obj -> Device.M.Size
 	alignment :: Device.M.Size
 
-instance K.SizeAlignment kobj => SizeAlignment (Static kobj) where
+instance K.SizeAlignment kobj => SizeAlignment (Static_ kobj) where
 	dynNum = 1
 	size (ObjectLengthStatic kln) = K.size kln
 	alignment = K.alignment @kobj
