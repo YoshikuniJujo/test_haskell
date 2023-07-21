@@ -11,23 +11,37 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Object.Base (
-	Object(..), ObjectLength(..), TypeOfObject,
 
-	SizeAlignment(..),
+	-- * OBJECT
 
-	StoreObject(..),
+	Object(..), IsImage(..),
 
-	IsImage(..),
+	-- ** Synonyms
 
 	Atom, List, Image,
 
-	renameObjectLength
+	-- ** Type Of Object
+
+	TypeOfObject,
+
+	-- * OBJECT LENGTH
+
+	ObjectLength(..), renameObjectLength,
+
+	-- * STORE
+
+	StoreObject(..),
+
+	-- * SIZE AND ALIGNMENT
+
+	SizeAlignment(..)
+
 	) where
 
 import GHC.TypeLits
 import Foreign.Ptr
 import Foreign.Marshal.Array
-import Foreign.Storable
+import Foreign.Storable qualified as S
 import Data.Kind
 import Data.Foldable
 import Data.Traversable
@@ -84,53 +98,53 @@ type Size = Int
 type ObjAlignment = Int
 
 class SizeAlignment obj where
-	objectSize :: ObjectLength obj -> Device.M.Size
-	objectAlignment :: Device.M.Size
+	size :: ObjectLength obj -> Device.M.Size
+	alignment :: Device.M.Size
 
 applyAlign :: Integral n => n -> n -> n
 applyAlign algn ofst = ((ofst - 1) `div` algn + 1) * algn
 
-instance (KnownNat algn, Storable t) =>
+instance (KnownNat algn, S.Storable t) =>
 	SizeAlignment ((Atom algn t _nm)) where
-	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
-		fromIntegral (alignment @t undefined)
-	objectSize (ObjectLengthAtom) = applyAlign algn . fromIntegral $ sizeOf @t undefined
-		where algn = objectAlignment @((Atom algn t _nm))
+	size (ObjectLengthAtom) = applyAlign algn . fromIntegral $ S.sizeOf @t undefined
+		where algn = alignment @((Atom algn t _nm))
+	alignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
+		fromIntegral (S.alignment @t undefined)
 
-instance (KnownNat algn, Storable t) =>
+instance (KnownNat algn, S.Storable t) =>
 	SizeAlignment ((List algn t _nm)) where
-	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
-		fromIntegral (alignment @t undefined)
-	objectSize (ObjectLengthList n) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
+	size (ObjectLengthList n) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
 		where
-		sz = fromIntegral $ sizeOf @t undefined
-		algn = fromIntegral $ alignment @t undefined
-		algn' = objectAlignment @((List algn t _nm))
+		sz = fromIntegral $ S.sizeOf @t undefined
+		algn = fromIntegral $ S.alignment @t undefined
+		algn' = alignment @((List algn t _nm))
+	alignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
+		fromIntegral (S.alignment @t undefined)
 
-instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment ((Image algn img nm)) where
-	objectAlignment =fromIntegral (natVal (Proxy :: Proxy algn))
-		`lcm`
-		fromIntegral (alignment @(IsImagePixel img) undefined)
-	objectSize (ObjectLengthImage r _w h d) =
+instance (KnownNat algn, S.Storable (IsImagePixel img)) => SizeAlignment ((Image algn img nm)) where
+	size (ObjectLengthImage r _w h d) =
 		r * h * d * ((sz - 1) `div` algn + 1) * algn
 		where
-		sz = fromIntegral $ sizeOf @(IsImagePixel img) undefined
-		algn = objectAlignment @((Image algn img nm))
+		sz = fromIntegral $ S.sizeOf @(IsImagePixel img) undefined
+		algn = alignment @((Image algn img nm))
+	alignment =fromIntegral (natVal (Proxy :: Proxy algn))
+		`lcm`
+		fromIntegral (S.alignment @(IsImagePixel img) undefined)
 
 class SizeAlignment obj => StoreObject v (obj :: Object) where
 	storeObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
 	loadObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
 	objectLength :: v -> ObjectLength obj
 
-instance (Storable t, KnownNat _algn) => StoreObject t ((Atom _algn t _nm)) where
-	storeObject p (ObjectLengthAtom) x = poke p x
-	loadObject p (ObjectLengthAtom) = peek p
+instance (S.Storable t, KnownNat _algn) => StoreObject t ((Atom _algn t _nm)) where
+	storeObject p (ObjectLengthAtom) x = S.poke p x
+	loadObject p (ObjectLengthAtom) = S.peek p
 	objectLength _ = ObjectLengthAtom
 
 instance (
 	KnownNat _algn,
 	MonoFoldable v, Seq.IsSequence v,
-	Storable t, Element v ~ t ) =>
+	S.Storable t, Element v ~ t ) =>
 	StoreObject v ((List _algn t _nm)) where
 	storeObject p ((ObjectLengthList n)) xs =
 		pokeArray p . take (fromIntegral n) $ otoList xs
@@ -138,15 +152,15 @@ instance (
 		Seq.fromList <$> peekArray (fromIntegral n) p
 	objectLength = ObjectLengthList . fromIntegral . olength
 
-instance (KnownNat algn, IsImage img, Storable (IsImagePixel img)) =>
+instance (KnownNat algn, IsImage img, S.Storable (IsImagePixel img)) =>
 	StoreObject img ((Image algn img nm)) where
 	storeObject p0 (ObjectLengthImage r w _h _d) img =
 		for_ (zip (iterate (`plusPtr` fromIntegral s) p0) $ isImageBody img)
 			\(p, take (fromIntegral w) -> rw) -> pokeArray (castPtr p) $ take (fromIntegral w) rw
-		where s = r * fromIntegral (sizeOf @(IsImagePixel img) undefined)
+		where s = r * fromIntegral (S.sizeOf @(IsImagePixel img) undefined)
 	loadObject p0 (ObjectLengthImage r w h d) = isImageMake w h d
 		<$> for (take (fromIntegral (h * d)) $ iterate (`plusPtr` fromIntegral s) p0) \p -> peekArray (fromIntegral w) (castPtr p)
-		where s = r * fromIntegral (sizeOf @(IsImagePixel img) undefined)
+		where s = r * fromIntegral (S.sizeOf @(IsImagePixel img) undefined)
 	objectLength img = ObjectLengthImage
 		(isImageRow img) (isImageWidth img) (isImageHeight img) (isImageDepth img)
 

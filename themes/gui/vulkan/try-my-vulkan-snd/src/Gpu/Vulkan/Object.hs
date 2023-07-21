@@ -212,8 +212,8 @@ nextObject :: forall kobj . K.SizeAlignment kobj =>
 	Ptr (K.TypeOfObject kobj) -> K.ObjectLength kobj -> Ptr (K.TypeOfObject kobj)
 nextObject p ln = p `plusPtr` fromIntegral n
 	where
-	n = ((K.objectSize ln - 1) `div` algn + 1) * algn
-	algn = K.objectAlignment @kobj
+	n = ((K.size ln - 1) `div` algn + 1) * algn
+	algn = K.alignment @kobj
 
 -- SIZE, ALIGNMENT AND OFFSET
 
@@ -320,11 +320,11 @@ class SizeAlignment obj where
 
 instance K.SizeAlignment kobj => SizeAlignment (Static kobj) where
 	dynNum = 1
-	size (ObjectLengthStatic kln) = K.objectSize kln
-	alignment = K.objectAlignment @kobj
+	size (ObjectLengthStatic kln) = K.size kln
+	alignment = K.alignment @kobj
 
 instance (KnownNat n, K.SizeAlignment kobj) =>
 	SizeAlignment (Dynamic n kobj) where
 	dynNum = fromIntegral $ natVal (Proxy :: Proxy n)
-	size (ObjectLengthDynamic kln) = K.objectSize kln
-	alignment = K.objectAlignment @kobj
+	size (ObjectLengthDynamic kln) = K.size kln
+	alignment = K.alignment @kobj

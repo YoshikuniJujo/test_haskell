@@ -197,8 +197,8 @@ getOffset' :: forall obj . KObj.SizeAlignment obj =>
 	KObj.ObjectLength obj -> DynamicIndex obj -> Word32
 getOffset' ln (DynamicIndex i) = fromIntegral sz * i
 	where
-	sz = ((KObj.objectSize ln - 1) `div` algn + 1) * algn
-	algn = KObj.objectAlignment @obj
+	sz = ((KObj.size ln - 1) `div` algn + 1) * algn
+	algn = KObj.alignment @obj
 
 getOffsetListNew :: HeteroParList.ZipListWithC3 KObj.SizeAlignment osss =>
 		HeteroParList.PL3 KObj.ObjectLength osss ->
