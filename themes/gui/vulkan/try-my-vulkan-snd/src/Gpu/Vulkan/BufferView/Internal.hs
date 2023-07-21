@@ -41,7 +41,6 @@ create :: (
 	WithPoked (TMaybe.M mn),
 	Storable t, TEnum.FormatToValue (FormatOf t),
 	VObj.OffsetOfList t nm objs,
-	VObj.ObjectLengthForTypeName t nm objs,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfo mn t nm '(sm, sb, bnm, objs) ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
@@ -58,8 +57,7 @@ data CreateInfo mn t (nm :: Symbol) snmobjs = CreateInfo {
 
 createInfoToMiddle :: forall n t nm sm sb bnm objs . (
 	TEnum.FormatToValue (FormatOf t),
-	VObj.OffsetOfList t nm objs,
-	Storable t, VObj.ObjectLengthForTypeName t nm objs ) =>
+	VObj.OffsetOfList t nm objs, Storable t ) =>
 	CreateInfo n t nm '(sm, sb, bnm, objs) -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
@@ -69,19 +67,14 @@ createInfoToMiddle CreateInfo {
 	M.createInfoFlags = flgs,
 	M.createInfoBuffer = b,
 	M.createInfoFormat = TEnum.formatToValue @(FormatOf t),
-	M.createInfoOffset = offsetNew @t @nm lns,
-	M.createInfoRange = rangeNew @t @nm lns }
+	M.createInfoOffset = ost, M.createInfoRange = rng }
+	where
+	(ost, rng) = offsetRange @t @nm lns
 
 type family FormatOf t :: TEnum.Format
 
-offsetNew :: forall t nm objs .
+offsetRange :: forall t nm objs .
 	VObj.OffsetOfList t nm objs =>
-	HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
-offsetNew = VObj.offsetListFromSizeAlignmentList @t @nm 0
-	. VObj.sizeAlignmentList
-
-rangeNew :: forall t (nm :: Symbol) objs .
-	(Storable t, VObj.ObjectLengthForTypeName t nm objs) =>
-	HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
-rangeNew lns = VObj.objectLengthForTypeName @t @nm lns $ fromIntegral
-	. VObj.objectSize'
+	HeteroParList.PL VObj.ObjectLength objs ->
+	(Device.M.Size, Device.M.Size)
+offsetRange = VObj.offsetOfList @t @nm

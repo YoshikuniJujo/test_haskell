@@ -46,7 +46,7 @@ module Gpu.Vulkan.Object (
 
 	-- ** Find Length
 
-	ObjectLengthOf(..), ObjectLengthForTypeName(..),
+	ObjectLengthOf(..),
 
 	-- * ONLY DYNAMIC LENGTHS
 
@@ -86,7 +86,7 @@ import Data.HeteroParList (pattern (:**))
 
 import Data.Maybe
 
-import Foreign.Storable
+import Foreign.Storable (Storable)
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 
 -- OBJECT
@@ -158,22 +158,6 @@ instance {-# OVERLAPPABLE #-} ObjectLengthOf obj objs =>
 	ObjectLengthOf obj (obj' ': objs) where
 	objectLengthOf (_ :** lns) = objectLengthOf @obj lns
 
-class ObjectLengthForTypeName v nm objs where
-	objectLengthForTypeName ::
-		HeteroParList.PL ObjectLength objs -> (
-			forall algn . KnownNat algn =>
-			ObjectLength (List algn v nm) -> a) -> a
-
-instance KnownNat algn =>
-	ObjectLengthForTypeName v nm (List algn v nm ': _objs) where
-	objectLengthForTypeName (ln :** _) = ($ ln)
-
-instance {-# OVERLAPPABLE #-}
-	ObjectLengthForTypeName v nm objs =>
-	ObjectLengthForTypeName v nm (_obj ': objs) where
-	objectLengthForTypeName (_ :** lns) f =
-		objectLengthForTypeName @v @nm @objs lns f
-
 -- ONLY DYNAMIC LENGTH
 
 class OnlyDynamicLengths (objs :: [Object]) where
@@ -237,74 +221,68 @@ nextObject p ln = p `plusPtr` fromIntegral n
 
 wholeSize :: SizeAlignmentList objs =>
 	HeteroParList.PL ObjectLength objs -> Size
-wholeSize = wholeSizeFromSizeAlignmentList 0 . sizeAlignmentList
+wholeSize = wholeSizeFromSzAlgns 0 . sizeAlignmentList
 
-wholeSizeFromSizeAlignmentList ::
-	Size -> HeteroParList.PL SizeAlignmentOfObj objs -> Size
-wholeSizeFromSizeAlignmentList sz0 HeteroParList.Nil = sz0
-wholeSizeFromSizeAlignmentList sz0 (SizeAlignmentOfObj dn sz algn :** saoo) =
-	wholeSizeFromSizeAlignmentList
-		(((sz0 - 1) `div` algn + 1) * algn + dn * sz) saoo
+wholeSizeFromSzAlgns ::
+	Size -> HeteroParList.PL SizeAlignmentOf objs -> Size
+wholeSizeFromSzAlgns sz0 HeteroParList.Nil = sz0
+wholeSizeFromSzAlgns sz0 (SizeAlignmentOf dn sz algn :** saoo) =
+	wholeSizeFromSzAlgns (adjust algn sz0 + dn * sz) saoo
 
--- Offset
+-- OffsetRange
 
 offsetRange :: forall obj objs . OffsetRange obj objs => Device.M.Size ->
 	HeteroParList.PL ObjectLength objs -> (Device.M.Size, Device.M.Size)
-offsetRange ost0 lns =
-	offsetRangeFromSizeAlignmentList @obj (fromIntegral ost0)
-		$ sizeAlignmentList lns
+offsetRange ost0 lns = offsetRangeFromSzAlgns @obj ost0 $ sizeAlignmentList lns
 
 offsetSize :: forall obj objs . OffsetRange obj objs => Device.M.Size ->
 	HeteroParList.PL ObjectLength objs -> (Device.M.Size, Device.M.Size)
-offsetSize ost0 lns =
-	offsetSizeFromSizeAlignmentList @obj (fromIntegral ost0)
-		$ sizeAlignmentList lns
+offsetSize ost0 lns = offsetSizeFromSzAlgns @obj ost0 $ sizeAlignmentList lns
 
 class (SizeAlignmentList vs, HeteroParList.TypeIndex v vs) =>
 	OffsetRange (v :: Object) (vs :: [Object]) where
-	offsetRangeFromSizeAlignmentList ::
-		Device.M.Size -> HeteroParList.PL SizeAlignmentOfObj vs ->
+	offsetRangeFromSzAlgns ::
+		Device.M.Size -> HeteroParList.PL SizeAlignmentOf vs ->
 		(Device.M.Size, Device.M.Size)
-	offsetSizeFromSizeAlignmentList ::
-		Device.M.Size -> HeteroParList.PL SizeAlignmentOfObj vs ->
+	offsetSizeFromSzAlgns ::
+		Device.M.Size -> HeteroParList.PL SizeAlignmentOf vs ->
 		(Device.M.Size, Device.M.Size)
 
 instance (SizeAlignment v, SizeAlignmentList vs) =>
 	OffsetRange v (v ': vs) where
-	offsetRangeFromSizeAlignmentList ost (SizeAlignmentOfObj _dn sz algn :** _) =
-		(adjust algn ost, fromIntegral sz)
-	offsetSizeFromSizeAlignmentList ost (SizeAlignmentOfObj dn sz algn :** _) =
-		(adjust algn ost, fromIntegral $ dn * sz)
+	offsetRangeFromSzAlgns ost (SizeAlignmentOf _dn sz algn :** _) =
+		(adjust algn ost, sz)
+	offsetSizeFromSzAlgns ost (SizeAlignmentOf dn sz algn :** _) =
+		(adjust algn ost, dn * sz)
 
 instance {-# OVERLAPPABLE #-} (SizeAlignment v', OffsetRange v vs) =>
 	OffsetRange v (v' ': vs) where
-	offsetRangeFromSizeAlignmentList ost (SizeAlignmentOfObj dn sz algn :** sas) =
-		offsetRangeFromSizeAlignmentList @v @vs (adjust algn ost + dn * sz) sas
-	offsetSizeFromSizeAlignmentList ost (SizeAlignmentOfObj dn sz algn :** sas) =
-		offsetSizeFromSizeAlignmentList @v @vs (adjust algn ost + dn * sz) sas
+	offsetRangeFromSzAlgns ost (SizeAlignmentOf dn sz algn :** sas) =
+		offsetRangeFromSzAlgns @v @vs (adjust algn ost + dn * sz) sas
+	offsetSizeFromSzAlgns ost (SizeAlignmentOf dn sz algn :** sas) =
+		offsetSizeFromSzAlgns @v @vs (adjust algn ost + dn * sz) sas
 
 -- OffsetOfList
 
 offsetOfList :: forall v onm vs . OffsetOfList v onm vs =>
-	HeteroParList.PL ObjectLength vs -> Device.M.Size
-offsetOfList = offsetListFromSizeAlignmentList @v @onm 0 . sizeAlignmentList
+	HeteroParList.PL ObjectLength vs -> (Device.M.Size, Device.M.Size)
+offsetOfList = offsetRangeListFromSzAlgns @v @onm 0 . sizeAlignmentList
 
 class SizeAlignmentList objs =>
 	OffsetOfList v (nm :: Symbol) (objs :: [Object]) where
-	offsetListFromSizeAlignmentList ::
-		Device.M.Size -> HeteroParList.PL SizeAlignmentOfObj objs ->
-		Device.M.Size
+	offsetRangeListFromSzAlgns ::
+		Device.M.Size -> HeteroParList.PL SizeAlignmentOf objs ->
+		(Device.M.Size, Device.M.Size)
 
 instance (Storable v, KnownNat oalgn, SizeAlignmentList objs) =>
 	OffsetOfList v nm (List oalgn v nm ': objs) where
-	offsetListFromSizeAlignmentList
-		ost (SizeAlignmentOfObj _ _ algn :** _) = adjust algn ost
+	offsetRangeListFromSzAlgns ost (SizeAlignmentOf _ sz algn :** _) =
+		(adjust algn ost, sz)
 
 instance {-# OVERLAPPABLE #-} (SizeAlignment obj, OffsetOfList v nm objs) =>
 	OffsetOfList v nm (obj ': objs) where
-	offsetListFromSizeAlignmentList
-		ost (SizeAlignmentOfObj dn sz algn :** sas) =
-		offsetListFromSizeAlignmentList
+	offsetRangeListFromSzAlgns ost (SizeAlignmentOf dn sz algn :** sas) =
+		offsetRangeListFromSzAlgns
 			@v @nm @objs (adjust algn ost + dn * sz) sas
 
 adjust :: Device.M.Size -> Device.M.Size -> Device.M.Size
@@ -312,8 +290,8 @@ adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
 -- SizeAlignmentList
 
-data SizeAlignmentOfObj (obj :: Object) =
-	SizeAlignmentOfObj DynNum Size ObjAlignment deriving Show
+data SizeAlignmentOf (obj :: Object) = SizeAlignmentOf DynNum Size ObjAlignment
+	deriving Show
 
 type DynNum = Device.M.Size
 type Size = Device.M.Size
@@ -321,7 +299,7 @@ type ObjAlignment = Device.M.Size
 
 class SizeAlignmentList objs where
 	sizeAlignmentList :: HeteroParList.PL ObjectLength objs ->
-		HeteroParList.PL SizeAlignmentOfObj objs
+		HeteroParList.PL SizeAlignmentOf objs
 
 instance SizeAlignmentList '[] where
 	sizeAlignmentList HeteroParList.Nil = HeteroParList.Nil
@@ -329,26 +307,24 @@ instance SizeAlignmentList '[] where
 instance (SizeAlignment obj, SizeAlignmentList objs) =>
 	SizeAlignmentList (obj ': objs) where
 	sizeAlignmentList (ln :** lns) =
-		SizeAlignmentOfObj (dynNum @obj) (objectSize ln) (objectAlignment @obj) :**
+		SizeAlignmentOf
+			(dynNum @obj) (size ln) (alignment @obj) :**
 		sizeAlignmentList lns
 
 -- SizeAlignment
 
 class SizeAlignment obj where
-	objectSize :: ObjectLength obj -> Device.M.Size
 	dynNum :: Device.M.Size
-	objectSize' :: ObjectLength obj -> Device.M.Size
-	objectAlignment :: Device.M.Size
+	size :: ObjectLength obj -> Device.M.Size
+	alignment :: Device.M.Size
 
 instance K.SizeAlignment kobj => SizeAlignment (Static kobj) where
-	objectSize (ObjectLengthStatic kln) = K.objectSize kln
 	dynNum = 1
-	objectSize' = objectSize
-	objectAlignment = K.objectAlignment @kobj
+	size (ObjectLengthStatic kln) = K.objectSize kln
+	alignment = K.objectAlignment @kobj
 
 instance (KnownNat n, K.SizeAlignment kobj) =>
 	SizeAlignment (Dynamic n kobj) where
-	objectSize (ObjectLengthDynamic kln) = K.objectSize kln
 	dynNum = fromIntegral $ natVal (Proxy :: Proxy n)
-	objectSize' obj = fromIntegral (natVal (Proxy :: Proxy n)) * objectSize obj
-	objectAlignment = K.objectAlignment @kobj
+	size (ObjectLengthDynamic kln) = K.objectSize kln
+	alignment = K.objectAlignment @kobj

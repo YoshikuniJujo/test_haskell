@@ -129,7 +129,7 @@ instance Alignments ibs => Alignments ('(_s, 'ImageArg _nm _fmt) ': ibs) where
 
 instance (VObj.SizeAlignment obj, Alignments ibs) =>
 	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
-	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
+	alignments = Just (VObj.alignment @obj) : alignments @ibs
 
 -- OBJECT LENGTH
 

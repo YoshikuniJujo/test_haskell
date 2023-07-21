@@ -123,7 +123,7 @@ data IndexedForList sm sb nm t onm = forall objs .
 indexedListToOffset :: forall sm sb nm v onm a . IndexedForList sm sb nm v onm ->
 	(forall vs . (Binded sm sb nm vs, Device.M.Size) -> a) -> a
 indexedListToOffset (IndexedForList b@(Binded lns _)) f =
-	f (b, VObj.offsetOfList @v @onm lns)
+	f (b, fst $ VObj.offsetOfList @v @onm lns)
 
 indexedListToMiddle :: IndexedForList sm sb nm v onm -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
@@ -151,9 +151,9 @@ instance (
 	copyCheckLengthPrefix (s :** ss) (d :** ds) =
 		s == d && copyCheckLengthPrefix @as ss ds
 	copySizePrefix sz (ln :** lns) = copySizePrefix @as @ss @ds
-		(((sz - 1) `div` algn + 1) * algn + fromIntegral (VObj.objectSize ln))
+		(((sz - 1) `div` algn + 1) * algn + fromIntegral (VObj.size ln))
 		lns
-		where algn = fromIntegral $ VObj.objectAlignment @a
+		where algn = fromIntegral $ VObj.alignment @a
 
 class CopyInfo (area :: [VObj.Object]) (src :: [VObj.Object]) (dst :: [VObj.Object]) where
 	copyCheckLength ::
@@ -183,9 +183,9 @@ instance {-# OVERLAPPABLE #-}
 		copyCheckLength @(a ': as) @(a ': ss) @ds ss ds
 	copySrcOffset ost lns = copySrcOffset @(a ': as) @(a ': ss) @ds ost lns
 	copyDstOffset ost (ln :** lns) = copyDstOffset @(a ': as) @(a ': ss)
-		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.objectSize ln))
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.size ln))
 		lns
-		where algn = fromIntegral $ VObj.objectAlignment @d
+		where algn = fromIntegral $ VObj.alignment @d
 	copySize = copySize @(a ': as) @(a ': ss) @ds
 
 instance {-# OVERLAPPABLE #-}
@@ -194,9 +194,9 @@ instance {-# OVERLAPPABLE #-}
 	CopyInfo as (s ': ss) ds where
 	copyCheckLength (_ :** ss) ds = copyCheckLength @as ss ds
 	copySrcOffset ost (ln :** lns) = copySrcOffset @as @ss @ds
-		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.objectSize ln))
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.size ln))
 		lns
-		where algn = fromIntegral (VObj.objectAlignment @s)
+		where algn = fromIntegral (VObj.alignment @s)
 	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
 	copySize (_ :** lns) = copySize @as @ss @ds lns
 
@@ -231,7 +231,7 @@ offsetSize lns _ = (VObj.offsetNew @v lns, sizeNew @v lns)
 sizeNew :: forall v vs . (
 	VObj.SizeAlignment v, VObj.ObjectLengthOf v vs ) =>
 	HeteroParList.PL VObj.ObjectLength vs -> Device.M.Size
-sizeNew = fromIntegral . VObj.objectSize . VObj.objectLengthOf @v
+sizeNew = fromIntegral . VObj.size . VObj.objectLengthOf @v
 -}
 
 data MemoryBarrier mn sm sb nm obj = forall objs . (
