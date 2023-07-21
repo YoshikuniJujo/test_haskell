@@ -32,13 +32,13 @@ instance IsPrefixObject objs lobjs => BindingAndArrayElemBuffer
 	bindingAndArrayElemBuffer b ae = (b, ae)
 
 instance IsPrefixObject objs lobjs => BindingAndArrayElemBuffer
-		('Lyt.Buffer (VO.DynObj n al 'Nothing ot t ': lobjs) ': lbts)
-		(VO.DynObj n al ('Just _nm) ot t ': objs) 0 where
+		('Lyt.Buffer (VO.Dynamic n al 'Nothing ot t ': lobjs) ': lbts)
+		(VO.Dynamic n al ('Just _nm) ot t ': objs) 0 where
 	bindingAndArrayElemBuffer b ae = (b, ae)
 
 instance IsPrefixObject objs lobjs => BindingAndArrayElemBuffer
-		('Lyt.Buffer (VO.DynObj n al ('Just _nm) ot t ': lobjs) ': lbts)
-		(VO.DynObj n al 'Nothing ot t ': objs) 0 where
+		('Lyt.Buffer (VO.Dynamic n al ('Just _nm) ot t ': lobjs) ': lbts)
+		(VO.Dynamic n al 'Nothing ot t ': objs) 0 where
 	bindingAndArrayElemBuffer b ae = (b, ae)
 
 instance IsPrefixObject objs lobjs => BindingAndArrayElemBuffer
@@ -67,26 +67,26 @@ instance {-# OVERLAPPABLE #-} (
 
 instance {-# OVERLAPPABLE #-} (
 	BindingAndArrayElemBuffer ('Lyt.Buffer lobjs ': lbts)
-		(VO.DynObj n al ('Just nm) ot t ': objs) (i - 1) ) =>
+		(VO.Dynamic n al ('Just nm) ot t ': objs) (i - 1) ) =>
 	BindingAndArrayElemBuffer
-		('Lyt.Buffer (VO.DynObj n al 'Nothing ot t ': lobjs) ': lbts)
-		(VO.DynObj n al ('Just nm) ot t ': objs) i where
+		('Lyt.Buffer (VO.Dynamic n al 'Nothing ot t ': lobjs) ': lbts)
+		(VO.Dynamic n al ('Just nm) ot t ': objs) i where
 	bindingAndArrayElemBuffer b ae =
 		bindingAndArrayElemBuffer
 			@('Lyt.Buffer lobjs ': lbts)
-			@(VO.DynObj n al ('Just nm) ot t ': objs) @(i - 1)
+			@(VO.Dynamic n al ('Just nm) ot t ': objs) @(i - 1)
 			b (ae + 1)
 
 instance {-# OVERLAPPABLE #-} (
 	BindingAndArrayElemBuffer ('Lyt.Buffer lobjs ': lbts)
-		(VO.DynObj n al 'Nothing ot t ': objs) (i - 1) ) =>
+		(VO.Dynamic n al 'Nothing ot t ': objs) (i - 1) ) =>
 	BindingAndArrayElemBuffer
-		('Lyt.Buffer (VO.DynObj n al ('Just _nm) ot t ': lobjs) ': lbts)
-		(VO.DynObj n al 'Nothing ot t ': objs) i where
+		('Lyt.Buffer (VO.Dynamic n al ('Just _nm) ot t ': lobjs) ': lbts)
+		(VO.Dynamic n al 'Nothing ot t ': objs) i where
 	bindingAndArrayElemBuffer b ae =
 		bindingAndArrayElemBuffer
 			@('Lyt.Buffer lobjs ': lbts)
-			@(VO.DynObj n al 'Nothing ot t ': objs) @(i - 1)
+			@(VO.Dynamic n al 'Nothing ot t ': objs) @(i - 1)
 			b (ae + 1)
 
 instance {-# OVERLAPPABLE #-} (
@@ -129,12 +129,12 @@ instance IsPrefixObject objs objs' => IsPrefixObject
 	(VO.StObj al 'Nothing ot t ': objs')
 
 instance IsPrefixObject objs objs' => IsPrefixObject
-	(VO.DynObj n al 'Nothing ot t ': objs)
-	(VO.DynObj n al ('Just _nm) ot t ': objs')
+	(VO.Dynamic n al 'Nothing ot t ': objs)
+	(VO.Dynamic n al ('Just _nm) ot t ': objs')
 
 instance IsPrefixObject objs objs' => IsPrefixObject
-	(VO.DynObj n al ('Just _nm) ot t ': objs)
-	(VO.DynObj n al 'Nothing ot t ': objs')
+	(VO.Dynamic n al ('Just _nm) ot t ': objs)
+	(VO.Dynamic n al 'Nothing ot t ': objs')
 
 instance IsPrefixObject objs objs' =>
 	IsPrefixObject (obj ': objs) (obj ': objs')

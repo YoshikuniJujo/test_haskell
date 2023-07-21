@@ -17,7 +17,7 @@ module Gpu.Vulkan.Object (
 
 	-- ** Synonyms
 
-	StObj, DynObj,
+	StObj, Dynamic,
 
 	-- *** static
 
@@ -96,19 +96,19 @@ import Gpu.Vulkan.Device.Middle qualified as Device.M
 data O = Static_ K.Object | Dynamic Nat K.Object
 
 type StObj algn mnm ot v = Static_ ('K.Object algn mnm ot v)
-type DynObj n algn mnm ot v = Dynamic n ('K.Object algn mnm ot v)
+type Dynamic n algn mnm ot v = 'Dynamic n ('K.Object algn mnm ot v)
 
 type Atom algn v mnm = Static_ (K.Atom algn v mnm)
 type List algn v nm = Static_ (K.List algn v nm)
 type Image algn v nm = Static_ (K.Image algn v nm)
 
-type DynAtom n algn v nm = Dynamic n (K.Atom algn v nm)
-type DynList n algn v nm = Dynamic n (K.List algn v nm)
-type DynImage n algn v nm = Dynamic n (K.Image algn v nm)
+type DynAtom n algn v nm = 'Dynamic n (K.Atom algn v nm)
+type DynList n algn v nm = 'Dynamic n (K.List algn v nm)
+type DynImage n algn v nm = 'Dynamic n (K.Image algn v nm)
 
 type family TypeOfObject obj where
 	TypeOfObject (Static_ kobj) = K.TypeOfObject kobj
-	TypeOfObject (Dynamic n kobj) = K.TypeOfObject kobj
+	TypeOfObject ('Dynamic n kobj) = K.TypeOfObject kobj
 
 -- OBJECT LENGTH
 
@@ -193,7 +193,7 @@ instance K.StoreObject v bobj => Store v (Static_ bobj) where
 	load p (ObjectLengthStatic kln) = K.loadObject p kln
 	length = ObjectLengthStatic . K.objectLength
 
-instance (KnownNat n, K.StoreObject v bobj) => Store [Maybe v] (Dynamic n bobj) where
+instance (KnownNat n, K.StoreObject v bobj) => Store [Maybe v] ('Dynamic n bobj) where
 	store p0 (ObjectLengthDynamic kln) =
 		go p0 (natVal (Proxy :: Proxy n))
 		where
@@ -325,7 +325,7 @@ instance K.SizeAlignment kobj => SizeAlignment (Static_ kobj) where
 	alignment = K.alignment @kobj
 
 instance (KnownNat n, K.SizeAlignment kobj) =>
-	SizeAlignment (Dynamic n kobj) where
+	SizeAlignment ('Dynamic n kobj) where
 	dynNum = fromIntegral $ natVal (Proxy :: Proxy n)
 	size (ObjectLengthDynamic kln) = K.size kln
 	alignment = K.alignment @kobj
