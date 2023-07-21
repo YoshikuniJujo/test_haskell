@@ -60,7 +60,7 @@ module Gpu.Vulkan.Object (
 
 	-- ** Whole Size
 
-	wholeSizeNew,
+	wholeSize,
 
 	-- ** Offset Range
 
@@ -235,9 +235,9 @@ nextObject p ln = p `plusPtr` fromIntegral n
 
 -- WholeSize
 
-wholeSizeNew :: SizeAlignmentList objs =>
+wholeSize :: SizeAlignmentList objs =>
 	HeteroParList.PL ObjectLength objs -> Size
-wholeSizeNew = wholeSizeFromSizeAlignmentList 0 . sizeAlignmentList
+wholeSize = wholeSizeFromSizeAlignmentList 0 . sizeAlignmentList
 
 wholeSizeFromSizeAlignmentList ::
 	Size -> HeteroParList.PL SizeAlignmentOfObj objs -> Size

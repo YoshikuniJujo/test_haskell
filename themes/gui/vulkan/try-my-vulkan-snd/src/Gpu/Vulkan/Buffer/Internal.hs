@@ -90,7 +90,7 @@ createInfoToMiddle CreateInfo {
 	createInfoQueueFamilyIndices = qfis } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,
-	M.createInfoSize = fromIntegral $ VObj.wholeSizeNew lns,
+	M.createInfoSize = fromIntegral $ VObj.wholeSize lns,
 	M.createInfoUsage = usg,
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
