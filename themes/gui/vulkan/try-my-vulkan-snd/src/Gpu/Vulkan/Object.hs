@@ -79,7 +79,6 @@ module Gpu.Vulkan.Object (
 import GHC.TypeLits (Symbol)
 import GHC.TypeNats
 import Foreign.Ptr
-import Data.Kind.Object qualified as K
 import Data.Proxy
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -87,6 +86,7 @@ import Data.HeteroParList (pattern (:**))
 import Data.Maybe
 
 import Foreign.Storable (Storable)
+import Gpu.Vulkan.Object.Base qualified as K
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 
 -- OBJECT

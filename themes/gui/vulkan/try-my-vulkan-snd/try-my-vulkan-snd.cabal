@@ -35,7 +35,6 @@ library
       Codec.Wavefront.Read
       Codec.Wavefront.ReadOld
       Data.Bits.Utils
-      Data.Kind.Object
       Data.Traversable.Utils
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
@@ -116,6 +115,7 @@ library
       Gpu.Vulkan.Memory.Type
       Gpu.Vulkan.Misc
       Gpu.Vulkan.Object
+      Gpu.Vulkan.Object.Base
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
       Gpu.Vulkan.Pipeline.ColorBlendState

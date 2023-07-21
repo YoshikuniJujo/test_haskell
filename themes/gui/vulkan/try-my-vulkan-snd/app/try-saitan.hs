@@ -17,7 +17,7 @@ module Main where
 
 import Foreign.Storable
 import Data.Kind
-import Data.Kind.Object qualified as KObj
+import Gpu.Vulkan.Object.Base qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits

@@ -40,7 +40,6 @@ import GHC.TypeLits
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Exception
-import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
@@ -53,6 +52,7 @@ import Data.Word
 
 import Gpu.Vulkan.Enum hiding (ObjectType)
 import Gpu.Vulkan.Buffer.Enum
+import Gpu.Vulkan.Object.Base qualified as KObj
 
 import qualified Gpu.Vulkan.Middle as C
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks

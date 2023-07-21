@@ -99,11 +99,11 @@ import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.Memory as Memory
 
 import Data.IORef -- for debug
-import Data.Kind.Object qualified as KObj
 
 import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool qualified as QueryPool
 import Gpu.Vulkan.Query qualified as Query
+import Gpu.Vulkan.Object.Base qualified as KObj
 
 beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
 	CommandBuffer.C scb -> RenderPass.BeginInfo mn sr sf cts ->

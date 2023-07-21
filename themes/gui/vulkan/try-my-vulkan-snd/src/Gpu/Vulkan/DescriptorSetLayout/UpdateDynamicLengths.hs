@@ -14,8 +14,8 @@ module Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths (
 
 	UpdateDynamicLength(..) ) where
 
-import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object.Base qualified as KObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
@@ -58,14 +58,14 @@ instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 		('Layout.Buffer (VObj.DynObj n algn 'Nothing ot t ': os') ': bts)
 		(VObj.DynObj n algn ('Just _nm) ot t ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
-		(KObj.adjustDynamicLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
+		(KObj.renameObjectLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
 		('Layout.Buffer (VObj.DynObj n algn ('Just _nm) ot t ': os') ': bts)
 		(VObj.DynObj n algn 'Nothing ot t ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
-		(KObj.adjustDynamicLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
+		(KObj.renameObjectLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
@@ -128,14 +128,14 @@ instance UpdateDynamicLengthPrefix os os' =>
 		(VObj.DynObj n algn 'Nothing ot t ': os)
 		(VObj.DynObj n algn ('Just _nm) ot t ': os') where
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns)  =
-		KObj.adjustDynamicLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
+		KObj.renameObjectLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix
 		(VObj.DynObj n algn ('Just _nm) ot t ': os)
 		(VObj.DynObj n algn 'Nothing ot t ': os') where
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns)  =
-		KObj.adjustDynamicLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
+		KObj.renameObjectLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix

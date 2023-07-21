@@ -10,7 +10,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Kind.Object (
+module Gpu.Vulkan.Object.Base (
 	Object(..), ObjectLength(..), TypeOfObject,
 
 	SizeAlignment(..),
@@ -21,7 +21,7 @@ module Data.Kind.Object (
 
 	Atom, List, Image,
 
-	adjustDynamicLength
+	renameObjectLength
 	) where
 
 import GHC.TypeLits
@@ -63,11 +63,11 @@ data ObjectLength (obj :: Object) where
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
-adjustDynamicLength :: ObjectLength ('Object algn mnm ot t) ->
+renameObjectLength :: ObjectLength ('Object algn mnm ot t) ->
 	ObjectLength ('Object algn mnm' ot t)
-adjustDynamicLength ObjectLengthAtom = ObjectLengthAtom
-adjustDynamicLength (ObjectLengthList n) = ObjectLengthList n
-adjustDynamicLength (ObjectLengthImage r w h d) = ObjectLengthImage r w h d
+renameObjectLength ObjectLengthAtom = ObjectLengthAtom
+renameObjectLength (ObjectLengthList n) = ObjectLengthList n
+renameObjectLength (ObjectLengthImage r w h d) = ObjectLengthImage r w h d
 
 type family TypeOfObject obj where
 	TypeOfObject ((Atom _algn t _nm)) = t

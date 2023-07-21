@@ -34,7 +34,6 @@ module Gpu.Vulkan.DescriptorSet (
 
 import Foreign.Storable.PeekPoke
 import Data.Default
-import Data.Kind.Object qualified as KObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.Index qualified as TIndex
@@ -52,6 +51,8 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 import Gpu.Vulkan.DescriptorSet.Copy
 import Gpu.Vulkan.Misc
+
+import Gpu.Vulkan.Object.Base qualified as KObj
 
 layoutToMiddle :: U2 Layout.L slbts -> Layout.M.L
 layoutToMiddle (U2 (Layout.L l)) = l

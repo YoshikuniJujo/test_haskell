@@ -20,7 +20,7 @@ import qualified Gpu.Vulkan.Memory as Vk.Mem
 -- import Control.Concurrent
 
 import Gpu.Vulkan.Object qualified as Obj
-import Data.Kind.Object qualified as KObj
+import Gpu.Vulkan.Object.Base qualified as KObj
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
