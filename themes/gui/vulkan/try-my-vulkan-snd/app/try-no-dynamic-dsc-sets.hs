@@ -245,7 +245,7 @@ instance (Storable w, StorageBufferNews f a) =>
 type KBuffer = 'Vk.Dvc.Mem.ImgBffr.BufferArg
 
 storageBufferNew :: forall {sd} v {nm} obj {a} . (
-	VObj.StoreObject v obj, VObj.SizeAlignment obj ) =>
+	VObj.Store v obj, VObj.SizeAlignment obj ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> v -> (forall sb sm .
 		Vk.Bffr.Binded sm sb nm '[obj]  ->
 		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj])] ->
@@ -259,9 +259,9 @@ storageBufferNew phdvc dvc xs f =
 			f bnd m
 
 storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
-	VObj.StoreObject v obj0, VObj.SizeAlignment obj0,
-	VObj.StoreObject v obj1, VObj.SizeAlignment obj1,
-	VObj.StoreObject v obj2, VObj.SizeAlignment obj2,
+	VObj.Store v obj0, VObj.SizeAlignment obj0,
+	VObj.Store v obj1, VObj.SizeAlignment obj1,
+	VObj.Store v obj2, VObj.SizeAlignment obj2,
 	VObj.OffsetRange obj0 '[obj0, obj1, obj2],
 	VObj.OffsetRange obj1 '[obj0, obj1, obj2],
 	VObj.OffsetRange obj2 '[obj0, obj1, obj2],
@@ -283,24 +283,24 @@ storageBufferNew3Objs phdvc dvc x y z f =
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 dvc m zeroBits z
 			f bnd m
 
-bufferInfo :: VObj.StoreObject v obj => v -> Vk.Bffr.CreateInfo 'Nothing '[obj]
+bufferInfo :: VObj.Store v obj => v -> Vk.Bffr.CreateInfo 'Nothing '[obj]
 bufferInfo xs = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = def,
-	Vk.Bffr.createInfoLengths = HeteroParList.Singleton $ VObj.objectLength xs,
+	Vk.Bffr.createInfoLengths = HeteroParList.Singleton $ VObj.length xs,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 bufferInfo' :: (
-	VObj.StoreObject v obj0, VObj.StoreObject v obj1, VObj.StoreObject v obj2 ) =>
+	VObj.Store v obj0, VObj.Store v obj1, VObj.Store v obj2 ) =>
 	v -> v -> v -> Vk.Bffr.CreateInfo 'Nothing '[obj0, obj1, obj2]
 bufferInfo' x y z = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = def,
 	Vk.Bffr.createInfoLengths =
-		VObj.objectLength x :** VObj.objectLength y :**
-		VObj.objectLength z :** HeteroParList.Nil,
+		VObj.length x :** VObj.length y :**
+		VObj.length z :** HeteroParList.Nil,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }

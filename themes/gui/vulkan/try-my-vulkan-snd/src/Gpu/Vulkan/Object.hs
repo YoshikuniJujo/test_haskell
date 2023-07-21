@@ -54,7 +54,7 @@ module Gpu.Vulkan.Object (
 
 	-- * STORE
 
-	StoreObject(..),
+	Store(..),
 
 	-- * SIZE, ALIGNMENT AND OFFSET
 
@@ -75,6 +75,8 @@ module Gpu.Vulkan.Object (
 	SizeAlignmentList(..), SizeAlignment(..),
 
 	) where
+
+import Prelude hiding (length)
 
 import GHC.TypeLits (Symbol)
 import GHC.TypeNats
@@ -181,19 +183,18 @@ instance OnlyDynamicLengths objs => OnlyDynamicLengths ('Dynamic _n o ': objs) w
 
 -- STORE
 
-class StoreObject v obj where
-	storeObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
-	loadObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
-	objectLength :: v -> ObjectLength obj
+class Store v obj where
+	store :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
+	load :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
+	length :: v -> ObjectLength obj
 
-instance K.StoreObject v bobj => StoreObject v (Static bobj) where
-	storeObject p (ObjectLengthStatic kln) = K.storeObject p kln
-	loadObject p (ObjectLengthStatic kln) = K.loadObject p kln
-	objectLength = ObjectLengthStatic . K.objectLength
+instance K.StoreObject v bobj => Store v (Static bobj) where
+	store p (ObjectLengthStatic kln) = K.storeObject p kln
+	load p (ObjectLengthStatic kln) = K.loadObject p kln
+	length = ObjectLengthStatic . K.objectLength
 
-instance (KnownNat n, K.StoreObject v bobj) =>
-	StoreObject [Maybe v] (Dynamic n bobj) where
-	storeObject p0 (ObjectLengthDynamic kln) =
+instance (KnownNat n, K.StoreObject v bobj) => Store [Maybe v] (Dynamic n bobj) where
+	store p0 (ObjectLengthDynamic kln) =
 		go p0 (natVal (Proxy :: Proxy n))
 		where
 		go _ _ [] = pure ()
@@ -202,11 +203,11 @@ instance (KnownNat n, K.StoreObject v bobj) =>
 			K.storeObject p kln x >> go (nextObject p kln) (n - 1) xs
 		go p n (Nothing : xs) = do
 			go (nextObject p kln) (n - 1) xs
-	loadObject p0 (ObjectLengthDynamic kln) = go p0 (natVal (Proxy :: Proxy n))
+	load p0 (ObjectLengthDynamic kln) = go p0 (natVal (Proxy :: Proxy n))
 		where
 		go _ n | n < 1 = pure []
 		go p n = (:) <$> (Just <$> K.loadObject p kln) <*> go (nextObject p kln) (n - 1)
-	objectLength = ObjectLengthDynamic . K.objectLength . fromJust . head
+	length = ObjectLengthDynamic . K.objectLength . fromJust . head
 
 nextObject :: forall kobj . K.SizeAlignment kobj =>
 	Ptr (K.TypeOfObject kobj) -> K.ObjectLength kobj -> Ptr (K.TypeOfObject kobj)
