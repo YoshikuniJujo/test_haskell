@@ -2,13 +2,22 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PhysicalDevice (
-	M.P, enumerate,
-	M.getFeatures, M.getQueueFamilyProperties,
-	M.enumerateExtensionProperties,
-	M.getFormatProperties,
 
-	M.Properties(..), M.getProperties,
-	M.MemoryProperties(..), M.getMemoryProperties,
+	-- * ENUMERATE
+
+	enumerate, M.P,
+
+	-- * FEATURES
+
+	M.getFeatures,
+
+	-- * PROPERTIES
+
+	M.getProperties, M.Properties(..),
+	M.getMemoryProperties, M.MemoryProperties(..),
+	M.getQueueFamilyProperties, M.getFormatProperties,
+	M.enumerateExtensionProperties,
+
 	) where
 
 import Gpu.Vulkan.Instance.Type qualified as Instance.T
