@@ -70,13 +70,13 @@ import Gpu.Vulkan.Buffer.Type
 data CreateInfo mn objs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
-	createInfoLengths :: HeteroParList.PL VObj.ObjectLength objs,
+	createInfoLengths :: HeteroParList.PL VObj.Length objs,
 	createInfoUsage :: UsageFlags,
 	createInfoSharingMode :: SharingMode,
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 
 deriving instance
-	(Show (TMaybe.M n), Show (HeteroParList.PL VObj.ObjectLength objs)) =>
+	(Show (TMaybe.M n), Show (HeteroParList.PL VObj.Length objs)) =>
 	Show (CreateInfo n objs)
 
 createInfoToMiddle :: VObj.SizeAlignmentList objs =>
@@ -107,14 +107,14 @@ getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
 {-
-sampleObjLens :: HeteroParList.PL NObj.ObjectLength
+sampleObjLens :: HeteroParList.PL NObj.Length
 	['NObj.List 256 Bool "", 'NObj.Atom 256 Char 'Nothing, 'NObj.Atom 256 Int 'Nothing, 'NObj.List 256 Double "", 'NObj.List 256 Char ""]
 sampleObjLens =
-	NObj.ObjectLengthList 3 :**
-	NObj.ObjectLengthAtom :**
-	NObj.ObjectLengthAtom :**
-	NObj.ObjectLengthList 5 :**
-	NObj.ObjectLengthList 3 :** HeteroParList.Nil
+	NObj.LengthList 3 :**
+	NObj.LengthAtom :**
+	NObj.LengthAtom :**
+	NObj.LengthList 5 :**
+	NObj.LengthList 3 :** HeteroParList.Nil
 	-}
 
 data IndexedForList sm sb nm t onm = forall objs .
@@ -136,9 +136,9 @@ indexedListToMiddles (U5 il :** ils) =
 
 class CopyPrefix (area :: [VObj.O]) (src :: [VObj.O]) (dst :: [VObj.O]) where
 	copyCheckLengthPrefix ::
-		HeteroParList.PL VObj.ObjectLength src ->
-		HeteroParList.PL VObj.ObjectLength dst -> Bool
-	copySizePrefix :: Word64 -> HeteroParList.PL VObj.ObjectLength src -> Word64
+		HeteroParList.PL VObj.Length src ->
+		HeteroParList.PL VObj.Length dst -> Bool
+	copySizePrefix :: Word64 -> HeteroParList.PL VObj.Length src -> Word64
 
 instance CopyPrefix '[] src dst where
 	copyCheckLengthPrefix _ _ = True
@@ -157,17 +157,16 @@ instance (
 
 class CopyInfo (area :: [VObj.O]) (src :: [VObj.O]) (dst :: [VObj.O]) where
 	copyCheckLength ::
-		HeteroParList.PL VObj.ObjectLength src ->
-		HeteroParList.PL VObj.ObjectLength dst -> Bool
-	copySrcOffset :: Word64 -> HeteroParList.PL VObj.ObjectLength src -> Word64
-	copyDstOffset :: Word64 -> HeteroParList.PL VObj.ObjectLength dst -> Word64
-	copySize :: HeteroParList.PL VObj.ObjectLength src -> Word64
+		HeteroParList.PL VObj.Length src ->
+		HeteroParList.PL VObj.Length dst -> Bool
+	copySrcOffset :: Word64 -> HeteroParList.PL VObj.Length src -> Word64
+	copyDstOffset :: Word64 -> HeteroParList.PL VObj.Length dst -> Word64
+	copySize :: HeteroParList.PL VObj.Length src -> Word64
 
-type OT o = VObj.TypeOfObject o
+type OT o = VObj.TypeOf o
 
 instance (
-	WithPoked (VObj.TypeOfObject a),
-	Sizable (VObj.TypeOfObject a),
+	WithPoked (VObj.TypeOf a), Sizable (VObj.TypeOf a),
 	CopyPrefix (a ': as) (a ': ss) (a ': ds) ) => CopyInfo (a ': as) (a ': ss) (a ': ds) where
 	copyCheckLength = copyCheckLengthPrefix @(a ': as) @(a ': ss) @(a ': ds)
 	copySrcOffset ost _ = ((ost - 1) `div` algn + 1) * algn
@@ -201,7 +200,7 @@ instance {-# OVERLAPPABLE #-}
 	copySize (_ :** lns) = copySize @as @ss @ds lns
 
 makeCopy :: forall (as :: [VObj.O]) ss ds . CopyInfo as ss ds =>
-	HeteroParList.PL VObj.ObjectLength ss -> HeteroParList.PL VObj.ObjectLength ds -> C.Copy
+	HeteroParList.PL VObj.Length ss -> HeteroParList.PL VObj.Length ds -> C.Copy
 makeCopy src dst
 	| copyCheckLength @as src dst = C.Copy {
 		C.copySrcOffset = copySrcOffset @as @ss @ds 0 src,
@@ -211,8 +210,8 @@ makeCopy src dst
 
 class MakeCopies (cpss :: [[VObj.O]]) (ss :: [VObj.O]) (ds :: [VObj.O]) where
 	makeCopies ::
-		HeteroParList.PL VObj.ObjectLength ss ->
-		HeteroParList.PL VObj.ObjectLength ds -> [C.Copy]
+		HeteroParList.PL VObj.Length ss ->
+		HeteroParList.PL VObj.Length ds -> [C.Copy]
 
 instance MakeCopies '[] ss ds where makeCopies _ _ = []
 
@@ -223,19 +222,19 @@ instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 {-
 offsetSize :: forall v vs . (
 	VObj.OffsetRange v vs, VObj.SizeAlignment v,
-	VObj.ObjectLengthOf v vs ) =>
-	HeteroParList.PL VObj.ObjectLength vs ->
+	VObj.LengthOf v vs ) =>
+	HeteroParList.PL VObj.Length vs ->
 	Device.M.Size -> (Device.M.Size, Device.M.Size)
 offsetSize lns _ = (VObj.offsetNew @v lns, sizeNew @v lns)
 
 sizeNew :: forall v vs . (
-	VObj.SizeAlignment v, VObj.ObjectLengthOf v vs ) =>
-	HeteroParList.PL VObj.ObjectLength vs -> Device.M.Size
+	VObj.SizeAlignment v, VObj.LengthOf v vs ) =>
+	HeteroParList.PL VObj.Length vs -> Device.M.Size
 sizeNew = fromIntegral . VObj.size . VObj.objectLengthOf @v
 -}
 
 data MemoryBarrier mn sm sb nm obj = forall objs . (
-	VObj.OffsetRange obj objs, VObj.ObjectLengthOf obj objs ) =>
+	VObj.OffsetRange obj objs, VObj.LengthOf obj objs ) =>
 	MemoryBarrier {
 		memoryBarrierNext :: TMaybe.M mn,
 		memoryBarrierSrcAccessMask :: AccessFlags,
@@ -295,7 +294,7 @@ instance ImageCopyListToMiddle algn objs img '[] where
 instance (
 	Storable (KObj.IsImagePixel img), KnownNat algn,
 	VObj.OffsetRange (VObj.Image algn img nm) objs,
-	VObj.ObjectLengthOf (VObj.Image algn img nm) objs,
+	VObj.LengthOf (VObj.Image algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>
 	ImageCopyListToMiddle algn objs img (nm ': nms) where
 	imageCopyListToMiddle bf (ic :** ics) =
@@ -304,7 +303,7 @@ instance (
 
 imageCopyToMiddle :: forall algn img inm sm sb nm obj objs . (
 	obj ~ VObj.Image algn img inm, VObj.SizeAlignment obj,
-	VObj.OffsetRange obj objs, VObj.ObjectLengthOf obj objs ) =>
+	VObj.OffsetRange obj objs, VObj.LengthOf obj objs ) =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
@@ -318,4 +317,4 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageExtent = iext }
 	where
 	(ost, _) = VObj.offsetRange @(VObj.Image algn img inm) 0 lns
-	VObj.ObjectLengthImage r _w h _d = VObj.objectLengthOf @obj lns
+	VObj.LengthImage r _w h _d = VObj.lengthOf @obj lns

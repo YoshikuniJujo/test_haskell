@@ -1104,10 +1104,10 @@ createVertexBuffer :: forall sd sc vbnm a . Vk.PhDvc.P ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb vbnm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList . fromIntegral $ V.length vtcs)
+	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.LengthList . fromIntegral $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList . fromIntegral $ V.length vtcs)
+	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.LengthList . fromIntegral $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1147,7 +1147,7 @@ createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			'Vk.Mem.BufferArg nm
 				'[VObj.Atom 256 GpuCameraData 'Nothing]) ] ->
 		IO a) -> IO a
-createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HeteroParList.Singleton VObj.ObjectLengthAtom)
+createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HeteroParList.Singleton VObj.LengthAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
@@ -1162,7 +1162,7 @@ createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ) ] ->
 		IO a) -> IO a
 createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
-	(VObj.ObjectLengthAtom :** VObj.ObjectLengthAtom :** HeteroParList.Nil)
+	(VObj.LengthAtom :** VObj.LengthAtom :** HeteroParList.Nil)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createBuffer :: forall obj nm sd a . (
@@ -1171,7 +1171,7 @@ createBuffer :: forall obj nm sd a . (
 --	Vk.Mem.Alignments '[
 --		'(s, 'Vk.Mem.BufferArg nm objs) ]
 	) => -- VObj.SizeAlignment obj =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj] ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.Length '[obj] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[obj] ->
@@ -1205,7 +1205,7 @@ createBuffer2 :: forall obj obj2 nm sd a . (
 --	Vk.Mem.Alignments '[
 --		'(s, 'Vk.Mem.BufferArg nm objs) ]
 	) => -- VObj.SizeAlignment obj =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj, obj2] ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.Length '[obj, obj2] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[obj, obj2] ->
@@ -1347,7 +1347,7 @@ instance (
 	update _ _ _ _ _ = error "bad"
 
 descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
-	Show (HeteroParList.PL VObj.ObjectLength objs),
+	Show (HeteroParList.PL VObj.Length objs),
 	VObj.OffsetRange (VObj.Atom 256 tp objnm) objs ) =>
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->

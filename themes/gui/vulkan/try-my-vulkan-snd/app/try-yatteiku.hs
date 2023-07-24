@@ -367,10 +367,10 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 			'Vk.Memory.BufferArg nm '[ VObj.Image 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
-	createBuffer p dv (VObj.ObjectLengthImage r w h d) usg props
+	createBuffer p dv (VObj.LengthImage r w h d) usg props
 
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhysicalDevice.P -> Vk.Device.D sd -> VObj.ObjectLength o ->
+	Vk.PhysicalDevice.P -> Vk.Device.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Memory.M sm

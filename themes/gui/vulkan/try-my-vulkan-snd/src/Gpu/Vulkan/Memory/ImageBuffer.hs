@@ -60,7 +60,7 @@ data ImageBuffer s (ibarg :: ImageBufferArg) where
 	Image :: Image.I si nm fmt -> ImageBuffer si ('ImageArg nm fmt)
 	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('BufferArg nm objs)
 
-deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
+deriving instance Show (HeteroParList.PL VObj.Length objs) =>
 	Show (ImageBuffer sib ('BufferArg nm objs))
 
 data ImageBufferBinded sm sib (ibarg :: ImageBufferArg) where
@@ -69,7 +69,7 @@ data ImageBufferBinded sm sib (ibarg :: ImageBufferArg) where
 	BufferBinded :: Buffer.Binded sm sb nm objs ->
 		ImageBufferBinded sm sb ('BufferArg nm objs)
 
-deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
+deriving instance Show (HeteroParList.PL VObj.Length objs) =>
 	Show (ImageBufferBinded sm sib ('BufferArg nm objs))
 
 data ImageBufferArg = ImageArg Symbol T.Format | BufferArg Symbol [VObj.O]
@@ -135,12 +135,12 @@ instance (VObj.SizeAlignment obj, Alignments ibs) =>
 
 class ObjectLength (nm :: Symbol) (obj :: VObj.O) ibargs where
 	objectLength' :: HeteroParList.PL (U2 ImageBuffer) ibargs ->
-		VObj.ObjectLength obj
+		VObj.Length obj
 
-instance VObj.ObjectLengthOf obj objs =>
+instance VObj.LengthOf obj objs =>
 	ObjectLength nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
 	objectLength' (U2 (Buffer (Buffer.B lns _)) :** _) =
-		VObj.objectLengthOf @obj lns
+		VObj.lengthOf @obj lns
 
 instance {-# OVERLAPPABLE #-} ObjectLength nm obj ibargs =>
 	ObjectLength nm obj (ibarg ': ibargs) where

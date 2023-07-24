@@ -997,7 +997,7 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 			'Vk.Dvc.Mem.ImageBuffer.BufferArg nm '[ VObj.Image 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
-	createBuffer' p dv (VObj.ObjectLengthImage r w h d) usg props
+	createBuffer' p dv (VObj.LengthImage r w h d) usg props
 
 createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
@@ -1007,7 +1007,7 @@ createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 			sb,
 			'Vk.Dvc.Mem.ImageBuffer.BufferArg nm '[VObj.Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
-createBufferAtom p dv usg props = createBuffer' p dv VObj.ObjectLengthAtom usg props
+createBufferAtom p dv usg props = createBuffer' p dv VObj.LengthAtom usg props
 
 createBufferList :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Device.M.Size -> Vk.Bffr.UsageFlags ->
@@ -1019,10 +1019,10 @@ createBufferList :: forall sd nm t a . Storable t =>
 		IO a) ->
 	IO a
 createBufferList p dv ln usg props =
-	createBuffer' p dv (VObj.ObjectLengthList ln) usg props
+	createBuffer' p dv (VObj.LengthList ln) usg props
 
 createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.ObjectLength o ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm

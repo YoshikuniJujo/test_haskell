@@ -226,7 +226,7 @@ bufferInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List]
 bufferInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
-	Vk.Bffr.createInfoLengths = HL.Singleton $ Obj.ObjectLengthList bffSize,
+	Vk.Bffr.createInfoLengths = HL.Singleton $ Obj.LengthList bffSize,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -254,7 +254,7 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 		i : _ -> pure i
 
 writeDscSet :: forall slbts sb sm os sds . (
-	Show (HL.PL Obj.ObjectLength os),
+	Show (HL.PL Obj.Length os),
 	Obj.OffsetRange (Obj.List 256 Word32 "") os ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.Write 'Nothing sds slbts

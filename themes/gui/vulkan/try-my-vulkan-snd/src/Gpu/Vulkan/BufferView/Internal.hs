@@ -75,6 +75,5 @@ type family FormatOf t :: TEnum.Format
 
 offsetRange :: forall t nm objs .
 	VObj.OffsetOfList t nm objs =>
-	HeteroParList.PL VObj.ObjectLength objs ->
-	(Device.M.Size, Device.M.Size)
+	HeteroParList.PL VObj.Length objs -> (Device.M.Size, Device.M.Size)
 offsetRange = VObj.offsetOfList @t @nm

@@ -366,9 +366,9 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 
 writeDscSet ::
 	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds . (
-	Show (HeteroParList.PL VObj.ObjectLength objs1),
-	Show (HeteroParList.PL VObj.ObjectLength objs2),
-	Show (HeteroParList.PL VObj.ObjectLength objs3),
+	Show (HeteroParList.PL VObj.Length objs1),
+	Show (HeteroParList.PL VObj.Length objs2),
+	Show (HeteroParList.PL VObj.Length objs3),
 	VObj.OffsetRange (VObj.List 256 w1 "") objs1,
 	VObj.OffsetRange (VObj.List 256 w2 "") objs2,
 	VObj.OffsetRange (VObj.List 256 w3 "") objs3 ) =>
@@ -387,7 +387,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		U4 (bufferInfoList @w3 bc) :** HeteroParList.Nil }
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
-	Show (HeteroParList.PL VObj.ObjectLength objs),
+	Show (HeteroParList.PL VObj.Length objs),
 	VObj.OffsetRange (VObj.List 256 t "") objs ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "")
@@ -483,7 +483,7 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
-		VObj.ObjectLengthList (fromIntegral $ V.length xs) :** HeteroParList.Nil,
+		VObj.LengthList (fromIntegral $ V.length xs) :** HeteroParList.Nil,
 	Vk.Buffer.createInfoUsage =
 		Vk.Buffer.UsageStorageBufferBit .|.
 		Vk.Buffer.UsageStorageTexelBufferBit,

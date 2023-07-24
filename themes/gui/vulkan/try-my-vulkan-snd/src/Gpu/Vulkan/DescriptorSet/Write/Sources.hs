@@ -166,7 +166,7 @@ instance (
 			$ HeteroParList.map3_4 (toLength . unU4) bis
 		where
 		toLength :: Descriptor.BufferInfo sm sb nm obj ->
-			VObj.ObjectLength obj
+			VObj.Length obj
 		toLength (Descriptor.BufferInfo (Buffer.Binded lns _)) =
 			HeteroParList.typeIndex lns
 

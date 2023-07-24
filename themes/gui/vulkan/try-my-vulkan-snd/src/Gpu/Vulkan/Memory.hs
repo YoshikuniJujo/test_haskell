@@ -169,7 +169,7 @@ read :: forall nm obj v sd sm ibargs .
 	Device.D sd -> M sm ibargs -> M.MapFlags -> IO v
 read dv m flgs = bracket
 	(map @nm @obj dv m flgs) (const $ unmap dv m)
-	\(ptr :: Ptr (VObj.TypeOfObject obj)) ->
+	\(ptr :: Ptr (VObj.TypeOf obj)) ->
 		VObj.load @_ @obj ptr =<< objectLength @nm @obj m
 
 write :: forall nm obj sd sm ibargs v .
@@ -177,13 +177,13 @@ write :: forall nm obj sd sm ibargs v .
 	Device.D sd -> M sm ibargs -> M.MapFlags -> v -> IO ()
 write dv m flgs v = bracket
 	(map @nm @obj dv m flgs) (const $ unmap dv m)
-	\(ptr :: Ptr (VObj.TypeOfObject obj)) -> do
+	\(ptr :: Ptr (VObj.TypeOf obj)) -> do
 		ln <- objectLength @nm @obj m
 		VObj.store @_ @obj ptr ln v
 
 map :: forall nm obj sd sm ibargs . OffsetSize nm obj ibargs =>
 	Device.D sd -> M sm ibargs -> M.MapFlags ->
-	IO (Ptr (VObj.TypeOfObject obj))
+	IO (Ptr (VObj.TypeOf obj))
 map dv@(Device.D mdv) m flgs = readM m >>= \(_, mm) -> do
 	(ost, sz) <- offsetSize @nm @obj dv m 0
 	M.map mdv mm ost sz flgs

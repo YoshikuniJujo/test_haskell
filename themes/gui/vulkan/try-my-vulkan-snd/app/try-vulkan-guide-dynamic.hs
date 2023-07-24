@@ -1026,12 +1026,12 @@ createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[CameraObj]) ] ->
 		IO a) -> IO a
 createCameraBuffer pd dv = createBuffer pd dv
-	(HL.Singleton Obj.ObjectLengthAtom)
+	(HL.Singleton Obj.LengthAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
 createBuffer :: forall objs nm sd a . (
 	Obj.SizeAlignmentList objs, forall s . SizeAlignmentAll s nm objs ) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.ObjectLength objs ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.Length objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm objs ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm objs)] -> IO a) ->
@@ -1054,7 +1054,7 @@ instance {-# OVERLAPPABLE #-} (
 	Obj.SizeAlignment obj, SizeAlignmentAll s nm objs ) =>
 	SizeAlignmentAll s nm (obj ': objs)
 
-bufferInfo :: HL.PL Obj.ObjectLength objs ->
+bufferInfo :: HL.PL Obj.Length objs ->
 	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing objs
 bufferInfo lns usg = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
@@ -1074,7 +1074,7 @@ createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[SceneObj])] ->
 	IO a) -> IO a
 createSceneBuffer pd dv = createBuffer pd dv
-	(HL.Singleton Obj.ObjectLengthDynAtom)
+	(HL.Singleton Obj.LengthDynAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
 createDescriptorPool ::
@@ -1140,7 +1140,7 @@ instance (
 		update dv dscss csbs scnb
 
 descriptorWrite :: forall obj slbts sb sm nm objs sds . (
-	Show (HL.PL Obj.ObjectLength objs), Obj.OffsetRange obj objs ) =>
+	Show (HL.PL Obj.Length objs), Obj.OffsetRange obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
@@ -1168,7 +1168,7 @@ createVertexBuffer pd dv gq cp vs f =
 	beginSingleTimeCommands dv gq cp \cb ->
 		Vk.Cmd.copyBuffer @'[ '[Obj.List 256 Vertex ""]] cb b' b
 	f b
-	where lns = HL.Singleton . Obj.ObjectLengthList . fromIntegral $ V.length vs
+	where lns = HL.Singleton . Obj.LengthList . fromIntegral $ V.length vs
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->

@@ -62,5 +62,5 @@ writeMBinded (M rib _r) ibs =
 -- OBJECT LENGTH
 
 objectLength :: forall nm obj ibargs sm . ObjectLength nm obj ibargs =>
-	M sm ibargs -> IO (VObj.ObjectLength obj)
+	M sm ibargs -> IO (VObj.Length obj)
 objectLength m = (<$> readM m) \(ibs, _m) -> objectLength' @nm @obj @ibargs ibs

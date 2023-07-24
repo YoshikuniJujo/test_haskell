@@ -113,8 +113,8 @@ calc :: forall w1 w2 w3 . (
 	Storable w1, Storable w2, Storable w3,
 	VObj.OffsetRange (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3),
 	VObj.OffsetRange (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3),
-	VObj.ObjectLengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	VObj.ObjectLengthOf (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
+	VObj.LengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
+	VObj.LengthOf (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 	) =>
 	BufMem -> FilePath -> Vk.Image.Tiling -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
@@ -332,8 +332,8 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 	VObj.OffsetRange (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
 	Vk.DscSet.BindingAndArrayElemBuffer bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
 	Vk.DscSet.UpdateDynamicLength bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	VObj.ObjectLengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	VObj.ObjectLengthOf (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
+	VObj.LengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
+	VObj.LengthOf (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 	) =>
 	FilePath -> Vk.Image.Tiling ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
@@ -500,7 +500,7 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
-		VObj.ObjectLengthList (fromIntegral $ V.length xs) :** HeteroParList.Nil,
+		VObj.LengthList (fromIntegral $ V.length xs) :** HeteroParList.Nil,
 	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
@@ -522,9 +522,9 @@ bufferInfo' xs ys zs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
-		VObj.ObjectLengthList (fromIntegral $ V.length xs) :**
-		VObj.ObjectLengthList (fromIntegral $ V.length ys) :**
-		VObj.ObjectLengthList (fromIntegral $ V.length zs) :** HeteroParList.Nil,
+		VObj.LengthList (fromIntegral $ V.length xs) :**
+		VObj.LengthList (fromIntegral $ V.length ys) :**
+		VObj.LengthList (fromIntegral $ V.length zs) :** HeteroParList.Nil,
 	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
@@ -611,9 +611,9 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
 	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds . (
-	Show (HeteroParList.PL VObj.ObjectLength objs1),
-	Show (HeteroParList.PL VObj.ObjectLength objs2),
-	Show (HeteroParList.PL VObj.ObjectLength objs3),
+	Show (HeteroParList.PL VObj.Length objs1),
+	Show (HeteroParList.PL VObj.Length objs2),
+	Show (HeteroParList.PL VObj.Length objs3),
 	VObj.OffsetRange (VObj.List 256 w1 "") objs1,
 	VObj.OffsetRange (VObj.List 256 w2 "") objs2,
 	VObj.OffsetRange (VObj.List 256 w3 "") objs3 ) =>
@@ -632,7 +632,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		U4 (bufferInfoList @w3 bc) :** HeteroParList.Nil }
 
 writeDscSet' :: forall w1 w2 w3 slbts sb sm nm objs sds . (
-	Show (HeteroParList.PL VObj.ObjectLength objs),
+	Show (HeteroParList.PL VObj.Length objs),
 	VObj.OffsetRange (VObj.List 256 w1 "") objs,
 	VObj.OffsetRange (VObj.List 256 w2 "") objs,
 	VObj.OffsetRange (VObj.List 256 w3 "") objs ) =>
@@ -650,7 +650,7 @@ writeDscSet' ds b = Vk.DscSet.Write {
 		U4 (bufferInfoList @w3 b) :** HeteroParList.Nil }
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
-	Show (HeteroParList.PL VObj.ObjectLength objs),
+	Show (HeteroParList.PL VObj.Length objs),
 	VObj.OffsetRange (VObj.List 256 t "") objs ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "")

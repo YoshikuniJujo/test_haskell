@@ -219,7 +219,7 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
-		VObj.ObjectLengthDynList (fromIntegral $ V.length xs) :** HeteroParList.Nil,
+		VObj.LengthDynList (fromIntegral $ V.length xs) :** HeteroParList.Nil,
 	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
@@ -253,9 +253,9 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
 	forall slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 sds . (
-	Show (HeteroParList.PL VObj.ObjectLength objs1),
-	Show (HeteroParList.PL VObj.ObjectLength objs2),
-	Show (HeteroParList.PL VObj.ObjectLength objs3),
+	Show (HeteroParList.PL VObj.Length objs1),
+	Show (HeteroParList.PL VObj.Length objs2),
+	Show (HeteroParList.PL VObj.Length objs3),
 	VObj.OffsetRange ('VObj.Dynamic 2 (KObj.List 256 W1 "")) objs1,
 	VObj.OffsetRange ('VObj.Dynamic 2 (KObj.List 256 W2 "")) objs2,
 	VObj.OffsetRange ('VObj.Dynamic 2 (KObj.List 256 W3 "")) objs3
