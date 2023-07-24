@@ -190,25 +190,25 @@ bindDescriptorSetsCompute
 			dss)
 		dosts
 
-newtype DynamicIndex (obj :: KObj.Object) = DynamicIndex Word32 deriving Show
-newtype DynamicOffset (obj :: KObj.Object) = DynamicOffset Word32 deriving Show
+newtype DynamicIndex (obj :: KObj.O) = DynamicIndex Word32 deriving Show
+newtype DynamicOffset (obj :: KObj.O) = DynamicOffset Word32 deriving Show
 
 getOffset' :: forall obj . KObj.SizeAlignment obj =>
-	KObj.ObjectLength obj -> DynamicIndex obj -> Word32
+	KObj.Length obj -> DynamicIndex obj -> Word32
 getOffset' ln (DynamicIndex i) = fromIntegral sz * i
 	where
 	sz = ((KObj.size ln - 1) `div` algn + 1) * algn
 	algn = KObj.alignment @obj
 
 getOffsetListNew :: HeteroParList.ZipListWithC3 KObj.SizeAlignment osss =>
-		HeteroParList.PL3 KObj.ObjectLength osss ->
+		HeteroParList.PL3 KObj.Length osss ->
 		HeteroParList.PL3 DynamicIndex osss -> [[[Word32]]]
 getOffsetListNew = HeteroParList.zipListWithC3 @KObj.SizeAlignment getOffset'
 
 class GetDynamicLength sspslbtss where
 	getDynamicLength ::
 		HeteroParList.PL (U2 DescriptorSet.D) sspslbtss ->
-		IO (HeteroParList.PL3 KObj.ObjectLength
+		IO (HeteroParList.PL3 KObj.Length
 			(LayoutArgListOnlyDynamics (TMapIndex.M1_2 sspslbtss)))
 
 type family LayoutArgListOnlyDynamics las where
@@ -226,7 +226,7 @@ instance GetDynamicLength spslbtss =>
 		(:**) <$> getDscSetLengthsNew ds <*> getDynamicLength dss
 
 getDscSetLengthsNew :: DescriptorSet.D s slbts ->
-	IO (HeteroParList.PL2 KObj.ObjectLength
+	IO (HeteroParList.PL2 KObj.Length
 		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts)))
 getDscSetLengthsNew (DescriptorSet.D lns _) = readIORef lns
 

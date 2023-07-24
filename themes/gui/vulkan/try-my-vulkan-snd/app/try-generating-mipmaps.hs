@@ -1091,7 +1091,7 @@ halves :: Integral i => i -> [i]
 halves = iterate half
 
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
-	Storable (KObj.IsImagePixel img) =>
+	Storable (KObj.ImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
 --	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
@@ -1199,7 +1199,7 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
-createBufferImage :: Storable (KObj.IsImagePixel t) =>
+createBufferImage :: Storable (KObj.ImagePixel t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
@@ -1366,15 +1366,15 @@ listToTuple4 [r, g, b, a] = (r, g, b, a)
 listToTuple4 _ = error "The length of the list is not 4"
 
 instance KObj.IsImage MyImage where
-	type IsImagePixel MyImage = MyRgba8
+	type ImagePixel MyImage = MyRgba8
 	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
-	isImageRow = KObj.isImageWidth
-	isImageWidth (MyImage img) = fromIntegral $ imageWidth img
-	isImageHeight (MyImage img) = fromIntegral $ imageHeight img
-	isImageDepth _ = 1
-	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+	imageRow = KObj.imageWidth
+	imageWidth (MyImage img) = fromIntegral $ imageWidth img
+	imageHeight (MyImage img) = fromIntegral $ imageHeight img
+	imageDepth _ = 1
+	imageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
 		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	isImageMake w h _d pss = MyImage
+	imageMake w h _d pss = MyImage
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 

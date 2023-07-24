@@ -292,7 +292,7 @@ instance ImageCopyListToMiddle algn objs img '[] where
 	imageCopyListToMiddle _ HeteroParList.Nil = []
 
 instance (
-	Storable (KObj.IsImagePixel img), KnownNat algn,
+	Storable (KObj.ImagePixel img), KnownNat algn,
 	VObj.OffsetRange (VObj.Image algn img nm) objs,
 	VObj.LengthOf (VObj.Image algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>

@@ -15,6 +15,6 @@ import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Lyt
 
 data D s (slbts :: (Type, [Lyt.BindingType])) = D
-	(IORef (HeteroParList.PL2 KObj.ObjectLength
+	(IORef (HeteroParList.PL2 KObj.Length
 		(Lyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))))
 	M.D

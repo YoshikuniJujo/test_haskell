@@ -14,7 +14,7 @@ module Gpu.Vulkan.Object.Base (
 
 	-- * OBJECT
 
-	Object(..), IsImage(..),
+	O(..), IsImage(..),
 
 	-- ** Synonyms
 
@@ -22,15 +22,15 @@ module Gpu.Vulkan.Object.Base (
 
 	-- ** Type Of Object
 
-	TypeOfObject,
+	TypeOf,
 
 	-- * OBJECT LENGTH
 
-	ObjectLength(..), renameObjectLength,
+	Length(..), renameLength,
 
 	-- * STORE
 
-	StoreObject(..),
+	Store(..),
 
 	-- * SIZE AND ALIGNMENT
 
@@ -55,50 +55,50 @@ import Gpu.Vulkan.TypeEnum qualified as T
 
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 
-data Object = Object Alignment (Maybe Symbol) ObjectType Type
+data O = O Alignment (Maybe Symbol) ObjectType Type
 
 data ObjectType = AtomT | ListT | ImageT deriving Show
 
-type Atom algn t mnm = 'Object algn mnm AtomT t
-type List algn t nm = 'Object algn ('Just nm) ListT t
-type Image algn t nm = 'Object algn ('Just nm) ImageT t
+type Atom algn t mnm = 'O algn mnm AtomT t
+type List algn t nm = 'O algn ('Just nm) ListT t
+type Image algn t nm = 'O algn ('Just nm) ImageT t
 
 type Alignment = Nat
 
-data ObjectLength (obj :: Object) where
-	ObjectLengthAtom :: ObjectLength (Atom algn t nm)
-	ObjectLengthList :: Device.M.Size -> ObjectLength ('Object algn mnm ListT t)
-	ObjectLengthImage :: {
-		objectLengthImageRow :: Device.M.Size,
-		objectLengthImageWidth :: Device.M.Size,
-		objectLengthImageHeight :: Device.M.Size,
-		objectLengthImageDepth :: Device.M.Size } -> ObjectLength ('Object algn mnm ImageT t)
+data Length (obj :: O) where
+	LengthAtom :: Length (Atom algn t nm)
+	LengthList :: Device.M.Size -> Length ('O algn mnm ListT t)
+	LengthImage :: {
+		lengthImageRow :: Device.M.Size,
+		lengthImageWidth :: Device.M.Size,
+		lengthImageHeight :: Device.M.Size,
+		lengthImageDepth :: Device.M.Size } -> Length ('O algn mnm ImageT t)
 
-deriving instance Eq (ObjectLength obj)
-deriving instance Show (ObjectLength obj)
+deriving instance Eq (Length obj)
+deriving instance Show (Length obj)
 
-renameObjectLength :: ObjectLength ('Object algn mnm ot t) ->
-	ObjectLength ('Object algn mnm' ot t)
-renameObjectLength ObjectLengthAtom = ObjectLengthAtom
-renameObjectLength (ObjectLengthList n) = ObjectLengthList n
-renameObjectLength (ObjectLengthImage r w h d) = ObjectLengthImage r w h d
+renameLength :: Length ('O algn mnm ot t) ->
+	Length ('O algn mnm' ot t)
+renameLength LengthAtom = LengthAtom
+renameLength (LengthList n) = LengthList n
+renameLength (LengthImage r w h d) = LengthImage r w h d
 
-type family TypeOfObject obj where
-	TypeOfObject ((Atom _algn t _nm)) = t
-	TypeOfObject ((List _algn t _nm)) = t
+type family TypeOf obj where
+	TypeOf ((Atom _algn t _nm)) = t
+	TypeOf ((List _algn t _nm)) = t
 
-instance Default (ObjectLength (Atom algn t mnm)) where def = ObjectLengthAtom
-instance Default (ObjectLength (List algn t nm)) where def = ObjectLengthList 0
-instance Default (ObjectLength (Image algn t nm)) where def = ObjectLengthImage 0 0 0 0
+instance Default (Length (Atom algn t mnm)) where def = LengthAtom
+instance Default (Length (List algn t nm)) where def = LengthList 0
+instance Default (Length (Image algn t nm)) where def = LengthImage 0 0 0 0
 
-data SizeAlignmentOfObj (obj :: Object) =
+data SizeAlignmentOfObj (obj :: O) =
 	SizeAlignmentOfObj Size ObjAlignment deriving Show
 
 type Size = Int
 type ObjAlignment = Int
 
 class SizeAlignment obj where
-	size :: ObjectLength obj -> Device.M.Size
+	size :: Length obj -> Device.M.Size
 	alignment :: Device.M.Size
 
 applyAlign :: Integral n => n -> n -> n
@@ -106,14 +106,14 @@ applyAlign algn ofst = ((ofst - 1) `div` algn + 1) * algn
 
 instance (KnownNat algn, S.Storable t) =>
 	SizeAlignment ((Atom algn t _nm)) where
-	size (ObjectLengthAtom) = applyAlign algn . fromIntegral $ S.sizeOf @t undefined
+	size (LengthAtom) = applyAlign algn . fromIntegral $ S.sizeOf @t undefined
 		where algn = alignment @((Atom algn t _nm))
 	alignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		fromIntegral (S.alignment @t undefined)
 
 instance (KnownNat algn, S.Storable t) =>
 	SizeAlignment ((List algn t _nm)) where
-	size (ObjectLengthList n) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
+	size (LengthList n) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = fromIntegral $ S.sizeOf @t undefined
 		algn = fromIntegral $ S.alignment @t undefined
@@ -121,55 +121,55 @@ instance (KnownNat algn, S.Storable t) =>
 	alignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		fromIntegral (S.alignment @t undefined)
 
-instance (KnownNat algn, S.Storable (IsImagePixel img)) => SizeAlignment ((Image algn img nm)) where
-	size (ObjectLengthImage r _w h d) =
+instance (KnownNat algn, S.Storable (ImagePixel img)) => SizeAlignment ((Image algn img nm)) where
+	size (LengthImage r _w h d) =
 		r * h * d * ((sz - 1) `div` algn + 1) * algn
 		where
-		sz = fromIntegral $ S.sizeOf @(IsImagePixel img) undefined
+		sz = fromIntegral $ S.sizeOf @(ImagePixel img) undefined
 		algn = alignment @((Image algn img nm))
 	alignment =fromIntegral (natVal (Proxy :: Proxy algn))
 		`lcm`
-		fromIntegral (S.alignment @(IsImagePixel img) undefined)
+		fromIntegral (S.alignment @(ImagePixel img) undefined)
 
-class SizeAlignment obj => StoreObject v (obj :: Object) where
-	storeObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> v -> IO ()
-	loadObject :: Ptr (TypeOfObject obj) -> ObjectLength obj -> IO v
-	objectLength :: v -> ObjectLength obj
+class SizeAlignment obj => Store v (obj :: O) where
+	store :: Ptr (TypeOf obj) -> Length obj -> v -> IO ()
+	load :: Ptr (TypeOf obj) -> Length obj -> IO v
+	length :: v -> Length obj
 
-instance (S.Storable t, KnownNat _algn) => StoreObject t ((Atom _algn t _nm)) where
-	storeObject p (ObjectLengthAtom) x = S.poke p x
-	loadObject p (ObjectLengthAtom) = S.peek p
-	objectLength _ = ObjectLengthAtom
+instance (S.Storable t, KnownNat _algn) => Store t ((Atom _algn t _nm)) where
+	store p (LengthAtom) x = S.poke p x
+	load p (LengthAtom) = S.peek p
+	length _ = LengthAtom
 
 instance (
 	KnownNat _algn,
 	MonoFoldable v, Seq.IsSequence v,
 	S.Storable t, Element v ~ t ) =>
-	StoreObject v ((List _algn t _nm)) where
-	storeObject p ((ObjectLengthList n)) xs =
+	Store v ((List _algn t _nm)) where
+	store p ((LengthList n)) xs =
 		pokeArray p . take (fromIntegral n) $ otoList xs
-	loadObject p ((ObjectLengthList n)) =
+	load p ((LengthList n)) =
 		Seq.fromList <$> peekArray (fromIntegral n) p
-	objectLength = ObjectLengthList . fromIntegral . olength
+	length = LengthList . fromIntegral . olength
 
-instance (KnownNat algn, IsImage img, S.Storable (IsImagePixel img)) =>
-	StoreObject img ((Image algn img nm)) where
-	storeObject p0 (ObjectLengthImage r w _h _d) img =
-		for_ (zip (iterate (`plusPtr` fromIntegral s) p0) $ isImageBody img)
+instance (KnownNat algn, IsImage img, S.Storable (ImagePixel img)) =>
+	Store img ((Image algn img nm)) where
+	store p0 (LengthImage r w _h _d) img =
+		for_ (zip (iterate (`plusPtr` fromIntegral s) p0) $ imageBody img)
 			\(p, take (fromIntegral w) -> rw) -> pokeArray (castPtr p) $ take (fromIntegral w) rw
-		where s = r * fromIntegral (S.sizeOf @(IsImagePixel img) undefined)
-	loadObject p0 (ObjectLengthImage r w h d) = isImageMake w h d
+		where s = r * fromIntegral (S.sizeOf @(ImagePixel img) undefined)
+	load p0 (LengthImage r w h d) = imageMake w h d
 		<$> for (take (fromIntegral (h * d)) $ iterate (`plusPtr` fromIntegral s) p0) \p -> peekArray (fromIntegral w) (castPtr p)
-		where s = r * fromIntegral (S.sizeOf @(IsImagePixel img) undefined)
-	objectLength img = ObjectLengthImage
-		(isImageRow img) (isImageWidth img) (isImageHeight img) (isImageDepth img)
+		where s = r * fromIntegral (S.sizeOf @(ImagePixel img) undefined)
+	length img = LengthImage
+		(imageRow img) (imageWidth img) (imageHeight img) (imageDepth img)
 
 class IsImage img where
-	type IsImagePixel img
+	type ImagePixel img
 	type ImageFormat img :: T.Format
-	isImageRow :: img -> Device.M.Size
-	isImageWidth :: img -> Device.M.Size
-	isImageHeight :: img -> Device.M.Size
-	isImageDepth :: img -> Device.M.Size
-	isImageBody :: img -> [[IsImagePixel img]]
-	isImageMake :: Device.M.Size -> Device.M.Size -> Device.M.Size -> [[IsImagePixel img]] -> img
+	imageRow :: img -> Device.M.Size
+	imageWidth :: img -> Device.M.Size
+	imageHeight :: img -> Device.M.Size
+	imageDepth :: img -> Device.M.Size
+	imageBody :: img -> [[ImagePixel img]]
+	imageMake :: Device.M.Size -> Device.M.Size -> Device.M.Size -> [[ImagePixel img]] -> img
