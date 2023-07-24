@@ -8,9 +8,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Compute (createCsNew, C(..), CreateInfo(..)) where
+module Gpu.Vulkan.Pipeline.Compute (
+
+	-- CREATE
+
+	createCsNew, C(..), CreateInfo(..), CreateInfoListToMiddle
+
+	) where
 
 import Foreign.Storable.PeekPoke
+import Foreign.Storable.HeteroList
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
@@ -89,7 +96,7 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoBasePipelineHandle = bph,
 		M.createInfoBasePipelineIndex = bpi }
 
-class CreateInfoListToMiddle as where
+class M.CreateInfoListToCore (Result as) => CreateInfoListToMiddle as where
 	type Result as :: [(Maybe Type, Maybe Type, [Type])]
 	createInfoListToMiddle ::
 		Device.D sd -> HeteroParList.PL (U4 CreateInfo) as ->
@@ -101,7 +108,10 @@ instance CreateInfoListToMiddle '[] where
 
 instance (
 	WithPoked (TMaybe.M n'), CreateInfoListToMiddle as,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	AllocationCallbacks.ToMiddle mscc,
+
+	WithPoked (TMaybe.M n), WithPoked (TMaybe.M n1), PokableList vs
+	) =>
 	CreateInfoListToMiddle (
 		'(n, '(n1, n', 'GlslComputeShader, mscc, vs), slsbtss, sbph
 		) ': as) where
@@ -140,7 +150,7 @@ instance (
 		destroyCreateInfoMiddleList dvc mcis cis
 
 createCsNew :: (
-	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
+	CreateInfoListToMiddle vss,
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	HeteroParList.HomoList '() (HeteroParList.ToDummies vss),
 	FromMiddleList (CreateInfoListArgs4ToCArgs1 vss),
