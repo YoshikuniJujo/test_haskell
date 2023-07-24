@@ -95,7 +95,7 @@ import Gpu.Vulkan.Device.Middle qualified as Device.M
 
 data O = Static_ K.Object | Dynamic Nat K.Object
 
-type Static algn mnm ot v = Static_ ('K.Object algn mnm ot v)
+type Static algn mnm ot v = 'Static_ ('K.Object algn mnm ot v)
 type Dynamic n algn mnm ot v = 'Dynamic n ('K.Object algn mnm ot v)
 
 type Atom algn v mnm = Static_ (K.Atom algn v mnm)
