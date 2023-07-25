@@ -277,7 +277,7 @@ calc :: forall slbts sl bts sd spc sds . (
 	Vk.DS.D sds slbts -> Word32 -> IO ()
 calc qfi dv pcch dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil' \plyt ->
-	Vk.Ppl.Cmpt.createCsNew dv (Just pcch)
+	Vk.Ppl.Cmpt.createCs dv (Just pcch)
 		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
 	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->

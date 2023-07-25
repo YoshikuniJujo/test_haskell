@@ -284,7 +284,7 @@ calc :: forall slbts sl bts sd sds . (
 	Vk.DscSet.D sds slbts -> Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil' \plyt ->
-	Vk.Ppl.Cmpt.createCsNew dvc Nothing
+	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->

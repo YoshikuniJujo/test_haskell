@@ -149,7 +149,7 @@ calc' :: (
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil' \pplLyt ->
-	Vk.Ppl.Cmpt.createCsNew dvc Nothing
+	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ cmptPipelineInfo pplLyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil' \cmdPool ->

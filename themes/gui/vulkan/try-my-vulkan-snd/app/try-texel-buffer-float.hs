@@ -135,7 +135,7 @@ calc' :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3 sm1 sm2 sm3
 	IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil' \pplLyt ->
-	Vk.Ppl.Cmpt.createCsNew
+	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(U4 (computePipelineInfo pplLyt) :** HeteroParList.Nil)
 		nil' \(ppl :** HeteroParList.Nil) ->

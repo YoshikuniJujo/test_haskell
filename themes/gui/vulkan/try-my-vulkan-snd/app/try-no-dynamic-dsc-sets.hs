@@ -375,7 +375,7 @@ calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil' \plyt ->
-	Vk.Ppl.Cmpt.createCsNew
+	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
