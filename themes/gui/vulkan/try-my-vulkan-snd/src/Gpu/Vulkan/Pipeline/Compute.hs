@@ -112,7 +112,7 @@ destroyCreateInfoMiddle ::
 	Device.D sd -> M.CreateInfo n n1 vs ->
 	CreateInfo n '(n1, n2, 'GlslComputeShader, mscc, vs) lyta bpha -> IO ()
 destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddleNew dvc
-	(M.createInfoStage mci) ((\(U5 s) -> s) $ createInfoStage ci)
+	(M.createInfoStage mci) ((\(U5 s) -> snd $ ShaderStage.createInfoModuleNew s) $ createInfoStage ci)
 
 class DestroyCreateInfoMiddleList vss vss' where
 	destroyCreateInfoMiddleList ::
