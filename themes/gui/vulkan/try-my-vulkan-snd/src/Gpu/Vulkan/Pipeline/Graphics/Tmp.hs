@@ -10,15 +10,17 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics.Tmp (
-	createGs, recreateGs,
-	CreateInfo(..), CreateInfoListToMiddle(..), GListVars ) where
+
+	CreateInfo(..), CreateInfoListToMiddle(..),
+
+	createInfoToMiddle
+
+	) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 
-import GHC.TypeNats
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -49,11 +51,6 @@ import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
 	as BindingStrideList
 import qualified Gpu.Vulkan.VertexInput as VertexInput
-
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
-import qualified Gpu.Vulkan.PipelineCache.Middle as Cache
 
 data CreateInfo mn nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
@@ -144,31 +141,3 @@ instance (
 		n, nskndvss, n2, n3, n4, n5, n6, n7, n8, n9, n10) : CreateInfoListArgs ss
 	createInfoListToMiddle (U11 ci :** cis) =
 		U11 (createInfoToMiddle ci) :** createInfoListToMiddle cis
-
-createGs :: (
-	M.CreateInfoListToCore (CreateInfoListArgs ss),
-	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle msn'n' ) =>
-	Device.D -> Maybe Cache.C ->
-	HeteroParList.PL (U11 CreateInfo) ss ->
-	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO [M.G]
-createGs dvc mc cis (AllocationCallbacks.toMiddle -> mac) =
-	M.createGs dvc mc (createInfoListToMiddle cis) mac
-
-recreateGs :: (
-	M.CreateInfoListToCore (CreateInfoListArgs ss),
-	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle mscc ) => Device.D -> Maybe Cache.C ->
-	HeteroParList.PL (U11 CreateInfo) ss ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	[M.G] -> IO ()
-recreateGs dvc mc cis
-	(AllocationCallbacks.toMiddle -> macc) gs =
-	M.recreateGs dvc mc (createInfoListToMiddle cis) macc gs
-
-type family GListVars (ss :: [(
-		Type, [(Type, ShaderKind, [Type])],
-		(Type, [Type], [(Nat, Type)]), Type, Type, Type, Type, Type, Type, Type,
-		Type)]) :: [([Type], [(Nat, Type)])] where
-	GListVars '[] = '[]
-	GListVars ('(
-		n, nskndvss, '(n2, vs, ts),
-		n3, n4, n5, n6, n7, n8, n9, n10 ) ': ss) = '(vs, ts) ': GListVars ss

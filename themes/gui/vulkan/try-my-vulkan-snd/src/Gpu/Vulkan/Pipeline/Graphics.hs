@@ -53,6 +53,9 @@ import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 
 import Gpu.Vulkan.VertexInput qualified as VertexInput
 
+import qualified Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
+	as BindingStrideList
+
 data CreateInfo mn nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfo {
 		createInfoNext :: TMaybe.M mn,
@@ -105,6 +108,17 @@ type family CreateInfoListArgs14ToGArgs3 (cias :: [CreateInfoArgs14]) ::
 	CreateInfoListArgs14ToGArgs3 (cia ': cias) =
 		CreateInfoArgs14ToGArgs3 cia ':
 		CreateInfoListArgs14ToGArgs3 cias
+
+createInfoToMiddle' :: (
+	BindingStrideList.BindingStrideList
+		VertexInput.Rate vs VertexInput.Rate,
+	VertexInputState.CreateInfoAttributeDescription vs ts,
+	ShaderStage.CreateInfoListToMiddleNew nnskndscdvss ) =>
+	Device.D sd ->
+	CreateInfo n nnskndscdvss '(nv, vs, ts)
+		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb, vs', ts', slbtss') ->
+	IO (M.CreateInfo n (ShaderStage.MiddleVarsNew nnskndscdvss) nv n3 n4 n5 n6 n7 n8 n9 n10)
+createInfoToMiddle' dv = (T.createInfoToMiddle <$>) . createInfoToMiddle dv
 
 createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddleNew nnskndscdvss) =>
 	Device.D sd ->
@@ -165,6 +179,20 @@ class CreateInfoListToMiddle ss where
 		HeteroParList.PL (U11 T.CreateInfo) (MiddleVars ss) ->
 		HeteroParList.PL (U14 CreateInfo) ss -> IO ()
 
+class CreateInfoListToMiddle' ss where
+	type MiddleVars' ss :: [
+		(Maybe Type, [(Maybe Type, ShaderKind, [Type])],
+		(Maybe Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
+		Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type)]
+
+	createInfoListToMiddle' :: Device.D sd ->
+		HeteroParList.PL (U14 CreateInfo) ss ->
+		IO (HeteroParList.PL (U11 T.CreateInfo) (MiddleVars ss))
+
+	destroyShaderStages' :: Device.D sd ->
+		HeteroParList.PL (U11 T.CreateInfo) (MiddleVars ss) ->
+		HeteroParList.PL (U14 CreateInfo) ss -> IO ()
+
 instance CreateInfoListToMiddle '[] where
 	type MiddleVars '[] = '[]
 	createInfoListToMiddle _ HeteroParList.Nil = pure HeteroParList.Nil
@@ -212,8 +240,10 @@ createGs :: (
 		IO a) -> IO a
 createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis
 	macc@(AllocationCallbacks.toMiddle -> macd) f = bracket
-	(createInfoListToMiddle d cis >>= \cis' ->
-		T.createGs dvc mc cis' macc <* destroyShaderStages d cis' cis)
+	(createInfoListToMiddle d cis >>= \cis' -> M.createGs dvc mc
+			(T.createInfoListToMiddle cis')
+			(AllocationCallbacks.toMiddle macc)
+		<* destroyShaderStages d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . v2g)
 
 recreateGs :: (
@@ -227,5 +257,7 @@ recreateGs :: (
 	HeteroParList.PL (U3 (G sg)) (CreateInfoListArgs14ToGArgs3 ss) -> IO ()
 recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc gpls = do
 	cis' <- createInfoListToMiddle d cis
-	T.recreateGs dvc mc cis' macc $ g2v gpls
+	M.recreateGs dvc mc
+		(T.createInfoListToMiddle cis')
+		(AllocationCallbacks.toMiddle macc) $ g2v gpls
 	destroyShaderStages d cis' cis
