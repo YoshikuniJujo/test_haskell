@@ -7,4 +7,4 @@ module Data.TypeLevel.Tuple.Index where
 
 import Data.TypeLevel.Tuple.Index.TH
 
-uncurry mkI `mapM` [ (i, n) | n <- [2 .. 10], i <- [0 .. n - 1] ]
+uncurry mkI `mapM` [ (i, n) | n <- [2 .. 15], i <- [0 .. n - 1] ]
