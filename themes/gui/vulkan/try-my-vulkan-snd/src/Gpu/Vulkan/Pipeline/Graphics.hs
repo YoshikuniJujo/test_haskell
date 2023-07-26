@@ -172,8 +172,8 @@ instance CreateInfoListToMiddle '[] where
 instance (
 
 	HeteroParList.Map3_5 ssas,
-	ShaderStage.CreateInfoListToMiddleNew ssas,
-	ShaderStage.M.CreateInfoListToCore (ShaderStage.MiddleVarsNew ssas),
+	ShaderStage.CreateInfoListToMiddle ssas,
+	ShaderStage.M.CreateInfoListToCore (ShaderStage.MiddleArgs ssas),
 	BindingStrideList.BindingStrideList
 		VertexInput.Rate vibs VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vibs vias,
@@ -189,20 +189,20 @@ instance (
 	type MiddleArgs ('(
 		mn, ssas, '(nvis, vibs, vias), iasa, tsssa, vpsa, rstsa, mssa, dssa, cbsa, dsa,
 		'(sl, sbtss, pcl), rpa, '(sb, vibs', vias', slbtss') ) ': ss) =
-		'(mn, ShaderStage.MiddleVarsNew ssas, nvis, iasa, tsssa, vpsa, rstsa,
+		'(mn, ShaderStage.MiddleArgs ssas, nvis, iasa, tsssa, vpsa, rstsa,
 			mssa, dssa, cbsa, dsa) ': MiddleArgs ss
 	createInfoListToMiddle dvc (U14 ci :** cis) = (:**)
 		<$> (U11 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle dvc cis
 
 createInfoToMiddle :: (
-	ShaderStage.CreateInfoListToMiddleNew ssas,
+	ShaderStage.CreateInfoListToMiddle ssas,
 	BindingStrideList.BindingStrideList VertexInput.Rate vibs VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vibs vias ) =>
 	Device.D sd ->
 	CreateInfo n ssas '(nvis, vibs, vias)
 		iasa tsssa vpsa rstsa mssa dssa cbsa dsa sl rpa '(sb, vibs', vias', slbtss') ->
-	IO (M.CreateInfo n (ShaderStage.MiddleVarsNew ssas)
+	IO (M.CreateInfo n (ShaderStage.MiddleArgs ssas)
 		nvis iasa tsssa vpsa rstsa mssa dssa cbsa dsa)
 createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
@@ -222,7 +222,7 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi } = do
-	stgs' <- ShaderStage.createInfoListToMiddleNew dvc stgs
+	stgs' <- ShaderStage.createInfoListToMiddle dvc stgs
 	bph' <- maybe M.gNull (\(U4 (G g)) -> pure g) bph
 	pure M.CreateInfo {
 		M.createInfoNext = mnxt,
@@ -255,10 +255,10 @@ class DestroyShaderStages mvs macs where
 instance DestroyShaderStages '[] '[] where
 	destroyShaderStages' _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
-instance (ShaderStage.DestroyCreateInfoMiddleListNew' a2 mac, DestroyShaderStages ss macs) =>
+instance (ShaderStage.DestroyShaderModuleList a2 mac, DestroyShaderStages ss macs) =>
 	DestroyShaderStages ('(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) ': ss) (mac ': macs) where
 	destroyShaderStages' dvc (U11 cim :** cims) (mac :** macs) = do
-		ShaderStage.destroyCreateInfoMiddleListNew' dvc (M.createInfoStages cim) mac
+		ShaderStage.destroyShaderModuleList dvc (M.createInfoStages cim) mac
 		destroyShaderStages' dvc cims macs
 
 class AllocationCallbacksListListFromCreateInfoList cias where

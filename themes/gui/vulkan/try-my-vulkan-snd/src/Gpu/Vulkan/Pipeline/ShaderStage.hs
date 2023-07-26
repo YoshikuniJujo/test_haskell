@@ -4,7 +4,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage (
 
 	-- * CREATE INFO
 
-	CreateInfo(..), CreateInfoListToMiddleNew,
+	CreateInfo(..), CreateInfoListToMiddle,
 
 	) where
 

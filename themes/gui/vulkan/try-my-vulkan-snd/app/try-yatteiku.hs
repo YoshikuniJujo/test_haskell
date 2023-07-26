@@ -656,29 +656,29 @@ makePipelineNew dvc rp f = do
 			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode = glslVertexShaderMain }
 		vertShaderStage = Vk.Ppl.ShSt.CreateInfo {
-			Vk.Ppl.ShSt.createInfoNextNew = TMaybe.N,
-			Vk.Ppl.ShSt.createInfoFlagsNew =
+			Vk.Ppl.ShSt.createInfoNext = TMaybe.N,
+			Vk.Ppl.ShSt.createInfoFlags =
 				Vk.Ppl.ShSt.CreateFlagsZero,
-			Vk.Ppl.ShSt.createInfoStageNew = Vk.ShaderStageVertexBit,
-			Vk.Ppl.ShSt.createInfoModuleNew =
+			Vk.Ppl.ShSt.createInfoStage = Vk.ShaderStageVertexBit,
+			Vk.Ppl.ShSt.createInfoModule =
 				Vk.Shader.Module.M vertShaderCreateInfo nil',
-			Vk.Ppl.ShSt.createInfoNameNew = "main",
-			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
+			Vk.Ppl.ShSt.createInfoName = "main",
+			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
 		fragShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = TMaybe.N,
 			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode =
 				glslFragmentShaderMain }
 		fragShaderStage = Vk.Ppl.ShSt.CreateInfo {
-			Vk.Ppl.ShSt.createInfoNextNew = TMaybe.N,
-			Vk.Ppl.ShSt.createInfoFlagsNew =
+			Vk.Ppl.ShSt.createInfoNext = TMaybe.N,
+			Vk.Ppl.ShSt.createInfoFlags =
 				Vk.Ppl.ShSt.CreateFlagsZero,
-			Vk.Ppl.ShSt.createInfoStageNew =
+			Vk.Ppl.ShSt.createInfoStage =
 				Vk.ShaderStageFragmentBit,
-			Vk.Ppl.ShSt.createInfoModuleNew =
+			Vk.Ppl.ShSt.createInfoModule =
 				Vk.Shader.Module.M fragShaderCreateInfo nil',
-			Vk.Ppl.ShSt.createInfoNameNew = "main",
-			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
+			Vk.Ppl.ShSt.createInfoName = "main",
+			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
 	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil' \plyt -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
 					'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),

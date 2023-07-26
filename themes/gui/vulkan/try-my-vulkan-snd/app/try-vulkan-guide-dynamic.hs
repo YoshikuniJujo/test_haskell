@@ -1589,19 +1589,19 @@ shaderStages ::
 		'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 shaderStages vs fs = U5 vertinfo :** U5 fraginfo :** HL.Nil where
 	vertinfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
-		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
-		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
-		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl vs,
-		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
+		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
+		Vk.Ppl.ShdrSt.createInfoModule = mdl vs,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 	fraginfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
-		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
-		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,
-		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl fs,
-		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
+		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
+		Vk.Ppl.ShdrSt.createInfoModule = mdl fs,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 	mdl :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd 'Nothing
 	mdl cd = Vk.Shader.Module.M crInfo nil'
 		where crInfo = Vk.Shader.Module.M.CreateInfo {

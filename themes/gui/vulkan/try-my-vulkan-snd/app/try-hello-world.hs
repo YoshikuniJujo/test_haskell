@@ -294,12 +294,12 @@ pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 
 shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfo 'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
 shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
-	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
-	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.ShaderSt.createInfoStageNew = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModuleNew = Vk.ShaderMod.M shdrMdInfo nil',
-	Vk.Ppl.ShaderSt.createInfoNameNew = "main",
-	Vk.Ppl.ShaderSt.createInfoSpecializationInfoNew = Nothing }
+	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
+	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
+	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
+	Vk.Ppl.ShaderSt.createInfoModule = Vk.ShaderMod.M shdrMdInfo nil',
+	Vk.Ppl.ShaderSt.createInfoName = "main",
+	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
 	where shdrMdInfo = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,

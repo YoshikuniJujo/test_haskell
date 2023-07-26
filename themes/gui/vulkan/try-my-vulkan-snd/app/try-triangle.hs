@@ -621,19 +621,19 @@ shaderStages :: HeteroParList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo) '[
 shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParList.Nil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
-		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
-		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
-		Vk.Ppl.ShdrSt.createInfoModuleNew = vertShaderModule,
-		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
+		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
+		Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
-		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
-		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,
-		Vk.Ppl.ShdrSt.createInfoModuleNew = fragShaderModule,
-		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
+		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
+		Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
 inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo 'Nothing
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {

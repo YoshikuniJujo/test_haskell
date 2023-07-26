@@ -633,12 +633,12 @@ bufferInfoList = Vk.Dsc.BufferInfo
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo
 	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
-	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
-	Vk.Ppl.ShaderSt.createInfoFlagsNew = def,
-	Vk.Ppl.ShaderSt.createInfoStageNew = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModuleNew = Vk.ShaderMod.M shaderModInfo nil',
-	Vk.Ppl.ShaderSt.createInfoNameNew = "main",
-	Vk.Ppl.ShaderSt.createInfoSpecializationInfoNew =
+	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
+	Vk.Ppl.ShaderSt.createInfoFlags = def,
+	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
+	Vk.Ppl.ShaderSt.createInfoModule = Vk.ShaderMod.M shaderModInfo nil',
+	Vk.Ppl.ShaderSt.createInfoName = "main",
+	Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
 		Just $ HeteroParList.Id 3 :** HeteroParList.Id 10 :** HeteroParList.Nil }
 	where shaderModInfo = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,

@@ -8,9 +8,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
-	CreateInfo(..), CreateInfoListToMiddleNew(..), DestroyCreateInfoMiddleListNew'(..),
+	CreateInfo(..), CreateInfoListToMiddle(..), DestroyShaderModuleList(..),
 	createInfoToMiddleFooNew,
-	destroyCreateInfoMiddleNew,
+	destroyShaderModule,
 
 	allocationCallbacksListFromCreateInfoList
 	) where
@@ -34,23 +34,23 @@ import Gpu.Vulkan.AllocationCallbacks.Type qualified as AllocationCallbacks
 import Gpu.Vulkan.Pipeline.ShaderStage.Enum
 
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.ShaderModule.Internal as Shader.Module
+import qualified Gpu.Vulkan.ShaderModule.Internal as ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as M
 
-data CreateInfo mn m sknd mscc vs = CreateInfo {
-	createInfoNextNew :: TMaybe.M mn,
-	createInfoFlagsNew :: CreateFlags,
-	createInfoStageNew :: ShaderStageFlagBits,
-	createInfoModuleNew :: (
-		Shader.Module.CreateInfo m sknd, TPMaybe.M (U2 AllocationCallbacks.A) mscc ),
-	createInfoNameNew :: BS.ByteString,
-	createInfoSpecializationInfoNew :: Maybe (HeteroParList.L vs) }
+data CreateInfo mn mnsm sknd mac vs = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
+	createInfoFlags :: CreateFlags,
+	createInfoStage :: ShaderStageFlagBits,
+	createInfoModule :: (
+		ShaderModule.CreateInfo mnsm sknd, TPMaybe.M (U2 AllocationCallbacks.A) mac ),
+	createInfoName :: BS.ByteString,
+	createInfoSpecializationInfo :: Maybe (HeteroParList.L vs) }
 
 allocationCallbacksFromCreateInfo ::
-	CreateInfo mn m sknd mscc vs ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc
-allocationCallbacksFromCreateInfo
-	CreateInfo { createInfoModuleNew = (_, mac) } = mac
+	CreateInfo mn mnsm sknd mac vs ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac
+allocationCallbacksFromCreateInfo CreateInfo { createInfoModule = (_, mac) } =
+	mac
 
 allocationCallbacksListFromCreateInfoList :: HeteroParList.Map3_5 cias =>
 	HeteroParList.PL (U5 CreateInfo) cias ->
@@ -59,19 +59,19 @@ allocationCallbacksListFromCreateInfoList :: HeteroParList.Map3_5 cias =>
 allocationCallbacksListFromCreateInfoList =
 	HeteroParList.map3_5 (allocationCallbacksFromCreateInfo . unU5)
 
-createInfoToMiddleNew ::
-	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle mac)  =>
-	Device.D ds -> CreateInfo n m sknd mac vs ->
+createInfoToMiddle ::
+	(WithPoked (TMaybe.M mnsm), AllocationCallbacks.ToMiddle mac)  =>
+	Device.D ds -> CreateInfo n mnsm sknd mac vs ->
 	IO (M.CreateInfo n sknd vs)
-createInfoToMiddleNew dvc CreateInfo {
-	createInfoNextNew = mnxt,
-	createInfoFlagsNew = flgs,
-	createInfoStageNew = stg,
-	createInfoModuleNew = (mdl, mac),
-	createInfoNameNew = nm,
-	createInfoSpecializationInfoNew = spi
+createInfoToMiddle dvc CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoStage = stg,
+	createInfoModule = (mdl, mac),
+	createInfoName = nm,
+	createInfoSpecializationInfo = spi
 	} = do
-	mdl' <- Shader.Module.create dvc mdl mac
+	mdl' <- ShaderModule.create dvc mdl mac
 	pure M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,
@@ -81,59 +81,54 @@ createInfoToMiddleNew dvc CreateInfo {
 		M.createInfoSpecializationInfo = spi }
 
 createInfoToMiddleFooNew ::
-	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle mscc) =>
+	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle mac) =>
 	Device.D ds ->
-	U5 CreateInfo '(n, m, sknd, mscc, vs) -> IO (M.CreateInfo n sknd vs)
-createInfoToMiddleFooNew dvc (U5 ci) = createInfoToMiddleNew dvc ci
+	U5 CreateInfo '(n, m, sknd, mac, vs) -> IO (M.CreateInfo n sknd vs)
+createInfoToMiddleFooNew dvc (U5 ci) = createInfoToMiddle dvc ci
 
-destroyCreateInfoMiddleNew :: AllocationCallbacks.ToMiddle mscc =>
+destroyShaderModule :: AllocationCallbacks.ToMiddle mac =>
 	Device.D ds ->
 	M.CreateInfo n sknd vs ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> IO ()
-destroyCreateInfoMiddleNew dvc
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO ()
+destroyShaderModule dvc
 	M.CreateInfo { M.createInfoModule = mmdl }
-	mac = Shader.Module.destroy dvc mmdl mac
+	mac = ShaderModule.destroy dvc mmdl mac
 
-class DestroyCreateInfoMiddleListNew' (MiddleVarsNew nnskndcdvss) (TMapIndex.M3_5 nnskndcdvss) =>
-	CreateInfoListToMiddleNew (
-	nnskndcdvss :: [(Maybe Type, Maybe Type, ShaderKind, Maybe (Type, Type), [Type])]
-	) where
-	type MiddleVarsNew nnskndcdvss :: [(Maybe Type, ShaderKind, [Type])]
-	createInfoListToMiddleNew ::
+class DestroyShaderModuleList (MiddleArgs cias) (TMapIndex.M3_5 cias) =>
+	CreateInfoListToMiddle cias where
+	type MiddleArgs cias :: [(Maybe Type, ShaderKind, [Type])]
+	createInfoListToMiddle ::
 		Device.D ds ->
-		HeteroParList.PL (U5 CreateInfo) nnskndcdvss ->
-		IO (HeteroParList.PL (U3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
+		HeteroParList.PL (U5 CreateInfo) cias ->
+		IO (HeteroParList.PL (U3 M.CreateInfo) (MiddleArgs cias))
 
-instance CreateInfoListToMiddleNew '[] where
-	type MiddleVarsNew '[] = '[]
-	createInfoListToMiddleNew _ HeteroParList.Nil = pure HeteroParList.Nil
+instance CreateInfoListToMiddle '[] where
+	type MiddleArgs '[] = '[]
+	createInfoListToMiddle _ HeteroParList.Nil = pure HeteroParList.Nil
 
 instance (
-	WithPoked (TMaybe.M m),
-	CreateInfoListToMiddleNew nnskndcdvss,
+	WithPoked (TMaybe.M mnsm), AllocationCallbacks.ToMiddle mac,
+	CreateInfoListToMiddle cias ) =>
+	CreateInfoListToMiddle ('(n, mnsm, sknd, mac, vs) ': cias) where
+	type MiddleArgs ('(n, mnsm, sknd, mac, vs) ': cias) =
+		'(n, sknd, vs) ': MiddleArgs cias
+	createInfoListToMiddle dvc (U5 ci :** cis) = (:**)
+		<$> (U3 <$> createInfoToMiddle dvc ci)
+		<*> createInfoListToMiddle dvc cis
 
-	AllocationCallbacks.ToMiddle mscc
-	) =>
-	CreateInfoListToMiddleNew ('(n, m, sknd, mscc, vs) ': nnskndcdvss) where
-	type MiddleVarsNew ('(n, m, sknd, mscc, vs) ': nnskndcdvss) =
-		'(n, sknd, vs) ': MiddleVarsNew nnskndcdvss
-	createInfoListToMiddleNew dvc (U5 ci :** cis) = (:**)
-		<$> (U3 <$> createInfoToMiddleNew dvc ci)
-		<*> createInfoListToMiddleNew dvc cis
-
-class DestroyCreateInfoMiddleListNew' (foo :: [(Maybe Type, ShaderKind, [Type])]) (macs :: [Maybe (Type, Type)])  where
-	destroyCreateInfoMiddleListNew' ::
+class DestroyShaderModuleList (foo :: [(Maybe Type, ShaderKind, [Type])]) (macs :: [Maybe (Type, Type)])  where
+	destroyShaderModuleList ::
 		Device.D ds ->
 		HeteroParList.PL (U3 M.CreateInfo) foo ->
 		HeteroParList.PL (TPMaybe.M (U2 AllocationCallbacks.A)) macs -> IO ()
 
-instance DestroyCreateInfoMiddleListNew' '[] '[] where
-	destroyCreateInfoMiddleListNew' _ HeteroParList.Nil HeteroParList.Nil = pure ()
+instance DestroyShaderModuleList '[] '[] where
+	destroyShaderModuleList _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance (
 	AllocationCallbacks.ToMiddle mac,
-	DestroyCreateInfoMiddleListNew' foos macs ) =>
-	DestroyCreateInfoMiddleListNew' (foo ': foos) (mac ': macs) where
-	destroyCreateInfoMiddleListNew' dvc (U3 cim :** cims) (mac :** macs) =
-		destroyCreateInfoMiddleNew dvc cim mac >>
-		destroyCreateInfoMiddleListNew' dvc cims macs
+	DestroyShaderModuleList foos macs ) =>
+	DestroyShaderModuleList (foo ': foos) (mac ': macs) where
+	destroyShaderModuleList dvc (U3 cim :** cims) (mac :** macs) =
+		destroyShaderModule dvc cim mac >>
+		destroyShaderModuleList dvc cims macs
