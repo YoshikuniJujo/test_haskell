@@ -63,10 +63,10 @@ createInfoToMiddle ::
 createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
-	createInfoStage = stg,
+	createInfoStage = U5 stg,
 	createInfoLayout = U3 (Layout.L lyt),
 	createInfoBasePipelineHandleOrIndex = mbphi } = do
-	stg' <- ShaderStage.createInfoToMiddleFooNew dvc stg
+	stg' <- ShaderStage.createInfoToMiddle dvc stg
 	let	(bph, bpi) = case mbphi of
 			Nothing -> (Nothing, Nothing)
 			Just (Left (U2 (C h))) -> (Just h, Nothing)

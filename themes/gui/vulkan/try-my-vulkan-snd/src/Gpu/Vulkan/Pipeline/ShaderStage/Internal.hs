@@ -8,11 +8,20 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
-	CreateInfo(..), CreateInfoListToMiddle(..), DestroyShaderModuleList(..),
-	createInfoToMiddleFooNew,
-	destroyShaderModule,
 
+	-- * CREATE INFO
+
+	CreateInfo(..),
+
+	-- ** To Middle
+
+	CreateInfoListToMiddle(..), createInfoToMiddle,
+
+	-- ** Destroy Shader Module
+
+	DestroyShaderModuleList(..), destroyShaderModule,
 	allocationCallbacksListFromCreateInfoList
+
 	) where
 
 import Foreign.Storable.PeekPoke
@@ -80,20 +89,6 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoName = nm,
 		M.createInfoSpecializationInfo = spi }
 
-createInfoToMiddleFooNew ::
-	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle mac) =>
-	Device.D ds ->
-	U5 CreateInfo '(n, m, sknd, mac, vs) -> IO (M.CreateInfo n sknd vs)
-createInfoToMiddleFooNew dvc (U5 ci) = createInfoToMiddle dvc ci
-
-destroyShaderModule :: AllocationCallbacks.ToMiddle mac =>
-	Device.D ds ->
-	M.CreateInfo n sknd vs ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO ()
-destroyShaderModule dvc
-	M.CreateInfo { M.createInfoModule = mmdl }
-	mac = ShaderModule.destroy dvc mmdl mac
-
 class DestroyShaderModuleList (MiddleArgs cias) (TMapIndex.M3_5 cias) =>
 	CreateInfoListToMiddle cias where
 	type MiddleArgs cias :: [(Maybe Type, ShaderKind, [Type])]
@@ -116,19 +111,25 @@ instance (
 		<$> (U3 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle dvc cis
 
-class DestroyShaderModuleList (foo :: [(Maybe Type, ShaderKind, [Type])]) (macs :: [Maybe (Type, Type)])  where
+class DestroyShaderModuleList cias macs  where
 	destroyShaderModuleList ::
-		Device.D ds ->
-		HeteroParList.PL (U3 M.CreateInfo) foo ->
-		HeteroParList.PL (TPMaybe.M (U2 AllocationCallbacks.A)) macs -> IO ()
+		Device.D sd -> HeteroParList.PL (U3 M.CreateInfo) cias ->
+		HeteroParList.PL (TPMaybe.M (U2 AllocationCallbacks.A)) macs ->
+		IO ()
 
 instance DestroyShaderModuleList '[] '[] where
 	destroyShaderModuleList _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance (
 	AllocationCallbacks.ToMiddle mac,
-	DestroyShaderModuleList foos macs ) =>
-	DestroyShaderModuleList (foo ': foos) (mac ': macs) where
+	DestroyShaderModuleList cias macs ) =>
+	DestroyShaderModuleList (cia ': cias) (mac ': macs) where
 	destroyShaderModuleList dvc (U3 cim :** cims) (mac :** macs) =
 		destroyShaderModule dvc cim mac >>
 		destroyShaderModuleList dvc cims macs
+
+destroyShaderModule :: AllocationCallbacks.ToMiddle mac =>
+	Device.D sd -> M.CreateInfo n sknd vs ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO ()
+destroyShaderModule dvc M.CreateInfo { M.createInfoModule = mmdl } mac =
+	ShaderModule.destroy dvc mmdl mac
