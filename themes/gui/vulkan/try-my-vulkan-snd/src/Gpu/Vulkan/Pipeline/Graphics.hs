@@ -114,7 +114,7 @@ data CreateInfo
 		createInfoNext :: TMaybe.M mn,
 		createInfoFlags :: CreateFlags,
 		createInfoStages ::
-			HeteroParList.PL (U5 ShaderStage.CreateInfoNew) ssas,
+			HeteroParList.PL (U5 ShaderStage.CreateInfo) ssas,
 		createInfoVertexInputState ::
 			Maybe (U3 VertexInputState.CreateInfo visa),
 		createInfoInputAssemblyState ::

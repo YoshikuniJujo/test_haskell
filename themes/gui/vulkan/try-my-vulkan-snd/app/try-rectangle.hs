@@ -658,19 +658,19 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 
-shaderStages :: HeteroParList.PL (U5 Vk.Ppl.ShdrSt.CreateInfoNew) '[
+shaderStages :: HeteroParList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo) '[
 	'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 	'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParList.Nil
 	where
-	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
 		Vk.Ppl.ShdrSt.createInfoModuleNew = vertShaderModule,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
-	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,

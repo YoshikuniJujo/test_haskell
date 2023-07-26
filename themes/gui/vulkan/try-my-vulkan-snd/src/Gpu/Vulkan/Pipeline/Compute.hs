@@ -50,7 +50,7 @@ newtype C s (lyta ::
 data CreateInfo mn ssta lyta bpha = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
-	createInfoStage :: U5 ShaderStage.CreateInfoNew ssta,
+	createInfoStage :: U5 ShaderStage.CreateInfo ssta,
 	createInfoLayout :: U3 Layout.L lyta,
 	createInfoBasePipelineHandleOrIndex ::
 		Maybe (Either (U2 C bpha) Int32) }

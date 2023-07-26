@@ -1,9 +1,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ShaderStage (
-	CreateInfoNew(..), CreateInfoListToMiddleNew,
 
-	allocationCallbacksListFromCreateInfoList
+	-- * CREATE INFO
+
+	CreateInfo(..), CreateInfoListToMiddleNew,
+
 	) where
 
 import Gpu.Vulkan.Pipeline.ShaderStage.Internal

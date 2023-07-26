@@ -625,9 +625,9 @@ bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "")
 bufferInfoList = Vk.Dsc.BufferInfo
 
-shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew
+shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo
 	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]
-shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
+shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = def,
 	Vk.Ppl.ShaderSt.createInfoStageNew = Vk.ShaderStageComputeBit,

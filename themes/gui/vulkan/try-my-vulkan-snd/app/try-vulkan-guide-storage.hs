@@ -1776,18 +1776,18 @@ type FramebufferResized = IORef Bool
 
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
-	HL.PL (U5 Vk.Ppl.ShdrSt.CreateInfoNew) '[
+	HL.PL (U5 Vk.Ppl.ShdrSt.CreateInfo) '[
 		'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 		'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 shaderStages vs fs = U5 vertinfo :** U5 fraginfo :** HL.Nil where
-	vertinfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+	vertinfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
 		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl vs,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
-	fraginfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+	fraginfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,
