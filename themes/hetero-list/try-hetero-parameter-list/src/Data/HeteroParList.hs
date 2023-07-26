@@ -135,8 +135,8 @@ type PL4 t = PL (PL3 t)
 
 -- From/To List
 
-class FromList ss where
-	fromList :: (forall s . a -> t s) -> [a] -> PL t ss
+class FromList (ss :: [k]) where
+	fromList :: (forall (s :: k) . a -> t s) -> [a] -> PL t ss
 
 instance FromList '[] where
 	fromList _ [] = Nil
