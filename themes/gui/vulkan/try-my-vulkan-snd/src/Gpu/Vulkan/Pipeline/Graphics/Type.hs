@@ -15,5 +15,5 @@ import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 
 import Gpu.Vulkan.VertexInput qualified as VertexInput
 
-newtype G s (vs :: [(Type, VertexInput.Rate)]) (ts :: [(Nat, Type)])
-	(slbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) = G M.G
+newtype G s (vibs :: [(Type, VertexInput.Rate)]) (vias :: [(Nat, Type)])
+	(lyta :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) = G M.G
