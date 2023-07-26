@@ -124,7 +124,6 @@ library
       Gpu.Vulkan.Pipeline.DynamicState
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
-      Gpu.Vulkan.Pipeline.Graphics.Tmp
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.MultisampleState
