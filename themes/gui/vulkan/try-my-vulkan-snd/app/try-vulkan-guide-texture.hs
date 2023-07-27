@@ -693,7 +693,7 @@ createPipelineLayout :: forall sd sdl sdlod sdltx foo a . Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdl Buffers ->
 	Vk.DscSetLyt.L sdlod ObjDataBuffers ->
 	Vk.DscSetLyt.L sdltx foo ->
-	(forall sl . Vk.Ppl.Lyt.L sl
+	(forall sl . Vk.Ppl.Lyt.P sl
 			'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ]
 			'[WMeshPushConstants] ->
 		IO a) -> IO a
@@ -712,7 +712,7 @@ createPipelineLayout dv dslyt dslytod dslyttx f = Vk.Ppl.Lyt.createNew dv ci nil
 type Foo = '[ 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]]
 
 createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	(forall sg . Vk.Ppl.Grph.G sg
@@ -727,7 +727,7 @@ createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -740,7 +740,7 @@ recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 	(U3 gpls :** HL.Nil)
 
 graphicsPipelineCreateInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.CreateInfo 'Nothing
@@ -1439,7 +1439,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1478,7 +1478,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1511,7 +1511,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(s, Buffers), '(sod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -1534,7 +1534,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -1567,7 +1567,7 @@ drawFrame ::
 	) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L slyt
+	Vk.Ppl.Lyt.P slyt
 		'[ '(sl, Buffers), '(slod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1631,7 +1631,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod dstx vb vbtri c
 recordCommandBuffer ::
 	forall sr slyt sg sdlyt sdlytod sfoo sf sm sb nm smtri sbtri nmtri scb sds sds' sds'' .
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L slyt
+	Vk.Ppl.Lyt.P slyt
 		'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -1733,7 +1733,7 @@ data RenderObject sg sl sdlyt sdlytod sfoo sm sb nm = RenderObject {
 		'(sl,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]),
 	renderObjectPipelineLayout ::
-		Vk.Ppl.Lyt.L sl
+		Vk.Ppl.Lyt.P sl
 			'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)]
 			'[WMeshPushConstants],
 	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""],

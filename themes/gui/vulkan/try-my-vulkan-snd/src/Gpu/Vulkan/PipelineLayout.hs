@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineLayout (
-	L, createNew, CreateInfoNew(..),
+	P, createNew, CreateInfoNew(..),
 	M.CreateFlags,
 	Layout
 	) where
@@ -107,7 +107,7 @@ createNew :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn sbtss pcl ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall s . L s sbtss whole -> IO a) -> IO a
+	(forall s . P s sbtss whole -> IO a) -> IO a
 createNew (Device.D dvc) (createInfoToMiddleNew -> ci)
 	(AllocationCallbacks.toMiddle -> macc) f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macc) (f . L)
+	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macc) (f . P)

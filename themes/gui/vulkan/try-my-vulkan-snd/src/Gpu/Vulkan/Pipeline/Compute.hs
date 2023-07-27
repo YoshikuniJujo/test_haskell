@@ -51,7 +51,7 @@ data CreateInfo mn ssta lyta bpha = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoStage :: U5 ShaderStage.CreateInfo ssta,
-	createInfoLayout :: U3 Layout.L lyta,
+	createInfoLayout :: U3 Layout.P lyta,
 	createInfoBasePipelineHandleOrIndex ::
 		Maybe (Either (U2 C bpha) Int32) }
 
@@ -64,7 +64,7 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoStage = U5 stg,
-	createInfoLayout = U3 (Layout.L lyt),
+	createInfoLayout = U3 (Layout.P lyt),
 	createInfoBasePipelineHandleOrIndex = mbphi } = do
 	stg' <- ShaderStage.createInfoToMiddle dvc stg
 	let	(bph, bpi) = case mbphi of

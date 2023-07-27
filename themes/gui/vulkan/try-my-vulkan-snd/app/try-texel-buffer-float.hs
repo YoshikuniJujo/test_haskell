@@ -151,7 +151,7 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = U2 dsl :** HeteroParList.Nil }
 
-computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
+computePipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[Float, Float])
 		'(sl, sbtss, '[]) sbph
@@ -202,7 +202,7 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 ->
+	Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do

@@ -167,7 +167,7 @@ run :: forall w1 w2 w3 slbts sbtss sd sc sg sl m1 m2 m3 sds . (
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> (
+	Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> (
 		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
@@ -537,7 +537,7 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoFlagsNew = def,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = U2 dsl :** HeteroParList.Nil }
 
-cmptPipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
+cmptPipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
 		'(sl, sbtss, '[]) sbph

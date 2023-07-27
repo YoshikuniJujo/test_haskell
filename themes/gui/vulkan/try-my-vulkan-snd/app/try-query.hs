@@ -308,7 +308,7 @@ run :: forall slbts sd sq sq' tp sc sg sl sds . (
 	Vk.QFm.Index -> Vk.Dv.D sd ->
 	Vk.QP.Q sq tp -> Vk.QP.Q sq' Vk.QP.Timestamp ->
 	Vk.DS.D sds slbts -> Vk.CBffr.C sc ->
-	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
+	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
@@ -336,7 +336,7 @@ run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 
 -- COMPUTE PIPELINE INFO
 
-pplInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
+pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
 		'(sl, sbtss, '[]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {

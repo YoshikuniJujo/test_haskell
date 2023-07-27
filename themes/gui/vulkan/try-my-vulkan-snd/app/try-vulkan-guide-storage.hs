@@ -643,7 +643,7 @@ type ObjDataList = Obj.List 256 ObjData ""
 createPipelineLayout :: forall sd sdl sdlod a . Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdl Buffers ->
 	Vk.DscSetLyt.L sdlod ObjDataBuffers ->
-	(forall sl . Vk.Ppl.Lyt.L sl
+	(forall sl . Vk.Ppl.Lyt.P sl
 			'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers) ]
 			'[WMeshPushConstants] ->
 		IO a) -> IO a
@@ -660,7 +660,7 @@ createPipelineLayout dv dslyt dslytod f = Vk.Ppl.Lyt.createNew dv ci nil' f wher
 			U2 dslyt :** U2 dslytod :** HL.Nil }
 
 createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	(forall sg . Vk.Ppl.Grph.G sg
@@ -675,7 +675,7 @@ createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -688,7 +688,7 @@ recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 	(U3 gpls :** HL.Nil)
 
 graphicsPipelineCreateInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.CreateInfo 'Nothing
@@ -1339,7 +1339,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1376,7 +1376,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1407,7 +1407,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(s, Buffers), '(sod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -1430,7 +1430,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HL.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L sl
+	Vk.Ppl.Lyt.P sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -1463,7 +1463,7 @@ drawFrame ::
 	) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L slyt
+	Vk.Ppl.Lyt.P slyt
 		'[ '(sl, Buffers), '(slod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1525,7 +1525,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 recordCommandBuffer ::
 	forall sr slyt sg sdlyt sdlytod sf sm sb nm smtri sbtri nmtri scb sds sds' .
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Lyt.L slyt
+	Vk.Ppl.Lyt.P slyt
 		'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
@@ -1625,7 +1625,7 @@ data RenderObject sg sl sdlyt sdlytod sm sb nm = RenderObject {
 		'(sl,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)],
 			'[WMeshPushConstants]),
 	renderObjectPipelineLayout ::
-		Vk.Ppl.Lyt.L sl
+		Vk.Ppl.Lyt.P sl
 			'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)]
 			'[WMeshPushConstants],
 	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""],

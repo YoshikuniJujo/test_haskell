@@ -319,7 +319,7 @@ run :: forall slbts sbtss sd sc sg sl sds . (
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> IO ()
+	Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
@@ -341,7 +341,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 
 -- COMPUTE PIPELINE INFO
 
-computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
+computePipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
 		'(sl, sbtss, '[]) sbph

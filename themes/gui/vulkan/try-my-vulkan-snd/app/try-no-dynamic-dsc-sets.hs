@@ -391,7 +391,7 @@ pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dslyt }
 
-computePipelineInfo :: Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
+computePipelineInfo :: Vk.Ppl.Lyt.P sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing,
 		'[Word32, Word32]) '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
@@ -431,7 +431,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 run :: forall sd sc sg sl sdsl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) ->
-	Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
+	Vk.Ppl.Lyt.P sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.DscSet.D sds '(sdsl, DscSetLytLstW123)  -> Word32 ->
 	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm1 '[ListW1])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm2 '[ListW2])] ->

@@ -129,7 +129,7 @@ data CreateInfo
 		createInfoColorBlendState ::
 			Maybe (ColorBlendState.CreateInfo cbsa),
 		createInfoDynamicState :: Maybe (DynamicState.CreateInfo dsa),
-		createInfoLayout :: U3 Layout.L lyta,
+		createInfoLayout :: U3 Layout.P lyta,
 		createInfoRenderPass :: RenderPass.R rpa,
 		createInfoSubpass :: Word32,
 		createInfoBasePipelineHandle :: Maybe (U4 G bpha),
@@ -214,7 +214,7 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoDepthStencilState = dss,
 	createInfoColorBlendState = cbs,
 	createInfoDynamicState = ds,
-	createInfoLayout = U3 (Layout.L lyt),
+	createInfoLayout = U3 (Layout.P lyt),
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,

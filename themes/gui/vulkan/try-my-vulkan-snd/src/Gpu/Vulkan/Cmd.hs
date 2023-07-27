@@ -157,11 +157,11 @@ bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	InfixIndex dsls' dsls, GetDynamicLength dss,
 	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
 	CommandBuffer.GBinded sgbnd vibs '(sl, dsls, pcs) ->
-	Pipeline.BindPoint -> PipelineLayout.L sl dsls pcs ->
+	Pipeline.BindPoint -> PipelineLayout.P sl dsls pcs ->
 	HeteroParList.PL (U2 DescriptorSet.D) dss ->
 	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsGraphics
-	(CommandBuffer.T.GBinded c) bp (PipelineLayout.L l) dss idxs = do
+	(CommandBuffer.T.GBinded c) bp (PipelineLayout.P l) dss idxs = do
 	lns <- getDynamicLength dss
 	let	dosts = concat $ concat <$> getOffsetListNew lns idxs
 	M.bindDescriptorSets c bp l
@@ -177,11 +177,11 @@ bindDescriptorSetsCompute :: forall scbnd sl dsls pcs dss dsls' dyns . (
 	InfixIndex dsls' dsls, GetDynamicLength dss,
 	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
 	CommandBuffer.CBinded scbnd '(sl, dsls, pcs) ->
-	PipelineLayout.L sl dsls pcs ->
+	PipelineLayout.P sl dsls pcs ->
 	HeteroParList.PL (U2 DescriptorSet.D) dss ->
 	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsCompute
-	(CommandBuffer.T.CBinded c) (PipelineLayout.L l) dss idxs = do
+	(CommandBuffer.T.CBinded c) (PipelineLayout.P l) dss idxs = do
 	lns <- getDynamicLength dss
 	let	dosts = concat $ concat <$> getOffsetListNew lns idxs
 	M.bindDescriptorSets c Pipeline.BindPointCompute l
@@ -260,8 +260,8 @@ pushConstantsGraphics :: forall sss sc vibs sl sbtss pcs ts . (
 	PushConstant.ShaderStageFlagBitsToMiddle sss,
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.GBinded sc vibs '(sl, sbtss, pcs) ->
-	PipelineLayout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
-pushConstantsGraphics (CommandBuffer.T.GBinded cb) (PipelineLayout.L lyt) xs =
+	PipelineLayout.P sl sbtss pcs -> HeteroParList.L ts -> IO ()
+pushConstantsGraphics (CommandBuffer.T.GBinded cb) (PipelineLayout.P lyt) xs =
 	M.pushConstants
 		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
@@ -270,8 +270,8 @@ pushConstantsCompute :: forall sss sc sl sbtss pcs ts . (
 	PushConstant.ShaderStageFlagBitsToMiddle sss,
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.CBinded sc '(sl, sbtss, pcs) ->
-	PipelineLayout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
-pushConstantsCompute (CommandBuffer.T.CBinded cb) (PipelineLayout.L lyt) xs =
+	PipelineLayout.P sl sbtss pcs -> HeteroParList.L ts -> IO ()
+pushConstantsCompute (CommandBuffer.T.CBinded cb) (PipelineLayout.P lyt) xs =
 	M.pushConstants
 		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
