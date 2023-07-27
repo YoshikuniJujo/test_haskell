@@ -18,19 +18,21 @@ module Gpu.Vulkan.Pipeline.VertexInputState.Internal (
 
 	-- * CREATE INFO TO MIDDLE
 
-	createInfoToMiddle, AttributeDescriptions, Formattable(..),
+	createInfoToMiddle,
+	BindingStrideList, AttributeDescriptions, Formattable(..)
 
 	) where
 
 import GHC.TypeNats
+import Foreign.Storable.SizeAlignment
+import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Kind
 import Data.Bits
 import Data.Default
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
 
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput as VtxInp
@@ -43,16 +45,16 @@ data CreateInfo mn (vibs :: [(Type, VtxInp.Rate)]) (vias :: [(Nat, Type)]) =
 		createInfoNext :: TMaybe.M mn,
 		createInfoFlags :: M.CreateFlags }
 
-deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn vs ts)
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn vibs vias)
 
-instance Default (CreateInfo 'Nothing vs ts) where
+instance Default (CreateInfo 'Nothing vibs vias) where
 	def = CreateInfo {
 		createInfoNext = TMaybe.N, createInfoFlags = zeroBits }
 
 -- CREATE INFO TO MIDDLE
 
 createInfoToMiddle :: forall n vibs vias . (
-	BindingStrideList VtxInp.Rate vibs VtxInp.Rate,
+	BindingStrideList vibs VtxInp.Rate,
 	AttributeDescriptions vibs vias ) =>
 	CreateInfo n vibs vias -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
@@ -66,34 +68,54 @@ createInfoToMiddle CreateInfo {
 -- Binding Descriptions
 
 bindingDescriptions ::
-	forall vs . BindingStrideList VtxInp.Rate vs VtxInp.Rate =>
+	forall vibs . BindingStrideList vibs VtxInp.Rate =>
 	[VtxInp.M.BindingDescription]
 bindingDescriptions = fmap VtxInp.bindingDescriptionToMiddle
 	. VtxInp.bindingDescriptionFromRaw
-	$ bindingStrideList @VtxInp.Rate @vs @VtxInp.Rate
+	$ bindingStrideList @_ @vibs @VtxInp.Rate
+
+class BindingStrideList (ts :: [(Type, k)]) v where
+	bindingStrideList :: [(SizeAlignment, v)]
+
+instance BindingStrideList '[] v where bindingStrideList = []
+
+instance (SizeAlignmentList t, BindingStrideList ts v, VtxInp.TypeVal a v) =>
+	BindingStrideList ('(t, a) ': ts) v where
+	bindingStrideList =
+		(wholeSizeAlignment @t, VtxInp.typeVal @_ @a @v) :
+		bindingStrideList @_ @ts @v
 
 -- Attribute Descriptions
 
 class AttributeDescriptions
-	(vs :: [(Type, VtxInp.Rate)]) (vias :: [(Nat, Type)]) where
+	(vibs :: [(Type, VtxInp.Rate)]) (vias :: [(Nat, Type)]) where
 	attributeDescriptions :: [VtxInp.AttributeDescription]
 
-instance AttributeDescriptions vs '[] where
-	attributeDescriptions = []
+instance AttributeDescriptions vibs '[] where attributeDescriptions = []
 
 instance (
-	BindingOffset vs t, Formattable t,
-	AttributeDescriptions vs vias, KnownNat i) =>
-	AttributeDescriptions vs ('(i, t) ': vias) where
+	KnownNat i, BindingOffset (TMapIndex.M0_2 vibs) t, Formattable t,
+	AttributeDescriptions vibs vias ) =>
+	AttributeDescriptions vibs ('(i, t) ': vias) where
 	attributeDescriptions = VtxInp.AttributeDescription {
-		VtxInp.attributeDescriptionLocation = fromIntegral $ natVal @i undefined,
-		VtxInp.attributeDescriptionBinding = bd,
+		VtxInp.attributeDescriptionLocation =
+			fromIntegral $ natVal @i undefined,
+		VtxInp.attributeDescriptionBinding = bdng,
 		VtxInp.attributeDescriptionFormat = formatOf @t,
-		VtxInp.attributeDescriptionOffset = os } : ads
+		VtxInp.attributeDescriptionOffset = ost } : ads
 		where
-		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffset @_ @vs @t
-		ads = attributeDescriptions @vs @vias
+		Just (fromIntegral -> bdng, fromIntegral -> ost) =
+			bindingOffset @(TMapIndex.M0_2 vibs) @t
+		ads = attributeDescriptions @vibs @vias
 
 class Formattable a where formatOf :: Format
-
 instance Formattable Int where formatOf = FormatUndefined
+
+class BindingOffset (tss :: [Type]) t where bindingOffset :: Maybe (Int, Offset)
+instance BindingOffset '[] t where bindingOffset = Nothing
+
+instance (SizeAlignmentListUntil t ts, BindingOffset tss t) =>
+	BindingOffset (ts ': tss) t where
+	bindingOffset = case offsetOf @t @ts of
+		Nothing -> ((+ 1) `first`) <$> bindingOffset @tss @t
+		Just os -> Just (0, os)

@@ -60,9 +60,6 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 
 import Gpu.Vulkan.VertexInput qualified as VertexInput
 
-import qualified Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
-	as BindingStrideList
-
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as ShaderStage.M
 
 -- CREATE AND RECREATE
@@ -175,8 +172,7 @@ instance (
 	HeteroParList.Map3_5 ssas,
 	ShaderStage.CreateInfoListToMiddle ssas,
 	ShaderStage.M.CreateInfoListToCore (ShaderStage.MiddleArgs ssas),
-	BindingStrideList.BindingStrideList
-		VertexInput.Rate vibs VertexInput.Rate,
+	VertexInputState.BindingStrideList vibs VertexInput.Rate,
 	VertexInputState.AttributeDescriptions vibs vias,
 	WithPoked (TMaybe.M mn), WithPoked (TMaybe.M nvis),
 	WithPoked (TMaybe.M iasa), WithPoked (TMaybe.M tsssa),
@@ -198,7 +194,7 @@ instance (
 
 createInfoToMiddle :: (
 	ShaderStage.CreateInfoListToMiddle ssas,
-	BindingStrideList.BindingStrideList VertexInput.Rate vibs VertexInput.Rate,
+	VertexInputState.BindingStrideList vibs VertexInput.Rate,
 	VertexInputState.AttributeDescriptions vibs vias ) =>
 	Device.D sd ->
 	CreateInfo n ssas '(nvis, vibs, vias)

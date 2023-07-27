@@ -1,7 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGe MultiParamTypeClasses #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGe MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,12 +12,14 @@ module Gpu.Vulkan.VertexInput (
 	BindingDescription(..),
 
 	bindingDescriptionFromRaw,
-	bindingDescriptionToMiddle ) where
+	bindingDescriptionToMiddle,
+
+	TypeVal(..)
+
+	) where
 
 import Foreign.Storable.SizeAlignment
 import Data.Word
-
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (TypeVal(..))
 
 import Gpu.Vulkan.VertexInput.Middle qualified as M
 import Gpu.Vulkan.VertexInput.Enum qualified as M
@@ -48,3 +51,5 @@ bindingDescriptionToMiddle BindingDescription {
 rateToEnum :: Rate -> M.Rate
 rateToEnum RateVertex = M.RateVertex
 rateToEnum RateInstance = M.RateInstance
+
+class TypeVal (t :: k) v where typeVal :: v

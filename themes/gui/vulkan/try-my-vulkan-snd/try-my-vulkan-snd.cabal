@@ -132,8 +132,6 @@ library
       Gpu.Vulkan.Pipeline.ShaderStage.Internal
       Gpu.Vulkan.Pipeline.TessellationState
       Gpu.Vulkan.Pipeline.VertexInputState
-      Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
-      Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
       Gpu.Vulkan.Pipeline.VertexInputState.Internal
       Gpu.Vulkan.Pipeline.ViewportState
       Gpu.Vulkan.PipelineCache
