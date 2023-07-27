@@ -623,9 +623,9 @@ createPipelineLayout :: forall sd s b .
 					VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 			'[WrapMeshPushConstants] ->
 		IO b) -> IO b
-createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil' f
+createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.create dvc crInfo nil' f
 	where
-	crInfo :: Vk.Ppl.Layout.CreateInfoNew 'Nothing
+	crInfo :: Vk.Ppl.Layout.CreateInfo 'Nothing
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -635,10 +635,10 @@ createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil' f
 			'[ WrapMeshPushConstants]
 			'[ 'Vk.PushConstant.Range
 				'[ 'Vk.T.ShaderStageVertexBit] '[WrapMeshPushConstants] ])
-	crInfo = Vk.Ppl.Layout.CreateInfoNew {
-		Vk.Ppl.Layout.createInfoNextNew = TMaybe.N,
-		Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
-		Vk.Ppl.Layout.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 cmdslyt }
+	crInfo = Vk.Ppl.Layout.CreateInfo {
+		Vk.Ppl.Layout.createInfoNext = TMaybe.N,
+		Vk.Ppl.Layout.createInfoFlags = zeroBits,
+		Vk.Ppl.Layout.createInfoSetLayouts = HeteroParList.Singleton $ U2 cmdslyt }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->

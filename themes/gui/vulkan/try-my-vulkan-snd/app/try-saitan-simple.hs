@@ -283,7 +283,7 @@ calc :: forall slbts sl bts sd sds . (
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.D sds slbts -> Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet dsz =
-	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
@@ -292,12 +292,12 @@ calc dvc qFam dscSetLyt dscSet dsz =
 		run dvc qFam cb ppl plyt dscSet dsz
 
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
-	Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, bts)]
+	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.PushConstantLayout '[] '[])
-pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
-	Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dsl }
+pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
+	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
+	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
+	Vk.Ppl.Lyt.createInfoSetLayouts = HeteroParList.Singleton $ U2 dsl }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CmdPool.CreateInfo 'Nothing
 commandPoolInfo qFam = Vk.CmdPool.CreateInfo {

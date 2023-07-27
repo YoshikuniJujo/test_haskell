@@ -172,7 +172,7 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sm1 sm
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
-	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dscSetLyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dvc (pplLayoutInfoNew dscSetLyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing (U4 (computePipelineInfo plyt) :** HeteroParList.Nil)
 		nil' \(ppl :** HeteroParList.Nil) ->
@@ -501,12 +501,12 @@ bufferInfo' xs ys zs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
-pplLayoutInfoNew :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, bts)]
+pplLayoutInfoNew :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 	('Vk.PushConstant.PushConstantLayout '[] '[])
-pplLayoutInfoNew dsl = Vk.Ppl.Lyt.CreateInfoNew {
-	Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlagsNew = def,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew =
+pplLayoutInfoNew dsl = Vk.Ppl.Lyt.CreateInfo {
+	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
+	Vk.Ppl.Lyt.createInfoFlags = def,
+	Vk.Ppl.Lyt.createInfoSetLayouts =
 		U2 dsl :** HeteroParList.Nil }
 
 computePipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->

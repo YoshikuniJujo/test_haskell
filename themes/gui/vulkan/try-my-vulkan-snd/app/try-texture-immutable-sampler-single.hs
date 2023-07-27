@@ -671,12 +671,12 @@ createPipelineLayout' ::
 		Vk.Ppl.Layout.P sl '[AtomUbo sdsl ss] '[] -> IO b) -> IO b
 createPipelineLayout' dvc smplr f =
 	createDescriptorSetLayout dvc smplr \dsl ->
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
-			Vk.Ppl.Layout.createInfoNextNew = TMaybe.N,
-			Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
-			Vk.Ppl.Layout.createInfoSetLayoutsNew =
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
+			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
+			Vk.Ppl.Layout.createInfoFlags = zeroBits,
+			Vk.Ppl.Layout.createInfoSetLayouts =
 				HeteroParList.Singleton $ U2 dsl } in
-	Vk.Ppl.Layout.createNew @_ @_ @'[] @'Nothing dvc pipelineLayoutInfo nil' $ f dsl
+	Vk.Ppl.Layout.create @_ @_ @'[] @'Nothing dvc pipelineLayoutInfo nil' $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl ss] '[] ->

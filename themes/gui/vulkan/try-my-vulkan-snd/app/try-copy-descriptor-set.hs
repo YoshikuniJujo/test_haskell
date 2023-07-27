@@ -237,7 +237,7 @@ calc :: forall slbts sl bts sd sds . (
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
 	Vk.DS.D sds slbts -> Word32 -> IO ()
 calc qfi dv dslyt ds sz =
-	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
@@ -245,12 +245,12 @@ calc qfi dv dslyt ds sz =
 	run qfi dv ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.L sl bts ->
-	Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, bts)]
+	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.PushConstantLayout '[] '[])
-pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
-	Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HL.Singleton $ U2 dsl }
+pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
+	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
+	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
+	Vk.Ppl.Lyt.createInfoSetLayouts = HL.Singleton $ U2 dsl }
 
 commandPoolInfo :: Vk.QFm.Index -> Vk.CmdPool.CreateInfo 'Nothing
 commandPoolInfo qfi = Vk.CmdPool.CreateInfo {

@@ -374,7 +374,7 @@ calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm2 '[ListW2])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
-	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dvc (pplLayoutInfoNew dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
@@ -384,12 +384,12 @@ calc dvc qFam dslyt ln dss ma mb mc =
 		run dvc qFam cmdBuf ppl plyt dss ln ma mb mc
 
 pplLayoutInfoNew :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
-	Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, DscSetLytLstW123)]
+	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, DscSetLytLstW123)]
 		('Vk.PushConstant.PushConstantLayout '[] '[])
-pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
-	Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dslyt }
+pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfo {
+	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
+	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
+	Vk.Ppl.Lyt.createInfoSetLayouts = HeteroParList.Singleton $ U2 dslyt }
 
 computePipelineInfo :: Vk.Ppl.Lyt.P sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing,

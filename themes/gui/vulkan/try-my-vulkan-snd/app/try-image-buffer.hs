@@ -148,7 +148,7 @@ calc' :: (
 	(Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
-	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil' \pplLyt ->
+	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil' \pplLyt ->
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ cmptPipelineInfo pplLyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
@@ -530,12 +530,12 @@ bufferInfo' xs ys zs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
-	Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, bts)]
+	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.PushConstantLayout '[] '[])
-pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
-	Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlagsNew = def,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew = U2 dsl :** HeteroParList.Nil }
+pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
+	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
+	Vk.Ppl.Lyt.createInfoFlags = def,
+	Vk.Ppl.Lyt.createInfoSetLayouts = U2 dsl :** HeteroParList.Nil }
 
 cmptPipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing

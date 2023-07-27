@@ -615,16 +615,16 @@ createPipelineLayout :: forall sd sdl a . Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdl Buffers -> (forall sl .
 		Vk.Ppl.Lyt.P sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 		IO a) -> IO a
-createPipelineLayout dv dslyt f = Vk.Ppl.Lyt.createNew dv ci nil' f where
-	ci :: Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sdl, Buffers)] (
+createPipelineLayout dv dslyt f = Vk.Ppl.Lyt.create dv ci nil' f where
+	ci :: Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sdl, Buffers)] (
 		'Vk.PushConstant.PushConstantLayout
 			'[ WMeshPushConstants]
 			'[ 'Vk.PushConstant.Range '[ 'Vk.T.ShaderStageVertexBit]
 				'[WMeshPushConstants]] )
-	ci = Vk.Ppl.Lyt.CreateInfoNew {
-		Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
-		Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-		Vk.Ppl.Lyt.createInfoSetLayoutsNew = HL.Singleton $ U2 dslyt }
+	ci = Vk.Ppl.Lyt.CreateInfo {
+		Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
+		Vk.Ppl.Lyt.createInfoFlags = zeroBits,
+		Vk.Ppl.Lyt.createInfoSetLayouts = HL.Singleton $ U2 dslyt }
 
 createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.P sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->

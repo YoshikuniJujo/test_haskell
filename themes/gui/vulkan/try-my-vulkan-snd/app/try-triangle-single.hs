@@ -607,11 +607,11 @@ createRenderPassNew dvc f = do
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.P sl '[] '[] -> IO b) -> IO b
 createPipelineLayout' dvc f = do
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
-			Vk.Ppl.Layout.createInfoNextNew = TMaybe.N,
-			Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
-			Vk.Ppl.Layout.createInfoSetLayoutsNew = HeteroParList.Nil }
-	Vk.Ppl.Layout.createNew @_ @_ @'[] @'Nothing dvc pipelineLayoutInfo nil' f
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
+			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
+			Vk.Ppl.Layout.createInfoFlags = zeroBits,
+			Vk.Ppl.Layout.createInfoSetLayouts = HeteroParList.Nil }
+	Vk.Ppl.Layout.create @_ @_ @'[] @'Nothing dvc pipelineLayoutInfo nil' f
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->

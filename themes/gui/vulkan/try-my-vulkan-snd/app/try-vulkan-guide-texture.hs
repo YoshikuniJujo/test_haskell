@@ -697,16 +697,16 @@ createPipelineLayout :: forall sd sdl sdlod sdltx foo a . Vk.Dvc.D sd ->
 			'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ]
 			'[WMeshPushConstants] ->
 		IO a) -> IO a
-createPipelineLayout dv dslyt dslytod dslyttx f = Vk.Ppl.Lyt.createNew dv ci nil' f where
-	ci :: Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ] (
+createPipelineLayout dv dslyt dslytod dslyttx f = Vk.Ppl.Lyt.create dv ci nil' f where
+	ci :: Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ] (
 		'Vk.PushConstant.PushConstantLayout
 			'[ WMeshPushConstants]
 			'[ 'Vk.PushConstant.Range '[ 'Vk.T.ShaderStageVertexBit]
 				'[WMeshPushConstants]] )
-	ci = Vk.Ppl.Lyt.CreateInfoNew {
-		Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
-		Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-		Vk.Ppl.Lyt.createInfoSetLayoutsNew =
+	ci = Vk.Ppl.Lyt.CreateInfo {
+		Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
+		Vk.Ppl.Lyt.createInfoFlags = zeroBits,
+		Vk.Ppl.Lyt.createInfoSetLayouts =
 			U2 dslyt :** U2 dslytod :** U2 dslyttx :** HL.Nil }
 
 type Foo = '[ 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]]
