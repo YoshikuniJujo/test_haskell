@@ -6,7 +6,8 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList where
+module Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (
+	BindingStrideList(..), TypeVal(..) ) where
 
 import Foreign.Storable.SizeAlignment
 import Data.Kind

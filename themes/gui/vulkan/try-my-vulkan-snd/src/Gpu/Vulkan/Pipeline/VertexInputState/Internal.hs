@@ -51,17 +51,19 @@ instance Default (CreateInfo 'Nothing vs ts) where
 
 -- CREATE INFO TO MIDDLE
 
-createInfoToMiddle :: forall n vs ts . (
-	BindingStrideList VtxInp.Rate vs VtxInp.Rate,
-	AttributeDescriptions vs ts ) =>
-	CreateInfo n vs ts -> M.CreateInfo n
+createInfoToMiddle :: forall n vibs vias . (
+	BindingStrideList VtxInp.Rate vibs VtxInp.Rate,
+	AttributeDescriptions vibs vias ) =>
+	CreateInfo n vibs vias -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt, createInfoFlags = flgs } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,
-	M.createInfoVertexBindingDescriptions = bindingDescriptions @vs,
+	M.createInfoVertexBindingDescriptions = bindingDescriptions @vibs,
 	M.createInfoVertexAttributeDescriptions =
-		attributeDescriptions @vs @ts }
+		attributeDescriptions @vibs @vias }
+
+-- Binding Descriptions
 
 bindingDescriptions ::
 	forall vs . BindingStrideList VtxInp.Rate vs VtxInp.Rate =>
@@ -70,7 +72,10 @@ bindingDescriptions = fmap VtxInp.bindingDescriptionToMiddle
 	. VtxInp.bindingDescriptionFromRaw
 	$ bindingStrideList @VtxInp.Rate @vs @VtxInp.Rate
 
-class AttributeDescriptions (vs :: [(Type, VtxInp.Rate)]) (ts :: [(Nat, Type)]) where	
+-- Attribute Descriptions
+
+class AttributeDescriptions
+	(vs :: [(Type, VtxInp.Rate)]) (vias :: [(Nat, Type)]) where
 	attributeDescriptions :: [VtxInp.AttributeDescription]
 
 instance AttributeDescriptions vs '[] where
@@ -78,9 +83,8 @@ instance AttributeDescriptions vs '[] where
 
 instance (
 	BindingOffset vs t, Formattable t,
-	AttributeDescriptions vs ts, KnownNat i) =>
-	AttributeDescriptions vs ('(i, t) ': ts) where
-	attributeDescriptions :: forall n . [VtxInp.AttributeDescription]
+	AttributeDescriptions vs vias, KnownNat i) =>
+	AttributeDescriptions vs ('(i, t) ': vias) where
 	attributeDescriptions = VtxInp.AttributeDescription {
 		VtxInp.attributeDescriptionLocation = fromIntegral $ natVal @i undefined,
 		VtxInp.attributeDescriptionBinding = bd,
@@ -88,7 +92,7 @@ instance (
 		VtxInp.attributeDescriptionOffset = os } : ads
 		where
 		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffset @_ @vs @t
-		ads = attributeDescriptions @vs @ts
+		ads = attributeDescriptions @vs @vias
 
 class Formattable a where formatOf :: Format
 
