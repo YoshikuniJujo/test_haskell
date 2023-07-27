@@ -6,7 +6,19 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineCache (
-	C, create, getData, readData, writeData
+
+	-- * CREATE
+
+	create, P,
+
+	-- * GET DATA
+
+	getData,
+
+	-- * READ AND WRITE DATA
+
+	readData, writeData
+
 	) where
 
 import Foreign.Storable.PeekPoke
@@ -35,13 +47,13 @@ import Data.ByteString qualified as BS
 
 create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> M.CreateInfo mn ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> (forall s . C s -> IO a) -> IO a
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> (forall s . P s -> IO a) -> IO a
 create (Device.D dv) ci
 	(AllocationCallbacks.toMiddle -> mac) f =
-	bracket (M.create dv ci mac) (\c -> M.destroy dv c mac) (f . C)
+	bracket (M.create dv ci mac) (\c -> M.destroy dv c mac) (f . P)
 
-getData :: Device.D sd -> C s -> IO M.Data
-getData (Device.D dv) (C c) = M.getData dv c
+getData :: Device.D sd -> P s -> IO M.Data
+getData (Device.D dv) (P c) = M.getData dv c
 
 readData :: FilePath -> IO M.Data
 readData fp =

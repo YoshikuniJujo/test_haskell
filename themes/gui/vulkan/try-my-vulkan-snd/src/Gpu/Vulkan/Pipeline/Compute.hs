@@ -137,13 +137,13 @@ instance (
 createCs :: (
 	CreateInfoListToMiddle cias, AllocationCallbacks.ToMiddle mac,
 	FromMiddleList (TMapIndex.M2_4 cias) ) =>
-	Device.D sd -> Maybe (Cache.C spc) -> HeteroParList.PL (U4 CreateInfo) cias ->
+	Device.D sd -> Maybe (Cache.P spc) -> HeteroParList.PL (U4 CreateInfo) cias ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall s . HeteroParList.PL (C s) (TMapIndex.M2_4 cias) -> IO a) -> IO a
 createCs dvc@(Device.D mdvc) mcch cis
 	(AllocationCallbacks.toMiddle -> mac) f = do
 	cis' <- createInfoListToMiddle dvc cis
-	let	mcch' = (\(Cache.C c) -> c) <$> mcch
+	let	mcch' = (\(Cache.P c) -> c) <$> mcch
 	bracket
 		(M.createCs mdvc mcch' cis' mac
 			<* destroyCreateInfoMiddleList dvc cis' cis)

@@ -272,7 +272,7 @@ calc :: forall slbts sl bts sd spc sds . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	InfixIndex '[slbts] '[slbts]) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.PplCch.C spc ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.PplCch.P spc ->
 	Vk.DSLyt.L sl bts ->
 	Vk.DS.D sds slbts -> Word32 -> IO ()
 calc qfi dv pcch dslyt ds sz =

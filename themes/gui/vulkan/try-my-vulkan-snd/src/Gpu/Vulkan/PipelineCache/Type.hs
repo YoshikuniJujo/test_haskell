@@ -1,10 +1,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PipelineCache.Type where
+module Gpu.Vulkan.PipelineCache.Type (
+
+	-- * PIPELINE CACHE
+
+	P(..), pToMiddle
+
+	) where
 
 import qualified Gpu.Vulkan.PipelineCache.Middle as M
 
-newtype C s = C M.C deriving Show
+newtype P s = P M.C deriving Show
 
-cToMiddle :: C s -> M.C
-cToMiddle (C c) = c
+pToMiddle :: P s -> M.C
+pToMiddle (P c) = c

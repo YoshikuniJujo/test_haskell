@@ -65,14 +65,14 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as ShaderStage.M
 -- CREATE AND RECREATE
 
 createGs :: (CreateInfoListToMiddle cias, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> Maybe (Cache.C sc) ->
+	Device.D sd -> Maybe (Cache.P sc) ->
 	HeteroParList.PL (U14 CreateInfo) cias ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall sg .
 		HeteroParList.PL
 			(U3 (G sg)) (CreateInfoListArgsToGArgs cias) ->
 		IO a) -> IO a
-createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis
+createGs d@(Device.D dvc) ((Cache.pToMiddle <$>) -> mc) cis
 	macc@(AllocationCallbacks.toMiddle -> macd) f = bracket
 	(createInfoListToMiddle d cis >>= \cis' -> M.createGs dvc mc cis'
 			(AllocationCallbacks.toMiddle macc)
@@ -92,10 +92,10 @@ instance GListFromMiddle ss => GListFromMiddle ('(s, t, foo) ': ss) where
 		[] -> error "Wrong number of elements"
 
 recreateGs :: (CreateInfoListToMiddle cias, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.PL (U14 CreateInfo) cias ->
+	Device.D sd -> Maybe (Cache.P s) -> HeteroParList.PL (U14 CreateInfo) cias ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	HeteroParList.PL (U3 (G sg)) (CreateInfoListArgsToGArgs cias) -> IO ()
-recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc gpls = do
+recreateGs d@(Device.D dvc) ((Cache.pToMiddle <$>) -> mc) cis macc gpls = do
 	cis' <- createInfoListToMiddle d cis
 	M.recreateGs dvc mc cis'
 		(AllocationCallbacks.toMiddle macc) $ gListToMiddle gpls
