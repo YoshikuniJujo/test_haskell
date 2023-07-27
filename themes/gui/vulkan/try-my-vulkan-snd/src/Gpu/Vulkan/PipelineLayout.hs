@@ -35,6 +35,22 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DscStLyt
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.PipelineLayout.Middle as M
 
+-- CREATE
+
+create :: (
+	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
+	PushConstant.RangesToMiddle whole ranges,
+	WithPoked (TMaybe.M mn), HeteroParListToList' sbtss,
+	AllocationCallbacks.ToMiddle mscc ) =>
+	Device.D sd -> CreateInfo mn sbtss pcl ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	(forall s . P s sbtss whole -> IO a) -> IO a
+create (Device.D dvc) (createInfoToMiddleNew' -> ci)
+	(AllocationCallbacks.toMiddle -> macc) f =
+	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macc) (f . P)
+
+-- CREATE INFO
+
 data CreateInfo mn sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: M.CreateFlags,
@@ -70,15 +86,3 @@ createInfoToMiddleNew' CreateInfo {
 	M.createInfoSetLayouts = sls,
 	M.createInfoPushConstantRanges =
 		PushConstant.pushConstantLayoutToRanges @pcl }
-
-create :: (
-	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
-	PushConstant.RangesToMiddle whole ranges,
-	WithPoked (TMaybe.M mn), HeteroParListToList' sbtss,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd -> CreateInfo mn sbtss pcl ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall s . P s sbtss whole -> IO a) -> IO a
-create (Device.D dvc) (createInfoToMiddleNew' -> ci)
-	(AllocationCallbacks.toMiddle -> macc) f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macc) (f . P)
