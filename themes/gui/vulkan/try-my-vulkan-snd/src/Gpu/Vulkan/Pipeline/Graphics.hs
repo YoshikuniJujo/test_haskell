@@ -54,7 +54,8 @@ import qualified Gpu.Vulkan.Pipeline.RasterizationState as RasterizationState
 import qualified Gpu.Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Gpu.Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
-import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
+import Gpu.Vulkan.Pipeline.VertexInputState.Internal
+	qualified as VertexInputState
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 
 import Gpu.Vulkan.VertexInput qualified as VertexInput
@@ -176,7 +177,7 @@ instance (
 	ShaderStage.M.CreateInfoListToCore (ShaderStage.MiddleArgs ssas),
 	BindingStrideList.BindingStrideList
 		VertexInput.Rate vibs VertexInput.Rate,
-	VertexInputState.CreateInfoAttributeDescription vibs vias,
+	VertexInputState.AttributeDescriptions vibs vias,
 	WithPoked (TMaybe.M mn), WithPoked (TMaybe.M nvis),
 	WithPoked (TMaybe.M iasa), WithPoked (TMaybe.M tsssa),
 	WithPoked (TMaybe.M vpsa), WithPoked (TMaybe.M rstsa),
@@ -198,7 +199,7 @@ instance (
 createInfoToMiddle :: (
 	ShaderStage.CreateInfoListToMiddle ssas,
 	BindingStrideList.BindingStrideList VertexInput.Rate vibs VertexInput.Rate,
-	VertexInputState.CreateInfoAttributeDescription vibs vias ) =>
+	VertexInputState.AttributeDescriptions vibs vias ) =>
 	Device.D sd ->
 	CreateInfo n ssas '(nvis, vibs, vias)
 		iasa tsssa vpsa rstsa mssa dssa cbsa dsa sl rpa '(sb, vibs', vias', slbtss') ->

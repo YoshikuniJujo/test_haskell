@@ -134,6 +134,7 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState
       Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
       Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
+      Gpu.Vulkan.Pipeline.VertexInputState.Internal
       Gpu.Vulkan.Pipeline.ViewportState
       Gpu.Vulkan.PipelineCache
       Gpu.Vulkan.PipelineCache.Type
