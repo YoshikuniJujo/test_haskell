@@ -139,6 +139,7 @@ library
       Gpu.Vulkan.PipelineLayout
       Gpu.Vulkan.PipelineLayout.Type
       Gpu.Vulkan.PushConstant
+      Gpu.Vulkan.PushConstant.Internal
       Gpu.Vulkan.Query
       Gpu.Vulkan.Query.Enum
       Gpu.Vulkan.QueryPool

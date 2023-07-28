@@ -33,7 +33,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DscStLyt
-import qualified Gpu.Vulkan.PushConstant as PushConstant
+import qualified Gpu.Vulkan.PushConstant.Internal as PushConstant
 import qualified Gpu.Vulkan.PipelineLayout.Middle as M
 
 -- CREATE
@@ -41,7 +41,7 @@ import qualified Gpu.Vulkan.PipelineLayout.Middle as M
 create :: (
 	WithPoked (TMaybe.M mn),
 	HeteroParList.ToListT2 Type [DscStLyt.BindingType] lytas,
-	PushConstant.RangesToMiddle whole ranges,
+	PushConstant.RangeListToMiddle whole ranges,
 	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd ->
 	CreateInfo mn lytas ('PushConstant.Layout whole ranges) ->
@@ -61,11 +61,10 @@ deriving instance (
 	Show (TMaybe.M mn), Show (HeteroParList.PL (U2 DscStLyt.L) lytas) ) =>
 	Show (CreateInfo mn lytas pcl)
 
-createInfoToMiddle :: forall n k lytas pcl whole ranges . (
-	pcl ~ 'PushConstant.Layout whole ranges,
-	PushConstant.RangesToMiddle whole ranges,
+createInfoToMiddle :: forall n k lytas whole ranges . (
+	PushConstant.RangeListToMiddle whole ranges,
 	HeteroParList.ToListT2 k [DscStLyt.BindingType] lytas ) =>
-	CreateInfo n lytas pcl -> M.CreateInfo n
+	CreateInfo n lytas ('PushConstant.Layout whole ranges) -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -75,4 +74,4 @@ createInfoToMiddle CreateInfo {
 	M.createInfoFlags = flgs,
 	M.createInfoSetLayouts = sls,
 	M.createInfoPushConstantRanges =
-		PushConstant.pushConstantLayoutToRanges @pcl }
+		PushConstant.rangeListToMiddle @whole @ranges }

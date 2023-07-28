@@ -958,8 +958,8 @@ createTextureImage phdvc dvc gq cp fp f = do
 	img <- readRgba8 fp
 	putStrLn "CREATE TEXTURE"
 	print . V.length $ imageData img
-	let	wdt_ = fromIntegral $ imageWidth img
-		hgt_ = fromIntegral $ imageHeight img
+	let	wdt_ = imageWidth img
+		hgt_ = imageHeight img
 		wdt = fromIntegral wdt_
 		hgt = fromIntegral hgt_
 		mipLevels :: Word32 = floor @Double . logBase 2

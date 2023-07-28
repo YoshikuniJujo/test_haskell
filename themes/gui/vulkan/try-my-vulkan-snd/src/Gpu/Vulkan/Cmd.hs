@@ -72,6 +72,7 @@ import Data.Int
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Enum
+import Gpu.Vulkan.TypeEnum qualified as T
 
 import qualified Gpu.Vulkan.CommandBuffer as CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer.T
@@ -95,7 +96,6 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
 import qualified Gpu.Vulkan.Cmd.Middle as M
 
-import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.Memory as Memory
 
 import Data.IORef -- for debug
@@ -257,23 +257,23 @@ copyBuffer (CommandBuffer.T.C cb) (Buffer.Binded lnss s) (Buffer.Binded lnsd d) 
 	M.copyBuffer cb s d (Buffer.I.makeCopies @cpobjss lnss lnsd)
 
 pushConstantsGraphics :: forall sss sc vibs sl sbtss pcs ts . (
-	PushConstant.ShaderStageFlagBitsToMiddle sss,
+	T.ShaderStageFlagBitsListToValue sss,
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.GBinded sc vibs '(sl, sbtss, pcs) ->
 	PipelineLayout.P sl sbtss pcs -> HeteroParList.L ts -> IO ()
 pushConstantsGraphics (CommandBuffer.T.GBinded cb) (PipelineLayout.P lyt) xs =
 	M.pushConstants
-		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
+		cb lyt (T.shaderStageFlagBitsListToValue @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
 
 pushConstantsCompute :: forall sss sc sl sbtss pcs ts . (
-	PushConstant.ShaderStageFlagBitsToMiddle sss,
+	T.ShaderStageFlagBitsListToValue sss,
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.CBinded sc '(sl, sbtss, pcs) ->
 	PipelineLayout.P sl sbtss pcs -> HeteroParList.L ts -> IO ()
 pushConstantsCompute (CommandBuffer.T.CBinded cb) (PipelineLayout.P lyt) xs =
 	M.pushConstants
-		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
+		cb lyt (T.shaderStageFlagBitsListToValue @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
 
 pipelineBarrier :: (

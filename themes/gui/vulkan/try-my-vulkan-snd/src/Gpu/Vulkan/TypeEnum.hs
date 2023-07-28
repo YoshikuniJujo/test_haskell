@@ -1,14 +1,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.TypeEnum where
 
 import Language.Haskell.TH
+import Data.Bits
 
 import Gpu.Vulkan.TypeEnum.Th
 
@@ -20,6 +21,18 @@ do	is <- lines <$> runIO (readFile "th/vkShaderStageFlagBits.txt")
 	(: []) <$> dataD (pure []) (mkName "ShaderStageFlagBits") [] Nothing
 		((`normalC` []) . mkName <$> is)
 		[]
+
+class ShaderStageFlagBitsListToValue (ts :: [ShaderStageFlagBits]) where
+	shaderStageFlagBitsListToValue :: E.ShaderStageFlagBits
+
+instance ShaderStageFlagBitsListToValue '[] where
+	shaderStageFlagBitsListToValue = zeroBits
+
+instance (ShaderStageFlagBitsToValue t, ShaderStageFlagBitsListToValue ts) =>
+	ShaderStageFlagBitsListToValue (t ': ts) where
+	shaderStageFlagBitsListToValue =
+		shaderStageFlagBitsToValue @t .|.
+		shaderStageFlagBitsListToValue @ts
 
 class ShaderStageFlagBitsToValue (t :: ShaderStageFlagBits) where
 	shaderStageFlagBitsToValue :: E.ShaderStageFlagBits
