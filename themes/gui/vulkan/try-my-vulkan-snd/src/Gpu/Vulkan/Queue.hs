@@ -23,8 +23,8 @@ import qualified Gpu.Vulkan.Fence.Type as Fence
 
 import Gpu.Vulkan.Queue.Middle qualified as M
 
-submit :: SubmitInfoListToMiddle nssssvsss => M.Q ->
-	HeteroParList.PL (U4 SubmitInfo) nssssvsss -> Maybe (Fence.F sf) -> IO ()
+submit :: SubmitInfoListToMiddle sias => M.Q ->
+	HeteroParList.PL (U4 SubmitInfo) sias -> Maybe (Fence.F sf) -> IO ()
 submit q sis mf =
 	M.submit q (submitInfoListToMiddle sis) $ (\(Fence.F f) -> f) <$> mf
 
