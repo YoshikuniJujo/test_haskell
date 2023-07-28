@@ -8,7 +8,19 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PushConstant where
+module Gpu.Vulkan.PushConstant (
+
+	-- * PUSHCONSTANT LAYOUT
+
+	Layout(..), Range(..),
+
+	-- * OEHERS
+
+	ShaderStageFlagBitsToMiddle(..),
+	pushConstantLayoutToRanges,
+	RangesToMiddle
+
+	) where
 
 import Foreign.Storable.HeteroList
 import Data.Kind
