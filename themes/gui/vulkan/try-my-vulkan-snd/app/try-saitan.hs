@@ -502,7 +502,7 @@ bufferInfo' xs ys zs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
 pplLayoutInfoNew :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
-	('Vk.PushConstant.PushConstantLayout '[] '[])
+	('Vk.PushConstant.Layout '[] '[])
 pplLayoutInfoNew dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlags = def,

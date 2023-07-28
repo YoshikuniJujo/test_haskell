@@ -646,7 +646,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
 		layoutCreateInfoNew :: Vk.Ppl.Lyt.CreateInfo 'Nothing '[]
-			('Vk.PushConstant.PushConstantLayout '[] '[])
+			('Vk.PushConstant.Layout '[] '[])
 		layoutCreateInfoNew = Vk.Ppl.Lyt.CreateInfo {
 			Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 			Vk.Ppl.Lyt.createInfoFlags = zeroBits,

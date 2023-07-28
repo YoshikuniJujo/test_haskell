@@ -631,7 +631,7 @@ createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.create dvc crInfo nil' f
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing] ]) ]
 		(
-		'Vk.PushConstant.PushConstantLayout
+		'Vk.PushConstant.Layout
 			'[ WrapMeshPushConstants]
 			'[ 'Vk.PushConstant.Range
 				'[ 'Vk.T.ShaderStageVertexBit] '[WrapMeshPushConstants] ])

@@ -54,10 +54,10 @@ instance (RangeToMiddle whole range, RangesToMiddle whole ranges) =>
 	rangesToMiddle =
 		rangeToMiddle @whole @range : rangesToMiddle @whole @ranges
 
-data PushConstantLayout = PushConstantLayout [Type] [Range]
+data Layout = Layout [Type] [Range]
 
 pushConstantLayoutToRanges ::
-	forall (pcl :: PushConstantLayout) whole ranges .
-	(pcl ~ ('PushConstantLayout whole ranges), RangesToMiddle whole ranges) =>
+	forall (pcl :: Layout) whole ranges .
+	(pcl ~ ('Layout whole ranges), RangesToMiddle whole ranges) =>
 	[M.Range]
 pushConstantLayoutToRanges = rangesToMiddle @whole @ranges

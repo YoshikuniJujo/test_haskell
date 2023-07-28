@@ -2,8 +2,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -24,7 +26,6 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.PipelineLayout.Type
 
@@ -38,48 +39,37 @@ import qualified Gpu.Vulkan.PipelineLayout.Middle as M
 -- CREATE
 
 create :: (
-	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
+	WithPoked (TMaybe.M mn),
+	HeteroParList.ToListT2 Type [DscStLyt.BindingType] lytas,
 	PushConstant.RangesToMiddle whole ranges,
-	WithPoked (TMaybe.M mn), HeteroParListToList' sbtss,
-	AllocationCallbacks.ToMiddle mscc ) =>
-	Device.D sd -> CreateInfo mn sbtss pcl ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall s . P s sbtss whole -> IO a) -> IO a
-create (Device.D dvc) (createInfoToMiddleNew' -> ci)
-	(AllocationCallbacks.toMiddle -> macc) f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macc) (f . P)
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd ->
+	CreateInfo mn lytas ('PushConstant.Layout whole ranges) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall s . P s lytas whole -> IO a) -> IO a
+create (Device.D dvc) (createInfoToMiddle -> ci)
+	(AllocationCallbacks.toMiddle -> mac) f =
+	bracket (M.create dvc ci mac) (\l -> M.destroy dvc l mac) (f . P)
 
 -- CREATE INFO
 
-data CreateInfo mn sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfo {
-	createInfoNext :: TMaybe.M mn,
-	createInfoFlags :: M.CreateFlags,
-	createInfoSetLayouts :: HeteroParList.PL (U2 DscStLyt.L) sbtss }
+data CreateInfo mn lytas (pcl :: PushConstant.Layout) = CreateInfo {
+	createInfoNext :: TMaybe.M mn, createInfoFlags :: M.CreateFlags,
+	createInfoSetLayouts :: HeteroParList.PL (U2 DscStLyt.L) lytas }
 
 deriving instance (
-	Show (TMaybe.M mn),
-	Show (HeteroParList.PL (U2 DscStLyt.L) sbtss) ) =>
-	Show (CreateInfo mn sbtss pcl)
+	Show (TMaybe.M mn), Show (HeteroParList.PL (U2 DscStLyt.L) lytas) ) =>
+	Show (CreateInfo mn lytas pcl)
 
-class HeteroParListToList' sbtss where
-	toList' ::
-		(forall (s :: Type) (bts :: [DscStLyt.BindingType]) . t '(s, bts) -> t') ->
-		HeteroParList.PL t sbtss -> [t']
-
-instance HeteroParListToList' '[] where toList' _ HeteroParList.Nil = []
-
-instance HeteroParListToList' sbtss => HeteroParListToList' ('(s, bts) ': sbtss) where
-	toList' f (x :** xs) = f x : toList' f xs
-
-createInfoToMiddleNew' ::
-	forall n sbtss pcl whole ranges .
-	(	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
-		PushConstant.RangesToMiddle whole ranges ) =>
-	HeteroParListToList' sbtss => CreateInfo n sbtss pcl -> M.CreateInfo n
-createInfoToMiddleNew' CreateInfo {
+createInfoToMiddle :: forall n k lytas pcl whole ranges . (
+	pcl ~ 'PushConstant.Layout whole ranges,
+	PushConstant.RangesToMiddle whole ranges,
+	HeteroParList.ToListT2 k [DscStLyt.BindingType] lytas ) =>
+	CreateInfo n lytas pcl -> M.CreateInfo n
+createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
-	createInfoSetLayouts = toList'
+	createInfoSetLayouts = HeteroParList.toListT2
 		$ DscStLyt.unL . unU2 -> sls } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,

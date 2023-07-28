@@ -671,7 +671,7 @@ createPipelineLayout' dvc f =
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts =
 				HeteroParList.Singleton $ U2 dsl } in
-	Vk.Ppl.Layout.create @_ @_ @'[] @'Nothing dvc pipelineLayoutInfo nil' $ f dsl
+	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil' $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->

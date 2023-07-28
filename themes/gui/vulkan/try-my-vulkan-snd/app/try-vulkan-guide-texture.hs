@@ -699,7 +699,7 @@ createPipelineLayout :: forall sd sdl sdlod sdltx foo a . Vk.Dvc.D sd ->
 		IO a) -> IO a
 createPipelineLayout dv dslyt dslytod dslyttx f = Vk.Ppl.Lyt.create dv ci nil' f where
 	ci :: Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ] (
-		'Vk.PushConstant.PushConstantLayout
+		'Vk.PushConstant.Layout
 			'[ WMeshPushConstants]
 			'[ 'Vk.PushConstant.Range '[ 'Vk.T.ShaderStageVertexBit]
 				'[WMeshPushConstants]] )

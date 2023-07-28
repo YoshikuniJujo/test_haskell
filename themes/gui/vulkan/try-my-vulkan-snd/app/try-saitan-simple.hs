@@ -293,7 +293,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
-		('Vk.PushConstant.PushConstantLayout '[] '[])
+		('Vk.PushConstant.Layout '[] '[])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
