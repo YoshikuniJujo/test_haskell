@@ -36,36 +36,28 @@ import Gpu.Vulkan.AllocationCallbacks.Type qualified as AllocationCallbacks
 import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 import Gpu.Vulkan.PhysicalDevice.Struct qualified as PhysicalDevice
 import Gpu.Vulkan.Device.Type qualified as Device
+import Gpu.Vulkan.Query qualified as Q
 import Gpu.Vulkan.Query.Enum qualified as Q
 import Gpu.Vulkan.QueryPool.Type
 import Gpu.Vulkan.QueryPool.Middle qualified as M
 
+-- CREATE
+
 create :: (
 	WithPoked (TMaybe.M mn), QueryType tp,
-	AllocationCallbacks.ToMiddle mscc ) =>
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn tp ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	(forall sq . Q sq tp -> IO a) -> IO a
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall s . Q s tp -> IO a) -> IO a
 create (Device.D dv) ci
 	(AllocationCallbacks.toMiddle -> macc) f = bracket
 	(M.create dv (createInfoToMiddle ci) macc)
 	(\qp -> M.destroy dv qp macc) (f . Q)
 
-getResults :: forall sd sq av tp w64 . (
-	QueryType tp,
-	Storable (M.W32W64 w64), M.W32W64Tools w64,
-	M.AvailabilityTools av (M.W32W64 w64) ) =>
-	PhysicalDevice.P ->
-	Device.D sd -> Q sq tp -> Word32 -> Word32 -> Q.ResultFlags ->
-	IO [M.Availability av (tp w64)]
-getResults pd (Device.D dv) (Q qp) fq qc flgs = do
-	a <- getQueryArg @tp pd
-	((fromWord a <$>) <$>) <$> M.getResults dv qp fq qc flgs
-
 data CreateInfo mn (tp :: Bool -> Type) = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: M.CreateFlags,
-	createInfoQueryCount :: Word32,
+	createInfoQueryCount :: Q.Count,
 	createInfoPipelineStatistics :: Q.PipelineStatisticFlags }
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn tp)
@@ -83,11 +75,26 @@ createInfoToMiddle CreateInfo {
 	M.createInfoQueryCount = qc,
 	M.createInfoPipelineStatistics = ps }
 
+-- GET RESULTS
+
+getResults :: forall sd sq av tp w64 . (
+	QueryType tp,
+	Storable (M.W32W64 w64), M.W32W64Tools w64,
+	M.AvailabilityTools av (M.W32W64 w64) ) =>
+	PhysicalDevice.P ->
+	Device.D sd -> Q sq tp -> Q.First -> Q.Count -> Q.ResultFlags ->
+	IO [M.Availability av (tp w64)]
+getResults pd (Device.D dv) (Q qp) fq qc flgs = do
+	a <- getQueryArg @tp pd
+	((fromWord a <$>) <$>) <$> M.getResults dv qp fq qc flgs
+
 class QueryType (qt :: Bool -> Type) where
 	type QueryArg qt
 	queryType :: Q.Type
 	fromWord :: QueryArg qt -> M.W32W64 w64 -> qt w64
 	getQueryArg :: PhysicalDevice.P -> IO (QueryArg qt)
+
+-- Pipeline Statistics
 
 instance QueryType PipelineStatistics where
 	type QueryArg PipelineStatistics = ()
@@ -105,6 +112,8 @@ pipelineStatisticsFromWord :: M.W32W64 w64 -> PipelineStatistics w64
 pipelineStatisticsFromWord = \case
 	M.W32 w -> PipelineStatistics32 w; M.W64 w -> PipelineStatistics64 w
 
+-- Timestamp
+
 data Timestamp w64 where
 	Timestamp32 :: {
 		timestampPeriod32 :: Float,
@@ -113,12 +122,12 @@ data Timestamp w64 where
 		timestampPeriod64 :: Float,
 		timestampW64 :: Word64 } -> Timestamp 'True
 
--- deriving instance Show (Timestamp w64)
-
 instance Show (Timestamp w64) where
 	show = \case
-		Timestamp32 p w -> show @Double (realToFrac p * fromIntegral w) ++ "ns"
-		Timestamp64 p w -> show @Double (realToFrac p * fromIntegral w) ++ "ns"
+		Timestamp32 p w ->
+			show @Double (realToFrac p * fromIntegral w) ++ "ns"
+		Timestamp64 p w ->
+			show @Double (realToFrac p * fromIntegral w) ++ "ns"
 
 instance QueryType Timestamp where
 	type QueryArg Timestamp = Float
@@ -126,5 +135,6 @@ instance QueryType Timestamp where
 	fromWord p = \case
 		M.W32 w -> Timestamp32 p w; M.W64 w -> Timestamp64 p w
 	getQueryArg pd = do
-		lmts <- PhysicalDevice.propertiesLimits <$> PhysicalDevice.getProperties pd
+		lmts <- PhysicalDevice.propertiesLimits
+			<$> PhysicalDevice.getProperties pd
 		pure $ PhysicalDevice.limitsTimestampPeriod lmts
