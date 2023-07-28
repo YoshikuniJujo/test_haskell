@@ -2,7 +2,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Queue (
-	M.Q, submit, M.waitIdle, Index
+
+	-- * SUBMIT AND WAIT IDLE
+
+	submit, M.waitIdle, M.Q,
+
+	-- * TYPE SYNONYM
+
+	Index
+
 	) where
 
 import Data.TypeLevel.Tuple.Uncurry
