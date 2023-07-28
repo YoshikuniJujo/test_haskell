@@ -143,6 +143,7 @@ library
       Gpu.Vulkan.Query
       Gpu.Vulkan.Query.Enum
       Gpu.Vulkan.QueryPool
+      Gpu.Vulkan.QueryPool.Type
       Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
       Gpu.Vulkan.RenderPass

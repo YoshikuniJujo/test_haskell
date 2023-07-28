@@ -102,6 +102,7 @@ import Data.IORef -- for debug
 
 import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool qualified as QueryPool
+import Gpu.Vulkan.QueryPool.Type qualified as QueryPool
 import Gpu.Vulkan.Query qualified as Query
 import Gpu.Vulkan.Object.Base qualified as KObj
 

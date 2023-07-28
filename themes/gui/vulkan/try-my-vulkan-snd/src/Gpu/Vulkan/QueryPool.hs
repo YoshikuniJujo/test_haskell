@@ -10,7 +10,17 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.QueryPool where
+module Gpu.Vulkan.QueryPool (
+
+	-- * CREATE
+
+	create, Q, CreateInfo(..),
+
+	-- * GET RESULTS
+
+	getResults, QueryType, PipelineStatistics(..), Timestamp(..)
+
+	) where
 
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -21,15 +31,14 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.Kind
 import Data.Word
 
-import Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Type qualified as AllocationCallbacks
 import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 import Gpu.Vulkan.PhysicalDevice.Struct qualified as PhysicalDevice
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.Query.Enum qualified as Q
+import Gpu.Vulkan.QueryPool.Type
 import Gpu.Vulkan.QueryPool.Middle qualified as M
-
-newtype Q sq (tp :: Bool -> Type) = Q M.Q deriving Show
 
 create :: (
 	WithPoked (TMaybe.M mn), QueryType tp,
