@@ -1,6 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Query where
+module Gpu.Vulkan.Query (
+
+	-- * TYPE SYNONYMS
+
+	Q, First, Count
+
+	) where
 
 import Data.Word
 
