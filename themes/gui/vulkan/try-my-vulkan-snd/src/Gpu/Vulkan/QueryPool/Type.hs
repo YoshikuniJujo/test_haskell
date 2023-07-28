@@ -2,7 +2,13 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.QueryPool.Type where
+module Gpu.Vulkan.QueryPool.Type (
+
+	-- * QUERY POOL
+
+	Q(..)
+
+	) where
 
 import Data.Kind
 
