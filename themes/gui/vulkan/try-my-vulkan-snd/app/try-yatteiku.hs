@@ -550,16 +550,16 @@ makeRenderPass dvc f = do
 				Left [subpass0AttachmentRef],
 			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
-		renderPassCreateInfoNew :: Vk.RenderPass.CreateInfoNew 'Nothing _
-		renderPassCreateInfoNew = Vk.RenderPass.CreateInfoNew {
-			Vk.RenderPass.createInfoNextNew = TMaybe.N,
-			Vk.RenderPass.createInfoFlagsNew =
+		renderPassCreateInfoNew :: Vk.RenderPass.CreateInfo 'Nothing _
+		renderPassCreateInfoNew = Vk.RenderPass.CreateInfo {
+			Vk.RenderPass.createInfoNext = TMaybe.N,
+			Vk.RenderPass.createInfoFlags =
 				Vk.RenderPass.CreateFlagsZero,
-			Vk.RenderPass.createInfoAttachmentsNew =
+			Vk.RenderPass.createInfoAttachments =
 				attachmentNew :** HeteroParList.Nil,
-			Vk.RenderPass.createInfoSubpassesNew = [subpass],
-			Vk.RenderPass.createInfoDependenciesNew = [] }
-	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil' f
+			Vk.RenderPass.createInfoSubpasses = [subpass],
+			Vk.RenderPass.createInfoDependencies = [] }
+	Vk.RenderPass.create dvc renderPassCreateInfoNew nil' f
 
 makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
 	(forall s sl . Vk.Ppl.Gr.G s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a

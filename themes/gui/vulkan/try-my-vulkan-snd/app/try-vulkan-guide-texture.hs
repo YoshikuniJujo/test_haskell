@@ -566,15 +566,15 @@ createRenderPass ::
 	forall (scifmt :: Vk.T.Format) (dfmt :: Vk.T.Format) sd a . (
 	Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dfmt ) =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
-createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @'Nothing
+createRenderPass dv f = Vk.RndrPss.create @'[scifmt, dfmt] @'Nothing
 	dv renderPassInfo nil' f where
-	renderPassInfo = Vk.RndrPss.M.CreateInfoNew {
-		Vk.RndrPss.M.createInfoNextNew = TMaybe.N,
-		Vk.RndrPss.M.createInfoFlagsNew = zeroBits,
-		Vk.RndrPss.M.createInfoAttachmentsNew =
+	renderPassInfo = Vk.RndrPss.M.CreateInfo {
+		Vk.RndrPss.M.createInfoNext = TMaybe.N,
+		Vk.RndrPss.M.createInfoFlags = zeroBits,
+		Vk.RndrPss.M.createInfoAttachments =
 			colorAttachment :** depthAttachment :** HL.Nil,
-		Vk.RndrPss.M.createInfoSubpassesNew = [subpass],
-		Vk.RndrPss.M.createInfoDependenciesNew = [dependency] }
+		Vk.RndrPss.M.createInfoSubpasses = [subpass],
+		Vk.RndrPss.M.createInfoDependencies = [dependency] }
 	colorAttachment :: Vk.Att.Description scifmt
 	colorAttachment = Vk.Att.Description {
 		Vk.Att.descriptionFlags = zeroBits,

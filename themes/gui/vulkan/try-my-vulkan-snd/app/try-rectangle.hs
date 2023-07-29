@@ -567,13 +567,13 @@ createRenderPassNew dvc f = do
 				Vk.AccessColorAttachmentWriteBit .|.
 				Vk.AccessDepthStencilAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags = zeroBits }
-		renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
-			Vk.RndrPass.M.createInfoNextNew = TMaybe.N,
-			Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
-			Vk.RndrPass.M.createInfoAttachmentsNew = colorAttachment :** HeteroParList.Nil,
-			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
-			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
-	Vk.RndrPass.createNew @'[scifmt] @'Nothing dvc renderPassInfo nil' \rp -> f rp
+		renderPassInfo = Vk.RndrPass.M.CreateInfo {
+			Vk.RndrPass.M.createInfoNext = TMaybe.N,
+			Vk.RndrPass.M.createInfoFlags = zeroBits,
+			Vk.RndrPass.M.createInfoAttachments = colorAttachment :** HeteroParList.Nil,
+			Vk.RndrPass.M.createInfoSubpasses = [subpass],
+			Vk.RndrPass.M.createInfoDependencies = [dependency] }
+	Vk.RndrPass.create @'[scifmt] @'Nothing dvc renderPassInfo nil' \rp -> f rp
 
 type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]])
 
