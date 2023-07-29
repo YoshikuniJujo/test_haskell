@@ -147,7 +147,7 @@ library
       Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
       Gpu.Vulkan.RenderPass
-      Gpu.Vulkan.RenderPass.Tmp
+      Gpu.Vulkan.RenderPass.Enum
       Gpu.Vulkan.RenderPass.Type
       Gpu.Vulkan.Sample
       Gpu.Vulkan.Sampler

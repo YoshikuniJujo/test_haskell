@@ -966,8 +966,8 @@ createTextureImage ::
 createTextureImage phdvc dvc gq cp txfp f = do
 	img <- readRgba8 txfp
 	print . V.length $ imageData img
-	let	wdt_ = fromIntegral $ imageWidth img
-		hgt_ = fromIntegral $ imageHeight img
+	let	wdt_ = imageWidth img
+		hgt_ = imageHeight img
 		wdt, hgt :: Num i => i
 		wdt = fromIntegral wdt_
 		hgt = fromIntegral hgt_

@@ -65,7 +65,7 @@ import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RenderPass
-import qualified Gpu.Vulkan.RenderPass.Enum as Vk.RenderPass
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.RenderPass.Enum as Vk.RenderPass
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportState
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as
 	Vk.Ppl.VertexInputState
