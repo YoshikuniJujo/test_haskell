@@ -92,7 +92,7 @@ import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 
-import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
+import qualified Gpu.Vulkan.RenderPass.Internal as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
 import qualified Gpu.Vulkan.Cmd.Middle as M
 
