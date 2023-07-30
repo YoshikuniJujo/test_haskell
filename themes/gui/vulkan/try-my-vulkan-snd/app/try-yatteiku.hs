@@ -31,6 +31,7 @@ import Data.Word
 import Data.Color
 import Codec.Picture
 
+import Shaderc
 import Shaderc.TH
 import Shaderc.EnumAuto
 
@@ -79,7 +80,7 @@ import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
-import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
+import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.ImageView as Vk.ImgView
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Gpu.Vulkan.Component as Vk.Component
@@ -651,23 +652,23 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 			Vk.Ppl.Lyt.createInfoFlags = zeroBits,
 			Vk.Ppl.Lyt.createInfoSetLayouts = HeteroParList.Nil }
-		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
-			Vk.Shader.Module.createInfoNext = TMaybe.N,
-			Vk.Shader.Module.createInfoFlags = zeroBits,
-			Vk.Shader.Module.createInfoCode = glslVertexShaderMain }
+		vertShaderCreateInfo = Vk.ShaderModule.CreateInfo {
+			Vk.ShaderModule.createInfoNext = TMaybe.N,
+			Vk.ShaderModule.createInfoFlags = zeroBits,
+			Vk.ShaderModule.createInfoCode = glslVertexShaderMain }
 		vertShaderStage = Vk.Ppl.ShSt.CreateInfo {
 			Vk.Ppl.ShSt.createInfoNext = TMaybe.N,
 			Vk.Ppl.ShSt.createInfoFlags =
 				Vk.Ppl.ShSt.CreateFlagsZero,
 			Vk.Ppl.ShSt.createInfoStage = Vk.ShaderStageVertexBit,
 			Vk.Ppl.ShSt.createInfoModule =
-				Vk.Shader.Module.M vertShaderCreateInfo nil',
+				(vertShaderCreateInfo, nil'),
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
-		fragShaderCreateInfo = Vk.Shader.Module.CreateInfo {
-			Vk.Shader.Module.createInfoNext = TMaybe.N,
-			Vk.Shader.Module.createInfoFlags = zeroBits,
-			Vk.Shader.Module.createInfoCode =
+		fragShaderCreateInfo = Vk.ShaderModule.CreateInfo {
+			Vk.ShaderModule.createInfoNext = TMaybe.N,
+			Vk.ShaderModule.createInfoFlags = zeroBits,
+			Vk.ShaderModule.createInfoCode =
 				glslFragmentShaderMain }
 		fragShaderStage = Vk.Ppl.ShSt.CreateInfo {
 			Vk.Ppl.ShSt.createInfoNext = TMaybe.N,
@@ -676,7 +677,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoStage =
 				Vk.ShaderStageFragmentBit,
 			Vk.Ppl.ShSt.createInfoModule =
-				Vk.Shader.Module.M fragShaderCreateInfo nil',
+				(fragShaderCreateInfo, nil'),
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
 	Vk.Ppl.Lyt.create dvc layoutCreateInfoNew nil' \plyt -> do
@@ -716,6 +717,12 @@ makePipelineNew dvc rp f = do
 		Vk.Ppl.Gr.createGs dvc Nothing (
 			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil'
 				\(U3 g :** HeteroParList.Nil) -> f g
+
+shaderModuleCreateInfo :: Spv sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
+shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
+	Vk.ShaderModule.createInfoNext = TMaybe.N,
+	Vk.ShaderModule.createInfoFlags = def,
+	Vk.ShaderModule.createInfoCode = code }
 
 [glslVertexShader|
 

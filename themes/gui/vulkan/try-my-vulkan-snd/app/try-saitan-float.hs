@@ -636,7 +636,7 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = def,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = Vk.ShaderMod.M shaderModInfo nil',
+	Vk.Ppl.ShaderSt.createInfoModule = (shaderModInfo, nil'),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
 		Just $ HeteroParList.Id 3 :** HeteroParList.Id 10 :** HeteroParList.Nil }

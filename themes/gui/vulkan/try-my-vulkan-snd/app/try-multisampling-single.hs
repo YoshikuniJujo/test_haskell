@@ -97,8 +97,7 @@ import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
-import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
+import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
@@ -788,14 +787,16 @@ shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParLi
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlags = def,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
-		Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule,
+		Vk.Ppl.ShdrSt.createInfoModule = (
+			shaderModuleCreateInfo glslVertexShaderMain, nil' ),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlags = def,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
-		Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule,
+		Vk.Ppl.ShdrSt.createInfoModule = (
+			shaderModuleCreateInfo glslFragmentShaderMain, nil' ),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
@@ -1953,18 +1954,11 @@ instance Storable UniformBufferObject where
 instance SizeAlignmentList UniformBufferObject
 instance Foreign.Storable.Generic.G UniformBufferObject
 
-vertShaderModule :: Vk.Shader.Module.M 'Nothing 'GlslVertexShader 'Nothing
-vertShaderModule = mkShaderModule glslVertexShaderMain
-
-fragShaderModule :: Vk.Shader.Module.M 'Nothing 'GlslFragmentShader 'Nothing
-fragShaderModule = mkShaderModule glslFragmentShaderMain
-
-mkShaderModule :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd 'Nothing
-mkShaderModule code = Vk.Shader.Module.M createInfo nil'
-	where createInfo = Vk.Shader.Module.M.CreateInfo {
-		Vk.Shader.Module.M.createInfoNext = TMaybe.N,
-		Vk.Shader.Module.M.createInfoFlags = def,
-		Vk.Shader.Module.M.createInfoCode = code }
+shaderModuleCreateInfo :: Spv sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
+shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
+	Vk.ShaderModule.createInfoNext = TMaybe.N,
+	Vk.ShaderModule.createInfoFlags = def,
+	Vk.ShaderModule.createInfoCode = code }
 
 [glslVertexShader|
 

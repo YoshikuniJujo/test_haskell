@@ -5,7 +5,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ShaderModule.Internal (
-	M, pattern M, M.CreateInfo(..), M.CreateFlags, create, destroy ) where
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, M.CreateInfo(..), M.CreateFlags
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -16,11 +21,6 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.ShaderModule.Middle as M
-
-type M mn sknd mscc = (M.CreateInfo mn sknd, TPMaybe.M (U2 AllocationCallbacks.A) mscc)
-
-pattern M :: M.CreateInfo mn sknd -> TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M mn sknd mscc
-pattern M ci mac <- (ci, mac) where M ci mac = (ci, mac)
 
 create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> M.CreateInfo mn sknd -> TPMaybe.M (U2 AllocationCallbacks.A) mscc -> IO (M.M sknd)
