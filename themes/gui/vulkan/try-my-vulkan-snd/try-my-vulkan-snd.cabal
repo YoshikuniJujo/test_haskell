@@ -154,6 +154,7 @@ library
       Gpu.Vulkan.Sampler
       Gpu.Vulkan.Sampler.Type
       Gpu.Vulkan.Semaphore
+      Gpu.Vulkan.Semaphore.Type
       Gpu.Vulkan.ShaderModule
       Gpu.Vulkan.ShaderModule.Internal
       Gpu.Vulkan.Subpass

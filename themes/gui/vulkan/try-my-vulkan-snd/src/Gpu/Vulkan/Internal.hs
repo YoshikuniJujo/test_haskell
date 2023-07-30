@@ -84,7 +84,7 @@ import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import qualified Gpu.Vulkan.Middle as M
-import qualified Gpu.Vulkan.Semaphore as Semaphore
+import qualified Gpu.Vulkan.Semaphore.Type as Semaphore
 import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline

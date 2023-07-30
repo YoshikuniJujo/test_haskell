@@ -5,7 +5,13 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Semaphore where
+module Gpu.Vulkan.Semaphore (
+
+	-- * CREATE
+
+	create, S
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -18,11 +24,11 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Semaphore.Middle as M
 
-newtype S ss = S M.S deriving Show
+import Gpu.Vulkan.Semaphore.Type
 
-create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac) =>
 	Device.D sd -> M.CreateInfo mn ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall ss . S ss -> IO a) -> IO a
 create (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) f = bracket
