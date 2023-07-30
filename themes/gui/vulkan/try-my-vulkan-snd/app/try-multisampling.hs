@@ -671,7 +671,7 @@ createRenderPass dvc mss f = do
 				colorAttachmentResolve :** HeteroParList.Nil,
 			Vk.RndrPass.M.createInfoSubpasses = [subpass],
 			Vk.RndrPass.M.createInfoDependencies = [dependency] }
-	Vk.RndrPass.create @'[scifmt, dptfmt, scifmt] @'Nothing dvc renderPassInfo nil' \rp -> f rp
+	Vk.RndrPass.create @'Nothing @'[scifmt, dptfmt, scifmt] dvc renderPassInfo nil' \rp -> f rp
 
 type AtomUbo s = '(s, '[
 	'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
@@ -1055,8 +1055,8 @@ createTextureImage ::
 createTextureImage phdvc dvc gq cp txfp f = do
 	img <- readRgba8 txfp
 	print . V.length $ imageData img
-	let	wdt_ = fromIntegral $ imageWidth img
-		hgt_ = fromIntegral $ imageHeight img
+	let	wdt_ = imageWidth img
+		hgt_ = imageHeight img
 		wdt, hgt :: Num i => i
 		wdt = fromIntegral wdt_
 		hgt = fromIntegral hgt_

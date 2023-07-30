@@ -7,7 +7,7 @@
 
 module Gpu.Vulkan.RenderPass (
 
-	-- * CRATE
+	-- * CREATE
 
 	create, R, CreateInfo(..),
 
@@ -35,14 +35,17 @@ import qualified Gpu.Vulkan.Attachment as Attachment
 
 import qualified Gpu.Vulkan.Subpass.Middle as Subpass
 
+-- CREATE
+
 create :: (
-	Attachment.DescriptionListToMiddle fmts, WithPoked (TMaybe.M mn),
-	AllocationCallbacks.ToMiddle mscc ) =>
+	WithPoked (TMaybe.M mn), Attachment.DescriptionListToMiddle fmts,
+	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn fmts ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	(forall s . R s -> IO a) -> IO a
-create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket(M.create dvc (createInfoFrom ci) macd)
-		(\r -> M.destroy dvc r macd) (f . R)
+create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
+	(M.create dvc (createInfoToMiddle ci) mac)
+	(\r -> M.destroy dvc r mac) (f . R)
 
 data CreateInfo mn fmts = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
@@ -52,9 +55,9 @@ data CreateInfo mn fmts = CreateInfo {
 	createInfoSubpasses :: [Subpass.Description],
 	createInfoDependencies :: [Subpass.Dependency] }
 
-createInfoFrom :: Attachment.DescriptionListToMiddle fmts =>
+createInfoToMiddle :: Attachment.DescriptionListToMiddle fmts =>
 	CreateInfo n fmts -> M.CreateInfo n
-createInfoFrom CreateInfo {
+createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoAttachments = atts,
