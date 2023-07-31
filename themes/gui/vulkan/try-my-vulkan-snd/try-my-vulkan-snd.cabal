@@ -162,6 +162,7 @@ library
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
+      Gpu.Vulkan.VertexInput.Internal
       Sample.GetOpt
       Sample.Image
       ThEnv

@@ -26,6 +26,7 @@ module Gpu.Vulkan.Pipeline.VertexInputState.Internal (
 import GHC.TypeNats
 import Foreign.Storable.SizeAlignment
 import Control.Arrow
+import Data.TypeLevel.TypeVal qualified as TypeVal
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Kind
@@ -35,7 +36,7 @@ import Data.Default
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
-import qualified Gpu.Vulkan.VertexInput as VtxInp
+import qualified Gpu.Vulkan.VertexInput.Internal as VtxInp
 import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 
 -- CREATE INFO
@@ -79,10 +80,10 @@ class BindingStrideList (ts :: [(Type, k)]) v where
 
 instance BindingStrideList '[] v where bindingStrideList = []
 
-instance (SizeAlignmentList t, BindingStrideList ts v, VtxInp.TypeVal a v) =>
+instance (SizeAlignmentList t, BindingStrideList ts v, TypeVal.T a v) =>
 	BindingStrideList ('(t, a) ': ts) v where
 	bindingStrideList =
-		(wholeSizeAlignment @t, VtxInp.typeVal @_ @a @v) :
+		(wholeSizeAlignment @t, TypeVal.t @_ @a @v) :
 		bindingStrideList @_ @ts @v
 
 -- Attribute Descriptions
