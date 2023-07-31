@@ -9,6 +9,6 @@ module Gpu.Vulkan.Subpass.Middle (
 
 	-- * DEPENDENCY
 
-	Dependency(..), S(..), pattern SExternal ) where
+	Dependency(..), S, pattern SExternal ) where
 
 import Gpu.Vulkan.Subpass.Middle.Internal

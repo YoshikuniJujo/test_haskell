@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Subpass.Middle.Internal where
@@ -70,7 +71,7 @@ descriptionToCore Description {
 		C.descriptionPreserveAttachmentCount = fromIntegral pac,
 		C.descriptionPPreserveAttachments = ppas }
 
-enum "S" ''#{type uint32_t} [''Show, ''Storable]
+enum "S" ''#{type uint32_t} [''Show, ''Storable, ''Num]
 	[("SExternal", #{const VK_SUBPASS_EXTERNAL})]
 
 data Dependency = Dependency {
