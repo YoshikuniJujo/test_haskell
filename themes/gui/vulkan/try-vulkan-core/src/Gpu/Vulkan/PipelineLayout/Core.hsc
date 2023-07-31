@@ -7,7 +7,7 @@ module Gpu.Vulkan.PipelineLayout.Core (
 
 	-- * CREATE AND DESTROY
 
-	create, destroy, L, CreateInfo, pattern CreateInfo,
+	create, destroy, P, CreateInfo, pattern CreateInfo,
 	createInfoSType, createInfoPNext, createInfoFlags,
 	createInfoSetLayoutCount, createInfoPSetLayouts,
 	createInfoPushConstantRangeCount, createInfoPPushConstantRanges
@@ -45,7 +45,7 @@ struct "CreateInfo" #{size VkPipelineLayoutCreateInfo}
 	("setLayoutCount", ''#{type uint32_t},
 		[| #{peek VkPipelineLayoutCreateInfo, setLayoutCount} |],
 		[| #{poke VkPipelineLayoutCreateInfo, setLayoutCount} |]),
-	("pSetLayouts", ''DescriptorSet.Layout.PtrL,
+	("pSetLayouts", ''DescriptorSet.Layout.PtrD,
 		[| #{peek VkPipelineLayoutCreateInfo, pSetLayouts} |],
 		[| #{poke VkPipelineLayoutCreateInfo, pSetLayouts} |]),
 	("pushConstantRangeCount", ''#{type uint32_t},
@@ -58,11 +58,11 @@ struct "CreateInfo" #{size VkPipelineLayoutCreateInfo}
 		[| #{poke VkPipelineLayoutCreateInfo, pPushConstantRanges} |]) ]
 	[''Show, ''Storable]
 
-data LTag
-type L = Ptr LTag
+data PTag
+type P = Ptr PTag
 
 foreign import ccall "vkCreatePipelineLayout" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr L -> IO #{type VkResult}
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr P -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipelineLayout" destroy ::
-	Device.D -> L -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> P -> Ptr AllocationCallbacks.A -> IO ()

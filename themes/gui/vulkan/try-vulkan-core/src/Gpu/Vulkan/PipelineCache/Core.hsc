@@ -7,7 +7,7 @@ module Gpu.Vulkan.PipelineCache.Core (
 
 	-- * CREATE AND DESTROY
 
-	create, destroy, C, CreateInfo, pattern CreateInfo,
+	create, destroy, P, CreateInfo, pattern CreateInfo,
 	createInfoSType, createInfoPNext, createInfoFlags,
 	createInfoInitialDataSize, createInfoPInitialData,
 
@@ -50,15 +50,15 @@ struct "CreateInfo" #{size VkPipelineCacheCreateInfo}
 		[| #{poke VkPipelineCacheCreateInfo, pInitialData} |]) ]
 	[''Show, ''Storable]
 
-data CTag
-type C = Ptr CTag
+data PTag
+type P = Ptr PTag
 
 foreign import ccall "vkCreatePipelineCache" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr C ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr P ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipelineCache" destroy ::
-	Device.D -> C -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> P -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "vkGetPipelineCacheData" getData ::
-	Device.D -> C -> Ptr #{type size_t} -> Ptr () -> IO #{type VkResult}
+	Device.D -> P -> Ptr #{type size_t} -> Ptr () -> IO #{type VkResult}

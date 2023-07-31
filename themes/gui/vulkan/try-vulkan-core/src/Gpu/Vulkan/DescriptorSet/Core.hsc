@@ -65,7 +65,7 @@ struct "AllocateInfo" #{size VkDescriptorSetAllocateInfo}
 	("descriptorSetCount", ''#{type uint32_t},
 		[| #{peek VkDescriptorSetAllocateInfo, descriptorSetCount} |],
 		[| #{poke VkDescriptorSetAllocateInfo, descriptorSetCount} |]),
-	("pSetLayouts", ''Layout.PtrL,
+	("pSetLayouts", ''Layout.PtrD,
 		[| #{peek VkDescriptorSetAllocateInfo, pSetLayouts} |],
 		[| #{poke VkDescriptorSetAllocateInfo, pSetLayouts} |]) ]
 	[''Show, ''Storable]

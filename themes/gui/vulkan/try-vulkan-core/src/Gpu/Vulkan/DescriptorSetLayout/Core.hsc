@@ -6,7 +6,7 @@
 module Gpu.Vulkan.DescriptorSetLayout.Core (
 	-- * CREATE AND DESTROY
 
-	create, destroy, L, PtrL, CreateInfo, pattern CreateInfo,
+	create, destroy, D, PtrD, CreateInfo, pattern CreateInfo,
 	createInfoSType, createInfoPNext, createInfoFlags,
 	createInfoBindingCount, createInfoPBindings,
 
@@ -30,10 +30,10 @@ import qualified Gpu.Vulkan.Sampler.Core as Sampler
 
 #include <vulkan/vulkan.h>
 
-data LTag
-type L = Ptr LTag
+data DTag
+type D = Ptr DTag
 
-type PtrL = Ptr L
+type PtrD = Ptr D
 
 struct "Binding" #{size VkDescriptorSetLayoutBinding}
 		#{alignment VkDescriptorSetLayoutBinding} [
@@ -80,8 +80,8 @@ struct "CreateInfo" #{size VkDescriptorSetLayoutCreateInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateDescriptorSetLayout" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr L ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr D ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyDescriptorSetLayout" destroy ::
-	Device.D -> L -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> D -> Ptr AllocationCallbacks.A -> IO ()

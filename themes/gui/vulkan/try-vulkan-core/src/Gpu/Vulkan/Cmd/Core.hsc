@@ -79,7 +79,7 @@ foreign import ccall "vkCmdBindIndexBuffer" bindIndexBuffer ::
 	#{type VkIndexType} -> IO ()
 
 foreign import ccall "vkCmdBindDescriptorSets" bindDescriptorSets ::
-	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.Layout.L ->
+	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.Layout.P ->
 	#{type uint32_t} -> #{type uint32_t} -> Ptr DscSet.D ->
 	#{type uint32_t} -> Ptr #{type uint32_t} -> IO ()
 
@@ -109,7 +109,7 @@ foreign import ccall "vkCmdDispatch" dispatch ::
 	#{type uint32_t} -> #{type uint32_t} -> #{type uint32_t} -> IO ()
 
 foreign import ccall "vkCmdPushConstants" pushConstants ::
-	CommandBuffer.C -> Pipeline.Layout.L -> #{type VkShaderStageFlags} ->
+	CommandBuffer.C -> Pipeline.Layout.P -> #{type VkShaderStageFlags} ->
 	#{type uint32_t} -> #{type uint32_t} -> Ptr () -> IO ()
 
 foreign import ccall "vkCmdResetQueryPool" resetQueryPool ::

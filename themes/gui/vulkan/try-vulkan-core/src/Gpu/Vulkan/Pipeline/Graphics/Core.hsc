@@ -96,7 +96,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("pDynamicState", ''DynamicState.PtrCreateInfo,
 		[| #{peek VkGraphicsPipelineCreateInfo, pDynamicState} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, pDynamicState} |]),
-	("layout", ''Layout.L,
+	("layout", ''Layout.P,
 		[| #{peek VkGraphicsPipelineCreateInfo, layout} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, layout} |]),
 	("renderPass", ''RenderPass.R,
@@ -114,5 +114,5 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateGraphicsPipelines" create ::
-	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
+	Device.D -> Cache.P -> #{type uint32_t} -> Ptr CreateInfo ->
 	Ptr AllocationCallbacks.A -> Ptr Pipeline.P -> IO #{type VkResult}

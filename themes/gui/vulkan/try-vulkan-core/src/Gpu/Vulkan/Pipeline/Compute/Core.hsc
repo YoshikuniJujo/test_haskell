@@ -47,7 +47,7 @@ struct "CreateInfo" #{size VkComputePipelineCreateInfo}
 	("stage", ''Pipeline.ShaderStage.CreateInfo,
 		[| #{peek VkComputePipelineCreateInfo, stage} |],
 		[| #{poke VkComputePipelineCreateInfo, stage} |]),
-	("layout", ''Pipeline.Layout.L,
+	("layout", ''Pipeline.Layout.P,
 		[| #{peek VkComputePipelineCreateInfo, layout} |],
 		[| #{poke VkComputePipelineCreateInfo, layout} |]),
 	("basePipelineHandle", ''Pipeline.P,
@@ -59,5 +59,5 @@ struct "CreateInfo" #{size VkComputePipelineCreateInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateComputePipelines" createCs ::
-	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
+	Device.D -> Cache.P -> #{type uint32_t} -> Ptr CreateInfo ->
 	Ptr AllocationCallbacks.A -> Ptr Pipeline.P -> IO #{type VkResult}
