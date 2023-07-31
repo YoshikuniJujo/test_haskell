@@ -55,10 +55,10 @@ create (Device.D dvc) (createInfoToMiddle -> ci)
 
 data CreateInfo mn lytas (pcl :: PushConstant.Layout) = CreateInfo {
 	createInfoNext :: TMaybe.M mn, createInfoFlags :: M.CreateFlags,
-	createInfoSetLayouts :: HeteroParList.PL (U2 DscStLyt.L) lytas }
+	createInfoSetLayouts :: HeteroParList.PL (U2 DscStLyt.D) lytas }
 
 deriving instance (
-	Show (TMaybe.M mn), Show (HeteroParList.PL (U2 DscStLyt.L) lytas) ) =>
+	Show (TMaybe.M mn), Show (HeteroParList.PL (U2 DscStLyt.D) lytas) ) =>
 	Show (CreateInfo mn lytas pcl)
 
 createInfoToMiddle :: forall n k lytas whole ranges . (

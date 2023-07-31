@@ -585,7 +585,7 @@ createRenderPass dv f = Vk.RndrPss.create @'Nothing @'[scifmt, dfmt]
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
 createDescriptorSetLayout :: Vk.Dvc.D sd ->
-	(forall (s :: Type) . Vk.DscSetLyt.L s Buffers -> IO a) -> IO a
+	(forall (s :: Type) . Vk.DscSetLyt.D s Buffers -> IO a) -> IO a
 createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing Buffers
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
@@ -611,7 +611,7 @@ type CameraObj = Obj.Atom 256 CameraData 'Nothing
 type SceneObj = Obj.DynAtom 2 256 SceneData 'Nothing
 
 createPipelineLayout :: forall sd sdl a . Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdl Buffers -> (forall sl .
+	Vk.DscSetLyt.D sdl Buffers -> (forall sl .
 		Vk.Ppl.Lyt.P sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 		IO a) -> IO a
 createPipelineLayout dv dslyt f = Vk.Ppl.Lyt.create dv ci nil' f where
@@ -998,11 +998,11 @@ framebufferInfo Vk.Extent2d {
 		Vk.Frmbffr.createInfoHeight = h,
 		Vk.Frmbffr.createInfoLayers = 1 }
 
-createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sdsc Buffers ->
+createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sdsc Buffers ->
 	Int -> (forall slyts sbsms . (
 		Vk.DscSet.DListFromMiddle slyts, HL.FromList slyts,
 		Update sbsms slyts, HL.HomoList '(sdsc, Buffers) slyts ) =>
-		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
+		HL.PL (U2 Vk.DscSetLyt.D) slyts ->
 		HL.PL BindedCamera sbsms -> HL.PL MemoryCamera sbsms ->
 		IO a) -> IO a
 createCameraBuffers _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil
@@ -1095,7 +1095,7 @@ createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil'
 createDescriptorSets ::
 	(Vk.DscSet.DListFromMiddle lyts, HL.FromList lyts, Update cmbs lyts) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	HL.PL BindedCamera cmbs -> HL.PL (U2 Vk.DscSetLyt.L) lyts ->
+	HL.PL BindedCamera cmbs -> HL.PL (U2 Vk.DscSetLyt.D) lyts ->
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->
 	(forall sds . HL.PL (Vk.DscSet.D sds) lyts -> IO a) -> IO a
 createDescriptorSets dv dscp cmbs lyts scnb f =

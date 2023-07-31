@@ -630,7 +630,7 @@ type AtomUbo s ss = '(s, '[
 
 createDescriptorSetLayout :: forall sd ss s a .
 	Vk.Dvc.D sd -> Vk.Smplr.S ss -> (forall s .
-	Vk.DscSetLyt.L s '[
+	Vk.DscSetLyt.D s '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.ImageSampler '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb, ss)] ]
 	-> IO a) -> IO a
@@ -664,7 +664,7 @@ createDescriptorSetLayout dvc smplr = Vk.DscSetLyt.create dvc layoutInfo nil'
 
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> Vk.Smplr.S ss -> (forall sdsl sl .
-		Vk.DscSetLyt.L sdsl '[
+		Vk.DscSetLyt.D sdsl '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 			'Vk.DscSetLyt.ImageSampler '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb, ss)] ] ->
 		Vk.Ppl.Layout.P sl '[AtomUbo sdsl ss] '[] -> IO b) -> IO b
@@ -1135,7 +1135,7 @@ createDescriptorSet ::
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  ->
 	Vk.Smplr.S ss ->
-	Vk.DscSetLyt.L sdsc '[
+	Vk.DscSetLyt.D sdsc '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.ImageSampler '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb, ss)] ] ->
 	(forall sds . Vk.DscSet.D sds '(sdsc, '[

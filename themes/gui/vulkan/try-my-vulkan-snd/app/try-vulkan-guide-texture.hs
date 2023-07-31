@@ -287,7 +287,7 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 
 	createCameraObjDataBuffers pd dv dslyt dslyto maxFramesInFlight
 		\lyts cmbs cmms
-			(lytods :: HL.PL (U2 Vk.DscSetLyt.L) slytods)
+			(lytods :: HL.PL (U2 Vk.DscSetLyt.D) slytods)
 			(odbs :: HL.PL BindedObjData sbsmods) odms ->
 
 	createTextureImage pd dv gq cp "assets/lost_empire-RGBA.png" \timg ->
@@ -629,7 +629,7 @@ createRenderPass dv f = Vk.RndrPss.create @'Nothing @'[scifmt, dfmt]
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
 createDescriptorSetLayout :: Vk.Dvc.D sd ->
-	(forall (s :: Type) . Vk.DscSetLyt.L s Buffers -> IO a) -> IO a
+	(forall (s :: Type) . Vk.DscSetLyt.D s Buffers -> IO a) -> IO a
 createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing Buffers
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
@@ -657,7 +657,7 @@ type CameraObj = Obj.Atom 256 CameraData 'Nothing
 type SceneObj = Obj.DynAtom 2 256 SceneData 'Nothing
 
 createDescriptorSetLayoutObjData :: Vk.Dvc.D sd ->
-	(forall (s :: Type) . Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]] -> IO a) -> IO a
+	(forall (s :: Type) . Vk.DscSetLyt.D s '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]] -> IO a) -> IO a
 createDescriptorSetLayoutObjData dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
@@ -674,7 +674,7 @@ type ObjDataList = Obj.List 256 ObjData ""
 
 createSingleTextureSetLayout :: Vk.Dvc.D sd ->
 	(forall s .
-		Vk.DscSetLyt.L s '[
+		Vk.DscSetLyt.D s '[
 			'Vk.DscSetLyt.Image '[
 				'("texture", 'Vk.T.FormatR8g8b8a8Srgb) ] ] ->
 		IO a) -> IO a
@@ -690,9 +690,9 @@ createSingleTextureSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 			Vk.ShaderStageFragmentBit }
 
 createPipelineLayout :: forall sd sdl sdlod sdltx foo a . Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdl Buffers ->
-	Vk.DscSetLyt.L sdlod ObjDataBuffers ->
-	Vk.DscSetLyt.L sdltx foo ->
+	Vk.DscSetLyt.D sdl Buffers ->
+	Vk.DscSetLyt.D sdlod ObjDataBuffers ->
+	Vk.DscSetLyt.D sdltx foo ->
 	(forall sl . Vk.Ppl.Lyt.P sl
 			'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ]
 			'[WMeshPushConstants] ->
@@ -1094,11 +1094,11 @@ framebufferInfo Vk.Extent2d {
 		Vk.Frmbffr.createInfoLayers = 1 }
 
 {-
-createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sdsc Buffers ->
+createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sdsc Buffers ->
 	Int -> (forall slyts sbsms . (
 		Vk.DscSet.SListFromMiddle slyts, HL.FromList slyts,
 		Update sbsms slyts odbs slytods, HL.HomoList '(sdsc, Buffers) slyts ) =>
-		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
+		HL.PL (U2 Vk.DscSetLyt.D) slyts ->
 		HL.PL BindedCamera sbsms -> HL.PL MemoryCamera sbsms ->
 		IO a) -> IO a
 createCameraBuffers _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil
@@ -1108,8 +1108,8 @@ createCameraBuffers pd dv lyt n f = createCameraBuffer pd dv \b m ->
 	-}
 
 createCameraObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdsc Buffers ->
-	Vk.DscSetLyt.L sodlyt ObjDataBuffers ->
+	Vk.DscSetLyt.D sdsc Buffers ->
+	Vk.DscSetLyt.D sodlyt ObjDataBuffers ->
 	Int -> (forall slyts sbsms slytods sbsmods . (
 		Vk.DscSet.DListFromMiddle slyts, HL.FromList slyts,
 		Vk.DscSet.DListFromMiddle slytods,
@@ -1117,9 +1117,9 @@ createCameraObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
 		HL.HomoList '(sdsc, Buffers) slyts,
 		HL.HomoList '(sodlyt, ObjDataBuffers) slytods
 		) =>
-		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
+		HL.PL (U2 Vk.DscSetLyt.D) slyts ->
 		HL.PL BindedCamera sbsms -> HL.PL MemoryCamera sbsms ->
-		HL.PL (U2 Vk.DscSetLyt.L) slytods ->
+		HL.PL (U2 Vk.DscSetLyt.D) slytods ->
 		HL.PL BindedObjData sbsmods -> HL.PL MemoryObjData sbsmods ->
 		IO a) -> IO a
 createCameraObjDataBuffers _ _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil HL.Nil HL.Nil HL.Nil
@@ -1211,13 +1211,13 @@ maxObjects :: Vk.Dvc.M.Size
 maxObjects = 10000
 
 createObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ObjDataList] ] ->
+	Vk.DscSetLyt.D sdsc '[ 'Vk.DscSetLyt.Buffer '[ObjDataList] ] ->
 	Int -> (forall slyts sbsms . (
 		Vk.DscSet.DListFromMiddle slyts, HL.FromList slyts,
 --		Update sbsms slyts,
 		HL.HomoList
 			'(sdsc, '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]]) slyts ) =>
-		HL.PL (U2 Vk.DscSetLyt.L) slyts ->
+		HL.PL (U2 Vk.DscSetLyt.D) slyts ->
 		HL.PL BindedObjData sbsms -> HL.PL MemoryObjData sbsms ->
 		IO a) -> IO a
 createObjDataBuffers _ _ _ n f | n < 1 = f HL.Nil HL.Nil HL.Nil
@@ -1265,8 +1265,8 @@ createDescriptorSets ::
 	HL.FromList lyts,
 	Update cmbs lyts odbs lytods) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	HL.PL BindedCamera cmbs -> HL.PL (U2 Vk.DscSetLyt.L) lyts ->
-	HL.PL BindedObjData odbs -> HL.PL (U2 Vk.DscSetLyt.L) lytods ->
+	HL.PL BindedCamera cmbs -> HL.PL (U2 Vk.DscSetLyt.D) lyts ->
+	HL.PL BindedObjData odbs -> HL.PL (U2 Vk.DscSetLyt.D) lytods ->
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->
 	(forall sds sds' .
 		HL.PL (Vk.DscSet.D sds) lyts ->
@@ -1290,7 +1290,7 @@ allocateTextureDescriptorSets :: forall slyt foo sd sp a .
 	Default (HL.PL (HL.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics foo)) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.DscSetLyt.L slyt foo ->
+	Vk.DscSetLyt.D slyt foo ->
 	(forall sds . Vk.DscSet.D sds '(slyt, foo) -> IO a) -> IO a
 allocateTextureDescriptorSets dv dscpl lyt f =
 	Vk.DscSet.allocateDs dv Vk.DscSet.AllocateInfo {

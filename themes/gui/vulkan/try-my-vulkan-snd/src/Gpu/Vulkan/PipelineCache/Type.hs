@@ -4,13 +4,10 @@ module Gpu.Vulkan.PipelineCache.Type (
 
 	-- * PIPELINE CACHE
 
-	P(..), pToMiddle
+	P(..)
 
 	) where
 
 import qualified Gpu.Vulkan.PipelineCache.Middle as M
 
-newtype P s = P M.C deriving Show
-
-pToMiddle :: P s -> M.C
-pToMiddle (P c) = c
+newtype P s = P { pToMiddle :: M.P } deriving Show

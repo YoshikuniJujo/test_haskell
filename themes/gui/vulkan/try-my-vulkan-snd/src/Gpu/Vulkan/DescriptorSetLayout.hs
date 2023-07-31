@@ -13,7 +13,7 @@ module Gpu.Vulkan.DescriptorSetLayout (
 
 	-- * CREATE
 
-	create, L, CreateInfo(..),
+	create, D, CreateInfo(..),
 
 	-- ** Binding
 
@@ -54,10 +54,10 @@ create :: (
 	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn bts ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . L s bts -> IO a) -> IO a
+	(forall s . D s bts -> IO a) -> IO a
 create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f =
 	bracket (M.create dvc (createInfoToMiddle ci) mac)
-		(\l -> M.destroy dvc l mac) (f . L)
+		(\l -> M.destroy dvc l mac) (f . D)
 
 data CreateInfo mn bts = CreateInfo {
 	createInfoNext :: TMaybe.M mn,

@@ -11,4 +11,4 @@ import qualified Gpu.Vulkan.PipelineLayout.Middle as M
 
 newtype P s
 	(sbtss :: [(Type, [DescriptorSetLayout.BindingType])]) (pcw :: [Type]) =
-	P M.L deriving Show
+	P M.P deriving Show

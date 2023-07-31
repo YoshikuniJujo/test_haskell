@@ -577,7 +577,7 @@ createRenderPassNew dvc f = do
 type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]])
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]]
+	Vk.DscSetLyt.D s '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]]
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 	where
@@ -596,7 +596,7 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sdsl sl .
-		Vk.DscSetLyt.L sdsl
+		Vk.DscSetLyt.D sdsl
 			'[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]] ->
 		Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
 createPipelineLayout' dvc f =
@@ -829,13 +829,13 @@ createIndexBuffer phdvc dvc gq cp f =
 
 createUniformBuffers ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]] ->
+	Vk.DscSetLyt.D sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]] ->
 	Int -> (forall slyts smsbs . (
 		Vk.DscSet.DListFromMiddle slyts,
 		HeteroParList.FromList slyts,
 		Update smsbs slyts,
 		HeteroParList.HomoList (AtomUbo sdsc) slyts) =>
-		HeteroParList.PL (U2 Vk.DscSetLyt.L) slyts ->
+		HeteroParList.PL (U2 Vk.DscSetLyt.D) slyts ->
 		HeteroParList.PL BindedUbo smsbs ->
 		HeteroParList.PL MemoryUbo smsbs -> IO a) -> IO a
 createUniformBuffers _ _ _ 0 f = f HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
@@ -888,7 +888,7 @@ createDescriptorSets :: (
 	Vk.DscSet.DListFromMiddle ss,
 	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedUbo smsbs ->
-	HeteroParList.PL (U2 Vk.DscSetLyt.L) ss ->
+	HeteroParList.PL (U2 Vk.DscSetLyt.D) ss ->
 	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSets dvc dscp ubs dscslyts f =
 	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do

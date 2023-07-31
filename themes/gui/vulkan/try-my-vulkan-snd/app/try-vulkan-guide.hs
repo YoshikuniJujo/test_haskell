@@ -612,7 +612,7 @@ createRenderPass dvc f = do
 
 createPipelineLayout :: forall sd s b .
 	Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L s '[
+	Vk.DscSetLyt.D s '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ] -> (forall sl .
@@ -1119,7 +1119,7 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	f b
 
 createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdsc '[
+	Vk.DscSetLyt.D sdsc '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
@@ -1131,7 +1131,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
-		HeteroParList.PL (U2 Vk.DscSetLyt.L) slyts ->
+		HeteroParList.PL (U2 Vk.DscSetLyt.D) slyts ->
 		HeteroParList.PL BindedGcd sbsms ->
 		HeteroParList.PL MemoryGcd sbsms -> IO a) -> IO a
 createCameraBuffers _ _ _ n f | n < 1 = f HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
@@ -1245,7 +1245,7 @@ findMemoryType phdvc flt props =
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.L s '[
+	Vk.DscSetLyt.D s '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer
 			'[VObj.Atom 256 GpuSceneData0 'Nothing]
@@ -1295,7 +1295,7 @@ createDescriptorSets :: (
 	Vk.DscSet.DListFromMiddle ss,
 	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
-	HeteroParList.PL (U2 Vk.DscSetLyt.L) ss ->
+	HeteroParList.PL (U2 Vk.DscSetLyt.D) ss ->
 	Vk.Bffr.Binded sm sb "scene-buffer" '[
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->

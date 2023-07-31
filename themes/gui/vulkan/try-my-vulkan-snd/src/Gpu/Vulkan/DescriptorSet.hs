@@ -54,15 +54,15 @@ import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.Object.Base qualified as KObj
 
-layoutToMiddle :: U2 Layout.L slbts -> Layout.M.L
-layoutToMiddle (U2 (Layout.L l)) = l
+layoutToMiddle :: U2 Layout.D slbts -> Layout.M.D
+layoutToMiddle (U2 (Layout.D l)) = l
 
 data AllocateInfo mn sp slbtss = AllocateInfo {
 	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts :: HeteroParList.PL (U2 Layout.L) slbtss }
+	allocateInfoSetLayouts :: HeteroParList.PL (U2 Layout.D) slbtss }
 
-deriving instance (Show (TMaybe.M n), Show (HeteroParList.PL (U2 Layout.L) slbtss)) =>
+deriving instance (Show (TMaybe.M n), Show (HeteroParList.PL (U2 Layout.D) slbtss)) =>
 	Show (AllocateInfo n sp slbtss)
 
 allocateInfoToMiddle :: AllocateInfo n sp slbtss -> M.AllocateInfo n

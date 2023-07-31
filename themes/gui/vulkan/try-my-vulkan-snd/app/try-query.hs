@@ -180,7 +180,7 @@ prepareMems :: (
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DS.BindingAndArrayElemBuffer bts '[Word32List] 0,
 	Vk.DS.UpdateDynamicLength bts '[Word32List] ) =>
-	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
+	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	(forall sds sm sb .
 		Vk.DS.D sds '(sl, bts) ->
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg "" '[Word32List])] ->
@@ -202,7 +202,7 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
-dscSetInfo :: Vk.DscPool.P sp -> Vk.DSLyt.L sl bts ->
+dscSetInfo :: Vk.DscPool.P sp -> Vk.DSLyt.D sl bts ->
 	Vk.DS.AllocateInfo 'Nothing sp '[ '(sl, bts)]
 dscSetInfo pl lyt = Vk.DS.AllocateInfo {
 	Vk.DS.allocateInfoNext = TMaybe.N,
@@ -272,7 +272,7 @@ calc :: forall slbts sl bts sd sq sq' tp sds . (
 	InfixIndex '[slbts] '[slbts]) =>
 	Vk.QFm.Index -> Vk.Dv.D sd ->
 	Vk.QP.Q sq tp -> Vk.QP.Q sq' Vk.QP.Timestamp ->
-	Vk.DSLyt.L sl bts ->
+	Vk.DSLyt.D sl bts ->
 	Vk.DS.D sds slbts -> Word32 -> IO ()
 calc qfi dv qp qpt dslyt ds sz =
 	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil' \plyt ->
@@ -282,7 +282,7 @@ calc qfi dv qp qpt dslyt ds sz =
 	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) -> do
 	run qfi dv qp qpt ds cb plyt pl sz
 
-pplLayoutInfo :: Vk.DSLyt.L sl bts ->
+pplLayoutInfo :: Vk.DSLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.Layout '[] '[])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {

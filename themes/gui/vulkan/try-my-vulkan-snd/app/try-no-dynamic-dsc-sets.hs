@@ -153,7 +153,7 @@ dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 			Vk.ShaderStageComputeBit }
 
 prepDscSets ::
-	String -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
+	String -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sl DscSetLytLstW123 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sm2 sm3 sb1 sb2 sb3 .
 		Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 		Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm1 '[ListW1])] ->
@@ -201,7 +201,7 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
-dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
+dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.D sl DscSetLytLstW123 ->
 	Vk.DscSet.AllocateInfo 'Nothing sp '[ '(sl, DscSetLytLstW123)]
 dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoNext = TMaybe.N,
@@ -368,7 +368,7 @@ writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		U4 (Vk.Dsc.BufferInfo bx) :** HeteroParList.Nil }
 
-calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
+calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl DscSetLytLstW123 ->
 	Word32 -> Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm1 '[ListW1])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm2 '[ListW2])] ->
@@ -383,7 +383,7 @@ calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cp) \(cmdBuf :*. HeteroParList.Nil) ->
 		run dvc qFam cmdBuf ppl plyt dss ln ma mb mc
 
-pplLayoutInfoNew :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
+pplLayoutInfoNew :: Vk.DscSetLyt.D sl DscSetLytLstW123 ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, DscSetLytLstW123)]
 		('Vk.PushConstant.Layout '[] '[])
 pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfo {
