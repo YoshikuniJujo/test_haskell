@@ -187,15 +187,15 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
 - completed:
-    commit: 511e579860a040d291373b1c62abc491f91a3110
+    commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
     name: size-alignment-list
     pantry-tree:
-      sha256: f5634d990509d53fd09852071c4386a12a33e3c793e924d0dbbde20651fd433b
-      size: 964
-    version: 0.1.0.0
+      sha256: 9860e322138da1107f8cc2c39aba1b62b83ad321d6252642cd2b8c6d091d8f66
+      size: 965
+    version: 0.1.0.1
   original:
-    commit: 511e579860a040d291373b1c62abc491f91a3110
+    commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
 - completed:
     hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
