@@ -609,7 +609,7 @@ createRenderPass dvc f = do
 			Vk.Subpass.descriptionPreserveAttachments = [] }
 		dependency = Vk.Subpass.Dependency {
 			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
-			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
+			Vk.Subpass.dependencyDstSubpass = 0,
 			Vk.Subpass.dependencySrcStageMask =
 				Vk.Ppl.StageColorAttachmentOutputBit .|.
 				Vk.Ppl.StageEarlyFragmentTestsBit,

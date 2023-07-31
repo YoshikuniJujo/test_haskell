@@ -3,17 +3,13 @@
 
 module Gpu.Vulkan.Subpass (
 
-	-- * SUBPASS
-
-	S(..), pattern SExternal,
-
 	-- * SUBPASS DESCRIPTION
 
 	Description(..),
 
 	-- * SUBPASS DEPENDENCY
 
-	Dependency(..)
+	Dependency(..), S(..), pattern SExternal
 
 	) where
 

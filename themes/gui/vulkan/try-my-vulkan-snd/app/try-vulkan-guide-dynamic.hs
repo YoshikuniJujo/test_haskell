@@ -571,7 +571,7 @@ createRenderPass dv f = Vk.RndrPss.create @'Nothing @'[scifmt, dfmt]
 				Vk.Img.LayoutDepthStencilAttachmentOptimal }
 	dependency = Vk.Subpass.Dependency {
 		Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
-		Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
+		Vk.Subpass.dependencyDstSubpass = 0,
 		Vk.Subpass.dependencySrcStageMask =
 			Vk.Ppl.StageColorAttachmentOutputBit .|.
 			Vk.Ppl.StageEarlyFragmentTestsBit,
