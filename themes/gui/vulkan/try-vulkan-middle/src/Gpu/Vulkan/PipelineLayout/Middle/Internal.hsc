@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineLayout.Middle.Internal (
-	L(..), CreateInfo(..), CreateFlags, create, destroy
+	P(..), CreateInfo(..), CreateFlags, create, destroy
 	) where
 
 import Foreign.Ptr
@@ -44,7 +44,7 @@ instance Default CreateFlags where def = CreateFlagsZero
 data CreateInfo mn = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
-	createInfoSetLayouts :: [DescriptorSet.Layout.L],
+	createInfoSetLayouts :: [DescriptorSet.Layout.D],
 	createInfoPushConstantRanges :: [PushConstant.Range] }
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
@@ -55,7 +55,7 @@ createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoSetLayouts =
-		(length &&& ((\(DescriptorSet.Layout.L lyt) -> lyt) <$>)) ->
+		(length &&& ((\(DescriptorSet.Layout.D lyt) -> lyt) <$>)) ->
 			(slc, sls),
 	createInfoPushConstantRanges = (
 		length &&&
@@ -75,17 +75,17 @@ createInfoToCore CreateInfo {
 		C.createInfoPPushConstantRanges = ppcrs } in
 	withPoked ci f
 
-newtype L = L C.L deriving Show
+newtype P = P C.P deriving Show
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO L
-create (Device.D dvc) ci mac = L <$> alloca \pl -> do
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO P
+create (Device.D dvc) ci mac = P <$> alloca \pl -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create dvc pci pac pl
 			throwUnlessSuccess $ Result r
 	peek pl
 
-destroy :: Device.D -> L -> TPMaybe.M AllocationCallbacks.A md -> IO ()
-destroy (Device.D dvc) (L lyt) mac =
+destroy :: Device.D -> P -> TPMaybe.M AllocationCallbacks.A md -> IO ()
+destroy (Device.D dvc) (P lyt) mac =
 	AllocationCallbacks.mToCore mac $ C.destroy dvc lyt

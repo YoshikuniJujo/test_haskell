@@ -4,7 +4,7 @@ module Gpu.Vulkan.PipelineCache.Middle (
 
 	-- * CREATE AND DESTROY
 
-	create, destroy, C, CreateInfo(..), getData, Data(..),
+	create, destroy, P, CreateInfo(..), getData, Data(..),
 
 	) where
 

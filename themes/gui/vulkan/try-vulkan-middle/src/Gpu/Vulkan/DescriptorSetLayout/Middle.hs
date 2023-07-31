@@ -4,7 +4,7 @@ module Gpu.Vulkan.DescriptorSetLayout.Middle (
 
 	-- * CREATE AND DESTROY
 
-	create, destroy, L, CreateInfo(..), Binding(..)
+	create, destroy, D, CreateInfo(..), Binding(..)
 
 	) where
 

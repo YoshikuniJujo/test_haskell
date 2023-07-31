@@ -81,7 +81,7 @@ data CreateInfo mn stg vis ias ts vs rs ms dss cbs ds = CreateInfo {
 	createInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo dss),
 	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo cbs),
 	createInfoDynamicState :: Maybe (DynamicState.CreateInfo ds),
-	createInfoLayout :: Layout.L,
+	createInfoLayout :: Layout.P,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
 	createInfoBasePipelineHandle :: G,
@@ -110,7 +110,7 @@ createInfoToCore CreateInfo {
 	createInfoDepthStencilState = mdsst,
 	createInfoColorBlendState = mcbst,
 	createInfoDynamicState = mdst,
-	createInfoLayout = Layout.L lyt,
+	createInfoLayout = Layout.P lyt,
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,
@@ -200,12 +200,12 @@ gListToCore :: [G] -> IO [Pipeline.C.P]
 gListToCore cps = readIORef `mapM` gListToIORefs cps
 
 createGs :: CreateInfoListToCore cias =>
-	Device.D -> Maybe Cache.C -> HeteroParList.PL (U11 CreateInfo) cias ->
+	Device.D -> Maybe Cache.P -> HeteroParList.PL (U11 CreateInfo) cias ->
 	TPMaybe.M AllocationCallbacks.A mc -> IO [G]
 createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
 
 recreateGs :: CreateInfoListToCore cias =>
-	Device.D -> Maybe Cache.C ->
+	Device.D -> Maybe Cache.P ->
 	HeteroParList.PL (U11 CreateInfo) cias ->
 	TPMaybe.M AllocationCallbacks.A mc ->
 	[G] -> IO ()
@@ -213,11 +213,11 @@ recreateGs dvc mc cis macc gs =
 	recreateRaw dvc mc cis macc $ gListToIORefs gs
 
 createRaw :: forall ss mn' . CreateInfoListToCore ss =>
-	Device.D -> Maybe Cache.C ->
+	Device.D -> Maybe Cache.P ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
 	TPMaybe.M AllocationCallbacks.A mn' -> IO [Pipeline.C.P]
 createRaw (Device.D dvc) mc cis mac = let
-	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
+	cc = case mc of Nothing -> NullPtr; Just (Cache.P c) -> c
 	cic = length @_ @ss in
 	allocaArray cic \pps -> do
 		createInfoListToCore cis \ccis -> allocaArray cic \pcis ->
@@ -228,7 +228,7 @@ createRaw (Device.D dvc) mc cis mac = let
 		peekArray cic pps
 
 recreateRaw :: CreateInfoListToCore ss =>
-	Device.D -> Maybe Cache.C ->
+	Device.D -> Maybe Cache.P ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
 	TPMaybe.M AllocationCallbacks.A mc ->
 	[IORef Pipeline.C.P] -> IO ()

@@ -4,6 +4,6 @@ module Gpu.Vulkan.PipelineLayout.Middle (
 
 	-- * CREATE AND DESTROY
 
-	create, destroy, L, CreateInfo(..), CreateFlags ) where
+	create, destroy, P, CreateInfo(..), CreateFlags ) where
 
 import Gpu.Vulkan.PipelineLayout.Middle.Internal

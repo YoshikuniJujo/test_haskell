@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineCache.Middle.Internal (
-	C(..), CreateInfo(..), create, destroy,
+	P(..), CreateInfo(..), create, destroy,
 	Data(..), getData,
 	) where
 
@@ -58,23 +58,23 @@ createInfoToCore CreateInfo {
 	print dtsz >>
 	withPoked ci f
 
-newtype C = C C.C deriving Show
+newtype P = P C.P deriving Show
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO C
-create (Device.D dvc) ci mac = C <$> alloca \pc -> do
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO P
+create (Device.D dvc) ci mac = P <$> alloca \pc -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create dvc pci pac pc
 			throwUnlessSuccess $ Result r
 	peek pc
 
-destroy :: Device.D -> C -> TPMaybe.M AllocationCallbacks.A md -> IO ()
-destroy (Device.D dvc) (C c) mac =
+destroy :: Device.D -> P -> TPMaybe.M AllocationCallbacks.A md -> IO ()
+destroy (Device.D dvc) (P c) mac =
 	AllocationCallbacks.mToCore mac $ C.destroy dvc c
 
-getData :: Device.D -> C -> IO Data
-getData (Device.D dv) (C c) = alloca \psz -> do
+getData :: Device.D -> P -> IO Data
+getData (Device.D dv) (P c) = alloca \psz -> do
 	r <- C.getData dv c psz nullPtr
 	throwUnlessSuccess $ Result r
 	sz <- peek psz

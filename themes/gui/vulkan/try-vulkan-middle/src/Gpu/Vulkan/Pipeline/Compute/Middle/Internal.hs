@@ -48,7 +48,7 @@ data CreateInfo mn ss sivs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: Pipeline.CreateFlags,
 	createInfoStage :: ShaderStage.CreateInfo ss 'GlslComputeShader sivs,
-	createInfoLayout :: Pipeline.Layout.L,
+	createInfoLayout :: Pipeline.Layout.P,
 	createInfoBasePipelineHandle :: Maybe C,
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
@@ -63,7 +63,7 @@ createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = Pipeline.CreateFlagBits flgs,
 	createInfoStage = stg,
-	createInfoLayout = Pipeline.Layout.L lyt,
+	createInfoLayout = Pipeline.Layout.P lyt,
 	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
 	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx } f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
@@ -96,9 +96,9 @@ instance (
 newtype C = C Pipeline.C.P deriving Show
 
 createCs :: forall cias mc . CreateInfoListToCore cias =>
-	Device.D -> Maybe Cache.C -> HeteroParList.PL (U3 CreateInfo) cias ->
+	Device.D -> Maybe Cache.P -> HeteroParList.PL (U3 CreateInfo) cias ->
 	TPMaybe.M AllocationCallbacks.A mc -> IO [C]
-createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
+createCs (Device.D dvc) (maybe NullPtr (\(Cache.P c) -> c) -> cch) cis mac =
 	(C <$>) <$> allocaArray ln \pps -> do
 		createInfoListToCore cis \cis' ->
 			allocaArray ln \pcis ->

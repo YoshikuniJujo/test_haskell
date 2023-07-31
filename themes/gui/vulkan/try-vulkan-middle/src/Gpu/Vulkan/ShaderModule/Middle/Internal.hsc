@@ -39,7 +39,7 @@ import qualified Gpu.Vulkan.ShaderModule.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype M (sknd :: ShaderKind) = M C.S deriving Show
+newtype S (sknd :: ShaderKind) = S C.S deriving Show
 
 enum "CreateFlagBits" ''#{type VkShaderModuleCreateFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
@@ -79,14 +79,14 @@ readFromByteString (BS.PS f o l) = do
 
 create :: WithPoked (TMaybe.M mn) =>
 	Device.D ->
-	CreateInfo mn sknd -> TPMaybe.M AllocationCallbacks.A mc -> IO (M sknd)
-create (Device.D dvc) ci mac = M <$> alloca \pm -> do
+	CreateInfo mn sknd -> TPMaybe.M AllocationCallbacks.A mc -> IO (S sknd)
+create (Device.D dvc) ci mac = S <$> alloca \pm -> do
 	createInfoToCore ci \pcci ->
 		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create dvc pcci pac pm
 			throwUnlessSuccess $ Result r
 	peek pm
 
-destroy :: Device.D -> M sknd -> TPMaybe.M AllocationCallbacks.A md -> IO ()
-destroy (Device.D dvc) (M m) mac =
+destroy :: Device.D -> S sknd -> TPMaybe.M AllocationCallbacks.A md -> IO ()
+destroy (Device.D dvc) (S m) mac =
 	AllocationCallbacks.mToCore mac $ C.destroy dvc m

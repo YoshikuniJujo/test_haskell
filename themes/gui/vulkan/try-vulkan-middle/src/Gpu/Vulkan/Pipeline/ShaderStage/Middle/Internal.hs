@@ -35,7 +35,7 @@ data CreateInfo mn sknd sivs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoStage :: ShaderStageFlagBits,
-	createInfoModule :: ShaderModule.M sknd,
+	createInfoModule :: ShaderModule.S sknd,
 	createInfoName :: BS.ByteString,
 	createInfoSpecializationInfo :: Maybe (HeteroParList.L sivs) }
 
@@ -49,7 +49,7 @@ createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoStage = ShaderStageFlagBits stg,
-	createInfoModule = ShaderModule.M mdl,
+	createInfoModule = ShaderModule.S mdl,
 	createInfoName = nm,
 	createInfoSpecializationInfo = mxs } f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->

@@ -43,7 +43,7 @@ import qualified Gpu.Vulkan.BufferView.Core as BufferView.C
 data AllocateInfo mn = AllocateInfo {
 	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoDescriptorPool :: Pool.D,
-	allocateInfoSetLayouts :: [Layout.L] }
+	allocateInfoSetLayouts :: [Layout.D] }
 
 deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn)
 
@@ -57,7 +57,7 @@ allocateInfoToCore AllocateInfo {
 		((dsci, dscw), sls) } f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
 	psls <- allocaArray dsci \p ->
-		p <$ (pokeArray p $ (\(Layout.L l) -> l) <$> sls)
+		p <$ (pokeArray p $ (\(Layout.D l) -> l) <$> sls)
 	f C.AllocateInfo {
 		C.allocateInfoSType = (),
 		C.allocateInfoPNext = pnxt',

@@ -123,9 +123,9 @@ bindIndexBuffer
 	C.bindIndexBuffer cb ib sz it
 
 pushConstants :: forall as . PokableList as =>
-	CommandBuffer.M.C -> Pipeline.Layout.L ->
+	CommandBuffer.M.C -> Pipeline.Layout.P ->
 	ShaderStageFlags -> Word32 -> HeteroParList.L as -> IO ()
-pushConstants (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
+pushConstants (CommandBuffer.M.C _ cb) (Pipeline.Layout.P lyt)
 	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
 	let	sz :: Integral n => n
 		sz = fromIntegral $ wholeSize @as
@@ -134,10 +134,10 @@ pushConstants (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
 		C.pushConstants cb lyt ss ost sz p
 
 bindDescriptorSets ::
-	CommandBuffer.M.C -> Pipeline.BindPoint -> Pipeline.Layout.L ->
+	CommandBuffer.M.C -> Pipeline.BindPoint -> Pipeline.Layout.P ->
 	Word32 -> [Descriptor.Set.D] -> [Word32] -> IO ()
 bindDescriptorSets
-	(CommandBuffer.M.C _ cb) (Pipeline.BindPoint bp) (Pipeline.Layout.L lyt)
+	(CommandBuffer.M.C _ cb) (Pipeline.BindPoint bp) (Pipeline.Layout.P lyt)
 	fs (length &&& id -> (dsc, dss))
 	(length &&& id -> (doc, dos)) = ($ pure) $ runContT do
 	pdss <- ContT $ allocaArray dsc

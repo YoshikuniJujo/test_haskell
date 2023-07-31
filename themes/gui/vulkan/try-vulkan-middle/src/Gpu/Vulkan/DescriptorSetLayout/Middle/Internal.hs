@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout.Middle.Internal (
-	L(..), CreateInfo(..), Binding(..), create, destroy ) where
+	D(..), CreateInfo(..), Binding(..), create, destroy ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
@@ -58,7 +58,7 @@ bindingToCore Binding {
 		C.bindingStageFlags = sf,
 		C.bindingPImmutableSamplers = p }
 
-newtype L = L C.L deriving Show
+newtype D = D C.D deriving Show
 
 data CreateInfo mn = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
@@ -85,12 +85,12 @@ createInfoToCore CreateInfo {
 				C.createInfoPBindings = pbs } f
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO L
-create (Device.D dvc) ci mac = L <$> alloca \pl -> do
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO D
+create (Device.D dvc) ci mac = D <$> alloca \pl -> do
 	createInfoToCore ci \pci -> AllocationCallbacks.mToCore mac \pac ->
 		throwUnlessSuccess . Result =<< C.create dvc pci pac pl
 	peek pl
 
-destroy :: Device.D -> L -> TPMaybe.M AllocationCallbacks.A md -> IO ()
-destroy (Device.D dvc) (L l) mac =
+destroy :: Device.D -> D -> TPMaybe.M AllocationCallbacks.A md -> IO ()
+destroy (Device.D dvc) (D l) mac =
 	AllocationCallbacks.mToCore mac \pac -> C.destroy dvc l pac
