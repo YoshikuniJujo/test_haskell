@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           typelevel-tools
-version:        0.1.0.4
+version:        0.1.0.5
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/typelevel-tools#readme>
 homepage:       https://github.com/YoshikuniJujo/typelevel-tools#readme
 bug-reports:    https://github.com/YoshikuniJujo/typelevel-tools/issues
@@ -39,6 +39,7 @@ library
       Data.TypeLevel.Tuple.MapIndex.TH
       Data.TypeLevel.Tuple.Uncurry
       Data.TypeLevel.Tuple.Uncurry.TH
+      Data.TypeLevel.TypeVal
   other-modules:
       Paths_typelevel_tools
   hs-source-dirs:
