@@ -1,0 +1,149 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-gpu-vulkan
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
+homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
+bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2023 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+data-files:
+    th/vkPhysicalDeviceLimits.txt
+    th/vkPhysicalDeviceFeatures.txt
+    th/vkFormat.txt
+    th/vkShaderStageFlagBits.txt
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-gpu-vulkan
+
+library
+  exposed-modules:
+      Gpu.Vulkan
+      Gpu.Vulkan.AllocationCallbacks
+      Gpu.Vulkan.AllocationCallbacks.Type
+      Gpu.Vulkan.Attachment
+      Gpu.Vulkan.Attachment.Enum
+      Gpu.Vulkan.Buffer
+      Gpu.Vulkan.Buffer.Enum
+      Gpu.Vulkan.Buffer.Internal
+      Gpu.Vulkan.Buffer.Type
+      Gpu.Vulkan.BufferView
+      Gpu.Vulkan.BufferView.Internal
+      Gpu.Vulkan.Cmd
+      Gpu.Vulkan.CommandBuffer
+      Gpu.Vulkan.CommandBuffer.Type
+      Gpu.Vulkan.CommandPool.Type
+      Gpu.Vulkan.Component
+      Gpu.Vulkan.Descriptor.Internal
+      Gpu.Vulkan.DescriptorPool.Type
+      Gpu.Vulkan.DescriptorSet
+      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
+      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer
+      Gpu.Vulkan.DescriptorSet.Copy
+      Gpu.Vulkan.DescriptorSet.Type
+      Gpu.Vulkan.DescriptorSet.Write
+      Gpu.Vulkan.DescriptorSet.Write.Sources
+      Gpu.Vulkan.DescriptorSetLayout.Type
+      Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
+      Gpu.Vulkan.Device
+      Gpu.Vulkan.Device.Type
+      Gpu.Vulkan.Fence.Enum
+      Gpu.Vulkan.Fence.Type
+      Gpu.Vulkan.Framebuffer.Type
+      Gpu.Vulkan.Image
+      Gpu.Vulkan.Image.Enum
+      Gpu.Vulkan.Image.Internal
+      Gpu.Vulkan.Image.Type
+      Gpu.Vulkan.ImageView
+      Gpu.Vulkan.ImageView.Type
+      Gpu.Vulkan.Instance.Type
+      Gpu.Vulkan.Internal
+      Gpu.Vulkan.Memory
+      Gpu.Vulkan.Memory.Bind
+      Gpu.Vulkan.Memory.ImageBuffer
+      Gpu.Vulkan.Memory.OffsetSize
+      Gpu.Vulkan.Memory.Type
+      Gpu.Vulkan.Misc
+      Gpu.Vulkan.Object
+      Gpu.Vulkan.Object.Base
+      Gpu.Vulkan.PhysicalDevice
+      Gpu.Vulkan.Pipeline.Compute
+      Gpu.Vulkan.Pipeline.Graphics.Type
+      Gpu.Vulkan.Pipeline.ShaderStage.Internal
+      Gpu.Vulkan.PipelineCache.Type
+      Gpu.Vulkan.PipelineLayout.Type
+      Gpu.Vulkan.Query
+      Gpu.Vulkan.QueryPool
+      Gpu.Vulkan.QueryPool.Type
+      Gpu.Vulkan.Queue
+      Gpu.Vulkan.QueueFamily
+      Gpu.Vulkan.RenderPass.Enum
+      Gpu.Vulkan.RenderPass.Internal
+      Gpu.Vulkan.RenderPass.Type
+      Gpu.Vulkan.Sampler.Type
+      Gpu.Vulkan.Semaphore.Type
+      Gpu.Vulkan.ShaderModule.Internal
+      Gpu.Vulkan.TypeEnum
+      Gpu.Vulkan.TypeEnum.Th
+      Gpu.Vulkan.TypeEnum.TypeValues
+      Gpu.Vulkan.VertexInput
+      Gpu.Vulkan.VertexInput.Internal
+  other-modules:
+      Paths_try_gpu_vulkan
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , data-default
+    , mono-traversable
+    , size-alignment-list
+    , template-haskell
+    , text
+    , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
+    , try-language-spir-v
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-vulkan-middle
+    , typelevel-tools
+  default-language: Haskell2010
+
+test-suite try-gpu-vulkan-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_gpu_vulkan
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , data-default
+    , mono-traversable
+    , size-alignment-list
+    , template-haskell
+    , text
+    , try-gpu-vulkan
+    , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
+    , try-language-spir-v
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-vulkan-middle
+    , typelevel-tools
+  default-language: Haskell2010
