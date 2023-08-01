@@ -1,0 +1,70 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-gpu-vulkan-khr
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan-khr#readme>
+homepage:       https://github.com/githubuser/try-gpu-vulkan-khr#readme
+bug-reports:    https://github.com/githubuser/try-gpu-vulkan-khr/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2023 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-gpu-vulkan-khr
+
+library
+  exposed-modules:
+      Gpu.Vulkan.Khr
+      Gpu.Vulkan.Khr.Surface
+      Gpu.Vulkan.Khr.Surface.PhysicalDevice
+      Gpu.Vulkan.Khr.Surface.Type
+      Gpu.Vulkan.Khr.Swapchain
+      Gpu.Vulkan.Khr.Swapchain.Type
+  other-modules:
+      Paths_try_gpu_vulkan_khr
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , text
+    , try-gpu-vulkan
+    , try-hetero-parameter-list
+    , try-storable-peek-poke
+    , try-vulkan-core-khr
+    , try-vulkan-middle
+    , try-vulkan-middle-khr
+    , typelevel-tools
+  default-language: Haskell2010
+
+test-suite try-gpu-vulkan-khr-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_gpu_vulkan_khr
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , text
+    , try-gpu-vulkan
+    , try-gpu-vulkan-khr
+    , try-hetero-parameter-list
+    , try-storable-peek-poke
+    , try-vulkan-core-khr
+    , try-vulkan-middle
+    , try-vulkan-middle-khr
+    , typelevel-tools
+  default-language: Haskell2010
