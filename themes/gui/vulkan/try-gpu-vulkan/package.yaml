@@ -26,6 +26,7 @@ dependencies:
 - mono-traversable
 - data-default
 - text
+- time
 - try-vulkan-middle
 - try-language-spir-v
 - size-alignment-list
