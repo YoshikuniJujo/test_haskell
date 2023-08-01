@@ -34,7 +34,7 @@ import Language.SpirV.ShaderKind
 import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Enum as Vk
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.Queue as Vk.Queue
@@ -42,17 +42,17 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
+import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mm
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mm
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mm.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
+import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
@@ -60,7 +60,7 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DS
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CBffr
+import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandBuffer.Enum as Vk.CBffr
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr

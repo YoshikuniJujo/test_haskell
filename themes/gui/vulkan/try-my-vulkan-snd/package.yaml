@@ -31,6 +31,7 @@ dependencies:
 - JuicyPixels
 - vector
 - GLFW-b
+- try-gpu-vulkan
 - ranged-list
 - try-language-spir-v
 - try-shaderc

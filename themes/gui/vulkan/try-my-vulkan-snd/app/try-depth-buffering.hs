@@ -69,7 +69,7 @@ import Gpu.Vulkan.Data
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Enum as Vk
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Ist
@@ -92,7 +92,7 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Image.Enum as Vk.Img
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
@@ -110,26 +110,26 @@ import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Attachment as Vk.Att
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Attachment.Enum as Vk.Att
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Subpass.Enum as Vk.Subpass
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Subpass.Enum as Vk.Subpass
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
+import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
+import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Fence.Enum as Vk.Fence
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Queue as Vk.Queue
@@ -137,7 +137,7 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet

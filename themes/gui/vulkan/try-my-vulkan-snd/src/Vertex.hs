@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,7 +9,7 @@ import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
 
-import qualified Gpu.Vulkan.Enum as Vk
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 
 import qualified Cglm

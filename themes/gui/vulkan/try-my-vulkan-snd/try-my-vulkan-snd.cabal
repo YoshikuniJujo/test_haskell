@@ -41,134 +41,20 @@ library
       Foreign.Storable.Generic
       Glfw
       Glfw.Middle
-      Gpu.Vulkan
-      Gpu.Vulkan.AllocationCallbacks
-      Gpu.Vulkan.AllocationCallbacks.Type
-      Gpu.Vulkan.Attachment
-      Gpu.Vulkan.Attachment.Enum
-      Gpu.Vulkan.Buffer
-      Gpu.Vulkan.Buffer.Enum
-      Gpu.Vulkan.Buffer.Internal
-      Gpu.Vulkan.Buffer.Type
-      Gpu.Vulkan.BufferView
-      Gpu.Vulkan.BufferView.Internal
-      Gpu.Vulkan.Cmd
-      Gpu.Vulkan.CommandBuffer
-      Gpu.Vulkan.CommandBuffer.Enum
-      Gpu.Vulkan.CommandBuffer.Type
-      Gpu.Vulkan.CommandPool
-      Gpu.Vulkan.CommandPool.Enum
-      Gpu.Vulkan.CommandPool.Type
-      Gpu.Vulkan.Component
-      Gpu.Vulkan.Component.Enum
-      Gpu.Vulkan.Data
-      Gpu.Vulkan.Descriptor
-      Gpu.Vulkan.Descriptor.Enum
-      Gpu.Vulkan.Descriptor.Internal
-      Gpu.Vulkan.DescriptorPool
-      Gpu.Vulkan.DescriptorPool.Enum
-      Gpu.Vulkan.DescriptorPool.Type
-      Gpu.Vulkan.DescriptorSet
-      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
-      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer
-      Gpu.Vulkan.DescriptorSet.Copy
-      Gpu.Vulkan.DescriptorSet.Type
-      Gpu.Vulkan.DescriptorSet.Write
-      Gpu.Vulkan.DescriptorSet.Write.Sources
-      Gpu.Vulkan.DescriptorSetLayout
-      Gpu.Vulkan.DescriptorSetLayout.Enum
-      Gpu.Vulkan.DescriptorSetLayout.Type
-      Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
-      Gpu.Vulkan.Device
-      Gpu.Vulkan.Device.Enum
-      Gpu.Vulkan.Device.Type
-      Gpu.Vulkan.Enum
-      Gpu.Vulkan.Exception
       Gpu.Vulkan.Ext.DebugUtils
       Gpu.Vulkan.Ext.DebugUtils.Messenger
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
-      Gpu.Vulkan.Fence
-      Gpu.Vulkan.Fence.Enum
-      Gpu.Vulkan.Fence.Type
-      Gpu.Vulkan.Framebuffer
-      Gpu.Vulkan.Framebuffer.Enum
-      Gpu.Vulkan.Framebuffer.Type
-      Gpu.Vulkan.Image
-      Gpu.Vulkan.Image.Enum
-      Gpu.Vulkan.Image.Internal
-      Gpu.Vulkan.Image.Type
-      Gpu.Vulkan.ImageView
-      Gpu.Vulkan.ImageView.Type
-      Gpu.Vulkan.Instance
-      Gpu.Vulkan.Instance.Type
-      Gpu.Vulkan.Internal
       Gpu.Vulkan.Khr
       Gpu.Vulkan.Khr.Surface
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
       Gpu.Vulkan.Khr.Surface.Type
       Gpu.Vulkan.Khr.Swapchain
       Gpu.Vulkan.Khr.Swapchain.Type
-      Gpu.Vulkan.Memory
-      Gpu.Vulkan.Memory.Bind
-      Gpu.Vulkan.Memory.ImageBuffer
-      Gpu.Vulkan.Memory.OffsetSize
-      Gpu.Vulkan.Memory.Type
-      Gpu.Vulkan.Misc
-      Gpu.Vulkan.Object
-      Gpu.Vulkan.Object.Base
-      Gpu.Vulkan.PhysicalDevice
-      Gpu.Vulkan.Pipeline.ColorBlendAttachment
-      Gpu.Vulkan.Pipeline.ColorBlendState
-      Gpu.Vulkan.Pipeline.Compute
-      Gpu.Vulkan.Pipeline.DepthStencilState
-      Gpu.Vulkan.Pipeline.DynamicState
-      Gpu.Vulkan.Pipeline.Enum
-      Gpu.Vulkan.Pipeline.Graphics
-      Gpu.Vulkan.Pipeline.Graphics.Type
-      Gpu.Vulkan.Pipeline.InputAssemblyState
-      Gpu.Vulkan.Pipeline.MultisampleState
-      Gpu.Vulkan.Pipeline.RasterizationState
-      Gpu.Vulkan.Pipeline.ShaderStage
-      Gpu.Vulkan.Pipeline.ShaderStage.Internal
-      Gpu.Vulkan.Pipeline.TessellationState
-      Gpu.Vulkan.Pipeline.VertexInputState
-      Gpu.Vulkan.Pipeline.VertexInputState.Internal
-      Gpu.Vulkan.Pipeline.ViewportState
-      Gpu.Vulkan.PipelineCache
-      Gpu.Vulkan.PipelineCache.Type
-      Gpu.Vulkan.PipelineLayout
-      Gpu.Vulkan.PipelineLayout.Type
-      Gpu.Vulkan.PushConstant
-      Gpu.Vulkan.PushConstant.Internal
-      Gpu.Vulkan.Query
-      Gpu.Vulkan.Query.Enum
-      Gpu.Vulkan.QueryPool
-      Gpu.Vulkan.QueryPool.Type
-      Gpu.Vulkan.Queue
-      Gpu.Vulkan.QueueFamily
-      Gpu.Vulkan.RenderPass
-      Gpu.Vulkan.RenderPass.Enum
-      Gpu.Vulkan.RenderPass.Internal
-      Gpu.Vulkan.RenderPass.Type
-      Gpu.Vulkan.Sample
-      Gpu.Vulkan.Sampler
-      Gpu.Vulkan.Sampler.Type
-      Gpu.Vulkan.Semaphore
-      Gpu.Vulkan.Semaphore.Type
-      Gpu.Vulkan.ShaderModule
-      Gpu.Vulkan.ShaderModule.Internal
-      Gpu.Vulkan.Subpass
-      Gpu.Vulkan.Subpass.Enum
-      Gpu.Vulkan.TypeEnum
-      Gpu.Vulkan.TypeEnum.Th
-      Gpu.Vulkan.VertexInput
-      Gpu.Vulkan.VertexInput.Internal
       Sample.GetOpt
       Sample.Image
       ThEnv
       Tools
       TypeLevel.Nat
-      TypeValues
       Vertex
       VertexOld
   other-modules:
@@ -194,6 +80,7 @@ library
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -234,6 +121,7 @@ executable my-glslc
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -275,6 +163,7 @@ executable try-allocation-callbacks
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -316,6 +205,7 @@ executable try-copy-descriptor-set
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -357,6 +247,7 @@ executable try-depth-buffering
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -398,6 +289,7 @@ executable try-depth-buffering-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -439,6 +331,7 @@ executable try-dynamic-dsc-sets
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -480,6 +373,7 @@ executable try-generating-mipmaps
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -521,6 +415,7 @@ executable try-generating-mipmaps-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -562,6 +457,7 @@ executable try-hello-world
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -603,6 +499,7 @@ executable try-image-buffer
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -644,6 +541,7 @@ executable try-loading-models
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -685,6 +583,7 @@ executable try-loading-models-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -726,6 +625,7 @@ executable try-multisampling
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -767,6 +667,7 @@ executable try-multisampling-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -808,6 +709,7 @@ executable try-no-dynamic-dsc-sets
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -849,6 +751,7 @@ executable try-pipeline-cache
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -890,6 +793,7 @@ executable try-query
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -931,6 +835,7 @@ executable try-rectangle
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -972,6 +877,7 @@ executable try-rectangle-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1013,6 +919,7 @@ executable try-saitan
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1054,6 +961,7 @@ executable try-saitan-float
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1095,6 +1003,7 @@ executable try-saitan-simple
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1136,6 +1045,7 @@ executable try-shaderc
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1177,6 +1087,7 @@ executable try-texel-buffer-float
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1218,6 +1129,7 @@ executable try-texel-buffer-word32
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1259,6 +1171,7 @@ executable try-texture
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1300,6 +1213,7 @@ executable try-texture-immutable-sampler-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1341,6 +1255,7 @@ executable try-texture-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1382,6 +1297,7 @@ executable try-triangle
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1423,6 +1339,7 @@ executable try-triangle-single
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1464,6 +1381,7 @@ executable try-vulkan-guide
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1505,6 +1423,7 @@ executable try-vulkan-guide-dynamic
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1546,6 +1465,7 @@ executable try-vulkan-guide-storage
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1587,6 +1507,7 @@ executable try-vulkan-guide-texture
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1628,6 +1549,7 @@ executable try-wavefront-obj
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1669,6 +1591,7 @@ executable try-yatteiku
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
@@ -1711,6 +1634,7 @@ test-suite try-my-vulkan-snd-test
     , temporary
     , text
     , time
+    , try-gpu-vulkan
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v

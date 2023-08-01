@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
@@ -29,7 +29,7 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Word
 
-import Gpu.Vulkan.Enum
+import "try-gpu-vulkan" Gpu.Vulkan.Enum
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Swapchain.Type
 import Gpu.Vulkan.Khr.Swapchain.Enum
@@ -43,7 +43,7 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 
-import qualified Gpu.Vulkan.Image.Enum as Image
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
