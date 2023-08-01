@@ -32,6 +32,7 @@ dependencies:
 - vector
 - GLFW-b
 - try-gpu-vulkan
+- try-gpu-vulkan-khr
 - ranged-list
 - try-language-spir-v
 - try-shaderc
