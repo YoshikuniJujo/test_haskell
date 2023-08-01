@@ -6,15 +6,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Language.SpirV.Shaderc (
-	compileIntoSpirV, defaultCompileOptions
-	) where
+	compile, SourceText, InputFileName, EntryPointName ) where
 
 import Foreign.Storable
 import Control.Monad.Cont
 
 import qualified Data.ByteString as BS
 
-import Language.SpirV
+import Language.SpirV.Internal
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.Exception.Internal
 
@@ -23,10 +22,10 @@ import qualified Shaderc.Middle as M
 import qualified Language.SpirV.Shaderc.CompileOptions as CompileOptions
 import qualified Shaderc.CompilationResult.Core as CompilationResult
 
-compileIntoSpirV :: forall ud sknd . (Storable ud, SpvShaderKind sknd) =>
-	BS.ByteString -> BS.ByteString -> BS.ByteString ->
+compile :: forall ud sknd . (Storable ud, IsShaderKind sknd) =>
+	SourceText -> InputFileName -> EntryPointName ->
 	CompileOptions.C ud -> IO (S sknd)
-compileIntoSpirV src ifnm epnm opts = ($ pure) $ runContT do
+compile src ifnm epnm opts = ($ pure) $ runContT do
 	cmp <- lift C.compilerInitialize
 	rslt <- M.compileIntoSpv cmp src (shaderKind @sknd) ifnm epnm opts
 	lift $ throwUnlessSuccess rslt
@@ -37,11 +36,6 @@ compileIntoSpirV src ifnm epnm opts = ($ pure) $ runContT do
 		C.compilerRelease cmp
 		pure $ S spv
 
-defaultCompileOptions :: CompileOptions.C ()
-defaultCompileOptions = CompileOptions.C {
-	CompileOptions.cMacroDefinitions = [],
-	CompileOptions.cSourceLanguage = Nothing,
-	CompileOptions.cGenerateDebugInfo = False,
-	CompileOptions.cOptimizationLevel = Nothing,
-	CompileOptions.cForcedVersionProfile = Nothing,
-	CompileOptions.cIncludeCallbacks = Nothing }
+type SourceText = BS.ByteString
+type InputFileName = BS.ByteString
+type EntryPointName = BS.ByteString

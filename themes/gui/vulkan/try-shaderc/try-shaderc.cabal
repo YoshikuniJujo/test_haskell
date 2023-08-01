@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Language.SpirV
+      Language.SpirV.Internal
       Language.SpirV.ShaderKind
       Language.SpirV.Shaderc
       Language.SpirV.Shaderc.TH
@@ -55,6 +56,7 @@ library
     , bytestring
     , c-enum
     , c-struct
+    , data-default
     , exception-hierarchy
     , monads-tf
     , nowdoc
@@ -74,6 +76,7 @@ executable try-shaderc-exe
     , bytestring
     , c-enum
     , c-struct
+    , data-default
     , exception-hierarchy
     , monads-tf
     , nowdoc
@@ -95,6 +98,7 @@ test-suite try-shaderc-test
     , bytestring
     , c-enum
     , c-struct
+    , data-default
     , exception-hierarchy
     , monads-tf
     , nowdoc

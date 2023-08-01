@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
@@ -11,12 +12,14 @@ module Language.SpirV.Shaderc.TH (
 import Language.Haskell.TH
 import Language.Haskell.TH.Quote
 
+import Data.Default
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
-import Language.SpirV
-import Language.SpirV.Shaderc
+import Language.SpirV.Internal
 import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc
+import Language.SpirV.Shaderc.CompileOptions qualified as CompileOptions
 
 -- GLSL VERTEX SHADER
 
@@ -38,24 +41,24 @@ glslComputeShader = generalShader @'GlslComputeShader
 
 -- GENERAL
 
-generalShader :: forall shtp . SpvShaderKind shtp => String -> Name -> BS.ByteString -> QuasiQuoter
+generalShader :: forall shtp . IsShaderKind shtp => String -> Name -> BS.ByteString -> QuasiQuoter
 generalShader var shtp shnm = QuasiQuoter {
 	quoteExp = generalShaderExp @shtp shtp shnm,
 	quotePat = error "not defined",
 	quoteType = error "not defined",
 	quoteDec = generalShaderDec @shtp var shtp shnm }
 
-generalShaderExp :: forall shtp . SpvShaderKind shtp => Name -> BS.ByteString -> String -> ExpQ
+generalShaderExp :: forall shtp . IsShaderKind shtp => Name -> BS.ByteString -> String -> ExpQ
 generalShaderExp shtp shnm =
 	mkShaderExp (conT ''S `appT` conT shtp) $ compileGeneralShader @shtp shnm
 
-generalShaderDec :: forall shtp . SpvShaderKind shtp => String -> Name -> BS.ByteString -> String -> DecsQ
+generalShaderDec :: forall shtp . IsShaderKind shtp => String -> Name -> BS.ByteString -> String -> DecsQ
 generalShaderDec var shtp shnm =
 	mkShaderDec var (conT ''S `appT` conT shtp) $ compileGeneralShader @shtp shnm
 
-compileGeneralShader :: forall shtp . SpvShaderKind shtp =>  BS.ByteString -> BS.ByteString -> IO BS.ByteString
+compileGeneralShader :: forall shtp . IsShaderKind shtp =>  BS.ByteString -> BS.ByteString -> IO BS.ByteString
 compileGeneralShader nm src = (\(S spv :: S shtp) -> spv)
-	<$> compileIntoSpirV src nm "main" defaultCompileOptions
+	<$> compile src nm "main" (def :: CompileOptions.C ())
 
 -- BASE
 

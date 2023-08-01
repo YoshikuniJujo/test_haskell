@@ -24,6 +24,7 @@ dependencies:
 - template-haskell
 - bytestring
 - monads-tf
+- data-default
 - nowdoc
 - exception-hierarchy
 - c-enum
@@ -36,6 +37,7 @@ library:
   - shaderc
   exposed-modules:
   - Language.SpirV
+  - Language.SpirV.Internal
   - Language.SpirV.ShaderKind
   - Language.SpirV.Shaderc
   - Language.SpirV.Shaderc.TH

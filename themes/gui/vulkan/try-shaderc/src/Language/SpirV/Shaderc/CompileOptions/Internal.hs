@@ -1,6 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Language.SpirV.Shaderc.CompileOptions.Internal where
@@ -9,6 +10,7 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad.Cont
+import Data.Default
 import Data.Bool
 
 import qualified Data.ByteString as BS
@@ -72,3 +74,14 @@ setIncludeCallbacks opts rfun mud = do
 	let	(crfn, crrfn) = resolveFnToCore rfun
 	(castPtr -> pud) <- ContT $ withPokedMaybe mud
 	lift $ C.setIncludeCallbacks opts crfn crrfn pud
+
+instance Default (C ()) where def = defaultCompileOptions
+
+defaultCompileOptions :: C ()
+defaultCompileOptions = C {
+	cMacroDefinitions = [],
+	cSourceLanguage = Nothing,
+	cGenerateDebugInfo = False,
+	cOptimizationLevel = Nothing,
+	cForcedVersionProfile = Nothing,
+	cIncludeCallbacks = Nothing }
