@@ -15,7 +15,7 @@ import qualified Language.SpirV.Shaderc.CompileOptions as CompileOptions
 import Language.SpirV.Shaderc
 
 main :: IO ()
-main = BS.writeFile "tmp.spv" . (\(SpirV.S spv) -> spv) =<< compileIntoSpirV @() @'GlslVertexShader
+main = SpirV.writeFile "tmp.spv" =<< compile @() @'GlslVertexShader
 	"#version 450\nvoid main() {}"
 	"main.vert" "main" CompileOptions.C {
 		CompileOptions.cMacroDefinitions = [],
