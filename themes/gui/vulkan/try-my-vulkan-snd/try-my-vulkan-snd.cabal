@@ -41,9 +41,6 @@ library
       Foreign.Storable.Generic
       Glfw
       Glfw.Middle
-      Gpu.Vulkan.Ext.DebugUtils
-      Gpu.Vulkan.Ext.DebugUtils.Messenger
-      Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
       Sample.GetOpt
       Sample.Image
       ThEnv
@@ -75,6 +72,7 @@ library
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -83,7 +81,6 @@ library
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -117,6 +114,7 @@ executable my-glslc
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -126,7 +124,6 @@ executable my-glslc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -160,6 +157,7 @@ executable try-allocation-callbacks
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -169,7 +167,6 @@ executable try-allocation-callbacks
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -203,6 +200,7 @@ executable try-copy-descriptor-set
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -212,7 +210,6 @@ executable try-copy-descriptor-set
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -246,6 +243,7 @@ executable try-depth-buffering
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -255,7 +253,6 @@ executable try-depth-buffering
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -289,6 +286,7 @@ executable try-depth-buffering-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -298,7 +296,6 @@ executable try-depth-buffering-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -332,6 +329,7 @@ executable try-dynamic-dsc-sets
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -341,7 +339,6 @@ executable try-dynamic-dsc-sets
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -375,6 +372,7 @@ executable try-generating-mipmaps
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -384,7 +382,6 @@ executable try-generating-mipmaps
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -418,6 +415,7 @@ executable try-generating-mipmaps-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -427,7 +425,6 @@ executable try-generating-mipmaps-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -461,6 +458,7 @@ executable try-hello-world
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -470,7 +468,6 @@ executable try-hello-world
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -504,6 +501,7 @@ executable try-image-buffer
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -513,7 +511,6 @@ executable try-image-buffer
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -547,6 +544,7 @@ executable try-loading-models
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -556,7 +554,6 @@ executable try-loading-models
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -590,6 +587,7 @@ executable try-loading-models-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -599,7 +597,6 @@ executable try-loading-models-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -633,6 +630,7 @@ executable try-multisampling
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -642,7 +640,6 @@ executable try-multisampling
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -676,6 +673,7 @@ executable try-multisampling-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -685,7 +683,6 @@ executable try-multisampling-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -719,6 +716,7 @@ executable try-no-dynamic-dsc-sets
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -728,7 +726,6 @@ executable try-no-dynamic-dsc-sets
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -762,6 +759,7 @@ executable try-pipeline-cache
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -771,7 +769,6 @@ executable try-pipeline-cache
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -805,6 +802,7 @@ executable try-query
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -814,7 +812,6 @@ executable try-query
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -848,6 +845,7 @@ executable try-rectangle
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -857,7 +855,6 @@ executable try-rectangle
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -891,6 +888,7 @@ executable try-rectangle-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -900,7 +898,6 @@ executable try-rectangle-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -934,6 +931,7 @@ executable try-saitan
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -943,7 +941,6 @@ executable try-saitan
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -977,6 +974,7 @@ executable try-saitan-float
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -986,7 +984,6 @@ executable try-saitan-float
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1020,6 +1017,7 @@ executable try-saitan-simple
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1029,7 +1027,6 @@ executable try-saitan-simple
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1063,6 +1060,7 @@ executable try-shaderc
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1072,7 +1070,6 @@ executable try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1106,6 +1103,7 @@ executable try-texel-buffer-float
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1115,7 +1113,6 @@ executable try-texel-buffer-float
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1149,6 +1146,7 @@ executable try-texel-buffer-word32
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1158,7 +1156,6 @@ executable try-texel-buffer-word32
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1192,6 +1189,7 @@ executable try-texture
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1201,7 +1199,6 @@ executable try-texture
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1235,6 +1232,7 @@ executable try-texture-immutable-sampler-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1244,7 +1242,6 @@ executable try-texture-immutable-sampler-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1278,6 +1275,7 @@ executable try-texture-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1287,7 +1285,6 @@ executable try-texture-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1321,6 +1318,7 @@ executable try-triangle
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1330,7 +1328,6 @@ executable try-triangle
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1364,6 +1361,7 @@ executable try-triangle-single
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1373,7 +1371,6 @@ executable try-triangle-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1407,6 +1404,7 @@ executable try-vulkan-guide
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1416,7 +1414,6 @@ executable try-vulkan-guide
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1450,6 +1447,7 @@ executable try-vulkan-guide-dynamic
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1459,7 +1457,6 @@ executable try-vulkan-guide-dynamic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1493,6 +1490,7 @@ executable try-vulkan-guide-storage
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1502,7 +1500,6 @@ executable try-vulkan-guide-storage
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1536,6 +1533,7 @@ executable try-vulkan-guide-texture
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1545,7 +1543,6 @@ executable try-vulkan-guide-texture
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1579,6 +1576,7 @@ executable try-wavefront-obj
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1588,7 +1586,6 @@ executable try-wavefront-obj
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1622,6 +1619,7 @@ executable try-yatteiku
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1631,7 +1629,6 @@ executable try-yatteiku
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color
@@ -1666,6 +1663,7 @@ test-suite try-my-vulkan-snd-test
     , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1675,7 +1673,6 @@ test-suite try-my-vulkan-snd-test
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , typelevel-tools
     , union-color

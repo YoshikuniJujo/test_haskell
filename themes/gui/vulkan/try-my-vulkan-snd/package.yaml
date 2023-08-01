@@ -33,6 +33,7 @@ dependencies:
 - GLFW-b
 - try-gpu-vulkan
 - try-gpu-vulkan-khr
+- try-gpu-vulkan-ext-debug-utils
 - ranged-list
 - try-language-spir-v
 - try-shaderc
@@ -48,7 +49,6 @@ dependencies:
 - try-storable-hetero-list
 - try-vulkan-middle
 - try-vulkan-middle-khr
-- try-vulkan-middle-ext-debug-utils
 - typelevel-tools
 
 - directory

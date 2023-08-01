@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Gpu.Vulkan.Ext.DebugUtils
+      Gpu.Vulkan.Ext.DebugUtils.Enum
       Gpu.Vulkan.Ext.DebugUtils.Messenger
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
       Lib
