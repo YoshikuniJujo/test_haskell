@@ -31,8 +31,8 @@ import Data.Word
 import Data.Char
 import System.Directory
 
-import Shaderc.TH
-import Shaderc.EnumAuto
+import Language.SpirV.Shaderc.TH
+import Language.SpirV.ShaderKind
 import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk

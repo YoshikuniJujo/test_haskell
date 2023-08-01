@@ -58,9 +58,9 @@ import qualified Cglm
 import Foreign.Storable.Generic qualified as Str.G
 
 import ThEnv
-import Shaderc
-import Shaderc.EnumAuto
-import Shaderc.TH
+import qualified Language.SpirV as SpirV
+import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc.TH
 
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
@@ -2152,7 +2152,7 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 -- SHADER
 
 shaderStages ::
-	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
+	SpirV.S 'GlslVertexShader -> SpirV.S 'GlslFragmentShader ->
 	HL.PL (U5 Vk.Ppl.ShdrSt.CreateInfo) '[
 		'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 		'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
@@ -2176,7 +2176,7 @@ shaderStages vs fs = U5 vertinfo :** U5 fraginfo :** HL.Nil where
 			Vk.ShaderModule.M.createInfoFlags = zeroBits,
 			Vk.ShaderModule.M.createInfoCode = cd }
 
-shaderModuleCreateInfo :: Spv sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
+shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
 	Vk.ShaderModule.createInfoFlags = def,

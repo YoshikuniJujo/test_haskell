@@ -14,10 +14,11 @@ import System.Console.GetOpt
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
-import Shaderc
-import Shaderc.EnumAuto
+import qualified Language.SpirV as SpirV
+import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc
 
-import qualified Shaderc.CompileOptions as CompileOptions
+import qualified Language.SpirV.Shaderc.CompileOptions as CompileOptions
 
 main :: IO ()
 main = do
@@ -38,19 +39,19 @@ outfile = Option ['o'] [] (ReqArg Outfile "<file>")
 compile :: FilePath -> FilePath -> IO ()
 compile sf df = do
 	src <- BS.readFile sf
-	writeFile' df $ compileIntoSpv @()
-		src (BSC.pack sf) "main" CompileOptions.T {
-			CompileOptions.tMacroDefinitions = [],
-			CompileOptions.tSourceLanguage = Nothing,
-			CompileOptions.tGenerateDebugInfo = False,
-			CompileOptions.tOptimizationLevel = Nothing,
-			CompileOptions.tForcedVersionProfile = Nothing,
-			CompileOptions.tIncludeCallbacks = Nothing }
+	writeFile' df $ compileIntoSpirV @()
+		src (BSC.pack sf) "main" CompileOptions.C {
+			CompileOptions.cMacroDefinitions = [],
+			CompileOptions.cSourceLanguage = Nothing,
+			CompileOptions.cGenerateDebugInfo = False,
+			CompileOptions.cOptimizationLevel = Nothing,
+			CompileOptions.cForcedVersionProfile = Nothing,
+			CompileOptions.cIncludeCallbacks = Nothing }
 
-writeFile' :: FilePath -> (forall sknd . SpvShaderKind sknd => IO (Spv sknd)) -> IO ()
+writeFile' :: FilePath -> (forall sknd . SpvShaderKind sknd => IO (SpirV.S sknd)) -> IO ()
 writeFile' fp act = case takeExtension fp of
-	".vert" -> BS.writeFile fp . (\(Spv spv) -> spv) =<< act @'GlslVertexShader
-	".frag" -> BS.writeFile fp . (\(Spv spv) -> spv) =<< act @'GlslFragmentShader
+	".vert" -> BS.writeFile fp . (\(SpirV.S spv) -> spv) =<< act @'GlslVertexShader
+	".frag" -> BS.writeFile fp . (\(SpirV.S spv) -> spv) =<< act @'GlslFragmentShader
 	_ -> error "I don't know such extension"
 
 specifyKind :: FilePath -> ShaderKind

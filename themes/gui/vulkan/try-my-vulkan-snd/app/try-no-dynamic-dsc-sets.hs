@@ -34,8 +34,8 @@ import System.Environment
 import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Storable.Utils as V
 
-import Shaderc.TH
-import Shaderc.EnumAuto
+import Language.SpirV.Shaderc.TH
+import Language.SpirV.ShaderKind
 import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk

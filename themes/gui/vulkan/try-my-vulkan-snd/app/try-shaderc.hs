@@ -7,18 +7,20 @@ module Main where
 
 import qualified Data.ByteString as BS
 
-import Shaderc
-import Shaderc.EnumAuto
+import qualified Language.SpirV as SpirV
+import Language.SpirV.ShaderKind
 
-import qualified Shaderc.CompileOptions as CompileOptions
+import qualified Language.SpirV.Shaderc.CompileOptions as CompileOptions
+
+import Language.SpirV.Shaderc
 
 main :: IO ()
-main = BS.writeFile "tmp.spv" . (\(Spv spv) -> spv) =<< compileIntoSpv @() @'GlslVertexShader
+main = BS.writeFile "tmp.spv" . (\(SpirV.S spv) -> spv) =<< compileIntoSpirV @() @'GlslVertexShader
 	"#version 450\nvoid main() {}"
-	"main.vert" "main" CompileOptions.T {
-		CompileOptions.tMacroDefinitions = [],
-		CompileOptions.tSourceLanguage = Nothing,
-		CompileOptions.tGenerateDebugInfo = False,
-		CompileOptions.tOptimizationLevel = Nothing,
-		CompileOptions.tForcedVersionProfile = Nothing,
-		CompileOptions.tIncludeCallbacks = Nothing }
+	"main.vert" "main" CompileOptions.C {
+		CompileOptions.cMacroDefinitions = [],
+		CompileOptions.cSourceLanguage = Nothing,
+		CompileOptions.cGenerateDebugInfo = False,
+		CompileOptions.cOptimizationLevel = Nothing,
+		CompileOptions.cForcedVersionProfile = Nothing,
+		CompileOptions.cIncludeCallbacks = Nothing }

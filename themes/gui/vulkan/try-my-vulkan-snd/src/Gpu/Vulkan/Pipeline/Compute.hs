@@ -29,7 +29,7 @@ import Data.HeteroParList (pattern (:**))
 import Data.Kind
 import Data.Int
 
-import Shaderc.EnumAuto
+import Language.SpirV.ShaderKind
 
 import Gpu.Vulkan.Pipeline.Enum
 

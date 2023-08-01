@@ -54,9 +54,9 @@ import qualified Cglm
 import qualified Foreign.Storable.Generic
 
 import ThEnv
-import Shaderc
-import Shaderc.EnumAuto
-import Shaderc.TH
+import qualified Language.SpirV as SpirV
+import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc.TH
 
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
@@ -92,7 +92,6 @@ import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
-import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.ShaderModule.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
@@ -2003,7 +2002,7 @@ newtype SunlightDirection =
 newtype SunlightColor = SunlightColor Cglm.Vec4 deriving (Show, Storable)
 
 shaderStages ::
-	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
+	SpirV.S 'GlslVertexShader -> SpirV.S 'GlslFragmentShader ->
 	HeteroParList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo) '[
 		'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 		'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
@@ -2023,15 +2022,15 @@ shaderStages vs fs = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** Heter
 		Vk.Ppl.ShdrSt.createInfoModule = (crInfo fs, nil'),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
-	crInfo cd = Vk.ShaderModule.M.CreateInfo {
-			Vk.ShaderModule.M.createInfoNext = TMaybe.N,
-			Vk.ShaderModule.M.createInfoFlags = def,
-			Vk.ShaderModule.M.createInfoCode = cd }
+	crInfo cd = Vk.ShaderModule.CreateInfo {
+			Vk.ShaderModule.createInfoNext = TMaybe.N,
+			Vk.ShaderModule.createInfoFlags = def,
+			Vk.ShaderModule.createInfoCode = cd }
 
-shaderPair0 :: (Spv 'GlslVertexShader, Spv 'GlslFragmentShader)
+shaderPair0 :: (SpirV.S 'GlslVertexShader, SpirV.S 'GlslFragmentShader)
 shaderPair0 = (glslVertexShaderMain0, glslFragmentShaderMain0)
 
-glslVertexShaderMain0 :: Spv 'GlslVertexShader
+glslVertexShaderMain0 :: SpirV.S 'GlslVertexShader
 glslVertexShaderMain0 = [glslVertexShader|
 
 #version 450
@@ -2048,7 +2047,7 @@ main()
 
 |]
 
-glslFragmentShaderMain0 :: Spv 'GlslFragmentShader
+glslFragmentShaderMain0 :: SpirV.S 'GlslFragmentShader
 glslFragmentShaderMain0 = [glslFragmentShader|
 
 #version 450
@@ -2063,10 +2062,10 @@ main()
 
 |]
 
-shaderPair1 :: (Spv 'GlslVertexShader, Spv 'GlslFragmentShader)
+shaderPair1 :: (SpirV.S 'GlslVertexShader, SpirV.S 'GlslFragmentShader)
 shaderPair1 = (glslVertexShaderMain1, glslFragmentShaderMain1)
 
-glslVertexShaderMain1 :: Spv 'GlslVertexShader
+glslVertexShaderMain1 :: SpirV.S 'GlslVertexShader
 glslVertexShaderMain1 = [glslVertexShader|
 
 #version 450
@@ -2100,7 +2099,7 @@ main()
 
 |]
 
-glslFragmentShaderMain1 :: Spv 'GlslFragmentShader
+glslFragmentShaderMain1 :: SpirV.S 'GlslFragmentShader
 glslFragmentShaderMain1 = [glslFragmentShader|
 
 #version 450

@@ -33,7 +33,7 @@ import Data.HeteroParList.Tuple qualified as HeteroParList
 import Data.Word
 import Data.Int
 
-import Shaderc.EnumAuto
+import Language.SpirV.ShaderKind
 
 import Gpu.Vulkan.Pipeline.Enum
 import Gpu.Vulkan.Pipeline.Graphics.Type

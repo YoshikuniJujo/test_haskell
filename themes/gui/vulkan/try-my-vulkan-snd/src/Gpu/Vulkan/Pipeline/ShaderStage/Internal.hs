@@ -34,7 +34,7 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList.Tuple qualified as HeteroParList
 
-import Shaderc.EnumAuto
+import Language.SpirV.ShaderKind
 
 import qualified Data.ByteString as BS
 

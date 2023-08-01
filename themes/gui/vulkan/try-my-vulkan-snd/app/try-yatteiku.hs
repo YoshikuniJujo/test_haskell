@@ -31,9 +31,9 @@ import Data.Word
 import Data.Color
 import Codec.Picture
 
-import Shaderc
-import Shaderc.TH
-import Shaderc.EnumAuto
+import qualified Language.SpirV as SpirV
+import Language.SpirV.Shaderc.TH
+import Language.SpirV.ShaderKind
 
 import Gpu.Vulkan.Misc
 
@@ -718,7 +718,7 @@ makePipelineNew dvc rp f = do
 			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil'
 				\(U3 g :** HeteroParList.Nil) -> f g
 
-shaderModuleCreateInfo :: Spv sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
+shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
 	Vk.ShaderModule.createInfoFlags = def,

@@ -33,8 +33,8 @@ import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import Data.Char
 
-import Shaderc.TH
-import Shaderc.EnumAuto
+import Language.SpirV.Shaderc.TH
+import Language.SpirV.ShaderKind
 import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocCallbacks

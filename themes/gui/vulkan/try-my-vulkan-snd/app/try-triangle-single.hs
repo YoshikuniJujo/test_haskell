@@ -46,9 +46,9 @@ import qualified Cglm
 import qualified Foreign.Storable.Generic
 
 import ThEnv
-import Shaderc
-import Shaderc.EnumAuto
-import Shaderc.TH
+import qualified Language.SpirV as SpirV
+import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc.TH
 
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
@@ -1116,7 +1116,7 @@ vertices = [
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
 
-shaderModuleCreateInfo :: Spv sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
+shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
 	Vk.ShaderModule.createInfoFlags = def,
