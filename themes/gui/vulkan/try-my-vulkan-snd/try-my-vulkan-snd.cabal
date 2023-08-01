@@ -28,8 +28,6 @@ source-repository head
 
 library
   exposed-modules:
-      Cglm
-      Cglm.Core
       Codec.Picture.Tools
       Codec.Wavefront.Parse
       Codec.Wavefront.Read
@@ -40,6 +38,8 @@ library
       Foreign.Storable.Generic
       Glfw
       Glfw.Middle
+      Gpu.Vulkan.Cglm
+      Gpu.Vulkan.Cglm.Core
       Sample.GetOpt
       Sample.Image
       ThEnv

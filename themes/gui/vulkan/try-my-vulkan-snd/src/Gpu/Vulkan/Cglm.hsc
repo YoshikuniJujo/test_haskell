@@ -2,8 +2,8 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Cglm (
-	module Cglm, C.Vec2(..), C.Vec3(..), C.Vec4(..), C.Mat4, C.rad
+module Gpu.Vulkan.Cglm (
+	module Gpu.Vulkan.Cglm, C.Vec2(..), C.Vec3(..), C.Vec4(..), C.Mat4, C.rad
 	) where
 
 import Data.Foldable
@@ -11,7 +11,7 @@ import Data.Traversable.Utils
 import Data.Either
 import Data.List.Length
 
-import qualified Cglm.Core as C
+import qualified Gpu.Vulkan.Cglm.Core as C
 
 #include <cglm/cglm.h>
 

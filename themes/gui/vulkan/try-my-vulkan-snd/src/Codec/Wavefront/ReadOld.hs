@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -33,7 +34,7 @@ import qualified Foreign.Storable.Generic
 
 import qualified Codec.Wavefront.Parse as Wf
 import qualified VertexOld as Vtx
-import qualified Cglm
+import Gpu.Vulkan.Cglm qualified as Cglm
 
 verticesIndices :: FilePath -> IO (V.Vector Vtx.WVertex, V.Vector WWord32)
 verticesIndices fp = readVerticesIndices <$> BS.readFile fp

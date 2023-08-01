@@ -1,10 +1,11 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Cglm.Core where
+module Gpu.Vulkan.Cglm.Core where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
@@ -15,6 +16,9 @@ import Data.Foldable
 import Data.Either
 import Data.List.Length
 import System.IO.Unsafe
+
+import "try-gpu-vulkan" Gpu.Vulkan.Enum qualified as Vk
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VrtxInpSt
 
 #include <cglm/cglm.h>
 
@@ -34,6 +38,12 @@ instance Storable Vec3 where
 	peek p = Vec3 . fst . fromRight (error "never occur") . splitL
 		<$> peekArray 3 (castPtr p)
 	poke p (Vec3 v) = pokeArray (castPtr p) $ toList v
+
+instance Vk.Ppl.VrtxInpSt.Formattable Vec2 where
+	formatOf = Vk.FormatR32g32Sfloat
+
+instance Vk.Ppl.VrtxInpSt.Formattable Vec3 where
+	formatOf = Vk.FormatR32g32b32Sfloat
 
 instance Storable Mat4 where
 	sizeOf _ = #{size mat4}

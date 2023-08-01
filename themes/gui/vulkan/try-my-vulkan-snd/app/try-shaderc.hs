@@ -5,8 +5,6 @@
 
 module Main where
 
-import qualified Data.ByteString as BS
-
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 

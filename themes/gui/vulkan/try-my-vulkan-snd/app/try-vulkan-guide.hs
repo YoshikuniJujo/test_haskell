@@ -50,7 +50,7 @@ import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Glfw as Glfw
-import qualified Cglm
+import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
 import ThEnv
@@ -1894,14 +1894,6 @@ instance SizeAlignmentList Vertex
 instance SizeAlignmentListUntil Position Vertex
 instance SizeAlignmentListUntil Normal Vertex
 instance SizeAlignmentListUntil Color Vertex
-
-{-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.FormatR32g32Sfloat
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.FormatR32g32b32Sfloat
-	-}
 
 instance Foreign.Storable.Generic.G Vertex where
 

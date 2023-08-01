@@ -1,4 +1,4 @@
-{-# LANGUaGE PackageImports #-}
+{-# LANGUaGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -10,7 +10,7 @@ import Foreign.Storable
 import Foreign.Storable.SizeAlignment
 
 import qualified Foreign.Storable.Generic
-import qualified Cglm
+import Gpu.Vulkan.Cglm qualified as Cglm
 
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
@@ -35,12 +35,6 @@ instance SizeAlignmentListUntil Cglm.Vec2 Vertex
 instance SizeAlignmentListUntil Cglm.Vec3 Vertex
 instance SizeAlignmentListUntil Color Vertex
 instance SizeAlignmentListUntil TexCoord Vertex
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.FormatR32g32Sfloat
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.FormatR32g32b32Sfloat
 
 instance Foreign.Storable.Generic.G Vertex
 

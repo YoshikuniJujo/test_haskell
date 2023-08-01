@@ -47,7 +47,7 @@ import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Glfw as Glfw
-import qualified Cglm
+import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
 import ThEnv
@@ -88,7 +88,6 @@ import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
@@ -1311,12 +1310,6 @@ instance SizeAlignmentList Vertex
 
 instance SizeAlignmentListUntil Cglm.Vec2 Vertex
 instance SizeAlignmentListUntil Cglm.Vec3 Vertex
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.FormatR32g32Sfloat
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.FormatR32g32b32Sfloat
 
 instance Foreign.Storable.Generic.G Vertex where
 
