@@ -26,7 +26,7 @@ import Data.Word
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 
-import Language.SpirV qualified as SpirV
+import Language.SpirV.Internal qualified as SpirV
 import Language.SpirV.ShaderKind qualified as SpirV
 
 import Gpu.Vulkan.Exception.Middle.Internal
