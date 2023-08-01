@@ -32,6 +32,7 @@ dependencies:
 - vector
 - GLFW-b
 - ranged-list
+- try-language-spir-v
 - try-shaderc
 - size-alignment-list
 - union-color
