@@ -37,7 +37,7 @@ dependencies:
 - try-storable-peek-poke
 - try-storable-hetero-list
 - try-vulkan-core
-- try-shaderc
+- try-language-spir-v
 - typelevel-tools
 
 ghc-options:

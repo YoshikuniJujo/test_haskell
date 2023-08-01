@@ -175,8 +175,8 @@ library
     , template-haskell
     , text
     , try-hetero-parameter-list
+    , try-language-spir-v
     , try-monads-tf-misc-yj
-    , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-text-misc-yj
@@ -205,8 +205,8 @@ test-suite try-vulkan-middle-test
     , template-haskell
     , text
     , try-hetero-parameter-list
+    , try-language-spir-v
     , try-monads-tf-misc-yj
-    , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-text-misc-yj
