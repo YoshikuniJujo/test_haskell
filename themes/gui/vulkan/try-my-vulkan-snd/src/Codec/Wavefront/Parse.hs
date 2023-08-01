@@ -3,7 +3,14 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Wavefront.Parse where
+module Codec.Wavefront.Parse (
+
+	parseWavefront,
+	parseWavefront_,
+
+	WavefrontAtom(..), Vertex(..)
+
+	) where
 
 import Data.Maybe
 import Data.List.NonEmpty (NonEmpty(..))

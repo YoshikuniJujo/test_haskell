@@ -12,7 +12,6 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
 import Data.Word
-import Data.Int
 
 class G a where
 	gSizeOf :: a -> Int
@@ -91,30 +90,7 @@ instance {-# OVERLAPPABLE #-} G a => Storable a where
 	poke = gPoke
 	-}
 
-data SampleData = SD Word8 Int16 Char deriving (Show, Generic)
-
-instance G SampleData
-instance SizeAlignmentList SampleData
-
 instance G Word32 where
-	gSizeOf = sizeOf
-	gAlignment = alignment
-	gPeek = peek
-	gPoke = poke
-
-instance G Word16 where
-	gSizeOf = sizeOf
-	gAlignment = alignment
-	gPeek = peek
-	gPoke = poke
-
-instance G Word8 where
-	gSizeOf = sizeOf
-	gAlignment = alignment
-	gPeek = peek
-	gPoke = poke
-
-instance G Float where
 	gSizeOf = sizeOf
 	gAlignment = alignment
 	gPeek = peek

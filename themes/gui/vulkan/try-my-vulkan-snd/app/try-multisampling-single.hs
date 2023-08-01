@@ -1408,14 +1408,14 @@ createTextureSampler phdv dvc mplvs mnld f = do
 
 loadModel :: FilePath -> IO (V.Vector Vertex, V.Vector Word32)
 loadModel fp = do
-	(vtcs, idcs) <- verticesIndices fp
+	(vtcs, idcs) <- verticesIndices' fp
 	let	(vtcs', idcs') = indexingVector vtcs
 	putStrLn "LOAD MODEL"
 	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector Vertex))
 	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector Vertex))
-	putStrLn $ "idcs : " ++ show (V.length (idcs :: V.Vector WWord32))
-	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector WWord32))
-	pure (vtcs', V.map Foreign.Storable.Generic.unWrap idcs')
+	putStrLn $ "idcs : " ++ show (V.length (idcs :: V.Vector Word32))
+	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector Word32))
+	pure (vtcs', idcs')
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Vertex ->

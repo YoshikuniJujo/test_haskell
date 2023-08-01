@@ -12,7 +12,6 @@ import Foreign.Storable.SizeAlignment
 import qualified Foreign.Storable.Generic
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 
 data Vertex = Vertex {

@@ -6,11 +6,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Codec.Wavefront.Read (
-	readVertices, readSample, WWord32, readVerticesIndices,
-	sampleVerticesIndices, tinyVerticesIndices,
-	verticesIndices,
 
-	pattern W,
+	readSample,
+	verticesIndices',
 
 	Position(..), Normal(..),
 
@@ -34,12 +32,8 @@ import qualified Codec.Wavefront.Parse as Wf
 import qualified Vertex as Vtx
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-verticesIndices :: FilePath -> IO (V.Vector Vtx.Vertex, V.Vector WWord32)
-verticesIndices fp = readVerticesIndices <$> BS.readFile fp
-
-sampleVerticesIndices, tinyVerticesIndices :: IO (V.Vector Vtx.Vertex, V.Vector WWord32)
-sampleVerticesIndices = readVerticesIndices <$> readSample
-tinyVerticesIndices = readVerticesIndices <$> readTiny
+verticesIndices' :: FilePath -> IO (V.Vector Vtx.Vertex, V.Vector Word32)
+verticesIndices' fp = readVerticesIndices' <$> BS.readFile fp
 
 readSample, readTiny :: IO BS.ByteString
 readSample = BS.readFile "../../../../files/models/viking_room.obj"
@@ -241,10 +235,8 @@ readVertices bs = let
 	is = loosenFace fs in
 	getVertices ps ts is
 
-type WWord32 = W Word32
+makeIndices' :: V.Vector Vtx.Vertex -> V.Vector Word32
+makeIndices' vs = V.generate (V.length vs) \i -> fromIntegral i
 
-makeIndices :: V.Vector Vtx.Vertex -> V.Vector (Foreign.Storable.Generic.Wrap Word32)
-makeIndices vs = V.generate (V.length vs) \i -> W $ fromIntegral i
-
-readVerticesIndices :: BS.ByteString -> (V.Vector Vtx.Vertex, V.Vector WWord32)
-readVerticesIndices bs = let vs = readVertices bs in (vs, makeIndices vs)
+readVerticesIndices' :: BS.ByteString -> (V.Vector Vtx.Vertex, V.Vector Word32)
+readVerticesIndices' bs = let vs = readVertices bs in (vs, makeIndices' vs)
