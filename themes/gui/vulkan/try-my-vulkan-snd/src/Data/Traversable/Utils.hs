@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Traversable.Utils where
+module Data.Traversable.Utils (modifyElem2) where
 
 import Data.Bool
 import Data.Maybe

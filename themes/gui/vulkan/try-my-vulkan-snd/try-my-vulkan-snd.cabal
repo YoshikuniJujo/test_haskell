@@ -36,7 +36,6 @@ library
       Codec.Wavefront.ReadOld
       Data.Bits.Utils
       Data.Traversable.Utils
-      Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic
       Glfw
