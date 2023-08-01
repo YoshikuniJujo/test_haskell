@@ -17,7 +17,7 @@ main = do
 			. lookup "shaderc_shader_kind" $ typedefEnums lns
 		hselems = map (concatMap cap . tail . sep '_') celems
 	writeFile "../data/ShaderKind.txt" $ unlines hselems
-	writeFile "../src/Shaderc/EnumAuto/Core.hsc" . (header ++) . (++ " ]\n")
+	writeFile "../src/Language/SpirV/ShaderKind/Core.hsc" . (header ++) . (++ " ]\n")
 		. intercalate ",\n" $ zipWith mkElem hselems celems
 
 typedefEnums, typedefEnumsTail :: [String] -> [(String, [String])]
@@ -77,7 +77,7 @@ header = [nowdoc|
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Shaderc.EnumAuto.Core where
+module Language.SpirV.ShaderKind.Core where
 
 import Foreign.Storable
 import Foreign.C.Enum

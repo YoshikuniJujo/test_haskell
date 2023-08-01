@@ -5,7 +5,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Shaderc.TH (
+module Language.SpirV.Shaderc.TH (
 	glslVertexShader, glslFragmentShader, glslComputeShader ) where
 
 import Language.Haskell.TH
@@ -14,8 +14,9 @@ import Language.Haskell.TH.Quote
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
-import Shaderc
-import Shaderc.EnumAuto
+import Language.SpirV
+import Language.SpirV.Shaderc
+import Language.SpirV.ShaderKind
 
 -- GLSL VERTEX SHADER
 
@@ -46,15 +47,15 @@ generalShader var shtp shnm = QuasiQuoter {
 
 generalShaderExp :: forall shtp . SpvShaderKind shtp => Name -> BS.ByteString -> String -> ExpQ
 generalShaderExp shtp shnm =
-	mkShaderExp (conT ''Spv `appT` conT shtp) $ compileGeneralShader @shtp shnm
+	mkShaderExp (conT ''S `appT` conT shtp) $ compileGeneralShader @shtp shnm
 
 generalShaderDec :: forall shtp . SpvShaderKind shtp => String -> Name -> BS.ByteString -> String -> DecsQ
 generalShaderDec var shtp shnm =
-	mkShaderDec var (conT ''Spv `appT` conT shtp) $ compileGeneralShader @shtp shnm
+	mkShaderDec var (conT ''S `appT` conT shtp) $ compileGeneralShader @shtp shnm
 
 compileGeneralShader :: forall shtp . SpvShaderKind shtp =>  BS.ByteString -> BS.ByteString -> IO BS.ByteString
-compileGeneralShader nm src = (\(Spv spv :: Spv shtp) -> spv)
-	<$> compileIntoSpv src nm "main" defaultCompileOptions
+compileGeneralShader nm src = (\(S spv :: S shtp) -> spv)
+	<$> compileIntoSpirV src nm "main" defaultCompileOptions
 
 -- BASE
 

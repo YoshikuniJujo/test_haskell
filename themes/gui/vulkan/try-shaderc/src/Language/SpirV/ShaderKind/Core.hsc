@@ -5,7 +5,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Shaderc.EnumAuto.Core where
+module Language.SpirV.ShaderKind.Core where
 
 import Foreign.Storable
 import Foreign.C.Enum

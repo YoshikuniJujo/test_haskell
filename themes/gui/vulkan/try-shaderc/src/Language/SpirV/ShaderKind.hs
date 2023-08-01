@@ -4,14 +4,12 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Shaderc.EnumAuto where
+module Language.SpirV.ShaderKind where
 
 import Language.Haskell.TH
 import Data.Traversable
 
-import qualified Data.ByteString as BS
-
-import qualified Shaderc.EnumAuto.Core as C
+import qualified Language.SpirV.ShaderKind.Core as C
 
 (: []) <$> do
 	enms <- runIO $ lines <$> readFile "data/ShaderKind.txt"
@@ -19,8 +17,7 @@ import qualified Shaderc.EnumAuto.Core as C
 		((\enm -> normalC (mkName enm) []) <$> enms)
 		[derivClause Nothing [conT ''Show]]
 
-class SpvShaderKind (sknd :: ShaderKind) where
-	shaderKind :: C.ShaderKind
+class SpvShaderKind (sknd :: ShaderKind) where shaderKind :: C.ShaderKind
 
 do	enms <- runIO $ lines <$> readFile "data/ShaderKind.txt"
 	pairs <- for enms \nm -> do

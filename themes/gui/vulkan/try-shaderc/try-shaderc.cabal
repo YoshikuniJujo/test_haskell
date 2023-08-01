@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 
@@ -27,21 +27,24 @@ source-repository head
 
 library
   exposed-modules:
-      Shaderc
+      Language.SpirV
+      Language.SpirV.ShaderKind
+      Language.SpirV.Shaderc
+      Language.SpirV.Shaderc.TH
+      Language.SpirV.Shaderc.Exception
+      Language.SpirV.Shaderc.Exception.Enum
+      Language.SpirV.Shaderc.CompileOptions
+  other-modules:
+      Language.SpirV.Shaderc.CompileOptions.Internal
+      Language.SpirV.Shaderc.Exception.Internal
+      Language.SpirV.ShaderKind.Core
       Shaderc.CompilationResult.Core
-      Shaderc.CompileOptions
       Shaderc.CompileOptions.Core
       Shaderc.Core
       Shaderc.Enum
-      Shaderc.EnumAuto
-      Shaderc.EnumAuto.Core
-      Shaderc.Exception
-      Shaderc.Exception.Enum
       Shaderc.Include
       Shaderc.Include.Core
       Shaderc.Middle
-      Shaderc.TH
-  other-modules:
       Paths_try_shaderc
   hs-source-dirs:
       src

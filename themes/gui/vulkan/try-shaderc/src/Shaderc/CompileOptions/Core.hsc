@@ -11,30 +11,30 @@ import Shaderc.Include.Core
 
 #include <shaderc/shaderc.h>
 
-data Tag
-type T = Ptr Tag
+data CTag
+type C = Ptr CTag
 
-foreign import ccall "shaderc_compile_options_initialize" initialize :: IO T
-foreign import ccall "shaderc_compile_options_clone" clone :: T -> IO T
-foreign import ccall "shaderc_compile_options_release" release :: T -> IO ()
+foreign import ccall "shaderc_compile_options_initialize" initialize :: IO C
+foreign import ccall "shaderc_compile_options_clone" clone :: C -> IO C
+foreign import ccall "shaderc_compile_options_release" release :: C -> IO ()
 
 foreign import ccall "shaderc_compile_options_add_macro_definition"
 	addMacroDefinition ::
-	T -> Ptr CChar -> #{type size_t} -> Ptr CChar -> #{type size_t} -> IO ()
+	C -> Ptr CChar -> #{type size_t} -> Ptr CChar -> #{type size_t} -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_source_language"
-	setSourceLanguage :: T -> SourceLanguage -> IO ()
+	setSourceLanguage :: C -> SourceLanguage -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_generate_debug_info"
-	setGenerateDebugInfo :: T -> IO ()
+	setGenerateDebugInfo :: C -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_optimization_level"
-	setOptimizationLevel :: T -> OptimizationLevel -> IO ()
+	setOptimizationLevel :: C -> OptimizationLevel -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_forced_version_profile"
-	setForcedVersionProfile :: T -> Version -> Profile -> IO()
+	setForcedVersionProfile :: C -> Version -> Profile -> IO()
 
-setIncludeCallbacks :: T -> ResolveFn -> ResultReleaseFn -> PtrVoid -> IO ()
+setIncludeCallbacks :: C -> ResolveFn -> ResultReleaseFn -> PtrVoid -> IO ()
 setIncludeCallbacks opts rfn rrfn ud = do
 	prfn <- wrap_resolveFn rfn
 	prrfn <- wrap_resultReleaseFn rrfn
@@ -42,4 +42,4 @@ setIncludeCallbacks opts rfn rrfn ud = do
 
 foreign import ccall "shaderc_compile_options_set_include_callbacks"
 	c_shaderc_compile_options_set_include_callbacks ::
-	T -> FunPtr ResolveFn -> FunPtr ResultReleaseFn -> PtrVoid -> IO ()
+	C -> FunPtr ResolveFn -> FunPtr ResultReleaseFn -> PtrVoid -> IO ()

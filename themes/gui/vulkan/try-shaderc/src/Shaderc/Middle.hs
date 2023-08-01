@@ -8,15 +8,15 @@ import Control.Monad.Cont
 
 import qualified Data.ByteString as BS
 
-import Shaderc.EnumAuto.Core
+import Language.SpirV.ShaderKind.Core
 
 import qualified Shaderc.Core as C
-import qualified Shaderc.CompileOptions as CompileOptions
+import qualified Language.SpirV.Shaderc.CompileOptions.Internal as CompileOptions
 import qualified Shaderc.CompilationResult.Core as CompilationResult
 
 compileIntoSpv :: Storable ud =>
 	C.CompilerT -> BS.ByteString -> ShaderKind ->
-	BS.ByteString -> BS.ByteString -> CompileOptions.T ud ->
+	BS.ByteString -> BS.ByteString -> CompileOptions.C ud ->
 	ContT r IO CompilationResult.T
 compileIntoSpv cmp src knd ifnm epnm opts = do
 	(csrc, fromIntegral -> csrcln) <- ContT $ BS.useAsCStringLen src

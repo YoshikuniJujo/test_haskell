@@ -34,6 +34,14 @@ library:
   source-dirs: src
   pkg-config-dependencies:
   - shaderc
+  exposed-modules:
+  - Language.SpirV
+  - Language.SpirV.ShaderKind
+  - Language.SpirV.Shaderc
+  - Language.SpirV.Shaderc.TH
+  - Language.SpirV.Shaderc.Exception
+  - Language.SpirV.Shaderc.Exception.Enum
+  - Language.SpirV.Shaderc.CompileOptions
 
 data-files:
 - data/ShaderKind.txt

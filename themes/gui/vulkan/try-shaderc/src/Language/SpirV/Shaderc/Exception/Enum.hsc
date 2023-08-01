@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Shaderc.Exception.Enum where
+module Language.SpirV.Shaderc.Exception.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum

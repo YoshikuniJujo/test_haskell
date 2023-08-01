@@ -1,14 +1,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Shaderc.Exception where
+module Language.SpirV.Shaderc.Exception.Internal where
 
 import Control.Exception
 import Control.Exception.Hierarchy
 
 import qualified Data.ByteString as BS
 
-import Shaderc.Exception.Enum
+import Language.SpirV.Shaderc.Exception.Enum
 
 import qualified Shaderc.CompilationResult.Core as CompilationResult
 

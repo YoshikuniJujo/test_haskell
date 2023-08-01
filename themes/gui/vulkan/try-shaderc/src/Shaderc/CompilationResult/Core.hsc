@@ -7,7 +7,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Data.Word
 
-import Shaderc.Exception.Enum
+import Language.SpirV.Shaderc.Exception.Enum
 
 #include <shaderc/shaderc.h>
 
