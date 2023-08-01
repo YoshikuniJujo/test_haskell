@@ -26,8 +26,8 @@ import Data.Word
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 
-import Shaderc
-import Shaderc.EnumAuto
+import Language.SpirV qualified as SpirV
+import Language.SpirV.ShaderKind qualified as SpirV
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
@@ -39,7 +39,7 @@ import qualified Gpu.Vulkan.ShaderModule.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype S (sknd :: ShaderKind) = S C.S deriving Show
+newtype S (sknd :: SpirV.ShaderKind) = S C.S deriving Show
 
 enum "CreateFlagBits" ''#{type VkShaderModuleCreateFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
@@ -51,7 +51,7 @@ instance Default CreateFlags where def = CreateFlagsZero
 data CreateInfo mn sknd = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
-	createInfoCode :: Spv sknd }
+	createInfoCode :: SpirV.S sknd }
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn sknd)
 
@@ -62,7 +62,7 @@ createInfoToCore CreateInfo {
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoCode = cd } f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
-		(p, n) <- readFromByteString $ (\(Spv spv) -> spv) cd
+		(p, n) <- readFromByteString $ (\(SpirV.S spv) -> spv) cd
 		let ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt',

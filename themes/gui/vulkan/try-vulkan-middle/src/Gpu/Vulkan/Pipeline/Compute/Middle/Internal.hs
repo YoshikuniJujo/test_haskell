@@ -29,7 +29,7 @@ import Data.HeteroParList (pattern (:**))
 import Data.Maybe
 import Data.Int
 
-import Shaderc.EnumAuto
+import Language.SpirV.ShaderKind
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
