@@ -1,5 +1,5 @@
 name:                try-shaderc
-version:             0.1.0.3
+version:             0.1.0.4
 github:              "githubuser/try-shaderc"
 license:             BSD3
 author:              "Author name here"
@@ -25,6 +25,7 @@ dependencies:
 - bytestring
 - monads-tf
 - data-default
+- try-language-spir-v
 - nowdoc
 - exception-hierarchy
 - c-enum
@@ -36,9 +37,6 @@ library:
   pkg-config-dependencies:
   - shaderc
   exposed-modules:
-  - Language.SpirV
-  - Language.SpirV.Internal
-  - Language.SpirV.ShaderKind
   - Language.SpirV.Shaderc
   - Language.SpirV.Shaderc.TH
   - Language.SpirV.Shaderc.Exception

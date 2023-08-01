@@ -41,9 +41,11 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
+  commit: e2c99bb1f4b5fd53cee1cc5ea1f70c1ff1eb1f91
   subdirs:
+  - themes/gui/vulkan/try-language-spir-v
   - features/ffi/pointer/try-storable-peek-poke
+  - themes/type_level/typelevel-tools
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
