@@ -19,6 +19,7 @@ import qualified Gpu.Vulkan.Memory as Vk.Mem
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Foreign.Storable.Generic qualified as GStorable
 import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
@@ -1434,7 +1435,7 @@ drawObject ovb cb0 ds RenderObject {
 				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb
 			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
-		$ HL.Id (Str.G.Wrap MeshPushConstants {
+		$ HL.Id (Str.G.W MeshPushConstants {
 			meshPushConstantsData =
 				Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model }) :** HL.Nil
@@ -1477,8 +1478,8 @@ instance Storable Vertex where
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
 posNormalToVertex :: Str.G.Wrap Wv.PositionNormal -> Vertex
-posNormalToVertex (Wv.W (Wv.PositionNormal
-	(Wv.W (Wv.Position x y z)) (Wv.W (Wv.Normal v w u)))) =
+posNormalToVertex (GStorable.W (Wv.PositionNormal
+	(GStorable.W (Wv.Position x y z)) (GStorable.W (Wv.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,

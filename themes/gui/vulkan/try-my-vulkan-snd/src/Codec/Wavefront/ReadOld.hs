@@ -10,8 +10,6 @@ module Codec.Wavefront.ReadOld (
 	sampleVerticesIndices, tinyVerticesIndices,
 	verticesIndices,
 
-	W, pattern W,
-
 	Position(..), TexCoord(..), Normal(..), Face(..),
 
 	countV, countV', Count(..), readV', readV'',
@@ -30,7 +28,7 @@ import Data.Word
 import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Storable.Mutable as MV
 import qualified Data.ByteString as BS
-import qualified Foreign.Storable.Generic
+import qualified Foreign.Storable.Generic as GStorable
 
 import qualified Codec.Wavefront.Parse as Wf
 import qualified VertexOld as Vtx
@@ -85,37 +83,37 @@ instance Monoid Count where
 data Position = Position Float Float Float deriving (Show, Generic)
 
 instance SizeAlignmentList Position
-instance Foreign.Storable.Generic.G Position
+instance GStorable.G Position
 
 data TexCoord = TexCoord Float Float deriving (Show, Generic)
 
 instance SizeAlignmentList TexCoord
-instance Foreign.Storable.Generic.G TexCoord
+instance GStorable.G TexCoord
 
 data Normal = Normal Float Float Float deriving (Show, Generic)
 
 instance SizeAlignmentList Normal
-instance Foreign.Storable.Generic.G Normal
+instance GStorable.G Normal
 
 data Face = Face (W Indices) (W Indices) (W Indices) deriving (Show, Generic)
 
 instance SizeAlignmentList Face
-instance Foreign.Storable.Generic.G Face
+instance GStorable.G Face
 
 data Indices = Indices Int Int Int deriving (Show, Generic)
 
 instance SizeAlignmentList Indices
-instance Foreign.Storable.Generic.G Indices
+instance GStorable.G Indices
 
 indicesToIndices :: Wf.Vertex Int -> W Indices
-indicesToIndices (Wf.Vertex p t n) = w $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
+indicesToIndices (Wf.Vertex p t n) = GStorable.W $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
 
 indicesToPosTex ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> Indices ->
 	(Position, TexCoord)
 indicesToPosTex ps ts (Indices ip it _) = (
-	uw $ ps V.! (ip - 1),
-	uw $ ts V.! (it - 1) )
+	GStorable.unW $ ps V.! (ip - 1),
+	GStorable.unW $ ts V.! (it - 1) )
 
 readV :: Int -> Int -> Int -> BS.ByteString -> ST s (
 	V.Vector (W Position), V.Vector (W TexCoord),
@@ -130,16 +128,16 @@ readV n n' n'' s = do
 	flip (Wf.parseWavefront_ @_ @Int) s \case
 		Wf.V x y z -> do
 			i <- readSTRef ri
-			MV.write v i . w $ Position x y z
+			MV.write v i . GStorable.W $ Position x y z
 			writeSTRef ri (i + 1)
 		Wf.Vt x y -> do
 			i' <- readSTRef ri'
-			MV.write t i' . w $ TexCoord x (1 - y)
+			MV.write t i' . GStorable.W $ TexCoord x (1 - y)
 			writeSTRef ri' (i' + 1)
 		Wf.F idx1 idx2 idx3 -> do
 			i'' <- readSTRef ri''
 			MV.write idx i''
-				. w $ Face
+				. GStorable.W $ Face
 					(indicesToIndices idx1)
 					(indicesToIndices idx2)
 					(indicesToIndices idx3)
@@ -159,26 +157,26 @@ readV' nv nn nf str = runST do
 	flip (Wf.parseWavefront_ @_ @Int) str \case
 		Wf.V x y z -> do
 			i <- readSTRef iv
-			MV.write v i . W $ Position x y z
+			MV.write v i . GStorable.W $ Position x y z
 			writeSTRef iv (i + 1)
 		Wf.Vn x y z -> do
 			i <- readSTRef inml
-			MV.write n i . W $ Normal x y z
+			MV.write n i . GStorable.W $ Normal x y z
 			writeSTRef inml (i + 1)
 		Wf.F i1 i2 i3 -> do
 			i <- readSTRef ifc
-			MV.write f i . W $ Face
+			MV.write f i . GStorable.W $ Face
 				(indicesToIndices i1)
 				(indicesToIndices i2)
 				(indicesToIndices i3)
 			writeSTRef ifc (i + 1)
 		Wf.F4 i1 i2 i3 i4 -> do
 			i <- readSTRef ifc
-			MV.write f i . W $ Face
+			MV.write f i . GStorable.W $ Face
 				(indicesToIndices i1)
 				(indicesToIndices i2)
 				(indicesToIndices i3)
-			MV.write f (i + 1) . W $ Face
+			MV.write f (i + 1) . GStorable.W $ Face
 				(indicesToIndices i1)
 				(indicesToIndices i3)
 				(indicesToIndices i4)
@@ -200,30 +198,30 @@ readV'' nv nt nn nf str = runST do
 	flip (Wf.parseWavefront_ @_ @Int) str \case
 		Wf.V x y z -> do
 			i <- readSTRef iv
-			MV.write vv i . W $ Position x y z
+			MV.write vv i . GStorable.W $ Position x y z
 			writeSTRef iv (i + 1)
 		Wf.Vt u v -> do
 			i <- readSTRef it
-			MV.write t i . W $ TexCoord u v
+			MV.write t i . GStorable.W $ TexCoord u v
 			writeSTRef it (i + 1)
 		Wf.Vn x y z -> do
 			i <- readSTRef inml
-			MV.write n i . W $ Normal x y z
+			MV.write n i . GStorable.W $ Normal x y z
 			writeSTRef inml (i + 1)
 		Wf.F i1 i2 i3 -> do
 			i <- readSTRef ifc
-			MV.write f i . W $ Face
+			MV.write f i . GStorable.W $ Face
 				(indicesToIndices i1)
 				(indicesToIndices i2)
 				(indicesToIndices i3)
 			writeSTRef ifc (i + 1)
 		Wf.F4 i1 i2 i3 i4 -> do
 			i <- readSTRef ifc
-			MV.write f i . W $ Face
+			MV.write f i . GStorable.W $ Face
 				(indicesToIndices i1)
 				(indicesToIndices i2)
 				(indicesToIndices i3)
-			MV.write f (i + 1) . W $ Face
+			MV.write f (i + 1) . GStorable.W $ Face
 				(indicesToIndices i1)
 				(indicesToIndices i3)
 				(indicesToIndices i4)
@@ -245,18 +243,18 @@ indexPosNormal ::
 	V.Vector (W Position) -> V.Vector (W Normal) -> V.Vector (W Indices) ->
 	V.Vector (W PositionNormal)
 indexPosNormal ps ns is = V.generate ln \i -> let
-	W (Indices iv _ inml) = is V.! i
+	GStorable.W (Indices iv _ inml) = is V.! i
 	in
-	W $ PositionNormal (ps V.! (iv - 1)) (ns V.! (inml - 1))
+	GStorable.W $ PositionNormal (ps V.! (iv - 1)) (ns V.! (inml - 1))
 	where ln = V.length is
 
 indexPosTxtNormal ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Normal) -> V.Vector (W Indices) ->
 	V.Vector (W PositionTxtNormal)
 indexPosTxtNormal ps ts ns is = V.generate ln \i -> let
-	W (Indices iv it inml) = is V.! i
+	GStorable.W (Indices iv it inml) = is V.! i
 	in
-	W $ PositionTxtNormal (ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
+	GStorable.W $ PositionTxtNormal (ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
 	where ln = V.length is
 
 data PositionNormal = PositionNormal {
@@ -265,7 +263,7 @@ data PositionNormal = PositionNormal {
 	deriving (Show, Generic)
 
 instance SizeAlignmentList PositionNormal
-instance Foreign.Storable.Generic.G PositionNormal
+instance GStorable.G PositionNormal
 
 data PositionTxtNormal = PositionTxtNormal {
 	positionTxtNormalPosition :: W Position,
@@ -274,7 +272,7 @@ data PositionTxtNormal = PositionTxtNormal {
 	deriving (Show, Generic)
 
 instance SizeAlignmentList PositionTxtNormal
-instance Foreign.Storable.Generic.G PositionTxtNormal
+instance GStorable.G PositionTxtNormal
 
 takePosNormalFace :: Int ->
 	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face)) ->
@@ -286,23 +284,11 @@ readVertexPositions bs = let
 	((), (Sum n, Sum n', _, Sum n'')) = runWriter $ countV bs in
 	runST $ readV n n' n'' bs
 
-type W = Foreign.Storable.Generic.Wrap
-
-{-# COMPLETE W #-}
-
-pattern W :: a -> Foreign.Storable.Generic.Wrap a
-pattern W a <- Foreign.Storable.Generic.Wrap a
-	where W = Foreign.Storable.Generic.Wrap
-
-w :: a -> W a
-w = Foreign.Storable.Generic.Wrap
-
-uw :: W a -> a
-uw = Foreign.Storable.Generic.unWrap
+type W = GStorable.Wrap
 
 loosenFace :: V.Vector (W Face) -> V.Vector (W Indices)
 loosenFace fs = V.generate ln \i -> let
-	W (Face is0 is1 is2) = fs V.! (i `div` 3) in
+	GStorable.W (Face is0 is1 is2) = fs V.! (i `div` 3) in
 	case i `mod` 3 of 0 -> is0; 1 -> is1; 2 -> is2; _ -> error "never occur"
 	where ln = 3 * V.length fs
 
@@ -310,9 +296,9 @@ getVertices ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Indices) ->
 	V.Vector Vtx.WVertex
 getVertices ps ts is = V.generate ln \i ->
-	let	W ids = is V.! i
+	let	GStorable.W ids = is V.! i
 		(Position x y z, TexCoord u v) = indicesToPosTex ps ts ids in
-	w $ Vtx.Vertex
+	GStorable.W $ Vtx.Vertex
 		(Cglm.Vec3 $ x :. y :. z :. NilL)
 		(Vtx.Color . Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
 		(Vtx.TexCoord . Cglm.Vec2 $ u :. v :. NilL)
@@ -326,8 +312,8 @@ readVertices bs = let
 
 type WWord32 = W Word32
 
-makeIndices :: V.Vector Vtx.WVertex -> V.Vector (Foreign.Storable.Generic.Wrap Word32)
-makeIndices vs = V.generate (V.length vs) \i -> W $ fromIntegral i
+makeIndices :: V.Vector Vtx.WVertex -> V.Vector (GStorable.Wrap Word32)
+makeIndices vs = V.generate (V.length vs) \i -> GStorable.W $ fromIntegral i
 
 readVerticesIndices :: BS.ByteString -> (V.Vector Vtx.WVertex, V.Vector WWord32)
 readVerticesIndices bs = let vs = readVertices bs in (vs, makeIndices vs)

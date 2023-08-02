@@ -74,13 +74,13 @@ instance Storable a => Gg (K1 i a) where
 	ggPeek = (K1 <$>) . peek . castPtr
 	ggPoke p (K1 x) = poke (castPtr p) x
 
-newtype Wrap a = Wrap { unWrap :: a } deriving (Show, Eq, Ord, Enum)
+newtype Wrap a = W { unW :: a } deriving (Show, Eq, Ord, Enum)
 
 instance G a => Storable (Wrap a) where
-	sizeOf = gSizeOf . unWrap
-	alignment = gAlignment . unWrap
-	peek = (Wrap <$>) . gPeek . castPtr
-	poke p = gPoke (castPtr p) . unWrap
+	sizeOf = gSizeOf . unW
+	alignment = gAlignment . unW
+	peek = (W <$>) . gPeek . castPtr
+	poke p = gPoke (castPtr p) . unW
 
 {-
 instance {-# OVERLAPPABLE #-} G a => Storable a where

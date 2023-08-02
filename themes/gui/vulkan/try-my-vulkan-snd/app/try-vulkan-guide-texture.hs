@@ -1720,7 +1720,7 @@ drawObject ovb cb0 ds dsod dstx RenderObject {
 				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb
 			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
-		$ HL.Id (Str.G.Wrap MeshPushConstants {
+		$ HL.Id (Str.G.W MeshPushConstants {
 			meshPushConstantsData =
 				Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = mdl }) :** HL.Nil
@@ -1772,8 +1772,8 @@ instance Storable Vertex where
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
 posNormalToVertex :: Str.G.Wrap Wv.PositionNormal -> Vertex
-posNormalToVertex (Wv.W (Wv.PositionNormal
-	(Wv.W (Wv.Position x y z)) (Wv.W (Wv.Normal v w u)))) =
+posNormalToVertex (Str.G.W (Wv.PositionNormal
+	(Str.G.W (Wv.Position x y z)) (Str.G.W (Wv.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
@@ -1781,8 +1781,8 @@ posNormalToVertex (Wv.W (Wv.PositionNormal
 		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL }
 
 posTxtNormalToVertex :: Str.G.Wrap Wv.PositionTxtNormal -> Vertex
-posTxtNormalToVertex (Wv.W (Wv.PositionTxtNormal
-	(Wv.W (Wv.Position x y z)) (Wv.W (Wv.TexCoord p q)) (Wv.W (Wv.Normal v w u)))) =
+posTxtNormalToVertex (Str.G.W (Wv.PositionTxtNormal
+	(Str.G.W (Wv.Position x y z)) (Str.G.W (Wv.TexCoord p q)) (Str.G.W (Wv.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,

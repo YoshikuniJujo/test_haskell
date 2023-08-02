@@ -51,7 +51,7 @@ import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
-import qualified Foreign.Storable.Generic
+import qualified Foreign.Storable.Generic as GStorable
 
 import ThEnv
 import qualified Language.SpirV as SpirV
@@ -1555,7 +1555,7 @@ drawObject om cb sce cmd RenderObject {
 		_ -> do	Vk.Cmd.bindVertexBuffers cbb . HeteroParList.Singleton
 				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb
 			writeIORef om $ Just vb) >>
-	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit ] cbb lyt (HeteroParList.Id (Foreign.Storable.Generic.Wrap
+	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit ] cbb lyt (HeteroParList.Id (GStorable.W
 		MeshPushConstants {
 			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model
@@ -1845,9 +1845,9 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 		Glfw.waitEvents *> Glfw.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-positionNormalToVertex :: Foreign.Storable.Generic.Wrap W.PositionNormal -> Vertex
-positionNormalToVertex
-	(W.W (W.PositionNormal (W.W (W.Position x y z)) (W.W (W.Normal v w u)))) =
+positionNormalToVertex :: GStorable.Wrap W.PositionNormal -> Vertex
+positionNormalToVertex (GStorable.W (W.PositionNormal
+	(GStorable.W (W.Position x y z)) (GStorable.W (W.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
@@ -1884,10 +1884,10 @@ newtype Color = Color Cglm.Vec3
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance Storable Vertex where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
+	sizeOf = GStorable.gSizeOf
+	alignment = GStorable.gAlignment
+	peek = GStorable.gPeek
+	poke = GStorable.gPoke
 
 instance SizeAlignmentList Vertex
 
@@ -1895,7 +1895,7 @@ instance SizeAlignmentListUntil Position Vertex
 instance SizeAlignmentListUntil Normal Vertex
 instance SizeAlignmentListUntil Color Vertex
 
-instance Foreign.Storable.Generic.G Vertex where
+instance GStorable.G Vertex where
 
 vertices, vertices' :: V.Vector Vertex
 vertices = V.fromList [
@@ -1923,10 +1923,10 @@ data MeshPushConstants = MeshPushConstants {
 	meshPushConstantsData :: Cglm.Vec4,
 	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
 
-type WrapMeshPushConstants = Foreign.Storable.Generic.Wrap MeshPushConstants
+type WrapMeshPushConstants = GStorable.Wrap MeshPushConstants
 
 instance SizeAlignmentList MeshPushConstants
-instance Foreign.Storable.Generic.G MeshPushConstants
+instance GStorable.G MeshPushConstants
 
 data GpuCameraData = GpuCameraData {
 	gpuCameraDataView :: View,
@@ -1939,12 +1939,12 @@ gpuCameraData sce = GpuCameraData (View view) (Proj $ projection sce)
 	(ViewProj $ Cglm.mat4Mul (projection sce) view)
 
 instance Storable GpuCameraData where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
+	sizeOf = GStorable.gSizeOf
+	alignment = GStorable.gAlignment
+	peek = GStorable.gPeek
+	poke = GStorable.gPoke
 
-instance Foreign.Storable.Generic.G GpuCameraData
+instance GStorable.G GpuCameraData
 instance SizeAlignmentList GpuCameraData
 
 newtype View = View Cglm.Mat4 deriving (Show, Storable)
@@ -1978,12 +1978,12 @@ gpuSceneData fn = GpuSceneData {
 	b = cos (fromIntegral fn / (180 * frashRate) * pi)
 
 instance Storable GpuSceneData where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
+	sizeOf = GStorable.gSizeOf
+	alignment = GStorable.gAlignment
+	peek = GStorable.gPeek
+	poke = GStorable.gPoke
 
-instance Foreign.Storable.Generic.G GpuSceneData
+instance GStorable.G GpuSceneData
 instance SizeAlignmentList GpuSceneData
 
 newtype FogColor = FogColor Cglm.Vec4 deriving (Show, Storable)
