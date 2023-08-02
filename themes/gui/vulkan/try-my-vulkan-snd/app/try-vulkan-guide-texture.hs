@@ -147,6 +147,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSe
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
 import qualified Codec.Wavefront.ReadOld as Wv
+import qualified Codec.Wavefront.Read as WvNew
 import Tools
 
 import Foreign.Ptr
@@ -171,7 +172,7 @@ main :: IO ()
 main = do
 	[objfile] <- getArgs
 	s <- BS.readFile objfile
-	print $ Wv.countV' s
+	print $ WvNew.countV s
 	let	vns = vertices s
 --	print vns
 	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
@@ -180,12 +181,12 @@ main = do
 		else run w ist frszd vns
 	where
 	vertices s = V.map posTxtNormalToVertex
-		. uncurry4 Wv.facePosTxtNormal $ Wv.readV'' cv ct cn cf s
-		where Wv.Count {
-			Wv.countVertex = cv,
-			Wv.countTexture = ct,
-			Wv.countNormal = cn,
-			Wv.countFace = cf } = Wv.countV' s
+		. uncurry4 Wv.facePosTxtNormal $ Wv.readV' cv ct cn cf s
+		where WvNew.Count {
+			WvNew.countVertex = cv,
+			WvNew.countTexture = ct,
+			WvNew.countNormal = cn,
+			WvNew.countFace = cf } = WvNew.countV s
 
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w

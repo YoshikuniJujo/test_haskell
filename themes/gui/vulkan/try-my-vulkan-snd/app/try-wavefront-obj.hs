@@ -6,13 +6,13 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 
-import Codec.Wavefront.ReadOld
+import qualified Codec.Wavefront.Read as New
 
 main :: IO ()
 main = do
 	[objfile] <- getArgs
 	obj <- BS.readFile objfile
-	let	Count { countVertex = cv, countNormal = cn, countFace = cf } =
-			countV' obj
-		(vs, ns, fs) = readV' cv cn cf obj
-	print $ facePosNormal vs ns fs
+	let	New.Count { New.countVertex = cv, New.countNormal = cn, New.countFace = cf } =
+			New.countV obj
+		(vs, ns, fs) = New.readVOld cv cn cf obj
+	print $ New.facePosNormal vs ns fs

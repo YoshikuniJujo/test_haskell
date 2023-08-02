@@ -142,7 +142,7 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
-import qualified Codec.Wavefront.ReadOld as W
+import qualified Codec.Wavefront.Read as WNew
 import Tools
 
 main :: IO ()
@@ -254,11 +254,11 @@ print3 (x, y, z) = print x >> print y >> print z
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> BS.ByteString -> IO ()
 run w ist g obj = let
-	cnt = W.countV' obj
-	(vs, ns, fs) = W.readV' (W.countVertex cnt) (W.countNormal cnt) (W.countFace cnt) obj in
+	cnt = WNew.countV obj
+	(vs, ns, fs) = WNew.readVOld (WNew.countVertex cnt) (WNew.countNormal cnt) (WNew.countFace cnt) obj in
 	print cnt >>
 --	print3 (takePosNormalFace 10 vnf) >>
-	let	vns = V.map positionNormalToVertex $ W.facePosNormal vs ns fs in
+	let	vns = V.map positionNormalToVertex $ WNew.facePosNormal vs ns fs in
 --	print vns >>
 	Glfw.createWindowSurface ist w nil' \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
@@ -1845,9 +1845,9 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 		Glfw.waitEvents *> Glfw.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-positionNormalToVertex :: GStorable.Wrap W.PositionNormal -> Vertex
-positionNormalToVertex (GStorable.W (W.PositionNormal
-	(GStorable.W (W.Position x y z)) (GStorable.W (W.Normal v w u)))) =
+positionNormalToVertex :: GStorable.Wrap WNew.PositionNormal -> Vertex
+positionNormalToVertex (GStorable.W (WNew.PositionNormal
+	(GStorable.W (WNew.Position x y z)) (GStorable.W (WNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,

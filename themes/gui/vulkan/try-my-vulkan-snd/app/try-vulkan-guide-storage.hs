@@ -145,7 +145,7 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
-import qualified Codec.Wavefront.ReadOld as Wv
+import qualified Codec.Wavefront.Read as WvNew
 import Tools
 
 maxFramesInFlight :: Integral n => n
@@ -166,11 +166,11 @@ main = do
 		else run w ist frszd vns
 	where
 	vertices s = V.map posNormalToVertex
-		. uncurry3 Wv.facePosNormal $ Wv.readV' cv cn cf s
-		where Wv.Count {
-			Wv.countVertex = cv,
-			Wv.countNormal = cn,
-			Wv.countFace = cf } = Wv.countV' s
+		. uncurry3 WvNew.facePosNormal $ WvNew.readVOld cv cn cf s
+		where WvNew.Count {
+			WvNew.countVertex = cv,
+			WvNew.countNormal = cn,
+			WvNew.countFace = cf } = WvNew.countV s
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->
@@ -1657,9 +1657,9 @@ instance Storable Vertex where
 	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
-posNormalToVertex :: Str.G.Wrap Wv.PositionNormal -> Vertex
-posNormalToVertex (Str.G.W (Wv.PositionNormal
-	(Str.G.W (Wv.Position x y z)) (Str.G.W (Wv.Normal v w u)))) =
+posNormalToVertex :: Str.G.Wrap WvNew.PositionNormal -> Vertex
+posNormalToVertex (Str.G.W (WvNew.PositionNormal
+	(Str.G.W (WvNew.Position x y z)) (Str.G.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,

@@ -1215,7 +1215,7 @@ createTextureSampler phdv dvc f = do
 
 loadModel :: FilePath -> IO (V.Vector WVertex, V.Vector Word32)
 loadModel fp = do
-	(vtcs, idcs) <- verticesIndices' fp
+	(vtcs, idcs) <- verticesIndices fp
 	let	(vtcs', idcs') = indexingVector vtcs
 	putStrLn "LOAD MODEL"
 	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector WVertex))
