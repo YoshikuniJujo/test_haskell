@@ -3,12 +3,11 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Wavefront.Parse (
+module Codec.WavefrontObj.Scan (
 
-	parseWavefront,
-	parseWavefront_,
+	-- * WAVEFRONT OBJ SCAN
 
-	WavefrontAtom(..), Vertex(..)
+	s, s_, Atom(..), Vertex(..)
 
 	) where
 
@@ -25,7 +24,7 @@ removeComment = filter (not . ("#" `BS.isPrefixOf`)) . BSC.lines
 nonEmptyWords :: [BS.ByteString] -> [NonEmpty BS.ByteString]
 nonEmptyWords = catMaybes . (NE.nonEmpty . BSC.words <$>)
 
-data WavefrontAtom i
+data Atom i
 	= V Float Float Float
 	| Vt Float Float
 	| Vn Float Float Float
@@ -39,16 +38,13 @@ data WavefrontAtom i
 	| Unimplemented String
 	deriving Show
 
-isUnimplemented :: WavefrontAtom i -> Bool
-isUnimplemented = \case Unimplemented _ -> True; _ -> False
-
 data Vertex i = Vertex {
 	vertexPosition :: i,
 	vertexTexture :: Maybe i,
 	vertexNormal :: Maybe i }
 	deriving Show
 
-waveFrontAtom :: Read i => NonEmpty BS.ByteString -> WavefrontAtom i
+waveFrontAtom :: Read i => NonEmpty BS.ByteString -> Atom i
 waveFrontAtom = \case
 	"v" :| [x, y, z] -> V (bread x) (bread y) (bread z)
 	"vt" :| [x, y] -> Vt (bread x) (bread y)
@@ -61,10 +57,10 @@ waveFrontAtom = \case
 	"g" :| [nm] -> G $ BSC.unpack nm
 	"s" :| ["1"] -> S True
 	"s" :| ["off"] -> S False
-	s -> Unimplemented . BSC.unpack $ BSC.unwords $ NE.toList s
+	ws -> Unimplemented . BSC.unpack $ BSC.unwords $ NE.toList ws
 
 vertex :: Read i => BS.ByteString -> Vertex i
-vertex s = case BSC.split '/' s of
+vertex cs = case BSC.split '/' cs of
 	[bread -> p] -> Vertex p Nothing Nothing
 	[bread -> p, bread -> t] -> Vertex p (Just t) Nothing
 	[bread -> p, t, bread -> n]
@@ -75,8 +71,8 @@ vertex s = case BSC.split '/' s of
 bread :: Read a => BS.ByteString -> a
 bread = read . BSC.unpack
 
-parseWavefront :: (Monad m, Read i) => (WavefrontAtom i -> m a) -> BS.ByteString -> m [a]
-parseWavefront f = (f `mapM`) . (waveFrontAtom <$>) . nonEmptyWords . removeComment
+s :: (Monad m, Read i) => (Atom i -> m a) -> BS.ByteString -> m [a]
+s f = (f `mapM`) . (waveFrontAtom <$>) . nonEmptyWords . removeComment
 
-parseWavefront_ :: (Monad m, Read i) => (WavefrontAtom i -> m a) -> BS.ByteString -> m ()
-parseWavefront_ f = (f `mapM_`) . (waveFrontAtom <$>) . nonEmptyWords . removeComment
+s_ :: (Monad m, Read i) => (Atom i -> m a) -> BS.ByteString -> m ()
+s_ f = (f `mapM_`) . (waveFrontAtom <$>) . nonEmptyWords . removeComment

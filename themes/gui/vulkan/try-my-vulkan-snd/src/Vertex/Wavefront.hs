@@ -24,7 +24,7 @@ import qualified Foreign.Storable.Generic as GStorable
 import qualified Vertex as Vtx
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Codec.Wavefront.Read
+import Codec.WavefrontObj.Read
 
 verticesIndices :: FilePath -> IO (V.Vector (GStorable.Wrap Vtx.Vertex), V.Vector Word32)
 verticesIndices fp = readVerticesIndices' <$> BS.readFile fp

@@ -29,8 +29,8 @@ source-repository head
 library
   exposed-modules:
       Codec.Picture.Tools
-      Codec.Wavefront.Parse
-      Codec.Wavefront.Read
+      Codec.WavefrontObj.Read
+      Codec.WavefrontObj.Scan
       Data.Bits.Utils
       Data.Traversable.Utils
       Data.Vector.Storable.Utils

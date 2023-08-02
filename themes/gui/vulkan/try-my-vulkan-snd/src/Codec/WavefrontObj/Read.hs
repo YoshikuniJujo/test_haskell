@@ -5,7 +5,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Wavefront.Read (
+module Codec.WavefrontObj.Read (
 
 	-- * FUNCTIONS
 
@@ -40,15 +40,15 @@ import qualified Data.Vector.Storable.Mutable as MV
 import qualified Data.ByteString as BS
 import qualified Foreign.Storable.Generic as GStorable
 
-import qualified Codec.Wavefront.Parse as Wf
+import qualified Codec.WavefrontObj.Scan as Scan
 
 countV :: BS.ByteString -> Count
-countV = snd . runWriter . Wf.parseWavefront_ @_ @Word32 \case
-	Wf.V _ _ _ -> tell $ mempty { countVertex = 1 }
-	Wf.Vt _ _ -> tell $ mempty { countTexture = 1 }
-	Wf.Vn _ _ _ -> tell $ mempty { countNormal = 1 }
-	Wf.F _ _ _ -> tell $ mempty { countFace = 1 }
-	Wf.F4 _ _ _ _ -> tell $ mempty { countFace = 2 }
+countV = snd . runWriter . Scan.s_ @_ @Word32 \case
+	Scan.V _ _ _ -> tell $ mempty { countVertex = 1 }
+	Scan.Vt _ _ -> tell $ mempty { countTexture = 1 }
+	Scan.Vn _ _ _ -> tell $ mempty { countNormal = 1 }
+	Scan.F _ _ _ -> tell $ mempty { countFace = 1 }
+	Scan.F4 _ _ _ _ -> tell $ mempty { countFace = 2 }
 	_ -> tell mempty
 
 data Count = Count {
@@ -93,8 +93,8 @@ data Indices = Indices Int Int Int deriving (Show, Generic)
 instance SizeAlignmentList Indices
 instance GStorable.G Indices
 
-indicesToIndices :: Wf.Vertex Int -> W Indices
-indicesToIndices (Wf.Vertex p t n) = GStorable.W $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
+indicesToIndices :: Scan.Vertex Int -> W Indices
+indicesToIndices (Scan.Vertex p t n) = GStorable.W $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
 
 readV' :: Int -> Int -> Int -> Int -> BS.ByteString ->
 	(V.Vector (W Position), V.Vector (W TexCoord), V.Vector (W Normal), V.Vector (W Face))
@@ -107,27 +107,27 @@ readV' nv nt nn nf str = runST do
 	t <- MV.new nt
 	n <- MV.new nn
 	f <- MV.new nf
-	flip (Wf.parseWavefront_ @_ @Int) str \case
-		Wf.V x y z -> do
+	flip (Scan.s_ @_ @Int) str \case
+		Scan.V x y z -> do
 			i <- readSTRef iv
 			MV.write vv i . GStorable.W $ Position x y z
 			writeSTRef iv (i + 1)
-		Wf.Vt u v -> do
+		Scan.Vt u v -> do
 			i <- readSTRef it
 			MV.write t i . GStorable.W $ TexCoord u v
 			writeSTRef it (i + 1)
-		Wf.Vn x y z -> do
+		Scan.Vn x y z -> do
 			i <- readSTRef inml
 			MV.write n i . GStorable.W $ Normal x y z
 			writeSTRef inml (i + 1)
-		Wf.F i1 i2 i3 -> do
+		Scan.F i1 i2 i3 -> do
 			i <- readSTRef ifc
 			MV.write f i . GStorable.W $ Face
 				(indicesToIndices i1)
 				(indicesToIndices i2)
 				(indicesToIndices i3)
 			writeSTRef ifc (i + 1)
-		Wf.F4 i1 i2 i3 i4 -> do
+		Scan.F4 i1 i2 i3 i4 -> do
 			i <- readSTRef ifc
 			MV.write f i . GStorable.W $ Face
 				(indicesToIndices i1)
@@ -150,16 +150,16 @@ readVOld n n' n'' s = runST $ do
 	v <- MV.new n
 	t <- MV.new n'
 	idx <- MV.new n''
-	flip (Wf.parseWavefront_ @_ @Int) s \case
-		Wf.V x y z -> do
+	flip (Scan.s_ @_ @Int) s \case
+		Scan.V x y z -> do
 			i <- readSTRef ri
 			MV.write v i . GStorable.W $ Position x y z
 			writeSTRef ri (i + 1)
-		Wf.Vn x y z -> do
+		Scan.Vn x y z -> do
 			i' <- readSTRef ri'
 			MV.write t i' . GStorable.W $ Normal x y z
 			writeSTRef ri' (i' + 1)
-		Wf.F idx1 idx2 idx3 -> do
+		Scan.F idx1 idx2 idx3 -> do
 			i'' <- readSTRef ri''
 			MV.write idx i''
 				. GStorable.W $ Face
@@ -167,7 +167,7 @@ readVOld n n' n'' s = runST $ do
 					(indicesToIndices idx2)
 					(indicesToIndices idx3)
 			writeSTRef ri'' (i'' + 1)
-		Wf.F4 i1 i2 i3 i4 -> do
+		Scan.F4 i1 i2 i3 i4 -> do
 			i'' <- readSTRef ri''
 			MV.write idx i'' . GStorable.W $ Face
 				(indicesToIndices i1)
@@ -191,16 +191,16 @@ readV n n' n'' s = do
 	v <- MV.new n
 	t <- MV.new n'
 	idx <- MV.new n''
-	flip (Wf.parseWavefront_ @_ @Int) s \case
-		Wf.V x y z -> do
+	flip (Scan.s_ @_ @Int) s \case
+		Scan.V x y z -> do
 			i <- readSTRef ri
 			MV.write v i . GStorable.W $ Position x y z
 			writeSTRef ri (i + 1)
-		Wf.Vt x y -> do
+		Scan.Vt x y -> do
 			i' <- readSTRef ri'
 			MV.write t i' . GStorable.W $ TexCoord x (1 - y)
 			writeSTRef ri' (i' + 1)
-		Wf.F idx1 idx2 idx3 -> do
+		Scan.F idx1 idx2 idx3 -> do
 			i'' <- readSTRef ri''
 			MV.write idx i''
 				. GStorable.W $ Face
