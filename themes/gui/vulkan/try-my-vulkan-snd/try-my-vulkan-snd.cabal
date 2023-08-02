@@ -45,6 +45,7 @@ library
       Tools
       TypeLevel.Nat
       Vertex
+      Vertex.Wavefront
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:

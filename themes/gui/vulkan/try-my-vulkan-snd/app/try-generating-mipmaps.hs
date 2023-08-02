@@ -157,7 +157,7 @@ import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
 import Tools
 import Vertex
-import Codec.Wavefront.Read hiding (TexCoord)
+import Vertex.Wavefront
 import Data.Vector.Storable.Utils
 
 main :: IO ()
