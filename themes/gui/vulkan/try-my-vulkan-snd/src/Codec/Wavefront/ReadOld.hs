@@ -6,21 +6,22 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Codec.Wavefront.ReadOld (
-	readVertices, readSample, WWord32, readVerticesIndices,
-	sampleVerticesIndices, tinyVerticesIndices,
-	verticesIndices,
 
-	Position(..), TexCoord(..), Normal(..), Face(..),
+	Count(..), facePosNormal, countV', readV',
+	PositionNormal(..),
+	Position(..),
+	Normal(..),
+	readV'',
+	PositionTxtNormal(..),
+	facePosTxtNormal,
+	TexCoord(..),
 
-	countV, countV', Count(..), readV', readV'',
-	takePosNormalFace, facePosNormal, facePosTxtNormal,
-	PositionNormal(..), PositionTxtNormal(..)) where
+	) where
 
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
 import Control.Monad.ST
 import Control.Monad.Writer
-import Data.List.Length
 import Data.STRef
 import Data.Maybe
 import Data.Word
@@ -31,28 +32,6 @@ import qualified Data.ByteString as BS
 import qualified Foreign.Storable.Generic as GStorable
 
 import qualified Codec.Wavefront.Parse as Wf
-import qualified VertexOld as Vtx
-import Gpu.Vulkan.Cglm qualified as Cglm
-
-verticesIndices :: FilePath -> IO (V.Vector Vtx.WVertex, V.Vector WWord32)
-verticesIndices fp = readVerticesIndices <$> BS.readFile fp
-
-sampleVerticesIndices, tinyVerticesIndices :: IO (V.Vector Vtx.WVertex, V.Vector WWord32)
-sampleVerticesIndices = readVerticesIndices <$> readSample
-tinyVerticesIndices = readVerticesIndices <$> readTiny
-
-readSample, readTiny :: IO BS.ByteString
-readSample = BS.readFile "../../../../files/models/viking_room.obj"
-readTiny = BS.readFile "tiny.obj"
-
-countV :: BS.ByteString -> Writer (Sum Int, Sum Int, Sum Int, Sum Int) ()
-countV = Wf.parseWavefront_ @_ @Word32 \case
-	Wf.V _ _ _ -> tell (1, 0, 0, 0)
-	Wf.Vt _ _ -> tell (0, 1, 0, 0)
-	Wf.Vn _ _ _ -> tell (0, 0, 1, 0)
-	Wf.F _ _ _ -> tell (0, 0, 0, 1)
-	Wf.F4 _ _ _ _ -> tell (0, 0, 0, 2)
-	_ -> tell (0, 0, 0, 0)
 
 countV' :: BS.ByteString -> Count
 countV' = snd . runWriter . Wf.parseWavefront_ @_ @Word32 \case
@@ -107,43 +86,6 @@ instance GStorable.G Indices
 
 indicesToIndices :: Wf.Vertex Int -> W Indices
 indicesToIndices (Wf.Vertex p t n) = GStorable.W $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
-
-indicesToPosTex ::
-	V.Vector (W Position) -> V.Vector (W TexCoord) -> Indices ->
-	(Position, TexCoord)
-indicesToPosTex ps ts (Indices ip it _) = (
-	GStorable.unW $ ps V.! (ip - 1),
-	GStorable.unW $ ts V.! (it - 1) )
-
-readV :: Int -> Int -> Int -> BS.ByteString -> ST s (
-	V.Vector (W Position), V.Vector (W TexCoord),
-	V.Vector (W Face))
-readV n n' n'' s = do
-	ri <- newSTRef 0
-	ri' <- newSTRef 0
-	ri'' <- newSTRef 0
-	v <- MV.new n
-	t <- MV.new n'
-	idx <- MV.new n''
-	flip (Wf.parseWavefront_ @_ @Int) s \case
-		Wf.V x y z -> do
-			i <- readSTRef ri
-			MV.write v i . GStorable.W $ Position x y z
-			writeSTRef ri (i + 1)
-		Wf.Vt x y -> do
-			i' <- readSTRef ri'
-			MV.write t i' . GStorable.W $ TexCoord x (1 - y)
-			writeSTRef ri' (i' + 1)
-		Wf.F idx1 idx2 idx3 -> do
-			i'' <- readSTRef ri''
-			MV.write idx i''
-				. GStorable.W $ Face
-					(indicesToIndices idx1)
-					(indicesToIndices idx2)
-					(indicesToIndices idx3)
-			writeSTRef ri'' (i'' + 1)
-		_ -> pure ()
-	(,,) <$> V.freeze v <*> V.freeze t <*> V.freeze idx
 
 readV' :: Int -> Int -> Int -> BS.ByteString ->
 	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face))
@@ -274,16 +216,6 @@ data PositionTxtNormal = PositionTxtNormal {
 instance SizeAlignmentList PositionTxtNormal
 instance GStorable.G PositionTxtNormal
 
-takePosNormalFace :: Int ->
-	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face)) ->
-	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face))
-takePosNormalFace n (vs, ns, fs) = (V.take n vs, V.take n ns, V.take n fs)
-
-readVertexPositions :: BS.ByteString -> (V.Vector (W Position), V.Vector (W TexCoord), V.Vector (W Face))
-readVertexPositions bs = let
-	((), (Sum n, Sum n', _, Sum n'')) = runWriter $ countV bs in
-	runST $ readV n n' n'' bs
-
 type W = GStorable.Wrap
 
 loosenFace :: V.Vector (W Face) -> V.Vector (W Indices)
@@ -291,29 +223,3 @@ loosenFace fs = V.generate ln \i -> let
 	GStorable.W (Face is0 is1 is2) = fs V.! (i `div` 3) in
 	case i `mod` 3 of 0 -> is0; 1 -> is1; 2 -> is2; _ -> error "never occur"
 	where ln = 3 * V.length fs
-
-getVertices ::
-	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Indices) ->
-	V.Vector Vtx.WVertex
-getVertices ps ts is = V.generate ln \i ->
-	let	GStorable.W ids = is V.! i
-		(Position x y z, TexCoord u v) = indicesToPosTex ps ts ids in
-	GStorable.W $ Vtx.Vertex
-		(Cglm.Vec3 $ x :. y :. z :. NilL)
-		(Vtx.Color . Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
-		(Vtx.TexCoord . Cglm.Vec2 $ u :. v :. NilL)
-	where ln = V.length is
-
-readVertices :: BS.ByteString -> V.Vector Vtx.WVertex
-readVertices bs = let
-	(ps, ts, fs) = readVertexPositions bs
-	is = loosenFace fs in
-	getVertices ps ts is
-
-type WWord32 = W Word32
-
-makeIndices :: V.Vector Vtx.WVertex -> V.Vector (GStorable.Wrap Word32)
-makeIndices vs = V.generate (V.length vs) \i -> GStorable.W $ fromIntegral i
-
-readVerticesIndices :: BS.ByteString -> (V.Vector Vtx.WVertex, V.Vector WWord32)
-readVerticesIndices bs = let vs = readVertices bs in (vs, makeIndices vs)

@@ -32,7 +32,7 @@ import qualified Codec.Wavefront.Parse as Wf
 import qualified Vertex as Vtx
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-verticesIndices' :: FilePath -> IO (V.Vector Vtx.Vertex, V.Vector Word32)
+verticesIndices' :: FilePath -> IO (V.Vector (GStorable.Wrap Vtx.Vertex), V.Vector Word32)
 verticesIndices' fp = readVerticesIndices' <$> BS.readFile fp
 
 readSample, readTiny :: IO BS.ByteString
@@ -207,24 +207,25 @@ loosenFace fs = V.generate ln \i -> let
 
 getVertices ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Indices) ->
-	V.Vector Vtx.Vertex
+	V.Vector (GStorable.Wrap Vtx.Vertex)
 getVertices ps ts is = V.generate ln \i ->
 	let	GStorable.W ids = is V.! i
 		(Position x y z, TexCoord u v) = indicesToPosTex ps ts ids in
-	Vtx.Vertex
+	GStorable.W $ Vtx.Vertex
 		(Vtx.Pos . Cglm.Vec3 $ x :. y :. z :. NilL)
 		(Vtx.Color . Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
 		(Vtx.TexCoord . Cglm.Vec2 $ u :. v :. NilL)
 	where ln = V.length is
 
-readVertices :: BS.ByteString -> V.Vector Vtx.Vertex
+readVertices :: BS.ByteString -> V.Vector (GStorable.Wrap Vtx.Vertex)
 readVertices bs = let
 	(ps, ts, fs) = readVertexPositions bs
 	is = loosenFace fs in
 	getVertices ps ts is
 
-makeIndices' :: V.Vector Vtx.Vertex -> V.Vector Word32
+makeIndices' :: V.Vector (GStorable.Wrap Vtx.Vertex) -> V.Vector Word32
 makeIndices' vs = V.generate (V.length vs) \i -> fromIntegral i
 
-readVerticesIndices' :: BS.ByteString -> (V.Vector Vtx.Vertex, V.Vector Word32)
+readVerticesIndices' :: BS.ByteString ->
+	(V.Vector (GStorable.Wrap Vtx.Vertex), V.Vector Word32)
 readVerticesIndices' bs = let vs = readVertices bs in (vs, makeIndices' vs)

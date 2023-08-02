@@ -46,7 +46,6 @@ library
       Tools
       TypeLevel.Nat
       Vertex
-      VertexOld
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:

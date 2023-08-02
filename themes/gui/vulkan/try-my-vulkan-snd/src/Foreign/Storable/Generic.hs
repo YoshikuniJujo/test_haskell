@@ -1,7 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -74,13 +75,16 @@ instance Storable a => Gg (K1 i a) where
 	ggPeek = (K1 <$>) . peek . castPtr
 	ggPoke p (K1 x) = poke (castPtr p) x
 
-newtype Wrap a = W { unW :: a } deriving (Show, Eq, Ord, Enum)
+newtype Wrap a = W { unW :: a } deriving (Show, Eq, Ord, Enum, Generic, SizeAlignmentList)
 
 instance G a => Storable (Wrap a) where
 	sizeOf = gSizeOf . unW
 	alignment = gAlignment . unW
 	peek = (W <$>) . gPeek . castPtr
 	poke p = gPoke (castPtr p) . unW
+
+instance SizeAlignmentListUntil a b => SizeAlignmentListUntil a (Wrap b) where
+	sizeAlignmentListUntil = sizeAlignmentListUntil @a @b
 
 {-
 instance {-# OVERLAPPABLE #-} G a => Storable a where
