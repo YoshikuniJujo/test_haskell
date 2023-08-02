@@ -31,7 +31,6 @@ library
       Codec.Picture.Tools
       Codec.Wavefront.Parse
       Codec.Wavefront.Read
-      Codec.Wavefront.ReadOld
       Data.Bits.Utils
       Data.Traversable.Utils
       Data.Vector.Storable.Utils

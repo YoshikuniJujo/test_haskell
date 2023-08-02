@@ -146,7 +146,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
-import qualified Codec.Wavefront.ReadOld as Wv
 import qualified Codec.Wavefront.Read as WvNew
 import Tools
 
@@ -181,7 +180,7 @@ main = do
 		else run w ist frszd vns
 	where
 	vertices s = V.map posTxtNormalToVertex
-		. uncurry4 Wv.facePosTxtNormal $ Wv.readV' cv ct cn cf s
+		. uncurry4 WvNew.facePosTxtNormal $ WvNew.readV' cv ct cn cf s
 		where WvNew.Count {
 			WvNew.countVertex = cv,
 			WvNew.countTexture = ct,
@@ -1772,18 +1771,18 @@ instance Storable Vertex where
 	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
-posNormalToVertex :: Str.G.Wrap Wv.PositionNormal -> Vertex
-posNormalToVertex (Str.G.W (Wv.PositionNormal
-	(Str.G.W (Wv.Position x y z)) (Str.G.W (Wv.Normal v w u)))) =
+posNormalToVertex :: Str.G.Wrap WvNew.PositionNormal -> Vertex
+posNormalToVertex (Str.G.W (WvNew.PositionNormal
+	(Str.G.W (WvNew.Position x y z)) (Str.G.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL }
 
-posTxtNormalToVertex :: Str.G.Wrap Wv.PositionTxtNormal -> Vertex
-posTxtNormalToVertex (Str.G.W (Wv.PositionTxtNormal
-	(Str.G.W (Wv.Position x y z)) (Str.G.W (Wv.TexCoord p q)) (Str.G.W (Wv.Normal v w u)))) =
+posTxtNormalToVertex :: Str.G.Wrap WvNew.PositionTxtNormal -> Vertex
+posTxtNormalToVertex (Str.G.W (WvNew.PositionTxtNormal
+	(Str.G.W (WvNew.Position x y z)) (Str.G.W (WvNew.TexCoord p q)) (Str.G.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
