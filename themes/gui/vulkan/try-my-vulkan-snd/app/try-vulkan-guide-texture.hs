@@ -179,8 +179,8 @@ main = do
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where vertices s = V.map posTxtNormalToVertex
-		. uncurry4 WvNew.facePosTxtNormal
-		$ WvNew.readPosTxtNormal (WvNew.countV s) s
+		. uncurry4 WvNew.facePosTexNormal
+		$ WvNew.readPosTexNormal (WvNew.countV s) s
 
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w
@@ -1775,8 +1775,8 @@ posNormalToVertex (Str.G.W (WvNew.PositionNormal
 		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL }
 
-posTxtNormalToVertex :: Str.G.Wrap WvNew.PositionTxtNormal -> Vertex
-posTxtNormalToVertex (Str.G.W (WvNew.PositionTxtNormal
+posTxtNormalToVertex :: Str.G.Wrap WvNew.PositionTexNormal -> Vertex
+posTxtNormalToVertex (Str.G.W (WvNew.PositionTexNormal
 	(Str.G.W (WvNew.Position x y z)) (Str.G.W (WvNew.TexCoord p q)) (Str.G.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,

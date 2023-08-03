@@ -40,10 +40,10 @@ type W = GStorable.Wrap
 
 readVertices :: BS.ByteString -> V.Vector (GStorable.Wrap Vtx.Vertex)
 readVertices bs =
-	V.map posTxtToVertex . uncurry3 facePosTxt $ readPosTxt (countV bs) bs
+	V.map posTexToVertex . uncurry3 facePosTex $ readPosTex (countV bs) bs
 	where
-	posTxtToVertex :: W (W Position, W TexCoord) -> W Vtx.Vertex
-	posTxtToVertex (GStorable.W (
+	posTexToVertex :: W (W Position, W TexCoord) -> W Vtx.Vertex
+	posTexToVertex (GStorable.W (
 		GStorable.W (Position x y z),
 		GStorable.W (TexCoord u v) )) = GStorable.W $ Vtx.Vertex
 		(Vtx.Pos . Cglm.Vec3 $ x :. y :. z :. NilL)

@@ -11,9 +11,9 @@ module Codec.WavefrontObj.Read (
 
 	countV,
 	
-	readPosTxt, readPosNormal, readPosTxtNormal,
+	readPosTex, readPosNormal, readPosTexNormal,
 
-	facePosTxt, facePosNormal, facePosTxtNormal,
+	facePosTex, facePosNormal, facePosTexNormal,
 
 	-- * COUNT
 
@@ -25,7 +25,7 @@ module Codec.WavefrontObj.Read (
 
 	-- * POSITION NORMAL
 
-	PositionNormal(..), PositionTxtNormal(..),
+	PositionNormal(..), PositionTexNormal(..),
 
 	-- * UNCLASSIFIED
 
@@ -102,10 +102,10 @@ instance GStorable.G Indices
 indicesToIndices :: Scan.Vertex Int -> W Indices
 indicesToIndices (Scan.Vertex p t n) = GStorable.W $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
 
-readPosTxtNormal :: Count -> BS.ByteString -> (
+readPosTexNormal :: Count -> BS.ByteString -> (
 	V.Vector (W Position), V.Vector (W TexCoord),
 	V.Vector (W Normal), V.Vector (W Face) )
-readPosTxtNormal Count {
+readPosTexNormal Count {
 	countVertex = cv, countTexture = ct,
 	countNormal = cn, countFace = cf } = readV' cv ct cn cf
 
@@ -251,28 +251,28 @@ data PositionNormal = PositionNormal {
 instance SizeAlignmentList PositionNormal
 instance GStorable.G PositionNormal
 
-facePosTxtNormal ::
+facePosTexNormal ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Normal) -> V.Vector (W Face) ->
-	V.Vector (W PositionTxtNormal)
-facePosTxtNormal ps ts ns = indexPosTxtNormal ps ts ns . loosenFace
+	V.Vector (W PositionTexNormal)
+facePosTexNormal ps ts ns = indexPosTexNormal ps ts ns . loosenFace
 
-indexPosTxtNormal ::
+indexPosTexNormal ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Normal) -> V.Vector (W Indices) ->
-	V.Vector (W PositionTxtNormal)
-indexPosTxtNormal ps ts ns is = V.generate ln \i -> let
+	V.Vector (W PositionTexNormal)
+indexPosTexNormal ps ts ns is = V.generate ln \i -> let
 	GStorable.W (Indices iv it inml) = is V.! i
 	in
-	GStorable.W $ PositionTxtNormal (ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
+	GStorable.W $ PositionTexNormal (ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
 	where ln = V.length is
 
-data PositionTxtNormal = PositionTxtNormal {
-	positionTxtNormalPosition :: W Position,
-	positionTxtNormalTxt :: W TexCoord,
-	positionTxtNormalNormal :: W Normal }
+data PositionTexNormal = PositionTexNormal {
+	positionTexNormalPosition :: W Position,
+	positionTexNormalTex :: W TexCoord,
+	positionTexNormalNormal :: W Normal }
 	deriving (Show, Generic)
 
-instance SizeAlignmentList PositionTxtNormal
-instance GStorable.G PositionTxtNormal
+instance SizeAlignmentList PositionTexNormal
+instance GStorable.G PositionTexNormal
 
 type W = GStorable.Wrap
 
@@ -285,20 +285,20 @@ loosenFace fs = V.generate ln \i -> let
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
 
-readPosTxt :: Count -> BS.ByteString -> (
+readPosTex :: Count -> BS.ByteString -> (
 	V.Vector (W Position), V.Vector (W TexCoord), V.Vector (W Face) )
-readPosTxt Count { countVertex = n, countTexture = n', countFace = n'' } bs =
+readPosTex Count { countVertex = n, countTexture = n', countFace = n'' } bs =
 	runST $ readV n n' n'' bs
 
-facePosTxt ::
+facePosTex ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Face) ->
 	V.Vector (W (W Position, W TexCoord))
-facePosTxt ps ts = indexPosTxt ps ts . loosenFace
+facePosTex ps ts = indexPosTex ps ts . loosenFace
 
-indexPosTxt ::
+indexPosTex ::
 	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Indices) ->
 	V.Vector (W (W Position, W TexCoord))
-indexPosTxt ps ts is = V.generate ln \i -> let
+indexPosTex ps ts is = V.generate ln \i -> let
 	GStorable.W i' = is V.! i in GStorable.W $ indicesToPosTex' ps ts i'
 	where ln = V.length is
 
