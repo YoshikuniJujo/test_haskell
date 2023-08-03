@@ -165,7 +165,7 @@ main = do
 			else run txfp mdlfp (read mnld) win inst g
 
 type FramebufferResized = IORef Bool
-type WVertex = GStorable.Wrap Vertex
+type WVertex = GStorable.W Vertex
 
 globalFramebufferResized :: IORef Bool -> IORef Bool
 globalFramebufferResized = id

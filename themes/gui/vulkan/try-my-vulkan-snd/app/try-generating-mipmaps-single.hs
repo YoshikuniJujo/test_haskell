@@ -166,7 +166,7 @@ main = do
 
 type FramebufferResized = IORef Bool
 
-type WVertex = GStorable.Wrap Vertex
+type WVertex = GStorable.W Vertex
 
 globalFramebufferResized :: IORef Bool -> IORef Bool
 globalFramebufferResized = id
@@ -1321,13 +1321,13 @@ createTextureSampler phdv dvc mplvs mnld f = do
 			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
 	Vk.Smplr.create @'Nothing dvc samplerInfo nil' f
 
-loadModel :: FilePath -> IO (V.Vector (GStorable.Wrap Vertex), V.Vector Word32)
+loadModel :: FilePath -> IO (V.Vector (GStorable.W Vertex), V.Vector Word32)
 loadModel fp = do
 	(vtcs, idcs) <- verticesIndices fp
 	let	(vtcs', idcs') = indexingVector vtcs
 	putStrLn "LOAD MODEL"
-	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector (GStorable.Wrap Vertex)))
-	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector (GStorable.Wrap Vertex)))
+	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector (GStorable.W Vertex)))
+	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector (GStorable.W Vertex)))
 	putStrLn $ "idcs : " ++ show (V.length (idcs :: V.Vector Word32))
 	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector Word32))
 	pure (vtcs', idcs')

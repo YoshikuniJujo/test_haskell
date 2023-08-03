@@ -144,6 +144,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSe
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
 import qualified Codec.WavefrontObj.Read as WvNew
+import qualified Codec.WavefrontObj.Read as WNew
 import Tools
 
 maxFramesInFlight :: Integral n => n
@@ -1431,7 +1432,7 @@ drawObject ovb cb0 ds RenderObject {
 				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb
 			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
-		$ HL.Id (Str.G.W MeshPushConstants {
+		$ HL.Id (GStorable.W MeshPushConstants {
 			meshPushConstantsData =
 				Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model }) :** HL.Nil
@@ -1473,8 +1474,8 @@ instance Storable Vertex where
 	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
-posNormalToVertex :: Str.G.Wrap WvNew.PositionNormal -> Vertex
-posNormalToVertex (GStorable.W (WvNew.PositionNormal
+posNormalToVertex :: GStorable.W (GStorable.W WNew.Position, GStorable.W WNew.Normal) -> Vertex
+posNormalToVertex (GStorable.W ((,)
 	(GStorable.W (WvNew.Position x y z)) (GStorable.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
@@ -1567,7 +1568,7 @@ data MeshPushConstants = MeshPushConstants {
 	meshPushConstantsData :: Cglm.Vec4,
 	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
 
-type WMeshPushConstants = Str.G.Wrap MeshPushConstants
+type WMeshPushConstants = GStorable.W MeshPushConstants
 
 instance SizeAlignmentList MeshPushConstants
 instance Str.G.G MeshPushConstants

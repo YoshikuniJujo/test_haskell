@@ -75,15 +75,15 @@ instance Storable a => Gg (K1 i a) where
 	ggPeek = (K1 <$>) . peek . castPtr
 	ggPoke p (K1 x) = poke (castPtr p) x
 
-newtype Wrap a = W { unW :: a } deriving (Show, Eq, Ord, Enum, Generic, SizeAlignmentList)
+newtype W a = W { unW :: a } deriving (Show, Eq, Ord, Enum, Generic, SizeAlignmentList)
 
-instance G a => Storable (Wrap a) where
+instance G a => Storable (W a) where
 	sizeOf = gSizeOf . unW
 	alignment = gAlignment . unW
 	peek = (W <$>) . gPeek . castPtr
 	poke p = gPoke (castPtr p) . unW
 
-instance SizeAlignmentListUntil a b => SizeAlignmentListUntil a (Wrap b) where
+instance SizeAlignmentListUntil a b => SizeAlignmentListUntil a (W b) where
 	sizeAlignmentListUntil = sizeAlignmentListUntil @a @b
 
 {-

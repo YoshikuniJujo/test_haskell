@@ -145,6 +145,9 @@ import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSe
 import qualified Codec.WavefrontObj.Read as WNew
 import Tools
 
+import qualified Foreign.Storable.Generic as Str.G
+import qualified Foreign.Storable.Generic as GStorable
+
 main :: IO ()
 main = do
 	[objfile] <- getArgs
@@ -1845,8 +1848,8 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 		Glfw.waitEvents *> Glfw.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-positionNormalToVertex :: GStorable.Wrap WNew.PositionNormal -> Vertex
-positionNormalToVertex (GStorable.W (WNew.PositionNormal
+positionNormalToVertex :: GStorable.W (GStorable.W WNew.Position, GStorable.W WNew.Normal) -> Vertex
+positionNormalToVertex (GStorable.W ((,)
 	(GStorable.W (WNew.Position x y z)) (GStorable.W (WNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
@@ -1923,7 +1926,7 @@ data MeshPushConstants = MeshPushConstants {
 	meshPushConstantsData :: Cglm.Vec4,
 	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
 
-type WrapMeshPushConstants = GStorable.Wrap MeshPushConstants
+type WrapMeshPushConstants = GStorable.W MeshPushConstants
 
 instance SizeAlignmentList MeshPushConstants
 instance GStorable.G MeshPushConstants

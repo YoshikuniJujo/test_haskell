@@ -56,6 +56,7 @@ import qualified Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 
 import Foreign.Storable.Generic qualified as Str.G
+import Foreign.Storable.Generic qualified as GStorable
 
 import ThEnv
 import qualified Language.SpirV as SpirV
@@ -147,6 +148,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSe
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
 import qualified Codec.WavefrontObj.Read as WvNew
+import qualified Codec.WavefrontObj.Read as WNew
 import Tools
 
 import Foreign.Ptr
@@ -1715,7 +1717,7 @@ drawObject ovb cb0 ds dsod dstx RenderObject {
 				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb
 			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
-		$ HL.Id (Str.G.W MeshPushConstants {
+		$ HL.Id (GStorable.W MeshPushConstants {
 			meshPushConstantsData =
 				Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = mdl }) :** HL.Nil
@@ -1766,18 +1768,18 @@ instance Storable Vertex where
 	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
-posNormalToVertex :: Str.G.Wrap WvNew.PositionNormal -> Vertex
-posNormalToVertex (Str.G.W (WvNew.PositionNormal
-	(Str.G.W (WvNew.Position x y z)) (Str.G.W (WvNew.Normal v w u)))) =
+posNormalToVertex :: GStorable.W (GStorable.W WNew.Position, GStorable.W WNew.Normal) -> Vertex
+posNormalToVertex (GStorable.W ((,)
+	(GStorable.W (WvNew.Position x y z)) (GStorable.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL }
 
-posTxtNormalToVertex :: Str.G.Wrap WvNew.PositionTexNormal -> Vertex
-posTxtNormalToVertex (Str.G.W (WvNew.PositionTexNormal
-	(Str.G.W (WvNew.Position x y z)) (Str.G.W (WvNew.TexCoord p q)) (Str.G.W (WvNew.Normal v w u)))) =
+posTxtNormalToVertex :: GStorable.W WvNew.PositionTexNormal -> Vertex
+posTxtNormalToVertex (GStorable.W (WvNew.PositionTexNormal
+	(GStorable.W (WvNew.Position x y z)) (GStorable.W (WvNew.TexCoord p q)) (GStorable.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
@@ -1873,7 +1875,7 @@ data MeshPushConstants = MeshPushConstants {
 	meshPushConstantsData :: Cglm.Vec4,
 	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
 
-type WMeshPushConstants = Str.G.Wrap MeshPushConstants
+type WMeshPushConstants = GStorable.W MeshPushConstants
 
 instance SizeAlignmentList MeshPushConstants
 instance Str.G.G MeshPushConstants

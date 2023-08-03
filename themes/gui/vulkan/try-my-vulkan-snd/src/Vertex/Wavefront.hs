@@ -26,19 +26,19 @@ import Gpu.Vulkan.Cglm qualified as Cglm
 import Codec.WavefrontObj.Read
 
 verticesIndices ::
-	FilePath -> IO (V.Vector (GStorable.Wrap Vtx.Vertex), V.Vector Word32)
+	FilePath -> IO (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
 verticesIndices fp = readVerticesIndices <$> BS.readFile fp
 	where
 	readVerticesIndices :: BS.ByteString ->
-		(V.Vector (GStorable.Wrap Vtx.Vertex), V.Vector Word32)
+		(V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
 	readVerticesIndices bs =
 		let vs = readVertices bs in (vs, makeIndices vs)
-	makeIndices :: V.Vector (GStorable.Wrap Vtx.Vertex) -> V.Vector Word32
+	makeIndices :: V.Vector (GStorable.W Vtx.Vertex) -> V.Vector Word32
 	makeIndices vs = V.generate (V.length vs) \i -> fromIntegral i
 
-type W = GStorable.Wrap
+type W = GStorable.W
 
-readVertices :: BS.ByteString -> V.Vector (GStorable.Wrap Vtx.Vertex)
+readVertices :: BS.ByteString -> V.Vector (GStorable.W Vtx.Vertex)
 readVertices bs =
 	V.map posTexToVertex . uncurry3 facePosTex $ readPosTex (countV bs) bs
 	where
