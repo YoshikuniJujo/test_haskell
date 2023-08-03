@@ -9,28 +9,34 @@ module Codec.WavefrontObj.Read (
 
 	-- * FUNCTIONS
 
-	countV, readV, readVOld, readV',
+	countV,
+	
+	readPosTxt, readPosNormal, readPosTxtNormal,
 
-	takePosNormalFace, facePosNormal, facePosTxtNormal,
+	facePosTxt, facePosNormal, facePosTxtNormal,
 
 	-- * COUNT
 
 	Count(..),
 
-	-- * POSITION AND NORMAL
+	-- * FACE, POSITION, TEX COORD AND NORMAL
 
-	Position(..), Normal(..), TexCoord(..), Face(..), Indices(..),
+	Face(..), Position(..), TexCoord(..), Normal(..),
 
 	-- * POSITION NORMAL
 
-	PositionNormal(..), PositionTxtNormal(..)
+	PositionNormal(..), PositionTxtNormal(..),
+
+	-- * UNCLASSIFIED
+
+	uncurry3
 
 	) where
 
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
 import Control.Monad.ST
-import Control.Monad.Writer
+import Control.Monad.Trans.Writer.CPS
 import Data.STRef
 import Data.Maybe
 import Data.Word
@@ -96,6 +102,13 @@ instance GStorable.G Indices
 indicesToIndices :: Scan.Vertex Int -> W Indices
 indicesToIndices (Scan.Vertex p t n) = GStorable.W $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
 
+readPosTxtNormal :: Count -> BS.ByteString -> (
+	V.Vector (W Position), V.Vector (W TexCoord),
+	V.Vector (W Normal), V.Vector (W Face) )
+readPosTxtNormal Count {
+	countVertex = cv, countTexture = ct,
+	countNormal = cn, countFace = cf } = readV' cv ct cn cf
+
 readV' :: Int -> Int -> Int -> Int -> BS.ByteString ->
 	(V.Vector (W Position), V.Vector (W TexCoord), V.Vector (W Normal), V.Vector (W Face))
 readV' nv nt nn nf str = runST do
@@ -140,6 +153,11 @@ readV' nv nt nn nf str = runST do
 			writeSTRef ifc (i + 2)
 		_ -> pure ()
 	(,,,) <$> V.freeze vv <*> V.freeze t <*> V.freeze n <*> V.freeze f
+
+readPosNormal :: Count -> BS.ByteString -> (
+	V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face) )
+readPosNormal Count { countVertex = cv, countNormal = cn, countFace = cf } =
+	readVOld cv cn cf
 
 readVOld :: Int -> Int -> Int -> BS.ByteString -> (
 	V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face) )
@@ -256,11 +274,6 @@ data PositionTxtNormal = PositionTxtNormal {
 instance SizeAlignmentList PositionTxtNormal
 instance GStorable.G PositionTxtNormal
 
-takePosNormalFace :: Int ->
-	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face)) ->
-	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face))
-takePosNormalFace n (vs, ns, fs) = (V.take n vs, V.take n ns, V.take n fs)
-
 type W = GStorable.Wrap
 
 loosenFace :: V.Vector (W Face) -> V.Vector (W Indices)
@@ -268,3 +281,28 @@ loosenFace fs = V.generate ln \i -> let
 	GStorable.W (Face is0 is1 is2) = fs V.! (i `div` 3) in
 	case i `mod` 3 of 0 -> is0; 1 -> is1; 2 -> is2; _ -> error "never occur"
 	where ln = 3 * V.length fs
+
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (x, y, z) = f x y z
+
+readPosTxt :: Count -> BS.ByteString -> (
+	V.Vector (W Position), V.Vector (W TexCoord), V.Vector (W Face) )
+readPosTxt Count { countVertex = n, countTexture = n', countFace = n'' } bs =
+	runST $ readV n n' n'' bs
+
+facePosTxt ::
+	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Face) ->
+	V.Vector (W (W Position, W TexCoord))
+facePosTxt ps ts = indexPosTxt ps ts . loosenFace
+
+indexPosTxt ::
+	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Indices) ->
+	V.Vector (W (W Position, W TexCoord))
+indexPosTxt ps ts is = V.generate ln \i -> let
+	GStorable.W i' = is V.! i in GStorable.W $ indicesToPosTex' ps ts i'
+	where ln = V.length is
+
+indicesToPosTex' ::
+	V.Vector (W Position) -> V.Vector (W TexCoord) -> Indices ->
+	(W Position, W TexCoord)
+indicesToPosTex' ps ts (Indices ip it _) = (ps V.! (ip - 1), ts V.! (it - 1) )

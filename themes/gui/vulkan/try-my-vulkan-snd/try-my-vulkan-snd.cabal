@@ -69,6 +69,7 @@ library
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -111,6 +112,7 @@ executable my-glslc
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -154,6 +156,7 @@ executable try-allocation-callbacks
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -197,6 +200,7 @@ executable try-copy-descriptor-set
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -240,6 +244,7 @@ executable try-depth-buffering
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -283,6 +288,7 @@ executable try-depth-buffering-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -326,6 +332,7 @@ executable try-dynamic-dsc-sets
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -369,6 +376,7 @@ executable try-generating-mipmaps
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -412,6 +420,7 @@ executable try-generating-mipmaps-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -455,6 +464,7 @@ executable try-hello-world
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -498,6 +508,7 @@ executable try-image-buffer
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -541,6 +552,7 @@ executable try-loading-models
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -584,6 +596,7 @@ executable try-loading-models-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -627,6 +640,7 @@ executable try-multisampling
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -670,6 +684,7 @@ executable try-multisampling-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -713,6 +728,7 @@ executable try-no-dynamic-dsc-sets
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -756,6 +772,7 @@ executable try-pipeline-cache
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -799,6 +816,7 @@ executable try-query
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -842,6 +860,7 @@ executable try-rectangle
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -885,6 +904,7 @@ executable try-rectangle-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -928,6 +948,7 @@ executable try-saitan
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -971,6 +992,7 @@ executable try-saitan-float
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1014,6 +1036,7 @@ executable try-saitan-simple
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1057,6 +1080,7 @@ executable try-shaderc
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1100,6 +1124,7 @@ executable try-texel-buffer-float
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1143,6 +1168,7 @@ executable try-texel-buffer-word32
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1186,6 +1212,7 @@ executable try-texture
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1229,6 +1256,7 @@ executable try-texture-immutable-sampler-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1272,6 +1300,7 @@ executable try-texture-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1315,6 +1344,7 @@ executable try-triangle
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1358,6 +1388,7 @@ executable try-triangle-single
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1401,6 +1432,7 @@ executable try-vulkan-guide
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1444,6 +1476,7 @@ executable try-vulkan-guide-dynamic
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1487,6 +1520,7 @@ executable try-vulkan-guide-storage
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1530,6 +1564,7 @@ executable try-vulkan-guide-texture
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1573,6 +1608,7 @@ executable try-wavefront-obj
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1616,6 +1652,7 @@ executable try-yatteiku
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
@@ -1660,6 +1697,7 @@ test-suite try-my-vulkan-snd-test
     , temporary
     , text
     , time
+    , transformers
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr

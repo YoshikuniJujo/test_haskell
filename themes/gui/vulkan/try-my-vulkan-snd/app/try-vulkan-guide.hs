@@ -255,7 +255,7 @@ print3 (x, y, z) = print x >> print y >> print z
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> BS.ByteString -> IO ()
 run w ist g obj = let
 	cnt = WNew.countV obj
-	(vs, ns, fs) = WNew.readVOld (WNew.countVertex cnt) (WNew.countNormal cnt) (WNew.countFace cnt) obj in
+	(vs, ns, fs) = WNew.readPosNormal cnt obj in
 	print cnt >>
 --	print3 (takePosNormalFace 10 vnf) >>
 	let	vns = V.map positionNormalToVertex $ WNew.facePosNormal vs ns fs in

@@ -12,7 +12,5 @@ main :: IO ()
 main = do
 	[objfile] <- getArgs
 	obj <- BS.readFile objfile
-	let	New.Count { New.countVertex = cv, New.countNormal = cn, New.countFace = cf } =
-			New.countV obj
-		(vs, ns, fs) = New.readVOld cv cn cf obj
+	let	(vs, ns, fs) = New.readPosNormal (New.countV obj) obj
 	print $ New.facePosNormal vs ns fs

@@ -178,14 +178,9 @@ main = do
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil'
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
-	where
-	vertices s = V.map posTxtNormalToVertex
-		. uncurry4 WvNew.facePosTxtNormal $ WvNew.readV' cv ct cn cf s
-		where WvNew.Count {
-			WvNew.countVertex = cv,
-			WvNew.countTexture = ct,
-			WvNew.countNormal = cn,
-			WvNew.countFace = cf } = WvNew.countV s
+	where vertices s = V.map posTxtNormalToVertex
+		. uncurry4 WvNew.facePosTxtNormal
+		$ WvNew.readPosTxtNormal (WvNew.countV s) s
 
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w

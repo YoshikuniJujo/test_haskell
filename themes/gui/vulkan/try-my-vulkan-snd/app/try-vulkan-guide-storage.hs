@@ -164,13 +164,9 @@ main = do
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil'
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
-	where
-	vertices s = V.map posNormalToVertex
-		. uncurry3 WvNew.facePosNormal $ WvNew.readVOld cv cn cf s
-		where WvNew.Count {
-			WvNew.countVertex = cv,
-			WvNew.countNormal = cn,
-			WvNew.countFace = cf } = WvNew.countV s
+	where vertices s = V.map posNormalToVertex
+		. uncurry3 WvNew.facePosNormal
+		$ WvNew.readPosNormal (WvNew.countV s) s
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->

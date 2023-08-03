@@ -99,3 +99,5 @@ instance G Word32 where
 	gAlignment = alignment
 	gPeek = peek
 	gPoke = poke
+
+instance (Storable a, Storable b) => G (a, b)

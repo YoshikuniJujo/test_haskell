@@ -26,6 +26,7 @@ dependencies:
 - array
 - bytestring
 - text
+- transformers
 - monads-tf
 - filepath
 - JuicyPixels
