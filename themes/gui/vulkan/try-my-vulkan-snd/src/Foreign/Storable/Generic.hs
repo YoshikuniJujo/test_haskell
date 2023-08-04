@@ -2,9 +2,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Foreign.Storable.Generic (
-	module Foreign.Storable.Generic.Internal ) where
+
+	-- * STORABLE CLASS FOR GENERIC
+
+	G(..),
+
+	-- * WRAPPER
+
+	W(..)
+
+	) where
 
 import Foreign.Storable.Generic.TH
 import Foreign.Storable.Generic.Internal
 
-instanceTuples `mapM` [2 .. 10]
+instanceTuples `mapM` [2 .. 15]

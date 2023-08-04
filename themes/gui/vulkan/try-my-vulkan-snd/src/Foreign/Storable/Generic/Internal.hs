@@ -93,9 +93,3 @@ instance {-# OVERLAPPABLE #-} G a => Storable a where
 	peek = gPeek
 	poke = gPoke
 	-}
-
-instance G Word32 where
-	gSizeOf = sizeOf
-	gAlignment = alignment
-	gPeek = peek
-	gPoke = poke
