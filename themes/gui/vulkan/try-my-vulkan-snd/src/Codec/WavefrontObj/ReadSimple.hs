@@ -7,15 +7,14 @@
 
 module Codec.WavefrontObj.ReadSimple (
 
-	-- * FUNCTIONS
+	-- * READ
 
 	r, Result(..),
 
-	facePosTex, facePosNormal, facePosTexNormal,
+	-- * POSITIONS, TEXTURE COORDINATES AND NORMALS
 
-	-- * FACE, POSITION, TEX COORD AND NORMAL
-
-	Face(..), Position(..), TexCoord(..), Normal(..),
+	pos, posTex, posNormal, posTexNormal,
+	Position(..), TexCoord(..), Normal(..),
 
 	) where
 
@@ -40,8 +39,8 @@ r = readPosTexNormal <$> countV <*> id
 data Result = Result {
 	resultPositions :: V.Vector (GStr.W Position),
 	resultTexCoords :: V.Vector (GStr.W TexCoord),
-	resultNormal :: V.Vector (GStr.W Normal),
-	resultFace :: V.Vector (GStr.W Face) }
+	resultNormals :: V.Vector (GStr.W Normal),
+	resultFaces :: V.Vector (GStr.W Face) }
 	deriving Show
 
 countV :: BS.ByteString -> Count
@@ -148,11 +147,12 @@ readV' nv nt nn nf str = runST do
 		_ -> pure ()
 	Result <$> V.freeze vv <*> V.freeze t <*> V.freeze n <*> V.freeze f
 
-facePosNormal ::
-	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) ->
-	V.Vector (GStr.W Face) ->
+posNormal ::
+	Result ->
 	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W Normal)))
-facePosNormal ps ns = indexPosNormal ps ns . loosenFace
+posNormal
+	Result { resultPositions = ps, resultNormals = ns, resultFaces = fs } =
+	indexPosNormal ps ns $ loosenFace fs
 
 indexPosNormal ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) ->
@@ -164,10 +164,12 @@ indexPosNormal ps ns is = V.generateM ln \i -> case is V.! i of
 		Right . GStr.W $ (ps V.! (iv - 1), ns V.! (inml - 1))
 	where ln = V.length is
 
-facePosTexNormal ::
-	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Normal) -> V.Vector (GStr.W Face) ->
-	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord, GStr.W Normal)))
-facePosTexNormal ps ts ns = indexPosTexNormal ps ts ns . loosenFace
+posTexNormal :: Result -> Either String (
+	V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord, GStr.W Normal)) )
+posTexNormal Result {
+	resultPositions = ps, resultTexCoords = ts,
+	resultNormals = ns, resultFaces = fs } =
+	indexPosTexNormal ps ts ns $ loosenFace fs
 
 indexPosTexNormal ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) ->
@@ -188,10 +190,29 @@ loosenFace fs = V.generate ln \i -> let
 	case i `mod` 3 of 0 -> is0; 1 -> is1; 2 -> is2; _ -> error "never occur"
 	where ln = 3 * V.length fs
 
-facePosTex ::
-	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Face) ->
+pos :: Result -> Either String (V.Vector (GStr.W Position))
+pos Result { resultPositions = ps, resultFaces = fs } =
+	indexPos ps $ loosenFace fs
+
+indexPos ::
+	V.Vector (GStr.W Position) -> V.Vector (GStr.W Indices) ->
+	Either String (V.Vector (GStr.W Position))
+indexPos ps is = V.generateM ln \i -> let
+	GStr.W i' = is V.! i in indicesToPos' ps i'
+	where ln = V.length is
+
+indicesToPos' ::
+	V.Vector (GStr.W Position) -> Indices -> Either String (GStr.W Position)
+indicesToPos' ps = \case
+	(Indices _ 0 _) ->
+		Left "There is the vertex which has no texture coordinate."
+	(Indices ip it _) -> Right (ps V.! (ip - 1))
+
+posTex :: Result ->
 	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord)))
-facePosTex ps ts = indexPosTex ps ts . loosenFace
+posTex Result {
+	resultPositions = ps, resultTexCoords = ts, resultFaces = fs } =
+	indexPosTex ps ts $ loosenFace fs
 
 indexPosTex ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Indices) ->

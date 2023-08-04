@@ -182,8 +182,7 @@ main = do
 		else run w ist frszd vns
 	where
 	vertices s = V.map posTxtNormalToVertex
-		<$> result WvNew.facePosTexNormal (WvNew.r s)
-	result f (WNew.Result x y z w) = f x y z w
+		<$> WvNew.posTexNormal (WvNew.r s)
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->
