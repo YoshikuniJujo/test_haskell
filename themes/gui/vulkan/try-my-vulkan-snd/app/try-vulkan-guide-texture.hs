@@ -180,11 +180,10 @@ main = do
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil'
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
-	where vertices s = V.map posTxtNormalToVertex
-		<$> uncurry4 WvNew.facePosTexNormal (WvNew.r s)
-
-uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
-uncurry4 f (x, y, z, w) = f x y z w
+	where
+	vertices s = V.map posTxtNormalToVertex
+		<$> result WvNew.facePosTexNormal (WvNew.r s)
+	result f (WNew.Result x y z w) = f x y z w
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->

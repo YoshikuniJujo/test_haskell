@@ -43,7 +43,7 @@ readVertices :: BS.ByteString -> Either String (V.Vector (GStorable.W Vtx.Vertex
 readVertices bs =
 	V.map posTexToVertex <$> Wf.Read.facePosTex ps ts fs
 	where
-	(ps, ts, _ns, fs) = Wf.Read.r bs
+	Wf.Read.Result ps ts _ns fs = Wf.Read.r bs
 	posTexToVertex :: W (W Wf.Read.Position, W Wf.Read.TexCoord) -> W Vtx.Vertex
 	posTexToVertex (GStorable.W (
 		GStorable.W (Wf.Read.Position x y z),

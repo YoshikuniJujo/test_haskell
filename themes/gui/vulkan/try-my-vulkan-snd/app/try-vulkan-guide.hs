@@ -253,7 +253,7 @@ print3 :: (Show a, Show b, Show c) => (a, b, c) -> IO ()
 print3 (x, y, z) = print x >> print y >> print z
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> BS.ByteString -> IO ()
-run w ist g obj = let (vs, _ts, ns, fs) = WNew.r obj in
+run w ist g obj = let WNew.Result vs _ts ns fs = WNew.r obj in
 --	print3 (takePosNormalFace 10 vnf) >>
 	let	evns = V.map positionNormalToVertex <$> WNew.facePosNormal vs ns fs in
 	either error pure evns >>= \vns ->

@@ -9,17 +9,13 @@ module Codec.WavefrontObj.ReadSimple (
 
 	-- * FUNCTIONS
 
-	r,
+	r, Result(..),
 
 	facePosTex, facePosNormal, facePosTexNormal,
 
 	-- * FACE, POSITION, TEX COORD AND NORMAL
 
 	Face(..), Position(..), TexCoord(..), Normal(..),
-
-	-- * UNCLASSIFIED
-
-	uncurry3
 
 	) where
 
@@ -38,10 +34,15 @@ import qualified Foreign.Storable.Generic as GStr
 
 import qualified Codec.WavefrontObj.Scan as Scan
 
-r :: BS.ByteString -> (
-	V.Vector (GStr.W Position), V.Vector (GStr.W TexCoord),
-	V.Vector (GStr.W Normal), V.Vector (GStr.W Face) )
+r :: BS.ByteString -> Result
 r = readPosTexNormal <$> countV <*> id
+
+data Result = Result {
+	resultPositions :: V.Vector (GStr.W Position),
+	resultTexCoords :: V.Vector (GStr.W TexCoord),
+	resultNormal :: V.Vector (GStr.W Normal),
+	resultFace :: V.Vector (GStr.W Face) }
+	deriving Show
 
 countV :: BS.ByteString -> Count
 countV = snd . runWriter . Scan.s_ @_ @Word32 \case
@@ -97,15 +98,13 @@ instance GStr.G Indices
 indicesToIndices :: Scan.Vertex Int ->GStr.W Indices
 indicesToIndices (Scan.Vertex p t n) = GStr.W $ Indices p (fromMaybe 0 t) (fromMaybe 0 n)
 
-readPosTexNormal :: Count -> BS.ByteString -> (
-	V.Vector (GStr.W Position), V.Vector (GStr.W TexCoord),
-	V.Vector (GStr.W Normal), V.Vector (GStr.W Face) )
+readPosTexNormal :: Count -> BS.ByteString -> Result
 readPosTexNormal Count {
 	countVertex = cv, countTexture = ct,
 	countNormal = cn, countFace = cf } = readV' cv ct cn cf
 
-readV' :: Int -> Int -> Int -> Int -> BS.ByteString ->
-	(V.Vector (GStr.W Position), V.Vector (GStr.W TexCoord), V.Vector (GStr.W Normal), V.Vector (GStr.W Face))
+readV' :: Int -> Int -> Int -> Int -> BS.ByteString -> Result
+--	(V.Vector (GStr.W Position), V.Vector (GStr.W TexCoord), V.Vector (GStr.W Normal), V.Vector (GStr.W Face))
 readV' nv nt nn nf str = runST do
 	iv <- newSTRef 0
 	it <- newSTRef 0
@@ -147,7 +146,7 @@ readV' nv nt nn nf str = runST do
 				(indicesToIndices i4)
 			writeSTRef ifc (i + 2)
 		_ -> pure ()
-	(,,,) <$> V.freeze vv <*> V.freeze t <*> V.freeze n <*> V.freeze f
+	Result <$> V.freeze vv <*> V.freeze t <*> V.freeze n <*> V.freeze f
 
 facePosNormal ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) ->
@@ -188,9 +187,6 @@ loosenFace fs = V.generate ln \i -> let
 	GStr.W (Face is0 is1 is2) = fs V.! (i `div` 3) in
 	case i `mod` 3 of 0 -> is0; 1 -> is1; 2 -> is2; _ -> error "never occur"
 	where ln = 3 * V.length fs
-
-uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
-uncurry3 f (x, y, z) = f x y z
 
 facePosTex ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Face) ->

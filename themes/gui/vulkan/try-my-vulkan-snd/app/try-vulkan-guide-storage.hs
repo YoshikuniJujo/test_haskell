@@ -168,7 +168,7 @@ main = do
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where vertices s = V.map posNormalToVertex
-		<$> (\(ps, _ts, ns, fs) ->  WvNew.facePosNormal ps ns fs) (WvNew.r s)
+		<$> (\(WvNew.Result ps _ts ns fs) ->  WvNew.facePosNormal ps ns fs) (WvNew.r s)
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->

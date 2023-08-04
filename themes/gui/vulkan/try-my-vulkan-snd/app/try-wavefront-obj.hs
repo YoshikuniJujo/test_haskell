@@ -12,5 +12,5 @@ main :: IO ()
 main = do
 	[objfile] <- getArgs
 	obj <- BS.readFile objfile
-	let	(vs, _ts, ns, fs) = New.r obj
+	let	New.Result vs _ts ns fs = New.r obj
 	print $ New.facePosNormal vs ns fs
