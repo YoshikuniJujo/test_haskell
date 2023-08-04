@@ -27,20 +27,21 @@ import Codec.WavefrontObj.Read
 
 verticesIndices ::
 	FilePath -> IO (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
-verticesIndices fp = readVerticesIndices <$> BS.readFile fp
+verticesIndices fp =
+	either error pure =<< readVerticesIndices <$> BS.readFile fp
 	where
 	readVerticesIndices :: BS.ByteString ->
-		(V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
+		Either String (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
 	readVerticesIndices bs =
-		let vs = readVertices bs in (vs, makeIndices vs)
+		(\vs -> (vs, makeIndices vs)) <$> readVertices bs
 	makeIndices :: V.Vector (GStorable.W Vtx.Vertex) -> V.Vector Word32
 	makeIndices vs = V.generate (V.length vs) \i -> fromIntegral i
 
 type W = GStorable.W
 
-readVertices :: BS.ByteString -> V.Vector (GStorable.W Vtx.Vertex)
+readVertices :: BS.ByteString -> Either String (V.Vector (GStorable.W Vtx.Vertex))
 readVertices bs =
-	V.map posTexToVertex . uncurry3 facePosTex $ readPosTex (countV bs) bs
+	V.map posTexToVertex <$> uncurry3 facePosTex (readPosTex (countV bs) bs)
 	where
 	posTexToVertex :: W (W Position, W TexCoord) -> W Vtx.Vertex
 	posTexToVertex (GStorable.W (

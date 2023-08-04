@@ -11,7 +11,9 @@ module Codec.WavefrontObj.Read (
 
 	countV,
 	
-	readPosTex, readPosNormal, readPosTexNormal,
+	readPosTex,
+	readPosNormal,
+	readPosTexNormal,
 
 	facePosTex, facePosNormal, facePosTexNormal,
 
@@ -230,31 +232,37 @@ readV n n' n'' s = do
 	(,,) <$> V.freeze v <*> V.freeze t <*> V.freeze idx
 
 facePosNormal ::
-	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) -> V.Vector (GStr.W Face) ->
-	V.Vector (GStr.W (GStr.W Position, GStr.W Normal))
+	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) ->
+	V.Vector (GStr.W Face) ->
+	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W Normal)))
 facePosNormal ps ns = indexPosNormal ps ns . loosenFace
 
 indexPosNormal ::
-	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) -> V.Vector (GStr.W Indices) ->
-	V.Vector (GStr.W (GStr.W Position, GStr.W Normal))
-indexPosNormal ps ns is = V.generate ln \i -> let
-	GStr.W (Indices iv _ inml) = is V.! i
-	in
-	GStr.W $ (ps V.! (iv - 1), ns V.! (inml - 1))
+	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) ->
+	V.Vector (GStr.W Indices) ->
+	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W Normal)))
+indexPosNormal ps ns is = V.generateM ln \i -> case is V.! i of
+	GStr.W (Indices _ _ 0) -> Left "There is the vertex which has no normals."
+	GStr.W (Indices iv _ inml) ->
+		Right . GStr.W $ (ps V.! (iv - 1), ns V.! (inml - 1))
 	where ln = V.length is
 
 facePosTexNormal ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Normal) -> V.Vector (GStr.W Face) ->
-	V.Vector (GStr.W PositionTexNormal)
+	Either String (V.Vector (GStr.W PositionTexNormal))
 facePosTexNormal ps ts ns = indexPosTexNormal ps ts ns . loosenFace
 
 indexPosTexNormal ::
-	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Normal) -> V.Vector (GStr.W Indices) ->
-	V.Vector (GStr.W PositionTexNormal)
-indexPosTexNormal ps ts ns is = V.generate ln \i -> let
-	GStr.W (Indices iv it inml) = is V.! i
-	in
-	GStr.W $ PositionTexNormal (ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
+	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) ->
+	V.Vector (GStr.W Normal) -> V.Vector (GStr.W Indices) ->
+	Either String (V.Vector (GStr.W PositionTexNormal))
+indexPosTexNormal ps ts ns is = V.generateM ln \i -> case is V.! i of
+	GStr.W (Indices _ 0 0) -> Left $
+		"There is the vertex which has no texture coordinates or " ++
+		"has no normals"
+	GStr.W (Indices iv it inml) ->
+		Right . GStr.W $ PositionTexNormal
+			(ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
 	where ln = V.length is
 
 data PositionTexNormal = PositionTexNormal {
@@ -282,17 +290,21 @@ readPosTex Count { countVertex = n, countTexture = n', countFace = n'' } bs =
 
 facePosTex ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Face) ->
-	V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord))
+	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord)))
 facePosTex ps ts = indexPosTex ps ts . loosenFace
 
 indexPosTex ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Indices) ->
-	V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord))
-indexPosTex ps ts is = V.generate ln \i -> let
-	GStr.W i' = is V.! i in GStr.W $ indicesToPosTex' ps ts i'
+	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord)))
+indexPosTex ps ts is = V.generateM ln \i -> let
+	GStr.W i' = is V.! i in
+	GStr.W <$> indicesToPosTex' ps ts i'
 	where ln = V.length is
 
 indicesToPosTex' ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> Indices ->
-	(GStr.W Position, GStr.W TexCoord)
-indicesToPosTex' ps ts (Indices ip it _) = (ps V.! (ip - 1), ts V.! (it - 1) )
+	Either String (GStr.W Position, GStr.W TexCoord)
+indicesToPosTex' ps ts = \case
+	(Indices _ 0 _) ->
+		Left "There is the vertex which has no texture coordinate."
+	(Indices ip it _) -> Right (ps V.! (ip - 1), ts V.! (it - 1) )

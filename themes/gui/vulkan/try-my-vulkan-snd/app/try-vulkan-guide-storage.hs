@@ -161,14 +161,15 @@ frashRate = 2
 main :: IO ()
 main = do
 	[objfile] <- getArgs
-	vns <- vertices <$> BS.readFile objfile
+	evns <- vertices <$> BS.readFile objfile
+	vns <- either error pure evns
 	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil'
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where vertices s = V.map posNormalToVertex
-		. uncurry3 WvNew.facePosNormal
-		$ WvNew.readPosNormal (WvNew.countV s) s
+		<$> uncurry3 WvNew.facePosNormal
+		(WvNew.readPosNormal (WvNew.countV s) s)
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->

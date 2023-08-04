@@ -145,9 +145,6 @@ import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSe
 import qualified Codec.WavefrontObj.Read as WNew
 import Tools
 
-import qualified Foreign.Storable.Generic as Str.G
-import qualified Foreign.Storable.Generic as GStorable
-
 main :: IO ()
 main = do
 	[objfile] <- getArgs
@@ -261,7 +258,8 @@ run w ist g obj = let
 	(vs, ns, fs) = WNew.readPosNormal cnt obj in
 	print cnt >>
 --	print3 (takePosNormalFace 10 vnf) >>
-	let	vns = V.map positionNormalToVertex $ WNew.facePosNormal vs ns fs in
+	let	evns = V.map positionNormalToVertex <$> WNew.facePosNormal vs ns fs in
+	either error pure evns >>= \vns ->
 --	print vns >>
 	Glfw.createWindowSurface ist w nil' \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->

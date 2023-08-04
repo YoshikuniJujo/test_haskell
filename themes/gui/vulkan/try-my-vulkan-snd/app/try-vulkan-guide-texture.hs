@@ -174,15 +174,16 @@ main = do
 	[objfile] <- getArgs
 	s <- BS.readFile objfile
 	print $ WvNew.countV s
-	let	vns = vertices s
+	let	evns = vertices s
+	vns <- either error pure evns
 --	print vns
 	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil'
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where vertices s = V.map posTxtNormalToVertex
-		. uncurry4 WvNew.facePosTexNormal
-		$ WvNew.readPosTexNormal (WvNew.countV s) s
+		<$> uncurry4 WvNew.facePosTexNormal
+		(WvNew.readPosTexNormal (WvNew.countV s) s)
 
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w
