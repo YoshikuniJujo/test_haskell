@@ -35,6 +35,8 @@ library
       Data.Traversable.Utils
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic
+      Foreign.Storable.Generic.Internal
+      Foreign.Storable.Generic.TH
       Glfw
       Glfw.Middle
       Gpu.Vulkan.Cglm
