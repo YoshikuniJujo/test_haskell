@@ -25,10 +25,6 @@ module Codec.WavefrontObj.Read (
 
 	Face(..), Position(..), TexCoord(..), Normal(..),
 
-	-- * POSITION NORMAL
-
-	PositionTexNormal(..),
-
 	-- * UNCLASSIFIED
 
 	uncurry3
@@ -249,30 +245,21 @@ indexPosNormal ps ns is = V.generateM ln \i -> case is V.! i of
 
 facePosTexNormal ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Normal) -> V.Vector (GStr.W Face) ->
-	Either String (V.Vector (GStr.W PositionTexNormal))
+	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord, GStr.W Normal)))
 facePosTexNormal ps ts ns = indexPosTexNormal ps ts ns . loosenFace
 
 indexPosTexNormal ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) ->
 	V.Vector (GStr.W Normal) -> V.Vector (GStr.W Indices) ->
-	Either String (V.Vector (GStr.W PositionTexNormal))
+	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord, GStr.W Normal)))
 indexPosTexNormal ps ts ns is = V.generateM ln \i -> case is V.! i of
 	GStr.W (Indices _ 0 0) -> Left $
 		"There is the vertex which has no texture coordinates or " ++
 		"has no normals"
 	GStr.W (Indices iv it inml) ->
-		Right . GStr.W $ PositionTexNormal
+		Right . GStr.W $ (,,)
 			(ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
 	where ln = V.length is
-
-data PositionTexNormal = PositionTexNormal {
-	positionTexNormalPosition ::GStr.W Position,
-	positionTexNormalTex ::GStr.W TexCoord,
-	positionTexNormalNormal ::GStr.W Normal }
-	deriving (Show, Generic)
-
-instance SizeAlignmentList PositionTexNormal
-instance GStr.G PositionTexNormal
 
 loosenFace :: V.Vector (GStr.W Face) -> V.Vector (GStr.W Indices)
 loosenFace fs = V.generate ln \i -> let

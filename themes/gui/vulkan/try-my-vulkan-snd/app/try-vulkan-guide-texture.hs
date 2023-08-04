@@ -1778,8 +1778,11 @@ posNormalToVertex (GStorable.W ((,)
 		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL }
 
-posTxtNormalToVertex :: GStorable.W WvNew.PositionTexNormal -> Vertex
-posTxtNormalToVertex (GStorable.W (WvNew.PositionTexNormal
+posTxtNormalToVertex :: GStorable.W (
+	GStorable.W WvNew.Position,
+	GStorable.W WvNew.TexCoord,
+	GStorable.W WvNew.Normal ) -> Vertex
+posTxtNormalToVertex (GStorable.W ((,,)
 	(GStorable.W (WvNew.Position x y z)) (GStorable.W (WvNew.TexCoord p q)) (GStorable.W (WvNew.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
