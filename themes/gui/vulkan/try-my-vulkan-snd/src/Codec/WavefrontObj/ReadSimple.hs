@@ -22,10 +22,12 @@ import GHC.Generics
 import Foreign.Storable.SizeAlignment
 import Control.Monad.ST
 import Control.Monad.Trans.Writer.CPS
+import Data.Foldable qualified as Fld
 import Data.STRef
 import Data.Maybe
 import Data.Word
 
+import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Storable.Mutable as MV
 import qualified Data.ByteString as BS
@@ -48,8 +50,7 @@ countV = snd . runWriter . Scan.s_ @_ @Word32 \case
 	Scan.V _ _ _ -> tell $ mempty { countVertex = 1 }
 	Scan.Vt _ _ -> tell $ mempty { countTexture = 1 }
 	Scan.Vn _ _ _ -> tell $ mempty { countNormal = 1 }
-	Scan.F _ _ _ -> tell $ mempty { countFace = 1 }
-	Scan.F4 _ _ _ _ -> tell $ mempty { countFace = 2 }
+	Scan.F _ _ vs -> tell $ mempty { countFace = NE.length vs }
 	_ -> tell mempty
 
 data Count = Count {
@@ -85,6 +86,13 @@ instance SizeAlignmentList Normal
 instance GStr.G Normal
 
 data Face = Face (GStr.W Indices) (GStr.W Indices) (GStr.W Indices) deriving (Show, Generic)
+
+faces :: GStr.W Indices -> GStr.W Indices -> NE.NonEmpty (GStr.W Indices) -> NE.NonEmpty Face
+faces i1 i2 (i3 NE.:| is) = Face i1 i2 i3 NE.:| faces' i1 i3 is
+
+faces' :: GStr.W Indices -> GStr.W Indices -> [GStr.W Indices] -> [Face]
+faces' _ _ [] = []
+faces' i1 i2 (i3 : is) = Face i1 i2 i3 : faces' i1 i3 is
 
 instance SizeAlignmentList Face
 instance GStr.G Face
@@ -126,24 +134,12 @@ readV' nv nt nn nf str = runST do
 			i <- readSTRef inml
 			MV.write n i . GStr.W $ Normal x y z
 			writeSTRef inml (i + 1)
-		Scan.F i1 i2 i3 -> do
+		Scan.F i1 i2 vs -> do
 			i <- readSTRef ifc
-			MV.write f i . GStr.W $ Face
-				(indicesToIndices i1)
-				(indicesToIndices i2)
-				(indicesToIndices i3)
-			writeSTRef ifc (i + 1)
-		Scan.F4 i1 i2 i3 i4 -> do
-			i <- readSTRef ifc
-			MV.write f i . GStr.W $ Face
-				(indicesToIndices i1)
-				(indicesToIndices i2)
-				(indicesToIndices i3)
-			MV.write f (i + 1) . GStr.W $ Face
-				(indicesToIndices i1)
-				(indicesToIndices i3)
-				(indicesToIndices i4)
-			writeSTRef ifc (i + 2)
+			uncurry (MV.write f) `Fld.mapM_` NE.zip (NE.iterate (+ 1) i) (GStr.W <$> faces
+				(indicesToIndices i1) (indicesToIndices i2)
+				(indicesToIndices <$> vs))
+			writeSTRef ifc (i + NE.length vs)
 		_ -> pure ()
 	Result <$> V.freeze vv <*> V.freeze t <*> V.freeze n <*> V.freeze f
 
@@ -204,9 +200,7 @@ indexPos ps is = V.generateM ln \i -> let
 indicesToPos' ::
 	V.Vector (GStr.W Position) -> Indices -> Either String (GStr.W Position)
 indicesToPos' ps = \case
-	(Indices _ 0 _) ->
-		Left "There is the vertex which has no texture coordinate."
-	(Indices ip it _) -> Right (ps V.! (ip - 1))
+	(Indices ip _it _) -> Right (ps V.! (ip - 1))
 
 posTex :: Result ->
 	Either String (V.Vector (GStr.W (GStr.W Position, GStr.W TexCoord)))
@@ -227,5 +221,5 @@ indicesToPosTex' ::
 	Either String (GStr.W Position, GStr.W TexCoord)
 indicesToPosTex' ps ts = \case
 	(Indices _ 0 _) ->
-		Left "There is the vertex which has no texture coordinate."
+		Left "There is the vertex which has no texture coordinates."
 	(Indices ip it _) -> Right (ps V.! (ip - 1), ts V.! (it - 1) )

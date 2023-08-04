@@ -28,8 +28,8 @@ data Atom i
 	= V Float Float Float
 	| Vt Float Float
 	| Vn Float Float Float
-	| F (Vertex i) (Vertex i) (Vertex i)
-	| F4 (Vertex i) (Vertex i) (Vertex i) (Vertex i)
+	| F (Vertex i) (Vertex i) (NonEmpty (Vertex i))
+	| L (Vertex i) (NonEmpty (Vertex i))
 	| Mtllib FilePath
 	| Usemtl String
 	| O String
@@ -49,8 +49,8 @@ waveFrontAtom = \case
 	"v" :| [x, y, z] -> V (bread x) (bread y) (bread z)
 	"vt" :| [x, y] -> Vt (bread x) (bread y)
 	"vn" :| [x, y, z] -> Vn (bread x) (bread y) (bread z)
-	"f" :| [a, b, c] -> F (vertex a) (vertex b) (vertex c)
-	"f" :| [a, b, c, d] -> F4 (vertex a) (vertex b) (vertex c) (vertex d)
+	"f" :| (a : b : c : vs) -> F (vertex a) (vertex b) (vertex c :| (vertex <$> vs))
+	"l" :| (a : b : vs) -> L (vertex a) (vertex b :| (vertex <$> vs))
 	"mtllib" :| [fp] -> Mtllib $ BSC.unpack fp
 	"usemtl" :| [nm] -> Usemtl $ BSC.unpack nm
 	"o" :| [nm] -> O $ BSC.unpack nm
