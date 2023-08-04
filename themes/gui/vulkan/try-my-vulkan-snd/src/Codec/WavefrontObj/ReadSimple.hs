@@ -5,21 +5,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.WavefrontObj.Read (
+module Codec.WavefrontObj.ReadSimple (
 
 	-- * FUNCTIONS
 
-	countV,
-	
-	readPosTex,
-	readPosNormal,
-	readPosTexNormal,
+	r,
 
 	facePosTex, facePosNormal, facePosTexNormal,
-
-	-- * COUNT
-
-	Count,
 
 	-- * FACE, POSITION, TEX COORD AND NORMAL
 
@@ -45,6 +37,11 @@ import qualified Data.ByteString as BS
 import qualified Foreign.Storable.Generic as GStr
 
 import qualified Codec.WavefrontObj.Scan as Scan
+
+r :: BS.ByteString -> (
+	V.Vector (GStr.W Position), V.Vector (GStr.W TexCoord),
+	V.Vector (GStr.W Normal), V.Vector (GStr.W Face) )
+r = readPosTexNormal <$> countV <*> id
 
 countV :: BS.ByteString -> Count
 countV = snd . runWriter . Scan.s_ @_ @Word32 \case
@@ -152,81 +149,6 @@ readV' nv nt nn nf str = runST do
 		_ -> pure ()
 	(,,,) <$> V.freeze vv <*> V.freeze t <*> V.freeze n <*> V.freeze f
 
-readPosNormal :: Count -> BS.ByteString -> (
-	V.Vector (GStr.W Position), V.Vector (GStr.W Normal), V.Vector (GStr.W Face) )
-readPosNormal Count { countVertex = cv, countNormal = cn, countFace = cf } =
-	readVOld cv cn cf
-
-readVOld :: Int -> Int -> Int -> BS.ByteString -> (
-	V.Vector (GStr.W Position), V.Vector (GStr.W Normal), V.Vector (GStr.W Face) )
-readVOld n n' n'' s = runST $ do
-	ri <- newSTRef 0
-	ri' <- newSTRef 0
-	ri'' <- newSTRef 0
-	v <- MV.new n
-	t <- MV.new n'
-	idx <- MV.new n''
-	flip (Scan.s_ @_ @Int) s \case
-		Scan.V x y z -> do
-			i <- readSTRef ri
-			MV.write v i . GStr.W $ Position x y z
-			writeSTRef ri (i + 1)
-		Scan.Vn x y z -> do
-			i' <- readSTRef ri'
-			MV.write t i' . GStr.W $ Normal x y z
-			writeSTRef ri' (i' + 1)
-		Scan.F idx1 idx2 idx3 -> do
-			i'' <- readSTRef ri''
-			MV.write idx i''
-				. GStr.W $ Face
-					(indicesToIndices idx1)
-					(indicesToIndices idx2)
-					(indicesToIndices idx3)
-			writeSTRef ri'' (i'' + 1)
-		Scan.F4 i1 i2 i3 i4 -> do
-			i'' <- readSTRef ri''
-			MV.write idx i'' . GStr.W $ Face
-				(indicesToIndices i1)
-				(indicesToIndices i2)
-				(indicesToIndices i3)
-			MV.write idx (i'' + 1) . GStr.W $ Face
-				(indicesToIndices i1)
-				(indicesToIndices i3)
-				(indicesToIndices i4)
-			writeSTRef ri'' (i'' + 2)
-		_ -> pure ()
-	(,,) <$> V.freeze v <*> V.freeze t <*> V.freeze idx
-
-readV :: Int -> Int -> Int -> BS.ByteString -> ST s (
-	V.Vector (GStr.W Position), V.Vector (GStr.W TexCoord),
-	V.Vector (GStr.W Face))
-readV n n' n'' s = do
-	ri <- newSTRef 0
-	ri' <- newSTRef 0
-	ri'' <- newSTRef 0
-	v <- MV.new n
-	t <- MV.new n'
-	idx <- MV.new n''
-	flip (Scan.s_ @_ @Int) s \case
-		Scan.V x y z -> do
-			i <- readSTRef ri
-			MV.write v i . GStr.W $ Position x y z
-			writeSTRef ri (i + 1)
-		Scan.Vt x y -> do
-			i' <- readSTRef ri'
-			MV.write t i' . GStr.W $ TexCoord x (1 - y)
-			writeSTRef ri' (i' + 1)
-		Scan.F idx1 idx2 idx3 -> do
-			i'' <- readSTRef ri''
-			MV.write idx i''
-				. GStr.W $ Face
-					(indicesToIndices idx1)
-					(indicesToIndices idx2)
-					(indicesToIndices idx3)
-			writeSTRef ri'' (i'' + 1)
-		_ -> pure ()
-	(,,) <$> V.freeze v <*> V.freeze t <*> V.freeze idx
-
 facePosNormal ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W Normal) ->
 	V.Vector (GStr.W Face) ->
@@ -269,11 +191,6 @@ loosenFace fs = V.generate ln \i -> let
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
-
-readPosTex :: Count -> BS.ByteString -> (
-	V.Vector (GStr.W Position), V.Vector (GStr.W TexCoord), V.Vector (GStr.W Face) )
-readPosTex Count { countVertex = n, countTexture = n', countFace = n'' } bs =
-	runST $ readV n n' n'' bs
 
 facePosTex ::
 	V.Vector (GStr.W Position) -> V.Vector (GStr.W TexCoord) -> V.Vector (GStr.W Face) ->

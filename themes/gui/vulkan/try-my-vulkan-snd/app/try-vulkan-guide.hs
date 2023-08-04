@@ -142,7 +142,7 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
-import qualified Codec.WavefrontObj.Read as WNew
+import qualified Codec.WavefrontObj.ReadSimple as WNew
 import Tools
 
 main :: IO ()
@@ -253,10 +253,7 @@ print3 :: (Show a, Show b, Show c) => (a, b, c) -> IO ()
 print3 (x, y, z) = print x >> print y >> print z
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> BS.ByteString -> IO ()
-run w ist g obj = let
-	cnt = WNew.countV obj
-	(vs, ns, fs) = WNew.readPosNormal cnt obj in
-	print cnt >>
+run w ist g obj = let (vs, _ts, ns, fs) = WNew.r obj in
 --	print3 (takePosNormalFace 10 vnf) >>
 	let	evns = V.map positionNormalToVertex <$> WNew.facePosNormal vs ns fs in
 	either error pure evns >>= \vns ->

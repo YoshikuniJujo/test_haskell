@@ -143,8 +143,8 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
-import qualified Codec.WavefrontObj.Read as WvNew
-import qualified Codec.WavefrontObj.Read as WNew
+import qualified Codec.WavefrontObj.ReadSimple as WvNew
+import qualified Codec.WavefrontObj.ReadSimple as WNew
 import Tools
 
 maxFramesInFlight :: Integral n => n
@@ -165,8 +165,7 @@ main = do
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where vertices s = V.map posNormalToVertex
-		<$> uncurry3 WvNew.facePosNormal
-		(WvNew.readPosNormal (WvNew.countV s) s)
+		<$> (\(ps, _ts, ns, fs) -> WvNew.facePosNormal ps ns fs) (WvNew.r s)
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->

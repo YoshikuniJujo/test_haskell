@@ -29,7 +29,7 @@ source-repository head
 library
   exposed-modules:
       Codec.Picture.Tools
-      Codec.WavefrontObj.Read
+      Codec.WavefrontObj.ReadSimple
       Codec.WavefrontObj.Scan
       Data.Bits.Utils
       Data.Traversable.Utils

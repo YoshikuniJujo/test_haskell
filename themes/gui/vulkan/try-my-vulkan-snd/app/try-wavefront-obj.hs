@@ -6,11 +6,11 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 
-import qualified Codec.WavefrontObj.Read as New
+import qualified Codec.WavefrontObj.ReadSimple as New
 
 main :: IO ()
 main = do
 	[objfile] <- getArgs
 	obj <- BS.readFile objfile
-	let	(vs, ns, fs) = New.readPosNormal (New.countV obj) obj
+	let	(vs, _ts, ns, fs) = New.r obj
 	print $ New.facePosNormal vs ns fs

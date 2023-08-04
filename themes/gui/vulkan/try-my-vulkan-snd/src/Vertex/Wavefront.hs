@@ -23,7 +23,7 @@ import qualified Foreign.Storable.Generic as GStorable
 import qualified Vertex as Vtx
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Codec.WavefrontObj.Read
+import Codec.WavefrontObj.ReadSimple qualified as Wf.Read
 
 verticesIndices ::
 	FilePath -> IO (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
@@ -41,12 +41,13 @@ type W = GStorable.W
 
 readVertices :: BS.ByteString -> Either String (V.Vector (GStorable.W Vtx.Vertex))
 readVertices bs =
-	V.map posTexToVertex <$> uncurry3 facePosTex (readPosTex (countV bs) bs)
+	V.map posTexToVertex <$> Wf.Read.facePosTex ps ts fs
 	where
-	posTexToVertex :: W (W Position, W TexCoord) -> W Vtx.Vertex
+	(ps, ts, _ns, fs) = Wf.Read.r bs
+	posTexToVertex :: W (W Wf.Read.Position, W Wf.Read.TexCoord) -> W Vtx.Vertex
 	posTexToVertex (GStorable.W (
-		GStorable.W (Position x y z),
-		GStorable.W (TexCoord u v) )) = GStorable.W $ Vtx.Vertex
+		GStorable.W (Wf.Read.Position x y z),
+		GStorable.W (Wf.Read.TexCoord u v) )) = GStorable.W $ Vtx.Vertex
 		(Vtx.Pos . Cglm.Vec3 $ x :. y :. z :. NilL)
 		(Vtx.Color . Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
-		(Vtx.TexCoord . Cglm.Vec2 $ u :. v :. NilL)
+		(Vtx.TexCoord . Cglm.Vec2 $ u :. (1 - v) :. NilL)

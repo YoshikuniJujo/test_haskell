@@ -147,8 +147,8 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
-import qualified Codec.WavefrontObj.Read as WvNew
-import qualified Codec.WavefrontObj.Read as WNew
+import qualified Codec.WavefrontObj.ReadSimple as WvNew
+import qualified Codec.WavefrontObj.ReadSimple as WNew
 import Tools
 
 import Foreign.Ptr
@@ -173,7 +173,6 @@ main :: IO ()
 main = do
 	[objfile] <- getArgs
 	s <- BS.readFile objfile
-	print $ WvNew.countV s
 	let	evns = vertices s
 	vns <- either error pure evns
 --	print vns
@@ -182,8 +181,7 @@ main = do
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where vertices s = V.map posTxtNormalToVertex
-		<$> uncurry4 WvNew.facePosTexNormal
-		(WvNew.readPosTexNormal (WvNew.countV s) s)
+		<$> uncurry4 WvNew.facePosTexNormal (WvNew.r s)
 
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w
