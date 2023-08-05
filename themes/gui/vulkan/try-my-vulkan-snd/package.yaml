@@ -55,6 +55,7 @@ dependencies:
 - try-codec-wavefront-obj
 - try-gpu-vulkan-khr-glfw
 - try-gpu-vulkan-middle-khr-glfw
+- try-gpu-vulkan-cglm
 
 - directory
 - temporary
