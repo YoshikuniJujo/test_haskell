@@ -3,7 +3,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Glfw.Middle where
+module Gpu.Vulkan.Khr.Surface.Glfw.Middle where
 
 import Foreign.Marshal
 import Foreign.Storable

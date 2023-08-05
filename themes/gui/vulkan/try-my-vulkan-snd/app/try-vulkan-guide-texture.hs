@@ -52,7 +52,7 @@ import qualified Data.ByteString as BS
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Glfw as Glfw
+import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 
 import Foreign.Storable.Generic qualified as Str.G

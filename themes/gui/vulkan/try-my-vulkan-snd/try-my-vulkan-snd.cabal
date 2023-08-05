@@ -32,10 +32,10 @@ library
       Data.Bits.Utils
       Data.Traversable.Utils
       Data.Vector.Storable.Utils
-      Glfw
-      Glfw.Middle
       Gpu.Vulkan.Cglm
       Gpu.Vulkan.Cglm.Core
+      Gpu.Vulkan.Khr.Surface.Glfw
+      Gpu.Vulkan.Khr.Surface.Glfw.Middle
       Sample.GetOpt
       Sample.Image
       ThEnv
