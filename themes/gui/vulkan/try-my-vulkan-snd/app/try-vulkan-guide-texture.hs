@@ -147,8 +147,8 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
-import qualified Codec.WavefrontObj.ReadSimple as WvNew
-import qualified Codec.WavefrontObj.ReadSimple as WNew
+import qualified Codec.WavefrontObj.ReadFaceSimple as WvNew
+import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
 import Tools
 
 import Foreign.Ptr

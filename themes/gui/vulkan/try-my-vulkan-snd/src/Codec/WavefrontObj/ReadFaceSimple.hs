@@ -5,7 +5,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.WavefrontObj.ReadSimple (
+module Codec.WavefrontObj.ReadFaceSimple (
 
 	-- * READ
 

@@ -23,7 +23,7 @@ import qualified Foreign.Storable.Generic as GStorable
 import qualified Vertex as Vtx
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Codec.WavefrontObj.ReadSimple qualified as Wf.Read
+import Codec.WavefrontObj.ReadFaceSimple qualified as Wf.Read
 
 verticesIndices ::
 	FilePath -> IO (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)

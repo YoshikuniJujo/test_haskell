@@ -6,7 +6,7 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 
-import qualified Codec.WavefrontObj.ReadSimple as New
+import qualified Codec.WavefrontObj.ReadFaceSimple as New
 
 main :: IO ()
 main = do
