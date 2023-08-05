@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 8543a47368889c2717f2365c8f258094064fe334
+  commit: e473a6ad75655d0840541842a06f452a28f597b4
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
@@ -62,6 +62,7 @@ extra-deps:
   - features/ffi/pointer/try-storable-hetero-list
   - themes/type_level/typelevel-tools
   - features/ffi/pointer/try-storable-generic
+  - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
 - union-color-0.1.2.0

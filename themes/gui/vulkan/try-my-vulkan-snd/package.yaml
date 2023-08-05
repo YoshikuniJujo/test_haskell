@@ -52,6 +52,7 @@ dependencies:
 - try-vulkan-middle
 - try-vulkan-middle-khr
 - typelevel-tools
+- try-codec-wavefront-obj
 
 - directory
 - temporary
