@@ -34,7 +34,6 @@ library
       Data.Vector.Storable.Utils
       Gpu.Vulkan.Cglm
       Gpu.Vulkan.Cglm.Core
-      Gpu.Vulkan.Khr.Surface.Glfw
       Sample.GetOpt
       Sample.Image
       ThEnv
@@ -70,6 +69,7 @@ library
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -116,6 +116,7 @@ executable my-glslc
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -163,6 +164,7 @@ executable try-allocation-callbacks
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -210,6 +212,7 @@ executable try-copy-descriptor-set
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -257,6 +260,7 @@ executable try-depth-buffering
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -304,6 +308,7 @@ executable try-depth-buffering-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -351,6 +356,7 @@ executable try-dynamic-dsc-sets
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -398,6 +404,7 @@ executable try-generating-mipmaps
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -445,6 +452,7 @@ executable try-generating-mipmaps-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -492,6 +500,7 @@ executable try-hello-world
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -539,6 +548,7 @@ executable try-image-buffer
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -586,6 +596,7 @@ executable try-loading-models
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -633,6 +644,7 @@ executable try-loading-models-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -680,6 +692,7 @@ executable try-multisampling
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -727,6 +740,7 @@ executable try-multisampling-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -774,6 +788,7 @@ executable try-no-dynamic-dsc-sets
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -821,6 +836,7 @@ executable try-pipeline-cache
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -868,6 +884,7 @@ executable try-query
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -915,6 +932,7 @@ executable try-rectangle
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -962,6 +980,7 @@ executable try-rectangle-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1009,6 +1028,7 @@ executable try-saitan
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1056,6 +1076,7 @@ executable try-saitan-float
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1103,6 +1124,7 @@ executable try-saitan-simple
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1150,6 +1172,7 @@ executable try-shaderc
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1197,6 +1220,7 @@ executable try-texel-buffer-float
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1244,6 +1268,7 @@ executable try-texel-buffer-word32
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1291,6 +1316,7 @@ executable try-texture
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1338,6 +1364,7 @@ executable try-texture-immutable-sampler-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1385,6 +1412,7 @@ executable try-texture-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1432,6 +1460,7 @@ executable try-triangle
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1479,6 +1508,7 @@ executable try-triangle-single
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1526,6 +1556,7 @@ executable try-vulkan-guide
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1573,6 +1604,7 @@ executable try-vulkan-guide-dynamic
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1620,6 +1652,7 @@ executable try-vulkan-guide-storage
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1667,6 +1700,7 @@ executable try-vulkan-guide-texture
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1714,6 +1748,7 @@ executable try-wavefront-obj
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1761,6 +1796,7 @@ executable try-yatteiku
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
@@ -1809,6 +1845,7 @@ test-suite try-my-vulkan-snd-test
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
     , try-gpu-vulkan-middle-khr-glfw
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools

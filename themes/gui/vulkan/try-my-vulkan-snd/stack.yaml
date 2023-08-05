@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 30e46fa27d2d09ce449af43a5133fbb4b1a036bc
+  commit: 61a8c2b7a5d72c808441e961fa3184fc73086764
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
@@ -63,6 +63,7 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - features/ffi/pointer/try-storable-generic
   - themes/codec/try-codec-wavefront-obj
+  - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c

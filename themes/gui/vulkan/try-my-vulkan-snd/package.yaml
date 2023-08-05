@@ -53,6 +53,7 @@ dependencies:
 - try-vulkan-middle-khr
 - typelevel-tools
 - try-codec-wavefront-obj
+- try-gpu-vulkan-khr-glfw
 - try-gpu-vulkan-middle-khr-glfw
 
 - directory
