@@ -34,9 +34,6 @@ library
       Data.Bits.Utils
       Data.Traversable.Utils
       Data.Vector.Storable.Utils
-      Foreign.Storable.Generic
-      Foreign.Storable.Generic.Internal
-      Foreign.Storable.Generic.TH
       Glfw
       Glfw.Middle
       Gpu.Vulkan.Cglm
@@ -79,6 +76,7 @@ library
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -123,6 +121,7 @@ executable my-glslc
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -167,6 +166,7 @@ executable try-allocation-callbacks
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -211,6 +211,7 @@ executable try-copy-descriptor-set
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -255,6 +256,7 @@ executable try-depth-buffering
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -299,6 +301,7 @@ executable try-depth-buffering-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -343,6 +346,7 @@ executable try-dynamic-dsc-sets
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -387,6 +391,7 @@ executable try-generating-mipmaps
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -431,6 +436,7 @@ executable try-generating-mipmaps-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -475,6 +481,7 @@ executable try-hello-world
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -519,6 +526,7 @@ executable try-image-buffer
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -563,6 +571,7 @@ executable try-loading-models
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -607,6 +616,7 @@ executable try-loading-models-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -651,6 +661,7 @@ executable try-multisampling
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -695,6 +706,7 @@ executable try-multisampling-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -739,6 +751,7 @@ executable try-no-dynamic-dsc-sets
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -783,6 +796,7 @@ executable try-pipeline-cache
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -827,6 +841,7 @@ executable try-query
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -871,6 +886,7 @@ executable try-rectangle
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -915,6 +931,7 @@ executable try-rectangle-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -959,6 +976,7 @@ executable try-saitan
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1003,6 +1021,7 @@ executable try-saitan-float
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1047,6 +1066,7 @@ executable try-saitan-simple
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1091,6 +1111,7 @@ executable try-shaderc
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1135,6 +1156,7 @@ executable try-texel-buffer-float
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1179,6 +1201,7 @@ executable try-texel-buffer-word32
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1223,6 +1246,7 @@ executable try-texture
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1267,6 +1291,7 @@ executable try-texture-immutable-sampler-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1311,6 +1336,7 @@ executable try-texture-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1355,6 +1381,7 @@ executable try-triangle
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1399,6 +1426,7 @@ executable try-triangle-single
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1443,6 +1471,7 @@ executable try-vulkan-guide
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1487,6 +1516,7 @@ executable try-vulkan-guide-dynamic
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1531,6 +1561,7 @@ executable try-vulkan-guide-storage
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1575,6 +1606,7 @@ executable try-vulkan-guide-texture
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1619,6 +1651,7 @@ executable try-wavefront-obj
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1663,6 +1696,7 @@ executable try-yatteiku
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
@@ -1708,6 +1742,7 @@ test-suite try-my-vulkan-snd-test
     , try-language-spir-v
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
