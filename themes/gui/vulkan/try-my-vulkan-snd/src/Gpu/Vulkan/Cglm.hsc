@@ -3,7 +3,19 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Cglm (
-	module Gpu.Vulkan.Cglm, C.Vec2(..), C.Vec3(..), C.Vec4(..), C.Mat4, C.rad
+
+	-- * TRANSFORM
+
+	translate, scale, rotate, perspective, lookat, C.rad,
+
+	-- * VECTOR
+
+	C.Vec2(..), C.Vec3(..), C.Vec4(..),
+
+	-- * MATRIX
+
+	C.Mat4(..), mat4Identity, modifyMat4, mat4Mul
+
 	) where
 
 import Data.Foldable
@@ -38,14 +50,18 @@ mat4Mul m1 m2 =
 modifyMat4 :: Int -> Int -> (#{type float} -> #{type float}) -> C.Mat4 -> C.Mat4
 modifyMat4 i j f (C.Mat4 m) = C.Mat4 $ modifyElem2 i j f m
 
-mat4ToList :: C.Mat4 -> [#{type float}]
-mat4ToList (C.Mat4 m) = concat $ toList <$> toList m
+_mat4ToList :: C.Mat4 -> [#{type float}]
+_mat4ToList (C.Mat4 m) = concat $ toList <$> toList m
 
 mat4ToListVec4 :: C.Mat4 -> [C.Vec4]
 mat4ToListVec4 (C.Mat4 m) = C.Vec4 <$> toList m
 
-listToMat4 :: [#{type float}] -> C.Mat4
-listToMat4 = C.Mat4 . unsafeToLength . (unsafeToLength <$>) . separateN 4
+_listToMat4 :: [#{type float}] -> C.Mat4
+_listToMat4 = C.Mat4 . unsafeToLength . (unsafeToLength <$>) . separateN 4
+	where
+	separateN :: Int -> [a] -> [[a]]
+	separateN _ [] = []
+	separateN n xs = take n xs : separateN n (drop n xs)
 
 listVec4ToMat4 :: [C.Vec4] -> C.Mat4
 listVec4ToMat4 = C.vec4ToMat4 . unsafeToLength
@@ -53,23 +69,12 @@ listVec4ToMat4 = C.vec4ToMat4 . unsafeToLength
 unsafeToLength :: ListToLengthL n => [a] -> LengthL n a
 unsafeToLength = fst . fromRight (error "bad") . splitL
 
-sampleMat4 :: C.Mat4
-sampleMat4 = C.Mat4 $
-	(1 :. 0 :. 0 :. 0 :. NilL) :.
-	(0 :. 1 :. 0 :. 0 :. NilL) :.
-	(0 :. 0 :. 1 :. 0 :. NilL) :.
-	(0 :. 0 :. 0 :. 1 :. NilL) :. NilL
-
-separateN :: Int -> [a] -> [[a]]
-separateN _ [] = []
-separateN n xs = take n xs : separateN n (drop n xs)
-
 translate :: C.Mat4 -> C.Vec3 -> C.Mat4
 translate m v = listVec4ToMat4
 	$ C.glmTranslate (mat4ToListVec4 m) (vec3ToList v)
 
-listToVec3 :: [#{type float}] -> C.Vec3
-listToVec3 = C.Vec3 . unsafeToLength
+_listToVec3 :: [#{type float}] -> C.Vec3
+_listToVec3 = C.Vec3 . unsafeToLength
 
 vec3ToList :: C.Vec3 -> [#{type float}]
 vec3ToList (C.Vec3 fs) = toList fs
