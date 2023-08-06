@@ -64,7 +64,6 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Ist
-import qualified Gpu.Vulkan.Instance.Type as Vk.Ist
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
@@ -81,8 +80,8 @@ import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
-import qualified Gpu.Vulkan.Image.Type as Vk.Image
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Vk.Image
+import qualified Gpu.Vulkan.Image as Vk.Image
 import qualified Gpu.Vulkan.Image as Vk.Image.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
@@ -106,7 +105,6 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
-import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
@@ -206,9 +204,6 @@ createInstance f = do
 				bool [] validationLayers enableValidationLayers,
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
-
-instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
-instanceToMiddle (Vk.Ist.I inst) = inst
 
 setupDebugMessenger ::
 	Vk.Ist.I si ->
