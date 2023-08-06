@@ -37,10 +37,9 @@ import Gpu.Vulkan.Khr.Surface.Enum
 
 import qualified Gpu.Vulkan.Middle as C
 import qualified Gpu.Vulkan.TypeEnum as T
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Image.Type as Image
+import qualified Gpu.Vulkan.AllocationCallbacks.Internal as AllocationCallbacks
+import qualified Gpu.Vulkan.Device.Internal as Device
+import qualified Gpu.Vulkan.Image.Internal as Image
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Image

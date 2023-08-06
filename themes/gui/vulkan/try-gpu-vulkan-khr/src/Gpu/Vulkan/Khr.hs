@@ -31,8 +31,8 @@ import qualified Data.Text as T
 
 import Gpu.Vulkan.Exception.Enum
 
-import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Semaphore.Type as Semaphore
+import qualified Gpu.Vulkan.Device.Internal as Device
+import qualified Gpu.Vulkan.Semaphore.Internal as Semaphore
 import qualified Gpu.Vulkan.Fence.Middle as Fence
 import qualified Gpu.Vulkan.Queue as Queue
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
