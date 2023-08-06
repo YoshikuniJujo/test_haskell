@@ -22,9 +22,8 @@ import Data.TypeLevel.Tuple.Uncurry
 import Gpu.Vulkan.PNext.Middle qualified as MI
 import Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
 
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
-import qualified Gpu.Vulkan.Instance.Type as Instance
+import qualified Gpu.Vulkan.AllocationCallbacks.Internal as AllocationCallbacks
+import qualified Gpu.Vulkan.Instance.Internal as Instance
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as M
 
 create :: (

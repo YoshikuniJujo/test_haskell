@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-ext-debug-utils
-version:             0.1.0.1
+version:             0.1.0.2
 github:              "githubuser/try-gpu-vulkan-ext-debug-utils"
 license:             BSD3
 author:              "Author name here"
