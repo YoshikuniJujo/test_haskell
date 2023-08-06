@@ -83,6 +83,7 @@ library:
   - Gpu.Vulkan.Image.Enum
   - Gpu.Vulkan.ImageView
   - Gpu.Vulkan.Instance
+  - Gpu.Vulkan.Instance.Internal
   - Gpu.Vulkan.Memory
   - Gpu.Vulkan.Misc
   - Gpu.Vulkan.Object
