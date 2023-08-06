@@ -33,6 +33,8 @@ library
       Gpu.Vulkan
       Gpu.Vulkan.AllocationCallbacks
       Gpu.Vulkan.AllocationCallbacks.Internal
+      Gpu.Vulkan.Attachment
+      Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.BufferView
@@ -87,6 +89,7 @@ library
       Gpu.Vulkan.Pipeline.ViewportState
       Gpu.Vulkan.PipelineCache
       Gpu.Vulkan.PipelineLayout
+      Gpu.Vulkan.PushConstant
       Gpu.Vulkan.Query
       Gpu.Vulkan.Query.Enum
       Gpu.Vulkan.QueryPool
@@ -105,8 +108,6 @@ library
       Gpu.Vulkan.VertexInput
   other-modules:
       Gpu.Vulkan.AllocationCallbacks.Type
-      Gpu.Vulkan.Attachment
-      Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Buffer.Internal
       Gpu.Vulkan.Buffer.Type
       Gpu.Vulkan.BufferView.Internal
@@ -138,7 +139,6 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.Internal
       Gpu.Vulkan.PipelineCache.Type
       Gpu.Vulkan.PipelineLayout.Type
-      Gpu.Vulkan.PushConstant
       Gpu.Vulkan.PushConstant.Internal
       Gpu.Vulkan.QueryPool.Type
       Gpu.Vulkan.RenderPass.Internal

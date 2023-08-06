@@ -53,6 +53,8 @@ library:
   - Gpu.Vulkan
   - Gpu.Vulkan.AllocationCallbacks
   - Gpu.Vulkan.AllocationCallbacks.Internal
+  - Gpu.Vulkan.Attachment
+  - Gpu.Vulkan.Attachment.Enum
   - Gpu.Vulkan.Buffer
   - Gpu.Vulkan.Buffer.Enum
   - Gpu.Vulkan.BufferView
@@ -107,6 +109,7 @@ library:
   - Gpu.Vulkan.Pipeline.ViewportState
   - Gpu.Vulkan.PipelineCache
   - Gpu.Vulkan.PipelineLayout
+  - Gpu.Vulkan.PushConstant
   - Gpu.Vulkan.Query
   - Gpu.Vulkan.Query.Enum
   - Gpu.Vulkan.QueryPool
