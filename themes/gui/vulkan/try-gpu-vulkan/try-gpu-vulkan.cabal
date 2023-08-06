@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.0
+version:        0.1.0.1
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -32,67 +32,37 @@ library
   exposed-modules:
       Gpu.Vulkan
       Gpu.Vulkan.AllocationCallbacks
-      Gpu.Vulkan.AllocationCallbacks.Type
-      Gpu.Vulkan.Attachment
-      Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.Buffer.Enum
-      Gpu.Vulkan.Buffer.Internal
-      Gpu.Vulkan.Buffer.Type
       Gpu.Vulkan.BufferView
-      Gpu.Vulkan.BufferView.Internal
       Gpu.Vulkan.Cmd
       Gpu.Vulkan.CommandBuffer
       Gpu.Vulkan.CommandBuffer.Enum
-      Gpu.Vulkan.CommandBuffer.Type
       Gpu.Vulkan.CommandPool
       Gpu.Vulkan.CommandPool.Enum
-      Gpu.Vulkan.CommandPool.Type
       Gpu.Vulkan.Component
       Gpu.Vulkan.Component.Enum
       Gpu.Vulkan.Data
       Gpu.Vulkan.Descriptor
       Gpu.Vulkan.Descriptor.Enum
-      Gpu.Vulkan.Descriptor.Internal
       Gpu.Vulkan.DescriptorPool
       Gpu.Vulkan.DescriptorPool.Enum
-      Gpu.Vulkan.DescriptorPool.Type
       Gpu.Vulkan.DescriptorSet
-      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
-      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer
-      Gpu.Vulkan.DescriptorSet.Copy
-      Gpu.Vulkan.DescriptorSet.Type
-      Gpu.Vulkan.DescriptorSet.Write
-      Gpu.Vulkan.DescriptorSet.Write.Sources
       Gpu.Vulkan.DescriptorSetLayout
       Gpu.Vulkan.DescriptorSetLayout.Enum
-      Gpu.Vulkan.DescriptorSetLayout.Type
-      Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
       Gpu.Vulkan.Device
       Gpu.Vulkan.Device.Enum
-      Gpu.Vulkan.Device.Type
       Gpu.Vulkan.Enum
       Gpu.Vulkan.Exception
       Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Enum
-      Gpu.Vulkan.Fence.Type
       Gpu.Vulkan.Framebuffer
       Gpu.Vulkan.Framebuffer.Enum
-      Gpu.Vulkan.Framebuffer.Type
       Gpu.Vulkan.Image
       Gpu.Vulkan.Image.Enum
-      Gpu.Vulkan.Image.Internal
-      Gpu.Vulkan.Image.Type
       Gpu.Vulkan.ImageView
-      Gpu.Vulkan.ImageView.Type
       Gpu.Vulkan.Instance
-      Gpu.Vulkan.Instance.Type
-      Gpu.Vulkan.Internal
       Gpu.Vulkan.Memory
-      Gpu.Vulkan.Memory.Bind
-      Gpu.Vulkan.Memory.ImageBuffer
-      Gpu.Vulkan.Memory.OffsetSize
-      Gpu.Vulkan.Memory.Type
       Gpu.Vulkan.Misc
       Gpu.Vulkan.Object
       Gpu.Vulkan.Object.Base
@@ -104,47 +74,77 @@ library
       Gpu.Vulkan.Pipeline.DynamicState
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
-      Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.MultisampleState
       Gpu.Vulkan.Pipeline.RasterizationState
       Gpu.Vulkan.Pipeline.ShaderStage
-      Gpu.Vulkan.Pipeline.ShaderStage.Internal
       Gpu.Vulkan.Pipeline.TessellationState
       Gpu.Vulkan.Pipeline.VertexInputState
-      Gpu.Vulkan.Pipeline.VertexInputState.Internal
       Gpu.Vulkan.Pipeline.ViewportState
       Gpu.Vulkan.PipelineCache
-      Gpu.Vulkan.PipelineCache.Type
       Gpu.Vulkan.PipelineLayout
-      Gpu.Vulkan.PipelineLayout.Type
-      Gpu.Vulkan.PushConstant
-      Gpu.Vulkan.PushConstant.Internal
       Gpu.Vulkan.Query
       Gpu.Vulkan.Query.Enum
       Gpu.Vulkan.QueryPool
-      Gpu.Vulkan.QueryPool.Type
       Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
       Gpu.Vulkan.RenderPass
       Gpu.Vulkan.RenderPass.Enum
-      Gpu.Vulkan.RenderPass.Internal
-      Gpu.Vulkan.RenderPass.Type
       Gpu.Vulkan.Sample
       Gpu.Vulkan.Sampler
-      Gpu.Vulkan.Sampler.Type
       Gpu.Vulkan.Semaphore
-      Gpu.Vulkan.Semaphore.Type
       Gpu.Vulkan.ShaderModule
-      Gpu.Vulkan.ShaderModule.Internal
       Gpu.Vulkan.Subpass
       Gpu.Vulkan.Subpass.Enum
       Gpu.Vulkan.TypeEnum
+      Gpu.Vulkan.VertexInput
+  other-modules:
+      Gpu.Vulkan.AllocationCallbacks.Type
+      Gpu.Vulkan.Attachment
+      Gpu.Vulkan.Attachment.Enum
+      Gpu.Vulkan.Buffer.Internal
+      Gpu.Vulkan.Buffer.Type
+      Gpu.Vulkan.BufferView.Internal
+      Gpu.Vulkan.CommandBuffer.Type
+      Gpu.Vulkan.CommandPool.Type
+      Gpu.Vulkan.Descriptor.Internal
+      Gpu.Vulkan.DescriptorPool.Type
+      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
+      Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer
+      Gpu.Vulkan.DescriptorSet.Copy
+      Gpu.Vulkan.DescriptorSet.Type
+      Gpu.Vulkan.DescriptorSet.Write
+      Gpu.Vulkan.DescriptorSet.Write.Sources
+      Gpu.Vulkan.DescriptorSetLayout.Type
+      Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
+      Gpu.Vulkan.Device.Type
+      Gpu.Vulkan.Fence.Type
+      Gpu.Vulkan.Framebuffer.Type
+      Gpu.Vulkan.Image.Internal
+      Gpu.Vulkan.Image.Type
+      Gpu.Vulkan.ImageView.Type
+      Gpu.Vulkan.Instance.Type
+      Gpu.Vulkan.Internal
+      Gpu.Vulkan.Memory.Bind
+      Gpu.Vulkan.Memory.ImageBuffer
+      Gpu.Vulkan.Memory.OffsetSize
+      Gpu.Vulkan.Memory.Type
+      Gpu.Vulkan.Pipeline.Graphics.Type
+      Gpu.Vulkan.Pipeline.ShaderStage.Internal
+      Gpu.Vulkan.Pipeline.VertexInputState.Internal
+      Gpu.Vulkan.PipelineCache.Type
+      Gpu.Vulkan.PipelineLayout.Type
+      Gpu.Vulkan.PushConstant
+      Gpu.Vulkan.PushConstant.Internal
+      Gpu.Vulkan.QueryPool.Type
+      Gpu.Vulkan.RenderPass.Internal
+      Gpu.Vulkan.RenderPass.Type
+      Gpu.Vulkan.Sampler.Type
+      Gpu.Vulkan.Semaphore.Type
+      Gpu.Vulkan.ShaderModule.Internal
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.TypeEnum.TypeValues
-      Gpu.Vulkan.VertexInput
       Gpu.Vulkan.VertexInput.Internal
-  other-modules:
       Paths_try_gpu_vulkan
   hs-source-dirs:
       src
