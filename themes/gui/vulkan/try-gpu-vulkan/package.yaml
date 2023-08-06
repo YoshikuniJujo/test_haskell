@@ -52,6 +52,7 @@ library:
   exposed-modules:
   - Gpu.Vulkan
   - Gpu.Vulkan.AllocationCallbacks
+  - Gpu.Vulkan.AllocationCallbacks.Internal
   - Gpu.Vulkan.Buffer
   - Gpu.Vulkan.Buffer.Enum
   - Gpu.Vulkan.BufferView

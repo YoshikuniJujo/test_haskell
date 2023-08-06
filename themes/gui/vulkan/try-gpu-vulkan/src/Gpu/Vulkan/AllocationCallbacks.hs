@@ -1,31 +1,24 @@
-{-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.AllocationCallbacks (
 
 	-- * CREATE
 
-	create, Functions, M.FunctionsInfo(..),
+	create, Functions, FunctionsInfo(..),
 
 	-- ** Function Types
 
-	M.FnAllocationFunction, M.FnReallocationFunction, M.FnFreeFunction,
-	M.FnInternalAllocationNotification, M.FnInternalFreeNotification,
+	FnAllocationFunction, FnReallocationFunction, FnFreeFunction,
+	FnInternalAllocationNotification, FnInternalFreeNotification,
 
 	-- *** Size and Alignment
 
-	M.Size, M.Alignment,
+	Size, Alignment,
 
 	-- * APPLY
 
-	apply, A
+	apply, A, ToMiddle
 
 	) where
 
-import Control.Exception
-import Gpu.Vulkan.AllocationCallbacks.Type
-import Gpu.Vulkan.AllocationCallbacks.Middle qualified as M
-
-create :: M.FunctionsInfo a -> (forall s . Functions s a -> IO b) -> IO b
-create fns f = bracket (M.create fns) M.destroy (f . Functions)
+import Gpu.Vulkan.AllocationCallbacks.Internal
