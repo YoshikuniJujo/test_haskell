@@ -12,9 +12,8 @@ import Data.TypeLevel.Tuple.Uncurry
 
 import qualified Graphics.UI.GLFW as GlfwB
 
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
-import qualified Gpu.Vulkan.Instance.Type as Vk.Instance
+import qualified Gpu.Vulkan.AllocationCallbacks.Internal as AllocationCallbacks
+import qualified Gpu.Vulkan.Instance.Internal as Vk.Instance
 import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.Glfw.Middle as M
