@@ -69,6 +69,7 @@ library
       Gpu.Vulkan.Instance
       Gpu.Vulkan.Instance.Internal
       Gpu.Vulkan.Memory
+      Gpu.Vulkan.Memory.Enum
       Gpu.Vulkan.Misc
       Gpu.Vulkan.Object
       Gpu.Vulkan.Object.Base
@@ -94,6 +95,7 @@ library
       Gpu.Vulkan.Query.Enum
       Gpu.Vulkan.QueryPool
       Gpu.Vulkan.Queue
+      Gpu.Vulkan.Queue.Enum
       Gpu.Vulkan.QueueFamily
       Gpu.Vulkan.RenderPass
       Gpu.Vulkan.RenderPass.Enum
