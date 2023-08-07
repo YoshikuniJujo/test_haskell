@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.8
+version:             0.1.0.9
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -94,6 +94,7 @@ library:
   - Gpu.Vulkan.Object
   - Gpu.Vulkan.Object.Base
   - Gpu.Vulkan.PhysicalDevice
+  - Gpu.Vulkan.PhysicalDevice.Struct
   - Gpu.Vulkan.Pipeline.ColorBlendAttachment
   - Gpu.Vulkan.Pipeline.ColorBlendState
   - Gpu.Vulkan.Pipeline.Compute
