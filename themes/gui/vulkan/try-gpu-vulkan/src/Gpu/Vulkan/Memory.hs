@@ -22,7 +22,7 @@ module Gpu.Vulkan.Memory (
 
 	-- ** ALLOCATE INFO
 
-	AllocateInfo(..),
+	AllocateInfo(..), M.MType, M.TypeIndex, M.elemTypeIndex,
 
 	-- ** BINDABLE AND REBINDABLE
 
