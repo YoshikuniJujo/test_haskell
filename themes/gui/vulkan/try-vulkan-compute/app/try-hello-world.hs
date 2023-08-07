@@ -13,7 +13,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -23,7 +23,6 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.List
 import qualified Data.HeteroParList as HL
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
@@ -143,7 +142,6 @@ prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
 	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(HL.Singleton ds) ->
 	storageBufferNew pd dv \b m ->
---	Vk.DS.updateDs @_ @'Nothing dv (HL.Singleton . U5 $ writeDscSet ds b) [] >>
 	Vk.DS.updateDs dv (HL.Singleton . U5 $ writeDscSet ds b) HL.Nil >>
 	f ds m
 
@@ -224,8 +222,7 @@ writeDscSet ds ba = Vk.DS.Write {
 
 calc :: forall slbts sl bts sd s . (
 	slbts ~ '(sl, bts),
-	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
-	InfixIndex '[slbts] '[slbts]) =>
+	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	Vk.DS.D s slbts -> Word32 -> IO ()
 calc qfi dv dslyt ds sz =
@@ -257,8 +254,7 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 run :: forall slbts sd sc sg sl s . (
-	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
-	InfixIndex '[slbts] '[slbts] ) =>
+	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]] ) =>
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
