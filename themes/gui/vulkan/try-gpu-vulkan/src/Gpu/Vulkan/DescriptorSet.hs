@@ -29,7 +29,11 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- ** Copy
 
-	Copy(..), CopyListToMiddle, BindingAndArrayElem
+	Copy(..), CopyListToMiddle,
+
+	-- ** BindingAndArrayElem
+
+	BindingAndArrayElem, W.BindingAndArrayElemBuffer,
 
 	) where
 
