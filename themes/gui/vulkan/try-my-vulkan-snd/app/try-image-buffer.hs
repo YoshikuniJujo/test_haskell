@@ -79,10 +79,11 @@ import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 
 import Sample.GetOpt
 import Sample.Image
-import Codec.Picture.Tools
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
+
+import Tools
 
 main :: IO ()
 main = getOptions >>= maybe (pure ()) \(Opts opt ifp tlng_) -> do
@@ -603,9 +604,6 @@ findMemoryTypeIndex requirementss memoryProp memoryProperties = do
 	case filter (\x -> all (Vk.Mem.M.elemTypeIndex x) reqTypess) memPropTypes of
 		[] -> error "No available memory types"
 		i : _ -> i
-
-checkBits :: Bits bs => bs -> bs -> Bool
-checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
 	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds . (

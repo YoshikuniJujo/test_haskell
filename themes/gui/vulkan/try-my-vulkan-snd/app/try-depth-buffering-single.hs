@@ -45,7 +45,6 @@ import Data.Word
 import Data.Color
 import Data.Time
 import Codec.Picture
-import Codec.Picture.Tools
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V

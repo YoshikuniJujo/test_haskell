@@ -48,7 +48,6 @@ import Data.Color
 import Data.Time
 import System.Environment
 import Codec.Picture
-import Codec.Picture.Tools
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
@@ -150,7 +149,6 @@ import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import Tools
 import Vertex
 import Vertex.Wavefront
-import Data.Vector.Storable.Utils
 
 main :: IO ()
 main = do

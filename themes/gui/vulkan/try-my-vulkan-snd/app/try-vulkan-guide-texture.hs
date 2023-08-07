@@ -152,7 +152,6 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Data.Array
 import Codec.Picture
-import Codec.Picture.Tools
 
 import Gpu.Vulkan.Sampler as Vk.Smplr
 import Gpu.Vulkan.Sampler.Enum as Vk.Smplr

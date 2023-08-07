@@ -3,7 +3,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sample.Image where
+module Sample.Image (ImageRgba8(..)) where
 
 import GHC.Generics
 import Foreign.Storable

@@ -28,9 +28,6 @@ source-repository head
 
 library
   exposed-modules:
-      Codec.Picture.Tools
-      Data.Bits.Utils
-      Data.Vector.Storable.Utils
       Sample.GetOpt
       Sample.Image
       ThEnv

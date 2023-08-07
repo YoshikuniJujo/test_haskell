@@ -22,7 +22,6 @@ import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
-import Data.Bits.Utils
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -32,7 +31,6 @@ import Data.Word
 import System.Environment
 
 import qualified Data.Vector.Storable as V
-import qualified Data.Vector.Storable.Utils as V
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
@@ -73,6 +71,8 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
+
+import Tools
 
 main :: IO ()
 main = do
@@ -133,9 +133,9 @@ findQueueFamily phdvc qb = (<$> Vk.PhDvc.getQueueFamilyProperties phdvc)
 
 mkData :: Word32 -> (V.Vector W1, V.Vector W2, V.Vector W3)
 mkData n = (
-	V.genericReplicate n $ W1 3,
+	genericReplicate n $ W1 3,
 	V.fromList $ W2 <$> [1 .. n],
-	V.genericReplicate n $ W3 0 )
+	genericReplicate n $ W3 0 )
 
 type DscSetLytLstW123 = '[
 	'Vk.DscSetLyt.Buffer '[ListW1, ListW2, ListW3],
