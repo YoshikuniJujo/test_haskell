@@ -25,7 +25,7 @@ module Gpu.Vulkan.DescriptorSet.Write (
 	-- ** WriteListUpdateDynamicLengths
 
 	WriteListUpdateDynamicLengths(..),
-	WriteSourcesUpdateDynamicLengths,
+	WriteSourcesUpdateDynamicLengths, UpdateDynamicLength
 
 	) where
 

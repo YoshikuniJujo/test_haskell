@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.3
+version:             0.1.0.4
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -74,7 +74,6 @@ library:
   - Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
   - Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer
   - Gpu.Vulkan.DescriptorSetLayout
-  - Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
   - Gpu.Vulkan.DescriptorSetLayout.Enum
   - Gpu.Vulkan.Device
   - Gpu.Vulkan.Device.Internal
