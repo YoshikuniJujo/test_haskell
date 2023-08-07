@@ -137,7 +137,6 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
-import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
 import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
 import Tools
@@ -1314,9 +1313,9 @@ class Update smsbs slbtss where
 instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
-	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
-	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
+	Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
+	Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
+	Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
 	Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing],
 	Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")],
 	Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],

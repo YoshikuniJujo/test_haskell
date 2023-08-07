@@ -143,7 +143,6 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
-import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
 import qualified Codec.WavefrontObj.ReadFaceSimple as WvNew
 import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
@@ -1300,13 +1299,13 @@ class Update cmbs lyts odbs lytods where
 instance Update '[] '[] '[] '[] where update _ HL.Nil HL.Nil HL.Nil HL.Nil _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElemBuffer
+	Vk.DscSet.BindingAndArrayElemBuffer
 		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj] 0,
-	Vk.DscSet.T.BindingAndArrayElemBuffer
+	Vk.DscSet.BindingAndArrayElemBuffer
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj] 0,
-	Vk.DscSet.T.BindingAndArrayElemBuffer bods '[ObjDataList] 0,
+	Vk.DscSet.BindingAndArrayElemBuffer bods '[ObjDataList] 0,
 	Vk.DscSet.UpdateDynamicLength
 		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj],
