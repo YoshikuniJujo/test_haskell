@@ -71,7 +71,6 @@ library:
   - Gpu.Vulkan.DescriptorPool
   - Gpu.Vulkan.DescriptorPool.Enum
   - Gpu.Vulkan.DescriptorSet
-  - Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
   - Gpu.Vulkan.DescriptorSetLayout
   - Gpu.Vulkan.DescriptorSetLayout.Enum
   - Gpu.Vulkan.Device

@@ -20,7 +20,9 @@ module Gpu.Vulkan.DescriptorSet.Write.Sources (
 
 	-- ** WriteSourcesToMiddle
 
-	WriteSourcesToMiddle(..), BindingAndArrayElemBuffer,
+	WriteSourcesToMiddle(..),
+	BindingAndArrayElemImage, BindingAndArrayElemImageWithImmutableSampler,
+	BindingAndArrayElemBuffer, BindingAndArrayElemBufferView,
 
 	-- ** WriteSourcesUpdateDynamicLengths
 

@@ -33,7 +33,9 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- ** BindingAndArrayElem
 
-	BindingAndArrayElem, W.BindingAndArrayElemBuffer,
+	BindingAndArrayElem, W.BindingAndArrayElemImage,
+	W.BindingAndArrayElemImageWithImmutableSampler,
+	W.BindingAndArrayElemBuffer, W.BindingAndArrayElemBufferView
 
 	) where
 
