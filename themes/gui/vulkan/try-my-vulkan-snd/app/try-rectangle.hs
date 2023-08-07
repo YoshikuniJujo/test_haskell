@@ -130,7 +130,6 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
-import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 
 import Tools
@@ -920,7 +919,7 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElemBuffer
 		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
-	Vk.DscSet.T.UpdateDynamicLength
+	Vk.DscSet.UpdateDynamicLength
 		(TIndex.I1_2 '(ds, cs))
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ) =>

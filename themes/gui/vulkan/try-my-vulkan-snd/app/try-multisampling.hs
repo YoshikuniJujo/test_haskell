@@ -145,7 +145,6 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
-import qualified Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths as Vk.DscSet.T
 import qualified Gpu.Vulkan.DescriptorSet.BindingAndArrayElem.Buffer as Vk.DscSet.T
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
 
@@ -1670,7 +1669,7 @@ instance Update '[] '[] ssmp siv where update _ HeteroParList.Nil HeteroParList.
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
-	Vk.DscSet.T.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
+	Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ssmp siv,
 	Vk.DscSet.WriteSourcesToMiddle cs ('Vk.DscSet.WriteSourcesArgImage
 			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0
