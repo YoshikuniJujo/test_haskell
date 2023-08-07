@@ -32,12 +32,14 @@ library
   build-depends:
       base >=4.7 && <5
     , data-default
+    , ranged-list
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , typelevel-tools
+    , vector
   default-language: Haskell2010
 
 executable try-hello-world
@@ -50,6 +52,7 @@ executable try-hello-world
   build-depends:
       base >=4.7 && <5
     , data-default
+    , ranged-list
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
@@ -57,6 +60,28 @@ executable try-hello-world
     , try-shaderc
     , try-vulkan-compute
     , typelevel-tools
+    , vector
+  default-language: Haskell2010
+
+executable try-saitan-simple
+  main-is: try-saitan-simple.hs
+  other-modules:
+      Paths_try_vulkan_compute
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , data-default
+    , ranged-list
+    , try-gpu-vulkan
+    , try-gpu-vulkan-khr
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-vulkan-compute
+    , typelevel-tools
+    , vector
   default-language: Haskell2010
 
 test-suite try-vulkan-compute-test
@@ -70,6 +95,7 @@ test-suite try-vulkan-compute-test
   build-depends:
       base >=4.7 && <5
     , data-default
+    , ranged-list
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
@@ -77,4 +103,5 @@ test-suite try-vulkan-compute-test
     , try-shaderc
     , try-vulkan-compute
     , typelevel-tools
+    , vector
   default-language: Haskell2010
