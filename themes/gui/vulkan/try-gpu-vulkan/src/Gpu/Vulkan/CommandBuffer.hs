@@ -14,6 +14,7 @@ module Gpu.Vulkan.CommandBuffer (
 	-- * ALLOCATE
 
 	allocate, C, GBinded, CBinded, AllocateInfo(..),
+	allocateNew, AllocateInfoNew(..),
 
 	-- * BEGIN AND RESET
 
@@ -26,6 +27,7 @@ import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
 import Data.HeteroParList qualified as HeteroParList
+import Data.Word
 
 import Gpu.Vulkan.CommandBuffer.Type
 import Gpu.Vulkan.CommandBuffer.Enum
@@ -44,10 +46,25 @@ allocate (Device.D dvc) ai f = bracket
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPool ai)
 	(f . HeteroParList.fromList (HeteroParList.Dummy . C))
 
+allocateNew :: WithPoked (TMaybe.M mn) =>
+	Device.D sd -> AllocateInfoNew mn scp ->
+	(forall scb . [C scb] -> IO a) -> IO a
+allocateNew (Device.D dvc) ai f = bracket
+	(M.allocateCs dvc $ allocateInfoToMiddleNew ai)
+	(M.freeCs dvc
+		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolNew ai)
+	(f . (C <$>))
+
 data AllocateInfo mn scp (c :: [()]) = AllocateInfo {
 	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoCommandPool :: CommandPool.C scp,
 	allocateInfoLevel :: Level }
+
+data AllocateInfoNew mn scp = AllocateInfoNew {
+	allocateInfoNextNew :: TMaybe.M mn,
+	allocateInfoCommandPoolNew :: CommandPool.C scp,
+	allocateInfoLevelNew :: Level,
+	allocateInfoCommandBufferCountNew :: Word32 }
 
 deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn s c)
 
@@ -61,6 +78,17 @@ allocateInfoToMiddle AllocateInfo {
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
 	M.allocateInfoCommandBufferCount = TLength.length @_ @c }
+
+allocateInfoToMiddleNew :: AllocateInfoNew n s -> M.AllocateInfo n
+allocateInfoToMiddleNew AllocateInfoNew {
+	allocateInfoNextNew = mnxt,
+	allocateInfoCommandPoolNew = CommandPool.C cp,
+	allocateInfoLevelNew = lvl,
+	allocateInfoCommandBufferCountNew = c } = M.AllocateInfo {
+	M.allocateInfoNext = mnxt,
+	M.allocateInfoCommandPool = cp,
+	M.allocateInfoLevel = lvl,
+	M.allocateInfoCommandBufferCount = c }
 
 begin :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M ii)) =>
 	C s -> M.BeginInfo mn ii -> IO a -> IO a
