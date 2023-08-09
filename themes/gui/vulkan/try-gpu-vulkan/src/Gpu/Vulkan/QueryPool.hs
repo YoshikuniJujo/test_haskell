@@ -18,7 +18,9 @@ module Gpu.Vulkan.QueryPool (
 
 	-- * GET RESULTS
 
-	getResults, QueryType, PipelineStatistics(..), Timestamp(..)
+	getResults, QueryType, PipelineStatistics(..), Timestamp(..),
+
+	M.Availability(..)
 
 	) where
 
