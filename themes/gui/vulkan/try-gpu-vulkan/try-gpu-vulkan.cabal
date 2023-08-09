@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.12
+version:        0.1.0.13
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -39,6 +39,7 @@ library
       Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.BufferView
       Gpu.Vulkan.Cmd
+      Gpu.Vulkan.ColorComponent.Enum
       Gpu.Vulkan.CommandBuffer
       Gpu.Vulkan.CommandBuffer.Enum
       Gpu.Vulkan.CommandPool
@@ -104,6 +105,7 @@ library
       Gpu.Vulkan.RenderPass
       Gpu.Vulkan.RenderPass.Enum
       Gpu.Vulkan.Sample
+      Gpu.Vulkan.Sample.Enum
       Gpu.Vulkan.Sampler
       Gpu.Vulkan.Semaphore
       Gpu.Vulkan.Semaphore.Internal

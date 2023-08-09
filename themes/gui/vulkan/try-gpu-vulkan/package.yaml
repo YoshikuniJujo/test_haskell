@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.12
+version:             0.1.0.13
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -59,6 +59,7 @@ library:
   - Gpu.Vulkan.Buffer.Enum
   - Gpu.Vulkan.BufferView
   - Gpu.Vulkan.Cmd
+  - Gpu.Vulkan.ColorComponent.Enum
   - Gpu.Vulkan.CommandBuffer
   - Gpu.Vulkan.CommandBuffer.Enum
   - Gpu.Vulkan.CommandPool
@@ -124,6 +125,7 @@ library:
   - Gpu.Vulkan.RenderPass
   - Gpu.Vulkan.RenderPass.Enum
   - Gpu.Vulkan.Sample
+  - Gpu.Vulkan.Sample.Enum
   - Gpu.Vulkan.Sampler
   - Gpu.Vulkan.Semaphore
   - Gpu.Vulkan.Semaphore.Internal
