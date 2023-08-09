@@ -24,6 +24,7 @@ dependencies:
 - random
 - data-default
 - vector
+- time
 - try-gpu-vulkan
 - try-gpu-vulkan-khr
 - try-shaderc

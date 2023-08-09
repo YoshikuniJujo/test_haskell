@@ -80,6 +80,13 @@ import Gpu.Vulkan.Pipeline.Enum qualified as Vk.Ppl
 
 import Data.List qualified as L
 
+import Data.IORef
+import System.IO.Unsafe
+
+import Control.Concurrent
+
+import Data.Time
+
 ---------------------------------------------------------------------------
 
 -- MAIN
@@ -103,31 +110,36 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
 		pot = 2 ^ eot
-	rs <- getRandomRs (1, 100000) pot
-	let	pss = bitonicSortPairs False 0 eot
+	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 5)
+	let	pss = bitonicSortPairs False 0 (eot + 5)
 		das@(da : _) = V.fromList . (W1 . fst <$>) <$> pss
 		dbs@(db : _) = V.fromList . (W2 . snd <$>) <$> pss
 		dc = V.fromList $ W3 <$> rs
 	print mgcx
 	print eot
 	print pot
+	print $ map V.length das
+--	print $ map V.length dbs
+	ct0 <- getCurrentTime
 	(r1, r2, r3) <-
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
-		calc dvc qFam dscSetLyt dscSet ma mb das dbs mgcx >>
+		calc dvc qFam dscSetLyt dscSet ma mb das dbs pot >> threadDelay 1000000 >>
 		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
 			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @[W2] dvc mb def
 			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @[W3] dvc mc def
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
-	print . checkSorted $ unW3 <$> r3
+	print . checkSorted 0 $ unW3 <$> r3
+	ct1 <- getCurrentTime
+	print $ diffUTCTime ct1 ct0
 
-checkSorted :: Ord a => [a] -> Bool
-checkSorted [_] = True
-checkSorted (x : xs@(y : _))
-	| x <= y = checkSorted xs
-	| otherwise = False
+checkSorted :: Ord a => Int -> [a] -> (Int, Bool, [a])
+checkSorted i [_] = (i, True, [])
+checkSorted i (x : xs@(y : _))
+	| x <= y = checkSorted (i + 1) xs
+	| otherwise = (i, False, [x, y])
 
 maximumExponentOf2 :: Integral n => n -> n
 maximumExponentOf2 n | n < 2 = 0
@@ -206,11 +218,8 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(HeteroParList.Singleton dscSet) ->
 	storageBufferNew dvc phdvc da \ba ma ->
-	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da >>
 	storageBufferNew dvc phdvc db \bb mb ->
-	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db >>
 	storageBufferNew dvc phdvc dc \bc mc ->
-	Vk.Mm.write @"" @(VObj.List 256 W3 "") dvc mc def dc >>
 	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U5 $ writeDscSet dscSet ba bb bc)
 		HeteroParList.Nil >>
@@ -332,29 +341,6 @@ calc dvc qFam dscSetLyt dscSet ma mb das dbs dsz =
 		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip3 cbs das dbs) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
 
-{-
-		run dvc qFam cb0 ppl plyt dscSet dsz HeteroParList.Nil \s0 ->
-		Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def (das !! 1) >>
-		Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def (dbs !! 1) >>
-		run dvc qFam cb1 ppl plyt dscSet dsz (HeteroParList.Singleton s0) \s1 ->
-		Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def (das !! 2) >>
-		Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def (dbs !! 2) >>
-		run dvc qFam cb2 ppl plyt dscSet dsz (HeteroParList.Singleton s1) \s2 ->
-		Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def (das !! 3) >>
-		Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def (dbs !! 3) >>
-		run dvc qFam cb3 ppl plyt dscSet dsz (HeteroParList.Singleton s2) \s3 ->
-		Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def (das !! 4) >>
-		Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def (dbs !! 4) >>
-		run dvc qFam cb4 ppl plyt dscSet dsz (HeteroParList.Singleton s3) \s4 ->
-		Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def (das !! 5) >>
-		Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def (dbs !! 5) >>
-		run dvc qFam cb5 ppl plyt dscSet dsz (HeteroParList.Singleton s4) \s5 ->
-		Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def (das !! 6) >>
-		Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def (dbs !! 6) >>
-		run' dvc qFam cb6 ppl plyt dscSet dsz (HeteroParList.Singleton s5) \fnc ->
-		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
--}
-
 runAll :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
@@ -385,6 +371,9 @@ writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, da, db) f = do
 	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
 	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil f
 
+forDebug :: IORef Int
+forDebug = unsafePerformIO $ newIORef 0
+
 writeAndRun :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
@@ -397,6 +386,8 @@ writeAndRun :: (
 		V.Vector W1,  V.Vector W2 ) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
 writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db) f = do
+--	print =<< readIORef forDebug
+--	modifyIORef forDebug (+ 1)
 	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
 	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
 	run dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) f
@@ -455,7 +446,8 @@ commandBufferInfoNew cmdPool = Vk.CmdBuf.AllocateInfoNew {
 	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary,
 --	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 10000 }
-	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 1000 }
+--	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 1000 }
+	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 300 }
 
 run :: forall slbts sbtss sd sc sg sl sds swss a . (
 	sbtss ~ '[slbts],
@@ -473,7 +465,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz 1 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ 5) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -505,7 +497,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz 1 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ 5) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
@@ -577,7 +569,7 @@ layout(binding = 0) buffer Data {
 void
 main()
 {
-	int index = int(gl_GlobalInvocationID.x);
+	int index = int(gl_GlobalInvocationID.x) + (int(gl_GlobalInvocationID.y) << 15);
 	int i1 = int(data[0].val[index]);
 	int i2 = int(data[1].val[index]);
 	if (data[2].val[i1] > data[2].val[i2]) {
