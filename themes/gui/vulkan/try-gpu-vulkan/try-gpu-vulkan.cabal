@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.11
+version:        0.1.0.12
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -58,6 +58,7 @@ library
       Gpu.Vulkan.Device.Enum
       Gpu.Vulkan.Enum
       Gpu.Vulkan.Exception
+      Gpu.Vulkan.Exception.Enum
       Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Enum
       Gpu.Vulkan.Framebuffer
@@ -66,6 +67,7 @@ library
       Gpu.Vulkan.Image.Internal
       Gpu.Vulkan.Image.Enum
       Gpu.Vulkan.ImageView
+      Gpu.Vulkan.ImageView.Enum
       Gpu.Vulkan.Instance
       Gpu.Vulkan.Instance.Internal
       Gpu.Vulkan.Memory
@@ -127,11 +129,9 @@ library
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths
       Gpu.Vulkan.Device.Type
-      Gpu.Vulkan.Exception.Enum
       Gpu.Vulkan.Fence.Type
       Gpu.Vulkan.Framebuffer.Type
       Gpu.Vulkan.Image.Type
-      Gpu.Vulkan.ImageView.Enum
       Gpu.Vulkan.ImageView.Type
       Gpu.Vulkan.Instance.Type
       Gpu.Vulkan.Internal
