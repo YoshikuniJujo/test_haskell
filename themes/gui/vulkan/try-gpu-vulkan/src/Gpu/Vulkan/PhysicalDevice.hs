@@ -7,7 +7,7 @@ module Gpu.Vulkan.PhysicalDevice (
 
 	enumerate, M.P,
 
-	-- * FEATURES
+	-- * GET FEATURES
 
 	M.getFeatures,
 
@@ -17,6 +17,10 @@ module Gpu.Vulkan.PhysicalDevice (
 	M.getMemoryProperties, M.MemoryProperties(..),
 	M.getQueueFamilyProperties, M.getFormatProperties,
 	M.enumerateExtensionProperties,
+
+	-- * FEATURES
+
+	M.ShaderDrawParametersFeatures(..)
 
 	) where
 
