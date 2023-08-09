@@ -9,7 +9,7 @@ module Gpu.Vulkan.Sampler (
 
 	-- * CREATE
 
-	create, S
+	create, S, M.CreateInfo(..)
 
 	) where
 
