@@ -13,7 +13,11 @@ module Gpu.Vulkan.Device.Internal (
 
 	-- * GET QUEUE AND WAIT IDLE
 
-	getQueue, waitIdle
+	getQueue, waitIdle,
+
+	-- * SIZE
+
+	M.Size
 
 	) where
 

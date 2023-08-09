@@ -8,7 +8,11 @@ module Gpu.Vulkan.Device (
 
 	-- * GET QUEUE AND WAIT IDLE
 
-	getQueue, waitIdle
+	getQueue, waitIdle,
+
+	-- * SIZE
+
+	Size
 
 	) where
 
