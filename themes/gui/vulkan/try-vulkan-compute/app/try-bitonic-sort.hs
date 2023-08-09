@@ -110,8 +110,8 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
 		pot = 2 ^ eot
-	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 4)
-	let	pss = bitonicSortPairs False 0 (eot + 4)
+	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 1)
+	let	pss = bitonicSortPairs False 0 (eot + 1)
 		das@(da : _) = V.fromList . (W1 . fst <$>) <$> pss
 		dbs@(db : _) = V.fromList . (W2 . snd <$>) <$> pss
 		dc = V.fromList $ W3 <$> rs
@@ -220,6 +220,7 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	storageBufferNew dvc phdvc da \ba ma ->
 	storageBufferNew dvc phdvc db \bb mb ->
 	storageBufferNew dvc phdvc dc \bc mc ->
+	Vk.Mm.write @"" @(VObj.List 256 W3 "") dvc mc def dc >>
 	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U5 $ writeDscSet dscSet ba bb bc)
 		HeteroParList.Nil >>
@@ -465,7 +466,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ 4) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ 0) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -497,7 +498,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ 4) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ 0) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
