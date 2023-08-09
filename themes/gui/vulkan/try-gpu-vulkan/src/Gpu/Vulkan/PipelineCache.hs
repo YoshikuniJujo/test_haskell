@@ -9,11 +9,11 @@ module Gpu.Vulkan.PipelineCache (
 
 	-- * CREATE
 
-	create, P,
+	create, P, M.CreateInfo(..),
 
 	-- * GET DATA
 
-	getData,
+	getData, M.Data(..),
 
 	-- * READ AND WRITE DATA
 
@@ -34,7 +34,7 @@ import Gpu.Vulkan.AllocationCallbacks.Type qualified as AllocationCallbacks
 import Gpu.Vulkan.Device qualified as Device
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.PipelineCache.Middle qualified as M (
-	create, destroy, CreateInfo, getData, Data(..) )
+	create, destroy, CreateInfo(..), getData, Data(..) )
 
 import Foreign.Ptr
 import Foreign.Storable
