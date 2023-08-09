@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.19
+version:             0.1.0.20
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -110,6 +110,7 @@ library:
   - Gpu.Vulkan.Pipeline.MultisampleState
   - Gpu.Vulkan.Pipeline.RasterizationState
   - Gpu.Vulkan.Pipeline.ShaderStage
+  - Gpu.Vulkan.Pipeline.ShaderStage.Enum
   - Gpu.Vulkan.Pipeline.TessellationState
   - Gpu.Vulkan.Pipeline.VertexInputState
   - Gpu.Vulkan.Pipeline.ViewportState
