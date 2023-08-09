@@ -24,6 +24,8 @@ source-repository head
   location: https://github.com/githubuser/try-vulkan-compute
 
 library
+  exposed-modules:
+      BitonicSortPairs
   other-modules:
       Paths_try_vulkan_compute
   hs-source-dirs:
