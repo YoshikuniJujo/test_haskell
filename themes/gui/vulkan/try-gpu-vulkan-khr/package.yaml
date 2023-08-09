@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-khr
-version:             0.1.0.1
+version:             0.1.0.2
 github:              "githubuser/try-gpu-vulkan-khr"
 license:             BSD3
 author:              "Author name here"
@@ -23,7 +23,6 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - try-gpu-vulkan
-- try-vulkan-middle
 - try-vulkan-middle-khr
 - try-vulkan-core-khr
 - try-storable-peek-poke
