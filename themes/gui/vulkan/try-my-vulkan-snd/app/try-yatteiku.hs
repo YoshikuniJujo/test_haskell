@@ -43,13 +43,13 @@ import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Instance as Vk.Instance
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.Device as Vk.Device
-import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
+import qualified Gpu.Vulkan.Device as Vk.Dvc.M
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
-import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
+import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer.M
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Image as Vk.Img
@@ -58,7 +58,7 @@ import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.Sample as Vk.Sample
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
-import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
+import qualified Gpu.Vulkan.Memory as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Attachment as Vk.Attachment
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Attachment.Enum as Vk.Attachment

@@ -49,7 +49,7 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mm
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mm
-import qualified Gpu.Vulkan.Memory.Middle as Vk.Mm.M
+import qualified Gpu.Vulkan.Memory as Vk.Mm.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
@@ -71,7 +71,7 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import "try-gpu-vulkan" Gpu.Vulkan.Query.Enum as Vk.Qry
-import Gpu.Vulkan.QueryPool.Middle as Vk.QP.M
+import Gpu.Vulkan.QueryPool as Vk.QP.M
 
 import Gpu.Vulkan.QueryPool as Vk.QP
 
