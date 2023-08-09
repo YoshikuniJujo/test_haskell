@@ -80,6 +80,7 @@ library:
   - Gpu.Vulkan.Exception
   - Gpu.Vulkan.Exception.Enum
   - Gpu.Vulkan.Fence
+  - Gpu.Vulkan.Fence.Internal
   - Gpu.Vulkan.Fence.Enum
   - Gpu.Vulkan.Framebuffer
   - Gpu.Vulkan.Framebuffer.Enum

@@ -9,7 +9,7 @@ module Gpu.Vulkan.Semaphore.Internal (
 
 	-- * CREATE
 
-	create, S(..)
+	create, S(..), M.CreateInfo(..)
 
 	) where
 

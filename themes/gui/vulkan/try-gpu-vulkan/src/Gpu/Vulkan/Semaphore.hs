@@ -4,7 +4,7 @@ module Gpu.Vulkan.Semaphore (
 
 	-- * CREATE
 
-	create, S
+	create, S, CreateInfo(..)
 
 	) where
 
