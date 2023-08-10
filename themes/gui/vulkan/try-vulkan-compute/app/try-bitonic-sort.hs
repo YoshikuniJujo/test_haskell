@@ -119,12 +119,12 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 	print eot
 	print pot
 	print $ map V.length das
---	print $ map V.length dbs
+	print $ map V.length dbs
 	ct0 <- getCurrentTime
 	(r1, r2, r3) <-
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
-		calc dvc qFam dscSetLyt dscSet ma mb das dbs pot >> threadDelay 1000000 >>
+		calc dvc qFam dscSetLyt dscSet ma mb das dbs pot >>
 		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
 			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @[W2] dvc mb def
 			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @[W3] dvc mc def
@@ -470,7 +470,11 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws f = do
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
-		Vk.Queue.submit q (HeteroParList.Singleton . U4 $ submitInfo ws s) Nothing >> f s
+		Vk.Fence.create dvc Vk.Fence.CreateInfo {
+			Vk.Fence.createInfoNext = TMaybe.N,
+			Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
+			Vk.Queue.submit q (HeteroParList.Singleton . U4 $ submitInfo ws s) (Just fnc) >>
+			Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing >> f s
 	where
 	submitInfo :: forall swss' ss .
 		HeteroParList.PL Vk.Semaphore.S swss' ->
