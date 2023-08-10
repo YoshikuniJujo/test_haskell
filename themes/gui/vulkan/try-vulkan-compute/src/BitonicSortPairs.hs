@@ -36,6 +36,26 @@ calcPair e n n' i = bool id (uncurry $ flip (,)) b (i', i' + iv)
 	i' = i `div` iv * iv * 2 + i `mod` iv
 	iv = 2 ^ (n - n')
 
+{-
+
+	n = 2, n' = 1, i = 3
+
+	i : 00000011
+	i': 00000101
+
+	    00000011
+	         ^
+
+	n = 2, n' = 1, i = 5
+
+	i : 00000101
+	i': 00001001
+
+	    00000101
+	         ^
+
+-}
+
 testPairs :: Int -> Int -> Int -> Int -> Bool
 testPairs e n n' i = getPair' e n n' i == calcPair e n n' i
 
