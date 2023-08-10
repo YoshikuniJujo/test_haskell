@@ -57,6 +57,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-compute
+  try-push-constant:
+    main:                try-push-constant.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-compute
   try-saitan-simple:
     main:                try-saitan-simple.hs
     source-dirs:         app
