@@ -66,6 +66,8 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DSLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
+import qualified Gpu.Vulkan.TypeEnum as Vk.T
+
 ---------------------------------------------------------------------------
 
 -- MAIN
@@ -234,8 +236,10 @@ calc qfi dv dslyt ds sz =
 	run qfi dv ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.D sl bts ->
-	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
-		('Vk.PushConstant.Layout '[] '[])
+	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)] ('Vk.PushConstant.Layout
+		'[Word32]
+		'[ 'Vk.PushConstant.Range
+			'[ 'Vk.T.ShaderStageComputeBit] '[Word32]])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
@@ -256,11 +260,13 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
 run :: forall slbts sd sc sg sl s . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]] ) =>
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
-	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
-	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
+	Vk.Ppl.Lyt.P sl '[slbts] '[Word32] ->
+	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[Word32]) -> Word32 -> IO ()
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
+			ccb lyt (HL.Singleton (HL.Id (4 :: Word32))) >>
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1
@@ -276,9 +282,9 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 
 -- COMPUTE PIPELINE INFO
 
-pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
+pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[Word32] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
-		'(sl, sbtss, '[]) sbph
+		'(sl, sbtss, '[Word32]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
@@ -305,6 +311,8 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 
 layout(binding = 0) buffer Data { uint val[]; };
 
+layout(push_constant) uniform Foo { uint n; } foo;
+
 uint hello[] = uint[](
 	72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
@@ -313,7 +321,7 @@ void
 main()
 {
 	int index = int(gl_GlobalInvocationID.x);
-	val[index] = hello[index];
+	val[index] = hello[index] + foo.n;
 }
 
 |]
