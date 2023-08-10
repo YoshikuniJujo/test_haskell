@@ -35,3 +35,14 @@ calcPair e n n' i = bool id (uncurry $ flip (,)) b (i', i' + iv)
 	b = (i `shiftR` n) .&. 1 /= 0
 	i' = i `div` iv * iv * 2 + i `mod` iv
 	iv = 2 ^ (n - n')
+
+testPairs :: Int -> Int -> Int -> Int -> Bool
+testPairs e n n' i = getPair' e n n' i == calcPair e n n' i
+
+separateNum :: Int -> Int -> (Int, Int)
+separateNum i n
+	| i < n = separateNum (i + 1) (n - i - 1)
+	| otherwise = (i, n)
+
+calcPair' :: Int -> Int -> Int -> (Int, Int)
+calcPair' e n = uncurry (calcPair e) $ separateNum 0 n
