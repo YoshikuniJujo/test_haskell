@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       BitonicSortPairs
+      TryBitonicSortPairs
   other-modules:
       Paths_try_vulkan_compute
   hs-source-dirs:
@@ -33,6 +34,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   c-sources:
       csrc/hello.c
+      csrc/bitonicSortPairs.c
   build-depends:
       base >=4.7 && <5
     , data-default

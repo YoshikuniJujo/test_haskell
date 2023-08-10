@@ -48,6 +48,7 @@ library:
   source-dirs: src
   c-sources:
   - csrc/hello.c
+  - csrc/bitonicSortPairs.c
 
 executables:
   try-hello-world:
