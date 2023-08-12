@@ -113,8 +113,8 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
 		pot = 2 ^ eot
-	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 7)
-	let	pss = bitonicSortPairs False 0 (eot + 7)
+	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 6)
+	let	pss = bitonicSortPairs False 0 (eot + 6)
 		das@(da : _) = V.fromList . (W1 . fst <$>) <$> pss
 		dbs@(db : _) = V.fromList . (W2 . snd <$>) <$> pss
 		dc = V.fromList $ W3 <$> rs
@@ -188,7 +188,7 @@ dvcInfo qFam = Vk.Dvc.CreateInfo {
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
-	'Vk.DscSetLyt.Buffer '[VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 ""] ]
+	'Vk.DscSetLyt.Buffer '[VObj.List 256 W3 ""] ]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = TMaybe.N,
 	Vk.DscSetLyt.createInfoFlags = zeroBits,
@@ -205,10 +205,8 @@ prepareMems :: (
 	Default (HeteroParList.PL
 		(HeteroParList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Vk.DscSet.BindingAndArrayElemBuffer bts '[
-		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ] 0,
-	Vk.DscSet.UpdateDynamicLength bts '[
-		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ]
+	Vk.DscSet.BindingAndArrayElemBuffer bts '[VObj.List 256 W3 ""] 0,
+	Vk.DscSet.UpdateDynamicLength bts '[VObj.List 256 W3 ""]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sl bts ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
@@ -310,15 +308,12 @@ writeDscSet ::
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sm1, sb1, "", VObj.List 256 W1 ""), '(sm2, sb2, "", VObj.List 256 W2 ""),
 		'(sm3, sb3, "", VObj.List 256 W3 "") ]) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
 		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**
 		HeteroParList.Nil }
 
@@ -474,7 +469,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (6 :: Int)) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ (5 :: Int)) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -511,7 +506,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (6 :: Int)) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ (5 :: Int)) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
@@ -578,7 +573,7 @@ bitonicMergePairs fl i n =
 
 layout(binding = 0) buffer Data {
 	uint val[];
-} data[3];
+} data[1];
 
 layout(push_constant) uniform Foo { int n; } foo;
 
@@ -603,13 +598,10 @@ main()
 	if ((i >> p & 1) != 0) { f = y; t = x; }
 	else { f = x; t = y; }
 
-	int i1 = int(data[0].val[i]);
-	int i2 = int(data[1].val[i]);
-
-	if (data[2].val[f] > data[2].val[t]) {
-		uint tmp = data[2].val[f];
-		data[2].val[f] = data[2].val[t];
-		data[2].val[t] = tmp; }
+	if (data[0].val[f] > data[0].val[t]) {
+		uint tmp = data[0].val[f];
+		data[0].val[f] = data[0].val[t];
+		data[0].val[t] = tmp; }
 }
 
 |]

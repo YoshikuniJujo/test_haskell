@@ -15,7 +15,7 @@ getRandomRs r n = take n . randomRs r <$> getStdGen
 
 main :: IO ()
 main = do
-	rs <- getRandomRs @Word32 (1, 100000) $ 2 ^ 22
+	rs <- getRandomRs @Word32 (1, 100000) $ 2 ^ 21
 	ct0 <- getCurrentTime
 	print . take 20 $ L.sort rs
 	print . checkSorted 0 $ L.sort rs
