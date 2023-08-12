@@ -28,7 +28,7 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList (pattern (:*), pattern (:*.), pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -337,18 +337,27 @@ calc dvc qFam dscSetLyt dscSet ma mb das dbs dsz =
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
 		putStrLn "BEGIN CALC" >>
-		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip4 cbs das dbs [0 ..]) \fnc ->
+		let (ps, qs) = pqs in
+		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip5 cbs das dbs ps qs) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
+
+pqs :: ([Int32], [Int32])
+pqs = unzip $ makePqs 0 0
+
+makePqs :: Int32 -> Int32 -> [(Int32, Int32)]
+makePqs p q
+	| p <= q = (p, q) : makePqs (p + 1) 0
+	| otherwise = (p, q) : makePqs p (q + 1)
 
 runAll :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32, Int32]) ->
+	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M.M sm1 '[ '(sb1, 'Vk.Mm.M.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M.M sm2 '[ '(sb2, 'Vk.Mm.M.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	[(Vk.CmdBuf.C sc,
-		V.Vector W1, V.Vector W2, Int32)] ->
+		V.Vector W1, V.Vector W2, Int32, Int32)] ->
 	(forall sf . Vk.Fence.F sf -> IO c) -> IO c
 runAll dvc qFam ppl plyt dscSet dsz ma mb = repeatBeginEnd
 	(writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb)
@@ -358,17 +367,17 @@ runAll dvc qFam ppl plyt dscSet dsz ma mb = repeatBeginEnd
 writeAndRunBegin :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32, Int32]) ->
+	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	(	Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2, Int32 ) ->
+		V.Vector W1,  V.Vector W2, Int32, Int32 ) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
-writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, da, db, n) f = do
+writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, da, db, n, q) f = do
 --	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
 --	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
-	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil n f
+	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil n q f
 
 forDebug :: IORef Int
 forDebug = unsafePerformIO $ newIORef 0
@@ -376,36 +385,36 @@ forDebug = unsafePerformIO $ newIORef 0
 writeAndRun :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32, Int32]) ->
+	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	Vk.Semaphore.S ss -> (
 		Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2, Int32 ) ->
+		V.Vector W1,  V.Vector W2, Int32, Int32 ) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
-writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n) f = do
+writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n, q) f = do
 --	print =<< readIORef forDebug
 --	modifyIORef forDebug (+ 1)
 --	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
 --	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
-	run dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) n f
+	run dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) n q f
 
 writeAndRunEnd :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32, Int32]) ->
+	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	Vk.Semaphore.S ss -> (
 		Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2, Int32 ) ->
+		V.Vector W1,  V.Vector W2, Int32, Int32 ) ->
 	(forall sf . Vk.Fence.F sf -> IO b) -> IO b
-writeAndRunEnd dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n) f = do
+writeAndRunEnd dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n, q) f = do
 --	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
 --	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
-	run' dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) n f
+	run' dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) n q f
 
 repeatBeginEnd ::
 	(forall b . a -> (forall ss . s ss -> IO b) -> IO b) ->
@@ -422,9 +431,9 @@ repeatActions s (x : xs) g f = g s x \s' -> repeatActions s' xs g f
 pplLayoutInfo :: Vk.DscSetLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.Layout
-			'[Int32]
+			'[Int32, Int32]
 			'[ 'Vk.PushConstant.Range
-				'[ 'Vk.T.ShaderStageComputeBit] '[Int32]])
+				'[ 'Vk.T.ShaderStageComputeBit] '[Int32, Int32]])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
@@ -455,16 +464,16 @@ run :: forall slbts sbtss sd sc sg sl sds swss a . (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	InfixIndex '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
-	HeteroParList.PL Vk.Semaphore.S swss -> Int32 ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32, Int32]) ->
+	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
+	HeteroParList.PL Vk.Semaphore.S swss -> Int32 -> Int32 ->
 	(forall ss . Vk.Semaphore.S ss -> IO a) -> IO a
-run dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
-	q <- Vk.Dvc.getQueue dvc qFam 0
+run dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
+	qu <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb ->
 			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
-				ccb pplLyt (HeteroParList.Singleton (HeteroParList.Id (n :: Int32))) >>
+				ccb pplLyt (n :* q :* HeteroParList.Nil) >>
 			Vk.Cmd.bindDescriptorSetsCompute ccb
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
@@ -476,7 +485,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
 		Vk.Fence.create dvc Vk.Fence.CreateInfo {
 			Vk.Fence.createInfoNext = TMaybe.N,
 			Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
-			Vk.Queue.submit q (HeteroParList.Singleton . U4 $ submitInfo ws s) (Just fnc) >> f s
+			Vk.Queue.submit qu (HeteroParList.Singleton . U4 $ submitInfo ws s) (Just fnc) >> f s
 	where
 	submitInfo :: forall swss' ss .
 		HeteroParList.PL Vk.Semaphore.S swss' ->
@@ -492,16 +501,16 @@ run' :: forall slbts sbtss sd sc sg sl sds swss a . (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	InfixIndex '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
-	HeteroParList.PL Vk.Semaphore.S swss -> Int32 ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Int32, Int32]) ->
+	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
+	HeteroParList.PL Vk.Semaphore.S swss -> Int32 -> Int32 ->
 	(forall sf . Vk.Fence.F sf -> IO a) -> IO a
-run' dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
-	q <- Vk.Dvc.getQueue dvc qFam 0
+run' dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
+	qu <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb ->
 			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
-				ccb pplLyt (HeteroParList.Singleton (HeteroParList.Id (n :: Int32))) >>
+				ccb pplLyt (n :* q :* HeteroParList.Nil) >>
 			Vk.Cmd.bindDescriptorSetsCompute ccb
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
@@ -510,7 +519,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
-		Vk.Queue.submit q (HeteroParList.Singleton . U4 $ submitInfo ws) (Just fnc) >> f fnc
+		Vk.Queue.submit qu (HeteroParList.Singleton . U4 $ submitInfo ws) (Just fnc) >> f fnc
 	where
 	submitInfo :: forall swss' .
 		HeteroParList.PL Vk.Semaphore.S swss' ->
@@ -524,10 +533,10 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
 
 -- COMPUTE PIPELINE INFO
 
-computePipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[Int32] ->
+computePipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
-		'(sl, sbtss, '[Int32]) sbph
+		'(sl, sbtss, '[Int32, Int32]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
@@ -575,18 +584,14 @@ layout(binding = 0) buffer Data {
 	uint val[];
 } data[1];
 
-layout(push_constant) uniform Foo { int n; } foo;
+layout(push_constant) uniform Foo { int p; int q; } foo;
 
 void
 main()
 {
 	int i = int(gl_GlobalInvocationID.x) + (int(gl_GlobalInvocationID.y) << 15);
-	int q = foo.n;
 
-	int p;
-	for (p = 0; p < q; p ++) q = q - p - 1;
-
-	int r = p - q;
+	int r = foo.p - foo.q;
 	int u = i >> r << r;
 	int l = i ^ u;
 
@@ -595,10 +600,10 @@ main()
 
 	int f, t;
 
-	if ((i >> p & 1) != 0) { f = y; t = x; }
-	else { f = x; t = y; }
+	if ((i >> foo.p & 1) != 0) { f = y; t = x; } else { f = x; t = y; }
 
 	if (data[0].val[f] > data[0].val[t]) {
+//		data[0].val[f] = atomicExchange(data[0].val[t], data[0].val[f]); };
 		uint tmp = data[0].val[f];
 		data[0].val[f] = data[0].val[t];
 		data[0].val[t] = tmp; }
