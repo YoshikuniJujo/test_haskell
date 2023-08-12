@@ -112,16 +112,16 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
 		pot = 2 ^ eot
-	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 2)
-	let	pss = bitonicSortPairs False 0 (eot + 2)
+	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 4)
+	let	pss = bitonicSortPairs False 0 (eot + 4)
 		das@(da : _) = V.fromList . (W1 . fst <$>) <$> pss
 		dbs@(db : _) = V.fromList . (W2 . snd <$>) <$> pss
 		dc = V.fromList $ W3 <$> rs
 	print mgcx
 	print eot
 	print pot
-	print $ map V.length das
-	print $ map V.length dbs
+--	print $ map V.length das
+--	print $ map V.length dbs
 	ct0 <- getCurrentTime
 	(r1, r2, r3) <-
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
@@ -341,7 +341,7 @@ calc dvc qFam dscSetLyt dscSet ma mb das dbs dsz =
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
 		putStrLn "BEGIN CALC" >>
-		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip3 cbs das dbs) \fnc ->
+		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip4 cbs das dbs [0 ..]) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
 
 runAll :: (
@@ -352,7 +352,7 @@ runAll :: (
 	Vk.Mm.M.M sm1 '[ '(sb1, 'Vk.Mm.M.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M.M sm2 '[ '(sb2, 'Vk.Mm.M.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	[(Vk.CmdBuf.C sc,
-		V.Vector W1, V.Vector W2)] ->
+		V.Vector W1, V.Vector W2, Word32)] ->
 	(forall sf . Vk.Fence.F sf -> IO c) -> IO c
 runAll dvc qFam ppl plyt dscSet dsz ma mb = repeatBeginEnd
 	(writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb)
@@ -367,12 +367,12 @@ writeAndRunBegin :: (
 	Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	(	Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2 ) ->
+		V.Vector W1,  V.Vector W2, Word32 ) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
-writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, da, db) f = do
-	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
-	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
-	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil 321 f
+writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, da, db, n) f = do
+--	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
+--	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
+	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil n f
 
 forDebug :: IORef Int
 forDebug = unsafePerformIO $ newIORef 0
@@ -386,14 +386,14 @@ writeAndRun :: (
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	Vk.Semaphore.S ss -> (
 		Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2 ) ->
+		V.Vector W1,  V.Vector W2, Word32 ) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
-writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db) f = do
+writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n) f = do
 --	print =<< readIORef forDebug
 --	modifyIORef forDebug (+ 1)
-	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
-	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
-	run dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) 333 f
+--	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
+--	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
+	run dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) n f
 
 writeAndRunEnd :: (
 	sbtss ~ '[slbts],
@@ -404,12 +404,12 @@ writeAndRunEnd :: (
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 	Vk.Semaphore.S ss -> (
 		Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2 ) ->
+		V.Vector W1,  V.Vector W2, Word32 ) ->
 	(forall sf . Vk.Fence.F sf -> IO b) -> IO b
-writeAndRunEnd dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db) f = do
-	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
-	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
-	run' dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) 123 f
+writeAndRunEnd dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n) f = do
+--	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
+--	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
+	run' dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) n f
 
 repeatBeginEnd ::
 	(forall b . a -> (forall ss . s ss -> IO b) -> IO b) ->
@@ -473,7 +473,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (1 :: Int)) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ (3 :: Int)) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -511,7 +511,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (1 :: Int)) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ (3 :: Int)) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
@@ -580,16 +580,36 @@ layout(binding = 0) buffer Data {
 	uint val[];
 } data[3];
 
+layout(push_constant) uniform Foo { uint n; } foo;
+
 void
 main()
 {
-	int index = int(gl_GlobalInvocationID.x) + (int(gl_GlobalInvocationID.y) << 15);
-	int i1 = int(data[0].val[index]);
-	int i2 = int(data[1].val[index]);
-	if (data[2].val[i1] > data[2].val[i2]) {
-		uint t = data[2].val[i1];
-		data[2].val[i1] = data[2].val[i2];
-		data[2].val[i2] = t; }
+	int i = int(gl_GlobalInvocationID.x) + (int(gl_GlobalInvocationID.y) << 15);
+	int q = int(foo.n);
+
+	int p;
+	for (p = 0; p < q; p ++) q = q - p - 1;
+
+	int r = p - q;
+	int u = i >> r << r;
+	int l = i ^ u;
+
+	int x = u << 1 | l;
+	int y = u << 1 | 1 << r | l;
+
+	int f, t;
+
+	if ((i >> p & 1) != 0) { f = y; t = x; }
+	else { f = x; t = y; }
+
+	int i1 = int(data[0].val[i]);
+	int i2 = int(data[1].val[i]);
+
+	if (data[2].val[f] > data[2].val[t]) {
+		uint tmp = data[2].val[f];
+		data[2].val[f] = data[2].val[t];
+		data[2].val[t] = tmp; }
 }
 
 |]
