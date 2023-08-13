@@ -113,21 +113,15 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
 		pot = 2 ^ eot
-	rs <- getRandomRs (1, 1000000) (pot * 2 ^ 6)
-	let	pss = bitonicSortPairs False 0 (eot + 6)
-		das@(da : _) = V.fromList . (W1 . fst <$>) <$> pss
-		dbs@(db : _) = V.fromList . (W2 . snd <$>) <$> pss
-		dc = V.fromList $ W3 <$> rs
-	print mgcx
+	rs <- getRandomRs (1, 10 ^ (7 :: Int)) (pot * 2 ^ 6)
+	let	dc = V.fromList $ W3 <$> rs
 	print eot
 	print pot
---	print $ map V.length das
---	print $ map V.length dbs
 	ct0 <- getCurrentTime
 	(r1, r2, r3) <-
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
-		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
-		calc dvc qFam dscSetLyt dscSet ma mb das dbs pot >>
+		prepareMems phdvc dvc dscSetLyt 1 1 dc \dscSet ma mb mc ->
+		calc dvc qFam dscSetLyt dscSet ma mb undefined undefined pot >>
 		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
 			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @[W2] dvc mb def
 			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @[W3] dvc mc def
@@ -209,18 +203,19 @@ prepareMems :: (
 	Vk.DscSet.UpdateDynamicLength bts '[VObj.List 256 W3 ""]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sl bts ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
+	Vk.Dvc.Size -> Vk.Dvc.Size ->
+	V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.BufferArg "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
-prepareMems phdvc dvc dscSetLyt da db dc f =
+prepareMems phdvc dvc dscSetLyt ln1 ln2 dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(HeteroParList.Singleton dscSet) ->
-	storageBufferNew dvc phdvc da \ba ma ->
-	storageBufferNew dvc phdvc db \bb mb ->
-	storageBufferNew dvc phdvc dc \bc mc ->
+	storageBufferNew dvc phdvc ln1 \ba ma ->
+	storageBufferNew dvc phdvc ln2 \bb mb ->
+	storageBufferNew dvc phdvc (fromIntegral $ V.length dc) \bc mc ->
 	Vk.Mm.write @"" @(VObj.List 256 W3 "") dvc mc def dc >>
 	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U5 $ writeDscSet dscSet ba bb bc)
@@ -246,24 +241,24 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 		HeteroParList.Singleton $ U2 lyt }
 
 storageBufferNew :: forall sd nm w a . Storable w =>
-	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (forall sb sm .
+	Vk.Dvc.D sd -> Vk.PhDvc.P ->Vk.Dvc.Size -> (forall sb sm .
 		Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""]  ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List 256 w ""])] ->
 		IO a) -> IO a
-storageBufferNew dvc phdvc xs f =
-	Vk.Buffer.create dvc (bufferInfo xs) nil' \bf ->
+storageBufferNew dvc phdvc ln f =
+	Vk.Buffer.create dvc (bufferInfo ln) nil' \bf ->
 	getMemoryInfo phdvc dvc bf >>= \mmi ->
 	Vk.Mm.allocateBind dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
-bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
-bufferInfo xs = Vk.Buffer.CreateInfo {
+bufferInfo :: Storable w => Vk.Dvc.Size -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
+bufferInfo ln = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
-		VObj.LengthList (fromIntegral $ V.length xs) :** HeteroParList.Nil,
+		VObj.LengthList ln :** HeteroParList.Nil,
 	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
@@ -337,8 +332,9 @@ calc dvc qFam dscSetLyt dscSet ma mb das dbs dsz =
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
 		putStrLn "BEGIN CALC" >>
-		let (ps, qs) = pqs in
-		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip5 cbs das dbs ps qs) \fnc ->
+--		let (ps, qs) = pqs in
+		let (ps, qs) = unzip $ makePqs' 21 0 0 in
+		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip3 cbs ps qs) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
 
 pqs :: ([Int32], [Int32])
@@ -349,6 +345,12 @@ makePqs p q
 	| p <= q = (p, q) : makePqs (p + 1) 0
 	| otherwise = (p, q) : makePqs p (q + 1)
 
+makePqs' :: Int32 -> Int32 -> Int32 -> [(Int32, Int32)]
+makePqs' i p q
+	| i <= p = []
+	| p <= q = (p, q) : makePqs' i (p + 1) 0
+	| otherwise = (p, q) : makePqs' i p (q + 1)
+
 runAll :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
@@ -356,8 +358,7 @@ runAll :: (
 	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M.M sm1 '[ '(sb1, 'Vk.Mm.M.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M.M sm2 '[ '(sb2, 'Vk.Mm.M.BufferArg "" '[VObj.List 256 W2 ""])] ->
-	[(Vk.CmdBuf.C sc,
-		V.Vector W1, V.Vector W2, Int32, Int32)] ->
+	[(Vk.CmdBuf.C sc, Int32, Int32)] ->
 	(forall sf . Vk.Fence.F sf -> IO c) -> IO c
 runAll dvc qFam ppl plyt dscSet dsz ma mb = repeatBeginEnd
 	(writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb)
@@ -371,10 +372,9 @@ writeAndRunBegin :: (
 	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
-	(	Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2, Int32, Int32 ) ->
+	(	Vk.CmdBuf.C sc, Int32, Int32 ) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
-writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, da, db, n, q) f = do
+writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, n, q) f = do
 --	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
 --	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
 	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil n q f
@@ -389,11 +389,9 @@ writeAndRun :: (
 	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
-	Vk.Semaphore.S ss -> (
-		Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2, Int32, Int32 ) ->
+	Vk.Semaphore.S ss -> (Vk.CmdBuf.C sc, Int32, Int32) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
-writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n, q) f = do
+writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, n, q) f = do
 --	print =<< readIORef forDebug
 --	modifyIORef forDebug (+ 1)
 --	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
@@ -407,11 +405,9 @@ writeAndRunEnd :: (
 	Vk.Ppl.Lyt.P sl sbtss '[Int32, Int32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg "" '[VObj.List 256 W1 ""])] ->
 	Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
-	Vk.Semaphore.S ss -> (
-		Vk.CmdBuf.C sc,
-		V.Vector W1,  V.Vector W2, Int32, Int32 ) ->
+	Vk.Semaphore.S ss -> (Vk.CmdBuf.C sc, Int32, Int32) ->
 	(forall sf . Vk.Fence.F sf -> IO b) -> IO b
-writeAndRunEnd dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db, n, q) f = do
+writeAndRunEnd dvc qFam ppl plyt dscSet dsz ma mb s (cb, n, q) f = do
 --	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
 --	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
 	run' dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) n q f
