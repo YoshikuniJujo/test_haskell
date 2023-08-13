@@ -45,7 +45,7 @@ mkGraph fp minY maxY hd0 als = withCairo fp 1024 768 \cr -> do
 		cairoMoveTo cr 115 (transY minY maxY i)
 		cairoLineTo cr 130 (transY minY maxY i)
 		cairoStroke cr
-	for_ (tick (10 ** (- 7)) minY maxY) \i ->
+	for_ (tick (5 * 10 ** (- 8)) minY maxY) \i ->
 		putText cr (Size 10) 70 (transY minY maxY i - 7) . T.pack $ show i
 
 	putText cr (Size 15) 500 700 "N"
