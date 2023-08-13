@@ -36,7 +36,8 @@ library
       csrc/hello.c
       csrc/bitonicSortPairs.c
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -58,7 +59,32 @@ executable try-bitonic-sort
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
+    , data-default
+    , random
+    , ranged-list
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-khr
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-vulkan-compute
+    , typelevel-tools
+    , vector
+  default-language: Haskell2010
+
+executable try-bitonic-sort-cpu
+  main-is: try-bitonic-sort-cpu.hs
+  other-modules:
+      Paths_try_vulkan_compute
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -81,7 +107,8 @@ executable try-bitonic-sort-new
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -104,7 +131,8 @@ executable try-data-list-sort
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -127,7 +155,8 @@ executable try-hello
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -150,7 +179,8 @@ executable try-hello-world
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -173,7 +203,8 @@ executable try-push-constant
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -196,7 +227,8 @@ executable try-saitan-simple
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list
@@ -220,7 +252,8 @@ test-suite try-vulkan-compute-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , data-default
     , random
     , ranged-list

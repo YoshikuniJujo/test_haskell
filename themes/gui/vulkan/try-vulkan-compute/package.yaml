@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - random
 - data-default
+- array
 - vector
 - time
 - try-gpu-vulkan
@@ -89,6 +90,15 @@ executables:
     - try-vulkan-compute
   try-bitonic-sort-new:
     main:                try-bitonic-sort-new.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-compute
+  try-bitonic-sort-cpu:
+    main:                try-bitonic-sort-cpu.hs
     source-dirs:         app
     ghc-options:
     - -threaded
