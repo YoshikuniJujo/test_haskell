@@ -27,6 +27,7 @@ library
   exposed-modules:
       BitonicSortPairs
       TryBitonicSortPairs
+      TryQuickSort
   other-modules:
       Paths_try_vulkan_compute
   hs-source-dirs:
@@ -35,6 +36,7 @@ library
   c-sources:
       csrc/hello.c
       csrc/bitonicSortPairs.c
+      csrc/quicksort.c
   build-depends:
       array
     , base >=4.7 && <5
