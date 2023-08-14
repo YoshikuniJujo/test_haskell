@@ -15,13 +15,13 @@ getRandomRs r n = take n . randomRs r <$> getStdGen
 
 main :: IO ()
 main = do
-	rs <- getRandomRs @Word32 (1, 10 ^ (7 :: Int)) $ 2 ^ (22 :: Int)
-	let	rs' = listArray (0, 2 ^ (22 :: Int) - 1) rs
+	rs <- getRandomRs @Word32 (1, 10 ^ (7 :: Int)) $ 2 ^ (23 :: Int)
+	let	rs' = listArray (0, 2 ^ (23 :: Int) - 1) rs
 	ct0 <- getCurrentTime
 	ns <- quicksort 10 rs'
+	ct1 <- getCurrentTime
 	print . take 10 $ toList ns
 	print . checkSorted 0 $ toList ns
-	ct1 <- getCurrentTime
 	print $ diffUTCTime ct1 ct0
 
 checkSorted :: Ord a => Int -> [a] -> (Int, Bool)
