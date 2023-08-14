@@ -1,24 +1,32 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
-import Control.Monad.ST
+import Data.Foldable
 import Data.Array
-import Data.Array.MArray
-import Data.Array.ST
 import Data.Word
+import Data.Time
 import System.Random
+
+import TryBitonicSortCpu
+
+getRandomRs :: Random a => (a, a) -> Int -> IO [a]
+getRandomRs r n = take n . randomRs r <$> getStdGen
 
 main :: IO ()
 main = do
-	rs <- take 128 . randomRs (1 :: Word32, 1000) <$> getStdGen
-	let foo = runST $ sort rs
-	print foo
+	rs <- getRandomRs @Word32 (1, 10 ^ (7 :: Int)) $ 2 ^ (22 :: Int)
+	ct0 <- getCurrentTime
+	ns <- bitonicSortCpu 22 $ listArray (0, 2 ^ (22 :: Int) - 1) rs
+	print . take 10 $ toList ns
+	print . checkSorted 0 $ toList ns
+	ct1 <- getCurrentTime
+	print $ diffUTCTime ct1 ct0
 
-sort :: forall s . [Word32] -> ST s (Array Word32 Word32)
-sort rs = do
-	arr <- newListArray (0, 127) rs
-	freeze (arr :: STArray s Word32 Word32) :: ST s (Array Word32 Word32)
+checkSorted :: Ord a => Int -> [a] -> (Int, Bool)
+checkSorted i [_] = (i, True)
+checkSorted i (x : xs@(y : _))
+	| x <= y = checkSorted (i + 1) xs
+	| otherwise = (i, False)

@@ -113,7 +113,7 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
 		pot = 2 ^ eot
-	rs <- getRandomRs (1, 10 ^ (7 :: Int)) (pot * 2 ^ 6)
+	rs <- getRandomRs (1, 10 ^ (7 :: Int)) (pot * 2 ^ 7)
 	let	dc = V.fromList $ W3 <$> rs
 	print eot
 	print pot
@@ -333,7 +333,7 @@ calc dvc qFam dscSetLyt dscSet ma mb das dbs dsz =
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
 		putStrLn "BEGIN CALC" >>
 --		let (ps, qs) = pqs in
-		let (ps, qs) = unzip $ makePqs' 21 0 0 in
+		let (ps, qs) = unzip $ makePqs' 22 0 0 in
 		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip3 cbs ps qs) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
 
@@ -474,7 +474,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (5 :: Int)) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ (6 :: Int)) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -511,7 +511,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (5 :: Int)) 1
+			Vk.Cmd.dispatch ccb dsz (2 ^ (6 :: Int)) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->

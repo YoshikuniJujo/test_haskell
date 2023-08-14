@@ -51,6 +51,7 @@ library:
   - csrc/hello.c
   - csrc/bitonicSortPairs.c
   - csrc/quicksort.c
+  - csrc/bitonic_sort.c
 
 executables:
   try-hello-world:

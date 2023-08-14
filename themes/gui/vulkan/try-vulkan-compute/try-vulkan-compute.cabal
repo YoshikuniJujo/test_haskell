@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       BitonicSortPairs
+      TryBitonicSortCpu
       TryBitonicSortPairs
       TryQuickSort
   other-modules:
@@ -37,6 +38,7 @@ library
       csrc/hello.c
       csrc/bitonicSortPairs.c
       csrc/quicksort.c
+      csrc/bitonic_sort.c
   build-depends:
       array
     , base >=4.7 && <5
