@@ -97,9 +97,6 @@ import Data.Foldable
 
 -- MAIN
 
-getRandomRs :: Random a => (a, a) -> Int -> IO [a]
-getRandomRs r n = take n . randomRs r <$> getStdGen
-
 main :: IO ()
 main = withDevice \phdvc qFam dvc mgcx -> do
 	let	eot :: Integral n => n
@@ -119,6 +116,9 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 	print . take 20 $ unW3 <$> toList r3
 	print . checkSorted 0 $ unW3 <$> toList r3
 	print $ diffUTCTime ct1 ct0
+
+getRandomRs :: Random a => (a, a) -> Int -> IO [a]
+getRandomRs r n = take n . randomRs r <$> getStdGen
 
 checkSorted :: Ord a => Int -> [a] -> (Int, Bool, [a])
 checkSorted i [] = (i, True, [])
@@ -426,7 +426,8 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
+--			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (7 :: Int)) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -463,7 +464,8 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
-			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
+--			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (7 :: Int)) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
@@ -509,6 +511,8 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 [glslComputeShader|
 
 #version 460
+
+layout(local_size_x = 16) in;
 
 layout(binding = 0) buffer Data {
 	uint val[];
