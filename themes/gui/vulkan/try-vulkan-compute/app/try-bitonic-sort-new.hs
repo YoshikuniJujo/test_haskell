@@ -22,13 +22,12 @@ import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Object.Base qualified as KObj
 import Data.Default
 import Data.Bits
-import Data.Bool
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:*.), pattern (:**))
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -78,20 +77,13 @@ import System.Random
 
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
-import Gpu.Vulkan.Pipeline.Enum qualified as Vk.Ppl
 
 import Data.List qualified as L
-
-import Data.IORef
-import System.IO.Unsafe
-
-import Control.Concurrent
 
 import Data.Time
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
-import Data.Array
 import Data.Foldable
 
 ---------------------------------------------------------------------------
@@ -105,9 +97,6 @@ import Data.Foldable
 
 -- MAIN
 
-getRandoms :: Random a => Int -> IO [a]
-getRandoms n = take n . randoms <$> getStdGen
-
 getRandomRs :: Random a => (a, a) -> Int -> IO [a]
 getRandomRs r n = take n . randomRs r <$> getStdGen
 
@@ -116,11 +105,11 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 	let	eot :: Integral n => n
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
-		pot = 2 ^ eot
+		pot = 2 ^ (eot :: Int)
 	rs <- getRandomRs (1, 10 ^ (7 :: Int)) (2 ^ (23 :: Int))
 	let	dc = V.fromList $ W3 <$> rs
-	print eot
-	print pot
+	print (eot :: Int)
+	print (pot :: Int)
 	ct0 <- getCurrentTime
 	r3 <- Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt dc \dscSet mc ->
@@ -132,6 +121,7 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 	print $ diffUTCTime ct1 ct0
 
 checkSorted :: Ord a => Int -> [a] -> (Int, Bool, [a])
+checkSorted i [] = (i, True, [])
 checkSorted i [_] = (i, True, [])
 checkSorted i (x : xs@(y : _))
 	| x <= y = checkSorted (i + 1) xs
@@ -200,7 +190,7 @@ prepareMems :: (
 	Vk.DscSet.UpdateDynamicLength bts '[VObj.List 256 W3 ""]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sl bts ->
-	V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
+	V.Vector W3 -> (forall sds sm3 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.BufferArg "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt dc f =
@@ -210,7 +200,7 @@ prepareMems phdvc dvc dscSetLyt dc f =
 	storageBufferNew dvc phdvc (fromIntegral $ V.length dc) \bc mc ->
 	Vk.Mm.write @"" @(VObj.List 256 W3 "") dvc mc def dc >>
 	Vk.DscSet.updateDs dvc
-		(HeteroParList.Singleton . U5 $ writeDscSet dscSet undefined undefined bc)
+		(HeteroParList.Singleton . U5 $ writeDscSet dscSet bc)
 		HeteroParList.Nil >>
 	f dscSet mc
 
@@ -222,7 +212,7 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 	Vk.DscPool.createInfoPoolSizes = [poolSize] }
 	where poolSize = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPool.sizeDescriptorCount = 10 }
+		Vk.DscPool.sizeDescriptorCount = 1 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.D sl bts ->
 	Vk.DscSet.AllocateInfo 'Nothing sp '[ '(sl, bts)]
@@ -245,7 +235,7 @@ storageBufferNew dvc phdvc ln f =
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
-bufferInfo :: Storable w => Vk.Dvc.Size -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
+bufferInfo :: Vk.Dvc.Size -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
 bufferInfo ln = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
@@ -283,16 +273,14 @@ checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
-	forall slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 sds . (
+	forall slbts sb3 sm3 objs3 sds . (
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange (VObj.List 256 W3 "") objs3
-	) =>
+	VObj.OffsetRange (VObj.List 256 W3 "") objs3 ) =>
 	Vk.DscSet.D sds slbts ->
-	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sm3, sb3, "", VObj.List 256 W3 "") ]) 0
-writeDscSet ds ba bb bc = Vk.DscSet.Write {
+writeDscSet ds bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
@@ -302,10 +290,9 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd sds sm1 sb1 sm2 sb2 . (
+calc :: forall slbts sl bts sd sds . (
 	slbts ~ '(sl, bts),
-	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
-	InfixIndex '[slbts] '[ '(sl, bts)]) =>
+	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl bts ->
 	Vk.DscSet.D sds slbts ->
 	Word32 -> IO ()
@@ -315,7 +302,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
-	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
+	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs ->
 		putStrLn "BEGIN CALC" >>
 --		let (ps, qs) = pqs in
 		let (ps, qs) = unzip $ makePqs' 23 0 0 in
@@ -352,9 +339,6 @@ writeAndRunBegin dvc qFam ppl plyt dscSet dsz (cb, n, q) f = do
 --	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
 	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil n q f
 
-forDebug :: IORef Int
-forDebug = unsafePerformIO $ newIORef 0
-
 writeAndRun :: (
 	sbtss ~ '[slbts],
 	Vk.Cmd.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]] ) =>
@@ -380,10 +364,12 @@ repeatBeginEnd ::
 	(forall ss b . s ss -> a -> (forall ss' . s ss' -> IO b) -> IO b) ->
 	(forall ss b . s ss -> a -> (forall st . t st -> IO b) -> IO b) -> [a] ->
 	(forall st . t st -> IO c) -> IO c
-repeatBeginEnd b m e (x : xs) f = b x \s -> repeatActions s xs m \s x -> e s x f
+repeatBeginEnd _ _ _ [] _ = error "bad"
+repeatBeginEnd b m e (x : xs) f = b x \s -> repeatActions s xs m \s' x' -> e s' x' f
 
 repeatActions :: Monad m =>
-	s ss -> [a] -> (forall ss b . s ss -> a -> (forall ss' . s ss' -> m b) -> m b) -> (forall ss . s ss -> a -> m c) -> m c
+	s ss -> [a] -> (forall ss' b . s ss' -> a -> (forall ss'' . s ss'' -> m b) -> m b) -> (forall ss' . s ss' -> a -> m c) -> m c
+repeatActions _ [] _ _ = error "bad"
 repeatActions s [x] _ f = f s x
 repeatActions s (x : xs) g f = g s x \s' -> repeatActions s' xs g f
 
@@ -404,11 +390,13 @@ commandPoolInfo qFam = Vk.CmdPool.CreateInfo {
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qFam }
 
+{-
 commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfo 'Nothing s '[ '()]
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoNext = TMaybe.N,
 	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
+	-}
 
 commandBufferInfoNew :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s
 commandBufferInfoNew cmdPool = Vk.CmdBuf.AllocateInfoNew {
@@ -517,24 +505,6 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
-
-bitonicSortPairs :: Integral i => Bool -> i -> i -> [[(i, i)]]
-bitonicSortPairs _ _ 0 = []
-bitonicSortPairs fl i n =
-	zipWith (++)
-		(bitonicSortPairs fl i (n - 1))
-		(bitonicSortPairs (not fl) (i + 2 ^ (n - 1)) (n - 1)) ++
-	bitonicMergePairs fl i n
-
-bitonicMergePairs :: Integral i => Bool -> i -> i -> [[(i, i)]]
-bitonicMergePairs _ _ 0 = []
-bitonicMergePairs fl i n =
-	(bool id flip fl zip)
-		[i, i + 1 .. i + 2 ^ (n - 1) - 1]
-		[i + 2 ^ (n - 1) , i + 2 ^ (n - 1) + 1 .. i + 2 ^ n - 1] :
-	zipWith (++)
-		(bitonicMergePairs fl i (n - 1))
-		(bitonicMergePairs fl (i + 2 ^ (n - 1)) (n - 1))
 
 [glslComputeShader|
 
