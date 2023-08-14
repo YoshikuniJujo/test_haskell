@@ -36,7 +36,11 @@ pop(int *p, int *q, stack s)
 {
 	if (*s == NULL) return 0;
 
-	*p = (*s)->p; *q = (*s)-> q; *s = (*s)->next;
+	struct stack *h = *s;
+
+	*p = h->p; *q = h-> q; *s = h->next;
+	free(h);
+
 	return 1;
 }
 
@@ -89,6 +93,8 @@ quicksort(int m, int n, uint32_t ks[])
 			r = j - 1;
 		} else {
 			int *ll, *rr;
+			ll = malloc(sizeof(int));
+			rr = malloc(sizeof(int));
 			int cs = pop(ll, rr, st);
 			if (cs) { l = *ll; r = *rr; }
 			else break;
