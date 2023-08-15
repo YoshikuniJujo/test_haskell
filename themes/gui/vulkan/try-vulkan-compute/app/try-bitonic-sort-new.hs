@@ -103,7 +103,7 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		eot = maximumExponentOf2 mgcx
 		pot :: Integral n => n
 		pot = 2 ^ (eot :: Int)
-	rs <- getRandomRs (1, 10 ^ (7 :: Int)) (2 ^ (23 :: Int))
+	rs <- getRandomRs (1, 10 ^ (7 :: Int)) (2 ^ (24 :: Int))
 	let	dc = V.fromList $ W3 <$> rs
 	print (eot :: Int)
 	print (pot :: Int)
@@ -305,7 +305,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs ->
 		putStrLn "BEGIN CALC" >>
 --		let (ps, qs) = pqs in
-		let (ps, qs) = unzip $ makePqs' 23 0 0 in
+		let (ps, qs) = unzip $ makePqs' 24 0 0 in
 		runAll dvc qFam ppl plyt dscSet dsz (L.zip3 cbs ps qs) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
 
@@ -427,7 +427,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
 --			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
-			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (7 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (8 :: Int)) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -465,7 +465,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
 --			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
-			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (7 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (8 :: Int)) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
@@ -530,11 +530,9 @@ main()
 	int l = i ^ u;
 
 	int x = u << 1 | l;
-	int y = x | 1 << r;
 
-	int f, t;
-
-	if ((i >> foo.p & 1) != 0) { f = y; t = x; } else { f = x; t = y; }
+	int f = x | i >> foo.q & 1 << r;
+	int t = x | ~i >> foo.q & 1 << r;
 
 	if (data[0].val[f] > data[0].val[t]) {
 //		data[0].val[f] = atomicExchange(data[0].val[t], data[0].val[f]); };
