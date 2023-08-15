@@ -63,8 +63,8 @@ void
 render(uint32_t pixels[],
 	int w, int h, float complex upper_left, float complex lower_right)
 {
-	for (int row = 0; row < w; row++)
-		for (int column = 0; column < h; column++) {
+	for (int row = 0; row < h; row++)
+		for (int column = 0; column < w; column++) {
 			float complex point = pixel_to_point(
 				w, h, column, row, upper_left, lower_right );
 			int t = escape_time(point, 255);

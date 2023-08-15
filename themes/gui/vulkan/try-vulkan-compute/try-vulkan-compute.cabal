@@ -233,6 +233,31 @@ executable try-mandelbrot
     , vector
   default-language: Haskell2010
 
+executable try-mandelbrot-cpu
+  main-is: try-mandelbrot-cpu.hs
+  other-modules:
+      Paths_try_vulkan_compute
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , data-default
+    , random
+    , ranged-list
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-khr
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-vulkan-compute
+    , typelevel-tools
+    , vector
+  default-language: Haskell2010
+
 executable try-mandelbrot-hs
   main-is: try-mandelbrot-hs.hs
   other-modules:
