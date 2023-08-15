@@ -77,6 +77,7 @@ import Data.List qualified as L
 import Text.Read
 
 import Gpu.Vulkan.Fence qualified as Vk.Fence
+import Data.Complex
 
 ---------------------------------------------------------------------------
 
@@ -103,16 +104,19 @@ main :: IO ()
 main = do
 	as <- getArgs
 	case readArgs as of
-		Just (w, h) -> withDevice \pd qfi dv -> writeResult w h =<<
+		Just ((w, h), ul, lr) -> withDevice \pd qfi dv -> writeResult w h =<<
 			Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
 			prepareMems (fromIntegral w) (fromIntegral h) pd dv dslyt \dscs m ->
-			calc w h qfi dv dslyt dscs (bffSize w h) >>
+			calc w h ul lr qfi dv dslyt dscs (bffSize w h) >>
 			Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 		Nothing -> error "bad command line arguments"
 
-readArgs :: [String] -> Maybe (Word32, Word32)
+readArgs :: [String] -> Maybe ((Word32, Word32), Complex Float, Complex Float)
 readArgs = \case
-	[sz] -> readPair sz 'x'
+	[sz, ul, lr] -> (,,)
+		<$> readPair sz 'x'
+		<*> (uncurry (:+) <$> readPair ul ',')
+		<*> (uncurry (:+) <$> readPair lr ',')
 	_ -> Nothing
 
 readPair :: Read a => String -> Char -> Maybe (a, a)
@@ -257,23 +261,23 @@ writeDscSet ds ba = Vk.DS.Write {
 calc :: forall slbts sl bts sd s . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
-	Word32 -> Word32 ->
+	Word32 -> Word32 -> Complex Float -> Complex Float ->
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	Vk.DS.D s slbts -> Word32 -> IO ()
-calc w h qfi dv dslyt ds sz =
+calc w h ul lr qfi dv dslyt ds sz =
 	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
 	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
-	run w h qfi dv ds cb plyt pl sz
+	run w h ul lr qfi dv ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.Layout
-			'[PictureSize]
+			'[PictureSize, Complex Float, Complex Float]
 			'[	'Vk.PushConstant.Range
-					'[ 'Vk.T.ShaderStageComputeBit] '[PictureSize]
+					'[ 'Vk.T.ShaderStageComputeBit] '[PictureSize, Complex Float, Complex Float]
 				])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
@@ -294,15 +298,15 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
 
 run :: forall slbts sd sc sg sl s . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]] ) =>
-	Word32 -> Word32 ->
+	Word32 -> Word32 -> Complex Float -> Complex Float ->
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
-	Vk.Ppl.Lyt.P sl '[slbts] '[PictureSize] ->
-	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[PictureSize]) -> Word32 -> IO ()
-run w h qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
+	Vk.Ppl.Lyt.P sl '[slbts] '[PictureSize, Complex Float, Complex Float] ->
+	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[PictureSize, Complex Float, Complex Float]) -> Word32 -> IO ()
+run w h ul lr qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
 		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-			ccb lyt (GStr.W (w, h) :* HL.Nil) >>
+			ccb lyt (GStr.W (w, h) :* ul :* lr :* HL.Nil) >>
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb (w `div` 16) h 1
@@ -322,10 +326,10 @@ run w h qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 
 -- COMPUTE PIPELINE INFO
 
-pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[PictureSize] ->
+pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[PictureSize, Complex Float, Complex Float] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
-		'(sl, sbtss, '[PictureSize]) sbph
+		'(sl, sbtss, '[PictureSize, Complex Float, Complex Float]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
@@ -351,7 +355,8 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 #version 460
 
 layout(push_constant) uniform Foo {
-	uvec2 sz; } foo;
+	uvec2 sz; vec2 ul; vec2 lr;
+	} foo;
 
 layout(binding = 0) buffer Data { uint val[]; };
 
@@ -400,7 +405,7 @@ render(uint w, uint h, vec2 upper_left, vec2 lower_right)
 void
 main()
 {
-	render(foo.sz.x, foo.sz.y, vec2(-1.2, 0.35), vec2(-1.0, 0.2));
+	render(foo.sz.x, foo.sz.y, foo.ul, foo.lr);
 }
 
 |]
