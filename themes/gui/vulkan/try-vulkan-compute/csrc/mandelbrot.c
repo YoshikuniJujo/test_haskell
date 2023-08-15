@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <complex.h>
 
 int
@@ -56,4 +57,27 @@ pixel_to_point_hs(
 	float complex lower_right = make_complex(rgt, lwr);
 	float complex c = pixel_to_point(w, h, x, y, upper_left, lower_right);
 	get_complex(c, re, im);
+}
+
+void
+render(uint32_t pixels[],
+	int w, int h, float complex upper_left, float complex lower_right)
+{
+	for (int row = 0; row < w; row++)
+		for (int column = 0; column < h; column++) {
+			float complex point = pixel_to_point(
+				w, h, column, row, upper_left, lower_right );
+			int t = escape_time(point, 255);
+			if (t < 0) pixels[row * w + column] = 0;
+			else pixels[row * w + column] = 255 - t;
+		}
+}
+
+void
+render_hs(uint32_t pixels[],
+	int w, int h, float lft, float upr, float rgt, float lwr)
+{
+	float complex upper_left = lft + upr * I;
+	float complex lower_right = rgt + lwr * I;
+	render(pixels, w, h, upper_left, lower_right);
 }
