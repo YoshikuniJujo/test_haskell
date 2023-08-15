@@ -28,6 +28,7 @@ library
       BitonicSortPairs
       TryBitonicSortCpu
       TryBitonicSortPairs
+      TryMandelbrot
       TryQuickSort
   other-modules:
       Paths_try_vulkan_compute
@@ -39,6 +40,7 @@ library
       csrc/bitonicSortPairs.c
       csrc/quicksort.c
       csrc/bitonic_sort.c
+      csrc/mandelbrot.c
   build-depends:
       JuicyPixels
     , array
