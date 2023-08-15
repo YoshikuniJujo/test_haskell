@@ -111,6 +111,19 @@ packages:
 - completed:
     commit: ae3894a7ad3e727ad2cdad873709b8f1a18a61ec
     git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-storable-generic
+    pantry-tree:
+      sha256: 99349c4ca842ed6cbae1e4fc4ea97fee18d0387727c5d38b2e4c786719d7d2b4
+      size: 749
+    subdir: features/ffi/pointer/try-storable-generic
+    version: 0.1.0.0
+  original:
+    commit: ae3894a7ad3e727ad2cdad873709b8f1a18a61ec
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/pointer/try-storable-generic
+- completed:
+    commit: ae3894a7ad3e727ad2cdad873709b8f1a18a61ec
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-peek-poke
     pantry-tree:
       sha256: 3a416a40e213f6625ef04c4f632c9d6f9faea20262deca26e98342129cfe86a5

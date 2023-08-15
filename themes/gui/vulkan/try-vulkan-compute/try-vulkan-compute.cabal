@@ -54,6 +54,7 @@ library
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , typelevel-tools
     , vector
   default-language: Haskell2010
@@ -78,6 +79,7 @@ executable try-bitonic-sort
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -103,6 +105,7 @@ executable try-bitonic-sort-cpu
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -128,6 +131,7 @@ executable try-bitonic-sort-new
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -153,6 +157,7 @@ executable try-data-list-sort
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -178,6 +183,7 @@ executable try-hello
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -203,6 +209,7 @@ executable try-hello-world
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -228,6 +235,7 @@ executable try-mandelbrot
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -253,6 +261,7 @@ executable try-mandelbrot-cpu
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -278,6 +287,7 @@ executable try-mandelbrot-hs
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -303,6 +313,7 @@ executable try-push-constant
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -328,6 +339,7 @@ executable try-quick-sort
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -353,6 +365,7 @@ executable try-saitan-simple
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -379,6 +392,7 @@ test-suite try-vulkan-compute-test
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools
     , vector

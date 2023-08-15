@@ -24,7 +24,7 @@ import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HL
-import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList (pattern(:*), pattern (:*.), pattern (:**))
 import Data.Word
 
 import Language.SpirV.Shaderc.TH
@@ -68,6 +68,16 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import Codec.Picture
 import Data.Vector.Storable qualified as V
 
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+
+import Foreign.Storable.Generic qualified as GStr
+import System.Environment
+
+import Data.List qualified as L
+import Text.Read
+
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+
 ---------------------------------------------------------------------------
 
 -- MAIN
@@ -77,21 +87,38 @@ import Data.Vector.Storable qualified as V
 
 ---------------------------------------------------------------------------
 
+type PictureSize = GStr.W (Word32, Word32)
+
 -- MAIN
 
-bffSize :: Integral n => n
-bffSize = 2000 * 1500
+bffSize :: Integral n => n -> n -> n
+bffSize w h = w * h
 
-writeResult :: [Word32] -> IO ()
-writeResult = writePng @Pixel8 "autogen/mandelbrot.png" . Image 2000 1500
+writeResult :: Word32 -> Word32 -> [Word32] -> IO ()
+writeResult w h = writePng @Pixel8 "autogen/mandelbrot.png"
+	. Image (fromIntegral w) (fromIntegral h)
 	. V.fromList . map fromIntegral
 
 main :: IO ()
-main = withDevice \pd qfi dv -> writeResult =<<
-	Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
-	prepareMems pd dv dslyt \dscs m ->
-	calc qfi dv dslyt dscs bffSize >>
-	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
+main = do
+	as <- getArgs
+	case readArgs as of
+		Just (w, h) -> withDevice \pd qfi dv -> writeResult w h =<<
+			Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
+			prepareMems (fromIntegral w) (fromIntegral h) pd dv dslyt \dscs m ->
+			calc w h qfi dv dslyt dscs (bffSize w h) >>
+			Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
+		Nothing -> error "bad command line arguments"
+
+readArgs :: [String] -> Maybe (Word32, Word32)
+readArgs = \case
+	[sz] -> readPair sz 'x'
+	_ -> Nothing
+
+readPair :: Read a => String -> Char -> Maybe (a, a)
+readPair s c = case L.findIndex (== c) s of
+	Nothing -> Nothing
+	Just i -> (,) <$> readMaybe (take i s) <*> readMaybe (tail $ drop i s)
 
 type Word32List = Obj.List 256 Word32 ""
 
@@ -139,15 +166,16 @@ prepareMems :: (
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DS.BindingAndArrayElemBuffer bts '[Word32List] 0,
 	Vk.DS.UpdateDynamicLength bts '[Word32List] ) =>
+	Vk.Dv.Size -> Vk.Dv.Size ->
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	(forall sds sm sb .
 		Vk.DS.D sds '(sl, bts) ->
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg "" '[Word32List])] ->
 		IO a) -> IO a
-prepareMems pd dv dslyt f =
+prepareMems w h pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
 	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(HL.Singleton ds) ->
-	storageBufferNew pd dv \b m ->
+	storageBufferNew w h pd dv \b m ->
 	Vk.DS.updateDs dv (HL.Singleton . U5 $ writeDscSet ds b) HL.Nil >>
 	f ds m
 
@@ -168,22 +196,22 @@ dscSetInfo pl lyt = Vk.DS.AllocateInfo {
 	Vk.DS.allocateInfoDescriptorPool = pl,
 	Vk.DS.allocateInfoSetLayouts = HL.Singleton $ U2 lyt }
 
-storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
+storageBufferNew :: forall sd nm a . Vk.Dv.Size -> Vk.Dv.Size -> Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sm sb nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Word32List])] -> IO a) -> IO a
-storageBufferNew pd dv f =
-	Vk.Bffr.create dv bufferInfo nil' \bf ->
+storageBufferNew w h pd dv f =
+	Vk.Bffr.create dv (bufferInfo w h) nil' \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
 		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
 		\(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
-bufferInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List]
-bufferInfo = Vk.Bffr.CreateInfo {
+bufferInfo :: Vk.Dv.Size -> Vk.Dv.Size -> Vk.Bffr.CreateInfo 'Nothing '[Word32List]
+bufferInfo w h = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
-	Vk.Bffr.createInfoLengths = HL.Singleton $ Obj.LengthList bffSize,
+	Vk.Bffr.createInfoLengths = HL.Singleton . Obj.LengthList $ bffSize w h,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -229,19 +257,24 @@ writeDscSet ds ba = Vk.DS.Write {
 calc :: forall slbts sl bts sd s . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
+	Word32 -> Word32 ->
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	Vk.DS.D s slbts -> Word32 -> IO ()
-calc qfi dv dslyt ds sz =
+calc w h qfi dv dslyt ds sz =
 	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
 	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
-	run qfi dv ds cb plyt pl sz
+	run w h qfi dv ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
-		('Vk.PushConstant.Layout '[] '[])
+		('Vk.PushConstant.Layout
+			'[PictureSize]
+			'[	'Vk.PushConstant.Range
+					'[ 'Vk.T.ShaderStageComputeBit] '[PictureSize]
+				])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
@@ -261,17 +294,24 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
 
 run :: forall slbts sd sc sg sl s . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]] ) =>
+	Word32 -> Word32 ->
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
-	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
-	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
-run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
+	Vk.Ppl.Lyt.P sl '[slbts] '[PictureSize] ->
+	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[PictureSize]) -> Word32 -> IO ()
+run w h qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			ccb lyt (GStr.W (w, h) :* HL.Nil) >>
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
-		Vk.Cmd.dispatch ccb 2000 1500 1
-	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
-	Vk.Queue.waitIdle q
+		Vk.Cmd.dispatch ccb (w `div` 16) h 1
+	Vk.Fence.create dv Vk.Fence.CreateInfo {
+		Vk.Fence.createInfoNext = TMaybe.N,
+		Vk.Fence.createInfoFlags = zeroBits } nil'  \fnc ->
+		Vk.Queue.submit q (HL.Singleton $ U4 sinfo) (Just fnc) >>
+		 Vk.Queue.waitIdle q >>
+		Vk.Fence.waitForFs dv (HL.Singleton fnc) True Nothing
 	where
 	sinfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
 	sinfo = Vk.SubmitInfo {
@@ -282,9 +322,10 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 
 -- COMPUTE PIPELINE INFO
 
-pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
-		'(sl, sbtss, '[]) sbph
+pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[PictureSize] ->
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing
+		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
+		'(sl, sbtss, '[PictureSize]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
@@ -309,7 +350,12 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 
 #version 460
 
+layout(push_constant) uniform Foo {
+	uvec2 sz; } foo;
+
 layout(binding = 0) buffer Data { uint val[]; };
+
+layout(local_size_x = 16) in;
 
 #define cx_add(a, b) vec2(a.x+b.x, a.y+b.y)
 #define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
@@ -354,7 +400,7 @@ render(uint w, uint h, vec2 upper_left, vec2 lower_right)
 void
 main()
 {
-	render(2000, 1500, vec2(-1.2, 0.35), vec2(-1.0, 0.2));
+	render(foo.sz.x, foo.sz.y, vec2(-1.2, 0.35), vec2(-1.0, 0.2));
 }
 
 |]

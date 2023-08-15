@@ -52,6 +52,7 @@ extra-deps:
   - themes/gui/vulkan/try-vulkan-core-khr
   - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
+  - features/ffi/pointer/try-storable-generic
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list
   - themes/hetero-list/try-hetero-parameter-list

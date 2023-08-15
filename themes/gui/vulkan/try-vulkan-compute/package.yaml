@@ -32,6 +32,7 @@ dependencies:
 - try-shaderc
 - try-language-spir-v
 - try-hetero-parameter-list
+- try-storable-generic
 - ranged-list
 - typelevel-tools
 
