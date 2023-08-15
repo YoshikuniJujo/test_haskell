@@ -13,8 +13,15 @@ module Gpu.Vulkan.CommandBuffer (
 
 	-- * ALLOCATE
 
-	allocate, C, GBinded, CBinded, AllocateInfo(..),
-	allocateNew, AllocateInfoNew(..),
+	C, GBinded, CBinded,
+
+	-- ** Type Level List
+
+	allocate, AllocateInfo(..),
+
+	-- ** Value Level List
+
+	allocateList, AllocateInfoList(..),
 
 	-- * BEGIN AND RESET
 
@@ -46,13 +53,13 @@ allocate (Device.D dvc) ai f = bracket
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPool ai)
 	(f . HeteroParList.fromList (HeteroParList.Dummy . C))
 
-allocateNew :: WithPoked (TMaybe.M mn) =>
-	Device.D sd -> AllocateInfoNew mn scp ->
+allocateList :: WithPoked (TMaybe.M mn) =>
+	Device.D sd -> AllocateInfoList mn scp ->
 	(forall scb . [C scb] -> IO a) -> IO a
-allocateNew (Device.D dvc) ai f = bracket
-	(M.allocateCs dvc $ allocateInfoToMiddleNew ai)
+allocateList (Device.D dvc) ai f = bracket
+	(M.allocateCs dvc $ allocateInfoToMiddleList ai)
 	(M.freeCs dvc
-		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolNew ai)
+		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolList ai)
 	(f . (C <$>))
 
 data AllocateInfo mn scp (c :: [()]) = AllocateInfo {
@@ -60,11 +67,11 @@ data AllocateInfo mn scp (c :: [()]) = AllocateInfo {
 	allocateInfoCommandPool :: CommandPool.C scp,
 	allocateInfoLevel :: Level }
 
-data AllocateInfoNew mn scp = AllocateInfoNew {
-	allocateInfoNextNew :: TMaybe.M mn,
-	allocateInfoCommandPoolNew :: CommandPool.C scp,
-	allocateInfoLevelNew :: Level,
-	allocateInfoCommandBufferCountNew :: Word32 }
+data AllocateInfoList mn scp = AllocateInfoList {
+	allocateInfoNextList :: TMaybe.M mn,
+	allocateInfoCommandPoolList :: CommandPool.C scp,
+	allocateInfoLevelList :: Level,
+	allocateInfoCommandBufferCountList :: Word32 }
 
 deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn s c)
 
@@ -79,12 +86,12 @@ allocateInfoToMiddle AllocateInfo {
 	M.allocateInfoLevel = lvl,
 	M.allocateInfoCommandBufferCount = TLength.length @_ @c }
 
-allocateInfoToMiddleNew :: AllocateInfoNew n s -> M.AllocateInfo n
-allocateInfoToMiddleNew AllocateInfoNew {
-	allocateInfoNextNew = mnxt,
-	allocateInfoCommandPoolNew = CommandPool.C cp,
-	allocateInfoLevelNew = lvl,
-	allocateInfoCommandBufferCountNew = c } = M.AllocateInfo {
+allocateInfoToMiddleList :: AllocateInfoList n s -> M.AllocateInfo n
+allocateInfoToMiddleList AllocateInfoList {
+	allocateInfoNextList = mnxt,
+	allocateInfoCommandPoolList = CommandPool.C cp,
+	allocateInfoLevelList = lvl,
+	allocateInfoCommandBufferCountList = c } = M.AllocateInfo {
 	M.allocateInfoNext = mnxt,
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
