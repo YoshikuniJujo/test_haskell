@@ -80,10 +80,10 @@ import Data.Vector.Storable qualified as V
 -- MAIN
 
 bffSize :: Integral n => n
-bffSize = 1000 * 750
+bffSize = 2000 * 1500
 
 writeResult :: [Word32] -> IO ()
-writeResult = writePng @Pixel8 "autogen/mandelbrot.png" . Image 1000 750
+writeResult = writePng @Pixel8 "autogen/mandelbrot.png" . Image 2000 1500
 	. V.fromList . map fromIntegral
 
 main :: IO ()
@@ -269,7 +269,7 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
-		Vk.Cmd.dispatch ccb 1000 750 1
+		Vk.Cmd.dispatch ccb 2000 1500 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where
@@ -311,15 +311,50 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 
 layout(binding = 0) buffer Data { uint val[]; };
 
-uint hello[] = uint[](
-	72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+#define cx_add(a, b) vec2(a.x+b.x, a.y+b.y)
+#define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
+#define cx_magnitude(a) length(a)
+
+int
+escape_time(vec2 c, int lm)
+{
+	vec2 z = vec2(0, 0);
+
+	for (int i = 0; i <= lm; i++) {
+		z = cx_add(cx_mul(z, z), c);
+		if (cx_magnitude(z) > 2) return i;
+	}
+
+	return -1;
+}
+
+vec2
+pixel_to_point(
+	uint w, uint h, uint x, uint y, vec2 upper_left, vec2 lower_right )
+{
+	float width = lower_right.x - upper_left.x;
+	float height = upper_left.y - lower_right.y;
+
+	return vec2(
+		upper_left.x + float(x) * width / float(w),
+		upper_left.y - float(y) * height / float(h) );
+}
+
+void
+render(uint w, uint h, vec2 upper_left, vec2 lower_right)
+{
+	uint row = gl_GlobalInvocationID.y;
+	uint column = gl_GlobalInvocationID.x;
+	vec2 point = pixel_to_point(w, h, column, row, upper_left, lower_right);
+	int t = escape_time(point, 255);
+	if (t < 0) val[row * w + column] = 0;
+	else val[row * w + column] = 255 - t;
+}
 
 void
 main()
 {
-	int index = int(gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * 1000);
-	val[index] = 0x7f;
+	render(2000, 1500, vec2(-1.2, 0.35), vec2(-1.0, 0.2));
 }
 
 |]
