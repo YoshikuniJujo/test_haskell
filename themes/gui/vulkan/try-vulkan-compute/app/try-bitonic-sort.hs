@@ -337,7 +337,7 @@ calc dvc qFam dscSetLyt dscSet ma mb das dbs dsz =
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
-	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
+	Vk.CmdBuf.allocateList dvc (commandBufferInfoList cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
 		putStrLn "BEGIN CALC" >>
 		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip3 cbs das dbs) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
@@ -441,14 +441,14 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 
-commandBufferInfoNew :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s
-commandBufferInfoNew cmdPool = Vk.CmdBuf.AllocateInfoNew {
-	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
-	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary,
---	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 10000 }
---	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 1000 }
-	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 300 }
+commandBufferInfoList :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoList 'Nothing s
+commandBufferInfoList cmdPool = Vk.CmdBuf.AllocateInfoList {
+	Vk.CmdBuf.allocateInfoNextList = TMaybe.N,
+	Vk.CmdBuf.allocateInfoCommandPoolList = cmdPool,
+	Vk.CmdBuf.allocateInfoLevelList = Vk.CmdBuf.LevelPrimary,
+--	Vk.CmdBuf.allocateInfoCommandBufferCountList = 10000 }
+--	Vk.CmdBuf.allocateInfoCommandBufferCountList = 1000 }
+	Vk.CmdBuf.allocateInfoCommandBufferCountList = 300 }
 
 run :: forall slbts sbtss sd sc sg sl sds swss a . (
 	sbtss ~ '[slbts],

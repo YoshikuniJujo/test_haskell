@@ -302,7 +302,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
-	Vk.CmdBuf.allocateNew dvc (commandBufferInfoNew cmdPool) \cbs ->
+	Vk.CmdBuf.allocateList dvc (commandBufferInfoList cmdPool) \cbs ->
 		putStrLn "BEGIN CALC" >>
 --		let (ps, qs) = pqs in
 		let (ps, qs) = unzip $ makePqs' 24 0 0 in
@@ -398,15 +398,15 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 	-}
 
-commandBufferInfoNew :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s
-commandBufferInfoNew cmdPool = Vk.CmdBuf.AllocateInfoNew {
-	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
-	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary,
---	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 10000 }
---	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 1000 }
-	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 300 }
---	Vk.CmdBuf.allocateInfoCommandBufferCountNew = 270 }
+commandBufferInfoList :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoList 'Nothing s
+commandBufferInfoList cmdPool = Vk.CmdBuf.AllocateInfoList {
+	Vk.CmdBuf.allocateInfoNextList = TMaybe.N,
+	Vk.CmdBuf.allocateInfoCommandPoolList = cmdPool,
+	Vk.CmdBuf.allocateInfoLevelList = Vk.CmdBuf.LevelPrimary,
+--	Vk.CmdBuf.allocateInfoCommandBufferCountList = 10000 }
+--	Vk.CmdBuf.allocateInfoCommandBufferCountList = 1000 }
+	Vk.CmdBuf.allocateInfoCommandBufferCountList = 300 }
+--	Vk.CmdBuf.allocateInfoCommandBufferCountList = 270 }
 
 run :: forall slbts sbtss sd sc sg sl sds swss a . (
 	sbtss ~ '[slbts],
@@ -427,7 +427,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
 --			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
-			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (8 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 64) (2 ^ (8 :: Int)) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
@@ -465,7 +465,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
 --			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
-			Vk.Cmd.dispatch ccb (dsz `div` 16) (2 ^ (8 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 64) (2 ^ (8 :: Int)) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
@@ -512,7 +512,7 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 
 #version 460
 
-layout(local_size_x = 16) in;
+layout(local_size_x = 64) in;
 
 layout(binding = 0) buffer Data {
 	uint val[];
