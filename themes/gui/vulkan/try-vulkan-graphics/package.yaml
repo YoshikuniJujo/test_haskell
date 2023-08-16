@@ -86,6 +86,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-graphics
+  try-pyramid-single:
+    main:                try-pyramid-single.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-graphics
   try-gamepad-button:
     main:                try-gamepad-button.hs
     source-dirs:         app
