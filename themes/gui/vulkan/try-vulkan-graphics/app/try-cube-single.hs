@@ -14,6 +14,8 @@
 
 module Main (main) where
 
+import Control.Concurrent
+
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -140,9 +142,39 @@ main :: IO ()
 main = do
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
+		cev <- createControllerEvent
+		_ <- forkIO $ controller cev
 		if enableValidationLayers
-			then setupDebugMessenger inst $ const $ run win inst g
-			else run win inst g
+			then setupDebugMessenger inst $ const $ run win inst g cev
+			else run win inst g cev
+
+controller :: ControllerEvent -> IO ()
+controller ev = do
+	threadDelay 10000
+	fn <- readIORef $ controllerEventFinished ev
+	if fn then pure () else do
+		Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
+		modifyIORef (controllerEventLeftX ev) (+ ga Glfw.GamepadAxis'LeftX)
+		when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
+			$ writeIORef (controllerEventButtonAEver ev) True
+		controller ev
+
+createControllerEvent :: IO ControllerEvent
+createControllerEvent = do
+	fn <- newIORef False
+	ae <- newIORef False
+	lx <- newIORef 0
+	pure ControllerEvent {
+		controllerEventFinished = fn,
+		controllerEventButtonAEver = ae,
+		controllerEventLeftX = lx
+		}
+
+data ControllerEvent = ControllerEvent {
+	controllerEventFinished :: IORef Bool,
+	controllerEventButtonAEver :: IORef Bool,
+	controllerEventLeftX :: IORef Float
+	}
 
 type FramebufferResized = IORef Bool
 
@@ -232,8 +264,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w inst g =
+run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
+run w inst g cev =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -254,7 +286,7 @@ run w inst g =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm cev
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -1040,14 +1072,16 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
+	SyncObjects '(sias, srfs, siff) -> UTCTime -> ControllerEvent -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 cev = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
+		lx <- readIORef $ controllerEventLeftX cev
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) loop
+			(lx / 100) cev loop
+--			(realToFrac $ tm `diffUTCTime` tm0) cev loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
@@ -1065,13 +1099,16 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> Float ->
+	SyncObjects '(sias, srfs, siff) -> Float -> ControllerEvent ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm cev loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
-	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
+	ab <- readIORef $ controllerEventButtonAEver cev
+	if (cls || ab)
+	then writeIORef (controllerEventFinished cev) True
+	else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
