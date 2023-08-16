@@ -155,6 +155,7 @@ controller ev = do
 	if fn then pure () else do
 		Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
 		modifyIORef (controllerEventLeftX ev) (+ ga Glfw.GamepadAxis'LeftX)
+		modifyIORef (controllerEventLeftY ev) (+ ga Glfw.GamepadAxis'LeftY)
 		when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
 			$ writeIORef (controllerEventButtonAEver ev) True
 		controller ev
@@ -164,16 +165,19 @@ createControllerEvent = do
 	fn <- newIORef False
 	ae <- newIORef False
 	lx <- newIORef 0
+	ly <- newIORef 0
 	pure ControllerEvent {
 		controllerEventFinished = fn,
 		controllerEventButtonAEver = ae,
-		controllerEventLeftX = lx
+		controllerEventLeftX = lx,
+		controllerEventLeftY = ly
 		}
 
 data ControllerEvent = ControllerEvent {
 	controllerEventFinished :: IORef Bool,
 	controllerEventButtonAEver :: IORef Bool,
-	controllerEventLeftX :: IORef Float
+	controllerEventLeftX :: IORef Float,
+	controllerEventLeftY :: IORef Float
 	}
 
 type FramebufferResized = IORef Bool
@@ -1076,11 +1080,12 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 cev = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
-		tm <- getCurrentTime
+--		tm <- getCurrentTime
 		lx <- readIORef $ controllerEventLeftX cev
+		ly <- readIORef $ controllerEventLeftY cev
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(lx / 100) cev loop
+			(lx / 100, ly / 100) cev loop
 --			(realToFrac $ tm `diffUTCTime` tm0) cev loop
 	Vk.Dvc.waitIdle dvc
 
@@ -1099,7 +1104,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> Float -> ControllerEvent ->
+	SyncObjects '(sias, srfs, siff) -> (Float, Float) -> ControllerEvent ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm cev loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
@@ -1124,7 +1129,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias sr
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
+	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> (Float, Float) -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
@@ -1152,15 +1157,20 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 
 updateUniformBuffer :: Vk.Dvc.D sd ->
-	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> Float -> IO ()
-updateUniformBuffer dvc um sce tm = do
+	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> (Float, Float) -> IO ()
+updateUniformBuffer dvc um sce (tm, tm') = do
 	Vk.Mem.write @"uniform-buffer" @(VObj.Atom 256 UniformBufferObject 'Nothing)
 		dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
-		uniformBufferObjectModel = Cglm.rotate
-			Cglm.mat4Identity
-			(tm * Cglm.rad 90)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+		uniformBufferObjectModel =
+			Cglm.rotate
+				Cglm.mat4Identity
+				(tm * Cglm.rad 90)
+				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) `Cglm.mat4Mul`
+			Cglm.rotate
+				Cglm.mat4Identity
+				(tm' * Cglm.rad 90)
+				(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL),
 		uniformBufferObjectView = Cglm.lookat
 			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
@@ -1290,7 +1300,16 @@ vertices = [
 	Vertex (Pos . Cglm.Vec3 $ (0.5) :. 0.5 :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ (0.5) :. 0.5 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL)
 
 		]
 
@@ -1302,7 +1321,10 @@ indices = [
 --	8, 9, 10, 10, 11, 8
 	8, 11, 10, 10, 9, 8,
 	12, 13, 14, 14, 15, 12,
-	16, 17, 18, 18, 19, 16
+	16, 17, 18, 18, 19, 16,
+
+--	20, 21, 22, 22, 23, 20,
+	20, 23, 22, 22, 21, 20
 	]
 
 data UniformBufferObject = UniformBufferObject {
