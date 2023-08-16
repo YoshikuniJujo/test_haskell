@@ -309,7 +309,7 @@ run w h ul lr qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 			ccb lyt (GStr.W (w, h) :* ul :* lr :* HL.Nil) >>
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
-		Vk.Cmd.dispatch ccb (w `div` 64) h 1
+		Vk.Cmd.dispatch ccb (w `div` 8) (h `div` 8) 1
 	Vk.Fence.create dv Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil'  \fnc ->
@@ -360,7 +360,7 @@ layout(push_constant) uniform Foo {
 
 layout(binding = 0) buffer Data { uint val[]; };
 
-layout(local_size_x = 64) in;
+layout(local_size_x = 8, local_size_y = 8) in;
 
 #define cx_add(a, b) vec2(a.x+b.x, a.y+b.y)
 #define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)

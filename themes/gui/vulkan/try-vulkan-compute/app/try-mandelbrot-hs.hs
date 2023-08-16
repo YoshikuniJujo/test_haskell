@@ -14,6 +14,8 @@ import Text.Read
 import Codec.Picture
 import System.Environment
 
+import Control.Parallel.Strategies
+
 sample :: Image PixelRGBA8
 sample = Image 1000 750 $ V.replicate (4 * 1000 * 750) 0x7f
 
@@ -47,7 +49,8 @@ pixelToPoint (w, h) (x, y) (lft :+ upr) (rgt :+ lwr) =
 
 render :: (Word32, Word32) -> Complex Float -> Complex Float -> V.Vector Word8
 render wh@(w, h) ul lr =
-	V.generate (fromIntegral w * fromIntegral h) \(fromIntegral -> i) -> let
+--	V.generate (fromIntegral w * fromIntegral h) \(fromIntegral -> i) -> let
+	V.fromList $ (\f -> parMap rseq f [0 .. w * h - 1]) \(fromIntegral -> i) -> let
 		pxl = (i `mod` w, i `div` w)
 		pnt = pixelToPoint wh pxl ul lr in
 		case escapeTime 0 0 255 pnt of

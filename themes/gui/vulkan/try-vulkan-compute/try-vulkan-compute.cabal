@@ -46,6 +46,7 @@ library
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -71,6 +72,7 @@ executable try-bitonic-sort
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -97,6 +99,7 @@ executable try-bitonic-sort-cpu
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -123,6 +126,7 @@ executable try-bitonic-sort-new
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -149,6 +153,7 @@ executable try-data-list-sort
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -175,6 +180,7 @@ executable try-hello
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -201,6 +207,7 @@ executable try-hello-world
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -227,6 +234,7 @@ executable try-mandelbrot
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -253,6 +261,7 @@ executable try-mandelbrot-cpu
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -279,6 +288,7 @@ executable try-mandelbrot-hs
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -305,6 +315,7 @@ executable try-push-constant
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -331,6 +342,7 @@ executable try-quick-sort
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -357,6 +369,7 @@ executable try-saitan-simple
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
@@ -384,6 +397,7 @@ test-suite try-vulkan-compute-test
     , array
     , base >=4.7 && <5
     , data-default
+    , parallel
     , random
     , ranged-list
     , time
