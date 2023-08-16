@@ -1,4 +1,4 @@
-{-# LANGUAGE PackageImports, ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
@@ -11,7 +11,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import GHC.Generics
 import Foreign.Storable
@@ -32,7 +32,7 @@ import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
-import Data.List
+import Data.List qualified as L
 import Data.IORef
 import Data.List.Length
 import Data.Color
@@ -54,7 +54,7 @@ import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
 
 import qualified Gpu.Vulkan as Vk
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
+import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
@@ -75,7 +75,7 @@ import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Vk.Image
+import qualified Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Image as Vk.Image
 import qualified Gpu.Vulkan.Image as Vk.Image.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
@@ -94,25 +94,25 @@ import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Attachment as Vk.Att
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Attachment.Enum as Vk.Att
+import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Subpass.Enum as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified Gpu.Vulkan.Subpass.Enum as Vk.Subpass
+import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
-import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
+import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
+import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Fence.Enum as Vk.Fence
+import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
+import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
@@ -121,7 +121,7 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import Tools
-import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
+import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
 main :: IO ()
 main = do
@@ -132,9 +132,6 @@ main = do
 			else run win inst g
 
 type FramebufferResized = IORef Bool
-
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
 
 newFramebufferResized :: IO FramebufferResized
 newFramebufferResized = newIORef False
@@ -150,9 +147,6 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 1
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
@@ -172,7 +166,7 @@ createInstance f = do
 	when enableValidationLayers $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
-		=<< null . (validationLayers \\)
+		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
@@ -302,7 +296,7 @@ findQueueFamilies device sfc = do
 		(\i -> Vk.Khr.Surface.PhysicalDevice.getSupport device i sfc)
 		(fst <$> queueFamilies)
 	pure QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = fst <$> find
+		graphicsFamilyMaybe = fst <$> L.find
 			(checkBits Vk.Queue.GraphicsBit
 				. Vk.QueueFamily.propertiesQueueFlags . snd)
 			queueFamilies,
@@ -310,7 +304,7 @@ findQueueFamilies device sfc = do
 
 checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
 checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
+	null . (deviceExtensions L.\\) . (Vk.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
 deviceExtensions :: [Txt.Text]
@@ -333,7 +327,7 @@ createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
 createLogicalDevice phdvc qfis f = let
 	uniqueQueueFamilies =
-		nub [graphicsFamily qfis, presentFamily qfis]
+		L.nub [graphicsFamily qfis, presentFamily qfis]
 	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = def,
@@ -415,28 +409,18 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 recreateSwapChain :: forall ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S fmt ssc ->
-	IO (Vk.Format, Vk.Extent2d)
+	IO (Vk.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	(crInfo, scifmt) = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate dvc crInfo nil' sc
-
-mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
-	SwapChainSupportDetails -> Vk.Extent2d ->
-	(forall fmt . Vk.T.FormatToValue fmt =>
-		Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt -> Vk.Format -> a) -> a
-mkSwapchainCreateInfo sfc qfis spp ext f = Vk.T.formatToType (Vk.Khr.Surface.M.formatFormat fmt) \(_ :: Proxy t) ->
-	uncurry f $ mkSwapchainCreateInfoRaw @t sfc qfis spp ext
-	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
+	let	crInfo = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
+	ext <$ Vk.Khr.Swapchain.recreate dvc crInfo nil' sc
 
 mkSwapchainCreateInfoRaw :: forall fmt ss .
 	Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
-	(Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt, Vk.Format)
-mkSwapchainCreateInfoRaw sfc qfis0 spp ext = (
-	Vk.Khr.Swapchain.CreateInfo {
+	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
+mkSwapchainCreateInfoRaw sfc qfis0 spp ext = Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlags = def,
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
@@ -455,10 +439,9 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext = (
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
 		Vk.Khr.Swapchain.createInfoClipped = True,
-		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }, scifmt )
+		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
 	fmt = chooseSwapSurfaceFormat $ formats spp
-	scifmt = Vk.Khr.Surface.M.formatFormat fmt
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
@@ -474,7 +457,7 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext = (
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
-		$ find preferredSwapSurfaceFormat availableFormats
+		$ L.find preferredSwapSurfaceFormat availableFormats
 	_ -> error "no available swap surface formats"
 
 preferredSwapSurfaceFormat :: Vk.Khr.Surface.M.Format -> Bool
@@ -484,7 +467,7 @@ preferredSwapSurfaceFormat f =
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
-	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
+	fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
 chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
@@ -854,7 +837,7 @@ findMemoryType phdvc flt props =
 	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
-	suitable props1 = fst <$> find ((&&)
+	suitable props1 = fst <$> L.find ((&&)
 		<$> (`Vk.Mem.M.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
@@ -901,15 +884,11 @@ createCommandBuffer dvc cp f =
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss)
-addTypeToProxy Proxy = Proxy
-
 data SyncObjects (ssos :: (Type, Type, Type)) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: Vk.Semaphore.S sias,
-		renderFinishedSemaphores :: Vk.Semaphore.S srfs,
-		inFlightFences :: Vk.Fence.F sfs } ->
+		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
+		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
+		_inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
 createSyncObjects ::
@@ -1065,7 +1044,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
-	(scifmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
+	ext <- recreateSwapChain win sfc phdvc qfis dvc sc
 	ext <$ do
 		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 			recreateImageViewsNew dvc imgs scivs
