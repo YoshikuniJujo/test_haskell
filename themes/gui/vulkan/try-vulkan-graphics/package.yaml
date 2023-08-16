@@ -22,10 +22,11 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - template-haskell
+- data-default
 - containers
 - vector
 - text
-- data-default
+- time
 - JuicyPixels
 - GLFW-b
 - try-gpu-vulkan
@@ -60,6 +61,15 @@ library:
 executables:
   try-triangle-single:
     main:                try-triangle-single.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-graphics
+  try-rectangle-single:
+    main:                try-rectangle-single.hs
     source-dirs:         app
     ghc-options:
     - -threaded
