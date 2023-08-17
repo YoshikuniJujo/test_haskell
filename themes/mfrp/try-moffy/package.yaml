@@ -48,6 +48,7 @@ dependencies:
 - simple-gdk3
 - x-keysym
 - union-color
+- GLFW-b
 
 library:
   source-dirs: src
@@ -246,6 +247,15 @@ executables:
     - try-moffy
   try-gdk-gui:
     main:                try-gdk-gui.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy
+  try-glfw-boxes:
+    main:                try-glfw-boxes.hs
     source-dirs:         app
     ghc-options:
     - -threaded

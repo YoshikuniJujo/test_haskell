@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bed7b575841766446c60441e16fac720b3963feadc9f95fc2da86aba8612c941
+-- hash: afe8cfb956405ab157f0a7376129c5ca77a9d0af93f908f4c1d4a7ea918ca358
 
 name:           try-moffy
 version:        0.1.0.0
@@ -147,7 +147,8 @@ library
   pkgconfig-depends:
       gtk+-3.0
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -186,7 +187,8 @@ executable draw
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -226,7 +228,8 @@ executable followbox
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -266,7 +269,8 @@ executable followboxGtk
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -306,7 +310,8 @@ executable try-gdk-boxes
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -346,7 +351,49 @@ executable try-gdk-gui
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable try-glfw-boxes
+  main-is: try-glfw-boxes.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -385,7 +432,8 @@ executable try-moffy-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -425,7 +473,8 @@ executable tryCairo
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -465,7 +514,8 @@ executable tryCairoText
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -505,7 +555,8 @@ executable tryCairoTextExtents
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -545,7 +596,8 @@ executable tryConfigure
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -585,7 +637,8 @@ executable tryCount
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -625,7 +678,8 @@ executable tryDefaultWindow
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -665,7 +719,8 @@ executable tryDeleteEvent
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -705,7 +760,8 @@ executable tryFillPolygon
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -745,7 +801,8 @@ executable tryGdk
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -785,7 +842,8 @@ executable tryGtk
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -825,7 +883,8 @@ executable tryKey
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -865,7 +924,8 @@ executable tryMultiWindow
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -905,7 +965,8 @@ executable tryPango
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -945,7 +1006,8 @@ executable tryPngCursor
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -985,7 +1047,8 @@ executable tryPngCursorEvent
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -1025,7 +1088,8 @@ executable tryScroll
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
@@ -1065,7 +1129,8 @@ test-suite try-moffy-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , JuicyPixels-extra
     , X11
     , X11-xft
