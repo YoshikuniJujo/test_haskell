@@ -21,6 +21,8 @@ import Control.Moffy.Event.Delete.DefaultWindow
 import Control.Moffy.Event.Mouse (MouseDown(..))
 import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Handle.Time
+import Data.Maybe
+import Data.List.NonEmpty qualified as NE
 import Data.Map hiding (adjust)
 import Data.Type.Set
 import Data.OneOrMore hiding (expand)
@@ -46,26 +48,70 @@ handleWindowNew' ::
 	HandleSt' s IO (Singleton WindowNew)
 handleWindowNew' wid i2w w2i = liftHandle' $ handleWindowNew wid i2w w2i
 
-handleDelete :: TVar (Map WindowId Glfw.Window) -> Handle' IO (Singleton DeleteEvent)
-handleDelete ti2w _ = do
-	i2w <- atomically $ readTVar ti2w
-	let	w = i2w ! WindowId 0
-	doUntil_ do
-		threadDelay 100000
-		Glfw.pollEvents
-		Glfw.windowShouldClose w
-	pure . Just . App.Singleton . OccDeleteEvent $ WindowId 0
+handleDelete ::
+	TVar [EvOccs (DeleteEvent :- 'Nil)] ->
+	TVar (Map WindowId Glfw.Window) -> Handle' IO (Singleton DeleteEvent)
+handleDelete teos ti2w _ = do
+	meo <- atomically do
+		eoa <- readTVar teos
+		case eoa of
+			[] -> pure Nothing
+			eo : eos -> do
+				writeTVar teos eos
+				pure $ Just eo
+	case meo of
+		Nothing -> do
+			i2w <- atomically $ readTVar ti2w
+			polling teos i2w (keys i2w)
+		Just eo -> pure $ Just eo
 
-doUntil_ :: IO Bool -> IO ()
+polling ::
+	TVar [EvOccs (DeleteEvent :- 'Nil)] ->
+	Map WindowId Glfw.Window -> [WindowId] ->
+	IO (Maybe (EvOccs (DeleteEvent :- 'Nil)))
+polling teos i2w is = do
+	e NE.:| es <- pollAll i2w is
+	atomically $ modifyTVar teos (++ es)
+	pure $ Just e
+
+pollAll ::
+	Map WindowId Glfw.Window -> [WindowId] ->
+	IO (NE.NonEmpty (EvOccs (DeleteEvent :- 'Nil)))
+pollAll i2w is = doUntilNotEmpty do
+	let	ws = (i2w !) <$> is
+	threadDelay 100000
+	Glfw.pollEvents
+	bs <- Glfw.windowShouldClose `mapM` ws
+	pure . catMaybes $ (\f -> zipWith f bs is) \b i -> if b
+		then Just . App.Singleton $ OccDeleteEvent i else Nothing
+
+doUntil_ :: Monad m => m Bool -> m ()
 doUntil_ act = do
 	b <- act
 	if b then pure () else doUntil_ act
 
--- getMouseDown :: Glfw.Window -> IO (Maybe (EvOccs (MouseDown :- 'Nil)))
--- getMouseDown w = 
+doUntil :: Monad m => m (Maybe a) -> m a
+doUntil act = do
+	mx <- act
+	case mx of
+		Nothing -> doUntil act
+		Just x -> pure x
+
+doUntilNotEmpty :: Monad m => m [a] -> m (NE.NonEmpty a)
+doUntilNotEmpty act = do
+	xs <- act
+	case xs of
+		[] -> doUntilNotEmpty act
+		x : xs -> pure $ x NE.:| xs
+
+getMouseDown ::
+	TVar (Map WindowId Glfw.Window) -> WindowId ->
+	IO (Maybe (EvOccs (MouseDown :- 'Nil)))
+getMouseDown i2w i = undefined
 
 main :: IO ()
 main = do
+	teos <- atomically $ newTVar []
 	i2w <- atomically $ newTVar empty
 	Glfw.init
 	(print =<<) . ($ (Nothing :: Maybe WindowId)) $ interpretReactSt @_
@@ -73,7 +119,7 @@ main = do
 		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- 'Nil)
 		(retrySt $ 
 			handleWindowNew' undefined i2w undefined `mergeSt`
-			handleDefaultWindow `mergeSt` liftHandle' (handleDelete i2w)) do
+			handleDefaultWindow `mergeSt` liftHandle' (handleDelete teos i2w)) do
 		i <- adjust windowNew
 		adjust $ storeDefaultWindow i
 		adjust deleteEvent
