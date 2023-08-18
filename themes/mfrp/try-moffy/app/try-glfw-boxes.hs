@@ -14,6 +14,7 @@ import Control.Moffy
 import Control.Moffy.Run
 import Control.Moffy.Handle
 import Control.Moffy.Handle.DefaultWindow
+import Control.Moffy.Event.Time
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Delete hiding (deleteEvent)
@@ -28,6 +29,8 @@ import Data.Map hiding (adjust)
 import Data.Type.Set
 import Data.OneOrMore hiding (expand)
 import Data.OneOrMoreApp qualified as App
+import Data.Time.Clock.TAI
+import Data.Time.Clock.System
 
 import Trial.Boxes
 
@@ -64,7 +67,7 @@ handleDelete teos ti2w tbs _ = do
 	case meo of
 		Nothing -> do
 			i2w <- atomically $ readTVar ti2w
-			polling teos i2w (keys i2w) tbs
+			polling' teos i2w (keys i2w) tbs
 		Just eo -> pure $ Just eo
 
 polling ::
@@ -76,11 +79,32 @@ polling teos i2w is tbs = do
 	atomically $ modifyTVar teos (++ es)
 	pure $ Just e
 
+polling' ::
+	TVar [EvOccs (DeleteEvent :- MouseDown :- 'Nil)] ->
+	Map WindowId Glfw.Window -> [WindowId] -> TVar Glfw.MouseButtonState ->
+	IO (Maybe (EvOccs (DeleteEvent :- MouseDown :- 'Nil)))
+polling' teos i2w is tbs =  do
+	ea <- pollAll' i2w is tbs
+	case ea of
+		[] -> pure Nothing
+		e : es -> do
+			atomically $ modifyTVar teos (++ es)
+			pure $ Just e
+
 pollAll ::
 	Map WindowId Glfw.Window -> [WindowId] -> TVar Glfw.MouseButtonState ->
 	IO (NE.NonEmpty (EvOccs (DeleteEvent :- MouseDown :- 'Nil)))
 pollAll i2w is tbs = doUntilNotEmpty do
-	threadDelay 100000
+	threadDelay 10000
+	Glfw.pollEvents
+	catMaybes <$> for is \i ->
+		App.merge' <$> getOccDelete i2w i <*> getOccMouseDown i2w i ButtonRight tbs
+
+pollAll' ::
+	Map WindowId Glfw.Window -> [WindowId] -> TVar Glfw.MouseButtonState ->
+	IO [(EvOccs (DeleteEvent :- MouseDown :- 'Nil))]
+pollAll' i2w is tbs = do
+	threadDelay 10000
 	Glfw.pollEvents
 	catMaybes <$> for is \i ->
 		App.merge' <$> getOccDelete i2w i <*> getOccMouseDown i2w i ButtonRight tbs
@@ -103,7 +127,7 @@ getOccMouseDown i2w i b tbs0 = do
 		writeTVar tbs0 bs
 		pure s
 	pure case (bs0, bs) of
-		(Glfw.MouseButtonState'Released, Glfw.MouseButtonState'Pressed) -> 
+		(Glfw.MouseButtonState'Released, Glfw.MouseButtonState'Pressed) ->
 			Just . App.Singleton $ OccMouseDown i b
 		_ -> Nothing
 
@@ -131,24 +155,48 @@ doUntilNotEmpty act = do
 		[] -> doUntilNotEmpty act
 		x : xs -> pure $ x NE.:| xs
 
-getMouseDown ::
-	TVar (Map WindowId Glfw.Window) -> WindowId ->
-	IO (Maybe (EvOccs (MouseDown :- 'Nil)))
-getMouseDown i2w i = undefined
-
 main :: IO ()
 main = do
 	teos <- atomically $ newTVar []
 	i2w <- atomically $ newTVar empty
 	tbs <- atomically $ newTVar Glfw.MouseButtonState'Released
 	Glfw.init
-	(print =<<) . ($ (Nothing :: Maybe WindowId)) $ interpretReactSt @_
-		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- 'Nil)
-		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- 'Nil)
-		(retrySt $ 
+	is <- initState
+	(print =<<) . ($ is) $ interpretReactSt @_
+		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- TimeEv :+: 'Nil)
+		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- TimeEv :+: 'Nil)
+		(retrySt .
+			($ (0.05, ())) . popInput . handleTimeEvPlus . pushInput . const $
 			handleWindowNew' undefined i2w undefined `mergeSt`
 			handleDefaultWindow `mergeSt` liftHandle' (handleDelete teos i2w tbs)) do
 		i <- adjust windowNew
 		adjust $ storeDefaultWindow i
-		adjust $ deleteEvent `first` rightClick
+		adjust $ deleteEvent `first` doubler
 	Glfw.terminate
+
+data State = State {
+	defaultWindow :: Maybe WindowId,
+	timeMode :: Mode,
+	lastTime :: AbsoluteTime }
+	deriving Show
+
+instance DefaultWindowState State where
+	getDefaultWindow = defaultWindow
+	putDefaultWindow s i = s { defaultWindow = Just i }
+
+instance TimeState State where
+	getMode = timeMode
+	putMode s m = s { timeMode = m }
+	getLatestTime = lastTime
+	putLatestTime s t = s { lastTime = t }
+
+initState :: IO State
+initState = do
+	t <- getTAITime
+	pure State {
+		defaultWindow = Nothing,
+		timeMode = InitialMode,
+		lastTime = t }
+
+getTAITime :: IO AbsoluteTime
+getTAITime = systemToTAITime <$> getSystemTime
