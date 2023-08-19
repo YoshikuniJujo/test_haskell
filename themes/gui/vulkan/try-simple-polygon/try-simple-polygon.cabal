@@ -1,0 +1,163 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-simple-polygon
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-simple-polygon#readme>
+homepage:       https://github.com/githubuser/try-simple-polygon#readme
+bug-reports:    https://github.com/githubuser/try-simple-polygon/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2023 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-simple-polygon
+
+library
+  exposed-modules:
+      ThEnv
+      Tools
+  other-modules:
+      Paths_try_simple_polygon
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+executable try-pyramid-single
+  main-is: try-pyramid-single.hs
+  other-modules:
+      Main
+      Paths_try_simple_polygon
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-simple-polygon
+    , try-storable-generic
+    , try-storable-peek-poke
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+executable try-simple-polygon-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_simple_polygon
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-simple-polygon
+    , try-storable-generic
+    , try-storable-peek-poke
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+test-suite try-simple-polygon-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_simple_polygon
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-simple-polygon
+    , try-storable-generic
+    , try-storable-peek-poke
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
