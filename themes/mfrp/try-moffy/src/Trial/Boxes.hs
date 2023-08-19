@@ -9,7 +9,7 @@ module Trial.Boxes (
 	-- * Sig boxes
 	boxes,
 	-- * OTHERS
-	doubler, cycleColor, wiggleRect, firstPoint, completeRect, defineRect,
+	doubler, drClickOn, cycleColor, wiggleRect, firstPoint, completeRect, defineRect,
 	chooseBoxColor, box
 	) where
 

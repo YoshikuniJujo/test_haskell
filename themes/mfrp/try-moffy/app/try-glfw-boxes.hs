@@ -19,9 +19,11 @@ import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Delete hiding (deleteEvent)
 import Control.Moffy.Event.Delete.DefaultWindow
-import Control.Moffy.Event.Mouse (MouseDown(..), MouseBtn(..), pattern OccMouseDown)
+import Control.Moffy.Event.Mouse (
+	MouseDown(..), MouseBtn(..), pattern OccMouseDown, pattern OccMouseMove )
 import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Handle.Time
+import Control.Moffy.Viewable.Shape
 import Data.Traversable
 import Data.Maybe
 import Data.List.NonEmpty qualified as NE
@@ -53,9 +55,9 @@ handleWindowNew' ::
 handleWindowNew' wid i2w w2i = liftHandle' $ handleWindowNew wid i2w w2i
 
 handleDelete ::
-	TVar [EvOccs (DeleteEvent :- MouseDown :- 'Nil)] ->
+	TVar [EvOccs (DeleteEvent :- MouseDown :- MouseMove :- 'Nil)] ->
 	TVar (Map WindowId Glfw.Window) -> TVar Glfw.MouseButtonState ->
-	Handle' IO (DeleteEvent :- MouseDown :- 'Nil)
+	Handle' IO (DeleteEvent :- MouseDown :- MouseMove :- 'Nil)
 handleDelete teos ti2w tbs _ = do
 	meo <- atomically do
 		eoa <- readTVar teos
@@ -80,9 +82,9 @@ polling teos i2w is tbs = do
 	pure $ Just e
 
 polling' ::
-	TVar [EvOccs (DeleteEvent :- MouseDown :- 'Nil)] ->
+	TVar [EvOccs (DeleteEvent :- MouseDown :- MouseMove :- 'Nil)] ->
 	Map WindowId Glfw.Window -> [WindowId] -> TVar Glfw.MouseButtonState ->
-	IO (Maybe (EvOccs (DeleteEvent :- MouseDown :- 'Nil)))
+	IO (Maybe (EvOccs (DeleteEvent :- MouseDown :- MouseMove :- 'Nil)))
 polling' teos i2w is tbs =  do
 	ea <- pollAll' i2w is tbs
 	case ea of
@@ -102,12 +104,18 @@ pollAll i2w is tbs = doUntilNotEmpty do
 
 pollAll' ::
 	Map WindowId Glfw.Window -> [WindowId] -> TVar Glfw.MouseButtonState ->
-	IO [(EvOccs (DeleteEvent :- MouseDown :- 'Nil))]
+	IO [(EvOccs (DeleteEvent :- MouseDown :- MouseMove:- 'Nil))]
 pollAll' i2w is tbs = do
 	threadDelay 10000
 	Glfw.pollEvents
-	catMaybes <$> for is \i ->
-		App.merge' <$> getOccDelete i2w i <*> getOccMouseDown i2w i ButtonRight tbs
+	catMaybes <$> for is \i -> (\x y z -> x `mergeFoo` y `App.merge'` z)
+		<$> getOccDelete i2w i
+		<*> getOccMouseDown i2w i ButtonRight tbs
+		<*> getOccMouseMove i2w i
+
+mergeFoo :: Maybe (EvOccs (DeleteEvent :- 'Nil)) -> Maybe (EvOccs (MouseDown :- 'Nil)) ->
+	Maybe (EvOccs (DeleteEvent :- MouseDown :- 'Nil))
+mergeFoo = App.merge'
 
 getOccDelete :: Map WindowId Glfw.Window ->
 	WindowId -> IO (Maybe (EvOccs (DeleteEvent :- 'Nil)))
@@ -130,6 +138,11 @@ getOccMouseDown i2w i b tbs0 = do
 		(Glfw.MouseButtonState'Released, Glfw.MouseButtonState'Pressed) ->
 			Just . App.Singleton $ OccMouseDown i b
 		_ -> Nothing
+
+getOccMouseMove :: Map WindowId Glfw.Window -> WindowId -> IO (Maybe (EvOccs (MouseMove :- 'Nil)))
+getOccMouseMove i2w i = do
+	let	w = i2w ! i
+	Just . App.Singleton . OccMouseMove i <$> Glfw.getCursorPos w
 
 btnToButton :: MouseBtn -> Glfw.MouseButton
 btnToButton ButtonLeft = Glfw.MouseButton'1
@@ -163,15 +176,15 @@ main = do
 	Glfw.init
 	is <- initState
 	(print =<<) . ($ is) $ interpretReactSt @_
-		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- TimeEv :+: 'Nil)
-		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- TimeEv :+: 'Nil)
+		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- MouseMove :- TimeEv :+: 'Nil)
+		@(WindowNew :- LoadDefaultWindow :- StoreDefaultWindow :- DeleteEvent :- MouseDown :- MouseMove :- TimeEv :+: 'Nil)
 		(retrySt .
 			($ (0.05, ())) . popInput . handleTimeEvPlus . pushInput . const $
 			handleWindowNew' undefined i2w undefined `mergeSt`
 			handleDefaultWindow `mergeSt` liftHandle' (handleDelete teos i2w tbs)) do
 		i <- adjust windowNew
 		adjust $ storeDefaultWindow i
-		adjust $ deleteEvent `first` doubler
+		adjust $ deleteEvent `first` (drClickOn $ Rect (100, 100) (200, 200))
 	Glfw.terminate
 
 data State = State {
