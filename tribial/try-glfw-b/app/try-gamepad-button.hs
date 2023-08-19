@@ -15,6 +15,8 @@ main = GLFW.init >> doWhile_ do
 	Just (GLFW.GamepadState gb ga) <- GLFW.getGamepadState GLFW.Joystick'1
 	print $ ga GLFW.GamepadAxis'LeftX
 	print $ ga GLFW.GamepadAxis'LeftY
+	print $ gb GLFW.GamepadButton'LeftBumper
+	print $ gb GLFW.GamepadButton'RightBumper
 	pure $ gb GLFW.GamepadButton'A /= GLFW.GamepadButtonState'Pressed
 
 doWhile_ :: Monad m => m Bool -> m ()
