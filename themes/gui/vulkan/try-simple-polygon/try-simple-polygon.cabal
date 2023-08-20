@@ -25,6 +25,8 @@ source-repository head
 
 library
   exposed-modules:
+      Graphics.SimplePolygon.DebugMessenger
+      Graphics.SimplePolygon.Instance
       ThEnv
       Tools
   other-modules:
