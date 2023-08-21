@@ -8,10 +8,6 @@
 
 module Gpu.Vulkan.Khr (
 
-	-- * LAYER NAME
-
-	validationLayerName,
-
 	-- * QUEUE PRESENT
 
 	queuePresent, PresentInfo(..), SwapchainImageIndex(..),
@@ -27,8 +23,6 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
-import qualified Data.Text as T
-
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Device.Internal as Device
@@ -38,9 +32,6 @@ import qualified Gpu.Vulkan.Queue as Queue
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Khr.Middle as M
-
-validationLayerName :: T.Text
-validationLayerName = "VK_LAYER_KHRONOS_validation"
 
 queuePresent :: WithPoked (TMaybe.M mn) =>
 	Queue.Q -> PresentInfo mn swss scfmt sscs -> IO ()
