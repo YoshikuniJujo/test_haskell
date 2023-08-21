@@ -13,6 +13,7 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Layer as Vk.Layer
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -162,7 +163,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Txt.Text]
-validationLayers = [Vk.Khr.validationLayerName]
+validationLayers = [Vk.Layer.khronosValidationName]
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2

@@ -11,6 +11,8 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Layer as Vk.Layer
+
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
 import Foreign.Ptr
@@ -89,8 +91,6 @@ import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
-import qualified Gpu.Vulkan.Khr as Vk.Khr
-
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
@@ -105,7 +105,7 @@ main = do
 	let	createInfo :: Vk.Instance.CreateInfo 'Nothing 'Nothing
 		createInfo = def {
 			Vk.Instance.createInfoEnabledLayerNames =
-				[Vk.Khr.validationLayerName] }
+				[Vk.Layer.khronosValidationName] }
 	Vk.Instance.create createInfo nil' \inst -> do
 		(physicalDevice, graphicsQueueFamilyIndex) <-
 			selectPhysicalDeviceAndQueueFamily
@@ -126,7 +126,7 @@ main = do
 				Vk.Device.createInfoQueueCreateInfos =
 					HeteroParList.Singleton queueCreateInfo,
 				Vk.Device.createInfoEnabledLayerNames =
-					[Vk.Khr.validationLayerName],
+					[Vk.Layer.khronosValidationName],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
 		Vk.Device.create physicalDevice devCreateInfo nil' \dvc ->

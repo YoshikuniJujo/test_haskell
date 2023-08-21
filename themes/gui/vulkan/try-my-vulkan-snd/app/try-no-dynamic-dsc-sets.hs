@@ -15,6 +15,7 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Layer as Vk.Layer
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
 import Foreign.Storable
@@ -111,13 +112,13 @@ crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 	instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 	instInfo = def {
 		Vk.Inst.createInfoEnabledLayerNames =
-			[Vk.Khr.validationLayerName] }
+			[Vk.Layer.khronosValidationName] }
 	dvcInfo qf = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
 		Vk.Dvc.createInfoFlags = zeroBits,
 		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qf,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			[Vk.Khr.validationLayerName],
+			[Vk.Layer.khronosValidationName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	queueInfo qf = Vk.Dvc.QueueCreateInfo {

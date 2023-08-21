@@ -5,6 +5,7 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Layer as Vk.Layer
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 

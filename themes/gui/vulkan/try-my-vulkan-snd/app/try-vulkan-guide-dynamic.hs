@@ -14,6 +14,9 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Layer as Vk.Layer
+import qualified Gpu.Vulkan.Layer as Vk.Layer
+
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
 import GHC.Generics
@@ -179,7 +182,7 @@ withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
 	when enableValidationLayers $ bool (error msg) (pure ()) =<< null
-		. ([Vk.Khr.validationLayerName] \\)
+		. ([Vk.Layer.khronosValidationName] \\)
 		. (Vk.layerPropertiesLayerName <$>)
 		<$> Vk.Ist.M.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers
@@ -198,7 +201,7 @@ instInfo b exts f = istCreateInfoNext b \mn ->
 		Vk.Ist.M.createInfoFlags = zeroBits,
 		Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 		Vk.Ist.M.createInfoEnabledLayerNames = bool
-			[] [Vk.Khr.validationLayerName] enableValidationLayers,
+			[] [Vk.Layer.khronosValidationName] enableValidationLayers,
 		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
 	where
 	appInfo = Vk.ApplicationInfo {
@@ -339,7 +342,7 @@ createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qcris ->
 		Vk.Dvc.M.createInfoFlags = zeroBits,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qcris,
 		Vk.Dvc.M.createInfoEnabledLayerNames = bool
-			[] [Vk.Khr.validationLayerName] enableValidationLayers,
+			[] [Vk.Layer.khronosValidationName] enableValidationLayers,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 

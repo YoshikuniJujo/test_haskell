@@ -15,6 +15,7 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Layer as Vk.Layer
 import Foreign.Storable
 import Data.Kind
 import Gpu.Vulkan.Object.Base qualified as KObj
@@ -70,7 +71,6 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 
-import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 main :: IO ()
@@ -233,7 +233,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qFam,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			[Vk.Khr.validationLayerName],
+			[Vk.Layer.khronosValidationName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	queueInfo qFam = Vk.Dvc.QueueCreateInfo {
@@ -244,7 +244,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.Layer.khronosValidationName] }
 
 findQueueFamily ::
 	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index

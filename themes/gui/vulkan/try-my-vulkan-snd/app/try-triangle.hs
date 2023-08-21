@@ -13,6 +13,7 @@
 
 module Main where
 
+import qualified Gpu.Vulkan.Layer as Vk.Layer
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
 import GHC.Generics
@@ -77,7 +78,6 @@ import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device as Vk.Dvc.M
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface.M
-import qualified Gpu.Vulkan.Khr.Surface.Enum as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
@@ -156,7 +156,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Txt.Text]
-validationLayers = [Vk.Khr.validationLayerName]
+validationLayers = [Vk.Layer.khronosValidationName]
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
