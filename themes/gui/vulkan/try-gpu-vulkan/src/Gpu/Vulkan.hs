@@ -28,6 +28,10 @@ module Gpu.Vulkan (
 	ExtensionProperties(..),
 	FormatProperties(..),
 
+	-- * NAMES
+
+	layerKhronosValidationName,
+
 	-- * PIPELINE VALUES
 
 	-- ** ViewPort

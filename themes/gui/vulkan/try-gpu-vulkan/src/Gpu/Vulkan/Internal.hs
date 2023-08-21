@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -27,6 +27,10 @@ module Gpu.Vulkan.Internal (
 	M.LayerProperties(..),
 	M.ExtensionProperties(..),
 	M.FormatProperties(..),
+
+	-- * NAME
+
+	layerKhronosValidationName,
 
 	-- * PIPELINE VALUES
 
@@ -82,6 +86,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
+import Data.Text qualified as T
 
 import qualified Gpu.Vulkan.Middle as M
 import qualified Gpu.Vulkan.Semaphore.Type as Semaphore
@@ -160,3 +165,6 @@ instance SemaphorePipelineStageFlagsFromMiddle sss =>
 	semaphorePipelineStageFlagsFromMiddle ((s, psfs) : spsfss) =
 		SemaphorePipelineStageFlags (Semaphore.S s) psfs :**
 		semaphorePipelineStageFlagsFromMiddle spsfss
+
+layerKhronosValidationName :: T.Text
+layerKhronosValidationName = "VK_LAYER_KHRONOS_validation"

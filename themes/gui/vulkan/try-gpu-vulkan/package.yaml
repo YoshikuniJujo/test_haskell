@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.22
+version:             0.1.0.23
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -92,7 +92,6 @@ library:
   - Gpu.Vulkan.ImageView.Enum
   - Gpu.Vulkan.Instance
   - Gpu.Vulkan.Instance.Internal
-  - Gpu.Vulkan.Layer
   - Gpu.Vulkan.Memory
   - Gpu.Vulkan.Memory.Enum
   - Gpu.Vulkan.Misc
