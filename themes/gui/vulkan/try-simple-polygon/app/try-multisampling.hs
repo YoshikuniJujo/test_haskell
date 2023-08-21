@@ -156,11 +156,13 @@ import Vertex.Wavefront
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 
+import Gpu.Vulkan.Layer qualified as Vk.Layer
+
 main :: IO ()
 main = do
 	txfp : mdfp : mnld : _ <- getArgs
 	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
+	(`withWindow` g) \win -> createInstance enableValidationLayers \inst -> do
 		if enableValidationLayers
 			then DbgMsngr.setup inst
 				$ run txfp mdfp (read mnld) win inst g
@@ -181,9 +183,6 @@ windowSize = (width, height) where width = 800; height = 600
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
-validationLayers :: [Txt.Text]
-validationLayers = [Vk.Khr.validationLayerName]
-
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
@@ -200,14 +199,11 @@ initWindow frszd = do
 	w <$ Glfw.setFramebufferSizeCallback
 		w (Just $ \_ _ _ -> writeIORef frszd True)
 
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when enableValidationLayers $ bool
+createInstance :: Bool -> (forall si . Vk.Ist.I si -> IO a) -> IO a
+createInstance ev f = do
+	when ev $ bool
 		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers L.\\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
+		(pure ()) =<< DbgMsngr.checkLayer
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
@@ -232,6 +228,9 @@ createInstance f = do
 				bool [] validationLayers enableValidationLayers,
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
+
+validationLayers :: [Txt.Text]
+validationLayers = [Vk.Layer.khronosValidationName]
 
 run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdfp mnld w inst g =

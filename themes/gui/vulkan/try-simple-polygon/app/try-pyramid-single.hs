@@ -138,6 +138,8 @@ import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 
+import Gpu.Vulkan.Layer qualified as Vk.Layer
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized
@@ -195,7 +197,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Txt.Text]
-validationLayers = [Vk.Khr.validationLayerName]
+validationLayers = [Vk.Layer.khronosValidationName]
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
@@ -214,10 +216,7 @@ createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
 	when enableValidationLayers $ bool
 		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers L.\\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
+		(pure ()) =<< DbgMsngr.checkLayer
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
