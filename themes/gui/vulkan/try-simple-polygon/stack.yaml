@@ -66,6 +66,7 @@ extra-deps:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
+  - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
 - union-color-0.1.2.0

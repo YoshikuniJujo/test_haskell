@@ -29,6 +29,8 @@ library
       Graphics.SimplePolygon.Instance
       ThEnv
       Tools
+      Vertex
+      Vertex.Wavefront
   other-modules:
       Paths_try_simple_polygon
   hs-source-dirs:
@@ -37,7 +39,9 @@ library
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-default
     , ranged-list
@@ -45,6 +49,7 @@ library
     , template-haskell
     , text
     , time
+    , try-codec-wavefront-obj
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -53,6 +58,44 @@ library
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+executable try-multisampling
+  main-is: try-multisampling.hs
+  other-modules:
+      Main
+      Paths_try_simple_polygon
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-codec-wavefront-obj
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-simple-polygon
     , try-storable-generic
     , try-storable-peek-poke
     , typelevel-tools
@@ -71,7 +114,9 @@ executable try-pyramid-single
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-default
     , ranged-list
@@ -79,6 +124,7 @@ executable try-pyramid-single
     , template-haskell
     , text
     , time
+    , try-codec-wavefront-obj
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -105,7 +151,9 @@ executable try-simple-polygon-exe
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-default
     , ranged-list
@@ -113,6 +161,7 @@ executable try-simple-polygon-exe
     , template-haskell
     , text
     , time
+    , try-codec-wavefront-obj
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -140,7 +189,9 @@ test-suite try-simple-polygon-test
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
+    , bytestring
     , containers
     , data-default
     , ranged-list
@@ -148,6 +199,7 @@ test-suite try-simple-polygon-test
     , template-haskell
     , text
     , time
+    , try-codec-wavefront-obj
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils

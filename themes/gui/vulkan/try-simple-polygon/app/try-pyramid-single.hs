@@ -45,7 +45,6 @@ import Data.Time
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as Txt
-import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
@@ -69,7 +68,6 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
@@ -138,6 +136,8 @@ import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
 
+import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized
@@ -145,7 +145,7 @@ main = do
 		cev <- createControllerEvent
 		_ <- forkIO $ controller cev
 		if enableValidationLayers
-			then setupDebugMessenger inst $ const $ run win inst g cev
+			then DbgMsngr.setup inst $ run win inst g cev
 			else run win inst g cev
 
 controller :: ControllerEvent -> IO ()
@@ -235,38 +235,13 @@ createInstance f = do
 			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
 				'Nothing '[] ())) 'Nothing
 		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
+			Vk.Ist.M.createInfoNext = TMaybe.J DbgMsngr.createInfo,
 			Vk.Ist.M.createInfoFlags = def,
 			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
-
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> IO a) -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil' \m -> f m
-
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
-
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
 run w inst g cev =

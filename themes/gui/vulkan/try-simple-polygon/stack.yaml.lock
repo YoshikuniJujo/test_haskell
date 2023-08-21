@@ -291,6 +291,19 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
 - completed:
+    commit: ae3894a7ad3e727ad2cdad873709b8f1a18a61ec
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-codec-wavefront-obj
+    pantry-tree:
+      sha256: 8a7684cb8340297fd96d9204089d4f20bcac273badc8e2c9796b230f83cb115e
+      size: 678
+    subdir: themes/codec/try-codec-wavefront-obj
+    version: 0.1.0.0
+  original:
+    commit: ae3894a7ad3e727ad2cdad873709b8f1a18a61ec
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/codec/try-codec-wavefront-obj
+- completed:
     commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
     name: size-alignment-list

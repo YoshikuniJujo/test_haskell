@@ -43,6 +43,9 @@ dependencies:
 - try-hetero-parameter-list
 - union-color
 - typelevel-tools
+- array
+- bytestring
+- try-codec-wavefront-obj
 
 ghc-options:
 - -Wall
@@ -70,6 +73,15 @@ executables:
     - try-simple-polygon
   try-pyramid-single:
     main:                try-pyramid-single.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-polygon
+  try-multisampling:
+    main:                try-multisampling.hs
     source-dirs:         app
     ghc-options:
     - -threaded
