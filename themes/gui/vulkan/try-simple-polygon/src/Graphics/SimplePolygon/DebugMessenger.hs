@@ -49,4 +49,4 @@ createInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 
 debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layouer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
+	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)

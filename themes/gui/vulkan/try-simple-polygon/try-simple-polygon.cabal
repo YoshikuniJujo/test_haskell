@@ -27,6 +27,7 @@ library
   exposed-modules:
       Graphics.SimplePolygon.DebugMessenger
       Graphics.SimplePolygon.Instance
+      Graphics.SimplePolygon.PhysicalDevice
       ThEnv
       Tools
       Vertex
