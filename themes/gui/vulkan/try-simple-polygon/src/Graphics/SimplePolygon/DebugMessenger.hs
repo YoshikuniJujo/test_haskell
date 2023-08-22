@@ -5,21 +5,24 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.SimplePolygon.DebugMessenger (
-	checkLayer, setup, createInfo ) where
+	checkLayer, validationLayers, extensionName, setup, createInfo ) where
 
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Bits
 import Data.List qualified as L
-import Data.Text qualified as Txt
 import Data.Text.IO qualified as Txt
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Instance qualified as Vk.Ist
-import Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
-import Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerNameKhronosValidation]
+
+extensionName :: Vk.ExtensionName
+extensionName = Vk.Ext.DbgUtls.extensionName
 
 checkLayer :: IO Bool
 checkLayer = null

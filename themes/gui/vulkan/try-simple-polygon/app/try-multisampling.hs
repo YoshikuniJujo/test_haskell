@@ -52,7 +52,6 @@ import Data.Time
 import System.Environment
 import Codec.Picture
 
-
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
@@ -74,11 +73,8 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
@@ -153,13 +149,14 @@ import Tools
 import Vertex
 import Vertex.Wavefront
 
+import Graphics.SimplePolygon.Instance qualified as Ist
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 
 main :: IO ()
 main = do
 	txfp : mdfp : mnld : _ <- getArgs
 	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance enableValidationLayers \inst -> do
+	(`withWindow` g) \win -> Ist.create enableValidationLayers \inst -> do
 		if enableValidationLayers
 			then DbgMsngr.setup inst
 				$ run txfp mdfp (read mnld) win inst g
@@ -195,39 +192,6 @@ initWindow frszd = do
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
 	w <$ Glfw.setFramebufferSizeCallback
 		w (Just $ \_ _ _ -> writeIORef frszd True)
-
-createInstance :: Bool -> (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance ev f = do
-	when ev $ bool
-		(error "validation layers requested, but not available!")
-		(pure ()) =<< DbgMsngr.checkLayer
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers . (Vk.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	print extensions
-	let	appInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoNext = TMaybe.N,
-			Vk.applicationInfoApplicationName = "Hello Triangle",
-			Vk.applicationInfoApplicationVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoEngineName = "No Engine",
-			Vk.applicationInfoEngineVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo :: Vk.Ist.M.CreateInfo
-			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
-				'Nothing '[] ())) 'Nothing
-		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J DbgMsngr.createInfo,
-			Vk.Ist.M.createInfoFlags = def,
-			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil' \i -> f i
-
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerNameKhronosValidation]
 
 run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdfp mnld w inst g =
@@ -390,6 +354,9 @@ createLogicalDevice phdvc qfis f =
 		Vk.Dvc.queueCreateInfoFlags = def,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+
+validationLayers :: [Vk.LayerName]
+validationLayers = [Vk.layerNameKhronosValidation]
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
