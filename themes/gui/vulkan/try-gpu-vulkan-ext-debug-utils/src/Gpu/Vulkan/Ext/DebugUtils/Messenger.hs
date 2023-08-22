@@ -9,7 +9,7 @@ module Gpu.Vulkan.Ext.DebugUtils.Messenger (
 
 	-- * CREATE
 
-	create, M, M.CreateInfo(..), M.FnCallback, M.CallbackData(..)
+	create, M.CreateInfo(..), M.FnCallback, M.CallbackData(..)
 
 	) where
 
@@ -20,7 +20,6 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 
 import Gpu.Vulkan.PNext.Middle qualified as MI
-import Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks.Internal as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Internal as Instance
@@ -31,8 +30,7 @@ create :: (
 	MI.FindPNextChainAll cb, Storable' ud,
 	AllocationCallbacks.ToMiddle mac ) =>
 	Instance.I si -> M.CreateInfo mn cb ud ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . M s -> IO a) -> IO a
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO a -> IO a
 create (Instance.I ist) ci
 	(AllocationCallbacks.toMiddle -> macc) f = bracket
-	(M.create ist ci macc) (\m -> M.destroy ist m macc) (f . M)
+	(M.create ist ci macc) (\m -> M.destroy ist m macc) (const f)
