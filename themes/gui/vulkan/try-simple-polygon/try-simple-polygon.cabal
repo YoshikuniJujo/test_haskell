@@ -29,6 +29,7 @@ library
       Graphics.SimplePolygon.Instance
       Graphics.SimplePolygon.PhysicalDevice
       Graphics.SimplePolygon.Surface
+      Graphics.SimplePolygon.Window
       ThEnv
       Tools
       Vertex

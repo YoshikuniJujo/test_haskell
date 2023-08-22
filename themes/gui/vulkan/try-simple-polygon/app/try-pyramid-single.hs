@@ -131,13 +131,13 @@ import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 import Graphics.SimplePolygon.Instance qualified as Ist
+import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
 main :: IO ()
-main = do
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> Ist.create enableValidationLayers \inst -> do
+main = Win.create windowSize windowName \(Win.W win g) ->
+	Ist.create enableValidationLayers \inst -> do
 		cev <- createControllerEvent
 		_ <- forkIO $ controller cev
 		if enableValidationLayers
@@ -178,9 +178,6 @@ data ControllerEvent = ControllerEvent {
 
 type FramebufferResized = IORef Bool
 
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
-
 windowName :: String
 windowName = "Triangle"
 
@@ -192,19 +189,6 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerNameKhronosValidation]
-
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
 run w inst g cev =

@@ -149,24 +149,22 @@ import Vertex.Wavefront
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 import Graphics.SimplePolygon.Instance qualified as Ist
+import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
 main :: IO ()
 main = do
 	txfp : mdfp : mnld : _ <- getArgs
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> Ist.create enableValidationLayers \inst -> do
-		if enableValidationLayers
-			then DbgMsngr.setup inst
-				$ run txfp mdfp (read mnld) win inst g
-			else run txfp mdfp (read mnld) win inst g
+	Win.create windowSize windowName \(Win.W win g) ->
+		Ist.create enableValidationLayers \inst -> do
+			if enableValidationLayers
+				then DbgMsngr.setup inst
+					$ run txfp mdfp (read mnld) win inst g
+				else run txfp mdfp (read mnld) win inst g
 
-type FramebufferResized = IORef Bool
 type WVertex = GStorable.W Vertex
-
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
+type FramebufferResized = IORef Bool
 
 windowName :: String
 windowName = "Triangle"
@@ -179,19 +177,6 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
-
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
 
 run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdfp mnld w inst g =
