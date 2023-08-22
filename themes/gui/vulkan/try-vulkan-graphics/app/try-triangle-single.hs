@@ -126,7 +126,7 @@ main :: IO ()
 main = newFramebufferResized >>= \g ->
 	(`withWindow` g) \win -> createInstance \inst ->
 		if enableValidationLayers
-			then setupDebugMessenger inst $ const $ run win inst g
+			then setupDebugMessenger inst $ run win inst g
 			else run win inst g
 
 type FramebufferResized = IORef Bool
@@ -144,7 +144,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Txt.Text]
-validationLayers = [Vk.Khr.validationLayerName]
+validationLayers = [Vk.layerKhronosValidationName]
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
@@ -192,11 +192,9 @@ createInstance f = do
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
 
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> IO a) -> IO a
+setupDebugMessenger :: Vk.Ist.I si -> IO a -> IO a
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil' \m -> f m
+	debugMessengerCreateInfo nil' f
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
