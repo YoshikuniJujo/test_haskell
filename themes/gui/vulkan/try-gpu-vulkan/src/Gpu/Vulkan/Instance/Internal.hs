@@ -15,7 +15,7 @@ module Gpu.Vulkan.Instance.Internal (
 
 	-- * ENUMERATE
 
-	M.enumerateLayerProperties, M.enumerateExtensionProperties
+	enumerateLayerProperties, enumerateExtensionProperties
 
 	) where
 
@@ -26,7 +26,7 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
 
-import Gpu.Vulkan
+import Gpu.Vulkan.Internal
 import Gpu.Vulkan.Instance.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
@@ -73,3 +73,13 @@ createInfoToMiddle CreateInfo {
 	M.createInfoApplicationInfo = ai,
 	M.createInfoEnabledLayerNames = unLayerName <$> lns,
 	M.createInfoEnabledExtensionNames = unExtensionName <$> ens }
+
+enumerateLayerProperties :: IO [LayerProperties]
+enumerateLayerProperties =
+	(layerPropertiesFromMiddle <$>) <$> M.enumerateLayerProperties
+
+enumerateExtensionProperties ::
+	Maybe LayerName -> IO [ExtensionProperties]
+enumerateExtensionProperties (((\(LayerName ln) -> ln) <$>) -> mln) =
+	(extensionPropertiesFromMiddle <$>)
+		<$> M.enumerateExtensionProperties mln

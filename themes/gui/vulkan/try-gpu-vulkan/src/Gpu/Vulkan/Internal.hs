@@ -24,8 +24,8 @@ module Gpu.Vulkan.Internal (
 
 	-- * PROPERTIES
 
-	M.LayerProperties(..),
-	M.ExtensionProperties(..),
+	LayerProperties(..), layerPropertiesFromMiddle,
+	ExtensionProperties(..), extensionPropertiesFromMiddle,
 	M.FormatProperties(..),
 
 	-- * NAME
@@ -167,10 +167,40 @@ instance SemaphorePipelineStageFlagsFromMiddle sss =>
 		SemaphorePipelineStageFlags (Semaphore.S s) psfs :**
 		semaphorePipelineStageFlagsFromMiddle spsfss
 
-newtype LayerName = LayerName { unLayerName :: T.Text } deriving Show
+data LayerProperties = LayerProperties {
+	layerPropertiesLayerName :: LayerName,
+	layerPropertiesSpecVersion :: M.ApiVersion,
+	layerPropertiesImplementationVersion :: M.ApiVersion,
+	layerPropertiesDescription :: T.Text }
+	deriving Show
+
+layerPropertiesFromMiddle :: M.LayerProperties -> LayerProperties
+layerPropertiesFromMiddle M.LayerProperties {
+	M.layerPropertiesLayerName = ln,
+	M.layerPropertiesSpecVersion = sv,
+	M.layerPropertiesImplementationVersion = iv,
+	M.layerPropertiesDescription = dsc } = LayerProperties {
+	layerPropertiesLayerName = LayerName ln,
+	layerPropertiesSpecVersion = sv,
+	layerPropertiesImplementationVersion = iv,
+	layerPropertiesDescription = dsc }
+
+newtype LayerName = LayerName { unLayerName :: T.Text } deriving (Show, Eq)
 
 layerNameKhronosValidation :: LayerName
 layerNameKhronosValidation = LayerName "VK_LAYER_KHRONOS_validation"
 
+data ExtensionProperties = ExtensionProperties {
+	extensionPropertiesExtensionName :: ExtensionName,
+	extensionPropertiesSpecVersion :: M.ApiVersion }
+	deriving Show
+
+extensionPropertiesFromMiddle :: M.ExtensionProperties -> ExtensionProperties
+extensionPropertiesFromMiddle M.ExtensionProperties {
+	M.extensionPropertiesExtensionName = en,
+	M.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
+	extensionPropertiesExtensionName = ExtensionName en,
+	extensionPropertiesSpecVersion = sv }
+
 newtype ExtensionName =
-	ExtensionName { unExtensionName :: T.Text } deriving Show
+	ExtensionName { unExtensionName :: T.Text } deriving (Show, Eq)
