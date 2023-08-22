@@ -8,18 +8,17 @@ module Gpu.Vulkan.PhysicalDevice (
 
 	enumerate, M.P,
 
-	-- * GET FEATURES
+	-- * PHYSICAL DEVICE PROPERTIES AND FEATURES
 
-	M.getFeatures,
+	M.getProperties, M.Properties(..), M.getFeatures,
 
-	-- * PROPERTIES
+	-- * OTHER PROPERTIES
 
-	M.getProperties, M.Properties(..),
 	M.getMemoryProperties, M.MemoryProperties(..),
 	M.getQueueFamilyProperties, M.getFormatProperties,
 	enumerateExtensionProperties,
 
-	-- * FEATURES
+	-- * OTHER FEATURES
 
 	M.ShaderDrawParametersFeatures(..)
 

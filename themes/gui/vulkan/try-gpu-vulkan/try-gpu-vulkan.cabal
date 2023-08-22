@@ -78,6 +78,7 @@ library
       Gpu.Vulkan.Object
       Gpu.Vulkan.Object.Base
       Gpu.Vulkan.PhysicalDevice
+      Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Struct
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
       Gpu.Vulkan.Pipeline.ColorBlendState
