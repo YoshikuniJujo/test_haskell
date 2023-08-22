@@ -134,7 +134,7 @@ main = valNat maxFramesInFlight \(_ :: Proxy n) -> do
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ const $ run win inst g
+			then setupDebugMessenger inst $ run win inst g
 			else run win inst g
 
 type FramebufferResized = IORef Bool
@@ -207,9 +207,9 @@ createInstance f = do
 
 setupDebugMessenger ::
 	Vk.Ist.I si ->
-	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> IO a) -> IO a
+	IO a -> IO a
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil' \m -> f m
+	debugMessengerCreateInfo nil' f
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {

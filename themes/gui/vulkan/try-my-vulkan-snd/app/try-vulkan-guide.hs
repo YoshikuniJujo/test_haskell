@@ -148,7 +148,7 @@ main = do
 	frszd <- newFramebufferResized
 	(`withWindow` frszd) \win -> createInstance \ist -> do
 		if enableValidationLayers
-			then setupDebugMessenger ist $ const $ run win ist frszd obj
+			then setupDebugMessenger ist $ run win ist frszd obj
 			else run win ist frszd obj
 
 type FramebufferResized = IORef Bool
@@ -219,9 +219,9 @@ createInstance f = do
 
 setupDebugMessenger ::
 	Vk.Ist.I si ->
-	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> IO a) -> IO a
+	IO a -> IO a
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil' \m -> f m
+	debugMessengerCreateInfo nil' f
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
