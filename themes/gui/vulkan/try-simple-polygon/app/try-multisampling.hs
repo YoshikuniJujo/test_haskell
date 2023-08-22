@@ -55,7 +55,6 @@ import Codec.Picture
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
-import qualified Data.Text as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
@@ -203,7 +202,7 @@ createInstance ev f = do
 		(error "validation layers requested, but not available!")
 		(pure ()) =<< DbgMsngr.checkLayer
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers
+			enableValidationLayers . (Vk.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
@@ -227,8 +226,8 @@ createInstance ev f = do
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
 
-validationLayers :: [Txt.Text]
-validationLayers = [Vk.layerKhronosValidationName]
+validationLayers :: [Vk.LayerName]
+validationLayers = [Vk.layerNameKhronosValidation]
 
 run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdfp mnld w inst g =
@@ -351,7 +350,7 @@ checkDeviceExtensionSupport dvc =
 	null . (deviceExtensions L.\\) . (Vk.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
-deviceExtensions :: [Txt.Text]
+deviceExtensions :: [Vk.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {

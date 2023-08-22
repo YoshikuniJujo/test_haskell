@@ -47,6 +47,7 @@ library
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-codec-wavefront-obj
@@ -84,6 +85,7 @@ executable try-multisampling
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-codec-wavefront-obj
@@ -122,6 +124,7 @@ executable try-pyramid-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-codec-wavefront-obj
@@ -159,6 +162,7 @@ executable try-simple-polygon-exe
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-codec-wavefront-obj
@@ -197,6 +201,7 @@ test-suite try-simple-polygon-test
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-codec-wavefront-obj

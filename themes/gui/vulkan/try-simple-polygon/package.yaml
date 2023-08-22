@@ -46,6 +46,7 @@ dependencies:
 - array
 - bytestring
 - try-codec-wavefront-obj
+- temporary
 
 ghc-options:
 - -Wall

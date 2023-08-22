@@ -18,8 +18,8 @@ import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 
-validationLayers :: [Txt.Text]
-validationLayers = [Vk.layerKhronosValidationName]
+validationLayers :: [Vk.LayerName]
+validationLayers = [Vk.layerNameKhronosValidation]
 
 checkLayer :: IO Bool
 checkLayer = null
@@ -27,7 +27,7 @@ checkLayer = null
 	<$> Vk.Ist.enumerateLayerProperties
 
 setup :: Vk.Ist.I si -> IO a -> IO a
-setup ist f = Vk.Ext.DbgUtls.Msngr.create ist createInfo TPMaybe.N \_ -> f
+setup ist f = Vk.Ext.DbgUtls.Msngr.create ist createInfo TPMaybe.N f
 
 createInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 createInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
