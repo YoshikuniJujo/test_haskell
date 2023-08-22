@@ -30,7 +30,8 @@ module Gpu.Vulkan.Internal (
 
 	-- * NAME
 
-	layerKhronosValidationName,
+	LayerName(..), layerNameKhronosValidation,
+	ExtensionName(..),
 
 	-- * PIPELINE VALUES
 
@@ -166,5 +167,10 @@ instance SemaphorePipelineStageFlagsFromMiddle sss =>
 		SemaphorePipelineStageFlags (Semaphore.S s) psfs :**
 		semaphorePipelineStageFlagsFromMiddle spsfss
 
-layerKhronosValidationName :: T.Text
-layerKhronosValidationName = "VK_LAYER_KHRONOS_validation"
+newtype LayerName = LayerName { unLayerName :: T.Text } deriving Show
+
+layerNameKhronosValidation :: LayerName
+layerNameKhronosValidation = LayerName "VK_LAYER_KHRONOS_validation"
+
+newtype ExtensionName =
+	ExtensionName { unExtensionName :: T.Text } deriving Show

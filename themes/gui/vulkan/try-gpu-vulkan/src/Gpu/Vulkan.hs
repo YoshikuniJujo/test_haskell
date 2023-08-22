@@ -30,7 +30,8 @@ module Gpu.Vulkan (
 
 	-- * NAMES
 
-	layerKhronosValidationName,
+	LayerName(..), layerNameKhronosValidation,
+	ExtensionName(..),
 
 	-- * PIPELINE VALUES
 
