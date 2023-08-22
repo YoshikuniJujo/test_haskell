@@ -15,7 +15,6 @@
 
 module Main where
 
-import qualified Gpu.Vulkan.Layer as Vk.Layer
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
 import Foreign.Ptr
@@ -146,13 +145,13 @@ withDevice f = Vk.Inst.create instInfo
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.Layer.khronosValidationName] }
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName] }
 	
 dvcInfo :: Vk.QFm.Index -> Vk.Dv.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qfi = Vk.Dv.CreateInfo {
 	Vk.Dv.createInfoNext = TMaybe.N, Vk.Dv.createInfoFlags = zeroBits,
 	Vk.Dv.createInfoQueueCreateInfos = HL.Singleton qinfo,
-	Vk.Dv.createInfoEnabledLayerNames = [Vk.Layer.khronosValidationName],
+	Vk.Dv.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName],
 	Vk.Dv.createInfoEnabledExtensionNames = [],
 	Vk.Dv.createInfoEnabledFeatures = Nothing }
 	where qinfo = Vk.Dv.QueueCreateInfo {

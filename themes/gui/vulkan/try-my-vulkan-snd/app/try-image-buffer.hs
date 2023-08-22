@@ -15,7 +15,6 @@
 
 module Main where
 
-import qualified Gpu.Vulkan.Layer as Vk.Layer
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
 import GHC.Types
@@ -72,8 +71,6 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 
-import qualified Gpu.Vulkan.Khr as Vk.Khr
-
 import qualified Gpu.Vulkan.Image as Vk.Image
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
@@ -81,7 +78,6 @@ import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import Sample.GetOpt
 import Sample.Image
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Tools
@@ -239,7 +235,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qfam,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			[Vk.Layer.khronosValidationName],
+			[Vk.layerKhronosValidationName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	queueInfo qfam = Vk.Dvc.QueueCreateInfo {
@@ -250,7 +246,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.Layer.khronosValidationName] }
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName] }
 
 findQueueFamily ::
 	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index

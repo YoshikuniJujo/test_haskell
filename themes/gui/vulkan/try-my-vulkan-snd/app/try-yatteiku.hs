@@ -11,7 +11,6 @@
 
 module Main where
 
-import qualified Gpu.Vulkan.Layer as Vk.Layer
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -105,7 +104,7 @@ main = do
 	let	createInfo :: Vk.Instance.CreateInfo 'Nothing 'Nothing
 		createInfo = def {
 			Vk.Instance.createInfoEnabledLayerNames =
-				[Vk.Layer.khronosValidationName] }
+				[Vk.layerKhronosValidationName] }
 	Vk.Instance.create createInfo nil' \inst -> do
 		(physicalDevice, graphicsQueueFamilyIndex) <-
 			selectPhysicalDeviceAndQueueFamily
@@ -126,7 +125,7 @@ main = do
 				Vk.Device.createInfoQueueCreateInfos =
 					HeteroParList.Singleton queueCreateInfo,
 				Vk.Device.createInfoEnabledLayerNames =
-					[Vk.Layer.khronosValidationName],
+					[Vk.layerKhronosValidationName],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
 		Vk.Device.create physicalDevice devCreateInfo nil' \dvc ->

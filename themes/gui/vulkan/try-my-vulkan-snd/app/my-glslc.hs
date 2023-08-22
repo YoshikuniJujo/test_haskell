@@ -6,7 +6,6 @@
 
 module Main where
 
-import qualified Gpu.Vulkan.Layer as Vk.Layer
 import Control.Monad
 import System.Environment
 import System.Exit
