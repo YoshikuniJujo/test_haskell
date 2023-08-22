@@ -69,7 +69,6 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 
-import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import System.Random
@@ -168,14 +167,14 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName] }
 	
 dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qFam = Vk.Dvc.CreateInfo {
 	Vk.Dvc.createInfoNext = TMaybe.N,
 	Vk.Dvc.createInfoFlags = def,
 	Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton queueInfo,
-	Vk.Dvc.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName],
+	Vk.Dvc.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName],
 	Vk.Dvc.createInfoEnabledExtensionNames = [],
 	Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	where queueInfo = Vk.Dvc.QueueCreateInfo {

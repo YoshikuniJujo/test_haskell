@@ -36,6 +36,7 @@ dependencies:
 - try-storable-generic
 - ranged-list
 - typelevel-tools
+- temporary
 
 ghc-options:
 - -Wall

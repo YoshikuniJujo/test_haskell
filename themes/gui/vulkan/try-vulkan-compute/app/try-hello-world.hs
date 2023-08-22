@@ -63,7 +63,6 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DSLyt
 
-import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 ---------------------------------------------------------------------------
@@ -100,13 +99,13 @@ withDevice f = Vk.Inst.create instInfo nil' \inst -> do
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName] }
 	
 dvcInfo :: Vk.QFm.Index -> Vk.Dv.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qfi = Vk.Dv.CreateInfo {
 	Vk.Dv.createInfoNext = TMaybe.N, Vk.Dv.createInfoFlags = zeroBits,
 	Vk.Dv.createInfoQueueCreateInfos = HL.Singleton qinfo,
-	Vk.Dv.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName],
+	Vk.Dv.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName],
 	Vk.Dv.createInfoEnabledExtensionNames = [],
 	Vk.Dv.createInfoEnabledFeatures = Nothing }
 	where qinfo = Vk.Dv.QueueCreateInfo {

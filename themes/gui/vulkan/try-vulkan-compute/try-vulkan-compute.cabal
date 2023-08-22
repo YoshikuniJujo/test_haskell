@@ -49,6 +49,7 @@ library
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -75,6 +76,7 @@ executable try-bitonic-sort
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -102,6 +104,7 @@ executable try-bitonic-sort-cpu
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -129,6 +132,7 @@ executable try-bitonic-sort-new
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -156,6 +160,7 @@ executable try-data-list-sort
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -183,6 +188,7 @@ executable try-hello
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -210,6 +216,7 @@ executable try-hello-world
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -237,6 +244,7 @@ executable try-mandelbrot
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -264,6 +272,7 @@ executable try-mandelbrot-cpu
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -291,6 +300,7 @@ executable try-mandelbrot-hs
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -318,6 +328,7 @@ executable try-push-constant
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -345,6 +356,7 @@ executable try-quick-sort
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -372,6 +384,7 @@ executable try-saitan-simple
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
@@ -400,6 +413,7 @@ test-suite try-vulkan-compute-test
     , parallel
     , random
     , ranged-list
+    , temporary
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
