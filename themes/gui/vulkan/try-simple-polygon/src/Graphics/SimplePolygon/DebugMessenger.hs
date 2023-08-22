@@ -14,13 +14,12 @@ import Data.List qualified as L
 import Data.Text qualified as Txt
 import Data.Text.IO qualified as Txt
 import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Layer qualified as Vk.Layer
 import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 
 validationLayers :: [Txt.Text]
-validationLayers = [Vk.Layer.khronosValidationName]
+validationLayers = [Vk.layerKhronosValidationName]
 
 checkLayer :: IO Bool
 checkLayer = null

@@ -156,8 +156,6 @@ import Vertex.Wavefront
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 
-import Gpu.Vulkan.Layer qualified as Vk.Layer
-
 main :: IO ()
 main = do
 	txfp : mdfp : mnld : _ <- getArgs
@@ -230,7 +228,7 @@ createInstance ev f = do
 	Vk.Ist.create createInfo nil' \i -> f i
 
 validationLayers :: [Txt.Text]
-validationLayers = [Vk.Layer.khronosValidationName]
+validationLayers = [Vk.layerKhronosValidationName]
 
 run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdfp mnld w inst g =

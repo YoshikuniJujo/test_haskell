@@ -138,8 +138,6 @@ import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 
-import Gpu.Vulkan.Layer qualified as Vk.Layer
-
 main :: IO ()
 main = do
 	g <- newFramebufferResized
@@ -197,7 +195,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Txt.Text]
-validationLayers = [Vk.Layer.khronosValidationName]
+validationLayers = [Vk.layerKhronosValidationName]
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
