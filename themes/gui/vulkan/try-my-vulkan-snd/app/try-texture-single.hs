@@ -48,7 +48,6 @@ import Codec.Picture
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
-import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
