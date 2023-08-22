@@ -12,7 +12,7 @@ module Gpu.Vulkan.Khr.Swapchain (
 
 	-- * EXTENSION NAME
 
-	M.extensionName,
+	extensionName,
 
 	-- * CREATE
 
@@ -45,6 +45,9 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
+
+extensionName :: C.ExtensionName
+extensionName = C.ExtensionName M.extensionName
 
 create :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
