@@ -45,7 +45,6 @@ import Data.Time
 
 import qualified Data.List.NonEmpty as NE
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
@@ -132,6 +131,7 @@ import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 import Graphics.SimplePolygon.Instance qualified as Ist
+import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
 main :: IO ()
@@ -208,7 +208,7 @@ initWindow frszd = do
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
 run w inst g cev =
-	createSurface w inst \sfc ->
+	Sfc.create inst w \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChainNew w sfc phdv qfis dv
@@ -229,10 +229,6 @@ run w inst g cev =
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm cev
-
-createSurface :: Glfw.Window -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.createWindowSurface ist win nil' \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, PhDvc.QueueFamilyIndices)

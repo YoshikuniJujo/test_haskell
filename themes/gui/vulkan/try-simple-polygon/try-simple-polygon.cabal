@@ -28,6 +28,7 @@ library
       Graphics.SimplePolygon.DebugMessenger
       Graphics.SimplePolygon.Instance
       Graphics.SimplePolygon.PhysicalDevice
+      Graphics.SimplePolygon.Surface
       ThEnv
       Tools
       Vertex

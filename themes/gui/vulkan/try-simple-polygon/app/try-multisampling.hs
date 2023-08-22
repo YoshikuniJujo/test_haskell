@@ -55,7 +55,6 @@ import Codec.Picture
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic as GStorable
 
@@ -150,6 +149,7 @@ import Vertex.Wavefront
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 import Graphics.SimplePolygon.Instance qualified as Ist
+import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
 main :: IO ()
@@ -195,7 +195,7 @@ initWindow frszd = do
 
 run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdfp mnld w inst g =
-	createSurface w inst \sfc ->
+	Sfc.create inst w \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis, mss) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
@@ -227,10 +227,6 @@ run txfp mdfp mnld w inst g =
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		(clrimg, clrimgm, clrimgvw, mss)
 		(dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
-
-createSurface :: Glfw.Window -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.createWindowSurface ist win nil' \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, PhDvc.QueueFamilyIndices, Vk.Sample.CountFlags)
