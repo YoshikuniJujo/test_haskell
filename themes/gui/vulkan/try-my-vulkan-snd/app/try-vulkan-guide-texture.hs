@@ -49,7 +49,6 @@ import System.Environment
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Data.ByteString as BS
-import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
@@ -195,17 +194,17 @@ withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
 	when enableValidationLayers $ bool (error msg) (pure ()) =<< null
-		. ([Vk.layerKhronosValidationName] \\)
+		. ([Vk.layerNameKhronosValidation] \\)
 		. (Vk.layerPropertiesLayerName <$>)
 		<$> Vk.Ist.M.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers
+	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers . (Vk.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	instInfo enableValidationLayers exts \ci ->
 		Vk.Ist.create ci nil' f
 	where
 	msg = "validation layers requested, but not available!"
 
-instInfo :: Bool -> [Txt.Text] -> (
+instInfo :: Bool -> [Vk.ExtensionName] -> (
 	forall mn . WithPoked (TMaybe.M mn) => Vk.Ist.M.CreateInfo mn 'Nothing -> b
 	) -> b
 instInfo b exts f = istCreateInfoNext b \mn ->
@@ -214,7 +213,7 @@ instInfo b exts f = istCreateInfoNext b \mn ->
 		Vk.Ist.M.createInfoFlags = zeroBits,
 		Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 		Vk.Ist.M.createInfoEnabledLayerNames = bool
-			[] [Vk.layerKhronosValidationName] enableValidationLayers,
+			[] [Vk.layerNameKhronosValidation] enableValidationLayers,
 		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
 	where
 	appInfo = Vk.ApplicationInfo {
@@ -327,7 +326,7 @@ checkDeviceExtensionSupport dv = null
 	. (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
 		<$> Vk.Phd.enumerateExtensionProperties dv Nothing
 
-deviceExtensions :: [Txt.Text]
+deviceExtensions :: [Vk.ExtensionName]
 deviceExtensions = [Vk.Khr.Swpch.extensionName]
 
 findQueueFamilies :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
@@ -374,7 +373,7 @@ createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qcris ->
 		Vk.Dvc.M.createInfoFlags = zeroBits,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qcris,
 		Vk.Dvc.M.createInfoEnabledLayerNames = bool
-			[] [Vk.layerKhronosValidationName] enableValidationLayers,
+			[] [Vk.layerNameKhronosValidation] enableValidationLayers,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 	drawParFeatures :: Vk.Phd.M.ShaderDrawParametersFeatures 'Nothing

@@ -46,7 +46,6 @@ import System.Environment
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Data.ByteString as BS
-import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
@@ -165,8 +164,8 @@ windowSize = (width, height) where width = 800; height = 600
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
-validationLayers :: [Txt.Text]
-validationLayers = [Vk.layerKhronosValidationName]
+validationLayers :: [Vk.LayerName]
+validationLayers = [Vk.layerNameKhronosValidation]
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -193,12 +192,12 @@ createInstance f = do
 		=<< null . (validationLayers \\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers
+	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers . (Vk.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	Vk.Ist.create (crInfo exts) nil' f
 	where
 	msg = "validation layers requested, but not available!"
-	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo
+	crInfo :: [Vk.ExtensionName] -> Vk.Ist.M.CreateInfo
 		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ())) 'Nothing
 	crInfo exts = Vk.Ist.M.CreateInfo {
 		Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
@@ -341,7 +340,7 @@ checkDeviceExtensionSupport dvc =
 	null . (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
-deviceExtensions :: [Txt.Text]
+deviceExtensions :: [Vk.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapchainSupportDetails = SwapchainSupportDetails {

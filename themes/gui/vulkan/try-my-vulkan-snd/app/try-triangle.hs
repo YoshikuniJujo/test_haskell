@@ -44,7 +44,6 @@ import Data.Color
 import TypeLevel.Nat
 
 import qualified Data.List.NonEmpty as NE
-import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
@@ -154,8 +153,8 @@ windowSize = (width, height) where width = 800; height = 600
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
-validationLayers :: [Txt.Text]
-validationLayers = [Vk.layerKhronosValidationName]
+validationLayers :: [Vk.LayerName]
+validationLayers = [Vk.layerNameKhronosValidation]
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -183,7 +182,7 @@ createInstance f = do
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
+		<$> ((Vk.ExtensionName <$>) <$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions))
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
@@ -318,7 +317,7 @@ checkDeviceExtensionSupport dvc =
 	null . (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
-deviceExtensions :: [Txt.Text]
+deviceExtensions :: [Vk.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {

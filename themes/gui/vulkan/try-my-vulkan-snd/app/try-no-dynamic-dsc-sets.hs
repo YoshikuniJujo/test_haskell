@@ -111,13 +111,13 @@ crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 	instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 	instInfo = def {
 		Vk.Inst.createInfoEnabledLayerNames =
-			[Vk.layerKhronosValidationName] }
+			[Vk.layerNameKhronosValidation] }
 	dvcInfo qf = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
 		Vk.Dvc.createInfoFlags = zeroBits,
 		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qf,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			[Vk.layerKhronosValidationName],
+			[Vk.layerNameKhronosValidation],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	queueInfo qf = Vk.Dvc.QueueCreateInfo {
