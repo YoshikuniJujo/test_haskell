@@ -151,14 +151,14 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName] }
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerNameKhronosValidation] }
 	
 dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qFam = Vk.Dvc.CreateInfo {
 	Vk.Dvc.createInfoNext = TMaybe.N,
 	Vk.Dvc.createInfoFlags = def,
 	Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton queueInfo,
-	Vk.Dvc.createInfoEnabledLayerNames = [Vk.layerKhronosValidationName],
+	Vk.Dvc.createInfoEnabledLayerNames = [Vk.layerNameKhronosValidation],
 	Vk.Dvc.createInfoEnabledExtensionNames = [],
 	Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	where queueInfo = Vk.Dvc.QueueCreateInfo {
