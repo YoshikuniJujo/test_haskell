@@ -42,6 +42,7 @@ library
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-gpu-vulkan
@@ -76,6 +77,7 @@ executable try-cube-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-gpu-vulkan
@@ -111,6 +113,7 @@ executable try-gamepad-button
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-gpu-vulkan
@@ -146,6 +149,7 @@ executable try-pyramid-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-gpu-vulkan
@@ -181,6 +185,7 @@ executable try-rectangle-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-gpu-vulkan
@@ -216,6 +221,7 @@ executable try-triangle-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-gpu-vulkan
@@ -251,6 +257,7 @@ test-suite try-vulkan-graphics-test
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-gpu-vulkan

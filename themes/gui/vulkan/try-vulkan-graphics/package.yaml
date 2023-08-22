@@ -43,6 +43,7 @@ dependencies:
 - union-color
 - ranged-list
 - typelevel-tools
+- temporary
 
 ghc-options:
 - -Wall
