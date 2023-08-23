@@ -192,7 +192,7 @@ validationLayers = [Vk.layerNameKhronosValidation]
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
 run w inst g cev =
-	Sfc.create inst w \sfc ->
+	Sfc.create inst (Win.W w undefined) \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChainNew w sfc phdv qfis dv

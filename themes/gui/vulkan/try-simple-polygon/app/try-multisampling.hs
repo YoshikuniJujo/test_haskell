@@ -151,16 +151,6 @@ import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
-main :: IO ()
-main = getArgs >>= \case
-	[txfp, mdfp, mnld] ->
-		MyImage <$> readRgba8 txfp >>= \tximg ->
-		Win.create windowSize windowName \(Win.W win g) ->
-		Ist.create enableValidationLayers \inst ->
-		run' enableValidationLayers LeaveFrontFaceCounterClockwise
-			tximg mdfp (read mnld) win inst g
-	_ -> error "bad command line argument"
-
 type WVertex = GStorable.W Vertex
 type FramebufferResized = IORef Bool
 
@@ -176,16 +166,29 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
-run' :: BObj.IsImage img => Bool -> Culling -> img -> FilePath -> Float ->
-	Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run' vld cll img mdfp mnld w inst g =
-	bool id (DbgMsngr.setup inst) vld $ run vld cll img mdfp mnld w inst g
+main :: IO ()
+main = getArgs >>= \case
+	[txfp, mdfp] ->
+		Win.create windowSize windowName \w ->
+		Ist.create enableValidationLayers \inst ->
+		Sfc.create inst w \sfc ->
+		pickPhysicalDevice inst sfc >>= \pd ->
+		MyImage <$> readRgba8 txfp >>= \tximg ->
+		loadModel mdfp >>= \mdl ->
+		displayTex enableValidationLayers LeaveFrontFaceCounterClockwise
+			w inst sfc pd tximg mdl
+	_ -> error "bad command line argument"
 
-run :: BObj.IsImage img => Bool -> Culling -> img -> FilePath -> Float ->
-	Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run vld cll img mdfp mnld w inst g =
-	Sfc.create inst w \sfc ->
-	pickPhysicalDevice inst sfc >>= \(phdv, qfis, mss) ->
+displayTex :: BObj.IsImage img => Bool -> Culling ->
+	Win.W -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
+	img -> (V.Vector WVertex, V.Vector Word32) -> IO ()
+displayTex vld cll (Win.W w g) inst sfc pd img mdl =
+	bool id (DbgMsngr.setup inst) vld $ run vld cll img mdl 0 w g sfc pd
+
+run :: BObj.IsImage img => Bool -> Culling -> img -> (V.Vector WVertex, V.Vector Word32) -> Float ->
+	Glfw.Window -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
+run vld cll img (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
+	getMaxUsableSampleCount phdv >>= \mss ->
 	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
@@ -204,7 +207,6 @@ run vld cll img mdfp mnld w inst g =
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit mplvs
 		\(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
-	loadModel mdfp >>= \(vtcs, idcs) ->
 	createVertexBuffer phdv dv gq cp vtcs \vb ->
 	createIndexBuffer phdv dv gq cp idcs \ib ->
 	createDescriptorPool dv \dscp ->
@@ -217,25 +219,10 @@ run vld cll img mdfp mnld w inst g =
 		(clrimg, clrimgm, clrimgvw, mss)
 		(dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
 
-pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, PhDvc.QueueFamilyIndices, Vk.Sample.CountFlags)
+pickPhysicalDevice :: Vk.Ist.I si -> Vk.Khr.Surface.S ss -> IO PhDvc.P
 pickPhysicalDevice ist sfc = PhDvc.enumerate ist sfc >>= \case
 	[] -> error "failed to find a suitable GPU"
-	PhDvc.P p q : _ -> do
-		sc <- getMaxUsableSampleCount p
-		pure (p, q, sc)
-
-{-
-	putStrLn "PICK PHYSICAL DEVICE"
-	dvcs <- Vk.PhDvc.enumerate ist
-	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
-	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
-		Just (p, q) -> do
-			sc <- getMaxUsableSampleCount p
-			print sc
-			pure (p, q, sc)
-		Nothing -> error "failed to find a suitable GPU!"
-		-}
+	pd : _ -> pure pd
 
 getMaxUsableSampleCount :: Vk.PhDvc.P -> IO Vk.Sample.CountFlags
 getMaxUsableSampleCount phdvc = do
