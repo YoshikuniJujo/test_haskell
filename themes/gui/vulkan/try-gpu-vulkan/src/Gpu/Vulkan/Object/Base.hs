@@ -63,7 +63,8 @@ type Alignment = Nat
 
 data ObjectType = AtomT | ListT | ImageT deriving Show
 
-class IsImage img where
+class (S.Storable (ImagePixel img), T.FormatToValue (ImageFormat img)) =>
+	IsImage img where
 	type ImagePixel img
 	type ImageFormat img :: T.Format
 	imageRow :: img -> Device.M.Size
@@ -122,16 +123,14 @@ instance (S.Storable t, KnownNat algn) => Store t ((Atom algn t _nm)) where
 	load p (LengthAtom) = S.peek p
 	length _ = LengthAtom
 
-instance (
-	KnownNat algn,
-	MonoFoldable v, Seq.IsSequence v, S.Storable t, Element v ~ t ) =>
+instance (KnownNat algn, Seq.IsSequence v, S.Storable t, Element v ~ t) =>
 	Store v ((List algn t _nm)) where
 	store p ((LengthList (fromIntegral -> n))) xs =
 		pokeArray p . take n $ otoList xs
 	load p (LengthList (fromIntegral -> n)) = Seq.fromList <$> peekArray n p
 	length = LengthList . fromIntegral . olength
 
-instance (KnownNat algn, IsImage img, S.Storable (ImagePixel img)) =>
+instance (KnownNat algn, IsImage img) =>
 	Store img ((Image algn img nm)) where
 	store p0 (LengthImage (fromIntegral -> r) (fromIntegral -> w) _ _) img =
 		for_ (zip (iterate (`plusPtr` s) p0) $ imageBody img)
