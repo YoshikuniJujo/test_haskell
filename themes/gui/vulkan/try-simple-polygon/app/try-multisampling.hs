@@ -158,8 +158,8 @@ main = getArgs >>= \case
 		Win.create windowSize windowName \(Win.W win g) ->
 		Ist.create enableValidationLayers \inst ->
 		if enableValidationLayers
-		then DbgMsngr.setup inst $ run tximg mdfp (read mnld) win inst g
-		else run tximg mdfp (read mnld) win inst g
+		then DbgMsngr.setup inst $ run LeaveFrontFaceCounterClockwise tximg mdfp (read mnld) win inst g
+		else run LeaveFrontFaceCounterClockwise tximg mdfp (read mnld) win inst g
 	_ -> error "bad command line argument"
 
 type WVertex = GStorable.W Vertex
@@ -177,9 +177,9 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
-run :: BObj.IsImage img => img -> FilePath -> Float ->
+run :: BObj.IsImage img => Culling -> img -> FilePath -> Float ->
 	Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run img mdfp mnld w inst g =
+run cll img mdfp mnld w inst g =
 	Sfc.create inst w \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis, mss) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -192,7 +192,7 @@ run img mdfp mnld w inst g =
 	createColorResources @scifmt phdv dv ext mss \clrimg clrimgm clrimgvw ->
 	createRenderPass @scifmt @dptfmt dv mss \rp ->
 	createPipelineLayout' dv \dscslyt ppllyt ->
-	createGraphicsPipeline' dv ext rp ppllyt mss \gpl ->
+	createGraphicsPipeline cll dv ext rp ppllyt mss \gpl ->
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext mss \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs clrimgvw dptImgVw \fbs ->
@@ -209,7 +209,7 @@ run img mdfp mnld w inst g =
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
+	mainLoop cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		(clrimg, clrimgm, clrimgvw, mss)
 		(dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
 
@@ -581,30 +581,30 @@ createPipelineLayout' dvc f =
 				HeteroParList.Singleton $ U2 dsl } in
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil' $ f dsl
 
-createGraphicsPipeline' :: Vk.Dvc.D sd ->
+createGraphicsPipeline :: Culling -> Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
-createGraphicsPipeline' dvc sce rp ppllyt mss f =
+createGraphicsPipeline cll dvc sce rp ppllyt mss f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
 			nil' \(U3 gpl :** HeteroParList.Nil) -> f gpl
-	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
+	where pplInfo = mkGraphicsPipelineCreateInfo cll sce rp ppllyt mss
 
-recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
+recreateGraphicsPipeline :: Culling -> Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
-recreateGraphicsPipeline' dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.recreateGs
+recreateGraphicsPipeline cll dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.recreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U3 gpls :** HeteroParList.Nil)
-	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
+	where pplInfo = mkGraphicsPipelineCreateInfo cll sce rp ppllyt mss
 
-mkGraphicsPipelineCreateInfo' ::
+mkGraphicsPipelineCreateInfo :: Culling ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
@@ -614,14 +614,14 @@ mkGraphicsPipelineCreateInfo' ::
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', sbtss')
-mkGraphicsPipelineCreateInfo' sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfo {
+mkGraphicsPipelineCreateInfo cll sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Graphics.createInfoStages = shaderStages,
 	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ U3 def,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just inputAssembly,
 	Vk.Ppl.Graphics.createInfoViewportState = Just $ mkViewportState sce,
-	Vk.Ppl.Graphics.createInfoRasterizationState = Just rasterizer,
+	Vk.Ppl.Graphics.createInfoRasterizationState = Just $ rasterizer cll,
 	Vk.Ppl.Graphics.createInfoMultisampleState = Just $ multisampling mss,
 	Vk.Ppl.Graphics.createInfoDepthStencilState = Just depthStencil,
 	Vk.Ppl.Graphics.createInfoColorBlendState = Just colorBlending,
@@ -689,20 +689,32 @@ mkViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
 	scissor = Vk.Rect2d {
 		Vk.rect2dOffset = Vk.Offset2d 0 0, Vk.rect2dExtent = sce }
 
-rasterizer :: Vk.Ppl.RstSt.CreateInfo 'Nothing
-rasterizer = Vk.Ppl.RstSt.CreateInfo {
+rasterizer :: Culling -> Vk.Ppl.RstSt.CreateInfo 'Nothing
+rasterizer cll = Vk.Ppl.RstSt.CreateInfo {
 	Vk.Ppl.RstSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.RstSt.createInfoFlags = zeroBits,
 	Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
 	Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
 	Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
 	Vk.Ppl.RstSt.createInfoLineWidth = 1,
-	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
-	Vk.Ppl.RstSt.createInfoFrontFace = Vk.FrontFaceCounterClockwise,
+	Vk.Ppl.RstSt.createInfoCullMode = cm,
+	Vk.Ppl.RstSt.createInfoFrontFace = ff,
 	Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
 	Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
 	Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 	Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
+	where (cm, ff) = cullingToCullModes cll
+
+data Culling =
+	NoCulling | LeaveFrontFaceCounterClockwise | LeaveFrontFaceClockwise
+	deriving Show
+
+cullingToCullModes :: Culling -> (Vk.CullModeFlags, Vk.FrontFace)
+cullingToCullModes = \case
+	NoCulling -> (Vk.CullModeNone, Vk.FrontFaceCounterClockwise)
+	LeaveFrontFaceCounterClockwise ->
+		(Vk.CullModeBackBit, Vk.FrontFaceCounterClockwise)
+	LeaveFrontFaceClockwise -> (Vk.CullModeBackBit, Vk.FrontFaceClockwise)
 
 multisampling :: Vk.Sample.CountFlags -> Vk.Ppl.MltSmplSt.CreateInfo 'Nothing
 multisampling mss = Vk.Ppl.MltSmplSt.CreateInfo {
@@ -1675,7 +1687,7 @@ mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs,
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
-	HeteroParList.HomoList '() vss ) =>
+	HeteroParList.HomoList '() vss ) => Culling ->
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1700,11 +1712,11 @@ mainLoop :: (
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	UTCTime ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss tm0 = do
+mainLoop cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss tm0 = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
-		runLoop w sfc phdvc qfis dvc gq pq
+		runLoop cll w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss
 			(realToFrac $ tm `diffUTCTime` tm0)
 			cf (`loop` cfs)
@@ -1714,7 +1726,7 @@ runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs,
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
-	HeteroParList.HomoList '() vss) =>
+	HeteroParList.HomoList '() vss) => Culling ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
@@ -1738,14 +1750,14 @@ runLoop :: (
 	Float ->
 	Int ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext
+runLoop cll win sfc phdvc qfis dvc gq pq sc frszd ext
 	scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs
 	ubs ums dscss tm cf loop = do
-	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
+	catchAndRecreate cll win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs iasrfsifs ubs ums dscss tm cf
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
+		(loop =<< recreateSwapChainEtc cll
 			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs)
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs slyts sds . (
@@ -1825,7 +1837,7 @@ catchAndSerialize =
 
 catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs ) =>
+	RecreateFramebuffers sis sfs ) => Culling ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
@@ -1841,18 +1853,18 @@ catchAndRecreate :: (
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop act =
+catchAndRecreate cll win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapChainEtc
+	\_ -> loop =<< recreateSwapChainEtc cll
 		win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs
 
 recreateSwapChainEtc :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs ) =>
+	RecreateFramebuffers sis sfs ) => Culling ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
@@ -1868,7 +1880,7 @@ recreateSwapChainEtc :: (
 	ColorResources clnm scfmt clrsi clrsm clrsiv ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	IO Vk.Extent2d
-recreateSwapChainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp
+recreateSwapChainEtc cll win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp
 	(clrimg, clrimgm, clrimgvw, mss) (dptImg, dptImgMem, dptImgVw) = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
@@ -1879,7 +1891,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp
 			recreateImageViews dvc imgs scivs
 		recreateColorResources phdvc dvc ext mss clrimg clrimgm clrimgvw
 		recreateDepthResources phdvc dvc gq cp ext mss dptImg dptImgMem dptImgVw
-		recreateGraphicsPipeline' dvc ext rp ppllyt mss gpl
+		recreateGraphicsPipeline cll dvc ext rp ppllyt mss gpl
 		recreateFramebuffers dvc ext rp scivs clrimgvw dptImgVw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
