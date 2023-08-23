@@ -154,20 +154,18 @@ import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
 main :: IO ()
-main = do
-	txfp : mdfp : mnld : _ <- getArgs
+main = getArgs >>= \(txfp : mdfp : mnld : _) ->
 	Win.create windowSize windowName \(Win.W win g) ->
-		Ist.create enableValidationLayers \inst -> do
-			if enableValidationLayers
-				then DbgMsngr.setup inst
-					$ run txfp mdfp (read mnld) win inst g
-				else run txfp mdfp (read mnld) win inst g
+	Ist.create enableValidationLayers \inst ->
+	if enableValidationLayers
+	then DbgMsngr.setup inst $ run txfp mdfp (read mnld) win inst g
+	else run txfp mdfp (read mnld) win inst g
 
 type WVertex = GStorable.W Vertex
 type FramebufferResized = IORef Bool
 
 windowName :: String
-windowName = "Triangle"
+windowName = "TRY MULTISAMPLING"
 
 windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
@@ -180,6 +178,7 @@ maxFramesInFlight = 2
 
 run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdfp mnld w inst g =
+	MyImage <$> readRgba8 txfp >>= \img ->
 	Sfc.create inst w \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis, mss) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -196,7 +195,7 @@ run txfp mdfp mnld w inst g =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext mss \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs clrimgvw dptImgVw \fbs ->
-	createTextureImage phdv dv gq cp txfp \tximg mplvs ->
+	createTextureImage phdv dv gq cp img \tximg mplvs ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit mplvs
 		\(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
@@ -907,35 +906,35 @@ findSupportedFormat phdvc fs tlng fffs = do
 checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
 checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 
-createTextureImage ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> FilePath -> (
+createTextureImage :: forall img sd sc nm a . (
+	KObj.IsImage img, Vk.T.FormatToValue (KObj.ImageFormat img),
+	Storable (KObj.ImagePixel img) ) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img -> (
 		forall si sm .
-		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> Word32 ->
+		Vk.Img.Binded sm si nm (KObj.ImageFormat img) -> Word32 ->
 		IO a ) -> IO a
-createTextureImage phdvc dvc gq cp txfp f = do
-	img <- readRgba8 txfp
-	print . V.length $ imageData img
-	let	wdt_ = imageWidth img
-		hgt_ = imageHeight img
+createTextureImage phdvc dvc gq cp img f = do
+	let	wdt_ = KObj.imageWidth img
+		hgt_ = KObj.imageHeight img
 		wdt, hgt :: Num i => i
 		wdt = fromIntegral wdt_
 		hgt = fromIntegral hgt_
 		mipLevels :: Word32 = floor @Double . logBase 2 $ max wdt hgt
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt mipLevels Vk.Sample.Count1Bit
-		Vk.Img.TilingOptimal
+	createImage @_ @(KObj.ImageFormat img)
+		phdvc dvc wdt hgt mipLevels Vk.Sample.Count1Bit Vk.Img.TilingOptimal
 		(	Vk.Img.UsageTransferSrcBit .|.
 			Vk.Img.UsageTransferDstBit .|.
 			Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit \tximg _txmem -> do
-		createBufferImage @MyImage @_ phdvc dvc
+		createBufferImage @img @_ phdvc dvc
 			(wdt, wdt, hgt, 1)
 			Vk.Bffr.UsageTransferSrcBit
 			(	Vk.Mem.PropertyHostVisibleBit .|.
 				Vk.Mem.PropertyHostCoherentBit )
 			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
+				sm sb "texture-buffer" '[ VObj.Image 1 img inm]) sbm -> do
 			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-				@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
+				@(VObj.Image 1 img inm) dvc sbm zeroBits img
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
@@ -943,6 +942,39 @@ createTextureImage phdvc dvc gq cp txfp f = do
 			copyBufferToImage dvc gq cp sb tximg wdt hgt
 			generateMipmaps phdvc dvc gq cp tximg mipLevels wdt hgt
 			f tximg mipLevels
+
+newtype MyImage = MyImage (Image PixelRGBA8)
+
+instance KObj.IsImage MyImage where
+	type ImagePixel MyImage = MyRgba8
+	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+	imageRow = KObj.imageWidth
+	imageWidth (MyImage img) = fromIntegral $ imageWidth img
+	imageHeight (MyImage img) = fromIntegral $ imageHeight img
+	imageDepth _ = 1
+	imageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
+	imageMake w h _d pss = MyImage $ generateImage
+		(\x y -> let MyRgba8 p = (pss' ! y) ! x in p)
+		(fromIntegral w) (fromIntegral h)
+		where pss' = listArray
+			(0, fromIntegral h - 1)
+			(listArray (0, fromIntegral w - 1) <$> pss)
+
+newtype MyRgba8 = MyRgba8 { _unMyRgba8 :: PixelRGBA8 }
+
+instance Storable MyRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
+		<$> peekArray 4 (castPtr p)
+		where
+		listToTuple4 :: [a] -> (a, a, a, a)
+		listToTuple4 = \case
+			[r, g, b, a] -> (r, g, b, a)
+			_ -> error "The length of the list is not 4"
+	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
 
 checkImageFilterLinearBit ::
 	forall fmt . Vk.T.FormatToValue fmt => Vk.PhDvc.P -> IO ()
@@ -1296,37 +1328,6 @@ imageMemoryInfoBinded pd dvc prps img = do
 	pure Vk.Mem.AllocateInfo {
 		Vk.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
-
-newtype MyImage = MyImage (Image PixelRGBA8)
-
--- type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
-
-newtype MyRgba8 = MyRgba8 { _unMyRgba8 :: PixelRGBA8 }
-
-instance Storable MyRgba8 where
-	sizeOf _ = 4 * sizeOf @Pixel8 undefined
-	alignment _ = alignment @Pixel8 undefined
-	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
-		<$> peekArray 4 (castPtr p)
-	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
-		pokeArray (castPtr p) [r, g, b, a]
-
-listToTuple4 :: [a] -> (a, a, a, a)
-listToTuple4 [r, g, b, a] = (r, g, b, a)
-listToTuple4 _ = error "The length of the list is not 4"
-
-instance KObj.IsImage MyImage where
-	type ImagePixel MyImage = MyRgba8
-	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow = KObj.imageWidth
-	imageWidth (MyImage img) = fromIntegral $ imageWidth img
-	imageHeight (MyImage img) = fromIntegral $ imageHeight img
-	imageDepth _ = 1
-	imageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
-		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	imageMake w h _d pss = MyImage
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
-		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 createTextureSampler ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Float ->
