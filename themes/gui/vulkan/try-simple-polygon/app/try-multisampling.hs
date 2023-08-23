@@ -157,9 +157,8 @@ main = getArgs >>= \case
 		MyImage <$> readRgba8 txfp >>= \tximg ->
 		Win.create windowSize windowName \(Win.W win g) ->
 		Ist.create enableValidationLayers \inst ->
-		if enableValidationLayers
-		then DbgMsngr.setup inst $ run LeaveFrontFaceCounterClockwise tximg mdfp (read mnld) win inst g
-		else run LeaveFrontFaceCounterClockwise tximg mdfp (read mnld) win inst g
+		run' enableValidationLayers LeaveFrontFaceCounterClockwise
+			tximg mdfp (read mnld) win inst g
 	_ -> error "bad command line argument"
 
 type WVertex = GStorable.W Vertex
@@ -177,12 +176,17 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
-run :: BObj.IsImage img => Culling -> img -> FilePath -> Float ->
+run' :: BObj.IsImage img => Bool -> Culling -> img -> FilePath -> Float ->
 	Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run cll img mdfp mnld w inst g =
+run' vld cll img mdfp mnld w inst g =
+	bool id (DbgMsngr.setup inst) vld $ run vld cll img mdfp mnld w inst g
+
+run :: BObj.IsImage img => Bool -> Culling -> img -> FilePath -> Float ->
+	Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
+run vld cll img mdfp mnld w inst g =
 	Sfc.create inst w \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis, mss) ->
-	createLogicalDevice phdv qfis \dv gq pq ->
+	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
@@ -261,16 +265,16 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> (forall sd .
+createLogicalDevice :: Bool -> Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createLogicalDevice phdvc qfis f =
+createLogicalDevice vld phdvc qfis f =
 	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
 	let	createInfo = Vk.Dvc.M.CreateInfo {
 			Vk.Dvc.M.createInfoNext = TMaybe.N,
 			Vk.Dvc.M.createInfoFlags = def,
 			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
+				bool [] validationLayers vld,
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
