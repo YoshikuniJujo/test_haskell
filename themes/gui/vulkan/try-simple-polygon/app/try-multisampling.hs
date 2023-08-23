@@ -185,9 +185,9 @@ displayTex :: BObj.IsImage img => Bool -> Culling ->
 displayTex vld cll (Win.W w g) inst sfc pd img mdl =
 	bool id (DbgMsngr.setup inst) vld $ run vld cll img mdl 0 w g sfc pd
 
-run :: BObj.IsImage img => Bool -> Culling -> img -> (V.Vector WVertex, V.Vector Word32) -> Float ->
+run :: BObj.IsImage tximg => Bool -> Culling -> tximg -> (V.Vector WVertex, V.Vector Word32) -> Float ->
 	Glfw.Window -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
-run vld cll img (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
+run vld cll tximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
 	getMaxUsableSampleCount phdv >>= \mss ->
 	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
@@ -203,18 +203,23 @@ run vld cll img (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext mss \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs clrimgvw dptImgVw \fbs ->
-	createTextureImage phdv dv gq cp img \tximg mplvs ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit mplvs
-		\(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
+
+	createTextureImage phdv dv gq cp tximg \tx mplvs ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit mplvs
+		\(txvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
-	createVertexBuffer phdv dv gq cp vtcs \vb ->
-	createIndexBuffer phdv dv gq cp idcs \ib ->
+
 	createDescriptorPool dv \dscp ->
 	createUniformBuffers @ssmp @siv phdv dv dscslyt maxFramesInFlight \dscslyts ubs ums ->
-	createDescriptorSets @_ @_ @ssmp @siv dv dscp ubs dscslyts tximgvw txsmplr \dscss ->
+
+	createDescriptorSets @_ @_ @ssmp @siv dv dscp ubs dscslyts txvw txsmplr \dscss ->
+
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
+
+	createVertexBuffer phdv dv gq cp vtcs \vb ->
+	createIndexBuffer phdv dv gq cp idcs \ib ->
 	mainLoop cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		(clrimg, clrimgm, clrimgvw, mss)
 		(dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
