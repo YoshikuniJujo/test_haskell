@@ -47,6 +47,8 @@ library
     , bytestring
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -85,6 +87,8 @@ executable try-multisampling
     , bytestring
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -124,6 +128,8 @@ executable try-pyramid-single
     , bytestring
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -162,6 +168,8 @@ executable try-simple-polygon-exe
     , bytestring
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -201,6 +209,8 @@ test-suite try-simple-polygon-test
     , bytestring
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , template-haskell

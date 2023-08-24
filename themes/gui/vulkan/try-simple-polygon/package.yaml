@@ -47,6 +47,8 @@ dependencies:
 - bytestring
 - try-codec-wavefront-obj
 - temporary
+- optparse-declarative
+- mtl
 
 ghc-options:
 - -Wall

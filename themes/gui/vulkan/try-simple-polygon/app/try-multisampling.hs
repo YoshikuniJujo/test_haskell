@@ -49,7 +49,6 @@ import Data.Word
 import Data.Int
 import Data.Color
 import Data.Time
-import System.Environment
 import Codec.Picture
 
 import qualified Data.List.NonEmpty as NE
@@ -151,6 +150,9 @@ import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
+import Options.Declarative hiding (run)
+import Control.Monad.Trans
+
 type WVertex = GStorable.W Vertex
 type FramebufferResized = IORef Bool
 
@@ -167,17 +169,21 @@ maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
 main :: IO ()
-main = getArgs >>= \case
-	[txfp, mdfp] ->
+main = run_ command
+
+command ::
+	Flag "t" '["texture"] "FILEPATH" "texture image file path" FilePath ->
+	Flag "m" '["model"] "FILEPATH" "model file path" FilePath ->
+	Cmd "Try multisampling" ()
+command txfp mdfp = liftIO $
 		Win.create windowSize windowName \w ->
 		Ist.create enableValidationLayers \inst ->
 		Sfc.create inst w \sfc ->
 		pickPhysicalDevice inst sfc >>= \pd ->
-		MyImage <$> readRgba8 txfp >>= \tximg ->
-		loadModel mdfp >>= \mdl ->
+		MyImage <$> readRgba8 (get txfp) >>= \tximg ->
+		loadModel (get mdfp) >>= \mdl ->
 		displayTex enableValidationLayers LeaveFrontFaceCounterClockwise
 			w inst sfc pd tximg mdl
-	_ -> error "bad command line argument"
 
 displayTex :: BObj.IsImage img => Bool -> Culling ->
 	Win.W -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
