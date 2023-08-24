@@ -217,10 +217,9 @@ run vld lb cll tximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
 	createDepthResources phdv dv gq cp ext mss \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs clrimgvw dptImgVw \fbs ->
 
-	createTextureImage phdv dv gq cp tximg \tx mplvs ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit mplvs
-		\(txvw :: Vk.ImgVw.I "texture" txfmt siv) ->
-	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
+	createTexture phdv dv gq cp tximg mnld \
+		(txvw :: Vk.ImgVw.I "texture" txfmt siv)
+		(txsmplr :: Vk.Smplr.S ssmp) ->
 
 	createDescriptorPool dv \dscp ->
 	createUniformBuffers @ssmp @siv phdv dv dscslyt maxFramesInFlight \dscslyts ubs ums ->
@@ -236,6 +235,18 @@ run vld lb cll tximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
 	mainLoop lb cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		(clrimg, clrimgm, clrimgvw, mss)
 		(dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
+
+createTexture :: BObj.IsImage img =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img -> Float -> (
+		forall siv ss .
+		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  ->
+		Vk.Smplr.S ss -> IO a ) -> IO a
+createTexture phdv dv gq cp tximg mnld f =
+	createTextureImage phdv dv gq cp tximg \tx mplvs ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit mplvs
+		\(txvw :: Vk.ImgVw.I "texture" txfmt siv) ->
+	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
+	f txvw txsmplr
 
 pickPhysicalDevice :: Vk.Ist.I si -> Vk.Khr.Surface.S ss -> IO PhDvc.P
 pickPhysicalDevice ist sfc = PhDvc.enumerate ist sfc >>= \case
@@ -1567,6 +1578,30 @@ instance (
 			HeteroParList.Nil )
 			HeteroParList.Nil
 		update dvc ubs dscss tximgvw txsmp
+
+class UpdateTexture slbtss ssmp siv where
+	updateTexture ::
+		Vk.Dvc.D sd ->
+		HeteroParList.PL (Vk.DscSet.D sds) slbtss ->
+		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv ->
+		Vk.Smplr.S ssmp -> IO ()
+
+instance UpdateTexture '[] ssmp siv where updateTexture _ HeteroParList.Nil _ _ = pure ()
+
+instance (
+	Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[Obj.Atom 256 UniformBufferObject 'Nothing] 0,
+	Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[Obj.Atom 256 UniformBufferObject 'Nothing],
+	UpdateTexture dscss ssmp siv,
+	Vk.DscSet.WriteSourcesToMiddle cs ('Vk.DscSet.WriteSourcesArgImage
+			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0
+	) =>
+	UpdateTexture ('(ds, cs) ': dscss) ssmp siv where
+	updateTexture dvc (dscs :** dscss) tximgvw txsmp = do
+		Vk.DscSet.updateDs dvc (
+			U5 (descriptorWrite1 dscs tximgvw txsmp) :**
+			HeteroParList.Nil )
+			HeteroParList.Nil
+		updateTexture dvc dscss tximgvw txsmp
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.M.TypeIndex
