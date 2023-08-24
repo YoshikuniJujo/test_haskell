@@ -49,6 +49,7 @@ dependencies:
 - temporary
 - optparse-declarative
 - mtl
+- stm
 
 ghc-options:
 - -Wall

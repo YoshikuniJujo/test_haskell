@@ -51,6 +51,7 @@ library
     , optparse-declarative
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -91,6 +92,7 @@ executable try-multisampling
     , optparse-declarative
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -132,6 +134,7 @@ executable try-pyramid-single
     , optparse-declarative
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -172,6 +175,7 @@ executable try-simple-polygon-exe
     , optparse-declarative
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -213,6 +217,7 @@ test-suite try-simple-polygon-test
     , optparse-declarative
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text

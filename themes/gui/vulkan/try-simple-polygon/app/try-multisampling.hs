@@ -153,6 +153,9 @@ import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 import Options.Declarative hiding (run)
 import Control.Monad.Trans
 
+import Control.Concurrent
+import Control.Concurrent.STM
+
 type WVertex = GStorable.W Vertex
 type FramebufferResized = IORef Bool
 
@@ -172,28 +175,32 @@ main :: IO ()
 main = run_ command
 
 command ::
-	Flag "t" '["texture"] "FILEPATH" "texture image file path" FilePath ->
+	Flag "t" '["texture"] "FILEPATH" "texture image file path" [FilePath] ->
 	Flag "m" '["model"] "FILEPATH" "model file path" FilePath ->
 	Cmd "Try multisampling" ()
 command txfp mdfp = liftIO $
-		Win.create windowSize windowName \w ->
-		Ist.create enableValidationLayers \inst ->
-		Sfc.create inst w \sfc ->
-		pickPhysicalDevice inst sfc >>= \pd ->
-		MyImage <$> readRgba8 (get txfp) >>= \tximg ->
-		loadModel (get mdfp) >>= \mdl ->
-		displayTex enableValidationLayers LeaveFrontFaceCounterClockwise
-			w inst sfc pd tximg mdl
+	atomically newTChan >>= \lb ->
+	forkIO (forever do
+		_ <- atomically $ readTChan lb
+		putStrLn "Left Button Down") >>
+	Win.create windowSize windowName \w ->
+	Ist.create enableValidationLayers \inst ->
+	Sfc.create inst w \sfc ->
+	pickPhysicalDevice inst sfc >>= \pd ->
+	MyImage <$> readRgba8 (head $ get txfp) >>= \tximg ->
+	loadModel (get mdfp) >>= \mdl ->
+	displayTex enableValidationLayers lb LeaveFrontFaceCounterClockwise
+		w inst sfc pd tximg mdl
 
-displayTex :: BObj.IsImage img => Bool -> Culling ->
+displayTex :: BObj.IsImage img => Bool -> TChan () -> Culling ->
 	Win.W -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
 	img -> (V.Vector WVertex, V.Vector Word32) -> IO ()
-displayTex vld cll (Win.W w g) inst sfc pd img mdl =
-	bool id (DbgMsngr.setup inst) vld $ run vld cll img mdl 0 w g sfc pd
+displayTex vld lb cll (Win.W w g) inst sfc pd img mdl =
+	bool id (DbgMsngr.setup inst) vld $ run vld lb cll img mdl 0 w g sfc pd
 
-run :: BObj.IsImage tximg => Bool -> Culling -> tximg -> (V.Vector WVertex, V.Vector Word32) -> Float ->
+run :: BObj.IsImage tximg => Bool -> TChan () -> Culling -> tximg -> (V.Vector WVertex, V.Vector Word32) -> Float ->
 	Glfw.Window -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
-run vld cll tximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
+run vld lb cll tximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
 	getMaxUsableSampleCount phdv >>= \mss ->
 	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
@@ -226,7 +233,7 @@ run vld cll tximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
 
 	createVertexBuffer phdv dv gq cp vtcs \vb ->
 	createIndexBuffer phdv dv gq cp idcs \ib ->
-	mainLoop cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
+	mainLoop lb cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		(clrimg, clrimgm, clrimgvw, mss)
 		(dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
 
@@ -1689,8 +1696,8 @@ mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs,
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
-	HeteroParList.HomoList '() vss ) => Culling ->
-	FramebufferResized ->
+	HeteroParList.HomoList '() vss ) =>
+	TChan () -> Culling -> FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
@@ -1714,11 +1721,12 @@ mainLoop :: (
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	UTCTime ->
 	IO ()
-mainLoop cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss tm0 = do
+mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss tm0 = do
+	lbst <- atomically $ newTVar Glfw.MouseButtonState'Released
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
-		runLoop cll w sfc phdvc qfis dvc gq pq
+		runLoop lbst lb cll w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss
 			(realToFrac $ tm `diffUTCTime` tm0)
 			cf (`loop` cfs)
@@ -1728,8 +1736,9 @@ runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs,
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
-	HeteroParList.HomoList '() vss) => Culling ->
-	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	HeteroParList.HomoList '() vss) =>
+	TVar Glfw.MouseButtonState -> TChan () ->
+	Culling -> Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -1752,15 +1761,28 @@ runLoop :: (
 	Float ->
 	Int ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop cll win sfc phdvc qfis dvc gq pq sc frszd ext
+runLoop lbst lb cll win sfc phdvc qfis dvc gq pq sc frszd ext
 	scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs
 	ubs ums dscss tm cf loop = do
 	catchAndRecreate cll win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs iasrfsifs ubs ums dscss tm cf
 	cls <- Glfw.windowShouldClose win
+	mouseButtonDown lbst win Glfw.MouseButton'1 >>= \case
+		True -> atomically $ writeTChan lb ()
+		_ -> pure ()
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc cll
 			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs)
+
+mouseButtonDown ::
+	TVar Glfw.MouseButtonState -> Glfw.Window -> Glfw.MouseButton -> IO Bool
+mouseButtonDown st w b = do
+	now <- Glfw.getMouseButton w b
+	pre <- atomically $ readTVar st <* writeTVar st now
+	case (pre, now) of
+		(	Glfw.MouseButtonState'Released,
+			Glfw.MouseButtonState'Pressed ) -> pure True
+		_ -> pure False
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs slyts sds . (
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
