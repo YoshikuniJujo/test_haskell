@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -10,6 +11,11 @@ main :: IO ()
 main = run_ greet
 
 greet :: Flag "g" '["greet"] "STRING" "greeting message" (Def "Hello" String) ->
+	Flag "l" '["list"] "[STRING]" "list" [String] ->
 	Arg "NAME" String ->
+	Arg "LIST" [String] ->
 	Cmd "Greeting command" ()
-greet msg name = liftIO . putStrLn $ get msg ++ ", " ++ get name ++ "!"
+greet msg flst name lst = liftIO do
+	putStrLn $ get msg ++ ", " ++ get name ++ "!"
+	print $ get flst
+	print $ get lst
