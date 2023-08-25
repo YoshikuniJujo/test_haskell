@@ -176,7 +176,7 @@ main = run_ command
 
 command ::
 	Flag "t" '["texture"] "FILEPATH" "texture image file path" [FilePath] ->
-	Flag "m" '["model"] "FILEPATH" "model file path" FilePath ->
+	Flag "m" '["model"] "FILEPATH" "model file path" [FilePath] ->
 	Cmd "Try multisampling" ()
 command txfp mdfp = liftIO $
 	atomically newTChan >>= \lb ->
@@ -189,20 +189,22 @@ command txfp mdfp = liftIO $
 		_ <- atomically $ readTChan lb
 		putStrLn "Left Button Down"
 		atomically $ writeTChan tctximg ti) >>
-	loadModel (get mdfp) >>= \mdl ->
+	loadModel `mapM` get mdfp >>= \mdls@(mdl0 : mdl1 : _) ->
 	displayTex enableValidationLayers lb LeaveFrontFaceCounterClockwise
-		w inst sfc pd tximg tctximg mdl
+		w inst sfc pd tximg tctximg mdl0 mdl1
 
 displayTex :: BObj.IsImage img => Bool -> TChan () -> Culling ->
 	Win.W -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
-	img -> TChan img -> (V.Vector WVertex, V.Vector Word32) -> IO ()
-displayTex vld lb cll (Win.W w g) inst sfc pd img tctximg mdl =
-	bool id (DbgMsngr.setup inst) vld $ run vld lb cll img tctximg mdl 0 w g sfc pd
+	img -> TChan img -> Model -> Model -> IO ()
+displayTex vld lb cll (Win.W w g) inst sfc pd img tctximg mdl0 mdl1 =
+	bool id (DbgMsngr.setup inst) vld $ run vld lb cll img tctximg mdl0 mdl1 0 w g sfc pd
+
+type Model = (V.Vector WVertex, V.Vector Word32)
 
 run :: BObj.IsImage tximg => Bool -> TChan () -> Culling -> tximg -> TChan tximg ->
-	(V.Vector WVertex, V.Vector Word32) -> Float ->
+	Model -> Model -> Float ->
 	Glfw.Window -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
-run vld lb cll tximg tctximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
+run vld lb cll tximg tctximg mdl0 mdl1 mnld w g sfc (PhDvc.P phdv qfis) =
 	getMaxUsableSampleCount phdv >>= \mss ->
 	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
@@ -232,12 +234,12 @@ run vld lb cll tximg tctximg (vtcs, idcs) mnld w g sfc (PhDvc.P phdv qfis) =
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
 
-	createVertexBuffer phdv dv gq cp vtcs \vb ->
-	createIndexBuffer phdv dv gq cp idcs \ib ->
+	createModel phdv dv gq cp mdl0 \vbib ->
+
 	mainLoop lb cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		tctximg
 		(clrimg, clrimgm, clrimgvw, mss)
-		(dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
+		(dptImg, dptImgMem, dptImgVw) (snd mdl0) vbib cbs sos ubs ums dscss tm
 
 createTexture :: forall slyts ds cs img sd sc a . BObj.IsImage img =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img -> Float -> (
@@ -250,6 +252,21 @@ createTexture phdv dv gq cp tximg mnld f =
 		\(txvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
 	f @siv @ssmp txvw txsmplr
+
+-- createModels ::
+--	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp -> [Model] ->
+
+createModel ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp -> Model ->
+	(forall sm sb sm1 sb1 . (
+		Vk.Bffr.Binded
+			sm sb "vertex-buffer" '[Obj.List 256 WVertex ""],
+		Vk.Bffr.Binded
+			sm1 sb1 "index-buffer" '[Obj.List 256 Word32 ""] ) ->
+		IO a) -> IO a
+createModel phdv dv gq cp (vtcs, idcs) f =
+	createVertexBuffer phdv dv gq cp vtcs \vb ->
+	createIndexBuffer phdv dv gq cp idcs \ib -> f (vb, ib)
 
 pickPhysicalDevice :: Vk.Ist.I si -> Vk.Khr.Surface.S ss -> IO PhDvc.P
 pickPhysicalDevice ist sfc = PhDvc.enumerate ist sfc >>= \case
@@ -1709,15 +1726,19 @@ recordCommandBuffer cb tctximg rp fb sce ppllyt gpl idcs vb ib ubds =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
+
 	Vk.Cmd.bindVertexBuffers cbb
 		(HeteroParList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) >>
 	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word32 @"" ib) >>
+
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
 		(HeteroParList.Singleton $ U2 ubds)
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :** HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
+
 	Vk.Cmd.drawIndexed cbb (fromIntegral $ V.length idcs) 1 0 0 0
+
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf '[
 		'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32,
@@ -1757,8 +1778,8 @@ mainLoop :: (
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	V.Vector Word32 ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List 256 Word32 ""] ->
+	(	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""],
+		Vk.Bffr.Binded sm' sb' nm' '[Obj.List 256 Word32 ""] ) ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	HeteroParList.PL BindedUbo smsbs ->
@@ -1766,7 +1787,7 @@ mainLoop :: (
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	UTCTime ->
 	IO ()
-mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp tctximg crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss tm0 = do
+mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp tctximg crsrcs drsrcs idcs (vb, ib) cbs iasrfsifs ubs ums dscss tm0 = do
 	lbst <- atomically $ newTVar Glfw.MouseButtonState'Released
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
