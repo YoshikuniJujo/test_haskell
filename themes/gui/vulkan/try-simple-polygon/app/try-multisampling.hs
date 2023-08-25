@@ -575,6 +575,10 @@ type AtomUbo s = '(s, '[
 	'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing],
 	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
+type AtomModel s = '(s, '[
+	'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
+	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
+
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.D s '[
 		'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing],
@@ -606,6 +610,37 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
+createDescriptorSetLayout1 :: Vk.Dvc.D sd -> (forall (s :: Type) .
+	Vk.DscSetLyt.D s '[
+		'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
+		'Vk.DscSetLyt.Image
+			'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] -> IO a) ->
+	IO a
+createDescriptorSetLayout1 dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
+	where
+	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
+		'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
+	layoutInfo = Vk.DscSetLyt.CreateInfo {
+		Vk.DscSetLyt.createInfoNext = TMaybe.N,
+		Vk.DscSetLyt.createInfoFlags = zeroBits,
+		Vk.DscSetLyt.createInfoBindings =
+			uboLayoutBinding :**
+			samplerLayoutBinding :** HeteroParList.Nil }
+	uboLayoutBinding :: Vk.DscSetLyt.Binding
+		('Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing])
+	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
+		Vk.DscSetLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeUniformBuffer,
+		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	samplerLayoutBinding :: Vk.DscSetLyt.Binding
+		('Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)])
+	samplerLayoutBinding = Vk.DscSetLyt.BindingImage {
+		Vk.DscSetLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscSetLyt.bindingImageStageFlags =
+			Vk.ShaderStageFragmentBit }
+
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sdsl sl .
 		Vk.DscSetLyt.D sdsl '[
@@ -614,11 +649,12 @@ createPipelineLayout' ::
 		Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
 createPipelineLayout' dvc f =
 	createDescriptorSetLayout dvc \dsl ->
+	createDescriptorSetLayout1 dvc \dsl1 ->
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts =
-				HeteroParList.Singleton $ U2 dsl } in
+				U2 dsl :** HeteroParList.Nil } in
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil' $ f dsl
 
 createGraphicsPipeline :: Culling -> Vk.Dvc.D sd ->
@@ -2032,6 +2068,12 @@ instance Storable UniformBufferObject where
 instance SizeAlignmentList UniformBufferObject
 instance GStorable.G UniformBufferObject
 
+type WModelObject = GStorable.W ModelObject
+data ModelObject = ModelObject { modelObject :: Cglm.Mat4 } deriving (Show, Generic)
+
+instance SizeAlignmentList ModelObject
+instance GStorable.G ModelObject
+
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
@@ -2047,6 +2089,10 @@ layout(binding = 0) uniform UniformBufferObject {
 	mat4 view;
 	mat4 proj;
 	} ubo;
+
+layout(set = 1, binding = 0) uniform UniformBufferObject1 {
+	mat4 model2;
+	} ubo1;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -2075,6 +2121,8 @@ layout(location = 1) in vec2 fragTexCoord;
 layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
+
+layout(set = 1, binding = 1) uniform sampler2D texSampler1;
 
 void
 main()
