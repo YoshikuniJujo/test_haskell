@@ -33,3 +33,15 @@ indexedToRaw (Indexed (lst :: HeteroList ts)) f =
 
 getIndex :: Indexed t -> Int
 getIndex i = indexedToRaw i snd
+
+class ShowHetero ts where showHetero :: HeteroList ts -> String
+instance ShowHetero '[] where showHetero Nil = "Nil"
+
+instance (Show t, ShowHetero ts) => ShowHetero (t ': ts) where
+	showHetero (x :. xs) = show x ++ " :. " ++ showHetero xs
+
+getValue :: String -> (forall t . Show t => t -> a) -> a
+getValue "Int" f = f (8 :: Int)
+getValue "Float" f = f (321 :: Float)
+getValue "Bool" f = f True
+getValue _ f = f ()
