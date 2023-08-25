@@ -806,13 +806,12 @@ createDepthResources phdvc dvc gq cp ext f = do
 	fmt <- findDepthFormat phdvc
 	print fmt
 	print ext
-	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+	Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
 		createImage @_ @fmt phdvc dvc
 			(Vk.extent2dWidth ext) (Vk.extent2dHeight ext)
 			Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 			Vk.Mem.PropertyDeviceLocalBit \dptImg dptImgMem ->
-			createImageView @fmt
-				dvc dptImg Vk.Img.AspectDepthBit \dptImgVw -> do
+		createImageView @fmt dvc dptImg Vk.Img.AspectDepthBit \dptImgVw -> do
 			transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
 				Vk.Img.LayoutDepthStencilAttachmentOptimal
 			f dptImg dptImgMem dptImgVw
