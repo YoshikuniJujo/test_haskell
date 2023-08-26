@@ -222,6 +222,8 @@ run vld lb cll tximg tctximg mdl0 mdl1 mnld w g sfc (PhDvc.P phdv qfis) =
 	createFramebuffers dv ext rp scivs clrimgvw dptImgVw \fbs ->
 
 	createTexture phdv dv gq cp tximg mnld \
+		tx
+		txmem
 		(txvw :: Vk.ImgVw.I "texture" txfmt siv)
 		(txsmplr :: Vk.Smplr.S ssmp) ->
 
@@ -242,19 +244,32 @@ run vld lb cll tximg tctximg mdl0 mdl1 mnld w g sfc (PhDvc.P phdv qfis) =
 	mainLoop lb cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		tctximg
 		(clrimg, clrimgm, clrimgvw, mss)
-		(dptImg, dptImgMem, dptImgVw) (snd mdl0) vbib cbs sos ubs ums dscss ubsNew umsNew dscssNew tm
+		(dptImg, dptImgMem, dptImgVw) (snd mdl0) vbib cbs sos ubs ums dscss ubsNew umsNew dscssNew tm tx txmem txvw txsmplr
 
 createTexture :: forall slyts ds cs img sd sc a . BObj.IsImage img =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img -> Float -> (
-		forall siv ss .
+		forall sm si siv ss .
+		Vk.Img.M.Binded sm si "texture" (BObj.ImageFormat img) ->
+		Vk.Mem.M.M sm '[ '(si,
+			'Vk.Mem.M.ImageArg "texture" (BObj.ImageFormat img))] ->
 		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  ->
 		Vk.Smplr.S ss -> IO a ) -> IO a
 createTexture phdv dv gq cp tximg mnld f =
-	createTextureImage phdv dv gq cp tximg \tx mplvs ->
+	createTextureImage phdv dv gq cp tximg \tx txmem mplvs ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit mplvs
 		\(txvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
-	f @siv @ssmp txvw txsmplr
+	f @_ @_ @siv @ssmp tx txmem txvw txsmplr
+
+recreateTexture :: forall slyts ds cs img sd sc siv si3 sm2 a . BObj.IsImage img =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img ->
+	Vk.Img.M.Binded sm2 si3 "texture" (BObj.ImageFormat img) ->
+	Vk.Mem.M.M sm2 '[ '(si3,
+		'Vk.Mem.M.ImageArg "texture" (BObj.ImageFormat img))] ->
+	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv -> Float -> IO a -> IO ()
+recreateTexture phdv dv gq cp tximg tx txmem txiv mnld act =
+	recreateTextureImage phdv dv gq cp tximg tx txmem >>= \mplvs ->
+	recreateImageView' @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit txiv mplvs act -- mplvs
 
 -- createModels ::
 --	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp -> [Model] ->
@@ -461,6 +476,13 @@ recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO ()
 recreateImageView dvc timg asps iv mplvs =
 	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo timg asps mplvs) nil' iv
+
+recreateImageView' :: Vk.T.FormatToValue ivfmt =>
+	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
+	Vk.Img.AspectFlags ->
+	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO a -> IO ()
+recreateImageView' dvc timg asps iv mplvs =
+	Vk.ImgVw.recreate' dvc (mkImageViewCreateInfo timg asps mplvs) nil' iv
 
 mkImageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
@@ -1004,7 +1026,9 @@ checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 createTextureImage :: forall img sd sc nm a . BObj.IsImage img =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img -> (
 		forall si sm .
-		Vk.Img.Binded sm si nm (BObj.ImageFormat img) -> Word32 ->
+		Vk.Img.Binded sm si nm (BObj.ImageFormat img) ->
+		Vk.Mem.M.M sm '[ '(si, 'Vk.Mem.M.ImageArg nm (BObj.ImageFormat img))] ->
+		Word32 ->
 		IO a ) -> IO a
 createTextureImage phdvc dvc gq cp img f = do
 	let	wdt_ = BObj.imageWidth img
@@ -1018,7 +1042,7 @@ createTextureImage phdvc dvc gq cp img f = do
 		(	Vk.Img.UsageTransferSrcBit .|.
 			Vk.Img.UsageTransferDstBit .|.
 			Vk.Img.UsageSampledBit)
-		Vk.Mem.PropertyDeviceLocalBit \tximg _txmem -> do
+		Vk.Mem.PropertyDeviceLocalBit \tximg txmem -> do
 		createBufferImage @img @_ phdvc dvc
 			(wdt, wdt, hgt, 1)
 			Vk.Bffr.UsageTransferSrcBit
@@ -1034,7 +1058,40 @@ createTextureImage phdvc dvc gq cp img f = do
 				Vk.Img.LayoutTransferDstOptimal mipLevels
 			copyBufferToImage dvc gq cp sb tximg wdt hgt
 			generateMipmaps phdvc dvc gq cp tximg mipLevels wdt hgt
-			f tximg mipLevels
+			f tximg txmem mipLevels
+
+recreateTextureImage :: forall img sd sc nm a sm si . BObj.IsImage img =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img ->
+		Vk.Img.Binded sm si nm (BObj.ImageFormat img) ->
+		Vk.Mem.M.M sm '[ '(si, 'Vk.Mem.M.ImageArg nm (BObj.ImageFormat img))] -> IO Word32
+recreateTextureImage phdvc dvc gq cp img tx txmem = do
+	let	wdt_ = BObj.imageWidth img
+		hgt_ = BObj.imageHeight img
+		wdt, hgt :: Num i => i
+		wdt = fromIntegral wdt_
+		hgt = fromIntegral hgt_
+		mipLevels :: Word32 = floor @Double . logBase 2 $ max wdt hgt
+	recreateImage @(BObj.ImageFormat img)
+		phdvc dvc wdt hgt mipLevels Vk.Sample.Count1Bit Vk.Img.TilingOptimal
+		(	Vk.Img.UsageTransferSrcBit .|.
+			Vk.Img.UsageTransferDstBit .|.
+			Vk.Img.UsageSampledBit) Vk.Mem.PropertyDeviceLocalBit tx txmem
+	createBufferImage @img @_ phdvc dvc
+			(wdt, wdt, hgt, 1)
+			Vk.Bffr.UsageTransferSrcBit
+			(	Vk.Mem.PropertyHostVisibleBit .|.
+				Vk.Mem.PropertyHostCoherentBit )
+			\(sb :: Vk.Bffr.Binded
+				sm2 sb "texture-buffer" '[ Obj.Image 1 img inm]) sbm -> do
+			Vk.Mem.write @"texture-buffer"
+				@(Obj.Image 1 img inm) dvc sbm zeroBits img
+			print sb
+			transitionImageLayout dvc gq cp tx
+				Vk.Img.LayoutUndefined
+				Vk.Img.LayoutTransferDstOptimal mipLevels
+			copyBufferToImage dvc gq cp sb tx wdt hgt
+			generateMipmaps phdvc dvc gq cp tx mipLevels wdt hgt
+	pure mipLevels
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
@@ -1932,9 +1989,13 @@ mainLoop :: (
 	HeteroParList.PL MemoryUboNew smsbsNew ->
 	HeteroParList.PL (Vk.DscSet.D sdsNew) slytsNew ->
 	UTCTime ->
+	Vk.Img.M.Binded sm2 si3 "texture" (BObj.ImageFormat tximg) ->
+	Vk.Mem.M.M sm2 '[ '(si3,
+		'Vk.Mem.M.ImageArg "texture" (BObj.ImageFormat tximg))] ->
+	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2 -> Vk.Smplr.M.S ss2 ->
 	IO ()
 mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp
-	tctximg crsrcs drsrcs idcs (vb, ib) cbs iasrfsifs ubs ums dscss ubsNew umsNew dscssNew tm0 = do
+	tctximg crsrcs drsrcs idcs (vb, ib) cbs iasrfsifs ubs ums dscss ubsNew umsNew dscssNew tm0 tx txmem txiv txsmplr = do
 	lbst <- atomically $ newTVar Glfw.MouseButtonState'Released
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
@@ -1944,14 +2005,14 @@ mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp
 			ubs ums dscss
 			ubsNew umsNew dscssNew
 			(realToFrac $ tm `diffUTCTime` tm0)
-			cf (`loop` cfs)
+			cf tx txmem txiv txsmplr (`loop` cfs)
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: forall
 	tximg scfmt dptfmt sfs slyts slytsNew vss ssfc sd ssc sis sr sl sg sdi sdm
 	sdiv sm sb nm sm' sb' nm' sdsc sdsc' sc clrnm clrsm clrsi clrsiv scb
 	siassrfssfs
-	smsbs smsbsNew sds sdsNew .
+	smsbs smsbsNew sds sdsNew ss2 siv2 sm2 si3 .
 	(
 	BObj.IsImage tximg,
 	UpdateTexture slyts (AtomUbo sdsc),
@@ -1987,22 +2048,27 @@ runLoop :: forall
 	HeteroParList.PL (Vk.DscSet.D sdsNew) slytsNew ->
 	Float ->
 	Int ->
+	Vk.Img.M.Binded sm2 si3 "texture" (BObj.ImageFormat tximg) ->
+	Vk.Mem.M.M sm2 '[ '(si3,
+		'Vk.Mem.M.ImageArg "texture" (BObj.ImageFormat tximg))] ->
+	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2 -> Vk.Smplr.M.S ss2 ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 runLoop lbst lb cll win sfc phdvc qfis dvc gq pq sc frszd ext
 	scivs rp ppllyt gpl fbs cp tctximg crsrcs drsrcs idcs vb ib cbs iasrfsifs
 	ubs ums dscss
 	ubsNew umsNew dscssNew
-	tm cf loop = do
+	tm cf tx txmem txiv txsmplr loop = do
 	mtximg <- atomically (do
 		b <- isEmptyTChan tctximg
 		case b of
 			True -> pure Nothing
 			False -> Just <$> readTChan tctximg)
 	case mtximg of
-		Just tximg -> createTexture phdvc dvc gq cp tximg 0 \
-			(txvw :: Vk.ImgVw.I "texture" txfmt siv)
-			(txsmplr :: Vk.Smplr.S ssmp) -> do
-				updateTexture @slyts @(AtomUbo sdsc) dvc dscss txvw txsmplr
+		Just tximg -> recreateTexture phdvc dvc gq cp tximg tx txmem txiv 0
+				(updateTexture @slyts @(AtomUbo sdsc) dvc dscss txiv txsmplr) >> do
+--			(txvw :: Vk.ImgVw.I "texture" txfmt siv)
+--			(_txsmplr :: Vk.Smplr.S ssmp) -> do
+--				updateTexture @slyts @(AtomUbo sdsc) dvc dscss txiv txsmplr
 				catchAndRecreate cll win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
 					$ drawFrame dvc gq pq tctximg sc ext rp ppllyt gpl fbs idcs vb ib cbs iasrfsifs
 						ubs ums dscss ubsNew umsNew dscssNew tm cf
@@ -2269,8 +2335,8 @@ void
 main()
 {
 //	outColor = texture(texSampler, fragTexCoord * 2.0);
-//	outColor = vec4(fragColor * texture(texSampler, fragTexCoord).rgb, 1.0);
-	outColor = vec4(fragColor * texture(texSampler1, fragTexCoord).rgb, 1.0);
+	outColor = vec4(fragColor * texture(texSampler, fragTexCoord).rgb, 1.0);
+//	outColor = vec4(fragColor * texture(texSampler1, fragTexCoord).rgb, 1.0);
 }
 
 |]
