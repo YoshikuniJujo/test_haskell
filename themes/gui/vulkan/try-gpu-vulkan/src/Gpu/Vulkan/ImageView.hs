@@ -11,7 +11,7 @@ module Gpu.Vulkan.ImageView (
 
 	-- * CREATE
 
-	create, recreate, I, CreateInfo(..)
+	create, recreate, recreate', I, CreateInfo(..)
 
 	) where
 
@@ -77,3 +77,12 @@ recreate :: (
 recreate (Device.D d) ci
 	(AllocationCallbacks.toMiddle -> mac) (I i) =
 	M.recreate d (createInfoToMiddle ci) mac mac i
+
+recreate' :: (
+	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> CreateInfo mn sm si nm ifmt ivfmt ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> I nm ivfmt siv -> IO a -> IO ()
+recreate' (Device.D d) ci
+	(AllocationCallbacks.toMiddle -> mac) (I i) =
+	M.recreate' d (createInfoToMiddle ci) mac mac i
