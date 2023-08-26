@@ -105,9 +105,9 @@ recreate' (Device.D dvc) ci macc macd (I ri) act = alloca \pView ->
 		r <- C.create dvc pci pac pView
 		throwUnlessSuccess $ Result r
 		io <- readIORef ri
+		writeIORef ri =<< peek pView
 		rtn <- act
 		AllocationCallbacks.mToCore macd $ C.destroy dvc io
-		writeIORef ri =<< peek pView
 		pure rtn
 
 destroy :: Device.D -> I -> TPMaybe.M AllocationCallbacks.A md -> IO ()
