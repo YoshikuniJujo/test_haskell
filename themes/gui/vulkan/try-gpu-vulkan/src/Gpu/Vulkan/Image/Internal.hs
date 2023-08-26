@@ -13,7 +13,7 @@ module Gpu.Vulkan.Image.Internal (
 
 	-- * CREATE
 
-	create, recreate, I(..), Binded(..), CreateInfo(..),
+	create, recreate, recreate', I(..), Binded(..), CreateInfo(..),
 
 	-- * GET MEMORY REQUIREMENTS
 
@@ -77,6 +77,16 @@ recreate :: (
 recreate (Device.D mdvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (Binded i) =
 	M.recreate mdvc (createInfoToMiddle ci) macc macc i
+
+recreate' :: (
+	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
+	T.FormatToValue fmt ) =>
+	Device.D sd -> CreateInfo mn fmt ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	Binded sm si nm fmt -> IO a -> IO ()
+recreate' (Device.D mdvc) ci
+	(AllocationCallbacks.toMiddle -> macc) (Binded i) =
+	M.recreate' mdvc (createInfoToMiddle ci) macc macc i
 
 getMemoryRequirements :: Device.D sd -> I si nm fmt -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I img) =
