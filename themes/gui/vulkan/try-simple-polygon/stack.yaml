@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 62ccdd05dd137fa1043fe96224ab37f43ee134a8
+  commit: c5e59003c293fcd62e9e2b01c80f8ffb3e214048
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr

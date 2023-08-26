@@ -268,7 +268,7 @@ recreateTexture :: forall slyts ds cs img sd sc siv si3 sm2 a . BObj.IsImage img
 		'Vk.Mem.M.ImageArg "texture" (BObj.ImageFormat img))] ->
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv -> Float -> IO a -> IO ()
 recreateTexture phdv dv gq cp tximg tx txmem txiv mnld act =
-	recreateTextureImage phdv dv gq cp tximg tx txmem >>= \mplvs ->
+	recreateTextureImage phdv dv gq cp tximg tx txmem \mplvs ->
 	recreateImageView' @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit txiv mplvs act -- mplvs
 
 -- createModels ::
@@ -1063,20 +1063,20 @@ createTextureImage phdvc dvc gq cp img f = do
 recreateTextureImage :: forall img sd sc nm a sm si . BObj.IsImage img =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img ->
 		Vk.Img.Binded sm si nm (BObj.ImageFormat img) ->
-		Vk.Mem.M.M sm '[ '(si, 'Vk.Mem.M.ImageArg nm (BObj.ImageFormat img))] -> IO Word32
-recreateTextureImage phdvc dvc gq cp img tx txmem = do
+		Vk.Mem.M.M sm '[ '(si, 'Vk.Mem.M.ImageArg nm (BObj.ImageFormat img))] -> (Word32 -> IO a) -> IO ()
+recreateTextureImage phdvc dvc gq cp img tx txmem act = do
 	let	wdt_ = BObj.imageWidth img
 		hgt_ = BObj.imageHeight img
 		wdt, hgt :: Num i => i
 		wdt = fromIntegral wdt_
 		hgt = fromIntegral hgt_
 		mipLevels :: Word32 = floor @Double . logBase 2 $ max wdt hgt
-	recreateImage @(BObj.ImageFormat img)
+	recreateImage' @(BObj.ImageFormat img)
 		phdvc dvc wdt hgt mipLevels Vk.Sample.Count1Bit Vk.Img.TilingOptimal
 		(	Vk.Img.UsageTransferSrcBit .|.
 			Vk.Img.UsageTransferDstBit .|.
-			Vk.Img.UsageSampledBit) Vk.Mem.PropertyDeviceLocalBit tx txmem
-	createBufferImage @img @_ phdvc dvc
+			Vk.Img.UsageSampledBit) Vk.Mem.PropertyDeviceLocalBit tx txmem do
+		createBufferImage @img @_ phdvc dvc
 			(wdt, wdt, hgt, 1)
 			Vk.Bffr.UsageTransferSrcBit
 			(	Vk.Mem.PropertyHostVisibleBit .|.
@@ -1091,7 +1091,7 @@ recreateTextureImage phdvc dvc gq cp img tx txmem = do
 				Vk.Img.LayoutTransferDstOptimal mipLevels
 			copyBufferToImage dvc gq cp sb tx wdt hgt
 			generateMipmaps phdvc dvc gq cp tx mipLevels wdt hgt
-	pure mipLevels
+		act mipLevels
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
@@ -1416,6 +1416,19 @@ recreateImage pd dvc wdt hgt mplvs mss tlng usg prps img mem = do
 		(imageInfo wdt hgt mplvs mss tlng usg) nil' img
 	memInfo <- imageMemoryInfoBinded pd dvc prps img
 	imageReallocateBind dvc img memInfo mem
+
+recreateImage' :: Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
+	Vk.Img.Binded sm sb nm fmt ->
+	Vk.Mem.M
+		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] -> IO a -> IO ()
+recreateImage' pd dvc wdt hgt mplvs mss tlng usg prps img mem act = do
+	Vk.Img.recreate' @'Nothing dvc
+		(imageInfo wdt hgt mplvs mss tlng usg) nil' img do
+		memInfo <- imageMemoryInfoBinded pd dvc prps img
+		imageReallocateBind dvc img memInfo mem
+		act
 
 imageInfo ::
 	Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
