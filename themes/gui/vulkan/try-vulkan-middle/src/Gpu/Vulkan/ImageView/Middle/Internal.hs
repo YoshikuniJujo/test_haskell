@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImageView.Middle.Internal (
-	I, CreateInfo(..), create, recreate, destroy,
+	I, CreateInfo(..), create, recreate, recreate', destroy,
 
 	iToCore
 	) where
@@ -94,6 +94,21 @@ recreate (Device.D dvc) ci macc macd (I ri) = alloca \pView ->
 		io <- readIORef ri
 		AllocationCallbacks.mToCore macd $ C.destroy dvc io
 		writeIORef ri =<< peek pView
+
+recreate' :: WithPoked (TMaybe.M mn) =>
+	Device.D -> CreateInfo mn ->
+	TPMaybe.M AllocationCallbacks.A mc -> TPMaybe.M AllocationCallbacks.A md ->
+	I -> IO a -> IO ()
+recreate' (Device.D dvc) ci macc macd (I ri) act = alloca \pView ->
+	createInfoToCore ci \pci ->
+	AllocationCallbacks.mToCore macc \pac -> do
+		r <- C.create dvc pci pac pView
+		throwUnlessSuccess $ Result r
+		io <- readIORef ri
+		rtn <- act
+		AllocationCallbacks.mToCore macd $ C.destroy dvc io
+		writeIORef ri =<< peek pView
+		pure rtn
 
 destroy :: Device.D -> I -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) iv mac = do
