@@ -163,14 +163,15 @@ recreate' :: WithPoked (TMaybe.M mn) =>
 	TPMaybe.M AllocationCallbacks.A mc ->
 	TPMaybe.M AllocationCallbacks.A md ->
 	I -> IO a -> IO ()
-recreate' d@(Device.D dvc) ci macc macd i@(I ri) act = alloca \pimg ->
+recreate' (Device.D dvc) ci macc macd (I ri) act = alloca \pimg ->
 	createInfoToCore ci \pci ->
 	AllocationCallbacks.mToCore macc \pacc -> do
 		r <- C.create dvc pci pacc pimg
 		throwUnlessSuccess $ Result r
+		(_, img) <- readIORef ri
 		writeIORef ri . (ex ,) =<< peek pimg
 		_ <- act
-		destroy d i macd
+		AllocationCallbacks.mToCore macd $ C.destroy dvc img
 	where ex = createInfoExtent ci
 
 getMemoryRequirements :: Device.D -> I -> IO Memory.Requirements
