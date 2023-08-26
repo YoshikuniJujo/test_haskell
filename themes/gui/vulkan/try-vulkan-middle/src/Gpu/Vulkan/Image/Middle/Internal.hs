@@ -13,7 +13,7 @@ module Gpu.Vulkan.Image.Middle.Internal (
 
 	-- * CREATE AND DESTROY
 
-	create, recreate, destroy, I(..), CreateInfo(..),
+	create, recreate, recreate', destroy, I(..), CreateInfo(..),
 
 	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
@@ -156,6 +156,21 @@ recreate d@(Device.D dvc) ci macc macd i@(I ri) = alloca \pimg ->
 		throwUnlessSuccess $ Result r
 		destroy d i macd
 		writeIORef ri . (ex ,) =<< peek pimg
+	where ex = createInfoExtent ci
+
+recreate' :: WithPoked (TMaybe.M mn) =>
+	Device.D -> CreateInfo mn ->
+	TPMaybe.M AllocationCallbacks.A mc ->
+	TPMaybe.M AllocationCallbacks.A md ->
+	I -> IO a -> IO ()
+recreate' d@(Device.D dvc) ci macc macd i@(I ri) act = alloca \pimg ->
+	createInfoToCore ci \pci ->
+	AllocationCallbacks.mToCore macc \pacc -> do
+		r <- C.create dvc pci pacc pimg
+		throwUnlessSuccess $ Result r
+		writeIORef ri . (ex ,) =<< peek pimg
+		_ <- act
+		destroy d i macd
 	where ex = createInfoExtent ci
 
 getMemoryRequirements :: Device.D -> I -> IO Memory.Requirements
