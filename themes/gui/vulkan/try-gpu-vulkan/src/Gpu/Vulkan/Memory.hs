@@ -14,7 +14,7 @@ module Gpu.Vulkan.Memory (
 
 	-- * ALLOCATE AND BIND
 
-	allocateBind, reallocateBind,
+	allocateBind, reallocateBind, reallocateBind',
 
 	-- ** MEMORY
 
@@ -102,6 +102,15 @@ reallocateBind :: (
 	M sm ibargs -> IO ()
 reallocateBind dv ibs ai mac m =
 	reallocate dv ibs ai mac m >> rebindAll dv ibs m 0
+
+reallocateBind' :: (
+	WithPoked (TMaybe.M mn), Rebindable ibargs,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
+	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	M sm ibargs -> IO a -> IO ()
+reallocateBind' dv ibs ai mac m act =
+	reallocate' dv ibs ai mac m $ rebindAll dv ibs m 0 >> act
 
 reallocate :: (
 	WithPoked (TMaybe.M n), Alignments ibargs,
