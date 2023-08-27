@@ -114,6 +114,48 @@ executable try-multisampling
     , vector
   default-language: Haskell2010
 
+executable try-multisampling-with-image-manager
+  main-is: try-multisampling-with-image-manager.hs
+  other-modules:
+      Main
+      Paths_try_simple_polygon
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , mtl
+    , optparse-declarative
+    , ranged-list
+    , size-alignment-list
+    , stm
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , try-codec-wavefront-obj
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-simple-polygon
+    , try-storable-generic
+    , try-storable-peek-poke
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
 executable try-pyramid-single
   main-is: try-pyramid-single.hs
   other-modules:
