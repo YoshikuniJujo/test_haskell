@@ -120,6 +120,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
+  try-texture-image-manager-single:
+    main:                try-texture-image-manager-single.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-my-vulkan-snd
   try-texture:
     main:                try-texture.hs
     source-dirs:         app
