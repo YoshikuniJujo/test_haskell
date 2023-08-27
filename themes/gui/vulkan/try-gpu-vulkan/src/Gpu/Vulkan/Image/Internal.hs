@@ -15,6 +15,10 @@ module Gpu.Vulkan.Image.Internal (
 
 	create, recreate, recreate', I(..), Binded(..), CreateInfo(..),
 
+	-- ** Manage Destruction
+
+	manage, create', M.Manager,
+
 	-- * GET MEMORY REQUIREMENTS
 
 	getMemoryRequirements, getMemoryRequirementsBinded,
@@ -67,6 +71,20 @@ create (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
 	(M.create mdvc (createInfoToMiddle ci) macd)
 	(\i -> M.destroy mdvc i macd)
 	(f .I)
+
+manage :: AllocationCallbacks.ToMiddle mac =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall s . M.Manager s -> IO a) -> IO a
+manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) =
+	M.manage mdvc mac
+
+create' :: (
+	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> M.Manager sm -> CreateInfo mn fmt ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (I sm nm fmt)
+create' (Device.D mdvc) mngr ci (AllocationCallbacks.toMiddle -> macd) =
+	I <$> M.create' mdvc mngr (createInfoToMiddle ci) macd
 
 recreate :: (
 	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
