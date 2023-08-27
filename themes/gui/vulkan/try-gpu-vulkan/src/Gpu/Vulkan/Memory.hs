@@ -115,6 +115,17 @@ reallocate dv@(Device.D mdv) ibs ai (AllocationCallbacks.toMiddle -> mac) m = do
 	M.reallocate mdv mai mac mm
 	writeMBinded m ibs
 
+reallocate' :: (
+	WithPoked (TMaybe.M n), Alignments ibargs,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
+	AllocateInfo n -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	M sm ibargs -> IO a -> IO ()
+reallocate' dv@(Device.D mdv) ibs ai (AllocationCallbacks.toMiddle -> mac) m act = do
+	mai <- reallocateInfoToMiddle dv ibs ai
+	(_, mm) <- readM m
+	M.reallocate' mdv mai mac mm $ writeMBinded m ibs >> act
+
 -- Allocate Info
 
 data AllocateInfo mn = AllocateInfo {
