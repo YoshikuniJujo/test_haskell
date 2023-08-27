@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Memory.Middle.Internal (
-	M(..), mToCore, AllocateInfo(..), allocate, reallocate, free,
+	M(..), mToCore, AllocateInfo(..), allocate, reallocate, reallocate', free,
 	MapFlags(..), map, unmap,
 
 	Requirements(..), requirementsFromCore,
@@ -138,6 +138,20 @@ reallocate d@(Device.D dvc) ai macc m@(M rm) =
 		throwUnlessSuccess $ Result r
 		free d m macc
 		writeIORef rm =<< peek pm
+
+reallocate' :: WithPoked (TMaybe.M mn) =>
+	Device.D -> AllocateInfo mn ->
+	TPMaybe.M AllocationCallbacks.A ma ->
+	M -> IO a -> IO ()
+reallocate' (Device.D dvc) ai macc (M rm) act =
+	alloca \pm -> allocateInfoToCore ai \pai ->
+	AllocationCallbacks.mToCore macc \pac -> do
+		r <- C.allocate dvc pai pac pm
+		throwUnlessSuccess $ Result r
+		mm <- readIORef rm
+		writeIORef rm =<< peek pm
+		_ <- act
+		C.free dvc mm pac
 
 free :: Device.D -> M -> TPMaybe.M AllocationCallbacks.A mf -> IO ()
 free (Device.D dvc) (M mem) mac =
