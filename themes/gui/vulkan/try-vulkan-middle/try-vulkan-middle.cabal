@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-vulkan-middle
-version:        0.1.0.14
+version:        0.1.0.15
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-middle#readme>
 homepage:       https://github.com/githubuser/try-vulkan-middle#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-middle/issues
@@ -172,6 +172,7 @@ library
     , exception-hierarchy
     , monads-tf
     , ranged-list
+    , stm
     , template-haskell
     , text
     , try-hetero-parameter-list
@@ -202,6 +203,7 @@ test-suite try-vulkan-middle-test
     , exception-hierarchy
     , monads-tf
     , ranged-list
+    , stm
     , template-haskell
     , text
     , try-hetero-parameter-list

@@ -6,6 +6,10 @@ module Gpu.Vulkan.Image.Middle (
 
 	create, recreate, recreate', destroy, I, CreateInfo(..),
 
+	-- ** Manage Destruction
+
+	manage, create', Manager,
+
 	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
 	getMemoryRequirements, bindMemory,

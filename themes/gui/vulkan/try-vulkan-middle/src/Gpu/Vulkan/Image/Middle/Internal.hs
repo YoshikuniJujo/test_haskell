@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGe ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGe ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -14,6 +14,10 @@ module Gpu.Vulkan.Image.Middle.Internal (
 	-- * CREATE AND DESTROY
 
 	create, recreate, recreate', destroy, I(..), CreateInfo(..),
+
+	-- ** Manage Destruction
+
+	manage, create', Manager,
 
 	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
@@ -38,6 +42,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke (withPoked, WithPoked, withPoked', withPtrS)
 import Control.Arrow
 import Control.Monad.Cont
+import Control.Concurrent.STM
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.IORef
@@ -143,6 +148,29 @@ create (Device.D dvc) ci mac = I <$> alloca \pimg -> do
 				=<< C.create dvc pci pac pimg
 	newIORef . (ex ,) =<< peek pimg
 	where ex = createInfoExtent ci
+
+manage :: Device.D -> TPMaybe.M AllocationCallbacks.A md ->
+	(forall s . Manager s -> IO a) -> IO a
+manage dvc mac f = do
+	m <- atomically (newTVar [])
+	rtn <- f $ Manager m
+	((\i -> destroy dvc i mac) `mapM_`) =<< atomically (readTVar m)
+	pure rtn
+
+create' :: WithPoked (TMaybe.M mn) => Device.D ->
+	Manager sm -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO I
+create' (Device.D dvc) (Manager is) ci mac = do
+	i <- I <$> alloca \pimg -> do
+		createInfoToCore ci \pci ->
+			AllocationCallbacks.mToCore mac \pac ->
+				throwUnlessSuccess . Result
+					=<< C.create dvc pci pac pimg
+		newIORef . (ex ,) =<< peek pimg
+	atomically $ modifyTVar is (i :)
+	pure i
+	where ex = createInfoExtent ci
+
+newtype Manager s = Manager (TVar [I])
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
