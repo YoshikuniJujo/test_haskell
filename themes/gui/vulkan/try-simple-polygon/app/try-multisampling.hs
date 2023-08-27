@@ -1427,8 +1427,7 @@ recreateImage' pd dvc wdt hgt mplvs mss tlng usg prps img mem act = do
 	Vk.Img.recreate' @'Nothing dvc
 		(imageInfo wdt hgt mplvs mss tlng usg) nil' img do
 		memInfo <- imageMemoryInfoBinded pd dvc prps img
-		imageReallocateBind dvc img memInfo mem
-		act
+		imageReallocateBind' dvc img memInfo mem act
 
 imageInfo ::
 	Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
@@ -1469,6 +1468,16 @@ imageReallocateBind ::
 		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
 	Vk.Mem.reallocateBind @'Nothing dvc
+		(HeteroParList.Singleton . U2 $ Vk.Mem.ImageBinded img) memInfo
+		nil' m
+
+imageReallocateBind' ::
+	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
+	Vk.Mem.AllocateInfo 'Nothing ->
+	Vk.Mem.M
+		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] -> IO a -> IO ()
+imageReallocateBind' dvc img memInfo m =
+	Vk.Mem.reallocateBind' @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.ImageBinded img) memInfo
 		nil' m
 
