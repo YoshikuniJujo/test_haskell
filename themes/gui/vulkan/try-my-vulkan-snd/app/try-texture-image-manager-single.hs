@@ -261,22 +261,34 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 
-	Vk.ImgVw.manage dv nil' \ivmng ->
-
-	createTextureImage phdv dv gq cp \tximg ->
-	Vk.ImgVw.create' @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng (mkImageViewCreateInfo tximg) nil' >>= \tximgvw ->
-	createTextureSampler phdv dv \txsmplr ->
-
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
-	createDescriptorPool dv \dscp ->
-	createDescriptorSet dv dscp ub tximgvw txsmplr dscslyt \ubds ->
+
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
+
+	createTextureSampler phdv dv \txsmplr ->
+	Vk.Img.manage dv nil' \mng -> Vk.Dvc.Mem.manage dv nil' \mmng ->
+	Vk.ImgVw.manage dv nil' \ivmng ->
+
+	createTextureImage' phdv dv mng mmng gq cp >>= \tximg ->
+	Vk.ImgVw.create' @_ @'Vk.T.FormatR8g8b8a8Srgb
+		dv ivmng (mkImageViewCreateInfo tximg) nil' >>= \tximgvw ->
+
+	createDescriptorPool dv \dscp ->
+	createDescriptorSet dv dscp ub tximgvw txsmplr dscslyt \ubds ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+
+createTextureImage ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
+		forall si sm .
+		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
+	IO a
+createTextureImage phdvc dvc gq cp f =
+	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng ->
+		f =<< createTextureImage' phdvc dvc mng mmng gq cp
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -861,39 +873,37 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-createTextureImage ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
-		forall si sm .
-		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
-	IO a
-createTextureImage phdvc dvc gq cp f = do
+createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Img.Manager sim -> Vk.Mem.Manager smm ->
+	Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
+createTextureImage' phdvc dvc mng mmng gq cp = do
 	img <- readRgba8 "../../../../files/images/texture.jpg"
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
-	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng -> do
-		(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng
-			wdt hgt Vk.Img.TilingOptimal
-			(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
-			Vk.Mem.PropertyDeviceLocalBit
-		createBufferImage @MyImage @_ phdvc dvc
-			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
-			Vk.Bffr.UsageTransferSrcBit
-			(	Vk.Mem.PropertyHostVisibleBit .|.
-				Vk.Mem.PropertyHostCoherentBit )
-			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
-			Vk.Dvc.Mem.write @"texture-buffer"
-				@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
-			print sb
-			transitionImageLayout dvc gq cp tximg
-				Vk.Img.LayoutUndefined
-				Vk.Img.LayoutTransferDstOptimal
-			copyBufferToImage dvc gq cp sb tximg wdt hgt
-			transitionImageLayout dvc gq cp tximg
-				Vk.Img.LayoutTransferDstOptimal
-				Vk.Img.LayoutShaderReadOnlyOptimal
-			f tximg
+	(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng
+		wdt hgt Vk.Img.TilingOptimal
+		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
+		Vk.Mem.PropertyDeviceLocalBit
+	createBufferImage @MyImage @_ phdvc dvc
+		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit )
+		\(sb :: Vk.Bffr.Binded
+			sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
+		Vk.Dvc.Mem.write @"texture-buffer"
+			@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
+		print sb
+		transitionImageLayout dvc gq cp tximg
+			Vk.Img.LayoutUndefined
+			Vk.Img.LayoutTransferDstOptimal
+		copyBufferToImage dvc gq cp sb tximg wdt hgt
+		transitionImageLayout dvc gq cp tximg
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutShaderReadOnlyOptimal
+	pure tximg
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
