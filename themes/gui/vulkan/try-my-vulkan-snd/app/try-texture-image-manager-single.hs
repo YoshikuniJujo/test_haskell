@@ -928,7 +928,8 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 			'[ '(si, 'Vk.Mem.ImageArg nm fmt) ] ->
 		IO a) -> IO a
 createImage pd dvc wdt hgt tlng usg prps f =
-	Vk.Img.create @'Nothing dvc imageInfo nil' \img -> do
+	Vk.Img.manage dvc nil' \mng -> do
+	img <- Vk.Img.create' @'Nothing dvc mng imageInfo nil'
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
