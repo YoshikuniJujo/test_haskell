@@ -272,23 +272,15 @@ run w inst g =
 	createTextureSampler phdv dv \txsmplr ->
 	Vk.Img.manage dv nil' \mng -> Vk.Dvc.Mem.manage dv nil' \mmng ->
 	Vk.ImgVw.manage dv nil' \ivmng ->
+	createDescriptorPool dv \dscp ->
+	createDescriptorSet' dv dscp dscslyt \ubds ->
 
 	createTextureImage' phdv dv mng mmng gq cp >>= \tximg ->
 	Vk.ImgVw.create' @_ @'Vk.T.FormatR8g8b8a8Srgb
 		dv ivmng (mkImageViewCreateInfo tximg) nil' >>= \tximgvw ->
+	updateDescriptorSet dv ubds ub tximgvw txsmplr >>
 
-	createDescriptorPool dv \dscp ->
-	createDescriptorSet dv dscp ub tximgvw txsmplr dscslyt \ubds ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
-
-createTextureImage ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
-		forall si sm .
-		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
-	IO a
-createTextureImage phdvc dvc gq cp f =
-	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng ->
-		f =<< createTextureImage' phdvc dvc mng mmng gq cp
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -1149,29 +1141,33 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPool.sizeDescriptorCount = 1 }
 
-createDescriptorSet ::
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss ->
-	Vk.DscSetLyt.D sdsc '[
+createDescriptorSet' ::
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.DscSetLyt.D sdsc '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 	(forall sds . Vk.DscSet.D sds '(sdsc, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
-createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
-	Vk.DscSet.allocateDs dvc allocInfo \(HeteroParList.Singleton dscs) -> do
-	Vk.DscSet.updateDs dvc (
-		U5 (descriptorWrite0 ub dscs) :**
-		U5 (descriptorWrite1 dscs tximgvw txsmp) :**
-		HeteroParList.Nil )
-		HeteroParList.Nil
-	f dscs
+createDescriptorSet' dvc dscp dscslyt f =
+	Vk.DscSet.allocateDs dvc allocInfo \(HeteroParList.Singleton dscs) -> f dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts =
 			HeteroParList.Singleton $ U2 dscslyt }
+
+updateDescriptorSet ::
+	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, '[
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
+	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
+	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss -> IO ()
+updateDescriptorSet dvc dscs ub tximgvw txsmp = do
+	Vk.DscSet.updateDs dvc (
+		U5 (descriptorWrite0 ub dscs) :**
+		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HeteroParList.Nil )
+		HeteroParList.Nil
 
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
