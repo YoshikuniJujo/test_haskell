@@ -82,9 +82,9 @@ manage (Device.D d) (AllocationCallbacks.toMiddle -> mac) = M.manage d mac
 create' :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> M.Manager sm ->
+	Device.D sd -> M.Manager smng ->
 	CreateInfo mn sm si nm ifmt ivfmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (I nm ivfmt sm)
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (I nm ivfmt smng)
 create' (Device.D d) mng ci (AllocationCallbacks.toMiddle -> mac) =
 	I <$> M.create' d mng (createInfoToMiddle ci) mac
 
