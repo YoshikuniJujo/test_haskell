@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -8,6 +9,8 @@
 module Gpu.Vulkan.ImageView.Middle.Internal (
 	I, CreateInfo(..), create, recreate, recreate', destroy,
 
+	manage, create', Manager,
+
 	iToCore
 	) where
 
@@ -15,6 +18,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Control.Concurrent.STM
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.IORef
@@ -81,6 +85,29 @@ create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
 			r <- C.create dvc pci pac pView
 			throwUnlessSuccess $ Result r
 	peek pView
+
+manage :: Device.D -> TPMaybe.M AllocationCallbacks.A mc ->
+	(forall s . Manager s -> IO a) -> IO a
+manage dvc mac f = do
+	mng <- atomically $ newTVar []
+	rtn <- f $ Manager mng
+	((\iv -> destroy dvc iv mac) `mapM_`) =<< atomically (readTVar mng)
+	pure rtn
+
+newtype Manager s = Manager (TVar [I])
+
+create' :: WithPoked (TMaybe.M mn) =>
+	Device.D -> Manager sm ->
+	CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO I
+create' (Device.D dvc) (Manager is) ci mac = do
+	i <- iFromCore =<< alloca \pView -> do
+		createInfoToCore ci \pci ->
+			AllocationCallbacks.mToCore mac \pac -> do
+				r <- C.create dvc pci pac pView
+				throwUnlessSuccess $ Result r
+		peek pView
+	atomically $ modifyTVar is (i :)
+	pure i
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
