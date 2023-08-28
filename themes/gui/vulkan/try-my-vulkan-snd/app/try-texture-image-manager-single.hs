@@ -260,9 +260,14 @@ run w inst g =
 	createGraphicsPipeline' dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
+
+	Vk.ImgVw.manage dv nil' \ivmng ->
+
 	createTextureImage phdv dv gq cp \tximg ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
+	Vk.ImgVw.create' @_ @'Vk.T.FormatR8g8b8a8Srgb
+		dv ivmng (mkImageViewCreateInfo tximg) nil' >>= \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
+
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
