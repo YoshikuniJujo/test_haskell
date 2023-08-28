@@ -16,6 +16,10 @@ module Gpu.Vulkan.Memory (
 
 	allocateBind, reallocateBind, reallocateBind',
 
+	-- ** Manage Destruction
+
+	manage, allocateBind', M.Manager,
+
 	-- ** MEMORY
 
 	M, ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
@@ -91,6 +95,33 @@ allocate dv@(Device.D mdv) ibs ai
 		M.allocate mdv mai mac
 	(\m -> M.free mdv m mac)
 	\m -> f =<< newM ibs m
+
+manage :: AllocationCallbacks.ToMiddle mac =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall s . M.Manager s -> IO a) -> IO a
+manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) = M.manage mdvc mac
+
+allocateBind' :: (
+	WithPoked (TMaybe.M mn), Bindable ibargs,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> M.Manager sm ->
+	HeteroParList.PL (U2 ImageBuffer) ibargs ->
+	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	IO (	HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs,
+		M sm ibargs)
+allocateBind' dv mng ibs ai mac =
+	allocate' dv mng ibs ai mac >>= \m -> (, m) <$> bindAll dv ibs m 0
+
+allocate' :: (
+	WithPoked (TMaybe.M n), Alignments ibargs,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> M.Manager sm ->
+	HeteroParList.PL (U2 ImageBuffer) ibargs ->
+	AllocateInfo n -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	IO (M sm ibargs)
+allocate' dv@(Device.D mdv) mng ibs ai (AllocationCallbacks.toMiddle -> mac) = do
+	mai <- allocateInfoToMiddle dv ibs ai
+	newM ibs =<< M.allocate' mdv mng mai mac
 
 -- Reallocate Bind
 
