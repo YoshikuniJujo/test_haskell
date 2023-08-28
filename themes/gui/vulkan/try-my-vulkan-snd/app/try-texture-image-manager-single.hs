@@ -924,20 +924,30 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
 		Vk.Img.Binded sm si nm fmt ->
-		Vk.Dvc.Mem.M sm
-			'[ '(si, 'Vk.Mem.ImageArg nm fmt) ] ->
-		IO a) -> IO a
+		Vk.Dvc.Mem.M sm '[ '(si, 'Vk.Mem.ImageArg nm fmt)] -> IO a) ->
+	IO a
 createImage pd dvc wdt hgt tlng usg prps f =
-	Vk.Img.manage dvc nil' \mng -> do
+	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng ->
+	uncurry f =<< createImage' pd dvc mng mmng wdt hgt tlng usg prps
+
+createImage' :: forall sim smm nm fmt sd . Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Img.Manager sim -> Vk.Mem.Manager smm ->
+	Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
+		Vk.Img.Binded smm sim nm fmt,
+		Vk.Dvc.Mem.M smm
+			'[ '(sim, 'Vk.Mem.ImageArg nm fmt) ] )
+createImage' pd dvc mng mmng wdt hgt tlng usg prps = do
 	img <- Vk.Img.create' @'Nothing dvc mng imageInfo nil'
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	print mt
-	Vk.Dvc.Mem.allocateBind @'Nothing dvc
-		(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
-		nil' \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd))) m -> do
-		f bnd m
+	(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd)), m) <-
+		Vk.Dvc.Mem.allocateBind' @'Nothing dvc mmng
+			(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
+			nil'
+	pure (bnd, m)
 	where
 	imageInfo = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNext = TMaybe.N,
