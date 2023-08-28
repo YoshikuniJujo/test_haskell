@@ -871,9 +871,11 @@ createTextureImage phdvc dvc gq cp f = do
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Img.TilingOptimal
-		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
-		Vk.Mem.PropertyDeviceLocalBit \tximg _txmem -> do
+	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng -> do
+		(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng
+			wdt hgt Vk.Img.TilingOptimal
+			(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
+			Vk.Mem.PropertyDeviceLocalBit
 		createBufferImage @MyImage @_ phdvc dvc
 			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
 			Vk.Bffr.UsageTransferSrcBit
@@ -892,6 +894,17 @@ createTextureImage phdvc dvc gq cp f = do
 				Vk.Img.LayoutTransferDstOptimal
 				Vk.Img.LayoutShaderReadOnlyOptimal
 			f tximg
+
+createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P ->
+	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
+		Vk.Img.Binded sm si nm fmt ->
+		Vk.Dvc.Mem.M sm '[ '(si, 'Vk.Mem.ImageArg nm fmt)] -> IO a) ->
+	IO a
+createImage pd dvc wdt hgt tlng usg prps f =
+	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng ->
+	uncurry f =<< createImage' pd dvc mng mmng wdt hgt tlng usg prps
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
@@ -924,18 +937,7 @@ instance KObj.IsImage MyImage where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
-createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
-		Vk.Img.Binded sm si nm fmt ->
-		Vk.Dvc.Mem.M sm '[ '(si, 'Vk.Mem.ImageArg nm fmt)] -> IO a) ->
-	IO a
-createImage pd dvc wdt hgt tlng usg prps f =
-	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng ->
-	uncurry f =<< createImage' pd dvc mng mmng wdt hgt tlng usg prps
-
-createImage' :: forall sim smm nm fmt sd . Vk.T.FormatToValue fmt =>
+createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Img.Manager sim -> Vk.Mem.Manager smm ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
