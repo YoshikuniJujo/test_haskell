@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -9,6 +10,9 @@
 
 module Gpu.Vulkan.Memory.Middle.Internal (
 	M(..), mToCore, AllocateInfo(..), allocate, reallocate, reallocate', free,
+
+	manage, allocate', Manager,
+
 	MapFlags(..), map, unmap,
 
 	Requirements(..), requirementsFromCore,
@@ -27,6 +31,7 @@ import Foreign.Marshal.Alloc hiding (free)
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
+import Control.Concurrent.STM
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
@@ -126,6 +131,31 @@ allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
 			r <- C.allocate dvc pai pac pm
 			throwUnlessSuccess $ Result r
 	newIORef =<< peek pm
+
+-- free :: Device.D -> M -> TPMaybe.M AllocationCallbacks.A mf -> IO ()
+
+manage :: Device.D -> TPMaybe.M AllocationCallbacks.A mf ->
+	(forall s . Manager s -> IO a) -> IO a
+manage dvc mac f = do
+	mng <-atomically $ newTVar []
+	rtn <- f $ Manager mng
+	((\m -> free dvc m mac) `mapM_`) =<< atomically (readTVar mng)
+	pure rtn
+
+allocate' :: WithPoked (TMaybe.M mn) =>
+	Device.D -> Manager sm -> AllocateInfo mn ->
+	TPMaybe.M AllocationCallbacks.A ma -> IO M
+allocate' (Device.D dvc) (Manager ms) ai mac = do
+	m <- M <$> alloca \pm -> do
+		allocateInfoToCore ai \pai ->
+			AllocationCallbacks.mToCore mac \pac -> do
+				r <- C.allocate dvc pai pac pm
+				throwUnlessSuccess $ Result r
+		newIORef =<< peek pm
+	atomically $ modifyTVar ms (m :)
+	pure m
+
+newtype Manager s = Manager (TVar [M])
 
 reallocate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> AllocateInfo mn ->
