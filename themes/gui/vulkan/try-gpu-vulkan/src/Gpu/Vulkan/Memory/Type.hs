@@ -13,7 +13,7 @@ module Gpu.Vulkan.Memory.Type (
 
 	-- * TYPE
 
-	M,
+	M(..),
 
 	-- * NEW, READ AND WRITE
 

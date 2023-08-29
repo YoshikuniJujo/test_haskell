@@ -167,9 +167,11 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , data-default
     , mono-traversable
     , size-alignment-list
+    , stm
     , template-haskell
     , text
     , time
@@ -193,9 +195,11 @@ test-suite try-gpu-vulkan-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , data-default
     , mono-traversable
     , size-alignment-list
+    , stm
     , template-haskell
     , text
     , time

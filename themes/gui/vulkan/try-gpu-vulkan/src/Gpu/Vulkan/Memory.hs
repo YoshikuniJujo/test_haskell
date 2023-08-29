@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -18,7 +18,7 @@ module Gpu.Vulkan.Memory (
 
 	-- ** Manage Destruction
 
-	manage, allocateBind', M.Manager,
+	Manager, manage, allocateBind', free, lookup,
 
 	-- ** MEMORY
 
@@ -46,17 +46,20 @@ module Gpu.Vulkan.Memory (
 
 	) where
 
-import Prelude hiding (map, read)
+import Prelude hiding (map, read, lookup)
 
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
+import Control.Concurrent.STM
 import Control.Exception hiding (try)
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Maybe
-import qualified Data.HeteroParList as HeteroParList
+import Data.Map qualified as Map
+import Data.HeteroParList qualified as HeteroParList
+import Data.IORef
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
@@ -98,30 +101,58 @@ allocate dv@(Device.D mdv) ibs ai
 
 manage :: AllocationCallbacks.ToMiddle mac =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . M.Manager s -> IO a) -> IO a
-manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) = M.manage mdvc mac
+	(forall s . Manager s k ibargs -> IO a) -> IO a
+manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) f =
+	M.manage mdvc mac \mmng -> do
+		ibargs <- atomically $ newTVar Map.empty
+		f $ Manager ibargs mmng
 
 allocateBind' :: (
+	Ord k,
 	WithPoked (TMaybe.M mn), Bindable ibargs,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> M.Manager sm ->
+	Device.D sd -> Manager sm k ibargs -> k ->
 	HeteroParList.PL (U2 ImageBuffer) ibargs ->
 	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	IO (	HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs,
-		M sm ibargs)
-allocateBind' dv mng ibs ai mac =
-	allocate' dv mng ibs ai mac >>= \m -> (, m) <$> bindAll dv ibs m 0
+	IO (Either String (
+		HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs,
+		M sm ibargs))
+allocateBind' dv (Manager mib mng) k ibs ai mac = do
+	allocate' dv mng k ibs ai mac >>= \case
+		Left msg -> pure $ Left msg
+		Right m -> do
+			rtn@(_, M iibs _) <- (, m) <$> bindAll dv ibs m 0
+			atomically $ modifyTVar mib (Map.insert k iibs)
+			pure $ Right rtn
 
 allocate' :: (
+	Ord k,
 	WithPoked (TMaybe.M n), Alignments ibargs,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> M.Manager sm ->
+	Device.D sd -> M.Manager sm k -> k ->
 	HeteroParList.PL (U2 ImageBuffer) ibargs ->
 	AllocateInfo n -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	IO (M sm ibargs)
-allocate' dv@(Device.D mdv) mng ibs ai (AllocationCallbacks.toMiddle -> mac) = do
+	IO (Either String (M sm ibargs))
+allocate' dv@(Device.D mdv) mng k ibs ai (AllocationCallbacks.toMiddle -> mac) = do
 	mai <- allocateInfoToMiddle dv ibs ai
-	newM ibs =<< M.allocate' mdv mng mai mac
+	(newM ibs `mapM`) =<< M.allocate' mdv mng k mai mac
+
+free :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
+	Device.D sd -> Manager smng k ibargs -> k ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
+free (Device.D mdv) (Manager _ mng) k (AllocationCallbacks.toMiddle -> mac) =
+	M.free' mdv mng k mac
+
+data Manager s k ibargs = Manager
+	(TVar (Map.Map k (IORef (HeteroParList.PL (U2 ImageBuffer) ibargs))))
+	(M.Manager s k)
+
+lookup :: Ord k =>
+	Manager sm k ibargs -> k -> IO (Maybe (M s ibargs))
+lookup (Manager ibargss mmng) k = do
+	mibargs <- atomically $ Map.lookup k <$> readTVar ibargss
+	mmem <- M.lookup mmng k
+	pure $ M <$> mibargs <*> mmem
 
 -- Reallocate Bind
 
