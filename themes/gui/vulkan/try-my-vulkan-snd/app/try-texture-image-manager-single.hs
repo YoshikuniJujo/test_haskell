@@ -24,6 +24,7 @@ import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
 import Gpu.Vulkan.Object.Base qualified as KObj
@@ -280,10 +281,13 @@ run w inst g =
 		dv ivmng () (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSet dv ubds ub tximgvw txsmplr >>
 
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+	atomically (newTVar Glfw.KeyState'Released) >>= \prej ->
+
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej
 
 {-# COMPLETE AlwaysRight #-}
 
+pattern AlwaysRight :: b -> Either a b
 pattern AlwaysRight x <- Right x
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -1398,15 +1402,17 @@ mainLoop ::
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
+	SyncObjects '(sias, srfs, siff) -> UTCTime ->
+	TVar Glfw.KeyState ->
+	IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 prej = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs
 			rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) loop
+			(realToFrac $ tm `diffUTCTime` tm0) prej loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop ::
@@ -1429,16 +1435,26 @@ runLoop ::
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
+	TVar Glfw.KeyState ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm prej loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs
 		rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
+	keyDown prej win Glfw.Key'J >>= bool (pure ()) (putStrLn "J Down")
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs
 			rp ppllyt gpl fbs)
+
+keyDown :: TVar Glfw.KeyState -> Glfw.Window -> Glfw.Key -> IO Bool
+keyDown st w k = do
+	now <- Glfw.getKey w k
+	pre <- atomically $ readTVar st <* writeTVar st now
+	pure case (pre, now) of
+		(Glfw.KeyState'Released, Glfw.KeyState'Pressed) -> True
+		_ -> False
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->

@@ -54,6 +54,7 @@ library
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -100,6 +101,7 @@ executable my-glslc
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -147,6 +149,7 @@ executable try-allocation-callbacks
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -194,6 +197,7 @@ executable try-copy-descriptor-set
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -241,6 +245,7 @@ executable try-depth-buffering
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -288,6 +293,7 @@ executable try-depth-buffering-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -335,6 +341,7 @@ executable try-dynamic-dsc-sets
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -382,6 +389,7 @@ executable try-generating-mipmaps
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -429,6 +437,7 @@ executable try-generating-mipmaps-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -476,6 +485,7 @@ executable try-hello-world
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -523,6 +533,7 @@ executable try-image-buffer
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -570,6 +581,7 @@ executable try-loading-models
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -617,6 +629,7 @@ executable try-loading-models-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -664,6 +677,7 @@ executable try-multisampling
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -711,6 +725,7 @@ executable try-multisampling-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -758,6 +773,7 @@ executable try-no-dynamic-dsc-sets
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -805,6 +821,7 @@ executable try-pipeline-cache
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -852,6 +869,7 @@ executable try-query
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -899,6 +917,7 @@ executable try-rectangle
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -946,6 +965,7 @@ executable try-rectangle-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -993,6 +1013,7 @@ executable try-saitan
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1040,6 +1061,7 @@ executable try-saitan-float
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1087,6 +1109,7 @@ executable try-saitan-simple
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1134,6 +1157,7 @@ executable try-shaderc
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1181,6 +1205,7 @@ executable try-texel-buffer-float
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1228,6 +1253,7 @@ executable try-texel-buffer-word32
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1275,6 +1301,7 @@ executable try-texture
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1322,6 +1349,7 @@ executable try-texture-image-manager-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1369,6 +1397,7 @@ executable try-texture-immutable-sampler-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1416,6 +1445,7 @@ executable try-texture-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1463,6 +1493,7 @@ executable try-triangle
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1510,6 +1541,7 @@ executable try-triangle-single
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1557,6 +1589,7 @@ executable try-vulkan-guide
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1604,6 +1637,7 @@ executable try-vulkan-guide-dynamic
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1651,6 +1685,7 @@ executable try-vulkan-guide-storage
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1698,6 +1733,7 @@ executable try-vulkan-guide-texture
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1745,6 +1781,7 @@ executable try-wavefront-obj
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1792,6 +1829,7 @@ executable try-yatteiku
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
@@ -1840,6 +1878,7 @@ test-suite try-my-vulkan-snd-test
     , mono-traversable
     , ranged-list
     , size-alignment-list
+    , stm
     , template-haskell
     , temporary
     , text
