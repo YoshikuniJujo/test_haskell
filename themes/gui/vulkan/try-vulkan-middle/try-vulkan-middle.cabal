@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-vulkan-middle
-version:        0.1.0.17
+version:        0.1.0.18
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-middle#readme>
 homepage:       https://github.com/githubuser/try-vulkan-middle#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-middle/issues
@@ -168,6 +168,7 @@ library
       base >=4.7 && <5
     , bytestring
     , c-enum
+    , containers
     , data-default
     , exception-hierarchy
     , monads-tf
@@ -199,6 +200,7 @@ test-suite try-vulkan-middle-test
       base >=4.7 && <5
     , bytestring
     , c-enum
+    , containers
     , data-default
     , exception-hierarchy
     , monads-tf

@@ -6,7 +6,7 @@ module Gpu.Vulkan.ImageView.Middle (
 
 	create, recreate, recreate', destroy, I, CreateInfo(..),
 
-	-- ** Manage Destruction
+	-- ** Manage Multiple Image Views
 
 	manage, create', Manager
 

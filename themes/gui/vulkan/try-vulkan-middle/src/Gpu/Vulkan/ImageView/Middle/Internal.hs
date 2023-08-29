@@ -19,8 +19,10 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.Map qualified as M
 import Data.IORef
 
 import Gpu.Vulkan.Enum
@@ -87,27 +89,34 @@ create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
 	peek pView
 
 manage :: Device.D -> TPMaybe.M AllocationCallbacks.A mc ->
-	(forall s . Manager s -> IO a) -> IO a
+	(forall s . Manager s k -> IO a) -> IO a
 manage dvc mac f = do
-	mng <- atomically $ newTVar []
-	rtn <- f $ Manager mng
+	(sem, mng) <- atomically $ (,) <$> newTSem 1 <*> newTVar M.empty
+	rtn <- f $ Manager sem mng
 	((\iv -> destroy dvc iv mac) `mapM_`) =<< atomically (readTVar mng)
 	pure rtn
 
-newtype Manager s = Manager (TVar [I])
+data Manager s k = Manager TSem (TVar (M.Map k I))
 
-create' :: WithPoked (TMaybe.M mn) =>
-	Device.D -> Manager sm ->
-	CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO I
-create' (Device.D dvc) (Manager is) ci mac = do
-	i <- iFromCore =<< alloca \pView -> do
-		createInfoToCore ci \pci ->
-			AllocationCallbacks.mToCore mac \pac -> do
-				r <- C.create dvc pci pac pView
-				throwUnlessSuccess $ Result r
-		peek pView
-	atomically $ modifyTVar is (i :)
-	pure i
+create' :: (Ord k, WithPoked (TMaybe.M mn)) =>
+	Device.D -> Manager sm k -> k ->
+	CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO (Either String I)
+create' (Device.D dvc) (Manager sem is) k ci mac = do
+	ok <- atomically do
+		mx <- (M.lookup k) <$> readTVar is
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	i <- iFromCore =<< alloca \pView -> do
+			createInfoToCore ci \pci ->
+				AllocationCallbacks.mToCore mac \pac -> do
+					r <- C.create dvc pci pac pView
+					throwUnlessSuccess $ Result r
+			peek pView
+		atomically $ modifyTVar is (M.insert k i) >> signalTSem sem
+		pure $ Right i
+	else pure . Left $ "Gpu.Vulkan.ImageView.create': The key already exist"
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->

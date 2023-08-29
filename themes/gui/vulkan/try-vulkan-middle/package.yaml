@@ -1,5 +1,5 @@
 name:                try-vulkan-middle
-version:             0.1.0.17
+version:             0.1.0.18
 github:              "githubuser/try-vulkan-middle"
 license:             BSD3
 author:              "Author name here"
@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - template-haskell
 - stm
+- containers
 - text
 - try-text-misc-yj
 - bytestring
