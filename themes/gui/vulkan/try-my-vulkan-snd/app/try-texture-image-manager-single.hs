@@ -277,10 +277,14 @@ run w inst g =
 
 	createTextureImage' phdv dv mng mmng gq cp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng () (mkImageViewCreateInfo tximg) nil' >>= \(Right tximgvw) ->
+		dv ivmng () (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSet dv ubds ub tximgvw txsmplr >>
 
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+
+{-# COMPLETE AlwaysRight #-}
+
+pattern AlwaysRight x <- Right x
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -866,7 +870,7 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Manager sim -> Vk.Mem.Manager smm ->
+	Vk.Img.Manager sim () -> Vk.Mem.Manager smm ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
 createTextureImage' phdvc dvc mng mmng gq cp = do
@@ -940,14 +944,14 @@ instance KObj.IsImage MyImage where
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Img.Manager sim -> Vk.Mem.Manager smm ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Img.Manager sim () -> Vk.Mem.Manager smm ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
 		Vk.Img.Binded smm sim nm fmt,
 		Vk.Dvc.Mem.M smm
 			'[ '(sim, 'Vk.Mem.ImageArg nm fmt) ] )
 createImage' pd dvc mng mmng wdt hgt tlng usg prps = do
-	img <- Vk.Img.create' @'Nothing dvc mng imageInfo nil'
+	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng () imageInfo nil'
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
