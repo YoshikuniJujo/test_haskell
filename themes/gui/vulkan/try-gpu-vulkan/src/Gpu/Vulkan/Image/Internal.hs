@@ -17,7 +17,7 @@ module Gpu.Vulkan.Image.Internal (
 
 	-- ** Manage Destruction
 
-	M.Manager, manage, create', destroy, lookup,
+	Manager, manage, create', destroy, lookup,
 
 	-- * GET MEMORY REQUIREMENTS
 
@@ -73,29 +73,31 @@ create (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
 	(\i -> M.destroy mdvc i macd)
 	(f .I)
 
+newtype Manager s k nm fmt = Manager (M.Manager s k)
+
 manage :: AllocationCallbacks.ToMiddle mac =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . M.Manager s k -> IO a) -> IO a
-manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) =
-	M.manage mdvc mac
+	(forall s . Manager s k nm fmt -> IO a) -> IO a
+manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) f =
+	M.manage mdvc mac (f . Manager)
 
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> M.Manager sm k -> k -> CreateInfo mn fmt ->
+	Device.D sd -> Manager sm k nm fmt -> k -> CreateInfo mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	IO (Either String (I sm nm fmt))
-create' (Device.D mdvc) mngr k ci (AllocationCallbacks.toMiddle -> macd) =
+create' (Device.D mdvc) (Manager mngr) k ci (AllocationCallbacks.toMiddle -> macd) =
 	(I <$>) <$> M.create' mdvc mngr k (createInfoToMiddle ci) macd
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> M.Manager sm k -> k ->
+	Device.D sd -> Manager sm k nm fmt -> k ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
-destroy (Device.D mdvc) mngr k (AllocationCallbacks.toMiddle -> mac) =
+destroy (Device.D mdvc) (Manager mngr) k (AllocationCallbacks.toMiddle -> mac) =
 	M.destroy' mdvc mngr k mac
 
-lookup :: Ord k => M.Manager smng k -> k -> IO (Maybe (I smng nm fmt))
-lookup mng k = (I <$>) <$> M.lookup mng k
+lookup :: Ord k => Manager smng k nm fmt -> k -> IO (Maybe (I smng nm fmt))
+lookup (Manager mng) k = (I <$>) <$> M.lookup mng k
 
 recreate :: (
 	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
