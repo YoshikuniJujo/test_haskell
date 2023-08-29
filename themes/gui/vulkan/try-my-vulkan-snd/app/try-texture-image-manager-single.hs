@@ -276,8 +276,8 @@ run w inst g =
 	createDescriptorSet' dv dscp dscslyt \ubds ->
 
 	createTextureImage' phdv dv mng mmng gq cp >>= \tximg ->
-	Vk.ImgVw.create' @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng (mkImageViewCreateInfo tximg) nil' >>= \tximgvw ->
+	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
+		dv ivmng () (mkImageViewCreateInfo tximg) nil' >>= \(Right tximgvw) ->
 	updateDescriptorSet dv ubds ub tximgvw txsmplr >>
 
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
