@@ -15,9 +15,9 @@ module Gpu.Vulkan.Image.Middle.Internal (
 
 	create, recreate, recreate', destroy, I(..), CreateInfo(..),
 
-	-- ** Manage Destruction
+	-- ** Manage Multiple Image
 
-	manage, create', Manager,
+	Manager, manage, create', destroy', lookup,
 
 	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
@@ -35,6 +35,7 @@ module Gpu.Vulkan.Image.Middle.Internal (
 
 	) where
 
+import Prelude hiding (lookup)
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
@@ -43,8 +44,10 @@ import Foreign.Storable.PeekPoke (withPoked, WithPoked, withPoked', withPtrS)
 import Control.Arrow
 import Control.Monad.Cont
 import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.Map qualified as M
 import Data.IORef
 import Data.Word
 
@@ -150,27 +153,56 @@ create (Device.D dvc) ci mac = I <$> alloca \pimg -> do
 	where ex = createInfoExtent ci
 
 manage :: Device.D -> TPMaybe.M AllocationCallbacks.A md ->
-	(forall s . Manager s -> IO a) -> IO a
+	(forall s . Manager s k -> IO a) -> IO a
 manage dvc mac f = do
-	m <- atomically (newTVar [])
-	rtn <- f $ Manager m
+	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar M.empty
+	rtn <- f $ Manager sem m
 	((\i -> destroy dvc i mac) `mapM_`) =<< atomically (readTVar m)
 	pure rtn
 
-create' :: WithPoked (TMaybe.M mn) => Device.D ->
-	Manager sm -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO I
-create' (Device.D dvc) (Manager is) ci mac = do
-	i <- I <$> alloca \pimg -> do
-		createInfoToCore ci \pci ->
-			AllocationCallbacks.mToCore mac \pac ->
-				throwUnlessSuccess . Result
-					=<< C.create dvc pci pac pimg
-		newIORef . (ex ,) =<< peek pimg
-	atomically $ modifyTVar is (i :)
-	pure i
+create' :: (Ord k, WithPoked (TMaybe.M mn)) => Device.D ->
+	Manager sm k -> k -> CreateInfo mn ->
+	TPMaybe.M AllocationCallbacks.A mc -> IO (Either String I)
+create' (Device.D dvc) (Manager sem is) k ci mac = do
+	ok <- atomically do
+		mx <- (M.lookup k) <$> readTVar is
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	i <- I <$> alloca \pimg -> do
+			createInfoToCore ci \pci ->
+				AllocationCallbacks.mToCore mac \pac ->
+					throwUnlessSuccess . Result
+						=<< C.create dvc pci pac pimg
+			newIORef . (ex ,) =<< peek pimg
+		atomically $ modifyTVar is (M.insert k i) >> signalTSem sem
+		pure $ Right i
+	else pure . Left $ "Gpu.Vulkan.Image.create': The key already exist"
 	where ex = createInfoExtent ci
 
-newtype Manager s = Manager (TVar [I])
+data Manager s k = Manager TSem (TVar (M.Map k I))
+
+destroy' :: Ord k => Device.D ->
+	Manager sm k -> k -> TPMaybe.M AllocationCallbacks.A mc ->
+	IO (Either String ())
+destroy' dvc (Manager sem is) k mac = do
+	mi <- atomically do
+		mx <- (M.lookup k) <$> readTVar is
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case mi of
+		Nothing -> pure $ Left "Gpu.Vulkan.Image.destroy: No such key"
+		Just i -> do
+			destroy dvc i mac
+			atomically do
+				modifyTVar is (M.delete k)
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Manager sm k -> k -> IO (Maybe I)
+lookup (Manager _sem is) k = atomically $ M.lookup k <$> readTVar is
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->

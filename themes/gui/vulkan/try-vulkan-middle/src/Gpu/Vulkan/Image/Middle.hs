@@ -6,9 +6,9 @@ module Gpu.Vulkan.Image.Middle (
 
 	create, recreate, recreate', destroy, I, CreateInfo(..),
 
-	-- ** Manage Destruction
+	-- ** Manage Multiple Image
 
-	manage, create', Manager,
+	Manager, manage, create', destroy', lookup,
 
 	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
@@ -24,4 +24,5 @@ module Gpu.Vulkan.Image.Middle (
 
 	) where
 
+import Prelude hiding (lookup)
 import Gpu.Vulkan.Image.Middle.Internal
