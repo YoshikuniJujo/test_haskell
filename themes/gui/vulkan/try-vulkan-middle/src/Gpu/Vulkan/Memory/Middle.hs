@@ -8,8 +8,7 @@ module Gpu.Vulkan.Memory.Middle (
 
 	-- ** Manage Destruction
 
-	manage, allocate', Manager,
-
+	Manager, manage, allocate', free', lookup,
 
 	-- * MAP AND UNMNAP
 
@@ -23,6 +22,5 @@ module Gpu.Vulkan.Memory.Middle (
 
 	MType(..), TypeBits, TypeIndex, elemTypeIndex ) where
 
-import Prelude hiding (map)
-
+import Prelude hiding (map, lookup)
 import Gpu.Vulkan.Memory.Middle.Internal

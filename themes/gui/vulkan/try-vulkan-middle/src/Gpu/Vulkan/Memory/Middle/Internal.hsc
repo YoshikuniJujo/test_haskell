@@ -11,7 +11,7 @@
 module Gpu.Vulkan.Memory.Middle.Internal (
 	M(..), mToCore, AllocateInfo(..), allocate, reallocate, reallocate', free,
 
-	manage, allocate', Manager,
+	manage, allocate', free', lookup, Manager,
 
 	MapFlags(..), map, unmap,
 
@@ -24,7 +24,7 @@ module Gpu.Vulkan.Memory.Middle.Internal (
 	TypeBits, TypeIndex, elemTypeIndex, typeBitsToTypeIndices
 	) where
 
-import Prelude hiding (map)
+import Prelude hiding (map, lookup)
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc hiding (free)
@@ -32,10 +32,12 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Bits
+import Data.Map qualified as M
 import Data.IORef
 import Data.Word
 
@@ -135,27 +137,55 @@ allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
 -- free :: Device.D -> M -> TPMaybe.M AllocationCallbacks.A mf -> IO ()
 
 manage :: Device.D -> TPMaybe.M AllocationCallbacks.A mf ->
-	(forall s . Manager s -> IO a) -> IO a
+	(forall s . Manager s k -> IO a) -> IO a
 manage dvc mac f = do
-	mng <-atomically $ newTVar []
-	rtn <- f $ Manager mng
+	(sem, mng) <-atomically $ (,) <$> newTSem 1 <*> newTVar M.empty
+	rtn <- f $ Manager sem mng
 	((\m -> free dvc m mac) `mapM_`) =<< atomically (readTVar mng)
 	pure rtn
 
-allocate' :: WithPoked (TMaybe.M mn) =>
-	Device.D -> Manager sm -> AllocateInfo mn ->
-	TPMaybe.M AllocationCallbacks.A ma -> IO M
-allocate' (Device.D dvc) (Manager ms) ai mac = do
-	m <- M <$> alloca \pm -> do
-		allocateInfoToCore ai \pai ->
-			AllocationCallbacks.mToCore mac \pac -> do
-				r <- C.allocate dvc pai pac pm
-				throwUnlessSuccess $ Result r
-		newIORef =<< peek pm
-	atomically $ modifyTVar ms (m :)
-	pure m
+allocate' :: (Ord k, WithPoked (TMaybe.M mn)) =>
+	Device.D -> Manager sm k -> k -> AllocateInfo mn ->
+	TPMaybe.M AllocationCallbacks.A ma -> IO (Either String M)
+allocate' (Device.D dvc) (Manager sem ms) k ai mac = do
+	ok <- atomically do
+		mx <- (M.lookup k) <$> readTVar ms
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	m <- M <$> alloca \pm -> do
+			allocateInfoToCore ai \pai ->
+				AllocationCallbacks.mToCore mac \pac -> do
+					r <- C.allocate dvc pai pac pm
+					throwUnlessSuccess $ Result r
+			newIORef =<< peek pm
+		atomically $ modifyTVar ms (M.insert k m)
+		pure $ Right m
+	else pure . Left $ "Gpu.Vulkan.Memory.allocate': The key already exist"
 
-newtype Manager s = Manager (TVar [M])
+data Manager s k = Manager TSem (TVar (M.Map k M))
+
+free' :: Ord k => Device.D ->
+	Manager smng k -> k -> TPMaybe.M AllocationCallbacks.A mc ->
+	IO (Either String ())
+free' dvc (Manager sem ms) k mac = do
+	mm <- atomically do
+		mx <- (M.lookup k) <$> readTVar ms
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case mm of
+		Nothing -> pure $ Left "Gpu.Vulkan.Memory.free': No such key"
+		Just m -> do
+			free dvc m mac
+			atomically do
+				modifyTVar ms (M.delete k)
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Manager sm k -> k -> IO (Maybe M)
+lookup (Manager _sem ms) k = atomically $ M.lookup k <$> readTVar ms
 
 reallocate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> AllocateInfo mn ->
