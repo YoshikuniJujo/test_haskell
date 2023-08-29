@@ -129,7 +129,7 @@ destroy' dvc (Manager sem is) k mac = do
 			Nothing -> pure Nothing
 			Just _ -> waitTSem sem >> pure mx
 	case mi of
-		Nothing -> pure $ Left "Gpu.Vulkan.ImageView.destroy: no such key"
+		Nothing -> pure $ Left "Gpu.Vulkan.ImageView.destroy: No such key"
 		Just i -> do
 			destroy dvc i mac
 			atomically do

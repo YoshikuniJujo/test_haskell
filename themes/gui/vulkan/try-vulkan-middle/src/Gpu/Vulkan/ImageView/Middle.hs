@@ -8,7 +8,7 @@ module Gpu.Vulkan.ImageView.Middle (
 
 	-- ** Manage Multiple Image Views
 
-	manage, create', destroy', lookup, Manager
+	Manager, manage, create', destroy', lookup
 
 	) where
 
