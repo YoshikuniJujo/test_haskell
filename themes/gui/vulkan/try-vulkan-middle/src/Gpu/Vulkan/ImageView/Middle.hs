@@ -8,8 +8,9 @@ module Gpu.Vulkan.ImageView.Middle (
 
 	-- ** Manage Multiple Image Views
 
-	manage, create', Manager
+	manage, create', destroy', lookup, Manager
 
 	) where
 
+import Prelude hiding (lookup)
 import Gpu.Vulkan.ImageView.Middle.Internal

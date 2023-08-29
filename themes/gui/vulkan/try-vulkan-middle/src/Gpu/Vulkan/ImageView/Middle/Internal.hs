@@ -9,10 +9,12 @@
 module Gpu.Vulkan.ImageView.Middle.Internal (
 	I, CreateInfo(..), create, recreate, recreate', destroy,
 
-	manage, create', Manager,
+	manage, create', destroy', lookup, Manager,
 
 	iToCore
 	) where
+
+import Prelude hiding (lookup)
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -117,6 +119,26 @@ create' (Device.D dvc) (Manager sem is) k ci mac = do
 		atomically $ modifyTVar is (M.insert k i) >> signalTSem sem
 		pure $ Right i
 	else pure . Left $ "Gpu.Vulkan.ImageView.create': The key already exist"
+
+destroy' :: Ord k => Device.D ->
+	Manager sm k -> k -> TPMaybe.M AllocationCallbacks.A mc -> IO (Either String ())
+destroy' dvc (Manager sem is) k mac = do
+	mi <- atomically do
+		mx <- (M.lookup k) <$> readTVar is
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case mi of
+		Nothing -> pure $ Left "Gpu.Vulkan.ImageView.destroy: no such key"
+		Just i -> do
+			destroy dvc i mac
+			atomically do
+				modifyTVar is (M.delete k)
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Manager sm k -> k -> IO (Maybe I)
+lookup (Manager _sem is) k = atomically $ M.lookup k <$> readTVar is
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
