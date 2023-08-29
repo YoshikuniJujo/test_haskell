@@ -15,9 +15,9 @@ module Gpu.Vulkan.Image (
 
 	create, recreate, recreate', I, Binded, CreateInfo(..),
 
-	-- ** Manage Destruction
+	-- ** Manage Multiple Image
 
-	manage, create', Manager,
+	Manager, manage, create', destroy, lookup,
 
 	-- * GET MEMORY REQUIREMENTS
 
@@ -33,4 +33,5 @@ module Gpu.Vulkan.Image (
 
 	) where
 
+import Prelude hiding (lookup)
 import Gpu.Vulkan.Image.Internal

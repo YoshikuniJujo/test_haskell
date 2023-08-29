@@ -17,7 +17,7 @@ module Gpu.Vulkan.Image.Internal (
 
 	-- ** Manage Destruction
 
-	manage, create', M.Manager,
+	M.Manager, manage, create', destroy, lookup,
 
 	-- * GET MEMORY REQUIREMENTS
 
@@ -34,6 +34,7 @@ module Gpu.Vulkan.Image.Internal (
 
 	) where
 
+import Prelude hiding (lookup)
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -74,17 +75,27 @@ create (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
 
 manage :: AllocationCallbacks.ToMiddle mac =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . M.Manager s -> IO a) -> IO a
+	(forall s . M.Manager s k -> IO a) -> IO a
 manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) =
 	M.manage mdvc mac
 
 create' :: (
-	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
+	Ord k, WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> M.Manager sm -> CreateInfo mn fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (I sm nm fmt)
-create' (Device.D mdvc) mngr ci (AllocationCallbacks.toMiddle -> macd) =
-	I <$> M.create' mdvc mngr (createInfoToMiddle ci) macd
+	Device.D sd -> M.Manager sm k -> k -> CreateInfo mn fmt ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	IO (Either String (I sm nm fmt))
+create' (Device.D mdvc) mngr k ci (AllocationCallbacks.toMiddle -> macd) =
+	(I <$>) <$> M.create' mdvc mngr k (createInfoToMiddle ci) macd
+
+destroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
+	Device.D sd -> M.Manager sm k -> k ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
+destroy (Device.D mdvc) mngr k (AllocationCallbacks.toMiddle -> mac) =
+	M.destroy' mdvc mngr k mac
+
+lookup :: Ord k => M.Manager smng k -> k -> IO (Maybe (I smng nm fmt))
+lookup mng k = (I <$>) <$> M.lookup mng k
 
 recreate :: (
 	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
