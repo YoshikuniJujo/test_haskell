@@ -15,10 +15,11 @@ module Gpu.Vulkan.ImageView (
 
 	-- ** Manage Multiple Image View
 
-	manage, create', M.Manager
+	manage, create', destroy, lookup, M.Manager
 
 	) where
 
+import Prelude hiding (lookup)
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -88,6 +89,15 @@ create' :: (
 	IO (Either String (I nm ivfmt smng))
 create' (Device.D d) mng k ci (AllocationCallbacks.toMiddle -> mac) =
 	(I <$>) <$> M.create' d mng k (createInfoToMiddle ci) mac
+
+destroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
+	Device.D sd -> M.Manager sm k -> k ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
+destroy (Device.D d) mng k (AllocationCallbacks.toMiddle -> mac) =
+	M.destroy' d mng k mac
+
+lookup :: Ord k => M.Manager smng k -> k -> IO (Maybe (I nm ivfmt smng))
+lookup mng k = (I <$>) <$> M.lookup mng k
 
 recreate :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
