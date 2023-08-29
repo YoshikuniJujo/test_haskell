@@ -24,6 +24,7 @@ import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
@@ -284,7 +285,13 @@ run w inst g =
 
 	atomically (newTVar M.empty) >>= \prej ->
 
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej
+	atomically newTChan >>= \oke ->
+
+	forkIO (forever $ print =<< atomically (readTChan oke)) >>
+
+	keyFlows oke [Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L] >>= \kcs ->
+
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej kcs
 
 {-# COMPLETE AlwaysRight #-}
 
@@ -1405,15 +1412,16 @@ mainLoop ::
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime ->
 	TVar (M.Map Glfw.Key Glfw.KeyState) ->
+	M.Map Glfw.Key (TChan ()) ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 prej = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 prej kcs = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs
 			rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) prej loop
+			(realToFrac $ tm `diffUTCTime` tm0) prej kcs loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop ::
@@ -1436,21 +1444,24 @@ runLoop ::
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
-	TVar (M.Map Glfw.Key Glfw.KeyState) ->
+	TVar (M.Map Glfw.Key Glfw.KeyState) -> M.Map Glfw.Key (TChan ()) ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm prej loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm prej kcs loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs
 		rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
-	keyDown prej win Glfw.Key'H >>= bool (pure ()) (putStrLn "H Down")
-	keyDown prej win Glfw.Key'J >>= bool (pure ()) (putStrLn "J Down")
-	keyDown prej win Glfw.Key'K >>= bool (pure ()) (putStrLn "K Down")
-	keyDown prej win Glfw.Key'L >>= bool (pure ()) (putStrLn "L Down")
+	sendKey prej win kcs `mapM_` [Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L]
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs
 			rp ppllyt gpl fbs)
+
+sendKey ::
+	TVar (M.Map Glfw.Key Glfw.KeyState) -> Glfw.Window ->
+	M.Map Glfw.Key (TChan ()) -> Glfw.Key -> IO ()
+sendKey pre win kcs k =
+	keyDown pre win k >>= bool (pure ()) (atomically $ writeTChan (kcs M.! k) ())
 
 keyDown :: TVar (M.Map Glfw.Key Glfw.KeyState) -> Glfw.Window -> Glfw.Key -> IO Bool
 keyDown st w k = do
@@ -1461,6 +1472,31 @@ keyDown st w k = do
 	pure case (pre, now) of
 		(Glfw.KeyState'Released, Glfw.KeyState'Pressed) -> True
 		_ -> False
+
+keyFlows :: TChan KeyEvent -> [Glfw.Key] -> IO (M.Map Glfw.Key (TChan ()))
+keyFlows oke = \case
+	[] -> pure M.empty
+	k : ks -> do
+		ip <- keyFlow oke k
+		ips <- keyFlows oke ks
+		pure $ M.insert k ip ips
+
+keyFlow :: TChan KeyEvent -> Glfw.Key -> IO (TChan ())
+keyFlow oke k = do
+	ip <- atomically newTChan
+	_ <- forkIO $ flow ip oke (First k : repeat (Key k))
+	pure ip
+
+flow :: TChan () -> TChan a -> [a] -> IO ()
+flow ip op = \case
+	[] -> error "no more"
+	x : xs -> do
+		atomically do
+			_ <- readTChan ip
+			writeTChan op x
+		flow ip op xs
+
+data KeyEvent = First Glfw.Key | Key Glfw.Key deriving Show
 
 indexWithDefault :: Ord k => v -> k -> M.Map k v -> v
 indexWithDefault d k = fromMaybe d . M.lookup k
