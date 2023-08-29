@@ -280,7 +280,7 @@ run w inst g =
 
 	createTextureImage' phdv dv mng mmng gq cp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng () (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
+		dv ivmng 'Glfw.Key'H (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSet dv ubds ub tximgvw txsmplr >>
 
 	atomically (newTVar M.empty) >>= \prej ->
@@ -882,8 +882,8 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Manager sim () nm 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Mem.Manager smm () '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
+	Vk.Img.Manager sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Mem.Manager smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
 createTextureImage' phdvc dvc mng mmng gq cp = do
@@ -913,17 +913,6 @@ createTextureImage' phdvc dvc mng mmng gq cp = do
 			Vk.Img.LayoutTransferDstOptimal
 			Vk.Img.LayoutShaderReadOnlyOptimal
 	pure tximg
-
-createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
-		Vk.Img.Binded sm si nm fmt ->
-		Vk.Dvc.Mem.M sm '[ '(si, 'Vk.Mem.ImageArg nm fmt)] -> IO a) ->
-	IO a
-createImage pd dvc wdt hgt tlng usg prps f =
-	Vk.Img.manage dvc nil' \mng -> Vk.Dvc.Mem.manage dvc nil' \mmng ->
-	uncurry f =<< createImage' pd dvc mng mmng wdt hgt tlng usg prps
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
@@ -958,21 +947,21 @@ instance KObj.IsImage MyImage where
 
 createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Manager sim () nm fmt ->
-	Vk.Mem.Manager smm () '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
+	Vk.Img.Manager sim Glfw.Key nm fmt ->
+	Vk.Mem.Manager smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
 		Vk.Img.Binded smm sim nm fmt,
 		Vk.Dvc.Mem.M smm
 			'[ '(sim, 'Vk.Mem.ImageArg nm fmt)] )
 createImage' pd dvc mng mmng wdt hgt tlng usg prps = do
-	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng () imageInfo nil'
+	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng Glfw.Key'H imageInfo nil'
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	print mt
 	Right (HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd)), m) <-
-		Vk.Dvc.Mem.allocateBind' @_ @'Nothing dvc mmng ()
+		Vk.Dvc.Mem.allocateBind' @_ @'Nothing dvc mmng Glfw.Key'H
 			(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
 			nil'
 	pure (bnd :: Vk.Img.Binded smm sim nm fmt, m)
@@ -1476,10 +1465,20 @@ keyDown st w k = do
 keyFlows :: TChan KeyEvent -> [Glfw.Key] -> IO (M.Map Glfw.Key (TChan ()))
 keyFlows oke = \case
 	[] -> pure M.empty
+	Glfw.Key'H : ks -> do
+		ip <- keyFlow0 oke Glfw.Key'H
+		ips <- keyFlows oke ks
+		pure $ M.insert Glfw.Key'H ip ips
 	k : ks -> do
 		ip <- keyFlow oke k
 		ips <- keyFlows oke ks
 		pure $ M.insert k ip ips
+
+keyFlow0 :: TChan KeyEvent -> Glfw.Key -> IO (TChan ())
+keyFlow0 oke k = do
+	ip <- atomically newTChan
+	_ <- forkIO $ flow ip oke (repeat (Key k))
+	pure ip
 
 keyFlow :: TChan KeyEvent -> Glfw.Key -> IO (TChan ())
 keyFlow oke k = do
