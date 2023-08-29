@@ -870,7 +870,8 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Manager sim () -> Vk.Mem.Manager smm ->
+	Vk.Img.Manager sim () nm 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Mem.Manager smm () '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
 createTextureImage' phdvc dvc mng mmng gq cp = do
@@ -880,7 +881,7 @@ createTextureImage' phdvc dvc mng mmng gq cp = do
 		hgt = fromIntegral $ imageHeight img
 	(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng
 		wdt hgt Vk.Img.TilingOptimal
-		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
+		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit
 	createBufferImage @MyImage @_ phdvc dvc
 		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
@@ -944,23 +945,25 @@ instance KObj.IsImage MyImage where
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Img.Manager sim () -> Vk.Mem.Manager smm ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Img.Manager sim () nm fmt ->
+	Vk.Mem.Manager smm () '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
 		Vk.Img.Binded smm sim nm fmt,
 		Vk.Dvc.Mem.M smm
-			'[ '(sim, 'Vk.Mem.ImageArg nm fmt) ] )
+			'[ '(sim, 'Vk.Mem.ImageArg nm fmt)] )
 createImage' pd dvc mng mmng wdt hgt tlng usg prps = do
 	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng () imageInfo nil'
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	print mt
-	(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd)), m) <-
-		Vk.Dvc.Mem.allocateBind' @'Nothing dvc mmng
+	Right (HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd)), m) <-
+		Vk.Dvc.Mem.allocateBind' @_ @'Nothing dvc mmng ()
 			(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
 			nil'
-	pure (bnd, m)
+	pure (bnd :: Vk.Img.Binded smm sim nm fmt, m)
 	where
 	imageInfo = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNext = TMaybe.N,
