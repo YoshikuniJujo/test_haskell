@@ -32,6 +32,7 @@ import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
+import Data.Map qualified as M
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
@@ -281,7 +282,7 @@ run w inst g =
 		dv ivmng () (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSet dv ubds ub tximgvw txsmplr >>
 
-	atomically (newTVar Glfw.KeyState'Released) >>= \prej ->
+	atomically (newTVar M.empty) >>= \prej ->
 
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej
 
@@ -1403,7 +1404,7 @@ mainLoop ::
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime ->
-	TVar Glfw.KeyState ->
+	TVar (M.Map Glfw.Key Glfw.KeyState) ->
 	IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 prej = do
 	($ ext0) $ fix \loop ext -> do
@@ -1435,26 +1436,34 @@ runLoop ::
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
-	TVar Glfw.KeyState ->
+	TVar (M.Map Glfw.Key Glfw.KeyState) ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm prej loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs
 		rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
+	keyDown prej win Glfw.Key'H >>= bool (pure ()) (putStrLn "H Down")
 	keyDown prej win Glfw.Key'J >>= bool (pure ()) (putStrLn "J Down")
+	keyDown prej win Glfw.Key'K >>= bool (pure ()) (putStrLn "K Down")
+	keyDown prej win Glfw.Key'L >>= bool (pure ()) (putStrLn "L Down")
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs
 			rp ppllyt gpl fbs)
 
-keyDown :: TVar Glfw.KeyState -> Glfw.Window -> Glfw.Key -> IO Bool
+keyDown :: TVar (M.Map Glfw.Key Glfw.KeyState) -> Glfw.Window -> Glfw.Key -> IO Bool
 keyDown st w k = do
 	now <- Glfw.getKey w k
-	pre <- atomically $ readTVar st <* writeTVar st now
+	pre <- atomically
+		$ (indexWithDefault Glfw.KeyState'Released k <$> readTVar st)
+			<* modifyTVar st (M.insert k now)
 	pure case (pre, now) of
 		(Glfw.KeyState'Released, Glfw.KeyState'Pressed) -> True
 		_ -> False
+
+indexWithDefault :: Ord k => v -> k -> M.Map k v -> v
+indexWithDefault d k = fromMaybe d . M.lookup k
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
