@@ -17,6 +17,10 @@ module Gpu.Vulkan.Buffer.Internal (
 
 	create, B, CreateInfo(..),
 
+	-- ** Buffer Group
+
+	Group, group, create', destroy, lookup,
+
 	-- * BINDED
 
 	getMemoryRequirements, Binded,
@@ -36,6 +40,7 @@ module Gpu.Vulkan.Buffer.Internal (
 	
 	) where
 
+import Prelude hiding (lookup)
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -65,6 +70,10 @@ import qualified Gpu.Vulkan.Image as Image.M
 
 import Gpu.Vulkan.Buffer.Type
 
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
+import Data.Map qualified as Map
+
 data CreateInfo mn objs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
@@ -93,7 +102,9 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WithPoked (TMaybe.M mn), VObj.SizeAlignmentList objs, AllocationCallbacks.ToMiddle ma) =>
+create :: (
+	WithPoked (TMaybe.M mn),
+	VObj.SizeAlignmentList objs, AllocationCallbacks.ToMiddle ma ) =>
 	Device.D sd -> CreateInfo mn objs ->
 	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
 	(forall sb . B sb nm objs -> IO a) -> IO a
@@ -101,19 +112,61 @@ create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 	(M.create dvc (createInfoToMiddle ci) mac) (\b -> M.destroy dvc b mac)
 	(f . B (createInfoLengths ci))
 
+data Group s k nm objs = Group TSem (TVar (Map.Map k (B s nm objs)))
+
+group :: AllocationCallbacks.ToMiddle md =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) md ->
+	(forall s . Group s k nm objs -> IO a) -> IO a
+group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mmac) f = do
+	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
+	rtn <- f $ Group sem m
+	((\(B _ mb) -> M.destroy mdvc mb mmac) `mapM_`)
+		=<< atomically (readTVar m)
+	pure rtn
+
+create' :: (
+	Ord k, WithPoked (TMaybe.M mn),
+	VObj.SizeAlignmentList objs, AllocationCallbacks.ToMiddle ma ) =>
+	Device.D sd -> Group sg k nm objs -> k -> CreateInfo mn objs ->
+	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall sb . Either String (B sb nm objs) -> IO a) -> IO a
+create' (Device.D dvc) (Group sem bs) k ci (AllocationCallbacks.toMiddle -> mac) f = do
+	ok <- atomically do
+		mx <- (Map.lookup k) <$> readTVar bs
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	b <- M.create dvc (createInfoToMiddle ci) mac
+		let b' = B (createInfoLengths ci) b
+		atomically $ modifyTVar bs (Map.insert k b') >> signalTSem sem
+		f $ Right b'
+	else f . Left $ "Gpu.Vulkan.Buffer.create': The key already exist"
+
+destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Device.D sd -> Group sg k nm objs -> k ->
+	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	IO (Either String ())
+destroy (Device.D mdvc) (Group sem bs) k (AllocationCallbacks.toMiddle -> ma) = do
+	mb <- atomically do
+		mx <- Map.lookup k <$> readTVar bs
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case mb of
+		Nothing -> pure $ Left "Gpu.Vulkan.Buffer.destroy: No such key"
+		Just (B _ b) -> do
+			M.destroy mdvc b ma
+			atomically do
+				modifyTVar bs (Map.delete k)
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Group sg k nm objs -> k -> IO (Maybe (B sg nm objs))
+lookup (Group _sem bs) k = atomically $ Map.lookup k <$> readTVar bs
+
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
-
-{-
-sampleObjLens :: HeteroParList.PL NObj.Length
-	['NObj.List 256 Bool "", 'NObj.Atom 256 Char 'Nothing, 'NObj.Atom 256 Int 'Nothing, 'NObj.List 256 Double "", 'NObj.List 256 Char ""]
-sampleObjLens =
-	NObj.LengthList 3 :**
-	NObj.LengthAtom :**
-	NObj.LengthAtom :**
-	NObj.LengthList 5 :**
-	NObj.LengthList 3 :** HeteroParList.Nil
-	-}
 
 data IndexedForList sm sb nm t onm = forall objs .
 	VObj.OffsetOfList t onm objs => IndexedForList (Binded sm sb nm objs)

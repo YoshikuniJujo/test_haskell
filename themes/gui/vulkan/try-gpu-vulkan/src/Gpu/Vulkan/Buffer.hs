@@ -17,6 +17,10 @@ module Gpu.Vulkan.Buffer (
 
 	create, B, CreateInfo(..),
 
+	-- ** Buffer Group
+
+	Group, group, create', destroy, lookup,
+
 	-- * BINDED
 
 	getMemoryRequirements, Binded, IndexedForList(..),
@@ -31,4 +35,5 @@ module Gpu.Vulkan.Buffer (
 	
 	) where
 
+import Prelude hiding (lookup)
 import Gpu.Vulkan.Buffer.Internal
