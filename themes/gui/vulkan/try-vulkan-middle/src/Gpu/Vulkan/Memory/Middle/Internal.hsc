@@ -160,7 +160,9 @@ allocate' (Device.D dvc) (Manager sem ms) k ai mac = do
 					r <- C.allocate dvc pai pac pm
 					throwUnlessSuccess $ Result r
 			newIORef =<< peek pm
-		atomically $ modifyTVar ms (M.insert k m)
+		atomically do
+			modifyTVar ms (M.insert k m)
+			signalTSem sem
 		pure $ Right m
 	else pure . Left $ "Gpu.Vulkan.Memory.allocate': The key already exist"
 
