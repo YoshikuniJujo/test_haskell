@@ -54,3 +54,26 @@ enum "Type" ''#{type VkDescriptorType}
 	("TypeMutableValve",
 		#{const VK_DESCRIPTOR_TYPE_MUTABLE_VALVE}),
 	("TypeMaxEnum", #{const VK_DESCRIPTOR_TYPE_MAX_ENUM}) ]
+
+enum "BindingFlagBits" ''#{type VkDescriptorBindingFlagBits}
+		[''Show, ''Eq, ''Storable] [
+	("BindingUpdateAfterBindBit",
+		#{const VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT}),
+	("BindingUpdateUnusedWhilePendingBit",
+		#{const VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT}),
+	("BindingPartiallyBoundBit",
+		#{const VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT}),
+	("BindingVariableDescriptorCountBit",
+		#{const VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT}),
+	("BindingUpdateAfterBindBitExt",
+		#{const VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT}),
+	("BindingUpdateUnusedWhilePendingBitExt",
+		#{const VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT}),
+	("BindingPartiallyBoundBitExt",
+		#{const VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT}),
+	("BindingVariableDescriptorCountBitExt",
+		#{const VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT}),
+	("BindingFlagBitsMaxEnum",
+		#{const VK_DESCRIPTOR_BINDING_FLAG_BITS_MAX_ENUM}) ]
+
+type BindingFlags = BindingFlagBits
