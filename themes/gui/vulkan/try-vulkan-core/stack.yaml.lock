@@ -17,7 +17,7 @@ packages:
     git: https://github.com/YoshikuniJujo/c-struct
 snapshots:
 - completed:
-    sha256: cfd4536710fbd0ee992ba694f7229bb2a3e3d9f7e084c2524faed472c4bdbee3
-    size: 632121
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/5/31.yaml
-  original: nightly-2023-05-31
+    sha256: 2fc12a405ab6f7eac73eb11a0ca5ccca0e956bd2848db780c140b7406ff9ebb5
+    size: 640035
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/9.yaml
+  original: lts-21.9
