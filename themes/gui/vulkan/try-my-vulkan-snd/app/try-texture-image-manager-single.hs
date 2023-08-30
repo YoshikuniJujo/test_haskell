@@ -164,11 +164,16 @@ command ::
 		"FILEPATH" "texture image file path for key 'l'" [FilePath] ->
 	Cmd "Try texture" ()
 command htximg jtximg ktximg ltximg = liftIO do
+	let	kis = foldr (uncurry M.insert) M.empty $ zip
+			[Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L]
+			(head <$> [
+				get htximg, get jtximg,
+				get ktximg, get ltximg ])
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g (head $ get htximg)
-			else run win inst g (head $ get htximg)
+			then setupDebugMessenger inst $ run win inst g kis
+			else run win inst g kis
 
 type FramebufferResized = IORef Bool
 
@@ -264,8 +269,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> FilePath -> IO ()
-run w inst g tximgfp =
+run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> M.Map Glfw.Key FilePath -> IO ()
+run w inst g kis =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -292,27 +297,21 @@ run w inst g tximgfp =
 	Vk.ImgVw.manage dv nil' \ivmng ->
 	createDescriptorPool dv \dscp ->
 	createDescriptorSet' dv dscp dscslyt \ubds ->
-	updateDescriptorSet dv ubds ub >>
+	updateDescriptorSet dv ubds ub >> let
 
-	createTexture phdv dv
-		gq cp ubds mng mmng ivmng txsmplr Glfw.Key'H tximgfp >>
+	crtx = createTexture phdv dv
+		gq cp ubds mng mmng ivmng txsmplr kis
+	udtx = updateTexture dv ubds txsmplr ivmng in
 
-{-
-	createTextureImage' phdv dv mng mmng gq cp tximgfp >>= \tximg ->
-	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng Glfw.Key'H (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
-	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
-	-}
+	crtx Glfw.Key'H >>
 
 	atomically (newTVar M.empty) >>= \prej ->
 
 	atomically newTChan >>= \oke ->
 
-	forkIO (forever $ print =<< atomically (readTChan oke)) >>
-
 	keyFlows oke [Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L] >>= \kcs ->
 
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej kcs
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej oke kcs crtx udtx
 
 createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.D sds '(sdsc, '[
@@ -323,12 +322,25 @@ createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Dvc.Mem.Manager sm Glfw.Key '[
 		'(si, 'Vk.Dvc.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
 	Vk.ImgVw.Manager siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Smplr.M.S ss -> Glfw.Key -> FilePath -> IO ()
-createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr k tximgfp =
-	createTextureImage' phdv dv mng mmng gq cp tximgfp >>= \tximg ->
+	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
+createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr kis k = let
+	tximgfp = kis M.! k in
+	putStrLn "createTexture begin" >>
+	createTextureImage' phdv dv mng mmng gq cp k tximgfp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
 		dv ivmng k (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSetTex dv ubds tximgvw txsmplr
+
+updateTexture :: Ord k => Vk.Dvc.D sd ->
+	Vk.DscSet.D sds '(sdsc, '[
+		'Vk.DscSetLyt.Buffer
+			'[VObj.Atom 256 UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
+	Vk.Smplr.S ss -> Vk.ImgVw.Manager siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	k -> IO ()
+updateTexture dv udbs txsmplr imng k = do
+	Just tximgvw <- Vk.ImgVw.lookup imng k
+	updateDescriptorSetTex dv udbs tximgvw txsmplr
 
 {-# COMPLETE AlwaysRight #-}
 
@@ -921,17 +933,19 @@ createCommandPool qfis dvc f =
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Manager sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Manager smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
-	Vk.Queue.Q -> Vk.CmdPool.C sc -> FilePath ->
+	Vk.Queue.Q -> Vk.CmdPool.C sc -> Glfw.Key -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
-createTextureImage' phdvc dvc mng mmng gq cp tximg = do
+createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
+	putStrLn "createTextureImage' begin"
 	img <- readRgba8 tximg
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
-	(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng
+	(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng k
 		wdt hgt Vk.Img.TilingOptimal
 		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit
+	putStrLn "before createBufferImage"
 	createBufferImage @MyImage @_ phdvc dvc
 		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
 		Vk.Bffr.UsageTransferSrcBit
@@ -952,8 +966,6 @@ createTextureImage' phdvc dvc mng mmng gq cp tximg = do
 	pure tximg
 
 newtype MyImage = MyImage (Image PixelRGBA8)
-
--- type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
 
 newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
 
@@ -986,19 +998,20 @@ createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Manager sim Glfw.Key nm fmt ->
 	Vk.Mem.Manager smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
+	Glfw.Key ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
 		Vk.Img.Binded smm sim nm fmt,
 		Vk.Dvc.Mem.M smm
 			'[ '(sim, 'Vk.Mem.ImageArg nm fmt)] )
-createImage' pd dvc mng mmng wdt hgt tlng usg prps = do
-	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng Glfw.Key'H imageInfo nil'
+createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
+	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng k imageInfo nil'
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	print mt
 	Right (HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd)), m) <-
-		Vk.Dvc.Mem.allocateBind' @_ @'Nothing dvc mmng Glfw.Key'H
+		Vk.Dvc.Mem.allocateBind' @_ @'Nothing dvc mmng k
 			(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
 			nil'
 	pure (bnd :: Vk.Img.Binded smm sim nm fmt, m)
@@ -1065,7 +1078,6 @@ copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.ImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
---	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp bf img wdt hgt =
@@ -1282,8 +1294,9 @@ createBufferImage :: Storable (KObj.ImagePixel t) =>
 			sb,
 			'Vk.Mem.BufferArg nm '[ VObj.Image 1 t inm])] ->
 		IO a) -> IO a
-createBufferImage p dv (r, w, h, d) usg props =
-	createBuffer p dv (VObj.LengthImage r w h d) usg props
+createBufferImage p dv (r, w, h, d) usg props f =
+	putStrLn "createBufferImage begin" >>
+	createBuffer p dv (VObj.LengthImage r w h d) usg props f
 
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
@@ -1447,10 +1460,16 @@ mainLoop ::
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime ->
 	TVar (M.Map Glfw.Key Glfw.KeyState) ->
+	TChan KeyEvent ->
 	M.Map Glfw.Key (TChan ()) ->
+	(Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 prej kcs = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 prej oke kcs crtx udtx = do
 	($ ext0) $ fix \loop ext -> do
+		me <- atomically do
+			b <- isEmptyTChan oke
+			if b then pure Nothing else Just <$> readTChan oke
+		maybe (pure ()) (\case First k -> crtx k; Key k -> udtx k) me
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
