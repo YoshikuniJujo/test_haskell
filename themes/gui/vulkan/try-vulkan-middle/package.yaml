@@ -80,6 +80,7 @@ library:
   - Gpu.Vulkan.DescriptorSet.Middle
   - Gpu.Vulkan.DescriptorSetLayout.Enum
   - Gpu.Vulkan.DescriptorSetLayout.Middle
+  - Gpu.Vulkan.DescriptorSetLayout.BindingFlags.Middle
   - Gpu.Vulkan.Device.Enum
   - Gpu.Vulkan.Device.Middle
   - Gpu.Vulkan.Device.Middle.Internal

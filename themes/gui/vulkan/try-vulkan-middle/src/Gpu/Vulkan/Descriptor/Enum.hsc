@@ -11,6 +11,7 @@ module Gpu.Vulkan.Descriptor.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.Bits
 import Data.Word
 
 #include <vulkan/vulkan.h>
@@ -56,7 +57,7 @@ enum "Type" ''#{type VkDescriptorType}
 	("TypeMaxEnum", #{const VK_DESCRIPTOR_TYPE_MAX_ENUM}) ]
 
 enum "BindingFlagBits" ''#{type VkDescriptorBindingFlagBits}
-		[''Show, ''Eq, ''Storable] [
+		[''Show, ''Eq, ''Storable, ''Bits] [
 	("BindingUpdateAfterBindBit",
 		#{const VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT}),
 	("BindingUpdateUnusedWhilePendingBit",
