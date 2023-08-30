@@ -30,6 +30,7 @@ dependencies:
 - transformers
 - monads-tf
 - filepath
+- optparse-declarative
 - JuicyPixels
 - vector
 - GLFW-b

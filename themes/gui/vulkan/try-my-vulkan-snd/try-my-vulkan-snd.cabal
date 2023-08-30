@@ -52,6 +52,7 @@ library
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -99,6 +100,7 @@ executable my-glslc
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -147,6 +149,7 @@ executable try-allocation-callbacks
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -195,6 +198,7 @@ executable try-copy-descriptor-set
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -243,6 +247,7 @@ executable try-depth-buffering
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -291,6 +296,7 @@ executable try-depth-buffering-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -339,6 +345,7 @@ executable try-dynamic-dsc-sets
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -387,6 +394,7 @@ executable try-generating-mipmaps
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -435,6 +443,7 @@ executable try-generating-mipmaps-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -483,6 +492,7 @@ executable try-hello-world
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -531,6 +541,7 @@ executable try-image-buffer
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -579,6 +590,7 @@ executable try-loading-models
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -627,6 +639,7 @@ executable try-loading-models-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -675,6 +688,7 @@ executable try-multisampling
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -723,6 +737,7 @@ executable try-multisampling-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -771,6 +786,7 @@ executable try-no-dynamic-dsc-sets
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -819,6 +835,7 @@ executable try-pipeline-cache
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -867,6 +884,7 @@ executable try-query
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -915,6 +933,7 @@ executable try-rectangle
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -963,6 +982,7 @@ executable try-rectangle-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1011,6 +1031,7 @@ executable try-saitan
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1059,6 +1080,7 @@ executable try-saitan-float
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1107,6 +1129,7 @@ executable try-saitan-simple
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1155,6 +1178,7 @@ executable try-shaderc
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1203,6 +1227,7 @@ executable try-texel-buffer-float
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1251,6 +1276,7 @@ executable try-texel-buffer-word32
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1299,6 +1325,7 @@ executable try-texture
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1347,6 +1374,7 @@ executable try-texture-image-manager-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1395,6 +1423,7 @@ executable try-texture-immutable-sampler-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1443,6 +1472,7 @@ executable try-texture-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1491,6 +1521,7 @@ executable try-triangle
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1539,6 +1570,7 @@ executable try-triangle-single
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1587,6 +1619,7 @@ executable try-vulkan-guide
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1635,6 +1668,7 @@ executable try-vulkan-guide-dynamic
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1683,6 +1717,7 @@ executable try-vulkan-guide-storage
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1731,6 +1766,7 @@ executable try-vulkan-guide-texture
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1779,6 +1815,7 @@ executable try-wavefront-obj
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1827,6 +1864,7 @@ executable try-yatteiku
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm
@@ -1876,6 +1914,7 @@ test-suite try-my-vulkan-snd-test
     , ghc-prim
     , monads-tf
     , mono-traversable
+    , optparse-declarative
     , ranged-list
     , size-alignment-list
     , stm

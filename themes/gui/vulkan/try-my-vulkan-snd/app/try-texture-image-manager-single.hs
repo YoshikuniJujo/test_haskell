@@ -147,13 +147,28 @@ import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
 
 import Tools
 
+import Options.Declarative hiding (run)
+import Control.Monad.Trans
+
 main :: IO ()
-main = do
+main = run_ command
+
+command ::
+	Flag "h" '["key-h"]
+		"FILEPATH" "texture image file path for key 'h'" [FilePath] ->
+	Flag "j" '["key-j"]
+		"FILEPATH" "texture image file path for key 'j'" [FilePath] ->
+	Flag "k" '["key-k"]
+		"FILEPATH" "texture image file path for key 'k'" [FilePath] ->
+	Flag "l" '["key-l"]
+		"FILEPATH" "texture image file path for key 'l'" [FilePath] ->
+	Cmd "Try texture" ()
+command htximg jtximg ktximg ltximg = liftIO do
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g
-			else run win inst g
+			then setupDebugMessenger inst $ run win inst g (head $ get htximg)
+			else run win inst g (head $ get htximg)
 
 type FramebufferResized = IORef Bool
 
@@ -249,8 +264,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w inst g =
+run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> FilePath -> IO ()
+run w inst g tximgfp =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -277,11 +292,17 @@ run w inst g =
 	Vk.ImgVw.manage dv nil' \ivmng ->
 	createDescriptorPool dv \dscp ->
 	createDescriptorSet' dv dscp dscslyt \ubds ->
+	updateDescriptorSet dv ubds ub >>
 
-	createTextureImage' phdv dv mng mmng gq cp >>= \tximg ->
+	createTexture phdv dv
+		gq cp ubds mng mmng ivmng txsmplr Glfw.Key'H tximgfp >>
+
+{-
+	createTextureImage' phdv dv mng mmng gq cp tximgfp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng 'Glfw.Key'H (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
-	updateDescriptorSet dv ubds ub tximgvw txsmplr >>
+		dv ivmng Glfw.Key'H (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
+	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
+	-}
 
 	atomically (newTVar M.empty) >>= \prej ->
 
@@ -292,6 +313,22 @@ run w inst g =
 	keyFlows oke [Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L] >>= \kcs ->
 
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej kcs
+
+createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.DscSet.D sds '(sdsc, '[
+		'Vk.DscSetLyt.Buffer
+			'[VObj.Atom 256 UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
+	Vk.Img.Manager si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Dvc.Mem.Manager sm Glfw.Key '[
+		'(si, 'Vk.Dvc.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
+	Vk.ImgVw.Manager siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Smplr.M.S ss -> Glfw.Key -> FilePath -> IO ()
+createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr k tximgfp =
+	createTextureImage' phdv dv mng mmng gq cp tximgfp >>= \tximg ->
+	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
+		dv ivmng k (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
+	updateDescriptorSetTex dv ubds tximgvw txsmplr
 
 {-# COMPLETE AlwaysRight #-}
 
@@ -884,10 +921,10 @@ createCommandPool qfis dvc f =
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Manager sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Manager smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
-	Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Queue.Q -> Vk.CmdPool.C sc -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
-createTextureImage' phdvc dvc mng mmng gq cp = do
-	img <- readRgba8 "../../../../files/images/texture.jpg"
+createTextureImage' phdvc dvc mng mmng gq cp tximg = do
+	img <- readRgba8 tximg
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
@@ -1170,10 +1207,19 @@ updateDescriptorSet ::
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss -> IO ()
-updateDescriptorSet dvc dscs ub tximgvw txsmp = do
+	IO ()
+updateDescriptorSet dvc dscs ub = do
 	Vk.DscSet.updateDs dvc (
-		U5 (descriptorWrite0 ub dscs) :**
+		U5 (descriptorWrite0 ub dscs) :** HeteroParList.Nil )
+		HeteroParList.Nil
+
+updateDescriptorSetTex ::
+	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, '[
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
+	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss -> IO ()
+updateDescriptorSetTex dvc dscs tximgvw txsmp = do
+	Vk.DscSet.updateDs dvc (
 		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HeteroParList.Nil )
 		HeteroParList.Nil
 
