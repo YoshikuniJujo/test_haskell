@@ -135,7 +135,7 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
+import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
@@ -149,6 +149,8 @@ import Tools
 
 import Options.Declarative hiding (run)
 import Control.Monad.Trans
+
+import Gpu.Vulkan.DescriptorSetLayout.BindingFlags qualified as Vk.DscSetLyt.BFlgs
 
 main :: IO ()
 main = run_ command
@@ -702,11 +704,11 @@ createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 	where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
+	layoutInfo :: Vk.DscSetLyt.CreateInfo ('Just (Vk.DscSetLyt.BFlgs.CreateInfo 'Nothing)) '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = TMaybe.N,
+		Vk.DscSetLyt.createInfoNext = TMaybe.J bindingFlagsInfo,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings =
 			uboLayoutBinding :**
@@ -725,6 +727,13 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 			Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
+	bindingFlagsInfo = Vk.DscSetLyt.BFlgs.CreateInfo {
+		Vk.DscSetLyt.BFlgs.createInfoNext = TMaybe.N,
+		Vk.DscSetLyt.BFlgs.createInfoBindingFlagsList = [
+			zeroBits,
+			Vk.Dsc.BindingUpdateAfterBindBit -- .|.
+--			Vk.Dsc.BindingUpdateUnusedWhilePendingBit
+			] }
 
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sdsl sl .
