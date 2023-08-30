@@ -75,6 +75,8 @@ enum "Result" ''#{type VkResult}
 	("OperationNotDeferredKhr", #{const VK_OPERATION_NOT_DEFERRED_KHR}),
 	("ErrorCompressionExhaustedExt",
 		#{const VK_ERROR_COMPRESSION_EXHAUSTED_EXT}),
+	("ErrorIncompatibleShaderBinaryExt",
+		#{const VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT}),
 	("ErrorOutOfPoolMemoryKhr", #{const VK_ERROR_OUT_OF_POOL_MEMORY_KHR}),
 	("ErrorInvalidExternalHandleKhr",
 		#{const VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR}),
