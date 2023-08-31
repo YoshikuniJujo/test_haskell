@@ -24,7 +24,6 @@ import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
-import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
@@ -152,6 +151,8 @@ import Control.Monad.Trans
 
 import Gpu.Vulkan.DescriptorSetLayout.BindingFlags qualified as Vk.DscSetLyt.BFlgs
 
+import Keyboard qualified as K
+
 main :: IO ()
 main = run_ command
 
@@ -166,11 +167,8 @@ command ::
 		"FILEPATH" "texture image file path for key 'l'" [FilePath] ->
 	Cmd "Try texture" ()
 command htximg jtximg ktximg ltximg = liftIO do
-	let	kis = foldr (uncurry M.insert) M.empty $ zip
-			[Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L]
-			(head <$> [
-				get htximg, get jtximg,
-				get ktximg, get ltximg ])
+	let	kis = foldr (uncurry M.insert) M.empty . zip K.hjkl $ head
+			<$> [get htximg, get jtximg, get ktximg, get ltximg]
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
@@ -307,13 +305,9 @@ run w inst g kis =
 
 	crtx Glfw.Key'H >>
 
-	atomically (newTVar M.empty) >>= \prej ->
+	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
 
-	atomically newTChan >>= \oke ->
-
-	keyFlows oke [Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L] >>= \kcs ->
-
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm prej oke kcs crtx udtx
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm oke prkcs crtx udtx
 
 createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.D sds '(sdsc, '[
@@ -1468,23 +1462,25 @@ mainLoop ::
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime ->
-	TVar (M.Map Glfw.Key Glfw.KeyState) ->
-	TChan KeyEvent ->
-	M.Map Glfw.Key (TChan ()) ->
+	TChan K.KeyEvent -> K.Envs ->
 	(Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 prej oke kcs crtx udtx = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 oke prkcs crtx udtx = do
 	($ ext0) $ fix \loop ext -> do
 		me <- atomically do
 			b <- isEmptyTChan oke
 			if b then pure Nothing else Just <$> readTChan oke
-		maybe (pure ()) (\case First k -> crtx k; Key k -> udtx k) me
+		maybe (pure ()) (\case
+			K.First k | K.isHjkl k -> crtx k
+			K.Key k | K.isHjkl k -> udtx k
+			k -> print k
+			) me
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs
 			rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) prej kcs loop
+			(realToFrac $ tm `diffUTCTime` tm0) prkcs loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop ::
@@ -1506,73 +1502,18 @@ runLoop ::
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> Float ->
-	TVar (M.Map Glfw.Key Glfw.KeyState) -> M.Map Glfw.Key (TChan ()) ->
+	SyncObjects '(sias, srfs, siff) -> Float -> K.Envs ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm prej kcs loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm prkcs loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs
 		rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
-	sendKey prej win kcs `mapM_` [Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L]
+	K.sendKeys win prkcs
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs
 			rp ppllyt gpl fbs)
-
-sendKey ::
-	TVar (M.Map Glfw.Key Glfw.KeyState) -> Glfw.Window ->
-	M.Map Glfw.Key (TChan ()) -> Glfw.Key -> IO ()
-sendKey pre win kcs k =
-	keyDown pre win k >>= bool (pure ()) (atomically $ writeTChan (kcs M.! k) ())
-
-keyDown :: TVar (M.Map Glfw.Key Glfw.KeyState) -> Glfw.Window -> Glfw.Key -> IO Bool
-keyDown st w k = do
-	now <- Glfw.getKey w k
-	pre <- atomically
-		$ (indexWithDefault Glfw.KeyState'Released k <$> readTVar st)
-			<* modifyTVar st (M.insert k now)
-	pure case (pre, now) of
-		(Glfw.KeyState'Released, Glfw.KeyState'Pressed) -> True
-		_ -> False
-
-keyFlows :: TChan KeyEvent -> [Glfw.Key] -> IO (M.Map Glfw.Key (TChan ()))
-keyFlows oke = \case
-	[] -> pure M.empty
-	Glfw.Key'H : ks -> do
-		ip <- keyFlow0 oke Glfw.Key'H
-		ips <- keyFlows oke ks
-		pure $ M.insert Glfw.Key'H ip ips
-	k : ks -> do
-		ip <- keyFlow oke k
-		ips <- keyFlows oke ks
-		pure $ M.insert k ip ips
-
-keyFlow0 :: TChan KeyEvent -> Glfw.Key -> IO (TChan ())
-keyFlow0 oke k = do
-	ip <- atomically newTChan
-	_ <- forkIO $ flow ip oke (repeat (Key k))
-	pure ip
-
-keyFlow :: TChan KeyEvent -> Glfw.Key -> IO (TChan ())
-keyFlow oke k = do
-	ip <- atomically newTChan
-	_ <- forkIO $ flow ip oke (First k : repeat (Key k))
-	pure ip
-
-flow :: TChan () -> TChan a -> [a] -> IO ()
-flow ip op = \case
-	[] -> error "no more"
-	x : xs -> do
-		atomically do
-			_ <- readTChan ip
-			writeTChan op x
-		flow ip op xs
-
-data KeyEvent = First Glfw.Key | Key Glfw.Key deriving Show
-
-indexWithDefault :: Ord k => v -> k -> M.Map k v -> v
-indexWithDefault d k = fromMaybe d . M.lookup k
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
