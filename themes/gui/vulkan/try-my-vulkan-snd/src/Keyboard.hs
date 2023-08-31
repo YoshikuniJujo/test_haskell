@@ -41,6 +41,10 @@ keyFlows oke = \case
 		ip <- keyFlow0 oke Glfw.Key'H
 		ips <- keyFlows oke ks
 		pure $ M.insert Glfw.Key'H ip ips
+	Glfw.Key'G : ks -> do
+		ip <- keyFlow0 oke Glfw.Key'G
+		ips <- keyFlows oke ks
+		pure $ M.insert Glfw.Key'G ip ips
 	k : ks -> do
 		ip <- keyFlow oke k
 		ips <- keyFlows oke ks
