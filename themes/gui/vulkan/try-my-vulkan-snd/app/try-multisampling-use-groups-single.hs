@@ -128,7 +128,6 @@ import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
-import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
@@ -279,8 +278,7 @@ run txfp mdlfp mnld w inst g =
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit mplvs \tximgvw ->
 	createTextureSampler phdv dv mplvs mnld \txsmplr ->
 	loadModel mdlfp >>= \(vtcs, idcs) ->
-	createVertexBuffer phdv dv gq cp vtcs \vb ->
-	createIndexBuffer phdv dv gq cp idcs \ib ->
+
 	createUniformBuffer phdv dv \ub ubm ->
 	createDescriptorPool dv \dscp ->
 	createDescriptorSet dv dscp ub tximgvw txsmplr dscslyt \ubds ->
@@ -290,9 +288,15 @@ run txfp mdlfp mnld w inst g =
 
 	K.newChans' K.gf >>= \(cke, kenvs) ->
 
+	Vk.Bffr.group dv nil' \grp -> Vk.Mem.manage dv nil' \mng ->
+	Vk.Bffr.group dv nil' \grp' -> Vk.Mem.manage dv nil' \mng' ->
+
+	createVertexBuffer' phdv dv grp mng Glfw.Key'G gq cp vtcs >>= \vb ->
+	createIndexBuffer' phdv dv grp' mng' Glfw.Key'G gq cp idcs >>= \ib ->
+
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		(clrimg, clrimgm, clrimgvw, spcnt)
-		dptImg dptImgMem dptImgVw idcs vb ib ubm ubds cb sos tm cke kenvs
+		dptImg dptImgMem dptImgVw idcs (grp, mng) (grp', mng') (vb, ib) ubm ubds cb sos tm cke kenvs
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -1416,14 +1420,16 @@ loadModel fp = do
 	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector Word32))
 	pure (vtcs', idcs')
 
-createVertexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector WVertex ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] -> IO a ) -> IO a
-createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBufferList phdvc dvc (fromIntegral $ V.length vtcs)
+createVertexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sb k nm '[VObj.List 256 WVertex ""] ->
+	Vk.Mem.Manager sm k
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 WVertex ""])] ->
+	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector WVertex ->
+	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""])
+createVertexBuffer' phdvc dvc grp mng k gq cp vtcs =
+	createBufferList' phdvc dvc grp mng k (fromIntegral $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+		Vk.Mem.PropertyDeviceLocalBit >>= \(b, _) -> do
 	createBufferList phdvc dvc (fromIntegral $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
@@ -1436,15 +1442,18 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 		Vk.Mem.write
 			@"vertex-buffer" @(VObj.List 256 WVertex "") dvc bm' zeroBits vtcs
 		copyBuffer dvc gq cp b' b
-	f b
+	pure b
 
-createIndexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 Word32 ""] -> IO a) -> IO a
-createIndexBuffer phdvc dvc gq cp idcs f =
-	createBufferList phdvc dvc (fromIntegral $ V.length idcs)
+createIndexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sb k nm '[VObj.List 256 Word32 ""] ->
+	Vk.Mem.Manager sm k
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Word32 ""])]  ->
+	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 ->
+	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 Word32 ""])
+createIndexBuffer' phdvc dvc grp mng k gq cp idcs = do
+	(b, _) <- createBufferList' phdvc dvc grp mng k (fromIntegral $ V.length idcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
+		Vk.Mem.PropertyDeviceLocalBit
 	createBufferList phdvc dvc (fromIntegral $ V.length idcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
@@ -1454,10 +1463,10 @@ createIndexBuffer phdvc dvc gq cp idcs f =
 				sb,
 				'Vk.Mem.BufferArg "index-buffer"
 					'[ VObj.List 256 Word32 ""] ) ]) -> do
-	Vk.Mem.write
-		@"index-buffer" @(VObj.List 256 Word32 "") dvc bm' zeroBits idcs
-	copyBuffer dvc gq cp b' b
-	f b
+		Vk.Mem.write
+			@"index-buffer" @(VObj.List 256 Word32 "") dvc bm' zeroBits idcs
+		copyBuffer dvc gq cp b' b
+	pure b
 
 createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[ VObj.Atom 256 UniformBufferObject 'Nothing]  ->
@@ -1560,7 +1569,21 @@ createBufferList :: forall sd nm t a . Storable t =>
 	IO a
 createBufferList p dv ln usg props f =
 	Vk.Bffr.group dv nil' \grp -> Vk.Mem.manage dv nil' \mng ->
-	uncurry f =<< createBuffer' p dv grp mng (VObj.LengthList ln) usg props
+	uncurry f =<< createBufferList' p dv grp mng () ln usg props
+
+createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sb k nm '[VObj.List 256 t ""] ->
+	Vk.Mem.Manager sm k
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
+	k -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Mem.PropertyFlags -> IO (
+		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 t ""],
+		Vk.Mem.M sm '[ '(
+			sb,
+			'Vk.Mem.BufferArg nm '[ VObj.List 256 t ""] ) ])
+createBufferList' p dv grp mng k ln usg props =
+	createBuffer' p dv grp mng k (VObj.LengthList ln) usg props
 
 createBufferImage :: Storable (KObj.ImagePixel t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
@@ -1582,22 +1605,22 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		IO a) -> IO a
 createBuffer p dv ln usg props f =
 	Vk.Bffr.group dv nil' \grp -> Vk.Mem.manage dv nil' \mng ->
-	uncurry f =<< createBuffer' p dv grp mng ln usg props
+	uncurry f =<< createBuffer' p dv grp mng () ln usg props
 
-createBuffer' :: forall sd nm o a sm sb . VObj.SizeAlignment o =>
+createBuffer' :: forall sd nm o sm sb k . (Ord k, VObj.SizeAlignment o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group sb () nm '[o] ->
-	Vk.Mem.Manager sm () '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
-	VObj.Length o ->
+	Vk.Bffr.Group sb k nm '[o] ->
+	Vk.Mem.Manager sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
+	k -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
 		Vk.Bffr.Binded sm sb nm '[o],
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] )
-createBuffer' p dv grp mng ln usg props = do
-	Right b <- Vk.Bffr.create' dv grp () bffrInfo nil'
+createBuffer' p dv grp mng k ln usg props = do
+	Right b <- Vk.Bffr.create' dv grp k bffrInfo nil'
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Right ((HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))), m) <- do
-		Vk.Mem.allocateBind' dv mng () (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil'
+		Vk.Mem.allocateBind' dv mng k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil'
 	pure (bnd, m)
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
@@ -1731,6 +1754,15 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 			Vk.ClearValueDepthStencil (Vk.ClearDepthStencilValue 1 0) :**
 			HeteroParList.Nil }
 
+type VertexIndexBuffer sm sb sm' sb' nm nm' = (
+	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""],
+	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""])
+
+type GroupAndManager sm sb k nm t = (
+	Vk.Bffr.Group sb k nm '[VObj.List 256 t ""],
+	Vk.Mem.Manager sm k
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])])
+
 mainLoop :: (
 	RecreateFramebuffers ss sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
@@ -1753,8 +1785,9 @@ mainLoop :: (
 		sdm '[ '(sdi, 'Vk.Mem.ImageArg "depth-buffer" dptfmt)] ->
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	V.Vector Word32 ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""] ->
+	GroupAndManager sm sb Glfw.Key nm WVertex ->
+	GroupAndManager sm' sb' Glfw.Key nm' Word32 ->
+	VertexIndexBuffer sm sb sm' sb' nm nm' ->
 	Vk.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mem.BufferArg "uniform-buffer"
@@ -1765,18 +1798,15 @@ mainLoop :: (
 	TChan K.KeyEvent ->
 	K.Envs -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp clrrscs
-	dptImg dptImgMem dptImgVw idcs vb ib ubm ubds cb iasrfsifs tm0 cke kenvs = do
-	($ ext0) $ fix \loop ext -> do
-		me <- atomically do
-			b <- isEmptyTChan cke
-			if b then pure Nothing else Just <$> readTChan cke
-		maybe (pure ()) print me
+	dptImg dptImgMem dptImgVw idcs0 grpmng grpmng' vbib0 ubm ubds cb iasrfsifs tm0 cke kenvs = do
+	($ idcs0) . ($ vbib0) . ($ ext0) $ fix \loop ext vbib idcs -> do
 		K.sendKeys w kenvs
 		Glfw.pollEvents
 		tm <- getCurrentTime
+--		let	vbib = vbib0
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs
-			rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs idcs vb ib ubm ubds cb iasrfsifs
+			rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs idcs cke grpmng grpmng' vbib ubm ubds cb iasrfsifs
 			(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 
@@ -1799,8 +1829,10 @@ runLoop :: (
 	Vk.CmdPool.C sc ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""] ->
+	TChan K.KeyEvent ->
+	GroupAndManager sm sb Glfw.Key nm WVertex ->
+	GroupAndManager sm' sb' Glfw.Key nm' Word32 ->
+	VertexIndexBuffer sm sb sm' sb' nm nm' ->
 	Vk.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mem.BufferArg "uniform-buffer"
@@ -1808,16 +1840,35 @@ runLoop :: (
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
-	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs idcs vb ib ubm ubds cb iasrfsifs tm loop = do
+	(Vk.Extent2d -> VertexIndexBuffer sm sb sm' sb' nm nm' -> V.Vector Word32 -> IO ()) -> IO ()
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
+	dptImg dptImgMem dptImgVw cp fbs idcs cke (grp, mng) (grp', mng') vbib@(vb, ib) ubm ubds cb iasrfsifs tm loop = do
+	me <- atomically do
+		b <- isEmptyTChan cke
+		if b then pure Nothing else Just <$> readTChan cke
+	(vbib', idcs'') <- maybe (pure (vbib, idcs)) (\case
+		K.First Glfw.Key'F -> loadModel "../../../../files/models/monkey_smooth.obj" >>= \(vtcs, idcs') -> do
+			vb' <- createVertexBuffer' phdvc dvc grp mng Glfw.Key'F gq cp vtcs
+			ib' <- createIndexBuffer' phdvc dvc grp' mng' Glfw.Key'F gq cp idcs'
+			pure ((vb', ib'), idcs')
+			{-
+		K.Key k | isGf k -> do
+			Just vb' <- Vk.Buffer.lookup grp k
+			Just ib' <- Vk.Buffer.lookup grp' k
+			pure ((vb', ib')
+			-}
+		e -> do	print e
+			pure (vbib, idcs)
+		) me
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs
-		rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib ubm ubds cb iasrfsifs tm
+		rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs vbib' idcs'' loop
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs'' vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
-	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
-			win sfc phdvc qfis dvc gq sc scivs
-			rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs)
+	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext vbib' idcs'')
+		(do	ext' <- recreateSwapChainEtc
+				win sfc phdvc qfis dvc gq sc scivs
+				rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs
+			loop ext' vbib' idcs'')
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
@@ -1910,15 +1961,18 @@ catchAndRecreate :: (
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPool.C sc ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs loop act =
+	VertexIndexBuffer sm sm' sb sb' nm nm' -> V.Vector Word32 ->
+	(Vk.Extent2d -> VertexIndexBuffer sm sm' sb sb' nm nm' -> V.Vector Word32 -> IO ()) -> IO () -> IO ()
+catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs vbib idcs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapChainEtc
-		win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs
+	\_ -> do
+		ext' <- recreateSwapChainEtc
+			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs
+		loop ext' vbib idcs
 
 recreateSwapChainEtc :: (
 	RecreateFramebuffers sis sfs,

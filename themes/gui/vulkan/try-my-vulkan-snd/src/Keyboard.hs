@@ -10,7 +10,7 @@ module Keyboard (
 
 	-- * KEY SETS
 
-	hjkl, gf, isHjkl
+	hjkl, gf, isHjkl, isGf
 
 	) where
 
@@ -76,6 +76,9 @@ isHjkl = (`elem` hjkl)
 
 hjkl :: [Glfw.Key]
 hjkl = [Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L]
+
+isGf :: Glfw.Key -> Bool
+isGf = (`elem` gf)
 
 gf :: [Glfw.Key]
 gf = [Glfw.Key'G, Glfw.Key'F]
