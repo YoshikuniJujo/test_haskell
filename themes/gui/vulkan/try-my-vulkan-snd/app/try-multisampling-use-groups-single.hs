@@ -1764,6 +1764,14 @@ type GroupAndManager sm sb k nm t = (
 	Vk.Mem.Manager sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])])
 
+bindedBuffer ::
+	Vk.Mem.M sm
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
+	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""])
+bindedBuffer m = do
+	HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded b)) <- Vk.Mem.getBinded m
+	pure b
+
 mainLoop :: (
 	RecreateFramebuffers ss sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
@@ -1853,12 +1861,12 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
 			ib' <- createIndexBuffer' phdvc dvc grp' mng' Glfw.Key'F gq cp idcs'
 			print $ Vk.Bffr.lengthBinded ib'
 			pure ((vb', ib'), idcs')
-			{-
 		K.Key k | K.isGf k -> do
-			Just vb' <- Vk.Bffr.lookup grp k
-			Just ib' <- Vk.Bffr.lookup grp' k
+			Just vm <- Vk.Mem.lookup mng k
+			Just im <- Vk.Mem.lookup mng' k
+			vb' <- bindedBuffer vm
+			ib' <- bindedBuffer im
 			pure ((vb', ib'), idcs)
-			-}
 		e -> do	print e
 			pure (vbib, idcs)
 		) me
