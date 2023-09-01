@@ -44,6 +44,8 @@ module Gpu.Vulkan.Object (
 	pattern LengthDynList,
 	pattern LengthDynImage,
 
+	pattern LengthList',
+
 	-- ** Find Length
 
 	LengthOf(..),
@@ -86,10 +88,11 @@ import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import Data.Maybe
+import Data.Word
 
 import Foreign.Storable (Storable)
 import Gpu.Vulkan.Object.Base qualified as K
-import Gpu.Vulkan.Device.Middle qualified as Device.M
+import Gpu.Vulkan.Device.Middle.Internal qualified as Device.M
 
 -- OBJECT
 
@@ -124,11 +127,15 @@ pattern LengthAtom :: Length ('Static_ (K.Atom algn v nm))
 pattern LengthAtom <- LengthStatic K.LengthAtom where
 	LengthAtom = LengthStatic K.LengthAtom
 
-{-# COMPLETE LengthList #-}
+{-# COMPLETE LengthList, LengthList' #-}
 
 pattern LengthList :: Device.M.Size -> Length ('Static_ (K.List algn v nm))
 pattern LengthList n <- LengthStatic (K.LengthList n) where
 	LengthList n = LengthStatic (K.LengthList n)
+
+pattern LengthList' :: Word64 -> Length ('Static_ (K.List algn v nm))
+pattern LengthList' n <- LengthStatic (K.LengthList (Device.M.Size n)) where
+	LengthList' n = LengthStatic (K.LengthList (Device.M.Size n))
 
 {-# COMPLETE LengthImage #-}
 
