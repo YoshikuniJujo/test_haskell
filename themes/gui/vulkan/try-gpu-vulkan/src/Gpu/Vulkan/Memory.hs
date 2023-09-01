@@ -122,9 +122,7 @@ allocateBind' dv (Manager mib mng) k ibs ai mac = do
 		Left msg -> pure $ Left msg
 		Right m -> do
 			rtn@(_, M iibs _) <- (, m) <$> bindAll dv ibs m 0
-			putStrLn "Gpu.Vulkan.Memory.allocateBind': before atomically"
 			atomically $ modifyTVar mib (Map.insert k iibs)
-			putStrLn "Gpu.Vulkan.Memory.allocateBind': after atomically"
 			pure $ Right rtn
 
 allocate' :: (
