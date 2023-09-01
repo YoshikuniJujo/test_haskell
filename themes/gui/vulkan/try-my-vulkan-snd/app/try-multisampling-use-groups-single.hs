@@ -1423,7 +1423,7 @@ createVertexBuffer :: Vk.PhDvc.P ->
 createVertexBuffer phdvc dvc gq cp vtcs f =
 	createBufferList phdvc dvc (fromIntegral $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
+		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
 	createBufferList phdvc dvc (fromIntegral $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
@@ -1433,9 +1433,9 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 				sb,
 				'Vk.Dvc.Mem.ImageBuffer.BufferArg "vertex-buffer"
 					'[ VObj.List 256 WVertex ""] ) ]) -> do
-	Vk.Dvc.Mem.ImageBuffer.write
-		@"vertex-buffer" @(VObj.List 256 WVertex "") dvc bm' zeroBits vtcs
-	copyBuffer dvc gq cp b' b
+		Vk.Dvc.Mem.ImageBuffer.write
+			@"vertex-buffer" @(VObj.List 256 WVertex "") dvc bm' zeroBits vtcs
+		copyBuffer dvc gq cp b' b
 	f b
 
 createIndexBuffer :: Vk.PhDvc.P ->
