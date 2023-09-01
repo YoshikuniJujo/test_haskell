@@ -128,9 +128,8 @@ create' :: (
 	Ord k, WithPoked (TMaybe.M mn),
 	VObj.SizeAlignmentList objs, AllocationCallbacks.ToMiddle ma ) =>
 	Device.D sd -> Group sg k nm objs -> k -> CreateInfo mn objs ->
-	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
-	(forall sb . Either String (B sb nm objs) -> IO a) -> IO a
-create' (Device.D dvc) (Group sem bs) k ci (AllocationCallbacks.toMiddle -> mac) f = do
+	TPMaybe.M (U2 AllocationCallbacks.A) ma -> IO (Either String (B sg nm objs))
+create' (Device.D dvc) (Group sem bs) k ci (AllocationCallbacks.toMiddle -> mac) = do
 	ok <- atomically do
 		mx <- (Map.lookup k) <$> readTVar bs
 		case mx of
@@ -140,8 +139,8 @@ create' (Device.D dvc) (Group sem bs) k ci (AllocationCallbacks.toMiddle -> mac)
 	then do	b <- M.create dvc (createInfoToMiddle ci) mac
 		let b' = B (createInfoLengths ci) b
 		atomically $ modifyTVar bs (Map.insert k b') >> signalTSem sem
-		f $ Right b'
-	else f . Left $ "Gpu.Vulkan.Buffer.create': The key already exist"
+		pure $ Right b'
+	else pure . Left $ "Gpu.Vulkan.Buffer.create': The key already exist"
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Device.D sd -> Group sg k nm objs -> k ->
