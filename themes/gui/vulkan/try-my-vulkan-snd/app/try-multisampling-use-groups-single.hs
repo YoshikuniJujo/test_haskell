@@ -1737,7 +1737,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 		(HeteroParList.Singleton $ U2 ubds)
 		(HeteroParList.Singleton
 			(HeteroParList.Nil :** HeteroParList.Nil :** HeteroParList.Nil)) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ V.length idcs) 1 0 0 0
+--	Vk.Cmd.drawIndexed cbb (fromIntegral $ V.length idcs) 1 0 0 0
+	Vk.Cmd.drawIndexed cbb (indexBufferLength ib) 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf '[
 		'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32,
@@ -1850,12 +1851,13 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
 		K.First Glfw.Key'F -> loadModel "../../../../files/models/monkey_smooth.obj" >>= \(vtcs, idcs') -> do
 			vb' <- createVertexBuffer' phdvc dvc grp mng Glfw.Key'F gq cp vtcs
 			ib' <- createIndexBuffer' phdvc dvc grp' mng' Glfw.Key'F gq cp idcs'
+			print $ Vk.Bffr.lengthBinded ib'
 			pure ((vb', ib'), idcs')
 			{-
-		K.Key k | isGf k -> do
-			Just vb' <- Vk.Buffer.lookup grp k
-			Just ib' <- Vk.Buffer.lookup grp' k
-			pure ((vb', ib')
+		K.Key k | K.isGf k -> do
+			Just vb' <- Vk.Bffr.lookup grp k
+			Just ib' <- Vk.Bffr.lookup grp' k
+			pure ((vb', ib'), idcs)
 			-}
 		e -> do	print e
 			pure (vbib, idcs)
@@ -1869,6 +1871,11 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
 				win sfc phdvc qfis dvc gq sc scivs
 				rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs
 			loop ext' vbib' idcs'')
+
+indexBufferLength :: Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""] -> Word32
+indexBufferLength ib = let
+	HeteroParList.Singleton (VObj.LengthList' sz) = Vk.Bffr.lengthBinded ib
+	in fromIntegral sz
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
