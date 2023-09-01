@@ -49,8 +49,12 @@ data M s (ibargs :: [(Type, ImageBufferArg)]) =
 newM :: HeteroParList.PL (U2 ImageBuffer) ibargs -> M.M -> IO (M s ibargs)
 newM ibs mm = (`M` mm) <$> newIORef ibs
 
-getBinded :: M s ibargs -> IO (HeteroParList.PL (U2 ImageBuffer) ibargs)
-getBinded m = fst <$> readM m
+getBinded :: M s ibargs -> IO (HeteroParList.PL (U2 (ImageBufferBinded s)) ibargs)
+getBinded m = HeteroParList.map toBinded . fst <$> readM m
+	where
+	toBinded :: U2 ImageBuffer ibarg -> U2 (ImageBufferBinded sm) ibarg
+	toBinded (U2 (Image (I.I i))) = U2 . ImageBinded $ I.Binded i
+	toBinded (U2 (Buffer (B.B x b))) = U2 . BufferBinded $ B.Binded x b
 
 readM :: M s ibargs -> IO (HeteroParList.PL (U2 ImageBuffer) ibargs, M.M)
 readM (M ib m) = (, m) <$> readIORef ib
