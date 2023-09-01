@@ -19,6 +19,8 @@ module Gpu.Vulkan.Memory.Type (
 
 	newM, readM, writeMBinded,
 
+	getBinded,
+
 	-- * OBJECT LENGTH
 
 	objectLength
@@ -46,6 +48,9 @@ data M s (ibargs :: [(Type, ImageBufferArg)]) =
 
 newM :: HeteroParList.PL (U2 ImageBuffer) ibargs -> M.M -> IO (M s ibargs)
 newM ibs mm = (`M` mm) <$> newIORef ibs
+
+getBinded :: M s ibargs -> IO (HeteroParList.PL (U2 ImageBuffer) ibargs)
+getBinded m = fst <$> readM m
 
 readM :: M s ibargs -> IO (HeteroParList.PL (U2 ImageBuffer) ibargs, M.M)
 readM (M ib m) = (, m) <$> readIORef ib

@@ -22,7 +22,7 @@ module Gpu.Vulkan.Memory (
 
 	-- ** MEMORY
 
-	M, ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
+	M, getBinded, ImageBuffer(..), ImageBufferBinded(..), ImageBufferArg(..),
 
 	-- ** ALLOCATE INFO
 
