@@ -23,7 +23,7 @@ module Gpu.Vulkan.Buffer.Internal (
 
 	-- * BINDED
 
-	getMemoryRequirements, Binded,
+	getMemoryRequirements, Binded, lengthBinded,
 	IndexedForList(..), indexedListToMiddles, indexedListToMiddle,
 
 	-- * COPY

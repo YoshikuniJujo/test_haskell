@@ -26,6 +26,9 @@ deriving instance Eq (HeteroParList.PL VObj.Length objs) =>
 data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [VObj.O]) =
 	Binded (HeteroParList.PL VObj.Length objs) M.B
 
+lengthBinded :: Binded sm sb nm objs -> HeteroParList.PL VObj.Length objs
+lengthBinded (Binded ln _) = ln
+
 deriving instance Show (HeteroParList.PL VObj.Length objs) =>
 	Show (Binded sm sb nm objs)
 
