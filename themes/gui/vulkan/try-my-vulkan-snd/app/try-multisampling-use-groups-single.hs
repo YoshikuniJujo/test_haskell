@@ -1580,7 +1580,8 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
+createBuffer p dv ln usg props f = Vk.Bffr.group dv nil' \grp -> do
+	Right b <- Vk.Bffr.create' dv grp () bffrInfo nil'
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Dvc.Mem.ImageBuffer.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b)
