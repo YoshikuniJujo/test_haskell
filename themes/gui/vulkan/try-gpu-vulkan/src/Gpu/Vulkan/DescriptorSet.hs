@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
@@ -15,6 +15,10 @@ module Gpu.Vulkan.DescriptorSet (
 	-- * ALLOCATE
 
 	allocateDs, D, AllocateInfo(..), DListFromMiddle, DefaultDynamicLengths,
+
+	-- ** Descriptor Set Group
+
+	Group, group, allocateDs', freeDs,
 
 	-- * UPDATE
 
@@ -60,6 +64,10 @@ import Gpu.Vulkan.DescriptorSet.Copy
 import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.Object.Base qualified as KObj
+
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
+import Data.Map qualified as Map
 
 layoutToMiddle :: U2 Layout.D slbts -> Layout.M.D
 layoutToMiddle (U2 (Layout.D l)) = l
@@ -113,6 +121,57 @@ allocateDs (Device.D dvc) ai f = do
 	f ds <* M.freeDs dvc
 		((\(Descriptor.Pool.P p) -> p) $ allocateInfoDescriptorPool ai)
 		dsm
+
+data Group s k sp slbtss = Group TSem
+	(TVar (Map.Map k (Descriptor.Pool.P sp, HeteroParList.PL (D s) slbtss)))
+
+group :: Device.D sd -> (forall s . Group s k sp slbtss -> IO a) -> IO a
+group (Device.D mdvc) f = do
+	(sem, dsss) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
+	rtn <- f $ Group sem dsss
+	((\(Descriptor.Pool.P dsp, dss) -> M.freeDs mdvc dsp $ dListToMiddle dss) `mapM_`) =<<
+		(Map.elems <$> atomically (readTVar dsss))
+	pure rtn
+
+allocateDs' :: (Ord k, WithPoked (TMaybe.M mn), DListFromMiddle slbtss) =>
+	Device.D sd -> Group sg k sp slbtss -> k -> AllocateInfo mn sp slbtss ->
+	IO (Either String (HeteroParList.PL (D sg) slbtss))
+allocateDs' (Device.D dvc) (Group sem mp) k ai = do
+	ok <- atomically do
+		mx <- (Map.lookup k) <$> readTVar mp
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	dsm <- M.allocateDs dvc (allocateInfoToMiddle ai)
+		ds <- dListFromMiddle dsm
+		atomically $ modifyTVar mp (Map.insert k (sp, ds))
+		Right ds <$ M.freeDs dvc
+			((\(Descriptor.Pool.P p) -> p) $ allocateInfoDescriptorPool ai)
+			dsm
+	else pure . Left
+		$ "Gpu.Vulkan.DescriptorSet.allocateDs': The key already exist"
+--	where Descriptor.Pool.P sp  = allocateInfoDescriptorPool ai
+	where sp  = allocateInfoDescriptorPool ai
+
+freeDs :: Ord k => Device.D sd -> Group sg k sp slbtss -> k -> IO (Either String ())
+freeDs (Device.D mdvc) (Group sem mp) k = do
+	md <- atomically do
+		mx <- Map.lookup k <$> readTVar mp
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case md of
+		Nothing -> pure $ Left "Gpu.Vulkan.DescriptorSet.freeDs"
+		Just (Descriptor.Pool.P p, ds) -> do
+			M.freeDs mdvc p (dListToMiddle ds)
+			atomically do
+				modifyTVar mp (Map.delete k)
+				signalTSem sem
+				pure $ Right ()
+
+dListToMiddle :: HeteroParList.PL (D s) slbtss -> [M.D]
+dListToMiddle = HeteroParList.toList \(D _ md) -> md
 
 updateDs :: (
 	W.WriteListToMiddle writeArgs,
