@@ -136,6 +136,7 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
+import qualified Gpu.Vulkan.DescriptorSetLayout.Enum as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
@@ -222,6 +223,7 @@ createInstance f = do
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers . (Vk.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
+	let extensions' = Vk.ExtensionName "VK_KHR_get_physical_device_properties2" : extensions
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
@@ -241,7 +243,7 @@ createInstance f = do
 			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
+			Vk.Ist.M.createInfoEnabledExtensionNames = extensions' }
 	Vk.Ist.create createInfo nil' \i -> f i
 
 setupDebugMessenger ::
@@ -413,7 +415,11 @@ checkDeviceExtensionSupport dvc =
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
 deviceExtensions :: [Vk.ExtensionName]
-deviceExtensions = [Vk.Khr.Swapchain.extensionName]
+deviceExtensions = [
+	Vk.Khr.Swapchain.extensionName, Vk.Dsc.extensionNameIndexing ]
+--	Vk.Khr.Swapchain.extensionName ]
+
+deviceExtensions' = Vk.ExtensionName "VK_KHR_maintenance3" : deviceExtensions
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	capabilities :: Vk.Khr.Surface.M.Capabilities,
@@ -438,7 +444,7 @@ createLogicalDevice phdvc qfis f =
 			Vk.Dvc.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
-				deviceExtensions,
+				deviceExtensions',
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
 				Vk.PhDvc.featuresSamplerAnisotropy = True } } in
 	Vk.Dvc.create phdvc createInfo nil' \dvc -> do
@@ -703,7 +709,8 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.J bindingFlagsInfo,
-		Vk.DscSetLyt.createInfoFlags = zeroBits,
+--		Vk.DscSetLyt.createInfoFlags = zeroBits,
+		Vk.DscSetLyt.createInfoFlags = Vk.DscSetLyt.CreateUpdateAfterBindPoolBit,
 		Vk.DscSetLyt.createInfoBindings =
 			uboLayoutBinding :**
 			samplerLayoutBinding :**
@@ -1191,7 +1198,8 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 	poolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = TMaybe.N,
 		Vk.DscPool.createInfoFlags =
-			Vk.DscPool.CreateFreeDescriptorSetBit,
+			Vk.DscPool.CreateFreeDescriptorSetBit .|.
+			Vk.DscPool.CreateUpdateAfterBindBit,
 		Vk.DscPool.createInfoMaxSets = 1,
 		Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
 	poolSize0 = Vk.DscPool.Size {
