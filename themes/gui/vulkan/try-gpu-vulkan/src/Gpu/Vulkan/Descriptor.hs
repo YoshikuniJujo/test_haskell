@@ -2,6 +2,10 @@
 
 module Gpu.Vulkan.Descriptor (
 
+	-- * EXTENSION NAME
+
+	extensionNameIndexing,
+
 	-- * BUFFER INFO
 
 	BufferInfo(..),

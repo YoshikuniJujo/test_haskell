@@ -11,6 +11,10 @@
 
 module Gpu.Vulkan.Descriptor.Internal (
 
+	-- * EXTENSION NAME
+
+	extensionNameIndexing,
+
 	-- * BUFFER INFO
 
 	BufferInfo(..), bufferInfoToMiddle,
@@ -21,6 +25,8 @@ module Gpu.Vulkan.Descriptor.Internal (
 	ImageInfoNoSampler(..), imageInfoNoSamplerToMiddle
 
 	) where
+
+import Gpu.Vulkan
 
 import Gpu.Vulkan.Object qualified as VObj
 
@@ -34,6 +40,9 @@ import qualified Gpu.Vulkan.ImageView as ImageView
 import qualified Gpu.Vulkan.ImageView.Type as ImageView
 
 import Gpu.Vulkan.Sampler.Middle as Sampler.M
+
+extensionNameIndexing :: ExtensionName
+extensionNameIndexing = ExtensionName M.extensionNameIndexing
 
 data BufferInfo sm sb nm obj = forall objs .
 	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
