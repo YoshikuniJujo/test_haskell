@@ -32,8 +32,8 @@ foo = [d|
 		}
 	|]
 
-mkFoo :: DecQ
-mkFoo = dataD (cxt [])
+mkData :: DecQ
+mkData = dataD (cxt [])
 	(mkName "DescriptorIndexingFeatures")
 	[plainTV $ mkName "mn"] Nothing
 	[recC (mkName "DescriptorIndexingFeatures") [
@@ -82,8 +82,8 @@ bar = [d|
 				boolToBool32 siaad }
 	|]
 
-mkBarType :: DecQ
-mkBarType = sigD (mkName "descriptorIndexingFeatureToCore")
+mkToCoreType :: DecQ
+mkToCoreType = sigD (mkName "descriptorIndexingFeatureToCore")
 	(forallT []
 		(cxt [conT ''WithPoked `appT`
 			(conT ''TMaybe.M `appT` varT (mkName "mn"))])
@@ -91,9 +91,9 @@ mkBarType = sigD (mkName "descriptorIndexingFeatureToCore")
 			(conT ''C.DescriptorIndexingFeatures `arrT` conT ''IO `appT` conT ''()) `arrT`
 			conT ''IO `appT` conT ''()))
 
-mkBarBody :: DecQ
-mkBarBody = funD (mkName "descriptorIndexingFeaturesToCore")
-	. (: []) . ($ []) . clause [mkBarPat, varP $ mkName "f"] . normalB
+mkToCoreBody :: DecQ
+mkToCoreBody = funD (mkName "descriptorIndexingFeaturesToCore")
+	. (: []) . ($ []) . clause [mkToCorePat, varP $ mkName "f"] . normalB
 	$ varE 'withPoked' `appE` varE (mkName "mnxt") `appE`
 		lamE [varP $ mkName "pnxt"] (
 			varE 'withPtrS `appE` varE (mkName "pnxt") `appE`
@@ -105,8 +105,8 @@ mkBarBody = funD (mkName "descriptorIndexingFeaturesToCore")
 						<$> varE 'boolToBool32 `appE` varE (mkName "siaad")
 					] ) )
 
-mkBarPat :: PatQ
-mkBarPat = recP (mkName "DescriptorIndexingFeatures") [
+mkToCorePat :: PatQ
+mkToCorePat = recP (mkName "DescriptorIndexingFeatures") [
 	fieldPat 'descriptorIndexingFeaturesNext (varP $ mkName "mnxt"),
 	fieldPat 'descriptorIndexingFeaturesShaderInputAttachmentArrayDynamicIndexing
 		(varP $ mkName "siaad")
@@ -125,3 +125,32 @@ descriptorIndexingFeaturesFromCore C.DescriptorIndexingFeatures {
 	DescriptorIndexingFeaturesNoNext {
 		descriptorIndexingFeaturesNoNextShaderInputAttachmentArrayDynamicIndexing =
 			bool32ToBool siaad }
+
+fromCore :: DecsQ
+fromCore = [d|
+	descriptorIndexingFeaturesFromCore ::
+		C.DescriptorIndexingFeatures -> DescriptorIndexingFeaturesNoNext
+	descriptorIndexingFeaturesFromCore C.DescriptorIndexingFeatures {
+		C.descriptorIndexingFeaturesShaderInputAttachmentArrayDynamicIndexing =
+			siaad } =
+		DescriptorIndexingFeaturesNoNext {
+			descriptorIndexingFeaturesNoNextShaderInputAttachmentArrayDynamicIndexing =
+				bool32ToBool siaad }
+	|]
+
+mkFromCoreType :: DecQ
+mkFromCoreType = sigD (mkName "descriptorIndexingFeaturesFromCore")
+	(conT 'C.DescriptorIndexingFeatures `arrT`
+		varT 'DescriptorIndexingFeaturesNoNext)
+
+mkFromCoreBody :: DecQ
+mkFromCoreBody = funD (mkName "descriptorIndexingFeaturesFromCore") . (: []) . ($ [])
+	. clause [mkFromCorePat] . normalB $ recConE 'DescriptorIndexingFeaturesNoNext [
+		('descriptorIndexingFeaturesNoNextShaderInputAttachmentArrayDynamicIndexing ,)
+			<$> varE 'bool32ToBool `appE` varE (mkName "siaad")
+		]
+
+mkFromCorePat :: PatQ
+mkFromCorePat = recP 'C.DescriptorIndexingFeatures [
+	fieldPat 'C.descriptorIndexingFeaturesShaderInputAttachmentArrayDynamicIndexing
+		(varP $ mkName "siaad") ]
