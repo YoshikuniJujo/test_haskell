@@ -80,12 +80,32 @@ showWithBar :: (a -> String) -> (b -> String) -> (a, b) -> String
 showWithBar sa sb (x, y) = sa x ++ "|" ++ sb y
 
 field1 :: String -> String -> Name -> String
+field1 csn "VkStructureType" (Atom "sType") = "\t(\"sType\", ''(), [| const $ pure () |],\n" ++
+	"\t\t[| \\p _ -> #{poke " ++ csn ++ ", sType} p" ++
+	"\n\t\t\t" ++ csnToStructureType csn
+field1 csn "void*" (Atom n) = "\t(\"" ++ n ++ "\", ''PtrVoid,\n\t\t[| #{peek " ++
+	csn ++ ", " ++ n ++ "} |],\n\t\t[| #{poke " ++
+	csn ++ ", " ++ n ++ "} |])"
 field1 csn t (Atom n) = "\t(\"" ++ n ++ "\", ''#{type " ++ t ++ "},\n\t\t[| #{peek " ++
 	csn ++ ", " ++ n ++ "} |],\n\t\t[| #{poke " ++
 	csn ++ ", " ++ n ++ "} |])"
 field1 csn t (List nm nb) = "\t(\"" ++ nm ++ "\", ''" ++ listOf t ++ ",\n\t\t[| peekArray " ++
 	show nb ++ " . #{ptr " ++ csn ++ ", " ++ nm ++ "}" ++ "|],\n\t\t[| pokeArray . #{ptr " ++
 	csn ++ ", " ++ nm ++ "} |])"
+
+csnToStructureType :: String -> String
+csnToStructureType csn = "(#{const VK_STRUCTURE_TYPE_" ++
+	intercalate "_" (((toUpper <$>) <$>) . drop 2 $ sepUpper csn) ++ "} ::\n" ++
+	"\t\t\t\t#{type VkStructureType}) |])"
+
+sepUpper :: String -> [String]
+sepUpper "" = [""]
+sepUpper ca@(c : cs)
+	| isUpper c = "" : sepUpper (toLower c : cs)
+	| otherwise = case sepUpper cs of
+		cs : css -> (c : cs) : css
+		[] -> error "never occur"
+		
 
 takeDefinition :: String -> [String] -> [(String, Name)]
 takeDefinition nm = map ((\[t, n] -> (t, makeName $ init n)) . words)
