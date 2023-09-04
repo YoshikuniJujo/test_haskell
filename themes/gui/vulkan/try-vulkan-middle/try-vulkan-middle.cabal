@@ -136,6 +136,7 @@ library
       Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Struct.Th
+      Gpu.Vulkan.PhysicalDevice.Struct.ThTest
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
       Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
       Gpu.Vulkan.Pipeline.Compute.Middle.Internal

@@ -4,7 +4,11 @@
 
 module Gpu.Vulkan.PhysicalDevice.Struct.Th (
 	vkPhysicalDeviceLimits, vkPhysicalDeviceFeatures,
-	DeviceSize(..), Size(..) ) where
+	DeviceSize(..), Size(..),
+
+
+	vkPhysicalDeviceData
+	) where
 
 import Language.Haskell.TH
 import Control.Arrow
