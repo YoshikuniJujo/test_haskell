@@ -155,6 +155,8 @@ data Features2Result ns = Features2Result {
 	features2ResultNexts :: HeteroParList.PL Maybe ns,
 	features2ResultFeatures :: Features }
 
+deriving instance Show (HeteroParList.PL Maybe ns) => Show (Features2Result ns)
+
 features2FromCore :: FindPNextChainAll ns => C.Features2 -> IO (Features2Result ns)
 features2FromCore C.Features2 {
 	C.features2PNext = pnxt,
