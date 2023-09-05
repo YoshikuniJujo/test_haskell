@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -25,6 +25,33 @@ import Data.List.Length
 import Data.Char
 import Control.Arrow
 
+mkData :: String -> DecQ
+mkData nm = do
+	mn <- newName "mn"
+	varBangTypes <- getVarBangType "" nm
+	dataD (cxt [])
+		(mkName nm)
+		[plainTV mn] Nothing
+		[recC (mkName nm) $
+			(varBangType (mkName $ nm' ++ "Next")
+				(bangType noBang
+					(conT ''TMaybe.M `appT` varT mn))) :
+			(drop 2 varBangTypes)] []
+	where nm' = appHead toLower nm
+
+mkDataShow :: String -> DecQ
+mkDataShow nm = standaloneDerivD
+	(cxt [conT ''Show `appT` (conT ''TMaybe.M `appT` varT (mkName "mn"))])
+	(conT ''Show `appT` (conT (mkName nm) `appT` varT (mkName "mn")))
+
+mkDataNoNext :: String -> DecQ
+mkDataNoNext nm = do
+	varBangTypes <- getVarBangType "NoNext" nm
+	dataD (cxt []) (mkName nmnnx) [] Nothing
+		[recC (mkName nmnnx) $ drop 2 varBangTypes]
+		[derivClause Nothing [conT ''Show]]
+	where nmnnx = nm ++ "NoNext"
+
 newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
 	deriving Show
 
@@ -35,32 +62,8 @@ data DescriptorIndexingFeatures mn = DescriptorIndexingFeatures {
 	descriptorIndexingFeaturesShaderInputAttachmentArrayDynamicIndexing :: Bool
 	}
 
-foo :: DecsQ
-foo = [d|
-
-	data DescriptorIndexingFeatures mn = DescriptorIndexingFeatures {
-		descriptorIndexingFeaturesNext :: TMaybe.M mn,
-		descriptorIndexingFeaturesShaderInputAttachmentArrayDynamicIndexing :: Bool
-		}
-	|]
-
-mkData :: DecQ
-mkData = do
-	varBangTypes <- getVarBangType "DescriptorIndexingFeatures"
-	dataD (cxt [])
-		(mkName "DescriptorIndexingFeatures")
-		[plainTV $ mkName "mn"] Nothing
-		[recC (mkName "DescriptorIndexingFeatures") $
-			(varBangType (mkName "descriptorIndexingFeaturesNext") (bangType
-				(bang noSourceUnpackedness noSourceStrictness)
-				(conT ''TMaybe.M `appT` varT (mkName "mn")))) : (drop 2 varBangTypes)
-	--		varBangType (mkName "descriptorIndexingFeaturesShaderInputAttachmentArrayDynamicIndexing") $ bangType
-	--			(bang noSourceUnpackedness noSourceStrictness)
-	--			(conT ''Bool)
-			]
-		[]
-
-deriving instance Show (TMaybe.M mn) => Show (DescriptorIndexingFeatures mn)
+sample :: String
+sample = "DescriptorIndexingFeatures"
 
 data DescriptorIndexingFeaturesNoNext = DescriptorIndexingFeaturesNoNext {
 	descriptorIndexingFeaturesNoNextShaderInputAttachmentArrayDynamicIndexing :: Bool
@@ -174,8 +177,11 @@ data FieldName = Atom String | List String Integer deriving Show
 member :: String -> String -> FieldName -> VarBangTypeQ
 member dtnm tp_ fn = varBangType (mkName nm) $ bangType noBang tp
 	where
-	pfx = map toLower dtnm
+	pfx = appHead toLower dtnm
 	(nm, tp) = getNameType pfx tp_ fn
+
+appHead :: (a -> a) -> [a] -> [a]
+appHead f = \case [] -> []; x : xs -> f x : xs
 
 getNameType :: String -> String -> FieldName -> (String, TypeQ)
 getNameType pfx tp (Atom fn) = (pfx ++ capitalize fn, fst $ lookup' tp dict)
@@ -228,15 +234,15 @@ noBang = bang noSourceUnpackedness noSourceStrictness
 
 vkPhysicalDeviceData :: String -> DecQ
 vkPhysicalDeviceData dtnm = do
-	mms <- getVarBangType dtnm
+	mms <- getVarBangType "" dtnm
 	dataD (cxt []) (mkName dtnm) [] Nothing
 		[recC (mkName dtnm) mms]
 		[derivClause Nothing [conT ''Show]]
 
-getVarBangType :: String -> Q [VarBangTypeQ]
-getVarBangType dtnm = do
+getVarBangType :: String -> String -> Q [VarBangTypeQ]
+getVarBangType sfx dtnm = do
 	ds <- runIO $ readStructData dtnm
-	pure $ uncurry (member dtnm) <$> ds
+	pure $ uncurry (member $ dtnm ++ sfx) <$> ds
 
 readStructData :: String -> IO [(String, FieldName)]
 readStructData dtnm = map ((id *** readName) . (separate '|')) . lines <$>
