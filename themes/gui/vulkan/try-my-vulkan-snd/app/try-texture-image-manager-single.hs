@@ -275,7 +275,8 @@ run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> M.Map Glfw.Key FilePa
 run w inst g kis =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
-	createLogicalDevice phdv qfis \dv gq pq ->
+	debugIndexingFeatures phdv >>= \indexingFeatures ->
+	createLogicalDevice phdv qfis indexingFeatures \dv gq pq ->
 	createSwapChainNew w sfc phdv qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
@@ -310,6 +311,15 @@ run w inst g kis =
 	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
 
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm oke prkcs crtx udtx
+
+debugIndexingFeatures :: Vk.PhDvc.P -> IO (Vk.PhDvc.DescriptorIndexingFeatures 'Nothing)
+debugIndexingFeatures phdv = do
+	Vk.PhDvc.Features2Result (HeteroParList.Singleton (Just nxts)) ftrs <- Vk.PhDvc.getFeatures2
+		@'[Vk.PhDvc.DescriptorIndexingFeaturesNoNext] phdv
+	let	nxts' = Vk.PhDvc.descriptorIndexingFeaturesFromNoNext TMaybe.N nxts
+	pure nxts'
+--	print nxts'
+--	print ftrs
 
 createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.D sds '(sdsc, '[
@@ -433,12 +443,12 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
+createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> Vk.PhDvc.DescriptorIndexingFeatures 'Nothing -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createLogicalDevice phdvc qfis f =
+createLogicalDevice phdvc qfis difs f =
 	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
 	let	createInfo = Vk.Dvc.M.CreateInfo {
-			Vk.Dvc.M.createInfoNext = TMaybe.N,
+			Vk.Dvc.M.createInfoNext = TMaybe.J difs, -- TMaybe.N,
 			Vk.Dvc.M.createInfoFlags = def,
 			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 			Vk.Dvc.M.createInfoEnabledLayerNames =
