@@ -7,7 +7,7 @@ module Gpu.Vulkan.PhysicalDevice.Struct.Th (
 	DeviceSize(..), Size(..),
 
 
-	vkPhysicalDeviceData
+	vkPhysicalDeviceData, vkPhysicalDeviceFromFunBody
 	) where
 
 import Language.Haskell.TH
