@@ -20,6 +20,9 @@ import qualified Gpu.Vulkan.PhysicalDevice.Struct.Core as C
 
 import Gpu.Vulkan.PhysicalDevice.Struct.ThTest
 
+import Gpu.Vulkan.Enum
+import Gpu.Vulkan.PNext.Middle.Internal
+
 vkPhysicalDeviceLimits
 vkPhysicalDeviceFeatures
 
@@ -32,3 +35,6 @@ makeStructure "DescriptorIndexingFeatures"
 
 instance Peek DescriptorIndexingFeaturesNoNext where
 	peek' = (descriptorIndexingFeaturesFromCore <$>) . peek . castPtr
+
+instance Nextable DescriptorIndexingFeaturesNoNext where
+	nextableType = StructureTypePhysicalDeviceDescriptorIndexingFeatures
