@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -38,3 +39,6 @@ instance Peek DescriptorIndexingFeaturesNoNext where
 
 instance Nextable DescriptorIndexingFeaturesNoNext where
 	nextableType = StructureTypePhysicalDeviceDescriptorIndexingFeatures
+
+instance Sizable DescriptorIndexingFeaturesNoNext where
+	sizeOf' = sizeOf @C.DescriptorIndexingFeatures undefined
