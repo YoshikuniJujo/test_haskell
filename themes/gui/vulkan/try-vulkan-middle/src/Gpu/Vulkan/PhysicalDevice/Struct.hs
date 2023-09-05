@@ -1,4 +1,6 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
@@ -9,6 +11,7 @@
 module Gpu.Vulkan.PhysicalDevice.Struct where
 
 import Foreign.Ptr
+import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 
@@ -23,6 +26,8 @@ import Gpu.Vulkan.PhysicalDevice.Struct.ThTest
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.PNext.Middle.Internal
+
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 vkPhysicalDeviceLimits
 vkPhysicalDeviceFeatures
@@ -42,3 +47,8 @@ instance Nextable DescriptorIndexingFeaturesNoNext where
 
 instance Sizable DescriptorIndexingFeaturesNoNext where
 	sizeOf' = sizeOf @C.DescriptorIndexingFeatures undefined
+
+instance WithPoked (TMaybe.M mn) => WithPoked (DescriptorIndexingFeatures mn) where
+	withPoked' difs f = alloca \pcdifs -> do
+		descriptorIndexingFeaturesToCore difs $ \cdifs -> poke pcdifs cdifs
+		f . ptrS $ castPtr pcdifs
