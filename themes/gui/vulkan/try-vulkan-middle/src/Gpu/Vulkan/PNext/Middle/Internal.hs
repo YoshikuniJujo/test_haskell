@@ -59,6 +59,9 @@ findPNextChain :: forall n . Nextable n => Ptr () -> IO (Maybe n)
 findPNextChain NullPtr = pure Nothing
 findPNextChain p = do
 	sc <- peek' $ castPtr p
+	putStrLn "findPNextChain"
+	putStrLn $ "\tthis type    : " ++ show (structCommonSType sc)
+	putStrLn $ "\tnextable type: " ++ show (nextableType @n)
 	if structCommonSType sc == nextableType @n
 	then Just <$> peek' (castPtr p)
 	else findPNextChain $ structCommonPNext sc
