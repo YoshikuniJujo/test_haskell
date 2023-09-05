@@ -7,6 +7,10 @@
 
 module Gpu.Vulkan.PhysicalDevice.Struct where
 
+import Foreign.Ptr
+import Foreign.Storable
+import Foreign.Storable.PeekPoke
+
 import Data.Default
 import System.IO.Unsafe
 
@@ -25,3 +29,6 @@ featuresZero = unsafePerformIO $ featuresFromCore <$> C.getClearedFeatures
 instance Default Features where def = featuresZero
 
 makeStructure "DescriptorIndexingFeatures"
+
+instance Peek DescriptorIndexingFeaturesNoNext where
+	peek' = (descriptorIndexingFeaturesFromCore <$>) . peek . castPtr
