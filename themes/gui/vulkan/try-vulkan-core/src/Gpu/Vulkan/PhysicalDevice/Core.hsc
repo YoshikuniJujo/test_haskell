@@ -188,7 +188,9 @@ struct "Features2"
 	("pNext", ''PtrVoid,
 		[| #{peek VkPhysicalDeviceFeatures2, pNext} |],
 		[| #{poke VkPhysicalDeviceFeatures2, pNext} |]),
-	("features", ''Features, [| peek . castPtr |], [| poke . castPtr |]) ]
+	("features", ''Features,
+		[| peek . #{ptr VkPhysicalDeviceFeatures2, features} |],
+		[| poke . #{ptr VkPhysicalDeviceFeatures2, features} |]) ]
 	[''Show, ''Storable]
 
 foreign import ccall "vkGetPhysicalDeviceFeatures2" getFeatures2 ::
