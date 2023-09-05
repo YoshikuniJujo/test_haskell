@@ -14,6 +14,8 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 
 	enumerate, P(..), getProperties, Properties(..), getFeatures,
 
+	Features2Result(..), getFeatures2,
+
 	-- * OTHER PROPERTIES
 
 	getQueueFamilyProperties,
@@ -55,6 +57,9 @@ import qualified Gpu.Vulkan.PhysicalDevice.Core as C
 import qualified Gpu.Vulkan.QueueFamily.Middle.Internal as QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
+
+import Data.HeteroParList qualified as HeteroParList
+import Gpu.Vulkan.PNext.Middle.Internal
 
 newtype P = P C.P deriving Show
 
@@ -140,6 +145,24 @@ getFeatures :: P -> IO Features
 getFeatures (P pdvc) = featuresFromCore <$> alloca \pfts -> do
 	C.getFeatures pdvc pfts
 	peek pfts
+
+getFeatures2 :: FindPNextChainAll ns => P -> IO (Features2Result ns)
+getFeatures2 (P pdvc) = features2FromCore =<< alloca \pfts -> do
+	C.getFeatures2 pdvc pfts
+	peek pfts
+
+data Features2Result ns = Features2Result {
+	features2ResultNexts :: HeteroParList.PL Maybe ns,
+	features2ResultFeatures :: Features }
+
+features2FromCore :: FindPNextChainAll ns => C.Features2 -> IO (Features2Result ns)
+features2FromCore C.Features2 {
+	C.features2PNext = pnxt,
+	C.features2Features = ftrs } = do
+	nxts <- findPNextChainAll pnxt
+	let	ftrs' = featuresFromCore ftrs
+	pure Features2Result {
+		features2ResultNexts = nxts, features2ResultFeatures = ftrs' }
 
 getQueueFamilyProperties :: P -> IO [(QueueFamily.Index, QueueFamily.Properties)]
 getQueueFamilyProperties (P pdvc) =
