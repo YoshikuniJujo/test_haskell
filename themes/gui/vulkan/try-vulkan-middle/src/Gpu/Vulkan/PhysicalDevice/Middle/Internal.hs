@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
@@ -146,15 +146,16 @@ getFeatures (P pdvc) = featuresFromCore <$> alloca \pfts -> do
 	C.getFeatures pdvc pfts
 	peek pfts
 
-getFeatures2 :: FindPNextChainAll ns => P -> IO (Features2Result ns)
-getFeatures2 (P pdvc) = features2FromCore =<< alloca \pfts -> do
-	cfs <- C.getClearedFeatures
-	poke pfts $ C.Features2 {
-		C.features2SType = (),
-		C.features2PNext = nullPtr,
-		C.features2Features = cfs }
-	C.getFeatures2 pdvc pfts
-	peek pfts
+getFeatures2 :: forall ns . (FindPNextChainAll ns, ClearedChain ns) => P -> IO (Features2Result ns)
+getFeatures2 (P pdvc) = clearedChain @ns \pns ->
+	features2ResultFromCore =<< alloca \pfts -> do
+		cfs <- C.getClearedFeatures
+		poke pfts $ C.Features2 {
+			C.features2SType = (),
+			C.features2PNext = pns,
+			C.features2Features = cfs }
+		C.getFeatures2 pdvc pfts
+		peek pfts
 
 data Features2Result ns = Features2Result {
 	features2ResultNexts :: HeteroParList.PL Maybe ns,
@@ -162,8 +163,12 @@ data Features2Result ns = Features2Result {
 
 deriving instance Show (HeteroParList.PL Maybe ns) => Show (Features2Result ns)
 
-features2FromCore :: FindPNextChainAll ns => C.Features2 -> IO (Features2Result ns)
-features2FromCore C.Features2 {
+data Features2 mn = Features2 {
+	features2Next :: TMaybe.M mn,
+	features2Features :: Features }
+
+features2ResultFromCore :: FindPNextChainAll ns => C.Features2 -> IO (Features2Result ns)
+features2ResultFromCore C.Features2 {
 	C.features2PNext = pnxt,
 	C.features2Features = ftrs } = do
 	nxts <- findPNextChainAll pnxt

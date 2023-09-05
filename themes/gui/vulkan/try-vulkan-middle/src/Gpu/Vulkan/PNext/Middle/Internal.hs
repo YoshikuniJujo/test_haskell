@@ -1,7 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -14,13 +16,19 @@ module Gpu.Vulkan.PNext.Middle.Internal (
 
 	-- * FIND P NEXT CHAIN ALL
 
-	FindPNextChainAll(..), Nextable(..)
+	FindPNextChainAll(..), Nextable(..),
+
+	-- * OTHERS
+
+	ClearedChain(..)
 
 	) where
 
 import Foreign.Ptr
+import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Data.Kind
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
 
@@ -32,6 +40,9 @@ data StructCommon = StructCommon {
 	structCommonPNext :: Ptr () }
 	deriving Show
 
+instance Peek StructCommon where
+	peek' p = structCommonFromCore <$> peek (castPtr p)
+
 structCommonFromCore :: C.StructCommon -> StructCommon
 structCommonFromCore C.StructCommon {
 	C.structCommonSType = stp,
@@ -39,8 +50,15 @@ structCommonFromCore C.StructCommon {
 	structCommonSType = StructureType stp,
 	structCommonPNext = pn }
 
-instance Peek StructCommon where
-	peek' p = structCommonFromCore <$> peek (castPtr p)
+instance Poke StructCommon where
+	poke' p = poke (castPtr p) . structCommonToCore
+
+structCommonToCore :: StructCommon -> C.StructCommon
+structCommonToCore StructCommon {
+	structCommonSType = StructureType stp,
+	structCommonPNext = pn } = C.StructCommon {
+	C.structCommonSType = stp,
+	C.structCommonPNext = pn }
 
 class Peek n => Nextable n where nextableType :: StructureType
 
@@ -65,3 +83,19 @@ findPNextChain p = do
 	if structCommonSType sc == nextableType @n
 	then Just <$> peek' (castPtr p)
 	else findPNextChain $ structCommonPNext sc
+
+class ClearedChain (ns :: [Type]) where
+	clearedChain :: (Ptr () -> IO a) -> IO a
+
+instance ClearedChain '[] where clearedChain = ($ nullPtr)
+
+instance (Sizable n, Nextable n, ClearedChain ns) => ClearedChain (n ': ns) where
+	clearedChain f = clearedChain @ns \p -> do
+		let	sc = StructCommon {
+				structCommonSType = nextableType @n,
+				structCommonPNext = p }
+		p' <- callocBytes (sizeOf' @n)
+		poke' p' sc
+		rslt <- f $ castPtr p'
+		free p'
+		pure rslt
