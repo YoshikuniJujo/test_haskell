@@ -148,6 +148,11 @@ getFeatures (P pdvc) = featuresFromCore <$> alloca \pfts -> do
 
 getFeatures2 :: FindPNextChainAll ns => P -> IO (Features2Result ns)
 getFeatures2 (P pdvc) = features2FromCore =<< alloca \pfts -> do
+	cfs <- C.getClearedFeatures
+	poke pfts $ C.Features2 {
+		C.features2SType = (),
+		C.features2PNext = nullPtr,
+		C.features2Features = cfs }
 	C.getFeatures2 pdvc pfts
 	peek pfts
 
