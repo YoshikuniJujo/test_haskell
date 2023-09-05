@@ -24,7 +24,7 @@ import Data.Int
 import Data.List.Length
 import Data.Char
 import Control.Arrow
-import Data.Maybe
+-- import Data.Maybe
 import Data.Foldable
 import Control.Monad
 
@@ -37,7 +37,8 @@ makeStructure nm = do
 	sequence [
 		mkData nm dct, mkDataShow nm, mkDataNoNext nm dct,
 		mkFromCoreType Production nm, mkFromCoreBody Production nm dct,
-		mkToCoreType Production nm, mkToCoreBody Production nm dct ]
+		mkToCoreType Production nm, mkToCoreBody Production nm dct,
+		mkFromNoNextType nm, mkFromNoNextBody nm dct ]
 
 mkData :: String -> DictFieldName -> DecQ
 mkData nm dct = do
@@ -282,3 +283,34 @@ exFieldExp1 sfx pfx (List nm _) x f = do
 
 (.<$>) :: ExpQ -> ExpQ -> ExpQ
 f .<$> x = infixApp f (varE '(<$>)) x
+
+mkFromNoNextType :: String -> DecQ
+mkFromNoNextType nm = do
+	mn <- newName "mn"
+	sigD (mkName $ nm' ++ "FromNoNext") $
+		(conT ''TMaybe.M `appT` varT mn) `arrT`
+		conT (mkName $ nm ++ "NoNext") `arrT`
+		(conT (mkName nm) `appT` varT mn)
+	where nm' = appHead toLower nm
+
+mkFromNoNextBody :: String -> DictFieldName -> DecQ
+mkFromNoNextBody nm dct = do
+	mnxt <- newName "mnxt"
+	xs <- replicateM (length dct) $ newName "x"
+	funD (mkName $ nm' ++ "FromNoNext") . (: []) . ($ [])
+		. clause [varP mnxt, mkFromNoNextPat nm (drop 2 dct) xs] . normalB
+		. recConE (mkName nm) $
+			((mkName (nm' ++ "Next") ,) <$> varE mnxt) :
+			(<$> zip (dictFieldNameToNames $ drop 2 dct) xs) \(fnm, x) ->
+				(mkName (nm' ++ capitalize fnm) ,) <$> varE x
+	where nm' = appHead toLower nm
+
+mkFromNoNextPat :: String -> DictFieldName -> [Name] -> PatQ
+mkFromNoNextPat nm dct xs = recP (mkName $ nm ++ "NoNext")
+	$ (<$> zip (dictFieldNameToNames dct) xs) \(fnm, x) ->
+		fieldPat (mkName $ nm' ++ "NoNext" ++ capitalize fnm) (varP x)
+	where nm' = appHead toLower nm
+
+dictFieldNameToNames :: DictFieldName -> [String]
+dictFieldNameToNames = (dfntn <$>)
+	where dfntn (_, fn) = case fn of Atom n -> n; List n _ -> n
