@@ -47,7 +47,14 @@ module Gpu.Vulkan.PhysicalDevice.Core (
 
 	-- * FEATURES
 
+	-- ** Get Features
+
 	getFeatures, Features, pattern Features, getClearedFeatures,
+
+	-- ** Get Features 2
+
+	getFeatures2, Features2,
+	pattern Features2, features2SType, features2PNext, features2Features,
 
 	-- ** ShaderDrawParametersFeatures
 
@@ -168,6 +175,24 @@ getClearedFeatures = do
 
 foreign import ccall "vkGetPhysicalDeviceFeatures" getFeatures ::
 	P -> Ptr Features -> IO ()
+
+sTypeFeatures2 :: #{type VkStructureType}
+sTypeFeatures2 = #{const VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2}
+
+struct "Features2"
+	#{size VkPhysicalDeviceFeatures2}
+	#{alignment VkPhysicalDeviceFeatures2} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkPhysicalDeviceFeatures2, sType}
+			p sTypeFeatures2 |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkPhysicalDeviceFeatures2, pNext} |],
+		[| #{poke VkPhysicalDeviceFeatures2, pNext} |]),
+	("features", ''Features, [| peek . castPtr |], [| poke . castPtr |]) ]
+	[''Show, ''Storable]
+
+foreign import ccall "vkGetPhysicalDeviceFeatures2" getFeatures2 ::
+	P -> Ptr Features2 -> IO ()
 
 foreign import ccall "vkGetPhysicalDeviceQueueFamilyProperties"
 	getQueueFamilyProperties ::
