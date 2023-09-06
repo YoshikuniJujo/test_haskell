@@ -25,13 +25,11 @@ module Gpu.Vulkan (
 	-- * PROPERTIES
 
 	LayerProperties(..),
-	ExtensionProperties(..),
 	FormatProperties(..),
 
 	-- * NAMES
 
 	LayerName(..), layerNameKhronosValidation,
-	ExtensionName(..),
 
 	-- * PIPELINE VALUES
 

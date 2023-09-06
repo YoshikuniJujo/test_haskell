@@ -4,7 +4,8 @@ module Gpu.Vulkan.Device (
 
 	-- * CREATE
 
-	create, D, CreateInfo(..), CreateFlags, QueueCreateInfo(..),
+	create, D, CreateInfo(..),
+	CreateFlags, QueueCreateInfo(..),
 
 	-- * GET QUEUE AND WAIT IDLE
 

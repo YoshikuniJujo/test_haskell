@@ -10,7 +10,8 @@ module Gpu.Vulkan.Device.Internal (
 
 	-- * CREATE
 
-	create, D(..), CreateInfo(..), M.CreateFlags, M.QueueCreateInfo(..),
+	create, D(..), CreateInfo(..),
+	M.CreateFlags, M.QueueCreateInfo(..),
 
 	-- * GET QUEUE AND WAIT IDLE
 
@@ -62,7 +63,7 @@ data CreateInfo mn qcis = CreateInfo {
 	createInfoFlags :: M.CreateFlags,
 	createInfoQueueCreateInfos :: HeteroParList.PL M.QueueCreateInfo qcis,
 	createInfoEnabledLayerNames :: [LayerName],
-	createInfoEnabledExtensionNames :: [ExtensionName],
+	createInfoEnabledExtensionNames :: [PhysicalDevice.ExtensionName],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 
 deriving instance (
@@ -76,7 +77,7 @@ createInfoToMiddle CreateInfo {
 	createInfoQueueCreateInfos = qcis,
 	createInfoEnabledLayerNames = ((\(LayerName ln) -> ln) <$>) -> elnms,
 	createInfoEnabledExtensionNames =
-		((\(ExtensionName en) -> en) <$>) ->eenms,
+		((\(PhysicalDevice.ExtensionName en) -> en) <$>) ->eenms,
 	createInfoEnabledFeatures = mef } = M.CreateInfo {
 	M.createInfoNext = nxt,
 	M.createInfoFlags = flgs,

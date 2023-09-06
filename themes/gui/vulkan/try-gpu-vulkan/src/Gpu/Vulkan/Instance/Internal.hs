@@ -11,7 +11,7 @@ module Gpu.Vulkan.Instance.Internal (
 
 	-- * CREATE
 
-	create, I(..), CreateInfo(..),
+	create, I(..), CreateInfo(..), ExtensionName(..),
 
 	-- * ENUMERATE
 
@@ -34,6 +34,9 @@ import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import Gpu.Vulkan.Instance.Enum
 import qualified Gpu.Vulkan.Instance.Middle as M
 
+import Data.Text qualified as T
+import Gpu.Vulkan.Middle qualified as M
+
 create :: (
 	WithPoked (TMaybe.M mn), WithPoked (TMaybe.M ai),
 	AllocationCallbacks.ToMiddle mac ) =>
@@ -49,6 +52,9 @@ data CreateInfo mn ai = CreateInfo {
 	createInfoApplicationInfo :: Maybe (ApplicationInfo ai),
 	createInfoEnabledLayerNames :: [LayerName],
 	createInfoEnabledExtensionNames :: [ExtensionName] }
+
+newtype ExtensionName = ExtensionName { unExtensionName :: T.Text }
+	deriving Show
 
 deriving instance (Show (TMaybe.M mn), Show (TMaybe.M ai)) =>
 	Show (CreateInfo mn ai)
@@ -83,3 +89,15 @@ enumerateExtensionProperties ::
 enumerateExtensionProperties (((\(LayerName ln) -> ln) <$>) -> mln) =
 	(extensionPropertiesFromMiddle <$>)
 		<$> M.enumerateExtensionProperties mln
+
+data ExtensionProperties = ExtensionProperties {
+	extensionPropertiesExtensionName :: ExtensionName,
+	extensionPropertiesSpecVersion :: M.ApiVersion }
+	deriving Show
+
+extensionPropertiesFromMiddle :: M.ExtensionProperties -> ExtensionProperties
+extensionPropertiesFromMiddle M.ExtensionProperties {
+	M.extensionPropertiesExtensionName = en,
+	M.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
+	extensionPropertiesExtensionName = ExtensionName en,
+	extensionPropertiesSpecVersion = sv }

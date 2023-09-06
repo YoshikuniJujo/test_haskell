@@ -26,8 +26,6 @@ module Gpu.Vulkan.Descriptor.Internal (
 
 	) where
 
-import Gpu.Vulkan
-
 import Gpu.Vulkan.Object qualified as VObj
 
 import qualified Gpu.Vulkan.Buffer as Buffer
@@ -41,8 +39,10 @@ import qualified Gpu.Vulkan.ImageView.Type as ImageView
 
 import Gpu.Vulkan.Sampler.Middle as Sampler.M
 
-extensionNameIndexing :: ExtensionName
-extensionNameIndexing = ExtensionName M.extensionNameIndexing
+import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
+
+extensionNameIndexing :: PhysicalDevice.ExtensionName
+extensionNameIndexing = PhysicalDevice.ExtensionName M.extensionNameIndexing
 
 data BufferInfo sm sb nm obj = forall objs .
 	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>

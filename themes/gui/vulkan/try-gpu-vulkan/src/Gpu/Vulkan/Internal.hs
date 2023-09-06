@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -25,13 +25,11 @@ module Gpu.Vulkan.Internal (
 	-- * PROPERTIES
 
 	LayerProperties(..), layerPropertiesFromMiddle,
-	ExtensionProperties(..), extensionPropertiesFromMiddle,
 	M.FormatProperties(..),
 
 	-- * NAME
 
 	LayerName(..), layerNameKhronosValidation,
-	ExtensionName(..),
 
 	-- * PIPELINE VALUES
 
@@ -159,13 +157,21 @@ class SemaphorePipelineStageFlagsFromMiddle sss where
 		HeteroParList.PL SemaphorePipelineStageFlags sss
 
 instance SemaphorePipelineStageFlagsFromMiddle '[] where
-	semaphorePipelineStageFlagsFromMiddle [] = HeteroParList.Nil
+	semaphorePipelineStageFlagsFromMiddle = \case
+		[] -> HeteroParList.Nil
+		_ -> error $
+			"semaphorePipelineStageFlagsFromMiddle @'[] xs: " ++
+			"xs should be null"
 
 instance SemaphorePipelineStageFlagsFromMiddle sss =>
 	SemaphorePipelineStageFlagsFromMiddle (ss ': sss) where
-	semaphorePipelineStageFlagsFromMiddle ((s, psfs) : spsfss) =
-		SemaphorePipelineStageFlags (Semaphore.S s) psfs :**
-		semaphorePipelineStageFlagsFromMiddle spsfss
+	semaphorePipelineStageFlagsFromMiddle = \case
+		(s, psfs) : spsfss ->
+			SemaphorePipelineStageFlags (Semaphore.S s) psfs :**
+			semaphorePipelineStageFlagsFromMiddle spsfss
+		[] -> error $
+			"semaphorePipelineStageFlagsFromMiddle " ++
+			"@(ss ': sss) xs: xs should not be null"
 
 data LayerProperties = LayerProperties {
 	layerPropertiesLayerName :: LayerName,
@@ -189,18 +195,3 @@ newtype LayerName = LayerName { unLayerName :: T.Text } deriving (Show, Eq)
 
 layerNameKhronosValidation :: LayerName
 layerNameKhronosValidation = LayerName "VK_LAYER_KHRONOS_validation"
-
-data ExtensionProperties = ExtensionProperties {
-	extensionPropertiesExtensionName :: ExtensionName,
-	extensionPropertiesSpecVersion :: M.ApiVersion }
-	deriving Show
-
-extensionPropertiesFromMiddle :: M.ExtensionProperties -> ExtensionProperties
-extensionPropertiesFromMiddle M.ExtensionProperties {
-	M.extensionPropertiesExtensionName = en,
-	M.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
-	extensionPropertiesExtensionName = ExtensionName en,
-	extensionPropertiesSpecVersion = sv }
-
-newtype ExtensionName =
-	ExtensionName { unExtensionName :: T.Text } deriving (Show, Eq)
