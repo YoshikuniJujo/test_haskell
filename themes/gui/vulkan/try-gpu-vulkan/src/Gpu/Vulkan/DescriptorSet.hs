@@ -147,7 +147,9 @@ allocateDs' (Device.D dvc) (Group sem mp) k ai = do
 	if ok
 	then do	dsm <- M.allocateDs dvc (allocateInfoToMiddle ai)
 		ds <- dListFromMiddle dsm
-		atomically $ modifyTVar mp (Map.insert k (sp, ds))
+		atomically do
+			modifyTVar mp (Map.insert k (sp, ds))
+			signalTSem sem
 		pure $ Right ds
 	else pure . Left
 		$ "Gpu.Vulkan.DescriptorSet.allocateDs': The key already exist"
