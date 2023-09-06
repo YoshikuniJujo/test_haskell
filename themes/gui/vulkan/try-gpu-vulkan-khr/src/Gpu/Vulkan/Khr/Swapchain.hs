@@ -46,8 +46,10 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
-extensionName :: C.ExtensionName
-extensionName = C.ExtensionName M.extensionName
+import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
+
+extensionName :: PhysicalDevice.ExtensionName
+extensionName = PhysicalDevice.ExtensionName M.extensionName
 
 create :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
