@@ -223,7 +223,7 @@ createInstance f = do
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	let extensions' = Vk.Ist.ExtensionName "VK_KHR_get_physical_device_properties2" : extensions
+	let extensions' = Vk.PhDvc.getProperties2ExtensionName : extensions
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
@@ -426,10 +426,9 @@ checkDeviceExtensionSupport dvc =
 
 deviceExtensions :: [Vk.PhDvc.ExtensionName]
 deviceExtensions = [
-	Vk.Khr.Swapchain.extensionName, Vk.Dsc.extensionNameIndexing ]
---	Vk.Khr.Swapchain.extensionName ]
-
-deviceExtensions' = Vk.PhDvc.ExtensionName "VK_KHR_maintenance3" : deviceExtensions
+	Vk.Khr.Swapchain.extensionName,
+	Vk.PhDvc.maintenance3ExtensionName,
+	Vk.Dsc.indexingExtensionName ]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	capabilities :: Vk.Khr.Surface.M.Capabilities,
@@ -454,7 +453,7 @@ createLogicalDevice phdvc qfis difs f =
 			Vk.Dvc.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
-				deviceExtensions',
+				deviceExtensions,
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
 				Vk.PhDvc.featuresSamplerAnisotropy = True } } in
 	Vk.Dvc.create phdvc createInfo nil' \dvc -> do
