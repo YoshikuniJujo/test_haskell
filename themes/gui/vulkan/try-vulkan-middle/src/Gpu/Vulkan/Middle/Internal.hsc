@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -40,6 +40,8 @@ module Gpu.Vulkan.Middle.Internal (
 	C.Viewport, pattern C.Viewport,
 	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
 	C.viewportMinDepth, C.viewportMaxDepth,
+
+	getPhysicalDeviceProperties2ExtensionName, maintenance3ExtensionName
 
 	) where
 
@@ -342,3 +344,10 @@ formatPropertiesFromCore C.FormatProperties {
 		formatPropertiesOptimalTilingFeatures =
 			FormatFeatureFlagBits otfs,
 		formatPropertiesBufferFeatures = FormatFeatureFlagBits bfs }
+
+getPhysicalDeviceProperties2ExtensionName :: T.Text
+getPhysicalDeviceProperties2ExtensionName =
+	#{const_str VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}
+
+maintenance3ExtensionName :: T.Text
+maintenance3ExtensionName = #{const_str VK_KHR_MAINTENANCE_3_EXTENSION_NAME}

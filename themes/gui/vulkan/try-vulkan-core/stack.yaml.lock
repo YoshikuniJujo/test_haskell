@@ -3,18 +3,7 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    commit: 120910bb3809f608b335c37cae66ac70f75703e0
-    git: https://github.com/YoshikuniJujo/c-struct
-    name: c-struct
-    pantry-tree:
-      sha256: 1afa181b3e732314979c12e1a6a811fe91bb5200306cec3e0264077649a2a2e8
-      size: 837
-    version: 0.1.2.0
-  original:
-    commit: 120910bb3809f608b335c37cae66ac70f75703e0
-    git: https://github.com/YoshikuniJujo/c-struct
+packages: []
 snapshots:
 - completed:
     sha256: 2fc12a405ab6f7eac73eb11a0ca5ccca0e956bd2848db780c140b7406ff9ebb5
