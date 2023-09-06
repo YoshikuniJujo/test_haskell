@@ -13,7 +13,7 @@ module Gpu.Vulkan.Descriptor.Internal (
 
 	-- * EXTENSION NAME
 
-	extensionNameIndexing,
+	indexingExtensionName,
 
 	-- * BUFFER INFO
 
@@ -41,8 +41,8 @@ import Gpu.Vulkan.Sampler.Middle as Sampler.M
 
 import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 
-extensionNameIndexing :: PhysicalDevice.ExtensionName
-extensionNameIndexing = PhysicalDevice.ExtensionName M.extensionNameIndexing
+indexingExtensionName :: PhysicalDevice.ExtensionName
+indexingExtensionName = PhysicalDevice.ExtensionName M.indexingExtensionName
 
 data BufferInfo sm sb nm obj = forall objs .
 	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
