@@ -5,6 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,6 +18,8 @@ module Gpu.Vulkan.PNext.Middle.Internal (
 	-- * FIND P NEXT CHAIN ALL
 
 	FindPNextChainAll(..), Nextable(..),
+
+	FindPNextChainAll'(..), Nextable'(..),
 
 	-- * OTHERS
 
@@ -34,6 +37,8 @@ import Data.HeteroParList qualified as HeteroParList
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Core qualified as C
+
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 data StructCommon = StructCommon {
 	structCommonSType :: StructureType,
@@ -99,3 +104,20 @@ instance (Sizable n, Nextable n, ClearedChain ns) => ClearedChain (n ': ns) wher
 		rslt <- f $ castPtr p'
 		free p'
 		pure rslt
+
+class FindPNextChainAll' mn where
+	findPNextChainAll' :: Ptr () -> IO (TMaybe.M mn)
+
+instance FindPNextChainAll' 'Nothing where
+	findPNextChainAll' _ = pure TMaybe.N
+
+instance (Nextable' n, FindPNextChainAll' mn') =>
+	FindPNextChainAll' ('Just (n (mn'))) where
+	findPNextChainAll' p = do
+		p' <- nextPtr @n p
+		mn' <- findPNextChainAll' p'
+		TMaybe.J <$> createNextable p mn'
+	
+class Nextable' (n :: Maybe Type -> Type) where
+	nextPtr :: Ptr () -> IO (Ptr ())
+	createNextable :: Ptr () -> TMaybe.M mn' -> IO (n mn')
