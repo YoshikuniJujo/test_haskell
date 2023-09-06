@@ -15,7 +15,8 @@ module Gpu.Vulkan.Instance.Internal (
 
 	-- * ENUMERATE
 
-	enumerateLayerProperties, enumerateExtensionProperties
+	enumerateLayerProperties,
+	enumerateExtensionProperties, ExtensionProperties(..)
 
 	) where
 

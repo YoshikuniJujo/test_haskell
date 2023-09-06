@@ -19,7 +19,7 @@ module Gpu.Vulkan.PhysicalDevice (
 	M.getMemoryProperties, M.MemoryProperties(..),
 	M.getQueueFamilyProperties, M.getFormatProperties,
 	enumerateExtensionProperties,
-	ExtensionName(..),
+	ExtensionProperties(..), ExtensionName(..),
 
 	-- * OTHER FEATURES
 

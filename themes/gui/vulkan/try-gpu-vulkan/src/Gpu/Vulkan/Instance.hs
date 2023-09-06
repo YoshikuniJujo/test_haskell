@@ -8,7 +8,8 @@ module Gpu.Vulkan.Instance (
 
 	-- * ENUMERATE
 
-	enumerateLayerProperties, enumerateExtensionProperties
+	enumerateLayerProperties,
+	enumerateExtensionProperties, ExtensionProperties(..)
 
 	) where
 
