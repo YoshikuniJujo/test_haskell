@@ -19,8 +19,8 @@ module Gpu.Vulkan.Ext.DebugUtils (
 
 	) where
 
-import Gpu.Vulkan
+import Gpu.Vulkan.Instance.Internal qualified as Ist
 import Gpu.Vulkan.Ext.DebugUtils.Middle qualified as M
 
-extensionName :: ExtensionName
-extensionName = ExtensionName M.extensionName
+extensionName :: Ist.ExtensionName
+extensionName = Ist.ExtensionName M.extensionName
