@@ -6,6 +6,9 @@ module Gpu.Vulkan.PhysicalDevice.Middle (
 
 	enumerate, P, getProperties, Properties(..), getFeatures,
 
+	-- ** Get Properties 2
+
+	getProperties2ExtensionName,
 	getFeatures2, Features2Result(..),
 
 	-- * OTHER PROPERTIES
@@ -17,7 +20,11 @@ module Gpu.Vulkan.PhysicalDevice.Middle (
 
 	-- * OTHER FEATURES
 
-	ShaderDrawParametersFeatures(..)
+	ShaderDrawParametersFeatures(..),
+
+	-- * OTHER EXTENSIONS
+
+	maintenance3ExtensionName
 
 	) where
 
