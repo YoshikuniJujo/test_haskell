@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Descriptor.Middle.Internal (
-	extensionNameIndexing,
+	indexingExtensionName,
 	ImageInfo(..), imageInfoToCore, BufferInfo(..), bufferInfoToCore ) where
 
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
@@ -20,8 +20,8 @@ import Data.Text qualified as T
 
 #include <vulkan/vulkan.h>
 
-extensionNameIndexing :: T.Text
-extensionNameIndexing = #{const_str VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME}
+indexingExtensionName :: T.Text
+indexingExtensionName = #{const_str VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME}
 
 data BufferInfo = BufferInfo {
 	bufferInfoBuffer :: Buffer.B,
