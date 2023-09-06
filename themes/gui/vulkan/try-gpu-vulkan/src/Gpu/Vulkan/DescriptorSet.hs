@@ -18,7 +18,7 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- ** Descriptor Set Group
 
-	Group, group, allocateDs', freeDs,
+	Group, group, allocateDs', freeDs, lookup,
 
 	-- * UPDATE
 
@@ -42,6 +42,8 @@ module Gpu.Vulkan.DescriptorSet (
 	W.BindingAndArrayElemBuffer, W.BindingAndArrayElemBufferView
 
 	) where
+
+import Prelude hiding (lookup)
 
 import Foreign.Storable.PeekPoke
 import Data.Default
@@ -167,6 +169,10 @@ freeDs (Device.D mdvc) (Group sem mp) k = do
 				modifyTVar mp (Map.delete k)
 				signalTSem sem
 				pure $ Right ()
+
+lookup :: Ord k =>
+	Group s k sp slbtss -> k -> IO (Maybe (HeteroParList.PL (D s) slbtss))
+lookup (Group _sem mp) k = atomically $ (snd <$>) . Map.lookup k <$> readTVar mp
 
 dListToMiddle :: HeteroParList.PL (D s) slbtss -> [M.D]
 dListToMiddle = HeteroParList.toList \(D _ md) -> md
