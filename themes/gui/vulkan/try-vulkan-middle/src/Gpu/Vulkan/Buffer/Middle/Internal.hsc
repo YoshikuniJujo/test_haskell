@@ -21,8 +21,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke (
-	WithPoked, withPoked, withPoked', withPokedMaybe', withPtrS )
+import Foreign.Storable.PeekPoke (WithPoked, withPoked, withPoked', withPtrS)
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Kind

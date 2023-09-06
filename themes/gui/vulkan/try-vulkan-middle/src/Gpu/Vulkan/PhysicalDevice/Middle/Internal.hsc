@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -14,7 +14,10 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 
 	enumerate, P(..), getProperties, Properties(..), getFeatures,
 
-	Features2Result(..), getFeatures2,
+	-- ** Get Properties 2
+
+	getProperties2ExtensionName,
+	getFeatures2, Features2Result(..),
 
 	-- * OTHER PROPERTIES
 
@@ -25,7 +28,11 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 
 	-- * OTHER FEATURES
 
-	ShaderDrawParametersFeatures(..)
+	ShaderDrawParametersFeatures(..),
+
+	-- * OTHER EXTENSIONS
+
+	maintenance3ExtensionName
 
 	) where
 
@@ -60,6 +67,8 @@ import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
 import Data.HeteroParList qualified as HeteroParList
 import Gpu.Vulkan.PNext.Middle.Internal
+
+#include <vulkan/vulkan.h>
 
 newtype P = P C.P deriving Show
 
@@ -253,3 +262,10 @@ shaderDrawParametersFeaturesToCore ShaderDrawParametersFeatures {
 instance WithPoked (TMaybe.M mn) => WithPoked (ShaderDrawParametersFeatures mn) where
 	withPoked' sdpfs f =
 		shaderDrawParametersFeaturesToCore sdpfs $ f . ptrS . castPtr
+
+maintenance3ExtensionName :: T.Text
+maintenance3ExtensionName = #{const_str VK_KHR_MAINTENANCE_3_EXTENSION_NAME}
+
+getProperties2ExtensionName :: T.Text
+getProperties2ExtensionName =
+	#{const_str VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}
