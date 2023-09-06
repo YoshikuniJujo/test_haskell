@@ -149,8 +149,6 @@ import Tools
 import Options.Declarative hiding (run)
 import Control.Monad.Trans
 
-import Gpu.Vulkan.DescriptorSetLayout.BindingFlags qualified as Vk.DscSetLyt.BFlgs
-
 import Keyboard qualified as K
 
 main :: IO ()
@@ -296,36 +294,53 @@ run w inst g kis =
 	Vk.Img.manage dv nil' \mng -> Vk.Dvc.Mem.manage dv nil' \mmng ->
 	Vk.ImgVw.manage dv nil' \ivmng ->
 	createDescriptorPool dv \dscp ->
-	createDescriptorSet' dv dscp dscslyt \ubds ->
-	updateDescriptorSet dv ubds ub >> let
+	Vk.DscSet.group dv \grp ->
+	createUpdateDescriptorSet dv grp Glfw.Key'H dscp dscslyt ub >>= \ubds ->
+	atomically (newTVar ubds) >>= \vubds -> let
 
-	crtx = createTexture phdv dv
-		gq cp ubds mng mmng ivmng txsmplr kis
-	udtx = updateTexture dv ubds txsmplr ivmng in
+	crds k = atomically . writeTVar vubds
+		=<< createUpdateDescriptorSet dv grp k dscp dscslyt ub
+	udds k = Vk.DscSet.lookup grp k
+		>>= \(Just (HeteroParList.Singleton ds)) ->
+		atomically $ writeTVar vubds ds
+	crtx = createTexture phdv dv gq cp grp mng mmng ivmng txsmplr kis in
 
 	crtx Glfw.Key'H >>
 
 	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
 
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm oke prkcs crtx udtx
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib
+		ubm vubds cb sos tm oke prkcs crtx crds udds
+
+createUpdateDescriptorSet :: Ord k => Vk.Dvc.D sd ->
+	Vk.DscSet.Group sds k sp '[ '(sdsc, Foo)] -> k ->
+	Vk.DscPool.P sp -> Vk.DscSetLyt.D sdsc '[
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
+	IO (Vk.DscSet.D sds '(sdsc, '[
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]))
+createUpdateDescriptorSet dv grp k dscp dscslyt ub =
+	createDescriptorSet' dv grp k dscp dscslyt >>= \ubds ->
+	updateDescriptorSet dv ubds ub >>
+	pure ubds
 
 createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer
-			'[VObj.Atom 256 UniformBufferObject 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
+	Vk.DscSet.Group sgrp Glfw.Key sp '[ '(sdsl, Foo)] ->
 	Vk.Img.Manager si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Dvc.Mem.Manager sm Glfw.Key '[
 		'(si, 'Vk.Dvc.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
 	Vk.ImgVw.Manager siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
-createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr kis k = let
+createTexture phdv dv gq cp grp mng mmng ivmng txsmplr kis k = let
 	tximgfp = kis M.! k in
 	putStrLn "createTexture begin" >>
+	Vk.DscSet.lookup grp k >>= \(Just (HeteroParList.Singleton ubds')) ->
 	createTextureImage' phdv dv mng mmng gq cp k tximgfp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
 		dv ivmng k (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
-	updateDescriptorSetTex dv ubds tximgvw txsmplr
+	updateDescriptorSetTex dv ubds' tximgvw txsmplr
 
 updateTexture :: Ord k => Vk.Dvc.D sd ->
 	Vk.DscSet.D sds '(sdsc, '[
@@ -698,11 +713,11 @@ createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 	where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo ('Just (Vk.DscSetLyt.BFlgs.CreateInfo 'Nothing)) '[
+	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = TMaybe.J bindingFlagsInfo,
+		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings =
 			uboLayoutBinding :**
@@ -721,13 +736,6 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 			Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
-	bindingFlagsInfo = Vk.DscSetLyt.BFlgs.CreateInfo {
-		Vk.DscSetLyt.BFlgs.createInfoNext = TMaybe.N,
-		Vk.DscSetLyt.BFlgs.createInfoBindingFlagsList = [
-			zeroBits,
-			Vk.Dsc.BindingUpdateAfterBindBit -- .|.
---			Vk.Dsc.BindingUpdateUnusedWhilePendingBit
-			] }
 
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sdsl sl .
@@ -1192,26 +1200,30 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 		Vk.DscPool.createInfoNext = TMaybe.N,
 		Vk.DscPool.createInfoFlags =
 			Vk.DscPool.CreateFreeDescriptorSetBit,
-		Vk.DscPool.createInfoMaxSets = 1,
+		Vk.DscPool.createInfoMaxSets = 4,
 		Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
 	poolSize0 = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPool.sizeDescriptorCount = 1 }
+		Vk.DscPool.sizeDescriptorCount = 4 }
 	poolSize1 = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DscPool.sizeDescriptorCount = 1 }
+		Vk.DscPool.sizeDescriptorCount = 4 }
 
-createDescriptorSet' ::
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.DscSetLyt.D sdsc '[
+type Foo = '[
+	'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
+	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
+
+createDescriptorSet' :: Ord k => Vk.Dvc.D sd ->
+	Vk.DscSet.Group sds k sp '[ '(sdsc, Foo)] -> k ->
+	Vk.DscPool.P sp -> Vk.DscSetLyt.D sdsc '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-	(forall sds . Vk.DscSet.D sds '(sdsc, '[
+	IO (Vk.DscSet.D sds '(sdsc, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
-createDescriptorSet' dvc dscp dscslyt f =
-	Vk.DscSet.group dvc \grp ->
-	Vk.DscSet.allocateDs' dvc grp () allocInfo
-		>>= \(Right (HeteroParList.Singleton dscs)) -> f dscs
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]))
+createDescriptorSet' dvc grp k dscp dscslyt =
+	Vk.DscSet.allocateDs' dvc grp k allocInfo
+		>>= \(Right (HeteroParList.Singleton dscs)) -> pure dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
@@ -1461,24 +1473,26 @@ mainLoop ::
 		sb2,
 		'Vk.Mem.BufferArg "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
-	Vk.DscSet.D sds (AtomUbo sdsl) ->
+	TVar (Vk.DscSet.D sds (AtomUbo sdsl)) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime ->
 	TChan K.KeyEvent -> K.Envs ->
-	(Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) ->
+	(Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 oke prkcs crtx udtx = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm vubds cb iasrfsifs tm0 oke prkcs crtx crds udds = do
 	($ ext0) $ fix \loop ext -> do
 		me <- atomically do
 			b <- isEmptyTChan oke
 			if b then pure Nothing else Just <$> readTChan oke
 		maybe (pure ()) (\case
-			K.First k | K.isHjkl k -> crtx k
-			K.Key k | K.isHjkl k -> udtx k
+			K.First k | K.isHjkl k -> do
+				crds k >> crtx k
+			K.Key k | K.isHjkl k -> udds k
 			k -> print k
 			) me
 		Glfw.pollEvents
 		tm <- getCurrentTime
+		ubds <- atomically $ readTVar vubds
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs
 			rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
