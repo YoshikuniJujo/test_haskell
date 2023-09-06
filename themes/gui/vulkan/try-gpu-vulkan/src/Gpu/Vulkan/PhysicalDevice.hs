@@ -56,4 +56,4 @@ extensionPropertiesFromMiddle M.ExtensionProperties {
 	extensionPropertiesSpecVersion = sv }
 
 newtype ExtensionName = ExtensionName { unExtensionName :: T.Text }
-	deriving Show
+	deriving (Show, Eq)

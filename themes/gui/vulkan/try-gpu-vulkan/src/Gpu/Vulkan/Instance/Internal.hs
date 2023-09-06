@@ -55,7 +55,7 @@ data CreateInfo mn ai = CreateInfo {
 	createInfoEnabledExtensionNames :: [ExtensionName] }
 
 newtype ExtensionName = ExtensionName { unExtensionName :: T.Text }
-	deriving Show
+	deriving (Show, Eq)
 
 deriving instance (Show (TMaybe.M mn), Show (TMaybe.M ai)) =>
 	Show (CreateInfo mn ai)
