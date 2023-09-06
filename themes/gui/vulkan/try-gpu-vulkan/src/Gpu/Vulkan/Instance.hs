@@ -9,7 +9,11 @@ module Gpu.Vulkan.Instance (
 	-- * ENUMERATE
 
 	enumerateLayerProperties,
-	enumerateExtensionProperties, ExtensionProperties(..)
+	enumerateExtensionProperties, ExtensionProperties(..),
+
+	-- * EXTENSIONS
+
+	getPhysicalDeviceProperties2ExtensionName
 
 	) where
 

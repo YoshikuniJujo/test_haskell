@@ -23,7 +23,11 @@ module Gpu.Vulkan.PhysicalDevice (
 
 	-- * OTHER FEATURES
 
-	M.ShaderDrawParametersFeatures(..)
+	M.ShaderDrawParametersFeatures(..),
+
+	-- * EXTENSIONS
+
+	maintenance3ExtensionName
 
 	) where
 
@@ -57,3 +61,6 @@ extensionPropertiesFromMiddle M.ExtensionProperties {
 
 newtype ExtensionName = ExtensionName { unExtensionName :: T.Text }
 	deriving (Show, Eq)
+
+maintenance3ExtensionName :: ExtensionName
+maintenance3ExtensionName = ExtensionName M.maintenance3ExtensionName

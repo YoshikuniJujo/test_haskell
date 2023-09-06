@@ -16,7 +16,11 @@ module Gpu.Vulkan.Instance.Internal (
 	-- * ENUMERATE
 
 	enumerateLayerProperties,
-	enumerateExtensionProperties, ExtensionProperties(..)
+	enumerateExtensionProperties, ExtensionProperties(..),
+
+	-- * EXTENSIONS
+
+	getPhysicalDeviceProperties2ExtensionName
 
 	) where
 
@@ -102,3 +106,7 @@ extensionPropertiesFromMiddle M.ExtensionProperties {
 	M.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
 	extensionPropertiesExtensionName = ExtensionName en,
 	extensionPropertiesSpecVersion = sv }
+
+getPhysicalDeviceProperties2ExtensionName :: ExtensionName
+getPhysicalDeviceProperties2ExtensionName =
+	ExtensionName M.getPhysicalDeviceProperties2ExtensionName
