@@ -102,10 +102,10 @@ findQueueFamilies device sfc = do
 
 checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
 checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions L.\\) . (Vk.extensionPropertiesExtensionName <$>)
+	null . (deviceExtensions L.\\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
-deviceExtensions :: [Vk.ExtensionName]
+deviceExtensions :: [Vk.PhDvc.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 querySwapChainSupport ::

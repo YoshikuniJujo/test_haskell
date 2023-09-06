@@ -16,7 +16,7 @@ import Data.Bool
 import Graphics.UI.GLFW qualified as Glfw
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Instance qualified as Vk.Ist
+import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 
@@ -25,7 +25,7 @@ create vld = createGen vld \nxt -> \f' -> do
 	when vld $ bool
 		(error "validation layers requested, but not available!")
 		(pure ()) =<< DbgMsngr.checkLayer
-	gexs <- (Vk.ExtensionName <$>)
+	gexs <- (Vk.Ist.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	let	exs = bool id (DbgMsngr.extensionName :) vld gexs
 	Vk.Ist.create Vk.Ist.CreateInfo {

@@ -13,7 +13,7 @@ import Data.Bits
 import Data.List qualified as L
 import Data.Text.IO qualified as Txt
 import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Instance qualified as Vk.Ist
+import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
@@ -21,7 +21,7 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerNameKhronosValidation]
 
-extensionName :: Vk.ExtensionName
+extensionName :: Vk.Ist.ExtensionName
 extensionName = Vk.Ext.DbgUtls.extensionName
 
 checkLayer :: IO Bool

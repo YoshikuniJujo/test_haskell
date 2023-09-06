@@ -220,7 +220,7 @@ pickPhysicalDevice ist sfc = PhDvc.enumerate ist sfc >>= \case
 	[] -> error "failed to find a sutable GPU!"
 	PhDvc.P phd qfi : _ -> pure (phd, qfi)
 
-deviceExtensions :: [Vk.ExtensionName]
+deviceExtensions :: [Vk.PhDvc.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {

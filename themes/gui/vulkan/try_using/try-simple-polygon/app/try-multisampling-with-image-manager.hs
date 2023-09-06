@@ -304,7 +304,7 @@ getMaxUsableSampleCount phdvc = do
 findBit :: Bits b => [b] -> b -> Maybe b
 findBit bl bs = find ((/= zeroBits) . (.&. bs)) bl
 
-deviceExtensions :: [Vk.ExtensionName]
+deviceExtensions :: [Vk.PhDvc.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
