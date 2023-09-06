@@ -106,9 +106,11 @@ instance (Sizable n, Nextable n, ClearedChain ns) => ClearedChain (n ': ns) wher
 		pure rslt
 
 class FindPNextChainAll' mn where
+	clearedChain' :: (Ptr () -> IO a) -> IO a
 	findPNextChainAll' :: Ptr () -> IO (TMaybe.M mn)
 
 instance FindPNextChainAll' 'Nothing where
+	clearedChain' = ($ nullPtr)
 	findPNextChainAll' _ = pure TMaybe.N
 
 instance (Nextable' n, FindPNextChainAll' mn') =>
@@ -119,5 +121,7 @@ instance (Nextable' n, FindPNextChainAll' mn') =>
 		TMaybe.J <$> createNextable p mn'
 	
 class Nextable' (n :: Maybe Type -> Type) where
+	nextableSize :: Int
+	nextableType' :: StructureType
 	nextPtr :: Ptr () -> IO (Ptr ())
 	createNextable :: Ptr () -> TMaybe.M mn' -> IO (n mn')
