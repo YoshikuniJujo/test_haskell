@@ -35,6 +35,7 @@ module Gpu.Vulkan.PhysicalDevice (
 	) where
 
 import Gpu.Vulkan.Internal
+import Gpu.Vulkan.Instance.Internal qualified as Instance
 import Gpu.Vulkan.Instance.Type qualified as Instance.T
 import Gpu.Vulkan.PhysicalDevice.Middle qualified as M
 
@@ -68,5 +69,5 @@ newtype ExtensionName = ExtensionName { unExtensionName :: T.Text }
 maintenance3ExtensionName :: ExtensionName
 maintenance3ExtensionName = ExtensionName M.maintenance3ExtensionName
 
-getProperties2ExtensionName :: ExtensionName
-getProperties2ExtensionName = ExtensionName M.getProperties2ExtensionName
+getProperties2ExtensionName :: Instance.ExtensionName
+getProperties2ExtensionName = Instance.ExtensionName M.getProperties2ExtensionName
