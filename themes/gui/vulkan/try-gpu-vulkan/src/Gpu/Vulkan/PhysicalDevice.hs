@@ -12,6 +12,9 @@ module Gpu.Vulkan.PhysicalDevice (
 
 	M.getProperties, M.Properties(..), M.getFeatures,
 
+	-- ** Get Properties 2
+
+	getProperties2ExtensionName,
 	M.getFeatures2, M.Features2Result(..),
 
 	-- * OTHER PROPERTIES
@@ -64,3 +67,6 @@ newtype ExtensionName = ExtensionName { unExtensionName :: T.Text }
 
 maintenance3ExtensionName :: ExtensionName
 maintenance3ExtensionName = ExtensionName M.maintenance3ExtensionName
+
+getProperties2ExtensionName :: ExtensionName
+getProperties2ExtensionName = ExtensionName M.getProperties2ExtensionName

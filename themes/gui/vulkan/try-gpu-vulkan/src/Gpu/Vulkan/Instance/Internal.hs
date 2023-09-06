@@ -18,10 +18,6 @@ module Gpu.Vulkan.Instance.Internal (
 	enumerateLayerProperties,
 	enumerateExtensionProperties, ExtensionProperties(..),
 
-	-- * EXTENSIONS
-
-	getPhysicalDeviceProperties2ExtensionName
-
 	) where
 
 import Foreign.Storable.PeekPoke
@@ -106,7 +102,3 @@ extensionPropertiesFromMiddle M.ExtensionProperties {
 	M.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
 	extensionPropertiesExtensionName = ExtensionName en,
 	extensionPropertiesSpecVersion = sv }
-
-getPhysicalDeviceProperties2ExtensionName :: ExtensionName
-getPhysicalDeviceProperties2ExtensionName =
-	ExtensionName M.getPhysicalDeviceProperties2ExtensionName

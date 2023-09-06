@@ -11,10 +11,6 @@ module Gpu.Vulkan.Instance (
 	enumerateLayerProperties,
 	enumerateExtensionProperties, ExtensionProperties(..),
 
-	-- * EXTENSIONS
-
-	getPhysicalDeviceProperties2ExtensionName
-
 	) where
 
 import Gpu.Vulkan.Instance.Internal
