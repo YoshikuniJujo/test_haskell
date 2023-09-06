@@ -70,7 +70,7 @@ import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
-import qualified Gpu.Vulkan.Instance as Vk.Ist
+import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
@@ -197,14 +197,14 @@ createInstance f = do
 		. ([Vk.layerNameKhronosValidation] \\)
 		. (Vk.layerPropertiesLayerName <$>)
 		<$> Vk.Ist.M.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers . (Vk.ExtensionName <$>)
+	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers . (Vk.Ist.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	instInfo enableValidationLayers exts \ci ->
 		Vk.Ist.create ci nil' f
 	where
 	msg = "validation layers requested, but not available!"
 
-instInfo :: Bool -> [Vk.ExtensionName] -> (
+instInfo :: Bool -> [Vk.Ist.ExtensionName] -> (
 	forall mn . WithPoked (TMaybe.M mn) => Vk.Ist.M.CreateInfo mn 'Nothing -> b
 	) -> b
 instInfo b exts f = istCreateInfoNext b \mn ->
@@ -323,10 +323,10 @@ isPhysicalDeviceSuitable ph sfc =
 
 checkDeviceExtensionSupport :: Vk.Phd.P -> IO Bool
 checkDeviceExtensionSupport dv = null
-	. (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
+	. (deviceExtensions \\) . (Vk.Phd.extensionPropertiesExtensionName <$>)
 		<$> Vk.Phd.enumerateExtensionProperties dv Nothing
 
-deviceExtensions :: [Vk.ExtensionName]
+deviceExtensions :: [Vk.Phd.ExtensionName]
 deviceExtensions = [Vk.Khr.Swpch.extensionName]
 
 findQueueFamilies :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe

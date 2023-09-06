@@ -62,7 +62,7 @@ import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
-import qualified Gpu.Vulkan.Instance as Vk.Ist
+import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
@@ -182,7 +182,7 @@ createInstance f = do
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers
-		<$> ((Vk.ExtensionName <$>) <$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions))
+		<$> ((Vk.Ist.ExtensionName <$>) <$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions))
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
@@ -314,10 +314,10 @@ findQueueFamilies device sfc = do
 
 checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
 checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
+	null . (deviceExtensions \\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
-deviceExtensions :: [Vk.ExtensionName]
+deviceExtensions :: [Vk.PhDvc.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
