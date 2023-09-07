@@ -6,9 +6,9 @@ module Gpu.Vulkan.Memory.Middle (
 
 	allocate, reallocate, reallocate', free, M, AllocateInfo(..),
 
-	-- ** Manage Destruction
+	-- ** Destruction Group
 
-	Manager, manage, allocate', free', lookup,
+	Group, group, allocate', free', lookup,
 
 	-- * MAP AND UNMNAP
 
