@@ -317,6 +317,8 @@ debugIndexingFeatures phdv = do
 	Vk.PhDvc.Features2Result (HeteroParList.Singleton (Just nxts)) ftrs <- Vk.PhDvc.getFeatures2
 		@'[Vk.PhDvc.DescriptorIndexingFeaturesNoNext] phdv
 	let	nxts' = Vk.PhDvc.descriptorIndexingFeaturesFromNoNext TMaybe.N nxts
+	print =<< Vk.PhDvc.getFeatures2'
+		@('Just (Vk.PhDvc.DescriptorIndexingFeatures 'Nothing)) phdv
 	pure nxts'
 --	print nxts'
 --	print ftrs
