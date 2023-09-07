@@ -16,6 +16,7 @@ module Gpu.Vulkan.PhysicalDevice (
 
 	getProperties2ExtensionName,
 	M.getFeatures2, M.Features2Result(..),
+	M.getFeatures2', M.Features2(..),
 
 	-- * OTHER PROPERTIES
 
