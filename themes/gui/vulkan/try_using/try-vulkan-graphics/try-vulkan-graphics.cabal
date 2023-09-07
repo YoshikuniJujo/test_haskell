@@ -132,6 +132,42 @@ executable try-gamepad-button
     , vector
   default-language: Haskell2010
 
+executable try-multi-rectangles
+  main-is: try-multi-rectangles.hs
+  other-modules:
+      Main
+      Paths_try_vulkan_graphics
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr
+    , try-gpu-vulkan-khr-glfw
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
+    , try-vulkan-graphics
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
 executable try-pyramid-single
   main-is: try-pyramid-single.hs
   other-modules:
