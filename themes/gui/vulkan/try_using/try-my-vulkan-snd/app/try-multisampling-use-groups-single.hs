@@ -1856,7 +1856,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
 		b <- isEmptyTChan cke
 		if b then pure Nothing else Just <$> readTChan cke
 	(vbib', idcs'') <- maybe (pure (vbib, idcs)) (\case
-		K.First Glfw.Key'F -> loadModel "../../../../files/models/monkey_smooth.obj" >>= \(vtcs, idcs') -> do
+		K.First Glfw.Key'F -> loadModel "../../../../../files/models/monkey_smooth.obj" >>= \(vtcs, idcs') -> do
 			vb' <- createVertexBuffer' phdvc dvc grp mng Glfw.Key'F gq cp vtcs
 			ib' <- createIndexBuffer' phdvc dvc grp' mng' Glfw.Key'F gq cp idcs'
 			print $ Vk.Bffr.lengthBinded ib'
