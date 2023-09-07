@@ -1,0 +1,225 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           tribial-trials
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/tribial-trials#readme>
+homepage:       https://github.com/githubuser/tribial-trials#readme
+bug-reports:    https://github.com/githubuser/tribial-trials/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2019 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+data-files:
+    th/some.txt
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/tribial-trials
+
+library
+  exposed-modules:
+      CEnum.Sample
+      CEnum.SampleType
+      ContinuationMonad
+      ContinuationMonad.WithFile
+      DfsBfs
+      FixLoop
+      Foldl
+      Foldr
+      Foreign.Ptr.Safe
+      Gadt
+      GeneralFoldable
+      GetSizeAlignment
+      HeteroList.First
+      HeteroList.IndexedType
+      HeteroParList
+      IdealList
+      InfiniteTree
+      Injective
+      InstanceAll
+      IORef
+      LambdaCube
+      Lib
+      Lib1
+      Lib2
+      LocalValues
+      LoopAndException
+      OneThirdOfTheYearIsOver
+      PrintableClass
+      PseudoPrime
+      RankNTypes
+      RecursionOverModules.List
+      RecursionOverModules.NonEmpty
+      SequenceCombination
+      Shadow
+      Template
+      Template.Foo
+      Template.ModuleTree
+      Template.NameSpace
+      Template.NestInFile
+      Template.TryDataFiles
+      Template.TryModule
+      Template.TryNameSpace
+      Template.TryNameSpace2
+      TryGenerics
+      TryHeteroMap
+      TryIndexing
+      TryList
+      TryTemplate
+      TryTypeLevelList
+      TryTypeLevelNat
+      TryUnsafeCoerce
+      TryValueToType
+      TypeFamilies.TestAssociated
+      TypeFamilies.TryErrors
+      TypeInfixOf
+      TypeLevel.Nat
+      TypeLevelPatternMatch
+      TypeLevelProlog
+      TypeLevelProlog.Sazae
+      TypeLevelTupleContext
+      TypeMatch
+      TypeNat
+      TypeValues
+      Wrapper
+      Zip
+  other-modules:
+      Paths_tribial_trials
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , containers
+    , deepseq
+    , monads-tf
+    , mono-traversable
+    , random
+    , template-haskell
+    , time
+    , vector
+  default-language: Haskell2010
+
+executable chokkaku
+  main-is: chokkaku.hs
+  other-modules:
+      Main
+      Paths_tribial_trials
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , containers
+    , deepseq
+    , monads-tf
+    , mono-traversable
+    , random
+    , template-haskell
+    , time
+    , tribial-trials
+    , vector
+  default-language: Haskell2010
+
+executable endless
+  main-is: endless.hs
+  other-modules:
+      Main
+      Paths_tribial_trials
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , containers
+    , deepseq
+    , monads-tf
+    , mono-traversable
+    , random
+    , template-haskell
+    , time
+    , tribial-trials
+    , vector
+  default-language: Haskell2010
+
+executable tribial-trials-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_tribial_trials
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , containers
+    , deepseq
+    , monads-tf
+    , mono-traversable
+    , random
+    , template-haskell
+    , time
+    , tribial-trials
+    , vector
+  default-language: Haskell2010
+
+executable tryRecursionOverModules
+  main-is: tryRecursionOverModules.hs
+  other-modules:
+      Main
+      Paths_tribial_trials
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , containers
+    , deepseq
+    , monads-tf
+    , mono-traversable
+    , random
+    , template-haskell
+    , time
+    , tribial-trials
+    , vector
+  default-language: Haskell2010
+
+test-suite tribial-trials-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_tribial_trials
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , containers
+    , deepseq
+    , monads-tf
+    , mono-traversable
+    , random
+    , template-haskell
+    , time
+    , tribial-trials
+    , vector
+  default-language: Haskell2010
