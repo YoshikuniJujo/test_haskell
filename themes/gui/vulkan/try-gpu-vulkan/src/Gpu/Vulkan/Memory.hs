@@ -16,9 +16,9 @@ module Gpu.Vulkan.Memory (
 
 	allocateBind, reallocateBind, reallocateBind',
 
-	-- ** Manage Destruction
+	-- ** Destruction Group
 
-	Manager, manage, allocateBind', free, lookup,
+	Group, group, allocateBind', free, lookup,
 
 	-- ** MEMORY
 
@@ -99,25 +99,25 @@ allocate dv@(Device.D mdv) ibs ai
 	(\m -> M.free mdv m mac)
 	\m -> f =<< newM ibs m
 
-manage :: AllocationCallbacks.ToMiddle mac =>
+group :: AllocationCallbacks.ToMiddle mac =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . Manager s k ibargs -> IO a) -> IO a
-manage (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) f =
-	M.manage mdvc mac \mmng -> do
+	(forall s . Group s k ibargs -> IO a) -> IO a
+group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) f =
+	M.group mdvc mac \mmng -> do
 		ibargs <- atomically $ newTVar Map.empty
-		f $ Manager ibargs mmng
+		f $ Group ibargs mmng
 
 allocateBind' :: (
 	Ord k,
 	WithPoked (TMaybe.M mn), Bindable ibargs,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> Manager sm k ibargs -> k ->
+	Device.D sd -> Group sm k ibargs -> k ->
 	HeteroParList.PL (U2 ImageBuffer) ibargs ->
 	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	IO (Either String (
 		HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs,
 		M sm ibargs))
-allocateBind' dv (Manager mib mng) k ibs ai mac = do
+allocateBind' dv (Group mib mng) k ibs ai mac = do
 	allocate' dv mng k ibs ai mac >>= \case
 		Left msg -> pure $ Left msg
 		Right m -> do
@@ -129,7 +129,7 @@ allocate' :: (
 	Ord k,
 	WithPoked (TMaybe.M n), Alignments ibargs,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> M.Manager sm k -> k ->
+	Device.D sd -> M.Group sm k -> k ->
 	HeteroParList.PL (U2 ImageBuffer) ibargs ->
 	AllocateInfo n -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	IO (Either String (M sm ibargs))
@@ -138,18 +138,18 @@ allocate' dv@(Device.D mdv) mng k ibs ai (AllocationCallbacks.toMiddle -> mac) =
 	(newM ibs `mapM`) =<< M.allocate' mdv mng k mai mac
 
 free :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> Manager smng k ibargs -> k ->
+	Device.D sd -> Group smng k ibargs -> k ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
-free (Device.D mdv) (Manager _ mng) k (AllocationCallbacks.toMiddle -> mac) =
+free (Device.D mdv) (Group _ mng) k (AllocationCallbacks.toMiddle -> mac) =
 	M.free' mdv mng k mac
 
-data Manager s k ibargs = Manager
+data Group s k ibargs = Group
 	(TVar (Map.Map k (IORef (HeteroParList.PL (U2 ImageBuffer) ibargs))))
-	(M.Manager s k)
+	(M.Group s k)
 
 lookup :: Ord k =>
-	Manager sm k ibargs -> k -> IO (Maybe (M s ibargs))
-lookup (Manager ibargss mmng) k = do
+	Group sm k ibargs -> k -> IO (Maybe (M s ibargs))
+lookup (Group ibargss mmng) k = do
 	mibargs <- atomically $ Map.lookup k <$> readTVar ibargss
 	mmem <- M.lookup mmng k
 	pure $ M <$> mibargs <*> mmem
