@@ -288,8 +288,8 @@ run txfp mdlfp mnld w inst g =
 
 	K.newChans' K.gf >>= \(cke, kenvs) ->
 
-	Vk.Bffr.group dv nil' \grp -> Vk.Mem.manage dv nil' \mng ->
-	Vk.Bffr.group dv nil' \grp' -> Vk.Mem.manage dv nil' \mng' ->
+	Vk.Bffr.group dv nil' \grp -> Vk.Mem.group dv nil' \mng ->
+	Vk.Bffr.group dv nil' \grp' -> Vk.Mem.group dv nil' \mng' ->
 
 	createVertexBuffer' phdv dv grp mng Glfw.Key'G gq cp vtcs >>= \vb ->
 	createIndexBuffer' phdv dv grp' mng' Glfw.Key'G gq cp idcs >>= \ib ->
@@ -1422,7 +1422,7 @@ loadModel fp = do
 
 createVertexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sb k nm '[VObj.List 256 WVertex ""] ->
-	Vk.Mem.Manager sm k
+	Vk.Mem.Group sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 WVertex ""])] ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector WVertex ->
 	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""])
@@ -1446,7 +1446,7 @@ createVertexBuffer' phdvc dvc grp mng k gq cp vtcs =
 
 createIndexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sb k nm '[VObj.List 256 Word32 ""] ->
-	Vk.Mem.Manager sm k
+	Vk.Mem.Group sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Word32 ""])]  ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 ->
 	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 Word32 ""])
@@ -1568,13 +1568,13 @@ createBufferList :: forall sd nm t a . Storable t =>
 		IO a) ->
 	IO a
 createBufferList p dv ln usg props f =
-	Vk.Bffr.group dv nil' \grp -> Vk.Mem.manage dv nil' \mng ->
+	Vk.Bffr.group dv nil' \grp -> Vk.Mem.group dv nil' \mng ->
 	uncurry f =<< createBufferList' p dv grp mng () ln usg props
 
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sb k nm '[VObj.List 256 t ""] ->
-	Vk.Mem.Manager sm k
+	Vk.Mem.Group sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
 	k -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> IO (
@@ -1604,13 +1604,13 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
 createBuffer p dv ln usg props f =
-	Vk.Bffr.group dv nil' \grp -> Vk.Mem.manage dv nil' \mng ->
+	Vk.Bffr.group dv nil' \grp -> Vk.Mem.group dv nil' \mng ->
 	uncurry f =<< createBuffer' p dv grp mng () ln usg props
 
 createBuffer' :: forall sd nm o sm sb k . (Ord k, VObj.SizeAlignment o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sb k nm '[o] ->
-	Vk.Mem.Manager sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
+	Vk.Mem.Group sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 	k -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
 		Vk.Bffr.Binded sm sb nm '[o],
@@ -1761,7 +1761,7 @@ type VertexIndexBuffer sm sb sm' sb' nm nm' = (
 
 type GroupAndManager sm sb k nm t = (
 	Vk.Bffr.Group sb k nm '[VObj.List 256 t ""],
-	Vk.Mem.Manager sm k
+	Vk.Mem.Group sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])])
 
 bindedBuffer ::

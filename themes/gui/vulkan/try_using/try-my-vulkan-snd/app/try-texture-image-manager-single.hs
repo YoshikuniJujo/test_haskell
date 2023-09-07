@@ -296,7 +296,7 @@ run w inst g kis =
 	getCurrentTime >>= \tm ->
 
 	createTextureSampler phdv dv \txsmplr ->
-	Vk.Img.manage dv nil' \mng -> Vk.Dvc.Mem.manage dv nil' \mmng ->
+	Vk.Img.manage dv nil' \mng -> Vk.Dvc.Mem.group dv nil' \mmng ->
 	Vk.ImgVw.manage dv nil' \ivmng ->
 	createDescriptorPool dv \dscp ->
 	createDescriptorSet' dv dscp dscslyt \ubds ->
@@ -324,7 +324,7 @@ createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 			'[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
 	Vk.Img.Manager si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Dvc.Mem.Manager sm Glfw.Key '[
+	Vk.Dvc.Mem.Group sm Glfw.Key '[
 		'(si, 'Vk.Dvc.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
 	Vk.ImgVw.Manager siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
@@ -948,7 +948,7 @@ createCommandPool qfis dvc f =
 
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Manager sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Mem.Manager smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
+	Vk.Mem.Group smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc -> Glfw.Key -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
 createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
@@ -1013,7 +1013,7 @@ instance KObj.IsImage MyImage where
 createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Manager sim Glfw.Key nm fmt ->
-	Vk.Mem.Manager smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
+	Vk.Mem.Group smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	Glfw.Key ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
