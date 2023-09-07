@@ -18,6 +18,7 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 
 	getProperties2ExtensionName,
 	getFeatures2, Features2Result(..),
+	getFeatures2', Features2(..),
 
 	-- * OTHER PROPERTIES
 
@@ -172,10 +173,6 @@ data Features2Result ns = Features2Result {
 
 deriving instance Show (HeteroParList.PL Maybe ns) => Show (Features2Result ns)
 
-data Features2 mn = Features2 {
-	features2Next :: TMaybe.M mn,
-	features2Features :: Features }
-
 features2ResultFromCore :: FindPNextChainAll ns => C.Features2 -> IO (Features2Result ns)
 features2ResultFromCore C.Features2 {
 	C.features2PNext = pnxt,
@@ -184,6 +181,32 @@ features2ResultFromCore C.Features2 {
 	let	ftrs' = featuresFromCore ftrs
 	pure Features2Result {
 		features2ResultNexts = nxts, features2ResultFeatures = ftrs' }
+
+getFeatures2' :: forall mn . FindPNextChainAll' mn => P -> IO (Features2 mn)
+getFeatures2' (P pdvc) = clearedChain' @mn \pn ->
+	features2FromCore =<< alloca \pfts -> do
+		cfs <- C.getClearedFeatures
+		poke pfts $ C.Features2 {
+			C.features2SType = (),
+			C.features2PNext = pn,
+			C.features2Features = cfs }
+		C.getFeatures2 pdvc pfts
+		peek pfts
+
+data Features2 mn = Features2 {
+	features2Next :: TMaybe.M mn,
+	features2Features :: Features }
+
+deriving instance Show (TMaybe.M mn) => Show (Features2 mn)
+
+features2FromCore :: FindPNextChainAll' mn => C.Features2 -> IO (Features2 mn)
+features2FromCore C.Features2 {
+	C.features2PNext = pnxt,
+	C.features2Features = ftrs } = do
+	nxts <- findPNextChainAll' pnxt
+	let	ftrs' = featuresFromCore ftrs
+	pure Features2 {
+		features2Next = nxts, features2Features = ftrs' }
 
 getQueueFamilyProperties :: P -> IO [(QueueFamily.Index, QueueFamily.Properties)]
 getQueueFamilyProperties (P pdvc) =

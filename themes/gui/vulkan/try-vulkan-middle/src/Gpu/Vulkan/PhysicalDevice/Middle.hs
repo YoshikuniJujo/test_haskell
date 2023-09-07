@@ -10,6 +10,7 @@ module Gpu.Vulkan.PhysicalDevice.Middle (
 
 	getProperties2ExtensionName,
 	getFeatures2, Features2Result(..),
+	getFeatures2', Features2(..),
 
 	-- * OTHER PROPERTIES
 

@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -115,6 +115,15 @@ instance FindPNextChainAll' 'Nothing where
 
 instance (Nextable' n, FindPNextChainAll' mn') =>
 	FindPNextChainAll' ('Just (n (mn'))) where
+	clearedChain' f = clearedChain' @mn' \p -> do
+		let	sc = StructCommon {
+				structCommonSType = nextableType' @n,
+				structCommonPNext = p }
+		p' <- callocBytes (nextableSize @n)
+		poke' p' sc
+		rslt <- f $ castPtr p'
+		free p'
+		pure rslt
 	findPNextChainAll' p = do
 		p' <- nextPtr @n p
 		mn' <- findPNextChainAll' p'
