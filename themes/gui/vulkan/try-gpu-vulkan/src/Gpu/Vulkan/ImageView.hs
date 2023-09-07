@@ -15,7 +15,7 @@ module Gpu.Vulkan.ImageView (
 
 	-- ** Manage Multiple Image View
 
-	manage, create', destroy, lookup, Manager
+	group, create', destroy, lookup, Group
 
 	) where
 
@@ -75,33 +75,33 @@ create (Device.D d) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 	(M.create d (createInfoToMiddle ci) mac)
 	(\i -> M.destroy d i mac) (f . I)
 
-manage ::
+group ::
 	AllocationCallbacks.ToMiddle mac =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . Manager s k nm ivfmt -> IO a) -> IO a
-manage (Device.D d) (AllocationCallbacks.toMiddle -> mac) f =
-	M.manage d mac $ f . Manager
+	(forall s . Group s k nm ivfmt -> IO a) -> IO a
+group (Device.D d) (AllocationCallbacks.toMiddle -> mac) f =
+	M.group d mac $ f . Group
 
-newtype Manager s k (nm :: Symbol) (ivfmt :: T.Format) = Manager (M.Manager s k)
+newtype Group s k (nm :: Symbol) (ivfmt :: T.Format) = Group (M.Group s k)
 
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> Manager smng k nm ivfmt -> k ->
+	Device.D sd -> Group smng k nm ivfmt -> k ->
 	CreateInfo mn sm si nm ifmt ivfmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	IO (Either String (I nm ivfmt smng))
-create' (Device.D d) (Manager mng) k ci (AllocationCallbacks.toMiddle -> mac) =
+create' (Device.D d) (Group mng) k ci (AllocationCallbacks.toMiddle -> mac) =
 	(I <$>) <$> M.create' d mng k (createInfoToMiddle ci) mac
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> Manager sm k nm ivfmt  -> k ->
+	Device.D sd -> Group sm k nm ivfmt  -> k ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
-destroy (Device.D d) (Manager mng) k (AllocationCallbacks.toMiddle -> mac) =
+destroy (Device.D d) (Group mng) k (AllocationCallbacks.toMiddle -> mac) =
 	M.destroy' d mng k mac
 
-lookup :: Ord k => Manager smng k nm ivfmt -> k -> IO (Maybe (I nm ivfmt smng))
-lookup (Manager mng) k = (I <$>) <$> M.lookup mng k
+lookup :: Ord k => Group smng k nm ivfmt -> k -> IO (Maybe (I nm ivfmt smng))
+lookup (Group mng) k = (I <$>) <$> M.lookup mng k
 
 recreate :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,

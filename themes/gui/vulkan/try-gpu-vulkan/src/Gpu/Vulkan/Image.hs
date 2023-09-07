@@ -17,7 +17,7 @@ module Gpu.Vulkan.Image (
 
 	-- ** Manage Multiple Image
 
-	Manager, manage, create', destroy, lookup,
+	Group, group, create', destroy, lookup,
 
 	-- * GET MEMORY REQUIREMENTS
 
