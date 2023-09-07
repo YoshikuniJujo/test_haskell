@@ -9,7 +9,7 @@
 module Gpu.Vulkan.ImageView.Middle.Internal (
 	I, CreateInfo(..), create, recreate, recreate', destroy,
 
-	manage, create', destroy', lookup, Manager,
+	group, create', destroy', lookup, Group,
 
 	iToCore
 	) where
@@ -90,20 +90,20 @@ create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
 			throwUnlessSuccess $ Result r
 	peek pView
 
-manage :: Device.D -> TPMaybe.M AllocationCallbacks.A mc ->
-	(forall s . Manager s k -> IO a) -> IO a
-manage dvc mac f = do
+group :: Device.D -> TPMaybe.M AllocationCallbacks.A mc ->
+	(forall s . Group s k -> IO a) -> IO a
+group dvc mac f = do
 	(sem, mng) <- atomically $ (,) <$> newTSem 1 <*> newTVar M.empty
-	rtn <- f $ Manager sem mng
+	rtn <- f $ Group sem mng
 	((\iv -> destroy dvc iv mac) `mapM_`) =<< atomically (readTVar mng)
 	pure rtn
 
-data Manager s k = Manager TSem (TVar (M.Map k I))
+data Group s k = Group TSem (TVar (M.Map k I))
 
 create' :: (Ord k, WithPoked (TMaybe.M mn)) =>
-	Device.D -> Manager sm k -> k ->
+	Device.D -> Group sm k -> k ->
 	CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO (Either String I)
-create' (Device.D dvc) (Manager sem is) k ci mac = do
+create' (Device.D dvc) (Group sem is) k ci mac = do
 	ok <- atomically do
 		mx <- (M.lookup k) <$> readTVar is
 		case mx of
@@ -121,8 +121,8 @@ create' (Device.D dvc) (Manager sem is) k ci mac = do
 	else pure . Left $ "Gpu.Vulkan.ImageView.create': The key already exist"
 
 destroy' :: Ord k => Device.D ->
-	Manager sm k -> k -> TPMaybe.M AllocationCallbacks.A mc -> IO (Either String ())
-destroy' dvc (Manager sem is) k mac = do
+	Group sm k -> k -> TPMaybe.M AllocationCallbacks.A mc -> IO (Either String ())
+destroy' dvc (Group sem is) k mac = do
 	mi <- atomically do
 		mx <- (M.lookup k) <$> readTVar is
 		case mx of
@@ -137,8 +137,8 @@ destroy' dvc (Manager sem is) k mac = do
 				signalTSem sem
 				pure $ Right ()
 
-lookup :: Ord k => Manager sm k -> k -> IO (Maybe I)
-lookup (Manager _sem is) k = atomically $ M.lookup k <$> readTVar is
+lookup :: Ord k => Group sm k -> k -> IO (Maybe I)
+lookup (Group _sem is) k = atomically $ M.lookup k <$> readTVar is
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->

@@ -8,7 +8,7 @@ module Gpu.Vulkan.Image.Middle (
 
 	-- ** Manage Multiple Image
 
-	Manager, manage, create', destroy', lookup,
+	Group, group, create', destroy', lookup,
 
 	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
