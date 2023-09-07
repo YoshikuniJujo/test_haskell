@@ -47,8 +47,17 @@ instance Nextable DescriptorIndexingFeaturesNoNext where
 
 instance Sizable DescriptorIndexingFeaturesNoNext where
 	sizeOf' = sizeOf @C.DescriptorIndexingFeatures undefined
+	alignment' = alignment @C.DescriptorIndexingFeatures undefined
 
 instance WithPoked (TMaybe.M mn) => WithPoked (DescriptorIndexingFeatures mn) where
 	withPoked' difs f = alloca \pcdifs -> do
 		descriptorIndexingFeaturesToCore difs $ \cdifs -> poke pcdifs cdifs
 		f . ptrS $ castPtr pcdifs
+
+instance Nextable' DescriptorIndexingFeatures where
+	nextableSize = sizeOf @C.DescriptorIndexingFeatures undefined
+	nextableType' = StructureTypePhysicalDeviceDescriptorIndexingFeatures
+	nextPtr p = C.descriptorIndexingFeaturesPNext <$> peek (castPtr p)
+	createNextable p n =
+		descriptorIndexingFeaturesFromNoNext n .
+		descriptorIndexingFeaturesFromCore <$> peek (castPtr p)
