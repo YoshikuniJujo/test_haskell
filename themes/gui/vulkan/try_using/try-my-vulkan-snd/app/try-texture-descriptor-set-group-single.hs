@@ -291,8 +291,8 @@ run w inst g kis =
 	getCurrentTime >>= \tm ->
 
 	createTextureSampler phdv dv \txsmplr ->
-	Vk.Img.manage dv nil' \mng -> Vk.Mem.group dv nil' \mmng ->
-	Vk.ImgVw.manage dv nil' \ivmng ->
+	Vk.Img.group dv nil' \mng -> Vk.Mem.group dv nil' \mmng ->
+	Vk.ImgVw.group dv nil' \ivmng ->
 	createDescriptorPool dv \dscp ->
 	Vk.DscSet.group dv \grp ->
 	createUpdateDescriptorSet dv grp Glfw.Key'H dscp dscslyt ub >>= \ubds ->
@@ -328,10 +328,10 @@ createUpdateDescriptorSet dv grp k dscp dscslyt ub =
 
 createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.Group sgrp Glfw.Key sp '[ '(sdsl, Foo)] ->
-	Vk.Img.Manager si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Img.Group si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Group sm Glfw.Key '[
 		'(si, 'Vk.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
-	Vk.ImgVw.Manager siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.ImgVw.Group siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
 createTexture phdv dv gq cp grp mng mmng ivmng txsmplr kis k = let
 	tximgfp = kis M.! k in
@@ -347,7 +347,7 @@ updateTexture :: Ord k => Vk.Dvc.D sd ->
 		'Vk.DscSetLyt.Buffer
 			'[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Smplr.S ss -> Vk.ImgVw.Manager siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Smplr.S ss -> Vk.ImgVw.Group siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	k -> IO ()
 updateTexture dv udbs txsmplr imng k = do
 	Just tximgvw <- Vk.ImgVw.lookup imng k
@@ -942,7 +942,7 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Manager sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Img.Group sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Group smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc -> Glfw.Key -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
@@ -1007,7 +1007,7 @@ instance KObj.IsImage MyImage where
 
 createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Manager sim Glfw.Key nm fmt ->
+	Vk.Img.Group sim Glfw.Key nm fmt ->
 	Vk.Mem.Group smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	Glfw.Key ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
