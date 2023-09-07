@@ -314,14 +314,9 @@ run w inst g kis =
 
 debugIndexingFeatures :: Vk.PhDvc.P -> IO (Vk.PhDvc.DescriptorIndexingFeatures 'Nothing)
 debugIndexingFeatures phdv = do
-	Vk.PhDvc.Features2Result (HeteroParList.Singleton (Just nxts)) ftrs <- Vk.PhDvc.getFeatures2
-		@'[Vk.PhDvc.DescriptorIndexingFeaturesNoNext] phdv
-	let	nxts' = Vk.PhDvc.descriptorIndexingFeaturesFromNoNext TMaybe.N nxts
-	print =<< Vk.PhDvc.getFeatures2'
+	Vk.PhDvc.Features2 (TMaybe.J nxts'') ftrs' <- Vk.PhDvc.getFeatures2'
 		@('Just (Vk.PhDvc.DescriptorIndexingFeatures 'Nothing)) phdv
-	pure nxts'
---	print nxts'
---	print ftrs
+	pure nxts''
 
 createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.D sds '(sdsc, '[
