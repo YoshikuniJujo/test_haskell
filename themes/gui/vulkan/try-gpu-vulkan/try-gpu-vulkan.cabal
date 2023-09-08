@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.57
+version:        0.1.0.58
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -153,6 +153,7 @@ library
       Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeFam
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
+      Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
       Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal
       Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment

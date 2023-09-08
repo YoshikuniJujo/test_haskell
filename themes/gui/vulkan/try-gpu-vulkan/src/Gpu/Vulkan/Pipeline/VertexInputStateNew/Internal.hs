@@ -32,13 +32,12 @@ import Data.Kind
 import Data.Bits
 import Data.Default
 
-import Gpu.Vulkan.Enum
-
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput.Internal as VtxInp
 import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
 
 -- CREATE INFO
 
@@ -109,6 +108,3 @@ instance (
 		(fromIntegral -> bdng, fromIntegral -> ost) =
 			bindingOffsetNew @(TMapIndex.M0_2 vibs) @t
 		ads = attributeDescriptions @vibs @vias
-
-class Formattable a where formatOf :: Format
-instance Formattable Int where formatOf = FormatUndefined
