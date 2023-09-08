@@ -38,6 +38,7 @@ library
       Foreign.Ptr.Safe
       Gadt
       GeneralFoldable
+      Generics.TypeList
       GetSizeAlignment
       HeteroList.First
       HeteroList.IndexedType
