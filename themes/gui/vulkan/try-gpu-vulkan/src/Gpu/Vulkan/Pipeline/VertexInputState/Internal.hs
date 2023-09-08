@@ -27,30 +27,15 @@ import GHC.TypeNats
 import Foreign.Storable.SizeAlignment
 import Control.Arrow
 import Data.TypeLevel.TypeVal qualified as TypeVal
-import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Kind
-import Data.Bits
-import Data.Default
 
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput.Internal as VtxInp
 import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.CreateInfo
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
-
--- CREATE INFO
-
-data CreateInfo mn (vibs :: [(Type, VtxInp.Rate)]) (vias :: [(Nat, Type)]) =
-	CreateInfo {
-		createInfoNext :: TMaybe.M mn,
-		createInfoFlags :: M.CreateFlags }
-
-deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn vibs vias)
-
-instance Default (CreateInfo 'Nothing vibs vias) where
-	def = CreateInfo {
-		createInfoNext = TMaybe.N, createInfoFlags = zeroBits }
 
 -- CREATE INFO TO MIDDLE
 

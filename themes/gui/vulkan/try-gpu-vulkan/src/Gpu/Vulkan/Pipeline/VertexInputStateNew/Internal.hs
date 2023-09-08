@@ -26,11 +26,8 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal (
 import GHC.TypeNats
 import Foreign.Storable.SizeAlignment
 import Data.TypeLevel.TypeVal qualified as TypeVal
-import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Kind
-import Data.Bits
-import Data.Default
 
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput.Internal as VtxInp
@@ -39,6 +36,20 @@ import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.CreateInfo
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
+
+-- CREATE INFO TO MIDDLE
+
+createInfoToMiddle :: forall n vibs vias . (
+	BindingStrideList vibs VtxInp.Rate,
+	AttributeDescriptions vibs vias ) =>
+	CreateInfo n vibs vias -> M.CreateInfo n
+createInfoToMiddle CreateInfo {
+	createInfoNext = mnxt, createInfoFlags = flgs } = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoVertexBindingDescriptions = bindingDescriptions @vibs,
+	M.createInfoVertexAttributeDescriptions =
+		attributeDescriptions @vibs @vias }
 
 -- Binding Descriptions
 
