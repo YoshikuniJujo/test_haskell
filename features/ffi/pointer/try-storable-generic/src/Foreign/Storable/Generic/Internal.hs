@@ -3,7 +3,7 @@
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
-{-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving, DerivingStrategies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Foreign.Storable.Generic.Internal (G(..), W(..)) where
@@ -74,7 +74,9 @@ instance Storable a => Gg (K1 i a) where
 	ggPeek = (K1 <$>) . peek . castPtr
 	ggPoke p (K1 x) = poke (castPtr p) x
 
-newtype W a = W { unW :: a } deriving (Show, Eq, Ord, Enum, Generic, SizeAlignmentList)
+newtype W a = W { unW :: a }
+	deriving (Show, Eq, Ord, Enum, SizeAlignmentList)
+	deriving newtype Generic
 
 instance G a => Storable (W a) where
 	sizeOf = gSizeOf . unW
