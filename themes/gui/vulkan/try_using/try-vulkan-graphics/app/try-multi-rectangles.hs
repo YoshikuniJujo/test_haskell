@@ -1200,9 +1200,6 @@ instance Storable Vertex where
 
 instance SizeAlignmentList Vertex
 
-instance SizeAlignmentListUntil Cglm.Vec2 Vertex
-instance SizeAlignmentListUntil Cglm.Vec3 Vertex
-
 instance Foreign.Storable.Generic.G Vertex where
 
 data Rectangle = Rectangle { rectanglePos :: RectPos }
@@ -1212,9 +1209,6 @@ newtype RectPos = RectPos Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance SizeAlignmentList Rectangle
-instance SizeAlignmentListUntil Cglm.Vec2 Rectangle
-instance SizeAlignmentListUntil Cglm.Vec3 Rectangle
-instance SizeAlignmentListUntil RectPos Rectangle
 
 vertices :: [Vertex]
 vertices = [
