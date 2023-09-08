@@ -7,8 +7,7 @@
 
 module Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal (
 	SizeAlignmentList(sizeAlignmentList),
---	SizeAlignmentListUntil(sizeAlignmentListUntil),
-	MapSizableUntil,
+	SizeAlignmentListUntil(sizeAlignmentListUntil), MapSizableUntil,
 	Size, Alignment, SizeAlignment ) where
 
 import GHC.Generics
@@ -40,7 +39,6 @@ sizeAlignmentTypeMaybeList ::
 sizeAlignmentTypeMaybeList =
 	mapTypeValMaybe2 @Sizable @mas (\(_ :: a) -> (sizeOf' @a, alignment' @a))
 
-{-
 class SizeAlignmentListUntil t a where
 	sizeAlignmentListUntil :: Maybe [SizeAlignment]
 
@@ -49,6 +47,5 @@ class SizeAlignmentListUntil t a where
 		Maybe [SizeAlignment]
 	sizeAlignmentListUntil =
 		sizeAlignmentTypeMaybeList @(Until t (Flatten (Rep a)))
-		-}
 
 type MapSizableUntil t ts = MapTypeValMaybe2 Sizable (Until t (Flatten (Rep ts)))

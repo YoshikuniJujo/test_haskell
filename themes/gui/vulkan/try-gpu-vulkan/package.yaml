@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.61
+version:             0.1.0.60
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -31,6 +31,7 @@ dependencies:
 - time
 - try-vulkan-middle
 - try-language-spir-v
+- size-alignment-list
 - try-storable-peek-poke
 - try-storable-hetero-list
 - try-hetero-parameter-list

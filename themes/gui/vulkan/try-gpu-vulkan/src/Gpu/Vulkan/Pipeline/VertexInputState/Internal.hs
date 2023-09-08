@@ -10,7 +10,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal (
+module Gpu.Vulkan.Pipeline.VertexInputState.Internal (
 
 	-- * CREATE INFO
 
@@ -25,6 +25,7 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal (
 
 import GHC.TypeNats
 import Foreign.Storable.SizeAlignment
+import Control.Arrow
 import Data.TypeLevel.TypeVal qualified as TypeVal
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Kind
@@ -33,7 +34,6 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput.Internal as VtxInp
 import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.CreateInfo
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
 
@@ -80,7 +80,7 @@ class AttributeDescriptions
 instance AttributeDescriptions vibs '[] where attributeDescriptions = []
 
 instance (
-	KnownNat i, BindingOffsetNew (TMapIndex.M0_2 vibs) t, Formattable t,
+	KnownNat i, BindingOffset (TMapIndex.M0_2 vibs) t, Formattable t,
 	AttributeDescriptions vibs vias ) =>
 	AttributeDescriptions vibs ('(i, t) ': vias) where
 	attributeDescriptions = VtxInp.AttributeDescription {
@@ -90,6 +90,15 @@ instance (
 		VtxInp.attributeDescriptionFormat = formatOf @t,
 		VtxInp.attributeDescriptionOffset = ost } : ads
 		where
-		(fromIntegral -> bdng, fromIntegral -> ost) =
-			bindingOffsetNew @(TMapIndex.M0_2 vibs) @t
+		Just (fromIntegral -> bdng, fromIntegral -> ost) =
+			bindingOffset @(TMapIndex.M0_2 vibs) @t
 		ads = attributeDescriptions @vibs @vias
+
+class BindingOffset (tss :: [Type]) t where bindingOffset :: Maybe (Int, Offset)
+instance BindingOffset '[] t where bindingOffset = Nothing
+
+instance (SizeAlignmentListUntil t ts, BindingOffset tss t) =>
+	BindingOffset (ts ': tss) t where
+	bindingOffset = case offsetOf @t @ts of
+		Nothing -> ((+ 1) `first`) <$> bindingOffset @tss @t
+		Just os -> Just (0, os)
