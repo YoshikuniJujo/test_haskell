@@ -1,6 +1,16 @@
 memo
 ====
 
+new
+---
+
+* [ ] repair try-storable-generic
+* [ ] remove instance SizeAlignmentList Vertex from try-my-vulkan-snd
+* [ ] refactoring try-gpu-vulkan about SizeAlignmentList
+
+old
+---
+
 * [ ] rename Pointable to Pokable
 * [ ] Vk.CommandBuffer.C s
     + [ ] Vk.CommandBuffer.C' s vs
