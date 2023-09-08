@@ -244,6 +244,7 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
+	createRectangleBuffer phdv dv gq cp \rb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
 	createDescriptorPool dv \dscp ->
@@ -251,7 +252,7 @@ run w inst g =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb sos tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -595,7 +596,7 @@ createGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
 createGraphicsPipeline' dvc sce rp ppllyt f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
@@ -606,7 +607,7 @@ recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U3 gpls :** HeteroParList.Nil)
@@ -619,7 +620,7 @@ mkGraphicsPipelineCreateInfo' ::
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 		'(	'Nothing,
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
-			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
+			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', foo)
 mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
@@ -810,6 +811,21 @@ createIndexBuffer phdvc dvc gq cp f =
 	copyBuffer dvc gq cp b' b
 	f b
 
+createRectangleBuffer :: Vk.PhDvc.P ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""] -> IO a ) -> IO a
+createRectangleBuffer phdvc dvc gq cp f =
+	createBufferList' phdvc dvc (fromIntegral $ length instances)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mem.PropertyDeviceLocalBit \b _ ->
+	createBufferList' phdvc dvc (fromIntegral $ length instances)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
+	Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
+	copyBuffer dvc gq cp b' b
+	f b
+
 createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom 256 UniformBufferObject 'Nothing]  ->
 		UniformBufferMemory sm sb ->
@@ -985,30 +1001,37 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[AtomUbo sdsl], '[]) ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)] '(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	IO ()
-recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
+recordCommandBuffer cb rp fb sce ppllyt gpl vb rb ib ubds =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
-	Vk.Cmd.bindVertexBuffers cbb
-		(HeteroParList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb) >>
+	Vk.Cmd.bindVertexBuffers cbb (
+		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb) :**
+		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @Rectangle @"" rb) :**
+		HeteroParList.Nil
+		) >>
 	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @"" ib) >>
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
 		(HeteroParList.Singleton $ U2 ubds)
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) 1 0 0 0
+	Vk.Cmd.drawIndexed cbb
+		(fromIntegral $ length indices)
+		(fromIntegral $ length instances)
+		0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -1030,21 +1053,22 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.Khr.Swapchain.S scfmt ssc -> Vk.Extent2d -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm0 = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
+			sc g ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs
 			(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 
@@ -1056,39 +1080,41 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds .
+drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
+drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1096,7 +1122,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
+		recordCommandBuffer cb rp fb ext ppllyt gpl vb rb ib ubds
 	updateUniformBuffer dvc ubm ext tm
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
@@ -1147,7 +1173,7 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
@@ -1169,7 +1195,7 @@ recreateSwapChainEtc :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
@@ -1210,6 +1236,14 @@ newtype RectPos = RectPos Cglm.Vec2
 
 instance SizeAlignmentList Rectangle
 
+instance Foreign.Storable.Generic.G Rectangle where
+
+instance Storable Rectangle where
+	sizeOf = Foreign.Storable.Generic.gSizeOf
+	alignment = Foreign.Storable.Generic.gAlignment
+	peek = Foreign.Storable.Generic.gPeek
+	poke = Foreign.Storable.Generic.gPoke
+
 vertices :: [Vertex]
 vertices = [
 	Vertex (Cglm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
@@ -1223,6 +1257,14 @@ vertices = [
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
+
+instances :: [Rectangle]
+instances = [
+	Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL),
+	Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL),
+	Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL),
+	Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+	]
 
 data UniformBufferObject = UniformBufferObject {
 	uniformBufferObjectModel :: Cglm.Mat4,
