@@ -20,7 +20,9 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal (
 	-- * CREATE INFO TO MIDDLE
 
 	createInfoToMiddle,
-	BindingStrideList, AttributeDescriptions, Formattable(..)
+	BindingStrideList, AttributeDescriptions, Formattable(..),
+
+	SizeAlignmentList(..)
 
 	) where
 
