@@ -8,9 +8,7 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew (
 
 	-- * FORMATTABLE
 
-	Formattable(..),
-
-	SizeAlignmentList(..)
+	Formattable(..)
 
 	) where
 
