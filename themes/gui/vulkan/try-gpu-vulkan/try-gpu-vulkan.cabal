@@ -151,7 +151,6 @@ library
       Gpu.Vulkan.Pipeline.ShaderStage.Internal
       Gpu.Vulkan.Pipeline.VertexInputState.Internal
       Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
-      Gpu.Vulkan.Pipeline.VertexInputStateNew.CreateInfo
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeFam
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
