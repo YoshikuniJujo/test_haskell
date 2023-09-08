@@ -31,9 +31,5 @@ instance GStorable.G Vertex
 
 instance SizeAlignmentList Vertex
 
-instance SizeAlignmentListUntil Pos Vertex
-instance SizeAlignmentListUntil Color Vertex
-instance SizeAlignmentListUntil TexCoord Vertex
-
 newtype Color = Color Cglm.Vec3
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)

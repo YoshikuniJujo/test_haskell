@@ -1462,9 +1462,6 @@ newtype Color = Color Cglm.Vec3
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 instance SizeAlignmentList Vertex
-instance SizeAlignmentListUntil Position Vertex
-instance SizeAlignmentListUntil Normal Vertex
-instance SizeAlignmentListUntil Color Vertex
 instance Str.G.G Vertex
 
 instance Storable Vertex where

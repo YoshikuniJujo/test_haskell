@@ -1750,10 +1750,6 @@ newtype Uv = Uv Cglm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 instance SizeAlignmentList Vertex
-instance SizeAlignmentListUntil Position Vertex
-instance SizeAlignmentListUntil Normal Vertex
-instance SizeAlignmentListUntil Color Vertex
-instance SizeAlignmentListUntil Uv Vertex
 instance Str.G.G Vertex
 
 instance Storable Vertex where

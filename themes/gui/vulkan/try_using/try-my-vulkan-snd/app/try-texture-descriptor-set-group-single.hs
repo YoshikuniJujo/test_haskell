@@ -1668,10 +1668,6 @@ instance Storable Vertex where
 
 instance SizeAlignmentList Vertex
 
-instance SizeAlignmentListUntil Cglm.Vec2 Vertex
-instance SizeAlignmentListUntil Cglm.Vec3 Vertex
-instance SizeAlignmentListUntil TexCoord Vertex
-
 instance Foreign.Storable.Generic.G Vertex where
 
 vertices :: [Vertex]

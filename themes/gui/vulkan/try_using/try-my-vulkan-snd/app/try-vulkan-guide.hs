@@ -1881,10 +1881,6 @@ instance Storable Vertex where
 
 instance SizeAlignmentList Vertex
 
-instance SizeAlignmentListUntil Position Vertex
-instance SizeAlignmentListUntil Normal Vertex
-instance SizeAlignmentListUntil Color Vertex
-
 instance GStorable.G Vertex where
 
 vertices, vertices' :: V.Vector Vertex
