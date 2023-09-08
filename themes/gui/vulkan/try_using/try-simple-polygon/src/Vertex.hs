@@ -10,7 +10,7 @@ import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
 
-import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
+import qualified Gpu.Vulkan.Pipeline.VertexInputStateNew as Vk.Ppl.VertexInputSt
 
 import Gpu.Vulkan.Cglm qualified as Cglm
 import qualified Foreign.Storable.Generic as GStorable
