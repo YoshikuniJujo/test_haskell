@@ -14,26 +14,29 @@ import Data.Kind
 
 data Foo = Foo Int Double Char deriving (Show, Generic)
 
-class Index (ts :: [Type]) (t :: Type) where index :: (Int, Int)
+class Index (ts :: [Type]) (a :: Type) where index :: (Int, Int)
 
-instance (Generic t0, Index' (Rep t0) ts t) => Index (t0 ': ts) t where
-	index = index' @(Rep t0) @ts @t
+instance (Generic t0, Index' (Rep t0) ts a) => Index (t0 ': ts) a where
+	index = index' @(Rep t0) @ts @a 0
 
-class Index' (t0 :: Type -> Type) (ts :: [Type]) (t :: Type) where
-	index' :: (Int, Int)
+class Index' (t0 :: Type -> Type) (ts :: [Type]) (a :: Type) where
+	index' :: Int -> (Int, Int)
 
-instance Index' body ts t => Index' (M1 _i _c body) ts t where
-	index' = index' @body @ts @t
+instance Index' body ts a => Index' (M1 _i _c body) ts a where
+	index' = index' @body @ts @a
 
-instance Index' (K1 _i t) ts t where index' = (0, 0)
+instance Index' (K1 _i a) ts a where index' i = (0, i)
 
-instance {-# OVERLAPPABLE #-} Index ts t => Index' (K1 R t0) ts t where
-	index' = (+ 1) `first` index @ts @t
+instance {-# OVERLAPPABLE #-} Index ts a => Index' (K1 _i t0) ts a where
+	index' _ = (+ 1) `first` index @ts @a
 
-instance Index' (body :*: bs) ts t => Index' (M1 _i _c body :*: bs) ts t where
-	index' = index' @(body :*: bs) @ts @t
+instance Index' (body :*: bs) ts a => Index' (M1 _i _c body :*: bs) ts a where
+	index' = index' @(body :*: bs) @ts @a
 
-instance Index' (K1 R t :*: _ms) ts t where index' = (0, 0)
+instance Index' (K1 _i a :*: _ms) ts a where index' i = (0, i)
 
-instance {-# OVERLAPPABLE #-} Index' ms ts t => Index' (_m :*: ms) ts t where
-	index' = (+ 1) `second` index' @ms @ts @t
+instance Index' (m :*: (m' :*: ms)) ts a => Index' ((m :*: m') :*: ms) ts a where
+	index' = index' @(m :*: (m' :*: ms)) @ts @a
+
+instance {-# OVERLAPPABLE #-} Index' ms ts a => Index' (_m :*: ms) ts a where
+	index' i = index' @ms @ts @a (i + 1)
