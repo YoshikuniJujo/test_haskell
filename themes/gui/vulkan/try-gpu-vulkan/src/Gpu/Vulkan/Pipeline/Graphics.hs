@@ -54,7 +54,7 @@ import qualified Gpu.Vulkan.Pipeline.RasterizationState as RasterizationState
 import qualified Gpu.Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Gpu.Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
-import Gpu.Vulkan.Pipeline.VertexInputState.Internal
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal
 	qualified as VertexInputState
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 
