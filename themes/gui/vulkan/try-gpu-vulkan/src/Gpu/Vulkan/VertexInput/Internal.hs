@@ -16,7 +16,6 @@ module Gpu.Vulkan.VertexInput.Internal (
 
 	) where
 
-import Foreign.Storable.SizeAlignment
 import Data.Word
 import Data.TypeLevel.TypeVal qualified as TypeVal
 
@@ -48,3 +47,7 @@ bindingDescriptionToMiddle BindingDescription {
 	M.bindingDescriptionInputRate = rateToEnum rt }
 	where rateToEnum = \case
 		RateVertex -> M.RateVertex; RateInstance -> M.RateInstance
+
+type Size = Int
+type Alignment = Int
+type SizeAlignment = (Size, Alignment)

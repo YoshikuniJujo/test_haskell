@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE InstanceSigs #-}
@@ -24,7 +25,9 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal (
 	) where
 
 import GHC.TypeNats
-import Foreign.Storable.SizeAlignment
+import GHC.Generics
+import Foreign.Storable.PeekPoke
+-- import Foreign.Storable.SizeAlignment
 import Data.TypeLevel.TypeVal qualified as TypeVal
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Kind
@@ -36,6 +39,8 @@ import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.CreateInfo
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
 
 -- CREATE INFO TO MIDDLE
 
@@ -71,6 +76,36 @@ instance (SizeAlignmentList t, BindingStrideList ts v, TypeVal.T a v) =>
 		(wholeSizeAlignment @t, TypeVal.t @_ @a @v) :
 		bindingStrideList @_ @ts @v
 
+wholeSizeAlignment :: forall a . SizeAlignmentList a => SizeAlignment
+wholeSizeAlignment = let sas = sizeAlignmentList @a in
+	(calcWholeSize sas, calcWholeAlignment sas)
+
+next :: Offset -> SizeAlignment -> Offset
+next os (sz, algn) = ((os + sz - 1) `div` algn + 1) * algn
+
+type Offset = Int
+
+calcWholeAlignment :: [SizeAlignment] -> Alignment
+calcWholeAlignment = foldl lcm 1 . (snd <$>)
+
+calcWholeSize :: [SizeAlignment] -> Size
+calcWholeSize = foldl next 0 . rotateAlignmentL
+
+rotateAlignmentL :: [SizeAlignment] -> [SizeAlignment]
+rotateAlignmentL [] = error "empty size and alignment list"
+rotateAlignmentL sas = zip ss (as ++ [a]) where (ss, a : as) = unzip sas
+
+class SizeAlignmentList a where
+	sizeAlignmentList :: [SizeAlignment]
+
+	default sizeAlignmentList :: (
+		MapTypeVal2 Sizable (Flatten (Rep a)) ) => [SizeAlignment]
+	sizeAlignmentList = sizeAlignmentTypeList @(Flatten (Rep a))
+
+sizeAlignmentTypeList ::
+	forall (as :: [Type]) . MapTypeVal2 Sizable as => [SizeAlignment]
+sizeAlignmentTypeList = mapTypeVal2 @Sizable @as (\(_ :: a) -> (sizeOf' @a, alignment' @a))
+
 -- Attribute Descriptions
 
 class AttributeDescriptions
@@ -93,3 +128,7 @@ instance (
 		(fromIntegral -> bdng, fromIntegral -> ost) =
 			bindingOffsetNew @(TMapIndex.M0_2 vibs) @t
 		ads = attributeDescriptions @vibs @vias
+
+type Size = Int
+type Alignment = Int
+type SizeAlignment = (Size, Alignment)

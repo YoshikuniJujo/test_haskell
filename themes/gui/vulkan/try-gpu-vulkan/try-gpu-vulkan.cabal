@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.60
+version:        0.1.0.61
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -148,8 +148,6 @@ library
       Gpu.Vulkan.Memory.Type
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.ShaderStage.Internal
-      Gpu.Vulkan.Pipeline.VertexInputState
-      Gpu.Vulkan.Pipeline.VertexInputState.Internal
       Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
       Gpu.Vulkan.Pipeline.VertexInputStateNew.CreateInfo
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeFam
@@ -159,7 +157,6 @@ library
       Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal
       Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment
       Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal
-      Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.TH
       Gpu.Vulkan.PipelineCache.Type
       Gpu.Vulkan.PipelineLayout.Type
       Gpu.Vulkan.PushConstant.Internal
@@ -182,7 +179,6 @@ library
     , containers
     , data-default
     , mono-traversable
-    , size-alignment-list
     , stm
     , template-haskell
     , text
@@ -210,7 +206,6 @@ test-suite try-gpu-vulkan-test
     , containers
     , data-default
     , mono-traversable
-    , size-alignment-list
     , stm
     , template-haskell
     , text
