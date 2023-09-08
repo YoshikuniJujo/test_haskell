@@ -69,7 +69,7 @@ import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RenderPass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.RenderPass.Enum as Vk.RenderPass
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportState
-import qualified Gpu.Vulkan.Pipeline.VertexInputStateNew as
+import qualified Gpu.Vulkan.Pipeline.VertexInputState as
 	Vk.Ppl.VertexInputState
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAssSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
