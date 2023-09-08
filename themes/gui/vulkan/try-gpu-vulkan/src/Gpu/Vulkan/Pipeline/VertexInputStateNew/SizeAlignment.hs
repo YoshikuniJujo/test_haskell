@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
@@ -10,15 +11,29 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment (
 	wholeSizeAlignment, offsetOf,
 	module Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal, Offset ) where
 
+import GHC.Generics
+import Foreign.Storable.PeekPoke
+import Data.Kind
+
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.TH
+
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
 
 concat <$> instanceSizeAlignmentListTuple `mapM` filter (/= 1) [0 .. 15]
 concat <$> instanceSizeAlignmentListUntilTuple `mapM` filter (/= 1) [0 .. 15]
 
-wholeSizeAlignment :: forall a . SizeAlignmentList a => SizeAlignment
-wholeSizeAlignment = let sas = sizeAlignmentList @a in
+wholeSizeAlignment :: forall a . MapTypeVal2 Sizable (Flatten (Rep a)) => SizeAlignment
+wholeSizeAlignment = let sas = sizeAlignmentListNew @a in
 	(calcWholeSize sas, calcWholeAlignment sas)
+
+sizeAlignmentListNew :: forall a . MapTypeVal2 Sizable (Flatten (Rep a)) => [SizeAlignment]
+sizeAlignmentListNew = sizeAlignmentTypeList @(Flatten (Rep a))
+
+sizeAlignmentTypeList ::
+	forall (as :: [Type]) . MapTypeVal2 Sizable as => [SizeAlignment]
+sizeAlignmentTypeList = mapTypeVal2 @Sizable @as (\(_ :: a) -> (sizeOf' @a, alignment' @a))
 
 calcWholeAlignment :: [SizeAlignment] -> Alignment
 calcWholeAlignment = foldl lcm 1 . (snd <$>)
