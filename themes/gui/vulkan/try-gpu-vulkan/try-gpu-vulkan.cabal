@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.56
+version:        0.1.0.57
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -95,6 +95,7 @@ library
       Gpu.Vulkan.Pipeline.ShaderStage.Enum
       Gpu.Vulkan.Pipeline.TessellationState
       Gpu.Vulkan.Pipeline.VertexInputState
+      Gpu.Vulkan.Pipeline.VertexInputStateNew
       Gpu.Vulkan.Pipeline.ViewportState
       Gpu.Vulkan.PipelineCache
       Gpu.Vulkan.PipelineLayout
