@@ -19,7 +19,6 @@ import qualified Gpu.Vulkan.Memory as Vk.Mem
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -1749,7 +1748,6 @@ newtype Color = Color Cglm.Vec3
 newtype Uv = Uv Cglm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
-instance SizeAlignmentList Vertex
 instance Str.G.G Vertex
 
 instance Storable Vertex where
@@ -1810,7 +1808,6 @@ instance Storable CameraData where
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
 instance Str.G.G CameraData
-instance SizeAlignmentList CameraData
 
 cameraData :: Vk.Extent2d -> CameraData
 cameraData ex = CameraData (View view) (Proj $ projection ex)
@@ -1847,7 +1844,6 @@ instance Storable SceneData where
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
 instance Str.G.G SceneData
-instance SizeAlignmentList SceneData
 
 sceneData :: Int -> SceneData
 sceneData fn = SceneData {
@@ -1868,7 +1864,6 @@ data MeshPushConstants = MeshPushConstants {
 
 type WMeshPushConstants = GStorable.W MeshPushConstants
 
-instance SizeAlignmentList MeshPushConstants
 instance Str.G.G MeshPushConstants
 
 -- OBJECT DATA
@@ -1881,7 +1876,6 @@ instance Storable ObjData where
 	peek = Str.G.gPeek; poke = Str.G.gPoke
 
 instance Str.G.G ObjData
-instance SizeAlignmentList ObjData
 	
 -- OTHER TYPES
 

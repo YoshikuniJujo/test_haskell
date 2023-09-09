@@ -20,7 +20,6 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -1843,7 +1842,6 @@ instance Storable UniformBufferObject where
 	peek = GStorable.gPeek
 	poke = GStorable.gPoke
 
-instance SizeAlignmentList UniformBufferObject
 instance GStorable.G UniformBufferObject
 
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd

@@ -55,7 +55,6 @@ library
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -103,7 +102,6 @@ executable my-glslc
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -152,7 +150,6 @@ executable try-allocation-callbacks
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -201,7 +198,6 @@ executable try-copy-descriptor-set
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -250,7 +246,6 @@ executable try-depth-buffering
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -299,7 +294,6 @@ executable try-depth-buffering-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -348,7 +342,6 @@ executable try-dynamic-dsc-sets
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -397,7 +390,6 @@ executable try-generating-mipmaps
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -446,7 +438,6 @@ executable try-generating-mipmaps-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -495,7 +486,6 @@ executable try-hello-world
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -544,7 +534,6 @@ executable try-image-buffer
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -593,7 +582,6 @@ executable try-loading-models
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -642,7 +630,6 @@ executable try-loading-models-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -691,7 +678,6 @@ executable try-multisampling
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -740,7 +726,6 @@ executable try-multisampling-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -789,7 +774,6 @@ executable try-multisampling-use-groups-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -838,7 +822,6 @@ executable try-no-dynamic-dsc-sets
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -887,7 +870,6 @@ executable try-pipeline-cache
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -936,7 +918,6 @@ executable try-query
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -985,7 +966,6 @@ executable try-rectangle
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1034,7 +1014,6 @@ executable try-rectangle-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1083,7 +1062,6 @@ executable try-saitan
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1132,7 +1110,6 @@ executable try-saitan-float
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1181,7 +1158,6 @@ executable try-saitan-simple
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1230,7 +1206,6 @@ executable try-shaderc
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1279,7 +1254,6 @@ executable try-texel-buffer-float
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1328,7 +1302,6 @@ executable try-texel-buffer-word32
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1377,7 +1350,6 @@ executable try-texture
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1426,7 +1398,6 @@ executable try-texture-descriptor-set-group-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1475,7 +1446,6 @@ executable try-texture-image-manager-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1524,7 +1494,6 @@ executable try-texture-immutable-sampler-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1573,7 +1542,6 @@ executable try-texture-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1622,7 +1590,6 @@ executable try-triangle
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1671,7 +1638,6 @@ executable try-triangle-single
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1720,7 +1686,6 @@ executable try-vulkan-guide
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1769,7 +1734,6 @@ executable try-vulkan-guide-dynamic
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1818,7 +1782,6 @@ executable try-vulkan-guide-storage
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1867,7 +1830,6 @@ executable try-vulkan-guide-texture
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1916,7 +1878,6 @@ executable try-wavefront-obj
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -1965,7 +1926,6 @@ executable try-yatteiku
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary
@@ -2015,7 +1975,6 @@ test-suite try-my-vulkan-snd-test
     , mono-traversable
     , optparse-declarative
     , ranged-list
-    , size-alignment-list
     , stm
     , template-haskell
     , temporary

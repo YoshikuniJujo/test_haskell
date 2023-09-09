@@ -16,7 +16,6 @@ module Main where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -1879,7 +1878,6 @@ instance Storable Vertex where
 	peek = GStorable.gPeek
 	poke = GStorable.gPoke
 
-instance SizeAlignmentList Vertex
 
 instance GStorable.G Vertex where
 
@@ -1911,7 +1909,6 @@ data MeshPushConstants = MeshPushConstants {
 
 type WrapMeshPushConstants = GStorable.W MeshPushConstants
 
-instance SizeAlignmentList MeshPushConstants
 instance GStorable.G MeshPushConstants
 
 data GpuCameraData = GpuCameraData {
@@ -1931,7 +1928,6 @@ instance Storable GpuCameraData where
 	poke = GStorable.gPoke
 
 instance GStorable.G GpuCameraData
-instance SizeAlignmentList GpuCameraData
 
 newtype View = View Cglm.Mat4 deriving (Show, Storable)
 newtype Proj = Proj Cglm.Mat4 deriving (Show, Storable)
@@ -1970,7 +1966,6 @@ instance Storable GpuSceneData where
 	poke = GStorable.gPoke
 
 instance GStorable.G GpuSceneData
-instance SizeAlignmentList GpuSceneData
 
 newtype FogColor = FogColor Cglm.Vec4 deriving (Show, Storable)
 newtype FogDistances = FogDistances Cglm.Vec4 deriving (Show, Storable)

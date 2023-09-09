@@ -7,7 +7,6 @@ module Sample.Image (ImageRgba8(..)) where
 
 import GHC.Generics
 import Foreign.Storable
-import Foreign.Storable.SizeAlignment
 import Data.MonoTraversable
 import Data.List
 import Data.Word
@@ -22,7 +21,6 @@ data Rgba8 = Rgba8 {
 	rgba8Blue :: Word8,
 	rgba8Alpha :: Word8 } deriving (Show, Generic)
 
-instance SizeAlignmentList Rgba8
 instance Foreign.Storable.Generic.G Rgba8
 
 instance Storable Rgba8 where

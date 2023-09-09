@@ -40,7 +40,6 @@ dependencies:
 - ranged-list
 - try-language-spir-v
 - try-shaderc
-- size-alignment-list
 - union-color
 - ghc-prim
 - time
