@@ -1,8 +1,12 @@
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving, DerivingStrategies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,7 +15,9 @@ module Foreign.Storable.Generic.Internal (G(..), W(..)) where
 import GHC.Generics
 import Foreign.Ptr
 import Foreign.Storable
-import Foreign.Storable.SizeAlignment
+import Foreign.Storable.PeekPoke
+import Foreign.Storable.SizeAlignment qualified as Old
+import Data.Kind
 
 class G a where
 	gSizeOf :: a -> Int
@@ -19,11 +25,11 @@ class G a where
 	gPeek :: Ptr a -> IO a
 	gPoke :: Ptr a -> a -> IO ()
 
-	default gSizeOf :: SizeAlignmentList a => a -> Int
-	gSizeOf _ = fst (wholeSizeAlignment @a)
+	default gSizeOf :: MapTypeVal2 Sizable (Flatten (Rep a)) => a -> Int
+	gSizeOf _ = fst (wholeSizeAlignmentNew @a)
 
-	default gAlignment :: SizeAlignmentList a => a -> Int
-	gAlignment _ = snd (wholeSizeAlignment @a)
+	default gAlignment :: MapTypeVal2 Sizable (Flatten (Rep a)) => a -> Int
+	gAlignment _ = snd (wholeSizeAlignmentNew @a)
 
 	default gPeek :: (Generic a, Gg (Rep a)) => Ptr a -> IO a
 	gPeek = (to <$>) . ggPeek . castPtr
@@ -75,7 +81,7 @@ instance Storable a => Gg (K1 i a) where
 	ggPoke p (K1 x) = poke (castPtr p) x
 
 newtype W a = W { unW :: a }
-	deriving (Show, Eq, Ord, Enum, SizeAlignmentList)
+	deriving (Show, Eq, Ord, Enum, Old.SizeAlignmentList)
 	deriving newtype Generic
 
 instance G a => Storable (W a) where
@@ -84,8 +90,8 @@ instance G a => Storable (W a) where
 	peek = (W <$>) . gPeek . castPtr
 	poke p = gPoke (castPtr p) . unW
 
-instance SizeAlignmentListUntil a b => SizeAlignmentListUntil a (W b) where
-	sizeAlignmentListUntil = sizeAlignmentListUntil @a @b
+instance Old.SizeAlignmentListUntil a b => Old.SizeAlignmentListUntil a (W b) where
+	sizeAlignmentListUntil = Old.sizeAlignmentListUntil @a @b
 
 {-
 instance {-# OVERLAPPABLE #-} G a => Storable a where
@@ -94,3 +100,62 @@ instance {-# OVERLAPPABLE #-} G a => Storable a where
 	peek = gPeek
 	poke = gPoke
 	-}
+
+wholeSizeAlignmentNew ::
+	forall a . MapTypeVal2 Sizable (Flatten (Rep a)) => SizeAlignment
+wholeSizeAlignmentNew = let sas = sizeAlignmentListNew @a in
+	(calcWholeSize sas, calcWholeAlignment sas)
+
+calcWholeAlignment :: [SizeAlignment] -> Alignment
+calcWholeAlignment = foldl lcm 1 . (snd <$>)
+
+calcWholeSize :: [SizeAlignment] -> Size
+calcWholeSize = foldl next 0 . rotateAlignmentL
+
+next :: Offset -> SizeAlignment -> Offset
+next os (sz, algn) = ((os + sz - 1) `div` algn + 1) * algn
+
+type Offset = Int
+
+rotateAlignmentL :: [SizeAlignment] -> [SizeAlignment]
+rotateAlignmentL [] = error "empty size and alignment list"
+rotateAlignmentL sas = zip ss (as ++ [a]) where (ss, a : as) = unzip sas
+
+sizeAlignmentListNew ::
+	forall a . MapTypeVal2 Sizable (Flatten (Rep a)) => [SizeAlignment]
+sizeAlignmentListNew = sizeAlignmentTypeList @(Flatten (Rep a))
+
+sizeAlignmentTypeList ::
+	forall (as :: [Type]) . MapTypeVal2 Sizable as => [SizeAlignment]
+sizeAlignmentTypeList = mapTypeVal2 @Sizable @as (\(_ :: a) -> (sizeOf' @a, alignment' @a))
+
+type Size = Int
+type Alignment = Int
+type SizeAlignment = (Size, Alignment)
+
+class MapTypeVal2 c (as :: [Type]) where
+	mapTypeVal2 :: (forall a . c a => a -> b) -> [b]
+
+instance MapTypeVal2 c '[] where mapTypeVal2 _ = []
+
+instance (c a, MapTypeVal2 c as) => MapTypeVal2 c (a ': as) where
+	mapTypeVal2 x = x (undefined :: a) : mapTypeVal2 @c @as x
+
+class MapTypeValMaybe2 c (mas :: Maybe [Type]) where
+	mapTypeValMaybe2 :: (forall a . c a => a -> b) -> Maybe [b]
+
+instance MapTypeValMaybe2 c 'Nothing where mapTypeValMaybe2 _ = Nothing
+
+instance MapTypeVal2 c as => MapTypeValMaybe2 c ('Just as) where
+	mapTypeValMaybe2 x = Just $ mapTypeVal2 @c @as x
+
+type family GetType (x :: Type -> Type) :: Type where
+	GetType (K1 i a) = a
+	GetType (M1 m i a) = GetType a
+
+type family Flatten (x :: Type -> Type) :: [Type] where
+	Flatten U1 = '[]
+	Flatten (K1 i a) = '[a]
+	Flatten (M1 m i a) = Flatten a
+	Flatten (M1 m i a :*: t2) = GetType a ': Flatten t2
+	Flatten ((t1 :*: t2) :*: t3) = Flatten (t1 :*: t2 :*: t3)
