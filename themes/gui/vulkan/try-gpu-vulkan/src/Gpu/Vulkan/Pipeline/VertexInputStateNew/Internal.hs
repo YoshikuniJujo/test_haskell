@@ -24,7 +24,8 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal (
 	) where
 
 import GHC.TypeNats
-import Foreign.Storable.SizeAlignment
+import GHC.Generics
+import Foreign.Storable.PeekPoke
 import Data.TypeLevel.TypeVal qualified as TypeVal
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
@@ -38,6 +39,9 @@ import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
 import Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
+import Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
 
 -- CREATE INFO
 
@@ -80,7 +84,7 @@ class BindingStrideList (ts :: [(Type, k)]) v where
 
 instance BindingStrideList '[] v where bindingStrideList = []
 
-instance (SizeAlignmentList t, BindingStrideList ts v, TypeVal.T a v) =>
+instance (MapTypeVal2 Sizable (Flatten (Rep t)), BindingStrideList ts v, TypeVal.T a v) =>
 	BindingStrideList ('(t, a) ': ts) v where
 	bindingStrideList =
 		(wholeSizeAlignment @t, TypeVal.t @_ @a @v) :
