@@ -18,7 +18,7 @@ import Data.List.Length
 import System.IO.Unsafe
 
 import "try-gpu-vulkan" Gpu.Vulkan.Enum qualified as Vk
-import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VrtxInpSt
+import Gpu.Vulkan.Pipeline.VertexInputStateNew qualified as Vk.Ppl.VrtxInpSt
 
 #include <cglm/cglm.h>
 

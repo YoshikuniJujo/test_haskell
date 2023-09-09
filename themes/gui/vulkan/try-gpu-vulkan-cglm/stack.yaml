@@ -44,7 +44,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 61a8c2b7a5d72c808441e961fa3184fc73086764
+  commit: c634a24930b61fe5b49867a109bbfc5323e988bf
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-vulkan-middle
@@ -57,8 +57,6 @@ extra-deps:
   - themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
-- git: https://github.com/YoshikuniJujo/size-alignment-list.git
-  commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
 - union-color-0.1.2.0
 
 # Override default flag values for local packages and extra-deps
