@@ -23,7 +23,6 @@ dependencies:
 - base >= 4.7 && < 5
 - template-haskell
 - try-storable-peek-poke
-- size-alignment-list
 
 ghc-options:
 - -Wall

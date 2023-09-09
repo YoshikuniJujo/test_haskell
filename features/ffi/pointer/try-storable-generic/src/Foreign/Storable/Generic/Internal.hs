@@ -16,7 +16,6 @@ import GHC.Generics
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.SizeAlignment qualified as Old
 import Data.Kind
 
 class G a where
@@ -81,7 +80,7 @@ instance Storable a => Gg (K1 i a) where
 	ggPoke p (K1 x) = poke (castPtr p) x
 
 newtype W a = W { unW :: a }
-	deriving (Show, Eq, Ord, Enum, Old.SizeAlignmentList)
+	deriving (Show, Eq, Ord, Enum)
 	deriving newtype Generic
 
 instance G a => Storable (W a) where
@@ -89,9 +88,6 @@ instance G a => Storable (W a) where
 	alignment = gAlignment . unW
 	peek = (W <$>) . gPeek . castPtr
 	poke p = gPoke (castPtr p) . unW
-
-instance Old.SizeAlignmentListUntil a b => Old.SizeAlignmentListUntil a (W b) where
-	sizeAlignmentListUntil = Old.sizeAlignmentListUntil @a @b
 
 {-
 instance {-# OVERLAPPABLE #-} G a => Storable a where
@@ -140,14 +136,6 @@ instance MapTypeVal2 c '[] where mapTypeVal2 _ = []
 
 instance (c a, MapTypeVal2 c as) => MapTypeVal2 c (a ': as) where
 	mapTypeVal2 x = x (undefined :: a) : mapTypeVal2 @c @as x
-
-class MapTypeValMaybe2 c (mas :: Maybe [Type]) where
-	mapTypeValMaybe2 :: (forall a . c a => a -> b) -> Maybe [b]
-
-instance MapTypeValMaybe2 c 'Nothing where mapTypeValMaybe2 _ = Nothing
-
-instance MapTypeVal2 c as => MapTypeValMaybe2 c ('Just as) where
-	mapTypeValMaybe2 x = Just $ mapTypeVal2 @c @as x
 
 type family GetType (x :: Type -> Type) :: Type where
 	GetType (K1 i a) = a

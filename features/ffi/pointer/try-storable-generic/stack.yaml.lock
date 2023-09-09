@@ -30,17 +30,6 @@ packages:
     commit: ad752b7d4a4c37d91cf263179168465045f14e2d
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
-- completed:
-    commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
-    git: https://github.com/YoshikuniJujo/size-alignment-list.git
-    name: size-alignment-list
-    pantry-tree:
-      sha256: 9860e322138da1107f8cc2c39aba1b62b83ad321d6252642cd2b8c6d091d8f66
-      size: 965
-    version: 0.1.0.1
-  original:
-    commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
-    git: https://github.com/YoshikuniJujo/size-alignment-list.git
 snapshots:
 - completed:
     sha256: 2e7d4a730d8eb5373b2d383fac84efcf7c81e3b7a5fce71b4c2e19a1768f25a6
