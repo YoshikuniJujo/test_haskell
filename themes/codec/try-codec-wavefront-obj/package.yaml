@@ -1,5 +1,5 @@
 name:                try-codec-wavefront-obj
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "githubuser/try-codec-wavefront-obj"
 license:             BSD3
 author:              "Author name here"
@@ -25,7 +25,6 @@ dependencies:
 - vector
 - bytestring
 - try-storable-generic
-- size-alignment-list
 
 ghc-options:
 - -Wall

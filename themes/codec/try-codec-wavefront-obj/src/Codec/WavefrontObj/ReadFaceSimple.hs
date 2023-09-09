@@ -19,7 +19,6 @@ module Codec.WavefrontObj.ReadFaceSimple (
 	) where
 
 import GHC.Generics
-import Foreign.Storable.SizeAlignment
 import Control.Monad.ST
 import Control.Monad.Trans.Writer.CPS
 import Data.Foldable qualified as Fld
@@ -72,17 +71,14 @@ instance Monoid Count where
 
 data Position = Position Float Float Float deriving (Show, Generic)
 
-instance SizeAlignmentList Position
 instance GStr.G Position
 
 data TexCoord = TexCoord Float Float deriving (Show, Generic)
 
-instance SizeAlignmentList TexCoord
 instance GStr.G TexCoord
 
 data Normal = Normal Float Float Float deriving (Show, Generic)
 
-instance SizeAlignmentList Normal
 instance GStr.G Normal
 
 data Face = Face (GStr.W Indices) (GStr.W Indices) (GStr.W Indices) deriving (Show, Generic)
@@ -94,12 +90,10 @@ faces' :: GStr.W Indices -> GStr.W Indices -> [GStr.W Indices] -> [Face]
 faces' _ _ [] = []
 faces' i1 i2 (i3 : is) = Face i1 i2 i3 : faces' i1 i3 is
 
-instance SizeAlignmentList Face
 instance GStr.G Face
 
 data Indices = Indices Int Int Int deriving (Show, Generic)
 
-instance SizeAlignmentList Indices
 instance GStr.G Indices
 
 indicesToIndices :: Scan.Vertex Int ->GStr.W Indices

@@ -5,20 +5,20 @@
 
 packages:
 - completed:
-    commit: 8543a47368889c2717f2365c8f258094064fe334
+    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-generic
     pantry-tree:
-      sha256: 99349c4ca842ed6cbae1e4fc4ea97fee18d0387727c5d38b2e4c786719d7d2b4
+      sha256: 35a92aacd041a05114605cd5ba5df78f48c66b7e8aa838beffef97f9205fc792
       size: 749
     subdir: features/ffi/pointer/try-storable-generic
-    version: 0.1.0.0
+    version: 0.1.0.2
   original:
-    commit: 8543a47368889c2717f2365c8f258094064fe334
+    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-generic
 - completed:
-    commit: 8543a47368889c2717f2365c8f258094064fe334
+    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-peek-poke
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: features/ffi/pointer/try-storable-peek-poke
     version: 0.1.0.1
   original:
-    commit: 8543a47368889c2717f2365c8f258094064fe334
+    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-peek-poke
 - completed:
-    commit: 8543a47368889c2717f2365c8f258094064fe334
+    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
     git: https://github.com/YoshikuniJujo/test_haskell
     name: typelevel-tools
     pantry-tree:
@@ -40,20 +40,9 @@ packages:
     subdir: themes/type_level/typelevel-tools
     version: 0.1.0.5
   original:
-    commit: 8543a47368889c2717f2365c8f258094064fe334
+    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
-- completed:
-    commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
-    git: https://github.com/YoshikuniJujo/size-alignment-list.git
-    name: size-alignment-list
-    pantry-tree:
-      sha256: 9860e322138da1107f8cc2c39aba1b62b83ad321d6252642cd2b8c6d091d8f66
-      size: 965
-    version: 0.1.0.1
-  original:
-    commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
-    git: https://github.com/YoshikuniJujo/size-alignment-list.git
 snapshots:
 - completed:
     sha256: 2e7d4a730d8eb5373b2d383fac84efcf7c81e3b7a5fce71b4c2e19a1768f25a6

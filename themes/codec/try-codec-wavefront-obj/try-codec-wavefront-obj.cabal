@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-codec-wavefront-obj
-version:        0.1.0.0
+version:        0.1.0.1
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-codec-wavefront-obj#readme>
 homepage:       https://github.com/githubuser/try-codec-wavefront-obj#readme
 bug-reports:    https://github.com/githubuser/try-codec-wavefront-obj/issues
@@ -35,7 +35,6 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , size-alignment-list
     , transformers
     , try-storable-generic
     , vector
@@ -52,7 +51,6 @@ test-suite try-codec-wavefront-obj-test
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , size-alignment-list
     , transformers
     , try-codec-wavefront-obj
     , try-storable-generic
