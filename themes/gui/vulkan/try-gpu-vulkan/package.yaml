@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.61
+version:             0.1.0.62
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -31,7 +31,6 @@ dependencies:
 - time
 - try-vulkan-middle
 - try-language-spir-v
-- size-alignment-list
 - try-storable-peek-poke
 - try-storable-hetero-list
 - try-hetero-parameter-list
@@ -116,7 +115,6 @@ library:
   - Gpu.Vulkan.Pipeline.ShaderStage
   - Gpu.Vulkan.Pipeline.ShaderStage.Enum
   - Gpu.Vulkan.Pipeline.TessellationState
-  - Gpu.Vulkan.Pipeline.VertexInputState
   - Gpu.Vulkan.Pipeline.VertexInputStateNew
   - Gpu.Vulkan.Pipeline.ViewportState
   - Gpu.Vulkan.PipelineCache

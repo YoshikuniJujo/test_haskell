@@ -16,7 +16,6 @@ module Gpu.Vulkan.VertexInput.Internal (
 
 	) where
 
-import Foreign.Storable.SizeAlignment
 import Data.Word
 import Data.TypeLevel.TypeVal qualified as TypeVal
 
@@ -33,6 +32,8 @@ data BindingDescription = BindingDescription {
 	bindingDescriptionStride :: Word32,
 	bindingDescriptionInputRate :: Rate }
 	deriving Show
+
+type SizeAlignment = (Int, Int)
 
 bindingDescriptionFromRaw :: [(SizeAlignment, Rate)] -> [BindingDescription]
 bindingDescriptionFromRaw sars = (<$> zip [0 ..] sars)
