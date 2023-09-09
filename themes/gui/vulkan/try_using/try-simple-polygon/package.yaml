@@ -37,7 +37,6 @@ dependencies:
 - try-gpu-vulkan-cglm
 - try-language-spir-v
 - try-shaderc
-- size-alignment-list
 - try-storable-generic
 - try-storable-peek-poke
 - try-hetero-parameter-list

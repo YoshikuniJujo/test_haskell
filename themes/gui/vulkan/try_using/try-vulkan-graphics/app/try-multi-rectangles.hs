@@ -17,7 +17,6 @@ module Main (main) where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -1224,8 +1223,6 @@ instance Storable Vertex where
 	peek = Foreign.Storable.Generic.gPeek
 	poke = Foreign.Storable.Generic.gPoke
 
-instance SizeAlignmentList Vertex
-
 instance Foreign.Storable.Generic.G Vertex where
 
 data Rectangle = Rectangle { rectanglePos :: RectPos }
@@ -1233,8 +1230,6 @@ data Rectangle = Rectangle { rectanglePos :: RectPos }
 
 newtype RectPos = RectPos Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-instance SizeAlignmentList Rectangle
 
 instance Foreign.Storable.Generic.G Rectangle where
 
@@ -1278,7 +1273,6 @@ instance Storable UniformBufferObject where
 	peek = Foreign.Storable.Generic.gPeek
 	poke = Foreign.Storable.Generic.gPoke
 
-instance SizeAlignmentList UniformBufferObject
 instance Foreign.Storable.Generic.G UniformBufferObject
 
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd

@@ -16,7 +16,6 @@ module Main (main) where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -1060,8 +1059,6 @@ instance Storable Vertex where
 	alignment = Foreign.Storable.Generic.gAlignment
 	peek = Foreign.Storable.Generic.gPeek
 	poke = Foreign.Storable.Generic.gPoke
-
-instance SizeAlignmentList Vertex
 
 instance Foreign.Storable.Generic.G Vertex where
 

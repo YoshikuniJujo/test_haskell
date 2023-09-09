@@ -40,7 +40,6 @@ library
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text
@@ -75,7 +74,6 @@ executable try-cube-single
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text
@@ -111,7 +109,6 @@ executable try-gamepad-button
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text
@@ -147,7 +144,6 @@ executable try-multi-rectangles
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text
@@ -183,7 +179,6 @@ executable try-pyramid-single
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text
@@ -219,7 +214,6 @@ executable try-rectangle-single
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text
@@ -255,7 +249,6 @@ executable try-triangle-single
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text
@@ -291,7 +284,6 @@ test-suite try-vulkan-graphics-test
     , containers
     , data-default
     , ranged-list
-    , size-alignment-list
     , template-haskell
     , temporary
     , text

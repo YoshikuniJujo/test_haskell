@@ -19,7 +19,6 @@ import Control.Concurrent
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -44,7 +43,6 @@ import Data.Color
 import Data.Time
 
 import qualified Data.List.NonEmpty as NE
-import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
@@ -1245,8 +1243,6 @@ instance Storable Vertex where
 	peek = Foreign.Storable.Generic.gPeek
 	poke = Foreign.Storable.Generic.gPoke
 
-instance SizeAlignmentList Vertex
-
 instance Foreign.Storable.Generic.G Vertex where
 
 vertices :: [Vertex]
@@ -1333,7 +1329,6 @@ instance Storable UniformBufferObject where
 	peek = Foreign.Storable.Generic.gPeek
 	poke = Foreign.Storable.Generic.gPoke
 
-instance SizeAlignmentList UniformBufferObject
 instance Foreign.Storable.Generic.G UniformBufferObject
 
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
