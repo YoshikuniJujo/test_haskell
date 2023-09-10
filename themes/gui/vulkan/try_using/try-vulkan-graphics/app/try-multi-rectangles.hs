@@ -132,7 +132,7 @@ import Tools
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
-import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
+import Gpu.Vulkan.Pipeline.VertexInputStateNew qualified as Vk.Ppl.VertexInputSt
 
 main :: IO ()
 main = do
