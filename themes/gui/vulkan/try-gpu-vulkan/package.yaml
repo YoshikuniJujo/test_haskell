@@ -36,6 +36,7 @@ dependencies:
 - try-hetero-parameter-list
 - try-hetero-parameter-list-with-typelevel-tools
 - typelevel-tools
+- temporary
 
 ghc-options:
 - -Wall
@@ -115,7 +116,7 @@ library:
   - Gpu.Vulkan.Pipeline.ShaderStage
   - Gpu.Vulkan.Pipeline.ShaderStage.Enum
   - Gpu.Vulkan.Pipeline.TessellationState
-  - Gpu.Vulkan.Pipeline.VertexInputStateNew
+  - Gpu.Vulkan.Pipeline.VertexInputState
   - Gpu.Vulkan.Pipeline.ViewportState
   - Gpu.Vulkan.PipelineCache
   - Gpu.Vulkan.PipelineLayout

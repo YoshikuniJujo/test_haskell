@@ -10,7 +10,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal (
+module Gpu.Vulkan.Pipeline.VertexInputState.Internal (
 
 	-- * CREATE INFO
 
@@ -37,11 +37,11 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput.Internal as VtxInp
 import qualified Gpu.Vulkan.VertexInput.Middle as VtxInp.M
 
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
+import Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
+import Gpu.Vulkan.Pipeline.VertexInputState.Formattable
+import Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment
+import Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeValMap
+import Gpu.Vulkan.Pipeline.VertexInputState.GHC.Generics.TypeFam
 
 -- CREATE INFO
 

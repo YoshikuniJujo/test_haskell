@@ -7,15 +7,15 @@
 {-# LANGUAGE DefaultSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.BindingOffset (BindingOffsetNew(..)) where
+module Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset (BindingOffsetNew(..)) where
 
 import GHC.Generics
 import Foreign.Storable
 import Control.Arrow
 import Data.Kind
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeFam
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
+import Gpu.Vulkan.Pipeline.VertexInputState.GHC.Generics.TypeFam
+import Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeFam
+import Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeValMap
 
 import Foreign.Storable.PeekPoke
 

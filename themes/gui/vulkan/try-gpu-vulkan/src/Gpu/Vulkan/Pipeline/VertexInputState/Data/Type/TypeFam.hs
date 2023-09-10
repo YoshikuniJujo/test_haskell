@@ -4,7 +4,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeFam where
+module Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeFam where
 
 import Data.Kind
 

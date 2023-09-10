@@ -1,7 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.Formattable where
+module Gpu.Vulkan.Pipeline.VertexInputState.Formattable where
 
 import Gpu.Vulkan.Enum
 

@@ -5,16 +5,16 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal (
+module Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment.Internal (
 	SizeAlignmentList(sizeAlignmentList),
 	SizeAlignmentListUntil(sizeAlignmentListUntil), MapSizableUntil,
 	Size, Alignment, SizeAlignment ) where
 
 import GHC.Generics
 import Data.Kind
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeFam
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
+import Gpu.Vulkan.Pipeline.VertexInputState.GHC.Generics.TypeFam
+import Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeFam
+import Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeValMap
 
 import Foreign.Storable.PeekPoke
 

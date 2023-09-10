@@ -1,13 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.TH (
+module Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment.TH (
 	instanceSizeAlignmentListTuple,
 	instanceSizeAlignmentListUntilTuple ) where
 
 import Language.Haskell.TH
 import Foreign.Storable.PeekPoke
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal
+import Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment.Internal
 import Data.Bool
 
 instanceSizeAlignmentListTuple :: Int -> DecsQ

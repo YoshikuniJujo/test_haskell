@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew (
+module Gpu.Vulkan.Pipeline.VertexInputState (
 
 	-- * CREATE INFO
 
@@ -12,4 +12,4 @@ module Gpu.Vulkan.Pipeline.VertexInputStateNew (
 
 	) where
 
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Internal
+import Gpu.Vulkan.Pipeline.VertexInputState.Internal

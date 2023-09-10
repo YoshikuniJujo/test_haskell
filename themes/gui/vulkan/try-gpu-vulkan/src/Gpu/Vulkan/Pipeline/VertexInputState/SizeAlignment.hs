@@ -7,19 +7,19 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment (
+module Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment (
 	wholeSizeAlignment, offsetOf,
-	module Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal, Offset ) where
+	module Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment.Internal, Offset ) where
 
 import GHC.Generics
 import Foreign.Storable.PeekPoke
 import Data.Kind
 
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.Internal
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.SizeAlignment.TH
+import Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment.Internal
+import Gpu.Vulkan.Pipeline.VertexInputState.SizeAlignment.TH
 
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.Data.Type.TypeValMap
-import Gpu.Vulkan.Pipeline.VertexInputStateNew.GHC.Generics.TypeFam
+import Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeValMap
+import Gpu.Vulkan.Pipeline.VertexInputState.GHC.Generics.TypeFam
 
 concat <$> instanceSizeAlignmentListTuple `mapM` filter (/= 1) [0 .. 15]
 concat <$> instanceSizeAlignmentListUntilTuple `mapM` filter (/= 1) [0 .. 15]
