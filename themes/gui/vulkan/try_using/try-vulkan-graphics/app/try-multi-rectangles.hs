@@ -143,14 +143,22 @@ main = do
 	outp <- atomically newTChan
 	forkIO $ (`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g outp
-			else run win inst g outp
-	untilEnd outp
+			then setupDebugMessenger inst $ run win inst g inp outp
+			else run win inst g inp outp
+	untilEnd inp outp
 
-untilEnd :: TChan Bool -> IO ()
-untilEnd outp = do
-	_ <- atomically $ readTChan outp
-	putStrLn "THE WOLD ENDS"
+untilEnd :: TChan UTCTime -> TChan Bool -> IO ()
+untilEnd inp outp = do
+	threadDelay 10000
+	now <- getCurrentTime
+	o <- atomically do
+		writeTChan inp now
+		e <- isEmptyTChan outp
+		if e then pure Nothing else Just <$> readTChan outp
+	case o of
+		Nothing -> untilEnd inp outp
+		Just True -> untilEnd inp outp
+		Just False -> putStrLn "THE WOLD ENDS"
 
 
 type FramebufferResized = IORef Bool
@@ -239,8 +247,9 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> TChan Bool -> IO ()
-run w inst g outp =
+run :: Glfw.Window -> Vk.Ist.I si ->
+	FramebufferResized -> TChan UTCTime -> TChan Bool -> IO ()
+run w inst g inp outp =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -254,7 +263,6 @@ run w inst g outp =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
-	createRectangleBuffer phdv dv gq cp \rb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
 	createDescriptorPool dv \dscp ->
@@ -262,7 +270,9 @@ run w inst g outp =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb sos tm outp
+	createRectangleBuffer phdv dv gq cp \rb ->
+	Vk.Bffr.group dv nil' \rbgrp ->
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb sos tm inp outp cp
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -795,52 +805,73 @@ createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
-	createBufferList' phdvc dvc (fromIntegral $ length vertices)
+	createBufferList phdvc dvc (fromIntegral $ length vertices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList' phdvc dvc (fromIntegral $ length vertices)
+		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+	createBufferList phdvc dvc (fromIntegral $ length vertices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vertices
-	copyBuffer dvc gq cp b' b
+			Vk.Mem.PropertyHostCoherentBit )
+		\(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
+		Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vertices
+		copyBuffer dvc gq cp b' b
 	f b
 
 createIndexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Word16 ""] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp f =
-	createBufferList' phdvc dvc (fromIntegral $ length indices)
+	createBufferList phdvc dvc (fromIntegral $ length indices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList' phdvc dvc (fromIntegral $ length indices)
+		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+	createBufferList phdvc dvc (fromIntegral $ length indices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices
-	copyBuffer dvc gq cp b' b
+			Vk.Mem.PropertyHostCoherentBit )
+			\(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
+		Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices
+		copyBuffer dvc gq cp b' b
 	f b
 
 createRectangleBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""] -> IO a ) -> IO a
 createRectangleBuffer phdvc dvc gq cp f =
-	createBufferList' phdvc dvc (fromIntegral $ length instances)
+	createBufferList phdvc dvc (fromIntegral $ length instances)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+	createBufferList phdvc dvc (fromIntegral $ length instances)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit )
+			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
+		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
+		copyBuffer dvc gq cp b' b
+	f b
+
+{-
+createRectangleBuffer' :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q ->
+	Vk.CmdPool.C sc ->
+	Vk.Bffr.Group sgrp () "rectangle-buffer" '[VObj.LIst 256 t ""] ->
+	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
+createRectangleBuffer' phdvc dvc gq cp grp =
+	createBufferList phdvc dvc (fromIntegral $ length instances)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList' phdvc dvc (fromIntegral $ length instances)
+	createBufferList phdvc dvc (fromIntegral $ length instances)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
 	Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
 	copyBuffer dvc gq cp b' b
 	f b
+	-}
 
 createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom 256 UniformBufferObject 'Nothing]  ->
 		UniformBufferMemory sm sb ->
 		IO b) -> IO b
-createUniformBuffer phdvc dvc = createBufferAtom' phdvc dvc
+createUniformBuffer phdvc dvc = createBufferAtom phdvc dvc
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mem.PropertyHostVisibleBit .|. Vk.Mem.PropertyHostCoherentBit)
 
@@ -893,7 +924,7 @@ descriptorWrite ub dscs = Vk.DscSet.Write {
 		HeteroParList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
-createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 a 'Nothing] ->
@@ -901,28 +932,27 @@ createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd 
 			sb,
 			'Vk.Mem.BufferArg nm '[VObj.Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
-createBufferAtom' p dv usg props = createBuffer' p dv VObj.LengthAtom usg props
+createBufferAtom p dv usg props = createBuffer p dv VObj.LengthAtom usg props
 
-createBufferList' :: forall sd nm t a . Storable t =>
+createBufferList :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.BufferArg nm '[VObj.List 256 t ""] ) ] ->
-		IO a) ->
-	IO a
-createBufferList' p dv ln usg props =
-	createBuffer' p dv (VObj.LengthList ln) usg props
+		IO a) -> IO a
+createBufferList p dv ln usg props =
+	createBuffer p dv (VObj.LengthList ln) usg props
 
-createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
+createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mem.M sm
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
+createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
@@ -1072,14 +1102,16 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan Bool -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm0 outp = do
+	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan UTCTime -> TChan Bool -> Vk.CmdPool.C sc -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm0 inp outp cp = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
-		tm <- getCurrentTime
-		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) loop
+		tm <- atomically $ readTChan inp
+--		createRectangleBuffer phdvc dvc gq cp \rb ->
+		id $
+			runLoop w sfc phdvc qfis dvc gq pq
+				sc g ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs
+				(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 	atomically $ writeTChan outp False
 
