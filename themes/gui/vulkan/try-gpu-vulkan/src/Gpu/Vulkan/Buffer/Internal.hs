@@ -112,14 +112,15 @@ create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 	(M.create dvc (createInfoToMiddle ci) mac) (\b -> M.destroy dvc b mac)
 	(f . B (createInfoLengths ci))
 
-data Group s k nm objs = Group TSem (TVar (Map.Map k (B s nm objs)))
+data Group ma s k nm objs = Group (TPMaybe.M (U2 AllocationCallbacks.A) ma)
+	TSem (TVar (Map.Map k (B s nm objs)))
 
 group :: AllocationCallbacks.ToMiddle md =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) md ->
-	(forall s . Group s k nm objs -> IO a) -> IO a
-group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mmac) f = do
+	(forall s . Group md s k nm objs -> IO a) -> IO a
+group (Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
-	rtn <- f $ Group sem m
+	rtn <- f $ Group mac sem m
 	((\(B _ mb) -> M.destroy mdvc mb mmac) `mapM_`)
 		=<< atomically (readTVar m)
 	pure rtn
@@ -127,9 +128,10 @@ group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mmac) f = do
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn),
 	VObj.SizeAlignmentList objs, AllocationCallbacks.ToMiddle ma ) =>
-	Device.D sd -> Group sg k nm objs -> k -> CreateInfo mn objs ->
-	TPMaybe.M (U2 AllocationCallbacks.A) ma -> IO (Either String (B sg nm objs))
-create' (Device.D dvc) (Group sem bs) k ci (AllocationCallbacks.toMiddle -> mac) = do
+	Device.D sd -> Group ma sg k nm objs -> k -> CreateInfo mn objs ->
+	IO (Either String (B sg nm objs))
+create' (Device.D dvc)
+	(Group (AllocationCallbacks.toMiddle -> mac) sem bs) k ci = do
 	ok <- atomically do
 		mx <- (Map.lookup k) <$> readTVar bs
 		case mx of
@@ -143,10 +145,9 @@ create' (Device.D dvc) (Group sem bs) k ci (AllocationCallbacks.toMiddle -> mac)
 	else pure . Left $ "Gpu.Vulkan.Buffer.create': The key already exist"
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Device.D sd -> Group sg k nm objs -> k ->
-	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
-	IO (Either String ())
-destroy (Device.D mdvc) (Group sem bs) k (AllocationCallbacks.toMiddle -> ma) = do
+	Device.D sd -> Group ma sg k nm objs -> k -> IO (Either String ())
+destroy (Device.D mdvc)
+	(Group (AllocationCallbacks.toMiddle -> ma) sem bs) k = do
 	mb <- atomically do
 		mx <- Map.lookup k <$> readTVar bs
 		case mx of
@@ -161,8 +162,8 @@ destroy (Device.D mdvc) (Group sem bs) k (AllocationCallbacks.toMiddle -> ma) = 
 				signalTSem sem
 				pure $ Right ()
 
-lookup :: Ord k => Group sg k nm objs -> k -> IO (Maybe (B sg nm objs))
-lookup (Group _sem bs) k = atomically $ Map.lookup k <$> readTVar bs
+lookup :: Ord k => Group md sg k nm objs -> k -> IO (Maybe (B sg nm objs))
+lookup (Group _ _sem bs) k = atomically $ Map.lookup k <$> readTVar bs
 
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
