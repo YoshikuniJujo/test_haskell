@@ -271,7 +271,7 @@ run w inst g inp outp =
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
 	createRectangleBuffer phdv dv gq cp \rb ->
-	Vk.Bffr.group dv nil' \rbgrp ->
+	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb sos tm inp outp cp
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -837,9 +837,10 @@ createRectangleBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""] -> IO a ) -> IO a
 createRectangleBuffer phdvc dvc gq cp f =
-	createBufferList phdvc dvc (fromIntegral $ length instances)
+	Vk.Bffr.group dvc nil' \bgrp -> Vk.Mem.group dvc nil' \mgrp ->
+	createBufferList' phdvc dvc bgrp mgrp () (fromIntegral $ length instances)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+		Vk.Mem.PropertyDeviceLocalBit >>= \(b, _) -> do
 	createBufferList phdvc dvc (fromIntegral $ length instances)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
@@ -848,6 +849,24 @@ createRectangleBuffer phdvc dvc gq cp f =
 		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
 		copyBuffer dvc gq cp b' b
 	f b
+
+createRectangleBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sb k nm '[VObj.List 256 Rectangle ""]  ->
+	Vk.Mem.Group sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] ->
+	k -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
+createRectangleBuffer' phdvc dvc bgrp mgrp k gq cp =
+	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length instances)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mem.PropertyDeviceLocalBit >>= \(b, _) -> do
+	createBufferList phdvc dvc (fromIntegral $ length instances)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit )
+			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
+		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
+		copyBuffer dvc gq cp b' b
+	pure b
 
 {-
 createRectangleBuffer' :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q ->
@@ -945,6 +964,19 @@ createBufferList :: forall sd nm t a . Storable t =>
 createBufferList p dv ln usg props =
 	createBuffer p dv (VObj.LengthList ln) usg props
 
+createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sb k nm '[VObj.List 256 t ""]  ->
+	Vk.Mem.Group sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
+	k ->
+	Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Mem.PropertyFlags -> IO (
+		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""],
+		Vk.Mem.M sm '[ '(
+			sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""] ) ] )
+createBufferList' p dv bgrp mgrp k ln usg props =
+	createBuffer' p dv bgrp mgrp k (VObj.LengthList ln) usg props
+
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
@@ -952,12 +984,26 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		Vk.Mem.M sm
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
-	reqs <- Vk.Bffr.getMemoryRequirements dv b
-	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
-		(allcInfo mt) nil'
-		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
+createBuffer p dv ln usg props f =
+	Vk.Bffr.group dv nil' \bgrp -> Vk.Mem.group dv nil' \mgrp ->
+	uncurry f =<< createBuffer' p dv bgrp mgrp () ln usg props
+
+createBuffer' :: forall sd sb nm o sm k .
+	(Ord k, VObj.SizeAlignment o) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sb k nm '[o] ->
+	Vk.Mem.Group sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] -> k ->
+	VObj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
+		Vk.Bffr.Binded sm sb nm '[o],
+		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] )
+createBuffer' p dv bgrp mgrp k ln usg props =
+	Vk.Bffr.create' dv bgrp k bffrInfo nil' >>= \(AlwaysRight b) -> do
+		reqs <- Vk.Bffr.getMemoryRequirements dv b
+		mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
+		Vk.Mem.allocateBind' dv mgrp k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
+			(allcInfo mt) nil' >>=
+			\(AlwaysRight (HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd)), mem)) -> pure (bnd, mem)
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
@@ -971,6 +1017,18 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 	allcInfo mt = Vk.Mem.AllocateInfo {
 		Vk.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
+
+destroyBuffer :: Ord k => Vk.Dvc.D sd ->
+	Vk.Bffr.Group sg k nm objs -> Vk.Mem.Group smng k ibargs -> k ->
+	IO (Either String ())
+destroyBuffer dvc bgrp mgrp k =
+	Vk.Bffr.destroy dvc bgrp k nil' >> Vk.Mem.free dvc mgrp k nil'
+
+{-# COMPLETE AlwaysRight #-}
+
+pattern AlwaysRight :: r -> Either l r
+pattern AlwaysRight x <- Right x where
+	AlwaysRight x = Right x
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.M.TypeIndex
