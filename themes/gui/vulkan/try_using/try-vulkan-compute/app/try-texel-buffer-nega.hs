@@ -9,7 +9,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -77,15 +77,19 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import Gpu.Vulkan.TypeEnum qualified as Vk.TEnum
 
 import Codec.Picture
+import System.Environment
+import System.FilePath
 
 main :: IO ()
 main = do
-	(r1, r2, r3, pxs@(sz, r4)) <- calc datA datB datC
+	fp : _ <- getArgs
+	let fp' = uncurry (++) . first (++ "_nega") $ splitExtension fp
+	(r1, r2, r3, pxs@(sz, r4)) <- calc fp datA datB datC
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print $ V.take 20 r3
 	print $ V.take 20 r4
-	uncurry writeDd pxs
+	uncurry (writeDd fp') pxs
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
@@ -99,9 +103,9 @@ datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
 datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 
 calc :: forall w1 w2 w3 . (Storable w1, Storable w2, Storable w3) =>
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
+	FilePath -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], V.Vector w3, ((Int, Int), V.Vector MyPixel))
-calc da db dc = withDevice \phdvc qFam dvc mxx ->
+calc fp da db dc = withDevice \phdvc qFam dvc mxx ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil' \dscSetLyt ->
 	let	n = fromIntegral mxx
 		da' = V.take n da; db' = V.take n db; dc' = V.take n dc
@@ -109,25 +113,25 @@ calc da db dc = withDevice \phdvc qFam dvc mxx ->
 			MyPixel 23 21 11 33,
 			MyPixel 55 44 33 22,
 			MyPixel 99 88 77 66 ] in
-	createDd >>= \(sz, dd') ->
+	createDd fp >>= \(sz@(fromIntegral -> w, fromIntegral -> h), dd') ->
 	prepareMems phdvc dvc dscSetLyt da' db' dc' dd' mxx \dscSet
 		(ma :: MemoryList sm1 sb1 nm1 w1)
 		(mb :: MemoryList sm2 sb2 nm2 w2)
 		(mc :: MemoryList sm3 sb3 nm3 w3)
 		(md :: MemoryList sm4 sb4 nm4 MyPixel) ->
-	calc' @nm1 @nm2 @nm3 @nm4 dvc qFam dscSetLyt dscSet mxx ma mb mc md >>= \(r1, r2, r3, r4) ->
+	calc' @nm1 @nm2 @nm3 @nm4 dvc qFam dscSetLyt dscSet mxx ma mb mc md w h >>= \(r1, r2, r3, r4) ->
 	pure (r1, r2, r3, (sz, r4))
 
-createDd :: IO ((Int, Int), V.Vector MyPixel)
-createDd = do
-	Right (ImageRGBA8 girl) <- readPng "images/girl.png"
+createDd :: FilePath -> IO ((Int, Int), V.Vector MyPixel)
+createDd fp = do
+	Right (ImageRGBA8 girl) <- readPng fp
 	print $ (imageWidth &&& imageHeight) girl
 	pure ((imageWidth &&& imageHeight) girl, V.unsafeCast $ imageData girl)
 
-writeDd :: (Int, Int) -> V.Vector MyPixel -> IO ()
-writeDd (w, h) pxs = do
+writeDd :: FilePath -> (Int, Int) -> V.Vector MyPixel -> IO ()
+writeDd fp (w, h) pxs = do
 	let	img = Image w h (V.unsafeCast pxs)
-	writePng @PixelRGBA8 "images/girl_nega.png" img
+	writePng @PixelRGBA8 fp img
 
 type MemoryList sm sb nm w =
 	Vk.Mem.M sm '[ '( sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 w ""])]
@@ -148,8 +152,9 @@ calc' :: forall nm1 nm2 nm3 nm4 w1 w2 w3 w4 objss1 objss2 objss3 objss4 sm1 sm2 
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl bts ->
 	Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 -> Vk.Mem.M sm3 objss3 -> Vk.Mem.M sm4 objss4 ->
+	Word32 -> Word32 ->
 	IO ([w1], [w2], V.Vector w3, V.Vector w4)
-calc' dvc qFam dscSetLyt dscSet dsz ma mb mc md =
+calc' dvc qFam dscSetLyt dscSet dsz ma mb mc md w h =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil' \pplLyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
@@ -157,7 +162,7 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc md =
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(cmdBuf :*. HeteroParList.Nil) ->
-		run @nm1 @nm2 @nm3 @nm4 dvc qFam cmdBuf ppl pplLyt dscSet dsz ma mb mc md
+		run @nm1 @nm2 @nm3 @nm4 dvc qFam cmdBuf ppl pplLyt dscSet dsz ma mb mc md w h
 
 pplLayoutInfo :: Vk.DscSetLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
@@ -224,8 +229,9 @@ run :: forall nm1 nm2 nm3 nm4 w1 w2 w3 w4
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Word32]) ->
 	Vk.Ppl.Lyt.P sl sbtss '[Word32] -> Vk.DscSet.D sds slbts -> Word32 ->
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
-	Vk.Mem.M sm3 objss3 -> Vk.Mem.M sm4 objss4 -> IO ([w1], [w2], V.Vector w3, V.Vector w4)
-run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC memD = do
+	Vk.Mem.M sm3 objss3 -> Vk.Mem.M sm4 objss4 -> Word32 -> Word32 ->
+	IO ([w1], [w2], V.Vector w3, V.Vector w4)
+run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC memD w h = do
 	queue <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cmdBuf def $
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl \ccb -> do
@@ -235,8 +241,8 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC memD = do
 					HeteroParList.Nil :** HeteroParList.Nil :**
 					HeteroParList.Nil)
 			Vk.Cmd.pushConstantsCompute @'[ 'Vk.TEnum.ShaderStageComputeBit ]
-				ccb pplLyt (HeteroParList.Singleton (HeteroParList.Id (1000 :: Word32)))
-			Vk.Cmd.dispatch ccb dsz 1 1
+				ccb pplLyt (HeteroParList.Singleton (HeteroParList.Id (w :: Word32)))
+			Vk.Cmd.dispatch ccb w h 1
 	Vk.Queue.submit queue (U4 submitInfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle queue
 	(,,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @[w1] dvc memA def
@@ -558,16 +564,13 @@ layout(push_constant) uniform PushConstant { uint width; } pushConstant;
 void
 main()
 {
-	int index = int(gl_GlobalInvocationID.x);
-	uvec4 some = imageLoad(storageTexelBuffer, index);
-//	data[2].val[index] = (data[0].val[index] + data[1].val[index]) * sc * sc2;
-	data[0].val[index] = some.x + pushConstant.width;
-	data[1].val[index] = some.y;
-	data[2].val[index] = some.w;
-	some.x = 255 - some.x;
-	some.y = 255 - some.y;
-	some.z = 255 - some.z;
-	imageStore(storageTexelBuffer, index, some);
+	int index = int(gl_GlobalInvocationID.x +
+		gl_GlobalInvocationID.y * pushConstant.width);
+	uvec4 px = imageLoad(storageTexelBuffer, index);
+	px.r = 255 - px.r;
+	px.g = 255 - px.g;
+	px.b = 255 - px.b;
+	imageStore(storageTexelBuffer, index, px);
 }
 
 |]

@@ -46,6 +46,7 @@ library
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -73,6 +74,7 @@ executable try-bitonic-sort
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -101,6 +103,7 @@ executable try-bitonic-sort-cpu
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -129,6 +132,7 @@ executable try-bitonic-sort-new
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -157,6 +161,7 @@ executable try-data-list-sort
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -185,6 +190,7 @@ executable try-hello
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -213,6 +219,7 @@ executable try-hello-world
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -241,6 +248,7 @@ executable try-mandelbrot
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -269,6 +277,7 @@ executable try-mandelbrot-cpu
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -297,6 +306,7 @@ executable try-mandelbrot-hs
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -325,6 +335,7 @@ executable try-push-constant
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -353,6 +364,7 @@ executable try-quick-sort
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -381,6 +393,7 @@ executable try-saitan-simple
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -409,6 +422,7 @@ executable try-texel-buffer-nega
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list
@@ -438,6 +452,7 @@ test-suite try-vulkan-compute-test
     , array
     , base >=4.7 && <5
     , data-default
+    , filepath
     , parallel
     , random
     , ranged-list

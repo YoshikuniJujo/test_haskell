@@ -27,6 +27,7 @@ dependencies:
 - array
 - vector
 - time
+- filepath
 - JuicyPixels
 - try-gpu-vulkan
 - try-gpu-vulkan-khr
