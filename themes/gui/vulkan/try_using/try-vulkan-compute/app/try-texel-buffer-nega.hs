@@ -40,12 +40,12 @@ import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
-import qualified Gpu.Vulkan.Instance as Vk.Inst
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
+import qualified Gpu.Vulkan.Instance as Vk.Ist
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
-import qualified Gpu.Vulkan.Device as Vk.Dvc
+import qualified Gpu.Vulkan.Device as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Buffer
@@ -84,45 +84,47 @@ main = do
 	writePixels outf =<< makeNega =<< readPixels inf
 
 makeNega :: Pixels -> IO Pixels
-makeNega pxs = withDevice \phd qfam dvc ->
+makeNega pxs = device \phd qf dvc ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo TPMaybe.N \dslyt ->
 	pure pxs >>= \(sz@(fromIntegral -> w, fromIntegral -> h), dd') ->
 	prepareMems phd dvc dslyt dd' \dscSet
 		(md :: MemoryList sm4 sb4 nm4 MyPixel) ->
-	calc' @nm4 dvc qfam dslyt dscSet md w h >>= \r4 ->
+	calc' @nm4 dvc qf dslyt dscSet md w h >>= \r4 ->
 	pure (sz, r4)
 
-withDevice ::
-	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
-	phd <- head <$> Vk.PhDvc.enumerate inst
-	qfam <- findQueueFamily phd Vk.Queue.ComputeBit
-	Vk.Dvc.create phd (dvcInfo qfam) nil' $ \dvc -> f phd qfam dvc
+device :: (forall sd . Vk.Phd.P -> Vk.QFam.Index -> Vk.Dv.D sd -> IO a) -> IO a
+device f = Vk.Ist.create @_ @'Nothing instInfo nil' \ist -> do
+	phd <- head <$> Vk.Phd.enumerate ist
+	qf <- findQueueFamily phd Vk.Queue.ComputeBit
+	Vk.Dv.create phd (dvcInfo qf) nil' \dvc -> f phd qf dvc
 	where
-	dvcInfo qf = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = TMaybe.N,
-		Vk.Dvc.createInfoFlags = def,
-		Vk.Dvc.createInfoQueueCreateInfos = HL.Singleton $ queueInfo qf,
-		Vk.Dvc.createInfoEnabledLayerNames =
-			[Vk.layerNameKhronosValidation],
-		Vk.Dvc.createInfoEnabledExtensionNames = [],
-		Vk.Dvc.createInfoEnabledFeatures = Nothing }
-	queueInfo qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = def,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
+	instInfo :: Vk.Ist.CreateInfo 'Nothing 'Nothing
+	instInfo = def {
+		Vk.Ist.createInfoEnabledLayerNames =
+			[Vk.layerKhronosValidation] }
+	dvcInfo qf = Vk.Dv.CreateInfo {
+		Vk.Dv.createInfoNext = TMaybe.N,
+		Vk.Dv.createInfoFlags = zeroBits,
+		Vk.Dv.createInfoQueueCreateInfos = HL.Singleton $ queueInfo qf,
+		Vk.Dv.createInfoEnabledLayerNames = [Vk.layerKhronosValidation],
+		Vk.Dv.createInfoEnabledExtensionNames = [],
+		Vk.Dv.createInfoEnabledFeatures = Nothing }
+	queueInfo qf = Vk.Dv.QueueCreateInfo {
+		Vk.Dv.queueCreateInfoNext = TMaybe.N,
+		Vk.Dv.queueCreateInfoFlags = zeroBits,
+		Vk.Dv.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dv.queueCreateInfoQueuePriorities = [0] }
 
-findQueueFamily :: Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
+findQueueFamily :: Vk.Phd.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
 findQueueFamily phd qf = fst . head
 	. filter ((/= zeroBits) . (.&. qf) . Vk.QFam.propertiesQueueFlags . snd)
-	<$> Vk.PhDvc.getQueueFamilyProperties phd
+	<$> Vk.Phd.getQueueFamilyProperties phd
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
 	'Vk.DscSetLyt.BufferView '[ '("", MyPixel)] ]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = TMaybe.N,
-	Vk.DscSetLyt.createInfoFlags = def,
+	Vk.DscSetLyt.createInfoFlags = zeroBits,
 	Vk.DscSetLyt.createInfoBindings = binding1 :** HL.Nil }
 
 type MemoryList sm sb nm w =
@@ -134,18 +136,18 @@ calc' :: forall nm4 w4 objss4 sm4 slbts sl bts sd sds . (
 	Storable w4,
 	Vk.Mem.OffsetSize nm4 (VObj.List 256 w4 "") objss4,
 	InfixIndex '[slbts] '[ '(sl, bts)]) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl bts ->
+	Vk.Dv.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl bts ->
 	Vk.DscSet.D sds slbts ->
 	Vk.Mem.M sm4 objss4 -> Word32 -> Word32 -> IO (V.Vector w4)
-calc' dvc qfam dscSetLyt dscSet md w h =
+calc' dvc qf dscSetLyt dscSet md w h =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil' \pplLyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(U4 (computePipelineInfo pplLyt) :** HL.Nil)
 		nil' \(ppl :** HL.Nil) ->
-	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil' \cmdPool ->
+	Vk.CommandPool.create dvc (commandPoolInfo qf) nil' \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(cmdBuf :*. HL.Nil) ->
-		run @nm4 dvc qfam cmdBuf ppl pplLyt dscSet md w h
+		run @nm4 dvc qf cmdBuf ppl pplLyt dscSet md w h
 
 pplLayoutInfo :: Vk.DscSetLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
@@ -183,11 +185,11 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo 'Nothing
-commandPoolInfo qfam = Vk.CommandPool.CreateInfo {
+commandPoolInfo qf = Vk.CommandPool.CreateInfo {
 	Vk.CommandPool.createInfoNext = TMaybe.N,
 	Vk.CommandPool.createInfoFlags =
 		Vk.CommandPool.CreateResetCommandBufferBit,
-	Vk.CommandPool.createInfoQueueFamilyIndex = qfam }
+	Vk.CommandPool.createInfoQueueFamilyIndex = qf }
 
 commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo 'Nothing s '[ '()]
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
@@ -201,13 +203,13 @@ run :: forall nm4 w4 objss4 slbts sbtss sd sc sg sl sm4 sds . (
 	Storable w4,
 	Vk.Mem.OffsetSize nm4 (VObj.List 256 w4 "") objss4,
 	InfixIndex '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
+	Vk.Dv.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Word32]) ->
 	Vk.Ppl.Lyt.P sl sbtss '[Word32] -> Vk.DscSet.D sds slbts ->
 	Vk.Mem.M sm4 objss4 -> Word32 -> Word32 ->
 	IO (V.Vector w4)
-run dvc qfam cmdBuf ppl pplLyt dscSet memD w h = do
-	queue <- Vk.Dvc.getQueue dvc qfam 0
+run dvc qf cmdBuf ppl pplLyt dscSet memD w h = do
+	queue <- Vk.Dv.getQueue dvc qf 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cmdBuf def $
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb pplLyt
@@ -226,10 +228,6 @@ run dvc qfam cmdBuf ppl pplLyt dscSet memD w h = do
 			Vk.submitInfoCommandBuffers = cmdBuf :** HL.Nil,
 			Vk.submitInfoSignalSemaphores = HL.Nil }
 
-instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
-instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerNameKhronosValidation] }
-
 binding1 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.BufferView '[ '("", MyPixel) ])
 binding1 = Vk.DscSetLyt.BindingBufferView {
 	Vk.DscSetLyt.bindingBufferViewDescriptorType =
@@ -242,7 +240,7 @@ prepareMems ::
 		(HL.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)] 0 ) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sl bts ->
+	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DscSetLyt.D sl bts ->
 	V.Vector MyPixel -> (
 		forall sds sm4 sb4 .
 		Vk.DscSet.D sds '(sl, bts) ->
@@ -318,7 +316,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HL.Nil }
 
 storageBufferNew :: forall sd nm w a . Storable w =>
-	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
+	Vk.Dv.D sd -> Vk.Phd.P -> V.Vector w -> (
 		forall sb sm .
 		Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""]  ->
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 w ""])] -> IO a ) -> IO a
@@ -342,7 +340,7 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
-getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
+getMemoryInfo :: Vk.Phd.P -> Vk.Dv.D sd -> Vk.Buffer.B sb nm objs ->
 	IO (Vk.Mem.AllocateInfo 'Nothing)
 getMemoryInfo phd dvc buffer = do
 	requirements <- Vk.Buffer.getMemoryRequirements dvc buffer
@@ -354,15 +352,15 @@ getMemoryInfo phd dvc buffer = do
 		Vk.Mem.allocateInfoMemoryTypeIndex = memTypeIdx }
 
 findMemoryTypeIndex ::
-	Vk.PhDvc.P -> Vk.Mem.M.Requirements -> Vk.Mem.PropertyFlags ->
+	Vk.Phd.P -> Vk.Mem.M.Requirements -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.M.TypeIndex
 findMemoryTypeIndex physicalDevice requirements memoryProp = do
-	memoryProperties <- Vk.PhDvc.getMemoryProperties physicalDevice
+	memoryProperties <- Vk.Phd.getMemoryProperties physicalDevice
 	let	reqTypes = Vk.Mem.M.requirementsMemoryTypeBits requirements
 		memPropTypes = (fst <$>)
 			. filter (checkBits memoryProp
 				. Vk.Mem.M.mTypePropertyFlags . snd)
-			$ Vk.PhDvc.memoryPropertiesMemoryTypes memoryProperties
+			$ Vk.Phd.memoryPropertiesMemoryTypes memoryProperties
 	case filter (`Vk.Mem.M.elemTypeIndex` reqTypes) memPropTypes of
 		[] -> error "No available memory types"
 		i : _ -> pure i
