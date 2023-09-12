@@ -180,7 +180,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerNameKhronosValidation]
+validationLayers = [Vk.layerKhronosValidation]
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2

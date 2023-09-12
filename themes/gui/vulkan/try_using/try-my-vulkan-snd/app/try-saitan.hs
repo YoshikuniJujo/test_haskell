@@ -234,7 +234,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qFam,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			[Vk.layerNameKhronosValidation],
+			[Vk.layerKhronosValidation],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	queueInfo qFam = Vk.Dvc.QueueCreateInfo {
@@ -245,7 +245,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerNameKhronosValidation] }
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidation] }
 
 findQueueFamily ::
 	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index

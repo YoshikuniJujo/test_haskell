@@ -104,7 +104,7 @@ main = do
 	let	createInfo :: Vk.Instance.CreateInfo 'Nothing 'Nothing
 		createInfo = def {
 			Vk.Instance.createInfoEnabledLayerNames =
-				[Vk.layerNameKhronosValidation] }
+				[Vk.layerKhronosValidation] }
 	Vk.Instance.create createInfo nil' \inst -> do
 		(physicalDevice, graphicsQueueFamilyIndex) <-
 			selectPhysicalDeviceAndQueueFamily
@@ -125,7 +125,7 @@ main = do
 				Vk.Device.createInfoQueueCreateInfos =
 					HeteroParList.Singleton queueCreateInfo,
 				Vk.Device.createInfoEnabledLayerNames =
-					[Vk.layerNameKhronosValidation],
+					[Vk.layerKhronosValidation],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
 		Vk.Device.create physicalDevice devCreateInfo nil' \dvc ->
