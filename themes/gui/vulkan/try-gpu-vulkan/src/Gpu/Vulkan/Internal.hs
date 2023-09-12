@@ -29,7 +29,7 @@ module Gpu.Vulkan.Internal (
 
 	-- * NAME
 
-	LayerName(..), layerNameKhronosValidation,
+	LayerName(..), layerKhronosValidation,
 
 	-- * PIPELINE VALUES
 
@@ -193,5 +193,5 @@ layerPropertiesFromMiddle M.LayerProperties {
 
 newtype LayerName = LayerName { unLayerName :: T.Text } deriving (Show, Eq)
 
-layerNameKhronosValidation :: LayerName
-layerNameKhronosValidation = LayerName "VK_LAYER_KHRONOS_validation"
+layerKhronosValidation :: LayerName
+layerKhronosValidation = LayerName "VK_LAYER_KHRONOS_validation"
