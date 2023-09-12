@@ -397,6 +397,34 @@ executable try-saitan-simple
     , vector
   default-language: Haskell2010
 
+executable try-texel-buffer-nega
+  main-is: try-texel-buffer-nega.hs
+  other-modules:
+      Paths_try_vulkan_compute
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , data-default
+    , parallel
+    , random
+    , ranged-list
+    , temporary
+    , time
+    , try-gpu-vulkan
+    , try-gpu-vulkan-khr
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-vulkan-compute
+    , typelevel-tools
+    , vector
+  default-language: Haskell2010
+
 test-suite try-vulkan-compute-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
