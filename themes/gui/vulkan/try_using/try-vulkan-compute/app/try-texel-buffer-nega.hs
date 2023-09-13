@@ -233,9 +233,11 @@ buffer :: forall bts sd sl nm sds a . (
 	(forall sm sb .  Memory sm sb nm -> IO a) -> IO a
 buffer phd dv v ds f =
 	Vk.Bff.group dv nil' \bgrp -> Vk.Mm.group dv nil' \mgrp ->
+	Vk.BffVw.group dv nil' \pgrp -> Vk.BffVw.group dv nil' \pfgrp ->
+
 	bufferNew dv phd v bgrp mgrp >>= \(bd, m) ->
-	Vk.BffVw.create dv (bvInfo bd) nil' \(bv :: Vk.BffVw.B sbv "" Pixel) ->
-	Vk.BffVw.create dv (bvInfo bd) nil' \(bv2 :: Vk.BffVw.B sbv2 "" PixelFloat) ->
+	Vk.BffVw.create' dv pgrp () (bvInfo bd) >>= \(AlwaysRight bv) ->
+	Vk.BffVw.create' dv pfgrp () (bvInfo bd) >>= \(AlwaysRight bv2) ->
 	Vk.DS.updateDs dv
 		(U5 (write bv) :** U5 (write2 bv2) :** HL.Nil)
 		HL.Nil >> f m
