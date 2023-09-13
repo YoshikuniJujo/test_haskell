@@ -18,6 +18,7 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.C.Types
 import Gpu.Vulkan.Object.Base qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Control.Arrow
@@ -34,6 +35,7 @@ import Data.Word
 
 import qualified Data.Vector.Storable as V
 
+import Language.SpirV qualified as SpirV
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
 import Gpu.Vulkan.Misc
@@ -76,6 +78,8 @@ import Codec.Picture qualified as P
 import System.Environment
 import System.FilePath
 
+import Gpu.Vulkan.Semaphore qualified as Vk.Smph
+
 main :: IO ()
 main = do
 	inf : _ <- getArgs
@@ -86,11 +90,14 @@ makeNega :: Pixels -> IO Pixels
 makeNega (sz@(fromIntegral -> w, fromIntegral -> h), v) =
 	device \phd qf dv -> dscSetLayout dv \dslyt ->
 	buffer phd dv dslyt v \ds (m :: Memory sm sb nm) ->
-	pipeline dv qf dslyt \cb ppl plyt ->
-	(sz ,) <$> run @nm dv qf cb ppl plyt ds m w h
+	pipeline dv qf dslyt \cb ppl ppl2 plyt ->
+	(sz ,) <$> run @nm dv qf cb ppl ppl2 plyt ds m w h
 
-type Memory sm sb nm = Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg nm '[PixelList])]
+type Memory sm sb nm = Vk.Mm.M sm
+	'[ '( sb, 'Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])]
 type PixelList = VObj.List 256 Pixel ""
+
+type PixelFloatList = VObj.List 256 PixelFloat ""
 
 device :: (forall sd . Vk.Phd.P -> Vk.QF.Index -> Vk.Dv.D sd -> IO a) -> IO a
 device f = Vk.Ist.create @_ @'Nothing instInfo nil' \ist -> do
@@ -121,13 +128,16 @@ findQueueFamily phd qf = fst . head
 	<$> Vk.Phd.getQueueFamilyProperties phd
 
 dscSetLayout :: Vk.Dv.D sd -> (forall s .
-	Vk.DSLyt.D s '[ 'Vk.DSLyt.BufferView '[ '("", Pixel)]] -> IO a) -> IO a
+	Vk.DSLyt.D s '[
+		'Vk.DSLyt.BufferView '[ '("", Pixel)],
+		'Vk.DSLyt.BufferView '[ '("", PixelFloat)] ] ->
+	IO a) -> IO a
 dscSetLayout dv = Vk.DSLyt.create dv dscSetLayoutInfo TPMaybe.N
 	where
 	dscSetLayoutInfo = Vk.DSLyt.CreateInfo {
 		Vk.DSLyt.createInfoNext = TMaybe.N,
 		Vk.DSLyt.createInfoFlags = zeroBits,
-		Vk.DSLyt.createInfoBindings = bdng :** HL.Nil }
+		Vk.DSLyt.createInfoBindings = bdng :** bdng :** HL.Nil }
 	bdng = Vk.DSLyt.BindingBufferView {
 		Vk.DSLyt.bindingBufferViewDescriptorType =
 			Vk.Dsc.TypeStorageTexelBuffer,
@@ -137,6 +147,7 @@ dscSetLayout dv = Vk.DSLyt.create dv dscSetLayoutInfo TPMaybe.N
 buffer :: forall bts sd sl nm a . (
 	Default (HL.PL (HL.PL KObj.Length)
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0 ) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts -> V.Vector Pixel -> (
 		forall sds sm sb .
@@ -145,9 +156,12 @@ buffer phd dv lyt v f =
 	Vk.DP.create dv poolInfo nil' \pl ->
 	Vk.DS.allocateDs dv (setInfo pl)
 		\((ds :: Vk.DS.D sds '(sl, bts)) :** HL.Nil) ->
-	bufferNew dv phd v \(bd :: Vk.Bff.Binded sm sb nm '[PixelList]) m ->
+	bufferNew dv phd v \(bd :: Vk.Bff.Binded sm sb nm '[PixelList, PixelFloatList]) m ->
 	Vk.BffVw.create dv (bvInfo bd) nil' \(bv :: Vk.BffVw.B sbv "" Pixel) ->
-	Vk.DS.updateDs dv (U5 (write ds bv) :** HL.Nil) HL.Nil >> f ds m
+	Vk.BffVw.create dv (bvInfo bd) nil' \(bv2 :: Vk.BffVw.B sbv2 "" PixelFloat) ->
+	Vk.DS.updateDs dv
+		(U5 (write ds bv) :** U5 (write2 ds bv2) :** HL.Nil)
+		HL.Nil >> f ds m
 	where
 	poolInfo = Vk.DP.CreateInfo {
 		Vk.DP.createInfoNext = TMaybe.N,
@@ -156,7 +170,7 @@ buffer phd dv lyt v f =
 		Vk.DP.createInfoPoolSizes = [poolSize] }
 	poolSize = Vk.DP.Size {
 		Vk.DP.sizeType = Vk.Dsc.TypeStorageTexelBuffer,
-		Vk.DP.sizeDescriptorCount = 1 }
+		Vk.DP.sizeDescriptorCount = 2 }
 	setInfo :: Vk.DP.P sp -> Vk.DS.AllocateInfo 'Nothing sp '[ '(sl, bts)]
 	setInfo pl = Vk.DS.AllocateInfo {
 		Vk.DS.allocateInfoNext = TMaybe.N,
@@ -175,10 +189,19 @@ buffer phd dv lyt v f =
 		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DS.writeSources =
 			Vk.DS.TexelBufferViews . HL.Singleton $ U3 bv }
+	write2 :: Vk.DS.D sds '(sl, bts) -> Vk.BffVw.B sb "" PixelFloat ->
+		Vk.DS.Write 'Nothing sds '(sl, bts)
+			(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", PixelFloat)]) 0
+	write2 ds bv = Vk.DS.Write {
+		Vk.DS.writeNext = TMaybe.N,
+		Vk.DS.writeDstSet = ds,
+		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
+		Vk.DS.writeSources =
+			Vk.DS.TexelBufferViews . HL.Singleton $ U3 bv }
 
 bufferNew :: forall sd nm a .
 	Vk.Dv.D sd -> Vk.Phd.P -> V.Vector Pixel -> (forall sb sm .
-		Vk.Bff.Binded sm sb nm '[PixelList] -> Memory sm sb nm ->
+		Vk.Bff.Binded sm sb nm '[PixelList, PixelFloatList] -> Memory sm sb nm ->
 		IO a) -> IO a
 bufferNew dv phd v f =
 	Vk.Bff.create dv bufferInfo nil' \bffr ->
@@ -191,7 +214,9 @@ bufferNew dv phd v f =
 		Vk.Bff.createInfoNext = TMaybe.N,
 		Vk.Bff.createInfoFlags = def,
 		Vk.Bff.createInfoLengths =
-			VObj.LengthList (fromIntegral $ V.length v) :** HL.Nil,
+			VObj.LengthList (fromIntegral $ V.length v) :**
+			VObj.LengthList (fromIntegral $ V.length v) :**
+			HL.Nil,
 		Vk.Bff.createInfoUsage =
 			Vk.Bff.UsageStorageBufferBit .|.
 			Vk.Bff.UsageStorageTexelBufferBit,
@@ -220,16 +245,22 @@ findMemoryTypeIndex phd rq prp0 = Vk.Phd.getMemoryProperties phd >>= \prps -> do
 	where check = (.) <$> (==) <*> (.&.)
 
 pipeline :: forall sd sl bts a .
-	Vk.Dv.D sd -> Vk.QF.Index -> Vk.DSLyt.D sl bts -> (forall scb s1 s .
+	Vk.Dv.D sd -> Vk.QF.Index -> Vk.DSLyt.D sl bts -> (forall scb s1 s2 s .
 		Vk.CmdBuf.C scb ->
 		Vk.Ppl.Cmpt.C s1 '(s, '[ '(sl, bts)], '[Word32]) ->
-		Vk.Ppl.Lyt.P s '[ '(sl, bts)] '[Word32] -> IO a) -> IO a
+		Vk.Ppl.Cmpt.C s2 '(s, '[ '(sl, bts)], '[Word32]) ->
+		Vk.Ppl.Lyt.P s '[ '(sl, bts)] '[Word32] ->
+		IO a) -> IO a
 pipeline dv qf dslyt f =
 	Vk.Ppl.Lyt.create dv plytInfo nil' \plyt ->
-	Vk.Ppl.Cmpt.createCs dv Nothing (U4 (pplInfo plyt) :** HL.Nil) nil'
+	Vk.Ppl.Cmpt.createCs dv Nothing
+		(U4 (pplInfo glslComputeShaderMain plyt) :** HL.Nil) nil'
 		\(ppl :** HL.Nil) ->
+	Vk.Ppl.Cmpt.createCs dv Nothing
+		(U4 (pplInfo glslComputeShaderMain2 plyt) :** HL.Nil) nil'
+		\(ppl2 :** HL.Nil) ->
 	Vk.CommandPool.create dv cpoolInfo nil' \cp ->
-	Vk.CmdBuf.allocate dv (cbInfo cp) \(cb :*. HL.Nil) -> f cb ppl plyt
+	Vk.CmdBuf.allocate dv (cbInfo cp) \(cb :*. HL.Nil) -> f cb ppl ppl2 plyt
 	where
 	plytInfo :: Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PC.Layout '[Word32] '[ 'Vk.PC.Range
@@ -238,26 +269,26 @@ pipeline dv qf dslyt f =
 		Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 		Vk.Ppl.Lyt.createInfoFlags = zeroBits,
 		Vk.Ppl.Lyt.createInfoSetLayouts = U2 dslyt :** HL.Nil }
-	pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+	pplInfo sdr pl = Vk.Ppl.Cmpt.CreateInfo {
 		Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 		Vk.Ppl.Cmpt.createInfoFlags = def,
-		Vk.Ppl.Cmpt.createInfoStage = U5 shaderInfo,
+		Vk.Ppl.Cmpt.createInfoStage = U5 $ shaderInfo sdr,
 		Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 		Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
-	shaderInfo :: Vk.Ppl.ShaderSt.CreateInfo
+	shaderInfo :: SpirV.S 'GlslComputeShader -> Vk.Ppl.ShaderSt.CreateInfo
 		'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]
-	shaderInfo = Vk.Ppl.ShaderSt.CreateInfo {
+	shaderInfo sdr = Vk.Ppl.ShaderSt.CreateInfo {
 		Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-		Vk.Ppl.ShaderSt.createInfoModule = (shaderModInfo, nil'),
+		Vk.Ppl.ShaderSt.createInfoModule = (shaderModInfo sdr, nil'),
 		Vk.Ppl.ShaderSt.createInfoName = "main",
 		Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
 			Just $ HL.Id 3 :** HL.Id 10 :** HL.Nil }
-	shaderModInfo = Vk.ShaderMod.CreateInfo {
+	shaderModInfo sdr = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
-		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
+		Vk.ShaderMod.createInfoCode = sdr } -- glslComputeShaderMain }
 	cpoolInfo = Vk.CommandPool.CreateInfo {
 		Vk.CommandPool.createInfoNext = TMaybe.N,
 		Vk.CommandPool.createInfoFlags =
@@ -269,33 +300,59 @@ pipeline dv qf dslyt f =
 		Vk.CmdBuf.allocateInfoCommandPool = cp,
 		Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 
-run :: forall nm4 w4 objss4 slbts sbtss sd sc sg sl sm4 sds . (
-	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[]],
+run :: forall nm4 w4 objss4 slbts sbtss sd sc sg sg2 sl sm4 sds . (
+	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
 	Storable w4,
 	Vk.Mm.OffsetSize nm4 (VObj.List 256 w4 "") objss4,
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dv.D sd -> Vk.QF.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Word32]) ->
+	Vk.Ppl.Cmpt.C sg2 '(sl, sbtss, '[Word32]) ->
 	Vk.Ppl.Lyt.P sl sbtss '[Word32] -> Vk.DS.D sds slbts ->
 	Vk.Mm.M sm4 objss4 -> Word32 -> Word32 ->
 	IO (V.Vector w4)
-run dv qf cb ppl plyt ds m w h = Vk.Dv.getQueue dv qf 0 >>= \q -> do
+run dv qf cb ppl ppl2 plyt ds m w h =
+	Vk.Smph.create dv (def @(Vk.Smph.CreateInfo 'Nothing)) nil' \smph -> do
+	q <- Vk.Dv.getQueue dv qf 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb plyt
 				(U2 ds :** HL.Nil)
-				(HL.Singleton
-					$ HL.Nil :** HL.Nil)
+				(HL.Singleton $ HL.Nil :** HL.Nil :** HL.Nil)
 			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
 				ccb plyt (HL.Singleton (HL.Id (w :: Word32)))
 			Vk.Cmd.dispatch ccb w h 1
-	Vk.Queue.submit q (U4 submitInfo :** HL.Nil) Nothing
+	Vk.Queue.submit q (U4 (submitInfo smph) :** HL.Nil) Nothing
+
+	Vk.Queue.waitIdle q
+--	threadDelay 100000
+--	Vk.CmdBuf.reset cb Vk.CmdBuf.ResetReleaseResourcesBit
+
+	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl2 \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute ccb plyt
+				(U2 ds :** HL.Nil)
+				(HL.Singleton $ HL.Nil :** HL.Nil :** HL.Nil)
+			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
+				ccb plyt (HL.Singleton (HL.Id (w :: Word32)))
+			Vk.Cmd.dispatch ccb w h 1
+	Vk.Queue.submit q (U4 (submitInfo2 smph) :** HL.Nil) Nothing
 	Vk.Queue.waitIdle q
 	Vk.Mm.read @nm4 @(VObj.List 256 w4 "") @(V.Vector w4) dv m def
-	where	submitInfo = Vk.SubmitInfo {
+	where
+	submitInfo :: Vk.Smph.S s -> Vk.SubmitInfo 'Nothing '[] '[sc] '[s]
+	submitInfo smph = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
+			Vk.submitInfoCommandBuffers = cb :** HL.Nil,
+			Vk.submitInfoSignalSemaphores = HL.Singleton smph }
+	submitInfo2 :: Vk.Smph.S s -> Vk.SubmitInfo 'Nothing '[s] '[sc] '[]
+	submitInfo2 smph = Vk.SubmitInfo {
+			Vk.submitInfoNext = TMaybe.N,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Singleton
+				$ Vk.SemaphorePipelineStageFlags smph
+					Vk.Ppl.StageComputeShaderBit,
 			Vk.submitInfoCommandBuffers = cb :** HL.Nil,
 			Vk.submitInfoSignalSemaphores = HL.Nil }
 
@@ -322,12 +379,25 @@ instance Storable Pixel where
 		[r, g, b, a] -> pure (Pixel r g b a); _ -> error "never occur"
 	poke p (Pixel r g b a) = pokeArray (castPtr p) [r, g, b, a]
 
-[glslComputeShader|
+data PixelFloat = PixelFloat CFloat CFloat CFloat CFloat deriving Show
+
+type instance Vk.BffVw.FormatOf PixelFloat = 'Vk.T.FormatR32g32b32a32Sfloat
+
+instance Storable PixelFloat where
+	sizeOf _ = 4 * sizeOf @CFloat undefined
+	alignment _ = alignment @CFloat undefined
+	peek p = peekArray 4 (castPtr p) >>= \case
+		[r, g, b, a] -> pure (PixelFloat r g b a); _ -> error "never occur"
+	poke p (PixelFloat r g b a) = pokeArray (castPtr p) [r, g, b, a]
+
+glslComputeShaderMain :: SpirV.S 'GlslComputeShader
+glslComputeShaderMain = [glslComputeShader|
 
 #version 460
 layout(local_size_x = 1, local_size_y = 1) in;
 
 layout(binding = 0, rgba8ui) uniform uimageBuffer storageTexelBuffer;
+layout(binding = 1, rgba32f) uniform imageBuffer storageTexelBuffer2;
 layout(push_constant) uniform PushConstant { uint width; } pushConstant;
 
 void
@@ -335,8 +405,43 @@ main()
 {
 	int index = int(gl_GlobalInvocationID.x +
 		gl_GlobalInvocationID.y * pushConstant.width);
+
 	uvec4 px = imageLoad(storageTexelBuffer, index);
-	px.r = 255 - px.r; px.g = 255 - px.g; px.b = 255 - px.b;
+	vec4 px2;
+	px2.r = float(px.r) / 255;
+	px2.g = float(px.g) / 255;
+	px2.b = float(px.b) / 255;
+	px2.a = float(px.a) / 255;
+	imageStore(storageTexelBuffer2, index, px2);
+}
+
+|]
+
+glslComputeShaderMain2 :: SpirV.S 'GlslComputeShader
+glslComputeShaderMain2 = [glslComputeShader|
+
+#version 460
+layout(local_size_x = 1, local_size_y = 1) in;
+
+layout(binding = 0, rgba8ui) uniform uimageBuffer storageTexelBuffer;
+layout(binding = 1, rgba32f) uniform imageBuffer storageTexelBuffer2;
+layout(push_constant) uniform PushConstant { uint width; } pushConstant;
+
+void
+main()
+{
+	int index = int(gl_GlobalInvocationID.x +
+		gl_GlobalInvocationID.y * pushConstant.width);
+
+	vec4 px2 = imageLoad(storageTexelBuffer2, index);
+//	px2.r = 0; px2.g = px2.g; px2.b = 0;
+	px2.r = 1 - px2.r; px2.g = 1 - px2.g; px2.b = 1 - px2.b;
+
+	uvec4 px;
+	px.r = uint(px2.r * 255);
+	px.g = uint(px2.g * 255);
+	px.b = uint(px2.b * 255);
+	px.a = uint(px2.a * 255);
 	imageStore(storageTexelBuffer, index, px);
 }
 
