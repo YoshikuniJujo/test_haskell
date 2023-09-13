@@ -101,23 +101,6 @@ makeNega outf inp outp (sz@(fromIntegral -> w, fromIntegral -> h), v) =
 	pipeline dv qf dslyt \cb ppl ppl2 plyt plyt2 -> do
 		run1 dv qf cb ppl plyt ds w h
 		run2Loop @nm outf inp outp dv qf cb ppl2 plyt2 ds m w h nega sz
-		{-
-		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h nega
-		writePixels outf rslt
-		atomically $ readTChan inp
-		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h red
-		writePixels outf rslt
-		atomically $ readTChan inp
-		putStrLn "begin green"
-		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h green
-		writePixels outf rslt
-		putStrLn "end green"
-		atomically $ readTChan inp
-		putStrLn "begin blue"
-		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h blue
-		writePixels outf rslt
-		putStrLn "end blue"
-		-}
 
 run2Loop :: forall nm4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
