@@ -22,6 +22,8 @@ import Foreign.C.Types
 import Gpu.Vulkan.Object.Base qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Control.Arrow
+import Control.Concurrent
+import Control.Concurrent.STM
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
@@ -78,20 +80,60 @@ import Codec.Picture qualified as P
 import System.Environment
 import System.FilePath
 
-import Gpu.Vulkan.Semaphore qualified as Vk.Smph
-
 main :: IO ()
 main = do
+	inp <- atomically newTChan
+	outp <- atomically newTChan
 	inf : _ <- getArgs
 	let outf = uncurry (++) . first (++ "_nega") $ splitExtension inf
-	writePixels outf =<< makeNega =<< readPixels inf
+	_ <- forkIO do
+		makeNega outf inp =<< readPixels inf
+		atomically $ writeTChan outp ()
 
-makeNega :: Pixels -> IO Pixels
-makeNega (sz@(fromIntegral -> w, fromIntegral -> h), v) =
+	_ <- getLine
+	atomically $ writeTChan inp ()
+	_ <- getLine
+	atomically $ writeTChan inp ()
+	_ <- getLine
+	atomically $ writeTChan inp ()
+	atomically $ readTChan outp
+
+makeNega :: FilePath -> TChan () -> Pixels -> IO ()
+makeNega outf inp (sz@(fromIntegral -> w, fromIntegral -> h), v) =
 	device \phd qf dv -> dscSetLayout dv \dslyt ->
 	buffer phd dv dslyt v \ds (m :: Memory sm sb nm) ->
-	pipeline dv qf dslyt \cb ppl ppl2 plyt plyt2 ->
-	(sz ,) <$> run @nm dv qf cb ppl ppl2 plyt plyt2 ds m w h
+	pipeline dv qf dslyt \cb ppl ppl2 plyt plyt2 -> do
+		run1 dv qf cb ppl plyt ds w h
+		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h nega
+		writePixels outf rslt
+		atomically $ readTChan inp
+		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h red
+		writePixels outf rslt
+		atomically $ readTChan inp
+		putStrLn "begin green"
+		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h green
+		writePixels outf rslt
+		putStrLn "end green"
+		atomically $ readTChan inp
+		putStrLn "begin blue"
+		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h blue
+		writePixels outf rslt
+		putStrLn "end blue"
+
+type Constants =
+	HL.L '[CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat]
+
+nega :: Constants
+nega = mone :* one :* mone :* one :* mone :* one :* one :* zero :* HL.Nil
+
+red :: Constants
+red = one :* zero :* zero :* zero :* zero :* zero :* one :* zero :* HL.Nil
+
+green :: Constants
+green = zero :* zero :* one :* zero :* zero :* zero :* one :* zero :* HL.Nil
+
+blue :: Constants
+blue = zero :* zero :* zero :* zero :* one :* zero :* one :* zero :* HL.Nil
 
 type Memory sm sb nm = Vk.Mm.M sm
 	'[ '( sb, 'Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])]
@@ -305,22 +347,15 @@ pipeline dv qf dslyt f =
 		Vk.CmdBuf.allocateInfoCommandPool = cp,
 		Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 
-run :: forall nm4 w4 objss4 slbts sbtss sd sc sg sg2 sl sl2 sm4 sds . (
+run1 :: forall slbts sbtss sd sc sg sl sds . (
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
-	Storable w4,
-	Vk.Mm.OffsetSize nm4 (VObj.List 256 w4 "") objss4,
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dv.D sd -> Vk.QF.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Word32]) ->
-	Vk.Ppl.Cmpt.C sg2 '(sl2, sbtss, PushConstants) ->
 	Vk.Ppl.Lyt.P sl sbtss '[Word32] ->
-	Vk.Ppl.Lyt.P sl2 sbtss PushConstants ->
-	Vk.DS.D sds slbts ->
-	Vk.Mm.M sm4 objss4 -> Word32 -> Word32 ->
-	IO (V.Vector w4)
-run dv qf cb ppl ppl2 plyt plyt2 ds m w h =
-	Vk.Smph.create dv (def @(Vk.Smph.CreateInfo 'Nothing)) nil' \smph -> do
+	Vk.DS.D sds slbts -> Word32 -> Word32 -> IO ()
+run1 dv qf cb ppl plyt ds w h = do
 	q <- Vk.Dv.getQueue dv qf 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
@@ -330,40 +365,45 @@ run dv qf cb ppl ppl2 plyt plyt2 ds m w h =
 			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
 				ccb plyt (HL.Singleton (HL.Id (w :: Word32)))
 			Vk.Cmd.dispatch ccb w h 1
-	Vk.Queue.submit q (U4 (submitInfo smph) :** HL.Nil) Nothing
-
+	Vk.Queue.submit q (U4 submitInfo :** HL.Nil) Nothing
 	Vk.Queue.waitIdle q
---	threadDelay 100000
---	Vk.CmdBuf.reset cb Vk.CmdBuf.ResetReleaseResourcesBit
+	where
+	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
+	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = TMaybe.N,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
+			Vk.submitInfoCommandBuffers = cb :** HL.Nil,
+			Vk.submitInfoSignalSemaphores = HL.Nil }
 
+run2 :: forall nm4 w4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
+	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
+	sbtss ~ '[slbts],
+	Storable w4,
+	Vk.Mm.OffsetSize nm4 (VObj.List 256 w4 "") objss4,
+	InfixIndex '[slbts] sbtss ) =>
+	Vk.Dv.D sd -> Vk.QF.Index -> Vk.CmdBuf.C sc ->
+	Vk.Ppl.Cmpt.C sg2 '(sl2, sbtss, PushConstants) ->
+	Vk.Ppl.Lyt.P sl2 sbtss PushConstants ->
+	Vk.DS.D sds slbts ->
+	Vk.Mm.M sm4 objss4 -> Word32 -> Word32 -> Constants -> IO (V.Vector w4)
+run2 dv qf cb ppl2 plyt2 ds m w h cs = do
+	q <- Vk.Dv.getQueue dv qf 0
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl2 \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb plyt2
 				(U2 ds :** HL.Nil)
 				(HL.Singleton $ HL.Nil :** HL.Nil :** HL.Nil)
 			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
---				ccb plyt2 (HL.Singleton (HL.Id (w :: Word32)))
-				ccb plyt2 ((w :: Word32) :*
-					mone :* one :* mone :* one :*
-					mone :* one :* one :* one :*
-					HL.Nil)
+				ccb plyt2 ((w :: Word32) :* cs)
 			Vk.Cmd.dispatch ccb w h 1
-	Vk.Queue.submit q (U4 (submitInfo2 smph) :** HL.Nil) Nothing
+	Vk.Queue.submit q (U4 submitInfo2 :** HL.Nil) Nothing
 	Vk.Queue.waitIdle q
 	Vk.Mm.read @nm4 @(VObj.List 256 w4 "") @(V.Vector w4) dv m def
 	where
-	submitInfo :: Vk.Smph.S s -> Vk.SubmitInfo 'Nothing '[] '[sc] '[s]
-	submitInfo smph = Vk.SubmitInfo {
+	submitInfo2 :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
+	submitInfo2 = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
-			Vk.submitInfoCommandBuffers = cb :** HL.Nil,
-			Vk.submitInfoSignalSemaphores = HL.Singleton smph }
-	submitInfo2 :: Vk.Smph.S s -> Vk.SubmitInfo 'Nothing '[s] '[sc] '[]
-	submitInfo2 smph = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Singleton
-				$ Vk.SemaphorePipelineStageFlags smph
-					Vk.Ppl.StageComputeShaderBit,
 			Vk.submitInfoCommandBuffers = cb :** HL.Nil,
 			Vk.submitInfoSignalSemaphores = HL.Nil }
 
