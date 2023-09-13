@@ -79,16 +79,14 @@ import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 import Codec.Picture qualified as P
 import System.Environment
-import System.FilePath
 
 main :: IO ()
 main = do
 	inp <- atomically newTChan
 	outp <- atomically newTChan
 	inf : _ <- getArgs
-	let outf = uncurry (++) . first (++ "_nega") $ splitExtension inf
 	_ <- forkIO do
-		makeNega outf inp outp =<< readPixels inf
+		makeNega "autogen/nega_result.png" inp outp =<< readPixels inf
 		atomically $ writeTChan outp False
 
 	fix \rec -> do
