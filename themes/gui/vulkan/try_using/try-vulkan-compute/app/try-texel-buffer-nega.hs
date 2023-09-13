@@ -22,6 +22,7 @@ import Foreign.C.Types
 import Gpu.Vulkan.Object.Base qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Control.Arrow
+import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Default
@@ -87,23 +88,22 @@ main = do
 	inf : _ <- getArgs
 	let outf = uncurry (++) . first (++ "_nega") $ splitExtension inf
 	_ <- forkIO do
-		makeNega outf inp =<< readPixels inf
-		atomically $ writeTChan outp ()
+		makeNega outf inp outp =<< readPixels inf
+		atomically $ writeTChan outp False
 
-	_ <- getLine
-	atomically $ writeTChan inp ()
-	_ <- getLine
-	atomically $ writeTChan inp ()
-	_ <- getLine
-	atomically $ writeTChan inp ()
-	atomically $ readTChan outp
+	fix \rec -> do
+		atomically . writeTChan inp =<< getLine
+		b <- atomically $ readTChan outp
+		if b then rec else pure ()
 
-makeNega :: FilePath -> TChan () -> Pixels -> IO ()
-makeNega outf inp (sz@(fromIntegral -> w, fromIntegral -> h), v) =
+makeNega :: FilePath -> TChan String -> TChan Bool -> Pixels -> IO ()
+makeNega outf inp outp (sz@(fromIntegral -> w, fromIntegral -> h), v) =
 	device \phd qf dv -> dscSetLayout dv \dslyt ->
 	buffer phd dv dslyt v \ds (m :: Memory sm sb nm) ->
 	pipeline dv qf dslyt \cb ppl ppl2 plyt plyt2 -> do
 		run1 dv qf cb ppl plyt ds w h
+		run2Loop @nm outf inp outp dv qf cb ppl2 plyt2 ds m w h nega sz
+		{-
 		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h nega
 		writePixels outf rslt
 		atomically $ readTChan inp
@@ -119,6 +119,39 @@ makeNega outf inp (sz@(fromIntegral -> w, fromIntegral -> h), v) =
 		rslt <- (sz ,) <$> run2 @nm dv qf cb ppl2 plyt2 ds m w h blue
 		writePixels outf rslt
 		putStrLn "end blue"
+		-}
+
+run2Loop :: forall nm4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
+	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
+	sbtss ~ '[slbts],
+	Vk.Mm.OffsetSize nm4 (VObj.List 256 Pixel "") objss4,
+	InfixIndex '[slbts] sbtss ) =>
+	FilePath -> TChan String -> TChan Bool ->
+	Vk.Dv.D sd -> Vk.QF.Index -> Vk.CmdBuf.C sc ->
+	Vk.Ppl.Cmpt.C sg2 '(sl2, sbtss, PushConstants) ->
+	Vk.Ppl.Lyt.P sl2 sbtss PushConstants ->
+	Vk.DS.D sds slbts ->
+	Vk.Mm.M sm4 objss4 -> Word32 -> Word32 -> Constants -> (Int, Int) ->
+	IO ()
+run2Loop outf inp outp dv qf cb ppl2 plyt2 ds m w h cs sz = do
+	rslt <- (sz ,) <$> run2 @nm4 @_ @objss4 dv qf cb ppl2 plyt2 ds m w h cs
+	writePixels outf rslt
+	fix \rec -> do
+		cmd <- atomically $ readTChan inp
+		case (cmd, nameConstant cmd) of
+			("quit", _) -> pure ()
+			(_, Just c) -> do
+				atomically $ writeTChan outp True
+				run2Loop @nm4 @objss4 outf inp outp dv qf cb ppl2 plyt2 ds m w h c sz
+			(_, Nothing) -> do
+				atomically $ writeTChan outp True
+				rec
+
+nameConstant :: String -> Maybe Constants
+nameConstant = \case
+	"nega" -> Just nega; "red" -> Just red
+	"green" -> Just green; "blue" -> Just blue
+	_ -> Nothing
 
 type Constants =
 	HL.L '[CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat]
