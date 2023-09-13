@@ -24,7 +24,7 @@ import Gpu.Vulkan.Object qualified as VObj
 import Control.Arrow
 import Control.Monad.Fix
 import Control.Concurrent
-import Control.Concurrent.STM
+import Control.Concurrent.STM hiding (check)
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
@@ -97,10 +97,11 @@ main = do
 makeNega :: FilePath -> TChan String -> TChan Bool -> Pixels -> IO ()
 makeNega outf inp outp (sz@(fromIntegral -> w, fromIntegral -> h), v) =
 	device \phd qf dv -> dscSetLayout dv \dslyt ->
-	buffer phd dv dslyt v \ds (m :: Memory sm sb nm) ->
-	pipeline dv qf dslyt \cb ppl ppl2 plyt plyt2 -> do
-		run1 dv qf cb ppl plyt ds w h
-		run2Loop @nm outf inp outp dv qf cb ppl2 plyt2 ds m w h nega sz
+	descriptorSet dv dslyt \ds ->
+	buffer phd dv v ds \(m :: Memory sm sb nm) ->
+	pipeline dv qf dslyt \cb ppl ppl2 plyt plyt2 ->
+	run1 dv qf cb ppl plyt ds w h >>
+	run2Loop @nm outf inp outp dv qf cb ppl2 plyt2 ds m w h nega sz
 
 run2Loop :: forall nm4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
@@ -130,15 +131,16 @@ run2Loop outf inp outp dv qf cb ppl2 plyt2 ds m w h cs sz = do
 
 nameConstant :: String -> Maybe Constants
 nameConstant = \case
-	"nega" -> Just nega; "red" -> Just red
-	"green" -> Just green; "blue" -> Just blue
+	"posi" -> Just posi; "nega" -> Just nega;
+	"red" -> Just red; "green" -> Just green; "blue" -> Just blue
 	_ -> Nothing
 
 type Constants =
 	HL.L '[CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat]
 
-nega :: Constants
+nega, posi :: Constants
 nega = mone :* one :* mone :* one :* mone :* one :* one :* zero :* HL.Nil
+posi = one :* zero :* one :* zero :* one :* zero :* one :* zero :* HL.Nil
 
 red :: Constants
 red = one :* zero :* zero :* zero :* zero :* zero :* one :* zero :* HL.Nil
@@ -200,24 +202,15 @@ dscSetLayout dv = Vk.DSLyt.create dv dscSetLayoutInfo TPMaybe.N
 		Vk.DSLyt.bindingBufferViewStageFlags =
 			Vk.ShaderStageComputeBit }
 
-buffer :: forall bts sd sl nm a . (
+descriptorSet :: forall bts sd sl a .
 	Default (HL.PL (HL.PL KObj.Length)
-		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
-	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0 ) =>
-	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts -> V.Vector Pixel -> (
-		forall sds sm sb .
-		Vk.DS.D sds '(sl, bts) -> Memory sm sb nm -> IO a ) -> IO a
-buffer phd dv lyt v f =
+		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)) =>
+	Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
+	(forall sds .  Vk.DS.D sds '(sl, bts) -> IO a) -> IO a
+descriptorSet dv lyt f =
 	Vk.DP.create dv poolInfo nil' \pl ->
 	Vk.DS.allocateDs dv (setInfo pl)
-		\((ds :: Vk.DS.D sds '(sl, bts)) :** HL.Nil) ->
-	bufferNew dv phd v \(bd :: Vk.Bff.Binded sm sb nm '[PixelList, PixelFloatList]) m ->
-	Vk.BffVw.create dv (bvInfo bd) nil' \(bv :: Vk.BffVw.B sbv "" Pixel) ->
-	Vk.BffVw.create dv (bvInfo bd) nil' \(bv2 :: Vk.BffVw.B sbv2 "" PixelFloat) ->
-	Vk.DS.updateDs dv
-		(U5 (write ds bv) :** U5 (write2 ds bv2) :** HL.Nil)
-		HL.Nil >> f ds m
+		\((ds :: Vk.DS.D sds '(sl, bts)) :** HL.Nil) -> f ds
 	where
 	poolInfo = Vk.DP.CreateInfo {
 		Vk.DP.createInfoNext = TMaybe.N,
@@ -232,39 +225,60 @@ buffer phd dv lyt v f =
 		Vk.DS.allocateInfoNext = TMaybe.N,
 		Vk.DS.allocateInfoDescriptorPool = pl,
 		Vk.DS.allocateInfoSetLayouts = U2 lyt :** HL.Nil }
+
+buffer :: forall bts sd sl nm sds a . (
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0 ) =>
+	Vk.Phd.P -> Vk.Dv.D sd -> V.Vector Pixel -> Vk.DS.D sds '(sl, bts) ->
+	(forall sm sb .  Memory sm sb nm -> IO a) -> IO a
+buffer phd dv v ds f =
+	Vk.Bff.group dv nil' \bgrp -> Vk.Mm.group dv nil' \mgrp ->
+	bufferNew dv phd v bgrp mgrp >>= \(bd, m) ->
+	Vk.BffVw.create dv (bvInfo bd) nil' \(bv :: Vk.BffVw.B sbv "" Pixel) ->
+	Vk.BffVw.create dv (bvInfo bd) nil' \(bv2 :: Vk.BffVw.B sbv2 "" PixelFloat) ->
+	Vk.DS.updateDs dv
+		(U5 (write bv) :** U5 (write2 bv2) :** HL.Nil)
+		HL.Nil >> f m
+	where
 	bvInfo bd = Vk.BffVw.CreateInfo {
 		Vk.BffVw.createInfoNext = TMaybe.N,
 		Vk.BffVw.createInfoFlags = zeroBits,
 		Vk.BffVw.createInfoBuffer = U4 bd }
-	write :: Vk.DS.D sds '(sl, bts) -> Vk.BffVw.B sb "" Pixel ->
+	write :: Vk.BffVw.B sb "" Pixel ->
 		Vk.DS.Write 'Nothing sds '(sl, bts)
 			(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", Pixel)]) 0
-	write ds bv = Vk.DS.Write {
+	write bv = Vk.DS.Write {
 		Vk.DS.writeNext = TMaybe.N,
 		Vk.DS.writeDstSet = ds,
 		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DS.writeSources =
 			Vk.DS.TexelBufferViews . HL.Singleton $ U3 bv }
-	write2 :: Vk.DS.D sds '(sl, bts) -> Vk.BffVw.B sb "" PixelFloat ->
+	write2 :: Vk.BffVw.B sb "" PixelFloat ->
 		Vk.DS.Write 'Nothing sds '(sl, bts)
 			(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", PixelFloat)]) 0
-	write2 ds bv = Vk.DS.Write {
+	write2 bv = Vk.DS.Write {
 		Vk.DS.writeNext = TMaybe.N,
 		Vk.DS.writeDstSet = ds,
 		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DS.writeSources =
 			Vk.DS.TexelBufferViews . HL.Singleton $ U3 bv }
 
-bufferNew :: forall sd nm a .
-	Vk.Dv.D sd -> Vk.Phd.P -> V.Vector Pixel -> (forall sb sm .
-		Vk.Bff.Binded sm sb nm '[PixelList, PixelFloatList] -> Memory sm sb nm ->
-		IO a) -> IO a
-bufferNew dv phd v f =
-	Vk.Bff.create dv bufferInfo nil' \bffr ->
+{-# COMPLETE AlwaysRight #-}
+
+pattern AlwaysRight :: b -> Either a b
+pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
+
+bufferNew :: forall sd sbgrp nm smgrp .
+	Vk.Dv.D sd -> Vk.Phd.P -> V.Vector Pixel ->
+	Vk.Bff.Group 'Nothing sbgrp () nm '[PixelList, PixelFloatList] ->
+	Vk.Mm.Group smgrp () '[ '(sbgrp, Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])] ->
+	IO (Vk.Bff.Binded smgrp sbgrp nm '[PixelList, PixelFloatList], Memory smgrp sbgrp nm)
+bufferNew dv phd v bgrp mgrp =
+	Vk.Bff.create' dv bgrp () bufferInfo >>= \(AlwaysRight bffr) ->
 	memoryInfo bffr >>= \mi ->
-	Vk.Mm.allocateBind dv (U2 (Vk.Mm.Buffer bffr) :** HL.Nil) mi nil'
-		\(U2 (Vk.Mm.BufferBinded bnd) :** HL.Nil) m ->
-	Vk.Mm.write @nm @PixelList dv m def v >> f bnd m
+	Vk.Mm.allocateBind' dv mgrp () (U2 (Vk.Mm.Buffer bffr) :** HL.Nil) mi nil' >>=
+		\(AlwaysRight (U2 (Vk.Mm.BufferBinded bnd) :** HL.Nil, m)) ->
+	Vk.Mm.write @nm @PixelList dv m def v >> pure (bnd, m)
 	where
 	bufferInfo = Vk.Bff.CreateInfo {
 		Vk.Bff.createInfoNext = TMaybe.N,
