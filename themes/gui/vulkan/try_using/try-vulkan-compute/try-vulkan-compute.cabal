@@ -45,6 +45,7 @@ library
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -52,8 +53,10 @@ library
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -74,6 +77,7 @@ executable try-bitonic-sort
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -81,8 +85,10 @@ executable try-bitonic-sort
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -104,6 +110,7 @@ executable try-bitonic-sort-cpu
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -111,8 +118,10 @@ executable try-bitonic-sort-cpu
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -134,6 +143,7 @@ executable try-bitonic-sort-new
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -141,8 +151,10 @@ executable try-bitonic-sort-new
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -164,6 +176,7 @@ executable try-data-list-sort
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -171,8 +184,10 @@ executable try-data-list-sort
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -194,6 +209,7 @@ executable try-hello
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -201,8 +217,10 @@ executable try-hello
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -224,6 +242,7 @@ executable try-hello-world
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -231,8 +250,10 @@ executable try-hello-world
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -254,6 +275,7 @@ executable try-mandelbrot
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -261,8 +283,10 @@ executable try-mandelbrot
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -284,6 +308,7 @@ executable try-mandelbrot-cpu
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -291,8 +316,10 @@ executable try-mandelbrot-cpu
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -314,6 +341,7 @@ executable try-mandelbrot-hs
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -321,8 +349,10 @@ executable try-mandelbrot-hs
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -344,6 +374,7 @@ executable try-push-constant
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -351,8 +382,10 @@ executable try-push-constant
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -374,6 +407,7 @@ executable try-quick-sort
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -381,8 +415,10 @@ executable try-quick-sort
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -404,6 +440,7 @@ executable try-saitan-simple
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -411,8 +448,10 @@ executable try-saitan-simple
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -434,6 +473,7 @@ executable try-texel-buffer-nega
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -441,8 +481,10 @@ executable try-texel-buffer-nega
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
@@ -465,6 +507,7 @@ test-suite try-vulkan-compute-test
       JuicyPixels
     , array
     , base >=4.7 && <5
+    , bytestring
     , data-default
     , filepath
     , parallel
@@ -472,8 +515,10 @@ test-suite try-vulkan-compute-test
     , ranged-list
     , stm
     , temporary
+    , text
     , time
     , try-gpu-vulkan
+    , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v

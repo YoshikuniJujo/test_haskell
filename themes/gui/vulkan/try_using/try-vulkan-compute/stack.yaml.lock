@@ -33,6 +33,19 @@ packages:
 - completed:
     commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
     git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-gpu-vulkan-ext-debug-utils
+    pantry-tree:
+      sha256: b7bb03c13ee62dcf76b326af807ff99b75511042fc6359f05c8a5d751c69452f
+      size: 765
+    subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
+    version: 0.1.0.5
+  original:
+    commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
+- completed:
+    commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle
     pantry-tree:
       sha256: fcedf6f1f611728afa658d6f3b5095fbb2327c42f3ef93d1c94149639d843e79
@@ -59,6 +72,19 @@ packages:
 - completed:
     commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
     git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-vulkan-middle-ext-debug-utils
+    pantry-tree:
+      sha256: 8dd107d19c1860f014978ff48e808fc8e78b85dcfa9ee457ccd19e9a3d3c446e
+      size: 1068
+    subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
+    version: 0.1.0.3
+  original:
+    commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
+- completed:
+    commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
       sha256: 95cd7e3b9b9c67ad295861493fdf91e4101b23dfd4afc47ed713405efca56f8a
@@ -82,6 +108,19 @@ packages:
     commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-khr
+- completed:
+    commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-vulkan-core-ext-debug-utils
+    pantry-tree:
+      sha256: 1edaaec238e311ce6b6837f9e15866878a5f06bb111f537594aa74a05793ed5c
+      size: 751
+    subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
+    version: 0.1.0.0
+  original:
+    commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
     commit: 4af13985346c90f0a16a31eea6aa1f58d9cbbcdc
     git: https://github.com/YoshikuniJujo/test_haskell
