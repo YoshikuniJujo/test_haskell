@@ -322,7 +322,7 @@ createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 		'Vk.DscSetLyt.Buffer
 			'[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Img.Group si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Img.Group 'Nothing si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Dvc.Mem.Group sm Glfw.Key '[
 		'(si, 'Vk.Dvc.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
 	Vk.ImgVw.Group siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
@@ -946,7 +946,7 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Img.Group 'Nothing sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Group smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc -> Glfw.Key -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
@@ -1011,7 +1011,7 @@ instance KObj.IsImage MyImage where
 
 createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group sim Glfw.Key nm fmt ->
+	Vk.Img.Group 'Nothing sim Glfw.Key nm fmt ->
 	Vk.Mem.Group smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	Glfw.Key ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
@@ -1020,7 +1020,7 @@ createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 		Vk.Dvc.Mem.M smm
 			'[ '(sim, 'Vk.Mem.ImageArg nm fmt)] )
 createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
-	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng k imageInfo nil'
+	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng k imageInfo
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
