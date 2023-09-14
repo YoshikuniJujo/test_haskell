@@ -88,6 +88,8 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 
 import Data.Text.IO qualified as Txt
 
+import Data.Map qualified as M
+
 main :: IO ()
 main = do
 	io@(inp, outp) <- (,) <$> atomically newTChan <*> atomically newTChan
@@ -118,7 +120,9 @@ makeNega inf outf io =
 	openPixels dvs pplplyt grps ("initial" :: String) pxs >>=
 		\(szwhm :: (Size, Memory sm sb nm)) ->
 
-	mainLoop @nm dvs pplplyt pplplyt2 io grps outf szwhm nega
+	atomically (newTVar . M.singleton "initial" $ fst szwhm) >>= \szwhs ->
+
+	mainLoop @nm dvs pplplyt pplplyt2 io grps szwhs outf szwhm nega
 
 openPixels :: (
 	'(sl, bts) ~ slbts,
@@ -148,8 +152,10 @@ mainLoop :: forall nm4 objss4 slbts sl bts sbtss sd sc sg1 sl1 sg2 sl2 sm4 sds s
 	PplPlyt sg1 sl1 slbts '[Word32] ->
 	PplPlyt sg2 sl2 slbts PushConstants ->
 	InOut -> Groups String sm4 sb nm4 sbp sbpf ->
+	TVar (M.Map String Size) ->
 	FilePath -> (Size, Vk.Mm.M sm4 objss4) -> Constants -> IO ()
-mainLoop dvs@(_, dv, qf, cb, ds) pplplyt pplplyt2@(ppl2, plyt2) io@(inp, outp) grps outf szwhm@((sz, (w, h)), m) cs = do
+mainLoop dvs@(_, dv, qf, cb, ds) pplplyt pplplyt2@(ppl2, plyt2) io@(inp, outp)
+	grps@(_, mgrp, pgrp, pfgrp) szwhs outf szwhm@((sz, (w, h)), m) cs = do
 	rslt <- (sz ,) <$> run2 @nm4 @_ @objss4 dv qf cb ppl2 plyt2 ds m w h cs
 	writePixels outf rslt
 	fix \rec -> do
@@ -161,10 +167,19 @@ mainLoop dvs@(_, dv, qf, cb, ds) pplplyt pplplyt2@(ppl2, plyt2) io@(inp, outp) g
 				readPixels io fp >>= \pxs ->
 				openPixels dvs pplplyt grps nm pxs >>=
 					\(szwhm' :: (Size, Memory sm sb nm)) ->
-				mainLoop @nm dvs pplplyt pplplyt2 io grps outf szwhm' cs
+				atomically (modifyTVar szwhs . M.insert nm $ fst szwhm') >>
+				mainLoop @nm dvs pplplyt pplplyt2 io grps szwhs outf szwhm' cs
+			(["select", nm], _) -> do
+				atomically $ writeTChan outp True
+				Just m' <- Vk.Mm.lookup mgrp nm
+				Just bp <- Vk.BffVw.lookup pgrp nm
+				Just bpf <- Vk.BffVw.lookup pfgrp nm
+				Just szwh <- M.lookup nm <$> atomically (readTVar szwhs)
+				update dv ds bp bpf
+				mainLoop @nm4 dvs pplplyt pplplyt2 io grps szwhs outf (szwh, m') cs
 			(_, Just c) -> do
 				atomically $ writeTChan outp True
-				mainLoop @nm4 @objss4 dvs pplplyt pplplyt2 io grps outf szwhm c
+				mainLoop @nm4 @objss4 dvs pplplyt pplplyt2 io grps szwhs outf szwhm c
 			(_, Nothing) -> do
 				atomically $ writeTChan outp True
 				rec
@@ -297,32 +312,37 @@ buffer phd dv ds (bgrp, mgrp, pgrp, pfgrp) k v =
 	bufferNew dv phd v bgrp mgrp k >>= \(bd, m) ->
 	Vk.BffVw.create' dv pgrp k (bvInfo bd) >>= \(Right bv) ->
 	Vk.BffVw.create' dv pfgrp k (bvInfo bd) >>= \(Right bv2) ->
-	Vk.DS.updateDs dv
-		(U5 (write bv) :** U5 (write2 bv2) :** HL.Nil)
-		HL.Nil >> pure m
+	update dv ds bv bv2 >> pure m
 	where
 	bvInfo bd = Vk.BffVw.CreateInfo {
 		Vk.BffVw.createInfoNext = TMaybe.N,
 		Vk.BffVw.createInfoFlags = zeroBits,
 		Vk.BffVw.createInfoBuffer = U4 bd }
-	write :: Vk.BffVw.B sb "" Pixel ->
-		Vk.DS.Write 'Nothing sds '(sl, bts)
-			(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", Pixel)]) 0
-	write bv = Vk.DS.Write {
+
+update :: forall sd sds sl bts sb sb2 . (
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0 ) =>
+	Vk.Dv.D sd -> Vk.DS.D sds '(sl, bts) ->
+	Vk.BffVw.B sb "" Pixel -> Vk.BffVw.B sb2 "" PixelFloat -> IO ()
+update dv ds bv bv2 =
+	Vk.DS.updateDs dv (U5 write :** U5 write2 :** HL.Nil) HL.Nil
+	where
+	write :: Vk.DS.Write 'Nothing sds '(sl, bts)
+		(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", Pixel)]) 0
+	write = Vk.DS.Write {
 		Vk.DS.writeNext = TMaybe.N,
 		Vk.DS.writeDstSet = ds,
 		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DS.writeSources =
 			Vk.DS.TexelBufferViews . HL.Singleton $ U3 bv }
-	write2 :: Vk.BffVw.B sb "" PixelFloat ->
-		Vk.DS.Write 'Nothing sds '(sl, bts)
-			(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", PixelFloat)]) 0
-	write2 bv = Vk.DS.Write {
+	write2 :: Vk.DS.Write 'Nothing sds '(sl, bts)
+		(Vk.DS.WriteSourcesArgBufferView '[ '(sb2, "", PixelFloat)]) 0
+	write2 = Vk.DS.Write {
 		Vk.DS.writeNext = TMaybe.N,
 		Vk.DS.writeDstSet = ds,
 		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DS.writeSources =
-			Vk.DS.TexelBufferViews . HL.Singleton $ U3 bv }
+			Vk.DS.TexelBufferViews . HL.Singleton $ U3 bv2 }
 
 {-# COMPLETE AlwaysRight #-}
 
