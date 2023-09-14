@@ -35,6 +35,7 @@ import Data.TypeLevel.List
 import Data.HeteroParList qualified as HL
 import Data.HeteroParList (pattern (:*), pattern (:*.), pattern (:**))
 import Data.Word
+import Data.ByteString qualified as BS
 
 import qualified Data.Vector.Storable as V
 
@@ -100,7 +101,8 @@ makeNega inf outf inp outp =
 	descriptorSet dv dslyt \ds -> groups dv \grps ->
 	pipeline dv qf dslyt \cb ppl ppl2 plyt plyt2 ->
 
-	openPixels phd dv qf cb ppl plyt ds grps ("initial" :: String) inf >>=
+	readPixels inf >>= \pxs ->
+	openPixels phd dv qf cb ppl plyt ds grps ("initial" :: String) pxs >>=
 		\(sz, w, h, m :: Memory sm sb nm) ->
 	mainLoop @nm outf inp outp dv qf cb ppl2 plyt2 ds m w h nega sz
 
@@ -113,10 +115,10 @@ openPixels :: (
 	Vk.Ppl.Cmpt.C sg '(sl1, '[ '(sl2, bts)], '[Word32]) ->
 	Vk.Ppl.Lyt.P sl1 '[ '(sl2, bts)] '[Word32] ->
 	Vk.DS.D sds '(sl2, bts) ->
-	Groups k sm sb nm sbp sbpf -> k -> FilePath ->
+	Groups k sm sb nm sbp sbpf -> k -> Pixels ->
 	IO ((Int, Int), Word32, Word32, Memory sm sb nm)
-openPixels phd dv qf cb ppl plyt ds grps k inf =
-	readPixels inf >>= \(sz@(fromIntegral -> w, fromIntegral -> h), v) ->
+openPixels phd dv qf cb ppl plyt ds grps k pxs =
+	pure pxs >>= \(sz@(fromIntegral -> w, fromIntegral -> h), v) ->
 	buffer phd dv ds grps k v >>= \(m :: Memory sm sb nm) ->
 	run1 dv qf cb ppl plyt ds w h >> pure (sz, w, h, m)
 
@@ -479,6 +481,9 @@ readPixels fp = (<$> P.readPng fp) \case
 	Right (P.ImageRGBA8 img) -> ((P.imageWidth &&& P.imageHeight) &&&
 			V.unsafeCast . P.imageData) img
 	_ -> error "readPixels: can't get pixels"
+
+-- tryReadFile :: FilePath -> IO (Either IOError BS.ByteString)
+-- tryReadFile = try . readFile
 
 writePixels :: FilePath -> Pixels -> IO ()
 writePixels fp ((w, h), pxs) =
