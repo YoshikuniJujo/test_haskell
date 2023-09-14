@@ -73,31 +73,30 @@ create (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> macd) f = bracket
 	(\i -> M.destroy mdvc i macd)
 	(f .I)
 
-newtype Group s k nm fmt = Group (M.Group s k)
+data Group ma s k nm fmt =
+	Group (TPMaybe.M (U2 AllocationCallbacks.A) ma) (M.Group s k)
 
 group :: AllocationCallbacks.ToMiddle mac =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . Group s k nm fmt -> IO a) -> IO a
-group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) f =
-	M.group mdvc mac (f . Group)
+	(forall s . Group mac s k nm fmt -> IO a) -> IO a
+group (Device.D mdvc) ma@(AllocationCallbacks.toMiddle -> mac) f =
+	M.group mdvc mac (f . Group ma)
 
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> Group sm k nm fmt -> k -> CreateInfo mn fmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	Device.D sd -> Group mac sm k nm fmt -> k -> CreateInfo mn fmt ->
 	IO (Either String (I sm nm fmt))
-create' (Device.D mdvc) (Group mngr) k ci (AllocationCallbacks.toMiddle -> macd) =
+create' (Device.D mdvc) (Group (AllocationCallbacks.toMiddle -> macd) mngr) k ci =
 	(I <$>) <$> M.create' mdvc mngr k (createInfoToMiddle ci) macd
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> Group sm k nm fmt -> k ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
-destroy (Device.D mdvc) (Group mngr) k (AllocationCallbacks.toMiddle -> mac) =
+	Device.D sd -> Group mac sm k nm fmt -> k -> IO (Either String ())
+destroy (Device.D mdvc) (Group (AllocationCallbacks.toMiddle -> mac) mngr) k =
 	M.destroy' mdvc mngr k mac
 
-lookup :: Ord k => Group smng k nm fmt -> k -> IO (Maybe (I smng nm fmt))
-lookup (Group mng) k = (I <$>) <$> M.lookup mng k
+lookup :: Ord k => Group ma smng k nm fmt -> k -> IO (Maybe (I smng nm fmt))
+lookup (Group _ mng) k = (I <$>) <$> M.lookup mng k
 
 recreate :: (
 	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
