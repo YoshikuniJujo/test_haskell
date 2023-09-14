@@ -19,7 +19,7 @@ import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 
 validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerNameKhronosValidation]
+validationLayers = [Vk.layerKhronosValidation]
 
 extensionName :: Vk.Ist.ExtensionName
 extensionName = Vk.Ext.DbgUtls.extensionName

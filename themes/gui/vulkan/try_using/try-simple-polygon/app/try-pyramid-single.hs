@@ -126,7 +126,7 @@ import Tools
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
-import Gpu.Vulkan.Pipeline.VertexInputStateNew qualified as Vk.Ppl.VtxInpSt
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 import Graphics.SimplePolygon.Instance qualified as Ist
@@ -187,7 +187,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerNameKhronosValidation]
+validationLayers = [Vk.layerKhronosValidation]
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
 run w inst g cev =

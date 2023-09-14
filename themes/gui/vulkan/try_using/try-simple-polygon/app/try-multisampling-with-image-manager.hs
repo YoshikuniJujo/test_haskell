@@ -345,7 +345,7 @@ createLogicalDevice vld phdvc qfis f =
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
 validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerNameKhronosValidation]
+validationLayers = [Vk.layerKhronosValidation]
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b

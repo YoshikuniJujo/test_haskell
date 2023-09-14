@@ -142,7 +142,7 @@ enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerNameKhronosValidation]
+validationLayers = [Vk.layerKhronosValidation]
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
