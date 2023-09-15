@@ -147,12 +147,12 @@ main = do
 			else run win inst g inp outp
 	untilEnd inp outp
 
-untilEnd :: TChan UTCTime -> TChan Bool -> IO ()
+untilEnd :: TChan (UTCTime, [Rectangle]) -> TChan Bool -> IO ()
 untilEnd inp outp = do
 	threadDelay 10000
 	now <- getCurrentTime
 	o <- atomically do
-		writeTChan inp now
+		writeTChan inp (now, instances)
 		e <- isEmptyTChan outp
 		if e then pure Nothing else Just <$> readTChan outp
 	case o of
@@ -248,7 +248,7 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si ->
-	FramebufferResized -> TChan UTCTime -> TChan Bool -> IO ()
+	FramebufferResized -> TChan (UTCTime, [Rectangle]) -> TChan Bool -> IO ()
 run w inst g inp outp =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
@@ -270,8 +270,9 @@ run w inst g inp outp =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	createRectangleBuffer phdv dv gq cp \rb ->
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
+
+	createRectangleBuffer' phdv dv rbgrp rmgrp () gq cp >>= \rb ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb sos tm inp outp cp
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -833,23 +834,6 @@ createIndexBuffer phdvc dvc gq cp f =
 		copyBuffer dvc gq cp b' b
 	f b
 
-createRectangleBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""] -> IO a ) -> IO a
-createRectangleBuffer phdvc dvc gq cp f =
-	Vk.Bffr.group dvc nil' \bgrp -> Vk.Mem.group dvc nil' \mgrp ->
-	createBufferList' phdvc dvc bgrp mgrp () (fromIntegral $ length instances)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit >>= \(b, _) -> do
-	createBufferList phdvc dvc (fromIntegral $ length instances)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit )
-			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
-		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
-		copyBuffer dvc gq cp b' b
-	f b
-
 createRectangleBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 Rectangle ""]  ->
 	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] ->
@@ -867,24 +851,6 @@ createRectangleBuffer' phdvc dvc bgrp mgrp k gq cp =
 		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
 		copyBuffer dvc gq cp b' b
 	pure b
-
-{-
-createRectangleBuffer' :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q ->
-	Vk.CmdPool.C sc ->
-	Vk.Bffr.Group sgrp () "rectangle-buffer" '[VObj.LIst 256 t ""] ->
-	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
-createRectangleBuffer' phdvc dvc gq cp grp =
-	createBufferList phdvc dvc (fromIntegral $ length instances)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList phdvc dvc (fromIntegral $ length instances)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
-	copyBuffer dvc gq cp b' b
-	f b
-	-}
 
 createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom 256 UniformBufferObject 'Nothing]  ->
@@ -1160,11 +1126,11 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan UTCTime -> TChan Bool -> Vk.CmdPool.C sc -> IO ()
+	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan (UTCTime, [Rectangle]) -> TChan Bool -> Vk.CmdPool.C sc -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm0 inp outp cp = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
-		tm <- atomically $ readTChan inp
+		(tm, rects) <- atomically $ readTChan inp
 --		createRectangleBuffer phdvc dvc gq cp \rb ->
 		id $
 			runLoop w sfc phdvc qfis dvc gq pq
