@@ -41,6 +41,7 @@ library
       GeneralFoldable
       Generics.TypeList
       GetSizeAlignment
+      Graphic.Shape
       HeteroList.First
       HeteroList.IndexedType
       HeteroParList
