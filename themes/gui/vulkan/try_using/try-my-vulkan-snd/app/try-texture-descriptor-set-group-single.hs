@@ -330,7 +330,7 @@ createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Img.Group 'Nothing si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Group sm Glfw.Key '[
 		'(si, 'Vk.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
-	Vk.ImgVw.Group siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.ImgVw.Group 'Nothing siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
 createTexture phdv dv gq cp grp mng mmng ivmng txsmplr kis k = let
 	tximgfp = kis M.! k in
@@ -338,7 +338,7 @@ createTexture phdv dv gq cp grp mng mmng ivmng txsmplr kis k = let
 	Vk.DscSet.lookup grp k >>= \(Just (HeteroParList.Singleton ubds')) ->
 	createTextureImage' phdv dv mng mmng gq cp k tximgfp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng k (mkImageViewCreateInfo tximg) nil' >>= \(AlwaysRight tximgvw) ->
+		dv ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSetTex dv ubds' tximgvw txsmplr
 
 updateTexture :: Ord k => Vk.Dvc.D sd ->
@@ -346,7 +346,7 @@ updateTexture :: Ord k => Vk.Dvc.D sd ->
 		'Vk.DscSetLyt.Buffer
 			'[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Smplr.S ss -> Vk.ImgVw.Group siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Smplr.S ss -> Vk.ImgVw.Group 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	k -> IO ()
 updateTexture dv udbs txsmplr imng k = do
 	Just tximgvw <- Vk.ImgVw.lookup imng k
