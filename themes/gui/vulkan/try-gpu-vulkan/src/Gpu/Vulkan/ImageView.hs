@@ -76,32 +76,31 @@ create (Device.D d) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 	(\i -> M.destroy d i mac) (f . I)
 
 group ::
-	AllocationCallbacks.ToMiddle mac =>
-	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . Group s k nm ivfmt -> IO a) -> IO a
-group (Device.D d) (AllocationCallbacks.toMiddle -> mac) f =
-	M.group d mac $ f . Group
+	AllocationCallbacks.ToMiddle ma =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall s . Group ma s k nm ivfmt -> IO a) -> IO a
+group (Device.D d) ma@(AllocationCallbacks.toMiddle -> mac) f =
+	M.group d mac $ f . Group ma
 
-newtype Group s k (nm :: Symbol) (ivfmt :: T.Format) = Group (M.Group s k)
+data Group ma s k (nm :: Symbol) (ivfmt :: T.Format) =
+	Group (TPMaybe.M (U2 AllocationCallbacks.A) ma) (M.Group s k)
 
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
-	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> Group smng k nm ivfmt -> k ->
+	AllocationCallbacks.ToMiddle ma ) =>
+	Device.D sd -> Group ma smng k nm ivfmt -> k ->
 	CreateInfo mn sm si nm ifmt ivfmt ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	IO (Either String (I nm ivfmt smng))
-create' (Device.D d) (Group mng) k ci (AllocationCallbacks.toMiddle -> mac) =
+create' (Device.D d) (Group (AllocationCallbacks.toMiddle -> mac) mng) k ci =
 	(I <$>) <$> M.create' d mng k (createInfoToMiddle ci) mac
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> Group sm k nm ivfmt  -> k ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
-destroy (Device.D d) (Group mng) k (AllocationCallbacks.toMiddle -> mac) =
+destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Device.D sd -> Group ma sm k nm ivfmt  -> k -> IO (Either String ())
+destroy (Device.D d) (Group (AllocationCallbacks.toMiddle -> mac) mng) k =
 	M.destroy' d mng k mac
 
-lookup :: Ord k => Group smng k nm ivfmt -> k -> IO (Maybe (I nm ivfmt smng))
-lookup (Group mng) k = (I <$>) <$> M.lookup mng k
+lookup :: Ord k => Group ma smng k nm ivfmt -> k -> IO (Maybe (I nm ivfmt smng))
+lookup (Group _ mng) k = (I <$>) <$> M.lookup mng k
 
 recreate :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
