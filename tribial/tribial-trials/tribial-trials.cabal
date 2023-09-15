@@ -55,6 +55,7 @@ library
       Lib2
       LocalValues
       LoopAndException
+      Number.Floating
       OneThirdOfTheYearIsOver
       PrintableClass
       PseudoPrime
