@@ -74,8 +74,7 @@ import Gpu.Vulkan.Memory qualified as Vk.Mem
 import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Buffer.Enum qualified as Vk.Bffr
-import Gpu.Vulkan.Image qualified as Vk.Image
-import Gpu.Vulkan.Image.Enum qualified as Vk.Image
+import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.ImageView.Enum qualified as Vk.ImgVw
@@ -112,7 +111,7 @@ import Gpu.Vulkan.Khr qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
-import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Surface.PhysicalDevice
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Surface.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw qualified as Glfw
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DbgUtls
@@ -125,12 +124,11 @@ import ThEnv
 main :: IO ()
 main = do
 	g <- newFramebufferResized
-	inp <- atomically newTChan
-	outp <- atomically newTChan
-	forkIO $ (`withWindow` g) \win -> createInstance \inst -> do
+	(inp, outp) <- (,) <$> atomically newTChan <*> atomically newTChan
+	_ <- forkIO $ (`withWindow` g) \w -> createInstance \inst ->
 		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g inp outp
-			else run win inst g inp outp
+		then setupDebugMessenger inst $ run w inst g inp outp
+		else run w inst g inp outp
 	untilEnd inp outp
 
 untilEnd :: TChan (UTCTime, [Rectangle]) -> TChan Bool -> IO ()
@@ -316,7 +314,7 @@ findQueueFamilies ::
 findQueueFamilies device sfc = do
 	queueFamilies <- Vk.PhDvc.getQueueFamilyProperties device
 	pfis <- filterM
-		(\i -> Vk.Khr.Surface.PhysicalDevice.getSupport device i sfc)
+		(\i -> Vk.Khr.Surface.Phd.getSupport device i sfc)
 		(fst <$> queueFamilies)
 	pure QueueFamilyIndicesMaybe {
 		graphicsFamilyMaybe = fst <$> L.find
@@ -341,9 +339,9 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 querySwapChainSupport ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
-	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
+	<$> Vk.Khr.Surface.Phd.getCapabilities dvc sfc
+	<*> Vk.Khr.Surface.Phd.getFormats dvc sfc
+	<*> Vk.Khr.Surface.Phd.getPresentModes dvc sfc
 
 createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
@@ -469,7 +467,7 @@ chooseSwapExtent win caps
 	x = Vk.Khr.Surface.capabilitiesMaxImageExtent caps
 
 createImageViewsNew :: Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> [Vk.Image.Binded ss ss nm fmt] ->
+	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
 	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
 createImageViewsNew _dvc [] f = f HeteroParList.Nil
 createImageViewsNew dvc (sci : scis) f =
@@ -477,23 +475,23 @@ createImageViewsNew dvc (sci : scis) f =
 	createImageViewsNew dvc scis \scivs -> f $ sciv :** scivs
 
 recreateImageViewsNew :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Image.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
+	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViewsNew _dvc [] HeteroParList.Nil = pure ()
 recreateImageViewsNew dvc (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.recreate dvc (mkImageViewCreateInfoNew sci) nil' iv >>
 	recreateImageViewsNew dvc scis ivs
 recreateImageViewsNew _ _ _ =
-	error "number of Vk.Image.I and Vk.ImageView.I should be same"
+	error "number of Vk.Img.I and Vk.ImageView.I should be same"
 
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Image.Binded sm si nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg f =
 	Vk.ImgVw.create dvc (mkImageViewCreateInfoNew timg) nil' f
 
 mkImageViewCreateInfoNew ::
-	Vk.Image.Binded sm si nm ifmt ->
+	Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
 mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
@@ -506,12 +504,12 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
 		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Image.SubresourceRange {
-		Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
-		Vk.Image.subresourceRangeBaseMipLevel = 0,
-		Vk.Image.subresourceRangeLevelCount = 1,
-		Vk.Image.subresourceRangeBaseArrayLayer = 0,
-		Vk.Image.subresourceRangeLayerCount = 1 }
+	subresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
 
 createRenderPassNew ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
