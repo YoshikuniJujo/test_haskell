@@ -852,7 +852,7 @@ createRectangleBuffer phdvc dvc gq cp f =
 
 createRectangleBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 Rectangle ""]  ->
-	Vk.Mem.Group sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] ->
+	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
 createRectangleBuffer' phdvc dvc bgrp mgrp k gq cp =
@@ -967,7 +967,7 @@ createBufferList p dv ln usg props =
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 t ""]  ->
-	Vk.Mem.Group sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
+	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
 	k ->
 	Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> IO (
@@ -992,7 +992,7 @@ createBuffer' :: forall sd sb nm o sm k .
 	(Ord k, VObj.SizeAlignment o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group 'Nothing sb k nm '[o] ->
-	Vk.Mem.Group sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] -> k ->
+	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] -> k ->
 	VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
 		Vk.Bffr.Binded sm sb nm '[o],
@@ -1002,7 +1002,7 @@ createBuffer' p dv bgrp mgrp k ln usg props =
 		reqs <- Vk.Bffr.getMemoryRequirements dv b
 		mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 		Vk.Mem.allocateBind' dv mgrp k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
-			(allcInfo mt) nil' >>=
+			(allcInfo mt) >>=
 			\(AlwaysRight (HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd)), mem)) -> pure (bnd, mem)
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
@@ -1019,10 +1019,10 @@ createBuffer' p dv bgrp mgrp k ln usg props =
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 destroyBuffer :: Ord k => Vk.Dvc.D sd ->
-	Vk.Bffr.Group 'Nothing sg k nm objs -> Vk.Mem.Group smng k ibargs -> k ->
+	Vk.Bffr.Group 'Nothing sg k nm objs -> Vk.Mem.Group 'Nothing smng k ibargs -> k ->
 	IO (Either String ())
 destroyBuffer dvc bgrp mgrp k =
-	Vk.Bffr.destroy dvc bgrp k >> Vk.Mem.free dvc mgrp k nil'
+	Vk.Bffr.destroy dvc bgrp k >> Vk.Mem.free dvc mgrp k
 
 {-# COMPLETE AlwaysRight #-}
 

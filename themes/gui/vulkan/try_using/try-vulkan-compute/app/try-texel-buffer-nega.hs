@@ -290,7 +290,7 @@ descriptorSet dv lyt f =
 
 type Groups k smgrp sbgrp nm sbp sbpf = (
 	Vk.Bff.Group 'Nothing sbgrp k nm '[PixelList, PixelFloatList],
-	Vk.Mm.Group smgrp k '[
+	Vk.Mm.Group 'Nothing smgrp k '[
 		'(sbgrp, Vk.Mm.BufferArg nm '[PixelList, PixelFloatList]) ],
 	Vk.BffVw.Group 'Nothing sbp k "" Pixel,
 	Vk.BffVw.Group 'Nothing sbpf k "" PixelFloat )
@@ -352,7 +352,7 @@ pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
 bufferNew :: forall sd sbgrp nm smgrp k . Ord k =>
 	Vk.Dv.D sd -> Vk.Phd.P -> V.Vector Pixel ->
 	Vk.Bff.Group 'Nothing sbgrp k nm '[PixelList, PixelFloatList] ->
-	Vk.Mm.Group smgrp k '[
+	Vk.Mm.Group 'Nothing smgrp k '[
 		'(sbgrp, Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])] ->
 	k -> IO (
 		Vk.Bff.Binded smgrp sbgrp nm '[PixelList, PixelFloatList],
@@ -360,7 +360,7 @@ bufferNew :: forall sd sbgrp nm smgrp k . Ord k =>
 bufferNew dv phd v bgrp mgrp k =
 	Vk.Bff.create' dv bgrp k bufferInfo >>= \(Right bffr) ->
 	memoryInfo bffr >>= \mi ->
-	Vk.Mm.allocateBind' dv mgrp k (U2 (Vk.Mm.Buffer bffr) :** HL.Nil) mi nil' >>=
+	Vk.Mm.allocateBind' dv mgrp k (U2 (Vk.Mm.Buffer bffr) :** HL.Nil) mi >>=
 		\(AlwaysRight (U2 (Vk.Mm.BufferBinded bnd) :** HL.Nil, m)) ->
 	Vk.Mm.write @nm @PixelList dv m def v >> pure (bnd, m)
 	where
