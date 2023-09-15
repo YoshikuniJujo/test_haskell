@@ -99,25 +99,24 @@ allocate dv@(Device.D mdv) ibs ai
 	(\m -> M.free mdv m mac)
 	\m -> f =<< newM ibs m
 
-group :: AllocationCallbacks.ToMiddle mac =>
-	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall s . Group s k ibargs -> IO a) -> IO a
-group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) f =
+group :: AllocationCallbacks.ToMiddle ma =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall s . Group ma s k ibargs -> IO a) -> IO a
+group (Device.D mdvc) ma@(AllocationCallbacks.toMiddle -> mac) f =
 	M.group mdvc mac \mmng -> do
 		ibargs <- atomically $ newTVar Map.empty
-		f $ Group ibargs mmng
+		f $ Group ma ibargs mmng
 
 allocateBind' :: (
 	Ord k,
 	WithPoked (TMaybe.M mn), Bindable ibargs,
-	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> Group sm k ibargs -> k ->
-	HeteroParList.PL (U2 ImageBuffer) ibargs ->
-	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	AllocationCallbacks.ToMiddle ma ) =>
+	Device.D sd -> Group ma sm k ibargs -> k ->
+	HeteroParList.PL (U2 ImageBuffer) ibargs -> AllocateInfo mn ->
 	IO (Either String (
 		HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs,
 		M sm ibargs))
-allocateBind' dv (Group mib mng) k ibs ai mac = do
+allocateBind' dv (Group mac mib mng) k ibs ai = do
 	allocate' dv mng k ibs ai mac >>= \case
 		Left msg -> pure $ Left msg
 		Right m -> do
@@ -137,19 +136,19 @@ allocate' dv@(Device.D mdv) mng k ibs ai (AllocationCallbacks.toMiddle -> mac) =
 	mai <- allocateInfoToMiddle dv ibs ai
 	(newM ibs `mapM`) =<< M.allocate' mdv mng k mai mac
 
-free :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> Group smng k ibargs -> k ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac -> IO (Either String ())
-free (Device.D mdv) (Group _ mng) k (AllocationCallbacks.toMiddle -> mac) =
+free :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Device.D sd -> Group ma smng k ibargs -> k -> IO (Either String ())
+free (Device.D mdv) (Group (AllocationCallbacks.toMiddle -> mac) _ mng) k =
 	M.free' mdv mng k mac
 
-data Group s k ibargs = Group
+data Group ma s k ibargs = Group
+	(TPMaybe.M (U2 AllocationCallbacks.A) ma)
 	(TVar (Map.Map k (IORef (HeteroParList.PL (U2 ImageBuffer) ibargs))))
 	(M.Group s k)
 
 lookup :: Ord k =>
-	Group sm k ibargs -> k -> IO (Maybe (M s ibargs))
-lookup (Group ibargss mmng) k = do
+	Group ma sm k ibargs -> k -> IO (Maybe (M s ibargs))
+lookup (Group _ ibargss mmng) k = do
 	mibargs <- atomically $ Map.lookup k <$> readTVar ibargss
 	mmem <- M.lookup mmng k
 	pure $ M <$> mibargs <*> mmem
