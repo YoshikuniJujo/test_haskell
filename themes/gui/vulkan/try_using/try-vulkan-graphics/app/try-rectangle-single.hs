@@ -20,6 +20,7 @@ import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
@@ -140,10 +141,10 @@ main = do
 			then setupDebugMessenger inst $ run win inst g
 			else run win inst g
 
-type FramebufferResized = IORef Bool
+type FramebufferResized = TVar Bool
 
 newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
+newFramebufferResized = atomically $ newTVar False
 
 windowName :: String
 windowName = "Triangle"
@@ -168,7 +169,7 @@ initWindow frszd = do
 		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
 	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
+		w (Just $ \_ _ _ -> atomically $ writeTVar frszd True)
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do

@@ -26,6 +26,7 @@ module Tools (
 
 	) where
 
+import Control.Concurrent.STM
 import Data.IORef
 import Data.Bits
 import Data.Bool
@@ -52,8 +53,9 @@ clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 onlyIf :: (a -> Bool) -> a -> Maybe a
 onlyIf p x | p x = Just x | otherwise = Nothing
 
-checkFlag :: IORef Bool -> IO Bool
-checkFlag fg = readIORef fg >>= bool (pure False) (True <$ writeIORef fg False)
+checkFlag :: TVar Bool -> IO Bool
+checkFlag fg = atomically
+	$ readTVar fg >>= bool (pure False) (True <$ writeTVar fg False)
 
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits wnt = (== wnt) . (.&. wnt)

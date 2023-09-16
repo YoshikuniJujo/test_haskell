@@ -40,7 +40,6 @@ import Data.Bool
 import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Color
-import Data.IORef
 import Data.Time
 import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
@@ -145,10 +144,10 @@ untilEnd inp outp = do
 		Just False -> putStrLn "THE WOLD ENDS"
 
 
-type FramebufferResized = IORef Bool
+type FramebufferResized = TVar Bool
 
 newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
+newFramebufferResized = atomically $ newTVar False
 
 windowName :: String
 windowName = "Triangle"
@@ -173,7 +172,7 @@ initWindow frszd = do
 		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
 	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
+		w (Just $ \_ _ _ -> atomically $ writeTVar frszd True)
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
