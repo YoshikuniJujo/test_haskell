@@ -123,21 +123,36 @@ import ThEnv
 main :: IO ()
 main = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	withWindow \w g -> do
-		_ <- forkIO $ createInstance \inst -> do
+	_ <- forkIO $ withWindow \w g -> do
+		mb1state <- atomically $ newTVar Glfw.MouseButtonState'Released
+		_ <- forkIO $ glfwEvents w outp mb1state
+		createInstance \inst -> do
 			if enableValidationLayers
 			then setupDebugMessenger inst $ run w inst g inp outp
 			else run w inst g inp outp
-		mb1state <- atomically $ newTVar Glfw.MouseButtonState'Released
-		untilEnd w (inp, outp) mb1state
-	pure ()
+	untilEnd (inp, outp)
 
-type Input = (UTCTime, [Rectangle], Maybe (Double, Double))
+type Input = (UTCTime, [Rectangle])
+type Output = Either Bool (Double, Double)
 
-untilEnd :: Glfw.Window -> (TChan Input, TChan Bool) -> TVar Glfw.MouseButtonState -> IO ()
-untilEnd w (inp, outp) mbs = do
+untilEnd :: (TChan Input, TChan Output) -> IO ()
+untilEnd (inp, outp) = do
 	threadDelay 10000
 	now <- getCurrentTime
+	o <- atomically do
+		writeTChan inp (now, instances)
+		e <- isEmptyTChan outp
+		if e then pure Nothing else Just <$> readTChan outp
+	case o of
+		Nothing -> untilEnd (inp, outp)
+		Just (Right p) -> print p >> untilEnd (inp, outp)
+		Just (Left True) -> untilEnd (inp, outp)
+		Just (Left False) -> putStrLn "THE WOLD ENDS"
+
+glfwEvents :: Glfw.Window ->
+	TChan Output -> TVar Glfw.MouseButtonState -> IO ()
+glfwEvents w cmb1 mbs = do
+	threadDelay 10000
 	mb <- Glfw.getMouseButton w Glfw.MouseButton'1
 	mbp <- atomically do
 		p <- readTVar mbs
@@ -148,15 +163,8 @@ untilEnd w (inp, outp) mbs = do
 			putStrLn "MouseButton'1 down"
 			Just <$> Glfw.getCursorPos w
 		_ -> pure Nothing
-	o <- atomically do
-		writeTChan inp (now, instances, cpos)
-		e <- isEmptyTChan outp
-		if e then pure Nothing else Just <$> readTChan outp
-	case o of
-		Nothing -> untilEnd w (inp, outp) mbs
-		Just True -> untilEnd w (inp, outp) mbs
-		Just False -> putStrLn "THE WOLD ENDS"
-
+	maybe (pure ()) (atomically . writeTChan cmb1 . Right) cpos
+	glfwEvents w cmb1 mbs
 
 type FramebufferResized = TVar Bool
 
@@ -247,7 +255,7 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si ->
-	FramebufferResized -> TChan Input -> TChan Bool -> IO ()
+	FramebufferResized -> TChan Input -> TChan Output -> IO ()
 run w inst g inp outp =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
@@ -1125,19 +1133,18 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan Input -> TChan Bool -> Vk.CmdPool.C sc -> IO ()
+	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan Input -> TChan Output -> Vk.CmdPool.C sc -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm0 inp outp cp = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
-		(tm, rects, mpos) <- atomically $ readTChan inp
-		maybe (pure ()) print mpos
+		(tm, rects) <- atomically $ readTChan inp
 --		createRectangleBuffer phdvc dvc gq cp \rb ->
 		id $
 			runLoop w sfc phdvc qfis dvc gq pq
 				sc g ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs
 				(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
-	atomically $ writeTChan outp False
+	atomically . writeTChan outp $ Left False
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
