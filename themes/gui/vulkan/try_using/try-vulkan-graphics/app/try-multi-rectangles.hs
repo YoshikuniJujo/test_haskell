@@ -125,8 +125,8 @@ main = do
 	io@(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	_ <- forkIO $ do
 		withWindow \w g -> do
-			_ <- forkIO $ glfwEvents w outp =<< atomically
-				(newTVar Glfw.MouseButtonState'Released)
+			_ <- forkIO $ glfwEvents
+				w outp Glfw.MouseButtonState'Released
 			createInstance \inst ->
 				if enableValidationLayers
 				then setupDebugMessenger inst $ run w inst g inp
@@ -134,6 +134,9 @@ main = do
 		atomically . writeTChan outp $ Left False
 	rs <- atomically $ newTVar instances
 	untilEnd io rs
+
+enableValidationLayers :: Bool
+enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 untilEnd :: (TChan Input, TChan Output) -> TVar [Rectangle] -> IO ()
 untilEnd io@(inp, outp) rs = do
@@ -157,45 +160,29 @@ untilEnd io@(inp, outp) rs = do
 type Input = (UTCTime, [Rectangle])
 type Output = Either Bool (Double, Double)
 
-glfwEvents :: Glfw.Window ->
-	TChan Output -> TVar Glfw.MouseButtonState -> IO ()
-glfwEvents w cmb1 mbs = do
+glfwEvents :: Glfw.Window -> TChan Output -> Glfw.MouseButtonState -> IO ()
+glfwEvents w outp = fix \loop mb1p -> do
 	threadDelay 10000
-	mb <- Glfw.getMouseButton w Glfw.MouseButton'1
-	mbp <- atomically do
-		p <- readTVar mbs
-		writeTVar mbs mb
-		pure p
-	cpos <- case (mb, mbp) of
-		(Glfw.MouseButtonState'Pressed, Glfw.MouseButtonState'Released) -> do
+	mb1 <- Glfw.getMouseButton w Glfw.MouseButton'1
+	case (mb1p, mb1) of
+		(Glfw.MouseButtonState'Released,
+			Glfw.MouseButtonState'Pressed) -> do
 			putStrLn "MouseButton'1 down"
-			Just <$> Glfw.getCursorPos w
-		_ -> pure Nothing
-	maybe (pure ()) (atomically . writeTChan cmb1 . Right) cpos
-	glfwEvents w cmb1 mbs
-
-type FramebufferResized = TVar Bool
-
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = atomically $ newTVar False
-
-windowName :: String
-windowName = "Triangle"
-
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
+			atomically . writeTChan outp . Right
+				=<< Glfw.getCursorPos w
+		_ -> pure ()
+	loop mb1
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f =
 	newFramebufferResized >>= \g ->
 	initWindow g >>= \w ->
 	f w g <* (Glfw.destroyWindow w >> Glfw.terminate)
+
+type FramebufferResized = TVar Bool
+
+newFramebufferResized :: IO FramebufferResized
+newFramebufferResized = atomically $ newTVar False
 
 initWindow :: FramebufferResized -> IO Glfw.Window
 initWindow frszd = do
@@ -205,6 +192,9 @@ initWindow frszd = do
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
 	w <$ Glfw.setFramebufferSizeCallback
 		w (Just $ \_ _ _ -> atomically $ writeTVar frszd True)
+	where
+	windowName = "Triangle"
+	windowSize = (width, height) where width = 800; height = 600
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
@@ -239,6 +229,9 @@ createInstance f = do
 			Vk.Ist.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
 
+validationLayers :: [Vk.LayerName]
+validationLayers = [Vk.layerKhronosValidation]
+
 setupDebugMessenger :: Vk.Ist.I si -> IO a -> IO a
 setupDebugMessenger ist f =
 	Vk.Ext.DbgUtls.Msngr.create ist debugMessengerCreateInfo nil' f
@@ -257,10 +250,10 @@ debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
 	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
-
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
+	where
+	debugCallback _msgsvr _msgtp cbdt _udata = False <$ Txt.putStrLn
+		("validation layer: " <>
+			Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si ->
 	FramebufferResized -> TChan Input -> IO ()
