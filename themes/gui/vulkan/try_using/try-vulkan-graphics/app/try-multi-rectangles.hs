@@ -1,6 +1,6 @@
 {-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
@@ -122,32 +122,40 @@ import ThEnv
 
 main :: IO ()
 main = do
-	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	_ <- forkIO $ withWindow \w g -> do
-		mb1state <- atomically $ newTVar Glfw.MouseButtonState'Released
-		_ <- forkIO $ glfwEvents w outp mb1state
-		createInstance \inst -> do
-			if enableValidationLayers
-			then setupDebugMessenger inst $ run w inst g inp outp
-			else run w inst g inp outp
-	untilEnd (inp, outp)
+	io@(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
+	_ <- forkIO $ do
+		withWindow \w g -> do
+			_ <- forkIO $ glfwEvents w outp =<< atomically
+				(newTVar Glfw.MouseButtonState'Released)
+			createInstance \inst ->
+				if enableValidationLayers
+				then setupDebugMessenger inst $ run w inst g inp
+				else run w inst g inp
+		atomically . writeTChan outp $ Left False
+	rs <- atomically $ newTVar instances
+	untilEnd io rs
 
-type Input = (UTCTime, [Rectangle])
-type Output = Either Bool (Double, Double)
-
-untilEnd :: (TChan Input, TChan Output) -> IO ()
-untilEnd (inp, outp) = do
+untilEnd :: (TChan Input, TChan Output) -> TVar [Rectangle] -> IO ()
+untilEnd io@(inp, outp) rs = do
 	threadDelay 10000
 	now <- getCurrentTime
 	o <- atomically do
-		writeTChan inp (now, instances)
-		e <- isEmptyTChan outp
-		if e then pure Nothing else Just <$> readTChan outp
+		writeTChan inp . (now ,) =<< readTVar rs
+		bool (Just <$> readTChan outp) (pure Nothing)
+			=<< isEmptyTChan outp
 	case o of
-		Nothing -> untilEnd (inp, outp)
-		Just (Right p) -> print p >> untilEnd (inp, outp)
-		Just (Left True) -> untilEnd (inp, outp)
+		Nothing -> untilEnd io rs
+		Just (Left True) -> untilEnd io rs
 		Just (Left False) -> putStrLn "THE WOLD ENDS"
+		Just (Right p@(x, y)) -> do
+			print p
+			atomically if x < 300
+				then writeTVar rs instances
+				else writeTVar rs instances2
+			untilEnd (inp, outp) rs
+
+type Input = (UTCTime, [Rectangle])
+type Output = Either Bool (Double, Double)
 
 glfwEvents :: Glfw.Window ->
 	TChan Output -> TVar Glfw.MouseButtonState -> IO ()
@@ -255,8 +263,8 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si ->
-	FramebufferResized -> TChan Input -> TChan Output -> IO ()
-run w inst g inp outp =
+	FramebufferResized -> TChan Input -> IO ()
+run w inst g inp =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -279,8 +287,8 @@ run w inst g inp outp =
 	getCurrentTime >>= \tm ->
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 
-	createRectangleBuffer' phdv dv rbgrp rmgrp () gq cp >>= \rb ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb sos tm inp outp cp
+	createRectangleBuffer phdv dv rbgrp rmgrp () gq cp >>= \rb ->
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb sos tm inp cp
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -841,12 +849,12 @@ createIndexBuffer phdvc dvc gq cp f =
 		copyBuffer dvc gq cp b' b
 	f b
 
-createRectangleBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createRectangleBuffer :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 Rectangle ""]  ->
 	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
-createRectangleBuffer' phdvc dvc bgrp mgrp k gq cp =
+createRectangleBuffer phdvc dvc bgrp mgrp k gq cp =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length instances)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit >>= \(b, _) -> do
@@ -1133,8 +1141,8 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan Input -> TChan Output -> Vk.CmdPool.C sc -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm0 inp outp cp = do
+	SyncObjects '(sias, srfs, siff) -> UTCTime -> TChan Input -> Vk.CmdPool.C sc -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm0 inp cp = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		(tm, rects) <- atomically $ readTChan inp
@@ -1144,7 +1152,6 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb rb ib u
 				sc g ext scivs rp ppllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs
 				(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
-	atomically . writeTChan outp $ Left False
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
@@ -1351,6 +1358,22 @@ instances = [
 	Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
 		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 		(RectColor . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+	]
+
+instances2 :: [Rectangle]
+instances2 = [
+	Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+		(RectColor . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
+		(RectColor . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+		(RectColor . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
+	Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+		(RectColor . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
 	]
 
 data UniformBufferObject = UniformBufferObject {
