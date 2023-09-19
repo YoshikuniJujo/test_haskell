@@ -144,19 +144,16 @@ rectangles = do
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
-untilEnd :: (TChan Input, TChan Output) -> TVar Vk.Extent2d -> [Rectangle] -> IO ()
+untilEnd :: (TChan Input, TChan Output) -> TVar Vk.Extent2d -> (Float -> [Rectangle]) -> IO ()
 untilEnd (inp, outp) ext rs0 = do
 	tm0 <- getCurrentTime
 	($ rs0) $ fix \loop rs -> do
 		threadDelay 10000
 		now <- getCurrentTime
+		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
 			e <- readTVar ext
-			writeTChan inp (
-				uniformBufferObject
-					(realToFrac $ now `diffUTCTime` tm0)
-					e,
-				rs )
+			writeTChan inp (uniformBufferObject tm e, rs tm)
 			bool (Just <$> readTChan outp) (pure Nothing)
 				=<< isEmptyTChan outp
 		case o of
@@ -279,7 +276,7 @@ run inp vext we@(w, _) inst = createSurface w inst \sfc ->
 		scs = (sc, scivs, rp, fbs); ppls = (gpl, pllyt)
 		vbs = (vb, ib); rgrps = (rbgrp, rmgrp); ubs = (ubds, ubm) in
 
-	createRectangleBuffer dvs rgrps () instances >>
+	createRectangleBuffer dvs rgrps () (instances 0) >>
 	mainLoop inp vext we sfc dvs sos scs ppls vbs rgrps ubs ext0
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -623,7 +620,9 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp pllyt f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
@@ -634,7 +633,9 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Graphics.recreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U3 gpls :** HeteroParList.Nil)
@@ -647,7 +648,9 @@ mkGraphicsPipelineCreateInfo' ::
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 		'(	'Nothing,
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
-			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)] )
+			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+				'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', foo)
 mkGraphicsPipelineCreateInfo' sce rp pllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
@@ -1090,13 +1093,16 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl 
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)] '(sl, '[AtomUbo sdsl], '[]) ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
+	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	IO ()
-recordCommandBuffer cb rp fb sce pllyt gpl vb rb ib ubds =
+recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
@@ -1111,10 +1117,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb rb ib ubds =
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb
-		(fromIntegral $ length indices)
-		(fromIntegral $ length instances)
-		0 0 0
+	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) ic 0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -1144,7 +1147,9 @@ mainLoop inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
 		Vk.Dvc.waitIdle dvc
 		destroyRectangleBuffer dvs rgrps ()
 		createRectangleBuffer dvs rgrps () rects >>= \rb ->
-			runLoop we sfc dvs iasrfsifs scs pls vbs rb ubs tm loop ext
+			runLoop we sfc dvs iasrfsifs scs pls
+				vbs (rb, fromIntegral $ length rects) ubs
+				tm loop ext
 	Vk.Dvc.waitIdle dvc
 
 type Devices sd scp scb = (
@@ -1159,7 +1164,9 @@ type Swapchains scfmt ssc nm ss sr sfs = (
 type Pipelines sg sl sdsl = (
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]),
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] )
 
@@ -1175,7 +1182,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	SyncObjects '(sias, srfs, siff) ->
 	Swapchains scfmt ssc nm sis sr sfs -> Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
-	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
+	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
 	UniformBuffers sds sdsl sm2 sb2 -> UniformBufferObject ->
 	(Vk.Extent2d -> IO ()) -> Vk.Extent2d -> IO ()
 runLoop (win, fbrszd) sfc (phdvc, qfis, dvc, gq, pq, _cp, cb) iasrfsifs
@@ -1193,11 +1200,13 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
+	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
@@ -1262,7 +1271,9 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
@@ -1284,7 +1295,9 @@ recreateSwapchainEtc :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs = do
@@ -1318,7 +1331,11 @@ instance StrG.G Vertex where
 data Rectangle = Rectangle {
 	rectanglePos :: RectPos,
 	rectangleSize :: RectSize,
-	rectagnleColor :: RectColor }
+	rectagnleColor :: RectColor,
+	rectangleModel0 :: RectModel0,
+	rectangleModel1 :: RectModel1,
+	rectangleModel2 :: RectModel2,
+	rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
 
 newtype RectPos = RectPos Cglm.Vec2
@@ -1328,6 +1345,18 @@ newtype RectSize = RectSize Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 newtype RectColor = RectColor Cglm.Vec3
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel0 = RectModel0 Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel1 = RectModel1 Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel2 = RectModel2 Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel3 = RectModel3 Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance StrG.G Rectangle where
@@ -1352,37 +1381,53 @@ vertices = [
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
-instances :: [Rectangle]
-instances = [
-	Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-		(RectColor . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
-		(RectColor . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
-		(RectColor . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-		(RectColor . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
-	]
+instances :: Float -> [Rectangle]
+instances tm = let
+	(m0, m1, m2, m3) = calcModel tm in
+	[
+		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
+			(RectColor . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
+			(RectColor . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3
+		]
 
-instances2 :: [Rectangle]
-instances2 = [
-	Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-		(RectColor . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
-		(RectColor . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-		(RectColor . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
-	Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-		(RectColor . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
-	]
+instances2 :: Float -> [Rectangle]
+instances2 tm = let (m0, m1, m2, m3) = calcModel tm in
+	[
+		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
+			(RectColor . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+			m0 m1 m2 m3
+		]
+
+calcModel tm = let
+	m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s $ Cglm.rotate Cglm.mat4Identity
+		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) in
+	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
 
 data UniformBufferObject = UniformBufferObject {
 	uniformBufferObjectModel :: Cglm.Mat4,
@@ -1419,6 +1464,7 @@ layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec2 rectPosition;
 layout(location = 3) in vec2 rectSize;
 layout(location = 4) in vec3 rectColor;
+layout(location = 5) in mat4 rectModel;
 
 layout(location = 0) out vec3 fragColor;
 
@@ -1426,7 +1472,7 @@ void
 main()
 {
 	gl_Position =
-		ubo.proj * ubo.view * ubo.model *
+		ubo.proj * ubo.view * rectModel *
 		vec4(inPosition * rectSize, 0.0, 1.0) +
 		vec4(rectPosition, 0.0, 1.0);
 //	fragColor = inColor;
