@@ -153,7 +153,7 @@ untilEnd (inp, outp) rs0 = do
 			Just (Left True) -> loop rs
 			Just (Left False) -> putStrLn "THE WOLD ENDS"
 			Just (Right p@(x, y)) -> print p >>
-				loop (bool instances2 instances $ x < 300)
+				loop (bool instances2 instances $ x < 400)
 
 type Input = (NominalDiffTime, [Rectangle])
 type Output = Either Bool (Double, Double)
@@ -268,8 +268,7 @@ run inp we@(w, _) inst = createSurface w inst \sfc ->
 		scs = (sc, ext, scivs, rp, fbs); ppls = (gpl, pllyt)
 		vbs = (vb, ib); rgrps = (rbgrp, rmgrp); ubs = (ubds, ubm) in
 
-	createRectangleBuffer dvs rgrps () >>= \rb ->
---	pure undefined >>= \rb ->
+	createRectangleBuffer dvs rgrps () instances >>= \rb ->
 	mainLoop inp we sfc dvs sos scs ppls vbs rgrps rb ubs
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -371,7 +370,6 @@ createLogicalDevice phdvc qfis f =
 				Vk.Dvc.createInfoNext = TMaybe.N,
 				Vk.Dvc.createInfoFlags = def,
 				Vk.Dvc.createInfoQueueCreateInfos = qs,
---					queueCreateInfos <$> uniqueQueueFamilies,
 				Vk.Dvc.createInfoEnabledLayerNames =
 					bool [] validationLayers enableValidationLayers,
 				Vk.Dvc.createInfoEnabledExtensionNames =
@@ -832,20 +830,30 @@ createIndexBuffer phdvc dvc gq cp f =
 	f b
 
 createRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sm sb nm k -> k ->
+	Devices sd sc scb -> RectGroups sm sb nm k -> k -> [Rectangle] ->
 	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
-createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k =
-	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length instances)
+createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
+	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit >>= \(b, _) -> do
-	createBufferList phdvc dvc (fromIntegral $ length instances)
+	createBufferList phdvc dvc (fromIntegral $ length rs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
-		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits instances
+		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") dvc bm' zeroBits rs
 		copyBuffer dvc gq cp b' b
 	pure b
+
+destroyRectangleBuffer :: Ord k =>
+	Devices sd sc scb -> RectGroups sm sb nm k -> k -> IO ()
+destroyRectangleBuffer (_, _, dvc, _, _, _, _) (bgrp, mgrp) k = do
+	r1 <- Vk.Mem.free dvc mgrp k
+	r2 <- Vk.Bffr.destroy dvc bgrp k
+	case (r1, r2) of
+		(Left msg, _) -> error msg
+		(_, Left msg) -> error msg
+		_ -> pure ()
 
 type RectGroups sm sb nm k = (
 	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 Rectangle ""],
@@ -1122,10 +1130,11 @@ mainLoop inp (w, g) sfc dvs@(phdvc, qfis, dvc, gq, pq, cp, cb) iasrfsifs
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		(tm, rects) <- atomically $ readTChan inp
---		createRectangleBuffer dvs rgrps () >>= \rb' ->
-		id $
+		Vk.Dvc.waitIdle dvc
+		destroyRectangleBuffer dvs rgrps ()
+		createRectangleBuffer dvs rgrps () rects >>= \rb' ->
 			runLoop w sfc phdvc qfis dvc gq pq
-				sc g ext scivs rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs
+				sc g ext scivs rp pllyt gpl fbs vb rb' ib ubm ubds cb iasrfsifs
 				(realToFrac tm) loop
 	Vk.Dvc.waitIdle dvc
 
