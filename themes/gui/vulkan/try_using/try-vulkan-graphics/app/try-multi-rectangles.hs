@@ -122,6 +122,11 @@ import ThEnv
 
 main :: IO ()
 main = do
+	(io, vext) <- rectangles
+	untilEnd io vext instances
+
+rectangles :: IO ((TChan Input, TChan Output), TVar Vk.Extent2d)
+rectangles = do
 	io@(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically . newTVar $ Vk.Extent2d 0 0
 	_ <- forkIO $ do
@@ -132,7 +137,7 @@ main = do
 				(setupDebugMessenger inst)
 				enableValidationLayers $ run inp vext we inst
 		atomically . writeTChan outp $ Left False
-	untilEnd io vext instances
+	pure (io, vext)
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
 
@@ -146,7 +151,12 @@ untilEnd (inp, outp) ext rs0 = do
 		threadDelay 10000
 		now <- getCurrentTime
 		o <- atomically do
-			writeTChan inp (now `diffUTCTime` tm0, rs)
+			e <- readTVar ext
+			writeTChan inp (
+				uniformBufferObject
+					(realToFrac $ now `diffUTCTime` tm0)
+					e,
+				rs )
 			bool (Just <$> readTChan outp) (pure Nothing)
 				=<< isEmptyTChan outp
 		case o of
@@ -156,7 +166,7 @@ untilEnd (inp, outp) ext rs0 = do
 			Just (Right p@(x, y)) -> print p >>
 				loop (bool instances2 instances $ x < 400)
 
-type Input = (NominalDiffTime, [Rectangle])
+type Input = (UniformBufferObject, [Rectangle])
 type Output = Either Bool (Double, Double)
 
 glfwEvents :: Glfw.Window -> TChan Output -> Glfw.MouseButtonState -> IO ()
@@ -1134,9 +1144,7 @@ mainLoop inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
 		Vk.Dvc.waitIdle dvc
 		destroyRectangleBuffer dvs rgrps ()
 		createRectangleBuffer dvs rgrps () rects >>= \rb ->
-			runLoop we sfc dvs iasrfsifs scs pls vbs rb ubs
-				(uniformBufferObject (realToFrac tm) ext)
-				loop ext
+			runLoop we sfc dvs iasrfsifs scs pls vbs rb ubs tm loop ext
 	Vk.Dvc.waitIdle dvc
 
 type Devices sd scp scb = (
