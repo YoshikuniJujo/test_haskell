@@ -62,6 +62,9 @@ instance Storable Vec4 where
 		<$> peekArray 4 (castPtr p)
 	poke p (Vec4 v) = pokeArray (castPtr p) $ toList v
 
+instance Vk.Ppl.VrtxInpSt.Formattable Vec4 where
+	formatOf = Vk.FormatR32g32b32a32Sfloat
+
 newtype {-# CTYPE "cglm/cglm.h" "mat4" #-}
 	Mat4 = Mat4 (LengthL 4 (LengthL 4 #{type float})) deriving (Show, Eq, Ord)
 
