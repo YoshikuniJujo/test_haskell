@@ -53,7 +53,7 @@ instance Storable Mat4 where
 	poke p (mat4ToVec4 -> vs) = pokeArray (castPtr p) $ toList vs
 
 newtype {-# CTYPE "cglm/cglm.h" "vec4" #-}
-	Vec4 = Vec4 (LengthL 4 #{type float}) deriving Show
+	Vec4 = Vec4 (LengthL 4 #{type float}) deriving (Show, Eq, Ord)
 
 instance Storable Vec4 where
 	sizeOf _ = #{size vec4}
