@@ -247,14 +247,14 @@ run inp vext we@(w, _) inst = createSurface w inst \sfc ->
 	createLogicalDevice phd qfis \dv gq pq ->
 
 	createSwapchain w sfc phd qfis dv
-		\(sc :: Vk.Khr.Swapchain.S scfmt ss) ext ->
+		\(sc :: Vk.Khr.Swapchain.S scfmt ss) ext0 ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \scis ->
 	createImageViews dv scis \scivs ->
 	createRenderPass @scfmt dv \rp ->
-	createFramebuffers dv ext rp scivs \fbs ->
+	createFramebuffers dv ext0 rp scivs \fbs ->
 
 	createPipelineLayout dv \dslyt pllyt ->
-	createGraphicsPipeline dv ext rp pllyt \gpl ->
+	createGraphicsPipeline dv ext0 rp pllyt \gpl ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phd dv gq cp \vb ->
 	createIndexBuffer phd dv gq cp \ib ->
@@ -266,11 +266,11 @@ run inp vext we@(w, _) inst = createSurface w inst \sfc ->
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 
 	let	dvs = (phd, qfis, dv, gq, pq, cp, cb)
-		scs = (sc, vext, ext, scivs, rp, fbs); ppls = (gpl, pllyt)
+		scs = (sc, scivs, rp, fbs); ppls = (gpl, pllyt)
 		vbs = (vb, ib); rgrps = (rbgrp, rmgrp); ubs = (ubds, ubm) in
 
-	createRectangleBuffer dvs rgrps () instances >>= \rb ->
-	mainLoop inp we sfc dvs sos scs ppls vbs rgrps rb ubs
+	createRectangleBuffer dvs rgrps () instances >>
+	mainLoop inp vext we sfc dvs sos scs ppls vbs rgrps ubs ext0
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -1119,25 +1119,24 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb rb ib ubds =
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
-	TChan Input -> WinEnvs -> Vk.Khr.Surface.S ssfc -> Devices sd sc scb ->
+	TChan Input -> TVar Vk.Extent2d -> WinEnvs -> Vk.Khr.Surface.S ssfc -> Devices sd sc scb ->
 	SyncObjects '(sias, srfs, siff) -> Swapchains scfmt ssc nm ss sr sfs ->
 	Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups srm srb nm () ->
-	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
-	UniformBuffers sds sdsl sm2 sb2 -> IO ()
-mainLoop inp (w, g) sfc dvs@(phdvc, qfis, dvc, gq, pq, cp, cb) iasrfsifs
-	(sc, vext, ext0, scivs, rp, fbs) (gpl, pllyt) (vb, ib) rgrps rb (ubds, ubm) = do
+	UniformBuffers sds sdsl sm2 sb2 -> Vk.Extent2d -> IO ()
+mainLoop inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
+	rgrps ubs@(ubds, ubm) ext0 = do
 	($ ext0) $ fix \loop ext -> do
 		atomically $ writeTVar vext ext
 		Glfw.pollEvents
 		(tm, rects) <- atomically $ readTChan inp
 		Vk.Dvc.waitIdle dvc
 		destroyRectangleBuffer dvs rgrps ()
-		createRectangleBuffer dvs rgrps () rects >>= \rb' ->
-			runLoop w sfc phdvc qfis dvc gq pq
-				sc g ext scivs rp pllyt gpl fbs vb rb' ib ubm ubds cb iasrfsifs
-				(realToFrac tm) loop
+		createRectangleBuffer dvs rgrps () rects >>= \rb ->
+			runLoop we sfc dvs iasrfsifs scs pls vbs rb ubs
+				(uniformBufferObject (realToFrac tm) ext)
+				loop ext
 	Vk.Dvc.waitIdle dvc
 
 type Devices sd scp scb = (
@@ -1146,7 +1145,6 @@ type Devices sd scp scb = (
 
 type Swapchains scfmt ssc nm ss sr sfs = (
 	Vk.Khr.Swapchain.S scfmt ssc,
-	TVar Vk.Extent2d, Vk.Extent2d,
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss,
 	Vk.RndrPass.R sr, HeteroParList.PL Vk.Frmbffr.F sfs )
 
@@ -1165,27 +1163,17 @@ type UniformBuffers sds sdsl sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm2 sb2)
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
-	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
-	Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos), '(3, RectSize), '(4, RectColor)]
-		'(sl, '[AtomUbo sdsl], '[]) ->
-	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	WinEnvs -> Vk.Khr.Surface.S ssfc -> Devices sd scp scb ->
+	SyncObjects '(sias, srfs, siff) ->
+	Swapchains scfmt ssc nm sis sr sfs -> Pipelines sg sl sdsl ->
+	VertexBuffers sm sb nm sm' sb' nm' ->
 	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
-	UniformBufferMemory sm2 sb2 ->
-	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> Float ->
-	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc fbrszd ext scivs rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm loop = do
+	UniformBuffers sds sdsl sm2 sb2 -> UniformBufferObject ->
+	(Vk.Extent2d -> IO ()) -> Vk.Extent2d -> IO ()
+runLoop (win, fbrszd) sfc (phdvc, qfis, dvc, gq, pq, _cp, cb) iasrfsifs
+	(sc, scivs, rp, fbs) (gpl, pllyt) (vb, ib) rb (ubds, ubm) ubo loop ext = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs tm
+		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs ubo
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag fbrszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
@@ -1205,8 +1193,8 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
-drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
+	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> UniformBufferObject -> IO ()
+drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ias rfs iff) ubo = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1215,7 +1203,7 @@ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ia
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext pllyt gpl vb rb ib ubds
-	updateUniformBuffer' dvc ubm $ uniformBufferObject tm ext
+	updateUniformBuffer' dvc ubm ubo
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
