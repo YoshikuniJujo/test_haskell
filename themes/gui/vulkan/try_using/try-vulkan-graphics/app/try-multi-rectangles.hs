@@ -141,6 +141,9 @@ rectangles = do
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
 
+type Input = (UniformBufferObject, [Rectangle])
+type Output = Either Bool (Double, Double)
+
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
@@ -162,9 +165,6 @@ untilEnd (inp, outp) ext rs0 = do
 			Just (Left False) -> putStrLn "THE WOLD ENDS"
 			Just (Right p@(x, y)) -> print p >>
 				loop (bool instances2 instances $ x < 400)
-
-type Input = (UniformBufferObject, [Rectangle])
-type Output = Either Bool (Double, Double)
 
 glfwEvents :: Glfw.Window -> TChan Output -> Glfw.MouseButtonState -> IO ()
 glfwEvents w outp = fix \loop mb1p -> do
@@ -1245,10 +1245,6 @@ updateUniformBuffer' dvc um obj = do
 
 uniformBufferObject :: Float -> Vk.Extent2d -> UniformBufferObject
 uniformBufferObject tm sce = UniformBufferObject {
-	uniformBufferObjectModel = Cglm.rotate
-		Cglm.mat4Identity
-		(tm * Cglm.rad 90)
-		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 	uniformBufferObjectView = Cglm.lookat
 		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
@@ -1430,7 +1426,6 @@ calcModel tm = let
 	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
 
 data UniformBufferObject = UniformBufferObject {
-	uniformBufferObjectModel :: Cglm.Mat4,
 	uniformBufferObjectView :: Cglm.Mat4,
 	uniformBufferObjectProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
@@ -1454,7 +1449,6 @@ shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 #version 450
 
 layout(binding = 0) uniform UniformBufferObject {
-	mat4 model;
 	mat4 view;
 	mat4 proj;
 } ubo;
