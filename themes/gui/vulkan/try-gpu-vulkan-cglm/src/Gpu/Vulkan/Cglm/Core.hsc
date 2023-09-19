@@ -50,7 +50,7 @@ instance Storable Mat4 where
 	alignment _ = #{alignment mat4}
 	peek p = vec4ToMat4 . fst . fromRight (error "never occur") . splitL
 		<$> peekArray 4 (castPtr p)
-	poke p (mat4ToVec4 -> vs) = pokeArray (castPtr p) $ toList vs
+	poke p (mat4ToVec4s -> vs) = pokeArray (castPtr p) $ toList vs
 
 newtype {-# CTYPE "cglm/cglm.h" "vec4" #-}
 	Vec4 = Vec4 (LengthL 4 #{type float}) deriving (Show, Eq, Ord)
@@ -71,8 +71,8 @@ newtype {-# CTYPE "cglm/cglm.h" "mat4" #-}
 vec4ToMat4 :: LengthL 4 Vec4 -> Mat4
 vec4ToMat4 = Mat4 . ((\(Vec4 l) -> l) <$>)
 
-mat4ToVec4 :: Mat4 -> LengthL 4 Vec4
-mat4ToVec4 (Mat4 m) = Vec4 <$> m
+mat4ToVec4s :: Mat4 -> LengthL 4 Vec4
+mat4ToVec4s (Mat4 m) = Vec4 <$> m
 
 glmRotate :: [Vec4] -> #{type float} -> [#{type float}] -> [Vec4]
 glmRotate m angle axis = unsafePerformIO . ($ pure) $ runContT do

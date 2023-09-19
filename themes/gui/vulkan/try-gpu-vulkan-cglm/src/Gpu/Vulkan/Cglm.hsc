@@ -14,7 +14,7 @@ module Gpu.Vulkan.Cglm (
 
 	-- * MATRIX
 
-	C.Mat4(..), mat4Identity, modifyMat4, mat4Mul
+	C.Mat4(..), mat4Identity, modifyMat4, mat4Mul, C.mat4ToVec4s
 
 	) where
 
