@@ -136,13 +136,17 @@ rectangles = do
 			createInstance \inst -> bool id
 				(setupDebugMessenger inst)
 				enableValidationLayers $ run inp vext we inst
-		atomically . writeTChan outp $ Left False
+		atomically . writeTChan outp $ Left ()
 	pure (io, vext)
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
 
 type Input = (UniformBufferObject, [Rectangle])
-type Output = Either Bool (Double, Double)
+type Output = Either () MouseButtonDown
+
+data MouseButtonDown
+	= MouseButton1Down Double Double
+	deriving Show
 
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
@@ -161,9 +165,8 @@ untilEnd (inp, outp) ext rs0 = do
 				=<< isEmptyTChan outp
 		case o of
 			Nothing -> loop rs
-			Just (Left True) -> loop rs
-			Just (Left False) -> putStrLn "THE WOLD ENDS"
-			Just (Right p@(x, y)) -> print p >>
+			Just (Left ()) -> putStrLn "THE WOLD ENDS"
+			Just (Right p@(MouseButton1Down x y)) -> print p >>
 				loop (bool instances2 instances $ x < 400)
 
 glfwEvents :: Glfw.Window -> TChan Output -> Glfw.MouseButtonState -> IO ()
@@ -175,6 +178,7 @@ glfwEvents w outp = fix \loop mb1p -> do
 			Glfw.MouseButtonState'Pressed) -> do
 			putStrLn "MouseButton'1 down"
 			atomically . writeTChan outp . Right
+				. uncurry MouseButton1Down
 				=<< Glfw.getCursorPos w
 		_ -> pure ()
 	loop mb1
