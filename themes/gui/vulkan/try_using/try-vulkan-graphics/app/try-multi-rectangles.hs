@@ -123,23 +123,24 @@ import ThEnv
 main :: IO ()
 main = do
 	io@(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
+	vext <- atomically . newTVar $ Vk.Extent2d 0 0
 	_ <- forkIO $ do
 		withWindow \we@(w, _) -> do
 			_ <- forkIO $ glfwEvents
 				w outp Glfw.MouseButtonState'Released
 			createInstance \inst -> bool id
 				(setupDebugMessenger inst)
-				enableValidationLayers $ run inp we inst
+				enableValidationLayers $ run inp vext we inst
 		atomically . writeTChan outp $ Left False
-	untilEnd io instances
+	untilEnd io vext instances
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
 
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
-untilEnd :: (TChan Input, TChan Output) -> [Rectangle] -> IO ()
-untilEnd (inp, outp) rs0 = do
+untilEnd :: (TChan Input, TChan Output) -> TVar Vk.Extent2d -> [Rectangle] -> IO ()
+untilEnd (inp, outp) ext rs0 = do
 	tm0 <- getCurrentTime
 	($ rs0) $ fix \loop rs -> do
 		threadDelay 10000
@@ -240,8 +241,8 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run :: TChan Input -> WinEnvs -> Vk.Ist.I si -> IO ()
-run inp we@(w, _) inst = createSurface w inst \sfc ->
+run :: TChan Input -> TVar Vk.Extent2d -> WinEnvs -> Vk.Ist.I si -> IO ()
+run inp vext we@(w, _) inst = createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phd, qfis) ->
 	createLogicalDevice phd qfis \dv gq pq ->
 
@@ -265,7 +266,7 @@ run inp we@(w, _) inst = createSurface w inst \sfc ->
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 
 	let	dvs = (phd, qfis, dv, gq, pq, cp, cb)
-		scs = (sc, ext, scivs, rp, fbs); ppls = (gpl, pllyt)
+		scs = (sc, vext, ext, scivs, rp, fbs); ppls = (gpl, pllyt)
 		vbs = (vb, ib); rgrps = (rbgrp, rmgrp); ubs = (ubds, ubm) in
 
 	createRectangleBuffer dvs rgrps () instances >>= \rb ->
@@ -1126,8 +1127,9 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""] ->
 	UniformBuffers sds sdsl sm2 sb2 -> IO ()
 mainLoop inp (w, g) sfc dvs@(phdvc, qfis, dvc, gq, pq, cp, cb) iasrfsifs
-	(sc, ext0, scivs, rp, fbs) (gpl, pllyt) (vb, ib) rgrps rb (ubds, ubm) = do
+	(sc, vext, ext0, scivs, rp, fbs) (gpl, pllyt) (vb, ib) rgrps rb (ubds, ubm) = do
 	($ ext0) $ fix \loop ext -> do
+		atomically $ writeTVar vext ext
 		Glfw.pollEvents
 		(tm, rects) <- atomically $ readTChan inp
 		Vk.Dvc.waitIdle dvc
@@ -1143,7 +1145,8 @@ type Devices sd scp scb = (
 	Vk.Queue.Q, Vk.Queue.Q, Vk.CmdPool.C scp, Vk.CmdBffr.C scb )
 
 type Swapchains scfmt ssc nm ss sr sfs = (
-	Vk.Khr.Swapchain.S scfmt ssc, Vk.Extent2d,
+	Vk.Khr.Swapchain.S scfmt ssc,
+	TVar Vk.Extent2d, Vk.Extent2d,
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss,
 	Vk.RndrPass.R sr, HeteroParList.PL Vk.Frmbffr.F sfs )
 
@@ -1212,7 +1215,7 @@ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ia
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext pllyt gpl vb rb ib ubds
-	updateUniformBuffer dvc ubm ext tm
+	updateUniformBuffer' dvc ubm $ uniformBufferObject tm ext
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
@@ -1229,26 +1232,27 @@ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ia
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 
-updateUniformBuffer :: Vk.Dvc.D sd ->
-	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> Float -> IO ()
-updateUniformBuffer dvc um sce tm = do
+updateUniformBuffer' :: Vk.Dvc.D sd ->
+	UniformBufferMemory sm2 sb2 -> UniformBufferObject -> IO ()
+updateUniformBuffer' dvc um obj = do
 	Vk.Mem.write @"uniform-buffer" @(VObj.Atom 256 UniformBufferObject 'Nothing)
-		dvc um zeroBits ubo
-	where ubo = UniformBufferObject {
-		uniformBufferObjectModel = Cglm.rotate
-			Cglm.mat4Identity
-			(tm * Cglm.rad 90)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-		uniformBufferObjectView = Cglm.lookat
-			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-		uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
-			$ Cglm.perspective
-				(Cglm.rad 45)
-				(fromIntegral (Vk.extent2dWidth sce) /
-					fromIntegral (Vk.extent2dHeight sce))
-				0.1 10 }
+		dvc um zeroBits obj
+
+uniformBufferObject :: Float -> Vk.Extent2d -> UniformBufferObject
+uniformBufferObject tm sce = UniformBufferObject {
+	uniformBufferObjectModel = Cglm.rotate
+		Cglm.mat4Identity
+		(tm * Cglm.rad 90)
+		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+	uniformBufferObjectView = Cglm.lookat
+		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+	uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
+		$ Cglm.perspective
+			(Cglm.rad 45)
+			(fromIntegral (Vk.extent2dWidth sce) /
+				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
