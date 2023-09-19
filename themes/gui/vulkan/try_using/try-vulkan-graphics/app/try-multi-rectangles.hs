@@ -36,6 +36,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.List.Length
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.Map qualified as M
 import Data.Bool
 import Data.Word
 import Data.Text.IO qualified as Txt
@@ -131,8 +132,9 @@ rectangles = do
 	vext <- atomically . newTVar $ Vk.Extent2d 0 0
 	_ <- forkIO $ do
 		withWindow \we@(w, _) -> do
-			_ <- forkIO $ glfwEvents
-				w outp Glfw.MouseButtonState'Released
+			_ <- forkIO . glfwEvents
+				w outp . foldr (uncurry M.insert) M.empty
+					$ ((, Glfw.MouseButtonState'Released) <$>) [Glfw.MouseButton'1 .. Glfw.MouseButton'8]
 			createInstance \inst -> bool id
 				(setupDebugMessenger inst)
 				enableValidationLayers $ run inp vext we inst
@@ -146,6 +148,7 @@ type Output = Either () MouseButtonDown
 
 data MouseButtonDown
 	= MouseButton1Down Double Double
+	| MouseButton2Down Double Double
 	deriving Show
 
 enableValidationLayers :: Bool
@@ -168,17 +171,34 @@ untilEnd (inp, outp) ext rs0 = do
 			Just (Left ()) -> putStrLn "THE WOLD ENDS"
 			Just (Right p@(MouseButton1Down x y)) -> print p >>
 				loop (bool instances2 instances $ x < 400)
+			Just (Right p@(MouseButton2Down x y)) -> print p >>
+				loop (bool instances2 instances $ y < 200)
 
-glfwEvents :: Glfw.Window -> TChan Output -> Glfw.MouseButtonState -> IO ()
+type MouseButtonStateDict = M.Map Glfw.MouseButton Glfw.MouseButtonState
+
+getMouseButtons :: Glfw.Window -> IO MouseButtonStateDict
+getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
+	<$> Glfw.getMouseButton w `mapM` bs
+	where bs = [Glfw.MouseButton'1 .. Glfw.MouseButton'8]
+
+glfwEvents :: Glfw.Window -> TChan Output -> MouseButtonStateDict -> IO ()
 glfwEvents w outp = fix \loop mb1p -> do
 	threadDelay 10000
-	mb1 <- Glfw.getMouseButton w Glfw.MouseButton'1
-	case (mb1p, mb1) of
+	mb1 <- getMouseButtons w
+	case (mb1p M.! Glfw.MouseButton'1, mb1 M.! Glfw.MouseButton'1) of
 		(Glfw.MouseButtonState'Released,
 			Glfw.MouseButtonState'Pressed) -> do
 			putStrLn "MouseButton'1 down"
 			atomically . writeTChan outp . Right
 				. uncurry MouseButton1Down
+				=<< Glfw.getCursorPos w
+		_ -> pure ()
+	case (mb1p M.! Glfw.MouseButton'2, mb1 M.! Glfw.MouseButton'2) of
+		(Glfw.MouseButtonState'Released,
+			Glfw.MouseButtonState'Pressed) -> do
+			putStrLn "MouseButton'2 down"
+			atomically . writeTChan outp . Right
+				. uncurry MouseButton2Down
 				=<< Glfw.getCursorPos w
 		_ -> pure ()
 	loop mb1
