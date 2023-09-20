@@ -147,12 +147,8 @@ type Input = (UniformBufferObject, [Rectangle])
 data Output
 	= OutputEnd
 	| OutputMouseButtonDown Glfw.MouseButton
+	| OutputMouseButtonUp Glfw.MouseButton
 	| OutputCursorPosition Double Double
-	deriving Show
-
-data MouseButtonDown
-	= MouseButton1Down Double Double
-	| MouseButton2Down Double Double
 	deriving Show
 
 enableValidationLayers :: Bool
@@ -177,8 +173,9 @@ untilEnd (inp, outp) ext rs0 = do
 				loop instances
 			Just (OutputMouseButtonDown Glfw.MouseButton'2) ->
 				loop instances2
-			Just p@(OutputCursorPosition x y) ->
-				loop rs
+			Just (OutputMouseButtonDown _) -> loop rs
+			Just (OutputMouseButtonUp _) -> loop rs
+			Just p@(OutputCursorPosition x y) -> loop rs
 
 type MouseButtonStateDict = M.Map Glfw.MouseButton Glfw.MouseButtonState
 
@@ -194,25 +191,37 @@ glfwEvents :: Glfw.Window -> TChan Output -> MouseButtonStateDict -> IO ()
 glfwEvents w outp = fix \loop mb1p -> do
 	threadDelay 10000
 	mb1 <- getMouseButtons w
-	case (mb1p M.! Glfw.MouseButton'1, mb1 M.! Glfw.MouseButton'1) of
-		(Glfw.MouseButtonState'Released,
-			Glfw.MouseButtonState'Pressed) -> do
-			putStrLn "MouseButton'1 down"
-			atomically . writeTChan outp
-				$ OutputMouseButtonDown Glfw.MouseButton'1
-		_ -> pure ()
-	case (mb1p M.! Glfw.MouseButton'2, mb1 M.! Glfw.MouseButton'2) of
-		(Glfw.MouseButtonState'Released,
-			Glfw.MouseButtonState'Pressed) -> do
-			putStrLn "MouseButton'2 down"
-			atomically . writeTChan outp
-				$ OutputMouseButtonDown Glfw.MouseButton'2
-		_ -> pure ()
+	sendMouseButtonDown mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonUp mb1p mb1 outp `mapM_` mouseButtonAll
 	if mAny (== Glfw.MouseButtonState'Pressed) mb1
 	then atomically . writeTChan outp . uncurry OutputCursorPosition
 		=<< Glfw.getCursorPos w
 	else pure ()
 	loop mb1
+
+mouseButtonAll :: [Glfw.MouseButton]
+mouseButtonAll = [Glfw.MouseButton'1 .. Glfw.MouseButton'8]
+
+sendMouseButtonDown, sendMouseButtonUp ::
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan Output ->
+	Glfw.MouseButton -> IO ()
+sendMouseButtonDown = sendMouseButton OutputMouseButtonDown
+	Glfw.MouseButtonState'Released Glfw.MouseButtonState'Pressed
+
+sendMouseButtonUp = sendMouseButton OutputMouseButtonUp
+	Glfw.MouseButtonState'Pressed Glfw.MouseButtonState'Released
+
+sendMouseButton ::
+	(Glfw.MouseButton -> Output) ->
+	Glfw.MouseButtonState -> Glfw.MouseButtonState ->
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan Output ->
+	Glfw.MouseButton -> IO ()
+sendMouseButton ev pst st pbss bss outp b =
+	case (pbss M.! b == pst, bss M.! b == st) of
+		(True, True) -> do
+			print $ ev b
+			atomically . writeTChan outp $ ev b
+		_ -> pure ()
 
 withWindow :: (WinEnvs -> IO a) -> IO a
 withWindow f = atomically (newTVar False) >>= \g -> initWindow g >>= \w ->
