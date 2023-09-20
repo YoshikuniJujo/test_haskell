@@ -37,41 +37,46 @@ class G a where
 	gPoke p = ggPoke (castPtr p) . from
 
 class Gg f where
-	ggSizeOf :: f a -> Int
+	ggSizeOf :: f a -> Int -> Int
 	ggAlignment :: f a -> Int
+	ggHeadAlignment :: f a -> Int
 	ggPeek :: Ptr (f a) -> IO (f a)
 	ggPoke :: Ptr (f a) -> f a -> IO ()
 
 instance Gg U1 where
-	ggSizeOf _ = 0
+	ggSizeOf _ sz = sz
 	ggAlignment _ = 1
+	ggHeadAlignment _ = 1
 	ggPeek _ = pure U1
 	ggPoke _ _ = pure ()
 
 instance (Storable a, Gg b) => Gg (K1 _i a :*: b) where
-	ggSizeOf _ = ((sizeOf @a undefined - 1) `div` a + 1) * a + ggSizeOf @b undefined
-		where a = ggAlignment @b undefined
+	ggSizeOf _ sz = ggSizeOf @b undefined (((sz + sizeOf @a undefined - 1) `div` a + 1) * a)
+		where a = ggHeadAlignment @b undefined
 	ggAlignment _ = alignment @a undefined `lcm` ggAlignment @b undefined
+	ggHeadAlignment _ = alignment @a undefined
 	ggPeek p = (:*:) <$> (K1 <$> peek (castPtr p)) <*> ggPeek (castPtr p')
 		where
 		ip = ptrToIntPtr p
 		p' = intPtrToPtr $ ((ip + (IntPtr $ sizeOf @a undefined) - 1) `div` a + 1) * a
-		a = IntPtr $ ggAlignment @b undefined
+		a = IntPtr $ ggHeadAlignment @b undefined
 	ggPoke p (K1 x :*: y) = poke (castPtr p) x >> ggPoke (castPtr p') y
 		where
 		ip = ptrToIntPtr p
 		p' = intPtrToPtr $ ((ip + (IntPtr $ sizeOf @a undefined) - 1) `div` a + 1) * a
-		a = IntPtr $ ggAlignment @b undefined
+		a = IntPtr $ ggHeadAlignment @b undefined
 
 instance Gg (a :*: b) => Gg (M1 _i _c a :*: b) where
 	ggSizeOf _ = ggSizeOf @(a :*: b) undefined
 	ggAlignment _ = ggAlignment @(a :*: b) undefined
+	ggHeadAlignment _ = ggHeadAlignment @(a :*: b) undefined
 	ggPeek p = (\(x :*: y) -> (M1 x :*: y)) <$> ggPeek (castPtr p)
 	ggPoke p (M1 x :*: y) = ggPoke (castPtr p) (x :*: y)
 
 instance Gg (a :*: (b :*: c)) => Gg ((a :*: b) :*: c) where
 	ggSizeOf _ = ggSizeOf @(a :*: (b :*: c)) undefined
 	ggAlignment _ = ggAlignment @(a :*: (b :*: c)) undefined
+	ggHeadAlignment _ = ggHeadAlignment @(a :*: (b :*: c)) undefined
 	ggPeek p = (\(x :*: (y :*: z)) -> (x :*: y) :*: z) <$> ggPeek (castPtr p)
 	ggPoke p ((x :*: y) :*: z) = ggPoke (castPtr p) (x :*: (y :*: z))
 
@@ -99,12 +104,14 @@ instance (Gg a, Gg b) => Gg (a :+: b) where
 instance Gg a => Gg (M1 i c a) where
 	ggSizeOf (M1 x) = ggSizeOf x
 	ggAlignment (M1 x) = ggAlignment x
+	ggHeadAlignment (M1 x) = ggHeadAlignment x
 	ggPeek = (M1 <$>) . ggPeek . castPtr
 	ggPoke p (M1 x) = ggPoke (castPtr p) x
 
 instance Storable a => Gg (K1 i a) where
-	ggSizeOf (K1 x) = sizeOf x
+	ggSizeOf (K1 x) sz = align (alignment x) sz + sizeOf x
 	ggAlignment (K1 x) = alignment x
+	ggHeadAlignment (K1 x) = alignment x
 	ggPeek = (K1 <$>) . peek . castPtr
 	ggPoke p (K1 x) = poke (castPtr p) x
 
@@ -176,3 +183,6 @@ type family Flatten (x :: Type -> Type) :: [Type] where
 	Flatten (M1 m i a) = Flatten a
 	Flatten (M1 m i a :*: t2) = GetType a ': Flatten t2
 	Flatten ((t1 :*: t2) :*: t3) = Flatten (t1 :*: t2 :*: t3)
+
+align :: Integral n => n -> n -> n
+align algn ofst = ((ofst - 1) `div` algn + 1) * algn
