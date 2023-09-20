@@ -48,6 +48,32 @@ instance Gg U1 where
 	ggPeek _ = pure U1
 	ggPoke _ _ = pure ()
 
+instance (Storable a, Gg b) => Gg (K1 _i a :*: b) where
+	ggSizeOf _ = ((sizeOf @a undefined - 1) `div` a + 1) * a + ggSizeOf @b undefined
+		where a = ggAlignment @b undefined
+	ggAlignment _ = alignment @a undefined `lcm` ggAlignment @b undefined
+	ggPeek p = (:*:) <$> (K1 <$> peek (castPtr p)) <*> ggPeek (castPtr p')
+		where
+		p' = p `plusPtr` (((sizeOf @a undefined - 1) `div` a + 1) * a)
+		a = ggAlignment @b undefined
+	ggPoke p (K1 x :*: y) = poke (castPtr p) x >> ggPoke (castPtr p') y
+		where
+		p' = p `plusPtr` (((sizeOf @a undefined - 1) `div` a + 1) * a)
+		a = ggAlignment @b undefined
+
+instance Gg (a :*: b) => Gg (M1 _i _c a :*: b) where
+	ggSizeOf _ = ggSizeOf @(a :*: b) undefined
+	ggAlignment _ = ggAlignment @(a :*: b) undefined
+	ggPeek p = (\(x :*: y) -> (M1 x :*: y)) <$> ggPeek (castPtr p)
+	ggPoke p (M1 x :*: y) = ggPoke (castPtr p) (x :*: y)
+
+instance Gg (a :*: (b :*: c)) => Gg ((a :*: b) :*: c) where
+	ggSizeOf _ = ggSizeOf @(a :*: (b :*: c)) undefined
+	ggAlignment _ = ggAlignment @(a :*: (b :*: c)) undefined
+	ggPeek p = (\(x :*: (y :*: z)) -> (x :*: y) :*: z) <$> ggPeek (castPtr p)
+	ggPoke p ((x :*: y) :*: z) = ggPoke (castPtr p) (x :*: (y :*: z))
+
+{-
 instance (Gg a, Gg b) => Gg (a :*: b) where
 	ggSizeOf _ = ((ggSizeOf @a undefined - 1) `div` a + 1) * a + ggSizeOf @b undefined
 		where a = ggAlignment @b undefined
@@ -60,6 +86,7 @@ instance (Gg a, Gg b) => Gg (a :*: b) where
 		where
 		p' = p `plusPtr` (((ggSizeOf @a undefined - 1) `div` a + 1) * a)
 		a = ggAlignment @b undefined
+		-}
 
 {-
 instance (Gg a, Gg b) => Gg (a :+: b) where
