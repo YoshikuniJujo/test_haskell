@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeValMap where
+module Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeValMap (MapTypeVal2(..), MapTypeValMaybe2(..)) where
 
 import Data.Kind
 

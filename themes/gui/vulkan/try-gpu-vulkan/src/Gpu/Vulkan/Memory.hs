@@ -259,7 +259,7 @@ write :: forall nm obj sd sm ibargs v .
 write dv m flgs v = bracket
 	(map @nm @obj dv m flgs) (const $ unmap dv m)
 	\(ptr :: Ptr (VObj.TypeOf obj)) -> do
-		putStrLn $ "Gpu.Vulkan.Memory.write: ptr = " ++ show ptr
+--		putStrLn $ "Gpu.Vulkan.Memory.write: ptr = " ++ show ptr
 		ln <- objectLength @nm @obj m
 		VObj.store @_ @obj ptr ln v
 

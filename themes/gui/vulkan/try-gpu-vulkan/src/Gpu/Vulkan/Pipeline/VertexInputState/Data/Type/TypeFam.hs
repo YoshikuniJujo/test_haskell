@@ -4,12 +4,9 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeFam where
+module Gpu.Vulkan.Pipeline.VertexInputState.Data.Type.TypeFam (Until) where
 
 import Data.Kind
-
-type family FromJust (mx :: Maybe x) :: x where
-	FromJust ('Just x) = x
 
 type family AppMaybe (f :: x -> y) (mx :: Maybe x) :: Maybe y where
 	AppMaybe _ 'Nothing = 'Nothing
