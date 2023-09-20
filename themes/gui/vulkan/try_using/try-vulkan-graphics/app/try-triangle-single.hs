@@ -32,7 +32,6 @@ import Data.Proxy
 import Data.Bool
 import Data.Maybe
 import Data.List qualified as L
-import Data.IORef
 import Data.List.Length
 import Data.Color
 

@@ -1367,7 +1367,7 @@ instance Default Rectangle where
 	def = Rectangle
 		(RectPos . Cglm.Vec2 $ 0 :. 0 :. NilL)
 		(RectSize . Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(RectColor . Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+		(RectColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL)
 		def def def def
 
 newtype RectPos = RectPos Cglm.Vec2
@@ -1376,7 +1376,7 @@ newtype RectPos = RectPos Cglm.Vec2
 newtype RectSize = RectSize Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-newtype RectColor = RectColor Cglm.Vec3
+newtype RectColor = RectColor Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 newtype RectModel0 = RectModel0 Cglm.Vec4
@@ -1419,7 +1419,7 @@ dummy :: [Rectangle]
 dummy = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
 	[Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
 			(RectModel0 m0) (RectModel1 m1)
 			(RectModel2 m2) (RectModel3 m3)]
 
@@ -1458,10 +1458,10 @@ layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec2 rectPosition;
 layout(location = 3) in vec2 rectSize;
-layout(location = 4) in vec3 rectColor;
+layout(location = 4) in vec4 rectColor;
 layout(location = 5) in mat4 rectModel;
 
-layout(location = 0) out vec3 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 void
 main()
@@ -1480,14 +1480,14 @@ main()
 
 #version 450
 
-layout(location = 0) in vec3 fragColor;
+layout(location = 0) in vec4 fragColor;
 
 layout(location = 0) out vec4 outColor;
 
 void
 main()
 {
-	outColor = vec4(fragColor, 1.0);
+	outColor = fragColor;
 }
 
 |]
