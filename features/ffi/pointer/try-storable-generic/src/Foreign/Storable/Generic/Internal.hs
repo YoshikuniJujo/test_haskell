@@ -54,12 +54,14 @@ instance (Storable a, Gg b) => Gg (K1 _i a :*: b) where
 	ggAlignment _ = alignment @a undefined `lcm` ggAlignment @b undefined
 	ggPeek p = (:*:) <$> (K1 <$> peek (castPtr p)) <*> ggPeek (castPtr p')
 		where
-		p' = p `plusPtr` (((sizeOf @a undefined - 1) `div` a + 1) * a)
-		a = ggAlignment @b undefined
+		ip = ptrToIntPtr p
+		p' = intPtrToPtr $ ((ip + (IntPtr $ sizeOf @a undefined) - 1) `div` a + 1) * a
+		a = IntPtr $ ggAlignment @b undefined
 	ggPoke p (K1 x :*: y) = poke (castPtr p) x >> ggPoke (castPtr p') y
 		where
-		p' = p `plusPtr` (((sizeOf @a undefined - 1) `div` a + 1) * a)
-		a = ggAlignment @b undefined
+		ip = ptrToIntPtr p
+		p' = intPtrToPtr $ ((ip + (IntPtr $ sizeOf @a undefined) - 1) `div` a + 1) * a
+		a = IntPtr $ ggAlignment @b undefined
 
 instance Gg (a :*: b) => Gg (M1 _i _c a :*: b) where
 	ggSizeOf _ = ggSizeOf @(a :*: b) undefined
