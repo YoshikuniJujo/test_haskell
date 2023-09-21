@@ -40,6 +40,8 @@ library
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell
@@ -75,6 +77,8 @@ executable try-cube-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell
@@ -111,6 +115,8 @@ executable try-gamepad-button
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell
@@ -147,6 +153,8 @@ executable try-multi-rectangles
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell
@@ -183,6 +191,8 @@ executable try-pyramid-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell
@@ -219,6 +229,8 @@ executable try-rectangle-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell
@@ -255,6 +267,8 @@ executable try-triangle-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell
@@ -291,6 +305,8 @@ test-suite try-vulkan-graphics-test
     , base >=4.7 && <5
     , containers
     , data-default
+    , mtl
+    , optparse-declarative
     , ranged-list
     , stm
     , template-haskell

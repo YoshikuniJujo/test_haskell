@@ -20,6 +20,7 @@ import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.List.Length
+import Data.Default
 import Data.Bool
 import Data.Time
 
@@ -27,38 +28,45 @@ import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-main :: IO ()
-main = (`untilEnd` instances) =<< rectangles
+import Options.Declarative
+import Control.Monad.Trans
 
-untilEnd :: ((Input -> STM (), (STM Bool, STM Output)), STM Vk.Extent2d) -> (Float -> [Rectangle]) -> IO ()
-untilEnd ((inp, (oute, outp)), ext) rs0 = do
+main :: IO ()
+main = run_ action
+
+action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
+	Cmd "Draw Rectangles" ()
+action f = liftIO $ untilEnd (get f) =<< rectangles
+
+untilEnd :: Bool -> ((Draw -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d) -> IO ()
+untilEnd f ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
-	($ rs0) $ fix \loop rs -> do
+	($ instances) $ fix \loop rs -> do
 		threadDelay 10000
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
 			e <- ext
-			inp (uniformBufferObject e, rs tm)
+			inp (bool (uniformBufferObject e) def f, rs tm)
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop rs
-			Just OutputEnd -> putStrLn "THE WOLD ENDS"
-			Just (OutputMouseButtonDown Glfw.MouseButton'1) ->
+			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just (EventMouseButtonDown Glfw.MouseButton'1) ->
 				loop instances
-			Just (OutputMouseButtonDown Glfw.MouseButton'2) ->
+			Just (EventMouseButtonDown Glfw.MouseButton'2) ->
 				loop instances2
-			Just (OutputMouseButtonDown _) -> loop rs
-			Just (OutputMouseButtonUp _) -> loop rs
-			Just (OutputCursorPosition _x _y) -> loop rs
+			Just (EventMouseButtonDown _) -> loop rs
+			Just (EventMouseButtonUp _) -> loop rs
+			Just (EventCursorPosition _x _y) -> loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {
-	uniformBufferObjectView = Cglm.lookat
+	viewProjectionView = Cglm.lookat
 		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-	uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
+	viewProjectionProj = Cglm.modifyMat4 1 1 negate
 		$ Cglm.perspective
 			(Cglm.rad 45)
 			(fromIntegral (Vk.extent2dWidth sce) /

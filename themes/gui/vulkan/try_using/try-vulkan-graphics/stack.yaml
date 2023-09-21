@@ -68,6 +68,7 @@ extra-deps:
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
 - union-color-0.1.2.0
+- optparse-declarative-0.4.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

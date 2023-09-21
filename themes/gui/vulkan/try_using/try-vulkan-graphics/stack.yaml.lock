@@ -297,6 +297,13 @@ packages:
       size: 429
   original:
     hackage: union-color-0.1.2.0
+- completed:
+    hackage: optparse-declarative-0.4.2@sha256:2054a1489442744f1c93b7994a9d5600fc51a513290d9c27631aef24ffbddf21,1003
+    pantry-tree:
+      sha256: 48c3be228ed334034ed82a3257daadc40a55d5964b9db5cc34fceb9dbb04c9d1
+      size: 631
+  original:
+    hackage: optparse-declarative-0.4.2
 snapshots:
 - completed:
     sha256: 23bb9bb355bfdb1635252e120a29b712f0d5e8a6c6a65c5ab5bd6692f46c438e

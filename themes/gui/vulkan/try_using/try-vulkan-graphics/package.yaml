@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - template-haskell
 - stm
+- mtl
 - data-default
 - containers
 - vector
@@ -30,6 +31,7 @@ dependencies:
 - time
 - JuicyPixels
 - GLFW-b
+- optparse-declarative
 - try-gpu-vulkan
 - try-gpu-vulkan-khr
 - try-gpu-vulkan-khr-glfw

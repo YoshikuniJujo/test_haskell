@@ -18,9 +18,9 @@ module Rectangles (
 
 	rectangles,
 
-	-- * INPUT
+	-- * DRAW
 
-	Input,
+	Draw,
 
 	-- ** VIEW PROJECTION
 
@@ -32,9 +32,9 @@ module Rectangles (
 	RectPos(..), RectSize(..), RectColor(..),
 	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
 
-	-- * OUTPUT
+	-- * EVENT
 
-	Output(..)
+	Event(..)
 
 	) where
 
@@ -144,7 +144,7 @@ import Gpu.Vulkan.Cglm qualified as Cglm
 import Tools
 import ThEnv
 
-rectangles :: IO ((Input -> STM (), (STM Bool, STM Output)), STM Vk.Extent2d)
+rectangles :: IO ((Draw -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d)
 rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically . newTVar $ Vk.Extent2d 0 0
@@ -156,17 +156,17 @@ rectangles = do
 			createInstance \inst -> bool id
 				(setupDebugMessenger inst)
 				enableValidationLayers $ run inp vext we inst
-		atomically $ writeTChan outp OutputEnd
+		atomically $ writeTChan outp EventEnd
 	pure ((writeTChan inp, (isEmptyTChan outp, readTChan outp)), readTVar vext)
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
 
-type Input = (ViewProjection, [Rectangle])
-data Output
-	= OutputEnd
-	| OutputMouseButtonDown Glfw.MouseButton
-	| OutputMouseButtonUp Glfw.MouseButton
-	| OutputCursorPosition Double Double
+type Draw = (ViewProjection, [Rectangle])
+data Event
+	= EventEnd
+	| EventMouseButtonDown Glfw.MouseButton
+	| EventMouseButtonUp Glfw.MouseButton
+	| EventCursorPosition Double Double
 	deriving Show
 
 enableValidationLayers :: Bool
@@ -182,14 +182,14 @@ getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
 
-glfwEvents :: Glfw.Window -> TChan Output -> MouseButtonStateDict -> IO ()
+glfwEvents :: Glfw.Window -> TChan Event -> MouseButtonStateDict -> IO ()
 glfwEvents w outp = fix \loop mb1p -> do
 	threadDelay 10000
 	mb1 <- getMouseButtons w
 	sendMouseButtonDown mb1p mb1 outp `mapM_` mouseButtonAll
 	sendMouseButtonUp mb1p mb1 outp `mapM_` mouseButtonAll
 	if mAny (== Glfw.MouseButtonState'Pressed) mb1
-	then atomically . writeTChan outp . uncurry OutputCursorPosition
+	then atomically . writeTChan outp . uncurry EventCursorPosition
 		=<< Glfw.getCursorPos w
 	else pure ()
 	loop mb1
@@ -198,18 +198,18 @@ mouseButtonAll :: [Glfw.MouseButton]
 mouseButtonAll = [Glfw.MouseButton'1 .. Glfw.MouseButton'8]
 
 sendMouseButtonDown, sendMouseButtonUp ::
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan Output ->
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
 	Glfw.MouseButton -> IO ()
-sendMouseButtonDown = sendMouseButton OutputMouseButtonDown
+sendMouseButtonDown = sendMouseButton EventMouseButtonDown
 	Glfw.MouseButtonState'Released Glfw.MouseButtonState'Pressed
 
-sendMouseButtonUp = sendMouseButton OutputMouseButtonUp
+sendMouseButtonUp = sendMouseButton EventMouseButtonUp
 	Glfw.MouseButtonState'Pressed Glfw.MouseButtonState'Released
 
 sendMouseButton ::
-	(Glfw.MouseButton -> Output) ->
+	(Glfw.MouseButton -> Event) ->
 	Glfw.MouseButtonState -> Glfw.MouseButtonState ->
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan Output ->
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
 	Glfw.MouseButton -> IO ()
 sendMouseButton ev pst st pbss bss outp b =
 	case (pbss M.! b == pst, bss M.! b == st) of
@@ -287,7 +287,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run :: TChan Input -> TVar Vk.Extent2d -> WinEnvs -> Vk.Ist.I si -> IO ()
+run :: TChan Draw -> TVar Vk.Extent2d -> WinEnvs -> Vk.Ist.I si -> IO ()
 run inp vext we@(w, _) inst = createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phd, qfis) ->
 	createLogicalDevice phd qfis \dv gq pq ->
@@ -762,7 +762,8 @@ rasterizer = Vk.Ppl.RstSt.CreateInfo {
 	Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
 	Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
 	Vk.Ppl.RstSt.createInfoLineWidth = 1,
-	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
+--	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
+	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeNone,
 	Vk.Ppl.RstSt.createInfoFrontFace = Vk.FrontFaceCounterClockwise,
 	Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
 	Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
@@ -1165,7 +1166,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
-	TChan Input -> TVar Vk.Extent2d -> WinEnvs -> Vk.Khr.Surface.S ssfc -> Devices sd sc scb ->
+	TChan Draw -> TVar Vk.Extent2d -> WinEnvs -> Vk.Khr.Surface.S ssfc -> Devices sd sc scb ->
 	SyncObjects '(sias, srfs, siff) -> Swapchains scfmt ssc nm ss sr sfs ->
 	Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
@@ -1177,11 +1178,12 @@ mainLoop inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
 		atomically $ writeTVar vext ext
 		Glfw.pollEvents
 		(tm, rects) <- atomically $ readTChan inp
+		let	rects' = bool rects dummy $ null rects
 		Vk.Dvc.waitIdle dvc
 		destroyRectangleBuffer dvs rgrps ()
-		createRectangleBuffer dvs rgrps () rects >>= \rb ->
+		createRectangleBuffer dvs rgrps () rects' >>= \rb ->
 			runLoop we sfc dvs iasrfsifs scs pls
-				vbs (rb, fromIntegral $ length rects) ubs
+				vbs (rb, fromIntegral $ length rects') ubs
 				tm loop ext
 	Vk.Dvc.waitIdle dvc
 
@@ -1424,8 +1426,8 @@ dummy = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
 			(RectModel2 m2) (RectModel3 m3)]
 
 data ViewProjection = ViewProjection {
-	uniformBufferObjectView :: Cglm.Mat4,
-	uniformBufferObjectProj :: Cglm.Mat4 }
+	viewProjectionView :: Cglm.Mat4,
+	viewProjectionProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
 instance Storable ViewProjection where
