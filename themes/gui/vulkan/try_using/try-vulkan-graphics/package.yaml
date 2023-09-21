@@ -32,6 +32,7 @@ dependencies:
 - JuicyPixels
 - GLFW-b
 - optparse-declarative
+- try-vulkan-rectangles
 - try-gpu-vulkan
 - try-gpu-vulkan-khr
 - try-gpu-vulkan-khr-glfw

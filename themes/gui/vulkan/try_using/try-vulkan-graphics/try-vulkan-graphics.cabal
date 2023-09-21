@@ -26,9 +26,6 @@ source-repository head
 library
   exposed-modules:
       Lib
-      Rectangles
-      ThEnv
-      Tools
   other-modules:
       Paths_try_vulkan_graphics
   hs-source-dirs:
@@ -58,6 +55,7 @@ library
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -96,6 +94,7 @@ executable try-cube-single
     , try-storable-generic
     , try-storable-peek-poke
     , try-vulkan-graphics
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -134,6 +133,7 @@ executable try-gamepad-button
     , try-storable-generic
     , try-storable-peek-poke
     , try-vulkan-graphics
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -172,6 +172,7 @@ executable try-multi-rectangles
     , try-storable-generic
     , try-storable-peek-poke
     , try-vulkan-graphics
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -210,6 +211,7 @@ executable try-pyramid-single
     , try-storable-generic
     , try-storable-peek-poke
     , try-vulkan-graphics
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -248,6 +250,7 @@ executable try-rectangle-single
     , try-storable-generic
     , try-storable-peek-poke
     , try-vulkan-graphics
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -286,6 +289,7 @@ executable try-triangle-single
     , try-storable-generic
     , try-storable-peek-poke
     , try-vulkan-graphics
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -324,6 +328,7 @@ test-suite try-vulkan-graphics-test
     , try-storable-generic
     , try-storable-peek-poke
     , try-vulkan-graphics
+    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
