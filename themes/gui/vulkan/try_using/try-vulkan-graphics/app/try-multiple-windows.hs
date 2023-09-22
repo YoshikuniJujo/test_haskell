@@ -260,7 +260,7 @@ createWindowResources :: Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(
 	forall ssfc sr sg sias srfs siff fmt ssc ss sfs .
 	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
-	WinParams ssfc sr sg sl sias srfs siff fmt ssc nm ss sfs -> IO a ) ->
+	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
 	IO a
 createWindowResources inst phdv dv qfis ppllyt f =
 	newFramebufferResized >>= \g ->
@@ -278,7 +278,7 @@ createWindowResources inst phdv dv qfis ppllyt f =
 
 	atomically (newTVar ext) >>= \vext ->
 
-	f (w, g, sfc, vext, rp, gpl, sos, sc, scivs, fbs)
+	f $ WinParams w g sfc vext rp gpl sos sc scivs fbs
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -1003,27 +1003,27 @@ mainLoop :: (
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] ->
-	WinParams ssfc sr sg sl sias srfs siff fmt ssc nm ss sfs ->
-	WinParams ssfc' sr' sg' sl sias' srfs' siff' fmt' ssc' nm' ss' sfs' -> IO ()
+	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
+	WinParams sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
 		runLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' loop
 	Vk.Dvc.waitIdle dvc
 
-type WinParams ssfc sr sg sl sias srfs siff fmt ssc nm ss sfs = (
-	Glfw.Window, FramebufferResized, Vk.Khr.Surface.S ssfc,
-	TVar Vk.Extent2d, Vk.RndrPass.R sr,
-	Vk.Ppl.Graphics.G sg
+data WinParams sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs = WinParams
+	Glfw.Window FramebufferResized (Vk.Khr.Surface.S ssfc)
+	(TVar Vk.Extent2d) (Vk.RndrPass.R sr)
+	(Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[], '[]),
-	SyncObjects '(sias, srfs, siff),
-	Vk.Khr.Swapchain.S fmt ssc,
-	HeteroParList.PL (Vk.ImgVw.I nm fmt) ss,
-	HeteroParList.PL Vk.Frmbffr.F sfs )
+		'(sl, '[], '[]))
+	(SyncObjects '(sias, srfs, siff))
+	(Vk.Khr.Swapchain.S fmt ssc)
+	(HeteroParList.PL (Vk.ImgVw.I nm fmt) ss)
+	(HeteroParList.PL Vk.Frmbffr.F sfs)
 
-type Recreates ssfc sr sg sl fmt ssc nm sis sfs = (
+type Recreates sl nm ssfc sr sg fmt ssc sis sfs = (
 	Glfw.Window, Vk.Khr.Surface.S ssfc,
 	TVar Vk.Extent2d,
 	Vk.RndrPass.R sr,
@@ -1036,12 +1036,12 @@ type Recreates ssfc sr sg sl fmt ssc nm sis sfs = (
 	HeteroParList.PL Vk.Frmbffr.F sfs )
 
 winParamsToRecreates ::
-	WinParams ssfc sr sg sl sias srfs siff fmt ssc nm sscivs sfs ->
-	Recreates ssfc sr sg sl fmt ssc nm sscivs sfs
-winParamsToRecreates (w, _frszd, sfc, ex, rp, gpl, _sos, sc, scivs, fb) =
+	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
+	Recreates sl nm ssfc sr sg fmt ssc sscivs sfs
+winParamsToRecreates (WinParams w _frszd sfc ex rp gpl _sos sc scivs fb) =
 	(w, sfc, ex, rp, gpl, sc, scivs, fb)
 
-type Draws sr sg sl sias srfs siff fmt ssc sfs = (
+type Draws sl sr sg sias srfs siff fmt ssc sfs = (
 	TVar Vk.Extent2d, Vk.RndrPass.R sr,
 	Vk.Ppl.Graphics.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]),
@@ -1050,9 +1050,9 @@ type Draws sr sg sl sias srfs siff fmt ssc sfs = (
 	HeteroParList.PL Vk.Frmbffr.F sfs )
 
 winParamsToDraws ::
-	WinParams ssfc sr sg sl sias srfs siff fmt ssc nm sscivs sfs ->
-	Draws sr sg sl sias srfs siff fmt ssc sfs
-winParamsToDraws (_w, _frszd, _sfc, ex, rp, gpl, sos, sc, _scivs, fb) =
+	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
+	Draws sl sr sg sias srfs siff fmt ssc sfs
+winParamsToDraws (WinParams _w _frszd _sfc ex rp gpl sos sc _scivs fb) =
 	(ex, rp, gpl, sos, sc, fb)
 
 runLoop :: (
@@ -1063,12 +1063,12 @@ runLoop :: (
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] ->
-	WinParams ssfc sr sg sl sias srfs siff fmt ssc nm sis sfs ->
-	WinParams ssfc' sr' sg' sl sias' srfs' siff' fmt' ssc' nm' sis' sfs' ->
+	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
+	WinParams sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
-	wps@(win, frszd, _, _, _, _, _, _, _, _)
-	wps'@(win', frszd', _, _, _, _, _, _, _, _) loop = do
+	wps@(WinParams win frszd _ _ _ _ _ _ _ _)
+	wps'@(WinParams win' frszd' _ _ _ _ _ _ _ _) loop = do
 	catchAndRecreate phdvc qfis dvc ppllyt (winParamsToRecreates wps) loop
 		$ drawFrame dvc gq pq cb vb (winParamsToDraws wps)
 	Vk.Dvc.waitIdle dvc
@@ -1093,7 +1093,7 @@ runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff sl .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Draws sr sg sl sias srfs siff fmt ssc sfs -> IO ()
+	Draws sl sr sg sias srfs siff fmt ssc sfs -> IO ()
 drawFrame dvc gq pq cb vb (vext, rp, gpl, (SyncObjects ias rfs iff), sc, fbs) = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
@@ -1127,7 +1127,7 @@ catchAndSerialize =
 catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
-	Recreates ssfc sr sg sl fmt ssc nm sis sfs ->
+	Recreates sl nm ssfc sr sg fmt ssc sis sfs ->
 	IO () -> IO () -> IO ()
 catchAndRecreate phd qfis dv plyt rcs loop act =
 	catchJust
@@ -1143,7 +1143,7 @@ recreateAll :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
-	Recreates ssfc sr sg sl fmt ssc nm sis sfs ->
+	Recreates sl nm ssfc sr sg fmt ssc sis sfs ->
 
 	IO ()
 recreateAll phdvc qfis dvc ppllyt (win, sfc, vext, rp, gpl, sc, scivs, fbs) = do
