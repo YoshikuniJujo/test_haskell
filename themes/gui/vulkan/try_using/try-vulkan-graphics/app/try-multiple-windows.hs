@@ -39,8 +39,8 @@ import Data.Color
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
+import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface, init)
+import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw hiding (getRequiredInstanceExtensions)
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
@@ -162,7 +162,6 @@ withDummyWindow f = initDummyWindow >>= \w -> f w <* Glfw.destroyWindow w
 initDummyWindow :: IO Glfw.Window
 initDummyWindow = do
 	Just w <- do
-		True <- Glfw.init
 		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
 		Glfw.windowHint $ Glfw.WindowHint'Visible False
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
@@ -173,7 +172,7 @@ withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w -> f w <* Glfw.destroyWindow w
 
 glfwInit :: IO a -> IO a
-glfwInit = bracket_ Glfw.init Glfw.terminate
+glfwInit = Glfw.init error
 
 initWindow :: FramebufferResized -> IO Glfw.Window
 initWindow frszd = do
