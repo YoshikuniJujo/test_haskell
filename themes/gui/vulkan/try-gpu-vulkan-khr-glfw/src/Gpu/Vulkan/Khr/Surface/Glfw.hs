@@ -35,9 +35,9 @@ import qualified Gpu.Vulkan.Khr.Surface.Glfw.Middle as M
 
 init :: (ErrorMessage -> IO a) -> IO a -> IO a
 init hdl cmp = GlfwB.init >>= bool
-	(finally cmp GlfwB.terminate)
 	(hdl $ "Gpu.Vulkan.Khr.Surface.Glfw: " ++
 		"GLFW-b.Graphics.UI.GLFW.init return False")
+	(finally cmp GlfwB.terminate)
 
 type ErrorMessage = String
 
