@@ -7,7 +7,7 @@
 
 module Gpu.Vulkan.Khr.Surface.Glfw (
 
-	init, getRequiredInstanceExtensions,
+	init, ErrorMessage, getRequiredInstanceExtensions,
 
 	createWindowSurface
 
@@ -33,10 +33,13 @@ import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.Glfw.Middle as M
 
-init :: IO a -> IO a -> IO a
-init cmp hdl = do
-	scc <- GlfwB.init
-	bool (finally cmp GlfwB.terminate) hdl scc
+init :: (ErrorMessage -> IO a) -> IO a -> IO a
+init hdl cmp = GlfwB.init >>= bool
+	(finally cmp GlfwB.terminate)
+	(hdl $ "Gpu.Vulkan.Khr.Surface.Glfw: " ++
+		"GLFW-b.Graphics.UI.GLFW.init return False")
+
+type ErrorMessage = String
 
 createWindowSurface :: (AllocationCallbacks.ToMiddle mscc ) =>
 	Vk.Instance.I si -> GlfwB.Window ->
