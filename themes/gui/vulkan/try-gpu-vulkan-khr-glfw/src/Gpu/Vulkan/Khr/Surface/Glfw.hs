@@ -1,14 +1,28 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Surface.Glfw where
+module Gpu.Vulkan.Khr.Surface.Glfw (
 
+	init, terminate, getRequiredInstanceExtensions,
+
+	createWindowSurface
+
+	) where
+
+import Prelude hiding (init)
+
+import Foreign.Ptr
+import Foreign.Storable
+import Foreign.C.String
 import Control.Exception
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.Text qualified as Txt
+import Data.Text.Foreign qualified as Txt
 
 import qualified Graphics.UI.GLFW as GlfwB
 
@@ -17,6 +31,12 @@ import qualified Gpu.Vulkan.Instance.Internal as Vk.Instance
 import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.Glfw.Middle as M
+
+init :: IO Bool
+init = GlfwB.init
+
+terminate :: IO ()
+terminate = GlfwB.terminate
 
 createWindowSurface :: (AllocationCallbacks.ToMiddle mscc ) =>
 	Vk.Instance.I si -> GlfwB.Window ->
@@ -27,3 +47,19 @@ createWindowSurface (Vk.Instance.I ist) win
 	(M.createWindowSurface ist win macc)
 	(\sfc -> Vk.Khr.Surface.M.destroy ist sfc macc)
 	(f . Vk.Khr.Surface.S)
+
+getRequiredInstanceExtensions :: IO [Txt.Text]
+getRequiredInstanceExtensions = (cstrToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
+
+cstrToText :: CString -> IO Txt.Text
+cstrToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
+
+cstringLength :: CString -> IO Int
+cstringLength pc = do
+	c <- peek pc
+	case c of
+		0 -> pure 0
+		_ -> (+ 1) <$> cstringLength (pc `plusPtr` 1)
+
+cstringToCStringLen :: CString -> IO CStringLen
+cstringToCStringLen cs = (cs ,) <$> cstringLength cs

@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan-khr-glfw
-version:        0.1.0.1
+version:        0.1.0.2
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan-khr-glfw#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan-khr-glfw#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan-khr-glfw/issues
@@ -38,6 +38,7 @@ library
     , base >=4.7 && <5
     , containers
     , stm
+    , text
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
     , try-gpu-vulkan-middle-khr-glfw
@@ -58,6 +59,7 @@ test-suite try-gpu-vulkan-khr-glfw-test
     , base >=4.7 && <5
     , containers
     , stm
+    , text
     , try-gpu-vulkan
     , try-gpu-vulkan-khr
     , try-gpu-vulkan-khr-glfw
