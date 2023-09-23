@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-khr-glfw
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "githubuser/try-gpu-vulkan-khr-glfw"
 license:             BSD3
 author:              "Author name here"
@@ -21,6 +21,8 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
+- containers
 - GLFW-b
 - try-gpu-vulkan
 - try-gpu-vulkan-khr
