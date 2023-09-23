@@ -7,7 +7,7 @@
 
 module Gpu.Vulkan.Khr.Surface.Glfw (
 
-	init, terminate, getRequiredInstanceExtensions,
+	init, getRequiredInstanceExtensions,
 
 	createWindowSurface
 
@@ -21,6 +21,7 @@ import Foreign.C.String
 import Control.Exception
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.Bool
 import Data.Text qualified as Txt
 import Data.Text.Foreign qualified as Txt
 
@@ -32,11 +33,10 @@ import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.Glfw.Middle as M
 
-init :: IO Bool
-init = GlfwB.init
-
-terminate :: IO ()
-terminate = GlfwB.terminate
+init :: IO a -> IO a -> IO a
+init cmp hdl = do
+	scc <- GlfwB.init
+	bool (finally cmp GlfwB.terminate) hdl scc
 
 createWindowSurface :: (AllocationCallbacks.ToMiddle mscc ) =>
 	Vk.Instance.I si -> GlfwB.Window ->
