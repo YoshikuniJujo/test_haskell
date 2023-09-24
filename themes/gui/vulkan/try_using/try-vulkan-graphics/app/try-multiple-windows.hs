@@ -41,6 +41,8 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface, init)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw hiding (getRequiredInstanceExtensions)
+import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Glfw.Win hiding (setFramebufferSizeCallback)
+import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window.Type as Glfw.Win
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
@@ -157,16 +159,15 @@ withDummySurface :: Vk.Ist.I si -> (forall ss . Vk.Khr.Surface.S ss -> IO a) -> 
 withDummySurface ist f = withDummyWindow \dwin -> createSurface dwin ist f
 
 withDummyWindow :: (Glfw.Window -> IO a) -> IO a
-withDummyWindow f = initDummyWindow >>= \w -> f w <* Glfw.destroyWindow w
-
-initDummyWindow :: IO Glfw.Window
-initDummyWindow = do
+withDummyWindow f = do
 	Just w <- do
 		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
 		Glfw.windowHint $ Glfw.WindowHint'Visible False
+		Glfw.windowHint (Glfw.WindowHint'Visible True)
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-			<* Glfw.windowHint (Glfw.WindowHint'Visible True)
-	pure w
+	rtn <- f w
+	Glfw.destroyWindow w
+	pure rtn
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w -> f w <* Glfw.destroyWindow w
