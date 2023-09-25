@@ -9,6 +9,8 @@ module Gpu.Vulkan.Khr.Surface.Glfw (
 
 	init, ErrorMessage, getRequiredInstanceExtensions,
 
+	GlfwB.pollEvents, GlfwB.waitEvents,
+
 	createWindowSurface
 
 	) where
