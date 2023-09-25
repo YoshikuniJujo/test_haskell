@@ -10,6 +10,8 @@ module Gpu.Vulkan.Khr.Surface.Glfw.Window (
 
 	W, Group, group, create', destroy, lookup,
 
+	shouldClose,
+
 	-- ** HINT
 
 	hint, B.WindowHint(..),
@@ -115,3 +117,6 @@ createSurface (Vk.Instance.I ist) (W win)
 
 getFramebufferSize :: W sw -> IO (Int, Int)
 getFramebufferSize (W w) = B.getFramebufferSize w
+
+shouldClose :: W sw -> IO Bool
+shouldClose (W w) = B.windowShouldClose w
