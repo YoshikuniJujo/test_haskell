@@ -15,13 +15,17 @@ module Gpu.Vulkan.Khr.Surface.Glfw.Window (
 	hint, B.WindowHint(..),
 	B.ClientAPI(..),
 
+	-- * SURFACE
+
+	createSurface,
+
 	-- * CALLBACK
 
 	setFramebufferSizeCallback, B.FramebufferSizeCallback,
 
-	-- * SURFACE
+	-- * PARAMETER
 
-	createSurface
+	getFramebufferSize
 
 	) where
 
@@ -108,3 +112,6 @@ createSurface (Vk.Instance.I ist) (W win)
 	(M.createWindowSurface ist win macc)
 	(\sfc -> Vk.Khr.Surface.M.destroy ist sfc macc)
 	(f . Vk.Khr.Surface.S)
+
+getFramebufferSize :: W sw -> IO (Int, Int)
+getFramebufferSize (W w) = B.getFramebufferSize w
