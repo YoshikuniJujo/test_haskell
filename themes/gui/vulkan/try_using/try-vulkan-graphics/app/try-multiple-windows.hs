@@ -39,10 +39,8 @@ import Data.Color
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface, init)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw hiding (getRequiredInstanceExtensions)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Glfw.Win hiding (setFramebufferSizeCallback)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window.Type as Glfw.Win
+import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
+import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Glfw.Win
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
@@ -155,33 +153,31 @@ validationLayers = [Vk.layerKhronosValidation]
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 1
 
-withDummySurface :: Vk.Ist.I si -> (forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-withDummySurface ist f = withDummyWindow \dwin -> createSurface dwin ist f
-
-withDummyWindow :: (Glfw.Window -> IO a) -> IO a
-withDummyWindow f = do
-	Just w <- do
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		Glfw.windowHint $ Glfw.WindowHint'Visible False
-		Glfw.windowHint (Glfw.WindowHint'Visible True)
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	rtn <- f w
-	Glfw.destroyWindow w
-	pure rtn
-
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w -> f w <* Glfw.destroyWindow w
-
 glfwInit :: IO a -> IO a
 glfwInit = Glfw.init error
 
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
+withDummySurface :: Vk.Ist.I si -> (forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
+withDummySurface ist f = withDummyWindow \dwin -> createSurface dwin ist f
+
+withDummyWindow :: (forall sw . Glfw.Win.W sw -> IO a) -> IO a
+withDummyWindow f = Glfw.Win.group \wgrp -> do
+	Right w <- do
+		Glfw.Win.hint $ Glfw.Win.WindowHint'ClientAPI Glfw.Win.ClientAPI'NoAPI
+		Glfw.Win.hint $ Glfw.Win.WindowHint'Visible False
+		uncurry (Glfw.Win.create' wgrp ())
+			windowSize windowName Nothing Nothing
+			<* Glfw.Win.hint (Glfw.Win.WindowHint'Visible True)
+	f w
+
+withWindow :: (forall sw . Glfw.Win.W sw -> IO a) -> FramebufferResized -> IO a
+withWindow f frszd = Glfw.Win.group \wgrp -> do
+	Right w <- do
+		Glfw.Win.hint $ Glfw.Win.WindowHint'ClientAPI Glfw.Win.ClientAPI'NoAPI
+		uncurry (Glfw.Win.create' wgrp ())
+			windowSize windowName Nothing Nothing
+	Glfw.Win.setFramebufferSizeCallback
 		w (Just $ \_ _ _ -> atomically $ writeTVar frszd True)
+	f w
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
@@ -193,7 +189,7 @@ createInstance f = do
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
+		<$> Glfw.getRequiredInstanceExtensions
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
@@ -258,9 +254,9 @@ run inst phdv qfis dv gq pq =
 createWindowResources :: Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	(
-	forall ssfc sr sg sias srfs siff fmt ssc ss sfs .
+	forall sw ssfc sr sg sias srfs siff fmt ssc ss sfs .
 	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
-	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
 	IO a
 createWindowResources inst phdv dv qfis ppllyt f =
 	newFramebufferResized >>= \g ->
@@ -280,9 +276,9 @@ createWindowResources inst phdv dv qfis ppllyt f =
 
 	f $ WinParams w g sfc vext rp gpl sos sc scivs fbs
 
-createSurface :: Glfw.Window -> Vk.Ist.I si ->
+createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.createWindowSurface ist win nil' f
+createSurface win ist f = Glfw.Win.createSurface ist win nil' f
 
 pickPhysicalDevice :: Vk.Ist.I si -> IO (Vk.PhDvc.P, QueueFamilyIndices)
 pickPhysicalDevice ist = do
@@ -396,7 +392,7 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-prepareSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+prepareSwapchain :: Glfw.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	(forall scfmt . Vk.T.FormatToValue scfmt =>
 		SwapChainSupportDetails -> Proxy scfmt -> Vk.Extent2d ->
 		IO a) -> IO a
@@ -454,9 +450,9 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
-recreateSwapchain :: forall ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
+recreateSwapchain :: forall ssfc sd sw ssc fmt . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+	Glfw.Win.W sw -> Vk.Khr.Surface.S ssfc ->
 	Vk.Khr.Swapchain.S fmt ssc ->
 	IO (Vk.Format, Vk.Extent2d)
 recreateSwapchain phdvc qfis0 dvc win sfc sc = do
@@ -529,14 +525,14 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> IO Vk.Extent2d
-chooseSwapExtent win caps
+chooseSwapExtent :: Glfw.Win.W sw -> Vk.Khr.Surface.M.Capabilities -> IO Vk.Extent2d
+chooseSwapExtent w caps
 	| Vk.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
-		(fromIntegral -> w, fromIntegral -> h) <-
-			Glfw.getFramebufferSize win
+		(fromIntegral -> wdt, fromIntegral -> h) <-
+			Glfw.Win.getFramebufferSize w
 		pure $ Vk.Extent2d
-			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
+			(clamp wdt (Vk.extent2dWidth n) (Vk.extent2dHeight n))
 			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
 	where
 	curExt = Vk.Khr.Surface.M.capabilitiesCurrentExtent caps
@@ -1003,16 +999,16 @@ mainLoop :: (
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] ->
-	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
+	WinParams sw' sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
 		runLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' loop
 	Vk.Dvc.waitIdle dvc
 
-data WinParams sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs = WinParams
-	Glfw.Window FramebufferResized (Vk.Khr.Surface.S ssfc)
+data WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs = WinParams
+	(Glfw.Win.W sw) FramebufferResized (Vk.Khr.Surface.S ssfc)
 	(TVar Vk.Extent2d) (Vk.RndrPass.R sr)
 	(Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1023,8 +1019,8 @@ data WinParams sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs = WinParams
 	(HeteroParList.PL (Vk.ImgVw.I nm fmt) ss)
 	(HeteroParList.PL Vk.Frmbffr.F sfs)
 
-type Recreates sl nm ssfc sr sg fmt ssc sis sfs = (
-	Glfw.Window, Vk.Khr.Surface.S ssfc,
+type Recreates sw sl nm ssfc sr sg fmt ssc sis sfs = (
+	Glfw.Win.W sw, Vk.Khr.Surface.S ssfc,
 	TVar Vk.Extent2d,
 	Vk.RndrPass.R sr,
 	Vk.Ppl.Graphics.G sg
@@ -1036,8 +1032,8 @@ type Recreates sl nm ssfc sr sg fmt ssc sis sfs = (
 	HeteroParList.PL Vk.Frmbffr.F sfs )
 
 winParamsToRecreates ::
-	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
-	Recreates sl nm ssfc sr sg fmt ssc sscivs sfs
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
+	Recreates sw sl nm ssfc sr sg fmt ssc sscivs sfs
 winParamsToRecreates (WinParams w _frszd sfc ex rp gpl _sos sc scivs fb) =
 	(w, sfc, ex, rp, gpl, sc, scivs, fb)
 
@@ -1050,7 +1046,7 @@ type Draws sl sr sg sias srfs siff fmt ssc sfs = (
 	HeteroParList.PL Vk.Frmbffr.F sfs )
 
 winParamsToDraws ::
-	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
 	Draws sl sr sg sias srfs siff fmt ssc sfs
 winParamsToDraws (WinParams _w _frszd _sfc ex rp gpl sos sc _scivs fb) =
 	(ex, rp, gpl, sos, sc, fb)
@@ -1063,20 +1059,20 @@ runLoop :: (
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] ->
-	WinParams sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
+	WinParams sw' sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
-	wps@(WinParams win frszd _ _ _ _ _ _ _ _)
-	wps'@(WinParams win' frszd' _ _ _ _ _ _ _ _) loop = do
+	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
+	wps'@(WinParams w' frszd' _ _ _ _ _ _ _ _) loop = do
 	catchAndRecreate phdvc qfis dvc ppllyt (winParamsToRecreates wps) loop
 		$ drawFrame dvc gq pq cb vb (winParamsToDraws wps)
 	Vk.Dvc.waitIdle dvc
 	catchAndRecreate phdvc qfis dvc ppllyt (winParamsToRecreates wps') loop
 		$ drawFrame dvc gq pq cb vb' (winParamsToDraws wps')
 	Vk.Dvc.waitIdle dvc
-	cls <- Glfw.windowShouldClose win
-	cls' <- Glfw.windowShouldClose win'
+	cls <- Glfw.Win.shouldClose w
+	cls' <- Glfw.Win.shouldClose w'
 	if cls || cls' then (pure ()) else do
 		b <- checkFlag frszd
 		b' <- checkFlag frszd'
@@ -1127,7 +1123,7 @@ catchAndSerialize =
 catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
-	Recreates sl nm ssfc sr sg fmt ssc sis sfs ->
+	Recreates sw sl nm ssfc sr sg fmt ssc sis sfs ->
 	IO () -> IO () -> IO ()
 catchAndRecreate phd qfis dv plyt rcs loop act =
 	catchJust
@@ -1143,24 +1139,23 @@ recreateAll :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
-	Recreates sl nm ssfc sr sg fmt ssc sis sfs ->
-
+	Recreates sw sl nm ssfc sr sg fmt ssc sis sfs ->
 	IO ()
-recreateAll phdvc qfis dvc ppllyt (win, sfc, vext, rp, gpl, sc, scivs, fbs) = do
-	waitFramebufferSize win
+recreateAll phdvc qfis dvc ppllyt (w, sfc, vext, rp, gpl, sc, scivs, fbs) = do
+	waitFramebufferSize w
 	Vk.Dvc.waitIdle dvc
 
-	(scifmt, ext) <- recreateSwapchain phdvc qfis dvc win sfc sc
+	(scifmt, ext) <- recreateSwapchain phdvc qfis dvc w sfc sc
 	atomically $ writeTVar vext ext
 	Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 		recreateImageViews dvc imgs scivs
 	recreateGraphicsPipeline dvc ext rp ppllyt gpl
 	recreateFramebuffers dvc ext rp scivs fbs
 
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
+waitFramebufferSize :: Glfw.Win.W sw -> IO ()
+waitFramebufferSize w = Glfw.Win.getFramebufferSize w >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+		Glfw.waitEvents *> Glfw.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
