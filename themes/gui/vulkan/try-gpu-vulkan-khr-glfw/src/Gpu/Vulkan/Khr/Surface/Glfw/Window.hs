@@ -12,7 +12,7 @@ module Gpu.Vulkan.Khr.Surface.Glfw.Window (
 
 	-- ** HINT
 
-	hint, B.WindowHint,
+	hint, B.WindowHint(..),
 
 	-- * CALLBACK
 
