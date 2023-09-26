@@ -163,23 +163,27 @@ withDummySurface ist f = withDummyWindow \dwin -> createSurface dwin ist f
 
 withDummyWindow :: (forall sw . Glfw.Win.W sw -> IO a) -> IO a
 withDummyWindow f = Glfw.Win.group \wgrp -> do
+	f =<< withDummyWindow' wgrp ()
+
+withDummyWindow' :: Ord k => Glfw.Win.Group sw k -> k -> IO (Glfw.Win.W sw)
+withDummyWindow' wgrp k = do
 	Right w <- do
 		Glfw.Win.hint $ Glfw.Win.WindowHint'ClientAPI Glfw.Win.ClientAPI'NoAPI
 		Glfw.Win.hint $ Glfw.Win.WindowHint'Visible False
-		uncurry (Glfw.Win.create' wgrp ())
+		uncurry (Glfw.Win.create' wgrp k)
 			windowSize windowName Nothing Nothing
 			<* Glfw.Win.hint (Glfw.Win.WindowHint'Visible True)
-	f w
+	pure w
 
-withWindow :: (forall sw . Glfw.Win.W sw -> IO a) -> FramebufferResized -> IO a
-withWindow f frszd = Glfw.Win.group \wgrp -> do
+withWindow' :: Ord k => Glfw.Win.Group sw k -> k -> FramebufferResized -> IO (Glfw.Win.W sw)
+withWindow' wgrp k frszd = do
 	Right w <- do
 		Glfw.Win.hint $ Glfw.Win.WindowHint'ClientAPI Glfw.Win.ClientAPI'NoAPI
-		uncurry (Glfw.Win.create' wgrp ())
+		uncurry (Glfw.Win.create' wgrp k)
 			windowSize windowName Nothing Nothing
 	Glfw.Win.setFramebufferSizeCallback
 		w (Just $ \_ _ _ -> atomically $ writeTVar frszd True)
-	f w
+	pure w
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
@@ -248,21 +252,23 @@ run inst phdv qfis dv gq pq =
 	createVertexBuffer phdv dv gq cp vertices \vb ->
 	createVertexBuffer phdv dv gq cp vertices2 \vb' ->
 
-	createWindowResources inst phdv dv qfis ppllyt \wps ->
-	createWindowResources inst phdv dv qfis ppllyt \wps' ->
+	Glfw.Win.group @Int \wgrp ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp 0 \wps ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
 
-createWindowResources :: Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Glfw.Win.Group sw k -> k ->
 	(
-	forall sw ssfc sr sg sias srfs siff fmt ssc ss sfs .
+	forall ssfc sr sg sias srfs siff fmt ssc ss sfs .
 	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
 	IO a
-createWindowResources inst phdv dv qfis ppllyt f =
+createWindowResources' inst phdv dv qfis ppllyt wgrp k f =
 	newFramebufferResized >>= \g ->
-	(`withWindow` g) \w ->
+	withWindow' wgrp k g >>= \w ->
 	createSurface w inst \sfc ->
 	prepareSwapchain w sfc phdv \spp (_ :: Proxy scifmt) ext ->
 	createRenderPass @scifmt dv \rp ->
@@ -1000,9 +1006,9 @@ mainLoop :: (
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw' sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc' sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1060,9 +1066,9 @@ runLoop :: (
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw' sl nm' ssfc' sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc' sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
