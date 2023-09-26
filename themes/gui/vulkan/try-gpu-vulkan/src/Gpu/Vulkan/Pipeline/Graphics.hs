@@ -15,11 +15,18 @@ module Gpu.Vulkan.Pipeline.Graphics (
 	-- * CREATE AND RECREATE
 
 	createGs, recreateGs, G, CreateInfo(..),
-	CreateInfoListArgsToGArgs, CreateInfoListToMiddle
+	CreateInfoListArgsToGArgs, CreateInfoListToMiddle,
+
+	-- ** Group
+
+	group, Group, createGs', destroyGs, lookup
 
 	) where
 
+import Prelude hiding (lookup)
 import Foreign.Storable.PeekPoke
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -27,7 +34,8 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
-import qualified Data.HeteroParList as HeteroParList
+import Data.Map qualified as Map
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList.Tuple qualified as HeteroParList
 import Data.Word
@@ -287,3 +295,62 @@ allocationCallbacksListFromCreateInfo :: HeteroParList.Map3_5 ssas =>
 	HeteroParList.PL (TPMaybe.M (U2 AllocationCallbacks.A)) (TMapIndex.M3_5 ssas)
 allocationCallbacksListFromCreateInfo =
 	ShaderStage.allocationCallbacksListFromCreateInfoList . createInfoStages
+
+-- Group
+
+data Group ma sg k gas = Group (TPMaybe.M (U2 AllocationCallbacks.A) ma)
+	TSem (TVar (Map.Map k ( HeteroParList.PL (U3 (G sg)) gas)))
+
+group :: AllocationCallbacks.ToMiddle ma =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall sg . Group ma sg k gas -> IO a) -> IO a
+group (Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
+	rtn <- f $ Group mac sem m
+	((\gs -> M.destroyGs mdvc (gListToMiddle gs) mmac) `mapM_`)
+		=<< atomically (readTVar m)
+	pure rtn
+
+createGs' :: (
+	Ord k,
+	CreateInfoListToMiddle cias, AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> Group mac sg k (CreateInfoListArgsToGArgs cias) -> k ->
+	Maybe (Cache.P sc) ->
+	HeteroParList.PL (U14 CreateInfo) cias ->
+	IO (Either String
+		(HeteroParList.PL (U3 (G sg)) (CreateInfoListArgsToGArgs cias)))
+createGs' d@(Device.D dvc)
+	(Group (AllocationCallbacks.toMiddle -> mmac) sem gss) k
+	((Cache.pToMiddle <$>) -> mc) cis = do
+	ok <- atomically do
+		mx <- Map.lookup k <$> readTVar gss
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	gs <- createInfoListToMiddle d cis >>= \cis' -> M.createGs dvc mc cis' mmac
+				<* destroyShaderStages' d cis'
+					(allocationCallbacksListListFromCreateInfoList cis)
+		let	gs' = gListFromMiddle gs
+		atomically $ modifyTVar gss (Map.insert k gs') >> signalTSem sem
+		pure $ Right gs'
+	else pure . Left $
+		"Gpu.Vulkan.Pipeline.Graphics.create' :: The key already exist"
+
+destroyGs :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Device.D sd -> Group ma sg k gas -> k -> IO (Either String ())
+destroyGs (Device.D mdvc)
+	(Group (AllocationCallbacks.toMiddle -> mma) sem gss) k = do
+	mgs <- atomically do
+		mx <- Map.lookup k <$> readTVar gss
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case mgs of
+		Nothing -> pure $ Left
+			"Gpu.Vulkan.Pipeline.Graphics.destroyGs: No such key"
+		Just gs -> Right <$> M.destroyGs mdvc (gListToMiddle gs) mma
+
+lookup :: Ord k =>
+	Group ma sg k gas -> k -> IO (Maybe (HeteroParList.PL (U3 (G sg)) gas))
+lookup (Group _ _sem gss) k = atomically $ Map.lookup k <$> readTVar gss
