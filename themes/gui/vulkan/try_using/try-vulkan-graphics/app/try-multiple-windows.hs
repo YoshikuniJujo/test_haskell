@@ -257,23 +257,13 @@ run inst phdv qfis dv gq pq =
 
 	Glfw.Win.group @Int \wgrp ->
 	Vk.Khr.Surface.group inst nil' \sfcgrp ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp 0 \wps ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp 1 \wps' ->
+	Vk.RndrPass.group dv nil' \rpgrp ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp 0 \wps ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
 
 createWindowResources :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
-	Glfw.Win.Group sw k -> k ->
-	(
-	forall ssfc sr sg sias srfs siff fmt ssc ss sfs .
-	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
-	IO a
-createWindowResources inst phdv dv qfis ppllyt wgrp k f = Vk.Khr.Surface.group inst nil' \sfcgrp ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp k f
-
-createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k -> k ->
 	(
@@ -281,12 +271,25 @@ createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
 	IO a
-createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp k f =
+createWindowResources inst phdv dv qfis ppllyt wgrp sfcgrp k f =
+	Vk.RndrPass.group dv nil' \rpgrp ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp k f
+
+createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
+	Vk.RndrPass.Group 'Nothing sr k -> k ->
+	(
+	forall sg sias srfs siff fmt ssc ss sfs .
+	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
+	IO a
+createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp k f =
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
 	createSurface' w inst sfcgrp k >>= \sfc ->
 	prepareSwapchain w sfc phdv \spp (_ :: Proxy scifmt) ext ->
-	createRenderPass @scifmt dv \rp ->
+	createRenderPass' @scifmt dv rpgrp k >>= \rp ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createSyncObjects dv \sos ->
 
@@ -618,57 +621,56 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 		Vk.Image.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Image.M.subresourceRangeLayerCount = 1 }
 
-createRenderPass ::
-	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
-	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dvc f = do
-	let	colorAttachment :: Vk.Att.Description scifmt
-		colorAttachment = Vk.Att.Description {
-			Vk.Att.descriptionFlags = zeroBits,
-			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
-			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
-			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
-			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
-			Vk.Att.descriptionStencilStoreOp =
-				Vk.Att.StoreOpDontCare,
-			Vk.Att.descriptionInitialLayout =
-				Vk.Img.LayoutUndefined,
-			Vk.Att.descriptionFinalLayout =
-				Vk.Img.LayoutPresentSrcKhr }
-		colorAttachmentRef = Vk.Att.Reference {
-			Vk.Att.referenceAttachment = 0,
-			Vk.Att.referenceLayout =
-				Vk.Img.LayoutColorAttachmentOptimal }
-		subpass = Vk.Subpass.Description {
-			Vk.Subpass.descriptionFlags = zeroBits,
-			Vk.Subpass.descriptionPipelineBindPoint =
-				Vk.Ppl.BindPointGraphics,
-			Vk.Subpass.descriptionInputAttachments = [],
-			Vk.Subpass.descriptionColorAndResolveAttachments =
-				Left [colorAttachmentRef],
-			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
-			Vk.Subpass.descriptionPreserveAttachments = [] }
-		dependency = Vk.Subpass.Dependency {
-			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
-			Vk.Subpass.dependencyDstSubpass = 0,
-			Vk.Subpass.dependencySrcStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit .|.
-				Vk.Ppl.StageEarlyFragmentTestsBit,
-			Vk.Subpass.dependencySrcAccessMask = zeroBits,
-			Vk.Subpass.dependencyDstStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit .|.
-				Vk.Ppl.StageEarlyFragmentTestsBit,
-			Vk.Subpass.dependencyDstAccessMask =
-				Vk.AccessColorAttachmentWriteBit .|.
-				Vk.AccessDepthStencilAttachmentWriteBit,
-			Vk.Subpass.dependencyDependencyFlags = zeroBits }
-		renderPassInfo = Vk.RndrPass.M.CreateInfo {
-			Vk.RndrPass.M.createInfoNext = TMaybe.N,
-			Vk.RndrPass.M.createInfoFlags = zeroBits,
-			Vk.RndrPass.M.createInfoAttachments = colorAttachment :** HeteroParList.Nil,
-			Vk.RndrPass.M.createInfoSubpasses = [subpass],
-			Vk.RndrPass.M.createInfoDependencies = [dependency] }
-	Vk.RndrPass.create @'Nothing @'[scifmt] dvc renderPassInfo nil' \rp -> f rp
+createRenderPass' ::
+	forall (scifmt :: Vk.T.Format) sd ma sr k a . (
+	Ord k, AllocationCallbacks.ToMiddle ma, Vk.T.FormatToValue scifmt ) =>
+	Vk.Dvc.D sd -> Vk.RndrPass.Group ma sr k -> k ->  IO (Vk.RndrPass.R sr)
+createRenderPass' dvc rpgrp k =
+	fromRight <$> Vk.RndrPass.create' @_ @_ @'[scifmt] dvc rpgrp k renderPassInfo
+	where
+	renderPassInfo = Vk.RndrPass.M.CreateInfo {
+		Vk.RndrPass.M.createInfoNext = TMaybe.N,
+		Vk.RndrPass.M.createInfoFlags = zeroBits,
+		Vk.RndrPass.M.createInfoAttachments =
+			colorAttachment :** HeteroParList.Nil,
+		Vk.RndrPass.M.createInfoSubpasses = [subpass],
+		Vk.RndrPass.M.createInfoDependencies = [dependency] }
+	colorAttachment :: Vk.Att.Description scifmt
+	colorAttachment = Vk.Att.Description {
+		Vk.Att.descriptionFlags = zeroBits,
+		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+		Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+		Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+		Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+		Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
+		Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
+		Vk.Att.descriptionFinalLayout = Vk.Img.LayoutPresentSrcKhr }
+	subpass = Vk.Subpass.Description {
+		Vk.Subpass.descriptionFlags = zeroBits,
+		Vk.Subpass.descriptionPipelineBindPoint =
+			Vk.Ppl.BindPointGraphics,
+		Vk.Subpass.descriptionInputAttachments = [],
+		Vk.Subpass.descriptionColorAndResolveAttachments =
+			Left [colorAttachmentRef],
+		Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+		Vk.Subpass.descriptionPreserveAttachments = [] }
+	colorAttachmentRef = Vk.Att.Reference {
+		Vk.Att.referenceAttachment = 0,
+		Vk.Att.referenceLayout = Vk.Img.LayoutColorAttachmentOptimal }
+	dependency = Vk.Subpass.Dependency {
+		Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
+		Vk.Subpass.dependencyDstSubpass = 0,
+		Vk.Subpass.dependencySrcStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencySrcAccessMask = zeroBits,
+		Vk.Subpass.dependencyDstStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencyDstAccessMask =
+			Vk.AccessColorAttachmentWriteBit .|.
+			Vk.AccessDepthStencilAttachmentWriteBit,
+		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
 createPipelineLayout ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.P sl '[] '[] -> IO b) -> IO b
@@ -1034,7 +1036,7 @@ mainLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw sl nm ssfc sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1094,7 +1096,7 @@ runLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw sl nm ssfc sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc sr sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
