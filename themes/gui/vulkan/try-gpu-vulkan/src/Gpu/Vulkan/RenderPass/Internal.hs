@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,17 +12,26 @@ module Gpu.Vulkan.RenderPass.Internal (
 
 	create, R, CreateInfo(..),
 
+	-- ** Group
+
+	group, Group, create', destroy, lookup,
+
 	-- * BEGIN INFO
 
 	BeginInfo(..), beginInfoToMiddle
 
 	) where
 
+import Prelude hiding (lookup)
+
 import Foreign.Storable.PeekPoke
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.Map qualified as Map
 import Data.HeteroParList qualified as HeteroParList
 
 import Gpu.Vulkan.RenderPass.Type
@@ -71,6 +81,65 @@ createInfoToMiddle CreateInfo {
 	M.createInfoAttachments = Attachment.descriptionListToMiddle atts,
 	M.createInfoSubpasses = spss,
 	M.createInfoDependencies = dps }
+
+-- Group
+
+data Group ma sr k = Group (TPMaybe.M (U2 AllocationCallbacks.A) ma)
+	TSem (TVar (Map.Map k (R sr)))
+
+group :: AllocationCallbacks.ToMiddle ma =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall sr . Group ma sr k -> IO a) -> IO a
+group (Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
+	rtn <- f $ Group mac sem m
+	((\(R mr) -> M.destroy mdvc mr mmac) `mapM_`)
+		=<< atomically (readTVar m)
+	pure rtn
+
+create' :: (
+	Ord k, WithPoked (TMaybe.M mn), Attachment.DescriptionListToMiddle fmts,
+	AllocationCallbacks.ToMiddle mac ) =>
+	Device.D sd -> Group mac sr k -> k -> CreateInfo mn fmts ->
+	IO (Either String (R sr))
+create' (Device.D mdvc)
+	(Group (AllocationCallbacks.toMiddle -> mac) sem rs) k ci = do
+	ok <- atomically do
+		mx <- Map.lookup k <$> readTVar rs
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	r <- M.create mdvc (createInfoToMiddle ci) mac
+		let r' = R r
+		atomically $ modifyTVar rs (Map.insert k r') >> signalTSem sem
+		pure $ Right r'
+	else pure . Left $
+		"Gpu.Vulkan.RenderPass.Internal.create': The key already exist"
+
+destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Device.D sd -> Group ma sr k -> k -> IO (Either String ())
+destroy (Device.D mdvc)
+	(Group (AllocationCallbacks.toMiddle -> ma) sem rs) k = do
+	mr <- atomically do
+		mx <- Map.lookup k <$> readTVar rs
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case mr of
+		Nothing -> pure $ Left
+			"Gpu.Vulkan.RenderPass.Internal.destroy: No such key"
+		Just (R r) -> do
+			M.destroy mdvc r ma
+			atomically do
+				modifyTVar rs $ Map.delete k
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Group ma sr k -> k -> IO (Maybe (R sr))
+lookup (Group _ _sem rs) k = atomically $ Map.lookup k <$> readTVar rs
+
+-- BEGIN INFO
 
 data BeginInfo mn sr sf cts = BeginInfo {
 	beginInfoNext :: TMaybe.M mn,

@@ -6,10 +6,15 @@ module Gpu.Vulkan.RenderPass (
 
 	create, R, CreateInfo(..),
 
+	-- ** Group
+
+	group, Group, create', destroy, lookup,
+
 	-- * BEGIN INFO
 
 	BeginInfo(..)
 
 	) where
 
+import Prelude hiding (lookup)
 import Gpu.Vulkan.RenderPass.Internal
