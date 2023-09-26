@@ -45,6 +45,7 @@ library
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -83,6 +84,7 @@ executable try-cube-single
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -122,6 +124,7 @@ executable try-gamepad-button
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -161,6 +164,7 @@ executable try-multi-rectangles
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -200,6 +204,7 @@ executable try-multiple-windows
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -239,6 +244,7 @@ executable try-pyramid-single
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -278,6 +284,7 @@ executable try-rectangle-single
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -317,6 +324,7 @@ executable try-triangle-single
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -356,6 +364,7 @@ test-suite try-vulkan-graphics-test
     , temporary
     , text
     , time
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils

@@ -39,10 +39,12 @@ import Data.Color
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Glfw.Win
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
+
+import Graphics.UI.GlfwG as Glfw
+import Graphics.UI.GlfwG.Window as Glfw.Win
 
 import ThEnv
 import qualified Language.SpirV as SpirV
@@ -278,7 +280,7 @@ createWindowResources inst phdv dv qfis ppllyt f =
 
 createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.Win.createSurface ist win nil' f
+createSurface win ist f = Glfw.Win.create ist win nil' f
 
 pickPhysicalDevice :: Vk.Ist.I si -> IO (Vk.PhDvc.P, QueueFamilyIndices)
 pickPhysicalDevice ist = do

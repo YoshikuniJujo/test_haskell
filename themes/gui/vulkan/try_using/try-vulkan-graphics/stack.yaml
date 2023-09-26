@@ -43,7 +43,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: ef0953c852cffffa0574c9437c1af929d1fe98e5
+  commit: 6c50c1ca5729887c374929f62864ced2381cd9f7
   subdirs:
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
   - themes/gui/vulkan/try-gpu-vulkan
@@ -60,6 +60,7 @@ extra-deps:
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
+  - themes/gui/vulkan/try-glfw-group
   - themes/hetero-list/try-hetero-parameter-list
   - themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
   - features/ffi/pointer/try-storable-hetero-list
