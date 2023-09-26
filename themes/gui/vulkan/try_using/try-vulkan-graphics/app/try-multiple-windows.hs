@@ -258,24 +258,15 @@ run inst phdv qfis dv gq pq =
 	Glfw.Win.group @Int \wgrp ->
 	Vk.Khr.Surface.group inst nil' \sfcgrp ->
 	Vk.RndrPass.group dv nil' \rpgrp ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp 0 \wps ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp 1 \wps' ->
+	Vk.Ppl.Graphics.group dv nil' \gpsgrp ->
+	createWindowResources'
+		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp 0 \wps ->
+	createWindowResources'
+		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
 
 createWindowResources :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
-	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k -> k ->
-	(
-	forall sr sg sias srfs siff fmt ssc ss sfs .
-	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
-	IO a
-createWindowResources inst phdv dv qfis ppllyt wgrp sfcgrp k f =
-	Vk.RndrPass.group dv nil' \rpgrp ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp k f
-
-createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
 	Vk.RndrPass.Group 'Nothing sr k -> k ->
@@ -284,13 +275,30 @@ createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
 	IO a
-createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp k f =
+createWindowResources inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp k f =
+	Vk.Ppl.Graphics.group dv nil' \gpsgrp ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp k f
+
+createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
+	Vk.RndrPass.Group 'Nothing sr k ->
+	Vk.Ppl.Graphics.Group 'Nothing sg k '[ '(
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)],
+		'(sl, '[], '[]) )] -> k ->
+	(
+	forall sias srfs siff fmt ssc ss sfs .
+	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
+	IO a
+createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp k f =
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
 	createSurface' w inst sfcgrp k >>= \sfc ->
 	prepareSwapchain w sfc phdv \spp (_ :: Proxy scifmt) ext ->
 	createRenderPass' @scifmt dv rpgrp k >>= \rp ->
-	createGraphicsPipeline dv ext rp ppllyt \gpl ->
+	createGraphicsPipeline' dv gpsgrp k ext rp ppllyt >>= \gpl ->
 	createSyncObjects dv \sos ->
 
 	createSwapchain @scifmt sfc spp ext qfis dv \sc _ ->
@@ -622,7 +630,7 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 		Vk.Image.M.subresourceRangeLayerCount = 1 }
 
 createRenderPass' ::
-	forall (scifmt :: Vk.T.Format) sd ma sr k a . (
+	forall (scifmt :: Vk.T.Format) sd ma sr k . (
 	Ord k, AllocationCallbacks.ToMiddle ma, Vk.T.FormatToValue scifmt ) =>
 	Vk.Dvc.D sd -> Vk.RndrPass.Group ma sr k -> k ->  IO (Vk.RndrPass.R sr)
 createRenderPass' dvc rpgrp k =
@@ -688,8 +696,23 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp ppllyt f =
-	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
-			nil' \(U3 gpl :** HeteroParList.Nil) -> f gpl
+	Vk.Ppl.Graphics.group dvc nil' \gpsgrp ->
+	f =<< createGraphicsPipeline' dvc gpsgrp () sce rp ppllyt
+
+createGraphicsPipeline' :: (AllocationCallbacks.ToMiddle ma, Ord k) =>
+	Vk.Dvc.D sd -> Vk.Ppl.Graphics.Group ma sg k '[ '(
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)],
+		'(sl, '[], '[]) )] -> k ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
+	IO (Vk.Ppl.Graphics.G sg
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'(sl, '[], '[]))
+createGraphicsPipeline' dvc gpsgrp k sce rp ppllyt =
+	(\(U3 gpl :** HeteroParList.Nil) -> gpl) . fromRight <$>
+	Vk.Ppl.Graphics.createGs' dvc gpsgrp k Nothing
+		(U14 pplInfo :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
@@ -1036,7 +1059,7 @@ mainLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw sl nm ssfc sr sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr sg sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1096,7 +1119,7 @@ runLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw sl nm ssfc sr sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc sr sg sias' srfs' siff' fmt' ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
