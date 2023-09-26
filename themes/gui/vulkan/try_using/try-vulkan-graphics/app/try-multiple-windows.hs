@@ -39,7 +39,8 @@ import Data.Color
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
-import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Glfw.Win
+
+import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Vk.Khr.Surface.Glfw.Win
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
@@ -123,6 +124,8 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import Tools
 import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
+
+import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
 
 main :: IO ()
 main = glfwInit $
@@ -253,12 +256,13 @@ run inst phdv qfis dv gq pq =
 	createVertexBuffer phdv dv gq cp vertices2 \vb' ->
 
 	Glfw.Win.group @Int \wgrp ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp 0 \wps ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp 1 \wps' ->
+	Vk.Khr.Surface.group inst nil' \sfcgrp ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp 0 \wps ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
 
-createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createWindowResources :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	Glfw.Win.Group sw k -> k ->
 	(
@@ -266,10 +270,21 @@ createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
 	IO a
-createWindowResources' inst phdv dv qfis ppllyt wgrp k f =
+createWindowResources inst phdv dv qfis ppllyt wgrp k f = Vk.Khr.Surface.group inst nil' \sfcgrp ->
+	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp k f
+
+createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k -> k ->
+	(
+	forall sr sg sias srfs siff fmt ssc ss sfs .
+	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
+	IO a
+createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp k f =
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
-	createSurface w inst \sfc ->
+	createSurface' w inst sfcgrp k >>= \sfc ->
 	prepareSwapchain w sfc phdv \spp (_ :: Proxy scifmt) ext ->
 	createRenderPass @scifmt dv \rp ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
@@ -286,7 +301,18 @@ createWindowResources' inst phdv dv qfis ppllyt wgrp k f =
 
 createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.Win.create ist win nil' f
+createSurface win ist f =
+	Vk.Khr.Surface.group ist nil' \sgrp ->
+	f . fromRight =<< Vk.Khr.Surface.Glfw.Win.create' ist sgrp () win
+
+fromRight :: Either l r -> r
+fromRight = \case Right r -> r; Left _ -> error "fromRight: not Right"
+
+createSurface' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Glfw.Win.W sw -> Vk.Ist.I si -> Vk.Khr.Surface.Group ma ss k -> k ->
+	IO (Vk.Khr.Surface.S ss)
+createSurface' win ist sgrp k =
+	fromRight <$> Vk.Khr.Surface.Glfw.Win.create' ist sgrp k win
 
 pickPhysicalDevice :: Vk.Ist.I si -> IO (Vk.PhDvc.P, QueueFamilyIndices)
 pickPhysicalDevice ist = do
@@ -1008,7 +1034,7 @@ mainLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw sl nm ssfc' sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr' sg' sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1068,7 +1094,7 @@ runLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw sl nm ssfc' sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc sr' sg' sias' srfs' siff' fmt' ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
