@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan-khr
-version:        0.1.0.7
+version:        0.1.0.8
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan-khr#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan-khr#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan-khr/issues
@@ -29,6 +29,7 @@ library
       Gpu.Vulkan.Khr.Enum
       Gpu.Vulkan.Khr.Surface
       Gpu.Vulkan.Khr.Surface.Enum
+      Gpu.Vulkan.Khr.Surface.Internal
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
       Gpu.Vulkan.Khr.Surface.Type
       Gpu.Vulkan.Khr.Swapchain
@@ -40,6 +41,8 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , containers
+    , stm
     , text
     , try-gpu-vulkan
     , try-hetero-parameter-list
@@ -59,6 +62,8 @@ test-suite try-gpu-vulkan-khr-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , containers
+    , stm
     , text
     , try-gpu-vulkan
     , try-gpu-vulkan-khr

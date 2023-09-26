@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-khr
-version:             0.1.0.7
+version:             0.1.0.8
 github:              "githubuser/try-gpu-vulkan-khr"
 license:             BSD3
 author:              "Author name here"
@@ -21,6 +21,8 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
+- containers
 - text
 - try-gpu-vulkan
 - try-vulkan-middle-khr
