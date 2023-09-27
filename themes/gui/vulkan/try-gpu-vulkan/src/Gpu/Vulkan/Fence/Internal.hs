@@ -12,6 +12,10 @@ module Gpu.Vulkan.Fence.Internal (
 
 	create, F(..), M.CreateInfo(..),
 
+	-- ** Group
+
+	group, Group,
+
 	-- * WAIT FOR FENCES AND RESET FENCES
 
 	waitForFs, resetFs
@@ -19,11 +23,14 @@ module Gpu.Vulkan.Fence.Internal (
 	) where
 
 import Foreign.Storable.PeekPoke
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.HeteroParList qualified as HeteroParList
+import Data.Map qualified as Map
 import Data.Word
 import Data.Time
 
@@ -50,3 +57,32 @@ resetFs (Device.D dvc) = M.resetFs dvc . HeteroParList.toList \(F f) -> f
 
 diffTimeToNanoseconds :: DiffTime -> Word64
 diffTimeToNanoseconds = fromInteger . (`div` 1000) . diffTimeToPicoseconds
+
+data Group sd ma sf k = Group (Device.D sd)
+	(TPMaybe.M (U2 AllocationCallbacks.A) ma) TSem (TVar (Map.Map k (F sf)))
+
+group :: AllocationCallbacks.ToMiddle ma =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall sf . Group sd ma sf k -> IO a) -> IO a
+group dvc@(Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
+	rtn <- f $ Group dvc mac sem m
+	((\(F s) -> M.destroy mdvc s mmac) `mapM_`) =<< atomically (readTVar m)
+	pure rtn
+
+{-
+create' :: (
+	Ord k, WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle ma) =>
+	Group sd ma sf k -> k -> M.CreateInfo mn -> IO (Either String (F sf))
+create' (Group (Device.D mdvc)
+	(AllocationCallbacks.toMiddle -> mmac) sem sf) k ci = do
+	ok <- atomically do
+		mx <- Map.lookup k <$> readTVar sf
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	f <- M.create mdvc ci mmac
+		let	f' = F f
+		atomically $ modifyTVar sf (Map.insert :q
+-}
