@@ -4,8 +4,13 @@ module Gpu.Vulkan.Semaphore (
 
 	-- * CREATE
 
-	create, S, CreateInfo(..)
+	create, S, CreateInfo(..),
+
+	-- ** Group
+
+	group, Group, create', destroy, lookup
 
 	) where
 
+import Prelude hiding (lookup)
 import Gpu.Vulkan.Semaphore.Internal
