@@ -148,8 +148,8 @@ group dvc@(Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 	pure rtn
 
 create' :: (
-	Ord k, WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle ma,
-	T.FormatToValue fmt ) =>
+	T.FormatToValue fmt,
+	Ord k, WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle ma ) =>
 	Group sd ma fmt ss k -> k -> CreateInfo mn ssfc fmt ->
 	IO (Either String (S fmt ss))
 create' (Group (Device.D mdvc)
