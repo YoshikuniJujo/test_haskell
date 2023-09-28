@@ -11,7 +11,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import GHC.Generics
 import Foreign.Storable
@@ -32,7 +32,6 @@ import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
-import Data.IORef
 import Data.List qualified as L
 import Data.List.Length
 import Data.Color
@@ -131,14 +130,22 @@ main :: IO ()
 main = glfwInit $
 	createInstance \inst ->
 	bool (setupDebugMessenger inst) id enableValidationLayers $
-	pickPhysicalDevice inst >>= \(phdv, qfis) ->
+
+	fromDummy inst >>= \(phdv, qfis, scfmt) ->
+	Vk.T.formatToType scfmt \(_ :: Proxy scfmt) ->
+
 	createLogicalDevice phdv qfis \dv gq pq ->
-	run inst phdv qfis dv gq pq
+	run @scfmt inst phdv qfis dv gq pq
+
+fromDummy :: Vk.Ist.I si -> IO (Vk.PhDvc.P, QueueFamilyIndices, Vk.Format)
+fromDummy inst = withDummySurface inst \dsfc -> do
+	(phdv, qfis) <- pickPhysicalDevice' inst dsfc
+	spp <- querySwapchainSupport phdv dsfc
+	let	fmt = Vk.Khr.Surface.M.formatFormat
+			. chooseSwapSurfaceFormat $ formats spp
+	pure (phdv, qfis, fmt)
 
 type FramebufferResized = TVar Bool
-
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
 
 newFramebufferResized :: IO FramebufferResized
 newFramebufferResized = atomically $ newTVar False
@@ -154,9 +161,6 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 1
 
 glfwInit :: IO a -> IO a
 glfwInit = Glfw.init error
@@ -246,7 +250,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Vk.Ist.I si -> Vk.PhDvc.P ->
+run :: forall (scfmt :: Vk.T.Format) si sd . Vk.T.FormatToValue scfmt =>
+	Vk.Ist.I si -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run inst phdv qfis dv gq pq =
 	createCommandPool qfis dv \cp ->
@@ -262,16 +267,20 @@ run inst phdv qfis dv gq pq =
 	Vk.Semaphore.group dv nil' \iasgrp ->
 	Vk.Semaphore.group dv nil' \rfsgrp ->
 	Vk.Fence.group dv nil' \iffgrp ->
-	createWindowResources'
+	createWindowResources @scfmt
 		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
 		iasgrp rfsgrp iffgrp 0 \wps ->
-	createWindowResources'
+	createWindowResources @scfmt
 		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
 		iasgrp rfsgrp iffgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
 
-createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createWindowResources ::
+	forall (scifmt :: Vk.T.Format)
+		si sd sl sw nm ssfc sr sg sias srfs siff k a . (
+	Ord k, Vk.T.FormatToValue scifmt ) =>
+	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
 	Vk.RndrPass.Group 'Nothing sr k ->
@@ -283,16 +292,15 @@ createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Semaphore.Group sd 'Nothing srfs k ->
 	Vk.Fence.Group sd 'Nothing siff k ->
 	k ->
-	(forall fmt ssc ss sfs .
-		(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
-		WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
+	(forall ssc ss sfs . RecreateFramebuffers ss sfs =>
+		WinParams sw sl nm ssfc sr sg sias srfs siff scifmt ssc ss sfs ->
 		IO a) -> IO a
-createWindowResources'
+createWindowResources
 	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp k f =
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
 	createSurface' w inst sfcgrp k >>= \sfc ->
-	prepareSwapchain w sfc phdv \spp (_ :: Proxy scifmt) ext ->
+	prepareSwapchain' @scifmt w sfc phdv >>= \(spp, ext) ->
 	createRenderPass' @scifmt dv rpgrp k >>= \rp ->
 	createGraphicsPipeline' dv gpsgrp k ext rp ppllyt >>= \gpl ->
 	createSyncObjects' iasgrp rfsgrp iffgrp k >>= \sos ->
@@ -321,12 +329,12 @@ createSurface' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 createSurface' win ist sgrp k =
 	fromRight <$> Vk.Khr.Surface.Glfw.Win.create' ist sgrp k win
 
-pickPhysicalDevice :: Vk.Ist.I si -> IO (Vk.PhDvc.P, QueueFamilyIndices)
-pickPhysicalDevice ist = do
+pickPhysicalDevice' :: Vk.Ist.I si ->
+	Vk.Khr.Surface.S ssfc -> IO (Vk.PhDvc.P, QueueFamilyIndices)
+pickPhysicalDevice' ist dsfc = do
 	dvcs <- Vk.PhDvc.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
-	mpdvc <- withDummySurface ist \sfc' ->
-		findDevice (`isDeviceSuitable` sfc') dvcs
+	mpdvc <- findDevice (`isDeviceSuitable` dsfc) dvcs
 	case mpdvc of
 		Just pdvc -> pure pdvc
 		Nothing -> error "failed to find a suitable GPU!"
@@ -433,16 +441,19 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-prepareSwapchain :: Glfw.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	(forall scfmt . Vk.T.FormatToValue scfmt =>
-		SwapChainSupportDetails -> Proxy scfmt -> Vk.Extent2d ->
-		IO a) -> IO a
-prepareSwapchain win sfc phdvc f = do
+prepareSwapchain' :: forall (scfmt :: Vk.T.Format) sw ssfc .
+	Vk.T.FormatToValue scfmt =>
+	Glfw.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	IO (SwapChainSupportDetails, Vk.Extent2d)
+prepareSwapchain' win sfc phdvc = do
 	spp <- querySwapchainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	fmt = Vk.Khr.Surface.M.formatFormat
+	let	fmt0 = Vk.T.formatToValue @scfmt
+		fmt = Vk.Khr.Surface.M.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
-	Vk.T.formatToType fmt \(pfmt :: Proxy fmt) -> f spp pfmt ext
+	when (fmt0 /= fmt) $ error
+		"app/try-multiple-windows: prepareSwapchain' format not match"
+	pure (spp, ext)
 
 createSwapchain :: forall scfmt ssfc sd a . Vk.T.FormatToValue scfmt =>
 	Vk.Khr.Surface.S ssfc -> SwapChainSupportDetails -> Vk.Extent2d ->
@@ -501,15 +512,6 @@ recreateSwapchain phdvc qfis0 dvc win sfc sc = do
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
 	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate dvc crInfo nil' sc
-
-mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
-	SwapChainSupportDetails -> Vk.Extent2d ->
-	(forall fmt . Vk.T.FormatToValue fmt =>
-		Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt -> Vk.Format -> a) -> a
-mkSwapchainCreateInfo sfc qfis spp ext f = Vk.T.formatToType (Vk.Khr.Surface.M.formatFormat fmt) \(_ :: Proxy t) ->
-	uncurry f $ mkSwapchainCreateInfoRaw @t sfc qfis spp ext
-	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
 
 mkSwapchainCreateInfoRaw :: forall fmt ss .
 	Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
@@ -684,16 +686,6 @@ createPipelineLayout dvc f = do
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts = HeteroParList.Nil }
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil' f
-
-createGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
-	(forall sg . Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[], '[]) -> IO a) -> IO a
-createGraphicsPipeline dvc sce rp ppllyt f =
-	Vk.Ppl.Graphics.group dvc nil' \gpsgrp ->
-	f =<< createGraphicsPipeline' dvc gpsgrp () sce rp ppllyt
 
 createGraphicsPipeline' :: (AllocationCallbacks.ToMiddle ma, Ord k) =>
 	Vk.Dvc.D sd -> Vk.Ppl.Graphics.Group ma sg k '[ '(
@@ -995,15 +987,11 @@ createCommandBuffer dvc cp f =
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss)
-addTypeToProxy Proxy = Proxy
-
 data SyncObjects (ssos :: (Type, Type, Type)) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: Vk.Semaphore.S sias,
-		renderFinishedSemaphores :: Vk.Semaphore.S srfs,
-		inFlightFences :: Vk.Fence.F sfs } ->
+		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
+		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
+		_inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
 createSyncObjects' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
@@ -1051,14 +1039,14 @@ recordCommandBuffer cb rp fb vsce gpl vb =
 
 mainLoop :: (
 	RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt,
-	RecreateFramebuffers ss' sfs', Vk.T.FormatToValue fmt' ) =>
+	RecreateFramebuffers ss' sfs' ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt' ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1111,14 +1099,14 @@ winParamsToDraws (WinParams _w _frszd _sfc ex rp gpl sos sc _scivs fb) =
 
 runLoop :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt,
-	RecreateFramebuffers sis' sfs', Vk.T.FormatToValue fmt' ) =>
+	RecreateFramebuffers sis' sfs' ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt' ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
