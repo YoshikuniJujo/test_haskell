@@ -138,7 +138,8 @@ getImages (Device.D d) (S sc) = (Image.Binded <$>) <$> M.getImages d sc
 data Group sd ma fmt ssc k = Group (Device.D sd)
 	(TPMaybe.M (U2 AllocationCallbacks.A) ma) TSem (TVar (Map.Map k (S fmt ssc)))
 
-group :: AllocationCallbacks.ToMiddle ma =>
+group :: forall fmt k sd ma a .
+	AllocationCallbacks.ToMiddle ma =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
 	(forall ssc . Group sd ma fmt ssc k -> IO a) -> IO a
 group dvc@(Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
