@@ -299,7 +299,10 @@ createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp k f =
 	prepareSwapchain w sfc phdv \spp (_ :: Proxy scifmt) ext ->
 	createRenderPass' @scifmt dv rpgrp k >>= \rp ->
 	createGraphicsPipeline' dv gpsgrp k ext rp ppllyt >>= \gpl ->
-	createSyncObjects dv \sos ->
+	Vk.Semaphore.group dv nil' \iasgrp ->
+	Vk.Semaphore.group dv nil' \rfsgrp ->
+	Vk.Fence.group dv nil' \iffgrp ->
+	createSyncObjects' iasgrp rfsgrp iffgrp () >>= \sos ->
 
 	createSwapchain @scifmt sfc spp ext qfis dv \sc _ ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
@@ -1015,10 +1018,19 @@ createSyncObjects ::
 createSyncObjects dvc f =
 	Vk.Semaphore.group dvc nil' \iasgrp ->
 	Vk.Semaphore.group dvc nil' \rfsgrp ->
-	Vk.Semaphore.create' @_ @Nothing iasgrp () def >>= \(Right ias) ->
-	Vk.Semaphore.create' @_ @Nothing rfsgrp () def >>= \(Right rfs) ->
-	Vk.Fence.create @'Nothing dvc fncInfo nil' \iff ->
-	f $ SyncObjects ias rfs iff
+	Vk.Fence.group dvc nil' \iffgrp ->
+	f =<< createSyncObjects' iasgrp rfsgrp iffgrp ()
+
+createSyncObjects' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Vk.Semaphore.Group sd ma sias k ->
+	Vk.Semaphore.Group sd ma srfs k ->
+	Vk.Fence.Group sd ma siff k -> k ->
+	IO (SyncObjects '(sias, srfs, siff))
+createSyncObjects' iasgrp rfsgrp iffgrp k =
+	Vk.Semaphore.create' @_ @Nothing iasgrp k def >>= \(Right ias) ->
+	Vk.Semaphore.create' @_ @Nothing rfsgrp k def >>= \(Right rfs) ->
+	Vk.Fence.create' @_ @'Nothing iffgrp k fncInfo >>= \(Right iff) ->
+	pure $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
