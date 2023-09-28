@@ -14,7 +14,7 @@ module Gpu.Vulkan.Fence.Internal (
 
 	-- ** Group
 
-	group, Group,
+	group, Group, create', destroy, lookup,
 
 	-- * WAIT FOR FENCES AND RESET FENCES
 
@@ -22,6 +22,7 @@ module Gpu.Vulkan.Fence.Internal (
 
 	) where
 
+import Prelude hiding (lookup)
 import Foreign.Storable.PeekPoke
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TSem
@@ -70,7 +71,6 @@ group dvc@(Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 	((\(F s) -> M.destroy mdvc s mmac) `mapM_`) =<< atomically (readTVar m)
 	pure rtn
 
-{-
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma sf k -> k -> M.CreateInfo mn -> IO (Either String (F sf))
@@ -84,5 +84,30 @@ create' (Group (Device.D mdvc)
 	if ok
 	then do	f <- M.create mdvc ci mmac
 		let	f' = F f
-		atomically $ modifyTVar sf (Map.insert :q
--}
+		atomically $ modifyTVar sf (Map.insert k f') >> signalTSem sem
+		pure $ Right f'
+	else pure . Left $
+		"Gpu.Vulkan.Fence.Internal.create': The key already exist"
+
+destroy :: (
+	Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Group sd ma sf k -> k -> IO (Either String ())
+destroy (Group (Device.D mdvc)
+	(AllocationCallbacks.toMiddle -> ma) sem fs) k = do
+	mf <- atomically do
+		mx <- Map.lookup k <$> readTVar fs
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case mf of
+		Nothing -> pure $ Left
+			"Gpu.Vulkan.Fence.destroy: No such key"
+		Just (F f) -> do
+			M.destroy mdvc f ma
+			atomically do
+				modifyTVar fs $ Map.delete k
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Group sd ma sf k -> k -> IO (Maybe (F sf))
+lookup (Group _ _ _sem fs) k = atomically $ Map.lookup k <$> readTVar fs
