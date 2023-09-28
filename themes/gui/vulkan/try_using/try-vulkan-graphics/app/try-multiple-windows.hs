@@ -267,18 +267,20 @@ run inst phdv qfis dv gq pq =
 	Vk.Semaphore.group dv nil' \iasgrp ->
 	Vk.Semaphore.group dv nil' \rfsgrp ->
 	Vk.Fence.group dv nil' \iffgrp ->
-	createWindowResources @scfmt
+	Vk.Khr.Swapchain.group @scfmt dv nil' \scgrp ->
+
+	createWindowResources
 		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-		iasgrp rfsgrp iffgrp 0 \wps ->
-	createWindowResources @scfmt
+		iasgrp rfsgrp iffgrp scgrp 0 \wps ->
+	createWindowResources
 		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-		iasgrp rfsgrp iffgrp 1 \wps' ->
+		iasgrp rfsgrp iffgrp scgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
 
 createWindowResources ::
 	forall (scifmt :: Vk.T.Format)
-		si sd sl sw nm ssfc sr sg sias srfs siff k a . (
+		si sd sl sw nm ssfc sr sg sias srfs siff ssc k a . (
 	Ord k, Vk.T.FormatToValue scifmt ) =>
 	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
@@ -291,12 +293,15 @@ createWindowResources ::
 	Vk.Semaphore.Group sd 'Nothing sias k ->
 	Vk.Semaphore.Group sd 'Nothing srfs k ->
 	Vk.Fence.Group sd 'Nothing siff k ->
+	Vk.Khr.Swapchain.Group sd 'Nothing scifmt ssc k ->
 	k ->
-	(forall ssc ss sfs . RecreateFramebuffers ss sfs =>
+	(forall ss sfs . RecreateFramebuffers ss sfs =>
 		WinParams sw sl nm ssfc sr sg sias srfs siff scifmt ssc ss sfs ->
 		IO a) -> IO a
 createWindowResources
-	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp k f =
+	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp
+	scgrp k f =
+
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
 	createSurface' w inst sfcgrp k >>= \sfc ->
@@ -305,7 +310,8 @@ createWindowResources
 	createGraphicsPipeline' dv gpsgrp k ext rp ppllyt >>= \gpl ->
 	createSyncObjects' iasgrp rfsgrp iffgrp k >>= \sos ->
 
-	createSwapchain @scifmt sfc spp ext qfis dv \sc _ ->
+	createSwapchain' scgrp k sfc spp ext qfis >>= \(sc, _) ->
+
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
 	createFramebuffers dv ext rp scivs \fbs ->
@@ -455,14 +461,15 @@ prepareSwapchain' win sfc phdvc = do
 		"app/try-multiple-windows: prepareSwapchain' format not match"
 	pure (spp, ext)
 
-createSwapchain :: forall scfmt ssfc sd a . Vk.T.FormatToValue scfmt =>
+createSwapchain' :: forall scfmt ssfc sd ma ss k .
+	(Ord k, Vk.T.FormatToValue scfmt, AllocationCallbacks.ToMiddle ma) =>
+	Vk.Khr.Swapchain.Group sd ma scfmt ss k -> k ->
 	Vk.Khr.Surface.S ssfc -> SwapChainSupportDetails -> Vk.Extent2d ->
-	QueueFamilyIndices -> Vk.Dvc.D sd ->
-	(forall ss .
-		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwapchain sfc spp ext qfis dvc f = do
-	let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
-	Vk.Khr.Swapchain.create @'Nothing @scfmt dvc crInfo nil' \sc -> f sc ext
+	QueueFamilyIndices ->
+	IO (Vk.Khr.Swapchain.S scfmt ss, Vk.Extent2d)
+createSwapchain' scgrp k sfc spp ext qfis =
+	let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext in
+	Vk.Khr.Swapchain.create' @scfmt scgrp k crInfo >>= \(fromRight -> sc) -> pure (sc, ext)
 
 mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
@@ -584,7 +591,7 @@ chooseSwapExtent w caps
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Image.Binded ss ss nm fmt] ->
-	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
+	(forall sis . HeteroParList.PL (Vk.ImgVw.I nm fmt) sis -> IO a) -> IO a
 createImageViews _dvc [] f = f HeteroParList.Nil
 createImageViews dvc (sci : scis) f =
 	createImageView dvc sci \sciv ->
@@ -1046,7 +1053,7 @@ mainLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1106,7 +1113,7 @@ runLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
