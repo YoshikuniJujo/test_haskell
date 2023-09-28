@@ -259,25 +259,17 @@ run inst phdv qfis dv gq pq =
 	Vk.Khr.Surface.group inst nil' \sfcgrp ->
 	Vk.RndrPass.group dv nil' \rpgrp ->
 	Vk.Ppl.Graphics.group dv nil' \gpsgrp ->
+	Vk.Semaphore.group dv nil' \iasgrp ->
+	Vk.Semaphore.group dv nil' \rfsgrp ->
+	Vk.Fence.group dv nil' \iffgrp ->
 	createWindowResources'
-		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp 0 \wps ->
+		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
+		iasgrp rfsgrp iffgrp 0 \wps ->
 	createWindowResources'
-		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp 1 \wps' ->
+		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
+		iasgrp rfsgrp iffgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
-
-createWindowResources :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
-	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
-	Vk.RndrPass.Group 'Nothing sr k -> k ->
-	(
-	forall sg sias srfs siff fmt ssc ss sfs .
-	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
-	IO a
-createWindowResources inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp k f =
-	Vk.Ppl.Graphics.group dv nil' \gpsgrp ->
-	createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp k f
 
 createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
@@ -286,23 +278,24 @@ createWindowResources' :: Ord k => Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Ppl.Graphics.Group 'Nothing sg k '[ '(
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)],
-		'(sl, '[], '[]) )] -> k ->
-	(
-	forall sias srfs siff fmt ssc ss sfs .
-	(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs -> IO a ) ->
-	IO a
-createWindowResources' inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp k f =
+		'(sl, '[], '[]) )] ->
+	Vk.Semaphore.Group sd 'Nothing sias k ->
+	Vk.Semaphore.Group sd 'Nothing srfs k ->
+	Vk.Fence.Group sd 'Nothing siff k ->
+	k ->
+	(forall fmt ssc ss sfs .
+		(Vk.T.FormatToValue fmt, RecreateFramebuffers ss sfs) =>
+		WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
+		IO a) -> IO a
+createWindowResources'
+	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp k f =
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
 	createSurface' w inst sfcgrp k >>= \sfc ->
 	prepareSwapchain w sfc phdv \spp (_ :: Proxy scifmt) ext ->
 	createRenderPass' @scifmt dv rpgrp k >>= \rp ->
 	createGraphicsPipeline' dv gpsgrp k ext rp ppllyt >>= \gpl ->
-	Vk.Semaphore.group dv nil' \iasgrp ->
-	Vk.Semaphore.group dv nil' \rfsgrp ->
-	Vk.Fence.group dv nil' \iffgrp ->
-	createSyncObjects' iasgrp rfsgrp iffgrp () >>= \sos ->
+	createSyncObjects' iasgrp rfsgrp iffgrp k >>= \sos ->
 
 	createSwapchain @scifmt sfc spp ext qfis dv \sc _ ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
@@ -1013,26 +1006,18 @@ data SyncObjects (ssos :: (Type, Type, Type)) where
 		inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
-createSyncObjects ::
-	Vk.Dvc.D sd -> (forall sias srfs siff . SyncObjects '(sias, srfs, siff) -> IO a ) -> IO a
-createSyncObjects dvc f =
-	Vk.Semaphore.group dvc nil' \iasgrp ->
-	Vk.Semaphore.group dvc nil' \rfsgrp ->
-	Vk.Fence.group dvc nil' \iffgrp ->
-	f =<< createSyncObjects' iasgrp rfsgrp iffgrp ()
-
 createSyncObjects' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Vk.Semaphore.Group sd ma sias k ->
 	Vk.Semaphore.Group sd ma srfs k ->
 	Vk.Fence.Group sd ma siff k -> k ->
 	IO (SyncObjects '(sias, srfs, siff))
 createSyncObjects' iasgrp rfsgrp iffgrp k =
-	Vk.Semaphore.create' @_ @Nothing iasgrp k def >>= \(Right ias) ->
-	Vk.Semaphore.create' @_ @Nothing rfsgrp k def >>= \(Right rfs) ->
-	Vk.Fence.create' @_ @'Nothing iffgrp k fncInfo >>= \(Right iff) ->
+	Vk.Semaphore.create' @_ @Nothing iasgrp k def >>= \(fromRight -> ias) ->
+	Vk.Semaphore.create' @_ @Nothing rfsgrp k def >>= \(fromRight -> rfs) ->
+	Vk.Fence.create' @_ @'Nothing iffgrp k finfo >>= \(fromRight -> iff) ->
 	pure $ SyncObjects ias rfs iff
 	where
-	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sf sg sm sb nm sl .
 	Vk.CmdBffr.C scb  ->
@@ -1073,7 +1058,7 @@ mainLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw sl nm ssfc sr sg sias' srfs' siff' fmt' ssc' ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt' ssc' ss' sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1133,7 +1118,7 @@ runLoop :: (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw sl nm ssfc sr sg sias' srfs' siff' fmt' ssc' sis' sfs' ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt' ssc' sis' sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
