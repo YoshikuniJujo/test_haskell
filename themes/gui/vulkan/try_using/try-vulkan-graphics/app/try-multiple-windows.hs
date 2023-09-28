@@ -132,9 +132,10 @@ main = glfwInit $
 	bool (setupDebugMessenger inst) id enableValidationLayers $
 
 	fromDummy inst >>= \(phdv, qfis, scfmt) ->
+	createLogicalDevice phdv qfis \dv gq pq ->
+
 	Vk.T.formatToType scfmt \(_ :: Proxy scfmt) ->
 
-	createLogicalDevice phdv qfis \dv gq pq ->
 	run @scfmt inst phdv qfis dv gq pq
 
 fromDummy :: Vk.Ist.I si -> IO (Vk.PhDvc.P, QueueFamilyIndices, Vk.Format)
@@ -144,6 +145,16 @@ fromDummy inst = withDummySurface inst \dsfc -> do
 	let	fmt = Vk.Khr.Surface.M.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	pure (phdv, qfis, fmt)
+
+withSwapchain :: forall scfmt ssfc sd a .
+	Vk.T.FormatToValue scfmt =>
+	Vk.Dvc.D sd ->
+	Vk.Khr.Surface.S ssfc -> SwapChainSupportDetails -> Vk.Extent2d ->
+	QueueFamilyIndices ->
+	(forall ss . Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
+withSwapchain dvc sfc spp ext qfis f =
+	let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext in
+	Vk.Khr.Swapchain.create @_ @scfmt dvc crInfo nil' \sc -> f sc ext
 
 type FramebufferResized = TVar Bool
 
@@ -305,12 +316,12 @@ createWindowResources
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
 	createSurface' w inst sfcgrp k >>= \sfc ->
-	prepareSwapchain' @scifmt w sfc phdv >>= \(spp, ext) ->
+	prepareSwapchain @scifmt w sfc phdv >>= \(spp, ext) ->
 	createRenderPass' @scifmt dv rpgrp k >>= \rp ->
 	createGraphicsPipeline' dv gpsgrp k ext rp ppllyt >>= \gpl ->
 	createSyncObjects' iasgrp rfsgrp iffgrp k >>= \sos ->
 
-	createSwapchain' scgrp k sfc spp ext qfis >>= \(sc, _) ->
+	createSwapchain scgrp k sfc spp ext qfis >>= \(sc, _) ->
 
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
@@ -447,34 +458,34 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-prepareSwapchain' :: forall (scfmt :: Vk.T.Format) sw ssfc .
+prepareSwapchain :: forall (scfmt :: Vk.T.Format) sw ssfc .
 	Vk.T.FormatToValue scfmt =>
 	Glfw.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	IO (SwapChainSupportDetails, Vk.Extent2d)
-prepareSwapchain' win sfc phdvc = do
+prepareSwapchain win sfc phdvc = do
 	spp <- querySwapchainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	fmt0 = Vk.T.formatToValue @scfmt
 		fmt = Vk.Khr.Surface.M.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	when (fmt0 /= fmt) $ error
-		"app/try-multiple-windows: prepareSwapchain' format not match"
+		"app/try-multiple-windows: prepareSwapchain format not match"
 	pure (spp, ext)
 
-createSwapchain' :: forall scfmt ssfc sd ma ss k .
+createSwapchain :: forall scfmt ssfc sd ma ss k .
 	(Ord k, Vk.T.FormatToValue scfmt, AllocationCallbacks.ToMiddle ma) =>
 	Vk.Khr.Swapchain.Group sd ma scfmt ss k -> k ->
 	Vk.Khr.Surface.S ssfc -> SwapChainSupportDetails -> Vk.Extent2d ->
 	QueueFamilyIndices ->
 	IO (Vk.Khr.Swapchain.S scfmt ss, Vk.Extent2d)
-createSwapchain' scgrp k sfc spp ext qfis =
-	let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext in
+createSwapchain scgrp k sfc spp ext qfis =
+	let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext in
 	Vk.Khr.Swapchain.create' @scfmt scgrp k crInfo >>= \(fromRight -> sc) -> pure (sc, ext)
 
-mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
+mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
-mkSwapchainCreateInfoNew sfc qfis0 spp ext =
+mkSwapchainCreateInfo sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlags = def,
