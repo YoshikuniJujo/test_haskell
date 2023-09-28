@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost, PackageImports #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
@@ -18,15 +19,23 @@ module Gpu.Vulkan.Khr.Swapchain (
 
 	create, recreate, S, CreateInfo(..),
 
+	-- ** Group
+
+	group, Group, create', destroy, lookup,
+
 	-- * GET IMAGES
 
 	getImages ) where
 
+import Prelude hiding (lookup)
 import Foreign.Storable.PeekPoke
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.Map qualified as Map
 import Data.Word
 
 import "try-gpu-vulkan" Gpu.Vulkan.Enum
@@ -125,3 +134,58 @@ createInfoToMiddle CreateInfo {
 
 getImages :: Device.D sd -> S fmt ss -> IO [Image.Binded ss ss nm fmt]
 getImages (Device.D d) (S sc) = (Image.Binded <$>) <$> M.getImages d sc
+
+data Group sd ma fmt ssc k = Group (Device.D sd)
+	(TPMaybe.M (U2 AllocationCallbacks.A) ma) TSem (TVar (Map.Map k (S fmt ssc)))
+
+group :: AllocationCallbacks.ToMiddle ma =>
+	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall ssc . Group sd ma fmt ssc k -> IO a) -> IO a
+group dvc@(Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
+	rtn <- f $ Group dvc mac sem m
+	((\(S s) -> M.destroy mdvc s mmac) `mapM_`) =<< atomically (readTVar m)
+	pure rtn
+
+create' :: (
+	Ord k, WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle ma,
+	T.FormatToValue fmt ) =>
+	Group sd ma fmt ss k -> k -> CreateInfo mn ssfc fmt ->
+	IO (Either String (S fmt ss))
+create' (Group (Device.D mdvc)
+	(AllocationCallbacks.toMiddle -> mmac) sem ss) k
+	(createInfoToMiddle -> mci) = do
+	ok <- atomically do
+		mx <- Map.lookup k <$> readTVar ss
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	s <- M.create mdvc mci mmac
+		let	s' = S s
+		atomically $ modifyTVar ss (Map.insert k s') >> signalTSem sem
+		pure $ Right s'
+	else pure . Left $
+		"Gpu.Vulkan.Khr.Swapchain.create': The key already exist"
+
+destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Group sd ma fmt ssc k -> k -> IO (Either String ())
+destroy (Group (Device.D mdvc)
+	(AllocationCallbacks.toMiddle -> ma) sem scs) k = do
+	msc <- atomically do
+		mx <- Map.lookup k <$> readTVar scs
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case msc of
+		Nothing -> pure $ Left
+			"Gpu.Vulkan.Khr.Swapchain.destroy: No such key"
+		Just (S sc) -> do
+			M.destroy mdvc sc ma
+			atomically do
+				modifyTVar scs $ Map.delete k
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Group sd ma fmt ssc k -> k -> IO (Maybe (S fmt ssc))
+lookup (Group _ _ _sem scs) k = atomically $ Map.lookup k <$> readTVar scs
