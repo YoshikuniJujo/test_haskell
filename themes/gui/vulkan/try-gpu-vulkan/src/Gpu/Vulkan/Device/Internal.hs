@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
@@ -13,6 +14,10 @@ module Gpu.Vulkan.Device.Internal (
 	create, D(..), CreateInfo(..),
 	M.CreateFlags, M.QueueCreateInfo(..),
 
+	-- ** Group
+
+	group, Group, create', destroy, lookup,
+
 	-- * GET QUEUE AND WAIT IDLE
 
 	getQueue, waitIdle,
@@ -23,11 +28,15 @@ module Gpu.Vulkan.Device.Internal (
 
 	) where
 
+import Prelude hiding (lookup)
 import Foreign.Storable.PeekPoke
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.Map qualified as Map
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Device.Type
@@ -85,3 +94,56 @@ createInfoToMiddle CreateInfo {
 	M.createInfoEnabledLayerNames = elnms,
 	M.createInfoEnabledExtensionNames = eenms,
 	M.createInfoEnabledFeatures = mef }
+
+data Group ma sd k = Group PhysicalDevice.P
+	(TPMaybe.M (U2 AllocationCallbacks.A) ma) TSem (TVar (Map.Map k (D sd)))
+
+group :: AllocationCallbacks.ToMiddle ma =>
+	PhysicalDevice.P -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	(forall sd . Group ma sd k -> IO a) -> IO a
+group  phd mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
+	rtn <- f $ Group phd mac sem m
+	((\(D d) -> M.destroy d mmac) `mapM_`) =<< atomically (readTVar m)
+	pure rtn
+
+create' :: (
+	Ord k, WithPoked (TMaybe.M mn),
+	HeteroParList.ToListWithCM' WithPoked TMaybe.M qcis,
+	AllocationCallbacks.ToMiddle ma ) =>
+	Group ma sd k -> k -> CreateInfo mn qcis -> IO (Either String (D sd))
+create' (Group phd
+	(AllocationCallbacks.toMiddle -> mmac) sem ds) k
+	(createInfoToMiddle -> ci) = do
+	ok <- atomically do
+		mx <- Map.lookup k <$> readTVar ds
+		case mx of
+			Nothing -> waitTSem sem >> pure True
+			Just _ -> pure False
+	if ok
+	then do	d <- M.create phd ci mmac
+		let	d' = D d
+		atomically $ modifyTVar ds (Map.insert k d') >> signalTSem sem
+		pure $ Right d'
+	else pure . Left $ "Gpu.Vulkan.Device.create': The key already exist"
+
+destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Group ma sd k -> k -> IO (Either String ())
+destroy (Group _
+	(AllocationCallbacks.toMiddle -> ma) sem ds) k = do
+	md <- atomically do
+		mx <- Map.lookup k <$> readTVar ds
+		case mx of
+			Nothing -> pure Nothing
+			Just _ -> waitTSem sem >> pure mx
+	case md of
+		Nothing -> pure $ Left "Gpu.Vulkan.Device.destroy: No such key"
+		Just (D d) -> do
+			M.destroy d ma
+			atomically do
+				modifyTVar ds $ Map.delete k
+				signalTSem sem
+				pure $ Right ()
+
+lookup :: Ord k => Group ma sd k -> k -> IO (Maybe (D sd))
+lookup (Group _ _ _sem ds) k = atomically $ Map.lookup k <$> readTVar ds

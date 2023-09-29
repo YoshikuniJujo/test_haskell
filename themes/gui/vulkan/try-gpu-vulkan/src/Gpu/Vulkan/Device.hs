@@ -7,6 +7,10 @@ module Gpu.Vulkan.Device (
 	create, D, CreateInfo(..),
 	CreateFlags, QueueCreateInfo(..),
 
+	-- ** Group
+
+	group, Group, create', destroy, lookup,
+
 	-- * GET QUEUE AND WAIT IDLE
 
 	getQueue, waitIdle,
@@ -17,4 +21,5 @@ module Gpu.Vulkan.Device (
 
 	) where
 
+import Prelude hiding (lookup)
 import Gpu.Vulkan.Device.Internal
