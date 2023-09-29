@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 6226d2a70e083c68d67d61ecd2164139cad5e001
+  commit: 31553ea6ec154f310d3c766ee8e55204db6971b6
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
@@ -63,6 +63,7 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - features/ffi/pointer/try-storable-generic
   - themes/codec/try-codec-wavefront-obj
+  - themes/gui/vulkan/try-glfw-group
   - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
   - themes/gui/vulkan/try-gpu-vulkan-cglm
