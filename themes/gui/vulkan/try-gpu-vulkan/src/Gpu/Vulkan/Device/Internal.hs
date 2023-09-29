@@ -95,24 +95,24 @@ createInfoToMiddle CreateInfo {
 	M.createInfoEnabledExtensionNames = eenms,
 	M.createInfoEnabledFeatures = mef }
 
-data Group ma sd k = Group PhysicalDevice.P
+data Group ma sd k = Group
 	(TPMaybe.M (U2 AllocationCallbacks.A) ma) TSem (TVar (Map.Map k (D sd)))
 
 group :: AllocationCallbacks.ToMiddle ma =>
-	PhysicalDevice.P -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
+	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
 	(forall sd . Group ma sd k -> IO a) -> IO a
-group  phd mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+group mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
-	rtn <- f $ Group phd mac sem m
+	rtn <- f $ Group mac sem m
 	((\(D d) -> M.destroy d mmac) `mapM_`) =<< atomically (readTVar m)
 	pure rtn
 
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn),
 	HeteroParList.ToListWithCM' WithPoked TMaybe.M qcis,
-	AllocationCallbacks.ToMiddle ma ) =>
+	AllocationCallbacks.ToMiddle ma ) => PhysicalDevice.P ->
 	Group ma sd k -> k -> CreateInfo mn qcis -> IO (Either String (D sd))
-create' (Group phd
+create' phd (Group
 	(AllocationCallbacks.toMiddle -> mmac) sem ds) k
 	(createInfoToMiddle -> ci) = do
 	ok <- atomically do
@@ -129,7 +129,7 @@ create' (Group phd
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group ma sd k -> k -> IO (Either String ())
-destroy (Group _
+destroy (Group
 	(AllocationCallbacks.toMiddle -> ma) sem ds) k = do
 	md <- atomically do
 		mx <- Map.lookup k <$> readTVar ds
@@ -146,4 +146,4 @@ destroy (Group _
 				pure $ Right ()
 
 lookup :: Ord k => Group ma sd k -> k -> IO (Maybe (D sd))
-lookup (Group _ _ _sem ds) k = atomically $ Map.lookup k <$> readTVar ds
+lookup (Group _ _sem ds) k = atomically $ Map.lookup k <$> readTVar ds
