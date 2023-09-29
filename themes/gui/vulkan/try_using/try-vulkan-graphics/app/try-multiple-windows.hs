@@ -1136,14 +1136,14 @@ recordCommandBuffer cb rp fb vsce gpl vb =
 
 mainLoop :: (
 	RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt,
-	RecreateFramebuffers ss' sfs' ) =>
+	RecreateFramebuffers ss sfs' ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss' sfs' -> IO ()
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs' -> IO ()
 mainLoop phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
 	fix \loop -> do
 		Glfw.pollEvents
@@ -1196,14 +1196,14 @@ winParamsToDraws (WinParams _w _frszd _sfc ex rp gpl sos sc _scivs fb) =
 
 runLoop :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt,
-	RecreateFramebuffers sis' sfs' ) =>
+	RecreateFramebuffers sis sfs' ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis' sfs' ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sis sfs' ->
 	IO () -> IO ()
 runLoop phdvc qfis dvc gq pq cb ppllyt vb vb'
 	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
