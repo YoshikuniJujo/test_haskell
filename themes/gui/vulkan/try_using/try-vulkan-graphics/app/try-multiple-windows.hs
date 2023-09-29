@@ -135,10 +135,11 @@ main = glfwInit $
 	fromDummy inst dgrp >>= \(phdv, qfis, scfmt, dv, gq, pq, n) ->
 
 	print n >>
+	getNum n \(_ :: Proxy n) ->
 
 	Vk.T.formatToType scfmt \(_ :: Proxy scfmt) ->
 
-	run @scfmt inst phdv qfis dv gq pq
+	run @scfmt @n inst phdv qfis dv gq pq
 
 fromDummy :: Vk.Ist.I si -> Vk.Dvc.Group 'Nothing sd () -> IO (
 	Vk.PhDvc.P, QueueFamilyIndices, Vk.Format,
@@ -176,7 +177,7 @@ withSwapchain dvc sfc spp ext qfis f =
 	let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext in
 	Vk.Khr.Swapchain.create @_ @scfmt dvc crInfo nil' \sc -> f sc ext
 
-getNum :: [a] -> (forall (n :: [()]) . Proxy n -> b) -> b
+getNum :: [a] -> (forall (n :: [()]) . MyHomoList n => Proxy n -> b) -> b
 getNum [] f = f (Proxy :: Proxy '[])
 getNum (_ : xs) f = getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
@@ -287,7 +288,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: forall (scfmt :: Vk.T.Format) si sd . Vk.T.FormatToValue scfmt =>
+run :: forall (scfmt :: Vk.T.Format) (n :: [()]) si sd .
+	(Vk.T.FormatToValue scfmt, MyHomoList n) =>
 	Vk.Ist.I si -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run inst phdv qfis dv gq pq =
@@ -305,20 +307,21 @@ run inst phdv qfis dv gq pq =
 	Vk.Semaphore.group dv nil' \rfsgrp ->
 	Vk.Fence.group dv nil' \iffgrp ->
 	Vk.Khr.Swapchain.group @scfmt dv nil' \scgrp ->
+	Vk.ImgVw.group dv nil' \ivgrp ->
 
-	createWindowResources
+	createWindowResources @_ @n
 		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-		iasgrp rfsgrp iffgrp scgrp 0 \wps ->
-	createWindowResources
+		iasgrp rfsgrp iffgrp scgrp ivgrp 0 \wps ->
+	createWindowResources @_ @n
 		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-		iasgrp rfsgrp iffgrp scgrp 1 \wps' ->
+		iasgrp rfsgrp iffgrp scgrp ivgrp 1 \wps' ->
 
 	mainLoop phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
 
 createWindowResources ::
-	forall (scifmt :: Vk.T.Format)
-		si sd sl sw nm ssfc sr sg sias srfs siff ssc k a . (
-	Ord k, Vk.T.FormatToValue scifmt ) =>
+	forall (scifmt :: Vk.T.Format) (n :: [()])
+		si siv sd sl sw nm ssfc sr sg sias srfs siff ssc k a . (
+	Ord k, Vk.T.FormatToValue scifmt, MyHomoList n ) =>
 	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
@@ -331,13 +334,14 @@ createWindowResources ::
 	Vk.Semaphore.Group sd 'Nothing srfs k ->
 	Vk.Fence.Group sd 'Nothing siff k ->
 	Vk.Khr.Swapchain.Group sd 'Nothing scifmt ssc k ->
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scifmt ->
 	k ->
-	(forall ss sfs . RecreateFramebuffers ss sfs =>
-		WinParams sw sl nm ssfc sr sg sias srfs siff scifmt ssc ss sfs ->
+	(forall sfs . RecreateFramebuffers (Replicate n siv) sfs =>
+		WinParams sw sl nm ssfc sr sg sias srfs siff scifmt ssc (Replicate n siv) sfs ->
 		IO a) -> IO a
 createWindowResources
 	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp
-	scgrp k f =
+	scgrp ivgrp k f =
 
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
@@ -350,7 +354,9 @@ createWindowResources
 	createSwapchain scgrp k sfc spp ext qfis >>= \(sc, _) ->
 
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
-	createImageViews dv imgs \scivs ->
+
+	createImageViews'' @n ivgrp k imgs >>= \scivs ->
+
 	createFramebuffers dv ext rp scivs \fbs ->
 
 	atomically (newTVar ext) >>= \vext ->
@@ -644,11 +650,24 @@ createImageViews dvc (sci : scis) f =
 	createImageView dvc sci \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :** scivs
 
+type family Replicate (n :: [a]) (x :: k) where
+	Replicate '[] _x = '[]
+	Replicate (_a ': as) x = x ': Replicate as x
+
+class MyHomoList (n :: [k]) where
+	homoListFromList :: [t s] -> HeteroParList.PL t (Replicate n s)
+
+instance MyHomoList '[] where
+	homoListFromList [] = HeteroParList.Nil
+
+instance MyHomoList ns => MyHomoList (n ': ns) where
+	homoListFromList (x : xs) = x :** (homoListFromList @_ @ns xs)
+
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Image.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.recreate dvc (mkImageViewCreateInfoNew sci) nil' iv >>
+	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo sci) nil' iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -658,12 +677,36 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.Dvc.D sd -> Vk.Image.Binded sm si nm ifmt ->
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfoNew timg) nil' f
+	Vk.ImgVw.group dvc nil' \ivgrp ->
+	f =<< createImageView' ivgrp ((), 0) timg
 
-mkImageViewCreateInfoNew ::
+createImageViews'' :: forall n ivfmt sd si siv k sm nm ifmt . (
+	Ord k, Vk.T.FormatToValue ivfmt, MyHomoList n ) =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt -> k ->
+	[Vk.Image.Binded sm si nm ifmt] ->
+	IO (HeteroParList.PL (Vk.ImgVw.I nm ivfmt) (Replicate n siv))
+createImageViews'' ivgrp k imgs = do
+	ivs <- createImageViews' ivgrp k imgs
+	pure $ homoListFromList @_ @n ivs
+
+createImageViews' :: forall ivfmt sd si siv k sm nm ifmt .
+	(Ord k, Vk.T.FormatToValue ivfmt) =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt -> k ->
+	[Vk.Image.Binded sm si nm ifmt] -> IO [Vk.ImgVw.I nm ivfmt siv]
+createImageViews' ivgrp k imgs =
+	mapM (\(i, img) -> createImageView' ivgrp (k, i) img) $ zip [0 ..] imgs
+
+createImageView' :: forall ivfmt sd si siv k sm nm ifmt . Ord k =>
+	Vk.T.FormatToValue ivfmt =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt -> (k, Int) ->
+	Vk.Image.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm ivfmt siv)
+createImageView' ivgrp k timg =
+	fromRight <$> Vk.ImgVw.create' ivgrp k (mkImageViewCreateInfo timg)
+
+mkImageViewCreateInfo ::
 	Vk.Image.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
+mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
 	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
 	Vk.ImgVw.createInfoImage = sci,
