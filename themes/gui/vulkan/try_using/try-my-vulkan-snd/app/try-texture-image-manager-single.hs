@@ -127,7 +127,6 @@ import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
-import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
@@ -325,14 +324,14 @@ createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Img.Group 'Nothing si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Group 'Nothing sm Glfw.Key '[
 		'(si, 'Vk.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
-	Vk.ImgVw.Group 'Nothing siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.ImgVw.Group sd 'Nothing siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
 createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr kis k = let
 	tximgfp = kis M.! k in
 	putStrLn "createTexture begin" >>
 	createTextureImage' phdv dv mng mmng gq cp k tximgfp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
-		dv ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
+		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSetTex dv ubds tximgvw txsmplr
 
 updateTexture :: Ord k => Vk.Dvc.D sd ->
@@ -340,7 +339,7 @@ updateTexture :: Ord k => Vk.Dvc.D sd ->
 		'Vk.DscSetLyt.Buffer
 			'[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Smplr.S ss -> Vk.ImgVw.Group 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Smplr.S ss -> Vk.ImgVw.Group sd 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	k -> IO ()
 updateTexture dv udbs txsmplr imng k = do
 	Just tximgvw <- Vk.ImgVw.lookup imng k
