@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -130,21 +130,41 @@ main :: IO ()
 main = glfwInit $
 	createInstance \inst ->
 	bool (setupDebugMessenger inst) id enableValidationLayers $
+	Vk.Dvc.group nil' \dgrp ->
 
-	fromDummy inst >>= \(phdv, qfis, scfmt) ->
-	createLogicalDevice phdv qfis \dv gq pq ->
+	fromDummy inst dgrp >>= \(phdv, qfis, scfmt, dv, gq, pq, n) ->
+
+	print n >>
 
 	Vk.T.formatToType scfmt \(_ :: Proxy scfmt) ->
 
 	run @scfmt inst phdv qfis dv gq pq
 
-fromDummy :: Vk.Ist.I si -> IO (Vk.PhDvc.P, QueueFamilyIndices, Vk.Format)
-fromDummy inst = withDummySurface inst \dsfc -> do
+fromDummy :: Vk.Ist.I si -> Vk.Dvc.Group 'Nothing sd () -> IO (
+	Vk.PhDvc.P, QueueFamilyIndices, Vk.Format,
+	Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q, [()] )
+fromDummy inst dgrp = withDummySurface inst \dwin dsfc -> do
 	(phdv, qfis) <- pickPhysicalDevice' inst dsfc
 	spp <- querySwapchainSupport phdv dsfc
+	ext <- chooseSwapExtent dwin $ capabilities spp
 	let	fmt = Vk.Khr.Surface.M.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
-	pure (phdv, qfis, fmt)
+	(dv, gq, pq) <- createLogicalDevice' phdv dgrp () qfis
+	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+		n <- getSwapchainImageNum @fmt dv dsfc spp ext qfis
+		pure (phdv, qfis, fmt, dv, gq, pq, n)
+
+getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
+	Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd ->
+	Vk.Khr.Surface.S ssfc -> SwapChainSupportDetails -> Vk.Extent2d ->
+	QueueFamilyIndices -> IO [()]
+getSwapchainImageNum dv sfc spp ext qfis =
+	withSwapchain @fmt dv sfc spp ext qfis \sc _ ->
+		sameNum () <$> Vk.Khr.Swapchain.getImages dv sc
+
+sameNum :: b -> [a] -> [b]
+sameNum x = \case [] -> []; _ : ys -> x : sameNum x ys
 
 withSwapchain :: forall scfmt ssfc sd a .
 	Vk.T.FormatToValue scfmt =>
@@ -155,6 +175,10 @@ withSwapchain :: forall scfmt ssfc sd a .
 withSwapchain dvc sfc spp ext qfis f =
 	let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext in
 	Vk.Khr.Swapchain.create @_ @scfmt dvc crInfo nil' \sc -> f sc ext
+
+getNum :: [a] -> (forall (n :: [()]) . Proxy n -> b) -> b
+getNum [] f = f (Proxy :: Proxy '[])
+getNum (_ : xs) f = getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
 type FramebufferResized = TVar Bool
 
@@ -176,8 +200,10 @@ validationLayers = [Vk.layerKhronosValidation]
 glfwInit :: IO a -> IO a
 glfwInit = Glfw.init error
 
-withDummySurface :: Vk.Ist.I si -> (forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-withDummySurface ist f = withDummyWindow \dwin -> createSurface dwin ist f
+withDummySurface :: Vk.Ist.I si ->
+	(forall sw ss . Glfw.Win.W sw -> Vk.Khr.Surface.S ss -> IO a) -> IO a
+withDummySurface ist f = withDummyWindow \dwin -> createSurface dwin ist \sfc ->
+	f dwin sfc
 
 withDummyWindow :: (forall sw . Glfw.Win.W sw -> IO a) -> IO a
 withDummyWindow f = Glfw.Win.group \wgrp -> do
@@ -430,28 +456,38 @@ querySwapchainSupport dvc sfc = SwapChainSupportDetails
 
 createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createLogicalDevice phdvc qfis f = let
+createLogicalDevice phdvc qfis f =
+	Vk.Dvc.group nil' \dgrp ->
+	uncurry3 f =<< createLogicalDevice' phdvc dgrp () qfis
+
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (x, y, z) = f x y z
+
+createLogicalDevice' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Vk.PhDvc.P -> Vk.Dvc.Group ma sd k -> k -> QueueFamilyIndices ->
+	IO (Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q)
+createLogicalDevice' phd dgrp k qfis =
+	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
+	Vk.Dvc.create' phd dgrp k (createInfo qs) >>= \(fromRight -> dvc) -> do
+		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
+		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
+		pure (dvc, gq, pq)
+	where
 	uniqueQueueFamilies =
 		L.nub [graphicsFamily qfis, presentFamily qfis]
 	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = def,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] } in
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs -> do
-	let	createInfo = Vk.Dvc.M.CreateInfo {
-			Vk.Dvc.M.createInfoNext = TMaybe.N,
-			Vk.Dvc.M.createInfoFlags = def,
-			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
-			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Dvc.M.createInfoEnabledExtensionNames =
-				deviceExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def }
-	Vk.Dvc.create phdvc createInfo nil' \dvc -> do
-		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		f dvc gq pq
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	createInfo qs = Vk.Dvc.M.CreateInfo {
+		Vk.Dvc.M.createInfoNext = TMaybe.N,
+		Vk.Dvc.M.createInfoFlags = def,
+		Vk.Dvc.M.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.M.createInfoEnabledLayerNames =
+			bool [] validationLayers enableValidationLayers,
+		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
+		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
