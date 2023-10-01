@@ -358,6 +358,8 @@ createWindowResources
 	createImageViews'' @n ivgrp k imgs >>= \scivs ->
 
 	createFramebuffers dv ext rp scivs \fbs ->
+--	Vk.Frmbffr.group dv nil' \fbgrp ->
+--	createFramebuffers' fbgrp () 0 ext rp scivs >>= \fbs ->
 
 	atomically (newTVar ext) >>= \vext ->
 
@@ -936,7 +938,8 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HeteroParList.Nil f = f HeteroParList.Nil
 createFramebuffers dvc sce rp (iv :** ivs) f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfoNew sce rp iv) nil' \fb ->
+	Vk.Frmbffr.group dvc nil' \fbgrp ->
+	Vk.Frmbffr.create' fbgrp () (mkFramebufferCreateInfoNew sce rp iv) >>= \(fromRight -> fb) ->
 	createFramebuffers dvc sce rp ivs \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -953,6 +956,30 @@ instance RecreateFramebuffers sis sfs =>
 		Vk.Frmbffr.recreate dvc
 			(mkFramebufferCreateInfoNew sce rp sciv) nil' fb >>
 		recreateFramebuffers dvc sce rp scivs fbs
+
+class RecreateFramebuffers' (sis :: [Type]) sf (sfs :: [Type]) where
+	createFramebuffers' :: Ord k =>
+		Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
+		Int -> Vk.Extent2d -> Vk.RndrPass.R sr ->
+		HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
+		IO (HeteroParList.PL Vk.Frmbffr.F sfs)
+	recreateFramebuffers' :: Vk.Dvc.D sd -> Vk.Extent2d ->
+		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
+		HeteroParList.PL Vk.Frmbffr.F sfs -> IO ()
+
+instance RecreateFramebuffers' '[] _sf '[] where
+	createFramebuffers' _ _ _ _ _ HeteroParList.Nil = pure HeteroParList.Nil
+	recreateFramebuffers' _dvc _sce _rp HeteroParList.Nil HeteroParList.Nil = pure ()
+
+instance RecreateFramebuffers' sis sf sfs =>
+	RecreateFramebuffers' (si ': sis) sf (sf ': sfs) where
+	createFramebuffers' fbgrp k i sce rp (sciv :** scivs) = (:**) . fromRight
+		<$> Vk.Frmbffr.create' fbgrp (k, i) (mkFramebufferCreateInfoNew sce rp sciv)
+		<*> createFramebuffers' fbgrp k (i + 1) sce rp scivs
+	recreateFramebuffers' dvc sce rp (sciv :** scivs) (fb :** fbs) =
+		Vk.Frmbffr.recreate dvc
+			(mkFramebufferCreateInfoNew sce rp sciv) nil' fb >>
+		recreateFramebuffers' @sis @sf dvc sce rp scivs fbs
 
 mkFramebufferCreateInfoNew ::
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
