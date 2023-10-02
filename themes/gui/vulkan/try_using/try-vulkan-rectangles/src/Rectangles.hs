@@ -899,10 +899,9 @@ createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 		copyBuffer dvc gq cp b' b
 	pure b
 
-destroyRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sd sm sb nm k -> k -> IO ()
-destroyRectangleBuffer (_, _, dvc, _, _, _, _) (bgrp, mgrp) k = do
-	r1 <- Vk.Mem.free dvc mgrp k
+destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm k -> k -> IO ()
+destroyRectangleBuffer (bgrp, mgrp) k = do
+	r1 <- Vk.Mem.free mgrp k
 	r2 <- Vk.Bffr.destroy bgrp k
 	case (r1, r2) of
 		(Left msg, _) -> error msg
@@ -911,7 +910,7 @@ destroyRectangleBuffer (_, _, dvc, _, _, _, _) (bgrp, mgrp) k = do
 
 type RectGroups sd sm sb nm k = (
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Rectangle ""],
-	Vk.Mem.Group 'Nothing sm k
+	Vk.Mem.Group sd 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] )
 
 createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
@@ -995,7 +994,7 @@ createBufferList p dv ln usg props =
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""]  ->
-	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
+	Vk.Mem.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
 	k ->
 	Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> IO (
@@ -1020,7 +1019,7 @@ createBuffer' :: forall sd sb nm o sm k .
 	(Ord k, VObj.SizeAlignment o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
-	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] -> k ->
+	Vk.Mem.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] -> k ->
 	VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
 		Vk.Bffr.Binded sm sb nm '[o],
@@ -1029,7 +1028,7 @@ createBuffer' p dv bgrp mgrp k ln usg props =
 	Vk.Bffr.create' bgrp k bffrInfo >>= \(AlwaysRight b) -> do
 		reqs <- Vk.Bffr.getMemoryRequirements dv b
 		mt <- findMemoryType p (Vk.Mem.requirementsMemoryTypeBits reqs) props
-		Vk.Mem.allocateBind' dv mgrp k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
+		Vk.Mem.allocateBind' mgrp k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
 			(allcInfo mt) >>=
 			\(AlwaysRight (HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd)), mem)) -> pure (bnd, mem)
 	where
@@ -1180,7 +1179,7 @@ mainLoop inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
 		(tm, rects) <- atomically $ readTChan inp
 		let	rects' = bool rects dummy $ null rects
 		Vk.Dvc.waitIdle dvc
-		destroyRectangleBuffer dvs rgrps ()
+		destroyRectangleBuffer rgrps ()
 		createRectangleBuffer dvs rgrps () rects' >>= \rb ->
 			runLoop we sfc dvs iasrfsifs scs pls
 				vbs (rb, fromIntegral $ length rects') ubs
