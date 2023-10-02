@@ -1420,7 +1420,7 @@ loadModel fp = do
 	pure (vtcs', idcs')
 
 createVertexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 WVertex ""] ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 WVertex ""] ->
 	Vk.Mem.Group 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 WVertex ""])] ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector WVertex ->
@@ -1444,7 +1444,7 @@ createVertexBuffer' phdvc dvc grp mng k gq cp vtcs =
 	pure b
 
 createIndexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 Word32 ""] ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Word32 ""] ->
 	Vk.Mem.Group 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Word32 ""])]  ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 ->
@@ -1572,7 +1572,7 @@ createBufferList p dv ln usg props f =
 
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 t ""] ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""] ->
 	Vk.Mem.Group 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
 	k -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
@@ -1608,14 +1608,14 @@ createBuffer p dv ln usg props f =
 
 createBuffer' :: forall sd nm o sm sb k . (Ord k, VObj.SizeAlignment o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group 'Nothing sb k nm '[o] ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
 	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 	k -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
 		Vk.Bffr.Binded sm sb nm '[o],
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] )
 createBuffer' p dv grp mng k ln usg props = do
-	Right b <- Vk.Bffr.create' dv grp k bffrInfo
+	Right b <- Vk.Bffr.create' grp k bffrInfo
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Right ((HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))), m) <- do
@@ -1758,8 +1758,8 @@ type VertexIndexBuffer sm sb sm' sb' nm nm' = (
 	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""],
 	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""])
 
-type GroupAndManager sm sb k nm t = (
-	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 t ""],
+type GroupAndManager sd sm sb k nm t = (
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""],
 	Vk.Mem.Group 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])])
 
@@ -1793,8 +1793,8 @@ mainLoop :: (
 		sdm '[ '(sdi, 'Vk.Mem.ImageArg "depth-buffer" dptfmt)] ->
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	V.Vector Word32 ->
-	GroupAndManager sm sb Glfw.Key nm WVertex ->
-	GroupAndManager sm' sb' Glfw.Key nm' Word32 ->
+	GroupAndManager sd sm sb Glfw.Key nm WVertex ->
+	GroupAndManager sd sm' sb' Glfw.Key nm' Word32 ->
 	VertexIndexBuffer sm sb sm' sb' nm nm' ->
 	Vk.Mem.M sm2 '[ '(
 		sb2,
@@ -1838,8 +1838,8 @@ runLoop :: (
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
 	TChan K.KeyEvent ->
-	GroupAndManager sm sb Glfw.Key nm WVertex ->
-	GroupAndManager sm' sb' Glfw.Key nm' Word32 ->
+	GroupAndManager sd sm sb Glfw.Key nm WVertex ->
+	GroupAndManager sd sm' sb' Glfw.Key nm' Word32 ->
 	VertexIndexBuffer sm sb sm' sb' nm nm' ->
 	Vk.Mem.M sm2 '[ '(
 		sb2,
