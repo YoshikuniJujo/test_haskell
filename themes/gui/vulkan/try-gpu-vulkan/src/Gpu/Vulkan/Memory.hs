@@ -101,22 +101,22 @@ allocate dv@(Device.D mdv) ibs ai
 
 group :: AllocationCallbacks.ToMiddle ma =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
-	(forall s . Group ma s k ibargs -> IO a) -> IO a
-group (Device.D mdvc) ma@(AllocationCallbacks.toMiddle -> mac) f =
+	(forall s . Group sd ma s k ibargs -> IO a) -> IO a
+group dvc@(Device.D mdvc) ma@(AllocationCallbacks.toMiddle -> mac) f =
 	M.group mdvc mac \mmng -> do
 		ibargs <- atomically $ newTVar Map.empty
-		f $ Group ma ibargs mmng
+		f $ Group dvc ma ibargs mmng
 
 allocateBind' :: (
 	Ord k,
 	WithPoked (TMaybe.M mn), Bindable ibargs,
 	AllocationCallbacks.ToMiddle ma ) =>
-	Device.D sd -> Group ma sm k ibargs -> k ->
+	Device.D sd -> Group sd ma sm k ibargs -> k ->
 	HeteroParList.PL (U2 ImageBuffer) ibargs -> AllocateInfo mn ->
 	IO (Either String (
 		HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs,
 		M sm ibargs))
-allocateBind' dv (Group mac mib mng) k ibs ai = do
+allocateBind' dv (Group _sd mac mib mng) k ibs ai = do
 	allocate' dv mng k ibs ai mac >>= \case
 		Left msg -> pure $ Left msg
 		Right m -> do
@@ -137,18 +137,18 @@ allocate' dv@(Device.D mdv) mng k ibs ai (AllocationCallbacks.toMiddle -> mac) =
 	(newM ibs `mapM`) =<< M.allocate' mdv mng k mai mac
 
 free :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Device.D sd -> Group ma smng k ibargs -> k -> IO (Either String ())
-free (Device.D mdv) (Group (AllocationCallbacks.toMiddle -> mac) _ mng) k =
+	Group sd ma smng k ibargs -> k -> IO (Either String ())
+free (Group (Device.D mdv) (AllocationCallbacks.toMiddle -> mac) _ mng) k =
 	M.free' mdv mng k mac
 
-data Group ma s k ibargs = Group
+data Group sd ma s k ibargs = Group (Device.D sd)
 	(TPMaybe.M (U2 AllocationCallbacks.A) ma)
 	(TVar (Map.Map k (IORef (HeteroParList.PL (U2 ImageBuffer) ibargs))))
 	(M.Group s k)
 
 lookup :: Ord k =>
-	Group ma sm k ibargs -> k -> IO (Maybe (M s ibargs))
-lookup (Group _ ibargss mmng) k = do
+	Group sd ma sm k ibargs -> k -> IO (Maybe (M s ibargs))
+lookup (Group _ _ ibargss mmng) k = do
 	mibargs <- atomically $ Map.lookup k <$> readTVar ibargss
 	mmem <- M.lookup mmng k
 	pure $ M <$> mibargs <*> mmem
