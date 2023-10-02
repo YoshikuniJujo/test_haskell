@@ -322,7 +322,7 @@ createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 			'[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
 	Vk.Img.Group 'Nothing si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Mem.Group 'Nothing sm Glfw.Key '[
+	Vk.Mem.Group sd 'Nothing sm Glfw.Key '[
 		'(si, 'Vk.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
 	Vk.ImgVw.Group sd 'Nothing siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
@@ -946,7 +946,7 @@ createCommandPool qfis dvc f =
 
 createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group 'Nothing sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Mem.Group 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
+	Vk.Mem.Group sd 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc -> Glfw.Key -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
 createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
@@ -1011,7 +1011,7 @@ instance KObj.IsImage MyImage where
 createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group 'Nothing sim Glfw.Key nm fmt ->
-	Vk.Mem.Group 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
+	Vk.Mem.Group sd 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	Glfw.Key ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
@@ -1025,7 +1025,7 @@ createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	print mt
 	Right (HeteroParList.Singleton (U2 (Vk.Mem.ImageBinded bnd)), m) <-
-		Vk.Mem.allocateBind' @_ @'Nothing dvc mmng k
+		Vk.Mem.allocateBind' @_ @'Nothing mmng k
 			(HeteroParList.Singleton . U2 $ Vk.Mem.Image img) (memInfo mt)
 	pure (bnd :: Vk.Img.Binded smm sim nm fmt, m)
 	where

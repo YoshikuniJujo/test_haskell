@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: efb974dffb35ff1c0c02acbd156ea9a01055e315
+  commit: 923252f786501836b603fc8bfc0f71be91767006
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj

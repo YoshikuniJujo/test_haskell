@@ -1421,7 +1421,7 @@ loadModel fp = do
 
 createVertexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 WVertex ""] ->
-	Vk.Mem.Group 'Nothing sm k
+	Vk.Mem.Group sd 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 WVertex ""])] ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector WVertex ->
 	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""])
@@ -1445,7 +1445,7 @@ createVertexBuffer' phdvc dvc grp mng k gq cp vtcs =
 
 createIndexBuffer' :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Word32 ""] ->
-	Vk.Mem.Group 'Nothing sm k
+	Vk.Mem.Group sd 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Word32 ""])]  ->
 	k -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 ->
 	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 Word32 ""])
@@ -1573,7 +1573,7 @@ createBufferList p dv ln usg props f =
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""] ->
-	Vk.Mem.Group 'Nothing sm k
+	Vk.Mem.Group sd 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
 	k -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> IO (
@@ -1609,7 +1609,7 @@ createBuffer p dv ln usg props f =
 createBuffer' :: forall sd nm o sm sb k . (Ord k, VObj.SizeAlignment o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
-	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
+	Vk.Mem.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 	k -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
 		Vk.Bffr.Binded sm sb nm '[o],
@@ -1619,7 +1619,7 @@ createBuffer' p dv grp mng k ln usg props = do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Right ((HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))), m) <- do
-		Vk.Mem.allocateBind' dv mng k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt)
+		Vk.Mem.allocateBind' mng k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt)
 	pure (bnd, m)
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
@@ -1760,7 +1760,7 @@ type VertexIndexBuffer sm sb sm' sb' nm nm' = (
 
 type GroupAndManager sd sm sb k nm t = (
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""],
-	Vk.Mem.Group 'Nothing sm k
+	Vk.Mem.Group sd 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])])
 
 bindedBuffer ::
