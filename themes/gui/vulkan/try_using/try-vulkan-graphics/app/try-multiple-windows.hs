@@ -1053,12 +1053,14 @@ createBuffer' :: forall sd sb k nm o a . (Ord k, VObj.SizeAlignment o) =>
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
 createBuffer' p dv bfgrp k ln usg props f =
+	Vk.Mem.group dv nil' \mmgrp ->
 	Vk.Bffr.create' bfgrp k bffrInfo >>= \(fromRight -> b) -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
-		(allcInfo mt) nil'
-		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
+	Vk.Mem.allocateBind' mmgrp () (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
+		(allcInfo mt)
+		>>= \(fromRight -> (HeteroParList.Singleton
+			(U2 (Vk.Mem.BufferBinded bnd)), mm)) -> f bnd mm
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
