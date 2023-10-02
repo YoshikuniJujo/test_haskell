@@ -316,12 +316,9 @@ run inst phdv qfis dv gq pq =
 
 	createWindowResources' @_ @n
 		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-		iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp 0 \wps ->
-	createWindowResources' @_ @n
-		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-		iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp 1 \wps' ->
+		iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp `mapM` [0, 1] >>= \[wps, wps'] ->
 
-	mainLoop' @n @siv @sf phdv qfis dv gq pq cb ppllyt vb vb' wps wps'
+	mainLoop' @n @siv @sf phdv qfis dv gq pq cb ppllyt vb vb' [wps, wps']
 
 createWindowResources' ::
 	forall (scifmt :: Vk.T.Format) (n :: [()])
@@ -343,11 +340,10 @@ createWindowResources' ::
 	Vk.Khr.Swapchain.Group sd 'Nothing scifmt ssc k ->
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scifmt ->
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
-	k -> (WinParams sw sl nm ssfc sr sg sias srfs siff scifmt ssc (Replicate' n siv) (Replicate' n sf) ->
-		IO a) -> IO a
+	k -> IO (WinParams sw sl nm ssfc sr sg sias srfs siff scifmt ssc (Replicate' n siv) (Replicate' n sf))
 createWindowResources'
 	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp
-	scgrp ivgrp fbgrp k f =
+	scgrp ivgrp fbgrp k =
 
 	newFramebufferResized >>= \g ->
 	withWindow' wgrp k g >>= \w ->
@@ -366,7 +362,7 @@ createWindowResources'
 
 	atomically (newTVar ext) >>= \vext ->
 
-	f $ WinParams w g sfc vext rp gpl sos sc scivs fbs
+	pure $ WinParams w g sfc vext rp gpl sos sc scivs fbs
 
 createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -992,13 +988,13 @@ createVertexBuffer :: Vk.PhDvc.P ->
 createVertexBuffer phdvc dvc gq cp vs f =
 	createBufferList phdvc dvc (fromIntegral $ length vs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
+		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
 	createBufferList phdvc dvc (fromIntegral $ length vs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vs
-	copyBuffer dvc gq cp b' b
+		Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vs
+		copyBuffer dvc gq cp b' b
 	f b
 
 createBufferList :: forall sd nm t a . Storable t =>
@@ -1020,7 +1016,8 @@ createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
 		Vk.Mem.M sm
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
+createBuffer' p dv ln usg props f =
+	Vk.Bffr.create dv bffrInfo nil' \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
@@ -1150,14 +1147,12 @@ mainLoop' :: forall n siv sf sd scb sl sm sb nm sm' sb' sw ssfc sr sg sias srfs 
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
-		(Replicate' n siv) (Replicate' n sf) ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
-		(Replicate' n siv) (Replicate' n sf) -> IO ()
-mainLoop' phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' = do
-	fix \loop -> do
+	[WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
+		(Replicate' n siv) (Replicate' n sf)] -> IO ()
+mainLoop' phdvc qfis dvc gq pq cb ppllyt vb vb' wpss0 = do
+	($ wpss0) $ fix \loop wpss -> do
 		Glfw.pollEvents
-		runLoop' @n @siv @sf phdvc qfis dvc gq pq cb ppllyt vb vb' wps wps' loop
+		runLoop' @n @siv @sf phdvc qfis dvc gq pq cb ppllyt vb vb' wpss (loop wpss)
 	Vk.Dvc.waitIdle dvc
 
 data WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs = WinParams
@@ -1211,19 +1206,15 @@ runLoop' :: forall n si sf sd scb sl sm sb nm ssfc sr sm' sb' sw sg sias srfs si
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
-		(Replicate' n si) (Replicate' n sf) ->
-	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
-		(Replicate' n si) (Replicate' n sf) ->
+	[WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
+		(Replicate' n si) (Replicate' n sf)] ->
 	IO () -> IO ()
 runLoop' phdvc qfis dvc gq pq cb ppllyt vb vb'
-	wps@(WinParams w frszd _ _ _ _ _ _ _ _)
-	wps'@(WinParams w' frszd' _ _ _ _ _ _ _ _) loop = do
-	catchAndRecreate' @n @si @sf phdvc qfis dvc ppllyt (winParamsToRecreates wps) loop
-		$ drawFrame dvc gq pq cb vb (winParamsToDraws wps)
+	[	wps@(WinParams w frszd _ _ _ _ _ _ _ _),
+		wps'@(WinParams w' frszd' _ _ _ _ _ _ _ _) ] loop = do
+	drawAndCatch @n @si @sf phdvc qfis dvc gq pq cb vb ppllyt wps loop
 	Vk.Dvc.waitIdle dvc
-	catchAndRecreate' @n @si @sf phdvc qfis dvc ppllyt (winParamsToRecreates wps') loop
-		$ drawFrame dvc gq pq cb vb' (winParamsToDraws wps')
+	drawAndCatch @n @si @sf phdvc qfis dvc gq pq cb vb' ppllyt wps' loop
 	Vk.Dvc.waitIdle dvc
 	cls <- Glfw.Win.shouldClose w
 	cls' <- Glfw.Win.shouldClose w'
@@ -1239,6 +1230,19 @@ runLoop' phdvc qfis dvc gq pq cb ppllyt vb vb'
 			True -> recreateAll' @n @si @sf
 				phdvc qfis dvc ppllyt (winParamsToRecreates wps')
 		loop
+
+drawAndCatch :: forall n (siv :: Type) (sf :: Type) sd sl sw ssfc sr sg sias srfs siff fmt ssc scb sm sb nm .
+	(Vk.T.FormatToValue fmt, RecreateFramebuffers' n) =>
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
+	Vk.CmdBffr.C scb ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Ppl.Layout.P sl '[] '[]  ->
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
+		(Replicate' n siv) (Replicate' n sf) ->
+	IO () -> IO ()
+drawAndCatch phdvc qfis dvc gq pq cb vb ppllyt wps loop =
+	catchAndRecreate' @n @siv @sf phdvc qfis dvc ppllyt (winParamsToRecreates wps) loop
+		$ drawFrame dvc gq pq cb vb (winParamsToDraws wps)
 
 drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff sl .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
