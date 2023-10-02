@@ -111,12 +111,12 @@ allocateBind' :: (
 	Ord k,
 	WithPoked (TMaybe.M mn), Bindable ibargs,
 	AllocationCallbacks.ToMiddle ma ) =>
-	Device.D sd -> Group sd ma sm k ibargs -> k ->
+	Group sd ma sm k ibargs -> k ->
 	HeteroParList.PL (U2 ImageBuffer) ibargs -> AllocateInfo mn ->
 	IO (Either String (
 		HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs,
 		M sm ibargs))
-allocateBind' dv (Group _sd mac mib mng) k ibs ai = do
+allocateBind' (Group dv mac mib mng) k ibs ai = do
 	allocate' dv mng k ibs ai mac >>= \case
 		Left msg -> pure $ Left msg
 		Right m -> do
