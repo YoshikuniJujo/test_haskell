@@ -300,8 +300,10 @@ run inst phdv qfis dv gq pq =
 	createCommandPool qfis dv \cp ->
 	createCommandBuffer dv cp \cb ->
 	createPipelineLayout dv \ppllyt ->
-	createVertexBuffer phdv dv gq cp vertices \vb ->
-	createVertexBuffer phdv dv gq cp vertices2 \vb' ->
+
+	Vk.Bffr.group dv nil' \bfgrp ->
+	createVertexBuffer' phdv dv gq cp bfgrp 0 vertices \vb ->
+	createVertexBuffer' phdv dv gq cp bfgrp 1 vertices2 \vb' ->
 
 	Glfw.Win.group @Int \wgrp ->
 	Vk.Khr.Surface.group inst nil' \sfcgrp ->
@@ -370,8 +372,8 @@ createSurface win ist f =
 	Vk.Khr.Surface.group ist nil' \sgrp ->
 	f . fromRight =<< Vk.Khr.Surface.Glfw.Win.create' ist sgrp () win
 
-fromRight :: Either l r -> r
-fromRight = \case Right r -> r; Left _ -> error "fromRight: not Right"
+fromRight :: Either String r -> r
+fromRight = \case Right r -> r; Left emsg -> error $ "fromRight: not Right: " ++ emsg
 
 createSurface' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Glfw.Win.W sw -> Vk.Ist.I si -> Vk.Khr.Surface.Group ma ss k -> k ->
@@ -986,7 +988,16 @@ createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> [Vertex] -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vs f =
-	createBufferList phdvc dvc (fromIntegral $ length vs)
+	Vk.Bffr.group dvc nil' \bfgrp ->
+	createVertexBuffer' phdvc dvc gq cp bfgrp () vs f
+
+createVertexBuffer' :: Ord k => Vk.PhDvc.P ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Vertex ""] -> k ->
+	[Vertex] -> (forall sm .
+		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
+createVertexBuffer' phdvc dvc gq cp bfgrp k vs f =
+	createBufferList' phdvc dvc bfgrp k (fromIntegral $ length vs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
 	createBufferList phdvc dvc (fromIntegral $ length vs)
@@ -1006,18 +1017,43 @@ createBufferList :: forall sd nm t a . Storable t =>
 			'Vk.Mem.BufferArg nm '[VObj.List 256 t ""] ) ] ->
 		IO a) ->
 	IO a
-createBufferList p dv ln usg props =
-	createBuffer' p dv (VObj.LengthList ln) usg props
+createBufferList p dv ln usg props f =
+	Vk.Bffr.group dv nil' \bfgrp ->
+	createBufferList' p dv bfgrp () ln usg props f
 
-createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
+createBufferList' :: forall sd sb k nm t a .  (Ord k, Storable t) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""] ->
+	k -> Vk.Dvc.M.Size ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm .
+		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
+		Vk.Mem.M sm
+			'[ '(sb, 'Vk.Mem.BufferArg nm
+				'[VObj.List 256 t ""])] -> IO a) -> IO a
+createBufferList' p dv bfgrp k ln =
+	createBuffer' p dv bfgrp k (VObj.LengthList ln)
+
+createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mem.M sm
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer' p dv ln usg props f =
-	Vk.Bffr.create dv bffrInfo nil' \b -> do
+createBuffer p dv ln usg props f =
+	Vk.Bffr.group dv nil' \bfgrp ->
+	createBuffer' p dv bfgrp () ln usg props f
+
+createBuffer' :: forall sd sb k nm o a . (Ord k, VObj.SizeAlignment o) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
+	k -> VObj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm .
+		Vk.Bffr.Binded sm sb nm '[o] ->
+		Vk.Mem.M sm
+			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
+		IO a) -> IO a
+createBuffer' p dv bfgrp k ln usg props f =
+	Vk.Bffr.create' bfgrp k bffrInfo >>= \(fromRight -> b) -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
@@ -1146,7 +1182,7 @@ mainLoop' :: forall n siv sf sd scb sl sm sb nm sm' sb' sw ssfc sr sg sias srfs 
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm' sb nm '[VObj.List 256 Vertex ""] ->
 	[WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
 		(Replicate' n siv) (Replicate' n sf)] -> IO ()
 mainLoop' phdvc qfis dvc gq pq cb ppllyt vb vb' wpss0 = do
@@ -1205,7 +1241,7 @@ runLoop' :: forall n si sf sd scb sl sm sb nm ssfc sr sm' sb' sw sg sias srfs si
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm' sb nm '[VObj.List 256 Vertex ""] ->
 	[WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
 		(Replicate' n si) (Replicate' n sf)] ->
 	IO () -> IO ()
@@ -1213,9 +1249,7 @@ runLoop' phdvc qfis dvc gq pq cb ppllyt vb vb'
 	[	wps@(WinParams w frszd _ _ _ _ _ _ _ _),
 		wps'@(WinParams w' frszd' _ _ _ _ _ _ _ _) ] loop = do
 	drawAndCatch @n @si @sf phdvc qfis dvc gq pq cb vb ppllyt wps loop
-	Vk.Dvc.waitIdle dvc
 	drawAndCatch @n @si @sf phdvc qfis dvc gq pq cb vb' ppllyt wps' loop
-	Vk.Dvc.waitIdle dvc
 	cls <- Glfw.Win.shouldClose w
 	cls' <- Glfw.Win.shouldClose w'
 	if cls || cls' then (pure ()) else do
@@ -1240,9 +1274,10 @@ drawAndCatch :: forall n (siv :: Type) (sf :: Type) sd sl sw ssfc sr sg sias srf
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
 		(Replicate' n siv) (Replicate' n sf) ->
 	IO () -> IO ()
-drawAndCatch phdvc qfis dvc gq pq cb vb ppllyt wps loop =
+drawAndCatch phdvc qfis dvc gq pq cb vb ppllyt wps loop = do
 	catchAndRecreate' @n @siv @sf phdvc qfis dvc ppllyt (winParamsToRecreates wps) loop
 		$ drawFrame dvc gq pq cb vb (winParamsToDraws wps)
+	Vk.Dvc.waitIdle dvc
 
 drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff sl .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
