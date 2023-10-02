@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 6226d2a70e083c68d67d61ecd2164139cad5e001
+  commit: f8d9c6182036d72872ea596cadceb17cb9ebdde3
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
@@ -67,6 +67,7 @@ extra-deps:
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
   - themes/codec/try-codec-wavefront-obj
+  - themes/gui/vulkan/try-glfw-group
 - union-color-0.1.2.0
 - optparse-declarative-0.4.2
 

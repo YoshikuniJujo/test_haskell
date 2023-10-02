@@ -131,7 +131,7 @@ openPixels :: (
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
 	Ord k ) => Devices sd sc sds slbts ->
 		PplPlyt sg sl1 slbts '[Word32] ->
-	Groups k sm sb nm sbp sbpf -> k -> Pixels ->
+	Groups k sm sd sb nm sbp sbpf -> k -> Pixels ->
 	IO (Size, Memory sm sb nm)
 openPixels (phd, dv, qf, cb, ds) (ppl, plyt) grps k pxs =
 	pure pxs >>= \(sz@(fromIntegral -> w, fromIntegral -> h), v) ->
@@ -151,7 +151,7 @@ mainLoop :: forall nm4 objss4 slbts sl bts sbtss sd sc sg1 sl1 sg2 sl2 sm4 sds s
 	Devices sd sc sds slbts ->
 	PplPlyt sg1 sl1 slbts '[Word32] ->
 	PplPlyt sg2 sl2 slbts PushConstants ->
-	InOut -> Groups String sm4 sb nm4 sbp sbpf ->
+	InOut -> Groups String sm4 sd sb nm4 sbp sbpf ->
 	TVar (M.Map String Size) ->
 	FilePath -> (Size, Vk.Mm.M sm4 objss4) -> Constants -> IO ()
 mainLoop dvs@(_, dv, qf, cb, ds) pplplyt pplplyt2@(ppl2, plyt2) io@(inp, outp)
@@ -288,15 +288,15 @@ descriptorSet dv lyt f =
 		Vk.DS.allocateInfoDescriptorPool = pl,
 		Vk.DS.allocateInfoSetLayouts = U2 lyt :** HL.Nil }
 
-type Groups k smgrp sbgrp nm sbp sbpf = (
-	Vk.Bff.Group 'Nothing sbgrp k nm '[PixelList, PixelFloatList],
+type Groups k smgrp sd sbgrp nm sbp sbpf = (
+	Vk.Bff.Group sd 'Nothing sbgrp k nm '[PixelList, PixelFloatList],
 	Vk.Mm.Group 'Nothing smgrp k '[
 		'(sbgrp, Vk.Mm.BufferArg nm '[PixelList, PixelFloatList]) ],
 	Vk.BffVw.Group 'Nothing sbp k "" Pixel,
 	Vk.BffVw.Group 'Nothing sbpf k "" PixelFloat )
 
 groups :: Vk.Dv.D sd -> (forall smgrp sbgrp nm sbp sbpf .
-	Groups k smgrp sbgrp nm sbp sbpf -> IO a) -> IO a
+	Groups k smgrp sd sbgrp nm sbp sbpf -> IO a) -> IO a
 groups dv f =
 	Vk.Bff.group dv nil' \bgrp -> Vk.Mm.group dv nil' \mgrp ->
 	Vk.BffVw.group dv nil' \pgrp -> Vk.BffVw.group dv nil' \pfgrp ->
@@ -306,7 +306,7 @@ buffer :: forall bts sd sl nm sds smgrp sbgrp sbp sbpf k . (
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0, Ord k ) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DS.D sds '(sl, bts) ->
-	Groups k smgrp sbgrp nm sbp sbpf -> k -> V.Vector Pixel ->
+	Groups k smgrp sd sbgrp nm sbp sbpf -> k -> V.Vector Pixel ->
 	IO (Memory smgrp sbgrp nm)
 buffer phd dv ds (bgrp, mgrp, pgrp, pfgrp) k v =
 	bufferNew dv phd v bgrp mgrp k >>= \(bd, m) ->
@@ -351,14 +351,14 @@ pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
 
 bufferNew :: forall sd sbgrp nm smgrp k . Ord k =>
 	Vk.Dv.D sd -> Vk.Phd.P -> V.Vector Pixel ->
-	Vk.Bff.Group 'Nothing sbgrp k nm '[PixelList, PixelFloatList] ->
+	Vk.Bff.Group sd 'Nothing sbgrp k nm '[PixelList, PixelFloatList] ->
 	Vk.Mm.Group 'Nothing smgrp k '[
 		'(sbgrp, Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])] ->
 	k -> IO (
 		Vk.Bff.Binded smgrp sbgrp nm '[PixelList, PixelFloatList],
 		Memory smgrp sbgrp nm )
 bufferNew dv phd v bgrp mgrp k =
-	Vk.Bff.create' dv bgrp k bufferInfo >>= \(Right bffr) ->
+	Vk.Bff.create' bgrp k bufferInfo >>= \(Right bffr) ->
 	memoryInfo bffr >>= \mi ->
 	Vk.Mm.allocateBind' dv mgrp k (U2 (Vk.Mm.Buffer bffr) :** HL.Nil) mi >>=
 		\(AlwaysRight (U2 (Vk.Mm.BufferBinded bnd) :** HL.Nil, m)) ->

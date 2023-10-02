@@ -135,8 +135,7 @@ import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Surface.Phd
-import Gpu.Vulkan.Khr.Surface.Glfw qualified as Glfw hiding (
-	init, getRequiredInstanceExtensions )
+import Gpu.Vulkan.Khr.Surface.Glfw qualified as Glfw
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
@@ -885,7 +884,7 @@ createIndexBuffer phdvc dvc gq cp f =
 	f b
 
 createRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sm sb nm k -> k -> [Rectangle] ->
+	Devices sd sc scb -> RectGroups sd sm sb nm k -> k -> [Rectangle] ->
 	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
 createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
@@ -901,17 +900,17 @@ createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 	pure b
 
 destroyRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sm sb nm k -> k -> IO ()
+	Devices sd sc scb -> RectGroups sd sm sb nm k -> k -> IO ()
 destroyRectangleBuffer (_, _, dvc, _, _, _, _) (bgrp, mgrp) k = do
 	r1 <- Vk.Mem.free dvc mgrp k
-	r2 <- Vk.Bffr.destroy dvc bgrp k
+	r2 <- Vk.Bffr.destroy bgrp k
 	case (r1, r2) of
 		(Left msg, _) -> error msg
 		(_, Left msg) -> error msg
 		_ -> pure ()
 
-type RectGroups sm sb nm k = (
-	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 Rectangle ""],
+type RectGroups sd sm sb nm k = (
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Rectangle ""],
 	Vk.Mem.Group 'Nothing sm k
 		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] )
 
@@ -995,7 +994,7 @@ createBufferList p dv ln usg props =
 
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group 'Nothing sb k nm '[VObj.List 256 t ""]  ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""]  ->
 	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
 	k ->
 	Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
@@ -1020,14 +1019,14 @@ createBuffer p dv ln usg props f =
 createBuffer' :: forall sd sb nm o sm k .
 	(Ord k, VObj.SizeAlignment o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group 'Nothing sb k nm '[o] ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
 	Vk.Mem.Group 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] -> k ->
 	VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
 		Vk.Bffr.Binded sm sb nm '[o],
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] )
 createBuffer' p dv bgrp mgrp k ln usg props =
-	Vk.Bffr.create' dv bgrp k bffrInfo >>= \(AlwaysRight b) -> do
+	Vk.Bffr.create' bgrp k bffrInfo >>= \(AlwaysRight b) -> do
 		reqs <- Vk.Bffr.getMemoryRequirements dv b
 		mt <- findMemoryType p (Vk.Mem.requirementsMemoryTypeBits reqs) props
 		Vk.Mem.allocateBind' dv mgrp k (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
@@ -1171,7 +1170,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	SyncObjects '(sias, srfs, siff) -> Swapchains scfmt ssc nm ss sr sfs ->
 	Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
-	RectGroups srm srb nm () ->
+	RectGroups sd srm srb nm () ->
 	UniformBuffers sds sdsl sm2 sb2 -> Vk.Extent2d -> IO ()
 mainLoop inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
 	rgrps ubs ext0 = do
