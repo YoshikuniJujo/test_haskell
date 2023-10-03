@@ -308,29 +308,71 @@ run inst phdv qfis dv gq pq =
 	(for [(0, vertices), (1, vertices2)] \(i, v) -> createVertexBuffer' @Int
 		phdv dv gq cp bfgrp mmgrp i v) >>= \vbs ->
 
-	Glfw.Win.group @Int \wgrp ->
+	winGroups @_ @_ @_ @scfmt inst dv \(wgs :: WinGroups
+		sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k) ->
+
+	atomically (newTVar 0) >>= \wnum ->
+	let	crw = do
+			wn <- atomically $ readTVar wnum <* modifyTVar wnum (+ 1)
+			createWindowResourcesWinGroups @_ @n
+				inst phdv dv qfis ppllyt wgs wn in
+
+	mainLoop @n @siv @sf phdv qfis dv gq pq cb ppllyt (cycle vbs) crw
+
+winGroups :: Vk.Ist.I si -> Vk.Dvc.D sd -> (
+	forall sw ssfc sr sg sias srfs siff ssc siv sf .
+	WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k ->
+	IO a) -> IO a
+winGroups inst dv f =
+	Glfw.Win.group \wgrp ->
 	Vk.Khr.Surface.group inst nil' \sfcgrp ->
 	Vk.RndrPass.group dv nil' \rpgrp ->
 	Vk.Ppl.Graphics.group dv nil' \gpsgrp ->
 	Vk.Semaphore.group dv nil' \iasgrp ->
 	Vk.Semaphore.group dv nil' \rfsgrp ->
 	Vk.Fence.group dv nil' \iffgrp ->
-	Vk.Khr.Swapchain.group @scfmt dv nil' \scgrp ->
-	Vk.ImgVw.group dv nil' \(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scifmt) ->
-	Vk.Frmbffr.group dv nil' \(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf (k, Int)) ->
+	Vk.Khr.Swapchain.group dv nil' \scgrp ->
+	Vk.ImgVw.group dv nil'
+		\(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scifmt) ->
+	Vk.Frmbffr.group dv nil'
+		\(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf (k, Int)) ->
+	f $ WinGroups
+		wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp
 
-	atomically (newTVar 0) >>= \wnum ->
-	let	crw = do
-			wn <- atomically $ readTVar wnum <* modifyTVar wnum (+ 1)
-			createWindowResources' @_ @n
-				inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-				iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp wn in
+data WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k =
+	WinGroups
+		(Glfw.Win.Group sw k) (Vk.Khr.Surface.Group 'Nothing ssfc k)
+		(Vk.RndrPass.Group 'Nothing sr k)
+		(Vk.Ppl.Graphics.Group 'Nothing sg k '[ '(
+			'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
+			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)],
+			'(sl, '[], '[]) )] )
+		(Vk.Semaphore.Group sd 'Nothing sias k)
+		(Vk.Semaphore.Group sd 'Nothing srfs k)
+		(Vk.Fence.Group sd 'Nothing siff k)
+		(Vk.Khr.Swapchain.Group sd 'Nothing scifmt ssc k)
+		(Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scifmt)
+		(Vk.Frmbffr.Group sd 'Nothing sf (k, Int))
 
-	replicateM 3 crw >>= \wpss ->
+createWindowResourcesWinGroups ::
+	forall (scifmt :: Vk.T.Format) (n :: [()])
+		si siv sd sl sw nm ssfc sr sg sias srfs siff ssc sf k . (
+	Ord k, Vk.T.FormatToValue scifmt, MyHomoList' n,
+	RecreateFramebuffers' n ) =>
+	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
+	WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k ->
+	k -> IO (WinParams
+		sw sl nm ssfc sr sg sias srfs siff scifmt ssc
+		(Replicate' n siv) (Replicate' n sf))
+createWindowResourcesWinGroups inst phdv dv qfis ppllyt
+	(WinGroups
+		wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp)
+	k = createWindowResources @_ @n
+		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp
+		scgrp ivgrp fbgrp k
 
-	mainLoop @n @siv @sf phdv qfis dv gq pq cb ppllyt (cycle vbs) wpss
-
-createWindowResources' ::
+createWindowResources ::
 	forall (scifmt :: Vk.T.Format) (n :: [()])
 		si siv sd sl sw nm ssfc sr sg sias srfs siff ssc sf k . (
 	Ord k, Vk.T.FormatToValue scifmt, MyHomoList' n,
@@ -350,8 +392,10 @@ createWindowResources' ::
 	Vk.Khr.Swapchain.Group sd 'Nothing scifmt ssc k ->
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scifmt ->
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
-	k -> IO (WinParams sw sl nm ssfc sr sg sias srfs siff scifmt ssc (Replicate' n siv) (Replicate' n sf))
-createWindowResources'
+	k -> IO (WinParams
+		sw sl nm ssfc sr sg sias srfs siff scifmt ssc
+		(Replicate' n siv) (Replicate' n sf))
+createWindowResources
 	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp
 	scgrp ivgrp fbgrp k =
 
@@ -362,16 +406,13 @@ createWindowResources'
 	createRenderPass' @scifmt dv rpgrp k >>= \rp ->
 	createGraphicsPipeline' dv gpsgrp k ext rp ppllyt >>= \gpl ->
 	createSyncObjects' iasgrp rfsgrp iffgrp k >>= \sos ->
-
 	createSwapchain scgrp k sfc spp ext qfis >>= \(sc, _) ->
-
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
-
 	createImageViews''' @n ivgrp k imgs >>= \scivs ->
-	createFramebuffers' @_ @n @k @sd @sf @sr @nm @_ @siv fbgrp k 0 ext rp scivs >>= \fbs ->
+	createFramebuffers' @_ @n @k @sd @sf @sr @nm @_ @siv
+		fbgrp k 0 ext rp scivs >>= \fbs ->
 
 	atomically (newTVar ext) >>= \vext ->
-
 	pure $ WinParams w g sfc vext rp gpl sos sc scivs fbs
 
 createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
@@ -1179,9 +1220,10 @@ mainLoop :: forall n siv sf sd scb sl sm sb nm sw ssfc sr sg sias srfs siff fmt 
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	[Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""]] ->
-	[WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
-		(Replicate' n siv) (Replicate' n sf)] -> IO ()
-mainLoop phdvc qfis dvc gq pq cb ppllyt vbs wpss0 = do
+	IO (WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
+		(Replicate' n siv) (Replicate' n sf)) -> IO ()
+mainLoop phdvc qfis dvc gq pq cb ppllyt vbs crw = do
+	wpss0 <- replicateM 3 crw
 	($ wpss0) $ fix \loop wpss -> do
 		Glfw.pollEvents
 		runLoop @n @siv @sf phdvc qfis dvc gq pq cb ppllyt vbs wpss (loop wpss)
