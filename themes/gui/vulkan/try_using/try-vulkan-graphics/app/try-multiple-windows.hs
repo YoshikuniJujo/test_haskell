@@ -23,6 +23,8 @@ import Control.Monad.Fix
 import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
+import Data.Foldable
+import Data.Traversable
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
@@ -302,8 +304,9 @@ run inst phdv qfis dv gq pq =
 	createPipelineLayout dv \ppllyt ->
 
 	Vk.Bffr.group dv nil' \bfgrp ->
-	createVertexBuffer' phdv dv gq cp bfgrp 0 vertices \vb ->
-	createVertexBuffer' phdv dv gq cp bfgrp 1 vertices2 \vb' ->
+	Vk.Mem.group dv nil' \mmgrp ->
+	(for [(0, vertices), (1, vertices2)] \(i, v) -> createVertexBuffer' @Int
+		phdv dv gq cp bfgrp mmgrp i v) >>= \vbs ->
 
 	Glfw.Win.group @Int \wgrp ->
 	Vk.Khr.Surface.group inst nil' \sfcgrp ->
@@ -316,15 +319,20 @@ run inst phdv qfis dv gq pq =
 	Vk.ImgVw.group dv nil' \(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scifmt) ->
 	Vk.Frmbffr.group dv nil' \(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf (k, Int)) ->
 
-	createWindowResources' @_ @n
-		inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
-		iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp `mapM` [0, 1] >>= \[wps, wps'] ->
+	atomically (newTVar 0) >>= \wnum ->
+	let	crw = do
+			wn <- atomically $ readTVar wnum <* modifyTVar wnum (+ 1)
+			createWindowResources' @_ @n
+				inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp
+				iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp wn in
 
-	mainLoop' @n @siv @sf phdv qfis dv gq pq cb ppllyt vb vb' [wps, wps']
+	replicateM 3 crw >>= \wpss ->
+
+	mainLoop @n @siv @sf phdv qfis dv gq pq cb ppllyt (cycle vbs) wpss
 
 createWindowResources' ::
 	forall (scifmt :: Vk.T.Format) (n :: [()])
-		si siv sd sl sw nm ssfc sr sg sias srfs siff ssc sf k a . (
+		si siv sd sl sw nm ssfc sr sg sias srfs siff ssc sf k . (
 	Ord k, Vk.T.FormatToValue scifmt, MyHomoList' n,
 	RecreateFramebuffers' n
 	) =>
@@ -984,29 +992,25 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-createVertexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> [Vertex] -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
-createVertexBuffer phdvc dvc gq cp vs f =
-	Vk.Bffr.group dvc nil' \bfgrp ->
-	createVertexBuffer' phdvc dvc gq cp bfgrp () vs f
-
 createVertexBuffer' :: Ord k => Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Vertex ""] -> k ->
-	[Vertex] -> (forall sm .
-		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
-createVertexBuffer' phdvc dvc gq cp bfgrp k vs f =
-	createBufferList' phdvc dvc bfgrp k (fromIntegral $ length vs)
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Vertex ""] ->
+	Vk.Mem.Group sd 'Nothing sm k
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Vertex ""])] ->
+	k -> [Vertex] -> IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""])
+createVertexBuffer' phdvc dvc gq cp bfgrp mmgrp k vs = do
+	(b, _) <- createBufferList' phdvc dvc bfgrp mmgrp k (fromIntegral $ length vs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+		Vk.Mem.PropertyDeviceLocalBit
 	createBufferList phdvc dvc (fromIntegral $ length vs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
+			Vk.Mem.PropertyHostCoherentBit )
+		\(b' :: Vk.Bffr.Binded sm sb
+			"vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
 		Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vs
 		copyBuffer dvc gq cp b' b
-	f b
+	pure b
 
 createBufferList :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
@@ -1015,52 +1019,43 @@ createBufferList :: forall sd nm t a . Storable t =>
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.BufferArg nm '[VObj.List 256 t ""] ) ] ->
-		IO a) ->
-	IO a
+		IO a) -> IO a
 createBufferList p dv ln usg props f =
 	Vk.Bffr.group dv nil' \bfgrp ->
-	createBufferList' p dv bfgrp () ln usg props f
+	Vk.Mem.group dv nil' \mmgrp ->
+	uncurry f =<< createBufferList' p dv bfgrp mmgrp () ln usg props
 
-createBufferList' :: forall sd sb k nm t a .  (Ord k, Storable t) =>
+createBufferList' :: forall sd sb sm k nm t .  (Ord k, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""] ->
+	Vk.Mem.Group sd 'Nothing sm k
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] ->
 	k -> Vk.Dvc.M.Size ->
-	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm .
-		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
+		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""],
 		Vk.Mem.M sm
-			'[ '(sb, 'Vk.Mem.BufferArg nm
-				'[VObj.List 256 t ""])] -> IO a) -> IO a
-createBufferList' p dv bfgrp k ln =
-	createBuffer' p dv bfgrp k (VObj.LengthList ln)
+			'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""])] )
+createBufferList' p dv bfgrp mmgrp k ln usg props =
+	createBuffer p dv bfgrp mmgrp k (VObj.LengthList ln) usg props
 
-createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[o] ->
-		Vk.Mem.M sm
-			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
-		IO a) -> IO a
-createBuffer p dv ln usg props f =
-	Vk.Bffr.group dv nil' \bfgrp ->
-	createBuffer' p dv bfgrp () ln usg props f
-
-createBuffer' :: forall sd sb k nm o a . (Ord k, VObj.SizeAlignment o) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
+createBuffer :: forall sd sb sm k nm o . (Ord k, VObj.SizeAlignment o) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
+	Vk.Mem.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 	k -> VObj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm .
-		Vk.Bffr.Binded sm sb nm '[o] ->
-		Vk.Mem.M sm
-			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
-		IO a) -> IO a
-createBuffer' p dv bfgrp k ln usg props f =
-	Vk.Mem.group dv nil' \mmgrp ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> IO (
+		Vk.Bffr.Binded sm sb nm '[o],
+		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[o])] )
+createBuffer p dv bfgrp mmgrp k ln usg props =
 	Vk.Bffr.create' bfgrp k bffrInfo >>= \(fromRight -> b) -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Mem.allocateBind' mmgrp () (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
-		(allcInfo mt)
-		>>= \(fromRight -> (HeteroParList.Singleton
-			(U2 (Vk.Mem.BufferBinded bnd)), mm)) -> f bnd mm
+	(fromRight ->
+		(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd)), mm)) <-
+		Vk.Mem.allocateBind' mmgrp k
+			(HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
+			(allcInfo mt)
+	pure (bnd, mm)
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
@@ -1178,19 +1173,18 @@ recordCommandBuffer cb rp fb vsce gpl vb =
 		Vk.RndrPass.beginInfoClearValues = HeteroParList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
-mainLoop' :: forall n siv sf sd scb sl sm sb nm sm' sb' sw ssfc sr sg sias srfs siff fmt ssc . (
+mainLoop :: forall n siv sf sd scb sl sm sb nm sw ssfc sr sg sias srfs siff fmt ssc . (
 	Vk.T.FormatToValue fmt, RecreateFramebuffers' n ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb nm '[VObj.List 256 Vertex ""] ->
+	[Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""]] ->
 	[WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
 		(Replicate' n siv) (Replicate' n sf)] -> IO ()
-mainLoop' phdvc qfis dvc gq pq cb ppllyt vb vb' wpss0 = do
+mainLoop phdvc qfis dvc gq pq cb ppllyt vbs wpss0 = do
 	($ wpss0) $ fix \loop wpss -> do
 		Glfw.pollEvents
-		runLoop' @n @siv @sf phdvc qfis dvc gq pq cb ppllyt vb vb' wpss (loop wpss)
+		runLoop @n @siv @sf phdvc qfis dvc gq pq cb ppllyt vbs wpss (loop wpss)
 	Vk.Dvc.waitIdle dvc
 
 data WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc ss sfs = WinParams
@@ -1237,34 +1231,36 @@ winParamsToDraws ::
 winParamsToDraws (WinParams _w _frszd _sfc ex rp gpl sos sc _scivs fb) =
 	(ex, rp, gpl, sos, sc, fb)
 
-runLoop' :: forall n si sf sd scb sl sm sb nm ssfc sr sm' sb' sw sg sias srfs siff fmt ssc . (
+winParamsToWindow ::
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
+	Glfw.Win.W sw
+winParamsToWindow (WinParams w _ _ _ _ _ _ _ _ _) = w
+
+checkFlagWinParams ::
+	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
+	IO Bool
+checkFlagWinParams (WinParams _ frszd _ _ _ _ _ _ _ _) = checkFlag frszd
+
+runLoop :: forall n si sf sd scb sl sm sb nm ssfc sr sw sg sias srfs siff fmt ssc . (
 	Vk.T.FormatToValue fmt, RecreateFramebuffers' n ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb nm '[VObj.List 256 Vertex ""] ->
+	[Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""]] ->
 	[WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc
 		(Replicate' n si) (Replicate' n sf)] ->
 	IO () -> IO ()
-runLoop' phdvc qfis dvc gq pq cb ppllyt vb vb'
-	[	wps@(WinParams w frszd _ _ _ _ _ _ _ _),
-		wps'@(WinParams w' frszd' _ _ _ _ _ _ _ _) ] loop = do
-	drawAndCatch @n @si @sf phdvc qfis dvc gq pq cb vb ppllyt wps loop
-	drawAndCatch @n @si @sf phdvc qfis dvc gq pq cb vb' ppllyt wps' loop
-	cls <- Glfw.Win.shouldClose w
-	cls' <- Glfw.Win.shouldClose w'
-	if cls || cls' then (pure ()) else do
-		b <- checkFlag frszd
-		b' <- checkFlag frszd'
-		case b of
-			False -> pure ()
-			True -> recreateAll' @n @si @sf
-				phdvc qfis dvc ppllyt (winParamsToRecreates wps)
-		case b' of
-			False -> pure ()
-			True -> recreateAll' @n @si @sf
-				phdvc qfis dvc ppllyt (winParamsToRecreates wps')
+runLoop phdvc qfis dvc gq pq cb ppllyt vbs wpss loop = do
+	for_ (zip vbs wpss) \(v, w) ->
+		drawAndCatch @n @si @sf phdvc qfis dvc gq pq cb v ppllyt w loop
+	cls <- or <$> (Glfw.Win.shouldClose . winParamsToWindow) `mapM` wpss
+	if cls then (pure ()) else do
+		for_ wpss \w -> do
+			b <- checkFlagWinParams w
+			case b of
+				False -> pure ()
+				True -> recreateAll' @n @si @sf
+					phdvc qfis dvc ppllyt (winParamsToRecreates w)
 		loop
 
 drawAndCatch :: forall n (siv :: Type) (sf :: Type) sd sl sw ssfc sr sg sias srfs siff fmt ssc scb sm sb nm .
