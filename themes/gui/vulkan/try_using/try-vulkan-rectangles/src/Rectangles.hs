@@ -133,9 +133,9 @@ import Gpu.Vulkan.Data
 import Gpu.Vulkan.Khr qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
-import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Surface.Phd
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Win
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
@@ -297,15 +297,16 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 run :: TChan Draw -> TChan Event -> TVar Vk.Extent2d -> Vk.Ist.I si ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
-run inp outp vext inst phd qfis dv gq pq =
+run inp outp vext ist phd qfis dv gq pq =
 
 	GlfwG.Win.group \wgrp ->
+	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
 
 	initWindow True wgrp () >>= \w ->
 	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
-	createSurface w inst \sfc ->
+	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () w >>= \(fromRight -> sfc) ->
 	forkIO (glfwEvents
 		w outp . foldr (uncurry M.insert) M.empty
 			$ ((, GlfwG.Ms.MouseButtonState'Released)
@@ -338,11 +339,13 @@ run inp outp vext inst phd qfis dv gq pq =
 	mainLoop inp vext (w, fbrszd) sfc dvs sos scs ppls vbs rgrps ubs ext0
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Vk.Khr.Surface.Glfw.Win.create ist win nil' \sfc -> f sfc
+	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
+createSurface win ist f =
+	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
+	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () win >>= f . fromRight
 
 pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
+	Vk.Khr.Sfc.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
 pickPhysicalDevice ist sfc = do
 	dvcs <- Vk.PhDvc.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
@@ -359,7 +362,7 @@ findDevice prd = \case
 		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
 
 isDeviceSuitable ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
+	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
 	_deviceProperties <- Vk.PhDvc.getProperties phdvc
 	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
@@ -388,11 +391,11 @@ completeQueueFamilies = \case
 	_ -> Nothing
 
 findQueueFamilies ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO QueueFamilyIndicesMaybe
+	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
 findQueueFamilies device sfc = do
 	queueFamilies <- Vk.PhDvc.getQueueFamilyProperties device
 	pfis <- filterM
-		(\i -> Vk.Khr.Surface.Phd.getSupport device i sfc)
+		(\i -> Vk.Khr.Sfc.Phd.getSupport device i sfc)
 		(fst <$> queueFamilies)
 	pure QueueFamilyIndicesMaybe {
 		graphicsFamilyMaybe = fst <$> L.find
@@ -410,16 +413,16 @@ deviceExtensions :: [Vk.PhDvc.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	capabilities :: Vk.Khr.Surface.Capabilities,
-	formats :: [Vk.Khr.Surface.Format],
+	capabilities :: Vk.Khr.Sfc.Capabilities,
+	formats :: [Vk.Khr.Sfc.Format],
 	presentModes :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
+	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
-	<$> Vk.Khr.Surface.Phd.getCapabilities dvc sfc
-	<*> Vk.Khr.Surface.Phd.getFormats dvc sfc
-	<*> Vk.Khr.Surface.Phd.getPresentModes dvc sfc
+	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getFormats dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
 
 createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
@@ -451,7 +454,7 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-createSwapchain :: GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapchain :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
@@ -459,14 +462,14 @@ createSwapchain :: GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 createSwapchain win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	fmt = Vk.Khr.Surface.formatFormat
+	let	fmt = Vk.Khr.Sfc.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
 		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil'
 			\sc -> f sc ext
 
-mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
+mkSwapchainCreateInfoNew :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfoNew sfc qfis0 spp ext =
@@ -476,7 +479,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Surface.formatColorSpace fmt,
+			Vk.Khr.Sfc.formatColorSpace fmt,
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
@@ -484,7 +487,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 		Vk.Khr.Swapchain.createInfoPreTransform =
-			Vk.Khr.Surface.capabilitiesCurrentTransform caps,
+			Vk.Khr.Sfc.capabilitiesCurrentTransform caps,
 		Vk.Khr.Swapchain.createInfoCompositeAlpha =
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
@@ -495,9 +498,9 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Surface.capabilitiesMaxImageCount caps
+		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
 	imgc = clamp
-		(Vk.Khr.Surface.capabilitiesMinImageCount caps + 1) 0 maxImgc
+		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1) 0 maxImgc
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
@@ -505,7 +508,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
-	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S scfmt ssc ->
 	IO Vk.Extent2d
 recreateSwapchain win sfc phdvc qfis0 dvc sc = do
@@ -514,22 +517,22 @@ recreateSwapchain win sfc phdvc qfis0 dvc sc = do
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swapchain.recreate @'Nothing dvc crInfo nil' sc
 
-chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
+chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
 		$ L.find preferredSwapSurfaceFormat availableFormats
 	_ -> error "no available swap surface formats"
 
-preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
+preferredSwapSurfaceFormat :: Vk.Khr.Sfc.Format -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+	Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: GlfwG.Win.W sw -> Vk.Khr.Surface.Capabilities -> IO Vk.Extent2d
+chooseSwapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
 	| Vk.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
@@ -539,9 +542,9 @@ chooseSwapExtent win caps
 			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
 			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
 	where
-	curExt = Vk.Khr.Surface.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Surface.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Surface.capabilitiesMaxImageExtent caps
+	curExt = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
+	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
+	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
@@ -1184,7 +1187,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
-	TChan Draw -> TVar Vk.Extent2d -> WinEnvs sw -> Vk.Khr.Surface.S ssfc -> Devices sd sc scb ->
+	TChan Draw -> TVar Vk.Extent2d -> WinEnvs sw -> Vk.Khr.Sfc.S ssfc -> Devices sd sc scb ->
 	SyncObjects '(sias, srfs, siff) -> Swapchains scfmt ssc nm ss sr sfs ->
 	Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
@@ -1231,7 +1234,7 @@ type UniformBuffers sds sdsl sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm2 sb2)
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
-	WinEnvs sw -> Vk.Khr.Surface.S ssfc -> Devices sd scp scb ->
+	WinEnvs sw -> Vk.Khr.Sfc.S ssfc -> Devices sd scp scb ->
 	SyncObjects '(sias, srfs, siff) ->
 	Swapchains scfmt ssc nm sis sr sfs -> Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
@@ -1301,7 +1304,7 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
-	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -1325,7 +1328,7 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop act =
 
 recreateSwapchainEtc :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt ) =>
-	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
