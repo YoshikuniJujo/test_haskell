@@ -153,14 +153,9 @@ rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically . newTVar $ Vk.Extent2d 0 0
 	_ <- forkIO . GlfwG.init error $ do
-		withWindow \we@(w, _) -> do
-			_ <- forkIO . glfwEvents
-				w outp . foldr (uncurry M.insert) M.empty
-					$ ((, GlfwG.Ms.MouseButtonState'Released)
-					<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-			createInstance \inst -> bool id
-				(setupDebugMessenger inst)
-				enableValidationLayers $ run inp vext we inst
+		createInstance \inst -> bool id
+			(setupDebugMessenger inst)
+			enableValidationLayers $ run inp outp vext inst
 		atomically $ writeTChan outp EventEnd
 	pure ((writeTChan inp, (isEmptyTChan outp, readTChan outp)), readTVar vext)
 	where setupDebugMessenger ist f =
@@ -224,7 +219,11 @@ sendMouseButton ev pst st pbss bss outp b =
 		_ -> pure ()
 
 withWindow :: (forall sw . WinEnvs sw -> IO a) -> IO a
-withWindow f = atomically (newTVar False) >>= \g -> initWindow g \w -> f (w, g)
+withWindow f =
+	GlfwG.Win.group \wgrp ->
+	atomically (newTVar False) >>= \fbrszd ->
+	initWindow' wgrp () fbrszd >>= \w ->
+	f (w, fbrszd)
 
 type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
 type FramebufferResized = TVar Bool
@@ -233,15 +232,15 @@ fromRight :: Either String a -> a
 fromRight (Left emsg) = error emsg
 fromRight (Right x) = x
 
-initWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-initWindow fbrszd f =
-	GlfwG.Win.hint (GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
-	GlfwG.Win.group \wgrp -> do
-		(fromRight -> w) <- uncurry
-			(GlfwG.Win.create' wgrp ()) wSize wName Nothing Nothing
-		GlfwG.Win.setFramebufferSizeCallback w
-			(Just \_ _ _ -> atomically $ writeTVar fbrszd True)
-		f w
+initWindow' :: Ord k => GlfwG.Win.Group sw k -> k ->
+	FramebufferResized -> IO (GlfwG.Win.W sw)
+initWindow' wgrp k fbrszd = do
+	GlfwG.Win.hint
+		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	(fromRight -> w) <- uncurry
+		(GlfwG.Win.create' wgrp k) wSize wName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback w
+		(Just \_ _ _ -> atomically $ writeTVar fbrszd True)
 	where wName = "Triangle"; wSize = (800, 600)
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
@@ -296,8 +295,14 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run :: TChan Draw -> TVar Vk.Extent2d -> WinEnvs sw -> Vk.Ist.I si -> IO ()
-run inp vext we@(w, _) inst = createSurface w inst \sfc ->
+run :: TChan Draw -> TChan Event -> TVar Vk.Extent2d -> Vk.Ist.I si -> IO ()
+run inp outp vext inst =
+	withWindow \we@(w, _) ->
+	forkIO (glfwEvents
+		w outp . foldr (uncurry M.insert) M.empty
+			$ ((, GlfwG.Ms.MouseButtonState'Released)
+			<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
+	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phd, qfis) ->
 	createLogicalDevice phd qfis \dv gq pq ->
 
