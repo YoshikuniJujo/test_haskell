@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 6a4fad8d9a3163be21d8cb2a98eb2da814fea5e3
+  commit: e175a7d8e8c22481bac8cf4256f264342a3f1ff7
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
@@ -68,6 +68,7 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - themes/gui/vulkan/try-glfw-group
 - union-color-0.1.2.0
+- optparse-declarative-0.4.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -68,7 +68,7 @@ import Data.Color
 import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
-import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
+-- import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Enum qualified as Vk
@@ -135,7 +135,7 @@ import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Surface.Phd
-import Gpu.Vulkan.Khr.Surface.Glfw qualified as Glfw
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Win
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
@@ -144,15 +144,20 @@ import Gpu.Vulkan.Cglm qualified as Cglm
 import Tools
 import ThEnv
 
+import Graphics.UI.GlfwG as GlfwG
+import Graphics.UI.GlfwG.Window as GlfwG.Win
+import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
+
 rectangles :: IO ((Draw -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d)
 rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically . newTVar $ Vk.Extent2d 0 0
-	_ <- forkIO $ do
+	_ <- forkIO . GlfwG.init error $ do
 		withWindow \we@(w, _) -> do
 			_ <- forkIO . glfwEvents
 				w outp . foldr (uncurry M.insert) M.empty
-					$ ((, Glfw.MouseButtonState'Released) <$>) [Glfw.MouseButton'1 .. Glfw.MouseButton'8]
+					$ ((, GlfwG.Ms.MouseButtonState'Released)
+					<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 			createInstance \inst -> bool id
 				(setupDebugMessenger inst)
 				enableValidationLayers $ run inp vext we inst
@@ -164,53 +169,53 @@ rectangles = do
 type Draw = (ViewProjection, [Rectangle])
 data Event
 	= EventEnd
-	| EventMouseButtonDown Glfw.MouseButton
-	| EventMouseButtonUp Glfw.MouseButton
+	| EventMouseButtonDown GlfwG.Ms.MouseButton
+	| EventMouseButtonUp GlfwG.Ms.MouseButton
 	| EventCursorPosition Double Double
 	deriving Show
 
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
-type MouseButtonStateDict = M.Map Glfw.MouseButton Glfw.MouseButtonState
+type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
-getMouseButtons :: Glfw.Window -> IO MouseButtonStateDict
+getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
 getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
-	<$> Glfw.getMouseButton w `mapM` bs
-	where bs = [Glfw.MouseButton'1 .. Glfw.MouseButton'8]
+	<$> GlfwG.Ms.getButton w `mapM` bs
+	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
 
-glfwEvents :: Glfw.Window -> TChan Event -> MouseButtonStateDict -> IO ()
+glfwEvents :: GlfwG.Win.W sw -> TChan Event -> MouseButtonStateDict -> IO ()
 glfwEvents w outp = fix \loop mb1p -> do
 	threadDelay 10000
 	mb1 <- getMouseButtons w
 	sendMouseButtonDown mb1p mb1 outp `mapM_` mouseButtonAll
 	sendMouseButtonUp mb1p mb1 outp `mapM_` mouseButtonAll
-	if mAny (== Glfw.MouseButtonState'Pressed) mb1
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1
 	then atomically . writeTChan outp . uncurry EventCursorPosition
-		=<< Glfw.getCursorPos w
+		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
 	loop mb1
 
-mouseButtonAll :: [Glfw.MouseButton]
-mouseButtonAll = [Glfw.MouseButton'1 .. Glfw.MouseButton'8]
+mouseButtonAll :: [GlfwG.Ms.MouseButton]
+mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 sendMouseButtonDown, sendMouseButtonUp ::
 	MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
-	Glfw.MouseButton -> IO ()
+	GlfwG.Ms.MouseButton -> IO ()
 sendMouseButtonDown = sendMouseButton EventMouseButtonDown
-	Glfw.MouseButtonState'Released Glfw.MouseButtonState'Pressed
+	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
 
 sendMouseButtonUp = sendMouseButton EventMouseButtonUp
-	Glfw.MouseButtonState'Pressed Glfw.MouseButtonState'Released
+	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
 
 sendMouseButton ::
-	(Glfw.MouseButton -> Event) ->
-	Glfw.MouseButtonState -> Glfw.MouseButtonState ->
+	(GlfwG.Ms.MouseButton -> Event) ->
+	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
 	MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
-	Glfw.MouseButton -> IO ()
+	GlfwG.Ms.MouseButton -> IO ()
 sendMouseButton ev pst st pbss bss outp b =
 	case (pbss M.! b == pst, bss M.! b == st) of
 		(True, True) -> do
@@ -218,21 +223,25 @@ sendMouseButton ev pst st pbss bss outp b =
 			atomically . writeTChan outp $ ev b
 		_ -> pure ()
 
-withWindow :: (WinEnvs -> IO a) -> IO a
-withWindow f = atomically (newTVar False) >>= \g -> initWindow g >>= \w ->
-	f (w, g) <* (Glfw.destroyWindow w >> Glfw.terminate)
+withWindow :: (forall sw . WinEnvs sw -> IO a) -> IO a
+withWindow f = atomically (newTVar False) >>= \g -> initWindow g \w -> f (w, g)
 
-type WinEnvs = (Glfw.Window, FramebufferResized)
+type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
 type FramebufferResized = TVar Bool
 
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow fbrszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow wSize wName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback w
-		(Just \_ _ _ -> atomically $ writeTVar fbrszd True)
+fromRight :: Either String a -> a
+fromRight (Left emsg) = error emsg
+fromRight (Right x) = x
+
+initWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+initWindow fbrszd f =
+	GlfwG.Win.hint (GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
+	GlfwG.Win.group \wgrp -> do
+		(fromRight -> w) <- uncurry
+			(GlfwG.Win.create' wgrp ()) wSize wName Nothing Nothing
+		GlfwG.Win.setFramebufferSizeCallback w
+			(Just \_ _ _ -> atomically $ writeTVar fbrszd True)
+		f w
 	where wName = "Triangle"; wSize = (800, 600)
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
@@ -245,7 +254,7 @@ createInstance f = do
 			<$> Vk.Ist.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DUtls.extensionName :)
 			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
+		<$> GlfwG.getRequiredInstanceExtensions
 	print exts
 	Vk.Ist.create (crinfo exts) nil' f
 	where
@@ -287,7 +296,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run :: TChan Draw -> TVar Vk.Extent2d -> WinEnvs -> Vk.Ist.I si -> IO ()
+run :: TChan Draw -> TVar Vk.Extent2d -> WinEnvs sw -> Vk.Ist.I si -> IO ()
 run inp vext we@(w, _) inst = createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phd, qfis) ->
 	createLogicalDevice phd qfis \dv gq pq ->
@@ -318,9 +327,9 @@ run inp vext we@(w, _) inst = createSurface w inst \sfc ->
 	createRectangleBuffer dvs rgrps () dummy >>
 	mainLoop inp vext we sfc dvs sos scs ppls vbs rgrps ubs ext0
 
-createSurface :: Glfw.Window -> Vk.Ist.I si ->
+createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.createWindowSurface ist win nil' \sfc -> f sfc
+createSurface win ist f = Vk.Khr.Surface.Glfw.Win.create ist win nil' \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -432,7 +441,7 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-createSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapchain :: GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
@@ -486,7 +495,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S scfmt ssc ->
 	IO Vk.Extent2d
 recreateSwapchain win sfc phdvc qfis0 dvc sc = do
@@ -510,12 +519,12 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.Capabilities -> IO Vk.Extent2d
+chooseSwapExtent :: GlfwG.Win.W sw -> Vk.Khr.Surface.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
 	| Vk.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
 		(fromIntegral -> w, fromIntegral -> h) <-
-			Glfw.getFramebufferSize win
+			GlfwG.Win.getFramebufferSize win
 		pure $ Vk.Extent2d
 			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
 			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
@@ -1165,7 +1174,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
-	TChan Draw -> TVar Vk.Extent2d -> WinEnvs -> Vk.Khr.Surface.S ssfc -> Devices sd sc scb ->
+	TChan Draw -> TVar Vk.Extent2d -> WinEnvs sw -> Vk.Khr.Surface.S ssfc -> Devices sd sc scb ->
 	SyncObjects '(sias, srfs, siff) -> Swapchains scfmt ssc nm ss sr sfs ->
 	Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
@@ -1175,7 +1184,7 @@ mainLoop inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
 	rgrps ubs ext0 = do
 	($ ext0) $ fix \loop ext -> do
 		atomically $ writeTVar vext ext
-		Glfw.pollEvents
+		GlfwG.pollEvents
 		(tm, rects) <- atomically $ readTChan inp
 		let	rects' = bool rects dummy $ null rects
 		Vk.Dvc.waitIdle dvc
@@ -1212,7 +1221,7 @@ type UniformBuffers sds sdsl sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm2 sb2)
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
-	WinEnvs -> Vk.Khr.Surface.S ssfc -> Devices sd scp scb ->
+	WinEnvs sw -> Vk.Khr.Surface.S ssfc -> Devices sd scp scb ->
 	SyncObjects '(sias, srfs, siff) ->
 	Swapchains scfmt ssc nm sis sr sfs -> Pipelines sg sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
@@ -1223,7 +1232,7 @@ runLoop (win, fbrszd) sfc (phdvc, qfis, dvc, gq, pq, _cp, cb) iasrfsifs
 	(sc, scivs, rp, fbs) (gpl, pllyt) (vb, ib) rb (ubds, ubm) ubo loop ext = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs ubo
-	cls <- Glfw.windowShouldClose win
+	cls <- GlfwG.Win.shouldClose win
 	if cls then (pure ()) else checkFlag fbrszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
 			win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs)
@@ -1282,7 +1291,7 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -1306,7 +1315,7 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop act =
 
 recreateSwapchainEtc :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt ) =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -1329,10 +1338,10 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs = do
 		recreateGraphicsPipeline dvc ext rp pllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }

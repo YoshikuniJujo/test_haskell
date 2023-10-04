@@ -28,7 +28,6 @@ dependencies:
 - vector
 - text
 - JuicyPixels
-- GLFW-b
 - union-color
 - try-gpu-vulkan
 - try-gpu-vulkan-khr
@@ -43,6 +42,10 @@ dependencies:
 - try-storable-peek-poke
 - try-storable-generic
 - typelevel-tools
+- try-glfw-group
+- time
+- mtl
+- optparse-declarative
 
 ghc-options:
 - -Wall
@@ -57,6 +60,17 @@ ghc-options:
 
 library:
   source-dirs: src
+
+executables:
+  try-multi-rectangles:
+    main:                try-multi-rectangles.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-rectangles
 
 tests:
   try-vulkan-rectangles-test:
