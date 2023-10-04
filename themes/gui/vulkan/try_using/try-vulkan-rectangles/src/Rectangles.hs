@@ -311,6 +311,7 @@ run inp outp vext ist phd qfis dv gq pq =
 	GlfwG.Win.group \wgrp ->
 	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
 	Vk.RndrPass.group dv nil' \rpgrp ->
+	Vk.Ppl.Graphics.group dv nil' \gpgrp ->
 
 	initWindow True wgrp () >>= \w ->
 	atomically (newTVar False) >>= \fbrszd ->
@@ -323,7 +324,7 @@ run inp outp vext ist phd qfis dv gq pq =
 	createRenderPass @scfmt rpgrp () >>= \rp ->
 
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
-	createGraphicsPipeline dv ext rp pllyt \gpl ->
+	createGraphicsPipeline gpgrp () ext rp pllyt >>= \gpl ->
 
 	createSwapchain' @scfmt dv sfc spp ext qfis \sc ext0 ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \scis ->
@@ -695,18 +696,23 @@ createPipelineLayout dvc f =
 				HeteroParList.Singleton $ U2 dsl } in
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil' $ f dsl
 
-createGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
-	(forall sg . Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
+	Vk.Ppl.Graphics.Group sd mac sg k '[ '(
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
-createGraphicsPipeline dvc sce rp pllyt f =
-	Vk.Ppl.Graphics.group dvc nil' \gpgrp ->
-	Vk.Ppl.Graphics.createGs' gpgrp () Nothing (U14 pplInfo :** HeteroParList.Nil)
-			>>= \(fromRight -> (U3 gpl :** HeteroParList.Nil)) -> f gpl
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ],
+			'(sl, '[AtomUbo sdsl], '[]) )] -> k ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO (
+		Vk.Ppl.Graphics.G sg
+			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
+				'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+			'(sl, '[AtomUbo sdsl], '[]))
+createGraphicsPipeline gpgrp k sce rp pllyt =
+	Vk.Ppl.Graphics.createGs' gpgrp k Nothing (U14 pplInfo :** HeteroParList.Nil)
+			>>= \(fromRight -> (U3 gpl :** HeteroParList.Nil)) -> pure gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
