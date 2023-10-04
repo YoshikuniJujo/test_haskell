@@ -155,11 +155,16 @@ rectangles = do
 	_ <- forkIO . GlfwG.init error $ do
 		createInstance \inst -> bool id (setupDebugMessenger inst)
 			enableValidationLayers do
-			(phd', qfis') <- withWindow False \dw ->
-				createSurface dw inst \dsfc ->
-				pickPhysicalDevice inst dsfc
-			createLogicalDevice phd' qfis' \dv gq pq ->
-				run inp outp vext inst phd' qfis' dv gq pq
+			(phd', qfis', fmt') <- withWindow False \dw ->
+				createSurface dw inst \dsfc -> do
+				(phd, qfis) <- pickPhysicalDevice inst dsfc
+				spp <- querySwapChainSupport phd dsfc
+				let	fmt = Vk.Khr.Sfc.formatFormat
+						. chooseSwapSurfaceFormat $ formats spp
+				pure (phd, qfis, fmt)
+			Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
+				createLogicalDevice phd' qfis' \dv gq pq ->
+				run @fmt inp outp vext inst phd' qfis' dv gq pq
 		atomically $ writeTChan outp EventEnd
 	pure ((writeTChan inp, (isEmptyTChan outp, readTChan outp)), readTVar vext)
 	where setupDebugMessenger ist f =
@@ -294,7 +299,8 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run :: TChan Draw -> TChan Event -> TVar Vk.Extent2d -> Vk.Ist.I si ->
+run :: forall (scfmt :: Vk.T.Format) si sd . Vk.T.FormatToValue scfmt =>
+	TChan Draw -> TChan Event -> TVar Vk.Extent2d -> Vk.Ist.I si ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run inp outp vext ist phd qfis dv gq pq =
@@ -306,17 +312,19 @@ run inp outp vext ist phd qfis dv gq pq =
 	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
-	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () w >>= \(fromRight -> sfc) ->
+
 	forkIO (glfwEvents
 		w outp . foldr (uncurry M.insert) M.empty
 			$ ((, GlfwG.Ms.MouseButtonState'Released)
 			<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
 
-	createSwapchain w sfc phd qfis dv
-		\(sc :: Vk.Khr.Swapchain.S scfmt ss) ext0 ->
+	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () w >>= \(fromRight -> sfc) ->
+	createRenderPass @scfmt dv \rp ->
+
+	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
+	createSwapchain' @scfmt dv sfc spp ext qfis \sc ext0 ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \scis ->
 	createImageViews dv scis \scivs ->
-	createRenderPass @scfmt dv \rp ->
 	createFramebuffers dv ext0 rp scivs \fbs ->
 
 	createPipelineLayout dv \dslyt pllyt ->
@@ -454,20 +462,31 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-createSwapchain :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd ->
-	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
-		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
-	IO a
-createSwapchain win sfc phdvc qfis dvc f = do
+prepareSwapchain :: forall (scfmt :: Vk.T.Format) sw ssfc .
+	Vk.T.FormatToValue scfmt =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
+	IO (SwapChainSupportDetails, Vk.Extent2d)
+prepareSwapchain win sfc phdvc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	fmt = Vk.Khr.Sfc.formatFormat
+	let	fmt0 = Vk.T.formatToValue @scfmt
+		fmt = Vk.Khr.Sfc.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
-	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
-		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil'
-			\sc -> f sc ext
+	when (fmt0 /= fmt) $ error
+		"Rectangles: prepareSwapchain format not match"
+	pure (spp, ext)
+
+createSwapchain' :: forall (scfmt :: Vk.T.Format) ssfc sd a .
+	Vk.T.FormatToValue scfmt =>
+	Vk.Dvc.D sd ->
+	Vk.Khr.Sfc.S ssfc -> SwapChainSupportDetails -> Vk.Extent2d ->
+	QueueFamilyIndices ->
+	(forall ss .
+		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
+	IO a
+createSwapchain' dvc sfc spp ext qfis f =
+	Vk.Khr.Swapchain.create @'Nothing @scfmt dvc crInfo nil' \sc -> f sc ext
+	where crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
 
 mkSwapchainCreateInfoNew :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
@@ -594,54 +613,54 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 createRenderPass ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dvc f = do
-	let	colorAttachment :: Vk.Att.Description scifmt
-		colorAttachment = Vk.Att.Description {
-			Vk.Att.descriptionFlags = zeroBits,
-			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
-			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
-			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
-			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
-			Vk.Att.descriptionStencilStoreOp =
-				Vk.Att.StoreOpDontCare,
-			Vk.Att.descriptionInitialLayout =
-				Vk.Img.LayoutUndefined,
-			Vk.Att.descriptionFinalLayout =
-				Vk.Img.LayoutPresentSrcKhr }
-		colorAttachmentRef = Vk.Att.Reference {
-			Vk.Att.referenceAttachment = 0,
-			Vk.Att.referenceLayout =
-				Vk.Img.LayoutColorAttachmentOptimal }
-		subpass = Vk.Subpass.Description {
-			Vk.Subpass.descriptionFlags = zeroBits,
-			Vk.Subpass.descriptionPipelineBindPoint =
-				Vk.Ppl.BindPointGraphics,
-			Vk.Subpass.descriptionInputAttachments = [],
-			Vk.Subpass.descriptionColorAndResolveAttachments =
-				Left [colorAttachmentRef],
-			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
-			Vk.Subpass.descriptionPreserveAttachments = [] }
-		dependency = Vk.Subpass.Dependency {
-			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
-			Vk.Subpass.dependencyDstSubpass = 0,
-			Vk.Subpass.dependencySrcStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit .|.
-				Vk.Ppl.StageEarlyFragmentTestsBit,
-			Vk.Subpass.dependencySrcAccessMask = zeroBits,
-			Vk.Subpass.dependencyDstStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit .|.
-				Vk.Ppl.StageEarlyFragmentTestsBit,
-			Vk.Subpass.dependencyDstAccessMask =
-				Vk.AccessColorAttachmentWriteBit .|.
-				Vk.AccessDepthStencilAttachmentWriteBit,
-			Vk.Subpass.dependencyDependencyFlags = zeroBits }
-		renderPassInfo = Vk.RndrPass.CreateInfo {
-			Vk.RndrPass.createInfoNext = TMaybe.N,
-			Vk.RndrPass.createInfoFlags = zeroBits,
-			Vk.RndrPass.createInfoAttachments = colorAttachment :** HeteroParList.Nil,
-			Vk.RndrPass.createInfoSubpasses = [subpass],
-			Vk.RndrPass.createInfoDependencies = [dependency] }
-	Vk.RndrPass.create @'Nothing @'[scifmt] dvc renderPassInfo nil' \rp -> f rp
+createRenderPass dvc f =
+	Vk.RndrPass.group dvc nil' \rpgrp ->
+	Vk.RndrPass.create' @_ @_ @'[scifmt] dvc rpgrp () renderPassInfo
+		>>= f . fromRight
+	where
+	colorAttachment :: Vk.Att.Description scifmt
+	colorAttachment = Vk.Att.Description {
+		Vk.Att.descriptionFlags = zeroBits,
+		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+		Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+		Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+		Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+		Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
+		Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
+		Vk.Att.descriptionFinalLayout = Vk.Img.LayoutPresentSrcKhr }
+	colorAttachmentRef = Vk.Att.Reference {
+		Vk.Att.referenceAttachment = 0,
+		Vk.Att.referenceLayout = Vk.Img.LayoutColorAttachmentOptimal }
+	subpass = Vk.Subpass.Description {
+		Vk.Subpass.descriptionFlags = zeroBits,
+		Vk.Subpass.descriptionPipelineBindPoint =
+			Vk.Ppl.BindPointGraphics,
+		Vk.Subpass.descriptionInputAttachments = [],
+		Vk.Subpass.descriptionColorAndResolveAttachments =
+			Left [colorAttachmentRef],
+		Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+		Vk.Subpass.descriptionPreserveAttachments = [] }
+	dependency = Vk.Subpass.Dependency {
+		Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
+		Vk.Subpass.dependencyDstSubpass = 0,
+		Vk.Subpass.dependencySrcStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencySrcAccessMask = zeroBits,
+		Vk.Subpass.dependencyDstStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencyDstAccessMask =
+			Vk.AccessColorAttachmentWriteBit .|.
+			Vk.AccessDepthStencilAttachmentWriteBit,
+		Vk.Subpass.dependencyDependencyFlags = zeroBits }
+	renderPassInfo = Vk.RndrPass.CreateInfo {
+		Vk.RndrPass.createInfoNext = TMaybe.N,
+		Vk.RndrPass.createInfoFlags = zeroBits,
+		Vk.RndrPass.createInfoAttachments =
+			colorAttachment :** HeteroParList.Nil,
+		Vk.RndrPass.createInfoSubpasses = [subpass],
+		Vk.RndrPass.createInfoDependencies = [dependency] }
 
 type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]])
 
