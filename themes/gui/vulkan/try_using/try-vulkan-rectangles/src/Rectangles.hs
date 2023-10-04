@@ -322,6 +322,7 @@ run inp outp vext ist phd qfis dv gq pq =
 	Vk.Semaphore.group dv nil' \iasgrp ->
 	Vk.Semaphore.group dv nil' \rfsgrp ->
 	Vk.Fence.group dv nil' \iffgrp ->
+	Vk.Khr.Swapchain.group dv nil' \scgrp ->
 
 	initWindow True wgrp () >>= \w ->
 	atomically (newTVar False) >>= \fbrszd ->
@@ -335,11 +336,11 @@ run inp outp vext ist phd qfis dv gq pq =
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
 	createGraphicsPipeline gpgrp () ext rp pllyt >>= \gpl ->
 	createSyncObjects iasgrp rfsgrp iffgrp () >>= \sos ->
+	createSwapchain @scfmt scgrp () sfc spp ext qfis >>= \(sc, _) ->
 
-	createSwapchain' @scfmt dv sfc spp ext qfis \sc ext0 ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \scis ->
 	createImageViews dv scis \scivs ->
-	createFramebuffers dv ext0 rp scivs \fbs ->
+	createFramebuffers dv ext rp scivs \fbs ->
 
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 
@@ -348,7 +349,7 @@ run inp outp vext ist phd qfis dv gq pq =
 		vbs = (vb, ib); rgrps = (rbgrp, rmgrp); ubs = (ubds, ubm) in
 
 	createRectangleBuffer dvs rgrps () dummy >>
-	mainLoop inp vext (w, fbrszd) sfc dvs sos scs ppls vbs rgrps ubs ext0
+	mainLoop inp vext (w, fbrszd) sfc dvs sos scs ppls vbs rgrps ubs ext
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -480,16 +481,16 @@ prepareSwapchain win sfc phdvc = do
 		"Rectangles: prepareSwapchain format not match"
 	pure (spp, ext)
 
-createSwapchain' :: forall (scfmt :: Vk.T.Format) ssfc sd a .
+createSwapchain ::
+	forall (scfmt :: Vk.T.Format) ssfc sd ma ssc k . (
+	Ord k, Vk.AllocationCallbacks.ToMiddle ma ) =>
 	Vk.T.FormatToValue scfmt =>
-	Vk.Dvc.D sd ->
+	Vk.Khr.Swapchain.Group sd ma scfmt ssc k -> k ->
 	Vk.Khr.Sfc.S ssfc -> SwapChainSupportDetails -> Vk.Extent2d ->
-	QueueFamilyIndices ->
-	(forall ss .
-		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
-	IO a
-createSwapchain' dvc sfc spp ext qfis f =
-	Vk.Khr.Swapchain.create @'Nothing @scfmt dvc crInfo nil' \sc -> f sc ext
+	QueueFamilyIndices -> IO (Vk.Khr.Swapchain.S scfmt ssc, Vk.Extent2d)
+createSwapchain scgrp k sfc spp ext qfis =
+	Vk.Khr.Swapchain.create' @scfmt scgrp k crInfo
+		>>= \(fromRight -> sc) -> pure (sc, ext)
 	where crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
 
 mkSwapchainCreateInfoNew :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
