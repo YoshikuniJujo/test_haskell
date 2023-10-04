@@ -298,15 +298,16 @@ allocationCallbacksListFromCreateInfo =
 
 -- Group
 
-data Group ma sg k gas = Group (TPMaybe.M (U2 AllocationCallbacks.A) ma)
+data Group sd ma sg k gas = Group (Device.D sd)
+	(TPMaybe.M (U2 AllocationCallbacks.A) ma)
 	TSem (TVar (Map.Map k ( HeteroParList.PL (U3 (G sg)) gas)))
 
 group :: AllocationCallbacks.ToMiddle ma =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
-	(forall sg . Group ma sg k gas -> IO a) -> IO a
-group (Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+	(forall sg . Group sd ma sg k gas -> IO a) -> IO a
+group dvc@(Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
-	rtn <- f $ Group mac sem m
+	rtn <- f $ Group dvc mac sem m
 	((\gs -> M.destroyGs mdvc (gListToMiddle gs) mmac) `mapM_`)
 		=<< atomically (readTVar m)
 	pure rtn
@@ -314,13 +315,13 @@ group (Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 createGs' :: (
 	Ord k,
 	CreateInfoListToMiddle cias, AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> Group mac sg k (CreateInfoListArgsToGArgs cias) -> k ->
+	Group sd mac sg k (CreateInfoListArgsToGArgs cias) -> k ->
 	Maybe (Cache.P sc) ->
 	HeteroParList.PL (U14 CreateInfo) cias ->
 	IO (Either String
 		(HeteroParList.PL (U3 (G sg)) (CreateInfoListArgsToGArgs cias)))
-createGs' d@(Device.D dvc)
-	(Group (AllocationCallbacks.toMiddle -> mmac) sem gss) k
+createGs' (Group d@(Device.D dvc)
+	(AllocationCallbacks.toMiddle -> mmac) sem gss) k
 	((Cache.pToMiddle <$>) -> mc) cis = do
 	ok <- atomically do
 		mx <- Map.lookup k <$> readTVar gss
@@ -338,9 +339,9 @@ createGs' d@(Device.D dvc)
 		"Gpu.Vulkan.Pipeline.Graphics.create' :: The key already exist"
 
 destroyGs :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Device.D sd -> Group ma sg k gas -> k -> IO (Either String ())
-destroyGs (Device.D mdvc)
-	(Group (AllocationCallbacks.toMiddle -> mma) sem gss) k = do
+	Group sd ma sg k gas -> k -> IO (Either String ())
+destroyGs (Group (Device.D mdvc)
+	(AllocationCallbacks.toMiddle -> mma) sem gss) k = do
 	mgs <- atomically do
 		mx <- Map.lookup k <$> readTVar gss
 		case mx of
@@ -352,5 +353,5 @@ destroyGs (Device.D mdvc)
 		Just gs -> Right <$> M.destroyGs mdvc (gListToMiddle gs) mma
 
 lookup :: Ord k =>
-	Group ma sg k gas -> k -> IO (Maybe (HeteroParList.PL (U3 (G sg)) gas))
-lookup (Group _ _sem gss) k = atomically $ Map.lookup k <$> readTVar gss
+	Group sd ma sg k gas -> k -> IO (Maybe (HeteroParList.PL (U3 (G sg)) gas))
+lookup (Group _ _ _sem gss) k = atomically $ Map.lookup k <$> readTVar gss
