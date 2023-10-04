@@ -76,6 +76,7 @@ import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Exception.Enum qualified as Vk
 import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocationCallbacks
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
@@ -304,22 +305,21 @@ run :: forall (scfmt :: Vk.T.Format) si sd . Vk.T.FormatToValue scfmt =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run inp outp vext ist phd qfis dv gq pq =
+	createPipelineLayout dv \dslyt pllyt ->
 
 	GlfwG.Win.group \wgrp ->
 	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
+	Vk.RndrPass.group dv nil' \rpgrp ->
 
 	initWindow True wgrp () >>= \w ->
 	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
-
-	forkIO (glfwEvents
-		w outp . foldr (uncurry M.insert) M.empty
-			$ ((, GlfwG.Ms.MouseButtonState'Released)
-			<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
-
+	forkIO (glfwEvents w outp . foldr (uncurry M.insert) M.empty
+		$ ((, GlfwG.Ms.MouseButtonState'Released)
+		<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
 	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () w >>= \(fromRight -> sfc) ->
-	createRenderPass @scfmt dv \rp ->
+	createRenderPass @scfmt rpgrp () >>= \rp ->
 
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
 	createSwapchain' @scfmt dv sfc spp ext qfis \sc ext0 ->
@@ -327,7 +327,6 @@ run inp outp vext ist phd qfis dv gq pq =
 	createImageViews dv scis \scivs ->
 	createFramebuffers dv ext0 rp scivs \fbs ->
 
-	createPipelineLayout dv \dslyt pllyt ->
 	createGraphicsPipeline dv ext0 rp pllyt \gpl ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phd dv gq cp \vb ->
@@ -611,14 +610,14 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLayerCount = 1 }
 
 createRenderPass ::
-	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
-	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dvc f =
-	Vk.RndrPass.group dvc nil' \rpgrp ->
-	Vk.RndrPass.create' @_ @_ @'[scifmt] dvc rpgrp () renderPassInfo
-		>>= f . fromRight
+	forall (scfmt :: Vk.T.Format) sd ma sr k . (
+	Vk.T.FormatToValue scfmt, Ord k,
+	Vk.AllocationCallbacks.ToMiddle ma ) =>
+	Vk.RndrPass.Group sd ma sr k -> k -> IO (Vk.RndrPass.R sr)
+createRenderPass rpgrp k =
+	fromRight <$> Vk.RndrPass.create' @_ @_ @'[scfmt] rpgrp k renderPassInfo
 	where
-	colorAttachment :: Vk.Att.Description scifmt
+	colorAttachment :: Vk.Att.Description scfmt
 	colorAttachment = Vk.Att.Description {
 		Vk.Att.descriptionFlags = zeroBits,
 		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
