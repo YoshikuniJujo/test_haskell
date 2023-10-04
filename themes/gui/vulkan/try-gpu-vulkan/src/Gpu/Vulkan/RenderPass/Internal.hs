@@ -84,15 +84,16 @@ createInfoToMiddle CreateInfo {
 
 -- Group
 
-data Group ma sr k = Group (TPMaybe.M (U2 AllocationCallbacks.A) ma)
+data Group sd ma sr k = Group (Device.D sd)
+	(TPMaybe.M (U2 AllocationCallbacks.A) ma)
 	TSem (TVar (Map.Map k (R sr)))
 
 group :: AllocationCallbacks.ToMiddle ma =>
 	Device.D sd -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
-	(forall sr . Group ma sr k -> IO a) -> IO a
-group (Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
+	(forall sr . Group sd ma sr k -> IO a) -> IO a
+group dvc@(Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
-	rtn <- f $ Group mac sem m
+	rtn <- f $ Group dvc mac sem m
 	((\(R mr) -> M.destroy mdvc mr mmac) `mapM_`)
 		=<< atomically (readTVar m)
 	pure rtn
@@ -100,10 +101,10 @@ group (Device.D mdvc) mac@(AllocationCallbacks.toMiddle -> mmac) f = do
 create' :: (
 	Ord k, WithPoked (TMaybe.M mn), Attachment.DescriptionListToMiddle fmts,
 	AllocationCallbacks.ToMiddle mac ) =>
-	Device.D sd -> Group mac sr k -> k -> CreateInfo mn fmts ->
+	Group sd mac sr k -> k -> CreateInfo mn fmts ->
 	IO (Either String (R sr))
-create' (Device.D mdvc)
-	(Group (AllocationCallbacks.toMiddle -> mac) sem rs) k ci = do
+create' (Group (Device.D mdvc)
+	(AllocationCallbacks.toMiddle -> mac) sem rs) k ci = do
 	ok <- atomically do
 		mx <- Map.lookup k <$> readTVar rs
 		case mx of
@@ -118,9 +119,9 @@ create' (Device.D mdvc)
 		"Gpu.Vulkan.RenderPass.Internal.create': The key already exist"
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Device.D sd -> Group ma sr k -> k -> IO (Either String ())
-destroy (Device.D mdvc)
-	(Group (AllocationCallbacks.toMiddle -> ma) sem rs) k = do
+	Group sd ma sr k -> k -> IO (Either String ())
+destroy (Group (Device.D mdvc)
+	(AllocationCallbacks.toMiddle -> ma) sem rs) k = do
 	mr <- atomically do
 		mx <- Map.lookup k <$> readTVar rs
 		case mx of
@@ -136,8 +137,8 @@ destroy (Device.D mdvc)
 				signalTSem sem
 				pure $ Right ()
 
-lookup :: Ord k => Group ma sr k -> k -> IO (Maybe (R sr))
-lookup (Group _ _sem rs) k = atomically $ Map.lookup k <$> readTVar rs
+lookup :: Ord k => Group sd ma sr k -> k -> IO (Maybe (R sr))
+lookup (Group _ _ _sem rs) k = atomically $ Map.lookup k <$> readTVar rs
 
 -- BEGIN INFO
 
