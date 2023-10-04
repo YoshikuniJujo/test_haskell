@@ -306,12 +306,22 @@ run :: forall (scfmt :: Vk.T.Format) si sd . Vk.T.FormatToValue scfmt =>
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run inp outp vext ist phd qfis dv gq pq =
 	createCommandPool qfis dv \cp ->
+	createCommandBuffer dv cp \cb ->
 	createPipelineLayout dv \dslyt pllyt ->
+
+	createVertexBuffer phd dv gq cp \vb ->
+	createIndexBuffer phd dv gq cp \ib ->
+	createUniformBuffer phd dv \ub ubm ->
+	createDescriptorPool dv \dp ->
+	createDescriptorSet dv dp ub dslyt \ubds ->
 
 	GlfwG.Win.group \wgrp ->
 	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
 	Vk.RndrPass.group dv nil' \rpgrp ->
 	Vk.Ppl.Graphics.group dv nil' \gpgrp ->
+	Vk.Semaphore.group dv nil' \iasgrp ->
+	Vk.Semaphore.group dv nil' \rfsgrp ->
+	Vk.Fence.group dv nil' \iffgrp ->
 
 	initWindow True wgrp () >>= \w ->
 	atomically (newTVar False) >>= \fbrszd ->
@@ -322,21 +332,15 @@ run inp outp vext ist phd qfis dv gq pq =
 		<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
 	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () w >>= \(fromRight -> sfc) ->
 	createRenderPass @scfmt rpgrp () >>= \rp ->
-
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
 	createGraphicsPipeline gpgrp () ext rp pllyt >>= \gpl ->
+	createSyncObjects iasgrp rfsgrp iffgrp () >>= \sos ->
 
 	createSwapchain' @scfmt dv sfc spp ext qfis \sc ext0 ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \scis ->
 	createImageViews dv scis \scivs ->
 	createFramebuffers dv ext0 rp scivs \fbs ->
-	createVertexBuffer phd dv gq cp \vb ->
-	createIndexBuffer phd dv gq cp \ib ->
-	createUniformBuffer phd dv \ub ubm ->
-	createDescriptorPool dv \dp ->
-	createDescriptorSet dv dp ub dslyt \ubds ->
-	createCommandBuffer dv cp \cb ->
-	createSyncObjects dv \sos ->
+
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 
 	let	dvs = (phd, qfis, dv, gq, pq, cp, cb)
@@ -1157,13 +1161,14 @@ data SyncObjects (ssos :: (Type, Type, Type)) where
 		_inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
-createSyncObjects ::
-	Vk.Dvc.D sd -> (forall sias srfs siff . SyncObjects '(sias, srfs, siff) -> IO a ) -> IO a
-createSyncObjects dvc f =
-	Vk.Semaphore.create @'Nothing dvc def nil' \ias ->
-	Vk.Semaphore.create @'Nothing dvc def nil' \rfs ->
-	Vk.Fence.create @'Nothing dvc fncInfo nil' \iff ->
-	f $ SyncObjects ias rfs iff
+createSyncObjects :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
+	Vk.Semaphore.Group sd ma sias k -> Vk.Semaphore.Group sd ma srfs k ->
+	Vk.Fence.Group sd ma siff k -> k -> IO (SyncObjects '(sias, srfs, siff))
+createSyncObjects iasgrp rfsgrp iffgrp k =
+	Vk.Semaphore.create' @_ @'Nothing iasgrp k def >>= \(fromRight -> ias) ->
+	Vk.Semaphore.create' @_ @'Nothing rfsgrp k def >>= \(fromRight -> rfs) ->
+	Vk.Fence.create' @_ @'Nothing iffgrp k fncInfo >>= \(fromRight -> iff) ->
+	pure $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
