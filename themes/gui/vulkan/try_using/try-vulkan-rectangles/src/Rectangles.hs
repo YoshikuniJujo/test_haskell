@@ -705,7 +705,7 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp pllyt f =
 	Vk.Ppl.Graphics.group dvc nil' \gpgrp ->
-	Vk.Ppl.Graphics.createGs' dvc gpgrp () Nothing (U14 pplInfo :** HeteroParList.Nil)
+	Vk.Ppl.Graphics.createGs' gpgrp () Nothing (U14 pplInfo :** HeteroParList.Nil)
 			>>= \(fromRight -> (U3 gpl :** HeteroParList.Nil)) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
 
