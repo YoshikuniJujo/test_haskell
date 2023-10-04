@@ -154,20 +154,25 @@ rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically . newTVar $ Vk.Extent2d 0 0
 	_ <- forkIO . GlfwG.init error $ do
-		createInstance \inst -> bool id (setupDebugMessenger inst)
-			enableValidationLayers do
-			(phd', qfis', fmt') <- withWindow False \dw ->
-				createSurface dw inst \dsfc -> do
-				(phd, qfis) <- pickPhysicalDevice inst dsfc
+		Vk.Dvc.group nil' \dvcgrp ->
+			createInstance \ist -> bool id (setupDebugMessenger ist)
+				enableValidationLayers do
+			(phd', qfis', fmt', dv', gq', pq') <-
+				withWindow False \dw ->
+				createSurface dw ist \dsfc -> do
+				(phd, qfis) <- pickPhysicalDevice ist dsfc
 				spp <- querySwapChainSupport phd dsfc
-				let	fmt = Vk.Khr.Sfc.formatFormat
-						. chooseSwapSurfaceFormat $ formats spp
-				pure (phd, qfis, fmt)
-			Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
-				createLogicalDevice phd' qfis' \dv gq pq ->
-				run @fmt inp outp vext inst phd' qfis' dv gq pq
+				(dv, gq, pq) <-
+					createLogicalDevice phd dvcgrp () qfis
+				pure (	phd, qfis,
+					Vk.Khr.Sfc.formatFormat
+						. chooseSwapSurfaceFormat
+						$ formats spp, dv, gq, pq )
+			Vk.T.formatToType fmt' \(_ :: Proxy fmt) -> run @fmt
+				inp outp vext ist phd' qfis' dv' gq' pq'
 		atomically $ writeTChan outp EventEnd
-	pure ((writeTChan inp, (isEmptyTChan outp, readTChan outp)), readTVar vext)
+	pure (	(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
+		readTVar vext )
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
 
@@ -437,30 +442,30 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Sfc.Phd.getFormats dvc sfc
 	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
-		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createLogicalDevice phdvc qfis f =
-	let	uniqueQueueFamilies =
-			L.nub [graphicsFamily qfis, presentFamily qfis]
-		queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
-			Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-			Vk.Dvc.queueCreateInfoFlags = def,
-			Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-			Vk.Dvc.queueCreateInfoQueuePriorities = [1] } in
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs -> do
-		let	createInfo = Vk.Dvc.CreateInfo {
-				Vk.Dvc.createInfoNext = TMaybe.N,
-				Vk.Dvc.createInfoFlags = def,
-				Vk.Dvc.createInfoQueueCreateInfos = qs,
-				Vk.Dvc.createInfoEnabledLayerNames =
-					bool [] validationLayers enableValidationLayers,
-				Vk.Dvc.createInfoEnabledExtensionNames =
-					deviceExtensions,
-				Vk.Dvc.createInfoEnabledFeatures = Just def }
-		Vk.Dvc.create phdvc createInfo nil' \dvc -> do
-			gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-			pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-			f dvc gq pq
+createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
+	Vk.PhDvc.P -> Vk.Dvc.Group ma sd k -> k ->
+	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q)
+createLogicalDevice phdvc dvcgrp k qfis =
+	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
+	Vk.Dvc.create' phdvc dvcgrp k (createInfo qs) >>= \(fromRight -> dvc) -> do
+		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
+		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
+		pure (dvc, gq, pq)
+	where
+	createInfo qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = def,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames =
+			bool [] validationLayers enableValidationLayers,
+		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def }
+	uniqueQueueFamilies = L.nub [graphicsFamily qfis, presentFamily qfis]
+	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
