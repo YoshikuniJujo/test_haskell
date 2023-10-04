@@ -342,8 +342,8 @@ winGroups inst dv f =
 data WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k =
 	WinGroups
 		(Glfw.Win.Group sw k) (Vk.Khr.Surface.Group 'Nothing ssfc k)
-		(Vk.RndrPass.Group 'Nothing sr k)
-		(Vk.Ppl.Graphics.Group 'Nothing sg k '[ '(
+		(Vk.RndrPass.Group sd 'Nothing sr k)
+		(Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)],
 			'(sl, '[], '[]) )] )
@@ -381,8 +381,8 @@ createWindowResources ::
 	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
-	Vk.RndrPass.Group 'Nothing sr k ->
-	Vk.Ppl.Graphics.Group 'Nothing sg k '[ '(
+	Vk.RndrPass.Group sd 'Nothing sr k ->
+	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)],
 		'(sl, '[], '[]) )] ->
@@ -756,9 +756,9 @@ mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfo {
 createRenderPass' ::
 	forall (scifmt :: Vk.T.Format) sd ma sr k . (
 	Ord k, AllocationCallbacks.ToMiddle ma, Vk.T.FormatToValue scifmt ) =>
-	Vk.Dvc.D sd -> Vk.RndrPass.Group ma sr k -> k ->  IO (Vk.RndrPass.R sr)
+	Vk.Dvc.D sd -> Vk.RndrPass.Group sd ma sr k -> k ->  IO (Vk.RndrPass.R sr)
 createRenderPass' dvc rpgrp k =
-	fromRight <$> Vk.RndrPass.create' @_ @_ @'[scifmt] dvc rpgrp k renderPassInfo
+	fromRight <$> Vk.RndrPass.create' @_ @_ @'[scifmt] rpgrp k renderPassInfo
 	where
 	renderPassInfo = Vk.RndrPass.M.CreateInfo {
 		Vk.RndrPass.M.createInfoNext = TMaybe.N,
@@ -814,7 +814,7 @@ createPipelineLayout dvc f = do
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil' f
 
 createGraphicsPipeline' :: (AllocationCallbacks.ToMiddle ma, Ord k) =>
-	Vk.Dvc.D sd -> Vk.Ppl.Graphics.Group ma sg k '[ '(
+	Vk.Dvc.D sd -> Vk.Ppl.Graphics.Group sd ma sg k '[ '(
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)],
 		'(sl, '[], '[]) )] -> k ->
@@ -825,7 +825,7 @@ createGraphicsPipeline' :: (AllocationCallbacks.ToMiddle ma, Ord k) =>
 		'(sl, '[], '[]))
 createGraphicsPipeline' dvc gpsgrp k sce rp ppllyt =
 	(\(U3 gpl :** HeteroParList.Nil) -> gpl) . fromRight <$>
-	Vk.Ppl.Graphics.createGs' dvc gpsgrp k Nothing
+	Vk.Ppl.Graphics.createGs' gpsgrp k Nothing
 		(U14 pplInfo :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
