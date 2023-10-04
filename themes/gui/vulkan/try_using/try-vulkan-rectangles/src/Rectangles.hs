@@ -305,6 +305,7 @@ run :: forall (scfmt :: Vk.T.Format) si sd . Vk.T.FormatToValue scfmt =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run inp outp vext ist phd qfis dv gq pq =
+	createCommandPool qfis dv \cp ->
 	createPipelineLayout dv \dslyt pllyt ->
 
 	GlfwG.Win.group \wgrp ->
@@ -322,13 +323,12 @@ run inp outp vext ist phd qfis dv gq pq =
 	createRenderPass @scfmt rpgrp () >>= \rp ->
 
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
+	createGraphicsPipeline dv ext rp pllyt \gpl ->
+
 	createSwapchain' @scfmt dv sfc spp ext qfis \sc ext0 ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \scis ->
 	createImageViews dv scis \scivs ->
 	createFramebuffers dv ext0 rp scivs \fbs ->
-
-	createGraphicsPipeline dv ext0 rp pllyt \gpl ->
-	createCommandPool qfis dv \cp ->
 	createVertexBuffer phd dv gq cp \vb ->
 	createIndexBuffer phd dv gq cp \ib ->
 	createUniformBuffer phd dv \ub ubm ->
@@ -704,8 +704,9 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp pllyt f =
-	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
-			nil' \(U3 gpl :** HeteroParList.Nil) -> f gpl
+	Vk.Ppl.Graphics.group dvc nil' \gpgrp ->
+	Vk.Ppl.Graphics.createGs' dvc gpgrp () Nothing (U14 pplInfo :** HeteroParList.Nil)
+			>>= \(fromRight -> (U3 gpl :** HeteroParList.Nil)) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
