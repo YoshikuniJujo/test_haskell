@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -157,24 +157,47 @@ rectangles = do
 		createInstance \ist ->
 			Vk.Dvc.group nil' \dvcgrp -> bool id (setupDebugMessenger ist)
 				enableValidationLayers do
-			(phd', qfis', fmt', dv', gq', pq') <-
+			(phd', qfis', fmt', dv', gq', pq', n') <-
 				withWindow False \dw ->
 				createSurface dw ist \dsfc -> do
 				(phd, qfis) <- pickPhysicalDevice ist dsfc
-				spp <- querySwapChainSupport phd dsfc
 				(dv, gq, pq) <-
 					createLogicalDevice phd dvcgrp () qfis
-				pure (	phd, qfis,
-					Vk.Khr.Sfc.formatFormat
+				spp <- querySwapChainSupport phd dsfc
+				ext <- chooseSwapExtent dw $ capabilities spp
+				let	fmt = Vk.Khr.Sfc.formatFormat
 						. chooseSwapSurfaceFormat
-						$ formats spp, dv, gq, pq )
-			Vk.T.formatToType fmt' \(_ :: Proxy fmt) -> run @fmt
-				inp outp vext ist phd' qfis' dv' gq' pq'
+						$ formats spp
+				Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+					n <- getSwapchainImageNum @fmt dv dsfc spp ext qfis
+					pure (	phd, qfis,
+						Vk.Khr.Sfc.formatFormat
+							. chooseSwapSurfaceFormat
+							$ formats spp, dv, gq, pq, n )
+			getNum n' \(_ :: Proxy n) ->
+				Vk.T.formatToType fmt' \(_ :: Proxy fmt) -> run @fmt
+					inp outp vext ist phd' qfis' dv' gq' pq'
 		atomically $ writeTChan outp EventEnd
 	pure (	(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVar vext )
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
+
+getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
+	Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> Vk.Khr.Sfc.S ssfc -> SwapChainSupportDetails ->
+	Vk.Extent2d -> QueueFamilyIndices -> IO [()]
+getSwapchainImageNum dv sfc spp ext qfis =
+	withSwapchain @fmt dv sfc spp ext qfis \sc _ ->
+	sameNum () <$> Vk.Khr.Swapchain.getImages dv sc
+
+sameNum :: b -> [a] -> [b]
+sameNum x = \case [] -> []; _ : ys -> x : sameNum x ys
+
+getNum :: [a] -> (forall (n :: [()]) . Proxy n -> b) -> b
+getNum [] f = f (Proxy :: Proxy '[])
+getNum (_ : xs) f =
+	getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
 type Draw = (ViewProjection, [Rectangle])
 data Event
@@ -486,6 +509,15 @@ prepareSwapchain win sfc phdvc = do
 		"Rectangles: prepareSwapchain format not match"
 	pure (spp, ext)
 
+withSwapchain ::
+	Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> Vk.Khr.Sfc.S ssfc -> SwapChainSupportDetails ->
+	Vk.Extent2d -> QueueFamilyIndices ->
+	(forall ssc . Vk.Khr.Swapchain.S fmt ssc -> Vk.Extent2d -> IO a) -> IO a
+withSwapchain dvc sfc spp ext qfis f =
+	Vk.Khr.Swapchain.group dvc nil' \scgrp ->
+	uncurry f =<< createSwapchain scgrp () sfc spp ext qfis
+
 createSwapchain ::
 	forall (scfmt :: Vk.T.Format) ssfc sd ma ssc k . (
 	Ord k, Vk.AllocationCallbacks.ToMiddle ma ) =>
@@ -674,7 +706,7 @@ createRenderPass rpgrp k =
 
 type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]])
 
-createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
+createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.D s '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]]
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
