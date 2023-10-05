@@ -154,8 +154,8 @@ rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically . newTVar $ Vk.Extent2d 0 0
 	_ <- forkIO . GlfwG.init error $ do
-		Vk.Dvc.group nil' \dvcgrp ->
-			createInstance \ist -> bool id (setupDebugMessenger ist)
+		createInstance \ist ->
+			Vk.Dvc.group nil' \dvcgrp -> bool id (setupDebugMessenger ist)
 				enableValidationLayers do
 			(phd', qfis', fmt', dv', gq', pq') <-
 				withWindow False \dw ->
