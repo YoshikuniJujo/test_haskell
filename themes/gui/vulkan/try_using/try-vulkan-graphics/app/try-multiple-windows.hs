@@ -181,7 +181,7 @@ withSwapchain dvc sfc spp ext qfis f =
 	Vk.Khr.Swapchain.create @_ @scfmt dvc crInfo nil' \sc -> f sc ext
 
 getNum :: [a] -> (forall (n :: [()]) . (
-	RecreateFramebuffers' n ) =>
+	Mappable n ) =>
 	Proxy n -> b) -> b
 getNum [] f = f (Proxy :: Proxy '[])
 getNum (_ : xs) f = getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
@@ -295,7 +295,7 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 
 run :: forall (scfmt :: Vk.T.Format) (n :: [()]) si sd . (
 	Vk.T.FormatToValue scfmt, 
-	RecreateFramebuffers' n) =>
+	Mappable n ) =>
 	Vk.Ist.I si -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run inst phdv qfis dv gq pq =
@@ -358,7 +358,7 @@ createWindowResourcesWinGroups ::
 	forall (scifmt :: Vk.T.Format) (n :: [()])
 		si siv sd sl sw nm ssfc sr sg sias srfs siff ssc sf k . (
 	Ord k, Vk.T.FormatToValue scifmt,
-	RecreateFramebuffers' n ) =>
+	Mappable n ) =>
 	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
 	WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k ->
@@ -376,7 +376,7 @@ createWindowResources ::
 	forall (scifmt :: Vk.T.Format) (n :: [()])
 		si siv sd sl sw nm ssfc sr sg sias srfs siff ssc sf k . (
 	Ord k, Vk.T.FormatToValue scifmt,
-	RecreateFramebuffers' n
+	Mappable n
 	) =>
 	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
@@ -409,8 +409,8 @@ createWindowResources
 	createSwapchain scgrp k sfc spp ext qfis >>= \(sc, _) ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews''' @n ivgrp k imgs >>= \scivs ->
-	createFramebuffers' @_ @n @k @sd @sf @sr @nm @_ @siv
-		fbgrp k 0 ext rp scivs >>= \fbs ->
+	createFramebuffers'' @n @k @sd @sf @sr @nm @_ @siv
+		fbgrp k ext rp scivs >>= \fbs ->
 
 	atomically (newTVar ext) >>= \vext ->
 	pure $ WinParams w g sfc vext rp gpl sos sc scivs fbs
@@ -695,13 +695,13 @@ recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
 createImageViews''' :: forall n ivfmt sd si siv k sm nm ifmt . (
-	Ord k, Vk.T.FormatToValue ivfmt, RecreateFramebuffers' n ) =>
+	Ord k, Vk.T.FormatToValue ivfmt, Mappable n ) =>
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt -> k ->
 	[Vk.Image.Binded sm si nm ifmt] ->
 	IO (HeteroParList.PL (Vk.ImgVw.I nm ivfmt) (Replicate n siv))
 createImageViews''' ivgrp k imgs = do
 	ivs <- createImageViews' ivgrp k imgs
-	pure $ homoListFromList' @_ @n ivs
+	pure $ homoListFromList @_ @n ivs
 
 createImageViews' :: forall ivfmt sd si siv k sm nm ifmt .
 	(Ord k, Vk.T.FormatToValue ivfmt) =>
@@ -944,46 +944,56 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-class RecreateFramebuffers' (n :: [t]) where
-	type Replicate n s :: [Type]
-	createFramebuffers' :: Ord k =>
-		Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
-		Int -> Vk.Extent2d -> Vk.RndrPass.R sr ->
-		HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate n siv) ->
-		IO (HeteroParList.PL Vk.Frmbffr.F (Replicate n sf))
-	recreateFramebuffers' :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate n siv) ->
-		HeteroParList.PL Vk.Frmbffr.F (Replicate n sf) -> IO ()
-	homoListFromList' :: [t' s] -> HeteroParList.PL t' (Replicate n s)
+createFramebuffers'' ::
+	forall ts k sd sf sr nm fmt siv .
+	(Mappable ts, Ord k) =>
+	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
+	Vk.Extent2d -> Vk.RndrPass.R sr ->
+	HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
+	IO (HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf))
+createFramebuffers'' fbgrp k sce rp =
+	mapHomoListMWithI @_ @ts @_ @_ @siv 0 \i sciv ->
+	fromRight <$> Vk.Frmbffr.create'
+		fbgrp (k, i) (mkFramebufferCreateInfoNew sce rp sciv)
 
-instance RecreateFramebuffers' '[] where
+recreateFramebuffers'' :: forall ts sd sr nm fmt siv sf .
+	Mappable ts =>
+	Vk.Dvc.D sd -> Vk.Extent2d ->
+	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
+	HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
+recreateFramebuffers'' dvc sce rp =
+	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
+	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfoNew sce rp sciv) nil' fb
+
+class Mappable (ts :: [knd]) where
+	type Replicate ts s :: [Type]
+	homoListFromList :: [t s] -> HeteroParList.PL t (Replicate ts s)
+	mapHomoListMWithI :: Monad m => Int -> (Int -> t a -> m (t' b)) ->
+		HeteroParList.PL t (Replicate ts a) ->
+		m (HeteroParList.PL t' (Replicate ts b))
+	zipWithHomoListM_ :: Monad m => (t a -> t' b -> m c) ->
+		HeteroParList.PL t (Replicate ts a) ->
+		HeteroParList.PL t' (Replicate ts b) -> m ()
+
+instance Mappable '[] where
 	type Replicate '[] s = '[]
-	createFramebuffers' _ _ _ _ _ HeteroParList.Nil = pure HeteroParList.Nil
-	recreateFramebuffers' _dvc _sce _rp HeteroParList.Nil HeteroParList.Nil = pure ()
-	homoListFromList' [] = HeteroParList.Nil
-	homoListFromList' _ = error "bad"
+	homoListFromList [] = HeteroParList.Nil
+	homoListFromList _ = error "bad"
+	mapHomoListMWithI _ _ HeteroParList.Nil = pure HeteroParList.Nil
+	zipWithHomoListM_ _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
-instance RecreateFramebuffers' n => RecreateFramebuffers' (t ': n) where
-	type Replicate (t ': n) s = s ': Replicate n s
-	createFramebuffers' ::
-		forall k sd sf sr nm fmt siv .
-		Ord k =>
-		Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
-		Int -> Vk.Extent2d -> Vk.RndrPass.R sr ->
-		HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate (t ': n) siv) ->
-		IO (HeteroParList.PL Vk.Frmbffr.F (Replicate (t ': n) sf))
-	createFramebuffers' fbgrp k i sce rp (sciv :** scivs) = (:**) . fromRight
-		<$> Vk.Frmbffr.create' fbgrp (k, i) (mkFramebufferCreateInfoNew sce rp sciv)
-		<*> (createFramebuffers' @_ @n @k @sd @sf @sr @nm @fmt @siv fbgrp k (i + 1) sce rp scivs)
-	recreateFramebuffers' :: forall sd sr nm fmt siv sf . Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate (t ': n) siv) ->
-		HeteroParList.PL Vk.Frmbffr.F (Replicate (t ': n) sf) -> IO ()
-	recreateFramebuffers' dvc sce rp (sciv :** scivs) (fb :** fbs) =
-		Vk.Frmbffr.recreate dvc
-			(mkFramebufferCreateInfoNew sce rp sciv) nil' fb >>
-		recreateFramebuffers' @_ @n @sd @sr @nm @fmt @siv @sf dvc sce rp scivs fbs
-	homoListFromList' (x : xs) = x :** (homoListFromList' @_ @n xs)
-	homoListFromList' _ = error "bad"
+instance Mappable ts => Mappable (t ': ts) where
+	type Replicate (t ': ts) s = s ': Replicate ts s
+	homoListFromList (x : xs) = x :** (homoListFromList @_ @ts xs)
+	homoListFromList _ = error "bad"
+	mapHomoListMWithI :: forall t' a t'' b m .
+		Monad m => Int -> (Int -> t' a -> m (t'' b)) ->
+		HeteroParList.PL t' (Replicate (t ': ts) a) ->
+		m (HeteroParList.PL t'' (Replicate (t ': ts) b))
+	mapHomoListMWithI i f (x :** xs) = (:**) <$> f i x
+		<*> mapHomoListMWithI @_ @ts @_ @_ @a @_ @b (i + 1) f xs
+	zipWithHomoListM_ f (x :** xs) (y :** ys) =
+		f x y >> zipWithHomoListM_ @_ @ts f xs ys
 
 mkFramebufferCreateInfoNew ::
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
@@ -1103,7 +1113,6 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocate
---		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
 		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
 		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
@@ -1190,7 +1199,7 @@ recordCommandBuffer cb rp fb vsce gpl vb =
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: forall n siv sf sd scb sl sm sb nm sw ssfc sr sg sias srfs siff fmt ssc . (
-	Vk.T.FormatToValue fmt, RecreateFramebuffers' n ) =>
+	Vk.T.FormatToValue fmt, Mappable n ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
@@ -1259,7 +1268,7 @@ checkFlagWinParams ::
 checkFlagWinParams (WinParams _ frszd _ _ _ _ _ _ _ _) = checkFlag frszd
 
 runLoop :: forall n si sf sd scb sl sm sb nm ssfc sr sw sg sias srfs siff fmt ssc . (
-	Vk.T.FormatToValue fmt, RecreateFramebuffers' n ) =>
+	Vk.T.FormatToValue fmt, Mappable n ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> Vk.CmdBffr.C scb ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
@@ -1281,7 +1290,8 @@ runLoop phdvc qfis dvc gq pq cb ppllyt vbs wpss loop = do
 		loop
 
 drawAndCatch :: forall n (siv :: Type) (sf :: Type) sd sl sw ssfc sr sg sias srfs siff fmt ssc scb sm sb nm .
-	(Vk.T.FormatToValue fmt, RecreateFramebuffers' n) =>
+	(Vk.T.FormatToValue fmt,
+	Mappable n) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.CmdBffr.C scb ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
@@ -1329,7 +1339,8 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate' :: forall n siv sf fmt sd sl sw nm ssfc sr sg ssc .
-	(RecreateFramebuffers' n, Vk.T.FormatToValue fmt) =>
+	(Mappable n,
+	Vk.T.FormatToValue fmt) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Recreates sw sl nm ssfc sr sg fmt ssc
@@ -1346,7 +1357,8 @@ catchAndRecreate' phd qfis dv plyt rcs loop act =
 		recreateAll' @n @siv @sf @_ @sd @sl @sw @nm @ssfc @sr @sg @ssc phd qfis dv plyt rcs >> loop
 
 recreateAll' :: forall n siv sf fmt sd sl sw nm ssfc sr sg ssc . (
-	RecreateFramebuffers' n, Vk.T.FormatToValue fmt ) =>
+	Mappable n,
+	Vk.T.FormatToValue fmt ) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[] '[] ->
 	Recreates sw sl nm ssfc sr sg fmt ssc (Replicate n siv) (Replicate n sf) ->
@@ -1360,7 +1372,7 @@ recreateAll' phdvc qfis dvc ppllyt (w, sfc, vext, rp, gpl, sc, scivs, fbs) = do
 	Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 		recreateImageViews dvc imgs scivs
 	recreateGraphicsPipeline dvc ext rp ppllyt gpl
-	recreateFramebuffers' @_ @n @sd @sr @nm @fmt @siv @sf dvc ext rp scivs fbs
+	recreateFramebuffers'' @n @sd @sr @nm @fmt @siv @sf dvc ext rp scivs fbs
 
 waitFramebufferSize :: Glfw.Win.W sw -> IO ()
 waitFramebufferSize w = Glfw.Win.getFramebufferSize w >>= \sz ->
