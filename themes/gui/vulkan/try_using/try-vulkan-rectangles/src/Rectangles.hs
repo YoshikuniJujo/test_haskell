@@ -2,6 +2,7 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -916,6 +917,58 @@ instance RecreateFramebuffers sis sfs =>
 		Vk.Frmbffr.recreate dvc
 			(mkFramebufferCreateInfo sce rp sciv) nil' fb >>
 		recreateFramebuffers dvc sce rp scivs fbs
+
+createFramebuffers' ::
+	forall ts k sd sf sr nm fmt siv .
+	(Mappable ts, Ord k) =>
+	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
+	Vk.Extent2d -> Vk.RndrPass.R sr ->
+	HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
+	IO (HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf))
+createFramebuffers' fbgrp k sce rp =
+	mapHomoListMWithI @_ @ts @_ @_ @siv 0 \i sciv ->
+	fromRight <$> Vk.Frmbffr.create'
+		fbgrp (k, i) (mkFramebufferCreateInfo sce rp sciv)
+
+recreateFramebuffers' :: forall ts sd sr nm fmt siv sf .
+	Mappable ts =>
+	Vk.Dvc.D sd -> Vk.Extent2d ->
+	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
+	HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
+recreateFramebuffers' dvc sce rp =
+	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
+	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfo sce rp sciv) nil' fb
+
+class Mappable (ts :: [knd]) where
+	type Replicate ts s :: [Type]
+	homoListFromList :: [t s] -> HeteroParList.PL t (Replicate ts s)
+	mapHomoListMWithI :: Monad m => Int -> (Int -> t a -> m (t' b)) ->
+		HeteroParList.PL t (Replicate ts a) ->
+		m (HeteroParList.PL t' (Replicate ts b))
+	zipWithHomoListM_ :: Monad m => (t a -> t' b -> m c) ->
+		HeteroParList.PL t (Replicate ts a) ->
+		HeteroParList.PL t' (Replicate ts b) -> m ()
+
+instance Mappable '[] where
+	type Replicate '[] s = '[]
+	homoListFromList [] = HeteroParList.Nil
+	homoListFromList _ = error "bad"
+	mapHomoListMWithI _ _ HeteroParList.Nil = pure HeteroParList.Nil
+	zipWithHomoListM_ _ HeteroParList.Nil HeteroParList.Nil = pure ()
+
+instance Mappable ts => Mappable (t ': ts) where
+	type Replicate (t ': ts) s = s ': Replicate ts s
+	homoListFromList (x : xs) = x :** (homoListFromList @_ @ts xs)
+	homoListFromList _ = error "bad"
+	mapHomoListMWithI :: forall t' a t'' b m .
+		Monad m => Int -> (Int -> t' a -> m (t'' b)) ->
+		HeteroParList.PL t' (Replicate (t ': ts) a) ->
+		m (HeteroParList.PL t'' (Replicate (t ': ts) b))
+	mapHomoListMWithI i f (x :** xs) = (:**) <$> f i x
+		<*> mapHomoListMWithI @_ @ts @_ @_ @a @_ @b (i + 1) f xs
+	zipWithHomoListM_ f (x :** xs) (y :** ys) =
+		f x y >> zipWithHomoListM_ @_ @ts f xs ys
+
 
 mkFramebufferCreateInfo ::
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
