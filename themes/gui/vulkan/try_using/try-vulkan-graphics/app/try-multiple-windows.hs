@@ -409,7 +409,7 @@ createWindowResources
 	createSwapchain scgrp k sfc spp ext qfis >>= \(sc, _) ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews''' @n ivgrp k imgs >>= \scivs ->
-	createFramebuffers'' @n @k @sd @sf @sr @nm @_ @siv
+	createFramebuffers @n @k @sd @sf @sr @nm @_ @siv
 		fbgrp k ext rp scivs >>= \fbs ->
 
 	atomically (newTVar ext) >>= \vext ->
@@ -944,26 +944,26 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createFramebuffers'' ::
+createFramebuffers ::
 	forall ts k sd sf sr nm fmt siv .
 	(Mappable ts, Ord k) =>
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
 	IO (HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf))
-createFramebuffers'' fbgrp k sce rp =
+createFramebuffers fbgrp k sce rp =
 	mapHomoListMWithI @_ @ts @_ @_ @siv 0 \i sciv ->
 	fromRight <$> Vk.Frmbffr.create'
-		fbgrp (k, i) (mkFramebufferCreateInfoNew sce rp sciv)
+		fbgrp (k, i) (mkFramebufferCreateInfo sce rp sciv)
 
-recreateFramebuffers'' :: forall ts sd sr nm fmt siv sf .
+recreateFramebuffers :: forall ts sd sr nm fmt siv sf .
 	Mappable ts =>
 	Vk.Dvc.D sd -> Vk.Extent2d ->
 	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
 	HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
-recreateFramebuffers'' dvc sce rp =
+recreateFramebuffers dvc sce rp =
 	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
-	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfoNew sce rp sciv) nil' fb
+	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfo sce rp sciv) nil' fb
 
 class Mappable (ts :: [knd]) where
 	type Replicate ts s :: [Type]
@@ -995,10 +995,10 @@ instance Mappable ts => Mappable (t ': ts) where
 	zipWithHomoListM_ f (x :** xs) (y :** ys) =
 		f x y >> zipWithHomoListM_ @_ @ts f xs ys
 
-mkFramebufferCreateInfoNew ::
+mkFramebufferCreateInfo ::
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)]
-mkFramebufferCreateInfoNew sce rp attch = Vk.Frmbffr.CreateInfo {
+mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
@@ -1372,7 +1372,7 @@ recreateAll' phdvc qfis dvc ppllyt (w, sfc, vext, rp, gpl, sc, scivs, fbs) = do
 	Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 		recreateImageViews dvc imgs scivs
 	recreateGraphicsPipeline dvc ext rp ppllyt gpl
-	recreateFramebuffers'' @n @sd @sr @nm @fmt @siv @sf dvc ext rp scivs fbs
+	recreateFramebuffers @n @sd @sr @nm @fmt @siv @sf dvc ext rp scivs fbs
 
 waitFramebufferSize :: Glfw.Win.W sw -> IO ()
 waitFramebufferSize w = Glfw.Win.getFramebufferSize w >>= \sz ->
