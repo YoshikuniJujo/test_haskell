@@ -608,6 +608,22 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
 
+createImageViews' :: forall n ivfmt sd si siv k sm nm ifmt . (
+	Mappable n, Ord k, Vk.T.FormatToValue ivfmt ) =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
+	k -> [Vk.Img.Binded sm si nm ifmt] ->
+	IO (HeteroParList.PL (Vk.ImgVw.I nm ivfmt) (Replicate n siv))
+createImageViews' ivgrp k imgs = do
+	ivs <- createImageViewList ivgrp k imgs
+	pure $ homoListFromList @_ @n ivs
+
+createImageViewList :: forall ivfmt sd si siv k sm nm ifmt . (
+	Ord k, Vk.T.FormatToValue ivfmt ) =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
+	k -> [Vk.Img.Binded sm si nm ifmt] -> IO [Vk.ImgVw.I nm ivfmt siv]
+createImageViewList ivgrp k =
+	mapM (\(i, img) -> createImageView' ivgrp (k, i) img) . zip [0 ..]
+
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
 	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
@@ -615,6 +631,22 @@ createImageViews _dvc [] f = f HeteroParList.Nil
 createImageViews dvc (sci : scis) f =
 	createImageView dvc sci \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :** scivs
+
+createImageView :: forall ivfmt sd si sm nm ifmt a .
+	Vk.T.FormatToValue ivfmt =>
+	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
+	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
+createImageView dvc timg f =
+	Vk.ImgVw.group dvc nil' \ivgrp ->
+	f =<< createImageView' ivgrp ((), 0) timg
+
+createImageView' :: forall ivfmt sd si siv k sm nm ifmt .
+	Ord k =>
+	Vk.T.FormatToValue ivfmt =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
+	(k, Int) -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm ivfmt siv)
+createImageView' ivgrp k timg = fromRight <$>
+	Vk.ImgVw.create' ivgrp k (mkImageViewCreateInfoNew timg)
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
@@ -624,13 +656,6 @@ recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Img.I and Vk.ImageView.I should be same"
-
-createImageView :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
-	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
-createImageView dvc timg f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfoNew timg) nil' f
 
 mkImageViewCreateInfoNew ::
 	Vk.Img.Binded sm si nm ifmt ->
