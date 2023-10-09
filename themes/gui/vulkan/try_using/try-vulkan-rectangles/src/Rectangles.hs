@@ -768,14 +768,14 @@ createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 	Vk.Ppl.Graphics.Group sd mac sg k '[ '(
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ],
 			'(sl, '[AtomUbo sdsl], '[]) )] -> k ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO (
 		Vk.Ppl.Graphics.G sg
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-				'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 			'(sl, '[AtomUbo sdsl], '[]))
 createGraphicsPipeline gpgrp k sce rp pllyt =
@@ -788,7 +788,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Graphics.recreateGs
@@ -803,7 +803,7 @@ mkGraphicsPipelineCreateInfo' ::
 		'(	'Nothing,
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-				'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', foo)
 mkGraphicsPipelineCreateInfo' sce rp pllyt = Vk.Ppl.Graphics.CreateInfo {
@@ -1295,7 +1295,7 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl 
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
@@ -1367,7 +1367,7 @@ type Pipelines sg sl sdsl = (
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]),
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] )
@@ -1403,7 +1403,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
@@ -1458,7 +1458,7 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
@@ -1482,7 +1482,7 @@ recreateSwapchainEtc :: (
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor), 
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
@@ -1496,6 +1496,33 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs = do
 			recreateImageViews dvc imgs scivs
 		recreateGraphicsPipeline dvc ext rp pllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
+
+recreateSwapchainEtc' :: forall
+	n scfmt sw ssfc sd ssc nm siv sf sr sl sdsl sg .
+	(
+	Vk.T.FormatToValue scfmt, Mappable n ) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.Khr.Swapchain.S scfmt ssc ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) (Replicate n siv) ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.Ppl.Graphics.G sg
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+		'(sl, '[AtomUbo sdsl], '[]) ->
+	HeteroParList.PL Vk.Frmbffr.F (Replicate n sf) -> IO Vk.Extent2d
+recreateSwapchainEtc' win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs = do
+	waitFramebufferSize win
+	Vk.Dvc.waitIdle dvc
+
+	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
+	ext <$ do
+		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
+			recreateImageViews dvc imgs scivs
+		recreateGraphicsPipeline dvc ext rp pllyt gpl
+		recreateFramebuffers' @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
