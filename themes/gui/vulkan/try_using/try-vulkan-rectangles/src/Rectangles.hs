@@ -269,9 +269,6 @@ initWindow v wgrp k = do
 	pure w
 	where wName = "Triangle"; wSize = (800, 600)
 
-type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
-type FramebufferResized = TVar Bool
-
 fromRight :: Either String a -> a
 fromRight (Left emsg) = error emsg
 fromRight (Right x) = x
@@ -378,11 +375,12 @@ run' inp outp vext ist phd qfis dv gq pq =
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 
 	let	dvs = (phd, qfis, dv, gq, pq, cp, cb)
-		scs = (sc, scivs, rp, fbs); ppls = (gpl, pllyt)
+		scs = (sc, scivs, rp, fbs)
 		vbs = (vb, ib); rgrps = (rbgrp, rmgrp); ubs = (ubds, ubm) in
 
 	createRectangleBuffer dvs rgrps () dummy >>
-	mainLoop' @n @siv @sf inp vext (w, fbrszd) sfc dvs sos scs ppls vbs rgrps ubs ext
+	mainLoop' @n @siv @sf inp dvs pllyt
+		(WinObjs (w, fbrszd) sfc vext gpl sos scs) vbs rgrps ubs ext
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -1300,14 +1298,16 @@ mainLoop' ::
 	forall n siv sf scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
 		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 .
 	(Mappable n, Vk.T.FormatToValue scfmt) =>
-	TChan Draw -> TVar Vk.Extent2d -> WinEnvs sw -> Vk.Khr.Sfc.S ssfc -> Devices sd sc scb ->
-	SyncObjects '(sias, srfs, siff) -> Swapchains scfmt ssc nm (Replicate n siv) sr (Replicate n sf) ->
-	Pipelines sg sl sdsl ->
+	TChan Draw -> Devices sd sc scb -> PipelineLayout sl sdsl ->
+
+	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
+		(Replicate n siv) sr (Replicate n sf) ->
+
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm () ->
 	UniformBuffers sds sdsl sm2 sb2 -> Vk.Extent2d -> IO ()
-mainLoop' inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
-	rgrps ubs ext0 = do
+mainLoop' inp dvs@(_, _, dvc, _, _, _, _) pll
+	(WinObjs we sfc vext pl iasrfsifs scs) vbs rgrps ubs ext0 = do
 	($ ext0) $ fix \loop ext -> do
 		atomically $ writeTVar vext ext
 		GlfwG.pollEvents
@@ -1316,7 +1316,7 @@ mainLoop' inp vext we sfc dvs@(_, _, dvc, _, _, _, _) iasrfsifs scs pls vbs
 		Vk.Dvc.waitIdle dvc
 		destroyRectangleBuffer rgrps ()
 		createRectangleBuffer dvs rgrps () rects' >>= \rb ->
-			runLoop' @n @siv @sf we sfc dvs iasrfsifs scs pls
+			runLoop' @n @siv @sf we sfc dvs iasrfsifs scs pl pll
 				vbs (rb, fromIntegral $ length rects') ubs
 				tm loop ext
 	Vk.Dvc.waitIdle dvc
@@ -1325,19 +1325,27 @@ type Devices sd scp scb = (
 	Vk.PhDvc.P, QueueFamilyIndices, Vk.Dvc.D sd,
 	Vk.Queue.Q, Vk.Queue.Q, Vk.CmdPool.C scp, Vk.CmdBffr.C scb )
 
+data WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm ss sr sfs = WinObjs
+	(WinEnvs sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
+	(Pipeline sg sl sdsl) (SyncObjects '(sias, srfs, siff))
+	(Swapchains scfmt ssc nm ss sr sfs)
+
+type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
+type FramebufferResized = TVar Bool
+
 type Swapchains scfmt ssc nm ss sr sfs = (
 	Vk.Khr.Swapchain.S scfmt ssc,
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss,
 	Vk.RndrPass.R sr, HeteroParList.PL Vk.Frmbffr.F sfs )
 
-type Pipelines sg sl sdsl = (
-	Vk.Ppl.Graphics.G sg
+type Pipeline sg sl sdsl = Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[AtomUbo sdsl], '[]),
-	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] )
+		'(sl, '[AtomUbo sdsl], '[])
+
+type PipelineLayout sl sdsl = Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[]
 
 type VertexBuffers sm sb nm sm' sb' nm' = (
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""],
@@ -1352,13 +1360,14 @@ runLoop' ::
 	(Mappable n, Vk.T.FormatToValue scfmt) =>
 	WinEnvs sw -> Vk.Khr.Sfc.S ssfc -> Devices sd scp scb ->
 	SyncObjects '(sias, srfs, siff) ->
-	Swapchains scfmt ssc nm (Replicate n siv) sr (Replicate n sf) -> Pipelines sg sl sdsl ->
+	Swapchains scfmt ssc nm (Replicate n siv) sr (Replicate n sf) ->
+	Pipeline sg sl sdsl -> PipelineLayout sl sdsl ->
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
 	UniformBuffers sds sdsl sm2 sb2 -> ViewProjection ->
 	(Vk.Extent2d -> IO ()) -> Vk.Extent2d -> IO ()
 runLoop' (win, fbrszd) sfc (phdvc, qfis, dvc, gq, pq, _cp, cb) iasrfsifs
-	(sc, scivs, rp, fbs) (gpl, pllyt) (vb, ib) rb (ubds, ubm) ubo loop ext = do
+	(sc, scivs, rp, fbs) gpl pllyt (vb, ib) rb (ubds, ubm) ubo loop ext = do
 	catchAndRecreate' @n @_ @siv @sf win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs ubo
 	cls <- GlfwG.Win.shouldClose win
