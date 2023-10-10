@@ -152,7 +152,7 @@ import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 rectangles :: IO ((Draw -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d)
 rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	vext <- atomically . newTVar $ Vk.Extent2d 0 0
+	vext <- atomically $ newTVar Nothing
 	_ <- forkIO . GlfwG.init error $ do
 		createInstance \ist ->
 			Vk.Dvc.group nil' \dvcgrp -> bool id (setupDebugMessenger ist)
@@ -175,13 +175,24 @@ rectangles = do
 							. chooseSwapSurfaceFormat
 							$ formats spp, dv, gq, pq, n )
 			getNum n' \(_ :: Proxy n) ->
-				Vk.T.formatToType fmt' \(_ :: Proxy fmt) -> run' @n @fmt
-					inp outp vext ist phd' qfis' dv' gq' pq'
+				Vk.T.formatToType fmt' \(_ :: Proxy fmt) -> do
+					vext' <- atomically do
+						v <- newTVar $ Vk.Extent2d 0 0
+						v <$ writeTVar vext (Just v)
+					run' @n @fmt inp outp
+						vext' ist phd' qfis' dv' gq' pq'
 		atomically $ writeTChan outp EventEnd
 	pure (	(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
-		readTVar vext )
+		waitAndRead vext )
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
+
+waitAndRead :: TVar (Maybe (TVar a)) -> STM a
+waitAndRead vmv = do
+	mv <- readTVar vmv
+	case mv of
+		Nothing -> retry
+		Just v -> readTVar v
 
 getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
 	Vk.T.FormatToValue fmt =>
