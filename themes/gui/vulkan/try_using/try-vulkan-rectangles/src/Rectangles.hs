@@ -333,13 +333,17 @@ run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd .
 run' inp outp vext ist phd qfis dv gq pq =
 	createCommandPool qfis dv \cp ->
 	createCommandBuffer dv cp \cb ->
+	let	dvs = (phd, qfis, dv, gq, pq, cp, cb) in
 	createPipelineLayout dv \dslyt pllyt ->
 
 	createVertexBuffer phd dv gq cp \vb ->
 	createIndexBuffer phd dv gq cp \ib ->
+	let	vbs = (vb, ib) in
+
 	createUniformBuffer phd dv \ub ubm ->
 	createDescriptorPool dv \dp ->
 	createDescriptorSet dv dp ub dslyt \ubds ->
+	let	ubs = (ubds, ubm) in
 
 	GlfwG.Win.group \wgrp ->
 	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
@@ -353,14 +357,18 @@ run' inp outp vext ist phd qfis dv gq pq =
 		\(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv k nm ivfmt) ->
 	Vk.Frmbffr.group dv nil'
 		\(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf k) ->
+	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
+	let	rgrps = (rbgrp, rmgrp) in
+	createRectangleBuffer dvs rgrps () dummy >>
 
 	initWindow True wgrp () >>= \w ->
-	atomically (newTVar False) >>= \fbrszd ->
-	GlfwG.Win.setFramebufferSizeCallback w
-		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
 	forkIO (glfwEvents w outp . foldr (uncurry M.insert) M.empty
 		$ ((, GlfwG.Ms.MouseButtonState'Released)
 		<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
+	atomically (newTVar False) >>= \fbrszd ->
+	GlfwG.Win.setFramebufferSizeCallback w
+		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
+
 	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () w >>= \(fromRight -> sfc) ->
 	createRenderPass @scfmt rpgrp () >>= \rp ->
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
@@ -372,15 +380,10 @@ run' inp outp vext ist phd qfis dv gq pq =
 	createImageViews' @n ivgrp () scis >>= \scivs ->
 	createFramebuffers' @n @siv fbgrp () ext rp scivs >>= \fbs ->
 
-	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
+	let	wos = WinObjs
+			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
 
-	let	dvs = (phd, qfis, dv, gq, pq, cp, cb)
-		scs = (sc, scivs, rp, fbs)
-		vbs = (vb, ib); rgrps = (rbgrp, rmgrp); ubs = (ubds, ubm) in
-
-	createRectangleBuffer dvs rgrps () dummy >>
-	mainLoop' @n @siv @sf inp dvs pllyt
-		(WinObjs (w, fbrszd) sfc vext gpl sos scs) vbs rgrps ubs ext
+	mainLoop' @n @siv @sf inp dvs pllyt wos vbs rgrps ubs ext
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -1306,8 +1309,8 @@ mainLoop' ::
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm () ->
 	UniformBuffers sds sdsl sm2 sb2 -> Vk.Extent2d -> IO ()
-mainLoop' inp dvs@(_, _, dvc, _, _, _, _) pll
-	(WinObjs we sfc vext pl iasrfsifs scs) vbs rgrps ubs ext0 = do
+mainLoop' inp dvs@(_, _, dvc, _, _, _, _) pll wos@(WinObjs _ _ vext _ _ _) vbs
+	rgrps ubs ext0 = do
 	($ ext0) $ fix \loop ext -> do
 		atomically $ writeTVar vext ext
 		GlfwG.pollEvents
@@ -1316,9 +1319,8 @@ mainLoop' inp dvs@(_, _, dvc, _, _, _, _) pll
 		Vk.Dvc.waitIdle dvc
 		destroyRectangleBuffer rgrps ()
 		createRectangleBuffer dvs rgrps () rects' >>= \rb ->
-			runLoop' @n @siv @sf we sfc dvs iasrfsifs scs pl pll
-				vbs (rb, fromIntegral $ length rects') ubs
-				tm loop ext
+			runLoop' @n @siv @sf dvs pll wos vbs
+				(rb, fromIntegral $ length rects') ubs tm loop
 	Vk.Dvc.waitIdle dvc
 
 type Devices sd scp scb = (
@@ -1358,16 +1360,19 @@ runLoop' ::
 	forall n siv sf scfmt sw ssfc sd scp scb sias srfs siff ssc nm sr
 		sg sl sdsl sm sb sm' sb' nm' smr sbr sds sm2 sb2 .
 	(Mappable n, Vk.T.FormatToValue scfmt) =>
-	WinEnvs sw -> Vk.Khr.Sfc.S ssfc -> Devices sd scp scb ->
-	SyncObjects '(sias, srfs, siff) ->
-	Swapchains scfmt ssc nm (Replicate n siv) sr (Replicate n sf) ->
-	Pipeline sg sl sdsl -> PipelineLayout sl sdsl ->
+	Devices sd scp scb -> PipelineLayout sl sdsl ->
+
+	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
+		(Replicate n siv) sr (Replicate n sf) ->
+
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
 	UniformBuffers sds sdsl sm2 sb2 -> ViewProjection ->
-	(Vk.Extent2d -> IO ()) -> Vk.Extent2d -> IO ()
-runLoop' (win, fbrszd) sfc (phdvc, qfis, dvc, gq, pq, _cp, cb) iasrfsifs
-	(sc, scivs, rp, fbs) gpl pllyt (vb, ib) rb (ubds, ubm) ubo loop ext = do
+	(Vk.Extent2d -> IO ()) -> IO ()
+runLoop' (phdvc, qfis, dvc, gq, pq, _cp, cb) pllyt
+	(WinObjs (win, fbrszd) sfc vext gpl iasrfsifs (sc, scivs, rp, fbs))
+	(vb, ib) rb (ubds, ubm) ubo loop = do
+	ext <- atomically $ readTVar vext
 	catchAndRecreate' @n @_ @siv @sf win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs ubo
 	cls <- GlfwG.Win.shouldClose win
