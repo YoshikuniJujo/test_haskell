@@ -1400,6 +1400,28 @@ type VertexBuffers sm sb nm sm' sb' nm' = (
 type UniformBuffers sds sdsl sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm2 sb2)
 
+type Recreates sw sl nm ssfc sr sg sdsl fmt ssc sis sfs = (
+	GlfwG.Win.W sw, Vk.Khr.Sfc.S ssfc,
+	TVar Vk.Extent2d,
+	Vk.RndrPass.R sr,
+	Vk.Ppl.Graphics.G sg
+		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
+			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
+			'(3, RectSize), '(4, RectColor),
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3) ]
+		'(sl, '[AtomUbo sdsl], '[]),
+	Vk.Khr.Swapchain.S fmt ssc,
+	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis,
+	HeteroParList.PL Vk.Frmbffr.F sfs )
+
+winObjsToRecreates ::
+	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sscivs sr sfs ->
+	Recreates sw sl nm ssfc sr sg sdsl scfmt ssc sscivs sfs
+winObjsToRecreates (WinObjs (w, _) sfc vex gpl iasrfsifs (sc, scivs, rp, fbs)) =
+	(w, sfc, vex, rp, gpl, sc, scivs, fbs)
+
 runLoop' ::
 	forall n siv sf scfmt sw ssfc sd scp scb sias srfs siff ssc nm sr
 		sg sl sdsl sm sb sm' sb' nm' smr sbr sds sm2 sb2 .
