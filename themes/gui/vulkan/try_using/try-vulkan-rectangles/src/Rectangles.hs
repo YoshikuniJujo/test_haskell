@@ -371,9 +371,9 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	createRectangleBuffer dvs rgrps () dummy >>
 
 	winObjs @n @scfmt outp ist phd dv qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
-		iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp >>= \(wos, ext) ->
+		iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp >>= \wos ->
 
-	mainLoop' @n @siv @sf inp dvs pllyt wos vbs rgrps ubs ext
+	mainLoop' @n @siv @sf inp dvs pllyt wos vbs rgrps ubs
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format)
 	si sd sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf . (
@@ -399,7 +399,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format)
 	Vk.Frmbffr.Group sd 'Nothing sf ((), Int) ->
 	IO (WinObjs
 		sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
-		(Replicate n siv) sr (Replicate n sf), Vk.Extent2d)
+		(Replicate n siv) sr (Replicate n sf))
 winObjs outp ist phd dv qfis pllyt vext_
 	wgrp sfcgrp rpgrp gpgrp iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp =
 	atomically (
@@ -427,7 +427,7 @@ winObjs outp ist phd dv qfis pllyt vext_
 
 	let	wos = WinObjs
 			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
-	pure (wos, ext)
+	pure wos
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -1352,11 +1352,10 @@ mainLoop' ::
 
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm () ->
-	UniformBuffers sds sdsl sm2 sb2 -> Vk.Extent2d -> IO ()
-mainLoop' inp dvs@(_, _, dvc, _, _, _, _) pll wos@(WinObjs _ _ vext _ _ _) vbs
-	rgrps ubs ext0 = do
-	($ ext0) $ fix \loop ext -> do
-		atomically $ writeTVar vext ext
+	UniformBuffers sds sdsl sm2 sb2 -> IO ()
+mainLoop' inp dvs@(_, _, dvc, _, _, _, _) pll wos@(WinObjs _ _ _ _ _ _) vbs
+	rgrps ubs = do
+	fix \loop -> do
 		GlfwG.pollEvents
 		(tm, rects) <- atomically $ readTChan inp
 		let	rects' = bool rects dummy $ null rects
@@ -1453,18 +1452,19 @@ runLoop' ::
 
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
-	UniformBuffers sds sdsl sm2 sb2 -> ViewProjection ->
-	(Vk.Extent2d -> IO ()) -> IO ()
+	UniformBuffers sds sdsl sm2 sb2 -> ViewProjection -> IO () -> IO ()
 runLoop' (phdvc, qfis, dvc, gq, pq, _cp, cb) pllyt
 	(WinObjs (win, fbrszd) sfc vext gpl iasrfsifs (sc, scivs, rp, fbs))
 	(vb, ib) rb (ubds, ubm) ubo loop = do
 	ext <- atomically $ readTVar vext
-	catchAndRecreate' @n @_ @siv @sf win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop
+	catchAndRecreate @n @_ @siv @sf win sfc vext phdvc qfis dvc sc scivs rp pllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs ubo
 	cls <- GlfwG.Win.shouldClose win
-	if cls then (pure ()) else checkFlag fbrszd >>= bool (loop ext)
-		(loop =<< recreateSwapchainEtc' @n @siv @sf
-			win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs)
+	if cls then (pure ()) else checkFlag fbrszd >>= bool loop do
+		ext' <- recreateSwapchainEtc' @n @siv @sf
+			win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs
+		atomically $ writeTVar vext ext'
+		loop
 
 drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
@@ -1519,10 +1519,10 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreate' ::
+catchAndRecreate ::
 	forall n scfmt siv sf sw ssfc sd nm sr ssc sl sdsl sg .
 	(Mappable n, Vk.T.FormatToValue scfmt) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> TVar Vk.Extent2d ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) (Replicate n siv) ->
@@ -1534,15 +1534,18 @@ catchAndRecreate' ::
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F (Replicate n sf) ->
-	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate' win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs loop act =
+	IO () -> IO () -> IO ()
+catchAndRecreate win sfc vext phdvc qfis dvc sc scivs rp pllyt gpl fbs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapchainEtc' @n @siv @sf
-		win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs
+	\_ -> do
+		ext <- recreateSwapchainEtc' @n @siv @sf
+			win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs
+		atomically $ writeTVar vext ext
+		loop
 
 recreateSwapchainEtc' :: forall
 	n siv sf scfmt sw ssfc sd ssc nm sr sl sdsl sg .
