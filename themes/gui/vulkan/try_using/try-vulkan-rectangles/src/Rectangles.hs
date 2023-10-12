@@ -1419,8 +1419,28 @@ type Recreates sw sl nm ssfc sr sg sdsl fmt ssc sis sfs = (
 winObjsToRecreates ::
 	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sscivs sr sfs ->
 	Recreates sw sl nm ssfc sr sg sdsl scfmt ssc sscivs sfs
-winObjsToRecreates (WinObjs (w, _) sfc vex gpl iasrfsifs (sc, scivs, rp, fbs)) =
+winObjsToRecreates (WinObjs (w, _) sfc vex gpl _iasrfsifs (sc, scivs, rp, fbs)) =
 	(w, sfc, vex, rp, gpl, sc, scivs, fbs)
+
+type Draws sl sr sg sdsl sias srfs siff fmt ssc sfs = (
+	TVar Vk.Extent2d, Vk.RndrPass.R sr,
+	Vk.Ppl.Graphics.G sg
+		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
+			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
+			'(3, RectSize), '(4, RectColor),
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3) ]
+		'(sl, '[AtomUbo sdsl], '[]),
+	SyncObjects '(sias, srfs, siff),
+	Vk.Khr.Swapchain.S fmt ssc,
+	HeteroParList.PL Vk.Frmbffr.F sfs )
+
+winObjsToDraws ::
+	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sscivs sr sfs ->
+	Draws sl sr sg sdsl sias srfs siff scfmt ssc sfs
+winObjsToDraws (WinObjs _ _sfc vex gpl iasrfsifs (sc, _scivs, rp, fbs)) =
+	(vex, rp, gpl, iasrfsifs, sc, fbs)
 
 runLoop' ::
 	forall n siv sf scfmt sw ssfc sd scp scb sias srfs siff ssc nm sr
