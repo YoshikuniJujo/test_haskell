@@ -1456,9 +1456,8 @@ runLoop' ::
 runLoop' (phdvc, qfis, dvc, gq, pq, _cp, cb) pllyt
 	wos@(WinObjs (win, fbrszd) _ vext gpl iasrfsifs (sc, _, rp, fbs))
 	(vb, ib) rb (ubds, ubm) ubo loop = do
-	ext <- atomically $ readTVar vext
 	catchAndRecreate @n @_ @siv @sf phdvc qfis dvc pllyt rcs loop
-		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs ubo
+		$ drawFrame dvc gq pq pllyt vext rp gpl iasrfsifs sc fbs vb rb ib ubm ubds cb ubo
 	cls <- GlfwG.Win.shouldClose win
 	if cls then (pure ()) else checkFlag fbrszd >>= bool loop do
 		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt rcs
@@ -1467,24 +1466,32 @@ runLoop' (phdvc, qfis, dvc, gq, pq, _cp, cb) pllyt
 	rcs = winObjsToRecreates wos
 
 drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds .
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
-	Vk.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	TVar Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
+	SyncObjects '(sias, srfs, siff) ->
+	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> ViewProjection -> IO ()
-drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ias rfs iff) ubo = do
+	Vk.CmdBffr.C scb ->
+	ViewProjection -> IO ()
+drawFrame dvc gq pq
+	pllyt
+	vext rp gpl (SyncObjects ias rfs iff) sc fbs
+	vb rb ib ubm ubds cb
+	ubo = do
 	let	siff = HeteroParList.Singleton iff
+	ext <- atomically $ readTVar vext
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
@@ -1508,6 +1515,8 @@ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb (SyncObjects ia
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
+
+--	(vex, rp, gpl, iasrfsifs, sc, fbs)
 
 updateUniformBuffer' :: Vk.Dvc.D sd ->
 	UniformBufferMemory sm2 sb2 -> ViewProjection -> IO ()
