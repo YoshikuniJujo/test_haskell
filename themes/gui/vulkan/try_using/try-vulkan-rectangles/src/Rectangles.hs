@@ -1399,27 +1399,27 @@ type VertexBuffers sm sb nm sm' sb' nm' = (
 type UniformBuffers sds sdsl sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm2 sb2)
 
-type Recreates sw sl nm ssfc sr sg sdsl fmt ssc sis sfs = (
-	GlfwG.Win.W sw, Vk.Khr.Sfc.S ssfc,
-	TVar Vk.Extent2d,
-	Vk.RndrPass.R sr,
-	Vk.Ppl.Graphics.G sg
+data Recreates sw sl nm ssfc sr sg sdsl fmt ssc sis sfs = Recreates
+	(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc)
+	(TVar Vk.Extent2d)
+	(Vk.RndrPass.R sr)
+	(Vk.Ppl.Graphics.G sg
 		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
 			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[AtomUbo sdsl], '[]),
-	Vk.Khr.Swapchain.S fmt ssc,
-	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis,
-	HeteroParList.PL Vk.Frmbffr.F sfs )
+		'(sl, '[AtomUbo sdsl], '[]))
+	(Vk.Khr.Swapchain.S fmt ssc)
+	(HeteroParList.PL (Vk.ImgVw.I nm fmt) sis)
+	(HeteroParList.PL Vk.Frmbffr.F sfs)
 
 winObjsToRecreates ::
 	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sscivs sr sfs ->
 	Recreates sw sl nm ssfc sr sg sdsl scfmt ssc sscivs sfs
 winObjsToRecreates (WinObjs (w, _) sfc vex gpl _iasrfsifs (sc, scivs, rp, fbs)) =
-	(w, sfc, vex, rp, gpl, sc, scivs, fbs)
+	Recreates w sfc vex rp gpl sc scivs fbs
 
 type Draws sl sr sg sdsl sias srfs siff fmt ssc sfs = (
 	TVar Vk.Extent2d, Vk.RndrPass.R sr,
@@ -1454,17 +1454,17 @@ runLoop' ::
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
 	UniformBuffers sds sdsl sm2 sb2 -> ViewProjection -> IO () -> IO ()
 runLoop' (phdvc, qfis, dvc, gq, pq, _cp, cb) pllyt
-	(WinObjs (win, fbrszd) sfc vext gpl iasrfsifs (sc, scivs, rp, fbs))
+	wos@(WinObjs (win, fbrszd) _ vext gpl iasrfsifs (sc, _, rp, fbs))
 	(vb, ib) rb (ubds, ubm) ubo loop = do
 	ext <- atomically $ readTVar vext
-	catchAndRecreate @n @_ @siv @sf win sfc vext phdvc qfis dvc sc scivs rp pllyt gpl fbs loop
+	catchAndRecreate @n @_ @siv @sf phdvc qfis dvc pllyt rcs loop
 		$ drawFrame dvc gq pq sc ext rp pllyt gpl fbs vb rb ib ubm ubds cb iasrfsifs ubo
 	cls <- GlfwG.Win.shouldClose win
 	if cls then (pure ()) else checkFlag fbrszd >>= bool loop do
-		ext' <- recreateSwapchainEtc' @n @siv @sf
-			win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs
-		atomically $ writeTVar vext ext'
+		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt rcs
 		loop
+	where
+	rcs = winObjsToRecreates wos
 
 drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
@@ -1522,57 +1522,56 @@ catchAndSerialize =
 catchAndRecreate ::
 	forall n scfmt siv sf sw ssfc sd nm sr ssc sl sdsl sg .
 	(Mappable n, Vk.T.FormatToValue scfmt) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> TVar Vk.Extent2d ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S scfmt ssc ->
-	HeteroParList.PL (Vk.ImgVw.I nm scfmt) (Replicate n siv) ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
-	Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[AtomUbo sdsl], '[]) ->
-	HeteroParList.PL Vk.Frmbffr.F (Replicate n sf) ->
+	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Recreates sw sl nm ssfc sr sg sdsl scfmt
+		ssc (Replicate n siv) (Replicate n sf) ->
 	IO () -> IO () -> IO ()
-catchAndRecreate win sfc vext phdvc qfis dvc sc scivs rp pllyt gpl fbs loop act =
-	catchJust
+catchAndRecreate phdvc qfis dvc pllyt rcs loop act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
 	\_ -> do
-		ext <- recreateSwapchainEtc' @n @siv @sf
-			win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs
-		atomically $ writeTVar vext ext
+		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt rcs
 		loop
 
-recreateSwapchainEtc' :: forall
+recreateSwapchainEtc :: forall
 	n siv sf scfmt sw ssfc sd ssc nm sr sl sdsl sg .
 	(
 	Vk.T.FormatToValue scfmt, Mappable n ) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S scfmt ssc ->
-	HeteroParList.PL (Vk.ImgVw.I nm scfmt) (Replicate n siv) ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+
+	Recreates sw sl nm ssfc sr sg sdsl scfmt ssc (Replicate n siv) (Replicate n sf) ->
+
+{-
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> TVar Vk.Extent2d ->
+	Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
-	HeteroParList.PL Vk.Frmbffr.F (Replicate n sf) -> IO Vk.Extent2d
-recreateSwapchainEtc' win sfc phdvc qfis dvc sc scivs rp pllyt gpl fbs = do
+	Vk.Khr.Swapchain.S scfmt ssc ->
+	HeteroParList.PL (Vk.ImgVw.I nm scfmt) (Replicate n siv) ->
+	HeteroParList.PL Vk.Frmbffr.F (Replicate n sf) ->
+	-}
+
+	IO ()
+recreateSwapchainEtc
+	phdvc qfis dvc pllyt
+	(Recreates win sfc vex rp gpl sc scivs fbs) = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
 	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
-			recreateImageViews dvc imgs scivs
-		recreateGraphicsPipeline dvc ext rp pllyt gpl
-		recreateFramebuffers' @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
+	atomically $ writeTVar vex ext
+	Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
+		recreateImageViews dvc imgs scivs
+	recreateGraphicsPipeline dvc ext rp pllyt gpl
+	recreateFramebuffers' @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
