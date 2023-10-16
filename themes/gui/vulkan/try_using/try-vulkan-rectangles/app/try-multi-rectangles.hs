@@ -37,18 +37,20 @@ main = run_ action
 
 action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
-action f = liftIO $ untilEnd (get f) =<< rectangles
+action f = liftIO $ untilEnd (get f) =<< rectangles @Int
 
-untilEnd :: Bool -> ((Draw -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d) -> IO ()
+untilEnd :: Bool -> ((Command -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d) -> IO ()
 untilEnd f ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
+	atomically $ inp OpenWindow
+	atomically $ inp OpenWindow
 	($ instances) $ fix \loop rs -> do
 		threadDelay 10000
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
 			e <- ext
-			inp (bool (uniformBufferObject e) def f, rs tm)
+			inp $ Draw (bool (uniformBufferObject e) def f) (rs tm)
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop rs
