@@ -411,10 +411,6 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 		(Replicate n siv) sr (Replicate n sf))
 winObjs outp ist phd dv qfis pllyt vext_
 	wgrp sfcgrp rpgrp gpgrp iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k =
-	atomically (
-		newTVar (Vk.Extent2d 0 0) >>= \v ->
-		v <$ writeTVar vext_ (Just v) ) >>= \vext ->
-
 	initWindow True wgrp k >>= \w ->
 	forkIO (glfwEvents w outp . foldr (uncurry M.insert) M.empty
 		$ ((, GlfwG.Ms.MouseButtonState'Released)
@@ -426,6 +422,12 @@ winObjs outp ist phd dv qfis pllyt vext_
 	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp k w >>= \(fromRight -> sfc) ->
 	createRenderPass @scfmt rpgrp k >>= \rp ->
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
+
+	atomically (
+		newTVar (Vk.Extent2d 0 0) >>= \v ->
+		writeTVar v ext >>
+		v <$ writeTVar vext_ (Just v) ) >>= \vext ->
+
 	createGraphicsPipeline gpgrp k ext rp pllyt >>= \gpl ->
 	createSyncObjects iasgrp rfsgrp iffgrp k >>= \sos ->
 	createSwapchain @scfmt scgrp k sfc spp ext qfis >>= \(sc, _) ->
