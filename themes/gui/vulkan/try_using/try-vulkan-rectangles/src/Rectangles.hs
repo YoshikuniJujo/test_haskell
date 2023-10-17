@@ -211,7 +211,7 @@ getNum (_ : xs) f =
 	getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
 data Command k
-	= Draw [(k, ViewProjection, [Rectangle])]
+	= Draw (M.Map k (ViewProjection, [Rectangle]))
 	| OpenWindow
 	deriving Show
 
@@ -379,7 +379,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp in
 
 	atomically (newTVar zero') >>= \vwid ->
-	atomically (newTVar []) >>= \vws ->
+	atomically (newTVar M.empty) >>= \vws ->
 
 	mainLoop' @n @siv @sf inp dvs pllyt crwos vbs rgrps ubs vwid vws
 
@@ -1400,25 +1400,25 @@ mainLoop' ::
 	RectGroups sd srm srb nm k ->
 	UniformBuffers sds sdsl sm2 sb2 ->
 	TVar k ->
-	TVar [WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
-		(Replicate n siv) sr (Replicate n sf)] ->
+	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
+		(Replicate n siv) sr (Replicate n sf))) ->
 	IO ()
 mainLoop' inp dvs pll crwos vbs rgrps ubs vwid vws = do
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
 				i <$ modifyTVar vwid succ'
-			atomically . modifyTVar vws . (:) =<< crwos wi
+			atomically . modifyTVar vws . M.insert wi =<< crwos wi
 	fix \loop -> do
 		GlfwG.pollEvents
 		atomically (readTChan inp) >>= \case
-			Draw [d] -> do
+			Draw ds -> do
 				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy d) ubs loop
+				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
 			OpenWindow -> crwos' >> loop
 
-rectsToDummy :: (a, b, [Rectangle]) -> (a, b, [Rectangle])
-rectsToDummy (k, tm, rects) = (k, tm, bool rects dummy $ null rects)
+rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])
+rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
 
 type Devices sd scp scb = (
 	Vk.PhDvc.P, QueueFamilyIndices, Vk.Dvc.D sd,
@@ -1506,30 +1506,36 @@ runLoop' :: forall n (siv :: Type) (sf :: Type)
 	smrct sbrct nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k .
 	(Mappable n, Vk.T.FormatToValue scfmt, Ord k) =>
 	Devices sd sc scb -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
-	[WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nmrct
-		(Replicate n siv) sr (Replicate n sf)] ->
+	(M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nmrct
+		(Replicate n siv) sr (Replicate n sf))) ->
 	(	Vk.Bffr.Binded sm' sb' nmrct '[VObj.List 256 Vertex ""],
 		Vk.Bffr.Binded sm2 sb2 nm2 '[VObj.List 256 Word16 ""] ) ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 Rectangle ""],
 		Vk.Mem.Group sd 'Nothing smrct k '[
 			'(sbrct, 'Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])] ) ->
-	(k, ViewProjection, [Rectangle]) ->
+	M.Map k (ViewProjection, [Rectangle]) ->
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm sb) ->
 	IO () -> IO ()
-runLoop' dvs pll ws vbs rgrps (k, tm, rects') ubs loop = do
+runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
 	let	(phdvc, qfis, dvc, gq, pq, _cp, cb) = dvs
 		(vb, ib) = vbs
 		(ubds, ubm) = ubs
-	destroyRectangleBuffer rgrps k
-	createRectangleBuffer dvs rgrps k rects' >>= \rb -> do
+	for_ (M.toList ws) \(k', wos) -> do
+		let	(tm, rects') = lookupRects rectss k'
+		destroyRectangleBuffer rgrps k'
+		rb <- createRectangleBuffer dvs rgrps k' rects'
 		let	rb' = (rb, fromIntegral $ length rects')
+		catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
+	cls <- or <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+	if cls then (pure ()) else do
 		for_ ws \wos ->
-			catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
-		cls <- or <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
-		if cls then (pure ()) else do
-			for_ ws \wos ->
-				recreateSwapchainEtcIfNeed @n @siv @sf phdvc qfis dvc pll wos
-			loop
+			recreateSwapchainEtcIfNeed @n @siv @sf phdvc qfis dvc pll wos
+		loop
+
+lookupRects :: Ord k =>
+	M.Map k (ViewProjection, [Rectangle]) -> k ->
+	(ViewProjection, [Rectangle])
+lookupRects rs = fromMaybe (viewProjectionIdentity, dummy) . (`M.lookup` rs)
 
 catchAndDraw ::
 	forall n siv sf
@@ -1605,8 +1611,6 @@ drawFrame dvc gq pq
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
-
---	(vex, rp, gpl, iasrfsifs, sc, fbs)
 
 updateUniformBuffer' :: Vk.Dvc.D sd ->
 	UniformBufferMemory sm2 sb2 -> ViewProjection -> IO ()
@@ -1754,6 +1758,11 @@ data ViewProjection = ViewProjection {
 	viewProjectionProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
+viewProjectionIdentity :: ViewProjection
+viewProjectionIdentity = ViewProjection {
+	viewProjectionView = Cglm.mat4Identity,
+	viewProjectionProj = Cglm.mat4Identity }
+
 instance Storable ViewProjection where
 	sizeOf = StrG.gSizeOf
 	alignment = StrG.gAlignment
@@ -1814,6 +1823,7 @@ void
 main()
 {
 	outColor = fragColor;
+	if (outColor.w < 1) { discard; }
 }
 
 |]

@@ -32,6 +32,8 @@ import Control.Monad.Trans
 
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
+import Data.Map qualified as M
+
 main :: IO ()
 main = run_ action
 
@@ -49,8 +51,12 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
-			e <- ext 0
-			inp $ Draw [(0, (bool (uniformBufferObject e) def f), (rs tm))]
+			e0 <- ext 0
+			e1 <- ext 1
+			inp . Draw $ M.fromList [
+				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
+				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
+				]
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop rs
