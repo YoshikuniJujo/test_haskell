@@ -183,9 +183,16 @@ rectangles = do
 						ist phd' qfis' dv' gq' pq'
 		atomically $ writeTChan outp EventEnd
 	pure (	(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
-		waitAndRead vext )
+		readTVarOr (Vk.Extent2d 0 0) vext )
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
+
+readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
+readTVarOr d mp k = do
+	mv <- (M.lookup k) <$> readTVar mp
+	case mv of
+		Nothing -> pure d
+		Just v -> readTVar v
 
 waitAndRead :: Ord k => TVar (M.Map k (TVar a)) -> k -> STM a
 waitAndRead vmv k = do
