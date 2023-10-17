@@ -67,8 +67,11 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 				loop instances2
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition k x y) ->
+			Just (EventCursorPosition _k _x _y) ->
 --				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
+				loop rs
+			Just (EventOpenWindow k) -> do
+				putStrLn $ "open window: " ++ show k
 				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection

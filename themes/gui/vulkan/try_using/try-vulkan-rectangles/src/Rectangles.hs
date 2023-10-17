@@ -220,6 +220,7 @@ data Event k
 	| EventMouseButtonDown k GlfwG.Ms.MouseButton
 	| EventMouseButtonUp k GlfwG.Ms.MouseButton
 	| EventCursorPosition k Double Double
+	| EventOpenWindow k
 	deriving Show
 
 enableValidationLayers :: Bool
@@ -382,7 +383,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	atomically (newTVar zero') >>= \vwid ->
 	atomically (newTVar M.empty) >>= \vws ->
 
-	mainLoop' @n @siv @sf inp dvs pllyt crwos vbs rgrps ubs vwid vws
+	mainLoop' @n @siv @sf inp outp dvs pllyt crwos vbs rgrps ubs vwid vws
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
@@ -1392,7 +1393,7 @@ mainLoop' ::
 	forall n siv sf scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
 		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k .
 	(Mappable n, Vk.T.FormatToValue scfmt, Ord k, Succable k) =>
-	TChan (Command k) -> Devices sd sc scb -> PipelineLayout sl sdsl ->
+	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl ->
 
 	(k -> IO (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
@@ -1404,19 +1405,19 @@ mainLoop' ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	IO ()
-mainLoop' inp dvs pll crwos vbs rgrps ubs vwid vws = do
+mainLoop' inp outp dvs pll crwos vbs rgrps ubs vwid vws = do
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
 				i <$ modifyTVar vwid succ'
-			atomically . modifyTVar vws . M.insert wi =<< crwos wi
+			wi <$ (atomically . modifyTVar vws . M.insert wi =<< crwos wi)
 	fix \loop -> do
 		GlfwG.pollEvents
 		atomically (readTChan inp) >>= \case
 			Draw ds -> do
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
-			OpenWindow -> crwos' >> loop
+			OpenWindow -> crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
 
 rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])
 rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
