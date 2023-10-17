@@ -151,7 +151,7 @@ import Graphics.UI.GlfwG.Window as GlfwG.Win
 import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 rectangles :: forall k . (Ord k, Succable k) =>
-	IO ((Command k -> STM (), (STM Bool, STM Event)), k -> STM Vk.Extent2d)
+	IO ((Command k -> STM (), (STM Bool, STM (Event k))), k -> STM Vk.Extent2d)
 rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar M.empty
@@ -215,11 +215,11 @@ data Command k
 	| OpenWindow
 	deriving Show
 
-data Event
+data Event k
 	= EventEnd
-	| EventMouseButtonDown GlfwG.Ms.MouseButton
-	| EventMouseButtonUp GlfwG.Ms.MouseButton
-	| EventCursorPosition Double Double
+	| EventMouseButtonDown k GlfwG.Ms.MouseButton
+	| EventMouseButtonUp k GlfwG.Ms.MouseButton
+	| EventCursorPosition k Double Double
 	deriving Show
 
 enableValidationLayers :: Bool
@@ -235,14 +235,14 @@ getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
 
-glfwEvents :: GlfwG.Win.W sw -> TChan Event -> MouseButtonStateDict -> IO ()
-glfwEvents w outp = fix \loop mb1p -> do
+glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> MouseButtonStateDict -> IO ()
+glfwEvents k w outp = fix \loop mb1p -> do
 	threadDelay 10000
 	mb1 <- getMouseButtons w
-	sendMouseButtonDown mb1p mb1 outp `mapM_` mouseButtonAll
-	sendMouseButtonUp mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonDown k mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonUp k mb1p mb1 outp `mapM_` mouseButtonAll
 	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1
-	then atomically . writeTChan outp . uncurry EventCursorPosition
+	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
 	loop mb1
@@ -251,24 +251,25 @@ mouseButtonAll :: [GlfwG.Ms.MouseButton]
 mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 sendMouseButtonDown, sendMouseButtonUp ::
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
+	k -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
 	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown = sendMouseButton EventMouseButtonDown
+sendMouseButtonDown k = sendMouseButton k EventMouseButtonDown
 	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
 
-sendMouseButtonUp = sendMouseButton EventMouseButtonUp
+sendMouseButtonUp k = sendMouseButton k EventMouseButtonUp
 	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
 
 sendMouseButton ::
-	(GlfwG.Ms.MouseButton -> Event) ->
+	k ->
+	(k -> GlfwG.Ms.MouseButton -> Event k) ->
 	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
 	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButton ev pst st pbss bss outp b =
+sendMouseButton k ev pst st pbss bss outp b =
 	case (pbss M.! b == pst, bss M.! b == st) of
 		(True, True) -> do
-			print $ ev b
-			atomically . writeTChan outp $ ev b
+--			print $ ev k b
+			atomically . writeTChan outp $ ev k b
 		_ -> pure ()
 
 withWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
@@ -342,7 +343,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 
 run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
 	Mappable n, Vk.T.FormatToValue scfmt, Ord k, Succable k ) =>
-	TChan (Command k) -> TChan Event -> TVar (M.Map k (TVar Vk.Extent2d)) ->
+	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run' inp outp vext_ ist phd qfis dv gq pq =
@@ -387,7 +388,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
 	smrct sbrct nmrct . (
 	Mappable n, Vk.T.FormatToValue scfmt, Ord k ) =>
-	TChan Event -> Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	TChan (Event k) -> Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	TVar (M.Map k (TVar Vk.Extent2d)) -> Group sw k ->
@@ -416,7 +417,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 winObjs outp ist phd dv gq cp qfis pllyt vext_
 	wgrp sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k =
 	initWindow True wgrp k >>= \w ->
-	forkIO (glfwEvents w outp . foldr (uncurry M.insert) M.empty
+	forkIO (glfwEvents k w outp . foldr (uncurry M.insert) M.empty
 		$ ((, GlfwG.Ms.MouseButtonState'Released)
 		<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
 	atomically (newTVar False) >>= \fbrszd ->

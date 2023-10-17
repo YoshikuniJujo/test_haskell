@@ -41,7 +41,7 @@ action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
 action f = liftIO $ untilEnd (get f) =<< rectangles
 
-untilEnd :: Bool -> ((Command Int -> STM (), (STM Bool, STM Event)), Int -> STM Vk.Extent2d) -> IO ()
+untilEnd :: Bool -> ((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
 untilEnd f ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	atomically $ inp OpenWindow
@@ -61,13 +61,15 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
-			Just (EventMouseButtonDown GlfwG.Ms.MouseButton'1) ->
+			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
 				loop instances
-			Just (EventMouseButtonDown GlfwG.Ms.MouseButton'2) ->
+			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
 				loop instances2
-			Just (EventMouseButtonDown _) -> loop rs
-			Just (EventMouseButtonUp _) -> loop rs
-			Just (EventCursorPosition _x _y) -> loop rs
+			Just (EventMouseButtonDown _ _) -> loop rs
+			Just (EventMouseButtonUp _ _) -> loop rs
+			Just (EventCursorPosition k x y) ->
+--				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
+				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {
