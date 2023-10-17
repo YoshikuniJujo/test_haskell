@@ -41,11 +41,13 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+- optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 76798572f99859cd49eba61da4794899f46fa081
+  commit: bc101c4cf1915298744813860b610fbee58ea9d1
   subdirs:
   - themes/mfrp/try-moffy
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
+  - themes/gui/vulkan/try-glfw-group
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
   - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
