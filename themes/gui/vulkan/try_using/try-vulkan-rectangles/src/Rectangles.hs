@@ -151,10 +151,10 @@ import Graphics.UI.GlfwG.Window as GlfwG.Win
 import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 rectangles :: forall k . (Ord k, Succable k) =>
-	IO ((Command -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d)
+	IO ((Command -> STM (), (STM Bool, STM Event)), k -> STM Vk.Extent2d)
 rectangles = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	vext <- atomically $ newTVar Nothing
+	vext <- atomically $ newTVar M.empty
 	_ <- forkIO . GlfwG.init error $ do
 		createInstance \ist ->
 			Vk.Dvc.group nil' \dvcgrp -> bool id (setupDebugMessenger ist)
@@ -187,9 +187,9 @@ rectangles = do
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
 
-waitAndRead :: TVar (Maybe (TVar a)) -> STM a
-waitAndRead vmv = do
-	mv <- readTVar vmv
+waitAndRead :: Ord k => TVar (M.Map k (TVar a)) -> k -> STM a
+waitAndRead vmv k = do
+	mv <- (M.lookup k) <$> readTVar vmv
 	case mv of
 		Nothing -> retry
 		Just v -> readTVar v
@@ -342,7 +342,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 
 run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
 	Mappable n, Vk.T.FormatToValue scfmt, Ord k, Succable k ) =>
-	TChan Command -> TChan Event -> TVar (Maybe (TVar Vk.Extent2d)) ->
+	TChan Command -> TChan Event -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
 run' inp outp vext_ ist phd qfis dv gq pq =
@@ -386,10 +386,10 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf . (
-	Mappable n, Vk.T.FormatToValue scfmt, Ord k ) =>
+	Mappable n, Vk.T.FormatToValue scfmt, Ord k, Succable k ) =>
 	TChan Event -> Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
-	TVar (Maybe (TVar Vk.Extent2d)) -> Group sw k ->
+	TVar (M.Map k (TVar Vk.Extent2d)) -> Group sw k ->
 	Vk.Khr.Sfc.Group 'Nothing ssfc k ->
 	Vk.RndrPass.Group sd 'Nothing sr k ->
 	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
@@ -426,7 +426,7 @@ winObjs outp ist phd dv qfis pllyt vext_
 	atomically (
 		newTVar (Vk.Extent2d 0 0) >>= \v ->
 		writeTVar v ext >>
-		v <$ writeTVar vext_ (Just v) ) >>= \vext ->
+		v <$ modifyTVar vext_ (M.insert zero' v) ) >>= \vext ->
 
 	createGraphicsPipeline gpgrp k ext rp pllyt >>= \gpl ->
 	createSyncObjects iasgrp rfsgrp iffgrp k >>= \sos ->
