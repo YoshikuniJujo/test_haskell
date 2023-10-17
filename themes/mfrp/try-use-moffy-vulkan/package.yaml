@@ -22,9 +22,18 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - stm
+- mtl
+- containers
+- optparse-declarative
+- data-default
+- time
 - type-flip
+- ranged-list
 - try-moffy
+- try-gpu-vulkan
+- try-gpu-vulkan-cglm
 - try-vulkan-rectangles
+- try-glfw-group
 - x-keysym
 
 ghc-options:
@@ -53,6 +62,15 @@ executables:
     - try-use-moffy-vulkan
   try-hello-windows:
     main:                try-hello-windows.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-use-moffy-vulkan
+  try-multi-rectangles:
+    main:                try-multi-rectangles.hs
     source-dirs:         app
     ghc-options:
     - -threaded
