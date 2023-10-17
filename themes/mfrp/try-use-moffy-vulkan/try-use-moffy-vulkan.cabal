@@ -33,8 +33,29 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , stm
     , try-moffy
     , try-vulkan-rectangles
+    , type-flip
+    , x-keysym
+  default-language: Haskell2010
+
+executable try-hello-windows
+  main-is: try-hello-windows.hs
+  other-modules:
+      Main
+      Paths_try_use_moffy_vulkan
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , stm
+    , try-moffy
+    , try-use-moffy-vulkan
+    , try-vulkan-rectangles
+    , type-flip
+    , x-keysym
   default-language: Haskell2010
 
 executable try-use-moffy-vulkan-exe
@@ -46,9 +67,12 @@ executable try-use-moffy-vulkan-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , stm
     , try-moffy
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
+    , type-flip
+    , x-keysym
   default-language: Haskell2010
 
 test-suite try-use-moffy-vulkan-test
@@ -61,7 +85,10 @@ test-suite try-use-moffy-vulkan-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , stm
     , try-moffy
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
+    , type-flip
+    , x-keysym
   default-language: Haskell2010

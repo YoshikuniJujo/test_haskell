@@ -21,8 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
+- type-flip
 - try-moffy
 - try-vulkan-rectangles
+- x-keysym
 
 ghc-options:
 - -Wall
@@ -41,6 +44,15 @@ library:
 executables:
   try-use-moffy-vulkan-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-use-moffy-vulkan
+  try-hello-windows:
+    main:                try-hello-windows.hs
     source-dirs:         app
     ghc-options:
     - -threaded
