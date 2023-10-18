@@ -21,21 +21,22 @@ import Gpu.Vulkan.AllocationCallbacks.Internal qualified as AllocationCallbacks
 import Gpu.Vulkan.Khr.Surface.Type
 import Gpu.Vulkan.Khr.Surface.Middle qualified as M
 
-data Group ma s k = Group (TPMaybe.M (U2 AllocationCallbacks.A) ma)
+data Group si ma s k = Group (Instance.I si)
+	(TPMaybe.M (U2 AllocationCallbacks.A) ma)
 	TSem (TVar (Map.Map k (S s)))
 
 group :: AllocationCallbacks.ToMiddle ma =>
 	Instance.I si -> TPMaybe.M (U2 AllocationCallbacks.A) ma ->
-	(forall s . Group ma s k -> IO a) -> IO a
-group (Instance.I mi) mac@(AllocationCallbacks.toMiddle -> ma) f = do
+	(forall s . Group si ma s k -> IO a) -> IO a
+group i@(Instance.I mi) mac@(AllocationCallbacks.toMiddle -> ma) f = do
 	(sem, m) <- atomically $ (,) <$> newTSem 1 <*> newTVar Map.empty
-	rtn <- f $ Group mac sem m
+	rtn <- f $ Group i mac sem m
 	((\(S s) -> M.destroy mi s ma) `mapM_`) =<< atomically (readTVar m)
 	pure rtn
 
 destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Instance.I si -> Group ma s k -> k -> IO (Either String ())
-destroy (Instance.I mi) (Group (AllocationCallbacks.toMiddle -> ma) sem ss) k =
+	Group si ma s k -> k -> IO (Either String ())
+destroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss) k =
 	do	mbs <- atomically do
 			mx <- Map.lookup k <$> readTVar ss
 			case mx of
@@ -51,5 +52,5 @@ destroy (Instance.I mi) (Group (AllocationCallbacks.toMiddle -> ma) sem ss) k =
 					signalTSem sem
 					pure $ Right ()
 
-lookup :: Ord k => Group ma s k -> k -> IO (Maybe (S s))
-lookup (Group _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
+lookup :: Ord k => Group si ma s k -> k -> IO (Maybe (S s))
+lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
