@@ -46,6 +46,7 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	atomically $ inp OpenWindow
 	atomically $ inp OpenWindow
+	atomically $ inp OpenWindow
 	($ instances) $ fix \loop rs -> do
 		threadDelay 10000
 		now <- getCurrentTime
