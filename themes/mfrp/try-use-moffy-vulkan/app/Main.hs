@@ -17,7 +17,7 @@ import Rectangles
 import Control.Monad.Fix
 import Control.Monad.Trans
 import Control.Concurrent
-import Control.Concurrent.STM
+import Control.Concurrent.STM hiding (retry)
 import Data.Default
 import Data.List.Length
 import Data.Map qualified as M
@@ -31,7 +31,12 @@ import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Window
 import Data.OneOrMore (project, pattern Singleton, expand)
--- import Data.OneOrMoreApp (pattern Singleton, expand)
+import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
+
+import ThreeWindows
+import Control.Moffy.Handle (retry)
+import Control.Moffy.Handle.TChan
+import Control.Moffy.Run.TChan
 
 main :: IO ()
 main = run_ action
@@ -41,28 +46,29 @@ action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 action f = liftIO do
 	((inp, (oute, outp)), ext) <- rectangles
 	cow <- atomically newTChan
-	forkIO $ fix \loop -> do
-		putStrLn "FOO"
-		atomically . writeTChan cow . expand $ Singleton WindowNewReq
-		threadDelay 2000000
-		loop
-	untilEnd (get f) cow ((inp, (oute, outp)), ext)
+	cocc <- atomically newTChan
+	c' <- atomically newTChan
+	forkIO $ untilEnd (get f) cow cocc ((inp, (oute, outp)), ext)
+	interpret (retry $ handle (Just 0.5) cow cocc) c' threeWindows
 
 data OpenWin = OpenWin
 
-processEvReqs :: (Command Int -> STM ()) -> EvReqs GuiEv -> IO ()
-processEvReqs inp rqs = do
+processEvReqs :: (Command Int -> STM ()) -> (STM Bool, STM (Event Int)) -> TChan (EvOccs GuiEv) -> EvReqs GuiEv -> IO ()
+processEvReqs inp (oute, outp) cocc rqs = do
 	case project rqs of
 		Nothing -> pure ()
-		Just WindowNewReq -> atomically $ inp OpenWindow
+		Just WindowNewReq -> atomically do
+			inp OpenWindow
+--			writeTChan cocc . App.expand . App.Singleton . OccWindowNew $ WindowId 0
 
-untilEnd :: Bool -> TChan (EvReqs GuiEv) -> ((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
-untilEnd f cow ((inp, (oute, outp)), ext) = do
+untilEnd :: Bool -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
+	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
+untilEnd f cow cocc ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	($ instances) $ fix \loop rs -> do
 		threadDelay 10000
 		ow <- atomically $ tryReadTChan cow
-		maybe (pure ()) (processEvReqs inp) ow
+		maybe (pure ()) (processEvReqs inp (oute, outp) cocc) ow
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
@@ -87,6 +93,9 @@ untilEnd f cow ((inp, (oute, outp)), ext) = do
 				loop rs
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
+				atomically . writeTChan cocc
+					. App.expand . App.Singleton
+					. OccWindowNew . WindowId $ fromIntegral k
 				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection

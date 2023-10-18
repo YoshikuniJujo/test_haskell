@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      ThreeWindows
       Trial.Rectangles
   other-modules:
       Paths_try_use_moffy_vulkan
