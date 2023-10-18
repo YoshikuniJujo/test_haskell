@@ -73,6 +73,9 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
 				loop rs
+			Just (EventDeleteWindow k) -> do
+				putStrLn $ "delete window: " ++ show k
+				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {

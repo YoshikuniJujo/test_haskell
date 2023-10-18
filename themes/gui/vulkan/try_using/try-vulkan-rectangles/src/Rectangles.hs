@@ -228,6 +228,7 @@ data Event k
 	| EventMouseButtonUp k GlfwG.Ms.MouseButton
 	| EventCursorPosition k Double Double
 	| EventOpenWindow k
+	| EventDeleteWindow k
 	deriving Show
 
 enableValidationLayers :: Bool
@@ -243,9 +244,11 @@ getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
 
-glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> MouseButtonStateDict -> IO ()
-glfwEvents k w outp = fix \loop mb1p -> do
+glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> Bool -> MouseButtonStateDict -> IO ()
+glfwEvents k w outp = fix \loop scls mb1p -> do
 	threadDelay 10000
+	cls <- GlfwG.Win.shouldClose w
+	when (not scls && cls) . atomically . writeTChan outp $ EventDeleteWindow k
 	mb1 <- getMouseButtons w
 	sendMouseButtonDown k mb1p mb1 outp `mapM_` mouseButtonAll
 	sendMouseButtonUp k mb1p mb1 outp `mapM_` mouseButtonAll
@@ -253,7 +256,7 @@ glfwEvents k w outp = fix \loop mb1p -> do
 	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
-	loop mb1
+	loop cls mb1
 
 mouseButtonAll :: [GlfwG.Ms.MouseButton]
 mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
@@ -425,9 +428,10 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 winObjs outp ist phd dv gq cp qfis pllyt vext_
 	wgrp sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k =
 	initWindow True wgrp k >>= \w ->
-	forkIO (glfwEvents k w outp . foldr (uncurry M.insert) M.empty
-		$ ((, GlfwG.Ms.MouseButtonState'Released)
-		<$>) [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]) >>
+	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
+			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
+				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
+	forkIO (glfwEvents k w outp False initMouseButtonStates) >>
 	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
@@ -1535,7 +1539,7 @@ runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
 		rb <- createRectangleBuffer dvs rgrps k' rects'
 		let	rb' = (rb, fromIntegral $ length rects')
 		catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
-	cls <- or <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
 	if cls then (pure ()) else do
 		for_ ws \wos ->
 			recreateSwapchainEtcIfNeed @n @siv @sf phdvc qfis dvc pll wos
