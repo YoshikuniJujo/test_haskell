@@ -350,7 +350,9 @@ destroyGs (Group (Device.D mdvc)
 	case mgs of
 		Nothing -> pure $ Left
 			"Gpu.Vulkan.Pipeline.Graphics.destroyGs: No such key"
-		Just gs -> Right <$> M.destroyGs mdvc (gListToMiddle gs) mma
+		Just gs -> do
+			atomically . modifyTVar gss $ Map.delete k
+			Right <$> M.destroyGs mdvc (gListToMiddle gs) mma
 
 lookup :: Ord k =>
 	Group sd ma sg k gas -> k -> IO (Maybe (HeteroParList.PL (U3 (G sg)) gas))
