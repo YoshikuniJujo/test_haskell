@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-khr-glfw
-version:             0.1.0.12
+version:             0.1.0.13
 github:              "githubuser/try-gpu-vulkan-khr-glfw"
 license:             BSD3
 author:              "Author name here"

@@ -40,10 +40,10 @@ create (Vk.Instance.I ist) (W win)
 	(f . Vk.Khr.Surface.S)
 
 create' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Vk.Instance.I si -> Vk.Khr.Surface.Group ma ss k -> k -> W sw ->
+	Vk.Khr.Surface.Group si ma ss k -> k -> W sw ->
 	IO (Either String (Vk.Khr.Surface.S ss))
-create' (Vk.Instance.I ist)
-	(Vk.Khr.Surface.Group
+create' (Vk.Khr.Surface.Group
+		(Vk.Instance.I ist)
 		(AllocationCallbacks.toMiddle -> ma) sem ss) k (W win) = do
 	ok <- atomically do
 		mx <- (Map.lookup k) <$> readTVar ss
