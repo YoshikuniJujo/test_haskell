@@ -43,7 +43,7 @@ packages:
 extra-deps:
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 44b9a04cea03d4ac39d1a328cb3db14322b66709
+  commit: e7180731ca24605c60631ab1d784fa77d11596ac
   subdirs:
   - themes/mfrp/try-moffy
   - themes/gui/vulkan/try_using/try-vulkan-rectangles

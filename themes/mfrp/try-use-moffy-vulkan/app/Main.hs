@@ -49,8 +49,10 @@ action f = liftIO do
 	cow <- atomically newTChan
 	cocc <- atomically newTChan
 	c' <- atomically newTChan
-	forkIO $ untilEnd (get f) cow cocc ((inp, (oute, outp)), ext)
-	interpret (retry $ handle (Just 0.5) cow cocc) c' threeWindows
+	e <- atomically newTChan
+	forkIO $ untilEnd (get f) e cow cocc ((inp, (oute, outp)), ext)
+	forkIO $ interpret (retry $ handle (Just 0.5) cow cocc) c' threeWindows
+	atomically $ readTChan e
 
 data OpenWin = OpenWin
 
@@ -63,13 +65,15 @@ processEvReqs inp (oute, outp) cocc rqs = do
 --			writeTChan cocc . App.expand . App.Singleton . OccWindowNew $ WindowId 0
 	case project rqs of
 		Nothing -> pure ()
-		Just (WindowDestroyReq i) -> do
+		Just (WindowDestroyReq i@(WindowId k)) -> do
 			putStrLn $ "window destroy: " ++ show i
-			atomically . writeTChan cocc . App.expand . App.Singleton $ OccWindowDestroy i
+			atomically do
+				inp . DestroyWindow $ fromIntegral k
+				writeTChan cocc . App.expand . App.Singleton $ OccWindowDestroy i
 
-untilEnd :: Bool -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
+untilEnd :: Bool -> TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
 	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
-untilEnd f cow cocc ((inp, (oute, outp)), ext) = do
+untilEnd f e cow cocc ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	($ instances) $ fix \loop rs -> do
 		threadDelay 10000
@@ -87,7 +91,7 @@ untilEnd f cow cocc ((inp, (oute, outp)), ext) = do
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop rs
-			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just EventEnd -> putStrLn "THE WORLD ENDS" >> atomically (writeTChan e ())
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
 				loop instances
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
