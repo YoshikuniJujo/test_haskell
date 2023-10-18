@@ -30,6 +30,7 @@ import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
 import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.Delete
 import Data.OneOrMore (project, pattern Singleton, expand)
 import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
 
@@ -60,6 +61,11 @@ processEvReqs inp (oute, outp) cocc rqs = do
 		Just WindowNewReq -> atomically do
 			inp OpenWindow
 --			writeTChan cocc . App.expand . App.Singleton . OccWindowNew $ WindowId 0
+	case project rqs of
+		Nothing -> pure ()
+		Just (WindowDestroyReq i) -> do
+			putStrLn $ "window destroy: " ++ show i
+			atomically . writeTChan cocc . App.expand . App.Singleton $ OccWindowDestroy i
 
 untilEnd :: Bool -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
 	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
@@ -96,6 +102,12 @@ untilEnd f cow cocc ((inp, (oute, outp)), ext) = do
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					. OccWindowNew . WindowId $ fromIntegral k
+				loop rs
+			Just (EventDeleteWindow k) -> do
+				putStrLn $ "delete window: " ++ show k
+				atomically . writeTChan cocc
+					. App.expand . App.Singleton
+					. OccDeleteEvent . WindowId $ fromIntegral k
 				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
