@@ -212,14 +212,21 @@ getSwapchainImageNum dv sfc spp ext qfis =
 sameNum :: b -> [a] -> [b]
 sameNum x = \case [] -> []; _ : ys -> x : sameNum x ys
 
-getNum :: [a] -> (forall (n :: [()]) . Mappable n => Proxy n -> b) -> b
+getNum :: [a] -> (forall (n :: [()]) . (Mappable n, NumToValue n) => Proxy n -> b) -> b
 getNum [] f = f (Proxy :: Proxy '[])
 getNum (_ : xs) f =
 	getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
+class NumToValue (n :: [()]) where numToValue :: Int
+instance NumToValue '[] where numToValue = 0
+
+instance NumToValue n => NumToValue ('() ': n) where
+	numToValue = 1 + numToValue @n
+
 data Command k
 	= Draw (M.Map k (ViewProjection, [Rectangle]))
 	| OpenWindow
+	| DestroyWindow k
 	deriving Show
 
 data Event k
@@ -353,7 +360,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
 run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
-	Mappable n, Vk.T.FormatToValue scfmt, Ord k, Succable k ) =>
+	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Succable k ) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
@@ -387,23 +394,26 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
 	let	rgrps = (rbgrp, rmgrp) in
 
-	let	crwos = winObjs @n @scfmt outp ist phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
-			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp in
+	let	crwos = winObjs @n @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
+			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp
+		drwos = destroyWinObjs @n wgrp sfcgrp rpgrp gpgrp
+			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp
+		in
 
 	atomically (newTVar zero') >>= \vwid ->
 	atomically (newTVar M.empty) >>= \vws ->
 
-	mainLoop' @n @siv @sf inp outp dvs pllyt crwos vbs rgrps ubs vwid vws
+	mainLoop' @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
 	smrct sbrct nmrct . (
 	Mappable n, Vk.T.FormatToValue scfmt, Ord k ) =>
-	TChan (Event k) -> Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	TChan (Event k) -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	TVar (M.Map k (TVar Vk.Extent2d)) -> Group sw k ->
-	Vk.Khr.Sfc.Group 'Nothing ssfc k ->
+	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
 	Vk.RndrPass.Group sd 'Nothing sr k ->
 	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
 		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
@@ -425,7 +435,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	IO (WinObjs
 		sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))
-winObjs outp ist phd dv gq cp qfis pllyt vext_
+winObjs outp phd dv gq cp qfis pllyt vext_
 	wgrp sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k =
 	initWindow True wgrp k >>= \w ->
 	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
@@ -436,7 +446,7 @@ winObjs outp ist phd dv gq cp qfis pllyt vext_
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
 
-	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp k w >>= \(fromRight -> sfc) ->
+	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(fromRight -> sfc) ->
 	createRenderPass @scfmt rpgrp k >>= \rp ->
 	prepareSwapchain @scfmt w sfc phd >>= \(spp, ext) ->
 
@@ -459,11 +469,52 @@ winObjs outp ist phd dv gq cp qfis pllyt vext_
 			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
 	pure wos
 
+destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
+	si sd sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
+	smrct sbrct nmrct . (NumToValue n,  Ord k) =>
+	Group sw k ->
+	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
+	Vk.RndrPass.Group sd 'Nothing sr k ->
+	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
+		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
+			'(Rectangle, 'Vk.VtxInp.RateInstance) ],
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
+			'(3, RectSize), '(4, RectColor),
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3) ],
+		'(sl, '[AtomUbo sdsl], '[]) )] ->
+	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 Rectangle ""],
+		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])]
+		) ->
+	Vk.Semaphore.Group sd 'Nothing sias k ->
+	Vk.Semaphore.Group sd 'Nothing srfs k ->
+	Vk.Fence.Group sd 'Nothing siff k ->
+	Vk.Khr.Swapchain.Group sd 'Nothing scfmt ssc k ->
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
+	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> IO ()
+destroyWinObjs
+	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k = do
+	either error pure =<< destroy wgrp k
+
+	either error pure =<< Vk.Khr.Swapchain.destroy scgrp k
+	either error pure =<< Vk.Khr.Sfc.destroy sfcgrp k
+
+	either error pure =<< Vk.RndrPass.destroy rpgrp k
+	either error pure =<< Vk.Ppl.Graphics.destroyGs gpgrp k
+	either error pure =<< Vk.Bffr.destroy rbgrp k
+	either error pure =<< Vk.Mem.free rmgrp k
+	either error pure =<< Vk.Semaphore.destroy iasgrp k
+	either error pure =<< Vk.Semaphore.destroy rfsgrp k
+	either error pure =<< Vk.Fence.destroy iffgrp k
+	for_ [0 .. numToValue @n - 1] \i -> do
+		either error pure =<< Vk.ImgVw.destroy ivgrp (k, i)
+		either error pure =<< Vk.Frmbffr.destroy fbgrp (k, i)
+
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
 createSurface win ist f =
 	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
-	Vk.Khr.Sfc.Glfw.Win.create' ist sfcgrp () win >>= f . fromRight
+	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp () win >>= f . fromRight
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Sfc.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -1409,6 +1460,8 @@ mainLoop' ::
 	(k -> IO (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 
+	(k -> IO ()) ->
+
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm k ->
 	UniformBuffers sds sdsl sm2 sb2 ->
@@ -1416,7 +1469,7 @@ mainLoop' ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	IO ()
-mainLoop' inp outp dvs pll crwos vbs rgrps ubs vwid vws = do
+mainLoop' inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws = do
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
@@ -1429,6 +1482,8 @@ mainLoop' inp outp dvs pll crwos vbs rgrps ubs vwid vws = do
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
 			OpenWindow -> crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
+			DestroyWindow k ->
+				atomically (modifyTVar vws (M.delete k)) >> drwos k >> loop
 
 rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])
 rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)

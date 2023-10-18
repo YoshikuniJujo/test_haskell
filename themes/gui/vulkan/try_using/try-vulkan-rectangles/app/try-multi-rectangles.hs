@@ -75,6 +75,7 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 				loop rs
 			Just (EventDeleteWindow k) -> do
 				putStrLn $ "delete window: " ++ show k
+				atomically . inp $ DestroyWindow k
 				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
