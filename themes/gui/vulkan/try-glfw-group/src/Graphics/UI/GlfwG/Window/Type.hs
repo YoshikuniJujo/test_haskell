@@ -5,4 +5,4 @@ module Graphics.UI.GlfwG.Window.Type where
 
 import Graphics.UI.GLFW qualified as B
 
-newtype W s = W B.Window deriving Show
+newtype W s = W B.Window deriving (Eq, Ord, Show)
