@@ -148,6 +148,7 @@ import ThEnv
 
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
+import Graphics.UI.GlfwG.Key as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 rectangles :: forall k . (Ord k, Succable k) =>
@@ -231,6 +232,8 @@ data Command k
 
 data Event k
 	= EventEnd
+	| EventKeyDown k GlfwG.Ky.Key
+	| EventKeyUp k GlfwG.Ky.Key
 	| EventMouseButtonDown k GlfwG.Ms.MouseButton
 	| EventMouseButtonUp k GlfwG.Ms.MouseButton
 	| EventCursorPosition k Double Double
@@ -444,9 +447,17 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	forkIO (glfwEvents k w outp False initMouseButtonStates) >>
 	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
-		(Just \w k sc act mods -> putStrLn $
-			show w ++ " " ++ show k ++ " " ++
-			show sc ++ " " ++ show act ++ " " ++ show mods) >>
+		(Just \w ky sc act mods -> do
+			putStrLn $
+				show w ++ " " ++ show ky ++ " " ++
+				show sc ++ " " ++ show act ++ " " ++ show mods
+			case act of
+				GlfwG.Ky.KeyState'Pressed ->
+					atomically $ writeTChan outp $ EventKeyDown k ky
+				GlfwG.Ky.KeyState'Released ->
+					atomically $ writeTChan outp $ EventKeyUp k ky
+				_ -> pure ()
+			) >>
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
 

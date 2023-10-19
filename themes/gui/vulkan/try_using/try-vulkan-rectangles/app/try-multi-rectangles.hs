@@ -62,6 +62,12 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just (EventKeyDown w ky) -> do
+				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
+				loop rs
+			Just (EventKeyUp w ky) -> do
+				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
+				loop rs
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
 				loop instances
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
