@@ -19,7 +19,7 @@ module Graphics.UI.GlfwG.Window (
 
 	-- * CALLBACK
 
-	setKeyCallback, B.KeyCallback,
+	setKeyCallback, KeyCallback,
 	setFramebufferSizeCallback, B.FramebufferSizeCallback,
 
 	-- * PARAMETER
@@ -97,8 +97,10 @@ setFramebufferSizeCallback (W w) = B.setFramebufferSizeCallback w
 getFramebufferSize :: W sw -> IO (Int, Int)
 getFramebufferSize (W w) = B.getFramebufferSize w
 
-setKeyCallback :: W s -> Maybe B.KeyCallback -> IO ()
-setKeyCallback (W w) = B.setKeyCallback w
+setKeyCallback :: W s -> Maybe (KeyCallback s) -> IO ()
+setKeyCallback (W w) = B.setKeyCallback w . ((. W) <$>)
+
+type KeyCallback s = W s -> B.Key -> Int -> B.KeyState -> B.ModifierKeys -> IO ()
 
 shouldClose :: W sw -> IO Bool
 shouldClose (W w) = B.windowShouldClose w
