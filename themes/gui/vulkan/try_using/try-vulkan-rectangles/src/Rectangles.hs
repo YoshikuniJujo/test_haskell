@@ -443,6 +443,10 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
 	forkIO (glfwEvents k w outp False initMouseButtonStates) >>
 	atomically (newTVar False) >>= \fbrszd ->
+	GlfwG.Win.setKeyCallback w
+		(Just \w k sc act mods -> putStrLn $
+			show w ++ " " ++ show k ++ " " ++
+			show sc ++ " " ++ show act ++ " " ++ show mods) >>
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
 
