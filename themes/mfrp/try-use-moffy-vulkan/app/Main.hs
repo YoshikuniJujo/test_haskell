@@ -13,6 +13,7 @@ import Trial.Boxes
 import Trial.Paper
 
 import Rectangles
+import KeyToXKey
 
 import Control.Monad.Fix
 import Control.Monad.Trans
@@ -23,14 +24,17 @@ import Data.List.Length
 import Data.Map qualified as M
 import Data.Bool
 import Data.Time
+import Data.KeySym
 import Options.Declarative
 import Gpu.Vulkan.Cglm qualified as Cglm
 import Gpu.Vulkan qualified as Vk
+import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
 import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Delete
+import Control.Moffy.Event.Key
 import Data.OneOrMore (project, pattern Singleton, expand)
 import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
 
@@ -92,6 +96,15 @@ untilEnd f e cow cocc ((inp, (oute, outp)), ext) = do
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS" >> atomically (writeTChan e ())
+			Just (EventKeyDown w ky) -> do
+				putStrLn $ "KEY DOWN: " ++ show w ++ " " ++ show ky
+				atomically . writeTChan cocc
+					. App.expand . App.Singleton
+					. OccKeyDown (WindowId $ fromIntegral w) $ keyToXKey ky
+				loop rs
+			Just (EventKeyUp w ky) -> do
+				putStrLn $ "KEY UP  : " ++ show w ++ " " ++ show ky
+				loop rs
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
 				loop instances
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->

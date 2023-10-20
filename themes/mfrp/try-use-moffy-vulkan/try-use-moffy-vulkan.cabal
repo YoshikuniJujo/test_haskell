@@ -25,6 +25,8 @@ source-repository head
 
 library
   exposed-modules:
+      KeyToXKey
+      KeyToXKey.TH
       ThreeWindows
       Trial.Rectangles
   other-modules:
@@ -40,6 +42,7 @@ library
     , optparse-declarative
     , ranged-list
     , stm
+    , template-haskell
     , time
     , try-glfw-group
     , try-gpu-vulkan
@@ -66,6 +69,7 @@ executable try-hello-windows
     , optparse-declarative
     , ranged-list
     , stm
+    , template-haskell
     , time
     , try-glfw-group
     , try-gpu-vulkan
@@ -93,6 +97,7 @@ executable try-multi-rectangles
     , optparse-declarative
     , ranged-list
     , stm
+    , template-haskell
     , time
     , try-glfw-group
     , try-gpu-vulkan
@@ -119,6 +124,7 @@ executable try-use-moffy-vulkan-exe
     , optparse-declarative
     , ranged-list
     , stm
+    , template-haskell
     , time
     , try-glfw-group
     , try-gpu-vulkan
@@ -146,6 +152,7 @@ test-suite try-use-moffy-vulkan-test
     , optparse-declarative
     , ranged-list
     , stm
+    , template-haskell
     , time
     , try-glfw-group
     , try-gpu-vulkan

@@ -23,10 +23,14 @@ threeWindows = do
 	w0 <- waitFor $ adjust windowNew
 	w1 <- waitFor $ adjust windowNew
 	w2 <- waitFor $ adjust windowNew
-	_ <- (waitFor . find (\(x, y, z) -> not $ x || y || z) $ (,,) <$%> ddw w0 <*%> ddw w1 <*%> ddw w2) `break`
-		(pressQ w0 `first` pressQ w1 `first` pressQ w2)
-
+	_ <- (waitFor . find (\(x, y, z) ->
+		not $ x || y || z) $ (,,) <$%> ddw w0 <*%> ddw w1 <*%> ddw w2)
 	pure ()
+
+pressQ' :: WindowId -> React s GuiEv ()
+pressQ' wid = do
+	adjust $ pressQ wid
+	adjust $ windowDestroy wid
 
 pressQ :: WindowId -> React s (Singleton KeyDown) ()
 pressQ wid = bool (pressQ wid) (pure ()) . isQ =<< keyDown wid
@@ -35,7 +39,7 @@ ddw :: WindowId -> Sig s GuiEv Bool ()
 ddw i = do
 	emit True
 	waitFor do
-		adjust $ deleteEvent i
+		adjust $ deleteEvent i `first` pressQ i
 		adjust $ windowDestroy i
 	emit False
 	waitFor never
