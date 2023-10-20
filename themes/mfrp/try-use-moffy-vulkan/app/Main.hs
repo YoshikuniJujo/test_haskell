@@ -35,6 +35,7 @@ import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Key
+import Control.Moffy.Event.Mouse (pattern OccMouseDown, MouseBtn(..))
 import Data.OneOrMore (project, pattern Singleton, expand)
 import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
 
@@ -105,10 +106,21 @@ untilEnd f e cow cocc ((inp, (oute, outp)), ext) = do
 			Just (EventKeyUp w ky) -> do
 				putStrLn $ "KEY UP  : " ++ show w ++ " " ++ show ky
 				loop rs
-			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
+			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'1) -> do
+				atomically . writeTChan cocc
+					. App.expand . App.Singleton
+					$ OccMouseDown (WindowId $ fromIntegral w) ButtonLeft
 				loop instances
-			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
+			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'2) -> do
+				atomically . writeTChan cocc
+					. App.expand . App.Singleton
+					$ OccMouseDown (WindowId $ fromIntegral w) ButtonRight
 				loop instances2
+			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'3) -> do
+				atomically . writeTChan cocc
+					. App.expand . App.Singleton
+					$ OccMouseDown (WindowId $ fromIntegral w) ButtonMiddle
+				loop rs
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
 			Just (EventCursorPosition _k _x _y) ->
