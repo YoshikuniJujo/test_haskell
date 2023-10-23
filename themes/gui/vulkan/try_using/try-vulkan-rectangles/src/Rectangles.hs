@@ -148,8 +148,11 @@ import ThEnv
 
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type as GlfwG.Win
 import Graphics.UI.GlfwG.Key as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
+
+import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
 
 rectangles :: forall k . (Ord k, Succable k) =>
 	IO ((Command k -> STM (), (STM Bool, STM (Event k))), k -> STM Vk.Extent2d)
@@ -513,6 +516,8 @@ destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> IO ()
 destroyWinObjs
 	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k = do
+	Just (GlfwG.Win.W w) <- GlfwG.Win.lookup wgrp k
+	Glfw.setWindowShouldClose w True
 	either error pure =<< destroy wgrp k
 
 	either error pure =<< Vk.Khr.Swapchain.destroy scgrp k

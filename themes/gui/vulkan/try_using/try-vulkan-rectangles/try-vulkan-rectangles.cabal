@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-vulkan-rectangles
-version:        0.1.0.4
+version:        0.1.0.5
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-rectangles#readme>
 homepage:       https://github.com/githubuser/try-vulkan-rectangles#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-rectangles/issues
@@ -34,7 +34,8 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , containers
     , data-default
@@ -70,7 +71,8 @@ executable try-multi-rectangles
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , containers
     , data-default
@@ -108,7 +110,8 @@ test-suite try-vulkan-rectangles-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , containers
     , data-default
