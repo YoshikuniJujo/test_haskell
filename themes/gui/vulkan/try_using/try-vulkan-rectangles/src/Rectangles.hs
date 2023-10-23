@@ -265,7 +265,8 @@ glfwEvents k w outp = fix \loop scls mb1p -> do
 	mb1 <- getMouseButtons w
 	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
 	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1
+	cls' <- GlfwG.Win.shouldClose w
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
 	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
