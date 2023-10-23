@@ -38,6 +38,7 @@ library
       base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
     , mtl
     , optparse-declarative
     , ranged-list
@@ -65,6 +66,7 @@ executable try-hello-windows
       base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
     , mtl
     , optparse-declarative
     , ranged-list
@@ -93,6 +95,7 @@ executable try-multi-rectangles
       base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
     , mtl
     , optparse-declarative
     , ranged-list
@@ -120,6 +123,7 @@ executable try-use-moffy-vulkan-exe
       base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
     , mtl
     , optparse-declarative
     , ranged-list
@@ -148,6 +152,7 @@ test-suite try-use-moffy-vulkan-test
       base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
     , mtl
     , optparse-declarative
     , ranged-list

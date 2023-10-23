@@ -36,6 +36,7 @@ dependencies:
 - try-vulkan-rectangles
 - try-glfw-group
 - x-keysym
+- extra-data-yj
 
 ghc-options:
 - -Wall

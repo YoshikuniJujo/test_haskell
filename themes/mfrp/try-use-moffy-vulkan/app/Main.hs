@@ -1,11 +1,13 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
+import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Viewable.Shape
@@ -33,16 +35,25 @@ import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
 import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Window
-import Control.Moffy.Event.Delete
+import Control.Moffy.Event.DefaultWindow
+import Control.Moffy.Event.Delete hiding (deleteEvent)
+import Control.Moffy.Event.Delete.DefaultWindow
 import Control.Moffy.Event.Key
-import Control.Moffy.Event.Mouse (pattern OccMouseDown, pattern OccMouseUp, MouseBtn(..))
+import Control.Moffy.Event.Mouse (
+	pattern OccMouseDown, pattern OccMouseUp, pattern OccMouseMove, MouseBtn(..))
 import Data.OneOrMore (project, pattern Singleton, expand)
 import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
 
 import ThreeWindows
-import Control.Moffy.Handle (retry)
+import Control.Moffy.Handle (retry, retrySt)
 import Control.Moffy.Handle.TChan
 import Control.Moffy.Run.TChan
+
+import Data.Time.Clock.System
+import Trial.Boxes.RunGtkField
+import Data.Type.Set
+import Data.Or
+import Control.Moffy.Event.Time
 
 main :: IO ()
 main = run_ action
@@ -56,8 +67,21 @@ action f = liftIO do
 	c' <- atomically newTChan
 	e <- atomically newTChan
 	forkIO $ untilEnd (get f) e cow cocc ((inp, (oute, outp)), ext)
-	forkIO $ interpret (retry $ handle (Just 0.5) cow cocc) c' threeWindows
+--	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.5 cow cocc) c' threeWindows . initialBoxesState . systemToTAITime =<< getSystemTime
+	forkIO $ void do
+		interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' (waitFor foo) . initialBoxesState . systemToTAITime =<< getSystemTime
+		putStrLn "HERE"
 	atomically $ readTChan e
+
+-- foo :: React s (TimeEv :+: DefaultWindowEv :+: GuiEv) (Or () ())
+foo :: React s (TimeEv :+: DefaultWindowEv :+: GuiEv) ()
+foo = do
+		i <- adjust windowNew
+		adjust $ storeDefaultWindow i
+		adjust $ deleteEvent `first` (drClickOn $ Rect (50, 50) (400, 400))
+--		adjust $ deleteEvent `first` doubler
+--		adjust rightClick
+		adjust $ windowDestroy i
 
 data OpenWin = OpenWin
 
@@ -141,8 +165,11 @@ untilEnd f e cow cocc ((inp, (oute, outp)), ext) = do
 				loop rs
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition _k _x _y) ->
---				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
+			Just (EventCursorPosition k x y) -> do
+				putStrLn ("position: " ++ show k ++ " " ++ show (x, y))
+				atomically . writeTChan cocc
+					. App.expand . App.Singleton
+					$ OccMouseMove (WindowId $ fromIntegral k) (x, y)
 				loop rs
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
