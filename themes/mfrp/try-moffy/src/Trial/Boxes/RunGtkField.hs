@@ -37,6 +37,10 @@ runBoxes s = do
 	(r, _) <- interpretSt (retrySt $ handleBoxesFoo 0.1 cr c) c' s . initialBoxesState . systemToTAITime =<< getSystemTime
 	r <$ gtkMainQuit
 
+handleBoxes :: DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
+	HandleSt' BoxesState IO (TimeEv :+: DefaultWindowEv :+: GuiEv)
+handleBoxes = handleBoxesFoo
+
 initialBoxesState :: AbsoluteTime -> BoxesState
 initialBoxesState t = BoxesState {
 	bsMode = InitialMode,
