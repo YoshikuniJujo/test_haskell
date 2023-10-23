@@ -7,6 +7,8 @@
 
 module Main (main) where
 
+import Prelude hiding (break)
+
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Mouse.DefaultWindow
@@ -68,20 +70,29 @@ action f = liftIO do
 	e <- atomically newTChan
 	forkIO $ untilEnd (get f) e cow cocc ((inp, (oute, outp)), ext)
 --	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.5 cow cocc) c' threeWindows . initialBoxesState . systemToTAITime =<< getSystemTime
+	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.5 cow cocc) c' bar . initialBoxesState . systemToTAITime =<< getSystemTime
+{-
 	forkIO $ void do
 		interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' (waitFor foo) . initialBoxesState . systemToTAITime =<< getSystemTime
 		putStrLn "HERE"
+-}
+	forkIO . forever $ print =<< atomically (readTChan c')
 	atomically $ readTChan e
 
--- foo :: React s (TimeEv :+: DefaultWindowEv :+: GuiEv) (Or () ())
 foo :: React s (TimeEv :+: DefaultWindowEv :+: GuiEv) ()
 foo = do
+	i <- adjust windowNew
+	adjust $ storeDefaultWindow i
+	adjust $ deleteEvent `first` (drClickOn $ Rect (50, 50) (400, 400))
+	adjust $ windowDestroy i
+
+bar :: Sig s (TimeEv :+: DefaultWindowEv :+: GuiEv) BColor ()
+bar = do
+	wi <- waitFor do
 		i <- adjust windowNew
-		adjust $ storeDefaultWindow i
-		adjust $ deleteEvent `first` (drClickOn $ Rect (50, 50) (400, 400))
---		adjust $ deleteEvent `first` doubler
---		adjust rightClick
-		adjust $ windowDestroy i
+		i <$ adjust (storeDefaultWindow i)
+	adjustSig $ cycleColor `break` deleteEvent
+	waitFor $ adjust $ windowDestroy wi
 
 data OpenWin = OpenWin
 
@@ -91,7 +102,6 @@ processEvReqs inp (oute, outp) cocc rqs = do
 		Nothing -> pure ()
 		Just WindowNewReq -> atomically do
 			inp OpenWindow
---			writeTChan cocc . App.expand . App.Singleton . OccWindowNew $ WindowId 0
 	case project rqs of
 		Nothing -> pure ()
 		Just (WindowDestroyReq i@(WindowId k)) -> do
@@ -143,7 +153,7 @@ untilEnd f e cow cocc ((inp, (oute, outp)), ext) = do
 					$ OccMouseDown (WindowId $ fromIntegral w) ButtonRight
 				loop instances2
 			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'3) -> do
-				putStrLn "BUTTON MIDDLE DOWN"
+--				putStrLn "BUTTON MIDDLE DOWN"
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseDown (WindowId $ fromIntegral w) ButtonMiddle
@@ -166,7 +176,7 @@ untilEnd f e cow cocc ((inp, (oute, outp)), ext) = do
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
 			Just (EventCursorPosition k x y) -> do
-				putStrLn ("position: " ++ show k ++ " " ++ show (x, y))
+--				putStrLn ("position: " ++ show k ++ " " ++ show (x, y))
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseMove (WindowId $ fromIntegral k) (x, y)
