@@ -291,8 +291,10 @@ sendMouseButton k w ev pst st pbss bss outp b =
 		(True, True) -> do
 --			print $ ev k b
 			atomically . writeTChan outp $ ev k b
-			atomically . writeTChan outp . uncurry (EventCursorPosition k)
-				=<< GlfwG.Ms.getCursorPos w
+			cl <- GlfwG.Win.shouldClose w
+			when (not cl) $
+				atomically . writeTChan outp . uncurry (EventCursorPosition k)
+					=<< GlfwG.Ms.getCursorPos w
 		_ -> pure ()
 
 withWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
