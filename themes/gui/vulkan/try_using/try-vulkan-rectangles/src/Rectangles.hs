@@ -1499,8 +1499,11 @@ mainLoop' inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws = do
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
 			OpenWindow -> crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
-			DestroyWindow k ->
-				atomically (modifyTVar vws (M.delete k)) >> drwos k >> loop
+			DestroyWindow k -> do
+				atomically (modifyTVar vws (M.delete k)) >> drwos k
+				ws <- atomically $ readTVar vws
+				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+				if cls then pure () else loop
 
 rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])
 rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
