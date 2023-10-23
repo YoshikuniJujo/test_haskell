@@ -260,8 +260,8 @@ glfwEvents k w outp = fix \loop scls mb1p -> do
 	cls <- GlfwG.Win.shouldClose w
 	when (not scls && cls) . atomically . writeTChan outp $ EventDeleteWindow k
 	mb1 <- getMouseButtons w
-	sendMouseButtonDown k mb1p mb1 outp `mapM_` mouseButtonAll
-	sendMouseButtonUp k mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
 	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1
 	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
@@ -272,25 +272,27 @@ mouseButtonAll :: [GlfwG.Ms.MouseButton]
 mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 sendMouseButtonDown, sendMouseButtonUp ::
-	k -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
+	k -> GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
 	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown k = sendMouseButton k EventMouseButtonDown
+sendMouseButtonDown k w = sendMouseButton k w EventMouseButtonDown
 	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
 
-sendMouseButtonUp k = sendMouseButton k EventMouseButtonUp
+sendMouseButtonUp k w = sendMouseButton k w EventMouseButtonUp
 	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
 
 sendMouseButton ::
-	k ->
+	k -> GlfwG.Win.W sw ->
 	(k -> GlfwG.Ms.MouseButton -> Event k) ->
 	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
 	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
 	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButton k ev pst st pbss bss outp b =
+sendMouseButton k w ev pst st pbss bss outp b =
 	case (pbss M.! b == pst, bss M.! b == st) of
 		(True, True) -> do
 --			print $ ev k b
 			atomically . writeTChan outp $ ev k b
+			atomically . writeTChan outp . uncurry (EventCursorPosition k)
+				=<< GlfwG.Ms.getCursorPos w
 		_ -> pure ()
 
 withWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
