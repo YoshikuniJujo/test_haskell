@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 83f0dcb667a57a35555d88f38072792261ca8ac7ff1f54a2981a86ab0d446f4a
+-- hash: 1a2e7e0c99df821c9056dbe2643e2d23fdca7fa7dd4dd6f50aa4241ff7fd3c67
 
 name:           try-moffy
-version:        0.1.0.1
+version:        0.1.0.2
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy#readme>
 homepage:       https://github.com/YoshikuniJujo/try-moffy#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-moffy/issues

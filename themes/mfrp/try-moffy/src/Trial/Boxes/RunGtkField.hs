@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.RunGtkField (runBoxes) where
+module Trial.Boxes.RunGtkField (runBoxes, handleBoxes) where
 
 import Prelude hiding (break)
 
