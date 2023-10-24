@@ -1,5 +1,5 @@
 name:                try-vulkan-rectangles
-version:             0.1.0.7
+version:             0.1.0.8
 github:              "githubuser/try-vulkan-rectangles"
 license:             BSD3
 author:              "Author name here"
@@ -65,6 +65,15 @@ library:
 executables:
   try-multi-rectangles:
     main:                try-multi-rectangles.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-rectangles
+  try-multi-rectangles2:
+    main:                try-multi-rectangles2.hs
     source-dirs:         app
     ghc-options:
     - -threaded
