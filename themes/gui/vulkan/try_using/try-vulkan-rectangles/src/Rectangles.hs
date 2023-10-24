@@ -263,6 +263,10 @@ glfwEvents k w outp = fix \loop scls mb1p -> do
 	cls <- GlfwG.Win.shouldClose w
 	when (not scls && cls) . atomically . writeTChan outp $ EventDeleteWindow k
 	mb1 <- getMouseButtons w
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls
+	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
+		=<< GlfwG.Ms.getCursorPos w
+	else pure ()
 	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
 	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
 	cls' <- GlfwG.Win.shouldClose w
