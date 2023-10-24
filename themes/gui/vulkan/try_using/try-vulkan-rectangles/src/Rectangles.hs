@@ -259,6 +259,7 @@ mAny p = M.foldr (\x b -> p x || b) False
 
 glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> Bool -> MouseButtonStateDict -> IO ()
 glfwEvents k w outp = fix \loop scls mb1p -> do
+	putStrLn "BEGIN glfwEvents"
 	threadDelay 10000
 	cls <- GlfwG.Win.shouldClose w
 	when (not scls && cls) . atomically . writeTChan outp $ EventDeleteWindow k
