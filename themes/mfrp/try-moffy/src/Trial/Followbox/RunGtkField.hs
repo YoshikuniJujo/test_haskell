@@ -50,11 +50,11 @@ newToOldDrawingArea da = New.pointer da $ pure . GtkWidget . castPtr
 
 drawFollowboxGtk :: New.GtkDrawingArea -> CairoT -> View -> IO ()
 drawFollowboxGtk wdt_ cr (View v) = do
-		wdt <- newToOldDrawingArea wdt_
-		w <- gtkWidgetGetAllocatedWidth wdt
-		h <- gtkWidgetGetAllocatedHeight wdt
-		cairoSetSourceRgb cr 0 0 0
-		cairoRectangle cr 0 0 (fromIntegral w) (fromIntegral h)
-		cairoStrokePreserve cr
-		cairoFill cr
-		((drawText wdt cr >-- drawLine wdt cr >-- SingletonFun (drawImage wdt cr)) `apply`) `mapM_` v
+	wdt <- newToOldDrawingArea wdt_
+	w <- gtkWidgetGetAllocatedWidth wdt
+	h <- gtkWidgetGetAllocatedHeight wdt
+	cairoSetSourceRgb cr 0 0 0
+	cairoRectangle cr 0 0 (fromIntegral w) (fromIntegral h)
+	cairoStrokePreserve cr
+	cairoFill cr
+	((drawText wdt cr >-- drawLine wdt cr >-- SingletonFun (drawImage wdt cr)) `apply`) `mapM_` v
