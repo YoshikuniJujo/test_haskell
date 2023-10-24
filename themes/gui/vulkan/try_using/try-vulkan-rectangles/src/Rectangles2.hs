@@ -1851,13 +1851,13 @@ instance Default RectModel3 where def = let (_, _, _, d) = defaultRectModel in d
 
 vertices :: [Vertex]
 vertices = [
-	Vertex (Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+	Vertex (Cglm.Vec2 $ (- 0) :. (- 0) :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 1 :. (- 1) :. NilL)
+	Vertex (Cglm.Vec2 $ 1 :. (- 0) :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ 1 :. 1 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec2 $ (- 1) :. 1 :. NilL)
+	Vertex (Cglm.Vec2 $ (- 0) :. 1 :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
 
 indices :: [Word16]
