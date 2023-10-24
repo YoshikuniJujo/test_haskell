@@ -67,15 +67,15 @@ defineRect = either error pure <=< runExceptT
 
 firstPoint :: React s (LoadDefaultWindow :- MouseDown :- MouseMove :- 'Nil) (Either String Point)
 firstPoint = (<$> mousePos `at` leftClick)
-	$ const neverOccur `either` (maybe neverOccur Right . fst)
+	$ const (neverOccur "firstPoint 1") `either` (maybe (neverOccur "firstPoint 2") Right . fst)
 
 completeRect ::
 	Point -> Sig s (LoadDefaultWindow :- MouseUp :- MouseMove :- 'Nil) Rect (Either String Rect)
 completeRect p1 = (<$> (Rect p1 <$%> mousePos) `until` leftUp)
-	$ const neverOccur `either` (Right . fst)
+	$ const (neverOccur "completeRect") `either` (Right . fst)
 
-neverOccur :: Either String a
-neverOccur = Left "never occur"
+neverOccur :: String -> Either String a
+neverOccur msg = Left $ "never occur: " ++ msg
 
 ---------------------------------------------------------------------------
 -- CHOOSE BOX COLOR
