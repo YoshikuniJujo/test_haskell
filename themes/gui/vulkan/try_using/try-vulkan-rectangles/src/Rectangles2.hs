@@ -1920,7 +1920,7 @@ void
 main()
 {
 	gl_Position =
-		ubo.proj * ubo.view * rectModel *
+//		ubo.proj * ubo.view * rectModel *
 		vec4(inPosition * rectSize, 0.0, 1.0) +
 		vec4(rectPosition, 0.0, 1.0);
 //	fragColor = inColor;
