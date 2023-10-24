@@ -54,6 +54,35 @@ library
     , x-keysym
   default-language: Haskell2010
 
+executable try-boxes
+  main-is: try-boxes.hs
+  other-modules:
+      Main
+      Paths_try_use_moffy_vulkan
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , data-default
+    , extra-data-yj
+    , mtl
+    , optparse-declarative
+    , ranged-list
+    , stm
+    , template-haskell
+    , time
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-moffy
+    , try-use-moffy-vulkan
+    , try-vulkan-rectangles
+    , type-flip
+    , x-keysym
+  default-language: Haskell2010
+
 executable try-hello-windows
   main-is: try-hello-windows.hs
   other-modules:

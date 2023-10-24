@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -16,7 +16,7 @@ import Control.Moffy.Viewable.Shape
 import Trial.Boxes
 import Trial.Paper
 
-import Rectangles
+import Rectangles2
 import KeyToXKey
 
 import Control.Monad.Fix
@@ -64,21 +64,19 @@ main = run_ action
 action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
 action f = liftIO do
-	((inp, (oute, outp)), ext) <- rectangles
+	(cinp, cout) <- atomically $ (,) <$> newTChan <*> newTChan
+	vext <- atomically $ newTVar M.empty
+	let	inp = writeTChan cinp
+		oute = isEmptyTChan cout
+		outp = readTChan cout
+		ext = readTVarOr (Vk.Extent2d 0 0) vext
 	cow <- atomically newTChan
 	cocc <- atomically newTChan
 	c' <- atomically newTChan
 	e <- atomically newTChan
 	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext)
---	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.5 cow cocc) c' threeWindows . initialBoxesState . systemToTAITime =<< getSystemTime
---	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.5 cow cocc) c' bar . initialBoxesState . systemToTAITime =<< getSystemTime
 	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' baz . initialBoxesState . systemToTAITime =<< getSystemTime
-{-
-	forkIO $ void do
-		interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' (waitFor foo) . initialBoxesState . systemToTAITime =<< getSystemTime
-		putStrLn "HERE"
--}
---	forkIO . forever $ print =<< atomically (readTChanMesh 10 c')
+	rectangles2 cinp cout vext
 	atomically $ readTChan e
 
 readTChanMesh :: Int -> TChan a -> STM a
@@ -127,66 +125,56 @@ processEvReqs inp (oute, outp) cocc rqs = do
 boxToRect :: STM Vk.Extent2d -> Box -> STM Rectangle
 boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
 	ex >>= \(Vk.Extent2d (fromIntegral -> w) (fromIntegral -> h)) -> do
-		let	l' = realToFrac $ l / w - 1
-			r' = realToFrac $ r / w - 1
-			u' = realToFrac $ u / h - 1
-			d' = realToFrac $ d / h - 1
+		let	l' = realToFrac $ 4 * l / w - 2
+			r' = realToFrac $ 4 * r / w - 2
+			u' = realToFrac $ 4 * u / h - 2
+			d' = realToFrac $ 4 * d / h - 2
 		pure $ Rectangle
 			(RectPos . Cglm.Vec2 $ l' :. u' :. NilL)
 			(RectSize . Cglm.Vec2 $ (r' - l') :. (d' - u') :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
+			(colorToColor clr)
 			m0 m1 m2 m3
 	where
 	(m0, m1, m2, m3) = calcModel 0
+
+colorToColor :: BColor -> RectColor
+colorToColor = \case
+	Red -> RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL
+	Green -> RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
+	Blue -> RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
+	Yellow -> RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
+	Cyan -> RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 1.0 :. 1.0 :. NilL
+	Magenta -> RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
 
 untilEnd :: Bool -> TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> TChan [Box] ->
 	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
 untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 
-{-
+	forkIO $ forever do
+		threadDelay 20000
+		atomically $ inp GetEvent
+
 	forkIO $ forever do
 		rs' <- atomically do
---			bs <- readTChan c'
-			bs <- fromMaybe [] <$> tryReadTChan c'
+			bs <- readTChan c'
 			boxToRect (ext 0) `mapM` bs
 		atomically do
-			e0 <- ext 0
---			e1 <- ext 1
-			inp . Draw $ M.fromList [
---				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
-				(0, ((bool (uniformBufferObject e0) def f), rs'))
---				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
-				]
--}
+			inp . Draw $ M.fromList [(0, (def, rs'))]
 
-	($ instances) $ fix \loop rs -> do
-		threadDelay 10000
+	forkIO $ forever do
+		threadDelay 500
 		ow <- atomically $ tryReadTChan cow
 		maybe (pure ()) (processEvReqs inp (oute, outp) cocc) ow
+
+	($ instances) $ fix \loop rs -> do
+		threadDelay 500
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
---		{-
-		rs' <- atomically do
-			bs <- fromMaybe [] <$> tryReadTChan c'
-			boxToRect (ext 0) `mapM` bs
---			-}
 		o <- atomically do
---		{-
-			e0 <- ext 0
-			e1 <- ext 1
-			{-
-			inp . Draw $ M.fromList [
---				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
-				(0, ((bool (uniformBufferObject e0) def f), rs')),
-				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
-				]
-				-}
---				-}
 			bool (Just <$> outp) (pure Nothing) =<< oute
-		putStrLn "HERE"
 		case o of
-			Nothing -> putStrLn "NO EVENT" >> loop rs
+			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS" >> atomically (writeTChan e ())
 			Just (EventKeyDown w ky) -> do
 				putStrLn $ "KEY DOWN: " ++ show w ++ " " ++ show ky
@@ -210,7 +198,6 @@ untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 					$ OccMouseDown (WindowId $ fromIntegral w) ButtonRight
 				loop instances2
 			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'3) -> do
---				putStrLn "BUTTON MIDDLE DOWN"
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseDown (WindowId $ fromIntegral w) ButtonMiddle
@@ -233,7 +220,6 @@ untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
 			Just (EventCursorPosition k x y) -> do
---				putStrLn ("position: " ++ show k ++ " " ++ show (x, y))
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseMove (WindowId $ fromIntegral k) (x, y)
