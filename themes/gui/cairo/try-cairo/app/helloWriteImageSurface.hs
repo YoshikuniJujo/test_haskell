@@ -18,7 +18,7 @@ main = do
 	sfc0 <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
 	cr <- cairoCreate sfc0
 
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
 	cairoRectangle cr 0 0 256 256
 	cairoFill cr
 
