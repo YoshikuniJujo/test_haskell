@@ -15,12 +15,14 @@ import Data.ImageData.Text
 import Trial.TryPango
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 scale :: Double
 scale = 16
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32
 		(round $ 224 * scale) (round $ 104 * scale)
 	cr <- cairoCreate sr
 

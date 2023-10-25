@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 
@@ -43,6 +43,7 @@ library
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , union-angle
     , union-color
@@ -64,6 +65,7 @@ executable try-cairo-argb32
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -86,6 +88,7 @@ executable try-cairo-layout
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -108,6 +111,7 @@ executable try-color
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -130,6 +134,7 @@ executable try-fill-rule
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -152,6 +157,7 @@ executable try-font
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -174,6 +180,7 @@ executable try-gradient
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -195,6 +202,7 @@ executable try-image-data-exe
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -217,6 +225,7 @@ executable try-layout
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -239,6 +248,7 @@ executable try-layout-alignment
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -261,6 +271,7 @@ executable try-layout-auto-dir
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -283,6 +294,7 @@ executable try-layout-ellipsize
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -305,6 +317,7 @@ executable try-layout-indent
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -327,6 +340,7 @@ executable try-layout-line-spacing
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -349,6 +363,7 @@ executable try-layout-wrap
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -371,6 +386,7 @@ executable try-line
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -393,6 +409,7 @@ executable try-mesh
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -415,6 +432,7 @@ executable try-operator
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -437,6 +455,7 @@ executable try-pattern-extend
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -459,6 +478,7 @@ executable try-pattern-filter
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -481,6 +501,7 @@ executable try-shape
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -503,6 +524,7 @@ executable try-surface-mask
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -525,6 +547,7 @@ executable try-surface-source
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -547,6 +570,7 @@ executable try-tex
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -569,6 +593,7 @@ executable try-underline
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle
@@ -591,6 +616,7 @@ test-suite try-image-data-test
     , primitive
     , simple-cairo
     , simple-pango
+    , temporary
     , text
     , try-image-data
     , union-angle

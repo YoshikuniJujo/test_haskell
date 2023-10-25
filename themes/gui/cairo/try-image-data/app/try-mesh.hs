@@ -9,6 +9,8 @@ import Data.ImageData
 import Trial.TryCairo
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = (`makePng` "pngs/try-mesh.png") =<< makeSurface Surface {
 	surfaceBase = SurfaceBaseBlank {

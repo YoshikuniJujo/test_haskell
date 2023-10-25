@@ -5,75 +5,74 @@
 
 packages:
 - completed:
+    commit: a7007c8704e03eb830916f202abafe779f1dfbbc
+    git: https://github.com/YoshikuniJujo/simple-cairo
     name: simple-cairo
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
+      sha256: 9c7f68e36324283db3d0e4aaf30fea944eafb40f6d1ce6d551bfba62288e37f1
       size: 4958
-      sha256: 8f3092f538d08f45a4178603ab1f54c7bb7bd909d08975fc8596cf3488d6ee2e
-    commit: ab9aab1beb1d069e29902c58c32ec178f6bfa2d2
+    version: 0.1.0.0
   original:
+    commit: a7007c8704e03eb830916f202abafe779f1dfbbc
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: ab9aab1beb1d069e29902c58c32ec178f6bfa2d2
 - completed:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+    git: https://github.com/YoshikuniJujo/cairo-image
     name: cairo-image
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/cairo-image
     pantry-tree:
+      sha256: 5b489f2b4ca2de60feab3c83f9bcac15674e7566d4504804f92445e29711f412
       size: 887
-      sha256: 46d3b277fcd23a824bc7d035f7288a16db7a211cef6fa858e85c24f079d1cf8a
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+    version: 0.1.0.0
   original:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
     git: https://github.com/YoshikuniJujo/cairo-image
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - completed:
+    commit: 54d19480822bb877c40aec622b3df685571539ba
+    git: https://github.com/YoshikuniJujo/union-color
     name: union-color
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/union-color
     pantry-tree:
-      size: 570
       sha256: b608ba38bce880cf7e5a5c46f1e7ac2d72444cbf601f548a5776ef1039b95a07
-    commit: 54d19480822bb877c40aec622b3df685571539ba
+      size: 570
+    version: 0.1.0.0
   original:
+    commit: 54d19480822bb877c40aec622b3df685571539ba
     git: https://github.com/YoshikuniJujo/union-color
-    commit: 54d19480822bb877c40aec622b3df685571539ba
 - completed:
+    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
+    git: https://github.com/YoshikuniJujo/JuicyCairo
     name: JuicyCairo
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/JuicyCairo
     pantry-tree:
-      size: 622
       sha256: 7af8d7bb8915566ab63cb40ccde07361e8282f3784ac7b9a4c571dfb945deee6
-    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
+      size: 622
+    version: 0.1.0.0
   original:
+    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
     git: https://github.com/YoshikuniJujo/JuicyCairo
-    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
 - completed:
+    commit: 4219ecf5de6caed418269577834f26eb0199068d
+    git: https://github.com/YoshikuniJujo/simple-pango
     name: simple-pango
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
+      sha256: 73fc630af21eeb4604cd11ad1b467cd54459cc43fdedfa965ed9a6c04191c726
       size: 3830
-      sha256: 04d899761301a7931951238ad618d33e70a4384fc0f5e858e5e37bc99dd8c351
-    commit: 29d86652bf47ecc8e29793ff92a56982212bdde1
-  original:
-    git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 29d86652bf47ecc8e29793ff92a56982212bdde1
-- completed:
-    name: glib-stopgap
     version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/glib-stopgap
-    pantry-tree:
-      size: 1273
-      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
-    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
   original:
-    git: https://github.com/YoshikuniJujo/glib-stopgap
+    commit: 4219ecf5de6caed418269577834f26eb0199068d
+    git: https://github.com/YoshikuniJujo/simple-pango
+- completed:
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    name: glib-stopgap
+    pantry-tree:
+      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
+      size: 1273
+    version: 0.1.0.0
+  original:
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+    git: https://github.com/YoshikuniJujo/glib-stopgap
 snapshots:
 - completed:
-    size: 587546
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/10.yaml
-    sha256: 88b4f81e162ba3adc230a9fcccc4d19ac116377656bab56c7382ca88598b257a
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/10.yaml
+    sha256: 85d2382958c178491d3fe50d770a624621f5ab456beef7d31ac7521f780c9bc7
+    size: 640042
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/17.yaml
+  original: lts-21.17

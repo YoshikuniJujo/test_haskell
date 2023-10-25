@@ -10,7 +10,7 @@ import Foreign.C.Types
 import Control.Monad.ST
 import Data.Maybe
 import Data.Color
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.CairoContext
 import Data.ImageData as I
 import Graphics.Cairo.Drawing.CairoT
@@ -23,7 +23,6 @@ import Graphics.Cairo.Drawing.CairoPatternT.Setting
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Utilities.CairoMatrixT
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Graphics.Cairo.Values
 
 import Trial.TryPango
 
@@ -40,7 +39,7 @@ makeSurfaceBase = \case
 	SurfaceBaseBlank {
 		surfaceBaseWidth = (fromIntegral -> w),
 		surfaceBaseHeight = (fromIntegral -> h) } ->
-		cairoImageSurfaceCreate cairoFormatArgb32 w h
+		cairoImageSurfaceCreate CairoFormatArgb32 w h
 	SurfaceBaseA8 img ->
 		cairoImageSurfaceCreateForCairoImage $ CairoImageA8 img
 	SurfaceBaseArgb32 img ->

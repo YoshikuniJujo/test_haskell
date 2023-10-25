@@ -6,16 +6,15 @@ module Trial.MakePng where
 import Control.Monad.ST
 import Data.Int
 import Data.CairoContext
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Graphics.Cairo.Values
 
 pngWith :: FilePath -> Int32 -> Int32 -> (CairoTIO s -> IO ()) -> IO ()
 pngWith fp w h act = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 w h
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 w h
 	cr <- cairoCreate sr
 	act cr
 	makePng sr fp

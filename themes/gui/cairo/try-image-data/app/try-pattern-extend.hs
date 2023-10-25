@@ -11,6 +11,8 @@ import Data.ImageData
 import Trial.TryCairo
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 imgSize, ptnSize :: Integer
 imgSize = 256
 ptnSize = 64

@@ -13,6 +13,8 @@ import Data.ImageData
 import Trial.TryCairo
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = for_ (zip [0 :: Int ..] $ separate 12 operators) \(i, ops) ->
 	page ("pngs/try-operator-" ++ show i ++ ".png") ops

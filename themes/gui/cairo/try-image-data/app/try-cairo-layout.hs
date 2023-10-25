@@ -11,6 +11,8 @@ import Data.ImageData.Text hiding (Rectangle)
 import Trial.TryCairo
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = (`makePng` "pngs/try-cairo-layout.png") =<< makeSurface Surface {
 	surfaceBase = SurfaceBaseBlank {

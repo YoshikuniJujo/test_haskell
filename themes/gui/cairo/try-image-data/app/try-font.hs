@@ -13,9 +13,11 @@ import Graphics.Cairo.Values
 import Trial.TryPango
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 900 1000
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 900 1000
 	cr <- cairoCreate sr
 	drawFont cr 16 16 (normalFont "sans") "abcあいう"
 	drawFont cr 16 64 (normalFont "serif") {

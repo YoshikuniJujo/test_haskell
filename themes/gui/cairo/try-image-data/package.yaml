@@ -30,6 +30,7 @@ dependencies:
 - cairo-image
 - union-color
 - simple-pango
+- temporary
 
 library:
   source-dirs: src

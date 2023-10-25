@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/10.yaml
+resolver: lts-21.17
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,15 +41,15 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: ab9aab1beb1d069e29902c58c32ec178f6bfa2d2
+  commit: a7007c8704e03eb830916f202abafe779f1dfbbc
 - git: https://github.com/YoshikuniJujo/cairo-image
-  commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+  commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
 - git: https://github.com/YoshikuniJujo/union-color
   commit: 54d19480822bb877c40aec622b3df685571539ba
 - git: https://github.com/YoshikuniJujo/JuicyCairo
   commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
 - git: https://github.com/YoshikuniJujo/simple-pango
-  commit: 29d86652bf47ecc8e29793ff92a56982212bdde1
+  commit: 4219ecf5de6caed418269577834f26eb0199068d
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 

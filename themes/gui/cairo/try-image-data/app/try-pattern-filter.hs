@@ -12,6 +12,8 @@ import System.Environment
 import Trial.TryCairo
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 imgSize :: Integer
 imgSize = 256
 

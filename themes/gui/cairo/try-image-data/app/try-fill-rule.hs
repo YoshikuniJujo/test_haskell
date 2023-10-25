@@ -10,6 +10,8 @@ import Data.ImageData
 import Trial.TryCairo
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = (`makePng` "pngs/try-fill-rule.png") =<< makeSurface Surface {
 	surfaceBase = SurfaceBaseBlank {

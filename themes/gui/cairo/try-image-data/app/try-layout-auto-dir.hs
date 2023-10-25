@@ -11,9 +11,11 @@ import Data.ImageData.Text
 import Trial.TryPango
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 1000 1200
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 1000 1200
 	cr <- cairoCreate sr
 
 	cairoMoveTo cr 32 32

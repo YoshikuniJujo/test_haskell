@@ -18,9 +18,11 @@ import Data.ImageData.Text
 import Trial.TryPango
 import Trial.MakePng
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 500 600
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 500 600
 	cr <- cairoCreate sr
 
 	for_ (zip [0 .. 20] (cycle [0, 1])) \(y, d) ->
