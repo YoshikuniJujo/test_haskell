@@ -20,12 +20,14 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
 
+import Data.CairoContext
+
 #include <cairo.h>
 
-testDraw :: FilePath -> #{type int} -> #{type int} -> (CairoT RealWorld -> IO a) -> IO a
+testDraw :: FilePath -> #{type int} -> #{type int} -> (CairoT r RealWorld -> IO a) -> IO a
 testDraw fp w h f = do
 	putStrLn "*** TEST DRAW BEGIN ***"
-	sfc0 <- cairoImageSurfaceCreate cairoFormatArgb32 w h
+	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 w h
 	cr <- cairoCreate sfc0
 	f cr <* do
 		cairoImageSurfaceGetCairoImage sfc0 >>= \case
@@ -39,13 +41,13 @@ writeArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8
 writeArgb32Mut :: FilePath -> Argb32Mut RealWorld -> IO ()
 writeArgb32Mut fp = (writePng fp =<<) . cairoArgb32MutToJuicyRGBA8
 
-redSquare :: PrimMonad m => CairoT (PrimState m) -> m ()
+redSquare :: PrimMonad m => CairoT r (PrimState m) -> m ()
 redSquare cr = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 0 0
 	cairoRectangle cr 25 25 50 50
 	cairoFill cr
 
-checkPattern :: PrimMonad m => CairoT (PrimState m) -> #{type int} -> #{type int} -> m ()
+checkPattern :: PrimMonad m => CairoT r (PrimState m) -> #{type int} -> #{type int} -> m ()
 checkPattern cr w h = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
 	for_ [0 .. (w - 1) `div` 25] \y -> for_ [0 .. (h - 1) `div` 25] \x ->
@@ -56,7 +58,7 @@ checkPattern cr w h = do
 		when ((x + y) `mod` 2 == 1) $ box cr x y
 	cairoFill cr
 
-box :: PrimMonad m => CairoT (PrimState m) -> #{type int} -> #{type int} -> m ()
+box :: PrimMonad m => CairoT r (PrimState m) -> #{type int} -> #{type int} -> m ()
 box cr x y = cairoRectangle cr (fromIntegral x * 25) (fromIntegral y * 25) 25 25
 
 readArgb32 :: FilePath -> IO Argb32

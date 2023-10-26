@@ -11,10 +11,12 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Surfaces.PngSupport
 import Graphics.Cairo.Values
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 500 500
-	cr <- cairoCreate sr
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 500 500
+	cr <- cairoCreate $ CairoSurfaceTImage sr
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
 	cairoMoveTo cr 100 100
@@ -45,4 +47,4 @@ main = do
 	cairoPaint cr
 	-}
 
-	print =<< cairoSurfaceWriteToPng sr "createdAsSource.png"
+	print =<< cairoSurfaceWriteToPng (CairoSurfaceTImage sr) "createdAsSource.png"

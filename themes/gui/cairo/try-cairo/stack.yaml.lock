@@ -5,41 +5,48 @@
 
 packages:
 - completed:
+    commit: a7007c8704e03eb830916f202abafe779f1dfbbc
+    git: https://github.com/YoshikuniJujo/simple-cairo
     name: simple-cairo
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 1792
-      sha256: 2a5ae7c326730bca8bf8faa0c36abd2e1720d913654aadb21e23df42794eb4cc
-    commit: 1af5ba1060f75abb55a5b67756def026cf906814
+      sha256: 9c7f68e36324283db3d0e4aaf30fea944eafb40f6d1ce6d551bfba62288e37f1
+      size: 4958
+    version: 0.1.0.0
   original:
+    commit: a7007c8704e03eb830916f202abafe779f1dfbbc
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: 1af5ba1060f75abb55a5b67756def026cf906814
 - completed:
+    commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
+    git: https://github.com/YoshikuniJujo/JuicyCairo
     name: JuicyCairo
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/JuicyCairo
     pantry-tree:
+      sha256: ce9e0bbbc4b9db6d85c209040f73222f7e9ab66b95f85536dd71f3aa6ec19a09
       size: 622
-      sha256: 7af8d7bb8915566ab63cb40ccde07361e8282f3784ac7b9a4c571dfb945deee6
-    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
-  original:
-    git: https://github.com/YoshikuniJujo/JuicyCairo
-    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
-- completed:
-    name: cairo-image
     version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/cairo-image.git
-    pantry-tree:
-      size: 887
-      sha256: 46d3b277fcd23a824bc7d035f7288a16db7a211cef6fa858e85c24f079d1cf8a
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
   original:
+    commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
+    git: https://github.com/YoshikuniJujo/JuicyCairo
+- completed:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
     git: https://github.com/YoshikuniJujo/cairo-image.git
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+    name: cairo-image
+    pantry-tree:
+      sha256: 5b489f2b4ca2de60feab3c83f9bcac15674e7566d4504804f92445e29711f412
+      size: 887
+    version: 0.1.0.0
+  original:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+    git: https://github.com/YoshikuniJujo/cairo-image.git
+- completed:
+    hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
+    pantry-tree:
+      sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850
+      size: 429
+  original:
+    hackage: union-color-0.1.2.0
 snapshots:
 - completed:
-    size: 568887
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2021/2/25.yaml
-    sha256: ece4fbc22b6e3dcc608f68447eccb00f9c114b8b1fbaf55ff607ecf7a56e8eeb
-  original: nightly-2021-02-25
+    sha256: 85d2382958c178491d3fe50d770a624621f5ab456beef7d31ac7521f780c9bc7
+    size: 640042
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/17.yaml
+  original: lts-21.17

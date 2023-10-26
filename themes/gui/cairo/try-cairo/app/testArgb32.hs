@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Graphics.Cairo.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoPatternT
@@ -14,7 +14,7 @@ import Parts (checkPattern, readArgb32, writeArgb32)
 main :: IO ()
 main = do
 	putStrLn "*** TEST ARGB 32 BEGIN ***"
-	sfc0 <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
+	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
 	cr <- cairoCreate sfc0
 	checkPattern cr 256 256
 	sfc <- cairoImageSurfaceCreateForCairoImage . CairoImageArgb32

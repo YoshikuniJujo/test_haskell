@@ -2,23 +2,23 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+import Foreign.C.Types
 import Control.Monad
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Foldable
 import Data.Maybe
-import Data.Int
 import Data.Color
 import Data.CairoImage.Internal
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Graphics.Cairo.Types
-import Graphics.Cairo.Values
 
 import Codec.Picture hiding (pixelAt, generateImage)
 
 import Juicy
+
+import Data.CairoContext
 
 main :: IO ()
 main = do
@@ -30,18 +30,22 @@ main = do
 	drawBlue
 	drawYellow
 
-makeRed :: PrimMonad m => m (CairoSurfaceT (PrimState m), CairoT (PrimState m))
+makeRed :: PrimMonad m => m (CairoSurfaceImageT r (PrimState m), CairoT r (PrimState m))
 makeRed = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 50 50
-	cr <- cairoCreate s
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 50 50
+	cr <- cairoCreate $ CairoSurfaceTImage s
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 0 0
 	pure (s, cr)
 
-red :: forall s . ST s (DynamicImage, CairoFormatT, Int32) -- (Vector Word8, CairoFormatT, Int32)
+red :: forall s . ST s (DynamicImage, CairoFormatT, CInt) -- (Vector Word8, CairoFormatT, Int32)
 red = do
 	(s, cr) <- makeRed
 	cairoPaint cr
 	(,,) <$> cairoImageSurfaceGetJuicyImage s <*> cairoImageSurfaceGetFormat s <*> cairoImageSurfaceGetStride s
+
+cairoImageSurfaceGetFormat s = cairoImageFormat <$> cairoImageSurfaceGetCairoImage s
+
+cairoImageSurfaceGetStride s = cairoImageStride <$> cairoImageSurfaceGetCairoImage s
 
 redIo :: IO (Either String Bool) -- DynamicImage -- (Vector Word8)
 redIo = do
@@ -65,23 +69,23 @@ green :: forall s . ST s (
 	Either (Argb32, Maybe PixelArgb32, Maybe PixelArgb32, Maybe PixelArgb32) CairoImage,
 	Maybe PixelArgb32 )
 green = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 50 50
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 50 50
 	cr <- cairoCreate s
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 1 0
 	cairoPaint cr
 	r1 <- (<$> cairoImageSurfaceGetCairoImage s) \case
 		CairoImageArgb32 a -> Left (a, pixelAt a 0 0, pixelAt a 30 30, pixelAt a 49 49)
 		i -> Right i
-	Left r2 <- (<$> cairoImageSurfaceGetCairoImageMut s) \case
-		CairoImageMutArgb32 a -> Left a
-		i -> Right i
-	p2020 <- getPixel r2 20 20
-	pure (r1, p2020)
+	cairoImageSurfaceGetCairoImageMut s >>= \case
+		CairoImageMutArgb32 r2 -> do
+			p2020 <- getPixel r2 20 20
+			pure (r1, p2020)
+		i -> error $ "green: " ++ show i
 
 blue :: Argb32
 blue = generateImage 200 200 \_ _ -> PixelArgb32Word32 0xff0000ff
 
-blueSurface :: ST s (CairoSurfaceT s)
+blueSurface :: ST s (CairoSurfaceImageT r s)
 blueSurface = cairoImageSurfaceCreateForCairoImage $ CairoImageArgb32 blue
 
 drawBlue :: IO ()
@@ -95,7 +99,7 @@ yellow = do
 	for_ [0 .. 199] \h -> for_ [0 .. 199] \w -> putPixel i w h $ PixelArgb32Word32 0xffffff00
 	pure i
 
-yellowSurface :: ST s (CairoSurfaceT s)
+yellowSurface :: ST s (CairoSurfaceImageT r s)
 yellowSurface = cairoImageSurfaceCreateForCairoImageMut . CairoImageMutArgb32 =<< yellow
 
 drawYellow :: IO ()

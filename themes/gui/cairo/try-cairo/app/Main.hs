@@ -3,6 +3,8 @@
 
 module Main where
 
+import Foreign.C.Types
+
 import Data.Maybe
 import Data.Color
 
@@ -17,8 +19,10 @@ import Graphics.Cairo.Values
 
 import Control.Monad.ST
 
-surface :: IO (CairoSurfaceT RealWorld)
-surface = cairoImageSurfaceCreate cairoFormatArgb32 800 500
+import Data.CairoImage.Internal
+
+surface :: IO (CairoSurfaceImageT r RealWorld)
+surface = cairoImageSurfaceCreate CairoFormatArgb32 800 500
 
 main :: IO ()
 main = do
@@ -39,10 +43,10 @@ main = do
 		cairoFontSlantNormal cairoFontWeightBold
 	cairoSetFontSize cr 48
 	te <- cairoTextExtents cr "Hello, world!"
-	let	xb = cairoTextExtentsTXBearing te
-		yb = cairoTextExtentsTYBearing te
-		w = cairoTextExtentsTWidth te
-		h = cairoTextExtentsTHeight te
+	let	xb = realToFrac $ cairoTextExtentsTXBearing te
+		yb = realToFrac $ cairoTextExtentsTYBearing te
+		w = realToFrac $ cairoTextExtentsTWidth te
+		h = realToFrac $ cairoTextExtentsTHeight te
 	cairoMoveTo cr (400 - w / 2 - xb) (250 - h / 2 - yb)
 	cairoShowText cr "Hello, world!"
 
@@ -50,14 +54,14 @@ main = do
 	cairoPaintWithAlpha cr 0.2
 
 	linpat <- cairoPatternCreateLinear 200 200 600 300
-	cairoPatternAddColorStopRgb linpat 0 0 0.3 0.8
-	cairoPatternAddColorStopRgb linpat 1 0 0.8 0.3
+	cairoPatternAddColorStopRgb linpat 0 . fromJust $ rgbDouble 0 0.3 0.8
+	cairoPatternAddColorStopRgb linpat 1 . fromJust $ rgbDouble 0 0.8 0.3
 
 	radpat <- cairoPatternCreateRadial 400 250 50 400 250 150
-	cairoPatternAddColorStopRgba radpat 0 0 0 0 1
-	cairoPatternAddColorStopRgba radpat 0.5 0 0 0 0
+	cairoPatternAddColorStopRgba radpat 0 . fromJust $ rgbaDouble 0 0 0 1
+	cairoPatternAddColorStopRgba radpat 0.5 . fromJust $ rgbaDouble 0 0 0 0
 
 	cairoSetSource cr linpat
 	cairoMask cr radpat
 
-	print =<< cairoSurfaceWriteToPng sr "tmp.png"
+	print =<< cairoSurfaceWriteToPng (CairoSurfaceTImage sr) "tmp.png"

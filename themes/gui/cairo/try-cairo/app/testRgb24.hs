@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Values
@@ -16,7 +16,7 @@ import Parts (checkPattern)
 main :: IO ()
 main = do
 	putStrLn "*** TEST RGB 24 BEGIN ***"
-	sfc0 <- cairoImageSurfaceCreate cairoFormatRgb24 256 256
+	sfc0 <- cairoImageSurfaceCreate CairoFormatRgb24 256 256
 	cr <- cairoCreate sfc0
 	checkPattern cr 256 256
 	sfc <- cairoImageSurfaceCreateForCairoImage . CairoImageRgb24

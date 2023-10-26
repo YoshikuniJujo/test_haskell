@@ -12,27 +12,19 @@ import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.Paths
 
+import Control.Monad.Primitive
+import Control.Monad.ST
+
+import SampleImages
+
 main :: IO ()
 main = do
 	putStrLn "*** TEST ARGB 32 BEGIN ***"
-	sfc0 <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
-	cr <- cairoCreate sfc0
 
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
-	cairoRectangle cr 0 0 256 256
-	cairoFill cr
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.3
-	cairoRectangle cr 50 50 110 110
-	cairoFill cr
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.3
-	cairoRectangle cr 100 130 100 70
-	cairoFill cr
-
-	cairoImageSurfaceGetCairoImage sfc0 >>= \case
+	case runST twoRectangles of
 		CairoImageArgb32 i -> writeArgb32 "helloWriteImageSurface.png" i
 		_ -> error "image format error"
+
 	putStrLn "*** TEST ARGB 32 END ***"
 
 writeArgb32 :: FilePath -> Argb32 -> IO ()

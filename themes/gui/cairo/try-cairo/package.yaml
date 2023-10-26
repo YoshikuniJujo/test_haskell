@@ -26,6 +26,7 @@ dependencies:
 - cairo-image
 - JuicyCairo
 - JuicyPixels
+- union-color
 
 library:
   source-dirs: src

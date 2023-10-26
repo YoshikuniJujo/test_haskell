@@ -17,7 +17,7 @@ import Data.JuicyCairo
 main :: IO ()
 main = do
 	putStrLn "*** TEST ARGB 32 BEGIN ***"
-	sfc0 <- cairoImageSurfaceCreate cairoFormatA1 256 256
+	sfc0 <- cairoImageSurfaceCreate CairoFormatA1 256 256
 	cr <- cairoCreate sfc0
 	sfc <- cairoImageSurfaceCreateForCairoImage . CairoImageArgb32
 		=<< readArgb32 =<< getDataFileName "HaskellLogo.png"

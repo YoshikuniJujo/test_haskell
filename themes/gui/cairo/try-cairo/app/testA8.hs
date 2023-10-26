@@ -14,7 +14,7 @@ import Data.Color
 import Data.CairoImage.Internal
 import Codec.Picture hiding (pixelAt, generateImage)
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Drawing.CairoPatternT
+import Graphics.Cairo.Drawing.CairoPatternT.Basic
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
@@ -40,9 +40,9 @@ circle x_ y_ = round $ sqrt (x ^ (2 :: Int) + y ^ (2 :: Int))
 
 type Color = (CDouble, CDouble, CDouble)
 
-testPattern :: Color -> FilePath -> CairoPatternT RealWorld -> IO ()
+testPattern :: Color -> FilePath -> CairoPatternSurfaceT RealWorld -> IO ()
 testPattern (r, g, b) fp p = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 33 33
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 33 33
 	cr <- cairoCreate s
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	cairoPaint cr

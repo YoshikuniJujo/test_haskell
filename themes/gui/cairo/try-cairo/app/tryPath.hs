@@ -8,9 +8,11 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Surfaces.PngSupport
 import Graphics.Cairo.Values
 
+import Data.CairoImage.Internal
+
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 500 500
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 500 500
 	cr <- cairoCreate sr
 
 	cairoSetLineWidth cr 5
@@ -24,4 +26,4 @@ main = do
 
 	cairoStroke cr
 
-	print =<< cairoSurfaceWriteToPng sr "tryPath.png"
+	print =<< cairoSurfaceWriteToPng (CairoSurfaceTImage sr) "tryPath.png"

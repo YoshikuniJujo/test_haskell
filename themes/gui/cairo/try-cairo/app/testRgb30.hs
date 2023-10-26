@@ -16,7 +16,7 @@ import Parts (checkPattern)
 main :: IO ()
 main = do
 	putStrLn "*** TEST RGB 30 BEGIN ***"
-	sfc0 <- cairoImageSurfaceCreate cairoFormatRgb30 256 256
+	sfc0 <- cairoImageSurfaceCreate CairoFormatRgb30 256 256
 	cr <- cairoCreate sfc0
 	checkPattern cr 256 256
 	sfc <- cairoImageSurfaceCreateForCairoImage . CairoImageRgb30
