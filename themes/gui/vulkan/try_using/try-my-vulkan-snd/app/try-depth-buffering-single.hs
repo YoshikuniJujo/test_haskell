@@ -133,6 +133,7 @@ import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
@@ -939,7 +940,7 @@ createTextureImage ::
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
 createTextureImage phdvc dvc gq cp f = do
-	img <- readRgba8 "../../../../files/images/texture.jpg"
+	img <- readRgba8 "../../../../../files/images/texture.jpg"
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
@@ -1258,7 +1259,7 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 	where
 	poolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = TMaybe.N,
-		Vk.DscPool.createInfoFlags = zeroBits,
+		Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
 		Vk.DscPool.createInfoMaxSets = 1,
 		Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
 	poolSize0 = Vk.DscPool.Size {
