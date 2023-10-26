@@ -3,6 +3,7 @@
 module SampleImages where
 
 import Control.Monad.Primitive
+import Control.Monad.ST
 import Data.Maybe
 import Data.Color
 import Data.CairoImage.Internal
@@ -10,8 +11,13 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 
-twoRectangles :: PrimMonad m => m CairoImage
-twoRectangles = do
+twoRectangles :: Argb32
+twoRectangles = case runST twoRectanglesPrim of
+	CairoImageArgb32 i -> i
+	_ -> error "never occur"
+
+twoRectanglesPrim :: PrimMonad m => m CairoImage
+twoRectanglesPrim = do
 	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
 	cr <- cairoCreate sfc0
 
