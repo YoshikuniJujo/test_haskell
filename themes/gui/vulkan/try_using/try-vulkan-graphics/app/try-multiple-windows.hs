@@ -309,7 +309,7 @@ run inst phdv qfis dv gq pq =
 		phdv dv gq cp bfgrp mmgrp i v) >>= \vbs ->
 
 	winGroups @_ @_ @_ @scfmt inst dv \(wgs :: WinGroups
-		sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k) ->
+		sw si sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k) ->
 
 	atomically (newTVar @Int 0) >>= \wnum ->
 	let	crw = do
@@ -321,7 +321,7 @@ run inst phdv qfis dv gq pq =
 
 winGroups :: Vk.Ist.I si -> Vk.Dvc.D sd -> (
 	forall sw ssfc sr sg sias srfs siff ssc siv sf .
-	WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k ->
+	WinGroups sw si sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k ->
 	IO a) -> IO a
 winGroups inst dv f =
 	Glfw.Win.group \wgrp ->
@@ -339,9 +339,9 @@ winGroups inst dv f =
 	f $ WinGroups
 		wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp
 
-data WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k =
+data WinGroups sw si sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k =
 	WinGroups
-		(Glfw.Win.Group sw k) (Vk.Khr.Surface.Group 'Nothing ssfc k)
+		(Glfw.Win.Group sw k) (Vk.Khr.Surface.Group si 'Nothing ssfc k)
 		(Vk.RndrPass.Group sd 'Nothing sr k)
 		(Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
@@ -361,7 +361,7 @@ createWindowResourcesWinGroups ::
 	Mappable n ) =>
 	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
-	WinGroups sw sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k ->
+	WinGroups sw si sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k ->
 	k -> IO (WinParams
 		sw sl nm ssfc sr sg sias srfs siff scifmt ssc
 		(Replicate n siv) (Replicate n sf))
@@ -380,7 +380,7 @@ createWindowResources ::
 	) =>
 	Vk.Ist.I si -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[] '[] ->
-	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group 'Nothing ssfc k ->
+	Glfw.Win.Group sw k -> Vk.Khr.Surface.Group si 'Nothing ssfc k ->
 	Vk.RndrPass.Group sd 'Nothing sr k ->
 	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)],
@@ -419,16 +419,16 @@ createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
 createSurface win ist f =
 	Vk.Khr.Surface.group ist nil' \sgrp ->
-	f . fromRight =<< Vk.Khr.Surface.Glfw.Win.create' ist sgrp () win
+	f . fromRight =<< Vk.Khr.Surface.Glfw.Win.create' sgrp () win
 
 fromRight :: Either String r -> r
 fromRight = \case Right r -> r; Left emsg -> error $ "fromRight: not Right: " ++ emsg
 
 createSurface' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Glfw.Win.W sw -> Vk.Ist.I si -> Vk.Khr.Surface.Group ma ss k -> k ->
+	Glfw.Win.W sw -> Vk.Ist.I si -> Vk.Khr.Surface.Group si ma ss k -> k ->
 	IO (Vk.Khr.Surface.S ss)
 createSurface' win ist sgrp k =
-	fromRight <$> Vk.Khr.Surface.Glfw.Win.create' ist sgrp k win
+	fromRight <$> Vk.Khr.Surface.Glfw.Win.create' sgrp k win
 
 pickPhysicalDevice' :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ssfc -> IO (Vk.PhDvc.P, QueueFamilyIndices)

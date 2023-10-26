@@ -26,6 +26,7 @@ dependencies:
 - mtl
 - data-default
 - containers
+- array
 - vector
 - text
 - time
@@ -48,6 +49,7 @@ dependencies:
 - ranged-list
 - typelevel-tools
 - temporary
+- try-cairo-image-samples
 
 ghc-options:
 - -Wall
@@ -120,6 +122,15 @@ executables:
     - try-vulkan-graphics
   try-multiple-windows:
     main:                try-multiple-windows.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-graphics
+  try-depth-buffering-single:
+    main:                try-depth-buffering-single.hs
     source-dirs:         app
     ghc-options:
     - -threaded

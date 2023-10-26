@@ -31,14 +31,16 @@ import Gpu.Vulkan.Cglm qualified as Cglm
 import Options.Declarative
 import Control.Monad.Trans
 
+import Data.Map qualified as M
+
 main :: IO ()
 main = run_ action
 
 action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
-action f = liftIO $ untilEnd (get f) =<< rectangles
+action f = liftIO $ untilEnd (get f) =<< rectangles @Int
 
-untilEnd :: Bool -> ((Draw -> STM (), (STM Bool, STM Event)), STM Vk.Extent2d) -> IO ()
+untilEnd :: (Ord k, Num k) => Bool -> ((Command k -> STM (), (STM Bool, STM (Event k))), k -> STM Vk.Extent2d) -> IO ()
 untilEnd f ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	($ instances) $ fix \loop rs -> do
@@ -46,19 +48,19 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
-			e <- ext
-			inp (bool (uniformBufferObject e) def f, rs tm)
+			e <- ext 0
+			inp . Draw $ M.fromList [(0, (bool (uniformBufferObject e) def f, rs tm))]
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
-			Just (EventMouseButtonDown Glfw.MouseButton'1) ->
+			Just (EventMouseButtonDown _ Glfw.MouseButton'1) ->
 				loop instances
-			Just (EventMouseButtonDown Glfw.MouseButton'2) ->
+			Just (EventMouseButtonDown _ Glfw.MouseButton'2) ->
 				loop instances2
-			Just (EventMouseButtonDown _) -> loop rs
-			Just (EventMouseButtonUp _) -> loop rs
-			Just (EventCursorPosition _x _y) -> loop rs
+			Just (EventMouseButtonDown _ _) -> loop rs
+			Just (EventMouseButtonUp _ _) -> loop rs
+			Just (EventCursorPosition _ _x _y) -> loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {
