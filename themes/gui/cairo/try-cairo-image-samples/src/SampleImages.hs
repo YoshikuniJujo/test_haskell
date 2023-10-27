@@ -14,7 +14,7 @@ module SampleImages (
 
 	-- * SURFACE AND CAIRO CONTEXT
 
-	cairoImageSurfaceCreate, CairoSurfaceImageT,
+	cairoImageSurfaceCreate, CairoSurfaceImageT, RealWorld,
 	cairoCreate, CairoT
 
 	) where
