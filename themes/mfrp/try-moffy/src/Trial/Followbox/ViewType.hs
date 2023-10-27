@@ -23,7 +23,7 @@ import Data.OneOfThem
 
 ---------------------------------------------------------------------------
 
-newtype View = View [View1]
+newtype View = View [View1] deriving Show
 
 type View1 = OneOfThem (VText :- Line :- Image :- 'Nil)
 
