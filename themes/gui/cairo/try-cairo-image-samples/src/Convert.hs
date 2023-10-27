@@ -28,7 +28,7 @@ pixelArgb32ToRgba (PixelArgb32Premultiplied a r g b) =
 			"pixelArgb32ToRgba: (a, r, g, b) = (" ++
 			show a ++ ", " ++ show r ++ ", " ++
 			show g ++ ", " ++ show b ++ ")" )
-		$ rgbaPremultipliedWord8 a r g b
+		$ rgbaPremultipliedWord8 r g b a
 
 rgbaToPixelArgb32 :: RealFrac d => Rgba d -> PixelArgb32
 rgbaToPixelArgb32 (RgbaPremultipliedWord8 a r g b) =
