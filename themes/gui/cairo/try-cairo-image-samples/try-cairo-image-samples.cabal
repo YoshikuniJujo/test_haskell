@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Convert
       SampleImages
   other-modules:
       Paths_try_cairo_image_samples
