@@ -89,6 +89,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-use-moffy-vulkan
+  try-followbox:
+    main:                try-followbox.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-use-moffy-vulkan
 
 tests:
   try-use-moffy-vulkan-test:
