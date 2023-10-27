@@ -1,8 +1,9 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module SampleImages (
 	Image(..), Argb32, PixelArgb32,
-	twoRectangles ) where
+	twoRectangles, twoRectanglesPrim ) where
 
 import Control.Monad.Primitive
 import Control.Monad.ST
@@ -14,11 +15,9 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 
 twoRectangles :: Argb32
-twoRectangles = case runST twoRectanglesPrim of
-	CairoImageArgb32 i -> i
-	_ -> error "never occur"
+twoRectangles = runST twoRectanglesPrim
 
-twoRectanglesPrim :: PrimMonad m => m CairoImage
+twoRectanglesPrim :: PrimMonad m => m Argb32
 twoRectanglesPrim = do
 	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
 	cr <- cairoCreate sfc0
@@ -35,4 +34,6 @@ twoRectanglesPrim = do
 	cairoRectangle cr 100 130 100 70
 	cairoFill cr
 
-	cairoImageSurfaceGetCairoImage sfc0
+	cairoImageSurfaceGetCairoImage sfc0 >>= \case
+		CairoImageArgb32 i -> pure i
+		_ -> error "never occur"
