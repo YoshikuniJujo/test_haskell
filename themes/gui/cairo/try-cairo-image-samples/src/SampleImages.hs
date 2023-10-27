@@ -12,9 +12,10 @@ module SampleImages (
 
 	Image(..), Argb32, PixelArgb32, pattern CairoFormatArgb32,
 
-	-- * FUNCTIONS
+	-- * SURFACE AND CAIRO CONTEXT
 
-	cairoImageSurfaceCreate, cairoCreate
+	cairoImageSurfaceCreate, CairoSurfaceImageT,
+	cairoCreate, CairoT
 
 	) where
 
