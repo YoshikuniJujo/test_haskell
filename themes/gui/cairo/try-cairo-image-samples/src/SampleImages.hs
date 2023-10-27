@@ -1,9 +1,22 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module SampleImages (
-	Image(..), Argb32, PixelArgb32,
-	twoRectangles, twoRectanglesPrim, twoRectanglesPrim' ) where
+
+	-- * TWO RECTANGLES
+
+	twoRectangles, twoRectanglesPrim, twoRectanglesPrim',
+
+	-- * TYPE AND ENUMS
+
+	Image(..), Argb32, PixelArgb32, pattern CairoFormatArgb32,
+
+	-- * FUNCTIONS
+
+	cairoImageSurfaceCreate, cairoCreate
+
+	) where
 
 import Control.Monad.Primitive
 import Control.Monad.ST
