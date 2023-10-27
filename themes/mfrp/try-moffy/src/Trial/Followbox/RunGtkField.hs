@@ -1,8 +1,9 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.RunGtkField where
+module Trial.Followbox.RunGtkField (runFollowbox, runFollowboxGen) where
 
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents
@@ -25,6 +26,7 @@ import Trial.Followbox.ViewType
 import Trial.Followbox.TypeSynonym
 
 import Control.Moffy.Run.GtkField (runGtkMain)
+import Control.Moffy.Run.GtkField qualified as G
 
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Cursor
@@ -42,8 +44,17 @@ handleFollowbox = handleFollowboxWith (uncurry . handle)
 runFollowbox :: Browser -> Maybe GithubNameToken -> Sig s (CursorEv :+: StoreDefaultWindow :- FollowboxEv) (Map WindowId View) r -> IO r
 runFollowbox brs mgnt s = do
 	([], (cr, c, c')) <- runGtkMain drawFollowboxGtk []
-	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) c' s (initialFollowboxState $ mkStdGen 8)
+	r <- runFollowboxGen cr c brs mgnt c' s
 	r <$ gtkMainQuit
+
+runFollowboxGen ::
+	TChan (EvReqs G.GuiEv) -> TChan (EvOccs G.GuiEv) -> String ->
+	Maybe GithubNameToken -> TChan x ->
+	Sig s (CursorEv :+: StoreDefaultWindow :- FollowboxEv) x r ->
+	IO r
+runFollowboxGen cr c brs mgnt c' s = do
+	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) c' s (initialFollowboxState $ mkStdGen 8)
+	pure r
 
 newToOldDrawingArea :: New.GtkDrawingArea -> IO GtkWidget
 newToOldDrawingArea da = New.pointer da $ pure . GtkWidget . castPtr
