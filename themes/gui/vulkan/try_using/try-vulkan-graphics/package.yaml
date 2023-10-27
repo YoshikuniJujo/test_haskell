@@ -138,6 +138,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-graphics
+  try-cairo-image-as-texture:
+    main:                try-cairo-image-as-texture.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-graphics
 
 tests:
   try-vulkan-graphics-test:
