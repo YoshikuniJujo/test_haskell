@@ -10,7 +10,7 @@ import Data.Type.Set
 
 import Control.Moffy.Viewable.Basic
 
-data Line = Line' Color LineWidth Position Position
+data Line = Line' Color LineWidth Position Position deriving Show
 numbered [t| Line |]
 
 data Box = Box Rect BColor deriving Show

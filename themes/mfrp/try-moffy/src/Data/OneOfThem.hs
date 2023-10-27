@@ -33,6 +33,13 @@ data OneOfThem :: Set Type -> Type where
 	JustIt :: a -> OneOfThem (a ':~ as)
 	Wrap :: OneOfThem as -> OneOfThem (a ':~ as)
 
+instance Show (OneOfThem 'Nil) where
+	show _ = error "bad"
+
+instance (Show a, Show (OneOfThem as)) => Show (OneOfThem (a :~ as)) where
+	show (JustIt x) = "(JustIt " ++ show x ++ ")"
+	show (Wrap xs) = show xs
+
 {-# COMPLETE Singleton #-}
 
 pattern Singleton :: a -> OneOfThem (Singleton a)

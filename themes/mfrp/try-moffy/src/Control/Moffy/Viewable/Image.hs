@@ -12,7 +12,7 @@ import qualified Data.ByteString as BS
 
 import Control.Moffy.Viewable.Basic (Position)
 
-data Image = Image' Position Png
+data Image = Image' Position Png deriving Show
 data Png = Png { pngWidth :: Double, pngHeight :: Double, pngData :: BS.ByteString }
 	deriving Show
 numbered [t| Image |]

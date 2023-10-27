@@ -16,5 +16,5 @@ import Control.Moffy.Viewable.Basic
 
 -- TEXT
 
-data VText = Text' Color FontName FontSize Position Text
+data VText = Text' Color FontName FontSize Position Text deriving Show
 numbered [t| VText |]
