@@ -13,7 +13,7 @@ module Convert (
 
 	-- * CONVERT
 
-	argb32ToRgba
+	pixelArgb32ToRgba, rgbaToPixelArgb32
 
 	) where
 
@@ -21,6 +21,10 @@ import Data.Maybe
 import Data.Color
 import Data.CairoImage
 
-argb32ToRgba :: PixelArgb32 -> Rgba d
-argb32ToRgba (PixelArgb32Premultiplied a r g b) =
+pixelArgb32ToRgba :: PixelArgb32 -> Rgba d
+pixelArgb32ToRgba (PixelArgb32Premultiplied a r g b) =
 	fromJust $ rgbaPremultipliedWord8 a r g b
+
+rgbaToPixelArgb32 :: RealFrac d => Rgba d -> PixelArgb32
+rgbaToPixelArgb32 (RgbaPremultipliedWord8 a r g b) =
+	fromJust $ pixelArgb32Premultiplied a r g b
