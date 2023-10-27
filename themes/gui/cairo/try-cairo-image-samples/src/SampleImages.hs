@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module SampleImages where
+module SampleImages (
+	Image(..), Argb32, PixelArgb32,
+	twoRectangles ) where
 
 import Control.Monad.Primitive
 import Control.Monad.ST

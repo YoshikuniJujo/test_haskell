@@ -1,6 +1,21 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Convert where
+module Convert (
+
+	-- * CAIRO IMAGE SURFACE PIXELS
+
+	PixelArgb32,
+
+	-- * COLORS
+
+	Rgba, pattern RgbaWord8,
+
+	-- * CONVERT
+
+	argb32ToRgba
+
+	) where
 
 import Data.Maybe
 import Data.Color
