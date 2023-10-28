@@ -252,7 +252,8 @@ draw :: Monoid a => WindowId -> GtkDrawer' a -> TChan (WindowId, FontName, FontS
 draw wid dr ftc co tx wdgt cr () = True <$ do
 	atomically (lastTChan ftc) >>= maybe (pure ()) \(wid', fn, fs, txt) -> case wid' == wid of
 		True -> do
-			(l, d) <- (,) <$> pangoCairoCreateLayout cr
+			(l, d) <- (,)
+				<$> pangoCairoCreateLayout cr
 				<*> pangoFontDescriptionNew
 			d `pangoFontDescriptionSetFamily` fn
 			d `pangoFontDescriptionSetAbsoluteSize` fs
