@@ -58,6 +58,7 @@ library
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
+    , try-moffy
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
@@ -97,6 +98,7 @@ executable try-multi-rectangles
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
+    , try-moffy
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
@@ -137,6 +139,7 @@ executable try-multi-rectangles2
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
+    , try-moffy
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
@@ -177,6 +180,7 @@ executable try-use-cairo
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
+    , try-moffy
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
@@ -218,6 +222,7 @@ test-suite try-vulkan-rectangles-test
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
+    , try-moffy
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
