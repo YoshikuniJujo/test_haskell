@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CairoImage (
-	CairoArgb32, twoRectangles', twoRectanglesIO ) where
+	CairoArgb32, twoRectangles', twoRectanglesIO, twoRectanglesIO' ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -28,6 +28,9 @@ twoRectangles' = CairoArgb32 twoRectangles
 
 twoRectanglesIO :: IO CairoArgb32
 twoRectanglesIO = CairoArgb32 <$> twoRectanglesPrim
+
+twoRectanglesIO' ::  CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> IO CairoArgb32
+twoRectanglesIO' sfc cr = CairoArgb32 <$> twoRectanglesPrim' sfc cr
 
 newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
 

@@ -148,6 +148,8 @@ import Control.Concurrent.STM
 
 import Gpu.Vulkan.CairoImage
 
+import SampleImages
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized
@@ -944,7 +946,12 @@ createTextureImage ::
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
 createTextureImage phdvc dvc gq cp f = do
-	let	img = twoRectangles'
+	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
+	cr <- cairoCreate sfc0
+
+	img <- twoRectanglesIO' sfc0 cr
+
+--	let	img = twoRectangles'
 	let	wdt = fromIntegral $ KObj.imageWidth img
 		hgt = fromIntegral $ KObj.imageHeight img
 	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Img.TilingOptimal
