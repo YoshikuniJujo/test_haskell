@@ -47,6 +47,8 @@ dependencies:
 - time
 - mtl
 - optparse-declarative
+- simple-cairo
+- cairo-image
 
 ghc-options:
 - -Wall
@@ -74,6 +76,15 @@ executables:
     - try-vulkan-rectangles
   try-multi-rectangles2:
     main:                try-multi-rectangles2.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-rectangles
+  try-use-cairo:
+    main:                try-use-cairo.hs
     source-dirs:         app
     ghc-options:
     - -threaded

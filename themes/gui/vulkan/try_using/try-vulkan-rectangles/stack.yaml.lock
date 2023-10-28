@@ -317,6 +317,28 @@ packages:
       size: 631
   original:
     hackage: optparse-declarative-0.4.2
+- completed:
+    commit: a7007c8704e03eb830916f202abafe779f1dfbbc
+    git: https://github.com/YoshikuniJujo/simple-cairo
+    name: simple-cairo
+    pantry-tree:
+      sha256: 9c7f68e36324283db3d0e4aaf30fea944eafb40f6d1ce6d551bfba62288e37f1
+      size: 4958
+    version: 0.1.0.0
+  original:
+    commit: a7007c8704e03eb830916f202abafe779f1dfbbc
+    git: https://github.com/YoshikuniJujo/simple-cairo
+- completed:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+    git: https://github.com/YoshikuniJujo/cairo-image.git
+    name: cairo-image
+    pantry-tree:
+      sha256: 5b489f2b4ca2de60feab3c83f9bcac15674e7566d4504804f92445e29711f412
+      size: 887
+    version: 0.1.0.0
+  original:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+    git: https://github.com/YoshikuniJujo/cairo-image.git
 snapshots:
 - completed:
     sha256: 9313df78f49519315342f4c51ffc5da12659d3735f8ac3c54a1fb98ff874474e
