@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -266,6 +267,25 @@ draw wid dr ftc co tx wdgt cr () = True <$ do
 	readTVarIO tx >>= \mx -> case Map.lookup wid mx of
 		Nothing -> dr wdgt cr mempty
 		Just x -> dr wdgt cr x
+	where
+	mkte ie le = TextExtents <$> r2r ie <*> r2r le
+	r2r r = rct
+		<$> pangoRectangleX r <*> pangoRectangleY r
+		<*> pangoRectangleWidth r <*> pangoRectangleHeight r
+	rct	(fromIntegral -> l) (fromIntegral -> t)
+		(fromIntegral -> w) (fromIntegral -> h) = Rectangle l t w h
+
+occCalcTextExtents ::
+	TChan (EvOccs GuiEv) -> CairoT -> WindowId -> String -> Double -> T.Text -> IO ()
+occCalcTextExtents co cr wid fn fs txt = do
+	(l, d) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	d `pangoFontDescriptionSetFamily` fn
+	d `pangoFontDescriptionSetAbsoluteSize` fs
+	l `pangoLayoutSetFontDescription` d
+	l `pangoLayoutSetText` txt
+	atomically . writeTChan co . expand . Singleton
+			. OccCalcTextExtents wid fn fs txt
+		=<< pangoLayoutWithPixelExtents l \ie le -> mkte ie le
 	where
 	mkte ie le = TextExtents <$> r2r ie <*> r2r le
 	r2r r = rct
