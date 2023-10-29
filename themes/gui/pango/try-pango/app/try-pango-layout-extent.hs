@@ -5,6 +5,8 @@
 
 module Main (main) where
 
+import Foreign.C.Types
+import Control.Monad.ST
 import Text.Nowdoc
 import Codec.Picture
 
@@ -17,6 +19,7 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
+import Data.CairoContext
 import Data.CairoImage.Internal
 import Data.JuicyCairo
 
@@ -54,16 +57,22 @@ main = do
 		_ -> error "never occur"
 
 	putStrLn "\nFOO"
-	pl3 <- pangoCairoCreateLayout cr
-	pfd3 <- pangoFontDescriptionNew
-	pangoFontDescriptionSet pfd3 $ Family "serif"
-	pangoFontDescriptionSet pfd3 $ AbsoluteSize 30
-	pangoLayoutSet pl3 . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd3
-	pangoLayoutSet pl3 ("Next" :: T.Text)
-	fpl3 <- pangoLayoutFreeze pl3
-	print =<< pangoLayoutInfo @PixelExtents fpl3
+	print =<< getPangoLayoutExtent cr "serif" 30 "Next"
 
 	pure ()
+
+getPangoLayoutExtent ::
+	CairoT r RealWorld -> String -> CDouble -> T.Text -> IO PixelExtents
+getPangoLayoutExtent cr fm sz tx = do
+	pl3 <- pangoCairoCreateLayout cr
+	pfd3 <- pangoFontDescriptionNew
+	pangoFontDescriptionSet pfd3 $ Family fm
+	pangoFontDescriptionSet pfd3 $ AbsoluteSize sz
+	pangoLayoutSet pl3 . pangoFontDescriptionToNullable . Just
+		=<< pangoFontDescriptionFreeze pfd3
+	pangoLayoutSet pl3 tx
+	fpl3 <- pangoLayoutFreeze pl3
+	pangoLayoutInfo @PixelExtents fpl3
 
 someText :: T.Text
 someText = T.unlines [
