@@ -50,7 +50,7 @@ main = do
 	pangoCairoShowLayout cr fpl2
 
 	cairoImageSurfaceGetCairoImage s >>= \case
-		CairoImageArgb32 a -> writePng "try-pango-layout-extent.png" $ cairoArgb32ToJuicyRGBA8 a
+		CairoImageArgb32 a -> writePng "png/try-pango-layout-extent.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
 	putStrLn "\nFOO"
