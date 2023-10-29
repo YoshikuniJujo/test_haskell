@@ -49,6 +49,7 @@ dependencies:
 - optparse-declarative
 - simple-cairo
 - cairo-image
+- simple-pango
 - try-moffy
 
 ghc-options:

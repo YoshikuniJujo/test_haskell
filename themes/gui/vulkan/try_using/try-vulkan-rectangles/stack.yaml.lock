@@ -418,6 +418,17 @@ packages:
   original:
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
     git: https://github.com/YoshikuniJujo/glib-stopgap
+- completed:
+    commit: 4219ecf5de6caed418269577834f26eb0199068d
+    git: https://github.com/YoshikuniJujo/simple-pango
+    name: simple-pango
+    pantry-tree:
+      sha256: 73fc630af21eeb4604cd11ad1b467cd54459cc43fdedfa965ed9a6c04191c726
+      size: 3830
+    version: 0.1.0.0
+  original:
+    commit: 4219ecf5de6caed418269577834f26eb0199068d
+    git: https://github.com/YoshikuniJujo/simple-pango
 snapshots:
 - completed:
     sha256: 9313df78f49519315342f4c51ffc5da12659d3735f8ac3c54a1fb98ff874474e

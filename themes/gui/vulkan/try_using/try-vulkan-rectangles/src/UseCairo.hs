@@ -50,7 +50,6 @@ import Foreign.Storable.Generic qualified as StrG
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
-import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
@@ -164,6 +163,10 @@ import Data.CairoImage.Internal
 import Data.CairoContext
 import Control.Monad.ST
 
+import PangoLayoutExtent
+
+import Control.Moffy.Event.CalcTextExtents qualified as CTE
+
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 rectangles2 inp outp vext = GlfwG.init error $ do
@@ -203,13 +206,6 @@ readTVarOr d mp k = do
 		Nothing -> pure d
 		Just v -> readTVar v
 
-waitAndRead :: Ord k => TVar (M.Map k (TVar a)) -> k -> STM a
-waitAndRead vmv k = do
-	mv <- (M.lookup k) <$> readTVar vmv
-	case mv of
-		Nothing -> retry
-		Just v -> readTVar v
-
 getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
 	Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Khr.Sfc.S ssfc -> SwapChainSupportDetails ->
@@ -237,6 +233,7 @@ data Command k
 	| OpenWindow
 	| DestroyWindow k
 	| GetEvent
+	| CalcTextLayoutExtent CTE.CalcTextExtents
 	deriving Show
 
 data Event k
@@ -439,7 +436,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
 	smrct sbrct nmrct . (
-	Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k ) =>
+	Mappable n, Vk.T.FormatToValue scfmt, Ord k ) =>
 	TChan (Event k) -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
@@ -1543,6 +1540,9 @@ mainLoop inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges cr = do
 				if cls then pure () else loop
 			GetEvent -> do
 				atomically (readTVar ges) >>= sequence_
+				loop
+			CalcTextLayoutExtent (CTE.CalcTextExtentsReq _ fn fs tx) -> do
+				print =<< getPangoLayoutExtent cr fn (realToFrac fs) tx
 				loop
 
 rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])

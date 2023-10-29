@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      PangoLayoutExtent
       Rectangles
       Rectangles2
       ThEnv
@@ -46,6 +47,7 @@ library
     , optparse-declarative
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
     , text
@@ -86,6 +88,7 @@ executable try-multi-rectangles
     , optparse-declarative
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
     , text
@@ -127,6 +130,7 @@ executable try-multi-rectangles2
     , optparse-declarative
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
     , text
@@ -168,6 +172,7 @@ executable try-use-cairo
     , optparse-declarative
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
     , text
@@ -210,6 +215,7 @@ test-suite try-vulkan-rectangles-test
     , optparse-declarative
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
     , text

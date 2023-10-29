@@ -86,6 +86,8 @@ extra-deps:
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+- git: https://github.com/YoshikuniJujo/simple-pango
+  commit: 4219ecf5de6caed418269577834f26eb0199068d
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

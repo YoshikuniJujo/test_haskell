@@ -35,6 +35,9 @@ import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
 import Data.Map qualified as M
 
+import Control.Moffy.Event.Window
+import Control.Moffy.Event.CalcTextExtents qualified as CTE
+
 main :: IO ()
 main = run_ action
 
@@ -48,10 +51,15 @@ action f = liftIO do
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	rectangles2 inp outp vext
 
-untilEnd :: Bool -> ((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
+untilEnd :: Bool -> (
+	(Command Int -> STM (), (STM Bool, STM (Event Int))),
+	Int -> STM Vk.Extent2d ) -> IO ()
 untilEnd f ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	atomically $ inp OpenWindow
+
+	atomically . inp . CalcTextLayoutExtent
+		$ CTE.CalcTextExtentsReq (WindowId 0) "serif" 30 "Hello, world!"
 
 	forkIO $ forever do
 		threadDelay 5000
