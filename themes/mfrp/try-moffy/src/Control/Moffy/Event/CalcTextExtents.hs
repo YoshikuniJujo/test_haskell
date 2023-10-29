@@ -28,6 +28,7 @@ numbered [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
 		OccCalcTextExtents WindowId FontName FontSize T.Text TextExtents
+		deriving Show
 
 data TextExtents = TextExtents {
 	textExtentsInkRect :: Rectangle,
