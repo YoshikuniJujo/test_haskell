@@ -165,6 +165,7 @@ import Control.Monad.ST
 
 import PangoLayoutExtent
 
+import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
@@ -245,6 +246,7 @@ data Event k
 	| EventCursorPosition k Double Double
 	| EventOpenWindow k
 	| EventDeleteWindow k
+	| EventTextLayoutExtentResult (Occurred CTE.CalcTextExtents)
 	deriving Show
 
 enableValidationLayers :: Bool
