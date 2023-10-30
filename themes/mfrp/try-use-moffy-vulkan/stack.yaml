@@ -43,7 +43,7 @@ packages:
 extra-deps:
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 95e233b148626372a1f6163b3002f62082ef0274
+  commit: c1400ed9a980623733a5fde721a8e55125515197
   subdirs:
   - themes/mfrp/try-moffy
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
@@ -88,6 +88,8 @@ extra-deps:
   commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 - git: https://github.com/YoshikuniJujo/union-color.git
   commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
+- git: https://github.com/YoshikuniJujo/simple-pango
+  commit: 4219ecf5de6caed418269577834f26eb0199068d
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

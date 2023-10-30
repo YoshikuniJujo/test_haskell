@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -12,11 +13,12 @@ import Prelude hiding (break)
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Mouse.DefaultWindow
+import Control.Moffy.Event.CalcTextExtents qualified as CTE
 import Control.Moffy.Viewable.Shape
 import Trial.Boxes
 import Trial.Paper
 
-import Rectangles2
+import UseCairo
 import KeyToXKey
 
 import Control.Monad.Fix
@@ -36,6 +38,7 @@ import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
 -- import Control.Moffy.Event.Gui
+import Control.Moffy.Event.Lock.Internal
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Delete hiding (deleteEvent)
@@ -92,8 +95,9 @@ action f = liftIO do
 		_ <- waitFor . adjust $ setCursorFromName i Default
 		waitFor . adjust $ storeDefaultWindow i
 		M.singleton i <$%> adjustSig (followbox i)
+		waitFor . adjust $ windowDestroy i
 --	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' baz . initialBoxesState . systemToTAITime =<< getSystemTime
-	forkIO $ print =<< atomically (readTChan c')
+	forkIO . forever $ putStrLn . ("VIEW: " ++) . show =<< atomically (readTChan c')
 	rectangles2 cinp cout vext
 	atomically $ readTChan e
 
@@ -156,6 +160,17 @@ processEvReqs inp (oute, outp) cocc rqs = do
 		Nothing -> pure ()
 		Just (SetCursorFromPngReq wid nc) -> do
 			putStrLn "SetCursorFromPngReq"
+	case project rqs of
+		Nothing -> pure ()
+		Just r@(CTE.CalcTextExtentsReq _ _ _ _) -> do
+			putStrLn "TextLayoutExtentReq"
+			atomically . inp $ CalcTextLayoutExtent r
+	case project rqs of
+		Nothing -> pure ()
+		Just WindowConfigureReq -> putStrLn "WindowConfigureReq"
+	case project rqs of
+		Nothing -> pure ()
+		Just (r :: NewLockId) -> putStrLn $ "NewLockIdReq: " ++ show r
 
 boxToRect :: STM Vk.Extent2d -> Box -> STM Rectangle
 boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
@@ -270,6 +285,11 @@ untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					. OccDeleteEvent . WindowId $ fromIntegral k
+				loop rs
+			Just (EventTextLayoutExtentResult ex) -> do
+				putStrLn $ "EventTextLayoutExtentResult: " ++ show ex
+				atomically . writeTChan cocc
+					. App.expand $ App.Singleton ex
 				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
