@@ -1,8 +1,15 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module PangoLayoutExtent where
+module PangoLayoutExtent (
+	getPangoLayoutExtent, PixelExtents(..),
+
+	PangoRectanglePixel,
+	pangoRectanglePixelX, pangoRectanglePixelY,
+	pangoRectanglePixelWidth, pangoRectanglePixelHeight,
+	) where
 
 import Foreign.C.Types
 import Control.Monad.ST

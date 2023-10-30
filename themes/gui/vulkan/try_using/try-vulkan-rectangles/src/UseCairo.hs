@@ -1543,9 +1543,23 @@ mainLoop inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges cr = do
 			GetEvent -> do
 				atomically (readTVar ges) >>= sequence_
 				loop
-			CalcTextLayoutExtent (CTE.CalcTextExtentsReq _ fn fs tx) -> do
-				print =<< getPangoLayoutExtent cr fn (realToFrac fs) tx
+			CalcTextLayoutExtent
+				(CTE.CalcTextExtentsReq wid fn fs tx) -> do
+				ex <- getPangoLayoutExtent
+					cr fn (realToFrac fs) tx
+				let	PixelExtents ie le = ex
+					ex' =  mkte ie le
+				atomically . writeTChan outp
+					. EventTextLayoutExtentResult
+					$ CTE.OccCalcTextExtents wid fn fs tx ex'
 				loop
+	where
+	mkte ie le = CTE.TextExtents (r2r ie) (r2r le)
+	r2r r = rct
+		(pangoRectanglePixelX r) (pangoRectanglePixelY r)
+		(pangoRectanglePixelWidth r) (pangoRectanglePixelHeight r)
+	rct	(fromIntegral -> l) (fromIntegral -> t)
+		(fromIntegral -> w) (fromIntegral -> h) = CTE.Rectangle l t w h
 
 rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])
 rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
