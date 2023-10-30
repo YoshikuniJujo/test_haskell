@@ -62,6 +62,7 @@ import Control.Moffy.Event.Time
 import Data.Maybe
 
 import Trial.Followbox
+import Trial.Followbox.ViewType
 import Trial.Followbox.RunGtkField
 
 import Control.Moffy.Event.Gui
@@ -89,7 +90,7 @@ action f = liftIO do
 	c' <- atomically newTChan
 	e <- atomically newTChan
 	x <- atomically newTChan
-	forkIO $ untilEnd (get f) e cow cocc x ((inp, (oute, outp)), ext)
+	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext)
 	forkIO $ runFollowboxGen cow cocc "firefox" Nothing c' do
 		i <- waitFor $ adjust windowNew
 		_ <- waitFor . adjust $ setCursorFromName i Default
@@ -97,7 +98,7 @@ action f = liftIO do
 		M.singleton i <$%> adjustSig (followbox i)
 		waitFor . adjust $ windowDestroy i
 --	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' baz . initialBoxesState . systemToTAITime =<< getSystemTime
-	forkIO . forever $ putStrLn . ("VIEW: " ++) . show =<< atomically (readTChan c')
+--	forkIO . forever $ putStrLn . ("VIEW: " ++) . show =<< atomically (readTChan c')
 	rectangles2 cinp cout vext
 	atomically $ readTChan e
 
@@ -196,7 +197,8 @@ colorToColor = \case
 	Cyan -> RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 1.0 :. 1.0 :. NilL
 	Magenta -> RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
 
-untilEnd :: Bool -> TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> TChan [Box] ->
+untilEnd :: Bool -> TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
+	TChan (M.Map WindowId View) ->
 	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
 untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
@@ -205,12 +207,19 @@ untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 		threadDelay 20000
 		atomically $ inp GetEvent
 
+	forkIO . forever $ atomically (readTChan c') >>= \vs -> do
+		putStrLn $ "VIEW: " ++ show vs
+		atomically
+			$ inp . Draw $ M.fromList [(0, (def, instances 0))]
+
+{-
 	forkIO $ forever do
 		rs' <- atomically do
 			bs <- readTChan c'
 			boxToRect (ext 0) `mapM` bs
 		atomically do
 			inp . Draw $ M.fromList [(0, (def, rs'))]
+			-}
 
 	forkIO $ forever do
 		threadDelay 500
