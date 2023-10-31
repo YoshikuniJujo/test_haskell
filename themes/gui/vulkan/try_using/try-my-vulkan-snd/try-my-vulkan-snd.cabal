@@ -28,6 +28,7 @@ source-repository head
 
 library
   exposed-modules:
+      CreateTextureGroup
       Keyboard
       Sample.GetOpt
       Sample.Image

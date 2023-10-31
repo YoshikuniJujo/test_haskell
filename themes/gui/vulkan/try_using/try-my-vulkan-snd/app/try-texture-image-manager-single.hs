@@ -292,17 +292,18 @@ run w inst g kis =
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
 
-	createTextureSampler phdv dv \txsmplr ->
-	Vk.Img.group dv nil' \mng -> Vk.Mem.group dv nil' \mmng ->
-	Vk.ImgVw.group dv nil' \ivmng ->
 	createDescriptorPool dv \dscp ->
 	createDescriptorSet' dv dscp dscslyt \ubds ->
-	updateDescriptorSet dv ubds ub >> let
+	updateDescriptorSet dv ubds ub >>
 
+	createTextureSampler phdv dv \txsmplr ->
+
+	textureGroup dv \txgrp@(_, _, ivmng) ->
+
+	let
 	crtx k = let tximgfp = kis M.! k in
 		readRgba8 tximgfp >>= \img ->
-		createTexture phdv dv gq cp ubds
-			mng mmng ivmng txsmplr (MyImage img) k
+		createTexture phdv dv gq cp ubds txgrp txsmplr (MyImage img) k
 	udtx = updateTexture dv ubds txsmplr ivmng in
 
 	crtx Glfw.Key'H >>
@@ -317,13 +318,16 @@ debugIndexingFeatures phdv = do
 		@('Just (Vk.PhDvc.DescriptorIndexingFeatures 'Nothing)) phdv
 	pure nxts''
 
-{-
-type TextureGroup = (
-	Vk.Img.Group 'Nothing si k "texture" (KObj.ImageFormat img),
-	Vk.Mem.Group sd 'Nothing sm k '[
-		'(si, 'Vk.Mem.ImageArg "texture" (KObj.ImageFormat img)) ],
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" (KObj.ImageFormat img) )
-	-}
+type TextureGroup sd si sm siv fmt k = (
+	Vk.Img.Group sd 'Nothing si k "texture" fmt,
+	Vk.Mem.Group sd 'Nothing sm k '[ '(si, 'Vk.Mem.ImageArg "texture" fmt)],
+	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt )
+
+textureGroup :: Vk.Dvc.D sd ->
+	(forall si sm siv . TextureGroup sd si sm siv fmt k -> IO a) -> IO a
+textureGroup dv f =
+	Vk.Img.group dv nil' \mng -> Vk.Mem.group dv nil' \mmng ->
+	Vk.ImgVw.group dv nil' \ivmng -> f (mng, mmng, ivmng)
 
 createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
 	KObj.IsImage img,
@@ -332,12 +336,9 @@ createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
 	Ord k ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.D sds '(sdsc, bis) ->
-	Vk.Img.Group sd 'Nothing si k "texture" (KObj.ImageFormat img) ->
-	Vk.Mem.Group sd 'Nothing sm k '[
-		'(si, 'Vk.Mem.ImageArg "texture" (KObj.ImageFormat img)) ] ->
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" (KObj.ImageFormat img) ->
+	TextureGroup sd si sm siv (KObj.ImageFormat img) k ->
 	Vk.Smplr.M.S ss -> img -> k -> IO ()
-createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr img k =
+createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
 	Vk.ImgVw.create' @_ @_ @(KObj.ImageFormat img)
