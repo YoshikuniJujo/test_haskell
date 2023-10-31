@@ -16,10 +16,8 @@ module Main where
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
 import GHC.Generics
-import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -30,7 +28,6 @@ import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
 import Data.List qualified as L
-import Data.Array hiding (indices)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
@@ -43,10 +40,8 @@ import Data.List.Length
 import Data.Word
 import Data.Color
 import Data.Time
-import Codec.Picture
 
 import qualified Data.List.NonEmpty as NE
-import qualified Data.Vector.Storable as V
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
@@ -270,14 +265,18 @@ run w inst g =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
+
+	createUniformBuffer phdv dv \ub ubm ->
+
 	createTextureImage phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
-	createVertexBuffer phdv dv gq cp \vb ->
-	createIndexBuffer phdv dv gq cp \ib ->
-	createUniformBuffer phdv dv \ub ubm ->
 	createDescriptorPool dv \dscp ->
 	createDescriptorSet dv dscp ub tximgvw txsmplr dscslyt \ubds ->
+
+	createVertexBuffer phdv dv gq cp \vb ->
+	createIndexBuffer phdv dv gq cp \ib ->
+
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
@@ -951,21 +950,28 @@ createTextureImage phdvc dvc gq cp f = do
 
 	img <- twoRectanglesIO' sfc0 cr
 
---	let	img = twoRectangles'
+	createTextureImage' phdvc dvc gq cp img f
+
+createTextureImage' :: forall img sd sc nm a . (
+	KObj.IsImage img, KObj.ImageFormat img ~ Vk.T.FormatR8g8b8a8Srgb ) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	img -> (forall si sm .
+		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a) -> IO a
+createTextureImage' phdvc dvc gq cp img f = do
 	let	wdt = fromIntegral $ KObj.imageWidth img
 		hgt = fromIntegral $ KObj.imageHeight img
 	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Img.TilingOptimal
 		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit \tximg _txmem -> do
-		createBufferImage @CairoArgb32 @_ phdvc dvc
+		createBufferImage @img @_ phdvc dvc
 			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
 			Vk.Bffr.UsageTransferSrcBit
 			(	Vk.Mem.PropertyHostVisibleBit .|.
 				Vk.Mem.PropertyHostCoherentBit )
 			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
+				sm sb "texture-buffer" '[ VObj.Image 1 img inm]) sbm -> do
 			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-				@(VObj.Image 1 CairoArgb32 inm) dvc sbm zeroBits img
+				@(VObj.Image 1 img inm) dvc sbm zeroBits img
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
