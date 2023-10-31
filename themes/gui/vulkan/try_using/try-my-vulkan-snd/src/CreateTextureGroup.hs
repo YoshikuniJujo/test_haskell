@@ -8,8 +8,24 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module CreateTextureGroup (
-	textureGroup, createTexture, updateTexture, createBuffer,
-	beginSingleTimeCommands, mkImageViewCreateInfo ) where
+
+	-- * GROUP
+
+	textureGroup, TextureGroup,
+
+	-- * CREATE AND UPDATE
+
+	createTexture, updateTexture, createBuffer,
+
+	-- * BEGIN SINGLE TIME COMMANDS
+
+	beginSingleTimeCommands,
+
+	-- * CREATE INFO
+
+	mkImageViewCreateInfo
+
+	) where
 
 import Foreign.Storable
 import Data.TypeLevel.Maybe qualified as TMaybe
