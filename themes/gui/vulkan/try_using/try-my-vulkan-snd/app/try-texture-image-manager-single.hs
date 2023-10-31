@@ -48,7 +48,6 @@ import Data.Time
 import Codec.Picture
 
 import qualified Data.List.NonEmpty as NE
-import qualified Data.Vector.Storable as V
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
@@ -316,30 +315,31 @@ debugIndexingFeatures phdv = do
 		@('Just (Vk.PhDvc.DescriptorIndexingFeatures 'Nothing)) phdv
 	pure nxts''
 
-createTexture :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer
-			'[VObj.Atom 256 UniformBufferObject 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Img.Group 'Nothing si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Mem.Group sd 'Nothing sm Glfw.Key '[
+createTexture :: (
+	Vk.DscSet.BindingAndArrayElemImage bis
+		'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] 0,
+	Ord k ) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.DscSet.D sds '(sdsc, bis) ->
+	Vk.Img.Group 'Nothing si k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Mem.Group sd 'Nothing sm k '[
 		'(si, 'Vk.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
-	Vk.ImgVw.Group sd 'Nothing siv Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Smplr.M.S ss -> M.Map Glfw.Key FilePath -> Glfw.Key -> IO ()
+	Vk.ImgVw.Group sd 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Smplr.M.S ss -> M.Map k FilePath -> k -> IO ()
 createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr kis k = let
 	tximgfp = kis M.! k in
 	putStrLn "createTexture begin" >>
-	createTextureImage' phdv dv mng mmng gq cp k tximgfp >>= \tximg ->
+	createTextureImage phdv dv mng mmng gq cp k tximgfp >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
 		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSetTex dv ubds tximgvw txsmplr
 
-updateTexture :: Ord k => Vk.Dvc.D sd ->
-	Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer
-			'[VObj.Atom 256 UniformBufferObject 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Smplr.S ss -> Vk.ImgVw.Group sd 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+updateTexture :: (
+	Vk.DscSet.BindingAndArrayElemImage bis
+		'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] 0,
+	Ord k ) =>
+	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) -> Vk.Smplr.S ss ->
+	Vk.ImgVw.Group sd 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	k -> IO ()
 updateTexture dv udbs txsmplr imng k = do
 	Just tximgvw <- Vk.ImgVw.lookup imng k
@@ -944,23 +944,33 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group 'Nothing sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Mem.Group sd 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
-	Vk.Queue.Q -> Vk.CmdPool.C sc -> Glfw.Key -> FilePath ->
+createTextureImage :: Ord k => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Img.Group 'Nothing sim k nm 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Mem.Group sd 'Nothing smm k
+		'[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
+	Vk.Queue.Q -> Vk.CmdPool.C sc -> k -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
-createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
-	putStrLn "createTextureImage' begin"
+createTextureImage phdvc dvc mng mmng gq cp k tximg = do
 	img <- readRgba8 tximg
-	print . V.length $ imageData img
-	let	wdt = fromIntegral $ imageWidth img
-		hgt = fromIntegral $ imageHeight img
-	(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng k
+	createTextureImage' phdvc dvc mng mmng gq cp k $ MyImage img
+
+createTextureImage' :: forall k sim nm sd smm sc img . (
+	KObj.IsImage img, Ord k
+	) => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Img.Group 'Nothing sim k nm (KObj.ImageFormat img) ->
+	Vk.Mem.Group sd 'Nothing smm k
+		'[ '(sim, 'Vk.Mem.ImageArg nm (KObj.ImageFormat img))] ->
+	Vk.Queue.Q -> Vk.CmdPool.C sc -> k -> img ->
+	IO (Vk.Img.Binded smm sim nm (KObj.ImageFormat img))
+createTextureImage' phdvc dvc mng mmng gq cp k img = do
+	let	wdt = fromIntegral $ KObj.imageWidth img
+		hgt = fromIntegral $ KObj.imageHeight img
+	(tximg, _txmem) <- createImage' @(KObj.ImageFormat img) phdvc dvc mng mmng k
 		wdt hgt Vk.Img.TilingOptimal
 		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit
 	putStrLn "before createBufferImage"
-	createBufferImage @MyImage @_ phdvc dvc
+	createBufferImage @img @_ phdvc dvc
 		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
@@ -968,7 +978,7 @@ createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
 		\(sb :: Vk.Bffr.Binded
 			sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
 		Vk.Mem.write @"texture-buffer"
-			@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
+			@(VObj.Image 1 img inm) dvc sbm zeroBits img -- (MyImage img)
 		print sb
 		transitionImageLayout dvc gq cp tximg
 			Vk.Img.LayoutUndefined
@@ -1008,11 +1018,11 @@ instance KObj.IsImage MyImage where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
-createImage' :: forall fmt sim smm nm sd . Vk.T.FormatToValue fmt =>
+createImage' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group 'Nothing sim Glfw.Key nm fmt ->
-	Vk.Mem.Group sd 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
-	Glfw.Key ->
+	Vk.Img.Group 'Nothing sim k nm fmt ->
+	Vk.Mem.Group sd 'Nothing smm k '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
+	k ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> IO (
 		Vk.Img.Binded smm sim nm fmt,
@@ -1240,9 +1250,9 @@ updateDescriptorSet dvc dscs ub = do
 		HeteroParList.Nil
 
 updateDescriptorSetTex ::
-	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
+	Vk.DscSet.BindingAndArrayElemImage bis
+		'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] 0 =>
+	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) ->
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss -> IO ()
 updateDescriptorSetTex dvc dscs tximgvw txsmp = do
 	Vk.DscSet.updateDs dvc (
