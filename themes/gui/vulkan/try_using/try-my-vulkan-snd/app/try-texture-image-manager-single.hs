@@ -299,8 +299,10 @@ run w inst g kis =
 	createDescriptorSet' dv dscp dscslyt \ubds ->
 	updateDescriptorSet dv ubds ub >> let
 
-	crtx = createTexture phdv dv
-		gq cp ubds mng mmng ivmng txsmplr kis
+	crtx k = let tximgfp = kis M.! k in
+		readRgba8 tximgfp >>= \img ->
+		createTexture phdv dv gq cp ubds
+			mng mmng ivmng txsmplr (MyImage img) k
 	udtx = updateTexture dv ubds txsmplr ivmng in
 
 	crtx Glfw.Key'H >>
@@ -315,24 +317,15 @@ debugIndexingFeatures phdv = do
 		@('Just (Vk.PhDvc.DescriptorIndexingFeatures 'Nothing)) phdv
 	pure nxts''
 
-createTexture :: (
-	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] 0,
-	Ord k ) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.DscSet.D sds '(sdsc, bis) ->
-	Vk.Img.Group 'Nothing si k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
+{-
+type TextureGroup = (
+	Vk.Img.Group 'Nothing si k "texture" (KObj.ImageFormat img),
 	Vk.Mem.Group sd 'Nothing sm k '[
-		'(si, 'Vk.Mem.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Smplr.M.S ss -> M.Map k FilePath -> k -> IO ()
-createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr kis k = let
-	tximgfp = kis M.! k in
-	readRgba8 tximgfp >>= \img ->
+		'(si, 'Vk.Mem.ImageArg "texture" (KObj.ImageFormat img)) ],
+	Vk.ImgVw.Group sd 'Nothing siv k "texture" (KObj.ImageFormat img) )
+	-}
 
-	createTexture' phdv dv gq cp ubds mng mmng ivmng txsmplr (MyImage img) k
-
-createTexture' :: forall bis img k sd sc sds sdsc sm si siv ss . (
+createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
 	KObj.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '("texture", KObj.ImageFormat img)] 0,
@@ -344,7 +337,7 @@ createTexture' :: forall bis img k sd sc sds sdsc sm si siv ss . (
 		'(si, 'Vk.Mem.ImageArg "texture" (KObj.ImageFormat img)) ] ->
 	Vk.ImgVw.Group sd 'Nothing siv k "texture" (KObj.ImageFormat img) ->
 	Vk.Smplr.M.S ss -> img -> k -> IO ()
-createTexture' phdv dv gq cp ubds mng mmng ivmng txsmplr img k =
+createTexture phdv dv gq cp ubds mng mmng ivmng txsmplr img k =
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
 	Vk.ImgVw.create' @_ @_ @(KObj.ImageFormat img)
@@ -353,12 +346,10 @@ createTexture' phdv dv gq cp ubds mng mmng ivmng txsmplr img k =
 	updateDescriptorSetTex dv ubds tximgvw txsmplr
 
 updateTexture :: (
-	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] 0,
+	Vk.DscSet.BindingAndArrayElemImage bis '[ '("texture", fmt)] 0,
 	Ord k ) =>
 	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) -> Vk.Smplr.S ss ->
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
-	k -> IO ()
+	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt -> k -> IO ()
 updateTexture dv udbs txsmplr imng k = do
 	Just tximgvw <- Vk.ImgVw.lookup imng k
 	updateDescriptorSetTex dv udbs tximgvw txsmplr
