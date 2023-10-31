@@ -332,7 +332,7 @@ createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
 	Ord k ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.D sds '(sdsc, bis) ->
-	Vk.Img.Group 'Nothing si k "texture" (KObj.ImageFormat img) ->
+	Vk.Img.Group sd 'Nothing si k "texture" (KObj.ImageFormat img) ->
 	Vk.Mem.Group sd 'Nothing sm k '[
 		'(si, 'Vk.Mem.ImageArg "texture" (KObj.ImageFormat img)) ] ->
 	Vk.ImgVw.Group sd 'Nothing siv k "texture" (KObj.ImageFormat img) ->
@@ -956,7 +956,7 @@ createCommandPool qfis dvc f =
 createTextureImage' :: forall k sim nm sd smm sc img . (
 	KObj.IsImage img, Ord k
 	) => Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group 'Nothing sim k nm (KObj.ImageFormat img) ->
+	Vk.Img.Group sd 'Nothing sim k nm (KObj.ImageFormat img) ->
 	Vk.Mem.Group sd 'Nothing smm k
 		'[ '(sim, 'Vk.Mem.ImageArg nm (KObj.ImageFormat img))] ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc -> k -> img ->
@@ -1019,7 +1019,7 @@ instance KObj.IsImage MyImage where
 
 createImage' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group 'Nothing sim k nm fmt ->
+	Vk.Img.Group sd 'Nothing sim k nm fmt ->
 	Vk.Mem.Group sd 'Nothing smm k '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	k ->
 	Word32 -> Word32 -> Vk.Img.Tiling ->
@@ -1028,7 +1028,7 @@ createImage' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
 		Vk.Mem.M smm
 			'[ '(sim, 'Vk.Mem.ImageArg nm fmt)] )
 createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
-	AlwaysRight img <- Vk.Img.create' @_ @'Nothing dvc mng k imageInfo
+	AlwaysRight img <- Vk.Img.create' @_ @'Nothing mng k imageInfo
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
