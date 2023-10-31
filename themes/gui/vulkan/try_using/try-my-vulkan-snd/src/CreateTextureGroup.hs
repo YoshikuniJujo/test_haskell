@@ -7,7 +7,9 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module CreateTextureGroup where
+module CreateTextureGroup (
+	textureGroup, createTexture, updateTexture, createBuffer,
+	beginSingleTimeCommands, mkImageViewCreateInfo ) where
 
 import Foreign.Storable
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -78,6 +80,15 @@ createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
 
 	updateDescriptorSetTex dv ubds tximgvw txsmplr
+
+updateTexture :: (
+	Vk.DscSet.BindingAndArrayElemImage bis '[ '("texture", fmt)] 0,
+	Ord k ) =>
+	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) -> Vk.Smplr.S ss ->
+	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt -> k -> IO ()
+updateTexture dv udbs txsmplr imng k = do
+	Just tximgvw <- Vk.ImgVw.lookup imng k
+	updateDescriptorSetTex dv udbs tximgvw txsmplr
 
 mkImageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt ->
