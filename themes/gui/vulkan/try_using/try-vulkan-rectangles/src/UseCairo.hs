@@ -168,6 +168,8 @@ import PangoLayoutExtent
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
+import CreateTextureGroup
+
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 rectangles2 inp outp vext = GlfwG.init error $ do
@@ -1325,17 +1327,6 @@ createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 			sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 t ""] ) ] )
 createBufferList' p dv bgrp mgrp k ln usg props =
 	createBuffer' p dv bgrp mgrp k (VObj.LengthList ln) usg props
-
-createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[o] ->
-		Vk.Mem.M sm
-			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
-		IO a) -> IO a
-createBuffer p dv ln usg props f =
-	Vk.Bffr.group dv nil' \bgrp -> Vk.Mem.group dv nil' \mgrp ->
-	uncurry f =<< createBuffer' p dv bgrp mgrp () ln usg props
 
 createBuffer' :: forall sd sb nm o sm k .
 	(Ord k, VObj.SizeAlignment o) =>
