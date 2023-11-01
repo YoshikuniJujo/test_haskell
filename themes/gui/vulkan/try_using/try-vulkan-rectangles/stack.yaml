@@ -68,6 +68,7 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - themes/gui/vulkan/try-glfw-group
   - themes/mfrp/try-moffy
+  - themes/gui/cairo/try-cairo-image-samples
 - union-color-0.1.2.0
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/simple-cairo

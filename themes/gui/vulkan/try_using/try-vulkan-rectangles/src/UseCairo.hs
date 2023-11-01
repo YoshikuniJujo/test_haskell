@@ -83,6 +83,7 @@ import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocationCallbacks
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
+import Gpu.Vulkan.PhysicalDevice.Struct qualified as Vk.PhDvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
@@ -169,6 +170,10 @@ import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
 import CreateTextureGroup
+import Gpu.Vulkan.CairoImage
+
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
+import Gpu.Vulkan.Sampler.Enum qualified as Vk.Smplr
 
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
@@ -432,10 +437,18 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	atomically (newTVar zero') >>= \vwid ->
 	atomically (newTVar M.empty) >>= \vws ->
 
+	createTextureSampler phd dv \txsmplr ->
+
+	textureGroup dv \txgrp ->
+
 	cairoImageSurfaceCreate CairoFormatArgb32 256 256 >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
 
-	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges cr
+	twoRectanglesIO' crsfc cr >>= \trs ->
+
+	createTexture phd dv gq cp ubds txgrp txsmplr trs (zero' :: k) >>
+
+	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crsfc cr
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
@@ -587,10 +600,10 @@ isDeviceSuitable ::
 	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
 	_deviceProperties <- Vk.PhDvc.getProperties phdvc
-	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
+	deviceFeatures <- Vk.PhDvc.getFeatures phdvc
 	is <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
-	if extensionSupported
+	if extensionSupported && Vk.PhDvc.featuresSamplerAnisotropy deviceFeatures
 	then (<$> querySwapChainSupport phdvc sfc) \spp ->
 		bool (completeQueueFamilies is) Nothing
 			$ null (formats spp) || null (presentModes spp)
@@ -663,7 +676,8 @@ createLogicalDevice phdvc dvcgrp k qfis =
 		Vk.Dvc.createInfoEnabledLayerNames =
 			bool [] validationLayers enableValidationLayers,
 		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
-		Vk.Dvc.createInfoEnabledFeatures = Just def }
+		Vk.Dvc.createInfoEnabledFeatures = Just def {
+			Vk.PhDvc.featuresSamplerAnisotropy = True } }
 	uniqueQueueFamilies = L.nub [graphicsFamily qfis, presentFamily qfis]
 	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
@@ -1518,7 +1532,7 @@ instance Succable Int where
 
 mainLoop ::
 	forall n siv sf scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
-		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k r .
+		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k s r .
 	(Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl ->
 
@@ -1534,9 +1548,8 @@ mainLoop ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar [IO ()] ->
-	CairoT r RealWorld ->
-	IO ()
-mainLoop inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges cr = do
+	CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> IO ()
+mainLoop inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges crsfc cr = do
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
@@ -1824,6 +1837,38 @@ waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
+
+createTextureSampler ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTextureSampler phdv dvc f = do
+	prp <- Vk.PhDvc.getProperties phdv
+	print . Vk.PhDvc.limitsMaxSamplerAnisotropy $ Vk.PhDvc.propertiesLimits prp
+	let	samplerInfo = Vk.Smplr.CreateInfo {
+			Vk.Smplr.createInfoNext = TMaybe.N,
+			Vk.Smplr.createInfoFlags = zeroBits,
+			Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMipmapMode =
+				Vk.Smplr.MipmapModeLinear,
+			Vk.Smplr.createInfoAddressModeU =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeV =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeW =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoMipLodBias = 0,
+			Vk.Smplr.createInfoAnisotropyEnable = True,
+			Vk.Smplr.createInfoMaxAnisotropy =
+				Vk.PhDvc.limitsMaxSamplerAnisotropy
+					$ Vk.PhDvc.propertiesLimits prp,
+			Vk.Smplr.createInfoCompareEnable = False,
+			Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+			Vk.Smplr.createInfoMinLod = 0,
+			Vk.Smplr.createInfoMaxLod = 0,
+			Vk.Smplr.createInfoBorderColor =
+				Vk.BorderColorIntOpaqueBlack,
+			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
+	Vk.Smplr.create @'Nothing dvc samplerInfo nil' f
 
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)

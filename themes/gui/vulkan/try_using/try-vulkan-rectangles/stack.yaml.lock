@@ -317,6 +317,19 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-moffy
 - completed:
+    commit: 9510ab9852628e8441971bdc15c24ab76a5821b7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-cairo-image-samples
+    pantry-tree:
+      sha256: bdafbb6ddac276c42eb843eebead8d58cd5df8e9a5b0bd8dcc795a7c908006af
+      size: 640
+    subdir: themes/gui/cairo/try-cairo-image-samples
+    version: 0.1.0.9
+  original:
+    commit: 9510ab9852628e8441971bdc15c24ab76a5821b7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/cairo/try-cairo-image-samples
+- completed:
     hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
     pantry-tree:
       sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850

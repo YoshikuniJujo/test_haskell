@@ -25,6 +25,7 @@ dependencies:
 - template-haskell
 - data-default
 - containers
+- array
 - vector
 - text
 - JuicyPixels
@@ -51,6 +52,7 @@ dependencies:
 - cairo-image
 - simple-pango
 - try-moffy
+- try-cairo-image-samples
 
 ghc-options:
 - -Wall

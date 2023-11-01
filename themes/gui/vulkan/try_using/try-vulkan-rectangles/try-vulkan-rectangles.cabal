@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       CreateTextureGroup
+      Gpu.Vulkan.CairoImage
       PangoLayoutExtent
       Rectangles
       Rectangles2
@@ -40,6 +41,7 @@ library
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , cairo-image
     , containers
@@ -53,6 +55,7 @@ library
     , template-haskell
     , text
     , time
+    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -81,6 +84,7 @@ executable try-multi-rectangles
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , cairo-image
     , containers
@@ -94,6 +98,7 @@ executable try-multi-rectangles
     , template-haskell
     , text
     , time
+    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -123,6 +128,7 @@ executable try-multi-rectangles2
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , cairo-image
     , containers
@@ -136,6 +142,7 @@ executable try-multi-rectangles2
     , template-haskell
     , text
     , time
+    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -165,6 +172,7 @@ executable try-use-cairo
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , cairo-image
     , containers
@@ -178,6 +186,7 @@ executable try-use-cairo
     , template-haskell
     , text
     , time
+    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -208,6 +217,7 @@ test-suite try-vulkan-rectangles-test
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , cairo-image
     , containers
@@ -221,6 +231,7 @@ test-suite try-vulkan-rectangles-test
     , template-haskell
     , text
     , time
+    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
