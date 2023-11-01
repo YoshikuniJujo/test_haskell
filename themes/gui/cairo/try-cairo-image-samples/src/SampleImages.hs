@@ -25,6 +25,7 @@ import Data.Maybe
 import Data.Color
 import Data.CairoContext
 import Data.CairoImage.Internal
+import Graphics.Cairo.Surfaces.CairoSurfaceT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
@@ -53,6 +54,8 @@ twoRectanglesPrim' sfc0 cr = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.3
 	cairoRectangle cr 100 130 100 70
 	cairoFill cr
+
+	cairoSurfaceFlush sfc0
 
 	cairoImageSurfaceGetCairoImage sfc0 >>= \case
 		CairoImageArgb32 i -> pure i

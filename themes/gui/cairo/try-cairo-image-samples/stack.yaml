@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: a7007c8704e03eb830916f202abafe779f1dfbbc
+  commit: 060f2b30db539a22f69cc627ce46b53e785946c3
 - git: https://github.com/YoshikuniJujo/cairo-image.git
   commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
 - union-color-0.1.2.0
