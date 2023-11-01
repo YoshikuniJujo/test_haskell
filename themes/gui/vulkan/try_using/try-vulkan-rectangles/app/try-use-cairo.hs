@@ -69,11 +69,13 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		threadDelay 2000
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
+--		print =<< atomically (ext 0)
 		o <- atomically do
 			e0 <- ext 0
 			e1 <- ext 1
 			inp . Draw $ M.fromList [
-				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
+				(0, ((bool (uniformBufferObject e0) def f), instances' 1024 1024 e0)),
+--				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
 				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
 				]
 			bool (Just <$> outp) (pure Nothing) =<< oute
@@ -122,8 +124,10 @@ instances :: Float -> [Rectangle]
 instances tm = let
 	(m0, m1, m2, m3) = calcModel tm in
 	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+--		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		Rectangle (RectPos . Cglm.Vec2 $ (- 2) :. (- 2) :. NilL)
+--			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(RectSize . Cglm.Vec2 $ 4 :. 4 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3,
 		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
@@ -165,4 +169,34 @@ calcModel :: Float -> (RectModel0, RectModel1, RectModel2, RectModel3)
 calcModel tm = let
 	m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s $ Cglm.rotate Cglm.mat4Identity
 		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) in
+	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
+
+instances' :: Float -> Float -> Vk.Extent2d -> [Rectangle]
+instances' w h ex = let
+	(m0, m1, m2, m3) = calcModel2 w h ex in
+	[
+--		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		Rectangle (RectPos . Cglm.Vec2 $ (- 2) :. (- 2) :. NilL)
+--			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(RectSize . Cglm.Vec2 $ 4 :. 4 :. NilL)
+			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
+			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
+			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3
+		]
+
+calcModel2 :: Float -> Float -> Vk.Extent2d -> (RectModel0, RectModel1, RectModel2, RectModel3)
+calcModel2 w0 h0 Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = let
+	m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s $ Cglm.scale Cglm.mat4Identity
+		(Cglm.Vec3 $ (w0 / fromIntegral w) :. (h0 / fromIntegral h) :. 1 :. NilL) in
 	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)

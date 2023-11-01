@@ -330,12 +330,12 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/cairo/try-cairo-image-samples
 - completed:
-    hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
+    hackage: union-color-0.1.2.1@sha256:0d8cd13f3fbe8135f34244f9847b415635d6066b06c92203fdb521a36cdaeae8,1326
     pantry-tree:
-      sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850
+      sha256: 7df303497f2479607876d561c5b48000d05bc22eabed3c4d84426440e4d5717a
       size: 429
   original:
-    hackage: union-color-0.1.2.0
+    hackage: union-color-0.1.2.1
 - completed:
     hackage: optparse-declarative-0.4.2@sha256:2054a1489442744f1c93b7994a9d5600fc51a513290d9c27631aef24ffbddf21,1003
     pantry-tree:

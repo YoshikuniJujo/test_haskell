@@ -441,11 +441,10 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 	textureGroup dv \txgrp ->
 
-	cairoImageSurfaceCreate CairoFormatArgb32 256 256 >>= \crsfc ->
+	cairoImageSurfaceCreate CairoFormatArgb32 1024 1024 >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
 
 	twoRectanglesIO' crsfc cr >>= \trs ->
-
 	createTexture phd dv gq cp ubds txgrp txsmplr trs (zero' :: k) >>
 
 	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crsfc cr
@@ -2031,6 +2030,7 @@ main()
 {
 	gl_Position =
 //		ubo.proj * ubo.view * rectModel *
+		rectModel *
 		vec4(inPosition * rectSize, 0.0, 1.0) +
 		vec4(rectPosition, 0.0, 1.0);
 //	fragColor = inColor;
