@@ -66,6 +66,7 @@ import Data.List.Length
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Map qualified as M
+import Data.OneOfThem
 import Data.Bool
 import Data.Word
 import Data.Text.IO qualified as Txt
@@ -175,7 +176,7 @@ import Gpu.Vulkan.CairoImage
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.Sampler.Enum qualified as Vk.Smplr
 
-import Trial.Followbox.ViewType
+import Trial.Followbox.ViewType as FV
 
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
@@ -1574,7 +1575,8 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
-			Draw2 ds view -> do
+			Draw2 ds (View view) -> do
+				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` view
 				drcr >> crcr
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
