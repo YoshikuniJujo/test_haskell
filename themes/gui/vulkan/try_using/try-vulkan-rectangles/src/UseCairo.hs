@@ -894,30 +894,47 @@ createRenderPass rpgrp k =
 		Vk.RndrPass.createInfoSubpasses = [subpass],
 		Vk.RndrPass.createInfoDependencies = [dependency] }
 
-type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]])
+type AtomUbo s = '(s, '[
+	'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing],
+	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.D s '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]]
-	-> IO a) -> IO a
+	Vk.DscSetLyt.D s '[
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing],
+		'Vk.DscSetLyt.Image
+			'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] -> IO a) ->
+	IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 	where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing
-		'[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing] ]
+	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
+		]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = uboLayoutBinding :** HeteroParList.Nil }
+		Vk.DscSetLyt.createInfoBindings =
+			uboLayoutBinding :**
+			samplerLayoutBinding :** HeteroParList.Nil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding
 		('Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing])
 	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	samplerLayoutBinding :: Vk.DscSetLyt.Binding
+		('Vk.DscSetLyt.Image '[ '("texture", Vk.T.FormatR8g8b8a8Srgb)])
+	samplerLayoutBinding = Vk.DscSetLyt.BindingImage {
+		Vk.DscSetLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscSetLyt.bindingImageStageFlags =
+			Vk.ShaderStageFragmentBit }
 
 createPipelineLayout ::
 	Vk.Dvc.D sd -> (forall sdsl sl .
-		Vk.DscSetLyt.D sdsl
-			'[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]] ->
+		Vk.DscSetLyt.D sdsl '[
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing],
+			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 		Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
 createPipelineLayout dvc f =
 	createDescriptorSetLayout dvc \dsl ->
@@ -1259,16 +1276,25 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 		Vk.DscPool.createInfoFlags =
 			Vk.DscPool.CreateFreeDescriptorSetBit,
 		Vk.DscPool.createInfoMaxSets = 1,
-		Vk.DscPool.createInfoPoolSizes = [poolSize] }
+		Vk.DscPool.createInfoPoolSizes = [poolSize, poolSize1] }
 	poolSize = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPool.sizeDescriptorCount = 1 }
+	poolSize1 = Vk.DscPool.Size {
+		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPool.sizeDescriptorCount = 1 }
 
 createDescriptorSet ::
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 ViewProjection 'Nothing] ->
-	Vk.DscSetLyt.D sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]] ->
+	Vk.DscSetLyt.D sdsc '[
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]] ->
 	(forall sds .
-		Vk.DscSet.D sds '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]]) -> IO a) -> IO a
+		Vk.DscSet.D sds '(sdsc, '[
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing],
+			'Vk.DscSetLyt.Image
+				'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
+		IO a) -> IO a
 createDescriptorSet dvc dscp ub dscslyt f =
 	Vk.DscSet.allocateDs dvc allocInfo \(HeteroParList.Singleton dscs) -> do
 	Vk.DscSet.updateDs dvc
@@ -1462,7 +1488,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pllyt
 		(HeteroParList.Singleton $ U2 ubds)
 		(HeteroParList.Singleton (
-			HeteroParList.Nil :**
+			HeteroParList.Nil :** HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
 	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) ic 0 0 0
 	where
