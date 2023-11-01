@@ -38,6 +38,9 @@ import Data.Map qualified as M
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
+import Trial.Followbox.ViewType
+import Data.OneOfThem
+
 main :: IO ()
 main = run_ action
 
@@ -65,6 +68,17 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		threadDelay 5000
 		atomically $ inp GetEvent
 
+	forkIO $ forever do
+		threadDelay 2000000
+		atomically do
+			e0 <- ext 0
+			e1 <- ext 1
+			inp $ Draw2 (M.fromList [
+				(0, ((bool (uniformBufferObject e0) def f), instances' 1024 1024 e0))
+				] )
+				(View [	expand . Singleton $ Line' blue 4 (10, 10) (100, 100)
+					])
+
 	($ instances) $ fix \loop rs -> do
 		threadDelay 2000
 		now <- getCurrentTime
@@ -73,11 +87,13 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		o <- atomically do
 			e0 <- ext 0
 			e1 <- ext 1
-			inp . Draw $ M.fromList [
+			inp $ Draw (M.fromList [
 				(0, ((bool (uniformBufferObject e0) def f), instances' 1024 1024 e0)),
 --				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
 				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
-				]
+				] )
+				(View [	expand . Singleton $ Line' blue 4 (10, 10) (100, 100)
+					])
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop rs

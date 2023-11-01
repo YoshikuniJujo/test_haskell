@@ -175,6 +175,8 @@ import Gpu.Vulkan.CairoImage
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.Sampler.Enum qualified as Vk.Smplr
 
+import Trial.Followbox.ViewType
+
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 rectangles2 inp outp vext = GlfwG.init error $ do
@@ -237,7 +239,8 @@ instance NumToValue n => NumToValue ('() ': n) where
 	numToValue = 1 + numToValue @n
 
 data Command k
-	= Draw (M.Map k (ViewProjection, [Rectangle]))
+	= Draw (M.Map k (ViewProjection, [Rectangle])) View
+	| Draw2 (M.Map k (ViewProjection, [Rectangle])) View
 	| OpenWindow
 	| DestroyWindow k
 	| GetEvent
@@ -444,10 +447,13 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	cairoImageSurfaceCreate CairoFormatArgb32 1024 1024 >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
 
-	twoRectanglesIO' crsfc cr >>= \trs ->
-	createTexture phd dv gq cp ubds txgrp txsmplr trs (zero' :: k) >>
+	let	crcr =	twoRectanglesIO' crsfc cr >>= \trs ->
+			createTexture phd dv gq cp ubds txgrp txsmplr trs (zero' :: k)
+		drcr = destroyTexture txgrp (zero' :: k) in
 
-	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crsfc cr
+	crcr >>
+
+	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr drcr cr -- crsfc cr
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
@@ -1554,8 +1560,8 @@ mainLoop ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar [IO ()] ->
-	CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> IO ()
-mainLoop inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges crsfc cr = do
+	IO () -> IO () -> CairoT r RealWorld -> IO ()
+mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr drcr cr = do
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
@@ -1564,7 +1570,13 @@ mainLoop inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges crsfc cr = do
 	fix \loop -> do
 --		GlfwG.pollEvents
 		atomically (readTChan inp) >>= \case
-			Draw ds -> do
+			Draw ds view -> do
+				Vk.Dvc.waitIdle dvc
+				ws <- atomically $ readTVar vws
+				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
+			Draw2 ds view -> do
+				drcr >> crcr
+				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
 			OpenWindow ->

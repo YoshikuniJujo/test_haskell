@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 9510ab9852628e8441971bdc15c24ab76a5821b7
+  commit: 4806b3c345923ccf436555f4515c68a10aaa227e
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
@@ -72,7 +72,7 @@ extra-deps:
 - union-color-0.1.2.1
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: a7007c8704e03eb830916f202abafe779f1dfbbc
+  commit: 060f2b30db539a22f69cc627ce46b53e785946c3
 - git: https://github.com/YoshikuniJujo/cairo-image.git
   commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
 - git: https://github.com/YoshikuniJujo/simple-field.git

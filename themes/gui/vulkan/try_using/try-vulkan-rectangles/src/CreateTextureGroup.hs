@@ -15,7 +15,7 @@ module CreateTextureGroup (
 
 	-- * CREATE AND UPDATE
 
-	createTexture, updateTexture, createBuffer,
+	createTexture, destroyTexture, updateTexture, createBuffer,
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
@@ -96,6 +96,13 @@ createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
 
 	updateDescriptorSetTex dv ubds tximgvw txsmplr
+
+destroyTexture :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
+destroyTexture (mng, mmng, ivmng) k = do
+	Vk.Img.destroy mng k
+	Vk.Mem.free mmng k
+	Vk.ImgVw.destroy ivmng k
+	pure ()
 
 updateTexture :: (
 	Vk.DscSet.BindingAndArrayElemImage bis '[ '("texture", fmt)] 0,
