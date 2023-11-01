@@ -466,7 +466,8 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ],
+			'(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ],
 		'(sl, '[AtomUbo sdsl], '[]) )] ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 Rectangle ""],
 		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])]
@@ -542,7 +543,8 @@ destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ],
+			'(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ],
 		'(sl, '[AtomUbo sdsl], '[]) )] ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 Rectangle ""],
 		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])]
@@ -964,14 +966,16 @@ createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ],
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ],
 			'(sl, '[AtomUbo sdsl], '[]) )] -> k ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO (
 		Vk.Ppl.Graphics.G sg
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
+				'(9, TexCoord) ]
 			'(sl, '[AtomUbo sdsl], '[]))
 createGraphicsPipeline gpgrp k sce rp pllyt =
 	Vk.Ppl.Graphics.createGs' gpgrp k Nothing (U14 pplInfo :** HeteroParList.Nil)
@@ -984,7 +988,8 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Graphics.recreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U3 gpls :** HeteroParList.Nil)
@@ -999,7 +1004,8 @@ mkGraphicsPipelineCreateInfo' ::
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ] )
+				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', foo)
 mkGraphicsPipelineCreateInfo' sce rp pllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
@@ -1482,7 +1488,8 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl 
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
@@ -1615,7 +1622,8 @@ type Pipeline sg sl sdsl = Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl], '[])
 
 type PipelineLayout sl sdsl = Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[]
@@ -1637,7 +1645,8 @@ data Recreates sw sl nm ssfc sr sg sdsl fmt ssc sis sfs = Recreates
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ]
+			'(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl], '[]))
 	(Vk.Khr.Swapchain.S fmt ssc)
 	(HeteroParList.PL (Vk.ImgVw.I nm fmt) sis)
@@ -1657,7 +1666,8 @@ data Draws sl sr sg sdsl sias srfs siff fmt ssc sfs = Draws
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ]
+			'(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl], '[]))
 	(SyncObjects '(sias, srfs, siff))
 	(Vk.Khr.Swapchain.S fmt ssc)
@@ -1870,7 +1880,9 @@ createTextureSampler phdv dvc f = do
 			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 	Vk.Smplr.create @'Nothing dvc samplerInfo nil' f
 
-data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
+data Vertex = Vertex {
+	vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3,
+	vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
 
 instance Storable Vertex where
@@ -1880,6 +1892,9 @@ instance Storable Vertex where
 	poke = StrG.gPoke
 
 instance StrG.G Vertex where
+
+newtype TexCoord = TexCoord Cglm.Vec2
+	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 data Rectangle = Rectangle {
 	rectanglePos :: RectPos,
@@ -1940,13 +1955,17 @@ instance Default RectModel3 where def = let (_, _, _, d) = defaultRectModel in d
 vertices :: [Vertex]
 vertices = [
 	Vertex (Cglm.Vec2 $ (- 0) :. (- 0) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 0 :. 0 :. NilL),
 	Vertex (Cglm.Vec2 $ 1 :. (- 0) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 1 :. 0 :. NilL),
 	Vertex (Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 1 :. 1 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0) :. 1 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 0 :. 1 :. NilL) ]
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
@@ -2002,7 +2021,10 @@ layout(location = 3) in vec2 rectSize;
 layout(location = 4) in vec4 rectColor;
 layout(location = 5) in mat4 rectModel;
 
+layout(location = 9) in vec2 inTexCoord;
+
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec2 fragTexCoord;
 
 void
 main()
@@ -2013,6 +2035,7 @@ main()
 		vec4(rectPosition, 0.0, 1.0);
 //	fragColor = inColor;
 	fragColor = rectColor;
+	fragTexCoord = inTexCoord;
 }
 
 |]
@@ -2022,13 +2045,17 @@ main()
 #version 450
 
 layout(location = 0) in vec4 fragColor;
+layout(location = 1) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
+
+layout(binding = 1) uniform sampler2D texSampler;
 
 void
 main()
 {
-	outColor = fragColor;
+//	outColor = fragColor;
+	outColor = vec4(texture(texSampler, fragTexCoord).rgb, 1.0);
 	if (outColor.w < 1) { discard; }
 }
 
