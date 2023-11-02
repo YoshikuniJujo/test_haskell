@@ -31,6 +31,10 @@ import Trial.Followbox.ViewType as VT
 
 import Data.OneOfThem
 
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Rendering.Cairo
+
 newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
 
 twoRectangles' :: CairoArgb32
@@ -97,12 +101,12 @@ instance BObj.IsImage CairoArgb32 where
 			pixelRgbaToPixelArgb32 $ (pss' ! y) ! x
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
-drawView :: PrimMonad m =>
-	CairoSurfaceImageT s (PrimState m) -> CairoT r (PrimState m) -> View ->
-	m Argb32
+drawView ::
+	CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> View ->
+	IO Argb32
 drawView sfc0 cr (View vs) = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
-	cairoRectangle cr 0 0 256 256
+	cairoRectangle cr 0 0 1024 1024
 	cairoFill cr
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.3
@@ -129,9 +133,18 @@ drawLine cr (Line' clr (realToFrac -> lw)
 	cairoLineTo cr x2 y2
 	cairoStroke cr
 
-drawText :: PrimMonad m => CairoT r (PrimState m) -> VText -> m ()
-drawText cr (Text' _ _ _ _ _) = do
-	pure ()
+drawText :: CairoT r RealWorld -> VText -> IO ()
+drawText cr (Text' clr fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
+	pl <- pangoCairoCreateLayout cr
+	pfd <- pangoFontDescriptionNew
+	pangoFontDescriptionSet pfd $ Family fnm
+	pangoFontDescriptionSet pfd $ AbsoluteSize fsz
+	pangoLayoutSet pl . pangoFontDescriptionToNullable . Just
+		=<< pangoFontDescriptionFreeze pfd
+	pangoLayoutSet pl txt
+	fpl <- pangoLayoutFreeze pl
+	cairoMoveTo cr x y
+	pangoCairoShowLayout cr fpl
 
 drawImage :: PrimMonad m => CairoT r (PrimState m) -> VT.Image -> m ()
 drawImage cr (Image' _ _) = do

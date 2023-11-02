@@ -76,7 +76,8 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 			inp $ Draw2 (M.fromList [
 				(0, ((bool (uniformBufferObject e0) def f), instances' 1024 1024 e0))
 				] )
-				(View [	expand . Singleton $ Line' blue 4 (10, 10) (100, 100)
+				(View [	expand . Singleton $ Line' blue 4 (10, 10) (100, 100),
+					expand . Singleton $ Text' blue "sans" 25 (50, 50) "HELLO WORLD"
 					])
 
 	($ instances) $ fix \loop rs -> do
