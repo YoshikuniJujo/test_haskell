@@ -500,7 +500,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	atomically (newTVar False) >>= \vb ->
 	atomically (newTVar initMouseButtonStates) >>= \vmbs ->
 	atomically (modifyTVar ges (glfwEvents k w outp vb vmbs :)) >>
-	atomically (newTVar False) >>= \fbrszd ->
+	atomically (newTVar NoResized) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
 		(Just \w ky sc act mods -> do
 			putStrLn $
@@ -514,7 +514,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 				_ -> pure ()
 			) >>
 	GlfwG.Win.setFramebufferSizeCallback w
-		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
+		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
 
 	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(fromRight -> sfc) ->
 	createRenderPass @scfmt rpgrp k >>= \rp ->
@@ -1573,7 +1573,8 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 	fix \loop -> do
 --		GlfwG.pollEvents
 		M.lookup zero' <$> atomically (readTVar vws) >>= \case
-			Just ws@(WinObjs (_, fbrszd) _ _ _ _ _) -> atomically (readTVar fbrszd) >>= bool (pure ()) (do
+--			Just ws@(WinObjs (_, fbrszd) _ _ _ _ _) -> atomically (readTVar fbrszd) >>= bool (pure ()) (do
+			Just ws@(WinObjs (_, fbrszd) _ _ _ _ _) -> checkResizedState fbrszd >>= bool (pure ()) (do
 				putStrLn "recreateSwapchainEtcIfNeed: needed"
 				atomically $ writeTChan outp EventNeedRedraw)
 			_ -> pure ()
@@ -1630,8 +1631,17 @@ data WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm ss sr sfs = WinObjs
 	(Pipeline sg sl sdsl) (SyncObjects '(sias, srfs, siff))
 	(Swapchains scfmt ssc nm ss sr sfs)
 
+data FramebufferResizedState = NoResized | HalfResized | Resized deriving Show
+
+checkResizedState :: FramebufferResized -> IO Bool
+checkResizedState fbrszd = atomically $
+	readTVar fbrszd >>= \case
+		Resized -> writeTVar fbrszd HalfResized >> pure True
+		HalfResized -> writeTVar fbrszd NoResized >> pure True
+		NoResized -> pure False
+
 type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
-type FramebufferResized = TVar Bool
+type FramebufferResized = TVar FramebufferResizedState
 
 type Swapchains scfmt ssc nm ss sr sfs = (
 	Vk.Khr.Swapchain.S scfmt ssc,
@@ -1770,7 +1780,8 @@ recreateSwapchainEtcIfNeed ::
 	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf) -> TChan (Event k) -> IO ()
 recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
-	checkFlag fbrszd >>= bool (pure ()) (do
+--	checkFlag fbrszd >>= bool (pure ()) (do
+	checkResizedState fbrszd >>= bool (pure ()) (do
 		putStrLn "recreateSwapchainEtcIfNeed: needed"
 		atomically $ writeTChan outp EventNeedRedraw
 		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
