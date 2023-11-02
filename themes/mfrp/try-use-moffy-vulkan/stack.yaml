@@ -43,7 +43,7 @@ packages:
 extra-deps:
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: c1400ed9a980623733a5fde721a8e55125515197
+  commit: 24f447aed1214dd25d3b08bc1a47891b4b8659a2
   subdirs:
   - themes/mfrp/try-moffy
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
@@ -70,6 +70,7 @@ extra-deps:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
+  - themes/gui/cairo/try-cairo-image-samples
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 - git: https://github.com/YoshikuniJujo/extra-data-yj
@@ -81,13 +82,13 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
+  commit: 060f2b30db539a22f69cc627ce46b53e785946c3
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 59dfe9365c64f03daadfe83e06af841c000ef0e6
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 - git: https://github.com/YoshikuniJujo/union-color.git
-  commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
+  commit: 8ce701b42c2c82a37e908c526caad0dd3ffb9607
 - git: https://github.com/YoshikuniJujo/simple-pango
   commit: 4219ecf5de6caed418269577834f26eb0199068d
 

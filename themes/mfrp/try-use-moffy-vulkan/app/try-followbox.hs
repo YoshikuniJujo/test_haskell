@@ -90,7 +90,8 @@ action f = liftIO do
 	c' <- atomically newTChan
 	e <- atomically newTChan
 	x <- atomically newTChan
-	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext)
+	v <- atomically . newTVar $ View []
+	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext) v
 	forkIO $ runFollowboxGen cow cocc "firefox" Nothing c' do
 		i <- waitFor $ adjust windowNew
 		_ <- waitFor . adjust $ setCursorFromName i Default
@@ -199,8 +200,9 @@ colorToColor = \case
 
 untilEnd :: Bool -> TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
 	TChan (M.Map WindowId View) ->
-	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
-untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
+	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) ->
+	TVar View -> IO ()
+untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) tvw = do
 	tm0 <- getCurrentTime
 
 	forkIO $ forever do
@@ -209,8 +211,11 @@ untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 
 	forkIO . forever $ atomically (readTChan c') >>= \vs -> do
 		putStrLn $ "VIEW: " ++ show vs
-		atomically
-			$ inp . Draw $ M.fromList [(0, (def, instances 0))]
+		atomically . writeTVar tvw $ vs M.! WindowId 0
+		e0 <- atomically $ ext 0
+--		atomically . inp $ Draw2 (M.fromList [(0, (def, instances 0))]) (vs M.! WindowId 0)
+		atomically . inp $ Draw2 (M.fromList [(0, (def, instances' 1024 1024 e0))]) (vs M.! WindowId 0)
+--		atomically . inp $ Draw2 (M.fromList [(0, (def, instances 0))]) (View [])
 
 {-
 	forkIO $ forever do
@@ -300,6 +305,12 @@ untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) = do
 				atomically . writeTChan cocc
 					. App.expand $ App.Singleton ex
 				loop rs
+			Just EventNeedRedraw -> do
+				putStrLn "EVENT NEED REDRAW"
+				vs <- atomically $ readTVar tvw
+				e0 <- atomically $ ext 0
+				atomically . inp $ Draw2 (M.fromList [(0, (def, instances' 1024 1024 e0))]) vs
+				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {
@@ -360,4 +371,35 @@ calcModel :: Float -> (RectModel0, RectModel1, RectModel2, RectModel3)
 calcModel tm = let
 	m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s $ Cglm.rotate Cglm.mat4Identity
 		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) in
+	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
+
+instances' :: Float -> Float -> Vk.Extent2d -> [Rectangle]
+instances' w h ex = let
+	(m0, m1, m2, m3) = calcModel2 w h ex in
+	[
+--		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		Rectangle (RectPos . Cglm.Vec2 $ (- 2) :. (- 2) :. NilL)
+--			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(RectSize . Cglm.Vec2 $ 4 :. 4 :. NilL)
+			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
+			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
+			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3,
+		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
+			m0 m1 m2 m3
+		]
+
+
+calcModel2 :: Float -> Float -> Vk.Extent2d -> (RectModel0, RectModel1, RectModel2, RectModel3)
+calcModel2 w0 h0 Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = let
+	m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s $ Cglm.scale Cglm.mat4Identity
+		(Cglm.Vec3 $ (w0 / fromIntegral w) :. (h0 / fromIntegral h) :. 1 :. NilL) in
 	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
