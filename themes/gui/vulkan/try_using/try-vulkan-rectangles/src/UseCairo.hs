@@ -1572,6 +1572,11 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			wi <$ (atomically . modifyTVar vws . M.insert wi =<< crwos wi)
 	fix \loop -> do
 --		GlfwG.pollEvents
+		M.lookup zero' <$> atomically (readTVar vws) >>= \case
+			Just ws@(WinObjs (_, fbrszd) _ _ _ _ _) -> atomically (readTVar fbrszd) >>= bool (pure ()) (do
+				putStrLn "recreateSwapchainEtcIfNeed: needed"
+				atomically $ writeTChan outp EventNeedRedraw)
+			_ -> pure ()
 		atomically (readTChan inp) >>= \case
 			Draw ds view -> do
 				Vk.Dvc.waitIdle dvc
