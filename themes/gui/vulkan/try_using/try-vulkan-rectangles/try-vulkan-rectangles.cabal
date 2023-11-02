@@ -48,6 +48,7 @@ library
     , data-default
     , mtl
     , optparse-declarative
+    , primitive
     , ranged-list
     , simple-cairo
     , simple-pango
@@ -91,6 +92,7 @@ executable try-multi-rectangles
     , data-default
     , mtl
     , optparse-declarative
+    , primitive
     , ranged-list
     , simple-cairo
     , simple-pango
@@ -135,6 +137,7 @@ executable try-multi-rectangles2
     , data-default
     , mtl
     , optparse-declarative
+    , primitive
     , ranged-list
     , simple-cairo
     , simple-pango
@@ -179,6 +182,7 @@ executable try-use-cairo
     , data-default
     , mtl
     , optparse-declarative
+    , primitive
     , ranged-list
     , simple-cairo
     , simple-pango
@@ -224,6 +228,7 @@ test-suite try-vulkan-rectangles-test
     , data-default
     , mtl
     , optparse-declarative
+    , primitive
     , ranged-list
     , simple-cairo
     , simple-pango
