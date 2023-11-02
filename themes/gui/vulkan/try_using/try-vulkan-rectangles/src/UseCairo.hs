@@ -448,11 +448,12 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	cairoImageSurfaceCreate CairoFormatArgb32 1024 1024 >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
 
-	let	crcr =	twoRectanglesIO' crsfc cr >>= \trs ->
+	let	crcr v =
+			drawViewIO crsfc cr v >>= \trs ->
 			createTexture phd dv gq cp ubds txgrp txsmplr trs (zero' :: k)
 		drcr = destroyTexture txgrp (zero' :: k) in
 
-	crcr >>
+	crcr (View []) >>
 
 	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr drcr cr -- crsfc cr
 
@@ -1561,7 +1562,7 @@ mainLoop ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar [IO ()] ->
-	IO () -> IO () -> CairoT r RealWorld -> IO ()
+	(View ->IO ()) -> IO () -> CairoT r RealWorld -> IO ()
 mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr drcr cr = do
 	let	crwos' = do
 			wi <- atomically do
@@ -1575,9 +1576,9 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
-			Draw2 ds (View view) -> do
-				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` view
-				drcr >> crcr
+			Draw2 ds (view@(View vs)) -> do
+				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` vs
+				drcr >> crcr view
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop

@@ -7,7 +7,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CairoImage (
-	CairoArgb32, twoRectangles', twoRectanglesIO, twoRectanglesIO' ) where
+	CairoArgb32, twoRectangles', twoRectanglesIO, twoRectanglesIO',
+	drawViewIO ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -28,6 +29,8 @@ import Convert
 import SampleImages
 import Trial.Followbox.ViewType as VT
 
+import Data.OneOfThem
+
 newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
 
 twoRectangles' :: CairoArgb32
@@ -38,6 +41,9 @@ twoRectanglesIO = CairoArgb32 <$> twoRectanglesPrim
 
 twoRectanglesIO' ::  CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> IO CairoArgb32
 twoRectanglesIO' sfc cr = CairoArgb32 <$> twoRectanglesPrim' sfc cr
+
+drawViewIO :: CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> View -> IO CairoArgb32
+drawViewIO sfc cr v = CairoArgb32 <$> drawView sfc cr v
 
 newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
 
@@ -94,7 +100,7 @@ instance BObj.IsImage CairoArgb32 where
 drawView :: PrimMonad m =>
 	CairoSurfaceImageT s (PrimState m) -> CairoT r (PrimState m) -> View ->
 	m Argb32
-drawView sfc0 cr v = do
+drawView sfc0 cr (View vs) = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
 	cairoRectangle cr 0 0 256 256
 	cairoFill cr
@@ -107,24 +113,25 @@ drawView sfc0 cr v = do
 	cairoRectangle cr 100 130 100 70
 	cairoFill cr
 
+	((drawLine cr >-- drawText cr >-- SingletonFun (drawImage cr)) `apply`)
+		`mapM_` vs
+
 	cairoImageSurfaceGetCairoImage sfc0 >>= \case
 		CairoImageArgb32 i -> pure i
 		_ -> error "never occur"
 
-drawLine :: PrimMonad m =>
-	CairoSurfaceImageT s (PrimState m) -> CairoT r (PrimState m) -> Line ->
-	m ()
-drawLine sfc cr (Line' _ _ _ _) = do
+drawLine :: PrimMonad m => CairoT r (PrimState m) -> Line -> m ()
+drawLine cr (Line' clr lw
+	(realToFrac -> x1, realToFrac -> y1)
+	(realToFrac -> x2, realToFrac -> y2)) = do
+	cairoMoveTo cr x1 y1
+	cairoLineTo cr x2 y2
+	cairoStroke cr
+
+drawText :: PrimMonad m => CairoT r (PrimState m) -> VText -> m ()
+drawText cr (Text' _ _ _ _ _) = do
 	pure ()
 
-drawText :: PrimMonad m =>
-	CairoSurfaceImageT s (PrimState m) -> CairoT r (PrimState m) -> VText ->
-	m ()
-drawText sfc cr (Text' _ _ _ _ _) = do
-	pure ()
-
-drawImage :: PrimMonad m =>
-	CairoSurfaceImageT s (PrimState m) -> CairoT r (PrimState m) -> VT.Image ->
-	m ()
-drawImage sfc cr (Image' _ _) = do
+drawImage :: PrimMonad m => CairoT r (PrimState m) -> VT.Image -> m ()
+drawImage cr (Image' _ _) = do
 	pure ()
