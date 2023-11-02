@@ -121,9 +121,10 @@ drawView sfc0 cr (View vs) = do
 		_ -> error "never occur"
 
 drawLine :: PrimMonad m => CairoT r (PrimState m) -> Line -> m ()
-drawLine cr (Line' clr lw
+drawLine cr (Line' clr (realToFrac -> lw)
 	(realToFrac -> x1, realToFrac -> y1)
 	(realToFrac -> x2, realToFrac -> y2)) = do
+	cairoSetLineWidth cr lw
 	cairoMoveTo cr x1 y1
 	cairoLineTo cr x2 y2
 	cairoStroke cr
