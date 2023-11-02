@@ -258,6 +258,7 @@ data Event k
 	| EventOpenWindow k
 	| EventDeleteWindow k
 	| EventTextLayoutExtentResult (Occurred CTE.CalcTextExtents)
+	| EventNeedRedraw
 	deriving Show
 
 enableValidationLayers :: Bool
@@ -1575,13 +1576,13 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			Draw ds view -> do
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
+				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
 			Draw2 ds (view@(View vs)) -> do
 				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` vs
 				drcr >> crcr view
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
+				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
 			OpenWindow ->
 				crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
 			DestroyWindow k -> do
@@ -1713,8 +1714,8 @@ runLoop' :: forall n (siv :: Type) (sf :: Type)
 			'(sbrct, 'Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])] ) ->
 	M.Map k (ViewProjection, [Rectangle]) ->
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm sb) ->
-	IO () -> IO ()
-runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
+	TChan (Event k) -> IO () -> IO ()
+runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 	let	(phdvc, qfis, dvc, gq, pq, _cp, cb) = dvs
 		(vb, ib) = vbs
 		(ubds, ubm) = ubs
@@ -1727,7 +1728,7 @@ runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
 	if cls then (pure ()) else do
 		for_ ws \wos ->
-			recreateSwapchainEtcIfNeed @n @siv @sf phdvc qfis dvc pll wos
+			recreateSwapchainEtcIfNeed @n @siv @sf phdvc qfis dvc pll wos outp
 		loop
 
 lookupRects :: Ord k =>
@@ -1757,15 +1758,17 @@ catchAndDraw phdvc qfis dvc gq pq pllyt vb rb ib ubm ubds cb ubo wos = do
 
 recreateSwapchainEtcIfNeed ::
 	forall n siv sf
-		sd sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sr .
+		sd sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sr k .
 	(Vk.T.FormatToValue scfmt, Mappable n) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
-		(Replicate n siv) sr (Replicate n sf) -> IO ()
-recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) =
-	checkFlag fbrszd >>= bool (pure ())
-		(recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
+		(Replicate n siv) sr (Replicate n sf) -> TChan (Event k) -> IO ()
+recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
+	checkFlag fbrszd >>= bool (pure ()) (do
+		putStrLn "recreateSwapchainEtcIfNeed: needed"
+		atomically $ writeTChan outp EventNeedRedraw
+		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
 	
 
 drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds .
@@ -1833,7 +1836,9 @@ catchAndRecreate phdvc qfis dvc pllyt rcs act = catchJust
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt rcs
+	\_ -> do
+		putStrLn "catchAndRecreate: catched"
+		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt rcs
 
 recreateSwapchainEtc :: forall
 	n siv sf scfmt sw ssfc sd ssc nm sr sl sdsl sg .

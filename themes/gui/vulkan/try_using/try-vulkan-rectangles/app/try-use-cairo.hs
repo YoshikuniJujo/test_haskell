@@ -123,6 +123,9 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 			Just (EventTextLayoutExtentResult ex) -> do
 				print ex
 				loop rs
+			Just EventNeedRedraw -> do
+				putStrLn "EVENT NEED REDRAW"
+				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {
