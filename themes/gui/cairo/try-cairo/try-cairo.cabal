@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ea6d6ff49a2756b657b965ee92f3b002697eae61fa5e111b6b3d1d3de315dbf6
+-- hash: e1cc78bb0a46b170b60e8a5e6822c0f7c311c49e023925be0f9a76ad0081ed7b
 
 name:           try-cairo
 version:        0.1.0.0
@@ -48,6 +48,7 @@ library
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -66,6 +67,7 @@ executable colorsAsSource
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -85,6 +87,27 @@ executable createdAsSource
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+    , union-color
+  default-language: Haskell2010
+
+executable fromPng
+  main-is: fromPng.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -104,6 +127,7 @@ executable gradientsAsSource
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -123,6 +147,7 @@ executable grayscale
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -142,6 +167,7 @@ executable grayscale-with-alpha
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -161,6 +187,7 @@ executable helloWriteImageSurface
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -180,6 +207,7 @@ executable picture8To16
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -199,6 +227,7 @@ executable removeAlpha
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -218,6 +247,7 @@ executable spec
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -237,6 +267,7 @@ executable testA1
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -256,6 +287,7 @@ executable testA1asDest
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -275,6 +307,7 @@ executable testA1asDestRGBA
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -294,6 +327,7 @@ executable testA1hs
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -313,6 +347,7 @@ executable testA1hsRGBA
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -332,6 +367,7 @@ executable testA8
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -351,6 +387,7 @@ executable testA8asDest
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -370,6 +407,7 @@ executable testA8asDestRGBA
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -389,6 +427,7 @@ executable testA8hs
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -408,6 +447,7 @@ executable testA8hsRGBA
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -427,6 +467,7 @@ executable testArgb32
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -446,6 +487,7 @@ executable testArgb32Mut
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -465,6 +507,7 @@ executable testParts
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -484,6 +527,7 @@ executable testRgb16_565
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -503,6 +547,7 @@ executable testRgb24
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -522,6 +567,7 @@ executable testRgb30
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -540,6 +586,7 @@ executable try-cairo-exe
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -559,6 +606,7 @@ executable tryPath
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -578,6 +626,7 @@ test-suite try-cairo-test
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo

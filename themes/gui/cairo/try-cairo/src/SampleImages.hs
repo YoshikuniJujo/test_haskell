@@ -1,3 +1,5 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module SampleImages where
@@ -10,6 +12,11 @@ import Data.CairoImage.Internal
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
+
+import Graphics.Cairo.Surfaces.PngSupport
+import Graphics.Cairo.Drawing.CairoPatternT
+
+import Data.ByteString qualified as BS
 
 twoRectangles :: Argb32
 twoRectangles = case runST twoRectanglesPrim of
@@ -34,3 +41,30 @@ twoRectanglesPrim = do
 	cairoFill cr
 
 	cairoImageSurfaceGetCairoImage sfc0
+
+fromPng :: IO Argb32
+fromPng = do
+	sfc <- cairoImageSurfaceCreate CairoFormatArgb32 512 512
+	cr <- cairoCreate sfc
+
+	sfc' <- cairoSurfaceCreateFromPng "../../../../files/images/saikoro.png"
+	cairoSetSourceSurface cr sfc' 0 0
+	cairoPaint cr
+
+	cairoImageSurfaceGetCairoImage sfc >>= \case
+		CairoImageArgb32 i -> pure i
+		_ -> error "never occur"
+
+fromPng' :: IO Argb32
+fromPng' = do
+	sfc <- cairoImageSurfaceCreate CairoFormatArgb32 768 512
+	cr <- cairoCreate sfc
+
+	bs <- BS.readFile "../../../../files/images/saikoro.png"
+	sfc' <- cairoSurfaceCreateFromPngByteString bs
+	cairoSetSourceSurface cr sfc' 0 0
+	cairoPaint cr
+
+	cairoImageSurfaceGetCairoImage sfc >>= \case
+		CairoImageArgb32 i -> pure i
+		_ -> error "never occur"
