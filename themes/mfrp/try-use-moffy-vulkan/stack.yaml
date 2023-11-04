@@ -43,7 +43,7 @@ packages:
 extra-deps:
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 24f447aed1214dd25d3b08bc1a47891b4b8659a2
+  commit: 766dd03aa2701a87e88788d2b066dae689e21ed9
   subdirs:
   - themes/mfrp/try-moffy
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
@@ -82,7 +82,7 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 060f2b30db539a22f69cc627ce46b53e785946c3
+  commit: 6a520b14a84e144faff4efb823c58ccb346104db
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 59dfe9365c64f03daadfe83e06af841c000ef0e6
 - git: https://github.com/YoshikuniJujo/glib-stopgap
