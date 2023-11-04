@@ -344,15 +344,15 @@ packages:
   original:
     hackage: optparse-declarative-0.4.2
 - completed:
-    commit: 060f2b30db539a22f69cc627ce46b53e785946c3
+    commit: 6a520b14a84e144faff4efb823c58ccb346104db
     git: https://github.com/YoshikuniJujo/simple-cairo
     name: simple-cairo
     pantry-tree:
-      sha256: 66227eac0786475ed53c6a3351e9b8602d7ccf3d74d6e2fc1a1fd5166e7d7dc9
+      sha256: 93616b711e69d10b4936a7f0ffbfac2642c6e528ca8ba82dbb2150909c50ed29
       size: 4958
-    version: 0.1.0.1
+    version: 0.1.0.5
   original:
-    commit: 060f2b30db539a22f69cc627ce46b53e785946c3
+    commit: 6a520b14a84e144faff4efb823c58ccb346104db
     git: https://github.com/YoshikuniJujo/simple-cairo
 - completed:
     commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d

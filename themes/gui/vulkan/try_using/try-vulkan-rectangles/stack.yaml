@@ -72,7 +72,7 @@ extra-deps:
 - union-color-0.1.2.1
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 060f2b30db539a22f69cc627ce46b53e785946c3
+  commit: 6a520b14a84e144faff4efb823c58ccb346104db
 - git: https://github.com/YoshikuniJujo/cairo-image.git
   commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
 - git: https://github.com/YoshikuniJujo/simple-field.git

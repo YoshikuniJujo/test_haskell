@@ -21,6 +21,7 @@ import Data.Color
 import Data.CairoImage
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Object.Base qualified as BObj
@@ -34,6 +35,8 @@ import Data.OneOfThem
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
+
+import Graphics.Cairo.Surfaces.PngSupport
 
 newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
 
@@ -147,5 +150,17 @@ drawText cr (Text' clr fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y
 	pangoCairoShowLayout cr fpl
 
 drawImage :: PrimMonad m => CairoT r (PrimState m) -> VT.Image -> m ()
-drawImage cr (Image' _ _) = do
-	pure ()
+drawImage cr (Image' (x, y) (Png w h img)) = do
+
+	sfc <- cairoSurfaceCreateFromPngByteString img
+	w0 <- cairoImageSurfaceGetWidth sfc
+	h0 <- cairoImageSurfaceGetHeight sfc
+
+	cairoTranslate cr (realToFrac x) (realToFrac y)
+	cairoScale cr
+		(realToFrac w / fromIntegral w0)
+		(realToFrac h / fromIntegral h0)
+	cairoSetSourceSurface cr sfc 0 0
+	cairoPaint cr
+
+	cairoIdentityMatrix cr
