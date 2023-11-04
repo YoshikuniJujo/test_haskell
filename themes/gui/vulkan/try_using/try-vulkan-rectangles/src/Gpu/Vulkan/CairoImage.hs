@@ -128,16 +128,18 @@ drawView sfc0 cr (View vs) = do
 		_ -> error "never occur"
 
 drawLine :: PrimMonad m => CairoT r (PrimState m) -> Line -> m ()
-drawLine cr (Line' clr (realToFrac -> lw)
+drawLine cr (Line' (Color r g b) (realToFrac -> lw)
 	(realToFrac -> x1, realToFrac -> y1)
 	(realToFrac -> x2, realToFrac -> y2)) = do
+	cairoSetSourceRgb cr $ RgbWord8 r g b
 	cairoSetLineWidth cr lw
 	cairoMoveTo cr x1 y1
 	cairoLineTo cr x2 y2
 	cairoStroke cr
 
 drawText :: CairoT r RealWorld -> VText -> IO ()
-drawText cr (Text' clr fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
+drawText cr (Text' (Color r g b) fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
+	cairoSetSourceRgb cr $ RgbWord8 r g b
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet pfd $ Family fnm
