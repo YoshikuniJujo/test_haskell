@@ -8,11 +8,13 @@
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
+
+import Control.Concurrent
 
 import GHC.Generics
 import Foreign.Storable
@@ -34,7 +36,7 @@ import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
-import Data.List
+import Data.List qualified as L
 import Data.IORef
 import Data.List.Length
 import Data.Word
@@ -44,7 +46,7 @@ import Data.Time
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
+import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw (createWindowSurface)
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
@@ -89,7 +91,6 @@ import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MltSmplSt
-import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VtxInpSt
 import qualified Gpu.Vulkan.Sample as Vk.Sample
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
@@ -134,18 +135,51 @@ import Tools
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
+		cev <- createControllerEvent
+		_ <- forkIO $ controller cev
 		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g
-			else run win inst g
+			then setupDebugMessenger inst $ run win inst g cev
+			else run win inst g cev
+
+controller :: ControllerEvent -> IO ()
+controller ev = do
+	threadDelay 10000
+	fn <- readIORef $ controllerEventFinished ev
+	if fn then pure () else do
+		Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
+		modifyIORef (controllerEventLeftX ev) (+ ga Glfw.GamepadAxis'LeftX)
+		modifyIORef (controllerEventLeftY ev) (+ ga Glfw.GamepadAxis'LeftY)
+		when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
+			$ writeIORef (controllerEventButtonAEver ev) True
+		controller ev
+
+createControllerEvent :: IO ControllerEvent
+createControllerEvent = do
+	fn <- newIORef False
+	ae <- newIORef False
+	lx <- newIORef 0
+	ly <- newIORef 0
+	pure ControllerEvent {
+		controllerEventFinished = fn,
+		controllerEventButtonAEver = ae,
+		controllerEventLeftX = lx,
+		controllerEventLeftY = ly
+		}
+
+data ControllerEvent = ControllerEvent {
+	controllerEventFinished :: IORef Bool,
+	controllerEventButtonAEver :: IORef Bool,
+	controllerEventLeftX :: IORef Float,
+	controllerEventLeftY :: IORef Float
+	}
 
 type FramebufferResized = TVar Bool
-
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
 
 newFramebufferResized :: IO FramebufferResized
 newFramebufferResized = atomically $ newTVar False
@@ -161,9 +195,6 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 1
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
@@ -183,7 +214,7 @@ createInstance f = do
 	when enableValidationLayers $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
-		=<< null . (validationLayers \\)
+		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
@@ -211,11 +242,9 @@ createInstance f = do
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
 
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil' f
+setupDebugMessenger :: Vk.Ist.I si -> IO a -> IO a
+setupDebugMessenger ist f =
+	Vk.Ext.DbgUtls.Msngr.create ist debugMessengerCreateInfo nil' f
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
@@ -236,8 +265,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w inst g =
+run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
+run w inst g cev =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -258,7 +287,7 @@ run w inst g =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm cev
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -318,7 +347,7 @@ findQueueFamilies device sfc = do
 		(\i -> Vk.Khr.Surface.PhysicalDevice.getSupport device i sfc)
 		(fst <$> queueFamilies)
 	pure QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = fst <$> find
+		graphicsFamilyMaybe = fst <$> L.find
 			(checkBits Vk.Queue.GraphicsBit
 				. Vk.QueueFamily.propertiesQueueFlags . snd)
 			queueFamilies,
@@ -326,7 +355,7 @@ findQueueFamilies device sfc = do
 
 checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
 checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions \\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
+	null . (deviceExtensions L.\\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
 deviceExtensions :: [Vk.PhDvc.ExtensionName]
@@ -348,7 +377,7 @@ createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
 createLogicalDevice phdvc qfis f =
 	let	uniqueQueueFamilies =
-			nub [graphicsFamily qfis, presentFamily qfis]
+			L.nub [graphicsFamily qfis, presentFamily qfis]
 		queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
 			Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 			Vk.Dvc.queueCreateInfoFlags = def,
@@ -441,7 +470,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
-		$ find preferredSwapSurfaceFormat availableFormats
+		$ L.find preferredSwapSurfaceFormat availableFormats
 	_ -> error "no available swap surface formats"
 
 preferredSwapSurfaceFormat :: Vk.Khr.Surface.M.Format -> Bool
@@ -451,7 +480,7 @@ preferredSwapSurfaceFormat f =
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
-	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
+	fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
 chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
@@ -928,7 +957,7 @@ findMemoryType phdvc flt props =
 	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
-	suitable props1 = fst <$> find ((&&)
+	suitable props1 = fst <$> L.find ((&&)
 		<$> (`Vk.Mem.M.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
@@ -974,15 +1003,11 @@ createCommandBuffer dvc cp f = Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. 
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss)
-addTypeToProxy Proxy = Proxy
-
 data SyncObjects (ssos :: (Type, Type, Type)) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: Vk.Semaphore.S sias,
-		renderFinishedSemaphores :: Vk.Semaphore.S srfs,
-		inFlightFences :: Vk.Fence.F sfs } ->
+		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
+		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
+		_inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
 createSyncObjects ::
@@ -1048,14 +1073,17 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
+	SyncObjects '(sias, srfs, siff) -> UTCTime -> ControllerEvent -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 cev = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
-		tm <- getCurrentTime
+--		tm <- getCurrentTime
+		lx <- readIORef $ controllerEventLeftX cev
+		ly <- readIORef $ controllerEventLeftY cev
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) loop
+			(lx / 100, ly / 100) cev loop
+--			(realToFrac $ tm `diffUTCTime` tm0) cev loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
@@ -1073,13 +1101,16 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> Float ->
+	SyncObjects '(sias, srfs, siff) -> (Float, Float) -> ControllerEvent ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm cev loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
-	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
+	ab <- readIORef $ controllerEventButtonAEver cev
+	if (cls || ab)
+	then writeIORef (controllerEventFinished cev) True
+	else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
@@ -1095,8 +1126,8 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias sr
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
+	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> (Float, Float) -> IO ()
+drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tmtm@(tm, tm') = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1105,7 +1136,16 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
-	updateUniformBuffer dvc ubm ext tm
+	let	rot =	Cglm.rotate
+				Cglm.mat4Identity
+				(tm' * Cglm.rad 90)
+				(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+			`Cglm.mat4Mul`
+			Cglm.rotate
+				Cglm.mat4Identity
+				(- tm * Cglm.rad 90)
+				(Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL)
+	updateUniformBuffer' dvc ubm ext rot
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
@@ -1122,18 +1162,15 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 
-updateUniformBuffer :: Vk.Dvc.D sd ->
-	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> Float -> IO ()
-updateUniformBuffer dvc um sce tm = do
+updateUniformBuffer' :: Vk.Dvc.D sd ->
+	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> Cglm.Mat4 -> IO ()
+updateUniformBuffer' dvc um sce rot = do
 	Vk.Mem.write @"uniform-buffer" @(VObj.Atom 256 UniformBufferObject 'Nothing)
 		dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
-		uniformBufferObjectModel = Cglm.rotate
-			Cglm.mat4Identity
-			(tm * Cglm.rad 90)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+		uniformBufferObjectModel = rot,
 		uniformBufferObjectView = Cglm.lookat
-			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+			(Cglm.Vec3 $ 5 :. 0 :. 0 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 		uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
@@ -1200,7 +1237,7 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 data Vertex = Vertex { vertexPos :: Pos, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
-newtype Pos = Pos Cglm.Vec2 deriving (Show, Storable, Vk.Ppl.VtxInpSt.Formattable)
+newtype Pos = Pos Cglm.Vec3 deriving (Show, Storable, Vk.Ppl.VtxInpSt.Formattable)
 
 instance Storable Vertex where
 	sizeOf = Foreign.Storable.Generic.gSizeOf
@@ -1212,17 +1249,102 @@ instance Foreign.Storable.Generic.G Vertex where
 
 vertices :: [Vertex]
 vertices = [
-	Vertex (Pos . Cglm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0 :. 0 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
+
+{-
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ (0.5) :. (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (0.5) :. 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL)
+		-}
+
+		]
 
 indices :: [Word16]
-indices = [0, 1, 2, 2, 3, 0]
+indices = [
+	2, 1, 0, -- , 2, 3, 0,
+	3, 4, 5,
+	6, 7, 8,
+	11, 10, 9
+--	4, 5, 6, 6, 7, 4,
+--	4, 7, 6, 6, 5, 4,
+--	8, 9, 10, 10, 11, 8
+--	8, 11, 10, 10, 9, 8,
+--	12, 13, 14, 14, 15, 12,
+--	16, 17, 18, 18, 19, 16,
+
+--	20, 21, 22, 22, 23, 20,
+--	20, 23, 22, 22, 21, 20
+	]
 
 data UniformBufferObject = UniformBufferObject {
 	uniformBufferObjectModel :: Cglm.Mat4,
@@ -1254,7 +1376,7 @@ layout(binding = 0) uniform UniformBufferObject {
 	mat4 proj;
 } ubo;
 
-layout(location = 0) in vec2 inPosition;
+layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
 
 layout(location = 0) out vec3 fragColor;
@@ -1262,7 +1384,7 @@ layout(location = 0) out vec3 fragColor;
 void
 main()
 {
-	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 0.0, 1.0);
+	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
 	fragColor = inColor;
 }
 
