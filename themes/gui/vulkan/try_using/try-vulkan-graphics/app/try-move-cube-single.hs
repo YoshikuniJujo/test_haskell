@@ -153,8 +153,9 @@ controller ev = do
 	fn <- readIORef $ controllerEventFinished ev
 	if fn then pure () else do
 		Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
-		modifyIORef (controllerEventLeftX ev) (+ ga Glfw.GamepadAxis'LeftX)
-		modifyIORef (controllerEventLeftY ev) (+ ga Glfw.GamepadAxis'LeftY)
+		let	lx = ga Glfw.GamepadAxis'LeftX
+			ly = ga Glfw.GamepadAxis'LeftY
+		modifyIORef (controllerEventRotate ev) (calcRot lx ly `Cglm.mat4Mul`)
 		when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
 			$ writeIORef (controllerEventButtonAEver ev) True
 		controller ev
@@ -163,21 +164,27 @@ createControllerEvent :: IO ControllerEvent
 createControllerEvent = do
 	fn <- newIORef False
 	ae <- newIORef False
-	lx <- newIORef 0
-	ly <- newIORef 0
+	rot <- newIORef Cglm.mat4Identity
 	pure ControllerEvent {
 		controllerEventFinished = fn,
 		controllerEventButtonAEver = ae,
-		controllerEventLeftX = lx,
-		controllerEventLeftY = ly
-		}
+		controllerEventRotate = rot }
 
 data ControllerEvent = ControllerEvent {
 	controllerEventFinished :: IORef Bool,
 	controllerEventButtonAEver :: IORef Bool,
-	controllerEventLeftX :: IORef Float,
-	controllerEventLeftY :: IORef Float
-	}
+	controllerEventRotate :: IORef Cglm.Mat4 }
+
+calcRot :: Float -> Float -> Cglm.Mat4
+calcRot lx ly =
+	Cglm.rotate Cglm.mat4Identity
+		(- ly / 100 * Cglm.rad 90)
+		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+	`Cglm.mat4Mul`
+	Cglm.rotate
+		Cglm.mat4Identity
+		(- lx / 100 * Cglm.rad 90)
+		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
 
 type FramebufferResized = TVar Bool
 
@@ -1077,13 +1084,9 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 cev = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
---		tm <- getCurrentTime
-		lx <- readIORef $ controllerEventLeftX cev
-		ly <- readIORef $ controllerEventLeftY cev
+		rot <- readIORef $ controllerEventRotate cev
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(lx / 100, ly / 100) cev loop
---			(realToFrac $ tm `diffUTCTime` tm0) cev loop
+			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs rot cev loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
@@ -1101,11 +1104,11 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> (Float, Float) -> ControllerEvent ->
+	SyncObjects '(sias, srfs, siff) -> Cglm.Mat4 -> ControllerEvent ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm cev loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs rot cev loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs rot
 	cls <- Glfw.windowShouldClose win
 	ab <- readIORef $ controllerEventButtonAEver cev
 	if (cls || ab)
@@ -1126,8 +1129,8 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias sr
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> (Float, Float) -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tmtm@(tm, tm') = do
+	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Cglm.Mat4 -> IO ()
+drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) rot = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1136,15 +1139,6 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
-	let	rot =	Cglm.rotate
-				Cglm.mat4Identity
-				(tm' * Cglm.rad 90)
-				(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-			`Cglm.mat4Mul`
-			Cglm.rotate
-				Cglm.mat4Identity
-				(- tm * Cglm.rad 90)
-				(Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL)
 	updateUniformBuffer' dvc ubm ext rot
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
