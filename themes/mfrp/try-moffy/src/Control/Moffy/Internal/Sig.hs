@@ -139,13 +139,13 @@ indexBy_ ::
 	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
 	React s (es :+: es') (ThreadId, ThreadId) ->
 	Sig s es a r -> Sig s es' b r' ->
-	Sig s (es :+: es') a (Either r (Maybe a, r'))
+	Sig s (es :+: es') (a, b) (Either r (Maybe a, r'))
 indexBy_ ft (adjustSig -> l) (adjustSig -> r) = indexByGen ft l r
 
 indexByGen ::
 	(Updatable (ISig s es a r) (ISig s es b r'), (es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
-	Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
+	Sig s es a r -> Sig s es b r' -> Sig s es (a, b) (Either r (Maybe a, r'))
 indexByGen ft l (Sig r) = waitFor (res $ pause ft l r) >>= \case
 	(Sig (Pure l'), r') -> (first Just <$>) <$> iindexBy ft l' (Sig r')
 	(l', Pure (_ :| r')) -> indexByGen ft l' r'
@@ -154,10 +154,10 @@ indexByGen ft l (Sig r) = waitFor (res $ pause ft l r) >>= \case
 
 iindexBy :: (Updatable (ISig s es a r) (ISig s es b r'), (es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
-	ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
+	ISig s es a r -> Sig s es b r' -> Sig s es (a, b) (Either r (a, r'))
 iindexBy ft l (Sig r) = waitFor (ires $ ipause ft l r) >>= \case
 	(End x, _) -> pure $ Left x
-	(l'@(hl :| _), Pure (_ :| r')) -> emit hl >> iindexBy ft l' r'
+	(l'@(hl :| _), Pure (x :| r')) -> emit (hl, x) >> iindexBy ft l' r'
 	(hl :| _, Pure (End y)) -> pure $ Right (hl, y)
 	_ -> error "never occur"
 

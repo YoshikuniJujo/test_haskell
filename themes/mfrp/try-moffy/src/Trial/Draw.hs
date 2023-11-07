@@ -161,12 +161,12 @@ polygonPoints ps = do
 	polygonPoints . maybe id (:) (adjustPoint ps0 cp) $ ps
 
 clickOnBox :: React s (LoadDefaultWindow :- MouseEv) ()
-clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
+clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (fst <$%> mousePos `indexBy` repeat leftClick)
 
 clickOnRect, upOnRect, rightOnRect :: Rect -> React s (LoadDefaultWindow :- MouseEv) ()
-clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftClick)
-upOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftUp)
-rightOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat rightClick)
+clickOnRect r = void . adjust $ find (`insideRect` r) (fst <$%> mousePos `indexBy` repeat leftClick)
+upOnRect r = void . adjust $ find (`insideRect` r) (fst <$%> mousePos `indexBy` repeat leftUp)
+rightOnRect r = void . adjust $ find (`insideRect` r) (fst <$%> mousePos `indexBy` repeat rightClick)
 
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b

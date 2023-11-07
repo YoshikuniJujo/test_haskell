@@ -100,7 +100,7 @@ cycleColor = go . cycle $ fromList [Red .. Magenta] where
 ---------------------------------------------------------------------------
 
 drClickOn :: Rect -> React s (LoadDefaultWindow :- MouseDown :- MouseMove :- TryWait :- 'Nil) ()
-drClickOn rct = void . find (`inside` rct) $ mousePos `indexBy` repeat doubler
+drClickOn rct = void . find (`inside` rct) . (fst <$%>) $ mousePos `indexBy` repeat doubler
 	where (x, y) `inside` Rect (l, u) (r, d) =
 		(l <= x && x <= r || r <= x && x <= l) &&
 		(u <= y && y <= d || d <= y && y <= u)

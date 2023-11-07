@@ -75,7 +75,7 @@ infixl 7 `indexBy`
 indexBy ::
 	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
 	Sig s es a r -> Sig s es' b r' ->
-	Sig s (es :+: es') a (Either r (Maybe a, r'))
+	Sig s (es :+: es') (a, b) (Either r (Maybe a, r'))
 indexBy = indexBy_ forkThreadId
 
 ---------------------------------------------------------------------------

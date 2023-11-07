@@ -28,6 +28,8 @@ import Control.Moffy.Viewable.Basic (Position)
 
 import Data.OneOfThem
 
+import Data.Type.Flip ((<$%>))
+
 ---------------------------------------------------------------------------
 
 -- * CLICKABLE
@@ -41,7 +43,7 @@ data Clickable s = Clickable { view :: View, click :: React s (LoadDefaultWindow
 
 clickable :: View -> Position -> Position -> Clickable s
 clickable v (l, t) (r, b) = Clickable v
-	. adjust $ () <$ find isd (repeat mouseMove `indexBy` repeat leftClick)
+	. adjust $ () <$ find isd (fst <$%> repeat mouseMove `indexBy` repeat leftClick)
 	where isd (x, y) = l <= x && x <= r && t <= y && y <= b
 
 ---------------------------------------------------------------------------
