@@ -178,12 +178,12 @@ data ControllerEvent = ControllerEvent {
 calcRot :: Float -> Float -> Cglm.Mat4
 calcRot lx ly =
 	Cglm.rotate Cglm.mat4Identity
-		(- ly / 100 * Cglm.rad 90)
+		(ly / 100 * Cglm.rad 90)
 		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 	`Cglm.mat4Mul`
 	Cglm.rotate
 		Cglm.mat4Identity
-		(- lx / 100 * Cglm.rad 90)
+		(lx / 100 * Cglm.rad 90)
 		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
 
 type FramebufferResized = TVar Bool
@@ -826,14 +826,14 @@ createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
-	createBufferList' phdvc dvc (fromIntegral $ length vertices)
+	createBufferList' phdvc dvc (fromIntegral $ length vertices2)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList' phdvc dvc (fromIntegral $ length vertices)
+	createBufferList' phdvc dvc (fromIntegral $ length vertices2)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vertices
+	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vertices2
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -841,14 +841,14 @@ createIndexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Word16 ""] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp f =
-	createBufferList' phdvc dvc (fromIntegral $ length indices)
+	createBufferList' phdvc dvc (fromIntegral $ length indices2)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList' phdvc dvc (fromIntegral $ length indices)
+	createBufferList' phdvc dvc (fromIntegral $ length indices2)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices
+	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices2
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -1050,7 +1050,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) 1 0 0 0
+	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices2) 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -1241,104 +1241,72 @@ instance Storable Vertex where
 
 instance Foreign.Storable.Generic.G Vertex where
 
-vertices :: [Vertex]
-vertices = [
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0 :. 0 :. NilL)
+vertices2 :: [Vertex]
+vertices2 = [
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0 :. 0 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0 :. 0 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
-
-{-
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
 
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
-
-	Vertex (Pos . Cglm.Vec3 $ (0.5) :. (- 0.5) :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (0.5) :. (- 0.5) :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (0.5) :. 0.5 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (0.5) :. 0.5 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL),
 
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL)
-		-}
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 1.0 :. NilL),
 
-		]
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 1.0 :. NilL)
 
-indices :: [Word16]
-indices = [
-	2, 1, 0, -- , 2, 3, 0,
-	3, 4, 5,
-	6, 7, 8,
-	11, 10, 9
---	4, 5, 6, 6, 7, 4,
---	4, 7, 6, 6, 5, 4,
---	8, 9, 10, 10, 11, 8
---	8, 11, 10, 10, 9, 8,
---	12, 13, 14, 14, 15, 12,
---	16, 17, 18, 18, 19, 16,
-
---	20, 21, 22, 22, 23, 20,
---	20, 23, 22, 22, 21, 20
 	]
+
+indices2 :: [Word16]
+indices2 = [
+	0, 1, 2, 2, 3, 0,
+	4, 5, 6, 6, 7, 4,
+	8, 9, 10, 10, 11, 8,
+	12, 13, 14, 14, 15, 12,
+	16, 17, 18, 18, 19, 16,
+	20, 21, 22, 22, 23, 20 ]
 
 data UniformBufferObject = UniformBufferObject {
 	uniformBufferObjectModel :: Cglm.Mat4,
