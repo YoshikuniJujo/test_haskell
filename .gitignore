@@ -303,7 +303,6 @@ a.out
 
 *.dyn_hi
 *.dyn_o
-bin/
 tmp.txt
 
 .txt/
