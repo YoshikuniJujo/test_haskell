@@ -10,9 +10,6 @@ enum TfeTextViewOpenResponseType {
 	TFE_OPEN_RESPONSE_CANCEL,
 	TFE_OPEN_RESPONSE_ERROR };
 
-void
-tfe_text_view_set_file(TfeTextView *tv, GFile *f);
-
 GFile *
 tfe_text_view_get_file(TfeTextView *tv);
 

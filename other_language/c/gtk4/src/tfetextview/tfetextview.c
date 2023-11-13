@@ -19,16 +19,35 @@ tfe_text_view_class_init(TfeTextViewClass *class)
 {
 }
 
-void
-tfe_text_view_set_file(TfeTextView *tv, GFile *f)
-{
-	tv -> file = f;
-}
-
 GFile *
 tfe_text_view_get_file(TfeTextView *tv)
 {
 	return tv -> file;
+}
+
+GtkWidget *
+tfe_text_view_new_with_file(GFile *file)
+{
+	g_return_val_if_fail(G_IS_FILE(file), NULL);
+
+	GtkWidget *tv;
+	GtkTextBuffer *tb;
+	char *contents;
+	gsize length;
+
+	if (! g_file_load_contents(file, NULL, &contents, &length, NULL, NULL))
+		return NULL;
+
+	tv = tfe_text_view_new();
+	tb = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
+	gtk_text_buffer_set_text(tb, contents, length);
+	TFE_TEXT_VIEW(tv)->file = g_file_dup(file);
+	gtk_text_buffer_set_modified(tb, FALSE);
+	g_free(contents);
+
+	g_print("here");
+
+	return tv;
 }
 
 GtkWidget *

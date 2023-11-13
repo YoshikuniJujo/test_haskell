@@ -52,7 +52,6 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 
 	GtkWidget *scr;
 	GtkWidget *tv;
-	GtkTextBuffer *tb;
 
 	char *contents;
 	gsize length;
@@ -71,14 +70,8 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 	for (i = 0; i < n_files; i++) {
 		if (g_file_load_contents(files[i], NULL, &contents, &length, NULL, &err)) {
 			scr = gtk_scrolled_window_new();
-			tv = tfe_text_view_new();
-			tb = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
-			gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tv), GTK_WRAP_WORD_CHAR);
+			tv = tfe_text_view_new_with_file(files[i]);
 			gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scr), tv);
-
-			tfe_text_view_set_file(TFE_TEXT_VIEW(tv), g_file_dup(files[i]));
-			gtk_text_buffer_set_text(tb, contents, length);
-			g_free(contents);
 			if ((filename = g_file_get_basename(files[i])) != NULL) {
 				lab = gtk_label_new(filename);
 				g_free(filename);
