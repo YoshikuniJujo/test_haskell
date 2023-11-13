@@ -1,5 +1,43 @@
 #include <gtk/gtk.h>
-#include "tfetextview.h"
+
+#define TFE_TYPE_TEXT_VIEW tfe_text_view_get_type()
+G_DECLARE_FINAL_TYPE(TfeTextView, tfe_text_view, TFE, TEXT_VIEW, GtkTextView);
+
+struct _TfeTextView
+{
+	GtkTextView parent;
+	GFile *file;
+};
+
+G_DEFINE_FINAL_TYPE(TfeTextView, tfe_text_view, GTK_TYPE_TEXT_VIEW);
+
+static void
+tfe_text_view_init(TfeTextView *tv)
+{
+}
+
+static void
+tfe_text_view_class_init(TfeTextViewClass *class)
+{
+}
+
+void
+tfe_text_view_set_file(TfeTextView *tv, GFile *f)
+{
+	tv -> file = f;
+}
+
+GFile *
+tfe_text_view_get_file(TfeTextView *tv)
+{
+	return tv -> file;
+}
+
+GtkWidget *
+tfe_text_view_new(void)
+{
+	return GTK_WIDGET(g_object_new(TFE_TYPE_TEXT_VIEW, NULL));
+}
 
 static void
 app_activate(GApplication *app)
@@ -13,6 +51,7 @@ before_close(GtkWindow *win, GtkWidget *nb)
 	GtkWidget *scr;
 	GtkWidget *tv;
 	GFile *file;
+	char *pathname;
 	GtkTextBuffer *tb;
 	GtkTextIter start_iter;
 	GtkTextIter end_iter;
@@ -49,6 +88,7 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 
 	GtkWidget *nb;
 	GtkWidget *lab;
+	GtkNotebookPage *nbp;
 
 	GtkWidget *scr;
 	GtkWidget *tv;
@@ -60,13 +100,11 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 	int i;
 	GError *err = NULL;
 
-	GtkBuilder *build;
-
-	build = gtk_builder_new_from_resource("/com/github/ToshioCP/tfe/tfe.ui");
-	win = GTK_WIDGET(gtk_builder_get_object(build, "win"));
-	gtk_window_set_application(GTK_WINDOW(win), GTK_APPLICATION(app));
-	nb = GTK_WIDGET(gtk_builder_get_object(build, "nb"));
-	g_object_unref(build);
+	win = gtk_application_window_new(GTK_APPLICATION(app));
+	gtk_window_set_title(GTK_WINDOW(win), "file viewr");
+	gtk_window_set_default_size(GTK_WINDOW(win), 600, 400);
+	nb = gtk_notebook_new();
+	gtk_window_set_child(GTK_WINDOW(win), nb);
 
 	for (i = 0; i < n_files; i++) {
 		if (g_file_load_contents(files[i], NULL, &contents, &length, NULL, &err)) {
@@ -74,6 +112,7 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 			tv = tfe_text_view_new();
 			tb = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
 			gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tv), GTK_WRAP_WORD_CHAR);
+//			gtk_text_view_set_editable(GTK_TEXT_VIEW(tv), FALSE);
 			gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scr), tv);
 
 			tfe_text_view_set_file(TFE_TEXT_VIEW(tv), g_file_dup(files[i]));
