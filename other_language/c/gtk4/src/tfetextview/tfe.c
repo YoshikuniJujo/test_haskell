@@ -36,7 +36,7 @@ before_close(GtkWindow *win, GtkWidget *nb)
 			g_printerr("%s.\n", err->message);
 			g_clear_error(&err); }
 		g_free(contents);
-		g_object_unref(file);
+//		g_object_unref(file);
 	}
 
 	return FALSE;
