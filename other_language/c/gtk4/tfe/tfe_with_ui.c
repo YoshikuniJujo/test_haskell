@@ -105,10 +105,8 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 	build = gtk_builder_new_from_file("tfe.ui");
 	win = GTK_WIDGET(gtk_builder_get_object(build, "win"));
 	gtk_window_set_application(GTK_WINDOW(win), GTK_APPLICATION(app));
-
 	nb = GTK_WIDGET(gtk_builder_get_object(build, "nb"));
-	gtk_widget_set_hexpand(nb, TRUE);
-	gtk_widget_set_vexpand(nb, TRUE);
+	g_object_unref(build);
 
 	for (i = 0; i < n_files; i++) {
 		if (g_file_load_contents(files[i], NULL, &contents, &length, NULL, &err)) {
