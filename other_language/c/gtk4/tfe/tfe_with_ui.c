@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include "resources.c"
 
 #define TFE_TYPE_TEXT_VIEW tfe_text_view_get_type()
 G_DECLARE_FINAL_TYPE(TfeTextView, tfe_text_view, TFE, TEXT_VIEW, GtkTextView);
@@ -102,7 +103,7 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 
 	GtkBuilder *build;
 
-	build = gtk_builder_new_from_file("tfe.ui");
+	build = gtk_builder_new_from_resource("/com/github/ToshioCP/tfe/tfe.ui");
 	win = GTK_WIDGET(gtk_builder_get_object(build, "win"));
 	gtk_window_set_application(GTK_WINDOW(win), GTK_APPLICATION(app));
 	nb = GTK_WIDGET(gtk_builder_get_object(build, "nb"));
