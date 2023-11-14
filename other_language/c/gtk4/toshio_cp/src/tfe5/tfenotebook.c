@@ -14,7 +14,6 @@ get_untitled()
 static void
 file_changed_cb(TfeTextView *tv, GtkNotebook *nb)
 {
-	g_print("file_changed_cb begin\n");
 	GtkWidget *scr;
 	GtkWidget *label;
 	GFile *file;
@@ -29,7 +28,6 @@ file_changed_cb(TfeTextView *tv, GtkNotebook *nb)
 	label = gtk_label_new(filename);
 	g_free(filename);
 	gtk_notebook_set_tab_label(nb, scr, label);
-	g_print("file_changed_cb end\n");
 }
 
 static void
@@ -84,7 +82,6 @@ notebook_page_new_with_file(GtkNotebook *nb, GFile *file)
 static void
 open_response_cb(TfeTextView *tv, int response, GtkNotebook *nb)
 {
-	g_print("open_response_cb begin\n");
 	GFile *file;
 	char *filename;
 
@@ -98,13 +95,11 @@ open_response_cb(TfeTextView *tv, int response, GtkNotebook *nb)
 		notebook_page_build(nb, GTK_WIDGET(tv), filename);
 		g_free(filename);
 	}
-	g_print("open_response_cb end\n");
 }
 
 void
 notebook_page_open(GtkNotebook *nb)
 {
-	g_print("notebook_page_open begin\n");
 	g_return_if_fail(GTK_IS_NOTEBOOK(nb));
 
 	GtkWidget *tv;
@@ -118,7 +113,6 @@ notebook_page_open(GtkNotebook *nb)
 		GTK_WINDOW(
 			gtk_widget_get_ancestor(
 				GTK_WIDGET(nb), GTK_TYPE_WINDOW ) ) );
-	g_print("notebook_page_open end\n");
 }
 
 void
