@@ -31,7 +31,7 @@
 						</object>
 					</child>
 					<child>
-						<object class="GtkButton">
+						<object class="GtkButton" id="save">
 							<property name="label">Save</property>
 						</object>
 					</child>

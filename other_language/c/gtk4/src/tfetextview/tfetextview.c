@@ -136,4 +136,39 @@ save_dialog_cb(GObject *source_object, GAsyncResult *res, gpointer data)
 			g_signal_emit(tv, tfe_text_view_signals[CHANGE_FILE], 0);
 		}
 	}
+	if (err) {
+		alert_dialog = gtk_alert_dialog_new("%s", err->message);
+		gtk_alert_dialog_show(alert_dialog, GTK_WINDOW(win));
+		g_object_unref(alert_dialog);
+		g_clear_error(&err);
+	}
+}
+
+void
+tfe_text_view_save(TfeTextView *tv)
+{
+	g_return_if_fail(TFE_IS_TEXT_VIEW(tv));
+
+	GtkTextBuffer *tb = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
+	GtkWidget *win = gtk_widget_get_ancestor(GTK_WIDGET(tv), GTK_TYPE_WINDOW);
+
+	if (! gtk_text_buffer_get_modified(tb))
+		return;
+	else if (tv->file == NULL)
+		tfe_text_view_saveas(tv);
+	else	save_file(tv->file, tb, GTK_WINDOW(win));
+}
+
+void
+tfe_text_view_saveas(TfeTextView *tv)
+{
+	g_return_if_fail(TFE_IS_TEXT_VIEW(tv));
+
+	GtkWidget *win =
+		gtk_widget_get_ancestor(GTK_WIDGET(tv), GTK_TYPE_WINDOW);
+	GtkFileDialog *dialog;
+
+	dialog = gtk_file_dialog_new();
+	gtk_file_dialog_save(dialog, GTK_WINDOW(win), NULL, save_dialog_cb, tv);
+	g_object_unref(dialog);
 }

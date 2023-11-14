@@ -2,6 +2,12 @@
 #include "tfetextview.h"
 
 static void
+save_button_cb(GtkButton *btns, TfeTextView *tv)
+{
+	tfe_text_view_save(tv);
+}
+
+static void
 app_activate(GApplication *app)
 {
 	g_printerr("You need a filename argument.\n");
@@ -60,17 +66,20 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 	GError *err = NULL;
 
 	GtkBuilder *build;
+	GtkWidget *btns;
 
 	build = gtk_builder_new_from_resource("/com/github/ToshioCP/tfe/tfe.ui");
 	win = GTK_WIDGET(gtk_builder_get_object(build, "win"));
 	gtk_window_set_application(GTK_WINDOW(win), GTK_APPLICATION(app));
 	nb = GTK_WIDGET(gtk_builder_get_object(build, "nb"));
+	btns = GTK_WIDGET(gtk_builder_get_object(build, "save"));
 	g_object_unref(build);
 
 	for (i = 0; i < n_files; i++) {
 		if (g_file_load_contents(files[i], NULL, &contents, &length, NULL, &err)) {
 			scr = gtk_scrolled_window_new();
 			tv = tfe_text_view_new_with_file(files[i]);
+			g_signal_connect(btns, "clicked", G_CALLBACK(save_button_cb), tv);
 			gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scr), tv);
 			if ((filename = g_file_get_basename(files[i])) != NULL) {
 				lab = gtk_label_new(filename);
@@ -86,7 +95,6 @@ app_open(GApplication *app, GFile *files[], int n_files, char *hint)
 		g_signal_connect(win, "close-request", G_CALLBACK(before_close), nb);
 		gtk_window_present(GTK_WINDOW(win));
 	} else	gtk_window_destroy(GTK_WINDOW(win));
-
 }
 
 int
