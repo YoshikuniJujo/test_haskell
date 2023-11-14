@@ -43,7 +43,7 @@ tfe_text_view_class_init(TfeTextViewClass *class)
 			G_SIGNAL_NO_RECURSE |
 			G_SIGNAL_NO_HOOKS,
 			0, NULL, NULL, NULL, G_TYPE_NONE, 0 );
-	tfe_text_view_signals[CHANGE_FILE] = g_signal_new(
+	tfe_text_view_signals[OPEN_RESPONSE] = g_signal_new(
 			"open-response",
 			G_TYPE_FROM_CLASS(class),
 			G_SIGNAL_RUN_LAST |
@@ -80,8 +80,6 @@ tfe_text_view_new_with_file(GFile *file)
 	TFE_TEXT_VIEW(tv)->file = g_file_dup(file);
 	gtk_text_buffer_set_modified(tb, FALSE);
 	g_free(contents);
-
-	g_print("here");
 
 	return tv;
 }
@@ -201,8 +199,7 @@ open_dialog_cb(GObject *source_object, GAsyncResult *res, gpointer data)
 		if (G_IS_FILE(tv->file)) g_object_unref(tv->file);
 		tv->file = file;
 		if (file_changed)
-			g_signal_emit(tv, tfe_text_view_signals[OPEN_RESPONSE],
-				0, TFE_OPEN_RESPONSE_SUCCESS);
+			g_signal_emit(tv, tfe_text_view_signals[CHANGE_FILE], 0);
 		g_signal_emit(
 			tv, tfe_text_view_signals[OPEN_RESPONSE],
 			0, TFE_OPEN_RESPONSE_SUCCESS );
