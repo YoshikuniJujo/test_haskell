@@ -55,7 +55,10 @@ tfe_text_view_class_init(TfeTextViewClass *class)
 GFile *
 tfe_text_view_get_file(TfeTextView *tv)
 {
-	return tv -> file;
+	g_return_val_if_fail(TFE_IS_TEXT_VIEW(tv), NULL);
+
+	if (G_IS_FILE(tv->file)) return g_file_dup(tv -> file);
+	else return NULL;
 }
 
 GtkWidget *
@@ -170,5 +173,65 @@ tfe_text_view_saveas(TfeTextView *tv)
 
 	dialog = gtk_file_dialog_new();
 	gtk_file_dialog_save(dialog, GTK_WINDOW(win), NULL, save_dialog_cb, tv);
+	g_object_unref(dialog);
+}
+
+static void
+open_dialog_cb(GObject *source_object, GAsyncResult *res, gpointer data)
+{
+	GtkFileDialog *dialog = GTK_FILE_DIALOG(source_object);
+	TfeTextView *tv = TFE_TEXT_VIEW(data);
+	GtkTextBuffer *tb = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
+	GtkWidget *win = gtk_widget_get_ancestor(GTK_WIDGET(tv), GTK_TYPE_WINDOW);
+	GFile *file;
+	char *contents;
+	gsize length;
+	gboolean file_changed;
+	GtkAlertDialog *alert_dialog;
+	GError *err = NULL;
+
+	if ((file = gtk_file_dialog_open_finish(dialog, res, &err)) != NULL &&
+		g_file_load_contents(
+			file, NULL, &contents, &length, NULL, &err )) {
+		gtk_text_buffer_set_text(tb, contents, length);
+		g_free(contents);
+		gtk_text_buffer_set_modified(tb, FALSE);
+		file_changed = (G_IS_FILE (tv->file) &&
+			g_file_equal(tv->file, file)) ? FALSE : TRUE;
+		if (G_IS_FILE(tv->file)) g_object_unref(tv->file);
+		tv->file = file;
+		if (file_changed)
+			g_signal_emit(tv, tfe_text_view_signals[OPEN_RESPONSE],
+				0, TFE_OPEN_RESPONSE_SUCCESS);
+		g_signal_emit(
+			tv, tfe_text_view_signals[OPEN_RESPONSE],
+			0, TFE_OPEN_RESPONSE_SUCCESS );
+	} else {
+		if (err->code == GTK_DIALOG_ERROR_DISMISSED)
+			g_signal_emit(
+				tv, tfe_text_view_signals[OPEN_RESPONSE],
+				0, TFE_OPEN_RESPONSE_CANCEL);
+		else {
+			alert_dialog = gtk_alert_dialog_new("%s", err->message);
+			gtk_alert_dialog_show(alert_dialog, GTK_WINDOW(win));
+			g_object_unref(alert_dialog);
+			g_signal_emit(
+				tv, tfe_text_view_signals[OPEN_RESPONSE],
+				0, TFE_OPEN_RESPONSE_ERROR);
+		}
+		g_clear_error(&err);
+	}
+}
+
+void
+tfe_text_view_open(TfeTextView *tv, GtkWindow *win)
+{
+	g_return_if_fail(TFE_IS_TEXT_VIEW(tv));
+	g_return_if_fail(GTK_IS_WINDOW(win) || win == NULL);
+
+	GtkFileDialog *dialog;
+
+	dialog = gtk_file_dialog_new();
+	gtk_file_dialog_open(dialog, win, NULL, open_dialog_cb, tv);
 	g_object_unref(dialog);
 }
