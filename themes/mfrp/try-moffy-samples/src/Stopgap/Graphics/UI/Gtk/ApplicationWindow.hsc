@@ -6,6 +6,7 @@ module Stopgap.Graphics.UI.Gtk.ApplicationWindow where
 
 import Foreign.Ptr
 
+import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 
@@ -13,6 +14,7 @@ data ATag
 
 data A = A (Ptr ATag) deriving Show
 
+instance Gtk.Widget.IsW A where toW (A a) = Gtk.Widget.W $ castPtr a
 instance Gtk.Window.IsW A where toW = window
 
 new :: Gtk.Application.A -> IO A

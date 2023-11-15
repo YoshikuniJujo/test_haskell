@@ -11,7 +11,10 @@ import Foreign.C.String
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 
-class IsW a where toW :: a -> W
+class Gtk.Widget.IsW a => IsW a where toW :: a -> W
+
+instance Gtk.Widget.IsW W where
+	toW (W w) = Gtk.Widget.W $ castPtr w
 
 instance IsW W where toW = id
 
