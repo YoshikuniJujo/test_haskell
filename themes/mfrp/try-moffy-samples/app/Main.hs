@@ -7,17 +7,22 @@ module Main (main) where
 import System.Environment
 import System.Exit
 
+import Stopgap.Graphics.UI.Gtk qualified as Gtk
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.ApplicationWindow
 	qualified as Gtk.ApplicationWindow
+import Stopgap.Graphics.UI.Gtk.Box qualified as Gtk.Box
 import Stopgap.Graphics.UI.Gtk.Button qualified as Gtk.Button
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
 
-clickCb :: Gtk.Button.B -> Gtk.ApplicationWindow.A -> IO ()
-clickCb _b w = Gtk.Window.destroy w
+click1Cb :: Gtk.Button.B -> Null -> IO ()
+click1Cb b Null = putStrLn "Foo Bar"
+
+click2Cb :: Gtk.Button.B -> Gtk.ApplicationWindow.A -> IO ()
+click2Cb _b w = Gtk.Window.destroy w
 
 appActivate :: Gtk.Application.A -> Null -> IO ()
 appActivate app Null = do
@@ -25,9 +30,18 @@ appActivate app Null = do
 	Gtk.Window.setTitle win "Slozsoft"
 	Gtk.Window.setDefaultSize win 400 300
 
-	btn <- Gtk.Button.newWithLabel "Click me"
-	Gtk.Window.setChild win btn
-	G.Signal.connect btn "clicked" clickCb win
+	box <- Gtk.Box.new Gtk.OrientationVertical 5
+	Gtk.Box.setHomogeneous box True
+	Gtk.Window.setChild win box
+
+	btn1 <- Gtk.Button.newWithLabel "Click me"
+	G.Signal.connect btn1 "clicked" click1Cb Null
+
+	btn2 <- Gtk.Button.newWithLabel "Close"
+	G.Signal.connect btn2 "clicked" click2Cb win
+
+	Gtk.Box.append box btn1
+	Gtk.Box.append box btn2
 
 	Gtk.Window.present win
 
