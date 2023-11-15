@@ -9,4 +9,4 @@ class IsPtr w => IsW w where toW :: w -> W
 
 data WTag
 
-data W = W (Ptr WTag) deriving Show
+newtype W = W (Ptr WTag) deriving Show

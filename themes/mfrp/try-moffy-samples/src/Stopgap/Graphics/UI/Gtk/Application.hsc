@@ -18,7 +18,7 @@ import Stopgap.Data.Ptr
 
 data ATag
 
-data A = A (Ptr ATag) deriving Show
+newtype A = A (Ptr ATag) deriving Show
 
 instance G.Application.IsA A where toA = gApplication
 

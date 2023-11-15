@@ -49,6 +49,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy-samples
+  try-text-view-exe:
+    main:                try-text-view.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
 
 tests:
   try-moffy-samples-test:

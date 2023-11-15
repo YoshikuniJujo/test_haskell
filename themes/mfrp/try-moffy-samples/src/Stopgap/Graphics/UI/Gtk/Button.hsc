@@ -12,7 +12,7 @@ import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 
 data BTag
 
-data B = B (Ptr BTag) deriving Show
+newtype B = B (Ptr BTag) deriving Show
 
 instance Gtk.Widget.IsW B where
 	toW (B p) = Gtk.Widget.W $ castPtr p

@@ -32,6 +32,8 @@ library
       Stopgap.Graphics.UI.Gtk.Box
       Stopgap.Graphics.UI.Gtk.Button
       Stopgap.Graphics.UI.Gtk.Label
+      Stopgap.Graphics.UI.Gtk.TextBuffer
+      Stopgap.Graphics.UI.Gtk.TextView
       Stopgap.Graphics.UI.Gtk.Widget
       Stopgap.Graphics.UI.Gtk.Window
       Stopgap.System.GLib.Application
@@ -56,6 +58,17 @@ executable try-moffy-samples-exe
       Paths_try_moffy_samples
   autogen-modules:
       Paths_try_moffy_samples
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , try-moffy-samples
+  default-language: Haskell2010
+
+executable try-text-view-exe
+  main-is: try-text-view.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N

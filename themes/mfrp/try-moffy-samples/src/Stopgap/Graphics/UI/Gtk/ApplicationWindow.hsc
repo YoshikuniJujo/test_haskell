@@ -14,7 +14,7 @@ import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 
 data ATag
 
-data A = A (Ptr ATag) deriving Show
+newtype A = A (Ptr ATag) deriving Show
 
 instance IsPtr A where type Tag A = ATag; fromPtr = A; toPtr (A p) = p
 instance Gtk.Widget.IsW A where toW (A a) = Gtk.Widget.W $ castPtr a
