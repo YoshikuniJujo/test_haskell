@@ -7,6 +7,8 @@ import Stopgap.Data.Ptr
 
 class IsPtr w => IsW w where toW :: w -> W
 
+-- class G.Object.IsO w => IsW w where toW :: w -> W
+
 data WTag
 
 newtype W = W (Ptr WTag) deriving Show

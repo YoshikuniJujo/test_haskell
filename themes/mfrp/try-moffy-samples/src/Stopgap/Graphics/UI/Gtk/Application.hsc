@@ -11,6 +11,7 @@ import Foreign.C.String
 import Data.Word
 import Data.String
 
+import Stopgap.System.GLib.Object qualified as G.Object
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.Data.Ptr
 

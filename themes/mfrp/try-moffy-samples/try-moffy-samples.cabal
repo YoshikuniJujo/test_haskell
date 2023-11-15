@@ -37,6 +37,7 @@ library
       Stopgap.Graphics.UI.Gtk.Widget
       Stopgap.Graphics.UI.Gtk.Window
       Stopgap.System.GLib.Application
+      Stopgap.System.GLib.Object
       Stopgap.System.GLib.Signal
   other-modules:
       Paths_try_moffy_samples
