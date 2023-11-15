@@ -8,12 +8,18 @@ import System.Environment
 import System.Exit
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
+import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
 
 appActivate :: Gtk.Application.A -> Null -> IO ()
-appActivate _app Null = putStrLn "GtkApplication is activated."
+appActivate app Null = do
+	win <- Gtk.Window.new
+	Gtk.Window.setTitle win "Slozsoft"
+	Gtk.Window.setDefaultSize win 400 300
+	Gtk.Window.setApplication win app
+	Gtk.Window.present win
 
 main :: IO ()
 main = do
