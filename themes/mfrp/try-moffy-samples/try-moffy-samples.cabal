@@ -29,6 +29,7 @@ library
       Stopgap.Graphics.UI.Gtk.Application
       Stopgap.Graphics.UI.Gtk.ApplicationWindow
       Stopgap.Graphics.UI.Gtk.Label
+      Stopgap.Graphics.UI.Gtk.Widget
       Stopgap.Graphics.UI.Gtk.Window
       Stopgap.System.GLib.Application
       Stopgap.System.GLib.Signal

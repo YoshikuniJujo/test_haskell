@@ -11,6 +11,7 @@ import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.ApplicationWindow
 	qualified as Gtk.ApplicationWindow
+import Stopgap.Graphics.UI.Gtk.Label qualified as Gtk.Label
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
@@ -20,6 +21,10 @@ appActivate app Null = do
 	win <- Gtk.ApplicationWindow.new app
 	Gtk.Window.setTitle win "Slozsoft"
 	Gtk.Window.setDefaultSize win 400 300
+
+	lab <- Gtk.Label.new "Hello."
+	Gtk.Window.setChild win lab
+
 	Gtk.Window.present win
 
 main :: IO ()

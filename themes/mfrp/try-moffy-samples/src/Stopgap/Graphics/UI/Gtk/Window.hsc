@@ -9,6 +9,7 @@ import Foreign.C.Types
 import Foreign.C.String
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
+import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 
 class IsW a where toW :: a -> W
 
@@ -47,3 +48,10 @@ setDefaultSize (toW -> W win) w h = c_gtk_window_set_default_size win w h
 
 foreign import ccall "gtk_window_set_default_size"
 	c_gtk_window_set_default_size :: Ptr WTag -> CInt -> CInt -> IO ()
+
+setChild :: (IsW w, Gtk.Widget.IsW c) => w -> c -> IO ()
+setChild (toW -> W win) (Gtk.Widget.toW -> Gtk.Widget.W cld) =
+	c_gtk_window_set_child win cld
+
+foreign import ccall "gtk_window_set_child" c_gtk_window_set_child ::
+	Ptr WTag -> Ptr Gtk.Widget.WTag -> IO ()
