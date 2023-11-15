@@ -1,10 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Stopgap.Graphics.UI.Gtk.ApplicationWindow where
 
 import Foreign.Ptr
+import Stopgap.Data.Ptr
 
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
@@ -14,6 +16,7 @@ data ATag
 
 data A = A (Ptr ATag) deriving Show
 
+instance IsPtr A where type Tag A = ATag; fromPtr = A; toPtr (A p) = p
 instance Gtk.Widget.IsW A where toW (A a) = Gtk.Widget.W $ castPtr a
 instance Gtk.Window.IsW A where toW = window
 

@@ -16,8 +16,8 @@ import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
 
-clickCb :: Gtk.Button.B -> Null -> IO ()
-clickCb _b Null = putStrLn "Clicked"
+clickCb :: Gtk.Button.B -> Gtk.ApplicationWindow.A -> IO ()
+clickCb _b w = Gtk.Window.destroy w
 
 appActivate :: Gtk.Application.A -> Null -> IO ()
 appActivate app Null = do
@@ -27,7 +27,7 @@ appActivate app Null = do
 
 	btn <- Gtk.Button.newWithLabel "Click me"
 	Gtk.Window.setChild win btn
-	G.Signal.connect btn "clicked" clickCb Null
+	G.Signal.connect btn "clicked" clickCb win
 
 	Gtk.Window.present win
 

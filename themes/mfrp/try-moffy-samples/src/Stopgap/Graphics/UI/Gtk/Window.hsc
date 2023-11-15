@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -7,20 +8,20 @@ module Stopgap.Graphics.UI.Gtk.Window where
 import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.C.String
+import Stopgap.Data.Ptr
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 
 class Gtk.Widget.IsW a => IsW a where toW :: a -> W
 
-instance Gtk.Widget.IsW W where
-	toW (W w) = Gtk.Widget.W $ castPtr w
-
-instance IsW W where toW = id
-
 data WTag
 
 data W = W (Ptr WTag) deriving Show
+
+instance IsPtr W where type Tag W = WTag; fromPtr = W; toPtr (W p) = p
+instance Gtk.Widget.IsW W where toW (W w) = Gtk.Widget.W $ castPtr w
+instance IsW W where toW = id
 
 new :: IO W
 new = W <$> c_gtk_window_new
@@ -58,3 +59,9 @@ setChild (toW -> W win) (Gtk.Widget.toW -> Gtk.Widget.W cld) =
 
 foreign import ccall "gtk_window_set_child" c_gtk_window_set_child ::
 	Ptr WTag -> Ptr Gtk.Widget.WTag -> IO ()
+
+destroy :: IsW w => w -> IO ()
+destroy (toW -> W win) = c_gtk_window_destroy win
+
+foreign import ccall "gtk_window_destroy" c_gtk_window_destroy ::
+	Ptr WTag -> IO ()
