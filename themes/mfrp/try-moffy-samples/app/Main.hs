@@ -18,15 +18,13 @@ import Stopgap.Data.Ptr
 appActivate :: Gtk.Application.A -> Null -> IO ()
 appActivate app Null = do
 	win <- Gtk.ApplicationWindow.new app
-	Gtk.Window.setTitle (Gtk.ApplicationWindow.window win) "Slozsoft"
-	Gtk.Window.setDefaultSize (Gtk.ApplicationWindow.window win) 400 300
-	Gtk.Window.present $ Gtk.ApplicationWindow.window win
+	Gtk.Window.setTitle win "Slozsoft"
+	Gtk.Window.setDefaultSize win 400 300
+	Gtk.Window.present win
 
 main :: IO ()
 main = do
 	app <- Gtk.Application.new
 		"com.github.YoshikuniJujo.pr1" G.Application.DefaultFlags
 	G.Signal.connect app "activate" appActivate Null
-	exitWith
-		=<< G.Application.run (Gtk.Application.gApplication app)
-		=<< getArgs
+	exitWith =<< G.Application.run app =<< getArgs

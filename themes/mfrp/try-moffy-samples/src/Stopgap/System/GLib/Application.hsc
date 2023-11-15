@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Stopgap.System.GLib.Application where
@@ -19,8 +19,12 @@ data ATag
 
 data A = A (Ptr ATag) deriving Show
 
-run :: A -> [String] -> IO ExitCode
-run (A pa) as = toExitCode
+class IsA a where toA :: a -> A
+
+instance IsA A where toA = id
+
+run :: IsA a => a -> [String] -> IO ExitCode
+run (toA -> A pa) as = toExitCode
 	<$> withArgcArgv as \argc argv -> c_g_application_run pa argc argv
 
 withArgcArgv :: [String] -> (CInt -> Ptr CString -> IO a) -> IO a

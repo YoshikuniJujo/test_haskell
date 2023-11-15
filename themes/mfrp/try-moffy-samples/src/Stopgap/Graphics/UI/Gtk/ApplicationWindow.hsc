@@ -13,6 +13,8 @@ data ATag
 
 data A = A (Ptr ATag) deriving Show
 
+instance Gtk.Window.IsW A where toW = window
+
 new :: Gtk.Application.A -> IO A
 new (Gtk.Application.A a) = A <$> c_gtk_application_window_new a
 

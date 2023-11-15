@@ -12,7 +12,6 @@ import Data.Word
 import Data.String
 
 import Stopgap.System.GLib.Application qualified as G.Application
-import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
 
 #include <gtk/gtk.h>
@@ -20,6 +19,8 @@ import Stopgap.Data.Ptr
 data ATag
 
 data A = A (Ptr ATag) deriving Show
+
+instance G.Application.IsA A where toA = gApplication
 
 instance IsPtr A where
 	type Tag A = ATag
