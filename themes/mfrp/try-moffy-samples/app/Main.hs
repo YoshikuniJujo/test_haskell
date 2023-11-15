@@ -11,10 +11,13 @@ import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.ApplicationWindow
 	qualified as Gtk.ApplicationWindow
-import Stopgap.Graphics.UI.Gtk.Label qualified as Gtk.Label
+import Stopgap.Graphics.UI.Gtk.Button qualified as Gtk.Button
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
+
+clickCb :: Gtk.Button.B -> Null -> IO ()
+clickCb _b Null = putStrLn "Clicked"
 
 appActivate :: Gtk.Application.A -> Null -> IO ()
 appActivate app Null = do
@@ -22,8 +25,9 @@ appActivate app Null = do
 	Gtk.Window.setTitle win "Slozsoft"
 	Gtk.Window.setDefaultSize win 400 300
 
-	lab <- Gtk.Label.new "Hello."
-	Gtk.Window.setChild win lab
+	btn <- Gtk.Button.newWithLabel "Click me"
+	Gtk.Window.setChild win btn
+	G.Signal.connect btn "clicked" clickCb Null
 
 	Gtk.Window.present win
 
