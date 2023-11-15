@@ -27,3 +27,15 @@ newWithLabel lbl = B <$> withCString lbl c_gtk_button_new_with_label
 
 foreign import ccall "gtk_button_new_with_label" c_gtk_button_new_with_label ::
 	CString -> IO (Ptr BTag)
+
+getLabel :: B -> IO String
+getLabel (B b) = peekCString =<< c_gtk_button_get_label b
+
+foreign import ccall "gtk_button_get_label" c_gtk_button_get_label ::
+	Ptr BTag -> IO CString
+
+setLabel :: B -> String -> IO ()
+setLabel (B b) txt = withCString txt $ c_gtk_button_set_label b
+
+foreign import ccall "gtk_button_set_label" c_gtk_button_set_label ::
+	Ptr BTag -> CString -> IO ()

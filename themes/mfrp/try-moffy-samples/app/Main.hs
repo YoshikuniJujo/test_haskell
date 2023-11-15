@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -19,7 +19,9 @@ import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
 
 click1Cb :: Gtk.Button.B -> Null -> IO ()
-click1Cb b Null = putStrLn "Foo Bar"
+click1Cb b Null = Gtk.Button.getLabel b >>= \case
+	"Hello." -> Gtk.Button.setLabel b "Good-bye."
+	_ -> Gtk.Button.setLabel b "Hello."
 
 click2Cb :: Gtk.Button.B -> Gtk.ApplicationWindow.A -> IO ()
 click2Cb _b w = Gtk.Window.destroy w
@@ -34,7 +36,7 @@ appActivate app Null = do
 	Gtk.Box.setHomogeneous box True
 	Gtk.Window.setChild win box
 
-	btn1 <- Gtk.Button.newWithLabel "Click me"
+	btn1 <- Gtk.Button.newWithLabel "Hello."
 	G.Signal.connect btn1 "clicked" click1Cb Null
 
 	btn2 <- Gtk.Button.newWithLabel "Close"
