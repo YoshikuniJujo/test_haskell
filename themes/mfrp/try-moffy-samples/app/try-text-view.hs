@@ -12,6 +12,7 @@ import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.ApplicationWindow
 	qualified as Gtk.ApplicationWindow
+import Stopgap.Graphics.UI.Gtk.ScrolledWindow qualified as Gtk.ScrolledWindow
 import Stopgap.Graphics.UI.Gtk.TextView qualified as Gtk.TextView
 import Stopgap.Graphics.UI.Gtk.TextBuffer qualified as Gtk.TextBuffer
 import Stopgap.System.GLib.Application qualified as G.Application
@@ -38,12 +39,15 @@ appActivate app Null = do
 	Gtk.Window.setTitle win "Slozsoft"
 	Gtk.Window.setDefaultSize win 400 300
 
+	scr <- Gtk.ScrolledWindow.new
+	Gtk.Window.setChild win scr
+
 	tv <- Gtk.TextView.new
 	tb <- Gtk.TextView.getBuffer tv
 	Gtk.TextBuffer.setText tb text
 	Gtk.TextView.setWrapMode tv Gtk.WrapWordChar
 
-	Gtk.Window.setChild win tv
+	Gtk.ScrolledWindow.setChild scr tv
 
 	Gtk.Window.present win
 

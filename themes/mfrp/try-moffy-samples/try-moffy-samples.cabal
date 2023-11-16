@@ -32,6 +32,7 @@ library
       Stopgap.Graphics.UI.Gtk.Box
       Stopgap.Graphics.UI.Gtk.Button
       Stopgap.Graphics.UI.Gtk.Label
+      Stopgap.Graphics.UI.Gtk.ScrolledWindow
       Stopgap.Graphics.UI.Gtk.TextBuffer
       Stopgap.Graphics.UI.Gtk.TextView
       Stopgap.Graphics.UI.Gtk.Widget
