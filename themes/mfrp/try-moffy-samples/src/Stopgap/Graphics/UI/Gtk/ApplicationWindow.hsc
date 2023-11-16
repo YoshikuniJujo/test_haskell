@@ -20,7 +20,7 @@ instance IsPtr A where type Tag A = ATag; fromPtr = A; toPtr (A p) = p
 instance Gtk.Widget.IsW A where toW (A a) = Gtk.Widget.W $ castPtr a
 instance Gtk.Window.IsW A where toW = window
 
-new :: Gtk.Application.A -> IO A
+new :: Gtk.Application.A s -> IO A
 new (Gtk.Application.A a) = A <$> c_gtk_application_window_new a
 
 foreign import ccall "gtk_application_window_new"

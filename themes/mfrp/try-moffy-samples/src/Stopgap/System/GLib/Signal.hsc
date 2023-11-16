@@ -1,5 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies, TypeFamilyDependencies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,9 +12,9 @@ import Data.String
 
 import Stopgap.Data.Ptr
 
-connect :: (IsPtr a, IsPtr b) => a -> Signal -> (a -> b -> IO ()) -> b -> IO ()
+connect :: forall a b . (IsPtr a, IsPtr b) => a -> Signal -> (a -> b -> IO ()) -> b -> IO ()
 connect x (Signal sig) h ud = withCString sig \csig -> wrapHandler h \ch ->
-	c_g_signal_connect (toPtr x) csig ch (toPtr ud)
+	c_g_signal_connect @(Tag a) @(Tag b) (toPtr @a x) csig ch (toPtr ud)
 
 data Signal = Signal String deriving Show
 
@@ -21,7 +22,7 @@ instance IsString Signal where
 	fromString = Signal
 
 foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
-	Ptr (Tag a) -> CString -> FunPtr (Ptr (Tag a) -> Ptr (Tag b) -> IO ()) -> Ptr (Tag b) -> IO ()
+	Ptr a -> CString -> FunPtr (Ptr a -> Ptr b -> IO ()) -> Ptr b -> IO ()
 
 wrapHandler :: (IsPtr a, IsPtr b) => (a -> b -> IO ()) ->
 	(FunPtr (Ptr (Tag a) -> Ptr (Tag b) -> IO ()) -> IO c) -> IO c

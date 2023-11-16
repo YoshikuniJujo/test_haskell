@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -17,7 +17,7 @@ import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.Data.Ptr
 
-appActivate :: Gtk.Application.A -> Null -> IO ()
+appActivate :: Gtk.Application.A s -> Null -> IO ()
 appActivate app Null = do
 	let	text =	"Once upon a time, " ++
 			"there was an old man who was called Taketori-no-Okina. "
@@ -34,8 +34,7 @@ appActivate app Null = do
 	Gtk.Window.present win
 
 main :: IO ()
-main = do
-	app <- Gtk.Application.new
-		"com.github.YoshikuniJujo.pr1" G.Application.DefaultFlags
+main = Gtk.Application.with
+		"com.github.YoshikuniJujo.pr1" G.Application.DefaultFlags \app -> do
 	G.Signal.connect app "activate" appActivate Null
 	exitWith =<< G.Application.run app =<< getArgs

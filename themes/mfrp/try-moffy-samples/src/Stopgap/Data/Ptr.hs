@@ -6,7 +6,7 @@ module Stopgap.Data.Ptr where
 import Foreign.Ptr
 
 class IsPtr a where
-	type Tag a = r | r -> a
+	type Tag a
 	toPtr :: a -> Ptr (Tag a)
 	fromPtr :: Ptr (Tag a) -> a
 

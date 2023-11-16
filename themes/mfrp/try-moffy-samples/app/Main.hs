@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -26,7 +26,7 @@ click1Cb b Null = Gtk.Button.getLabel b >>= \case
 click2Cb :: Gtk.Button.B -> Gtk.ApplicationWindow.A -> IO ()
 click2Cb _b w = Gtk.Window.destroy w
 
-appActivate :: Gtk.Application.A -> Null -> IO ()
+appActivate :: Gtk.Application.A s -> Null -> IO ()
 appActivate app Null = do
 	win <- Gtk.ApplicationWindow.new app
 	Gtk.Window.setTitle win "Slozsoft"
@@ -48,8 +48,7 @@ appActivate app Null = do
 	Gtk.Window.present win
 
 main :: IO ()
-main = do
-	app <- Gtk.Application.new
-		"com.github.YoshikuniJujo.pr1" G.Application.DefaultFlags
+main = Gtk.Application.with
+		"com.github.YoshikuniJujo.pr1" G.Application.DefaultFlags \app -> do
 	G.Signal.connect app "activate" appActivate Null
 	exitWith =<< G.Application.run app =<< getArgs

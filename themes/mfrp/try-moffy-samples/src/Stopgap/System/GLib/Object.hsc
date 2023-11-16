@@ -12,6 +12,11 @@ newtype O = O (Ptr OTag) deriving Show
 
 class IsPtr o => IsO o where toO :: o -> O
 
+withObject :: IsO o => IO o -> (o -> IO a) -> IO a
+withObject cr f = do
+	o <- cr
+	f o <* unref o
+
 unref :: IsO o => o -> IO ()
 unref (toO -> O o) = c_g_object_unref o
 

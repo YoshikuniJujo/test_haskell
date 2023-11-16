@@ -28,7 +28,7 @@ new = W <$> c_gtk_window_new
 
 foreign import ccall "gtk_window_new" c_gtk_window_new :: IO (Ptr WTag)
 
-setApplication :: IsW w => w -> Gtk.Application.A -> IO ()
+setApplication :: IsW w => w -> Gtk.Application.A s -> IO ()
 setApplication (toW -> W w) (Gtk.Application.A a) = c_gtk_window_set_application w a
 
 foreign import ccall "gtk_window_set_application"
