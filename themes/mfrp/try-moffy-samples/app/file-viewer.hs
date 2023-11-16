@@ -17,6 +17,7 @@ import Stopgap.Graphics.UI.Gtk.TextView qualified as Gtk.TextView
 import Stopgap.Graphics.UI.Gtk.TextBuffer qualified as Gtk.TextBuffer
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
+import Stopgap.System.GLib.File qualified as G.File
 import Stopgap.Data.Ptr
 
 appActivate :: Gtk.Application.A s -> Null -> IO ()
@@ -51,9 +52,16 @@ appActivate app Null = do
 
 	Gtk.Window.present win
 
+appOpen :: Gtk.Application.A s -> [G.File.F] -> String -> Null -> IO ()
+appOpen app files hint Null = do
+	print app
+	print files
+	print hint
+
 main :: IO ()
 main = Gtk.Application.with
-		"com.github.YoshikuniJujo.pr1" G.Application.DefaultFlags \app -> do
+		"com.github.YoshikuniJujo.pr1" G.Application.HandlesOpen \app -> do
 	G.Signal.connect app "activate" appActivate Null
+	G.Signal.connectOpen app "open" appOpen Null
 	cmd <- getProgName
 	exitWith =<< G.Application.run app cmd =<< getArgs

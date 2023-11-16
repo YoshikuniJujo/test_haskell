@@ -51,4 +51,5 @@ main :: IO ()
 main = Gtk.Application.with
 		"com.github.YoshikuniJujo.pr1" G.Application.DefaultFlags \app -> do
 	G.Signal.connect app "activate" appActivate Null
-	exitWith =<< G.Application.run app =<< getArgs
+	cmd <- getProgName
+	exitWith =<< G.Application.run app cmd =<< getArgs

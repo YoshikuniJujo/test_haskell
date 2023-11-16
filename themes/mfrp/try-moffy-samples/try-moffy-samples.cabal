@@ -38,6 +38,7 @@ library
       Stopgap.Graphics.UI.Gtk.Widget
       Stopgap.Graphics.UI.Gtk.Window
       Stopgap.System.GLib.Application
+      Stopgap.System.GLib.File
       Stopgap.System.GLib.Object
       Stopgap.System.GLib.Signal
   other-modules:
@@ -52,6 +53,17 @@ library
   build-depends:
       base >=4.7 && <5
     , c-enum
+  default-language: Haskell2010
+
+executable file-viewer
+  main-is: file-viewer.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , try-moffy-samples
   default-language: Haskell2010
 
 executable try-moffy-samples-exe

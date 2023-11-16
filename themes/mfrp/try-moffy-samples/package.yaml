@@ -59,6 +59,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy-samples
+  file-viewer:
+    main:                file-viewer.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
 
 tests:
   try-moffy-samples-test:
