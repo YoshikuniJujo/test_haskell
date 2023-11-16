@@ -7,6 +7,7 @@ module Main (main) where
 import System.Environment
 import System.Exit
 
+import Stopgap.Graphics.UI.Gtk qualified as Gtk
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.ApplicationWindow
@@ -40,6 +41,8 @@ appActivate app Null = do
 	tv <- Gtk.TextView.new
 	tb <- Gtk.TextView.getBuffer tv
 	Gtk.TextBuffer.setText tb text
+	Gtk.TextView.setWrapMode tv Gtk.WrapWordChar
+
 	Gtk.Window.setChild win tv
 
 	Gtk.Window.present win

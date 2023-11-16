@@ -16,3 +16,9 @@ newtype Pixel = Pixel CInt deriving (Show, Num)
 enum "Orientation" ''#{type GtkOrientation} [''Show, ''Read] [
 	("OrientationHorizontal", #{const GTK_ORIENTATION_HORIZONTAL}),
 	("OrientationVertical", #{const GTK_ORIENTATION_VERTICAL}) ]
+
+enum "WrapMode" ''#{type GtkWrapMode} [''Show, ''Read] [
+	("WrapNone", #{const GTK_WRAP_NONE}),
+	("WrapChar", #{const GTK_WRAP_CHAR}),
+	("WrapWord", #{const GTK_WRAP_WORD}),
+	("WrapWordChar", #{const GTK_WRAP_WORD_CHAR}) ]
