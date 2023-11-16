@@ -19,9 +19,20 @@ import Stopgap.Data.Ptr
 
 appActivate :: Gtk.Application.A s -> Null -> IO ()
 appActivate app Null = do
-	let	text =	"Once upon a time, " ++
-			"there was an old man who was called Taketori-no-Okina. "
-
+	let	text =	"Once upon a time, there was an old man " ++
+			"who was called Taketori-no-Okina. " ++
+			"It is a japanese word that means a man " ++
+			"whose work is making bamboo baskets.\n" ++
+			"One day, he went into a hill and found " ++
+			"a shining bamboo. " ++
+			"\"What a mysterious bamboo it is!, \" he said. " ++
+			"He cut it, then there was " ++
+			"a small cute baby girl in it. " ++
+			"The girl was shining faintly. " ++
+			"He thought this baby girl is a gift from Heaven " ++
+			"and took her home.\n" ++
+			"His wife was surprized at his story. " ++
+			"Tey were very happy because they had no children. "
 	win <- Gtk.ApplicationWindow.new app
 	Gtk.Window.setTitle win "Slozsoft"
 	Gtk.Window.setDefaultSize win 400 300
