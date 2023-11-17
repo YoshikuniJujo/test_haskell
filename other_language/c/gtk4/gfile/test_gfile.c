@@ -1,12 +1,33 @@
 #include <gtk/gtk.h>
 
+#include <stdio.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 gpointer
 sleep_some(GCancellable *cancellable)
 {
+	FILE *fp = fopen("fifo", "w");
+
 	g_usleep(1000000);
 
 	g_print("Sleeped\n");
+
+//	int file = open("fifo", O_WRONLY);
+
+	fprintf(fp, "foo\n");
+	fflush(fp);
+
+	g_usleep(1000000);
+	fprintf(fp, "bar\n");
+	fflush(fp);
+//	g_usleep(1000000);
+
 	g_cancellable_cancel(cancellable);
+
+	fclose(fp);
 
 	return NULL;
 }
