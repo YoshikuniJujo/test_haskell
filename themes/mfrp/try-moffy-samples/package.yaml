@@ -22,6 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - c-enum
+- c-struct
 
 ghc-options:
 - -Wall
@@ -61,6 +62,16 @@ executables:
     - try-moffy-samples
   file-viewer:
     main:                file-viewer.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
+  try-cancellable:
+    main:                try-cancellable.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
