@@ -5,7 +5,9 @@
 
 module Stopgap.System.GLib.Error where
 
+import Control.Exception.Hierarchy
 import Foreign.Ptr
+import Foreign.C.String
 import Foreign.C.Struct
 import Foreign.Storable
 import Data.Word
@@ -15,12 +17,31 @@ import Data.Int
 
 type PGChar = Ptr #{type gchar}
 
-struct "E" #{size GError} #{alignment GError} [
-	("domain", ''#{type GQuark},
+struct "E_" #{size GError} #{alignment GError} [
+	("domain_", ''#{type GQuark},
 		[| #{peek GError, domain} |], [| #{poke GError, domain} |]),
-	("code", ''#{type gint},
+	("code_", ''#{type gint},
 		[| #{peek GError, code} |], [| #{poke GError, code} |]),
-	("message", ''PGChar,
+	("message_", ''PGChar,
 		[| #{peek GError, message} |], [| #{poke GError, message} |])
 	]
-	[''Show]
+	[''Show, ''Storable]
+
+{-
+data E = E E_ deriving Show
+
+fromC :: E_ -> E
+fromC = E
+-}
+
+data E = E {
+	domain :: #{type GQuark},
+	code :: #{type gint},
+	message :: String }
+	deriving Show
+
+fromC :: E_ -> IO E
+fromC E_ { e_Domain_ = d, e_Code_ = c, e_Message_ = cm } =
+	E d c <$> peekCString (castPtr cm)
+
+exceptionHierarchy Nothing $ ExType ''E

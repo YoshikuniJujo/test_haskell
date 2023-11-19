@@ -2,5 +2,11 @@
 
 module Main where
 
+import System.Environment
+import Stopgap.System.GLib.File
+
 main :: IO ()
-main = putStrLn "foo"
+main = do
+	fp : _ <- getArgs
+	f <- newForPath fp
+	print =<< loadContents f Nothing
