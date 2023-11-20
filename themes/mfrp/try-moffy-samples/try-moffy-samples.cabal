@@ -40,6 +40,7 @@ library
       Stopgap.System.GLib.Application
       Stopgap.System.GLib.Cancellable
       Stopgap.System.GLib.Error
+      Stopgap.System.GLib.Error.Io
       Stopgap.System.GLib.File
       Stopgap.System.GLib.Object
       Stopgap.System.GLib.Signal
