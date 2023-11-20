@@ -18,7 +18,6 @@ import Data.Int
 import Stopgap.Data.Ptr
 
 import Stopgap.System.GLib.Error qualified as G.Error
-import Stopgap.System.GLib.Error.Io qualified as G.Error.Io
 import Stopgap.System.GLib.Cancellable qualified as G.Cancellable
 
 #include <gtk/gtk.h>
@@ -53,3 +52,9 @@ foreign import ccall "g_file_load_contents" c_g_file_load_contents ::
 	Ptr FTag -> Ptr G.Cancellable.CTag -> Ptr CString ->
 	Ptr #{type gsize} -> Ptr CString -> Ptr (Ptr G.Error.E_) ->
 	IO #{type gboolean}
+
+getBasename :: F -> IO String
+getBasename (F f) = peekCString =<< c_g_file_get_basename f
+
+foreign import ccall "g_file_get_basename" c_g_file_get_basename ::
+	Ptr FTag -> IO CString

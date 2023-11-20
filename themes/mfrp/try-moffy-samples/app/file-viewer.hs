@@ -5,6 +5,7 @@
 
 module Main (main) where
 
+import Control.Monad
 import Control.Exception
 import System.IO
 import System.Environment
@@ -45,15 +46,13 @@ appOpen app files _hint Null = do
 	(text, _) <- G.File.loadContents (files !! 0) Nothing
 		`onException` Gtk.Window.destroy win
 	Gtk.TextBuffer.setText tb text
-	Gtk.Window.setTitle win "Slozsoft"
-
+	Gtk.Window.setTitle win =<< G.File.getBasename (files !! 0)
 	Gtk.Window.present win
 
 main :: IO ()
 main = let	?makeEFuns = [G.Error.Io.mkEFun] in
-	Gtk.Application.with
-		"com.github.YoshikuniJujo.pr1" G.Application.HandlesOpen \app -> do
+	Gtk.Application.with "com.github.YoshikuniJujo.pr1"
+		G.Application.HandlesOpen \app -> do
 	G.Signal.connect app "activate" appActivate Null
 	G.Signal.connectOpen app "open" appOpen Null
-	cmd <- getProgName
-	exitWith =<< G.Application.run app cmd =<< getArgs
+	exitWith =<< join (G.Application.run app <$> getProgName <*> getArgs)
