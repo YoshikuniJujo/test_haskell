@@ -29,7 +29,7 @@ run (toA -> A pa) cmd as = toExitCode
 
 withArgcArgv :: String -> [String] -> (CInt -> Ptr CString -> IO a) -> IO a
 withArgcArgv cmd as f = withCStringList (cmd : as) \cas ->
-	withArrayLen cas \argc argv -> print argc >> f (fromIntegral argc) argv
+	withArrayLen cas \argc argv -> f (fromIntegral argc) argv
 
 withCStringList :: [String] -> ([CString] -> IO a) -> IO a
 withCStringList [] f = f []

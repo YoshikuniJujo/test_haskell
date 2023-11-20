@@ -1,9 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE ImplicitParams #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
+import Control.Exception
+import System.IO
 import System.Environment
 import System.Exit
 
@@ -15,29 +18,20 @@ import Stopgap.Graphics.UI.Gtk.ApplicationWindow
 import Stopgap.Graphics.UI.Gtk.ScrolledWindow qualified as Gtk.ScrolledWindow
 import Stopgap.Graphics.UI.Gtk.TextView qualified as Gtk.TextView
 import Stopgap.Graphics.UI.Gtk.TextBuffer qualified as Gtk.TextBuffer
+import Stopgap.System.GLib.Error qualified as G.Error
+import Stopgap.System.GLib.Error.Io qualified as G.Error.Io
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.System.GLib.File qualified as G.File
 import Stopgap.Data.Ptr
 
 appActivate :: Gtk.Application.A s -> Null -> IO ()
-appActivate app Null = do
-	let	text =	"Once upon a time, there was an old man " ++
-			"who was called Taketori-no-Okina. " ++
-			"It is a japanese word that means a man " ++
-			"whose work is making bamboo baskets.\n" ++
-			"One day, he went into a hill and found " ++
-			"a shining bamboo. " ++
-			"\"What a mysterious bamboo it is!, \" he said. " ++
-			"He cut it, then there was " ++
-			"a small cute baby girl in it. " ++
-			"The girl was shining faintly. " ++
-			"He thought this baby girl is a gift from Heaven " ++
-			"and took her home.\n" ++
-			"His wife was surprized at his story. " ++
-			"Tey were very happy because they had no children. "
+appActivate _app Null = hPutStrLn stderr "You need a filename argument."
+
+appOpen :: (?makeEFuns :: [G.Error.MakeEFun]) =>
+	Gtk.Application.A s -> [G.File.F] -> String -> Null -> IO ()
+appOpen app files _hint Null = do
 	win <- Gtk.ApplicationWindow.new app
-	Gtk.Window.setTitle win "Slozsoft"
 	Gtk.Window.setDefaultSize win 400 300
 
 	scr <- Gtk.ScrolledWindow.new
@@ -45,21 +39,20 @@ appActivate app Null = do
 
 	tv <- Gtk.TextView.new
 	tb <- Gtk.TextView.getBuffer tv
-	Gtk.TextBuffer.setText tb text
-	Gtk.TextView.setWrapMode tv Gtk.WrapWordChar
 
 	Gtk.ScrolledWindow.setChild scr tv
 
+	(text, _) <- G.File.loadContents (files !! 0) Nothing
+		`onException` Gtk.Window.destroy win
+	Gtk.TextBuffer.setText tb text
+	Gtk.Window.setTitle win "Slozsoft"
+	Gtk.TextView.setWrapMode tv Gtk.WrapWordChar
+
 	Gtk.Window.present win
 
-appOpen :: Gtk.Application.A s -> [G.File.F] -> String -> Null -> IO ()
-appOpen app files hint Null = do
-	print app
-	print files
-	print hint
-
 main :: IO ()
-main = Gtk.Application.with
+main = let	?makeEFuns = [G.Error.Io.mkEFun] in
+	Gtk.Application.with
 		"com.github.YoshikuniJujo.pr1" G.Application.HandlesOpen \app -> do
 	G.Signal.connect app "activate" appActivate Null
 	G.Signal.connectOpen app "open" appOpen Null

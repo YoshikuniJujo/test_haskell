@@ -18,13 +18,16 @@ import Stopgap.System.GLib.Error qualified
 #include <gtk/gtk.h>
 
 enum "I_" ''#{type GFileError} [''Show, ''Read] [
-	("IFailed", #{const G_IO_ERROR_FAILED}),
-	("INotFound", #{const G_IO_ERROR_NOT_FOUND}),
+	("Failed", #{const G_IO_ERROR_FAILED}),
+	("NotFound", #{const G_IO_ERROR_NOT_FOUND}),
 
-	("IPermissionDenied", #{const G_IO_ERROR_PERMISSION_DENIED})
+	("PermissionDenied", #{const G_IO_ERROR_PERMISSION_DENIED})
 	]
 
-data I = I { iCode :: I_, iMessage :: String } deriving Show
+data I = I { iCode :: I_, iMessage :: String }
+
+instance Show I where
+	show (I c msg) = "Error: " ++ show c ++ " " ++ msg
 
 exceptionHierarchy (Just ''G.Error.E) $ ExType ''I
 

@@ -35,7 +35,9 @@ type DomainCode = (#{type GQuark}, #{type gint})
 data EOthers = EOthers {
 	domainCode :: DomainCode,
 	message :: String }
-	deriving Show
+
+instance Show EOthers where
+	show (EOthers (d, c) msg) = "Error: " ++ show d ++ " " ++ show c ++ " " ++ msg
 
 exceptionHierarchy Nothing $ ExNode "E" [
 	ExType ''EOthers ]
