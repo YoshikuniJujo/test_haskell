@@ -1,6 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -43,10 +44,10 @@ exceptionHierarchy Nothing $ ExNode "E" [
 
 foreign import capi "gtk/gtk.h value G_IO_ERROR" c_G_IO_ERROR :: #{type GQuark}
 
-fromC :: [DomainCode -> String -> IO (Maybe E)] ->  E_ -> IO E
-fromC fs0 E_ { e_Domain_ = d, e_Code_ = c, e_Message_ = cm } = do
+fromC :: (?makeEFuns :: [DomainCode -> String -> IO (Maybe E)]) =>  E_ -> IO E
+fromC E_ { e_Domain_ = d, e_Code_ = c, e_Message_ = cm } = do
 	print c_G_IO_ERROR
-	get fs0 =<< peekCString (castPtr cm)
+	get ?makeEFuns =<< peekCString (castPtr cm)
 	where
 	get = \case
 		[] -> pure . E . EOthers (d, c)
