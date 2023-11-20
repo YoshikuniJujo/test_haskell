@@ -40,7 +40,9 @@ data EOthers = EOthers {
 exceptionHierarchy Nothing $ ExNode "E" [
 	ExType ''EOthers ]
 
-fromC :: (?makeEFuns :: [DomainCode -> String -> IO (Maybe E)]) =>  E_ -> IO E
+type MakeEFun = DomainCode -> String -> IO (Maybe E)
+
+fromC :: (?makeEFuns :: [MakeEFun]) =>  E_ -> IO E
 fromC E_ { e_Domain_ = d, e_Code_ = c, e_Message_ = cm } = do
 	get ?makeEFuns =<< peekCString (castPtr cm)
 	where

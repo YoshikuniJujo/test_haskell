@@ -30,8 +30,8 @@ exceptionHierarchy (Just ''G.Error.E) $ ExType ''I
 
 foreign import capi "gtk/gtk.h value G_IO_ERROR" c_G_IO_ERROR :: #{type GQuark}
 
-fromC :: G.Error.DomainCode -> String -> IO (Maybe G.Error.E)
-fromC (d, c) msg = do
+mkEFun :: G.Error.DomainCode -> String -> IO (Maybe G.Error.E)
+mkEFun (d, c) msg = do
 	let	d0 = c_G_IO_ERROR
 	pure if d == d0
 	then Just . G.Error.E $ I (I_ $ fromIntegral c) msg
