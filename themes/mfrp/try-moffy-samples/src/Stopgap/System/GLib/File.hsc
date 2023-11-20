@@ -37,10 +37,13 @@ foreign import ccall "g_file_new_for_path" c_g_file_new_for_path ::
 loadContents :: (?makeEFuns :: [G.Error.MakeEFun]) =>
 	F -> Maybe G.Cancellable.C -> IO (String, String)
 loadContents (F f) (cancellableToPtr -> c) =
-	alloca \pcnt -> alloca \plen -> alloca \petag -> alloca \perr -> do
-		rslt <- c_g_file_load_contents f c pcnt plen petag perr
-		when (rslt == #{const FALSE})
-			$ throw =<< G.Error.fromC =<< peek =<< peek perr
+	alloca \pcnt -> alloca \plen -> alloca \petag -> alloca \pperr -> do
+		rslt <- c_g_file_load_contents f c pcnt plen petag pperr
+		when (rslt == #{const FALSE}) do
+			perr <- peek pperr
+			err <- G.Error.fromC =<< peek perr
+			G.Error.free perr
+			throw err
 		cntlen <- (,) <$> peek pcnt <*> (fromIntegral <$> peek plen)
 		cetag <- peek petag
 		(,) <$> peekCStringLen cntlen <*> peekCString cetag

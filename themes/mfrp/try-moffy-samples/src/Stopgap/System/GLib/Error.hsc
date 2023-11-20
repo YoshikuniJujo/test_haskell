@@ -51,3 +51,8 @@ fromC E_ { e_Domain_ = d, e_Code_ = c, e_Message_ = cm } = do
 	get = \case
 		[] -> pure . E . EOthers (d, c)
 		f : fs -> \msg -> maybe (get fs msg) pure =<< f (d, c) msg
+
+free :: Ptr E_ -> IO ()
+free = c_g_error_free
+
+foreign import ccall "g_error_free" c_g_error_free :: Ptr E_ -> IO ()
