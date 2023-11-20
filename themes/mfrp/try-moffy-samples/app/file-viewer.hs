@@ -33,20 +33,19 @@ appOpen :: (?makeEFuns :: [G.Error.MakeEFun]) =>
 appOpen app files _hint Null = do
 	win <- Gtk.ApplicationWindow.new app
 	Gtk.Window.setDefaultSize win 400 300
-
 	scr <- Gtk.ScrolledWindow.new
 	Gtk.Window.setChild win scr
 
 	tv <- Gtk.TextView.new
 	tb <- Gtk.TextView.getBuffer tv
-
+	Gtk.TextView.setWrapMode tv Gtk.WrapWordChar
+	Gtk.TextView.setEditable tv False
 	Gtk.ScrolledWindow.setChild scr tv
 
 	(text, _) <- G.File.loadContents (files !! 0) Nothing
 		`onException` Gtk.Window.destroy win
 	Gtk.TextBuffer.setText tb text
 	Gtk.Window.setTitle win "Slozsoft"
-	Gtk.TextView.setWrapMode tv Gtk.WrapWordChar
 
 	Gtk.Window.present win
 

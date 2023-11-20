@@ -7,6 +7,7 @@ module Stopgap.Graphics.UI.Gtk.TextView where
 import Foreign.Ptr
 import Stopgap.Data.Ptr
 import Data.Word
+import Data.Int
 
 import Stopgap.Graphics.UI.Gtk qualified as Gtk
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
@@ -38,3 +39,14 @@ setWrapMode (T t) (Gtk.WrapMode wm) = c_gtk_text_view_set_wrap_mode t wm
 foreign import ccall "gtk_text_view_set_wrap_mode"
 	c_gtk_text_view_set_wrap_mode ::
 	Ptr TTag -> #{type GtkWrapMode} -> IO ()
+
+setEditable :: T -> Bool -> IO ()
+setEditable (T t) b = c_gtk_text_view_set_editable t $ boolToGboolean b
+
+boolToGboolean :: Bool -> #{type gboolean}
+boolToGboolean False = #{const FALSE}
+boolToGboolean True = #{const TRUE}
+
+foreign import ccall "gtk_text_view_set_editable"
+	c_gtk_text_view_set_editable ::
+	Ptr TTag -> #{type gboolean} -> IO ()
