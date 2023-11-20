@@ -37,7 +37,8 @@ loadContents :: F -> Maybe G.Cancellable.C -> IO (String, String)
 loadContents (F f) (cancellableToPtr -> c) =
 	alloca \pcnt -> alloca \plen -> alloca \petag -> alloca \perr -> do
 		rslt <- c_g_file_load_contents f c pcnt plen petag perr
-		when (rslt == #{const FALSE}) $ throw =<< G.Error.fromC =<< peek =<< peek perr
+		when (rslt == #{const FALSE})
+			$ throw =<< G.Error.fromC [G.Error.fFromC] =<< peek =<< peek perr
 		cntlen <- (,) <$> peek pcnt <*> (fromIntegral <$> peek plen)
 		cetag <- peek petag
 		(,) <$> peekCStringLen cntlen <*> peekCString cetag
