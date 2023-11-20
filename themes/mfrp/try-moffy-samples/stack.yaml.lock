@@ -3,7 +3,18 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: e1ec72d664498e0355aa788035d2a9102fa1e478
+    git: https://github.com/YoshikuniJujo/exception-hierarchy
+    name: exception-hierarchy
+    pantry-tree:
+      sha256: 5f47ca701c92cd2ff91fd7498ab41c0b5a0734abbc160ca38509fcfe7f4d9d89
+      size: 454
+    version: 0.1.0.9
+  original:
+    commit: e1ec72d664498e0355aa788035d2a9102fa1e478
+    git: https://github.com/YoshikuniJujo/exception-hierarchy
 snapshots:
 - completed:
     sha256: 5921ddc75f5dd3f197fbc32e1e5676895a8e7b971d4f82ef6b556657801dd18a

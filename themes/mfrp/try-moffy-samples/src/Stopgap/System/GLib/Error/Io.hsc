@@ -13,7 +13,7 @@ import Control.Exception.Hierarchy
 import Data.Word
 
 import Stopgap.System.GLib.Error qualified as G.Error
-import Stopgap.System.GLib.Error (eToException, eFromException)
+import Stopgap.System.GLib.Error qualified
 
 #include <gtk/gtk.h>
 
