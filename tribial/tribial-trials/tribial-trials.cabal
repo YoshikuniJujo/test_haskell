@@ -60,6 +60,11 @@ library
       OneThirdOfTheYearIsOver
       PrintableClass
       PseudoPrime
+      Qualified
+      Qualified.A
+      Qualified.B
+      Qualified.C
+      Qualified.D
       RankNTypes
       RecursionOverModules.List
       RecursionOverModules.NonEmpty
