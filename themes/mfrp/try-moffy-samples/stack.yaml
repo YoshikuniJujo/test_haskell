@@ -43,6 +43,11 @@ packages:
 extra-deps:
   - git: https://github.com/YoshikuniJujo/exception-hierarchy
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
+  - git: https://github.com/YoshikuniJujo/simple-cairo
+    commit: 6a520b14a84e144faff4efb823c58ccb346104db
+  - git: https://github.com/YoshikuniJujo/cairo-image
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+  - union-color-0.1.2.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

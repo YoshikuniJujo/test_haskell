@@ -24,6 +24,9 @@ dependencies:
 - c-enum
 - c-struct
 - exception-hierarchy
+- simple-cairo
+- cairo-image
+- union-color
 
 ghc-options:
 - -Wall
@@ -86,6 +89,16 @@ executables:
     - try-moffy-samples
   tfe :
     main:                tfe.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
+  try-cairo :
+    main:                try-cairo.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:

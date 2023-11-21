@@ -64,7 +64,10 @@ library
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , cairo-image
     , exception-hierarchy
+    , simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable file-viewer
@@ -76,8 +79,11 @@ executable file-viewer
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , cairo-image
     , exception-hierarchy
+    , simple-cairo
     , try-moffy-samples
+    , union-color
   default-language: Haskell2010
 
 executable tfe
@@ -89,8 +95,27 @@ executable tfe
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , cairo-image
     , exception-hierarchy
+    , simple-cairo
     , try-moffy-samples
+    , union-color
+  default-language: Haskell2010
+
+executable try-cairo
+  main-is: try-cairo.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , cairo-image
+    , exception-hierarchy
+    , simple-cairo
+    , try-moffy-samples
+    , union-color
   default-language: Haskell2010
 
 executable try-cancellable
@@ -102,8 +127,11 @@ executable try-cancellable
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , cairo-image
     , exception-hierarchy
+    , simple-cairo
     , try-moffy-samples
+    , union-color
   default-language: Haskell2010
 
 executable try-moffy-samples-exe
@@ -119,8 +147,11 @@ executable try-moffy-samples-exe
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , cairo-image
     , exception-hierarchy
+    , simple-cairo
     , try-moffy-samples
+    , union-color
   default-language: Haskell2010
 
 executable try-text-view-exe
@@ -132,8 +163,11 @@ executable try-text-view-exe
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , cairo-image
     , exception-hierarchy
+    , simple-cairo
     , try-moffy-samples
+    , union-color
   default-language: Haskell2010
 
 test-suite try-moffy-samples-test
@@ -150,6 +184,9 @@ test-suite try-moffy-samples-test
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , cairo-image
     , exception-hierarchy
+    , simple-cairo
     , try-moffy-samples
+    , union-color
   default-language: Haskell2010

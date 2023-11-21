@@ -15,6 +15,35 @@ packages:
   original:
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
     git: https://github.com/YoshikuniJujo/exception-hierarchy
+- completed:
+    commit: 6a520b14a84e144faff4efb823c58ccb346104db
+    git: https://github.com/YoshikuniJujo/simple-cairo
+    name: simple-cairo
+    pantry-tree:
+      sha256: 93616b711e69d10b4936a7f0ffbfac2642c6e528ca8ba82dbb2150909c50ed29
+      size: 4958
+    version: 0.1.0.5
+  original:
+    commit: 6a520b14a84e144faff4efb823c58ccb346104db
+    git: https://github.com/YoshikuniJujo/simple-cairo
+- completed:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+    git: https://github.com/YoshikuniJujo/cairo-image
+    name: cairo-image
+    pantry-tree:
+      sha256: 5b489f2b4ca2de60feab3c83f9bcac15674e7566d4504804f92445e29711f412
+      size: 887
+    version: 0.1.0.0
+  original:
+    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+    git: https://github.com/YoshikuniJujo/cairo-image
+- completed:
+    hackage: union-color-0.1.2.1@sha256:0d8cd13f3fbe8135f34244f9847b415635d6066b06c92203fdb521a36cdaeae8,1326
+    pantry-tree:
+      sha256: 7df303497f2479607876d561c5b48000d05bc22eabed3c4d84426440e4d5717a
+      size: 429
+  original:
+    hackage: union-color-0.1.2.1
 snapshots:
 - completed:
     sha256: 5921ddc75f5dd3f197fbc32e1e5676895a8e7b971d4f82ef6b556657801dd18a
