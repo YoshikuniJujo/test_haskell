@@ -107,6 +107,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy-samples
+  try-drawing-area :
+    main:                try-drawing-area.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
 
 tests:
   try-moffy-samples-test:
