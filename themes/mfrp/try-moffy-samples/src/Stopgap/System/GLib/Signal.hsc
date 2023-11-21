@@ -1,5 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies, TypeFamilyDependencies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -36,6 +36,29 @@ wrapHandler h f = do
 
 foreign import ccall "wrapper" c_wrap_handler ::
 	(Ptr a -> Ptr b -> IO ()) -> IO (FunPtr (Ptr a -> Ptr b -> IO ()))
+
+connectClose :: forall a b . (IsPtr a, IsPtr b) =>
+	a -> Signal -> (a -> b -> IO Bool) -> b -> IO ()
+connectClose x (Signal sig) h ud =
+	withCString sig \csig -> wrapHandlerClose h >>= \ch ->
+		c_g_signal_connect_close (toPtr x) csig ch (toPtr ud)
+
+foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect_close ::
+	Ptr a -> CString -> FunPtr (Ptr a -> Ptr b -> IO #{type gboolean}) ->
+	Ptr b -> IO ()
+
+wrapHandlerClose :: (IsPtr a, IsPtr b) => (a -> b -> IO Bool) ->
+	IO (FunPtr (Ptr (Tag a) -> Ptr (Tag b) -> IO #{type gboolean}))
+wrapHandlerClose h = do
+	let	g px pud = boolToGboolean <$> h (fromPtr px) (fromPtr pud)
+	c_wrap_handler_close g
+
+boolToGboolean :: Bool -> #{type gboolean}
+boolToGboolean = \case False -> #{const FALSE}; True -> #{const TRUE}
+
+foreign import ccall "wrapper" c_wrap_handler_close ::
+	(Ptr a -> Ptr b -> IO #{type gboolean}) ->
+	IO (FunPtr (Ptr a -> Ptr b -> IO #{type gboolean}))
 
 connectOpen :: forall a gf b . (IsPtr a, IsPtr gf, IsPtr b) =>
 	a -> Signal -> HandlerOpen a gf b -> b -> IO ()

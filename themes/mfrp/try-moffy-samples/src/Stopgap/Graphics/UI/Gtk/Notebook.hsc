@@ -13,6 +13,8 @@ import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 import Stopgap.Graphics.UI.Gtk.NotebookPage qualified as Gtk.NotebookPage
 import Stopgap.System.GLib.Object qualified as G.Object
 
+#include <gtk/gtk.h>
+
 data NTag
 
 newtype N = N (Ptr NTag) deriving Show
@@ -47,3 +49,9 @@ getPage (N n) (Gtk.Widget.toW -> Gtk.Widget.W c) =
 
 foreign import ccall "gtk_notebook_get_page" c_gtk_notebook_get_page ::
 	Ptr NTag -> Ptr Gtk.Widget.WTag -> IO (Ptr Gtk.NotebookPage.NTag)
+
+-- getNthPage :: N -> #{type gint} -> IO Gtk.NotebookPage.N
+-- getNthPage (N n) num = Gtk.NotebookPage.N <$> c_gtk_notebook_get_nth_page n num
+
+foreign import ccall "gtk_notebook_get_nth_page" c_gtk_notebook_get_nth_page ::
+	Ptr NTag -> #{type gint} -> IO (Ptr Gtk.Widget.WTag)

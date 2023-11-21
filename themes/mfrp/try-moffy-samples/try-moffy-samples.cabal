@@ -37,6 +37,7 @@ library
       Stopgap.Graphics.UI.Gtk.ScrolledWindow
       Stopgap.Graphics.UI.Gtk.TextBuffer
       Stopgap.Graphics.UI.Gtk.TextView
+      Stopgap.Graphics.UI.Gtk.TfeTextView
       Stopgap.Graphics.UI.Gtk.Widget
       Stopgap.Graphics.UI.Gtk.Window
       Stopgap.System.GLib.Application
@@ -53,6 +54,10 @@ library
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  include-dirs:
+      include
+  c-sources:
+      csrc/tfe.c
   pkgconfig-depends:
       gtk4
   build-depends:
@@ -64,6 +69,19 @@ library
 
 executable file-viewer
   main-is: file-viewer.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
+    , try-moffy-samples
+  default-language: Haskell2010
+
+executable tfe
+  main-is: tfe.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N

@@ -38,6 +38,9 @@ ghc-options:
 
 library:
   source-dirs: src
+  include-dirs: include
+  c-sources:
+  - csrc/tfe.c
   pkg-config-dependencies:
   - gtk4
 
@@ -73,6 +76,16 @@ executables:
     - try-moffy-samples
   try-cancellable:
     main:                try-cancellable.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
+  tfe :
+    main:                tfe.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
