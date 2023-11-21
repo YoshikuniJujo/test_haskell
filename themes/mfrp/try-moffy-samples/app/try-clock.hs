@@ -24,6 +24,7 @@ import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
+import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.ApplicationWindow
 	qualified as Gtk.ApplicationWindow
@@ -79,7 +80,7 @@ drawClock _area cr (fromIntegral -> width) (fromIntegral -> height) Null = do
 	timeinfo <- localTimeOfDay . zonedTimeToLocalTime <$> getZonedTime
 	let	hours = fromIntegral (todHour timeinfo) * pi / 6
 		minutes = fromIntegral (todMin timeinfo) * pi / 30
-		seconds = realToFrac (todSec timeinfo) * pi / 30
+		seconds = fromIntegral (round $ todSec timeinfo) * pi / 30
 
 	cairoSave cr
 	cairoSet cr LineCapRound
@@ -117,7 +118,7 @@ applicationId = Gtk.Application.Id "com.github.ToshioCP.da1"
 
 timeHandler :: Gtk.DrawingArea.D -> IO Bool
 timeHandler clock = do
-	putStrLn "TIME HANDLER"
+	Gtk.Widget.queueDraw clock
 	pure True
 
 appActivate :: Gtk.Application.A s -> Null -> IO ()
@@ -128,7 +129,7 @@ appActivate app Null = do
 	Gtk.Window.setChild win area
 
 	Gtk.DrawingArea.setDrawFunc area drawClock Null
-	G.Timeout.add 1000 timeHandler area
+	void $ G.Timeout.add 1000 timeHandler area
 	Gtk.Window.present win
 
 main :: IO ()
