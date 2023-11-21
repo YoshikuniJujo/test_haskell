@@ -26,6 +26,7 @@ import Stopgap.Graphics.UI.Gtk.Label qualified as Gtk.Label
 import Stopgap.System.GLib.Error qualified as G.Error
 import Stopgap.System.GLib.Error.Io qualified as G.Error.Io
 import Stopgap.System.GLib.Application qualified as G.Application
+import Stopgap.System.GLib.Object qualified as G.Object
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.System.GLib.File qualified as G.File
 import Stopgap.Data.Ptr
@@ -56,6 +57,8 @@ appOpen app files _hint Null = do
 
 		lab <- Gtk.Label.new =<< G.File.getBasename f
 		void $ Gtk.Notebook.appendPage nb scr lab
+		nbp <- Gtk.Notebook.getPage nb scr
+		G.Object.set nbp "tab-expand" True
 
 	nps <- Gtk.Notebook.getNPages nb
 	if nps > 0 then Gtk.Window.present win else Gtk.Window.destroy win
