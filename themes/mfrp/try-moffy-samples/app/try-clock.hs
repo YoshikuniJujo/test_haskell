@@ -30,6 +30,7 @@ import Stopgap.Graphics.UI.Gtk.ApplicationWindow
 import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
+import Stopgap.System.GLib.Timeout qualified as G.Timeout
 
 mRadius, mLineWidth :: CDouble
 mRadius = 0.42; mLineWidth = 0.05
@@ -114,13 +115,20 @@ drawClock _area cr (fromIntegral -> width) (fromIntegral -> height) Null = do
 applicationId :: Gtk.Application.Id
 applicationId = Gtk.Application.Id "com.github.ToshioCP.da1"
 
+timeHandler :: Gtk.DrawingArea.D -> IO Bool
+timeHandler clock = do
+	putStrLn "TIME HANDLER"
+	pure True
+
 appActivate :: Gtk.Application.A s -> Null -> IO ()
 appActivate app Null = do
 	win <- Gtk.ApplicationWindow.new app
 	area <- Gtk.DrawingArea.new
 	Gtk.Window.setTitle win "da1"
-	Gtk.DrawingArea.setDrawFunc area drawClock Null
 	Gtk.Window.setChild win area
+
+	Gtk.DrawingArea.setDrawFunc area drawClock Null
+	G.Timeout.add 1000 timeHandler area
 	Gtk.Window.present win
 
 main :: IO ()

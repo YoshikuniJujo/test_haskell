@@ -48,6 +48,7 @@ library
       Stopgap.System.GLib.File
       Stopgap.System.GLib.Object
       Stopgap.System.GLib.Signal
+      Stopgap.System.GLib.Timeout
   other-modules:
       Paths_try_moffy_samples
   autogen-modules:
