@@ -12,6 +12,7 @@ import Data.Int
 import Stopgap.Graphics.UI.Gtk qualified as Gtk
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 import Stopgap.Graphics.UI.Gtk.TextBuffer qualified as Gtk.TextBuffer
+import Stopgap.System.GLib.Object qualified as G.Object
 
 #include <gtk/gtk.h>
 
@@ -20,6 +21,7 @@ data TTag
 newtype T = T (Ptr TTag) deriving Show
 
 instance IsPtr T where type Tag T = TTag; fromPtr = T; toPtr (T p) = p
+instance G.Object.IsO T where toO (T t) = G.Object.O $ castPtr t
 instance Gtk.Widget.IsW T where toW (T t) = Gtk.Widget.W $ castPtr t
 
 new :: IO T

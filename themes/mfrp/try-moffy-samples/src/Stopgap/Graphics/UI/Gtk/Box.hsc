@@ -14,6 +14,7 @@ import Stopgap.Data.Ptr
 
 import Stopgap.Graphics.UI.Gtk qualified as Gtk
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
+import Stopgap.System.GLib.Object qualified as G.Object
 
 #include <gtk/gtk.h>
 
@@ -22,6 +23,7 @@ data BTag
 newtype B = B (Ptr BTag) deriving Show
 
 instance IsPtr B where type Tag B = BTag; fromPtr = B; toPtr (B p) = p
+instance G.Object.IsO B where toO (B p) = G.Object.O $ castPtr p
 instance Gtk.Widget.IsW B where toW (B p) = Gtk.Widget.W $ castPtr p
 
 new :: Gtk.Orientation -> Gtk.Pixel -> IO B

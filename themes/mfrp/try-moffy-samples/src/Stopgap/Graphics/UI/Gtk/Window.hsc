@@ -12,6 +12,7 @@ import Stopgap.Data.Ptr
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
+import Stopgap.System.GLib.Object qualified as G.Object
 
 class Gtk.Widget.IsW a => IsW a where toW :: a -> W
 
@@ -20,6 +21,7 @@ data WTag
 data W = W (Ptr WTag) deriving Show
 
 instance IsPtr W where type Tag W = WTag; fromPtr = W; toPtr (W p) = p
+instance G.Object.IsO W where toO (W w) = G.Object.O $ castPtr w
 instance Gtk.Widget.IsW W where toW (W w) = Gtk.Widget.W $ castPtr w
 instance IsW W where toW = id
 

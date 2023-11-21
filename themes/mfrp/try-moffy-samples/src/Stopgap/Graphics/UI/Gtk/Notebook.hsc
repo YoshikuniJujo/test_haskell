@@ -10,12 +10,14 @@ import Data.Int
 import Stopgap.Data.Ptr
 
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
+import Stopgap.System.GLib.Object qualified as G.Object
 
 data NTag
 
 newtype N = N (Ptr NTag) deriving Show
 
 instance IsPtr N where type Tag N = NTag; fromPtr = N; toPtr (N p) = p
+instance G.Object.IsO N where toO (N p) = G.Object.O $ castPtr p
 instance Gtk.Widget.IsW N where toW (N p) = Gtk.Widget.W $ castPtr p
 
 new :: IO N
