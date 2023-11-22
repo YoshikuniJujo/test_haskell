@@ -29,7 +29,7 @@ dependencies:
 - simple-cairo
 - cairo-image
 - union-color
-# - try-moffy
+- try-moffy
 
 ghc-options:
 - -Wall
