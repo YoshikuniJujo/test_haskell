@@ -46,6 +46,7 @@ library
       Stopgap.System.GLib.Error
       Stopgap.System.GLib.Error.Io
       Stopgap.System.GLib.File
+      Stopgap.System.GLib.Idle
       Stopgap.System.GLib.Object
       Stopgap.System.GLib.Signal
       Stopgap.System.GLib.Timeout
