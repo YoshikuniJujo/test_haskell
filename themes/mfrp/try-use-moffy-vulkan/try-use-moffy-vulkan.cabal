@@ -41,6 +41,7 @@ library
     , extra-data-yj
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , simple-cairo
     , stm
@@ -49,7 +50,7 @@ library
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy
+    , try-moffy-with-gtk3
     , try-vulkan-rectangles
     , type-flip
     , x-keysym
@@ -70,6 +71,7 @@ executable try-boxes
     , extra-data-yj
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , simple-cairo
     , stm
@@ -78,7 +80,7 @@ executable try-boxes
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy
+    , try-moffy-with-gtk3
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -100,6 +102,7 @@ executable try-followbox
     , extra-data-yj
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , simple-cairo
     , stm
@@ -108,7 +111,7 @@ executable try-followbox
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy
+    , try-moffy-with-gtk3
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -130,6 +133,7 @@ executable try-hello-windows
     , extra-data-yj
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , simple-cairo
     , stm
@@ -138,7 +142,7 @@ executable try-hello-windows
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy
+    , try-moffy-with-gtk3
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -160,6 +164,7 @@ executable try-multi-rectangles
     , extra-data-yj
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , simple-cairo
     , stm
@@ -168,7 +173,7 @@ executable try-multi-rectangles
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy
+    , try-moffy-with-gtk3
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -189,6 +194,7 @@ executable try-use-moffy-vulkan-exe
     , extra-data-yj
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , simple-cairo
     , stm
@@ -197,7 +203,7 @@ executable try-use-moffy-vulkan-exe
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy
+    , try-moffy-with-gtk3
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -219,6 +225,7 @@ test-suite try-use-moffy-vulkan-test
     , extra-data-yj
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , simple-cairo
     , stm
@@ -227,7 +234,7 @@ test-suite try-use-moffy-vulkan-test
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy
+    , try-moffy-with-gtk3
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip

@@ -28,9 +28,10 @@ dependencies:
 - optparse-declarative
 - data-default
 - time
+- random
 - type-flip
 - ranged-list
-- try-moffy
+- try-moffy-with-gtk3
 - try-gpu-vulkan
 - try-gpu-vulkan-cglm
 - try-vulkan-rectangles
