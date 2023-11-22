@@ -32,6 +32,8 @@ library
       Stopgap.Graphics.UI.Gtk.Box
       Stopgap.Graphics.UI.Gtk.Button
       Stopgap.Graphics.UI.Gtk.DrawingArea
+      Stopgap.Graphics.UI.Gtk.EventController
+      Stopgap.Graphics.UI.Gtk.EventControllerMotion
       Stopgap.Graphics.UI.Gtk.Label
       Stopgap.Graphics.UI.Gtk.Notebook
       Stopgap.Graphics.UI.Gtk.NotebookPage
@@ -72,7 +74,6 @@ library
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , union-color
   default-language: Haskell2010
 
@@ -90,7 +91,6 @@ executable file-viewer
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -109,7 +109,6 @@ executable tfe
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -128,7 +127,6 @@ executable try-cairo
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -147,7 +145,6 @@ executable try-cancellable
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -166,7 +163,6 @@ executable try-clock
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -185,7 +181,6 @@ executable try-clock-more
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -204,7 +199,6 @@ executable try-drawing-area
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -227,7 +221,24 @@ executable try-moffy-samples-exe
     , simple-cairo
     , stm
     , time
-    , try-moffy
+    , try-moffy-samples
+    , union-color
+  default-language: Haskell2010
+
+executable try-mouse-event
+  main-is: try-mouse-event.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , cairo-image
+    , exception-hierarchy
+    , simple-cairo
+    , stm
+    , time
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -246,7 +257,6 @@ executable try-text-view-exe
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -270,7 +280,6 @@ test-suite try-moffy-samples-test
     , simple-cairo
     , stm
     , time
-    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010

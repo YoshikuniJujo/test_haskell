@@ -29,7 +29,7 @@ dependencies:
 - simple-cairo
 - cairo-image
 - union-color
-- try-moffy
+# - try-moffy
 
 ghc-options:
 - -Wall
@@ -132,6 +132,16 @@ executables:
     - try-moffy-samples
   try-clock-more:
     main:                try-clock-more.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
+  try-mouse-event:
+    main:                try-mouse-event.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
