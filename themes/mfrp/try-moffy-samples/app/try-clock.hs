@@ -86,12 +86,12 @@ drawClock _area cr (fromIntegral -> width) (fromIntegral -> height) Null = do
 	cairoSet cr LineCapRound
 	cairoSave cr
 
-	cairoSet cr . LineWidth $ mLineWidth / 3
-	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0.7 0.7 0.7 0.8
+	cairoSet cr . LineWidth $ mLineWidth * 3 / 2
+	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0.337 0.612 0.117 0.9
 	cairoMoveTo cr 0 0
 	cairoLineTo cr
-		(sin seconds * mRadius * 0.9)
-		(- cos seconds * mRadius * 0.9)
+		(sin (hours + minutes / 12) * mRadius * 0.5)
+		(- cos (hours + minutes / 12) * mRadius * 0.5)
 	cairoStroke cr
 	cairoRestore cr
 
@@ -102,11 +102,12 @@ drawClock _area cr (fromIntegral -> width) (fromIntegral -> height) Null = do
 		(- cos (minutes + seconds / 60) * mRadius * 0.8)
 	cairoStroke cr
 
-	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0.337 0.612 0.117 0.9
+	cairoSet cr . LineWidth $ mLineWidth / 3
+	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0.7 0.7 0.7 0.8
 	cairoMoveTo cr 0 0
 	cairoLineTo cr
-		(sin (hours + minutes / 12) * mRadius * 0.5)
-		(- cos (hours + minutes / 12) * mRadius * 0.5)
+		(sin seconds * mRadius * 0.9)
+		(- cos seconds * mRadius * 0.9)
 	cairoStroke cr
 	cairoRestore cr
 
