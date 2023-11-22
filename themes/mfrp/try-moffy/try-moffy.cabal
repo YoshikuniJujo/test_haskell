@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3d618ec7b5f03319ef78346ab9c5ed5946f68ac55c6446d02bc3fb5faaefdd91
+-- hash: dc895b3dd1596551e0a5f4b3490f1731ac083c2465199a25a298c71b4cabb054
 
 name:           try-moffy
 version:        0.1.0.9
@@ -63,9 +63,7 @@ library
       Control.Moffy.Internal.Sig.Type
       Control.Moffy.NoThreadId
       Control.Moffy.Run
-      Control.Moffy.Run.GtkField
       Control.Moffy.Run.TChan
-      Control.Moffy.View.GtkField
       Control.Moffy.View.XField
       Control.Moffy.Viewable.Basic
       Control.Moffy.Viewable.Image
@@ -88,24 +86,12 @@ library
       Foreign.Tools
       Graphics.Cairo
       Graphics.CairoType
-      Graphics.GdkOld
-      Graphics.GdkOld.Event
-      Graphics.Gtk
-      Graphics.Gtk.Values
-      Graphics.Pango
-      System.Glib
-      System.Gobject
       System.Gobject.Hierarchy
-      System.Gobject.SignalConnect
-      System.Gobject.TempEvents
-      System.Gobject.TryDeleteEvent
       System.Gobject.TryHierarchy
       Trial.Boxes
       Trial.Boxes.BoxEv
-      Trial.Boxes.RunGtkField
       Trial.Boxes.RunXField
       Trial.Count
-      Trial.Draw
       Trial.Draw.Event
       Trial.Draw.Handle
       Trial.Draw.Marshal
@@ -115,23 +101,15 @@ library
       Trial.Followbox.Clickable
       Trial.Followbox.Event
       Trial.Followbox.Handle
-      Trial.Followbox.RunGtkField
       Trial.Followbox.RunXField
       Trial.Followbox.TypeSynonym
       Trial.Followbox.ViewType
       Trial.Followbox.XFieldHandle
       Trial.Paper
-      Trial.TryCalcTextExtents
-      Trial.TryConfigureEvent
       Trial.TryDefaultWindow
-      Trial.TryFillPolygon
-      Trial.TryKey
       Trial.TryLock
-      Trial.TryMultiWindow
       Trial.TryOneOfThem
-      Trial.TryPngCursor
       Trial.TryRandom
-      Trial.TryScroll
       Trial.TrySharing
       Trial.TrySharing.ThreadId
       Trial.TryThreadId
@@ -142,8 +120,6 @@ library
       src
   include-dirs:
       include
-  pkgconfig-depends:
-      gtk+-3.0
   build-depends:
       GLFW-b
     , JuicyPixels
@@ -168,46 +144,6 @@ library
     , text
     , time
     , transformers
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable draw
-  main-is: draw.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
     , type-flip
     , union-color
     , unordered-containers
@@ -217,46 +153,6 @@ executable draw
 
 executable followbox
   main-is: followbox.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable followboxGtk
-  main-is: followboxGtk.hs
   other-modules:
       Main
       Paths_try_moffy
@@ -374,166 +270,6 @@ executable try-moffy-exe
     , x-keysym
   default-language: Haskell2010
 
-executable tryCairo
-  main-is: tryCairo.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryCairoText
-  main-is: tryCairoText.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryCairoTextExtents
-  main-is: tryCairoTextExtents.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryConfigure
-  main-is: tryConfigure.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
 executable tryCount
   main-is: tryCount.hs
   other-modules:
@@ -576,406 +312,6 @@ executable tryCount
 
 executable tryDefaultWindow
   main-is: tryDefaultWindow.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryDeleteEvent
-  main-is: tryDeleteEvent.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryFillPolygon
-  main-is: tryFillPolygon.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryGdk
-  main-is: tryGdk.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryGtk
-  main-is: tryGtk.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryKey
-  main-is: tryKey.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryMultiWindow
-  main-is: tryMultiWindow.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryPango
-  main-is: tryPango.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryPngCursor
-  main-is: tryPngCursor.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryPngCursorEvent
-  main-is: tryPngCursorEvent.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable tryScroll
-  main-is: tryScroll.hs
   other-modules:
       Main
       Paths_try_moffy

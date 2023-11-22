@@ -51,7 +51,6 @@ dependencies:
 
 library:
   source-dirs: src
-  pkg-config-dependencies: gtk+-3.0
   include-dirs: include
 
 executables:
@@ -73,96 +72,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy
-  followboxGtk:
-    main:                followboxGtk.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryGtk:
-    main:                tryGtk.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryCairo:
-    main:                tryCairo.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryCairoText:
-    main:                tryCairoText.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryPango:
-    main:                tryPango.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryCairoTextExtents:
-    main:                tryCairoTextExtents.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  draw :
-    main:                draw.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryFillPolygon :
-    main:                tryFillPolygon.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryScroll :
-    main:                tryScroll.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryMultiWindow:
-    main:                tryMultiWindow.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
   tryDefaultWindow:
     main:                tryDefaultWindow.hs
     source-dirs:         app
@@ -174,60 +83,6 @@ executables:
     - try-moffy
   tryCount:
     main:                tryCount.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryConfigure:
-    main:                tryConfigure.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryPngCursor:
-    main:                tryPngCursor.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryPngCursorEvent:
-    main:                tryPngCursorEvent.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryDeleteEvent:
-    main:                tryDeleteEvent.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryKey:
-    main:                tryKey.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  tryGdk:
-    main:                tryGdk.hs
     source-dirs:         app
     ghc-options:
     - -threaded
