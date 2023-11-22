@@ -1,5 +1,5 @@
 name:                try-vulkan-rectangles
-version:             0.1.0.17
+version:             0.1.0.18
 github:              "githubuser/try-vulkan-rectangles"
 license:             BSD3
 author:              "Author name here"
@@ -52,7 +52,7 @@ dependencies:
 - simple-cairo
 - cairo-image
 - simple-pango
-- try-moffy
+- try-moffy-with-gtk3
 - try-cairo-image-samples
 
 ghc-options:
