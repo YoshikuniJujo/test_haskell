@@ -45,7 +45,6 @@ dependencies:
 - serialise
 - exception-hierarchy
 - simple-cairo
-- simple-gdk3
 - x-keysym
 - union-color
 - GLFW-b
@@ -229,24 +228,6 @@ executables:
     - try-moffy
   tryGdk:
     main:                tryGdk.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  try-gdk-boxes:
-    main:                try-gdk-boxes.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy
-  try-gdk-gui:
-    main:                try-gdk-gui.hs
     source-dirs:         app
     ghc-options:
     - -threaded

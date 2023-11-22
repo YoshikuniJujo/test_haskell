@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9f842679c9757a01ad5ac92fbd373c5c0b6bad744845e994b84c29c0d3f5c137
+-- hash: 3d618ec7b5f03319ef78346ab9c5ed5946f68ac55c6446d02bc3fb5faaefdd91
 
 name:           try-moffy
 version:        0.1.0.9
@@ -125,8 +125,6 @@ library
       Trial.TryConfigureEvent
       Trial.TryDefaultWindow
       Trial.TryFillPolygon
-      Trial.TryGdk.Boxes
-      Trial.TryGdk.Gui
       Trial.TryKey
       Trial.TryLock
       Trial.TryMultiWindow
@@ -165,7 +163,6 @@ library
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -205,7 +202,6 @@ executable draw
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -246,7 +242,6 @@ executable followbox
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -287,89 +282,6 @@ executable followboxGtk
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable try-gdk-boxes
-  main-is: try-gdk-boxes.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , simple-gdk3
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , union-color
-    , unordered-containers
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable try-gdk-gui
-  main-is: try-gdk-gui.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -410,7 +322,6 @@ executable try-glfw-boxes
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -450,7 +361,6 @@ executable try-moffy-exe
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -491,7 +401,6 @@ executable tryCairo
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -532,7 +441,6 @@ executable tryCairoText
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -573,7 +481,6 @@ executable tryCairoTextExtents
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -614,7 +521,6 @@ executable tryConfigure
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -655,7 +561,6 @@ executable tryCount
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -696,7 +601,6 @@ executable tryDefaultWindow
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -737,7 +641,6 @@ executable tryDeleteEvent
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -778,7 +681,6 @@ executable tryFillPolygon
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -819,7 +721,6 @@ executable tryGdk
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -860,7 +761,6 @@ executable tryGtk
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -901,7 +801,6 @@ executable tryKey
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -942,7 +841,6 @@ executable tryMultiWindow
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -983,7 +881,6 @@ executable tryPango
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -1024,7 +921,6 @@ executable tryPngCursor
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -1065,7 +961,6 @@ executable tryPngCursorEvent
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -1106,7 +1001,6 @@ executable tryScroll
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -1147,7 +1041,6 @@ test-suite try-moffy-test
     , serialise
     , simple-cairo
     , simple-field
-    , simple-gdk3
     , stm
     , template-haskell
     , text
