@@ -108,14 +108,16 @@ drawClock vtm _area cr (fromIntegral -> width) (fromIntegral -> height) Null = d
 
 	cairoSet cr . LineWidth $ mLineWidth / 3
 	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0.7 0.7 0.7 0.8
-	cairoMoveTo cr 0 0
+	cairoMoveTo cr
+		(- sin seconds * mRadius * 0.05)
+		(cos seconds * mRadius * 0.05)
 	cairoLineTo cr
 		(sin seconds * mRadius * 0.9)
 		(- cos seconds * mRadius * 0.9)
 	cairoStroke cr
 	cairoRestore cr
 
-	cairoArc cr 0 0 (mLineWidth / 3) 0 (2 * pi)
+	cairoArc cr 0 0 (mLineWidth / 4) 0 (2 * pi)
 	cairoFill cr
 
 applicationId :: Gtk.Application.Id
@@ -143,7 +145,7 @@ timeHandler' vtm clock = do
 			| - 2 < dff && dff < 2 -> do
 				void $ G.Timeout.add 500 (timeHandler vtm) clock
 				pure False
-			| - 15 * 60 < dff && dff < 15 * 60 -> do
+			| - 10 * 60 < dff && dff < 10 * 60 -> do
 				atomically . writeTVar vtm $ timeToTimeOfDay (dpr + 1)
 				Gtk.Widget.queueDraw clock
 				pure True
