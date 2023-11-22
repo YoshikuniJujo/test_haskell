@@ -1,0 +1,1066 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-moffy-with-gtk3
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-moffy-with-gtk3#readme>
+homepage:       https://github.com/githubuser/try-moffy-with-gtk3#readme
+bug-reports:    https://github.com/githubuser/try-moffy-with-gtk3/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2023 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-moffy-with-gtk3
+
+library
+  exposed-modules:
+      Control.Moffy
+      Control.Moffy.Event.CalcTextExtents
+      Control.Moffy.Event.CalcTextExtents.DefaultWindow
+      Control.Moffy.Event.Cursor
+      Control.Moffy.Event.DefaultWindow
+      Control.Moffy.Event.Delete
+      Control.Moffy.Event.Delete.DefaultWindow
+      Control.Moffy.Event.Gui
+      Control.Moffy.Event.Key
+      Control.Moffy.Event.Key.DefaultWindow
+      Control.Moffy.Event.Lock
+      Control.Moffy.Event.Lock.Internal
+      Control.Moffy.Event.Mouse
+      Control.Moffy.Event.Mouse.DefaultWindow
+      Control.Moffy.Event.Random
+      Control.Moffy.Event.Random.Internal
+      Control.Moffy.Event.ThreadId
+      Control.Moffy.Event.Time
+      Control.Moffy.Event.Window
+      Control.Moffy.Handle
+      Control.Moffy.Handle.DefaultWindow
+      Control.Moffy.Handle.Lock
+      Control.Moffy.Handle.Random
+      Control.Moffy.Handle.TChan
+      Control.Moffy.Handle.ThreadId
+      Control.Moffy.Handle.Time
+      Control.Moffy.Handle.XField
+      Control.Moffy.Handle.XField.CalcTextExtents
+      Control.Moffy.Handle.XField.Key
+      Control.Moffy.Handle.XField.Mouse
+      Control.Moffy.Internal.React
+      Control.Moffy.Internal.React.Type
+      Control.Moffy.Internal.Sig
+      Control.Moffy.Internal.Sig.Type
+      Control.Moffy.NoThreadId
+      Control.Moffy.Run
+      Control.Moffy.Run.GtkField
+      Control.Moffy.Run.TChan
+      Control.Moffy.View.GtkField
+      Control.Moffy.View.XField
+      Control.Moffy.Viewable.Basic
+      Control.Moffy.Viewable.Image
+      Control.Moffy.Viewable.Shape
+      Control.Moffy.Viewable.Text
+      Control.Monad.Freer.Par
+      Control.Monad.Freer.Par.FTCQueue
+      Control.Monad.Freer.Par.Funable
+      Control.Monad.Freer.Par.Internal.Id
+      Control.Monad.Freer.Par.Sequence
+      Control.Monad.Freer.Par.TaggableFunction
+      Data.OneOfThem
+      Data.OneOrMore
+      Data.OneOrMore.Internal
+      Data.OneOrMoreApp
+      Data.Type.Set
+      Data.Type.Set.Internal
+      Data.Type.SetApp
+      Data.Type.SetApp.Internal
+      Foreign.Tools
+      Graphics.Cairo
+      Graphics.CairoType
+      Graphics.GdkOld
+      Graphics.GdkOld.Event
+      Graphics.Gtk
+      Graphics.Gtk.Values
+      Graphics.Pango
+      System.Glib
+      System.Gobject
+      System.Gobject.Hierarchy
+      System.Gobject.SignalConnect
+      System.Gobject.TempEvents
+      System.Gobject.TryDeleteEvent
+      System.Gobject.TryHierarchy
+      Trial.Boxes
+      Trial.Boxes.BoxEv
+      Trial.Boxes.RunGtkField
+      Trial.Boxes.RunXField
+      Trial.Count
+      Trial.Draw
+      Trial.Draw.Event
+      Trial.Draw.Handle
+      Trial.Draw.Marshal
+      Trial.Draw.OneOfThem
+      Trial.Draw.Viewable
+      Trial.Followbox
+      Trial.Followbox.Clickable
+      Trial.Followbox.Event
+      Trial.Followbox.Handle
+      Trial.Followbox.RunGtkField
+      Trial.Followbox.RunXField
+      Trial.Followbox.TypeSynonym
+      Trial.Followbox.ViewType
+      Trial.Followbox.XFieldHandle
+      Trial.Paper
+      Trial.TryCalcTextExtents
+      Trial.TryConfigureEvent
+      Trial.TryDefaultWindow
+      Trial.TryFillPolygon
+      Trial.TryGdk.Boxes
+      Trial.TryGdk.Gui
+      Trial.TryKey
+      Trial.TryLock
+      Trial.TryMultiWindow
+      Trial.TryOneOfThem
+      Trial.TryPngCursor
+      Trial.TryRandom
+      Trial.TryScroll
+      Trial.TrySharing
+      Trial.TrySharing.ThreadId
+      Trial.TryThreadId
+      Trial.TryWindowKey
+  other-modules:
+      Paths_try_moffy_with_gtk3
+  autogen-modules:
+      Paths_try_moffy_with_gtk3
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  pkgconfig-depends:
+      gtk+-3.0
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable draw
+  main-is: draw.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable followbox
+  main-is: followbox.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable followboxGtk
+  main-is: followboxGtk.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable try-gdk-boxes
+  main-is: try-gdk-boxes.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable try-gdk-gui
+  main-is: try-gdk-gui.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable try-glfw-boxes
+  main-is: try-glfw-boxes.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable try-moffy-with-gtk3-exe
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryCairo
+  main-is: tryCairo.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryCairoText
+  main-is: tryCairoText.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryCairoTextExtents
+  main-is: tryCairoTextExtents.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryConfigure
+  main-is: tryConfigure.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryCount
+  main-is: tryCount.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryDefaultWindow
+  main-is: tryDefaultWindow.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryDeleteEvent
+  main-is: tryDeleteEvent.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryFillPolygon
+  main-is: tryFillPolygon.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryGdk
+  main-is: tryGdk.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryGtk
+  main-is: tryGtk.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryKey
+  main-is: tryKey.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryMultiWindow
+  main-is: tryMultiWindow.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryPango
+  main-is: tryPango.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryPngCursor
+  main-is: tryPngCursor.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryPngCursorEvent
+  main-is: tryPngCursorEvent.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+executable tryScroll
+  main-is: tryScroll.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010
+
+test-suite try-moffy-with-gtk3-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy-with-gtk3
+    , type-flip
+    , union-color
+    , unordered-containers
+    , vector
+    , x-keysym
+  default-language: Haskell2010

@@ -1,0 +1,309 @@
+name:                try-moffy-with-gtk3
+version:             0.1.0.0
+github:              "githubuser/try-moffy-with-gtk3"
+license:             BSD-3-Clause
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2023 Author name here"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/try-moffy-with-gtk3#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- template-haskell
+- stm
+- containers
+- unordered-containers
+- vector
+- bytestring
+- text
+- process
+- random
+- time
+- transformers
+- monads-tf
+- X11-xft
+- JuicyPixels
+- JuicyPixels-extra
+- exception-hierarchy
+- extra-data-yj
+- type-flip
+- simple-cairo
+- simple-gdk3
+- simple-field
+- x-keysym
+- union-color
+- http-conduit
+- aeson
+- serialise
+- GLFW-b
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+  pkg-config-dependencies: gtk+-3.0
+
+executables:
+  try-moffy-with-gtk3-exe:
+    main:                Main.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  followbox:
+    main:                followbox.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  followboxGtk:
+    main:                followboxGtk.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryGtk:
+    main:                tryGtk.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryCairo:
+    main:                tryCairo.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryCairoText:
+    main:                tryCairoText.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryPango:
+    main:                tryPango.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryCairoTextExtents:
+    main:                tryCairoTextExtents.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  draw :
+    main:                draw.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryFillPolygon :
+    main:                tryFillPolygon.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryScroll :
+    main:                tryScroll.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryMultiWindow:
+    main:                tryMultiWindow.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryDefaultWindow:
+    main:                tryDefaultWindow.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryCount:
+    main:                tryCount.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryConfigure:
+    main:                tryConfigure.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryPngCursor:
+    main:                tryPngCursor.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryPngCursorEvent:
+    main:                tryPngCursorEvent.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryDeleteEvent:
+    main:                tryDeleteEvent.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryKey:
+    main:                tryKey.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  tryGdk:
+    main:                tryGdk.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  try-gdk-boxes:
+    main:                try-gdk-boxes.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  try-gdk-gui:
+    main:                try-gdk-gui.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+  try-glfw-boxes:
+    main:                try-glfw-boxes.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
+
+tests:
+  try-moffy-with-gtk3-test:
+    main:                Spec.hs
+    other-modules:       []
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-with-gtk3
