@@ -38,12 +38,22 @@ appActivate app Null = do
 
 	Gtk.DrawingArea.setDrawFunc da drawFunction Null
 	G.Signal.connect em (G.Signal.Signal "leave") leaveHandler Null
+	G.Signal.connectXY em
+		(G.Signal.Signal "motion") (moveEnterHandler "motion") Null
+	G.Signal.connectXY em
+		(G.Signal.Signal "enter") (moveEnterHandler "enter") Null
 
 	Gtk.Window.present win
 
 drawFunction :: Gtk.DrawingArea.DrawFunction r Null
 drawFunction _area _cr _width _height Null = do
 	pure ()
+
+moveEnterHandler ::
+	String -> Gtk.EventControllerMotion.E -> Double -> Double -> Null ->
+	IO ()
+moveEnterHandler nm _em x y Null =
+	putStrLn $ nm ++ ": " ++ "x = " ++ show x ++ " y = " ++ show y
 
 leaveHandler :: Gtk.EventControllerMotion.E -> Null -> IO ()
 leaveHandler _em Null = putStrLn "leave"
