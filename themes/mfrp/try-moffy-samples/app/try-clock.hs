@@ -95,6 +95,7 @@ drawClock _area cr (fromIntegral -> width) (fromIntegral -> height) Null = do
 	cairoStroke cr
 	cairoRestore cr
 
+	cairoSet cr . LineWidth $ mLineWidth * 3 / 4
 	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0.117 0.337 0.612 0.9
 	cairoMoveTo cr 0 0
 	cairoLineTo cr
