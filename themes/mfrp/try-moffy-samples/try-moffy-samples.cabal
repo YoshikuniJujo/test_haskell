@@ -34,6 +34,8 @@ library
       Stopgap.Graphics.UI.Gtk.DrawingArea
       Stopgap.Graphics.UI.Gtk.EventController
       Stopgap.Graphics.UI.Gtk.EventControllerMotion
+      Stopgap.Graphics.UI.Gtk.Gesture
+      Stopgap.Graphics.UI.Gtk.GestureClick
       Stopgap.Graphics.UI.Gtk.Label
       Stopgap.Graphics.UI.Gtk.Notebook
       Stopgap.Graphics.UI.Gtk.NotebookPage

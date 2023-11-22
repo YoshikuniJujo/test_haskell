@@ -114,3 +114,27 @@ type CHandlerXY a b =
 
 foreign import ccall "wrapper" c_wrap_handler_xy ::
 	CHandlerXY a b -> IO (FunPtr (CHandlerXY a b))
+
+connectNXY :: forall a b . (IsPtr a, IsPtr b) =>
+	a -> Signal -> HandlerNXY a b -> b -> IO ()
+connectNXY x (Signal sig) h ud = withCString sig \csig -> do
+	ch <- wrapHandlerNXY h
+	c_g_signal_connect_nxy @(Tag a) @(Tag b) (toPtr x) csig ch (toPtr ud)
+
+foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect_nxy ::
+	Ptr a -> CString -> FunPtr (CHandlerNXY a b) -> Ptr b -> IO ()
+
+wrapHandlerNXY :: (IsPtr a, IsPtr b) => HandlerNXY a b ->
+	IO (FunPtr (CHandlerNXY (Tag a) (Tag b)))
+wrapHandlerNXY h = do
+	let	g px n x y pud = h (fromPtr px) n x y (fromPtr pud)
+	c_wrap_handler_nxy g
+
+type HandlerNXY a b =
+	a -> #{type gint} -> #{type gdouble} -> #{type gdouble} -> b -> IO ()
+
+type CHandlerNXY a b = Ptr a ->
+	#{type gint} -> #{type gdouble} -> #{type gdouble} -> Ptr b -> IO()
+
+foreign import ccall "wrapper" c_wrap_handler_nxy ::
+	CHandlerNXY a b -> IO (FunPtr (CHandlerNXY a b))

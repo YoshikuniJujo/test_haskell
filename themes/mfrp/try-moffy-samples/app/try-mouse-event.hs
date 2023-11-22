@@ -8,6 +8,7 @@ import Control.Monad
 import System.Environment
 import System.Exit
 import Stopgap.Data.Ptr
+import Data.Int
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
@@ -16,6 +17,7 @@ import Stopgap.Graphics.UI.Gtk.ApplicationWindow qualified as
 	Gtk.ApplicationWindow
 import Stopgap.Graphics.UI.Gtk.EventControllerMotion qualified as
 	Gtk.EventControllerMotion
+import Stopgap.Graphics.UI.Gtk.GestureClick qualified as Gtk.GestureClick
 import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
@@ -32,9 +34,18 @@ appActivate app Null = do
 	win <- Gtk.ApplicationWindow.new app
 	da <- Gtk.DrawingArea.new
 	em <- Gtk.EventControllerMotion.new
+	gcp <- Gtk.GestureClick.new
+	Gtk.GestureClick.setButton gcp Gtk.GestureClick.ButtonPrimary
+	gcm <- Gtk.GestureClick.new
+	Gtk.GestureClick.setButton gcm Gtk.GestureClick.ButtonMiddle
+	gcs <- Gtk.GestureClick.new
+	Gtk.GestureClick.setButton gcs Gtk.GestureClick.ButtonSecondary
 
 	Gtk.Window.setChild win da
 	Gtk.Widget.addController da em
+	Gtk.Widget.addController da gcp
+	Gtk.Widget.addController da gcm
+	Gtk.Widget.addController da gcs
 
 	Gtk.DrawingArea.setDrawFunc da drawFunction Null
 	G.Signal.connect em (G.Signal.Signal "leave") leaveHandler Null
@@ -42,6 +53,12 @@ appActivate app Null = do
 		(G.Signal.Signal "motion") (moveEnterHandler "motion") Null
 	G.Signal.connectXY em
 		(G.Signal.Signal "enter") (moveEnterHandler "enter") Null
+	G.Signal.connectNXY gcp
+		(G.Signal.Signal "pressed") (pressHandler "primary") Null
+	G.Signal.connectNXY gcm
+		(G.Signal.Signal "pressed") (pressHandler "middle") Null
+	G.Signal.connectNXY gcs
+		(G.Signal.Signal "pressed") (pressHandler "secondary") Null
 
 	Gtk.Window.present win
 
@@ -57,3 +74,8 @@ moveEnterHandler nm _em x y Null =
 
 leaveHandler :: Gtk.EventControllerMotion.E -> Null -> IO ()
 leaveHandler _em Null = putStrLn "leave"
+
+pressHandler :: String -> Gtk.GestureClick.G -> Int32 -> Double -> Double -> Null -> IO ()
+pressHandler b _gc n x y Null = do
+	putStrLn $ b ++ " pressed: n = " ++ show n ++
+		" x = " ++ show x ++ " y = " ++ show y
