@@ -5,6 +5,19 @@
 
 packages:
 - completed:
+    commit: 766dd03aa2701a87e88788d2b066dae689e21ed9
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-moffy
+    pantry-tree:
+      sha256: 4cc4fc0e3661c9a50fb975613bb0d1061c3f13ccfa2d23a04848417c679762c5
+      size: 9964
+    subdir: themes/mfrp/try-moffy
+    version: 0.1.0.8
+  original:
+    commit: 766dd03aa2701a87e88788d2b066dae689e21ed9
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/mfrp/try-moffy
+- completed:
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
     git: https://github.com/YoshikuniJujo/exception-hierarchy
     name: exception-hierarchy
@@ -44,6 +57,72 @@ packages:
       size: 429
   original:
     hackage: union-color-0.1.2.1
+- completed:
+    commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
+    git: https://github.com/YoshikuniJujo/extra-data-yj
+    name: extra-data-yj
+    pantry-tree:
+      sha256: 182f1aa48dd298035721ea4adef31772f808e72aa6f1a9f88c659c22c36f1261
+      size: 635
+    version: 0.1.0.0
+  original:
+    commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
+    git: https://github.com/YoshikuniJujo/extra-data-yj
+- completed:
+    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
+    git: https://github.com/YoshikuniJujo/type-flip
+    name: type-flip
+    pantry-tree:
+      sha256: 9831a4354e6f7f35799575325defda7b5c1c35045b76b36efb796da046fc411a
+      size: 570
+    version: 0.1.0.0
+  original:
+    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
+    git: https://github.com/YoshikuniJujo/type-flip
+- completed:
+    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+    git: https://github.com/YoshikuniJujo/simple-gdk3
+    name: simple-gdk3
+    pantry-tree:
+      sha256: edebfef20cccfee49ca1baefaa9edd0d963dbe872f7efb129c4858b2589a8ee9
+      size: 4020
+    version: 0.1.0.0
+  original:
+    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+    git: https://github.com/YoshikuniJujo/simple-gdk3
+- completed:
+    commit: e5e069590dbea7038540b66d9545df33b185e9bf
+    git: https://github.com/YoshikuniJujo/x-keysym
+    name: x-keysym
+    pantry-tree:
+      sha256: 7d7bf5e414a57950bc89937197aefe0d38cee0c7dcff41d2846a9b94f6b3d223
+      size: 754
+    version: 0.1.0.0
+  original:
+    commit: e5e069590dbea7038540b66d9545df33b185e9bf
+    git: https://github.com/YoshikuniJujo/x-keysym
+- completed:
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    name: glib-stopgap
+    pantry-tree:
+      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
+      size: 1273
+    version: 0.1.0.0
+  original:
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+- completed:
+    commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
+    git: https://github.com/YoshikuniJujo/simple-field.git
+    name: simple-field
+    pantry-tree:
+      sha256: 369eaccc216dd5ca74eea119d28f74ca66182a6d9f2f50f4088b67d62d49170f
+      size: 788
+    version: 0.1.0.0
+  original:
+    commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
+    git: https://github.com/YoshikuniJujo/simple-field.git
 snapshots:
 - completed:
     sha256: 5921ddc75f5dd3f197fbc32e1e5676895a8e7b971d4f82ef6b556657801dd18a

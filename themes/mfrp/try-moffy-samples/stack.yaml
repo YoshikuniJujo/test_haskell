@@ -41,6 +41,10 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 766dd03aa2701a87e88788d2b066dae689e21ed9
+    subdirs:
+    - themes/mfrp/try-moffy
   - git: https://github.com/YoshikuniJujo/exception-hierarchy
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
   - git: https://github.com/YoshikuniJujo/simple-cairo
@@ -48,6 +52,18 @@ extra-deps:
   - git: https://github.com/YoshikuniJujo/cairo-image
     commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
   - union-color-0.1.2.1
+  - git: https://github.com/YoshikuniJujo/extra-data-yj
+    commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
+  - git: https://github.com/YoshikuniJujo/type-flip
+    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
+  - git: https://github.com/YoshikuniJujo/simple-gdk3
+    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+  - git: https://github.com/YoshikuniJujo/x-keysym
+    commit: e5e069590dbea7038540b66d9545df33b185e9bf
+  - git: https://github.com/YoshikuniJujo/glib-stopgap
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+  - git: https://github.com/YoshikuniJujo/simple-field.git
+    commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -72,6 +72,7 @@ library
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , union-color
   default-language: Haskell2010
 
@@ -89,6 +90,7 @@ executable file-viewer
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -107,6 +109,7 @@ executable tfe
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -125,6 +128,7 @@ executable try-cairo
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -143,6 +147,7 @@ executable try-cancellable
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -161,6 +166,7 @@ executable try-clock
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -179,6 +185,7 @@ executable try-clock-more
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -197,6 +204,7 @@ executable try-drawing-area
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -219,6 +227,7 @@ executable try-moffy-samples-exe
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -237,6 +246,7 @@ executable try-text-view-exe
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
@@ -260,6 +270,7 @@ test-suite try-moffy-samples-test
     , simple-cairo
     , stm
     , time
+    , try-moffy
     , try-moffy-samples
     , union-color
   default-language: Haskell2010
