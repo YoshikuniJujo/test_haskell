@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Moffy.Samples.Boxes
       Control.Moffy.Samples.Event.Delete
+      Control.Moffy.Samples.Event.Mouse
       Control.Moffy.Samples.Run.Gtk4
       Stopgap.Data.Ptr
       Stopgap.Graphics.UI.Gtk
