@@ -29,6 +29,6 @@ main = do
 	void $ forkIO do
 		interpret
 			(retry $ handle @(Mouse.Down :- Singleton DeleteEvent) Nothing er eo)
-			v $ waitFor deleteEvent
+			v . waitFor $ Mouse.down `first` deleteEvent
 		putStrLn "AFTER INTERPRET"
 	runSingleWin eo
