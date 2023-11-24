@@ -1,7 +1,10 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM (atomically, newTChan, writeTChan)
 import Control.Moffy
@@ -20,6 +23,9 @@ main = do
 	er <- atomically newTChan
 	eo <- atomically newTChan
 	v <- atomically newTChan
-	forkIO $ interpret (retry $ handle @(Singleton DeleteEvent) Nothing er eo) v
-		$ waitFor deleteEvent
+	void $ forkIO do
+		interpret
+			(retry $ handle @(Singleton DeleteEvent) Nothing er eo)
+			v $ waitFor deleteEvent
+		putStrLn "AFTER INTERPRET"
 	runSingleWin eo
