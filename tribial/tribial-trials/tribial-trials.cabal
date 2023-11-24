@@ -79,6 +79,7 @@ library
       Template.TryModule
       Template.TryNameSpace
       Template.TryNameSpace2
+      Timeout
       TryGenerics
       TryHeteroMap
       TryIndexing
