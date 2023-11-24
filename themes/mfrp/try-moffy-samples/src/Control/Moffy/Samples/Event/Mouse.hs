@@ -9,7 +9,7 @@ module Control.Moffy.Samples.Event.Mouse where
 import Control.Moffy
 import Data.Type.Set
 
-data Button = ButtonPrimary | ButtonMiddle | ButtonSecondary deriving Show
+data Button = ButtonPrimary | ButtonMiddle | ButtonSecondary deriving (Show, Eq)
 
 data Down = DownReq deriving (Show, Eq, Ord)
 numbered [t| Down |]

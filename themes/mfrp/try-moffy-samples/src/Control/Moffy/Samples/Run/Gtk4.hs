@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -39,14 +39,15 @@ appActivate :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
 appActivate ceo app Null = do
 	win <- Gtk.ApplicationWindow.new app
 	da <- Gtk.DrawingArea.new
-	gcp <- Gtk.GestureClick.new
-	Gtk.GestureClick.setButton gcp Gtk.GestureClick.ButtonPrimary
+
+	gcp <- mouseButtonHandler ceo Mouse.ButtonPrimary
+	gcm <- mouseButtonHandler ceo Mouse.ButtonMiddle
+	gcs <- mouseButtonHandler ceo Mouse.ButtonSecondary
 
 	Gtk.Window.setChild win da
 	Gtk.Widget.addController da gcp
-
-	G.Signal.connectNXY gcp
-		(G.Signal.Signal "pressed") (pressHandler ceo) Null
+	Gtk.Widget.addController da gcm
+	Gtk.Widget.addController da gcs
 	G.Signal.connectClose win (G.Signal.Signal "close-request") (beforeClose ceo) Null
 
 	Gtk.Window.present win
@@ -60,7 +61,26 @@ runSingleWin ceo = Gtk.Application.with
 	G.Signal.connect app (G.Signal.Signal "activate") (appActivate ceo) Null
 	exitWith =<< join (G.Application.run app <$> getProgName <*> getArgs)
 
-pressHandler :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+pressHandler ::
+	TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+	Mouse.Button ->
 	Gtk.GestureClick.G -> Int32 -> Double -> Double -> Null -> IO ()
-pressHandler ceo _gc n x y Null = do
-	atomically $ writeTChan ceo . expand . Singleton $ Mouse.OccDown Mouse.ButtonPrimary
+pressHandler ceo b _gc n x y Null = do
+	atomically $ writeTChan ceo . expand . Singleton $ Mouse.OccDown b
+
+mouseButtonHandler ::
+	TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+	Mouse.Button ->
+	IO Gtk.GestureClick.G
+mouseButtonHandler ceo b = do
+	gcp <- Gtk.GestureClick.new
+	Gtk.GestureClick.setButton gcp (mouseButtonToGesture b)
+	G.Signal.connectNXY gcp
+		(G.Signal.Signal "pressed") (pressHandler ceo b) Null
+	pure gcp
+
+mouseButtonToGesture :: Mouse.Button -> Gtk.GestureClick.Button
+mouseButtonToGesture = \case
+	Mouse.ButtonPrimary -> Gtk.GestureClick.ButtonPrimary
+	Mouse.ButtonMiddle -> Gtk.GestureClick.ButtonMiddle
+	Mouse.ButtonSecondary -> Gtk.GestureClick.ButtonSecondary

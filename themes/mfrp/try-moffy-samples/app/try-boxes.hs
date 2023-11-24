@@ -32,3 +32,9 @@ main = do
 			v . waitFor $ Mouse.down `first` deleteEvent
 		putStrLn "AFTER INTERPRET"
 	runSingleWin eo
+
+sameClick :: React s (Singleton Mouse.Down) Bool
+sameClick = do
+	pressed <- Mouse.down
+	pressed2 <- Mouse.down
+	pure $ pressed == pressed2
