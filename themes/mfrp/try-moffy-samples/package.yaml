@@ -30,6 +30,7 @@ dependencies:
 - cairo-image
 - union-color
 - try-moffy
+- extra-data-yj
 
 ghc-options:
 - -Wall

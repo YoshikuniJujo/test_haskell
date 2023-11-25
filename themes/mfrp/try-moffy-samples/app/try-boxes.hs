@@ -1,7 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -18,6 +19,7 @@ import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.Run.Gtk4
 import Data.Type.Set
 import Data.OneOrMoreApp
+import Data.Or
 import Data.Bool
 
 import Trial.Boxes
@@ -43,3 +45,10 @@ sameClick = do
 clickOn :: Mouse.Button -> React s (Singleton Mouse.Down) ()
 clickOn b0 = do b <- Mouse.down
 		bool (clickOn b0) (pure ()) (b == b0)
+
+[leftClick, middleClick, rightClick] = clickOn
+	<$> [Mouse.ButtonPrimary, Mouse.ButtonMiddle, Mouse.ButtonSecondary]
+
+before :: Firstable es es' a b =>
+	React s es a -> React s es' b -> React s (es :+: es') Bool
+l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
