@@ -18,6 +18,7 @@ import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.Run.Gtk4
 import Data.Type.Set
 import Data.OneOrMoreApp
+import Data.Bool
 
 import Trial.Boxes
 
@@ -29,7 +30,7 @@ main = do
 	void $ forkIO do
 		interpret
 			(retry $ handle @(Mouse.Down :- Singleton DeleteEvent) Nothing er eo)
-			v . waitFor $ Mouse.down `first` deleteEvent
+			v . waitFor $ clickOn Mouse.ButtonMiddle `first` deleteEvent
 		putStrLn "AFTER INTERPRET"
 	runSingleWin eo
 
@@ -38,3 +39,7 @@ sameClick = do
 	pressed <- Mouse.down
 	pressed2 <- Mouse.down
 	pure $ pressed == pressed2
+
+clickOn :: Mouse.Button -> React s (Singleton Mouse.Down) ()
+clickOn b0 = do b <- Mouse.down
+		bool (clickOn b0) (pure ()) (b == b0)
