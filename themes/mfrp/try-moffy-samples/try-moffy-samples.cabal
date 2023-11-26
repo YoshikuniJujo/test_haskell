@@ -29,6 +29,7 @@ library
       Control.Moffy.Samples.Event.Delete
       Control.Moffy.Samples.Event.Mouse
       Control.Moffy.Samples.Run.Gtk4
+      Control.Moffy.Samples.View
       Stopgap.Data.Ptr
       Stopgap.Graphics.UI.Gtk
       Stopgap.Graphics.UI.Gtk.Application

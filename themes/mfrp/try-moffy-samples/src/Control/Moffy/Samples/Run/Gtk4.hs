@@ -10,6 +10,7 @@ import Control.Concurrent.STM
 import Control.Moffy
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
+import Control.Moffy.Samples.View
 import Data.Type.Set
 import Data.OneOrMoreApp
 import Data.Int
@@ -26,6 +27,7 @@ import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
 import Stopgap.Graphics.UI.Gtk.GestureClick qualified as Gtk.GestureClick
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
+import Stopgap.System.GLib.Idle qualified as G.Idle
 
 beforeClose :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
 	Gtk.ApplicationWindow.A -> Null -> IO Bool
@@ -35,8 +37,9 @@ beforeClose ceo win Null = do
 	pure False
 
 appActivate :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+	TChan View ->
 	Gtk.Application.A s -> Null -> IO ()
-appActivate ceo app Null = do
+appActivate ceo cv app Null = do
 	win <- Gtk.ApplicationWindow.new app
 	da <- Gtk.DrawingArea.new
 
@@ -48,6 +51,7 @@ appActivate ceo app Null = do
 	Gtk.Widget.addController da gcp
 	Gtk.Widget.addController da gcm
 	Gtk.Widget.addController da gcs
+--	G.Idle.add (viewHandler cv) win
 	G.Signal.connectClose win (G.Signal.Signal "close-request") (beforeClose ceo) Null
 
 	Gtk.Window.present win
@@ -55,10 +59,11 @@ appActivate ceo app Null = do
 appId :: Gtk.Application.Id
 appId = Gtk.Application.Id "com.github.YoshikuniJujo.moffy-samples-run"
 
-runSingleWin :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) -> IO ()
-runSingleWin ceo = Gtk.Application.with
+runSingleWin :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+	TChan View -> IO ()
+runSingleWin ceo cv = Gtk.Application.with
 		appId G.Application.DefaultFlags \app -> do
-	G.Signal.connect app (G.Signal.Signal "activate") (appActivate ceo) Null
+	G.Signal.connect app (G.Signal.Signal "activate") (appActivate ceo cv) Null
 	exitWith =<< join (G.Application.run app <$> getProgName <*> getArgs)
 
 pressHandler ::
@@ -78,6 +83,12 @@ mouseButtonHandler ceo b = do
 	G.Signal.connectNXY gcp
 		(G.Signal.Signal "pressed") (pressHandler ceo b) Null
 	pure gcp
+
+viewHandler :: TChan view -> Gtk.ApplicationWindow.A -> IO Bool
+viewHandler cv win = do
+	atomically $ readTChan cv
+	putStrLn "VIEW HANDLER"
+	pure True
 
 mouseButtonToGesture :: Mouse.Button -> Gtk.GestureClick.Button
 mouseButtonToGesture = \case

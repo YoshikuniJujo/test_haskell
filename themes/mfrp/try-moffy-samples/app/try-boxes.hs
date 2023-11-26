@@ -16,6 +16,7 @@ import Control.Moffy.Handle.TChan
 import Control.Moffy.Run.TChan
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
+import Control.Moffy.Samples.View
 import Control.Moffy.Samples.Run.Gtk4
 import Data.Type.Set
 import Data.OneOrMoreApp
@@ -32,9 +33,11 @@ main = do
 	void $ forkIO do
 		interpret
 			(retry $ handle @(Mouse.Down :- Singleton DeleteEvent) Nothing er eo)
-			v . waitFor $ clickOn Mouse.ButtonMiddle `first` deleteEvent
+			v do
+			waitFor $ clickOn Mouse.ButtonMiddle `first` deleteEvent
+			emit Stopped
 		putStrLn "AFTER INTERPRET"
-	runSingleWin eo
+	runSingleWin eo v
 
 sameClick :: React s (Singleton Mouse.Down) Bool
 sameClick = do
