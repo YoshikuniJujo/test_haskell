@@ -17,7 +17,7 @@ packages:
     git: https://github.com/YoshikuniJujo/base58-bitcoin-flavor.git
 snapshots:
 - completed:
-    sha256: dcf4fc28f12d805480ddbe8eb8c370e11db12f0461d0110a4240af27ac88d725
-    size: 650255
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/22.yaml
-  original: lts-20.22
+    sha256: afd5ba64ab602cabc2d3942d3d7e7dd6311bc626dcb415b901eaf576cb62f0ea
+    size: 640060
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/22.yaml
+  original: lts-21.22
