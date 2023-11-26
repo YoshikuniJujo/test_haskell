@@ -34,7 +34,7 @@ main = do
 		interpret
 			(retry $ handle @(Mouse.Down :- Singleton DeleteEvent) Nothing er eo)
 			v do
-			waitFor $ clickOn Mouse.ButtonMiddle `first` deleteEvent
+			waitFor $ clickOn Mouse.ButtonPrimary `first` deleteEvent
 			emit Stopped
 		putStrLn "AFTER INTERPRET"
 	runSingleWin eo v

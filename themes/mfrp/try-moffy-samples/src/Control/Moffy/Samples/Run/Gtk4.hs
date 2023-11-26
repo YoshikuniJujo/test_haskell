@@ -6,6 +6,7 @@
 module Control.Moffy.Samples.Run.Gtk4 where
 
 import Control.Monad
+import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Moffy
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
@@ -34,7 +35,7 @@ beforeClose :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
 beforeClose ceo win Null = do
 	putStrLn "BEFORE CLOSE"
 	atomically $ writeTChan ceo (expand $ Singleton OccDeleteEvent)
-	pure False
+	pure True
 
 appActivate :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
 	TChan View ->
@@ -51,7 +52,11 @@ appActivate ceo cv app Null = do
 	Gtk.Widget.addController da gcp
 	Gtk.Widget.addController da gcm
 	Gtk.Widget.addController da gcs
---	G.Idle.add (viewHandler cv) win
+
+	forkIO $ atomically (readTChan cv) >>= \case
+		Stopped -> void $ G.Idle.add
+			(\_ -> Gtk.Window.destroy win >> pure False) Null
+
 	G.Signal.connectClose win (G.Signal.Signal "close-request") (beforeClose ceo) Null
 
 	Gtk.Window.present win
