@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,7 +11,7 @@ module Control.Moffy.Handle (
 	-- ** Type
 	Handle, Handle',
 	-- ** Composer
-	retry, expand, before, merge,
+	retry, sleep, sleepIfNothing, expand, before, merge,
 	-- * Handle with State
 	-- ** Type
 	HandleSt, HandleSt', St, liftHandle, liftHandle', liftSt,
@@ -27,6 +27,7 @@ import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
 	EvReqs, EvOccs, ExpandableOccurred, MergeableOccurred,
 	Handle, HandleSt, St, liftHandle, liftSt )
+import Control.Concurrent (threadDelay)
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Collapsable)
 import Data.OneOrMoreApp (merge')
@@ -65,6 +66,14 @@ type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
 
 retry :: Monad m => Handle' m es -> Handle m es
 retry hdl rqs = retry hdl rqs `maybe` pure =<< hdl rqs
+
+sleep :: Int -> Handle' IO es -> Handle' IO es
+sleep n hdl rqs = hdl rqs <* threadDelay n
+
+sleepIfNothing :: Int -> Handle' IO es -> Handle' IO es
+sleepIfNothing n hdl rqs = hdl rqs >>= \case
+	Nothing -> Nothing <$ threadDelay n
+	Just x -> pure $ Just x
 
 collapse :: (Applicative m, Collapsable es' es) =>
 	Handle' m es -> EvReqs es' -> m (Maybe (EvOccs es))
