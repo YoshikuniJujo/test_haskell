@@ -23,6 +23,9 @@ import Data.Type.Set
 import Data.OneOrMoreApp
 import Data.Or
 import Data.Bool
+import Data.Time
+import Data.Time.Clock.System
+import Data.Time.Clock.TAI
 
 import Trial.Boxes
 
@@ -32,9 +35,10 @@ main = do
 	eo <- atomically newTChan
 	v <- atomically newTChan
 	void $ forkIO do
-		($ ()) $ interpretSt
---			(retrySt . ($ ()) . popInput . handleTimeEvPlus . pushInput . const . liftHandle' . sleepIfNothing 100000
-			(retrySt . ($ ()) . popInput . pushInput . const . liftHandle' . sleepIfNothing 100000
+		now <- systemToTAITime <$> getSystemTime
+		($ (InitialMode, now)) $ interpretSt
+			(retrySt . ($ (0.1, ())) . popInput . handleTimeEvPlus . pushInput . const . liftHandle' . sleepIfNothing 100000
+--			(retrySt . ($ ()) . popInput . pushInput . const . liftHandle' . sleepIfNothing 100000
 				$ handleNew @(Mouse.Down :- Singleton DeleteEvent) er eo)
 			v do
 			waitFor $ clickOn Mouse.ButtonPrimary `first` deleteEvent
