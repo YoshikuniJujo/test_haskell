@@ -13,6 +13,7 @@ import Control.Concurrent.STM (atomically, newTChan, writeTChan)
 import Control.Moffy
 import Control.Moffy.Handle
 import Control.Moffy.Handle.TChan
+import Control.Moffy.Handle.Time
 import Control.Moffy.Run.TChan
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
@@ -31,8 +32,10 @@ main = do
 	eo <- atomically newTChan
 	v <- atomically newTChan
 	void $ forkIO do
-		interpret
-			(retry $ handle @(Mouse.Down :- Singleton DeleteEvent) Nothing er eo)
+		($ ()) $ interpretSt
+--			(retrySt . ($ ()) . popInput . handleTimeEvPlus . pushInput . const . liftHandle' . sleepIfNothing 100000
+			(retrySt . ($ ()) . popInput . pushInput . const . liftHandle' . sleepIfNothing 100000
+				$ handleNew @(Mouse.Down :- Singleton DeleteEvent) er eo)
 			v do
 			waitFor $ clickOn Mouse.ButtonPrimary `first` deleteEvent
 			emit Stopped
@@ -55,3 +58,5 @@ clickOn b0 = do b <- Mouse.down
 before :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') Bool
 l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
+
+data BoxesState = BoxesState
