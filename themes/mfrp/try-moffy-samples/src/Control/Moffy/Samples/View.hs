@@ -1,3 +1,6 @@
 module Control.Moffy.Samples.View where
 
-data View = Stopped deriving Show
+data View
+	= Position (Double, Double)
+	| Stopped
+	deriving Show

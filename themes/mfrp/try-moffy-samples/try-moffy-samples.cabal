@@ -83,6 +83,7 @@ library
     , stm
     , time
     , try-moffy
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -103,6 +104,7 @@ executable file-viewer
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -123,6 +125,7 @@ executable tfe
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -143,6 +146,7 @@ executable try-boxes
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -163,6 +167,7 @@ executable try-cairo
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -183,6 +188,7 @@ executable try-cancellable
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -203,6 +209,7 @@ executable try-clock
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -223,6 +230,7 @@ executable try-clock-more
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -243,6 +251,7 @@ executable try-drawing-area
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -267,6 +276,7 @@ executable try-moffy-samples-exe
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -287,6 +297,7 @@ executable try-mouse-event
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -307,6 +318,7 @@ executable try-text-view-exe
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010
 
@@ -332,5 +344,6 @@ test-suite try-moffy-samples-test
     , time
     , try-moffy
     , try-moffy-samples
+    , type-flip
     , union-color
   default-language: Haskell2010

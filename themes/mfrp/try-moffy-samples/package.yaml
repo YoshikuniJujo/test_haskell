@@ -31,6 +31,7 @@ dependencies:
 - union-color
 - try-moffy
 - extra-data-yj
+- type-flip
 
 ghc-options:
 - -Wall

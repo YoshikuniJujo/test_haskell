@@ -7,9 +7,11 @@
 
 module Main where
 
+import Prelude hiding (until)
+
 import Control.Monad
 import Control.Concurrent
-import Control.Concurrent.STM (atomically, newTChan, writeTChan)
+import Control.Concurrent.STM (atomically, newTChan, readTChan, writeTChan)
 import Control.Moffy
 import Control.Moffy.Event.Time
 import Control.Moffy.Handle qualified as H
@@ -21,6 +23,7 @@ import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.View
 import Control.Moffy.Samples.Run.Gtk4
 import Data.Type.Set
+import Data.Type.Flip
 import Data.OneOrMoreApp
 import Data.Or
 import Data.Bool
@@ -37,9 +40,10 @@ main = do
 		now <- systemToTAITime <$> getSystemTime
 		($ (InitialMode, now)) $ interpretSt
 			(H.retrySt . ($ (0.05, ())) . H.popInput . handleTimeEvPlus . H.pushInput . const . H.liftHandle' . H.sleepIfNothing 50000
-				$ handleNew @(Mouse.Down :- Singleton DeleteEvent) er eo)
+				$ handleNew @(Mouse.Move :- Mouse.Down :- Singleton DeleteEvent) er eo)
 			v do
-			waitFor $ doubler `first` deleteEvent
+			(Position <$%> Mouse.position) `until` deleteEvent
+--			waitFor $ doubler `first` deleteEvent
 			emit Stopped
 		putStrLn "AFTER INTERPRET"
 	runSingleWin eo v

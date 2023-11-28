@@ -25,19 +25,21 @@ import Stopgap.Graphics.UI.Gtk.ApplicationWindow qualified as
 	Gtk.ApplicationWindow
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
+import Stopgap.Graphics.UI.Gtk.EventControllerMotion qualified as
+	Gtk.EventControllerMotion
 import Stopgap.Graphics.UI.Gtk.GestureClick qualified as Gtk.GestureClick
 import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.System.GLib.Idle qualified as G.Idle
 
-beforeClose :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+beforeClose :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Singleton DeleteEvent)) ->
 	Gtk.ApplicationWindow.A -> Null -> IO Bool
 beforeClose ceo win Null = do
 	putStrLn "BEFORE CLOSE"
 	atomically $ writeTChan ceo (expand $ Singleton OccDeleteEvent)
 	pure True
 
-appActivate :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+appActivate :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Singleton DeleteEvent)) ->
 	TChan View ->
 	Gtk.Application.A s -> Null -> IO ()
 appActivate ceo cv app Null = do
@@ -48,14 +50,19 @@ appActivate ceo cv app Null = do
 	gcm <- mouseButtonHandler ceo Mouse.ButtonMiddle
 	gcs <- mouseButtonHandler ceo Mouse.ButtonSecondary
 
+	ecm <- Gtk.EventControllerMotion.new
+	G.Signal.connectXY ecm (G.Signal.Signal "motion") (moveHandler ceo) Null
+
 	Gtk.Window.setChild win da
 	Gtk.Widget.addController da gcp
 	Gtk.Widget.addController da gcm
 	Gtk.Widget.addController da gcs
+	Gtk.Widget.addController da ecm
 
-	forkIO $ atomically (readTChan cv) >>= \case
+	forkIO . forever $ atomically (readTChan cv) >>= \case
 		Stopped -> void $ G.Idle.add
 			(\_ -> Gtk.Window.destroy win >> pure False) Null
+		v -> print v
 
 	G.Signal.connectClose win (G.Signal.Signal "close-request") (beforeClose ceo) Null
 
@@ -64,7 +71,7 @@ appActivate ceo cv app Null = do
 appId :: Gtk.Application.Id
 appId = Gtk.Application.Id "com.github.YoshikuniJujo.moffy-samples-run"
 
-runSingleWin :: TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+runSingleWin :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Singleton DeleteEvent)) ->
 	TChan View -> IO ()
 runSingleWin ceo cv = Gtk.Application.with
 		appId G.Application.DefaultFlags \app -> do
@@ -72,14 +79,15 @@ runSingleWin ceo cv = Gtk.Application.with
 	exitWith =<< join (G.Application.run app <$> getProgName <*> getArgs)
 
 pressHandler ::
-	TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (Mouse.Move :- Mouse.Down :- Singleton DeleteEvent)) ->
 	Mouse.Button ->
 	Gtk.GestureClick.G -> Int32 -> Double -> Double -> Null -> IO ()
-pressHandler ceo b _gc n x y Null = do
-	atomically $ writeTChan ceo . expand . Singleton $ Mouse.OccDown b
+pressHandler ceo b _gc n x y Null = atomically . writeTChan ceo
+	$ expand (Mouse.OccMove (x, y) >- Singleton (Mouse.OccDown b) ::
+		EvOccs (Mouse.Move :- Singleton Mouse.Down))
 
 mouseButtonHandler ::
-	TChan (EvOccs (Mouse.Down :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (Mouse.Move :- Mouse.Down :- Singleton DeleteEvent)) ->
 	Mouse.Button ->
 	IO Gtk.GestureClick.G
 mouseButtonHandler ceo b = do
@@ -88,6 +96,12 @@ mouseButtonHandler ceo b = do
 	G.Signal.connectNXY gcp
 		(G.Signal.Signal "pressed") (pressHandler ceo b) Null
 	pure gcp
+
+moveHandler ::
+	TChan (EvOccs (Mouse.Move :- Mouse.Down :- Singleton DeleteEvent)) ->
+	Gtk.EventControllerMotion.E -> Double -> Double -> Null -> IO ()
+moveHandler ceo _ x y Null = atomically . writeTChan ceo
+	. expand $ Singleton (Mouse.OccMove (x, y))
 
 viewHandler :: TChan view -> Gtk.ApplicationWindow.A -> IO Bool
 viewHandler cv win = do
