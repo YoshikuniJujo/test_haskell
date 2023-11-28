@@ -11,7 +11,8 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM (atomically, newTChan, writeTChan)
 import Control.Moffy
-import Control.Moffy.Handle
+import Control.Moffy.Event.Time
+import Control.Moffy.Handle qualified as H
 import Control.Moffy.Handle.TChan
 import Control.Moffy.Handle.Time
 import Control.Moffy.Run.TChan
@@ -27,8 +28,6 @@ import Data.Time
 import Data.Time.Clock.System
 import Data.Time.Clock.TAI
 
-import Trial.Boxes
-
 main :: IO ()
 main = do
 	er <- atomically newTChan
@@ -37,11 +36,10 @@ main = do
 	void $ forkIO do
 		now <- systemToTAITime <$> getSystemTime
 		($ (InitialMode, now)) $ interpretSt
-			(retrySt . ($ (0.1, ())) . popInput . handleTimeEvPlus . pushInput . const . liftHandle' . sleepIfNothing 100000
---			(retrySt . ($ ()) . popInput . pushInput . const . liftHandle' . sleepIfNothing 100000
+			(H.retrySt . ($ (0.05, ())) . H.popInput . handleTimeEvPlus . H.pushInput . const . H.liftHandle' . H.sleepIfNothing 50000
 				$ handleNew @(Mouse.Down :- Singleton DeleteEvent) er eo)
 			v do
-			waitFor $ clickOn Mouse.ButtonPrimary `first` deleteEvent
+			waitFor $ doubler `first` deleteEvent
 			emit Stopped
 		putStrLn "AFTER INTERPRET"
 	runSingleWin eo v
@@ -62,5 +60,9 @@ clickOn b0 = do b <- Mouse.down
 before :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') Bool
 l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
+
+doubler :: React s (TryWait :- Singleton Mouse.Down) ()
+doubler = adjust rightClick
+	>> (bool doubler (pure ()) =<< rightClick `before` sleep 0.2)
 
 data BoxesState = BoxesState
