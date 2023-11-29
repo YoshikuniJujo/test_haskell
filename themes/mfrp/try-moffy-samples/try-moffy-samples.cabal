@@ -33,6 +33,7 @@ library
       Control.Moffy.Samples.Followbox.Event
       Control.Moffy.Samples.Followbox.Event.CalcTextExtents
       Control.Moffy.Samples.Followbox.Handle
+      Control.Moffy.Samples.Followbox.RunGtkField
       Control.Moffy.Samples.Run.Gtk4
       Control.Moffy.Samples.View
       Stopgap.Data.Ptr
@@ -85,6 +86,7 @@ library
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -114,6 +116,7 @@ executable file-viewer
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -144,6 +147,7 @@ executable tfe
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -174,6 +178,7 @@ executable try-boxes
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -204,6 +209,7 @@ executable try-cairo
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -234,6 +240,7 @@ executable try-cancellable
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -264,6 +271,7 @@ executable try-clock
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -294,6 +302,7 @@ executable try-clock-more
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -324,6 +333,7 @@ executable try-drawing-area
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -358,6 +368,7 @@ executable try-moffy-samples-exe
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -388,6 +399,7 @@ executable try-mouse-event
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -418,6 +430,7 @@ executable try-text-view-exe
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
@@ -453,6 +466,7 @@ test-suite try-moffy-samples-test
     , c-enum
     , c-struct
     , cairo-image
+    , containers
     , exception-hierarchy
     , extra-data-yj
     , http-conduit

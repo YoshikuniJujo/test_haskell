@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - stm
 - transformers
+- containers
 - unordered-containers
 - bytestring
 - text
