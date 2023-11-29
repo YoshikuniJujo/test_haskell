@@ -20,6 +20,13 @@ instance Request Down where data Occurred Down = OccDown Button deriving Show
 down :: React s (Singleton Down) Button
 down = await DownReq \(OccDown b) -> b
 
+data Up = UpReq deriving (Show, Eq, Ord)
+numbered [t| Up |]
+instance Request Up where data Occurred Up = OccUp Button deriving Show
+
+up :: React s (Singleton Up) Button
+up = await UpReq \(OccUp b) -> b
+
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered [t| Move |]
 instance Request Move where data Occurred Move = OccMove Point deriving Show

@@ -82,6 +82,7 @@ library
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , type-flip
     , union-color
@@ -102,6 +103,7 @@ executable file-viewer
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -123,6 +125,7 @@ executable tfe
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -144,6 +147,7 @@ executable try-boxes
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -165,6 +169,7 @@ executable try-cairo
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -186,6 +191,7 @@ executable try-cancellable
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -207,6 +213,7 @@ executable try-clock
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -228,6 +235,7 @@ executable try-clock-more
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -249,6 +257,7 @@ executable try-drawing-area
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -274,6 +283,7 @@ executable try-moffy-samples-exe
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -295,6 +305,7 @@ executable try-mouse-event
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -316,6 +327,7 @@ executable try-text-view-exe
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
@@ -342,6 +354,7 @@ test-suite try-moffy-samples-test
     , simple-cairo
     , stm
     , time
+    , transformers
     , try-moffy
     , try-moffy-samples
     , type-flip
