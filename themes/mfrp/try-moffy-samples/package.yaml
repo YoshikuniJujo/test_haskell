@@ -27,6 +27,8 @@ dependencies:
 - bytestring
 - text
 - time
+- process
+- random
 - aeson
 - JuicyPixels
 - http-conduit

@@ -32,6 +32,7 @@ library
       Control.Moffy.Samples.Followbox.Clickable
       Control.Moffy.Samples.Followbox.Event
       Control.Moffy.Samples.Followbox.Event.CalcTextExtents
+      Control.Moffy.Samples.Followbox.Handle
       Control.Moffy.Samples.Run.Gtk4
       Control.Moffy.Samples.View
       Stopgap.Data.Ptr
@@ -87,6 +88,8 @@ library
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -114,6 +117,8 @@ executable file-viewer
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -142,6 +147,8 @@ executable tfe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -170,6 +177,8 @@ executable try-boxes
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -198,6 +207,8 @@ executable try-cairo
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -226,6 +237,8 @@ executable try-cancellable
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -254,6 +267,8 @@ executable try-clock
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -282,6 +297,8 @@ executable try-clock-more
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -310,6 +327,8 @@ executable try-drawing-area
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -342,6 +361,8 @@ executable try-moffy-samples-exe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -370,6 +391,8 @@ executable try-mouse-event
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -398,6 +421,8 @@ executable try-text-view-exe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
@@ -431,6 +456,8 @@ test-suite try-moffy-samples-test
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , process
+    , random
     , simple-cairo
     , stm
     , text
