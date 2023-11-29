@@ -5,16 +5,16 @@
 
 packages:
 - completed:
-    commit: 6a0e3d0dfdadeab67ef290a9ef7823d1e2dccb01
+    commit: 30eb7b1a060a98965b6f806b8a8f56bab8102ff2
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-moffy
     pantry-tree:
-      sha256: 91c761bbf4c181bcf6bc6e7c5494a8588db8d1dc1474445526ac4686050bb319
+      sha256: d2ef44bc5a4087b7c7b9de4c052f065ca7000a136d68d59aa7d21865a4e514be
       size: 7356
     subdir: themes/mfrp/try-moffy
-    version: 0.1.0.9
+    version: 0.1.0.10
   original:
-    commit: 6a0e3d0dfdadeab67ef290a9ef7823d1e2dccb01
+    commit: 30eb7b1a060a98965b6f806b8a8f56bab8102ff2
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-moffy
 - completed:

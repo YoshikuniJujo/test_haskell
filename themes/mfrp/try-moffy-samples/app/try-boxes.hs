@@ -9,6 +9,7 @@ module Main where
 
 import Prelude hiding (until)
 
+import Control.Arrow qualified as A
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM (atomically, newTChan, readTChan, writeTChan)
@@ -20,7 +21,7 @@ import Control.Moffy.Handle.Time
 import Control.Moffy.Run.TChan
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
-import Control.Moffy.Samples.View
+import Control.Moffy.Samples.View qualified as V
 import Control.Moffy.Samples.Run.Gtk4
 import Data.Type.Set
 import Data.Type.Flip
@@ -42,9 +43,10 @@ main = do
 			(H.retrySt . ($ (0.05, ())) . H.popInput . handleTimeEvPlus . H.pushInput . const . H.liftHandle' . H.sleepIfNothing 50000
 				$ handleNew @(Mouse.Move :- Mouse.Down :- Singleton DeleteEvent) er eo)
 			v do
-			curRect (150, 100) `until` deleteEvent
+--			rectToView <$%> curRect (150, 100) `until` deleteEvent
+			rectToView <$%> wiggleRect (Rect (150, 100) (300, 200)) `until` deleteEvent
 --			waitFor $ doubler `first` deleteEvent
-			emit Stopped
+			emit V.Stopped
 		putStrLn "AFTER INTERPRET"
 	runSingleWin eo v
 
@@ -71,5 +73,18 @@ doubler = adjust rightClick
 
 data BoxesState = BoxesState
 
-curRect :: Point -> Sig s (Singleton Mouse.Move) View ()
+curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
 curRect p1 = Rect p1 <$%> Mouse.position
+
+rectToView :: Rect -> V.View
+rectToView (Rect lu rd) = V.Rect lu rd
+
+data Rect = Rect { leftUp :: Point, rightdown :: Point }
+
+type Point = (Double, Double)
+
+wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect r
+wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed
+	where
+	rectAtTime t = Rect (A.first (+ dx t) lu) (A.first (+ dx t) rd)
+	dx t = sin (realToFrac t * 5) * 15

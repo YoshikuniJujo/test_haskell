@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 6a0e3d0dfdadeab67ef290a9ef7823d1e2dccb01
+    commit: 30eb7b1a060a98965b6f806b8a8f56bab8102ff2
     subdirs:
     - themes/mfrp/try-moffy
   - git: https://github.com/YoshikuniJujo/exception-hierarchy
