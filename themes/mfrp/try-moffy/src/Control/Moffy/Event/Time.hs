@@ -40,7 +40,7 @@ instance Request DeltaTime where data Occurred DeltaTime = OccDeltaTime DiffTime
 deltaTime :: React s (Singleton DeltaTime) DiffTime
 deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 
-elapsed :: Sig s (Singleton DeltaTime) DiffTime ()
+elapsed :: Sig s (Singleton DeltaTime) DiffTime r
 elapsed = scanl (+) 0 $ repeat deltaTime
 
 ---------------------------------------------------------------------------
