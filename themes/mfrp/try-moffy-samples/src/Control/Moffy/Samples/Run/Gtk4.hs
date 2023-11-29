@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Samples.Run.Gtk4 where
@@ -14,10 +15,16 @@ import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.View
 import Data.Type.Set
 import Data.OneOrMoreApp
+import Data.Maybe
 import Data.Int
+import Data.Color
 import Stopgap.Data.Ptr
 import System.Environment
 import System.Exit
+
+import Data.CairoContext
+import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Paths
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
@@ -43,8 +50,10 @@ appActivate :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Singleton DeleteEvent)
 	TChan View ->
 	Gtk.Application.A s -> Null -> IO ()
 appActivate ceo cv app Null = do
+	crd <- atomically $ newTVar ((50, 30), (200, 150))
 	win <- Gtk.ApplicationWindow.new app
 	da <- Gtk.DrawingArea.new
+	Gtk.DrawingArea.setDrawFunc da (drawFunction crd) Null
 
 	gcp <- mouseButtonHandler ceo Mouse.ButtonPrimary
 	gcm <- mouseButtonHandler ceo Mouse.ButtonMiddle
@@ -62,6 +71,11 @@ appActivate ceo cv app Null = do
 	forkIO . forever $ atomically (readTChan cv) >>= \case
 		Stopped -> void $ G.Idle.add
 			(\_ -> Gtk.Window.destroy win >> pure False) Null
+		Rect lu rd -> do
+			atomically $ writeTVar crd (lu, rd)
+			void $ G.Idle.add
+				(\_ -> Gtk.Widget.queueDraw da >> pure False)
+				Null
 		v -> print v
 
 	G.Signal.connectClose win (G.Signal.Signal "close-request") (beforeClose ceo) Null
@@ -114,3 +128,14 @@ mouseButtonToGesture = \case
 	Mouse.ButtonPrimary -> Gtk.GestureClick.ButtonPrimary
 	Mouse.ButtonMiddle -> Gtk.GestureClick.ButtonMiddle
 	Mouse.ButtonSecondary -> Gtk.GestureClick.ButtonSecondary
+
+drawFunction :: TVar (Point, Point) -> Gtk.DrawingArea.DrawFunction r Null
+drawFunction crd area cr width height Null = do
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
+	cairoPaint cr
+	cairoSetLineWidth cr 2
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
+	(	(realToFrac -> l, realToFrac -> u),
+		(realToFrac -> r, realToFrac -> d) ) <- atomically $ readTVar crd
+	cairoRectangle cr l u (r - l) (d - u)
+	cairoFill cr

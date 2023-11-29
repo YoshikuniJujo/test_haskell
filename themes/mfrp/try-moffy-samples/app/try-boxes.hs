@@ -42,7 +42,7 @@ main = do
 			(H.retrySt . ($ (0.05, ())) . H.popInput . handleTimeEvPlus . H.pushInput . const . H.liftHandle' . H.sleepIfNothing 50000
 				$ handleNew @(Mouse.Move :- Mouse.Down :- Singleton DeleteEvent) er eo)
 			v do
-			(Position <$%> Mouse.position) `until` deleteEvent
+			curRect (150, 100) `until` deleteEvent
 --			waitFor $ doubler `first` deleteEvent
 			emit Stopped
 		putStrLn "AFTER INTERPRET"
@@ -70,3 +70,6 @@ doubler = adjust rightClick
 	>> (bool doubler (pure ()) =<< rightClick `before` sleep 0.2)
 
 data BoxesState = BoxesState
+
+curRect :: Point -> Sig s (Singleton Mouse.Move) View ()
+curRect p1 = Rect p1 <$%> Mouse.position
