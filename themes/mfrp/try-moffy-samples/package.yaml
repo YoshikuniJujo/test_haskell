@@ -23,7 +23,13 @@ dependencies:
 - base >= 4.7 && < 5
 - stm
 - transformers
+- unordered-containers
+- bytestring
+- text
 - time
+- aeson
+- JuicyPixels
+- http-conduit
 - c-enum
 - c-struct
 - exception-hierarchy
