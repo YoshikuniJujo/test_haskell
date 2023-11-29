@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,7 +12,6 @@ module Control.Moffy.Samples.Followbox.Event.CalcTextExtents (
 	) where
 
 import Control.Moffy
-import Control.Moffy.Event.Window
 import Data.Type.Set
 import Data.Bool
 

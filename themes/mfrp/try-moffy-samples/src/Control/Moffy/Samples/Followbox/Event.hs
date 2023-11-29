@@ -33,11 +33,8 @@ import Control.Moffy.Event.ThreadId (GetThreadId)
 import Control.Moffy.Event.Lock (LockEv)
 import Control.Moffy.Event.Random (RandomEv)
 import Control.Moffy.Event.Delete (DeleteEvent)
-import Control.Moffy.Event.Window
-import Control.Moffy.Event.DefaultWindow
--- import Control.Moffy.Event.Mouse (MouseEv)
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse (Move, Down, Up)
-import Control.Moffy.Event.CalcTextExtents
+import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
 import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)
@@ -179,14 +176,8 @@ checkTerminate = catchError
 type SigF s = Sig s FollowboxEv
 type ReactF s r = React s FollowboxEv r
 
-type FollowboxEv = LoadDefaultWindow :- WindowEv :+: GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
-	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-
-	Browse :- BeginSleep :- EndSleep :- RaiseError :- 'Nil
-
-{-
 type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
 	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-
 	Browse :- BeginSleep :- EndSleep :- RaiseError :- 'Nil
-	-}
 
 type MouseEv = Mouse.Move :- Mouse.Down :- Mouse.Up :- 'Nil

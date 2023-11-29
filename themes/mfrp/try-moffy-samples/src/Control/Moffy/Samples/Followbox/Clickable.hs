@@ -15,11 +15,8 @@ module Control.Moffy.Samples.Followbox.Clickable (
 import Prelude hiding (repeat)
 
 import Control.Moffy (React, adjust, repeat, find, indexBy)
-import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
--- import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, leftClick, mouseMove)
--- import Control.Moffy.Samples.Followbox.Event.CalcTextExtents (
-import Control.Moffy.Event.CalcTextExtents.DefaultWindow (
+import Control.Moffy.Samples.Followbox.Event.CalcTextExtents (
 	TextExtents(..), FontName, FontSize, Rectangle(..),
 	CalcTextExtents, calcTextExtents )
 import Data.Type.Set (pattern Nil, (:-), Singleton)
@@ -44,7 +41,8 @@ import Data.Bool
 -- CLICKABLE
 ---------------------------------------------------------------------------
 
-data Clickable s = Clickable { view :: View, click :: React s (LoadDefaultWindow :- MouseEv) () }
+-- data Clickable s = Clickable { view :: View, click :: React s (LoadDefaultWindow :- MouseEv) () }
+data Clickable s = Clickable { view :: View, click :: React s MouseEv () }
 
 type MouseEv = Mouse.Move :- Mouse.Down :- Mouse.Up :- 'Nil
 
@@ -75,9 +73,9 @@ clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
 		rectangleLeft, rectangleTop, rectangleWidth, rectangleHeight ]
 
 withTextExtents :: FontName -> FontSize -> T.Text ->
-	React s (LoadDefaultWindow :- CalcTextExtents :- 'Nil) WithTextExtents
---	React s (CalcTextExtents :- 'Nil) WithTextExtents
-withTextExtents fn fs t = WithTextExtents fn fs t <$> adjust (calcTextExtents fn fs t)
+--	React s (LoadDefaultWindow :- CalcTextExtents :- 'Nil) WithTextExtents
+	React s (CalcTextExtents :- 'Nil) WithTextExtents
+withTextExtents fn fs t = WithTextExtents fn fs t <$> calcTextExtents fn fs t
 
 nextToText :: Position -> WithTextExtents -> Position
 nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y) where
