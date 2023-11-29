@@ -9,7 +9,7 @@
 
 module Main where
 
-import Prelude hiding (until, repeat)
+import Prelude hiding (until, repeat, cycle)
 
 import Control.Arrow qualified as A
 import Control.Monad
@@ -31,6 +31,10 @@ import Data.Type.Flip
 import Data.OneOrMoreApp
 import Data.Or
 import Data.Bool
+import Data.List.NonEmpty (fromList)
+import Data.List.Infinite (Infinite(..), cycle)
+import Data.Maybe
+import Data.Color
 import Data.Time
 import Data.Time.Clock.System
 import Data.Time.Clock.TAI
@@ -46,7 +50,8 @@ main = do
 			(H.retrySt . ($ (0.05, ())) . H.popInput . handleTimeEvPlus . H.pushInput . const . H.liftHandle' . H.sleepIfNothing 50000
 				$ handleNew @(Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent) er eo)
 			v do
-			rectToView <$%> defineRect
+			boxesToView <$%> boxes `until` deleteEvent
+--			rectToView <$%> defineRect
 --			rectToView <$%> curRect (150, 100) `until` deleteEvent
 --			rectToView <$%> wiggleRect (Rect (150, 100) (300, 200)) `until` deleteEvent
 --			waitFor $ doubler `first` deleteEvent
@@ -89,11 +94,29 @@ data BoxesState = BoxesState
 curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
 curRect p1 = Rect p1 <$%> Mouse.position
 
+boxesToView :: [Box] -> V.View
+boxesToView = V.View . (boxToView1 <$>)
+
+boxToView1 :: Box -> V.View1
+boxToView1 (Box (Rect lu rd) c) = V.Box lu rd $ bColorToColor c
+
+boxToView :: Box -> V.View
+boxToView (Box (Rect lu rd) c) = V.View [V.Box lu rd $ bColorToColor c]
+
+bColorToColor :: BColor -> Rgb Double
+bColorToColor = fromJust . \case
+	Red -> rgbDouble 0.8 0.1 0.05
+	Green -> rgbDouble 0.2 0.6 0.1
+	Blue -> rgbDouble 0.2 0.2 0.8
+	Yellow -> rgbDouble 0.8 0.7 0.1
+	Cyan -> rgbDouble 0.2 0.6 0.6
+	Magenta -> rgbDouble 0.5 0.2 0.4
+
 rectToView :: Rect -> V.View
-rectToView (Rect lu rd) = V.Rect lu rd
+rectToView (Rect lu rd) = V.View [V.Box lu rd . fromJust $ rgbDouble 0.2 0.6 0.1]
 
 -- data Rect = Rect { leftUp :: Point, rightdown :: Point }
-data Rect = Rect Point Point
+data Rect = Rect Point Point deriving Show
 
 type Point = (Double, Double)
 
@@ -123,3 +146,22 @@ completeRect p1 = (<$> (Rect p1 <$%> Mouse.position) `until` leftUp)
 
 neverOccur :: String -> Either String a
 neverOccur msg = Left $ "never occur: " ++ msg
+
+data Box = Box Rect BColor deriving Show
+data BColor = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+
+cycleColor :: Sig s (Mouse.Down :- 'Nil) BColor ()
+cycleColor = go . cycle $ fromList [Red .. Magenta] where
+	go (h :~ t) = emit h >>
+		(bool (pure ()) (go t)
+			=<< waitFor (middleClick `before` rightClick))
+
+chooseBoxColor :: Rect -> Sig s (Mouse.Down :- DeltaTime :- 'Nil) Box ()
+chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
+
+box :: Sig s (Mouse.Move :- Mouse.Down :- Mouse.Up :- DeltaTime :- TryWait :- 'Nil) Box ()
+box = (`Box` Red) <$%> adjustSig defineRect
+	>>= (>>) <$> adjustSig . chooseBoxColor <*> waitFor . adjust . drClickOn
+
+boxes :: Sig s (Mouse.Move :- Mouse.Down :- Mouse.Up :- DeltaTime :- TryWait :- 'Nil) [Box] ()
+boxes = () <$ parList (spawn box)

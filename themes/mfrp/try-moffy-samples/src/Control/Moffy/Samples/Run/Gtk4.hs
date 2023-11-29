@@ -6,7 +6,9 @@
 
 module Control.Moffy.Samples.Run.Gtk4 where
 
+import Foreign.C.Types
 import Control.Monad
+import Control.Monad.ST
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Moffy
@@ -50,7 +52,7 @@ appActivate :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton 
 	TChan View ->
 	Gtk.Application.A s -> Null -> IO ()
 appActivate ceo cv app Null = do
-	crd <- atomically $ newTVar ((50, 30), (200, 150))
+	crd <- atomically $ newTVar [] -- (Box (50, 30) (200, 150) (fromJust $ rgbDouble 0.2 0.6 0.1))
 	win <- Gtk.ApplicationWindow.new app
 	da <- Gtk.DrawingArea.new
 	Gtk.DrawingArea.setDrawFunc da (drawFunction crd) Null
@@ -71,8 +73,8 @@ appActivate ceo cv app Null = do
 	forkIO . forever $ atomically (readTChan cv) >>= \case
 		Stopped -> void $ G.Idle.add
 			(\_ -> Gtk.Window.destroy win >> pure False) Null
-		Rect lu rd -> do
-			atomically $ writeTVar crd (lu, rd)
+		View v -> do
+			atomically $ writeTVar crd v
 			void $ G.Idle.add
 				(\_ -> Gtk.Widget.queueDraw da >> pure False)
 				Null
@@ -139,13 +141,18 @@ mouseButtonToGesture = \case
 	Mouse.ButtonMiddle -> Gtk.GestureClick.ButtonMiddle
 	Mouse.ButtonSecondary -> Gtk.GestureClick.ButtonSecondary
 
-drawFunction :: TVar (Point, Point) -> Gtk.DrawingArea.DrawFunction r Null
+drawFunction :: TVar [View1] -> Gtk.DrawingArea.DrawFunction r Null
 drawFunction crd area cr width height Null = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
 	cairoPaint cr
 	cairoSetLineWidth cr 2
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
-	(	(realToFrac -> l, realToFrac -> u),
-		(realToFrac -> r, realToFrac -> d) ) <- atomically $ readTVar crd
+	(drawView1 cr `mapM_`) =<< atomically (readTVar crd)
+
+drawView1 :: CairoT r RealWorld -> View1 -> IO ()
+drawView1 cr (Box
+	(realToFrac -> l, realToFrac -> u)
+	(realToFrac -> r, realToFrac -> d)
+	(rgbRealToFrac -> clr)) = do
+	cairoSetSourceRgb cr clr
 	cairoRectangle cr l u (r - l) (d - u)
 	cairoFill cr
