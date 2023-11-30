@@ -51,23 +51,23 @@ main = do
 	fd0 <- pangoLayoutGet @PangoFontDescriptionNullable <$> pangoLayoutFreeze pl
 	print fd0
 
-	print =<< pangoLayoutInfo @CharacterCount =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @CharacterCount =<< pangoLayoutFreeze pl
 
 	pangoLayoutSet pl $ PangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 180
 	pangoLayoutSet pl $ LinesPerParagraph 3
-	print =<< pangoLayoutInfo @IsEllipsized =<< pangoLayoutFreeze pl
-	print =<< pangoLayoutInfo @IsWrapped =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @IsEllipsized =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @IsWrapped =<< pangoLayoutFreeze pl
 
 	print . pangoLayoutGet @Width =<< pangoLayoutFreeze pl
 	print . pangoLayoutGet @Height =<< pangoLayoutFreeze pl
 	pangoLayoutSet pl $ sampleText <> "\n" <> sampleText2
 
-	print =<< pangoLayoutInfo @IsEllipsized =<< pangoLayoutFreeze pl
-	print =<< pangoLayoutInfo @IsWrapped =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @IsEllipsized =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @IsWrapped =<< pangoLayoutFreeze pl
 
 	print . T.length $ sampleText <> "\n" <> sampleText2
-	print =<< pangoLayoutInfo @CharacterCount =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @CharacterCount =<< pangoLayoutFreeze pl
 
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
@@ -135,22 +135,22 @@ main = do
 	cairoMoveTo cr 300 780
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	print =<< pangoLayoutInfo @UnknownGlyphsCount =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @UnknownGlyphsCount =<< pangoLayoutFreeze pl
 
 	cairoMoveTo cr 300 930
 	pangoLayoutSet pl $ SingleParagraphMode True
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	print =<< pangoLayoutInfo @UnknownGlyphsCount =<< pangoLayoutFreeze pl
-	las <- pangoLayoutInfo =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @UnknownGlyphsCount =<< pangoLayoutFreeze pl
+	las <- pangoLayoutInfo <$> pangoLayoutFreeze pl
 	(putStrLn . (\(c, la) -> c ++ "\n" ++ la) . (show *** showPangoLogAttr)) `mapM_` zip (T.unpack $ txt <> "\x00") (pangoLogAttrsToList las)
 
-	print =<< pangoLayoutInfo @Extents =<< pangoLayoutFreeze pl
-	print =<< pangoLayoutInfo @PixelExtents =<< pangoLayoutFreeze pl
-	print =<< pangoLayoutInfo @LayoutSize =<< pangoLayoutFreeze pl
-	print =<< pangoLayoutInfo @LayoutPixelSize =<< pangoLayoutFreeze pl
-	print =<< pangoLayoutInfo @Baseline =<< pangoLayoutFreeze pl
-	print =<< pangoLayoutInfo @LineCount =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @Extents =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @PixelExtents =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @LayoutSize =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @LayoutPixelSize =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @Baseline =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @LineCount =<< pangoLayoutFreeze pl
 
 {-
 	print =<< pangoLayoutIndexToPos pl 0

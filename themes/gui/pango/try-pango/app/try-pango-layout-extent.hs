@@ -44,11 +44,11 @@ main = do
 
 	fpl2 <- pangoLayoutFreeze pl2
 	putStrLn "extents"
-	print =<< pangoLayoutInfo @Extents fpl2
+	print $ pangoLayoutInfo @Extents fpl2
 	putStrLn "\npangoLayoutGetPixelExtents:"
-	print =<< pangoLayoutInfo @PixelExtents fpl2
+	print $ pangoLayoutInfo @PixelExtents fpl2
 	putStrLn ""
-	print =<< pangoLayoutInfo @LayoutPixelSize fpl2
+	print $ pangoLayoutInfo @LayoutPixelSize fpl2
 
 	pangoCairoShowLayout cr fpl2
 
@@ -72,7 +72,7 @@ getPangoLayoutExtent cr fm sz tx = do
 		=<< pangoFontDescriptionFreeze pfd3
 	pangoLayoutSet pl3 tx
 	fpl3 <- pangoLayoutFreeze pl3
-	pangoLayoutInfo @PixelExtents fpl3
+	pure $ pangoLayoutInfo @PixelExtents fpl3
 
 someText :: T.Text
 someText = T.unlines [

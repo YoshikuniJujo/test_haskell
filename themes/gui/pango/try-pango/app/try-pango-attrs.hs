@@ -153,7 +153,7 @@ main = do
 
 	cairoMoveTo cr 0 230
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al9
-	print =<< pangoLayoutInfo @Extents =<< pangoLayoutFreeze pl
+	print . pangoLayoutInfo @Extents =<< pangoLayoutFreeze pl
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al10 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ PangoLanguage "en"

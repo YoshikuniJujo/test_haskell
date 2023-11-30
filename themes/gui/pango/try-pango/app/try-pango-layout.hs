@@ -145,13 +145,13 @@ main = do
 	print =<< pangoLayoutMoveCursorVisually fpl2 True 108 False R
 	print =<< pangoLayoutMoveCursorVisually fpl2 True 109 False R
 	putStrLn "extents"
-	print =<< pangoLayoutInfo @Extents fpl2
+	print $ pangoLayoutInfo @Extents fpl2
 	putStrLn "pangoLayoutGetPixelExtents:"
-	print =<< pangoLayoutInfo @PixelExtents fpl2
-	print =<< pangoLayoutInfo @LayoutPixelSize fpl2
+	print $ pangoLayoutInfo @PixelExtents fpl2
+	print $ pangoLayoutInfo @LayoutPixelSize fpl2
 	putStrLn "pangoLayoutInfo @Baseline"
-	print =<< pangoLayoutInfo @Baseline fpl2
-	print =<< pangoLayoutInfo @LineCount fpl2
+	print $ pangoLayoutInfo @Baseline fpl2
+	print $ pangoLayoutInfo @LineCount fpl2
 	print =<< pangoLayoutLineGetExtents . fromJust =<< pangoLayoutGetLine fpl2 2
 	putStrLn "foo"
 	print =<< pangoLayoutLineGetPixelExtents . fromJust =<< pangoLayoutGetLine fpl2 2
@@ -206,7 +206,7 @@ main = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
 	cairoMoveTo cr 100 700
 	fpl5 <- pangoLayoutFreeze pl5
-	print =<< pangoLayoutInfo @UnknownGlyphsCount fpl5
+	print $ pangoLayoutInfo @UnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
 
 --	pangoLayoutWithIter fpl2 \itr -> do
