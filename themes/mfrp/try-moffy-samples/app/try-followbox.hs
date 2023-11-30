@@ -24,4 +24,6 @@ view1ToView1 v1 = case project v1 of
 	Nothing -> case project v1 of
 		Just (T.Text' (T.Color r g b) fn fs p txt) ->
 			VText (RgbWord8 r g b) fn fs p txt
-		Nothing -> NotImplemented
+		Nothing -> case project v1 of
+			Just (T.Image' p (T.Png w h dt)) -> VImage p w h dt
+			Nothing -> NotImplemented

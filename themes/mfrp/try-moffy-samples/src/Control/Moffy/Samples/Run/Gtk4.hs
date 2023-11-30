@@ -30,6 +30,9 @@ import System.Exit
 import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Drawing.Transformations
+import Graphics.Cairo.Surfaces.ImageSurfaces
+import Graphics.Cairo.Surfaces.PngSupport
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.GlyphStorage
@@ -205,6 +208,20 @@ drawView1 cr (VText (rgbRealToFrac -> clr)
 	cairoMoveTo cr x y
 	cairoSetSourceRgb cr clr
 	pangoCairoShowLayout cr l'
+drawView1 cr (VImage
+	(realToFrac -> x, realToFrac -> y) w h dt) = do
+	sfc <- cairoSurfaceCreateFromPngByteString dt
+	w0 <- cairoImageSurfaceGetWidth sfc
+	h0 <- cairoImageSurfaceGetHeight sfc
+
+	cairoTranslate cr x y
+	cairoScale cr
+		(realToFrac w / fromIntegral w0)
+		(realToFrac h / fromIntegral h0)
+	cairoSetSourceSurface cr sfc 0 0
+	cairoPaint cr
+
+	cairoIdentityMatrix cr
 drawView1 cr NotImplemented = putStrLn "NOT IMPLEMENTED"
 
 occCalcTextExtents ::

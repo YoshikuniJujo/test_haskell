@@ -4,6 +4,7 @@
 module Control.Moffy.Samples.View where
 
 import Foreign.C.Types
+import Data.ByteString qualified as BS
 import Data.Text qualified as T
 import Data.Color
 
@@ -16,6 +17,7 @@ data View1
 	= Box { leftUp :: Point, rightDown :: Point, color :: Rgb Double }
 	| VLine (Rgb Double) LineWidth Point Point
 	| VText (Rgb Double) FontName' FontSize' Position' T.Text
+	| VImage Position' Double Double BS.ByteString
 	| NotImplemented
 	deriving Show
 
