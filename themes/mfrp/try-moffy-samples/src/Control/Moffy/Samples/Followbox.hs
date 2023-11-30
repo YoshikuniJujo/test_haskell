@@ -15,7 +15,7 @@ import Control.Moffy (adjust, emit, waitFor, first, break, until)
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
 import Control.Moffy.Event.Random (getRandomR)
-import Control.Moffy.Event.Delete (deleteEvent)
+import Control.Moffy.Samples.Event.Delete (deleteEvent)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Or (Or(..))
 import Data.Aeson (Object, Value(..), eitherDecode)
@@ -114,9 +114,9 @@ crossMergin = 4
 
 -- FOLLOWBOX
 
-followbox :: WindowId -> SigF s View ()
-followbox i = () <$
-	fieldWithResetTime numOfUsers `break` deleteEvent i `break` checkTerminate
+followbox :: SigF s View ()
+followbox = () <$
+	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate
 
 fieldWithResetTime :: Integer -> SigF s View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime

@@ -15,10 +15,13 @@ import Control.Moffy
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.View
+import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
 import Data.Type.Set
+import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
 import Data.Maybe
 import Data.Int
+import Data.Text qualified as T
 import Data.Color
 import Stopgap.Data.Ptr
 import System.Environment
@@ -27,6 +30,10 @@ import System.Exit
 import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.GlyphStorage
+import Graphics.Pango.Rendering.Cairo
 
 import Stopgap.Graphics.UI.Gtk.Application qualified as Gtk.Application
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
@@ -41,21 +48,24 @@ import Stopgap.System.GLib.Application qualified as G.Application
 import Stopgap.System.GLib.Signal qualified as G.Signal
 import Stopgap.System.GLib.Idle qualified as G.Idle
 
-beforeClose :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+beforeClose :: TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	Gtk.ApplicationWindow.A -> Null -> IO Bool
 beforeClose ceo win Null = do
 	putStrLn "BEFORE CLOSE"
 	atomically $ writeTChan ceo (expand $ Singleton OccDeleteEvent)
 	pure True
 
-appActivate :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+appActivate ::
+	TChan (EvReqs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	TChan View ->
 	Gtk.Application.A s -> Null -> IO ()
-appActivate ceo cv app Null = do
-	crd <- atomically $ newTVar [] -- (Box (50, 30) (200, 150) (fromJust $ rgbDouble 0.2 0.6 0.1))
+appActivate cer ceo cv app Null = do
+	crd <- atomically $ newTVar []
+	cte <- atomically newTChan
 	win <- Gtk.ApplicationWindow.new app
 	da <- Gtk.DrawingArea.new
-	Gtk.DrawingArea.setDrawFunc da (drawFunction crd) Null
+	Gtk.DrawingArea.setDrawFunc da (drawFunction crd ceo cte) Null
 
 	gcp <- mouseButtonHandler ceo Mouse.ButtonPrimary
 	gcm <- mouseButtonHandler ceo Mouse.ButtonMiddle
@@ -69,6 +79,16 @@ appActivate ceo cv app Null = do
 	Gtk.Widget.addController da gcm
 	Gtk.Widget.addController da gcs
 	Gtk.Widget.addController da ecm
+
+	forkIO . forever $ atomically (readTChan cer) >>= \r -> do
+		case OOM.project r of
+			Nothing -> pure ()
+			Just (CalcTextExtentsReq fn fs t) -> do
+				atomically $ writeTChan cte (fn, fs, t)
+				void $ G.Idle.add
+					(\_ ->	Gtk.Widget.queueDraw da >>
+						pure False)
+					Null
 
 	forkIO . forever $ atomically (readTChan cv) >>= \case
 		Stopped -> void $ G.Idle.add
@@ -87,15 +107,17 @@ appActivate ceo cv app Null = do
 appId :: Gtk.Application.Id
 appId = Gtk.Application.Id "com.github.YoshikuniJujo.moffy-samples-run"
 
-runSingleWin :: TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+runSingleWin ::
+	TChan (EvReqs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	TChan View -> IO ()
-runSingleWin ceo cv = Gtk.Application.with
+runSingleWin cer ceo cv = Gtk.Application.with
 		appId G.Application.DefaultFlags \app -> do
-	G.Signal.connect app (G.Signal.Signal "activate") (appActivate ceo cv) Null
+	G.Signal.connect app (G.Signal.Signal "activate") (appActivate cer ceo cv) Null
 	exitWith =<< join (G.Application.run app <$> getProgName <*> getArgs)
 
 pressHandler ::
-	TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	Mouse.Button ->
 	Gtk.GestureClick.G -> Int32 -> Double -> Double -> Null -> IO ()
 pressHandler ceo b _gc n x y Null = atomically . writeTChan ceo
@@ -103,7 +125,7 @@ pressHandler ceo b _gc n x y Null = atomically . writeTChan ceo
 		EvOccs (Mouse.Move :- Singleton Mouse.Down))
 
 releaseHandler ::
-	TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	Mouse.Button ->
 	Gtk.GestureClick.G -> Int32 -> Double -> Double -> Null -> IO ()
 releaseHandler ceo b _gc n x y Null = atomically . writeTChan ceo
@@ -111,7 +133,7 @@ releaseHandler ceo b _gc n x y Null = atomically . writeTChan ceo
 		EvOccs (Mouse.Move :- Singleton Mouse.Up))
 
 mouseButtonHandler ::
-	TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	Mouse.Button ->
 	IO Gtk.GestureClick.G
 mouseButtonHandler ceo b = do
@@ -124,10 +146,12 @@ mouseButtonHandler ceo b = do
 	pure gcp
 
 moveHandler ::
-	TChan (EvOccs (Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	Gtk.EventControllerMotion.E -> Double -> Double -> Null -> IO ()
 moveHandler ceo _ x y Null = atomically . writeTChan ceo
 	. expand $ Singleton (Mouse.OccMove (x, y))
+
+type GuiEv = Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent
 
 viewHandler :: TChan view -> Gtk.ApplicationWindow.A -> IO Bool
 viewHandler cv win = do
@@ -141,9 +165,15 @@ mouseButtonToGesture = \case
 	Mouse.ButtonMiddle -> Gtk.GestureClick.ButtonMiddle
 	Mouse.ButtonSecondary -> Gtk.GestureClick.ButtonSecondary
 
-drawFunction :: TVar [View1] -> Gtk.DrawingArea.DrawFunction r Null
-drawFunction crd area cr width height Null = do
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
+drawFunction :: TVar [View1] ->
+	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
+	TChan (FontName, FontSize, T.Text) ->
+	Gtk.DrawingArea.DrawFunction r Null
+drawFunction crd ceo cte area cr width height Null = do
+	atomically (tryReadTChan cte) >>= \case
+		Nothing -> pure ()
+		Just (fn, fs, txt) -> occCalcTextExtents ceo cr fn fs txt
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
 	cairoPaint cr
 	cairoSetLineWidth cr 2
 	(drawView1 cr `mapM_`) =<< atomically (readTVar crd)
@@ -156,3 +186,33 @@ drawView1 cr (Box
 	cairoSetSourceRgb cr clr
 	cairoRectangle cr l u (r - l) (d - u)
 	cairoFill cr
+drawView1 cr (VLine (rgbRealToFrac -> clr) lw
+	(realToFrac -> l, realToFrac -> u)
+	(realToFrac -> r, realToFrac -> d)) = do
+	cairoSetSourceRgb cr clr
+	cairoMoveTo cr l u
+	cairoLineTo cr r d
+	cairoStroke cr
+drawView1 cr NotImplemented = putStrLn "NOT IMPLEMENTED"
+
+occCalcTextExtents ::
+	TChan (EvOccs (CalcTextExtents :- GuiEv)) -> CairoT r RealWorld -> String -> Double -> T.Text -> IO ()
+occCalcTextExtents co cr fn fs txt = do
+	(l, d) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	d `pangoFontDescriptionSet` Family fn
+	d `pangoFontDescriptionSet` AbsoluteSize (realToFrac fs)
+	d' <- pangoFontDescriptionFreeze d
+	l `pangoLayoutSet` pangoFontDescriptionToNullable (Just d')
+	l `pangoLayoutSet` txt
+	l' <- pangoLayoutFreeze l
+	let	PixelExtents ie le = pangoLayoutInfo l'
+	atomically . writeTChan co . expand . Singleton
+		. OccCalcTextExtents fn fs txt
+		$ mkte ie le
+	where
+	mkte ie le = TextExtents (r2r ie) (r2r le)
+	r2r r = rct
+		(pangoRectanglePixelX r) (pangoRectanglePixelY r)
+		(pangoRectanglePixelWidth r) (pangoRectanglePixelHeight r)
+	rct	(fromIntegral -> l) (fromIntegral -> t)
+		(fromIntegral -> w) (fromIntegral -> h) = Rectangle l t w h

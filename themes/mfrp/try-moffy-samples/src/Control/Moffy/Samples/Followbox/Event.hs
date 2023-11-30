@@ -32,7 +32,7 @@ import Control.Moffy (Sig, React, Request(..), await)
 import Control.Moffy.Event.ThreadId (GetThreadId)
 import Control.Moffy.Event.Lock (LockEv)
 import Control.Moffy.Event.Random (RandomEv)
-import Control.Moffy.Event.Delete (DeleteEvent)
+import Control.Moffy.Samples.Event.Delete (DeleteEvent)
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse (Move, Down, Up)
 import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))

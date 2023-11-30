@@ -51,6 +51,8 @@ extra-deps:
     commit: 6a520b14a84e144faff4efb823c58ccb346104db
   - git: https://github.com/YoshikuniJujo/cairo-image
     commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+  - git: https://github.com/YoshikuniJujo/simple-pango
+    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
   - union-color-0.1.2.1
   - git: https://github.com/YoshikuniJujo/extra-data-yj
     commit: 23a243df2ca44306ca8cb8e93f286c524a77c332

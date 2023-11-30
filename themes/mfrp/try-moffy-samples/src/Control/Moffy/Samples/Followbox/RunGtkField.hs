@@ -3,8 +3,9 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Samples.Followbox.RunGtkField (runFollowboxGen) where
+module Control.Moffy.Samples.Followbox.RunGtkField (runFollowbox) where
 
+import Control.Concurrent
 import Control.Moffy
 import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
 import Control.Moffy.Handle.TChan
@@ -16,6 +17,17 @@ import System.Random
 import Control.Moffy.Samples.Followbox.Event
 import Control.Moffy.Samples.Followbox.Handle
 import Trial.Followbox.TypeSynonym
+
+import Control.Moffy.Samples.Run.Gtk4 hiding (GuiEv)
+
+import Control.Moffy.Samples.View
+
+runFollowbox :: String -> Maybe GithubNameToken -> Sig s FollowboxEv View () -> IO ()
+runFollowbox brws tkn sig = do
+	(cer, ceo, cv) <- atomically $
+		(,,) <$> newTChan <*> newTChan <*> newTChan
+	_ <- forkIO $ runFollowboxGen cer ceo brws tkn cv (sig >> emit Stopped)
+	runSingleWin cer ceo cv
 
 runFollowboxGen ::
 	TChan (EvReqs (CalcTextExtents :- GuiEv)) -> TChan (EvOccs (CalcTextExtents :- GuiEv)) -> String ->

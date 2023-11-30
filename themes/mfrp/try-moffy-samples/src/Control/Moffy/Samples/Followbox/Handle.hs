@@ -12,7 +12,7 @@ module Control.Moffy.Samples.Followbox.Handle (
 	FollowboxState(..), initialFollowboxState,
 	) where
 
-import Control.Moffy.Event.Delete
+import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key
 -- import Control.Moffy.Event.Mouse

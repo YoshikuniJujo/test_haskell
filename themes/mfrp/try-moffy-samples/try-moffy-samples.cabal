@@ -93,6 +93,7 @@ library
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -123,6 +124,7 @@ executable file-viewer
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -154,6 +156,7 @@ executable tfe
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -185,6 +188,7 @@ executable try-boxes
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -216,6 +220,7 @@ executable try-cairo
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -247,6 +252,7 @@ executable try-cancellable
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -278,6 +284,7 @@ executable try-clock
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -309,6 +316,7 @@ executable try-clock-more
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -340,6 +348,39 @@ executable try-drawing-area
     , process
     , random
     , simple-cairo
+    , simple-pango
+    , stm
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , try-moffy-samples
+    , type-flip
+    , union-color
+    , unordered-containers
+  default-language: Haskell2010
+
+executable try-followbox
+  main-is: try-followbox.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , c-struct
+    , cairo-image
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , process
+    , random
+    , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -375,6 +416,7 @@ executable try-moffy-samples-exe
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -406,6 +448,7 @@ executable try-mouse-event
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -437,6 +480,7 @@ executable try-text-view-exe
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time
@@ -473,6 +517,7 @@ test-suite try-moffy-samples-test
     , process
     , random
     , simple-cairo
+    , simple-pango
     , stm
     , text
     , time

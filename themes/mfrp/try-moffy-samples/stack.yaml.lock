@@ -51,6 +51,17 @@ packages:
     commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
     git: https://github.com/YoshikuniJujo/cairo-image
 - completed:
+    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
+    git: https://github.com/YoshikuniJujo/simple-pango
+    name: simple-pango
+    pantry-tree:
+      sha256: c9018bd60f1ab409e0f4b9f4ae6e6265725006c5062b4d5254014ec5aeb473fa
+      size: 3830
+    version: 0.1.0.1
+  original:
+    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
+    git: https://github.com/YoshikuniJujo/simple-pango
+- completed:
     hackage: union-color-0.1.2.1@sha256:0d8cd13f3fbe8135f34244f9847b415635d6066b06c92203fdb521a36cdaeae8,1326
     pantry-tree:
       sha256: 7df303497f2479607876d561c5b48000d05bc22eabed3c4d84426440e4d5717a

@@ -26,6 +26,7 @@ import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.View qualified as V
 import Control.Moffy.Samples.Run.Gtk4
+import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
 import Data.Type.Set
 import Data.Type.Flip
 import Data.OneOrMoreApp
@@ -48,7 +49,7 @@ main = do
 		now <- systemToTAITime <$> getSystemTime
 		($ (InitialMode, now)) $ interpretSt
 			(H.retrySt . ($ (0.05, ())) . H.popInput . handleTimeEvPlus . H.pushInput . const . H.liftHandle' . H.sleepIfNothing 50000
-				$ handleNew @(Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent) er eo)
+				$ handleNew @(CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent) er eo)
 			v do
 			boxesToView <$%> boxes `until` deleteEvent
 --			rectToView <$%> defineRect
@@ -57,7 +58,7 @@ main = do
 --			waitFor $ doubler `first` deleteEvent
 			emit V.Stopped
 		putStrLn "AFTER INTERPRET"
-	runSingleWin eo v
+	runSingleWin er eo v
 
 sameClick :: React s (Singleton Mouse.Down) Bool
 sameClick = do
