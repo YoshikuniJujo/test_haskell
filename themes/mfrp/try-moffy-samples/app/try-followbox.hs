@@ -21,4 +21,7 @@ viewToView (T.View vs) = View $ view1ToView1 <$> vs
 view1ToView1 :: T.View1 -> View1
 view1ToView1 v1 = case project v1 of
 	Just (Line' (T.Color r g b) lw p0 p1) -> VLine (RgbWord8 r g b) lw p0 p1
-	Nothing -> NotImplemented
+	Nothing -> case project v1 of
+		Just (T.Text' (T.Color r g b) fn fs p txt) ->
+			VText (RgbWord8 r g b) fn fs p txt
+		Nothing -> NotImplemented

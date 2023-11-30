@@ -193,6 +193,18 @@ drawView1 cr (VLine (rgbRealToFrac -> clr) lw
 	cairoMoveTo cr l u
 	cairoLineTo cr r d
 	cairoStroke cr
+drawView1 cr (VText (rgbRealToFrac -> clr)
+	fn (realToFrac -> fs) (realToFrac -> x, realToFrac -> y) txt) = do
+	(l, d) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	d `pangoFontDescriptionSet` Family fn
+	d `pangoFontDescriptionSet` AbsoluteSize fs
+	d' <- pangoFontDescriptionFreeze d
+	l `pangoLayoutSet` pangoFontDescriptionToNullable (Just d')
+	l `pangoLayoutSet` txt
+	l' <- pangoLayoutFreeze l
+	cairoMoveTo cr x y
+	cairoSetSourceRgb cr clr
+	pangoCairoShowLayout cr l'
 drawView1 cr NotImplemented = putStrLn "NOT IMPLEMENTED"
 
 occCalcTextExtents ::
