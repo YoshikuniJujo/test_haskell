@@ -5,20 +5,33 @@
 
 packages:
 - completed:
-    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-moffy-core
+    pantry-tree:
+      sha256: 2ebc41bc5d993532b90fc26e7788509a36fa4057499de9d2198713f8e65c7346
+      size: 1549
+    subdir: themes/mfrp/try-moffy-core
+    version: 0.1.0.1
+  original:
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/mfrp/try-moffy-core
+- completed:
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-moffy
     pantry-tree:
-      sha256: f02315a78b27e67d547d676d81e27b24216c990986ef9896e46f3c9a39f9542b
-      size: 6833
+      sha256: b7abc86881c02b260956d073f8da85b092ae8be05d9b890ec4695af698e0f3eb
+      size: 5324
     subdir: themes/mfrp/try-moffy
-    version: 0.1.0.11
+    version: 0.1.0.13
   original:
-    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-moffy
 - completed:
-    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-type-set
     pantry-tree:
@@ -27,9 +40,22 @@ packages:
     subdir: themes/mfrp/try-type-set
     version: 0.1.0.0
   original:
-    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-type-set
+- completed:
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-freer-par-monad
+    pantry-tree:
+      sha256: d8bb37f1cfc23f09257c7b04c8921f47beb4a07cb36428eb29c1ec1a56293acf
+      size: 998
+    subdir: themes/mfrp/try-freer-par-monad
+    version: 0.1.0.0
+  original:
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/mfrp/try-freer-par-monad
 - completed:
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
     git: https://github.com/YoshikuniJujo/exception-hierarchy

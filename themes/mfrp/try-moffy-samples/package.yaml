@@ -40,6 +40,7 @@ dependencies:
 - cairo-image
 - simple-pango
 - union-color
+- try-moffy-core
 - try-moffy
 - extra-data-yj
 - type-flip

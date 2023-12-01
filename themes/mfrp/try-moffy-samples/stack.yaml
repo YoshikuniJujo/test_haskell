@@ -42,10 +42,12 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
+    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
     subdirs:
+    - themes/mfrp/try-moffy-core
     - themes/mfrp/try-moffy
     - themes/mfrp/try-type-set
+    - themes/mfrp/try-freer-par-monad
   - git: https://github.com/YoshikuniJujo/exception-hierarchy
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
   - git: https://github.com/YoshikuniJujo/simple-cairo

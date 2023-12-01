@@ -99,6 +99,7 @@ library
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color
@@ -131,6 +132,7 @@ executable file-viewer
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -164,6 +166,7 @@ executable tfe
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -197,6 +200,7 @@ executable try-boxes
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -230,6 +234,7 @@ executable try-cairo
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -263,6 +268,7 @@ executable try-cancellable
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -296,6 +302,7 @@ executable try-clock
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -329,6 +336,7 @@ executable try-clock-more
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -362,6 +370,7 @@ executable try-drawing-area
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -395,6 +404,7 @@ executable try-followbox
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -432,6 +442,7 @@ executable try-moffy-samples-exe
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -465,6 +476,7 @@ executable try-mouse-event
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -498,6 +510,7 @@ executable try-text-view-exe
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
@@ -536,6 +549,7 @@ test-suite try-moffy-samples-test
     , time
     , transformers
     , try-moffy
+    , try-moffy-core
     , try-moffy-samples
     , try-type-set
     , type-flip
