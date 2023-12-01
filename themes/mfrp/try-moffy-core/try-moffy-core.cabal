@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-moffy-core
-version:        0.1.0.0
+version:        0.1.0.1
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy-core#readme>
 homepage:       https://github.com/YoshikuniJujo/try-moffy-core#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-moffy-core/issues
@@ -26,6 +26,11 @@ source-repository head
 library
   exposed-modules:
       Control.Moffy
+      Control.Moffy.NoThreadId
+      Control.Moffy.Internal.React
+      Control.Moffy.Internal.React.Type
+      Control.Moffy.Internal.Sig
+      Control.Moffy.Internal.Sig.Type
       Control.Moffy.Event.Lock
       Control.Moffy.Event.ThreadId
       Control.Moffy.Event.Time
@@ -33,13 +38,8 @@ library
       Control.Moffy.Handle.Lock
       Control.Moffy.Handle.ThreadId
       Control.Moffy.Handle.Time
-      Control.Moffy.NoThreadId
   other-modules:
       Control.Moffy.Event.Lock.Internal
-      Control.Moffy.Internal.React
-      Control.Moffy.Internal.React.Type
-      Control.Moffy.Internal.Sig
-      Control.Moffy.Internal.Sig.Type
       Paths_try_moffy_core
   autogen-modules:
       Paths_try_moffy_core
