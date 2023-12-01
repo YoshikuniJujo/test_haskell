@@ -39,8 +39,8 @@ dependencies:
 - x-keysym
 - extra-data-yj
 - simple-cairo
-- try-moffy-core
-- try-type-set
+- moffy
+- type-set
 
 ghc-options:
 - -Wall

@@ -39,6 +39,7 @@ library
     , containers
     , data-default
     , extra-data-yj
+    , moffy
     , mtl
     , optparse-declarative
     , random
@@ -50,11 +51,10 @@ library
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , try-vulkan-rectangles
     , type-flip
+    , type-set
     , x-keysym
   default-language: Haskell2010
 
@@ -71,6 +71,7 @@ executable try-boxes
     , containers
     , data-default
     , extra-data-yj
+    , moffy
     , mtl
     , optparse-declarative
     , random
@@ -82,12 +83,11 @@ executable try-boxes
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
+    , type-set
     , x-keysym
   default-language: Haskell2010
 
@@ -104,6 +104,7 @@ executable try-followbox
     , containers
     , data-default
     , extra-data-yj
+    , moffy
     , mtl
     , optparse-declarative
     , random
@@ -115,12 +116,11 @@ executable try-followbox
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
+    , type-set
     , x-keysym
   default-language: Haskell2010
 
@@ -137,6 +137,7 @@ executable try-hello-windows
     , containers
     , data-default
     , extra-data-yj
+    , moffy
     , mtl
     , optparse-declarative
     , random
@@ -148,12 +149,11 @@ executable try-hello-windows
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
+    , type-set
     , x-keysym
   default-language: Haskell2010
 
@@ -170,6 +170,7 @@ executable try-multi-rectangles
     , containers
     , data-default
     , extra-data-yj
+    , moffy
     , mtl
     , optparse-declarative
     , random
@@ -181,12 +182,11 @@ executable try-multi-rectangles
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
+    , type-set
     , x-keysym
   default-language: Haskell2010
 
@@ -202,6 +202,7 @@ executable try-use-moffy-vulkan-exe
     , containers
     , data-default
     , extra-data-yj
+    , moffy
     , mtl
     , optparse-declarative
     , random
@@ -213,12 +214,11 @@ executable try-use-moffy-vulkan-exe
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
+    , type-set
     , x-keysym
   default-language: Haskell2010
 
@@ -235,6 +235,7 @@ test-suite try-use-moffy-vulkan-test
     , containers
     , data-default
     , extra-data-yj
+    , moffy
     , mtl
     , optparse-declarative
     , random
@@ -246,11 +247,10 @@ test-suite try-use-moffy-vulkan-test
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
+    , type-set
     , x-keysym
   default-language: Haskell2010

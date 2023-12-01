@@ -42,8 +42,13 @@ packages:
 
 extra-deps:
 - optparse-declarative-0.4.2
+- moffy-0.1.0.0
+- freer-par-monad-0.1.0.0
+- type-set-0.1.0.0
+- type-flip-0.1.0.0
+- extra-data-yj-0.1.0.0
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 380bb73a2ef6edd5cff87db16f7251883183c5fb
+  commit: 82b1b9cb7d43938edcf57f6657c7e1846c24c02e
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
@@ -72,14 +77,8 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - themes/gui/cairo/try-cairo-image-samples
   - themes/mfrp/try-moffy-core
-  - themes/mfrp/try-freer-par-monad
-  - themes/mfrp/try-type-set
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
-- git: https://github.com/YoshikuniJujo/extra-data-yj
-  commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
-- git: https://github.com/YoshikuniJujo/type-flip
-  commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
 - git: https://github.com/YoshikuniJujo/simple-gdk3
   commit: b5efabfd256a7bea9ed865b76fb83990476932f9
 - git: https://github.com/YoshikuniJujo/x-keysym
