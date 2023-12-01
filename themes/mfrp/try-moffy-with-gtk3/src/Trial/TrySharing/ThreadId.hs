@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,7 +9,7 @@ module Trial.TrySharing.ThreadId (
 
 import Control.Monad.Freer.Par (runTagged, tag)
 import Control.Moffy (React, adjust, first)
-import Control.Moffy.NoThreadId (first')
+import Control.Moffy.NoThreadId qualified as NT (first)
 import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, MouseBtn, mouseDown)
@@ -47,7 +48,7 @@ runSharingFirstGetThreadId = runTagged do
 runSharingFirstGetThreadId' :: IO (Or' (MouseBtn, ThreadId), Maybe WindowId)
 runSharingFirstGetThreadId' = runTagged do
 	r <- tag $ (,) <$> heavyMouseDown <*> heavyGetThreadId
-	pure $ runMouseThreadId $ r `first'` r
+	pure $ runMouseThreadId $ r `NT.first` r
 
 ---------------------------------------------------------------------------
 -- PARTS

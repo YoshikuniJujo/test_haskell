@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-moffy-with-gtk3
-version:        0.1.0.2
+version:        0.1.0.3
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-moffy-with-gtk3#readme>
 homepage:       https://github.com/githubuser/try-moffy-with-gtk3#readme
 bug-reports:    https://github.com/githubuser/try-moffy-with-gtk3/issues
@@ -46,7 +46,6 @@ library
       Control.Moffy.Handle.XField.CalcTextExtents
       Control.Moffy.Handle.XField.Key
       Control.Moffy.Handle.XField.Mouse
-      Control.Moffy.Run
       Control.Moffy.Run.GtkField
       Control.Moffy.Run.TChan
       Control.Moffy.View.GtkField
@@ -128,7 +127,9 @@ library
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -141,10 +142,8 @@ library
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -167,7 +166,9 @@ executable draw
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -180,11 +181,9 @@ executable draw
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -207,7 +206,9 @@ executable followbox
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -220,11 +221,9 @@ executable followbox
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -247,7 +246,9 @@ executable followboxGtk
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -260,11 +261,9 @@ executable followboxGtk
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -287,7 +286,9 @@ executable try-gdk-boxes
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -300,11 +301,9 @@ executable try-gdk-boxes
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -327,7 +326,9 @@ executable try-gdk-gui
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -340,11 +341,9 @@ executable try-gdk-gui
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -367,7 +366,9 @@ executable try-glfw-boxes
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -380,11 +381,9 @@ executable try-glfw-boxes
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -407,7 +406,9 @@ executable try-moffy-with-gtk3-exe
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -420,11 +421,9 @@ executable try-moffy-with-gtk3-exe
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -447,7 +446,9 @@ executable tryCairo
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -460,11 +461,9 @@ executable tryCairo
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -487,7 +486,9 @@ executable tryCairoText
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -500,11 +501,9 @@ executable tryCairoText
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -527,7 +526,9 @@ executable tryCairoTextExtents
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -540,11 +541,9 @@ executable tryCairoTextExtents
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -567,7 +566,9 @@ executable tryConfigure
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -580,11 +581,9 @@ executable tryConfigure
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -607,7 +606,9 @@ executable tryCount
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -620,11 +621,9 @@ executable tryCount
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -647,7 +646,9 @@ executable tryDefaultWindow
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -660,11 +661,9 @@ executable tryDefaultWindow
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -687,7 +686,9 @@ executable tryDeleteEvent
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -700,11 +701,9 @@ executable tryDeleteEvent
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -727,7 +726,9 @@ executable tryFillPolygon
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -740,11 +741,9 @@ executable tryFillPolygon
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -767,7 +766,9 @@ executable tryGdk
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -780,11 +781,9 @@ executable tryGdk
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -807,7 +806,9 @@ executable tryGtk
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -820,11 +821,9 @@ executable tryGtk
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -847,7 +846,9 @@ executable tryKey
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -860,11 +861,9 @@ executable tryKey
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -887,7 +886,9 @@ executable tryMultiWindow
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -900,11 +901,9 @@ executable tryMultiWindow
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -927,7 +926,9 @@ executable tryPango
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -940,11 +941,9 @@ executable tryPango
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -967,7 +966,9 @@ executable tryPngCursor
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -980,11 +981,9 @@ executable tryPngCursor
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -1007,7 +1006,9 @@ executable tryPngCursorEvent
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -1020,11 +1021,9 @@ executable tryPngCursorEvent
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -1047,7 +1046,9 @@ executable tryScroll
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -1060,11 +1061,9 @@ executable tryScroll
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector
@@ -1088,7 +1087,9 @@ test-suite try-moffy-with-gtk3-test
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , freer-par-monad
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -1101,11 +1102,9 @@ test-suite try-moffy-with-gtk3-test
     , text
     , time
     , transformers
-    , try-freer-par-monad
-    , try-moffy-core
     , try-moffy-with-gtk3
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
     , vector

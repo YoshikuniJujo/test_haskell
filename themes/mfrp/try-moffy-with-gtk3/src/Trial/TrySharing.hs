@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -16,7 +17,7 @@ module Trial.TrySharing (
 
 import Control.Monad.Freer.Par (runTagged, tag)
 import Control.Moffy (React, adjust)
-import Control.Moffy.NoThreadId (first')
+import Control.Moffy.NoThreadId qualified as NT (first)
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, mouseDown)
 import Control.Moffy.Handle (retry, liftHandle', mergeSt, retrySt)
@@ -50,7 +51,7 @@ import Control.Moffy.Event.Window
 ---------------------------------------------------------------------------
 
 runShowButton2 :: IO (Or' String, Maybe WindowId)
-runShowButton2 = runMouseEv $ showButton `first'` showButton
+runShowButton2 = runMouseEv $ showButton `NT.first` showButton
 
 ---------------------------------------------------------------------------
 -- SHARING
@@ -60,22 +61,22 @@ runShowButton2 = runMouseEv $ showButton `first'` showButton
 
 runSharingShowButton2 :: IO ((Or' String), Maybe WindowId)
 runSharingShowButton2 =
-	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first'` sb
+	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `NT.first` sb
 
 -- NEST FIRST'
 
 runSharingShowButton4 :: IO (Or' (Or' String), Maybe WindowId)
 runSharingShowButton4 = runTagged do
 	sb <- tag showButton
-	sb' <- tag $ sb `first'` sb
-	pure . runMouseEv $ sb' `first'` sb'
+	sb' <- tag $ sb `NT.first` sb
+	pure . runMouseEv $ sb' `NT.first` sb'
 
 runSharingShowButton8 :: IO (Or' (Or' (Or' String)), Maybe WindowId)
 runSharingShowButton8 = runTagged do
 	sb <- tag showButton
-	sb' <- tag $ sb `first'` sb
-	sb'' <- tag $ sb' `first'` sb'
-	pure . runMouseEv $ sb'' `first'` sb''
+	sb' <- tag $ sb `NT.first` sb
+	sb'' <- tag $ sb' `NT.first` sb'
+	pure . runMouseEv $ sb'' `NT.first` sb''
 
 -- TWO TIME CLICK
 
@@ -83,7 +84,7 @@ runSharingShowButton2Button2 :: IO (Or' (String, String), Maybe WindowId)
 runSharingShowButton2Button2 = runTagged $ do
 	sb <- tag showButton
 	let	sb2 = (,) <$> sb <*> sb
-	pure . runMouseEv $ sb2 `first'` sb2
+	pure . runMouseEv $ sb2 `NT.first` sb2
 
 ---------------------------------------------------------------------------
 -- TOOLS

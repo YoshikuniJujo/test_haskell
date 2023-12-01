@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -5,7 +6,7 @@ module Trial.TryThreadId (
 	trySingleThreadId, tryDoubleThreadId, tryLeftRightThreadId, tryLeftRightThreadId' ) where
 
 import Control.Moffy (React, adjust, first)
-import Control.Moffy.NoThreadId (first')
+import Control.Moffy.NoThreadId qualified as NT (first)
 import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, leftClick, rightClick)
@@ -39,7 +40,7 @@ tryLeftRightThreadId = runMouseGetThreadId $
 
 tryLeftRightThreadId' :: IO (Or ThreadId ThreadId, Maybe WindowId)
 tryLeftRightThreadId' = runMouseGetThreadId $
-	clickThenGetThreadId (adjust leftClick) `first'`
+	clickThenGetThreadId (adjust leftClick) `NT.first`
 	clickThenGetThreadId (adjust rightClick)
 
 runMouseGetThreadId :: React s (LoadDefaultWindow :- GetThreadId :- MouseEv) a -> IO (a, Maybe WindowId)
