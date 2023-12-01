@@ -1,5 +1,5 @@
 name:                try-moffy-core
-version:             0.1.0.3
+version:             0.1.0.4
 github:              "YoshikuniJujo/try-moffy-core"
 license:             BSD-3-Clause
 author:              "Yoshikuni Jujo"
@@ -54,6 +54,7 @@ library:
     - Control.Moffy.Handle.Lock
     - Control.Moffy.Handle.ThreadId
     - Control.Moffy.Handle.Time
+    - Control.Moffy.Run
 
 tests:
   try-moffy-core-test:

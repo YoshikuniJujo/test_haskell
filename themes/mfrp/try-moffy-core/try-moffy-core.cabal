@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-moffy-core
-version:        0.1.0.3
+version:        0.1.0.4
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy-core#readme>
 homepage:       https://github.com/YoshikuniJujo/try-moffy-core#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-moffy-core/issues
@@ -38,9 +38,9 @@ library
       Control.Moffy.Handle.Lock
       Control.Moffy.Handle.ThreadId
       Control.Moffy.Handle.Time
+      Control.Moffy.Run
   other-modules:
       Control.Moffy.Event.Lock.Internal
-      Control.Moffy.Run
       Paths_try_moffy_core
   autogen-modules:
       Paths_try_moffy_core
