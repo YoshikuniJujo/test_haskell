@@ -18,18 +18,16 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-freer-par-monad
 - completed:
-    commit: 5ab7dad90a16e03721f6e18ddcc7218400da221c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-type-set
+    commit: 8b7c20acbba7b4a7afaba55b3e4b2773570274ab
+    git: https://github.com/YoshikuniJujo/type-set
+    name: type-set
     pantry-tree:
-      sha256: 8d86f5603ba07e67fa9b0c0c22888f5fed1cea6ecea921305c3b5347b1d4bf87
-      size: 1037
-    subdir: themes/mfrp/try-type-set
+      sha256: 4ca6ac463e85cea67a3978bea8f9daa836fca4efccc0a73df47400db5829d948
+      size: 1033
     version: 0.1.0.0
   original:
-    commit: 5ab7dad90a16e03721f6e18ddcc7218400da221c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/mfrp/try-type-set
+    commit: 8b7c20acbba7b4a7afaba55b3e4b2773570274ab
+    git: https://github.com/YoshikuniJujo/type-set
 - completed:
     hackage: extra-data-yj-0.1.0.0@sha256:96cff2cae6b9c15859013b4f7ab02f3a822900f1f2653fb1adad4ce905773e84,1389
     pantry-tree:

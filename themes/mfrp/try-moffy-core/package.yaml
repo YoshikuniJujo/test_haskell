@@ -22,7 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - time
-- try-type-set
+- type-set
 - try-freer-par-monad
 - extra-data-yj
 - type-flip

@@ -52,8 +52,8 @@ library
     , extra-data-yj
     , time
     , try-freer-par-monad
-    , try-type-set
     , type-flip
+    , type-set
   default-language: Haskell2010
 
 test-suite try-moffy-core-test
@@ -72,6 +72,6 @@ test-suite try-moffy-core-test
     , time
     , try-freer-par-monad
     , try-moffy-core
-    , try-type-set
     , type-flip
+    , type-set
   default-language: Haskell2010
