@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 7cf531f720529c2d3edfab8978e2df5cfe3783d0
+    commit: 4794ca2baddda045aa174c989ad31524f1388cca
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-type-set
     pantry-tree:
@@ -14,9 +14,22 @@ packages:
     subdir: themes/mfrp/try-type-set
     version: 0.1.0.0
   original:
-    commit: 7cf531f720529c2d3edfab8978e2df5cfe3783d0
+    commit: 4794ca2baddda045aa174c989ad31524f1388cca
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-type-set
+- completed:
+    commit: 4794ca2baddda045aa174c989ad31524f1388cca
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-freer-par-monad
+    pantry-tree:
+      sha256: d8bb37f1cfc23f09257c7b04c8921f47beb4a07cb36428eb29c1ec1a56293acf
+      size: 998
+    subdir: themes/mfrp/try-freer-par-monad
+    version: 0.1.0.0
+  original:
+    commit: 4794ca2baddda045aa174c989ad31524f1388cca
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/mfrp/try-freer-par-monad
 - completed:
     commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
     git: https://github.com/YoshikuniJujo/simple-field.git

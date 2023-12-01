@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b837e30a7e5f2bbaeb597b31af9200a8d053cda46f421e67f1cdd6b53fefd75a
+-- hash: 0f58f2d91d1139bf7736723d0dd4545dae4fa0dd137cb2f5ef4b07676489975e
 
 name:           try-moffy
-version:        0.1.0.11
+version:        0.1.0.12
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy#readme>
 homepage:       https://github.com/YoshikuniJujo/try-moffy#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-moffy/issues
@@ -69,12 +69,6 @@ library
       Control.Moffy.Viewable.Image
       Control.Moffy.Viewable.Shape
       Control.Moffy.Viewable.Text
-      Control.Monad.Freer.Par
-      Control.Monad.Freer.Par.FTCQueue
-      Control.Monad.Freer.Par.Funable
-      Control.Monad.Freer.Par.Internal.Id
-      Control.Monad.Freer.Par.Sequence
-      Control.Monad.Freer.Par.TaggableFunction
       Foreign.Tools
       Graphics.Cairo
       Graphics.CairoType
@@ -136,6 +130,7 @@ library
     , text
     , time
     , transformers
+    , try-freer-par-monad
     , try-type-set
     , type-flip
     , union-color
@@ -176,6 +171,7 @@ executable followbox
     , text
     , time
     , transformers
+    , try-freer-par-monad
     , try-moffy
     , try-type-set
     , type-flip
@@ -217,6 +213,7 @@ executable try-glfw-boxes
     , text
     , time
     , transformers
+    , try-freer-par-monad
     , try-moffy
     , try-type-set
     , type-flip
@@ -257,6 +254,7 @@ executable try-moffy-exe
     , text
     , time
     , transformers
+    , try-freer-par-monad
     , try-moffy
     , try-type-set
     , type-flip
@@ -298,6 +296,7 @@ executable tryCount
     , text
     , time
     , transformers
+    , try-freer-par-monad
     , try-moffy
     , try-type-set
     , type-flip
@@ -339,6 +338,7 @@ executable tryDefaultWindow
     , text
     , time
     , transformers
+    , try-freer-par-monad
     , try-moffy
     , try-type-set
     , type-flip
@@ -380,6 +380,7 @@ test-suite try-moffy-test
     , text
     , time
     , transformers
+    , try-freer-par-monad
     , try-moffy
     , try-type-set
     , type-flip
