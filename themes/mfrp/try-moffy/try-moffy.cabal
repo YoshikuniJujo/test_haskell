@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cb940758335f1fb7af530e6936a2aa64135d8e36502d157463acc1681158d4bc
+-- hash: 2a10c99e15e3e57848e6adfaf3f618eeead3eba9bf6481686c67be61dc2cb351
 
 name:           try-moffy
-version:        0.1.0.13
+version:        0.1.0.14
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy#readme>
 homepage:       https://github.com/YoshikuniJujo/try-moffy#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-moffy/issues
@@ -48,7 +48,6 @@ library
       Control.Moffy.Handle.XField.CalcTextExtents
       Control.Moffy.Handle.XField.Key
       Control.Moffy.Handle.XField.Mouse
-      Control.Moffy.Run
       Control.Moffy.Run.TChan
       Control.Moffy.View.XField
       Control.Moffy.Viewable.Basic

@@ -5,20 +5,20 @@
 
 packages:
 - completed:
-    commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+    commit: 57302fe9e3f3f19327b95d64ce484f851c4f4460
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-moffy-core
     pantry-tree:
-      sha256: 2ebc41bc5d993532b90fc26e7788509a36fa4057499de9d2198713f8e65c7346
-      size: 1549
+      sha256: fefffa1949529bcb664c22152aeb2ecf33e3720c3fc7997d34b521ffaa344350
+      size: 1614
     subdir: themes/mfrp/try-moffy-core
-    version: 0.1.0.1
+    version: 0.1.0.4
   original:
-    commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+    commit: 57302fe9e3f3f19327b95d64ce484f851c4f4460
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-moffy-core
 - completed:
-    commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+    commit: 57302fe9e3f3f19327b95d64ce484f851c4f4460
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-type-set
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/mfrp/try-type-set
     version: 0.1.0.0
   original:
-    commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+    commit: 57302fe9e3f3f19327b95d64ce484f851c4f4460
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-type-set
 - completed:
-    commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+    commit: 57302fe9e3f3f19327b95d64ce484f851c4f4460
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-par-monad
     pantry-tree:
@@ -40,7 +40,7 @@ packages:
     subdir: themes/mfrp/try-freer-par-monad
     version: 0.1.0.0
   original:
-    commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+    commit: 57302fe9e3f3f19327b95d64ce484f851c4f4460
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-freer-par-monad
 - completed:

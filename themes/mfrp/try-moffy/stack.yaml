@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+  commit: 57302fe9e3f3f19327b95d64ce484f851c4f4460
   subdirs:
     - themes/mfrp/try-moffy-core
     - themes/mfrp/try-type-set
