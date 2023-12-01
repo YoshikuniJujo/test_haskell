@@ -43,7 +43,7 @@ packages:
 extra-deps:
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: a7057eb76079047ecfcbdb8b911dad88a9996d0e
+  commit: 380bb73a2ef6edd5cff87db16f7251883183c5fb
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
@@ -71,6 +71,9 @@ extra-deps:
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
   - themes/gui/cairo/try-cairo-image-samples
+  - themes/mfrp/try-moffy-core
+  - themes/mfrp/try-freer-par-monad
+  - themes/mfrp/try-type-set
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 - git: https://github.com/YoshikuniJujo/extra-data-yj

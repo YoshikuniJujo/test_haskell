@@ -37,8 +37,7 @@ import Gpu.Vulkan qualified as Vk
 import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
--- import Control.Moffy.Event.Gui
-import Control.Moffy.Event.Lock.Internal
+import Control.Moffy.Event.Lock
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Delete hiding (deleteEvent)

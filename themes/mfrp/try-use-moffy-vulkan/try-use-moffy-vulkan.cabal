@@ -50,7 +50,9 @@ library
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , try-vulkan-rectangles
     , type-flip
     , x-keysym
@@ -80,7 +82,9 @@ executable try-boxes
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -111,7 +115,9 @@ executable try-followbox
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -142,7 +148,9 @@ executable try-hello-windows
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -173,7 +181,9 @@ executable try-multi-rectangles
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -203,7 +213,9 @@ executable try-use-moffy-vulkan-exe
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
@@ -234,7 +246,9 @@ test-suite try-use-moffy-vulkan-test
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , try-use-moffy-vulkan
     , try-vulkan-rectangles
     , type-flip
