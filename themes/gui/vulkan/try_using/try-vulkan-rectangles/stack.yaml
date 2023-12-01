@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 27e5726cf5b5cb257d619a8ac299b0be1a5b49dd
+  commit: 4f2f244c9651faff0674f671a72485d2e22d06c7
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
@@ -69,6 +69,9 @@ extra-deps:
   - themes/gui/vulkan/try-glfw-group
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/cairo/try-cairo-image-samples
+  - themes/mfrp/try-moffy-core
+  - themes/mfrp/try-freer-par-monad
+  - themes/mfrp/try-type-set
 - union-color-0.1.2.1
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/simple-cairo
