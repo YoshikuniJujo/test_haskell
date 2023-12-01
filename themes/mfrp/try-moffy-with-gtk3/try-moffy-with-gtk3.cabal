@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-moffy-with-gtk3
-version:        0.1.0.1
+version:        0.1.0.2
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-moffy-with-gtk3#readme>
 homepage:       https://github.com/githubuser/try-moffy-with-gtk3#readme
 bug-reports:    https://github.com/githubuser/try-moffy-with-gtk3/issues
@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Moffy
       Control.Moffy.Event.CalcTextExtents
       Control.Moffy.Event.CalcTextExtents.DefaultWindow
       Control.Moffy.Event.Cursor
@@ -35,31 +34,18 @@ library
       Control.Moffy.Event.Gui
       Control.Moffy.Event.Key
       Control.Moffy.Event.Key.DefaultWindow
-      Control.Moffy.Event.Lock
-      Control.Moffy.Event.Lock.Internal
       Control.Moffy.Event.Mouse
       Control.Moffy.Event.Mouse.DefaultWindow
       Control.Moffy.Event.Random
       Control.Moffy.Event.Random.Internal
-      Control.Moffy.Event.ThreadId
-      Control.Moffy.Event.Time
       Control.Moffy.Event.Window
-      Control.Moffy.Handle
       Control.Moffy.Handle.DefaultWindow
-      Control.Moffy.Handle.Lock
       Control.Moffy.Handle.Random
       Control.Moffy.Handle.TChan
-      Control.Moffy.Handle.ThreadId
-      Control.Moffy.Handle.Time
       Control.Moffy.Handle.XField
       Control.Moffy.Handle.XField.CalcTextExtents
       Control.Moffy.Handle.XField.Key
       Control.Moffy.Handle.XField.Mouse
-      Control.Moffy.Internal.React
-      Control.Moffy.Internal.React.Type
-      Control.Moffy.Internal.Sig
-      Control.Moffy.Internal.Sig.Type
-      Control.Moffy.NoThreadId
       Control.Moffy.Run
       Control.Moffy.Run.GtkField
       Control.Moffy.Run.TChan
@@ -69,20 +55,6 @@ library
       Control.Moffy.Viewable.Image
       Control.Moffy.Viewable.Shape
       Control.Moffy.Viewable.Text
-      Control.Monad.Freer.Par
-      Control.Monad.Freer.Par.FTCQueue
-      Control.Monad.Freer.Par.Funable
-      Control.Monad.Freer.Par.Internal.Id
-      Control.Monad.Freer.Par.Sequence
-      Control.Monad.Freer.Par.TaggableFunction
-      Data.OneOfThem
-      Data.OneOrMore
-      Data.OneOrMore.Internal
-      Data.OneOrMoreApp
-      Data.Type.Set
-      Data.Type.Set.Internal
-      Data.Type.SetApp
-      Data.Type.SetApp.Internal
       Foreign.Tools
       Graphics.Cairo
       Graphics.CairoType
@@ -169,6 +141,9 @@ library
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -205,7 +180,10 @@ executable draw
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -242,7 +220,10 @@ executable followbox
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -279,7 +260,10 @@ executable followboxGtk
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -316,7 +300,10 @@ executable try-gdk-boxes
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -353,7 +340,10 @@ executable try-gdk-gui
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -390,7 +380,10 @@ executable try-glfw-boxes
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -427,7 +420,10 @@ executable try-moffy-with-gtk3-exe
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -464,7 +460,10 @@ executable tryCairo
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -501,7 +500,10 @@ executable tryCairoText
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -538,7 +540,10 @@ executable tryCairoTextExtents
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -575,7 +580,10 @@ executable tryConfigure
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -612,7 +620,10 @@ executable tryCount
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -649,7 +660,10 @@ executable tryDefaultWindow
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -686,7 +700,10 @@ executable tryDeleteEvent
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -723,7 +740,10 @@ executable tryFillPolygon
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -760,7 +780,10 @@ executable tryGdk
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -797,7 +820,10 @@ executable tryGtk
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -834,7 +860,10 @@ executable tryKey
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -871,7 +900,10 @@ executable tryMultiWindow
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -908,7 +940,10 @@ executable tryPango
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -945,7 +980,10 @@ executable tryPngCursor
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -982,7 +1020,10 @@ executable tryPngCursorEvent
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -1019,7 +1060,10 @@ executable tryScroll
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -1057,7 +1101,10 @@ test-suite try-moffy-with-gtk3-test
     , text
     , time
     , transformers
+    , try-freer-par-monad
+    , try-moffy-core
     , try-moffy-with-gtk3
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers

@@ -1,5 +1,5 @@
 name:                try-moffy-with-gtk3
-version:             0.1.0.1
+version:             0.1.0.2
 github:              "githubuser/try-moffy-with-gtk3"
 license:             BSD-3-Clause
 author:              "Author name here"
@@ -48,6 +48,9 @@ dependencies:
 - aeson
 - serialise
 - GLFW-b
+- try-type-set
+- try-freer-par-monad
+- try-moffy-core
 
 ghc-options:
 - -Wall

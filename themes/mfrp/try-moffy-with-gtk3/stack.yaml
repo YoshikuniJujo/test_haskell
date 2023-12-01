@@ -39,8 +39,14 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
+
 extra-deps:
+- git: https://github.com/YoshikuniJujo/test_haskell
+  commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
+  subdirs:
+    - themes/mfrp/try-moffy-core
+    - themes/mfrp/try-type-set
+    - themes/mfrp/try-freer-par-monad
 - git: https://github.com/YoshikuniJujo/extra-data-yj
   commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
 - git: https://github.com/YoshikuniJujo/type-flip
