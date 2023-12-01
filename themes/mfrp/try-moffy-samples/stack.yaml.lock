@@ -5,18 +5,31 @@
 
 packages:
 - completed:
-    commit: 30eb7b1a060a98965b6f806b8a8f56bab8102ff2
+    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-moffy
     pantry-tree:
-      sha256: d2ef44bc5a4087b7c7b9de4c052f065ca7000a136d68d59aa7d21865a4e514be
-      size: 7356
+      sha256: f02315a78b27e67d547d676d81e27b24216c990986ef9896e46f3c9a39f9542b
+      size: 6833
     subdir: themes/mfrp/try-moffy
-    version: 0.1.0.10
+    version: 0.1.0.11
   original:
-    commit: 30eb7b1a060a98965b6f806b8a8f56bab8102ff2
+    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-moffy
+- completed:
+    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-type-set
+    pantry-tree:
+      sha256: 8d86f5603ba07e67fa9b0c0c22888f5fed1cea6ecea921305c3b5347b1d4bf87
+      size: 1037
+    subdir: themes/mfrp/try-type-set
+    version: 0.1.0.0
+  original:
+    commit: 112ee7f941e4f179f53219209e4406e208f1bfce
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/mfrp/try-type-set
 - completed:
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
     git: https://github.com/YoshikuniJujo/exception-hierarchy

@@ -43,6 +43,7 @@ dependencies:
 - try-moffy
 - extra-data-yj
 - type-flip
+- try-type-set
 
 ghc-options:
 - -Wall

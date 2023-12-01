@@ -99,6 +99,7 @@ library
     , time
     , transformers
     , try-moffy
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -131,6 +132,7 @@ executable file-viewer
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -163,6 +165,7 @@ executable tfe
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -195,6 +198,7 @@ executable try-boxes
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -227,6 +231,7 @@ executable try-cairo
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -259,6 +264,7 @@ executable try-cancellable
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -291,6 +297,7 @@ executable try-clock
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -323,6 +330,7 @@ executable try-clock-more
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -355,6 +363,7 @@ executable try-drawing-area
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -387,6 +396,7 @@ executable try-followbox
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -423,6 +433,7 @@ executable try-moffy-samples-exe
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -455,6 +466,7 @@ executable try-mouse-event
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -487,6 +499,7 @@ executable try-text-view-exe
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -524,6 +537,7 @@ test-suite try-moffy-samples-test
     , transformers
     , try-moffy
     , try-moffy-samples
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
