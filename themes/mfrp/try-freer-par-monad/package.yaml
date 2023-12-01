@@ -1,0 +1,54 @@
+name:                try-freer-par-monad
+version:             0.1.0.0
+github:              "YoshikuniJujo/try-freer-par-monad"
+license:             BSD-3-Clause
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "Copyright (c) 2023 Yoshikuni Jujo"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Monads
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-freer-par-monad#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+  exposed-modules:
+    - Control.Monad.Freer.Par
+    - Control.Monad.Freer.Par.FTCQueue
+    - Control.Monad.Freer.Par.Funable
+    - Control.Monad.Freer.Par.Sequence
+    - Control.Monad.Freer.Par.TaggableFunction
+
+tests:
+  try-freer-par-monad-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-freer-par-monad
