@@ -41,10 +41,8 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - git: https://github.com/YoshikuniJujo/freer-par-monad
-    commit: b9273334ace5153885a409c1433351aec948d262
-  - git: https://github.com/YoshikuniJujo/type-set
-    commit: 8b7c20acbba7b4a7afaba55b3e4b2773570274ab
+  - freer-par-monad-0.1.0.0
+  - type-set-0.1.0.0
   - extra-data-yj-0.1.0.0
   - type-flip-0.1.0.0
 

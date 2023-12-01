@@ -5,27 +5,19 @@
 
 packages:
 - completed:
-    commit: b9273334ace5153885a409c1433351aec948d262
-    git: https://github.com/YoshikuniJujo/freer-par-monad
-    name: freer-par-monad
+    hackage: freer-par-monad-0.1.0.0@sha256:39b22515a01356f46ef7200ea7ae9560f77aa1441d61bfe682b31884e91d8b12,1999
     pantry-tree:
-      sha256: b3b243190d32ae4acb996567b3cb145880c14897a2b187265eb155090a8a8a7e
-      size: 994
-    version: 0.1.0.0
+      sha256: 6ba64d7b1e18a329061adb17b1f8d9d2c40bc21baebb7e45ec279f4ce71c15bd
+      size: 786
   original:
-    commit: b9273334ace5153885a409c1433351aec948d262
-    git: https://github.com/YoshikuniJujo/freer-par-monad
+    hackage: freer-par-monad-0.1.0.0
 - completed:
-    commit: 8b7c20acbba7b4a7afaba55b3e4b2773570274ab
-    git: https://github.com/YoshikuniJujo/type-set
-    name: type-set
+    hackage: type-set-0.1.0.0@sha256:b503bb5d41e489ff16cfbfa5e68ef06dde668c42f850f42ea099c7e8805dfc29,1950
     pantry-tree:
-      sha256: 4ca6ac463e85cea67a3978bea8f9daa836fca4efccc0a73df47400db5829d948
-      size: 1033
-    version: 0.1.0.0
+      sha256: 4af7047ada93198d00e54f9d0fbfa6d96b45e0420de1c94f9a5c0b5382b6e0c3
+      size: 825
   original:
-    commit: 8b7c20acbba7b4a7afaba55b3e4b2773570274ab
-    git: https://github.com/YoshikuniJujo/type-set
+    hackage: type-set-0.1.0.0
 - completed:
     hackage: extra-data-yj-0.1.0.0@sha256:96cff2cae6b9c15859013b4f7ab02f3a822900f1f2653fb1adad4ce905773e84,1389
     pantry-tree:
