@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - time
 - type-set
-- try-freer-par-monad
+- freer-par-monad
 - extra-data-yj
 - type-flip
 
