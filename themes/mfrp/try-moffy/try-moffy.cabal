@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0f58f2d91d1139bf7736723d0dd4545dae4fa0dd137cb2f5ef4b07676489975e
+-- hash: cb940758335f1fb7af530e6936a2aa64135d8e36502d157463acc1681158d4bc
 
 name:           try-moffy
-version:        0.1.0.12
+version:        0.1.0.13
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy#readme>
 homepage:       https://github.com/YoshikuniJujo/try-moffy#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-moffy/issues
@@ -27,7 +27,6 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Moffy
       Control.Moffy.Event.CalcTextExtents
       Control.Moffy.Event.CalcTextExtents.DefaultWindow
       Control.Moffy.Event.Cursor
@@ -37,31 +36,18 @@ library
       Control.Moffy.Event.Gui
       Control.Moffy.Event.Key
       Control.Moffy.Event.Key.DefaultWindow
-      Control.Moffy.Event.Lock
-      Control.Moffy.Event.Lock.Internal
       Control.Moffy.Event.Mouse
       Control.Moffy.Event.Mouse.DefaultWindow
       Control.Moffy.Event.Random
       Control.Moffy.Event.Random.Internal
-      Control.Moffy.Event.ThreadId
-      Control.Moffy.Event.Time
       Control.Moffy.Event.Window
-      Control.Moffy.Handle
       Control.Moffy.Handle.DefaultWindow
-      Control.Moffy.Handle.Lock
       Control.Moffy.Handle.Random
       Control.Moffy.Handle.TChan
-      Control.Moffy.Handle.ThreadId
-      Control.Moffy.Handle.Time
       Control.Moffy.Handle.XField
       Control.Moffy.Handle.XField.CalcTextExtents
       Control.Moffy.Handle.XField.Key
       Control.Moffy.Handle.XField.Mouse
-      Control.Moffy.Internal.React
-      Control.Moffy.Internal.React.Type
-      Control.Moffy.Internal.Sig
-      Control.Moffy.Internal.Sig.Type
-      Control.Moffy.NoThreadId
       Control.Moffy.Run
       Control.Moffy.Run.TChan
       Control.Moffy.View.XField
@@ -131,6 +117,7 @@ library
     , time
     , transformers
     , try-freer-par-monad
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color
@@ -173,6 +160,7 @@ executable followbox
     , transformers
     , try-freer-par-monad
     , try-moffy
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color
@@ -215,6 +203,7 @@ executable try-glfw-boxes
     , transformers
     , try-freer-par-monad
     , try-moffy
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color
@@ -256,6 +245,7 @@ executable try-moffy-exe
     , transformers
     , try-freer-par-monad
     , try-moffy
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color
@@ -298,6 +288,7 @@ executable tryCount
     , transformers
     , try-freer-par-monad
     , try-moffy
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color
@@ -340,6 +331,7 @@ executable tryDefaultWindow
     , transformers
     , try-freer-par-monad
     , try-moffy
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color
@@ -382,6 +374,7 @@ test-suite try-moffy-test
     , transformers
     , try-freer-par-monad
     , try-moffy
+    , try-moffy-core
     , try-type-set
     , type-flip
     , union-color

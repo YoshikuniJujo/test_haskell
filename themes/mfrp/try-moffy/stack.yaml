@@ -41,8 +41,9 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4794ca2baddda045aa174c989ad31524f1388cca
+  commit: c8c682489fb4b1d8f3797e1aeba90cfde7b924d8
   subdirs:
+    - themes/mfrp/try-moffy-core
     - themes/mfrp/try-type-set
     - themes/mfrp/try-freer-par-monad
 - git: https://github.com/YoshikuniJujo/simple-field.git

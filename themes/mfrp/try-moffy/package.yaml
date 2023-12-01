@@ -1,5 +1,5 @@
 name:                try-moffy
-version:             0.1.0.12
+version:             0.1.0.13
 github:              "YoshikuniJujo/try-moffy"
 license:             BSD3
 author:              "Yoshikuni Jujo"
@@ -50,6 +50,7 @@ dependencies:
 - GLFW-b
 - try-type-set
 - try-freer-par-monad
+- try-moffy-core
 
 library:
   source-dirs: src
