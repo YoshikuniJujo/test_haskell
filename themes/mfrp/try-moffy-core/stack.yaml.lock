@@ -42,16 +42,12 @@ packages:
     commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
     git: https://github.com/YoshikuniJujo/extra-data-yj
 - completed:
-    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
-    git: https://github.com/YoshikuniJujo/type-flip
-    name: type-flip
+    hackage: type-flip-0.1.0.0@sha256:f7811aba3017610117778d1407884c01d8d78c34b4e692ed5ce78bc14dc81640,1375
     pantry-tree:
-      sha256: 9831a4354e6f7f35799575325defda7b5c1c35045b76b36efb796da046fc411a
-      size: 570
-    version: 0.1.0.0
+      sha256: 83901862da96beed3d48f8ee7e76c5439073a81f494999097994bd34607697eb
+      size: 363
   original:
-    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
-    git: https://github.com/YoshikuniJujo/type-flip
+    hackage: type-flip-0.1.0.0
 snapshots:
 - completed:
     sha256: afd5ba64ab602cabc2d3942d3d7e7dd6311bc626dcb415b901eaf576cb62f0ea
