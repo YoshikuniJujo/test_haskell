@@ -13,9 +13,6 @@ module Control.Moffy.Samples.Followbox.Handle (
 	) where
 
 import Control.Moffy.Samples.Event.Delete
-import Control.Moffy.Event.Window
-import Control.Moffy.Event.Key
--- import Control.Moffy.Event.Mouse
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Followbox.Event.CalcTextExtents (CalcTextExtents)
 import Control.Moffy.Handle (
@@ -23,8 +20,7 @@ import Control.Moffy.Handle (
 	retrySt, beforeSt, mergeSt )
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
-import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
-import Control.Moffy.Handle.DefaultWindow
+import Control.Moffy.Samples.Handle.Random (RandomState(..), handleRandom)
 import Data.Type.Set (Singleton, (:-), (:+:), pattern Nil)
 import Data.OneOrMore as Oom (pattern Singleton)
 import Data.Bool (bool)
@@ -44,7 +40,7 @@ import Control.Moffy.Samples.Followbox.Event (
 	GetTimeZone, pattern OccGetTimeZone, Browse(..), pattern OccBrowse,
 	BeginSleep(..), pattern OccBeginSleep, EndSleep, pattern OccEndSleep,
 	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..) )
-import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
+import Control.Moffy.Samples.Followbox.TypeSynonym (Browser, GithubNameToken)
 
 import Data.OneOrMoreApp as Ooma
 
@@ -75,14 +71,13 @@ type MouseEv = Mouse.Move :- Mouse.Down :- Mouse.Up :- 'Nil
 
 data FollowboxState = FollowboxState {
 	fsNextLockId :: Int, fsLockState :: [LockId], fsObjects :: [Object],
-	fsSleepUntil :: Maybe UTCTime, fsRandomGen :: StdGen,
-	fsDefaultWindow :: Maybe WindowId
+	fsSleepUntil :: Maybe UTCTime, fsRandomGen :: StdGen
 	} deriving Show
 
 initialFollowboxState :: StdGen -> FollowboxState
 initialFollowboxState g = FollowboxState {
 	fsNextLockId = 0, fsLockState = [], fsObjects = [],
-	fsSleepUntil = Nothing, fsRandomGen = g, fsDefaultWindow = Nothing }
+	fsSleepUntil = Nothing, fsRandomGen = g }
 
 type HandleF m es = HandleSt FollowboxState m es
 type HandleF' m es = HandleIo' FollowboxState FollowboxState m es
@@ -97,10 +92,6 @@ instance LockState FollowboxState where
 
 instance RandomState FollowboxState where
 	getRandomGen = fsRandomGen; putRandomGen s g = s { fsRandomGen = g }
-
-instance DefaultWindowState FollowboxState where
-	getDefaultWindow = fsDefaultWindow
-	putDefaultWindow s dw = s { fsDefaultWindow = Just dw }
 
 ---------------------------------------------------------------------------
 -- HANDLE

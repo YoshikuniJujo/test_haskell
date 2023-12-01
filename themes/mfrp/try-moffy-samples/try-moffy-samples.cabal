@@ -28,14 +28,25 @@ library
       Control.Moffy.Samples.Boxes
       Control.Moffy.Samples.Event.Delete
       Control.Moffy.Samples.Event.Mouse
+      Control.Moffy.Samples.Event.Random
+      Control.Moffy.Samples.Event.Random.Internal
       Control.Moffy.Samples.Followbox
       Control.Moffy.Samples.Followbox.Clickable
       Control.Moffy.Samples.Followbox.Event
       Control.Moffy.Samples.Followbox.Event.CalcTextExtents
       Control.Moffy.Samples.Followbox.Handle
       Control.Moffy.Samples.Followbox.RunGtkField
+      Control.Moffy.Samples.Followbox.TypeSynonym
+      Control.Moffy.Samples.Followbox.ViewType
+      Control.Moffy.Samples.Handle.Random
+      Control.Moffy.Samples.Handle.TChan
       Control.Moffy.Samples.Run.Gtk4
+      Control.Moffy.Samples.Run.TChan
       Control.Moffy.Samples.View
+      Control.Moffy.Samples.Viewable.Basic
+      Control.Moffy.Samples.Viewable.Image
+      Control.Moffy.Samples.Viewable.Shape
+      Control.Moffy.Samples.Viewable.Text
       Stopgap.Data.Ptr
       Stopgap.Graphics.UI.Gtk
       Stopgap.Graphics.UI.Gtk.Application
@@ -90,6 +101,7 @@ library
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -98,7 +110,6 @@ library
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-type-set
     , type-flip
@@ -123,6 +134,7 @@ executable file-viewer
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -131,7 +143,6 @@ executable file-viewer
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -157,6 +168,7 @@ executable tfe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -165,7 +177,6 @@ executable tfe
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -191,6 +202,7 @@ executable try-boxes
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -199,7 +211,6 @@ executable try-boxes
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -225,6 +236,7 @@ executable try-cairo
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -233,7 +245,6 @@ executable try-cairo
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -259,6 +270,7 @@ executable try-cancellable
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -267,7 +279,6 @@ executable try-cancellable
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -293,6 +304,7 @@ executable try-clock
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -301,7 +313,6 @@ executable try-clock
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -327,6 +338,7 @@ executable try-clock-more
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -335,7 +347,6 @@ executable try-clock-more
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -361,6 +372,7 @@ executable try-drawing-area
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -369,7 +381,6 @@ executable try-drawing-area
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -395,6 +406,7 @@ executable try-followbox
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -403,7 +415,6 @@ executable try-followbox
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -433,6 +444,7 @@ executable try-moffy-samples-exe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -441,7 +453,6 @@ executable try-moffy-samples-exe
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -467,6 +478,7 @@ executable try-mouse-event
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -475,7 +487,6 @@ executable try-mouse-event
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -501,6 +512,7 @@ executable try-text-view-exe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -509,7 +521,6 @@ executable try-text-view-exe
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set
@@ -540,6 +551,7 @@ test-suite try-moffy-samples-test
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , monads-tf
     , process
     , random
     , simple-cairo
@@ -548,7 +560,6 @@ test-suite try-moffy-samples-test
     , text
     , time
     , transformers
-    , try-moffy
     , try-moffy-core
     , try-moffy-samples
     , try-type-set

@@ -5,33 +5,20 @@
 
 packages:
 - completed:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-moffy-core
     pantry-tree:
-      sha256: 2ebc41bc5d993532b90fc26e7788509a36fa4057499de9d2198713f8e65c7346
-      size: 1549
+      sha256: fefffa1949529bcb664c22152aeb2ecf33e3720c3fc7997d34b521ffaa344350
+      size: 1614
     subdir: themes/mfrp/try-moffy-core
-    version: 0.1.0.1
+    version: 0.1.0.4
   original:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-moffy-core
 - completed:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-moffy
-    pantry-tree:
-      sha256: b7abc86881c02b260956d073f8da85b092ae8be05d9b890ec4695af698e0f3eb
-      size: 5324
-    subdir: themes/mfrp/try-moffy
-    version: 0.1.0.13
-  original:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/mfrp/try-moffy
-- completed:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-type-set
     pantry-tree:
@@ -40,11 +27,11 @@ packages:
     subdir: themes/mfrp/try-type-set
     version: 0.1.0.0
   original:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-type-set
 - completed:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-par-monad
     pantry-tree:
@@ -53,7 +40,7 @@ packages:
     subdir: themes/mfrp/try-freer-par-monad
     version: 0.1.0.0
   original:
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-freer-par-monad
 - completed:
@@ -130,28 +117,6 @@ packages:
     commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
     git: https://github.com/YoshikuniJujo/type-flip
 - completed:
-    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
-    git: https://github.com/YoshikuniJujo/simple-gdk3
-    name: simple-gdk3
-    pantry-tree:
-      sha256: edebfef20cccfee49ca1baefaa9edd0d963dbe872f7efb129c4858b2589a8ee9
-      size: 4020
-    version: 0.1.0.0
-  original:
-    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
-    git: https://github.com/YoshikuniJujo/simple-gdk3
-- completed:
-    commit: e5e069590dbea7038540b66d9545df33b185e9bf
-    git: https://github.com/YoshikuniJujo/x-keysym
-    name: x-keysym
-    pantry-tree:
-      sha256: 7d7bf5e414a57950bc89937197aefe0d38cee0c7dcff41d2846a9b94f6b3d223
-      size: 754
-    version: 0.1.0.0
-  original:
-    commit: e5e069590dbea7038540b66d9545df33b185e9bf
-    git: https://github.com/YoshikuniJujo/x-keysym
-- completed:
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
     git: https://github.com/YoshikuniJujo/glib-stopgap
     name: glib-stopgap
@@ -162,17 +127,6 @@ packages:
   original:
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
     git: https://github.com/YoshikuniJujo/glib-stopgap
-- completed:
-    commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
-    git: https://github.com/YoshikuniJujo/simple-field.git
-    name: simple-field
-    pantry-tree:
-      sha256: 369eaccc216dd5ca74eea119d28f74ca66182a6d9f2f50f4088b67d62d49170f
-      size: 788
-    version: 0.1.0.0
-  original:
-    commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
-    git: https://github.com/YoshikuniJujo/simple-field.git
 snapshots:
 - completed:
     sha256: 5921ddc75f5dd3f197fbc32e1e5676895a8e7b971d4f82ef6b556657801dd18a

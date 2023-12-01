@@ -23,8 +23,8 @@ import Data.Type.Set (pattern Nil, (:-), Singleton)
 
 import qualified Data.Text as T
 
-import Trial.Followbox.ViewType (View(..), blue, VText(..))
-import Control.Moffy.Viewable.Basic (Position)
+import Control.Moffy.Samples.Followbox.ViewType (View(..), blue, VText(..))
+import Control.Moffy.Samples.Viewable.Basic (Position)
 
 import Data.OneOfThem
 

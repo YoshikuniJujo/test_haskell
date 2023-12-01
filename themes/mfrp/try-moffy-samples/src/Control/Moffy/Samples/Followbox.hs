@@ -12,9 +12,9 @@ import Prelude hiding (break, until)
 import Control.Arrow ((>>>))
 import Control.Monad (void, forever, (<=<))
 import Control.Moffy (adjust, emit, waitFor, first, break, until)
-import Control.Moffy.Event.Window
+-- import Control.Moffy.Event.Window
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
-import Control.Moffy.Event.Random (getRandomR)
+import Control.Moffy.Samples.Event.Random (getRandomR)
 import Control.Moffy.Samples.Event.Delete (deleteEvent)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Or (Or(..))
@@ -36,10 +36,10 @@ import Control.Moffy.Samples.Followbox.Event (
 import Control.Moffy.Samples.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
-import Trial.Followbox.ViewType (View(..), View1, white, Png(..), VText(..), Line(..), Image(..))
-import Trial.Followbox.TypeSynonym (ErrorMessage)
+import Control.Moffy.Samples.Followbox.ViewType (View(..), View1, white, Png(..), VText(..), Line(..), Image(..))
+import Control.Moffy.Samples.Followbox.TypeSynonym (ErrorMessage)
 
-import Control.Moffy.Viewable.Basic (Position)
+import Control.Moffy.Samples.Viewable.Basic (Position)
 
 import qualified Codec.Picture as P
 

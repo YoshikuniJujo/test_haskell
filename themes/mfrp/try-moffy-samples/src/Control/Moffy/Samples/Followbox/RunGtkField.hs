@@ -8,15 +8,15 @@ module Control.Moffy.Samples.Followbox.RunGtkField (runFollowbox) where
 import Control.Concurrent
 import Control.Moffy
 import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
-import Control.Moffy.Handle.TChan
-import Control.Moffy.Run.TChan
+import Control.Moffy.Samples.Handle.TChan
+import Control.Moffy.Samples.Run.TChan
 import Control.Concurrent.STM
 import Data.Type.Set ((:-), (:+:))
 import System.Random
 
 import Control.Moffy.Samples.Followbox.Event
 import Control.Moffy.Samples.Followbox.Handle
-import Trial.Followbox.TypeSynonym
+import Control.Moffy.Samples.Followbox.TypeSynonym
 
 import Control.Moffy.Samples.Run.Gtk4 hiding (GuiEv)
 

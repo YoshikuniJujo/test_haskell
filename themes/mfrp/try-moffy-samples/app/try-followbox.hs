@@ -8,9 +8,9 @@ import Data.Type.Flip
 import Data.OneOfThem
 import Data.Color
 
-import Trial.Followbox.ViewType qualified as T
+import Control.Moffy.Samples.Followbox.ViewType qualified as T
 import Control.Moffy.Samples.View
-import Control.Moffy.Viewable.Shape
+import Control.Moffy.Samples.Viewable.Shape
 
 main :: IO ()
 main = runFollowbox "firefox" Nothing $ viewToView <$%> followbox

@@ -42,10 +42,9 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 00d1ea1927bdac96c499e0b250d339d08c7f2895
+    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
     subdirs:
     - themes/mfrp/try-moffy-core
-    - themes/mfrp/try-moffy
     - themes/mfrp/try-type-set
     - themes/mfrp/try-freer-par-monad
   - git: https://github.com/YoshikuniJujo/exception-hierarchy
@@ -61,14 +60,8 @@ extra-deps:
     commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
   - git: https://github.com/YoshikuniJujo/type-flip
     commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
-  - git: https://github.com/YoshikuniJujo/simple-gdk3
-    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
-  - git: https://github.com/YoshikuniJujo/x-keysym
-    commit: e5e069590dbea7038540b66d9545df33b185e9bf
   - git: https://github.com/YoshikuniJujo/glib-stopgap
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
-  - git: https://github.com/YoshikuniJujo/simple-field.git
-    commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - stm
 - transformers
+- monads-tf
 - containers
 - unordered-containers
 - bytestring
@@ -41,7 +42,6 @@ dependencies:
 - simple-pango
 - union-color
 - try-moffy-core
-- try-moffy
 - extra-data-yj
 - type-flip
 - try-type-set

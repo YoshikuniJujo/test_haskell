@@ -19,9 +19,9 @@ import Control.Concurrent.STM (atomically, newTChan, readTChan, writeTChan)
 import Control.Moffy
 import Control.Moffy.Event.Time
 import Control.Moffy.Handle qualified as H
-import Control.Moffy.Handle.TChan
+import Control.Moffy.Samples.Handle.TChan
 import Control.Moffy.Handle.Time
-import Control.Moffy.Run.TChan
+import Control.Moffy.Samples.Run.TChan
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.View qualified as V
