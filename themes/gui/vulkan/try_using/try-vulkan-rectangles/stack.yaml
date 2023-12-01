@@ -35,14 +35,15 @@ packages:
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
-# extra-deps:
-# - acme-missiles-0.3
-# - git: https://github.com/commercialhaskell/stack.git
-#   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+- moffy-0.1.0.0
+- freer-par-monad-0.1.0.0
+- type-set-0.1.0.0
+- type-flip-0.1.0.0
+- extra-data-yj-0.1.0.0
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4f2f244c9651faff0674f671a72485d2e22d06c7
+  commit: 71e71ad2948ca43881bf1a4248d274e9dc736afa
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
@@ -69,9 +70,6 @@ extra-deps:
   - themes/gui/vulkan/try-glfw-group
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/cairo/try-cairo-image-samples
-  - themes/mfrp/try-moffy-core
-  - themes/mfrp/try-freer-par-monad
-  - themes/mfrp/try-type-set
 - union-color-0.1.2.1
 - optparse-declarative-0.4.2
 - git: https://github.com/YoshikuniJujo/simple-cairo
@@ -80,10 +78,6 @@ extra-deps:
   commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
-- git: https://github.com/YoshikuniJujo/extra-data-yj
-  commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
-- git: https://github.com/YoshikuniJujo/type-flip
-  commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
 - git: https://github.com/YoshikuniJujo/simple-gdk3
   commit: b5efabfd256a7bea9ed865b76fb83990476932f9
 - git: https://github.com/YoshikuniJujo/x-keysym

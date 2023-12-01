@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-vulkan-rectangles
-version:        0.1.0.19
+version:        0.1.0.20
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-rectangles#readme>
 homepage:       https://github.com/githubuser/try-vulkan-rectangles#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-rectangles/issues
@@ -46,6 +46,7 @@ library
     , cairo-image
     , containers
     , data-default
+    , moffy
     , mtl
     , optparse-declarative
     , primitive
@@ -65,13 +66,12 @@ library
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
-    , try-moffy-core
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-type-set
+    , type-set
     , typelevel-tools
     , union-color
     , vector
@@ -92,6 +92,7 @@ executable try-multi-rectangles
     , cairo-image
     , containers
     , data-default
+    , moffy
     , mtl
     , optparse-declarative
     , primitive
@@ -111,14 +112,13 @@ executable try-multi-rectangles
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
-    , try-moffy-core
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-type-set
     , try-vulkan-rectangles
+    , type-set
     , typelevel-tools
     , union-color
     , vector
@@ -139,6 +139,7 @@ executable try-multi-rectangles2
     , cairo-image
     , containers
     , data-default
+    , moffy
     , mtl
     , optparse-declarative
     , primitive
@@ -158,14 +159,13 @@ executable try-multi-rectangles2
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
-    , try-moffy-core
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-type-set
     , try-vulkan-rectangles
+    , type-set
     , typelevel-tools
     , union-color
     , vector
@@ -186,6 +186,7 @@ executable try-use-cairo
     , cairo-image
     , containers
     , data-default
+    , moffy
     , mtl
     , optparse-declarative
     , primitive
@@ -205,14 +206,13 @@ executable try-use-cairo
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
-    , try-moffy-core
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-type-set
     , try-vulkan-rectangles
+    , type-set
     , typelevel-tools
     , union-color
     , vector
@@ -234,6 +234,7 @@ test-suite try-vulkan-rectangles-test
     , cairo-image
     , containers
     , data-default
+    , moffy
     , mtl
     , optparse-declarative
     , primitive
@@ -253,14 +254,13 @@ test-suite try-vulkan-rectangles-test
     , try-gpu-vulkan-khr-glfw
     , try-hetero-parameter-list
     , try-language-spir-v
-    , try-moffy-core
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-type-set
     , try-vulkan-rectangles
+    , type-set
     , typelevel-tools
     , union-color
     , vector
