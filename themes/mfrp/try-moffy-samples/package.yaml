@@ -41,10 +41,10 @@ dependencies:
 - cairo-image
 - simple-pango
 - union-color
-- try-moffy-core
+- moffy
 - extra-data-yj
 - type-flip
-- try-type-set
+- type-set
 
 ghc-options:
 - -Wall

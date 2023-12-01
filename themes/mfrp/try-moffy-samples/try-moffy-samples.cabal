@@ -101,6 +101,7 @@ library
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -110,9 +111,8 @@ library
     , text
     , time
     , transformers
-    , try-moffy-core
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -134,6 +134,7 @@ executable file-viewer
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -143,10 +144,9 @@ executable file-viewer
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -168,6 +168,7 @@ executable tfe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -177,10 +178,9 @@ executable tfe
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -202,6 +202,7 @@ executable try-boxes
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -211,10 +212,9 @@ executable try-boxes
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -236,6 +236,7 @@ executable try-cairo
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -245,10 +246,9 @@ executable try-cairo
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -270,6 +270,7 @@ executable try-cancellable
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -279,10 +280,9 @@ executable try-cancellable
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -304,6 +304,7 @@ executable try-clock
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -313,10 +314,9 @@ executable try-clock
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -338,6 +338,7 @@ executable try-clock-more
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -347,10 +348,9 @@ executable try-clock-more
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -372,6 +372,7 @@ executable try-drawing-area
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -381,10 +382,9 @@ executable try-drawing-area
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -406,6 +406,7 @@ executable try-followbox
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -415,10 +416,9 @@ executable try-followbox
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -444,6 +444,7 @@ executable try-moffy-samples-exe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -453,10 +454,9 @@ executable try-moffy-samples-exe
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -478,6 +478,7 @@ executable try-mouse-event
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -487,10 +488,9 @@ executable try-mouse-event
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -512,6 +512,7 @@ executable try-text-view-exe
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -521,10 +522,9 @@ executable try-text-view-exe
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010
@@ -551,6 +551,7 @@ test-suite try-moffy-samples-test
     , exception-hierarchy
     , extra-data-yj
     , http-conduit
+    , moffy
     , monads-tf
     , process
     , random
@@ -560,10 +561,9 @@ test-suite try-moffy-samples-test
     , text
     , time
     , transformers
-    , try-moffy-core
     , try-moffy-samples
-    , try-type-set
     , type-flip
+    , type-set
     , union-color
     , unordered-containers
   default-language: Haskell2010

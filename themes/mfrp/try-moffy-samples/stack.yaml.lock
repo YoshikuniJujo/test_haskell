@@ -5,44 +5,40 @@
 
 packages:
 - completed:
-    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-moffy-core
+    hackage: moffy-0.1.0.0@sha256:5c970a4621383c7df725d05f44f594b325bf29513ef76d17d582b4a8ecca6cda,2342
     pantry-tree:
-      sha256: fefffa1949529bcb664c22152aeb2ecf33e3720c3fc7997d34b521ffaa344350
-      size: 1614
-    subdir: themes/mfrp/try-moffy-core
-    version: 0.1.0.4
+      sha256: 510f81e97578307dcabc50650b748cd10a387f4772aa1a1c1163f58dd26e3685
+      size: 1444
   original:
-    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/mfrp/try-moffy-core
+    hackage: moffy-0.1.0.0
 - completed:
-    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-type-set
+    hackage: freer-par-monad-0.1.0.0@sha256:39b22515a01356f46ef7200ea7ae9560f77aa1441d61bfe682b31884e91d8b12,1999
     pantry-tree:
-      sha256: 8d86f5603ba07e67fa9b0c0c22888f5fed1cea6ecea921305c3b5347b1d4bf87
-      size: 1037
-    subdir: themes/mfrp/try-type-set
-    version: 0.1.0.0
+      sha256: 6ba64d7b1e18a329061adb17b1f8d9d2c40bc21baebb7e45ec279f4ce71c15bd
+      size: 786
   original:
-    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/mfrp/try-type-set
+    hackage: freer-par-monad-0.1.0.0
 - completed:
-    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-freer-par-monad
+    hackage: type-set-0.1.0.0@sha256:b503bb5d41e489ff16cfbfa5e68ef06dde668c42f850f42ea099c7e8805dfc29,1950
     pantry-tree:
-      sha256: d8bb37f1cfc23f09257c7b04c8921f47beb4a07cb36428eb29c1ec1a56293acf
-      size: 998
-    subdir: themes/mfrp/try-freer-par-monad
-    version: 0.1.0.0
+      sha256: 4af7047ada93198d00e54f9d0fbfa6d96b45e0420de1c94f9a5c0b5382b6e0c3
+      size: 825
   original:
-    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/mfrp/try-freer-par-monad
+    hackage: type-set-0.1.0.0
+- completed:
+    hackage: type-flip-0.1.0.0@sha256:f7811aba3017610117778d1407884c01d8d78c34b4e692ed5ce78bc14dc81640,1375
+    pantry-tree:
+      sha256: 83901862da96beed3d48f8ee7e76c5439073a81f494999097994bd34607697eb
+      size: 363
+  original:
+    hackage: type-flip-0.1.0.0
+- completed:
+    hackage: extra-data-yj-0.1.0.0@sha256:96cff2cae6b9c15859013b4f7ab02f3a822900f1f2653fb1adad4ce905773e84,1389
+    pantry-tree:
+      sha256: fba48ec459c0304dda00aef6c68f5e5d4be371a3908a063d01a32094e45e54a7
+      size: 427
+  original:
+    hackage: extra-data-yj-0.1.0.0
 - completed:
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
     git: https://github.com/YoshikuniJujo/exception-hierarchy
@@ -94,28 +90,6 @@ packages:
       size: 429
   original:
     hackage: union-color-0.1.2.1
-- completed:
-    commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
-    git: https://github.com/YoshikuniJujo/extra-data-yj
-    name: extra-data-yj
-    pantry-tree:
-      sha256: 182f1aa48dd298035721ea4adef31772f808e72aa6f1a9f88c659c22c36f1261
-      size: 635
-    version: 0.1.0.0
-  original:
-    commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
-    git: https://github.com/YoshikuniJujo/extra-data-yj
-- completed:
-    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
-    git: https://github.com/YoshikuniJujo/type-flip
-    name: type-flip
-    pantry-tree:
-      sha256: 9831a4354e6f7f35799575325defda7b5c1c35045b76b36efb796da046fc411a
-      size: 570
-    version: 0.1.0.0
-  original:
-    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
-    git: https://github.com/YoshikuniJujo/type-flip
 - completed:
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
     git: https://github.com/YoshikuniJujo/glib-stopgap

@@ -41,12 +41,11 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: c6138277b487b60c79cb4c4ed5b7690642d4d779
-    subdirs:
-    - themes/mfrp/try-moffy-core
-    - themes/mfrp/try-type-set
-    - themes/mfrp/try-freer-par-monad
+  - moffy-0.1.0.0
+  - freer-par-monad-0.1.0.0
+  - type-set-0.1.0.0
+  - type-flip-0.1.0.0
+  - extra-data-yj-0.1.0.0
   - git: https://github.com/YoshikuniJujo/exception-hierarchy
     commit: e1ec72d664498e0355aa788035d2a9102fa1e478
   - git: https://github.com/YoshikuniJujo/simple-cairo
@@ -56,10 +55,6 @@ extra-deps:
   - git: https://github.com/YoshikuniJujo/simple-pango
     commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
   - union-color-0.1.2.1
-  - git: https://github.com/YoshikuniJujo/extra-data-yj
-    commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
-  - git: https://github.com/YoshikuniJujo/type-flip
-    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
   - git: https://github.com/YoshikuniJujo/glib-stopgap
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 
