@@ -44,10 +44,9 @@ extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
     commit: 5ab7dad90a16e03721f6e18ddcc7218400da221c
     subdirs:
-      - themes/mfrp/try-type-set
       - themes/mfrp/try-freer-par-monad
-  - git: https://github.com/YoshikuniJujo/extra-data-yj
-    commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
+      - themes/mfrp/try-type-set
+  - extra-data-yj-0.1.0.0
   - type-flip-0.1.0.0
 
 # Override default flag values for local packages and extra-deps
