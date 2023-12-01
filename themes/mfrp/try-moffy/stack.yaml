@@ -38,8 +38,12 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
+
 extra-deps:
+- git: https://github.com/YoshikuniJujo/test_haskell
+  commit: 7cf531f720529c2d3edfab8978e2df5cfe3783d0
+  subdirs:
+    - themes/mfrp/try-type-set
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 - git: https://github.com/YoshikuniJujo/extra-data-yj

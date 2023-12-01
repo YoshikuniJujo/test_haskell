@@ -1,5 +1,5 @@
 name:                try-moffy
-version:             0.1.0.10
+version:             0.1.0.11
 github:              "YoshikuniJujo/try-moffy"
 license:             BSD3
 author:              "Yoshikuni Jujo"
@@ -48,6 +48,7 @@ dependencies:
 - x-keysym
 - union-color
 - GLFW-b
+- try-type-set
 
 library:
   source-dirs: src

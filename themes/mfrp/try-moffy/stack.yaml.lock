@@ -5,6 +5,19 @@
 
 packages:
 - completed:
+    commit: 7cf531f720529c2d3edfab8978e2df5cfe3783d0
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-type-set
+    pantry-tree:
+      sha256: 8d86f5603ba07e67fa9b0c0c22888f5fed1cea6ecea921305c3b5347b1d4bf87
+      size: 1037
+    subdir: themes/mfrp/try-type-set
+    version: 0.1.0.0
+  original:
+    commit: 7cf531f720529c2d3edfab8978e2df5cfe3783d0
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/mfrp/try-type-set
+- completed:
     commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
     git: https://github.com/YoshikuniJujo/simple-field.git
     name: simple-field

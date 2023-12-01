@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c0110602b9ee1020e58fb683b4fa3b0b3dc91dce86832ac02f52099f68e14ca3
+-- hash: b837e30a7e5f2bbaeb597b31af9200a8d053cda46f421e67f1cdd6b53fefd75a
 
 name:           try-moffy
-version:        0.1.0.10
+version:        0.1.0.11
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy#readme>
 homepage:       https://github.com/YoshikuniJujo/try-moffy#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-moffy/issues
@@ -75,14 +75,6 @@ library
       Control.Monad.Freer.Par.Internal.Id
       Control.Monad.Freer.Par.Sequence
       Control.Monad.Freer.Par.TaggableFunction
-      Data.OneOfThem
-      Data.OneOrMore
-      Data.OneOrMore.Internal
-      Data.OneOrMoreApp
-      Data.Type.Set
-      Data.Type.Set.Internal
-      Data.Type.SetApp
-      Data.Type.SetApp.Internal
       Foreign.Tools
       Graphics.Cairo
       Graphics.CairoType
@@ -144,6 +136,7 @@ library
     , text
     , time
     , transformers
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -184,6 +177,7 @@ executable followbox
     , time
     , transformers
     , try-moffy
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -224,6 +218,7 @@ executable try-glfw-boxes
     , time
     , transformers
     , try-moffy
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -263,6 +258,7 @@ executable try-moffy-exe
     , time
     , transformers
     , try-moffy
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -303,6 +299,7 @@ executable tryCount
     , time
     , transformers
     , try-moffy
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -343,6 +340,7 @@ executable tryDefaultWindow
     , time
     , transformers
     , try-moffy
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
@@ -383,6 +381,7 @@ test-suite try-moffy-test
     , time
     , transformers
     , try-moffy
+    , try-type-set
     , type-flip
     , union-color
     , unordered-containers
