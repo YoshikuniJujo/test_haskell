@@ -14,7 +14,7 @@ module Control.Moffy.Samples.Followbox.Handle (
 
 import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
-import Control.Moffy.Samples.Followbox.Event.CalcTextExtents (CalcTextExtents)
+import Control.Moffy.Samples.Event.CalcTextExtents (CalcTextExtents)
 import Control.Moffy.Handle (
 	Handle, Handle', HandleSt, HandleSt', HandleIo', liftHandle',
 	retrySt, beforeSt, mergeSt )

@@ -5,7 +5,7 @@
 
 module Control.Moffy.Samples.Viewable.Text (VText(..)) where
 
-import Control.Moffy.Samples.Followbox.Event.CalcTextExtents (FontName, FontSize)
+import Control.Moffy.Samples.Event.CalcTextExtents (FontName, FontSize)
 import Data.Text (Text)
 
 import Data.Type.Set

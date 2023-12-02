@@ -34,7 +34,7 @@ import Control.Moffy.Event.Lock (LockEv)
 import Control.Moffy.Samples.Event.Random (RandomEv)
 import Control.Moffy.Samples.Event.Delete (DeleteEvent)
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse (Move, Down, Up)
-import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
+import Control.Moffy.Samples.Event.CalcTextExtents
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
 import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)

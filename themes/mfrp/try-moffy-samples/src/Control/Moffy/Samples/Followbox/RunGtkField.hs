@@ -7,7 +7,7 @@ module Control.Moffy.Samples.Followbox.RunGtkField (runFollowbox) where
 
 import Control.Concurrent
 import Control.Moffy
-import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
+import Control.Moffy.Samples.Event.CalcTextExtents
 import Control.Moffy.Samples.Handle.TChan
 import Control.Moffy.Samples.Run.TChan
 import Control.Concurrent.STM

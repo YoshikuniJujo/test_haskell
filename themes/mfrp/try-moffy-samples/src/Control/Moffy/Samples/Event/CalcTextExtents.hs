@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Samples.Followbox.Event.CalcTextExtents (
+module Control.Moffy.Samples.Event.CalcTextExtents (
 	CalcTextExtents(..), pattern OccCalcTextExtents,
 	TextExtents(..), Rectangle(..), FontName, FontSize, calcTextExtents
 	) where

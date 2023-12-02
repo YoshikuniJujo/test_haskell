@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Control.Moffy.Samples.Boxes
+      Control.Moffy.Samples.Boxes.Run
+      Control.Moffy.Samples.Event.CalcTextExtents
       Control.Moffy.Samples.Event.Delete
       Control.Moffy.Samples.Event.Mouse
       Control.Moffy.Samples.Event.Random
@@ -33,7 +35,6 @@ library
       Control.Moffy.Samples.Followbox
       Control.Moffy.Samples.Followbox.Clickable
       Control.Moffy.Samples.Followbox.Event
-      Control.Moffy.Samples.Followbox.Event.CalcTextExtents
       Control.Moffy.Samples.Followbox.Handle
       Control.Moffy.Samples.Followbox.RunGtkField
       Control.Moffy.Samples.Followbox.TypeSynonym

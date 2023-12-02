@@ -16,7 +16,7 @@ import Prelude hiding (repeat)
 
 import Control.Moffy (React, adjust, repeat, find, indexBy)
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
-import Control.Moffy.Samples.Followbox.Event.CalcTextExtents (
+import Control.Moffy.Samples.Event.CalcTextExtents (
 	TextExtents(..), FontName, FontSize, Rectangle(..),
 	CalcTextExtents, calcTextExtents )
 import Data.Type.Set (pattern Nil, (:-), Singleton)

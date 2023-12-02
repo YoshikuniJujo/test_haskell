@@ -15,7 +15,7 @@ import Control.Moffy
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.View
-import Control.Moffy.Samples.Followbox.Event.CalcTextExtents
+import Control.Moffy.Samples.Event.CalcTextExtents
 import Data.Type.Set
 import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
