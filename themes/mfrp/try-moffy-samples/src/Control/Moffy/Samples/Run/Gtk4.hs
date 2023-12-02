@@ -4,7 +4,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Samples.Run.Gtk4 where
+module Control.Moffy.Samples.Run.Gtk4 (runSingleWin) where
 
 import Foreign.C.Types
 import Control.Monad
