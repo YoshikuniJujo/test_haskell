@@ -40,49 +40,33 @@ packages:
   original:
     hackage: extra-data-yj-0.1.0.0
 - completed:
-    commit: e1ec72d664498e0355aa788035d2a9102fa1e478
-    git: https://github.com/YoshikuniJujo/exception-hierarchy
-    name: exception-hierarchy
+    hackage: exception-hierarchy-0.1.0.10@sha256:aa1eeac824cb7348c94f1289ae8aca92377faf107060dab23d9a482614b996ce,871
     pantry-tree:
-      sha256: 5f47ca701c92cd2ff91fd7498ab41c0b5a0734abbc160ca38509fcfe7f4d9d89
-      size: 454
-    version: 0.1.0.9
+      sha256: 39577e92a22e7b160674d8da3c698f0e4166cfa44ef06b941732b406e9f21a71
+      size: 299
   original:
-    commit: e1ec72d664498e0355aa788035d2a9102fa1e478
-    git: https://github.com/YoshikuniJujo/exception-hierarchy
+    hackage: exception-hierarchy-0.1.0.10
 - completed:
-    commit: 6a520b14a84e144faff4efb823c58ccb346104db
-    git: https://github.com/YoshikuniJujo/simple-cairo
-    name: simple-cairo
+    hackage: simple-cairo-0.1.0.5@sha256:d26c1373505430b9ae3d41feae314061d86c231c8b46940f4c4cf36fe54a48b6,4499
     pantry-tree:
-      sha256: 93616b711e69d10b4936a7f0ffbfac2642c6e528ca8ba82dbb2150909c50ed29
-      size: 4958
-    version: 0.1.0.5
+      sha256: 8ae1a7b4ba3d68dd83d88f65cf14718b6b2a480e766b797270609b68de6157c9
+      size: 3985
   original:
-    commit: 6a520b14a84e144faff4efb823c58ccb346104db
-    git: https://github.com/YoshikuniJujo/simple-cairo
+    hackage: simple-cairo-0.1.0.5
 - completed:
-    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
-    git: https://github.com/YoshikuniJujo/cairo-image
-    name: cairo-image
+    hackage: cairo-image-0.1.0.0@sha256:a6663e39323271a7b1db2012a9c070881b7861cb5743b6bb32dd40d8d7f1e4b3,2058
     pantry-tree:
-      sha256: 5b489f2b4ca2de60feab3c83f9bcac15674e7566d4504804f92445e29711f412
-      size: 887
-    version: 0.1.0.0
+      sha256: c2d79af735be627636d43ab64b2190aaba40c5842875fa2035f22c0d57016dbd
+      size: 632
   original:
-    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
-    git: https://github.com/YoshikuniJujo/cairo-image
+    hackage: cairo-image-0.1.0.0
 - completed:
-    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
-    git: https://github.com/YoshikuniJujo/simple-pango
-    name: simple-pango
+    hackage: simple-pango-0.1.0.1@sha256:6dec5ff59e637364e2051e90eaf7ec4d7aea9d2023c3b0af0627950fa755162d,3504
     pantry-tree:
-      sha256: c9018bd60f1ab409e0f4b9f4ae6e6265725006c5062b4d5254014ec5aeb473fa
-      size: 3830
-    version: 0.1.0.1
+      sha256: 184ed5e202ba8faeef8e2fb7e5354f794c7087942f8d5a8ace4b24fa4416db9d
+      size: 3575
   original:
-    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
-    git: https://github.com/YoshikuniJujo/simple-pango
+    hackage: simple-pango-0.1.0.1
 - completed:
     hackage: union-color-0.1.2.1@sha256:0d8cd13f3fbe8135f34244f9847b415635d6066b06c92203fdb521a36cdaeae8,1326
     pantry-tree:
@@ -91,20 +75,15 @@ packages:
   original:
     hackage: union-color-0.1.2.1
 - completed:
-    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
-    git: https://github.com/YoshikuniJujo/glib-stopgap
-    name: glib-stopgap
+    hackage: glib-stopgap-0.1.0.0@sha256:a3244b5ccf1fe90fa876d9934e57c2f8079a0d74f3352443b9c69a9dfc6a53b4,1698
     pantry-tree:
-      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
-      size: 1273
-    version: 0.1.0.0
+      sha256: 44b66a5589cf322c2394f4a22178f6ef3dcc58fa0254d51badec55fda40522b4
+      size: 1020
   original:
-    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
-    git: https://github.com/YoshikuniJujo/glib-stopgap
+    hackage: glib-stopgap-0.1.0.0
 snapshots:
 - completed:
-    sha256: 5921ddc75f5dd3f197fbc32e1e5676895a8e7b971d4f82ef6b556657801dd18a
-    size: 640054
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/20.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/20.yaml
+    sha256: 1f62b4b1490b3985f486ddae2f150d1887eaf08631c6d81a1e3f3e1f1c62cd30
+    size: 698990
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/12/3.yaml
+  original: nightly-2023-12-03

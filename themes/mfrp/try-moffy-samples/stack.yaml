@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/20.yaml
+resolver: nightly-2023-12-03
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -46,17 +45,12 @@ extra-deps:
   - type-set-0.1.0.0
   - type-flip-0.1.0.0
   - extra-data-yj-0.1.0.0
-  - git: https://github.com/YoshikuniJujo/exception-hierarchy
-    commit: e1ec72d664498e0355aa788035d2a9102fa1e478
-  - git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: 6a520b14a84e144faff4efb823c58ccb346104db
-  - git: https://github.com/YoshikuniJujo/cairo-image
-    commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
-  - git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
+  - exception-hierarchy-0.1.0.10
+  - simple-cairo-0.1.0.5
+  - cairo-image-0.1.0.0
+  - simple-pango-0.1.0.1
   - union-color-0.1.2.1
-  - git: https://github.com/YoshikuniJujo/glib-stopgap
-    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+  - glib-stopgap-0.1.0.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
