@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MonoLocalBinds #-}
@@ -51,27 +51,19 @@ leftUp = releaseOn Mouse.ButtonPrimary
 
 before :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') Bool
-l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
+l `before` r = (\case L _ -> True; _ -> False) <$> l `first` r
 
 doubler :: React s (TryWait :- Singleton Mouse.Down) ()
-doubler = adjust rightClick
-	>> (bool doubler (pure ()) =<< rightClick `before` sleep 0.2)
+doubler = adjust rightClick >>
+	rightClick `before` sleep 0.2 >>= bool doubler (pure ())
+
+curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
+curRect p1 = Rect p1 <$%> Mouse.position
 
 wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect r
 wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed
-	where
-	rectAtTime t = Rect (A.first (+ dx t) lu) (A.first (+ dx t) rd)
-	dx t = sin (realToFrac t * 5) * 15
-
-drClickOn :: Rect -> React s (Mouse.Down :- Mouse.Move :- TryWait :- 'Nil) ()
-drClickOn rct = void . find (`inside` rct) . (fst <$%>) $ Mouse.position `indexBy` repeat doubler
-	where (x, y) `inside` Rect (l, u) (r, d) =
-		(l <= x && x <= r || r <= x && x <= l) &&
-		(u <= y && y <= d || d <= y && y <= u)
-
-defineRect :: Sig s (Mouse.Move :- Mouse.Down :- Mouse.Up :- 'Nil) Rect Rect
-defineRect = either error pure <=< runExceptT
-	$ ExceptT . adjustSig . completeRect =<< ExceptT (waitFor $ adjust firstPoint)
+	where rectAtTime t = let dx = sin (realToFrac t * 5) * 15 in
+		Rect ((+ dx) `A.first` lu) ((+ dx) `A.first` rd)
 
 firstPoint :: React s (Mouse.Down :- Mouse.Move :- 'Nil) (Either String Point)
 firstPoint = (<$> Mouse.position `at` leftClick)
@@ -81,8 +73,9 @@ completeRect :: Point -> Sig s (Mouse.Up :- Mouse.Move :- 'Nil) Rect (Either Str
 completeRect p1 = (<$> curRect p1 `until` leftUp)
 	$ const (neverOccur "never occur") `either` (Right . fst)
 
-curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
-curRect p1 = Rect p1 <$%> Mouse.position
+defineRect :: Sig s (Mouse.Move :- Mouse.Down :- Mouse.Up :- 'Nil) Rect Rect
+defineRect = either error pure <=< runExceptT
+	$ ExceptT . adjustSig . completeRect =<< ExceptT (waitFor $ adjust firstPoint)
 
 neverOccur :: String -> Either String a
 neverOccur msg = Left $ "never occur: " ++ msg
@@ -95,6 +88,12 @@ cycleColor = go . cycle $ fromList [Red .. Magenta] where
 
 chooseBoxColor :: Rect -> Sig s (Mouse.Down :- DeltaTime :- 'Nil) Box ()
 chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
+
+drClickOn :: Rect -> React s (Mouse.Down :- Mouse.Move :- TryWait :- 'Nil) ()
+drClickOn rct = void . find (`inside` rct) . (fst <$%>) $ Mouse.position `indexBy` repeat doubler
+	where (x, y) `inside` Rect (l, u) (r, d) =
+		(l <= x && x <= r || r <= x && x <= l) &&
+		(u <= y && y <= d || d <= y && y <= u)
 
 box :: Sig s (Mouse.Move :- Mouse.Down :- Mouse.Up :- DeltaTime :- TryWait :- 'Nil) Box ()
 box = (`Box` Red) <$%> adjustSig defineRect
