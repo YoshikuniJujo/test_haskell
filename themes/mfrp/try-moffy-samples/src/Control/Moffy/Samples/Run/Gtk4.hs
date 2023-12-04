@@ -117,7 +117,8 @@ runSingleWin ::
 runSingleWin cer ceo cv = Gtk.Application.with
 		appId G.Application.DefaultFlags \app -> do
 	G.Signal.connect app (G.Signal.Signal "activate") (appActivate cer ceo cv) Null
-	exitWith =<< join (G.Application.run app <$> getProgName <*> getArgs)
+--	exitWith =<< join (G.Application.run app <$> getProgName <*> getArgs)
+	exitWith =<< G.Application.run app "run" []
 
 pressHandler ::
 	TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->

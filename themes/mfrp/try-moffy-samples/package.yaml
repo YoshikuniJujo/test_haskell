@@ -165,18 +165,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy-samples
-  try-boxes:
-    main:                try-boxes.hs
-    other-modules:       []
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy-samples
-  try-followbox:
-    main:                try-followbox.hs
+  moffy_samples:
+    main:                moffy_samples.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:

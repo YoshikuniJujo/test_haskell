@@ -27,6 +27,7 @@ library
   exposed-modules:
       Control.Moffy.Samples.Boxes
       Control.Moffy.Samples.Boxes.Run
+      Control.Moffy.Samples.Boxes.Viewable
       Control.Moffy.Samples.Event.CalcTextExtents
       Control.Moffy.Samples.Event.Delete
       Control.Moffy.Samples.Event.Mouse
@@ -152,8 +153,8 @@ executable file-viewer
     , unordered-containers
   default-language: Haskell2010
 
-executable tfe
-  main-is: tfe.hs
+executable moffy_samples
+  main-is: moffy_samples.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -186,8 +187,8 @@ executable tfe
     , unordered-containers
   default-language: Haskell2010
 
-executable try-boxes
-  main-is: try-boxes.hs
+executable tfe
+  main-is: tfe.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -358,40 +359,6 @@ executable try-clock-more
 
 executable try-drawing-area
   main-is: try-drawing-area.hs
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      JuicyPixels
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , c-enum
-    , c-struct
-    , cairo-image
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , moffy
-    , monads-tf
-    , process
-    , random
-    , simple-cairo
-    , simple-pango
-    , stm
-    , text
-    , time
-    , transformers
-    , try-moffy-samples
-    , type-flip
-    , type-set
-    , union-color
-    , unordered-containers
-  default-language: Haskell2010
-
-executable try-followbox
-  main-is: try-followbox.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N

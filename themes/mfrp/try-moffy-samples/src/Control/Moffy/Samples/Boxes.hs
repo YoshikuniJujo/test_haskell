@@ -16,20 +16,15 @@ import Control.Monad.Trans.Except (pattern ExceptT, runExceptT)
 import Control.Moffy
 import Control.Moffy.Event.Time
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
-import Control.Moffy.Samples.View qualified as V
+import Control.Moffy.Samples.Boxes.Viewable
 import Data.Type.Set
 import Data.Type.Flip
 import Data.Or
 import Data.Bool
 import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
-import Data.Maybe
-import Data.Color
 
 import Control.Moffy.Samples.Boxes.Run
-
-main :: IO ()
-main = runBoxes $ boxesToView <$%> boxes
 
 clickOn :: Mouse.Button -> React s (Singleton Mouse.Down) ()
 clickOn b0 = do b <- Mouse.down
@@ -63,26 +58,6 @@ sameClick = do
 	pure $ pressed == pressed2
 -}
 
-boxesToView :: [Box] -> V.View
-boxesToView = V.View . (boxToView1 <$>)
-
-boxToView1 :: Box -> V.View1
-boxToView1 (Box (Rect lu rd) c) = V.Box lu rd $ bColorToColor c
-
-bColorToColor :: BColor -> Rgb Double
-bColorToColor = fromJust . \case
-	Red -> rgbDouble 0.8 0.1 0.05
-	Green -> rgbDouble 0.2 0.6 0.1
-	Blue -> rgbDouble 0.2 0.2 0.8
-	Yellow -> rgbDouble 0.8 0.7 0.1
-	Cyan -> rgbDouble 0.2 0.6 0.6
-	Magenta -> rgbDouble 0.5 0.2 0.4
-
--- data Rect = Rect { leftUp :: Point, rightdown :: Point }
-data Rect = Rect Point Point deriving Show
-
-type Point = (Double, Double)
-
 wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect r
 wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed
 	where
@@ -112,9 +87,6 @@ curRect p1 = Rect p1 <$%> Mouse.position
 
 neverOccur :: String -> Either String a
 neverOccur msg = Left $ "never occur: " ++ msg
-
-data Box = Box Rect BColor deriving Show
-data BColor = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
 cycleColor :: Sig s (Mouse.Down :- 'Nil) BColor ()
 cycleColor = go . cycle $ fromList [Red .. Magenta] where
