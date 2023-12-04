@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -19,20 +20,26 @@ import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Boxes.Viewable
 import Data.Type.Set
 import Data.Type.Flip
-import Data.Or
 import Data.Bool
+import Data.Or
 import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
 
-import Control.Moffy.Samples.Boxes.Run
+sameClick :: React s (Singleton Mouse.Down) Bool
+sameClick = do
+	pressed <- Mouse.down
+	pressed2 <- Mouse.down
+	pure $ pressed == pressed2
 
 clickOn :: Mouse.Button -> React s (Singleton Mouse.Down) ()
-clickOn b0 = do b <- Mouse.down
-		bool (clickOn b0) (pure ()) (b == b0)
+clickOn b0 = do
+	b <- Mouse.down
+	bool (clickOn b0) (pure ()) (b == b0)
 
 leftClick, middleClick, rightClick :: React s (Singleton Mouse.Down) ()
-[leftClick, middleClick, rightClick] = clickOn
-	<$> [Mouse.ButtonPrimary, Mouse.ButtonMiddle, Mouse.ButtonSecondary]
+leftClick = clickOn Mouse.ButtonPrimary
+middleClick = clickOn Mouse.ButtonMiddle
+rightClick = clickOn Mouse.ButtonSecondary
 
 releaseOn :: Mouse.Button -> React s (Singleton Mouse.Up) ()
 releaseOn b0 = do
@@ -49,14 +56,6 @@ l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
 doubler :: React s (TryWait :- Singleton Mouse.Down) ()
 doubler = adjust rightClick
 	>> (bool doubler (pure ()) =<< rightClick `before` sleep 0.2)
-
-{-
-sameClick :: React s (Singleton Mouse.Down) Bool
-sameClick = do
-	pressed <- Mouse.down
-	pressed2 <- Mouse.down
-	pure $ pressed == pressed2
--}
 
 wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect r
 wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed
