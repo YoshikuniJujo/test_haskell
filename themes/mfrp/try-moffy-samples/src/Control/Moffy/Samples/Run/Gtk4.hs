@@ -53,10 +53,8 @@ import Stopgap.System.GLib.Idle qualified as G.Idle
 
 beforeClose :: TChan (EvOccs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
 	Gtk.ApplicationWindow.A -> Null -> IO Bool
-beforeClose ceo win Null = do
-	putStrLn "BEFORE CLOSE"
-	atomically $ writeTChan ceo (expand $ Singleton OccDeleteEvent)
-	pure True
+beforeClose ceo win Null =
+	True <$ atomically (writeTChan ceo . expand $ Singleton OccDeleteEvent)
 
 appActivate ::
 	TChan (EvReqs (CalcTextExtents :- Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent)) ->
