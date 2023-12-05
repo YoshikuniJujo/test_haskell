@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Samples.Event.Mouse where
@@ -37,3 +38,5 @@ move = await MoveReq \(OccMove p) -> p
 
 position :: Sig s (Singleton Move) Point r
 position = repeat move
+
+type Events = Move :- Down :- Up :- 'Nil

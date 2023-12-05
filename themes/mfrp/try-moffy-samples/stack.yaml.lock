@@ -5,12 +5,12 @@
 
 packages:
 - completed:
-    hackage: moffy-0.1.0.0@sha256:5c970a4621383c7df725d05f44f594b325bf29513ef76d17d582b4a8ecca6cda,2342
+    hackage: moffy-0.1.1.0@sha256:a43656d480435db6018982f6a46007073d8eba2381a1ef6e9be52de184fb8b27,2332
     pantry-tree:
-      sha256: 510f81e97578307dcabc50650b748cd10a387f4772aa1a1c1163f58dd26e3685
-      size: 1444
+      sha256: c49452fac8254879b4235a4db3cb0f8ad69334d9591f7dbbe01db25728005fcc
+      size: 1397
   original:
-    hackage: moffy-0.1.0.0
+    hackage: moffy-0.1.1.0
 - completed:
     hackage: freer-par-monad-0.1.0.0@sha256:39b22515a01356f46ef7200ea7ae9560f77aa1441d61bfe682b31884e91d8b12,1999
     pantry-tree:
