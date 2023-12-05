@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,10 @@ import Prelude hiding (break, until)
 import Control.Arrow ((>>>))
 import Control.Monad (void, forever, (<=<))
 import Control.Moffy (adjust, emit, waitFor, first, break, until)
--- import Control.Moffy.Event.Window
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
 import Control.Moffy.Samples.Event.Random (getRandomR)
 import Control.Moffy.Samples.Event.Delete (deleteEvent)
-import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
-import Data.Or (Or(..))
-import Data.Aeson (Object, Value(..), eitherDecode)
-import Data.Time (UTCTime, utcToLocalTime)
-import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import Text.Read (readMaybe)
-
-import qualified Data.HashMap.Strict as HM
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
-import qualified Data.ByteString.Lazy as LBS
-import qualified Data.Text as T
-
+import Control.Moffy.Samples.Viewable.Basic (Position)
 import Control.Moffy.Samples.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
 	browse, beginSleep, checkBeginSleep, endSleep,
@@ -38,14 +26,20 @@ import Control.Moffy.Samples.Followbox.Clickable (
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
 import Control.Moffy.Samples.Followbox.ViewType (View(..), View1, white, Png(..), VText(..), Line(..), Image(..))
 import Control.Moffy.Samples.Followbox.TypeSynonym (ErrorMessage)
-
-import Control.Moffy.Samples.Viewable.Basic (Position)
-
-import qualified Codec.Picture as P
-
+import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.OneOfThem
-
+import Data.Or (Or(..))
+import Data.HashMap.Strict qualified as HM
+import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC
+import Data.ByteString.Lazy qualified as LBS
+import Data.Text qualified as T
+import Data.Time (UTCTime, utcToLocalTime)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
+import Data.Aeson (Object, Value(..), eitherDecode)
 import Data.Aeson.KeyMap (toHashMap)
+import Text.Read (readMaybe)
+import Codec.Picture qualified as P
 
 ---------------------------------------------------------------------------
 
