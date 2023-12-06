@@ -35,6 +35,7 @@ dependencies:
 - JuicyPixels
 - http-conduit
 - try-moffy-samples-events
+- try-moffy-samples-gtk4-run
 - c-enum
 - c-struct
 - exception-hierarchy

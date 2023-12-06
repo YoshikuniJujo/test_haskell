@@ -5,7 +5,20 @@
 
 packages:
 - completed:
-    commit: 1d2913028a25036f6dc228a3688c85a8f546ae6b
+    commit: db7ebccf2ccb9f8ebd16ff39abccdb4db8424cfd
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-moffy-samples-gtk4-run
+    pantry-tree:
+      sha256: 2aff49104953c929d396f687d6b31baa5972114378aeb77f3e9dccb3444288e2
+      size: 2999
+    subdir: themes/mfrp/try-moffy-samples-gtk4-run
+    version: 0.1.0.0
+  original:
+    commit: db7ebccf2ccb9f8ebd16ff39abccdb4db8424cfd
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/mfrp/try-moffy-samples-gtk4-run
+- completed:
+    commit: db7ebccf2ccb9f8ebd16ff39abccdb4db8424cfd
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-moffy-samples-events
     pantry-tree:
@@ -14,7 +27,7 @@ packages:
     subdir: themes/mfrp/try-moffy-samples-events
     version: 0.1.0.0
   original:
-    commit: 1d2913028a25036f6dc228a3688c85a8f546ae6b
+    commit: db7ebccf2ccb9f8ebd16ff39abccdb4db8424cfd
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/mfrp/try-moffy-samples-events
 - completed:

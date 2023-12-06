@@ -26,39 +26,8 @@ source-repository head
 library
   exposed-modules:
       Control.Moffy.Samples.Boxes
-      Control.Moffy.Samples.Boxes.Run.Gtk4
       Control.Moffy.Samples.Followbox
-      Control.Moffy.Samples.Followbox.Run.Gtk4
-      Control.Moffy.Samples.Run.Gtk4
-      Stopgap.Data.Ptr
-      Stopgap.Graphics.UI.Gtk
-      Stopgap.Graphics.UI.Gtk.Application
-      Stopgap.Graphics.UI.Gtk.ApplicationWindow
-      Stopgap.Graphics.UI.Gtk.Box
-      Stopgap.Graphics.UI.Gtk.Button
-      Stopgap.Graphics.UI.Gtk.DrawingArea
-      Stopgap.Graphics.UI.Gtk.EventController
-      Stopgap.Graphics.UI.Gtk.EventControllerMotion
-      Stopgap.Graphics.UI.Gtk.Gesture
-      Stopgap.Graphics.UI.Gtk.GestureClick
-      Stopgap.Graphics.UI.Gtk.Label
-      Stopgap.Graphics.UI.Gtk.Notebook
-      Stopgap.Graphics.UI.Gtk.NotebookPage
-      Stopgap.Graphics.UI.Gtk.ScrolledWindow
-      Stopgap.Graphics.UI.Gtk.TextBuffer
-      Stopgap.Graphics.UI.Gtk.TextView
       Stopgap.Graphics.UI.Gtk.TfeTextView
-      Stopgap.Graphics.UI.Gtk.Widget
-      Stopgap.Graphics.UI.Gtk.Window
-      Stopgap.System.GLib.Application
-      Stopgap.System.GLib.Cancellable
-      Stopgap.System.GLib.Error
-      Stopgap.System.GLib.Error.Io
-      Stopgap.System.GLib.File
-      Stopgap.System.GLib.Idle
-      Stopgap.System.GLib.Object
-      Stopgap.System.GLib.Signal
-      Stopgap.System.GLib.Timeout
   other-modules:
       Paths_try_moffy_samples
   autogen-modules:
@@ -95,6 +64,7 @@ library
     , time
     , transformers
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -130,6 +100,7 @@ executable file-viewer
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -165,6 +136,7 @@ executable moffy_samples
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -200,6 +172,7 @@ executable tfe
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -235,6 +208,7 @@ executable try-cairo
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -270,6 +244,7 @@ executable try-cancellable
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -305,6 +280,7 @@ executable try-clock
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -340,6 +316,7 @@ executable try-clock-more
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -375,6 +352,7 @@ executable try-drawing-area
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -414,6 +392,7 @@ executable try-moffy-samples-exe
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -449,6 +428,7 @@ executable try-mouse-event
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -484,6 +464,7 @@ executable try-text-view-exe
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color
@@ -524,6 +505,7 @@ test-suite try-moffy-samples-test
     , transformers
     , try-moffy-samples
     , try-moffy-samples-events
+    , try-moffy-samples-gtk4-run
     , type-flip
     , type-set
     , union-color

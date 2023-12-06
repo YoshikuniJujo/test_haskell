@@ -42,8 +42,9 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 1d2913028a25036f6dc228a3688c85a8f546ae6b
+    commit: db7ebccf2ccb9f8ebd16ff39abccdb4db8424cfd
     subdirs:
+      - themes/mfrp/try-moffy-samples-gtk4-run
       - themes/mfrp/try-moffy-samples-events
   - simple-cairo-0.1.0.5
   - cairo-image-0.1.0.0
