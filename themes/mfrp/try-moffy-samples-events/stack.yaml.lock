@@ -3,11 +3,17 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: union-color-0.1.2.1@sha256:0d8cd13f3fbe8135f34244f9847b415635d6066b06c92203fdb521a36cdaeae8,1326
+    pantry-tree:
+      sha256: 7df303497f2479607876d561c5b48000d05bc22eabed3c4d84426440e4d5717a
+      size: 429
+  original:
+    hackage: union-color-0.1.2.1
 snapshots:
 - completed:
-    sha256: 8809197159ce65ec2d66f91982e4844ad0c2cbd1126df42146dd103c0ea6cac0
-    size: 640063
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/23.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/23.yaml
+    sha256: d88d143974e013e69643a7ab059635300ec32d865830706e9e960eaf1725e7af
+    size: 708708
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/12/6.yaml
+  original: nightly-2023-12-06

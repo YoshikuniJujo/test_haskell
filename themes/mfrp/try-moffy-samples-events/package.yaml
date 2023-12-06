@@ -21,6 +21,20 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
+- bytestring
+- text
+- random
+- time
+- process
+- monads-tf
+- aeson
+- http-conduit
+- JuicyPixels
+- moffy
+- type-set
+- type-flip
+- union-color
 
 ghc-options:
 - -Wall
@@ -35,17 +49,6 @@ ghc-options:
 
 library:
   source-dirs: src
-
-executables:
-  try-moffy-samples-events-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-moffy-samples-events
 
 tests:
   try-moffy-samples-events-test:
