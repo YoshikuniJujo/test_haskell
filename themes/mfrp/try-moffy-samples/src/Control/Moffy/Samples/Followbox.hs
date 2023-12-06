@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Samples.Followbox (
@@ -25,7 +26,7 @@ import Control.Moffy.Samples.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
 import Control.Moffy.Samples.Followbox.ViewType (View(..), View1, white, Png(..), VText(..), Line(..), Image(..))
-import Control.Moffy.Samples.Followbox.TypeSynonym (ErrorMessage)
+import Control.Moffy.Samples.Followbox.TypeSynonym (ErrorMessage, Uri)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.OneOfThem
 import Data.Or (Or(..))
@@ -34,7 +35,7 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.Lazy qualified as LBS
 import Data.Text qualified as T
-import Data.Time (UTCTime, utcToLocalTime)
+import Data.Time (utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Aeson (Object, Value(..), eitherDecode)
 import Data.Aeson.KeyMap (toHashMap)
@@ -54,7 +55,6 @@ import Codec.Picture qualified as P
 --	+ USERS
 --	+ GET USER
 --	+ GET OBJECT
--- * HELPER FUNCTION
 
 ---------------------------------------------------------------------------
 -- PARAMETER LIST
@@ -140,36 +140,43 @@ resetTime = forever $ emit (View []) >> do
 			$ "Wait until " <> show (utcToLocalTime tz t)]
 	waitFor $ adjust endSleep
 
+twhite :: FontSize -> Position -> T.Text -> View1
+twhite fs p = expand . Singleton . Text' white defaultFont fs p
+
 -- USERS
 
 users :: LockId -> Integer -> SigF s View ()
-users lck n = mconcat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
+users lck (fromIntegral -> n) =
+	mconcat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
 
-user1 :: LockId -> Integer -> SigF s View ()
+user1 :: LockId -> Double -> SigF s View ()
 user1 lck n = do
-	(a, ln, u) <- waitFor $ getUser lck
-	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize ln
-	let	nm = clickableText np wte; cr = cross $ crossPos np wte
-	emit $ View [expand . Singleton $ Image' (avatarPos $ fromIntegral n) a] <> view nm <> view cr
-	void . (`break` click cr) . waitFor $ forever
-		(adjust (click nm) >> adjust (browse u) :: ReactF s ())
-	where np = namePos $ fromIntegral n
+	(avt, nm, uri) <- waitFor $ getUser lck
+	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize nm
+	let	ap = avatarPos n; np = namePos n
+		lnk = clickableText np wte; cr = cross $ crossPos np wte
+	emit $ View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr
+	void $ waitFor (listenForUserPage lnk uri) `break` click cr
+
+listenForUserPage :: Clickable s -> Uri -> ReactF s ()
+listenForUserPage nm u = forever $ adjust (click nm) >> adjust (browse u)
 
 cross :: Position -> Clickable s
 cross (l, t) = clickable (View [lwhite lt rb, lwhite lb rt]) (l', t') (r', b')
 	where
-	[lt, lb, rt, rb] = [(l, t), (l, b), (r, t), (r, b)]
-	[r, b] = (+ crossSize) <$> [l, t]
-	[l', t'] = subtract crossMergin <$> [l, t]
-	[r', b'] = (+ crossMergin) <$> [r, b]
+	(lt, lb, rt, rb) = ((l, t), (l, b), (r, t), (r, b))
+	(r, b) = (l + crossSize, t + crossSize)
+	(l', t') = (l - crossMergin, t - crossMergin)
+	(r', b') = (r + crossMergin, b + crossMergin)
+	lwhite p q = expand . Singleton $ Line' white 4 p q
 
 -- GET USER
 
 {-# ANN getUser ("HLint: ignore Redundant <$>" :: String) #-}
 
 getUser :: LockId -> ReactF s (Png, T.Text, T.Text)
-getUser lck = ex3 . toHashMap <$> getObj1 lck >>= err `either` \(au, ln, u) ->
-	getAvatarPng au >>= either err (pure . (, ln, u))
+getUser lck = ex3 . toHashMap <$> getObj1 lck >>= err `either` \(au, nm, url) ->
+	getAvatarPng au >>= either err (pure . (, nm, url))
 	where
 	ex3 o = (,,)
 		<$> ex o "avatar_url" (NoAvatarAddress, "No Avatar Address")
@@ -190,8 +197,9 @@ convert img = LBS.toStrict . P.encodePng . P.convertRGB8 <$> P.decodeImage img
 -- GET OBJECT
 
 getObj1 :: LockId -> ReactF s Object
-getObj1 lck = withLock lck $ adjust loadJsons
-	>>= \case [] -> getObj1FromWeb; o : os -> o <$ adjust (storeJsons os)
+getObj1 lck = withLock lck $ adjust loadJsons >>= \case
+	[] -> getObj1FromWeb
+	o : os -> o <$ adjust (storeJsons os)
 
 getObj1FromWeb :: ReactF s Object
 getObj1FromWeb = getObjs >>= \case
@@ -202,9 +210,9 @@ getObj1FromWeb = getObjs >>= \case
 getObjs :: ReactF s (Either String [Object])
 getObjs = do
 	n <- adjust $ getRandomR (0, userPageMax)
-	(h, b) <- adjust . httpGet $ api n
-	case (rmng h, rst h) of
-		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
+	(hdr, bdy) <- adjust . httpGet $ api n
+	case (rmng hdr, rst hdr) of
+		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode bdy
 		(Just _, Just t) ->
 			adjust (beginSleep t) >> adjust endSleep >> getObjs
 		(Just _, Nothing) -> adjust (uncurry raiseError rstE) >> getObjs
@@ -215,17 +223,5 @@ getObjs = do
 	rst = posixSeconds <=< lookup "X-RateLimit-Reset"
 	rmngE = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
 	rstE = (NoRateLimitReset, "No X-RateLimit-Reset header")
-
----------------------------------------------------------------------------
--- HELPER FUNCTION
----------------------------------------------------------------------------
-
-twhite :: FontSize -> Position -> T.Text -> View1
-twhite fs p = expand . Singleton . Text' white defaultFont fs p
-
-lwhite :: Position -> Position -> View1
-lwhite p q = expand . Singleton $ Line' white 4 p q
-
-posixSeconds :: BS.ByteString -> Maybe UTCTime
-posixSeconds =
-	(posixSecondsToUTCTime . fromInteger <$>) . readMaybe . BSC.unpack
+	posixSeconds = (posixSecondsToUTCTime . fromInteger <$>)
+		. readMaybe . BSC.unpack
