@@ -5,9 +5,9 @@ module Main (main) where
 
 import System.Environment
 import Control.Moffy.Samples.Boxes
-import Control.Moffy.Samples.Boxes.Run
+import Control.Moffy.Samples.Boxes.Run.Gtk4
 import Control.Moffy.Samples.Followbox
-import Control.Moffy.Samples.Followbox.RunGtkField
+import Control.Moffy.Samples.Followbox.Run.Gtk4
 
 main :: IO ()
 main = getArgs >>= \case

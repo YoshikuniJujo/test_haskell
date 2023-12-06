@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Samples.Boxes.Run (runBoxes) where
+module Control.Moffy.Samples.Boxes.Run.Gtk4 (runBoxes) where
 
 import Prelude hiding (until)
 import Control.Monad

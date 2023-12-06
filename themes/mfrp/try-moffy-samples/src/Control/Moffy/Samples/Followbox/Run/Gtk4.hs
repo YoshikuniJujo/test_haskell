@@ -5,7 +5,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Samples.Followbox.RunGtkField (runFollowbox) where
+module Control.Moffy.Samples.Followbox.Run.Gtk4 (runFollowbox) where
 
 import Control.Concurrent
 import Control.Moffy
