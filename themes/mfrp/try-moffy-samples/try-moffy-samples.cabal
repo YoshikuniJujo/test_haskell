@@ -27,28 +27,9 @@ library
   exposed-modules:
       Control.Moffy.Samples.Boxes
       Control.Moffy.Samples.Boxes.Run
-      Control.Moffy.Samples.Boxes.Viewable
-      Control.Moffy.Samples.Event.CalcTextExtents
-      Control.Moffy.Samples.Event.Delete
-      Control.Moffy.Samples.Event.Mouse
-      Control.Moffy.Samples.Event.Random
-      Control.Moffy.Samples.Event.Random.Internal
       Control.Moffy.Samples.Followbox
-      Control.Moffy.Samples.Followbox.Clickable
-      Control.Moffy.Samples.Followbox.Event
-      Control.Moffy.Samples.Followbox.Handle
       Control.Moffy.Samples.Followbox.RunGtkField
-      Control.Moffy.Samples.Followbox.TypeSynonym
-      Control.Moffy.Samples.Followbox.ViewType
-      Control.Moffy.Samples.Handle.Random
-      Control.Moffy.Samples.Handle.TChan
       Control.Moffy.Samples.Run.Gtk4
-      Control.Moffy.Samples.Run.TChan
-      Control.Moffy.Samples.View
-      Control.Moffy.Samples.Viewable.Basic
-      Control.Moffy.Samples.Viewable.Image
-      Control.Moffy.Samples.Viewable.Shape
-      Control.Moffy.Samples.Viewable.Text
       Stopgap.Data.Ptr
       Stopgap.Graphics.UI.Gtk
       Stopgap.Graphics.UI.Gtk.Application
@@ -113,6 +94,7 @@ library
     , text
     , time
     , transformers
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -147,6 +129,7 @@ executable file-viewer
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -181,6 +164,7 @@ executable moffy_samples
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -215,6 +199,7 @@ executable tfe
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -249,6 +234,7 @@ executable try-cairo
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -283,6 +269,7 @@ executable try-cancellable
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -317,6 +304,7 @@ executable try-clock
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -351,6 +339,7 @@ executable try-clock-more
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -385,6 +374,7 @@ executable try-drawing-area
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -423,6 +413,7 @@ executable try-moffy-samples-exe
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -457,6 +448,7 @@ executable try-mouse-event
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -491,6 +483,7 @@ executable try-text-view-exe
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -530,6 +523,7 @@ test-suite try-moffy-samples-test
     , time
     , transformers
     , try-moffy-samples
+    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
