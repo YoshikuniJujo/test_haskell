@@ -5,18 +5,16 @@
 
 packages:
 - completed:
-    commit: 1d2913028a25036f6dc228a3688c85a8f546ae6b
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-moffy-samples-events
+    commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
+    git: https://github.com/YoshikuniJujo/moffy-samples-events
+    name: moffy-samples-events
     pantry-tree:
-      sha256: 6bdb4d6cd306b9a3e8ef904843a0dfb6e8b36a5c70642e441f6e8918a254537f
-      size: 2167
-    subdir: themes/mfrp/try-moffy-samples-events
+      sha256: 9b6897a4fba1b24415ebf14014058d3b2e600c4eb7305bc6409d55c7d135b13e
+      size: 2113
     version: 0.1.0.0
   original:
-    commit: 1d2913028a25036f6dc228a3688c85a8f546ae6b
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/mfrp/try-moffy-samples-events
+    commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
+    git: https://github.com/YoshikuniJujo/moffy-samples-events
 - completed:
     hackage: simple-cairo-0.1.0.5@sha256:d26c1373505430b9ae3d41feae314061d86c231c8b46940f4c4cf36fe54a48b6,4499
     pantry-tree:

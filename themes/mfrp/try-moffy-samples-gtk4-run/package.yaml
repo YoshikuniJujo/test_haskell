@@ -34,7 +34,7 @@ dependencies:
 - simple-cairo
 - simple-pango
 - union-color
-- try-moffy-samples-events
+- moffy-samples-events
 
 ghc-options:
 - -Wall

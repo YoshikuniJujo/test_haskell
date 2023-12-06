@@ -71,13 +71,13 @@ library
     , c-struct
     , exception-hierarchy
     , moffy
+    , moffy-samples-events
     , random
     , simple-cairo
     , simple-pango
     , stm
     , text
     , time
-    , try-moffy-samples-events
     , type-flip
     , type-set
     , union-color
@@ -99,13 +99,13 @@ test-suite try-moffy-samples-gtk4-run-test
     , c-struct
     , exception-hierarchy
     , moffy
+    , moffy-samples-events
     , random
     , simple-cairo
     , simple-pango
     , stm
     , text
     , time
-    , try-moffy-samples-events
     , try-moffy-samples-gtk4-run
     , type-flip
     , type-set

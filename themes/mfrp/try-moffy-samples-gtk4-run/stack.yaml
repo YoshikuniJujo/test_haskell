@@ -41,10 +41,8 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 1d2913028a25036f6dc228a3688c85a8f546ae6b
-    subdirs:
-      - themes/mfrp/try-moffy-samples-events
+  - git: https://github.com/YoshikuniJujo/moffy-samples-events
+    commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
   - simple-cairo-0.1.0.5
   - cairo-image-0.1.0.0
   - simple-pango-0.1.0.1
