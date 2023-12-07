@@ -25,8 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Moffy.Samples.Boxes
-      Control.Moffy.Samples.Followbox
       Stopgap.Graphics.UI.Gtk.TfeTextView
   other-modules:
       Paths_try_moffy_samples
@@ -54,6 +52,7 @@ library
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -89,6 +88,7 @@ executable file-viewer
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -125,6 +125,7 @@ executable moffy_samples
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -161,6 +162,7 @@ executable tfe
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -197,6 +199,7 @@ executable try-cairo
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -233,6 +236,7 @@ executable try-cancellable
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -269,6 +273,7 @@ executable try-clock
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -305,6 +310,7 @@ executable try-clock-more
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -341,6 +347,7 @@ executable try-drawing-area
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -381,6 +388,7 @@ executable try-moffy-samples-exe
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -417,6 +425,7 @@ executable try-mouse-event
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -453,6 +462,7 @@ executable try-text-view-exe
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf
@@ -494,6 +504,7 @@ test-suite try-moffy-samples-test
     , extra-data-yj
     , http-conduit
     , moffy
+    , moffy-samples
     , moffy-samples-events
     , moffy-samples-gtk4-run
     , monads-tf

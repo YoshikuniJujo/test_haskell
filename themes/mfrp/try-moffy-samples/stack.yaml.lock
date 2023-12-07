@@ -16,6 +16,17 @@ packages:
     commit: 6f2d5119e197ad6644712a0640fc892dba9326d0
     git: https://github.com/YoshikuniJujo/moffy-samples-gtk4-run
 - completed:
+    commit: 0338429c16c09183aeefdcd6e54ee5bb29fc9ab2
+    git: https://github.com/YoshikuniJujo/moffy-samples
+    name: moffy-samples
+    pantry-tree:
+      sha256: 2f73506e5c0667447f7d61b0ecf95594d36292b0bd4165fbd56115552769d248
+      size: 719
+    version: 0.1.0.0
+  original:
+    commit: 0338429c16c09183aeefdcd6e54ee5bb29fc9ab2
+    git: https://github.com/YoshikuniJujo/moffy-samples
+- completed:
     commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
     git: https://github.com/YoshikuniJujo/moffy-samples-events
     name: moffy-samples-events

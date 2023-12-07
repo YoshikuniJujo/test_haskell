@@ -43,6 +43,8 @@ packages:
 extra-deps:
   - git: https://github.com/YoshikuniJujo/moffy-samples-gtk4-run
     commit: 6f2d5119e197ad6644712a0640fc892dba9326d0
+  - git: https://github.com/YoshikuniJujo/moffy-samples
+    commit: 0338429c16c09183aeefdcd6e54ee5bb29fc9ab2
   - git: https://github.com/YoshikuniJujo/moffy-samples-events
     commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
   - simple-cairo-0.1.0.5

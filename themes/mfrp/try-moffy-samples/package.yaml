@@ -34,6 +34,7 @@ dependencies:
 - aeson
 - JuicyPixels
 - http-conduit
+- moffy-samples
 - moffy-samples-events
 - moffy-samples-gtk4-run
 - c-enum
