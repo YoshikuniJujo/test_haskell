@@ -36,17 +36,15 @@ pressOn :: Char -> React s (Singleton Key) ()
 pressOn c = key >>= bool (pressOn c) (pure ()) . (c ==)
 
 digit :: React s (Singleton Key) Int
-digit = do
-	c <- key
-	bool digit (pure . read $ c : "") (isDigit c)
+digit = key >>= \c -> bool digit (pure . read $ c : "") (isDigit c)
 
 sigX :: Char -> Sig s (Singleton Key) Int ()
 sigX c = repeat $ pressOn c >> digit
 
+--
+
 output :: Int -> IO ()
 output c = putStrLn $ "\na + b = " ++ show c
-
---
 
 handle :: Handle IO (Singleton Key)
 handle = const $ Singleton . OccKey <$> getChar
