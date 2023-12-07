@@ -27,10 +27,11 @@ key :: React s (Singleton Key) Char
 key = await KeyReq \(OccKey c) -> c
 
 main :: IO ()
-main = do
-	void . withNoBuffering IO.stdin . interpret handle output
-		$ ((+) <$%> sigX 'a' <*%> sigX 'b') `break` pressOn 'q'
-	putStrLn ""
+main = withNoBuffering IO.stdin run >> putStrLn ""
+
+run :: IO ()
+run = void . interpret handle output
+	$ ((+) <$%> sigX 'a' <*%> sigX 'b') `break` pressOn 'q'
 
 pressOn :: Char -> React s (Singleton Key) ()
 pressOn c = key >>= bool (pressOn c) (pure ()) . (c ==)
