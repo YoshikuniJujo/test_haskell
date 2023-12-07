@@ -36,7 +36,21 @@ library
   build-depends:
       base >=4.7 && <5
     , moffy
+    , type-flip
     , type-set
+  default-language: Haskell2010
+
+executable keyKey
+  main-is: keyKey.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , moffy
+    , type-flip
+    , type-set
+    , zenn-use-moffy
   default-language: Haskell2010
 
 executable zenn-use-moffy-exe
@@ -51,6 +65,7 @@ executable zenn-use-moffy-exe
   build-depends:
       base >=4.7 && <5
     , moffy
+    , type-flip
     , type-set
     , zenn-use-moffy
   default-language: Haskell2010
@@ -68,6 +83,7 @@ test-suite zenn-use-moffy-test
   build-depends:
       base >=4.7 && <5
     , moffy
+    , type-flip
     , type-set
     , zenn-use-moffy
   default-language: Haskell2010
