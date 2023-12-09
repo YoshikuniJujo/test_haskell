@@ -26,6 +26,7 @@ dependencies:
 - monads-tf
 - containers
 - unordered-containers
+- hashable
 - bytestring
 - text
 - time

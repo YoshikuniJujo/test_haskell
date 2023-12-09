@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Moffy.Samples.FollowboxOrigin
       Stopgap.Graphics.UI.Gtk.TfeTextView
   other-modules:
       Paths_try_moffy_samples
@@ -50,6 +51,7 @@ library
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -86,6 +88,7 @@ executable file-viewer
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -123,6 +126,7 @@ executable moffy_samples
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -160,6 +164,7 @@ executable tfe
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -197,6 +202,7 @@ executable try-cairo
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -234,6 +240,7 @@ executable try-cancellable
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -271,6 +278,7 @@ executable try-clock
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -308,6 +316,7 @@ executable try-clock-more
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -345,6 +354,7 @@ executable try-drawing-area
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -386,6 +396,7 @@ executable try-moffy-samples-exe
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -423,6 +434,7 @@ executable try-mouse-event
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -460,6 +472,7 @@ executable try-text-view-exe
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
@@ -502,6 +515,7 @@ test-suite try-moffy-samples-test
     , containers
     , exception-hierarchy
     , extra-data-yj
+    , hashable
     , http-conduit
     , moffy
     , moffy-samples
