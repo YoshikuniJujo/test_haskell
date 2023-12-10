@@ -41,12 +41,9 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - git: https://github.com/YoshikuniJujo/moffy-samples-gtk4-run
-    commit: 6f2d5119e197ad6644712a0640fc892dba9326d0
-  - git: https://github.com/YoshikuniJujo/moffy-samples
-    commit: 0338429c16c09183aeefdcd6e54ee5bb29fc9ab2
-  - git: https://github.com/YoshikuniJujo/moffy-samples-events
-    commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
+  - moffy-samples-gtk4-run-0.1.0.0
+  - moffy-samples-0.1.0.1
+  - moffy-samples-events-0.1.1.0
   - simple-cairo-0.1.0.5
   - cairo-image-0.1.0.0
   - simple-pango-0.1.0.1

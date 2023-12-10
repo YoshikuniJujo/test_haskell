@@ -25,9 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Moffy.Samples.Event.Area
       Control.Moffy.Samples.FollowboxOrigin
-      Control.Moffy.Samples.Handle.Area
       Stopgap.Graphics.UI.Gtk.TfeTextView
   other-modules:
       Paths_try_moffy_samples

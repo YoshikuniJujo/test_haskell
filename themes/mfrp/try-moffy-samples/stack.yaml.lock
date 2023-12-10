@@ -5,38 +5,26 @@
 
 packages:
 - completed:
-    commit: 6f2d5119e197ad6644712a0640fc892dba9326d0
-    git: https://github.com/YoshikuniJujo/moffy-samples-gtk4-run
-    name: moffy-samples-gtk4-run
+    hackage: moffy-samples-gtk4-run-0.1.0.0@sha256:398d57749d80bade1a1cf5849656873d1f90769db9dfbe98832e73965de3525c,3536
     pantry-tree:
-      sha256: 9a17f808b3a95695aa343b0f1f5a945c84b522c705393755a9f69f4fbaae0c60
-      size: 2995
-    version: 0.1.0.0
+      sha256: ac70350aadbd133a51e6251222ef8a56ad4ca00fd910b9fa559f338d93b681a2
+      size: 2786
   original:
-    commit: 6f2d5119e197ad6644712a0640fc892dba9326d0
-    git: https://github.com/YoshikuniJujo/moffy-samples-gtk4-run
+    hackage: moffy-samples-gtk4-run-0.1.0.0
 - completed:
-    commit: 0338429c16c09183aeefdcd6e54ee5bb29fc9ab2
-    git: https://github.com/YoshikuniJujo/moffy-samples
-    name: moffy-samples
+    hackage: moffy-samples-0.1.0.1@sha256:9e2ac98fa019efda0dc28d7b08b4fdede96c3fa78891214e922da47623a0e2d9,2226
     pantry-tree:
-      sha256: 2f73506e5c0667447f7d61b0ecf95594d36292b0bd4165fbd56115552769d248
-      size: 719
-    version: 0.1.0.0
+      sha256: 39bf6023b05ee37e0368061d14ee356fc89535abab129fb490e9db4cf9a764b9
+      size: 461
   original:
-    commit: 0338429c16c09183aeefdcd6e54ee5bb29fc9ab2
-    git: https://github.com/YoshikuniJujo/moffy-samples
+    hackage: moffy-samples-0.1.0.1
 - completed:
-    commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
-    git: https://github.com/YoshikuniJujo/moffy-samples-events
-    name: moffy-samples-events
+    hackage: moffy-samples-events-0.1.1.0@sha256:4f76038570c6896d74688833f74889e807afc2ee65c2760b895eb2e86458e19f,3178
     pantry-tree:
-      sha256: 9b6897a4fba1b24415ebf14014058d3b2e600c4eb7305bc6409d55c7d135b13e
-      size: 2113
-    version: 0.1.0.0
+      sha256: f39291ad34d074142320c53216b502b627f803f9b31949fbb7470dfa48f586dd
+      size: 2064
   original:
-    commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
-    git: https://github.com/YoshikuniJujo/moffy-samples-events
+    hackage: moffy-samples-events-0.1.1.0
 - completed:
     hackage: simple-cairo-0.1.0.5@sha256:d26c1373505430b9ae3d41feae314061d86c231c8b46940f4c4cf36fe54a48b6,4499
     pantry-tree:
