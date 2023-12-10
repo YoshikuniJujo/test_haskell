@@ -179,6 +179,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy-samples
+  try-area:
+    main:                try-area.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples
 
 tests:
   try-moffy-samples-test:
