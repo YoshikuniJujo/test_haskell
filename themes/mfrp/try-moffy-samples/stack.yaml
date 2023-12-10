@@ -41,9 +41,9 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - moffy-samples-gtk4-run-0.1.0.0
+  - moffy-samples-gtk4-run-0.2.0.0
   - moffy-samples-0.1.0.1
-  - moffy-samples-events-0.1.1.0
+  - moffy-samples-events-0.2.1.0
   - simple-cairo-0.1.0.5
   - cairo-image-0.1.0.0
   - simple-pango-0.1.0.1
