@@ -15,7 +15,7 @@ main :: IO ()
 main = getArgs >>= \case
 	["boxes"] -> runBoxes boxes
 	["followbox"] -> runFollowbox "firefox" followbox
-	["followbox-origin"] -> runFollowbox "firefox" O.followbox
+	["followbox-origin"] -> runFollowbox' "firefox" O.followbox
 	_ -> putStrLn $
 		"Usage: moffy_samples [SUBCOMMAND]\n\n" ++
 		"Commands are\n\tboxes\n\tfollowbox\n\tfollowbox-origin"

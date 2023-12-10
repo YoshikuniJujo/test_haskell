@@ -9,11 +9,11 @@ module Control.Moffy.Samples.FollowboxOrigin (
 	-- * followbox
 	followbox ) where
 
-import Prelude hiding (break, until)
+import Prelude hiding (break, until, repeat)
 
 import Control.Arrow ((>>>))
 import Control.Monad (void, forever, (<=<))
-import Control.Moffy (adjust, emit, waitFor, first, break, until)
+import Control.Moffy (React, adjust, adjustSig, emit, waitFor, first, break, until, indexBy, find, repeat)
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
 import Control.Moffy.Samples.Event.Random (getRandomR)
 import Control.Moffy.Samples.Event.Delete (deleteEvent)
@@ -30,10 +30,12 @@ import Control.Moffy.Samples.Followbox.Clickable (
 import Control.Moffy.Samples.Followbox.ViewType (
 	View(..), View1, white, Png(..), VText(..), Line(..), Image(..) )
 import Control.Moffy.Samples.Followbox.TypeSynonym (ErrorMessage, Uri)
+import Data.Type.Set
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.OneOfThem
 import Data.Or (Or(..))
 import Data.HashMap.Strict qualified as HM
+import Data.Bool
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.Lazy qualified as LBS
@@ -47,6 +49,9 @@ import Codec.Picture qualified as P
 
 import Data.Hashable
 import Data.String
+
+import Control.Moffy.Samples.Event.Mouse qualified as Mouse
+import Control.Moffy.Samples.Event.Area
 
 ---------------------------------------------------------------------------
 
@@ -114,9 +119,9 @@ crossMergin = 4
 
 -- FOLLOWBOX
 
-followbox :: SigF s View ()
-followbox = () <$
-	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate
+followbox :: SigF s ([(Int, (Point, Point))], View) ()
+followbox = () <$ (([] ,) <$%>
+	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate)
 
 fieldWithResetTime :: Integer -> SigF s View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime
@@ -163,6 +168,24 @@ user1 lck n = do
 		lnk = clickableText np wte; cr = cross $ crossPos np wte
 	emit $ View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr
 	void $ waitFor (listenForUserPage lnk uri) `break` click cr
+
+clickCross :: Int -> ReactF s Int
+clickCross i = do
+	clickArea =<< adjust (getArea i)
+	adjust $ getRandomR (0, 99)
+
+clickArea :: (Point, Point) -> ReactF s ()
+clickArea ((l, u), (r, d)) = (() <$)
+	. adjust $ find isd $ fst <$%> repeat Mouse.move `indexBy` repeat leftClick
+	where isd (x, y) = l <= x && x <= r && u <= y && y <= d
+
+clickOn :: Mouse.Button -> React s (Singleton Mouse.Down) ()
+clickOn b0 = do
+	b <- Mouse.down
+	bool (clickOn b0) (pure ()) (b == b0)
+
+leftClick :: React s (Singleton Mouse.Down) ()
+leftClick = clickOn Mouse.ButtonPrimary
 
 listenForUserPage :: Clickable s -> Uri -> ReactF s ()
 listenForUserPage nm u = forever $ adjust (click nm) >> adjust (browse u)
