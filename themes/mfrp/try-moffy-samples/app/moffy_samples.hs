@@ -18,4 +18,4 @@ main = getArgs >>= \case
 	["followbox-origin"] -> runFollowbox "firefox" O.followbox
 	_ -> putStrLn $
 		"Usage: moffy_samples [SUBCOMMAND]\n\n" ++
-		"Commands are\n\tboxes\n\tfollowbox"
+		"Commands are\n\tboxes\n\tfollowbox\n\tfollowbox-origin"

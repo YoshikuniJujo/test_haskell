@@ -187,12 +187,11 @@ getUser lck = ex3 . toHashMap <$> getObj1 lck >>= err `either` \(au, nm, url) ->
 	err e = adjust (uncurry raiseError e) >> getUser lck
 
 getUsers :: ReactF s [(Png, T.Text, T.Text)]
-getUsers = (sequence . map (ex3 . toHashMap) <$> getObjs') >>= err1 `either` \aunmurls -> do
+getUsers = (sequence . map (ex3 . toHashMap) <$> getObjs') >>= err `either` \aunmurls -> do
 	let	(aus, nms, urls) = unzip3 aunmurls
-	sequence <$> (mapM getAvatarPng aus) >>= either err2 (pure . uncurry3 zip3 . (, nms, urls))
+	sequence <$> (mapM getAvatarPng aus) >>= either err (pure . uncurry3 zip3 . (, nms, urls))
 	where
-	err1 e = adjust (uncurry raiseError e) >> getUsers
-	err2 e = adjust (uncurry raiseError e) >> getUsers
+	err e = adjust (uncurry raiseError e) >> getUsers
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
