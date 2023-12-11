@@ -43,7 +43,7 @@ packages:
 extra-deps:
   - moffy-samples-gtk4-run-0.2.1.1
   - moffy-samples-0.1.0.1
-  - moffy-samples-events-0.2.2.1
+  - moffy-samples-events-0.2.2.2
   - simple-cairo-0.1.0.5
   - cairo-image-0.1.0.0
   - simple-pango-0.1.0.1
