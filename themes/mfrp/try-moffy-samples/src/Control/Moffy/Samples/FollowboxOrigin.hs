@@ -53,6 +53,8 @@ import Data.String
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Area
 
+import Debug.Trace
+
 ---------------------------------------------------------------------------
 
 -- * PARAMETER LIST
@@ -126,7 +128,7 @@ followbox = () <$
 type AreaView = ([(Int, (Point, Point))], View)
 
 fieldWithResetTime :: Integer -> SigF s AreaView ()
-fieldWithResetTime n = (<>) <$%> field n <*%> (([] ,) <$%> resetTime)
+fieldWithResetTime n = (<>) <$%> field' n <*%> (([] ,) <$%> resetTime)
 
 field :: Integer -> SigF s AreaView ()
 field n = do
@@ -145,6 +147,37 @@ field n = do
 	link p t = clickableText p
 		<$> adjust (withTextExtents defaultFont middleSize t)
 
+{-
+clickCross :: Int -> ReactF s Int
+clickCross i = do
+	clickArea =<< adjust (getArea i)
+	adjust $ getRandomR (0, 99)
+	-}
+
+field' :: Integer -> SigF s AreaView ()
+field' n = do
+	(nxt, rfs) <- waitFor
+		$ (,) <$> link nextPos "Next" <*> link refreshPos "Refresh"
+	let	frame = View [title] <> view nxt <> view rfs; clear = emit ([], frame)
+		refresh = forever do
+			emit Nothing
+			us <- waitFor getUsers'
+			emit $ Just us
+			waitFor . adjust $ click rfs
+		clickCrosses lck i = forever do
+--			emit =<< waitFor (adjust $ getRandomR (0, 99))
+			emit =<< waitFor (withLock lck (adjust $ getRandomR (0, 29) :: ReactF s Int))
+			waitFor $ clickArea ((0, 0 + i * 150), (100, 100 + i * 150)) -- =<< adjust (getArea i)
+	lck <- waitFor $ adjust newLockId
+	(clear >>) $ second (frame <>) <$%> ((\a b c -> a <> b <> c)
+		<$%> (chooseUser 0 <$%> refresh <*%> clickCrosses lck 0)
+		<*%> (chooseUser 1 <$%> refresh <*%> clickCrosses lck 1)
+		<*%> (chooseUser 2 <$%> refresh <*%> clickCrosses lck 2))
+	where
+	title = twhite largeSize titlePos "Who to follow"
+	link p t = clickableText p
+		<$> adjust (withTextExtents defaultFont middleSize t)
+
 resetTime :: SigF s View ()
 resetTime = forever $ emit (View []) >> do
 	emit =<< waitFor do
@@ -156,6 +189,11 @@ resetTime = forever $ emit (View []) >> do
 twhite :: FontSize -> Position -> T.Text -> View1
 twhite fs p = expand . Singleton . Text' white defaultFont fs p
 
+chooseUser :: Integer -> Maybe [(Png, T.Text, WithTextExtents)] -> Int -> AreaView
+chooseUser (fromIntegral &&& fromIntegral -> (n, n')) (Just us) i =
+	mkUser' n n' (us !! i)
+chooseUser (fromIntegral &&& fromIntegral -> (n, n')) Nothing i = ([], View [])
+
 -- USERS
 
 users :: LockId -> Integer -> SigF s AreaView ()
@@ -165,12 +203,16 @@ users lck n =
 user1 :: LockId -> Integer -> SigF s AreaView ()
 user1 lck (fromIntegral &&& fromIntegral -> (n, n')) = do
 	emit ([], View [])
-	(avt, uri, wte) <- waitFor $ getUser' lck
+	emit . mkUser' n n' =<< waitFor (getUser' lck)
+	void . waitFor $ clickCross n
 
-	let (aview, lsn) = mkUser n n' avt uri wte
-
-	emit aview
-	void $ lsn `break` clickCross n
+mkUser' :: Int -> Double -> (Png, Uri, WithTextExtents) -> AreaView
+mkUser' n n' (avt, _uri, wte) =
+	let	ap = avatarPos n'; np = namePos n'
+		lnk = clickableText np wte; cr = cross $ crossPos np wte
+		ara = crossArea $ crossPos np wte
+		aview = ([(n, ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr) in
+	aview
 
 mkUser :: Int -> Double -> Png -> Uri -> WithTextExtents -> (AreaView, SigF s AreaView())
 mkUser n n' avt uri wte =
@@ -291,7 +333,7 @@ getObjs' = getObjs >>= \case
 getObjs :: ReactF s (Either String [Object])
 getObjs = do
 	n <- adjust $ getRandomR (0, userPageMax)
-	(hdr, bdy) <- adjust . httpGet $ api n
+	(hdr, bdy) <- trace (show n) . adjust . httpGet $ api n
 	case (rmng hdr, rst hdr) of
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode bdy
 		(Just _, Just t) ->
