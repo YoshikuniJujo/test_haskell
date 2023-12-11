@@ -9,15 +9,15 @@ module Control.Moffy.Samples.FollowboxOrigin (
 	-- * followbox
 	followbox ) where
 
-import Prelude hiding (break, until, repeat)
+import Prelude hiding (break, until, repeat, scanl)
 
 import Control.Arrow ((>>>), second, (***), (&&&))
 import Control.Monad (void, forever, (<=<))
-import Control.Moffy (React, adjust, adjustSig, emit, waitFor, first, break, until, indexBy, find, repeat)
+import Control.Moffy (React, adjust, adjustSig, emit, waitFor, first, break, until, indexBy, find, repeat, scanl)
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
 import Control.Moffy.Samples.Event.Random (getRandomR)
 import Control.Moffy.Samples.Event.Delete (deleteEvent)
-import Control.Moffy.Samples.Viewable.Basic (Position)
+import Control.Moffy.Samples.Viewable.Basic (Position, Color(..))
 import Control.Moffy.Samples.Followbox.Event (
 	SigF, ReactF,
 	clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
@@ -130,44 +130,24 @@ type AreaView = ([(Int, (Point, Point))], View)
 fieldWithResetTime :: Integer -> SigF s AreaView ()
 fieldWithResetTime n = (<>) <$%> field' n <*%> (([] ,) <$%> resetTime)
 
-field :: Integer -> SigF s AreaView ()
-field n = do
-	(nxt, rfs) <- waitFor
-		$ (,) <$> link nextPos "Next" <*> link refreshPos "Refresh"
-	let	frame = View [title] <> view nxt <> view rfs; clear = emit ([], frame)
-	lck <- waitFor $ adjust newLockId
-	(clear >>) . forever $ (second (frame <>))
-		<$%> users lck n `until` click nxt `first` click rfs >>= \case
-			Right (_, L _) -> pure ()
-			Right (_, LR _ _) -> pure ()
-			Right (_, R _) -> clear >> waitFor (adjust clearJsons)
-			Left _ -> error "never occur"
-	where
-	title = twhite largeSize titlePos "Who to follow"
-	link p t = clickableText p
-		<$> adjust (withTextExtents defaultFont middleSize t)
-
-{-
-clickCross :: Int -> ReactF s Int
-clickCross i = do
-	clickArea =<< adjust (getArea i)
-	adjust $ getRandomR (0, 99)
-	-}
-
 field' :: Integer -> SigF s AreaView ()
 field' n = do
 	(nxt, rfs) <- waitFor
 		$ (,) <$> link nextPos "Next" <*> link refreshPos "Refresh"
-	let	frame = View [title] <> view nxt <> view rfs; clear = emit ([], frame)
+	let	frame = View [title] <> view nxt <> view rfs
+--	let	frame = View [title] <> view nxt <> view rfs <> View [expand $ Singleton $ Line' (Color 255 0 0) 30 (30, 30) (100, 100)]
+--	let	frame = View [title] <> view nxt <> view rfs <> bar 25
+		clear = emit ([], frame)
 		refresh = forever do
 			emit Nothing
-			us <- waitFor getUsers'
-			emit $ Just us
+			us <- Just . Left <$%> getUsers'
+			emit . Just $ Right us
 			waitFor . adjust $ click rfs
 		clickCrosses lck i = forever do
 --			emit =<< waitFor (adjust $ getRandomR (0, 99))
 			emit =<< waitFor (withLock lck (adjust $ getRandomR (0, 29) :: ReactF s Int))
-			waitFor $ clickArea ((0, 0 + i * 150), (100, 100 + i * 150)) -- =<< adjust (getArea i)
+			waitFor $ clickArea ((0, 0 + i * 150), (100, 100 + i * 150))
+--			waitFor $ clickArea =<< adjust (getArea i)
 	lck <- waitFor $ adjust newLockId
 	(clear >>) $ second (frame <>) <$%> ((\a b c -> a <> b <> c)
 		<$%> (chooseUser 0 <$%> refresh <*%> clickCrosses lck 0)
@@ -177,6 +157,9 @@ field' n = do
 	title = twhite largeSize titlePos "Who to follow"
 	link p t = clickableText p
 		<$> adjust (withTextExtents defaultFont middleSize t)
+
+bar :: Double -> View
+bar p = View [expand . Singleton $ Line' (Color 30 215 10) 50 (80, 300) (80 + p * 25, 300)]
 
 resetTime :: SigF s View ()
 resetTime = forever $ emit (View []) >> do
@@ -189,22 +172,13 @@ resetTime = forever $ emit (View []) >> do
 twhite :: FontSize -> Position -> T.Text -> View1
 twhite fs p = expand . Singleton . Text' white defaultFont fs p
 
-chooseUser :: Integer -> Maybe [(Png, T.Text, WithTextExtents)] -> Int -> AreaView
-chooseUser (fromIntegral &&& fromIntegral -> (n, n')) (Just us) i =
+chooseUser :: Integer -> Maybe (Either Int [(Png, T.Text, WithTextExtents)]) -> Int -> AreaView
+chooseUser _ (Just (Left i)) _ = ([], bar $ fromIntegral i)
+chooseUser (fromIntegral &&& fromIntegral -> (n, n')) (Just (Right us)) i =
 	mkUser' n n' (us !! i)
 chooseUser (fromIntegral &&& fromIntegral -> (n, n')) Nothing i = ([], View [])
 
 -- USERS
-
-users :: LockId -> Integer -> SigF s AreaView ()
-users lck n =
-	mconcat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
-
-user1 :: LockId -> Integer -> SigF s AreaView ()
-user1 lck (fromIntegral &&& fromIntegral -> (n, n')) = do
-	emit ([], View [])
-	emit . mkUser' n n' =<< waitFor (getUser' lck)
-	void . waitFor $ clickCross n
 
 mkUser' :: Int -> Double -> (Png, Uri, WithTextExtents) -> AreaView
 mkUser' n n' (avt, _uri, wte) =
@@ -263,13 +237,8 @@ cross (l, t) = clickable (View [lwhite lt rb, lwhite lb rt]) (l', t') (r', b')
 
 -- GET USER
 
-{-# ANN getUser ("HLint: ignore Redundant <$>" :: String) #-}
-
-getUser' :: LockId -> ReactF s (Png, T.Text, WithTextExtents)
-getUser' lck = userTextExtents =<< getUser lck
-
-getUsers' :: ReactF s [(Png, T.Text, WithTextExtents)]
-getUsers' = mapM userTextExtents =<< getUsers
+getUsers' :: SigF s Int [(Png, T.Text, WithTextExtents)]
+getUsers' = mapM (waitFor . userTextExtents) =<< getUsers
 
 userTextExtents ::
 	(Png, T.Text, T.Text) -> ReactF s (Png, T.Text, WithTextExtents)
@@ -277,18 +246,12 @@ userTextExtents (avt, nm, uri) = do
 	wte <- adjust $ withTextExtents defaultFont largeSize nm
 	pure (avt, uri, wte)
 
-getUser :: LockId -> ReactF s (Png, T.Text, T.Text)
-getUser lck = ex3 . toHashMap <$> getObj1 lck >>= err `either` \(au, nm, url) ->
-	getAvatarPng au >>= either err (pure . (, nm, url))
-	where
-	err e = adjust (uncurry raiseError e) >> getUser lck
-
-getUsers :: ReactF s [(Png, T.Text, T.Text)]
-getUsers = (sequence . map (ex3 . toHashMap) <$> getObjs') >>= err `either` \aunmurls -> do
+getUsers :: SigF s Int [(Png, T.Text, T.Text)]
+getUsers = waitFor (sequence . map (ex3 . toHashMap) <$> getObjs') >>= err `either` \aunmurls -> do
 	let	(aus, nms, urls) = unzip3 aunmurls
-	sequence <$> (mapM getAvatarPng aus) >>= either err (pure . uncurry3 zip3 . (, nms, urls))
+	sequence <$> (scanl (+) 0 $ mapM getAvatarPng aus) >>= either err (pure . uncurry3 zip3 . (, nms, urls))
 	where
-	err e = adjust (uncurry raiseError e) >> getUsers
+	err e = waitFor (adjust (uncurry raiseError e)) >> getUsers
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
@@ -302,11 +265,13 @@ ex3 o = (,,)
 	where
 	ex k e = case HM.lookup k o of Just (String v) -> Right v; _ -> Left e
 
-getAvatarPng :: T.Text -> ReactF s (Either (Error, ErrorMessage) Png)
-getAvatarPng url = (<$> adjust (httpGet url))
-	$ snd >>> LBS.toStrict >>> convert >>> either
-		(Left . (NoAvatar ,))
-		(Right . Png avatarSizeX avatarSizeY)
+getAvatarPng :: T.Text -> SigF s Int (Either (Error, ErrorMessage) Png)
+getAvatarPng url = do
+	emit 1
+	waitFor $ (<$> adjust (httpGet url))
+		$ snd >>> LBS.toStrict >>> convert >>> either
+			(Left . (NoAvatar ,))
+			(Right . Png avatarSizeX avatarSizeY)
 
 convert :: BS.ByteString -> Either String BS.ByteString
 convert img = LBS.toStrict . P.encodePng . P.convertRGB8 <$> P.decodeImage img

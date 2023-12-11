@@ -5,12 +5,12 @@
 
 packages:
 - completed:
-    hackage: moffy-samples-gtk4-run-0.2.1.0@sha256:5d07bd963594593d3c230e5d6927dd1385ce41281775f326ca95f6848ac43a27,3570
+    hackage: moffy-samples-gtk4-run-0.2.1.1@sha256:4c0d4a3aaa66cee958d1bb6520d60be34af60328a984782f87d0ffae207baab2,3570
     pantry-tree:
-      sha256: c4f5427526fc0369398a3e3177dcfb46dd667ff486d63b7d5f74ad1160f89ce4
+      sha256: 86f6d892977fe839b4f68926b0e5bba6e164ba4f0c6f9f276a2af70d8e58c645
       size: 2786
   original:
-    hackage: moffy-samples-gtk4-run-0.2.1.0
+    hackage: moffy-samples-gtk4-run-0.2.1.1
 - completed:
     hackage: moffy-samples-0.1.0.1@sha256:9e2ac98fa019efda0dc28d7b08b4fdede96c3fa78891214e922da47623a0e2d9,2226
     pantry-tree:
