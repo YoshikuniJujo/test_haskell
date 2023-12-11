@@ -165,13 +165,21 @@ users lck n =
 user1 :: LockId -> Integer -> SigF s AreaView ()
 user1 lck (fromIntegral &&& fromIntegral -> (n, n')) = do
 	emit ([], View [])
-	(avt, nm, uri) <- waitFor $ getUser lck
-	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize nm
+	(avt, uri, wte) <- waitFor $ getUser' lck
+
+	let (aview, lsn) = mkUser n n' avt uri wte
+
+	emit aview
+	void $ lsn `break` clickCross n
+
+mkUser :: Int -> Double -> Png -> Uri -> WithTextExtents -> (AreaView, SigF s AreaView())
+mkUser n n' avt uri wte =
 	let	ap = avatarPos n'; np = namePos n'
 		lnk = clickableText np wte; cr = cross $ crossPos np wte
 		ara = crossArea $ crossPos np wte
-	emit $ ([(n, ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr)
-	void $ waitFor (listenForUserPage lnk uri) `break` clickCross n
+		lsn = waitFor $ listenForUserPage lnk uri
+		aview = ([(n, ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr) in
+	(aview, lsn)
 
 clickCross :: Int -> ReactF s Int
 clickCross i = do
@@ -214,6 +222,18 @@ cross (l, t) = clickable (View [lwhite lt rb, lwhite lb rt]) (l', t') (r', b')
 -- GET USER
 
 {-# ANN getUser ("HLint: ignore Redundant <$>" :: String) #-}
+
+getUser' :: LockId -> ReactF s (Png, T.Text, WithTextExtents)
+getUser' lck = userTextExtents =<< getUser lck
+
+getUsers' :: ReactF s [(Png, T.Text, WithTextExtents)]
+getUsers' = mapM userTextExtents =<< getUsers
+
+userTextExtents ::
+	(Png, T.Text, T.Text) -> ReactF s (Png, T.Text, WithTextExtents)
+userTextExtents (avt, nm, uri) = do
+	wte <- adjust $ withTextExtents defaultFont largeSize nm
+	pure (avt, uri, wte)
 
 getUser :: LockId -> ReactF s (Png, T.Text, T.Text)
 getUser lck = ex3 . toHashMap <$> getObj1 lck >>= err `either` \(au, nm, url) ->
