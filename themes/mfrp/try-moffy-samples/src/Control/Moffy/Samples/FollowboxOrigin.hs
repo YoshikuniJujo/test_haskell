@@ -11,7 +11,7 @@ module Control.Moffy.Samples.FollowboxOrigin (
 
 import Prelude hiding (break, until, repeat)
 
-import Control.Arrow ((>>>))
+import Control.Arrow ((>>>), second, (***), (&&&))
 import Control.Monad (void, forever, (<=<))
 import Control.Moffy (React, adjust, adjustSig, emit, waitFor, first, break, until, indexBy, find, repeat)
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
@@ -119,20 +119,22 @@ crossMergin = 4
 
 -- FOLLOWBOX
 
-followbox :: SigF s ([(Int, (Point, Point))], View) ()
-followbox = () <$ (([] ,) <$%>
-	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate)
+followbox :: SigF s AreaView ()
+followbox = () <$
+	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate
 
-fieldWithResetTime :: Integer -> SigF s View ()
-fieldWithResetTime n = (<>) <$%> field n <*%> resetTime
+type AreaView = ([(Int, (Point, Point))], View)
 
-field :: Integer -> SigF s View ()
+fieldWithResetTime :: Integer -> SigF s AreaView ()
+fieldWithResetTime n = (<>) <$%> field n <*%> (([] ,) <$%> resetTime)
+
+field :: Integer -> SigF s AreaView ()
 field n = do
 	(nxt, rfs) <- waitFor
 		$ (,) <$> link nextPos "Next" <*> link refreshPos "Refresh"
-	let	frame = View [title] <> view nxt <> view rfs; clear = emit frame
+	let	frame = View [title] <> view nxt <> view rfs; clear = emit ([], frame)
 	lck <- waitFor $ adjust newLockId
-	(clear >>) . forever $ (frame <>)
+	(clear >>) . forever $ (second (frame <>))
 		<$%> users lck n `until` click nxt `first` click rfs >>= \case
 			Right (_, L _) -> pure ()
 			Right (_, LR _ _) -> pure ()
@@ -156,18 +158,20 @@ twhite fs p = expand . Singleton . Text' white defaultFont fs p
 
 -- USERS
 
-users :: LockId -> Integer -> SigF s View ()
-users lck (fromIntegral -> n) =
+users :: LockId -> Integer -> SigF s AreaView ()
+users lck n =
 	mconcat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
 
-user1 :: LockId -> Double -> SigF s View ()
-user1 lck n = do
+user1 :: LockId -> Integer -> SigF s AreaView ()
+user1 lck (fromIntegral &&& fromIntegral -> (n, n')) = do
+	emit ([], View [])
 	(avt, nm, uri) <- waitFor $ getUser lck
 	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize nm
-	let	ap = avatarPos n; np = namePos n
+	let	ap = avatarPos n'; np = namePos n'
 		lnk = clickableText np wte; cr = cross $ crossPos np wte
-	emit $ View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr
-	void $ waitFor (listenForUserPage lnk uri) `break` click cr
+		ara = crossArea $ crossPos np wte
+	emit $ ([(n, ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr)
+	void $ waitFor (listenForUserPage lnk uri) `break` clickCross n
 
 clickCross :: Int -> ReactF s Int
 clickCross i = do
@@ -189,6 +193,14 @@ leftClick = clickOn Mouse.ButtonPrimary
 
 listenForUserPage :: Clickable s -> Uri -> ReactF s ()
 listenForUserPage nm u = forever $ adjust (click nm) >> adjust (browse u)
+
+crossArea :: Position -> (Position, Position)
+crossArea (l, t) = ((l', t'), (r', b'))
+	where
+	(lt, lb, rt, rb) = ((l, t), (l, b), (r, t), (r, b))
+	(r, b) = (l + crossSize, t + crossSize)
+	(l', t') = (l - crossMergin, t - crossMergin)
+	(r', b') = (r + crossMergin, b + crossMergin)
 
 cross :: Position -> Clickable s
 cross (l, t) = clickable (View [lwhite lt rb, lwhite lb rt]) (l', t') (r', b')
