@@ -5,12 +5,12 @@
 
 packages:
 - completed:
-    hackage: moffy-samples-gtk4-run-0.2.1.1@sha256:4c0d4a3aaa66cee958d1bb6520d60be34af60328a984782f87d0ffae207baab2,3570
+    hackage: moffy-samples-gtk4-run-0.2.1.2@sha256:67a8b2dd0c830619899922dbeb11201d70f72ff47887ba5f283584f15dfd4abf,3570
     pantry-tree:
-      sha256: 86f6d892977fe839b4f68926b0e5bba6e164ba4f0c6f9f276a2af70d8e58c645
+      sha256: e11ed8e3de1f5e9f24ef1dfc41194ae77a98786e59ad39068e94d42fd78e1ff2
       size: 2786
   original:
-    hackage: moffy-samples-gtk4-run-0.2.1.1
+    hackage: moffy-samples-gtk4-run-0.2.1.2
 - completed:
     hackage: moffy-samples-0.1.0.1@sha256:9e2ac98fa019efda0dc28d7b08b4fdede96c3fa78891214e922da47623a0e2d9,2226
     pantry-tree:
@@ -19,12 +19,12 @@ packages:
   original:
     hackage: moffy-samples-0.1.0.1
 - completed:
-    hackage: moffy-samples-events-0.2.2.2@sha256:512590ae2425aaced59678c30516a919d6308d5cbda3f3885b936f5929943cc1,3206
+    hackage: moffy-samples-events-0.2.2.4@sha256:3bc0799f0c1230bf013f5a9eccc7ebac2387fa4e007f5ccbabe16ad666aeaca2,3206
     pantry-tree:
-      sha256: ffc27afc5bd27a0b56e0a0d971959d4adf9aa42508220330b0e802149d68bbeb
-      size: 2064
+      sha256: fea142bf60fa636231f49fa32bef0518c3477e120c4fa4e1d3fd19753caf1c5f
+      size: 2065
   original:
-    hackage: moffy-samples-events-0.2.2.2
+    hackage: moffy-samples-events-0.2.2.4
 - completed:
     hackage: simple-cairo-0.1.0.5@sha256:d26c1373505430b9ae3d41feae314061d86c231c8b46940f4c4cf36fe54a48b6,4499
     pantry-tree:

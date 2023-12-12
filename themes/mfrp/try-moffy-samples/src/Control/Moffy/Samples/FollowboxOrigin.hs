@@ -126,7 +126,7 @@ followbox :: SigF s AreaView ()
 followbox = () <$
 	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate
 
-type AreaView = ([(Int, (Point, Point))], View)
+type AreaView = ([(Int, Maybe (Point, Point))], View)
 
 fieldWithResetTime :: Integer -> SigF s AreaView ()
 fieldWithResetTime n = (<>) <$%> field' n <*%> (([] ,) <$%> resetTime)
@@ -138,6 +138,7 @@ field' n = do
 	let	frame = View [title] <> view nxt <> view rfs
 --	let	frame = View [title] <> view nxt <> view rfs <> View [expand $ Singleton $ Line' (Color 255 0 0) 30 (30, 30) (100, 100)]
 --	let	frame = View [title] <> view nxt <> view rfs <> bar 25
+--		clear = emit ([(0, Nothing), (0, Nothing), (0, Nothing)], frame)
 		clear = emit ([], frame)
 		refresh = forever do
 			emit Nothing
@@ -147,8 +148,8 @@ field' n = do
 		clickCrosses lck i = forever do
 --			emit =<< waitFor (adjust $ getRandomR (0, 99))
 			emit =<< waitFor (withLock lck (adjust $ getRandomR (0, 29) :: ReactF s Int))
-			waitFor $ clickArea ((0, 0 + i * 150), (100, 100 + i * 150))
---			waitFor $ clickArea =<< adjust (getArea i)
+--			waitFor $ clickArea ((0, 0 + i * 150), (100, 100 + i * 150))
+			waitFor $ (clickArea =<< adjust (getArea i)) `first` click rfs
 	lck <- waitFor $ adjust newLockId
 	(clear >>) $ second (frame <>) <$%> ((\a b c -> a <> b <> c)
 		<$%> (chooseUser 0 <$%> refresh <*%> clickCrosses lck 0)
@@ -177,7 +178,8 @@ chooseUser :: Integer -> Maybe (Either Int [(Png, T.Text, WithTextExtents)]) -> 
 chooseUser _ (Just (Left i)) _ = ([], bar $ fromIntegral i)
 chooseUser (fromIntegral &&& fromIntegral -> (n, n')) (Just (Right us)) i =
 	mkUser' n n' (us !! i)
-chooseUser (fromIntegral &&& fromIntegral -> (n, n')) Nothing i = ([], View [])
+chooseUser (fromIntegral &&& fromIntegral -> (n, n')) Nothing i = -- ([], View [])
+	([(n, Nothing)], View [])
 
 -- USERS
 
@@ -186,7 +188,7 @@ mkUser' n n' (avt, _uri, wte) =
 	let	ap = avatarPos n'; np = namePos n'
 		lnk = clickableText np wte; cr = cross $ crossPos np wte
 		ara = crossArea $ crossPos np wte
-		aview = ([(n, ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr) in
+		aview = ([(n, Just ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr) in
 	aview
 
 mkUser :: Int -> Double -> Png -> Uri -> WithTextExtents -> (AreaView, SigF s AreaView())
@@ -195,7 +197,7 @@ mkUser n n' avt uri wte =
 		lnk = clickableText np wte; cr = cross $ crossPos np wte
 		ara = crossArea $ crossPos np wte
 		lsn = waitFor $ listenForUserPage lnk uri
-		aview = ([(n, ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr) in
+		aview = ([(n, Just ara)], View [expand . Singleton $ Image' ap avt] <> view lnk <> view cr) in
 	(aview, lsn)
 
 clickCross :: Int -> ReactF s Int
