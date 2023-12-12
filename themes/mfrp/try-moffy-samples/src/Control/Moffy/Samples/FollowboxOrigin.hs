@@ -11,6 +11,7 @@ module Control.Moffy.Samples.FollowboxOrigin (
 
 import Prelude hiding (break, until, repeat, scanl)
 
+import Control.DeepSeq
 import Control.Arrow ((>>>), second, (***), (&&&))
 import Control.Monad (void, forever, (<=<))
 import Control.Moffy (React, adjust, adjustSig, emit, waitFor, first, break, until, indexBy, find, repeat, scanl)
@@ -268,10 +269,12 @@ ex3 o = (,,)
 getAvatarPng :: T.Text -> SigF s Int (Either (Error, ErrorMessage) Png)
 getAvatarPng url = do
 	emit 1
-	waitFor $ (<$> adjust (httpGet url))
+	r <- waitFor $ (<$> adjust (httpGet url))
 		$ snd >>> LBS.toStrict >>> convert >>> either
 			(Left . (NoAvatar ,))
 			(Right . Png avatarSizeX avatarSizeY)
+--	pure $!! r
+	pure r
 
 convert :: BS.ByteString -> Either String BS.ByteString
 convert img = LBS.toStrict . P.encodePng . P.convertRGB8 <$> P.decodeImage img

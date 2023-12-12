@@ -49,6 +49,7 @@ library
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -86,6 +87,7 @@ executable file-viewer
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -124,6 +126,7 @@ executable moffy_samples
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -162,6 +165,7 @@ executable tfe
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -200,6 +204,7 @@ executable try-area
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -238,6 +243,7 @@ executable try-cairo
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -276,6 +282,7 @@ executable try-cancellable
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -314,6 +321,7 @@ executable try-clock
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -352,6 +360,7 @@ executable try-clock-more
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -390,6 +399,7 @@ executable try-drawing-area
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -432,6 +442,7 @@ executable try-moffy-samples-exe
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -470,6 +481,7 @@ executable try-mouse-event
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -508,6 +520,7 @@ executable try-text-view-exe
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
@@ -551,6 +564,7 @@ test-suite try-moffy-samples-test
     , c-struct
     , cairo-image
     , containers
+    , deepseq
     , exception-hierarchy
     , extra-data-yj
     , hashable
