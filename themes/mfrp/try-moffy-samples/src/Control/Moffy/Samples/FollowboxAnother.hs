@@ -5,7 +5,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Samples.FollowboxOrigin (
+module Control.Moffy.Samples.FollowboxAnother (
 	-- * followbox
 	followbox ) where
 
