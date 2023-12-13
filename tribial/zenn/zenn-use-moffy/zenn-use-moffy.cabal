@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Determinism
   other-modules:
       Paths_zenn_use_moffy
   autogen-modules:
