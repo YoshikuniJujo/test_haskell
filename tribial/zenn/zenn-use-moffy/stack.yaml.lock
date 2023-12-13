@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: moffy-samples-gtk4-run-0.2.1.2@sha256:67a8b2dd0c830619899922dbeb11201d70f72ff47887ba5f283584f15dfd4abf,3570
+    pantry-tree:
+      sha256: e11ed8e3de1f5e9f24ef1dfc41194ae77a98786e59ad39068e94d42fd78e1ff2
+      size: 2786
+  original:
+    hackage: moffy-samples-gtk4-run-0.2.1.2
 snapshots:
 - completed:
     sha256: 7be2fa6693c8e95037267408566b93db0e6f70cad4a3b12aa42798770f51601d
