@@ -10,7 +10,9 @@ module Boxes where
 import Control.Moffy
 import Control.Moffy.Event.Time
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
+import Control.Moffy.Samples.Boxes.Viewable
 import Data.Type.Set
+import Data.Type.Flip
 import Data.Or
 import Data.Bool
 
@@ -31,3 +33,6 @@ doubler = do
 	adjust rightClick
 	r <- rightClick `before` sleep 0.2
 	if r then pure () else doubler
+
+curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
+curRect p1 = Rect p1 <$%> Mouse.position
