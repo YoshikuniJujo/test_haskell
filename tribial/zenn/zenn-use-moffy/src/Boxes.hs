@@ -7,7 +7,7 @@
 
 module Boxes where
 
-import Prelude hiding (until)
+import Prelude hiding (until, cycle)
 import Control.Arrow qualified as A
 import Control.Moffy
 import Control.Moffy.Event.Time
@@ -16,6 +16,8 @@ import Control.Moffy.Samples.Boxes.Viewable
 import Data.Type.Set
 import Data.Type.Flip
 import Data.Or
+import Data.List.NonEmpty (fromList)
+import Data.List.Infinite (Infinite(..), cycle)
 import Data.Bool
 
 clickOn :: Mouse.Button -> React s (Singleton Mouse.Down) ()
@@ -63,3 +65,6 @@ completeRect p1 = (const $ error "never occur") `either` fst
 
 defineRect :: Sig s (Mouse.Move :- Mouse.Down :- Singleton Mouse.Up) Rect Rect
 defineRect = adjustSig . completeRect =<< waitFor (adjust firstPoint)
+
+colorList :: Infinite BColor
+colorList = cycle $ fromList [Red .. Magenta]
