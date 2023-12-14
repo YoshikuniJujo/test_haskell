@@ -44,8 +44,8 @@ type StackedSig s = Sig s (SigValue :- Singleton Key)
 handleStacked :: forall s . StackedSig s Int Int -> Handle (StackedSig s Int) (SigValue :- Singleton Key)
 handleStacked sig = const $ expand . Singleton . OccSigValue <$> (interpret (handleStacked sig) outputStacked sig :: StackedSig s Int Int)
 
-outputStacked :: Int -> StackedSig s a ()
-outputStacked i = pure ()
+outputStacked :: Int -> StackedSig s Int ()
+outputStacked i = emit i
 
 ---------------------------------------------------------------------------
 
