@@ -7,6 +7,7 @@
 
 module Boxes where
 
+import Prelude hiding (until)
 import Control.Arrow qualified as A
 import Control.Moffy
 import Control.Moffy.Event.Time
@@ -50,3 +51,15 @@ wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect ()
 wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed
 	where rectAtTime t = Rect ((+ dx) `A.first` lu) ((+ dx) `A.first` rd)
 		where dx = sin (realToFrac t * 5) * 15
+
+firstPoint :: React s (Mouse.Move :- Singleton Mouse.Down) Point
+firstPoint = either error id
+	. atResult (const "never occur") (const "never occur")
+	<$> Mouse.position `at` leftClick
+
+completeRect :: Point -> Sig s (Mouse.Move :- Singleton Mouse.Up) Rect Rect
+completeRect p1 = (const $ error "never occur") `either` fst
+	<$> curRect p1 `until` leftUp
+
+defineRect :: Sig s (Mouse.Move :- Mouse.Down :- Singleton Mouse.Up) Rect Rect
+defineRect = adjustSig . completeRect =<< waitFor (adjust firstPoint)
