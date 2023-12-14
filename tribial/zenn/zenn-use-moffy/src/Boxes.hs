@@ -7,6 +7,7 @@
 
 module Boxes where
 
+import Control.Arrow qualified as A
 import Control.Moffy
 import Control.Moffy.Event.Time
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
@@ -24,6 +25,14 @@ leftClick = clickOn Mouse.ButtonPrimary
 middleClick = clickOn Mouse.ButtonMiddle
 rightClick = clickOn Mouse.ButtonSecondary
 
+releaseOn :: Mouse.Button -> React s (Singleton Mouse.Up) ()
+releaseOn b = bool (releaseOn b) (pure ()) . (== b) =<< Mouse.up
+
+leftUp, middleUp, rightUp :: React s (Singleton Mouse.Up) ()
+leftUp = releaseOn Mouse.ButtonPrimary
+middleUp = releaseOn Mouse.ButtonMiddle
+rightUp = releaseOn Mouse.ButtonSecondary
+
 before :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') Bool
 a `before` b = (<$> a `first` b) \case L _ -> True; _ -> False
@@ -36,3 +45,8 @@ doubler = do
 
 curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
 curRect p1 = Rect p1 <$%> Mouse.position
+
+wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect ()
+wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed
+	where rectAtTime t = Rect ((+ dx) `A.first` lu) ((+ dx) `A.first` rd)
+		where dx = sin (realToFrac t * 5) * 15
