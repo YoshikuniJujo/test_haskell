@@ -32,11 +32,11 @@ key = await KeyReq \(OccKey c) -> c
 
 ---------------------------------------------------------------------------
 
+celsius :: Sig s (Singleton Key) Double ()
+celsius = interpret (retry handleStacked) (emit . fst) ((,) <$%> celsius <*%> fahrenheit)
+
 fahrenheit :: Sig s (Singleton Key) Double ()
 fahrenheit = interpret (retry handleStacked) emit celsius
-
-celsius :: Sig s (Singleton Key) Double ()
-celsius = interpret (retry handleStacked) emit fahrenheit
 
 ---------------------------------------------------------------------------
 
