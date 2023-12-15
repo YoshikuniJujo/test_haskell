@@ -12,10 +12,12 @@ module StackedInterpreter where
 import Prelude hiding (repeat, break)
 import Control.Monad
 import Control.Moffy
+import Control.Moffy.Handle
 import Control.Moffy.Run
 import Control.Exception (bracket)
 import Data.Type.Set
 import Data.Type.Flip
+import Data.OneOrMore qualified as Oom
 import Data.OneOrMoreApp
 import Data.Bool
 import Data.Char
@@ -28,29 +30,42 @@ instance Request Key where data Occurred Key = OccKey Char deriving Show
 key :: React s (Singleton Key) Char
 key = await KeyReq \(OccKey c) -> c
 
-data SigValue = SigValueReq deriving (Show, Eq, Ord)
-numbered [t| SigValue |]
-
-instance Request SigValue where
-	data Occurred SigValue = OccSigValue Int deriving Show
-
-sigValue :: React s (Singleton SigValue) Int
-sigValue = await SigValueReq \(OccSigValue i) -> i
-
 ---------------------------------------------------------------------------
 
-type StackedSig s = Sig s (SigValue :- Singleton Key)
+type StackedSig s = Sig s (Singleton Key)
 
-handleStacked :: forall s . StackedSig s Int Int -> Handle (StackedSig s Int) (SigValue :- Singleton Key)
-handleStacked sig = const $ expand . Singleton . OccSigValue <$> (interpret (handleStacked sig) outputStacked sig :: StackedSig s Int Int)
+handleStacked :: Handle' (StackedSig s Int) (Singleton Key)
+handleStacked req = case Oom.project req of
+	Just krq -> Just <$> waitFor (await krq Singleton)
+	Nothing -> pure Nothing
 
 outputStacked :: Int -> StackedSig s Int ()
-outputStacked i = emit i
+outputStacked i = (1 +) <$%> emit i
+
+sigFoo :: Sig s (Singleton Key) Int ()
+sigFoo = emit 0 >> waitFor (pressOn ' ')
+	>> interpret (retry handleStacked) outputStacked sigFoo
+
+sigFib0 :: Sig s (Singleton Key) Int ()
+sigFib0 = emit 0 >> waitFor (pressOn ' ') >> sigFib1
+
+sigFib1 :: Sig s (Singleton Key) Int ()
+sigFib1 = do
+	emit 1 >> waitFor (pressOn ' ')
+	(+)	<$%> interpret (retry handleStacked) emit sigFib0
+		<*%> interpret (retry handleStacked) emit sigFib1
+
+mainSigFoo :: IO ()
+mainSigFoo = withNoBuffering IO.stdin runSigFoo >> putStrLn ""
+
+runSigFoo :: IO ()
+-- runSigFoo = void $ interpret handle output (sigFoo `break` pressOn 'q')
+runSigFoo = void $ interpret handle output (sigFib0 `break` pressOn 'q')
 
 ---------------------------------------------------------------------------
 
-main :: IO ()
-main = withNoBuffering IO.stdin run >> putStrLn ""
+main' :: IO ()
+main' = withNoBuffering IO.stdin run >> putStrLn ""
 
 run :: IO ()
 run = interpret handle output sigC

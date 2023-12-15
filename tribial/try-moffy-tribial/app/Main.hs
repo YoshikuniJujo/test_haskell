@@ -1,4 +1,6 @@
 module Main (main) where
 
+import StackedInterpreter
+
 main :: IO ()
-main = putStrLn "Hello, moffy world!"
+main = mainSigFoo
