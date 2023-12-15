@@ -32,9 +32,17 @@ key = await KeyReq \(OccKey c) -> c
 
 ---------------------------------------------------------------------------
 
+fahrenheit :: Sig s (Singleton Key) Double ()
+fahrenheit = interpret (retry handleStacked) emit celsius
+
+celsius :: Sig s (Singleton Key) Double ()
+celsius = interpret (retry handleStacked) emit fahrenheit
+
+---------------------------------------------------------------------------
+
 type StackedSig s = Sig s (Singleton Key)
 
-handleStacked :: Handle' (StackedSig s Int) (Singleton Key)
+handleStacked :: Handle' (StackedSig s a) (Singleton Key)
 handleStacked req = case Oom.project req of
 	Just krq -> Just <$> waitFor (await krq Singleton)
 	Nothing -> pure Nothing
@@ -46,21 +54,26 @@ sigFoo :: Sig s (Singleton Key) Int ()
 sigFoo = emit 0 >> waitFor (pressOn ' ')
 	>> interpret (retry handleStacked) outputStacked sigFoo
 
-sigFib0 :: Sig s (Singleton Key) Int ()
+sigFib0, sigFib0' :: Sig s (Singleton Key) Int ()
 sigFib0 = emit 0 >> waitFor (pressOn ' ') >> sigFib1
+sigFib0' = emit 0 >> waitFor (pressOn ' ') >> sigFib1'
 
-sigFib1 :: Sig s (Singleton Key) Int ()
+sigFib1, sigFib1' :: Sig s (Singleton Key) Int ()
 sigFib1 = do
 	emit 1 >> waitFor (pressOn ' ')
 	(+)	<$%> interpret (retry handleStacked) emit sigFib0
 		<*%> interpret (retry handleStacked) emit sigFib1
+sigFib1' = do
+	emit 1 >> waitFor (pressOn ' ')
+	(+) <$%> sigFib0' <*%> sigFib1'
 
 mainSigFoo :: IO ()
 mainSigFoo = withNoBuffering IO.stdin runSigFoo >> putStrLn ""
 
 runSigFoo :: IO ()
 -- runSigFoo = void $ interpret handle output (sigFoo `break` pressOn 'q')
-runSigFoo = void $ interpret handle output (sigFib0 `break` pressOn 'q')
+-- runSigFoo = void $ interpret handle output (sigFib0 `break` pressOn 'q')
+runSigFoo = void $ interpret handle output (sigFib0' `break` pressOn 'q')
 
 ---------------------------------------------------------------------------
 
