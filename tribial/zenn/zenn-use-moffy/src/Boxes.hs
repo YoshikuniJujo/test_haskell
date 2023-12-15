@@ -68,3 +68,13 @@ defineRect = adjustSig . completeRect =<< waitFor (adjust firstPoint)
 
 colorList :: Infinite BColor
 colorList = cycle $ fromList [Red .. Magenta]
+
+cycleColor :: Sig s (Singleton Mouse.Down) BColor ()
+cycleColor = go colorList where
+	go (h :~ t) = do
+		emit h
+		bool (pure ()) (go t)
+			=<< waitFor (middleClick `before` rightClick)
+
+chooseBoxColor :: Rect -> Sig s (Mouse.Down :- Singleton DeltaTime) Box ()
+chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
