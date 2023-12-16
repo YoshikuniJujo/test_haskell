@@ -9,6 +9,7 @@ module Boxes where
 
 import Prelude hiding (until, cycle)
 import Control.Arrow qualified as A
+import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Time
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
@@ -78,3 +79,9 @@ cycleColor = go colorList where
 
 chooseBoxColor :: Rect -> Sig s (Mouse.Down :- Singleton DeltaTime) Box ()
 chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
+
+posInside :: Rect -> Sig s evs Point y -> React s evs ()
+posInside rct = void . find (`inside` rct)
+	where inside (x, y) (Rect (l, u) (r, d)) =
+		(l <= x && x <= r || r <= x && x <= l) &&
+		(u <= y && y <= d || d <= y && y <= u)
