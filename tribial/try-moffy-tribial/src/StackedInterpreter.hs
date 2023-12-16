@@ -23,6 +23,9 @@ import Data.Bool
 import Data.Char
 import System.IO qualified as IO
 
+import Control.Moffy.Internal.React.Type
+import Control.Monad.Freer.Par
+
 data Key = KeyReq deriving (Show, Eq, Ord)
 numbered [t| Key |]
 instance Request Key where data Occurred Key = OccKey Char deriving Show
@@ -32,27 +35,46 @@ key = await KeyReq \(OccKey c) -> c
 
 ---------------------------------------------------------------------------
 
-celsius :: Sig s (Singleton Key) Double ()
-celsius = interpret (retry handleStacked) (emit . fst) ((,) <$%> celsius <*%> fahrenheit)
+data Celsius = CelsiusReq deriving (Show, Eq, Ord)
+numbered [t| Celsius |]
 
-fahrenheit :: Sig s (Singleton Key) Double ()
-fahrenheit = interpret (retry handleStacked) emit celsius
+instance Request Celsius where
+	data Occurred Celsius = OccCelsius Double deriving Show
+
+data Fahrenheit = FahrenheitReq deriving (Show, Eq, Ord)
+numbered [t| Fahrenheit |]
+
+instance Request Fahrenheit where
+	data Occurred Fahrenheit = OccFahrenheit Double deriving Show
+
+type TempratureEvents = Celsius :- Fahrenheit :- Singleton Key
 
 ---------------------------------------------------------------------------
 
-type StackedSig s = Sig s (Singleton Key)
+fahrenheit :: Sig s TempratureEvents Double ()
+fahrenheit = interpret (retry handleStacked) emit celsius
 
-handleStacked :: Handle' (StackedSig s a) (Singleton Key)
-handleStacked req = case Oom.project req of
+celsius :: Sig s TempratureEvents Double ()
+celsius = interpret (retry handleStacked) emit fahrenheit
+
+---------------------------------------------------------------------------
+
+type StackedSig s = Sig s TempratureEvents
+
+handleStacked :: Handle' (StackedSig s a) TempratureEvents
+handleStacked req = waitFor (pure . Just =<<< Await req)
+
+handleFoo :: Handle' (Sig s (Singleton Key) a) (Singleton Key)
+handleFoo req = case Oom.project req of
 	Just krq -> Just <$> waitFor (await krq Singleton)
 	Nothing -> pure Nothing
 
-outputStacked :: Int -> StackedSig s Int ()
-outputStacked i = (1 +) <$%> emit i
+outputFoo :: Int -> Sig s (Singleton Key) Int ()
+outputFoo i = (1 +) <$%> emit i
 
 sigFoo :: Sig s (Singleton Key) Int ()
 sigFoo = emit 0 >> waitFor (pressOn ' ')
-	>> interpret (retry handleStacked) outputStacked sigFoo
+	>> interpret (retry handleFoo) outputFoo sigFoo
 
 sigFib0, sigFib0' :: Sig s (Singleton Key) Int ()
 sigFib0 = emit 0 >> waitFor (pressOn ' ') >> sigFib1
@@ -61,8 +83,8 @@ sigFib0' = emit 0 >> waitFor (pressOn ' ') >> sigFib1'
 sigFib1, sigFib1' :: Sig s (Singleton Key) Int ()
 sigFib1 = do
 	emit 1 >> waitFor (pressOn ' ')
-	(+)	<$%> interpret (retry handleStacked) emit sigFib0
-		<*%> interpret (retry handleStacked) emit sigFib1
+	(+)	<$%> interpret (retry handleFoo) emit sigFib0
+		<*%> interpret (retry handleFoo) emit sigFib1
 sigFib1' = do
 	emit 1 >> waitFor (pressOn ' ')
 	(+) <$%> sigFib0' <*%> sigFib1'

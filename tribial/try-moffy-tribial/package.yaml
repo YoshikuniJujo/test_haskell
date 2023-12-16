@@ -24,6 +24,7 @@ dependencies:
 - moffy
 - type-set
 - type-flip
+- freer-par-monad
 
 ghc-options:
 - -Wall
