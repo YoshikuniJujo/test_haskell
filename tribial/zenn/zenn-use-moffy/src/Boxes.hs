@@ -7,7 +7,7 @@
 
 module Boxes where
 
-import Prelude hiding (until, cycle)
+import Prelude hiding (until, cycle, repeat)
 import Control.Arrow qualified as A
 import Control.Monad
 import Control.Moffy
@@ -85,3 +85,7 @@ posInside rct = void . find (`inside` rct)
 	where inside (x, y) (Rect (l, u) (r, d)) =
 		(l <= x && x <= r || r <= x && x <= l) &&
 		(u <= y && y <= d || d <= y && y <= u)
+
+drClickOn :: Rect -> React s (Mouse.Move :- Mouse.Down :- Singleton TryWait) ()
+drClickOn rct = posInside rct
+	$ fst <$%> Mouse.position `indexBy` repeat doubler
