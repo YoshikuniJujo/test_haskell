@@ -89,3 +89,11 @@ posInside rct = void . find (`inside` rct)
 drClickOn :: Rect -> React s (Mouse.Move :- Mouse.Down :- Singleton TryWait) ()
 drClickOn rct = posInside rct
 	$ fst <$%> Mouse.position `indexBy` repeat doubler
+
+box :: Sig s
+	(Mouse.Move :- Mouse.Down :- Mouse.Up :- DeltaTime :- Singleton TryWait)
+	Box ()
+box = do
+	b <- (`Box` Red) <$%> adjustSig defineRect
+	adjustSig $ chooseBoxColor b
+	waitFor . adjust $ drClickOn b
