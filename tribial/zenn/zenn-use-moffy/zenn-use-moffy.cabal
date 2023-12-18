@@ -27,6 +27,7 @@ library
   exposed-modules:
       Boxes
       Determinism
+      Followbox
   other-modules:
       Paths_zenn_use_moffy
   autogen-modules:
@@ -35,13 +36,20 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
     , extra-data-yj
+    , hashable
     , moffy
     , moffy-samples-events
     , moffy-samples-gtk4-run
+    , text
+    , time
     , type-flip
     , type-set
+    , unordered-containers
   default-language: Haskell2010
 
 executable keyKey
@@ -50,13 +58,20 @@ executable keyKey
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
     , extra-data-yj
+    , hashable
     , moffy
     , moffy-samples-events
     , moffy-samples-gtk4-run
+    , text
+    , time
     , type-flip
     , type-set
+    , unordered-containers
     , zenn-use-moffy
   default-language: Haskell2010
 
@@ -66,13 +81,20 @@ executable rectangle
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
     , extra-data-yj
+    , hashable
     , moffy
     , moffy-samples-events
     , moffy-samples-gtk4-run
+    , text
+    , time
     , type-flip
     , type-set
+    , unordered-containers
     , zenn-use-moffy
   default-language: Haskell2010
 
@@ -82,13 +104,20 @@ executable simple
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
     , extra-data-yj
+    , hashable
     , moffy
     , moffy-samples-events
     , moffy-samples-gtk4-run
+    , text
+    , time
     , type-flip
     , type-set
+    , unordered-containers
     , zenn-use-moffy
   default-language: Haskell2010
 
@@ -102,13 +131,20 @@ executable zenn-use-moffy-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
     , extra-data-yj
+    , hashable
     , moffy
     , moffy-samples-events
     , moffy-samples-gtk4-run
+    , text
+    , time
     , type-flip
     , type-set
+    , unordered-containers
     , zenn-use-moffy
   default-language: Haskell2010
 
@@ -123,12 +159,19 @@ test-suite zenn-use-moffy-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
     , extra-data-yj
+    , hashable
     , moffy
     , moffy-samples-events
     , moffy-samples-gtk4-run
+    , text
+    , time
     , type-flip
     , type-set
+    , unordered-containers
     , zenn-use-moffy
   default-language: Haskell2010
