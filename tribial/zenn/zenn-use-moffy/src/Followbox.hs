@@ -79,3 +79,35 @@ noRateLimitRemaining = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
 noRateLimitReset = (NoRateLimitReset, "No X-RateLimit-Reset header")
 noAvatarAddress = (NoAvatarAddress, "No Avatar Address")
 noLoginName = (NoLoginName, "No Login Name")
+
+text :: Color -> FontSize -> Position -> T.Text -> View
+text c fs p = View . (: []) . expand . Singleton . Text' c defaultFont fs p
+
+line :: Color -> LineWidth -> Position -> Position -> View
+line c w p q = View . (: []) . expand . Singleton $ Line' c w p q
+
+image :: Position -> Png -> View
+image p = View . (: []) . expand . Singleton . Image' p
+
+getObjs :: ReactF s (Either String [Object])
+getObjs = do
+	n <- adjust $ getRandomR (0, userMax)
+	(hdr, bdy) <- adjust . httpGet $ api n
+	case (rmng hdr, rst hdr) of
+		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode bdy
+		(Just _, Just t) -> sleep t >> getObjs
+		(Just _, Nothing) -> err noRateLimitReset >> getObjs
+		(Nothing, _) -> err noRateLimitRemaining >> getObjs
+	where
+	api = ("http://api.github.com/users?since=" <>) . T.pack . show @Int
+	rmng = (read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
+	rst = ut <=< lookup "X-RateLimit-Reset"
+	ut = (posixSecondsToUTCTime . fromInteger <$>) . readMaybe . BSC.unpack
+	err = adjust . uncurry raiseError
+	sleep t = adjust (beginSleep t) >> adjust endSleep
+
+multiLine :: Show a => Int -> a -> View
+multiLine n = text (Color 0 0 0) 15 (15, 15) . T.pack . unlines . sep . show
+	where
+	sep "" = []
+	sep cs = take n cs : sep (drop n cs)
