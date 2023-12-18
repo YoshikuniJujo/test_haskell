@@ -97,3 +97,8 @@ box = do
 	b <- (`Box` Red) <$%> adjustSig defineRect
 	adjustSig $ chooseBoxColor b
 	waitFor . adjust $ drClickOn b
+
+boxes :: Sig s
+	(Mouse.Move :- Mouse.Down :- Mouse.Up :- DeltaTime :- Singleton TryWait)
+	[Box] ()
+boxes = void $ parList (spawn box)
