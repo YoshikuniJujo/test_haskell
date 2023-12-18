@@ -111,3 +111,9 @@ multiLine n = text (Color 0 0 0) 15 (15, 15) . T.pack . unlines . sep . show
 	where
 	sep "" = []
 	sep cs = take n cs : sep (drop n cs)
+
+getObjs' :: ReactF s [Object]
+getObjs' = getObjs >>= \case
+	Left em -> adjust (raiseError NotJson em) >> getObjs'
+	Right [] -> adjust (raiseError EmptyJson "Empty JSON") >> getObjs'
+	Right os -> pure os
