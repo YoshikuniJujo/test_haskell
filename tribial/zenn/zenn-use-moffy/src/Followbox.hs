@@ -12,7 +12,6 @@ import Control.Monad (void, forever, (<=<))
 import Control.Moffy
 import Control.Moffy.Event.Lock
 import Control.Moffy.Samples.Event.Random
-import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.Area
 import Control.Moffy.Samples.Viewable.Basic
@@ -23,13 +22,12 @@ import Control.Moffy.Samples.Followbox.TypeSynonym (ErrorMessage)
 import Data.Type.Set
 import Data.Type.Flip ((<$%>), (<*%>))
 import Data.OneOfThem
-import Data.Hashable
 import Data.HashMap.Strict qualified as HM
 import Data.Bool
 import Data.ByteString.Lazy qualified as LBS
 import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
-import Data.Time (utcToLocalTime, UTCTime)
+import Data.Time (utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Aeson (Object, Value(..), eitherDecode)
 import Data.Aeson.KeyMap (toHashMap)
@@ -171,3 +169,48 @@ clickArea :: (Point, Point) -> ReactF s ()
 clickArea ((l, u), (r, d)) = void . adjust
 	. find inside $ fst <$%> repeat Mouse.move `indexBy` repeat leftClick
 	where inside (x, y) = l <= x && x <= r && u <= y && y <= d
+
+refresh :: Clickable s -> SigF s (Maybe (Either Int [(Png, T.Text)])) ()
+refresh rfs = forever do
+	emit Nothing
+	us <- Just . Left <$%> users
+	emit . Just $ Right us
+	waitFor . adjust $ click rfs
+
+close :: LockId -> Int -> SigF s Int ()
+close lck i = forever do
+	emit =<< waitFor
+		(withLock lck (adjust $ getRandomR (0, 29) :: ReactF s Int))
+	waitFor . clickArea $ crossArea i
+
+field :: SigF s View ()
+field = do
+	rfs <- waitFor $ link refreshPos "Refresh"
+	lck <- waitFor $ adjust newLockId
+	let	frame = title <> view rfs
+	emit frame
+	(frame <>) <$%> ((\a b c -> a <> b <> c)
+		<$%> (chooseUser 0 <$%> refresh rfs <*%> close lck 0)
+		<*%> (chooseUser 1 <$%> refresh rfs <*%> close lck 1)
+		<*%> (chooseUser 2 <$%> refresh rfs <*%> close lck 2))
+	where
+	title = text white largeSize titlePos "Who to follow"
+	link p t = clickableText p
+		<$> adjust (withTextExtents defaultFont middleSize t)
+
+chooseUser :: Int -> Maybe (Either Int [(Png, T.Text)]) -> Int -> View
+chooseUser _ (Just (Left i)) _ = bar i
+chooseUser n (Just (Right us)) i = userView n (us !! (i `mod` length us))
+chooseUser _ Nothing _ = View []
+
+resetTime :: SigF s View ()
+resetTime = forever do
+	emit $ View []
+	emit =<< waitFor do
+		(t, tz) <- (,) <$> adjust checkBeginSleep <*> adjust getTimeZone
+		pure . text white middleSize resetTimePos . T.pack
+			$ "Wait until " <> show (utcToLocalTime tz t)
+	waitFor $ adjust endSleep
+
+followbox :: SigF s View ()
+followbox = (<>) <$%> field <*%> resetTime
