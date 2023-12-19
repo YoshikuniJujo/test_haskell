@@ -66,6 +66,12 @@ crossPos n = (500, 162 + 120 * fromIntegral n)
 crossMergin :: Double
 crossMergin = 5
 
+crossArea :: Int -> (Position, Position)
+crossArea (crossPos -> (l, t)) = (
+	(l - crossMergin, t - crossMergin),
+	(r + crossMergin, b + crossMergin) )
+	where (r, b) = (l + crossSize, t + crossSize)
+
 barColor :: Color
 barColor = Color 0x32 0xcd 0x32
 
