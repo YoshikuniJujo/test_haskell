@@ -8,7 +8,6 @@
 module Followbox where
 
 import Prelude hiding (break, repeat, scanl)
-import Control.Arrow ((>>>))
 import Control.Monad (void, forever, (<=<))
 import Control.Moffy
 import Control.Moffy.Event.Lock
@@ -117,3 +116,12 @@ getObjs' = getObjs >>= \case
 	Left em -> adjust (raiseError NotJson em) >> getObjs'
 	Right [] -> adjust (raiseError EmptyJson "Empty JSON") >> getObjs'
 	Right os -> pure os
+
+avatar :: T.Text -> SigF s Int (Either (Error, ErrorMessage) Png)
+avatar url = emit 1 >> waitFor (epng . convert . snd <$> adjust (httpGet url))
+	where
+	epng = either
+		(Left . (NoAvatar ,))
+		(Right . Png avatarSizeX avatarSizeY)
+	convert img = LBS.toStrict . P.encodePng . P.convertRGB8
+		<$> P.decodeImage (LBS.toStrict img)
