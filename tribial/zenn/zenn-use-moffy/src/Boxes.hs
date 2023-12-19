@@ -51,14 +51,13 @@ curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
 curRect p1 = Rect p1 <$%> Mouse.position
 
 wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect ()
-wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed
-	where rectAtTime t = Rect ((+ dx) `A.first` lu) ((+ dx) `A.first` rd)
-		where dx = sin (realToFrac t * 5) * 15
+wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed where
+	rectAtTime t = let dx = sin (realToFrac t * 5) * 15 in
+		Rect ((+ dx) `A.first` lu) ((+ dx) `A.first` rd)
 
 firstPoint :: React s (Mouse.Move :- Singleton Mouse.Down) Point
-firstPoint = either error id
-	. atResult (const "never occur") (const "never occur")
-	<$> Mouse.position `at` leftClick
+firstPoint = let err = const "never occur" in
+	either error id . atResult err err <$> Mouse.position `at` leftClick
 
 completeRect :: Point -> Sig s (Mouse.Move :- Singleton Mouse.Up) Rect Rect
 completeRect p1 = (const $ error "never occur") `either` fst
