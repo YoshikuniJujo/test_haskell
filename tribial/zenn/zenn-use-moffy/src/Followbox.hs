@@ -151,3 +151,11 @@ avatarImage _ [] _ = View []
 avatarImage n (i : is) pns =
 	image (15, 90 * fromIntegral n) (fst $ pns !! i) <>
 	avatarImage (n + 1) is pns
+
+leftClick :: React s (Singleton Mouse.Down) ()
+leftClick = bool leftClick (pure ()) . (== Mouse.ButtonPrimary) =<< Mouse.down
+
+clickArea :: (Point, Point) -> ReactF s ()
+clickArea ((l, u), (r, d)) = void . adjust
+	. find inside $ fst <$%> repeat Mouse.move `indexBy` repeat leftClick
+	where inside (x, y) = l <= x && x <= r && u <= y && y <= d
