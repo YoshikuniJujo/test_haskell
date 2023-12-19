@@ -125,3 +125,29 @@ avatar url = emit 1 >> waitFor (epng . convert . snd <$> adjust (httpGet url))
 		(Right . Png avatarSizeX avatarSizeY)
 	convert img = LBS.toStrict . P.encodePng . P.convertRGB8
 		<$> P.decodeImage (LBS.toStrict img)
+
+users :: SigF s Int [(Png, T.Text)]
+users = waitFor (mapM ex2 <$> getObjs') >>= err \(unzip -> (avs, nms)) ->
+	sequence <$> ssum (avatar `mapM` avs) >>= err (pure . flip zip nms)
+	where
+	ex2 (toHashMap -> o) = (,)
+		<$> extract "avatar_url" o noAvatarAddress
+		<*> extract "login" o noLoginName
+	ssum = scanl (+) 0
+	err = either \e -> waitFor (adjust (uncurry raiseError e)) >> users
+	extract k o e =
+		case HM.lookup k o of Just (String v) -> Right v; _ -> Left e
+
+bar :: Int -> View
+bar p = line barColor 50 (80, 300) (80 + fromIntegral p * 25, 300)
+
+userName :: Int -> [(Png, T.Text)] -> View
+userName _ [] = View []
+userName i ((_, nm) : pns) =
+	text nameColor 15 (15, 17 * fromIntegral i) nm <> userName (i + 1) pns
+
+avatarImage :: Int -> [Int] -> [(Png, T.Text)] -> View
+avatarImage _ [] _ = View []
+avatarImage n (i : is) pns =
+	image (15, 90 * fromIntegral n) (fst $ pns !! i) <>
+	avatarImage (n + 1) is pns
