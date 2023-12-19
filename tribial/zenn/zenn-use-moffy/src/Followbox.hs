@@ -141,16 +141,22 @@ users = waitFor (mapM ex2 <$> getObjs') >>= err \(unzip -> (avs, nms)) ->
 bar :: Int -> View
 bar p = line barColor 50 (80, 300) (80 + fromIntegral p * 25, 300)
 
-userName :: Int -> [(Png, T.Text)] -> View
-userName _ [] = View []
-userName i ((_, nm) : pns) =
-	text nameColor 15 (15, 17 * fromIntegral i) nm <> userName (i + 1) pns
+userView :: Int -> (Png, T.Text) -> View
+userView n (avt, nm) =
+	image (avatarPos n) avt <>
+	text nameColor largeSize (namePos n) nm <>
+	cross n
 
-avatarImage :: Int -> [Int] -> [(Png, T.Text)] -> View
-avatarImage _ [] _ = View []
-avatarImage n (i : is) pns =
-	image (15, 90 * fromIntegral n) (fst $ pns !! i) <>
-	avatarImage (n + 1) is pns
+cross :: Int -> View
+cross (crossPos -> (l, t)) = line white 4 lt rb <> line white 4 lb rt
+	where
+	(lt, lb, rt, rb) = ((l, t), (l, b), (r, t), (r, b))
+	(r, b) = (l + crossSize, t + crossSize)
+
+userViewPick :: Int -> [Int] -> [(Png, T.Text)] -> View
+userViewPick _ [] _ = View []
+userViewPick p (i : is) pns =
+	userView p (pns !! i) <> userViewPick (p + 1) is pns
 
 leftClick :: React s (Singleton Mouse.Down) ()
 leftClick = bool leftClick (pure ()) . (== Mouse.ButtonPrimary) =<< Mouse.down
