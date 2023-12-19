@@ -132,7 +132,7 @@ avatar url = emit 1 >> waitFor (epng . convert . snd <$> adjust (httpGet url))
 
 users :: SigF s Int [(Png, T.Text)]
 users = waitFor (mapM ex2 <$> getObjs') >>= err \(unzip -> (avs, nms)) ->
-	sequence <$> ssum (avatar `mapM` avs) >>= err (pure . flip zip nms)
+	sequence <$> ssum (avatar `mapM` avs) >>= err (pure . (`zip` nms))
 	where
 	ex2 (toHashMap -> o) = (,)
 		<$> extract "avatar_url" o noAvatarAddress
