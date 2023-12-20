@@ -7,10 +7,12 @@ module Stopgap.System.GLib.Callback where
 
 import Foreign.Ptr
 import Foreign.Concurrent
+import Foreign.Storable
 import Control.Monad.ST
 import Data.Int
 import Data.CairoContext
 import Stopgap.Data.Ptr
+import Stopgap.Graphics.UI.Gdk.Event.Button qualified as Gdk.Event.Button
 
 #include <gtk/gtk.h>
 
@@ -50,7 +52,8 @@ foreign import ccall "wrapper" c_wrap_callback_void_void ::
 
 c_self_cairo_ud :: (IsPtr a, IsPtr b) =>
 	(a -> CairoT r RealWorld -> b -> IO Bool) ->
-	IO (C (Ptr (Tag a) -> Ptr (CairoT r RealWorld) -> Ptr (Tag b) -> IO #{type gboolean}))
+	IO (C (	Ptr (Tag a) -> Ptr (CairoT r RealWorld) -> Ptr (Tag b) ->
+		IO #{type gboolean}))
 c_self_cairo_ud f = do
 	let	f' x cr y = boolToGboolean <$> do
 			cr' <- CairoT <$> newForeignPtr cr (pure ())
@@ -60,3 +63,19 @@ c_self_cairo_ud f = do
 foreign import ccall "wrapper" c_wrap_callback_self_cairo_ud ::
 	(Ptr a -> Ptr (CairoT r s) -> Ptr b -> IO #{type gboolean}) ->
 	IO (FunPtr (Ptr a -> Ptr (CairoT r s) -> Ptr b -> IO #{type gboolean}))
+
+c_self_button_ud :: (IsPtr a, IsPtr b) =>
+	(a -> Gdk.Event.Button.B -> b -> IO Bool) ->
+	IO (C (	Ptr (Tag a) -> Ptr Gdk.Event.Button.B -> Ptr (Tag b) ->
+		IO #{type gboolean}))
+c_self_button_ud f = do
+	let	f' x eb y = boolToGboolean <$> do
+			eb' <- peek eb
+			f (fromPtr x) eb' (fromPtr y)
+	c_G_CALLBACK <$> c_wrap_callback_self_button_ud f'
+
+foreign import ccall "wrapper" c_wrap_callback_self_button_ud ::
+	(Ptr a -> Ptr Gdk.Event.Button.B -> Ptr b -> IO #{type gboolean}) ->
+	IO (FunPtr (
+		Ptr a -> Ptr Gdk.Event.Button.B -> Ptr b ->
+		IO #{type gboolean} ))

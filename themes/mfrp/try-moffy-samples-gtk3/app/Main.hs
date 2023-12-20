@@ -17,9 +17,13 @@ import Stopgap.Graphics.UI.Gtk.Widget qualified as Gtk.Widget
 import Stopgap.Graphics.UI.Gtk.Container qualified as Gtk.Container
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
+import Stopgap.Graphics.UI.Gdk.Event qualified as Gdk.Event
+import Stopgap.Graphics.UI.Gdk.Event.Button qualified as Gdk.Event.Button
 
-cbDelete :: Gtk.Window.W -> ud -> IO Bool
-cbDelete w ud = pure False
+clicked :: Gtk.DrawingArea.D -> Gdk.Event.Button.B -> ud -> IO Bool
+clicked _da eb _ud = do
+	print eb
+	pure True
 
 drawCallback :: Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
 drawCallback _ cr Null = do
@@ -27,6 +31,9 @@ drawCallback _ cr Null = do
 	cairoLineTo cr 300 200
 	cairoStroke cr
 	pure False
+
+cbDelete :: Gtk.Window.W -> ud -> IO Bool
+cbDelete w ud = pure False
 
 main :: IO ()
 main = do
@@ -39,6 +46,8 @@ main = do
 	da <- Gtk.DrawingArea.new
 	Gtk.Container.add w da
 	G.Signal.connect_self_cairo_ud da "draw" drawCallback Null
+	Gtk.Widget.addEvents da Gdk.Event.ButtonPressMask
+	G.Signal.connect_self_button_ud da "button-press-event" clicked Null
 
 	Gtk.Widget.showAll w
 	Gtk.main
