@@ -1,0 +1,90 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           zenn-use-moffy
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/zenn-use-moffy#readme>
+homepage:       https://github.com/YoshikuniJujo/zenn-use-moffy#readme
+bug-reports:    https://github.com/YoshikuniJujo/zenn-use-moffy/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      Copyright (c) 2023 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/zenn-use-moffy
+
+library
+  exposed-modules:
+      Determinism
+      Lib
+  other-modules:
+      Paths_zenn_use_moffy
+  autogen-modules:
+      Paths_zenn_use_moffy
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , moffy
+    , type-flip
+    , type-set
+  default-language: Haskell2010
+
+executable simple
+  main-is: simple.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , moffy
+    , type-flip
+    , type-set
+    , zenn-use-moffy
+  default-language: Haskell2010
+
+executable zenn-use-moffy-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_zenn_use_moffy
+  autogen-modules:
+      Paths_zenn_use_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , moffy
+    , type-flip
+    , type-set
+    , zenn-use-moffy
+  default-language: Haskell2010
+
+test-suite zenn-use-moffy-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_zenn_use_moffy
+  autogen-modules:
+      Paths_zenn_use_moffy
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , moffy
+    , type-flip
+    , type-set
+    , zenn-use-moffy
+  default-language: Haskell2010
