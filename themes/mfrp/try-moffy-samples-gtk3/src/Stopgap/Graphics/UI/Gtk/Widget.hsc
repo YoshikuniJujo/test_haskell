@@ -23,3 +23,9 @@ addEvents = c_gtk_widget_add_events . toW
 
 foreign import ccall "gtk_widget_add_events" c_gtk_widget_add_events ::
 	W -> Gdk.Event.Mask -> IO ()
+
+queueDraw :: IsW w => w ->IO ()
+queueDraw = c_gtk_widget_queue_draw . toW
+
+foreign import ccall "gtk_widget_queue_draw" c_gtk_widget_queue_draw ::
+	W -> IO ()

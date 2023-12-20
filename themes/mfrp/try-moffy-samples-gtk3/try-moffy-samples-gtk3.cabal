@@ -33,6 +33,7 @@ library
       Stopgap.Graphics.UI.Gtk.DrawingArea
       Stopgap.Graphics.UI.Gtk.Widget
       Stopgap.Graphics.UI.Gtk.Window
+      Stopgap.System.GLib
       Stopgap.System.GLib.Callback
       Stopgap.System.GLib.Object
       Stopgap.System.GLib.Signal
