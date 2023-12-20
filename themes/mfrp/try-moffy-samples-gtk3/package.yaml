@@ -31,6 +31,7 @@ dependencies:
 - moffy-samples
 - moffy-samples-events
 - simple-cairo
+- simple-pango
 - union-color
 
 ghc-options:

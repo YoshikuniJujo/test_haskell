@@ -56,6 +56,7 @@ library
     , moffy-samples
     , moffy-samples-events
     , simple-cairo
+    , simple-pango
     , stm
     , time
     , type-flip
@@ -76,6 +77,7 @@ executable try-boxes
     , moffy-samples
     , moffy-samples-events
     , simple-cairo
+    , simple-pango
     , stm
     , time
     , try-moffy-samples-gtk3
@@ -101,6 +103,7 @@ executable try-moffy-samples-gtk3-exe
     , moffy-samples
     , moffy-samples-events
     , simple-cairo
+    , simple-pango
     , stm
     , time
     , try-moffy-samples-gtk3
@@ -127,6 +130,7 @@ test-suite try-moffy-samples-gtk3-test
     , moffy-samples
     , moffy-samples-events
     , simple-cairo
+    , simple-pango
     , stm
     , time
     , try-moffy-samples-gtk3

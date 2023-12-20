@@ -1,15 +1,19 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Samples.Run.Gtk3 where
 
 import Control.Monad
+import Control.Monad.ST
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Type.Set
 import Data.OneOrMoreApp
+import Data.Maybe
+import Data.Color
 import System.Environment
 
 import Control.Moffy
@@ -17,6 +21,17 @@ import Control.Moffy.Samples.Event.Delete
 import Control.Moffy.Samples.Event.Mouse qualified as Mouse
 import Control.Moffy.Samples.Event.CalcTextExtents
 import Control.Moffy.Samples.View
+
+import Data.CairoContext
+import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Drawing.Transformations
+import Graphics.Cairo.Surfaces.ImageSurfaces
+import Graphics.Cairo.Surfaces.PngSupport
+
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Rendering.Cairo
 
 import Stopgap.Data.Ptr
 import Stopgap.System.GLib qualified as G
@@ -54,6 +69,8 @@ mousePoint eb = (Gdk.Event.Button.bX eb, Gdk.Event.Button.bY eb)
 runSingleWin ::
 	TChan (EvReqs Events) -> TChan (EvOccs Events) -> TChan View -> IO ()
 runSingleWin cer ceo cv = do
+	crd <- atomically $ newTVar []
+
 	join $ Gtk.init <$> getProgName <*> getArgs
 
 	w <- Gtk.Window.new Gtk.Window.Toplevel
@@ -64,12 +81,68 @@ runSingleWin cer ceo cv = do
 	Gtk.Widget.addEvents da Gdk.Event.ButtonPressMask
 	G.Signal.connect_self_button_ud
 		da "button-press-event" (clicked ceo) Null
+	G.Signal.connect_self_cairo_ud da "draw" (drawFunction crd) Null
 
 	Gtk.Widget.showAll w
 
 	forkIO . forever $ atomically (readTChan cv) >>= \case
 		Stopped -> void $ G.idleAdd
 			(\_ -> Gtk.mainQuit >> pure False) Null
+		View v -> do
+			atomically $ writeTVar crd v
+			void $ G.idleAdd
+				(\_ -> Gtk.Widget.queueDraw da >> pure False)
+				Null
 		v -> print v
 
 	Gtk.main
+
+drawFunction :: TVar [View1] -> Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
+drawFunction crd _ cr Null = do
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
+	cairoPaint cr
+	(drawView1 cr `mapM_`) =<< atomically (readTVar crd)
+	pure False
+
+drawView1 :: CairoT r RealWorld -> View1 -> IO ()
+drawView1 cr (Box
+	(realToFrac -> l, realToFrac -> u)
+	(realToFrac -> r, realToFrac -> d)
+	(rgbRealToFrac -> clr)) = do
+	cairoSetSourceRgb cr clr
+	cairoRectangle cr l u (r - l) (d - u)
+	cairoFill cr
+drawView1 cr (VLine (rgbRealToFrac -> clr) lw
+	(realToFrac -> l, realToFrac -> u)
+	(realToFrac -> r, realToFrac -> d)) = do
+	cairoSetSourceRgb cr clr
+	cairoSetLineWidth cr $ realToFrac lw
+	cairoMoveTo cr l u
+	cairoLineTo cr r d
+	cairoStroke cr
+drawView1 cr (VText (rgbRealToFrac -> clr)
+	fn (realToFrac -> fs) (realToFrac -> x, realToFrac -> y) txt) = do
+	(l, d) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	d `pangoFontDescriptionSet` Family fn
+	d `pangoFontDescriptionSet` AbsoluteSize fs
+	d' <- pangoFontDescriptionFreeze d
+	l `pangoLayoutSet` pangoFontDescriptionToNullable (Just d')
+	l `pangoLayoutSet` txt
+	l' <- pangoLayoutFreeze l
+	cairoMoveTo cr x y
+	cairoSetSourceRgb cr clr
+	pangoCairoShowLayout cr l'
+drawView1 cr (VImage
+	(realToFrac -> x, realToFrac -> y) w h dt) = do
+	sfc <- cairoSurfaceCreateFromPngByteString dt
+	w0 <- cairoImageSurfaceGetWidth sfc
+	h0 <- cairoImageSurfaceGetHeight sfc
+	cairoTranslate cr x y
+	cairoScale cr
+		(realToFrac w / fromIntegral w0)
+		(realToFrac h / fromIntegral h0)
+	cairoSetSourceSurface cr sfc 0 0
+	cairoPaint cr
+
+	cairoIdentityMatrix cr
+drawView1 cr NotImplemented = putStrLn "NOT IMPLEMENTED"
