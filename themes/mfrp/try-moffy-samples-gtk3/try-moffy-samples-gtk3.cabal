@@ -30,6 +30,7 @@ library
       Stopgap.Data.Ptr
       Stopgap.Graphics.UI.Gdk.Event
       Stopgap.Graphics.UI.Gdk.Event.Button
+      Stopgap.Graphics.UI.Gdk.Event.Motion
       Stopgap.Graphics.UI.Gtk
       Stopgap.Graphics.UI.Gtk.Container
       Stopgap.Graphics.UI.Gtk.DrawingArea

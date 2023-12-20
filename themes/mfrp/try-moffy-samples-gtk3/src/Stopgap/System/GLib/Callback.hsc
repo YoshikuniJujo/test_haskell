@@ -13,6 +13,7 @@ import Data.Int
 import Data.CairoContext
 import Stopgap.Data.Ptr
 import Stopgap.Graphics.UI.Gdk.Event.Button qualified as Gdk.Event.Button
+import Stopgap.Graphics.UI.Gdk.Event.Motion qualified as Gdk.Event.Motion
 
 #include <gtk/gtk.h>
 
@@ -78,4 +79,20 @@ foreign import ccall "wrapper" c_wrap_callback_self_button_ud ::
 	(Ptr a -> Ptr Gdk.Event.Button.B -> Ptr b -> IO #{type gboolean}) ->
 	IO (FunPtr (
 		Ptr a -> Ptr Gdk.Event.Button.B -> Ptr b ->
+		IO #{type gboolean} ))
+
+c_self_motion_ud :: (IsPtr a, IsPtr b) =>
+	(a -> Gdk.Event.Motion.M -> b -> IO Bool) ->
+	IO (C (	Ptr (Tag a) -> Ptr Gdk.Event.Motion.M -> Ptr (Tag b) ->
+		IO #{type gboolean}))
+c_self_motion_ud f = do
+	let	f' x eb y = boolToGboolean <$> do
+			eb' <- peek eb
+			f (fromPtr x) eb' (fromPtr y)
+	c_G_CALLBACK <$> c_wrap_callback_self_motion_ud f'
+
+foreign import ccall "wrapper" c_wrap_callback_self_motion_ud ::
+	(Ptr a -> Ptr Gdk.Event.Motion.M -> Ptr b -> IO #{type gboolean}) ->
+	IO (FunPtr (
+		Ptr a -> Ptr Gdk.Event.Motion.M -> Ptr b ->
 		IO #{type gboolean} ))

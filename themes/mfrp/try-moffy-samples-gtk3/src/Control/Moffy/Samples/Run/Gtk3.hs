@@ -12,6 +12,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Type.Set
 import Data.OneOrMoreApp
+import Data.Bits
 import Data.Maybe
 import Data.Color
 import System.Environment
@@ -43,6 +44,7 @@ import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
 import Stopgap.Graphics.UI.Gdk.Event qualified as Gdk.Event
 import Stopgap.Graphics.UI.Gdk.Event.Button qualified as Gdk.Event.Button
+import Stopgap.Graphics.UI.Gdk.Event.Motion qualified as Gdk.Event.Motion
 
 type Events = CalcTextExtents :-
 	Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent
@@ -56,6 +58,12 @@ clicked ceo _da eb _ud = do
 		_ -> pure ()
 	pure True
 
+moved :: TChan (EvOccs Events) ->
+	Gtk.DrawingArea.D -> Gdk.Event.Motion.M -> ud -> IO Bool
+moved ceo _da em _ud = do
+	atomically . writeTChan ceo . expand . Singleton . Mouse.OccMove $ movePoint em
+	pure True
+
 mouseButton :: Gdk.Event.Button.B -> Mouse.Button
 mouseButton eb = case Gdk.Event.Button.bButton eb of
 	1 -> Mouse.ButtonPrimary
@@ -65,6 +73,9 @@ mouseButton eb = case Gdk.Event.Button.bButton eb of
 
 mousePoint :: Gdk.Event.Button.B -> Point
 mousePoint eb = (Gdk.Event.Button.bX eb, Gdk.Event.Button.bY eb)
+
+movePoint :: Gdk.Event.Motion.M -> Point
+movePoint em = (Gdk.Event.Motion.mX em, Gdk.Event.Motion.mY em)
 
 runSingleWin ::
 	TChan (EvReqs Events) -> TChan (EvOccs Events) -> TChan View -> IO ()
@@ -78,9 +89,12 @@ runSingleWin cer ceo cv = do
 
 	da <- Gtk.DrawingArea.new
 	Gtk.Container.add w da
-	Gtk.Widget.addEvents da Gdk.Event.ButtonPressMask
+	Gtk.Widget.addEvents da
+		$ Gdk.Event.ButtonPressMask .|. Gdk.Event.ButtonMotionMask
 	G.Signal.connect_self_button_ud
 		da "button-press-event" (clicked ceo) Null
+	G.Signal.connect_self_motion_ud
+		da "motion-notify-event" (moved ceo) Null
 	G.Signal.connect_self_cairo_ud da "draw" (drawFunction crd) Null
 
 	Gtk.Widget.showAll w
