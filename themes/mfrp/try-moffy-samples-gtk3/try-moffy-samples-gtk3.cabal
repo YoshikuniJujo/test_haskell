@@ -1,0 +1,78 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-moffy-samples-gtk3
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy-samples-gtk3#readme>
+homepage:       https://github.com/YoshikuniJujo/try-moffy-samples-gtk3#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-moffy-samples-gtk3/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      Copyright (c) 2023 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-moffy-samples-gtk3
+
+library
+  exposed-modules:
+      Stopgap.Data.Ptr
+      Stopgap.Graphics.UI.Gtk
+      Stopgap.Graphics.UI.Gtk.Widget
+      Stopgap.Graphics.UI.Gtk.Window
+      Stopgap.System.GLib.Callback
+      Stopgap.System.GLib.Object
+      Stopgap.System.GLib.Signal
+  other-modules:
+      Paths_try_moffy_samples_gtk3
+  autogen-modules:
+      Paths_try_moffy_samples_gtk3
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  pkgconfig-depends:
+      gtk+-3.0
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+  default-language: Haskell2010
+
+executable try-moffy-samples-gtk3-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_moffy_samples_gtk3
+  autogen-modules:
+      Paths_try_moffy_samples_gtk3
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , try-moffy-samples-gtk3
+  default-language: Haskell2010
+
+test-suite try-moffy-samples-gtk3-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_moffy_samples_gtk3
+  autogen-modules:
+      Paths_try_moffy_samples_gtk3
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , try-moffy-samples-gtk3
+  default-language: Haskell2010
