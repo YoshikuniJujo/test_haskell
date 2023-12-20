@@ -22,13 +22,16 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - stm
+- time
 - c-enum
 - c-struct
 - type-set
+- type-flip
 - moffy
 - moffy-samples
 - moffy-samples-events
 - simple-cairo
+- union-color
 
 ghc-options:
 - -Wall

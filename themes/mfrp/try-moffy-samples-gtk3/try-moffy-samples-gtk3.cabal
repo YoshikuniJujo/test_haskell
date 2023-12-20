@@ -57,7 +57,10 @@ library
     , moffy-samples-events
     , simple-cairo
     , stm
+    , time
+    , type-flip
     , type-set
+    , union-color
   default-language: Haskell2010
 
 executable try-boxes
@@ -74,8 +77,11 @@ executable try-boxes
     , moffy-samples-events
     , simple-cairo
     , stm
+    , time
     , try-moffy-samples-gtk3
+    , type-flip
     , type-set
+    , union-color
   default-language: Haskell2010
 
 executable try-moffy-samples-gtk3-exe
@@ -96,8 +102,11 @@ executable try-moffy-samples-gtk3-exe
     , moffy-samples-events
     , simple-cairo
     , stm
+    , time
     , try-moffy-samples-gtk3
+    , type-flip
     , type-set
+    , union-color
   default-language: Haskell2010
 
 test-suite try-moffy-samples-gtk3-test
@@ -119,6 +128,9 @@ test-suite try-moffy-samples-gtk3-test
     , moffy-samples-events
     , simple-cairo
     , stm
+    , time
     , try-moffy-samples-gtk3
+    , type-flip
     , type-set
+    , union-color
   default-language: Haskell2010

@@ -37,7 +37,7 @@ clicked :: TChan (EvOccs Events) ->
 clicked ceo _da eb _ud = do
 	case Gdk.Event.Button.bType eb of
 		Gdk.Event.ButtonPress -> atomically . writeTChan ceo
-			$ expand (Singleton . Mouse.OccDown $ mouseButton eb)
+			$ expand (Mouse.OccMove (mousePoint eb) >- Singleton (Mouse.OccDown $ mouseButton eb) :: EvOccs (Mouse.Move :- Singleton Mouse.Down))
 		_ -> pure ()
 	pure True
 
@@ -47,6 +47,9 @@ mouseButton eb = case Gdk.Event.Button.bButton eb of
 	2 -> Mouse.ButtonMiddle
 	3 -> Mouse.ButtonSecondary
 	_ -> Mouse.ButtonMiddle
+
+mousePoint :: Gdk.Event.Button.B -> Point
+mousePoint eb = (Gdk.Event.Button.bX eb, Gdk.Event.Button.bY eb)
 
 runSingleWin ::
 	TChan (EvReqs Events) -> TChan (EvOccs Events) -> TChan View -> IO ()
