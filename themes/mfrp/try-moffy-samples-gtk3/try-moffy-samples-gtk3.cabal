@@ -27,6 +27,8 @@ library
   exposed-modules:
       Stopgap.Data.Ptr
       Stopgap.Graphics.UI.Gtk
+      Stopgap.Graphics.UI.Gtk.Container
+      Stopgap.Graphics.UI.Gtk.DrawingArea
       Stopgap.Graphics.UI.Gtk.Widget
       Stopgap.Graphics.UI.Gtk.Window
       Stopgap.System.GLib.Callback
@@ -44,6 +46,7 @@ library
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , simple-cairo
   default-language: Haskell2010
 
 executable try-moffy-samples-gtk3-exe
@@ -58,6 +61,7 @@ executable try-moffy-samples-gtk3-exe
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , simple-cairo
     , try-moffy-samples-gtk3
   default-language: Haskell2010
 
@@ -74,5 +78,6 @@ test-suite try-moffy-samples-gtk3-test
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , simple-cairo
     , try-moffy-samples-gtk3
   default-language: Haskell2010

@@ -7,7 +7,9 @@ module Stopgap.System.GLib.Signal where
 
 import Foreign.Ptr
 import Foreign.C.String
+import Control.Monad.ST
 import Data.String
+import Data.CairoContext
 import Stopgap.Data.Ptr
 import Stopgap.System.GLib.Object qualified as G.Object
 import Stopgap.System.GLib.Callback qualified as G.Callback
@@ -31,11 +33,13 @@ connect_ab_bool o (Signal sig) h ud = withCString sig \csig -> do
 connect_void_void :: G.Object.IsO a => a -> Signal -> IO () -> Null -> IO ()
 connect_void_void o (Signal sig) h Null = withCString sig \csig -> do
 	ch <- G.Callback.c_void_void h
-	c_g_signal_connect_void_void (toPtr o) csig ch nullPtr
+	c_g_signal_connect (toPtr o) csig ch nullPtr
+
+connect_self_cairo_ud :: (G.Object.IsO a, IsPtr b) =>
+	a -> Signal -> (a -> CairoT r RealWorld -> b -> IO Bool) -> b -> IO ()
+connect_self_cairo_ud o (Signal sig) h ud = withCString sig \csig -> do
+	ch <- G.Callback.c_self_cairo_ud h
+	c_g_signal_connect (toPtr o) csig ch (toPtr ud)
 
 foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
-	Ptr a -> CString ->
-	G.Callback.C (Ptr a -> Ptr b -> IO c) -> Ptr b -> IO ()
-
-foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect_void_void ::
-	Ptr a -> CString -> G.Callback.C (IO ()) -> Ptr () -> IO ()
+	Ptr a -> CString -> G.Callback.C fun -> Ptr b -> IO ()

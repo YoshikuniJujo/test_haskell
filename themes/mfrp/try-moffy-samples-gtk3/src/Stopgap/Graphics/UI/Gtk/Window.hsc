@@ -12,6 +12,7 @@ import Data.Word
 import Stopgap.Data.Ptr
 import Stopgap.System.GLib.Object qualified as G.Object
 import Stopgap.Graphics.UI.Gtk.Widget qualified as Widget
+import Stopgap.Graphics.UI.Gtk.Container qualified as Container
 
 #include <gtk/gtk.h>
 
@@ -26,6 +27,7 @@ newtype W = W (Ptr WTag) deriving Show
 instance IsPtr W where type Tag W = WTag; toPtr (W p) = p; fromPtr = W
 instance G.Object.IsO W where toO (W p) = G.Object.O $ castPtr p
 instance Widget.IsW W where toW (W p) = Widget.W $ castPtr p
+instance Container.IsC W where toC (W p) = Container.C $ castPtr p
 
 new :: Type -> IO W
 new = c_gtk_window_new
