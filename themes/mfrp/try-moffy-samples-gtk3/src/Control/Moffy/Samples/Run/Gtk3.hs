@@ -58,6 +58,15 @@ clicked ceo _da eb _ud = do
 		_ -> pure ()
 	pure True
 
+released :: TChan (EvOccs Events) ->
+	Gtk.DrawingArea.D -> Gdk.Event.Button.B -> ud -> IO Bool
+released ceo _da eb _ud = do
+	case Gdk.Event.Button.bType eb of
+		Gdk.Event.ButtonRelease -> atomically . writeTChan ceo
+			$ expand (Mouse.OccMove (mousePoint eb) >- Singleton (Mouse.OccUp $ mouseButton eb) :: EvOccs (Mouse.Move :- Singleton Mouse.Up))
+		_ -> pure ()
+	pure True
+
 moved :: TChan (EvOccs Events) ->
 	Gtk.DrawingArea.D -> Gdk.Event.Motion.M -> ud -> IO Bool
 moved ceo _da em _ud = do
@@ -89,10 +98,14 @@ runSingleWin cer ceo cv = do
 
 	da <- Gtk.DrawingArea.new
 	Gtk.Container.add w da
-	Gtk.Widget.addEvents da
-		$ Gdk.Event.ButtonPressMask .|. Gdk.Event.ButtonMotionMask
+	Gtk.Widget.addEvents da $
+		Gdk.Event.ButtonPressMask .|.
+		Gdk.Event.ButtonReleaseMask .|.
+		Gdk.Event.ButtonMotionMask
 	G.Signal.connect_self_button_ud
 		da "button-press-event" (clicked ceo) Null
+	G.Signal.connect_self_button_ud
+		da "button-release-event" (released ceo) Null
 	G.Signal.connect_self_motion_ud
 		da "motion-notify-event" (moved ceo) Null
 	G.Signal.connect_self_cairo_ud da "draw" (drawFunction crd) Null
