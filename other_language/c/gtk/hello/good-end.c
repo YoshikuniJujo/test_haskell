@@ -17,6 +17,7 @@ main(int argc, char *argv[])
 	gtk_window_set_title(GTK_WINDOW(window), "ハロー");
 
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(cb_delete), NULL);
+	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	gtk_widget_show_all(window);
 
