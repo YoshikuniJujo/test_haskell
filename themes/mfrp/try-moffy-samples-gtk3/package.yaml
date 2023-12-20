@@ -22,7 +22,10 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - stm
+- containers
+- text
 - time
+- random
 - c-enum
 - c-struct
 - type-set
@@ -62,6 +65,16 @@ executables:
     - try-moffy-samples-gtk3
   try-boxes:
     main:                try-boxes.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples-gtk3
+  try-followbox:
+    main:                try-followbox.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:

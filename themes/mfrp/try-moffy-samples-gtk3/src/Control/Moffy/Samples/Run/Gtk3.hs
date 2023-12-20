@@ -4,16 +4,18 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Samples.Run.Gtk3 where
+module Control.Moffy.Samples.Run.Gtk3 (runSingleWin) where
 
 import Control.Monad
 import Control.Monad.ST
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Type.Set
+import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
 import Data.Bits
 import Data.Maybe
+import Data.Text qualified as T
 import Data.Color
 import System.Environment
 
@@ -32,6 +34,7 @@ import Graphics.Cairo.Surfaces.PngSupport
 
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Rendering.Cairo
 
 import Stopgap.Data.Ptr
@@ -90,6 +93,7 @@ runSingleWin ::
 	TChan (EvReqs Events) -> TChan (EvOccs Events) -> TChan View -> IO ()
 runSingleWin cer ceo cv = do
 	crd <- atomically $ newTVar []
+	cte <- atomically newTChan
 
 	join $ Gtk.init <$> getProgName <*> getArgs
 
@@ -108,9 +112,19 @@ runSingleWin cer ceo cv = do
 		da "button-release-event" (released ceo) Null
 	G.Signal.connect_self_motion_ud
 		da "motion-notify-event" (moved ceo) Null
-	G.Signal.connect_self_cairo_ud da "draw" (drawFunction crd) Null
+	G.Signal.connect_self_cairo_ud da "draw" (drawFunction crd ceo cte) Null
 
 	Gtk.Widget.showAll w
+
+	forkIO . forever $ atomically (readTChan cer) >>= \r -> do
+		case OOM.project r of
+			Nothing -> pure ()
+			Just (CalcTextExtentsReq fn fs t) -> do
+				atomically $ writeTChan cte (fn, fs, t)
+				void $ G.idleAdd
+					(\_ -> Gtk.Widget.queueDraw da >>
+						pure False)
+					Null
 
 	forkIO . forever $ atomically (readTChan cv) >>= \case
 		Stopped -> void $ G.idleAdd
@@ -124,8 +138,13 @@ runSingleWin cer ceo cv = do
 
 	Gtk.main
 
-drawFunction :: TVar [View1] -> Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
-drawFunction crd _ cr Null = do
+drawFunction :: TVar [View1] ->
+	TChan (EvOccs Events) -> TChan (FontName, FontSize, T.Text) ->
+	Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
+drawFunction crd ceo cte _ cr Null = do
+	atomically (tryReadTChan cte) >>= \case
+		Nothing -> pure ()
+		Just (fn, fs, txt) -> occCalcTextExtents ceo cr fn fs txt
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
 	cairoPaint cr
 	(drawView1 cr `mapM_`) =<< atomically (readTVar crd)
@@ -173,3 +192,27 @@ drawView1 cr (VImage
 
 	cairoIdentityMatrix cr
 drawView1 cr NotImplemented = putStrLn "NOT IMPLEMENTED"
+
+occCalcTextExtents ::
+	TChan (EvOccs (CalcTextExtents :- GuiEv)) -> CairoT r RealWorld -> String -> Double -> T.Text -> IO ()
+occCalcTextExtents co cr fn fs txt = do
+	(l, d) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	d `pangoFontDescriptionSet` Family fn
+	d `pangoFontDescriptionSet` AbsoluteSize (realToFrac fs)
+	d' <- pangoFontDescriptionFreeze d
+	l `pangoLayoutSet` pangoFontDescriptionToNullable (Just d')
+	l `pangoLayoutSet` txt
+	l' <- pangoLayoutFreeze l
+	let	PixelExtents ie le = pangoLayoutInfo l'
+	atomically . writeTChan co . expand . Singleton
+		. OccCalcTextExtents fn fs txt
+		$ mkte ie le
+	where
+	mkte ie le = TextExtents (r2r ie) (r2r le)
+	r2r r = rct
+		(pangoRectanglePixelX r) (pangoRectanglePixelY r)
+		(pangoRectanglePixelWidth r) (pangoRectanglePixelHeight r)
+	rct	(fromIntegral -> l) (fromIntegral -> t)
+		(fromIntegral -> w) (fromIntegral -> h) = Rectangle l t w h
+
+type GuiEv = Mouse.Move :- Mouse.Down :- Mouse.Up :- Singleton DeleteEvent

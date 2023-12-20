@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Moffy.Samples.Boxes.Run.Gtk3
+      Control.Moffy.Samples.Followbox.Run.Gtk3
       Control.Moffy.Samples.Run.Gtk3
       Stopgap.Data.Ptr
       Stopgap.Graphics.UI.Gdk.Event
@@ -53,12 +54,15 @@ library
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , moffy
     , moffy-samples
     , moffy-samples-events
+    , random
     , simple-cairo
     , simple-pango
     , stm
+    , text
     , time
     , type-flip
     , type-set
@@ -74,12 +78,40 @@ executable try-boxes
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , moffy
     , moffy-samples
     , moffy-samples-events
+    , random
     , simple-cairo
     , simple-pango
     , stm
+    , text
+    , time
+    , try-moffy-samples-gtk3
+    , type-flip
+    , type-set
+    , union-color
+  default-language: Haskell2010
+
+executable try-followbox
+  main-is: try-followbox.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , containers
+    , moffy
+    , moffy-samples
+    , moffy-samples-events
+    , random
+    , simple-cairo
+    , simple-pango
+    , stm
+    , text
     , time
     , try-moffy-samples-gtk3
     , type-flip
@@ -100,12 +132,15 @@ executable try-moffy-samples-gtk3-exe
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , moffy
     , moffy-samples
     , moffy-samples-events
+    , random
     , simple-cairo
     , simple-pango
     , stm
+    , text
     , time
     , try-moffy-samples-gtk3
     , type-flip
@@ -127,12 +162,15 @@ test-suite try-moffy-samples-gtk3-test
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , moffy
     , moffy-samples
     , moffy-samples-events
+    , random
     , simple-cairo
     , simple-pango
     , stm
+    , text
     , time
     , try-moffy-samples-gtk3
     , type-flip
