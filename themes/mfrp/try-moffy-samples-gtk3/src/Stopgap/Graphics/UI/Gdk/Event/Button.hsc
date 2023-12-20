@@ -11,6 +11,8 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
+import Stopgap.Graphics.UI.Gdk.Event
+
 #include <gtk/gtk.h>
 
 data GdkWindowTag
@@ -21,7 +23,7 @@ type PtrGdkDevice = Ptr GdkDeviceTag
 type PtrGdouble = Ptr #{type gdouble}
 
 struct "B" #{size GdkEventButton} #{alignment GdkEventButton}
-	[	("type", ''#{type GdkEventType},
+	[	("type", ''Type,
 			[| #{peek GdkEventButton, type} |],
 			[| #{poke GdkEventButton, type} |]),
 		("window", ''PtrGdkWindow,

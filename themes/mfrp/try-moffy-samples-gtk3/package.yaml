@@ -21,8 +21,13 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
 - c-enum
 - c-struct
+- type-set
+- moffy
+- moffy-samples
+- moffy-samples-events
 - simple-cairo
 
 ghc-options:
@@ -44,6 +49,16 @@ library:
 executables:
   try-moffy-samples-gtk3-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy-samples-gtk3
+  try-boxes:
+    main:                try-boxes.hs
+    other-modules:       []
     source-dirs:         app
     ghc-options:
     - -threaded
