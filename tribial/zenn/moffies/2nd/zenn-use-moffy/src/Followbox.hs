@@ -83,6 +83,8 @@ noRateLimitReset = (NoRateLimitReset, "No X-RateLimit-Reset header")
 noAvatarAddress = (NoAvatarAddress, "No Avatar Address")
 noLoginName = (NoLoginName, "No Login Name")
 
+---------------------------------------------------------------------------
+
 text :: Color -> FontSize -> Position -> T.Text -> View
 text c fs p = View . (: []) . expand . Singleton . Text' c defaultFont fs p
 
@@ -91,6 +93,8 @@ line c w p q = View . (: []) . expand . Singleton $ Line' c w p q
 
 image :: Position -> Png -> View
 image p = View . (: []) . expand . Singleton . Image' p
+
+---------------------------------------------------------------------------
 
 getObjs :: ReactF s (Either String [Object])
 getObjs = do
@@ -120,6 +124,8 @@ getObjs' = getObjs >>= \case
 	Left em -> adjust (raiseError NotJson em) >> getObjs'
 	Right [] -> adjust (raiseError EmptyJson "Empty JSON") >> getObjs'
 	Right os -> pure os
+
+---------------------------------------------------------------------------
 
 avatar :: T.Text -> SigF s Int (Either (Error, ErrorMessage) Png)
 avatar url = emit 1 >> waitFor (epng . convert . snd <$> adjust (httpGet url))
@@ -162,6 +168,8 @@ userViewPick _ [] _ = View []
 userViewPick p (i : is) pns =
 	userView p (pns !! i) <> userViewPick (p + 1) is pns
 
+---------------------------------------------------------------------------
+
 leftClick :: React s (Singleton Mouse.Down) ()
 leftClick = bool leftClick (pure ()) . (== Mouse.ButtonPrimary) =<< Mouse.down
 
@@ -169,6 +177,8 @@ clickArea :: (Point, Point) -> ReactF s ()
 clickArea ((l, u), (r, d)) = void . adjust
 	. find inside $ fst <$%> repeat Mouse.move `indexBy` repeat leftClick
 	where inside (x, y) = l <= x && x <= r && u <= y && y <= d
+
+---------------------------------------------------------------------------
 
 refresh :: Clickable s -> SigF s (Maybe (Either Int [(Png, T.Text)])) ()
 refresh rfs = forever do
