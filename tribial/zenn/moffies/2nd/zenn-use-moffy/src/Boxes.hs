@@ -21,6 +21,8 @@ import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Bool
 
+---------------------------------------------------------------------------
+
 clickOn :: Mouse.Button -> React s (Singleton Mouse.Down) ()
 clickOn b = bool (clickOn b) (pure ()) . (== b) =<< Mouse.down
 
