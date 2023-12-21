@@ -26,6 +26,8 @@ instance Request Key where data Occurred Key = OccKey Char deriving Show
 key :: React s (Singleton Key) Char
 key = await KeyReq \(OccKey c) -> c
 
+---------------------------------------------------------------------------
+
 pressOn :: Char -> React s (Singleton Key) ()
 pressOn c = key >>= bool (pressOn c) (pure ()) . (c ==)
 
@@ -40,6 +42,8 @@ sigC = void $ ((+) <$%> sigX 'a' <*%> sigX 'b') `break` pressOn 'q'
 
 handle :: Handle IO (Singleton Key)
 handle = const $ Singleton . OccKey <$> getChar
+
+---------------------------------------------------------------------------
 
 output :: Int -> IO ()
 output c = putStrLn $ "\na + b = " ++ show c
