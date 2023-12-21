@@ -24,6 +24,9 @@ dependencies:
 - moffy
 - type-set
 - type-flip
+- moffy-samples-events
+- moffy-samples-gtk3-run
+- extra-data-yj
 
 ghc-options:
 - -Wall
