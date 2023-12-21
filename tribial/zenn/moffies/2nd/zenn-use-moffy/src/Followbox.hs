@@ -34,6 +34,8 @@ import Data.Aeson.KeyMap (toHashMap)
 import Text.Read (readMaybe)
 import Codec.Picture qualified as P
 
+---------------------------------------------------------------------------
+
 userMax :: Int
 userMax = 2 ^ (27 :: Int)
 
