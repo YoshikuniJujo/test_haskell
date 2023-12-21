@@ -27,6 +27,13 @@ dependencies:
 - moffy-samples-events
 - moffy-samples-gtk3-run
 - extra-data-yj
+- bytestring
+- text
+- time
+- unordered-containers
+- hashable
+- aeson
+- JuicyPixels
 
 ghc-options:
 - -Wall
