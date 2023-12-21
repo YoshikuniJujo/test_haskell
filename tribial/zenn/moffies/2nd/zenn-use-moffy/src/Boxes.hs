@@ -47,6 +47,8 @@ doubler = do
 	r <- rightClick `before` sleep 0.2
 	if r then pure () else doubler
 
+---------------------------------------------------------------------------
+
 curRect :: Point -> Sig s (Singleton Mouse.Move) Rect ()
 curRect p1 = Rect p1 <$%> Mouse.position
 
@@ -65,6 +67,8 @@ completeRect p1 = (const $ error "never occur") `either` fst
 
 defineRect :: Sig s (Mouse.Move :- Mouse.Down :- Singleton Mouse.Up) Rect Rect
 defineRect = adjustSig . completeRect =<< waitFor (adjust firstPoint)
+
+---------------------------------------------------------------------------
 
 colorList :: Infinite BColor
 colorList = cycle $ fromList [Red .. Magenta]
@@ -88,6 +92,8 @@ posInside rct = void . find (`inside` rct)
 drClickOn :: Rect -> React s (Mouse.Move :- Mouse.Down :- Singleton TryWait) ()
 drClickOn rct = posInside rct
 	$ fst <$%> Mouse.position `indexBy` repeat doubler
+
+---------------------------------------------------------------------------
 
 box :: Sig s
 	(Mouse.Move :- Mouse.Down :- Mouse.Up :- DeltaTime :- Singleton TryWait)
