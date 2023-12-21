@@ -40,10 +40,10 @@ sigX c = repeat $ pressOn c >> digit
 sigC :: Sig s (Singleton Key) Int ()
 sigC = void $ ((+) <$%> sigX 'a' <*%> sigX 'b') `break` pressOn 'q'
 
+---------------------------------------------------------------------------
+
 handle :: Handle IO (Singleton Key)
 handle = const $ Singleton . OccKey <$> getChar
-
----------------------------------------------------------------------------
 
 output :: Int -> IO ()
 output c = putStrLn $ "\na + b = " ++ show c
