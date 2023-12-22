@@ -1,4 +1,6 @@
-module Main where
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Main (main) where
 
 import System.Environment
 
@@ -6,7 +8,6 @@ main :: IO ()
 main = do
 	fn : _ <- getArgs
 	cnt <- readFile fn
-	print . (readImportPre <$>) $ lines cnt
 	writeFile (fn ++ "_new") . unlines . (trLine <$>) $ lines cnt
 
 data QualifiedImport = QualifiedImport String String deriving Show
