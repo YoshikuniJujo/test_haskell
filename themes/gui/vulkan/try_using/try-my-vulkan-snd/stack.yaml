@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-21.9
+resolver: nightly-2023-12-19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -68,7 +68,8 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
   - themes/gui/vulkan/try-gpu-vulkan-cglm
 - union-color-0.1.2.0
-- optparse-declarative-0.4.2
+- git: https://github.com/tanakh/optparse-declarative
+  commit: d3193db7979f391f1a307849236b870fd8933709
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

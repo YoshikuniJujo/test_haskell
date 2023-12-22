@@ -324,15 +324,19 @@ packages:
   original:
     hackage: union-color-0.1.2.0
 - completed:
-    hackage: optparse-declarative-0.4.2@sha256:2054a1489442744f1c93b7994a9d5600fc51a513290d9c27631aef24ffbddf21,1003
+    commit: d3193db7979f391f1a307849236b870fd8933709
+    git: https://github.com/tanakh/optparse-declarative
+    name: optparse-declarative
     pantry-tree:
-      sha256: 48c3be228ed334034ed82a3257daadc40a55d5964b9db5cc34fceb9dbb04c9d1
-      size: 631
+      sha256: fb9e8378d1025a1615f77e3411c098253031b0381cc8ff04c71eb595bcb79ec0
+      size: 1291
+    version: 0.4.2
   original:
-    hackage: optparse-declarative-0.4.2
+    commit: d3193db7979f391f1a307849236b870fd8933709
+    git: https://github.com/tanakh/optparse-declarative
 snapshots:
 - completed:
-    sha256: 2fc12a405ab6f7eac73eb11a0ca5ccca0e956bd2848db780c140b7406ff9ebb5
-    size: 640035
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/9.yaml
-  original: lts-21.9
+    sha256: e5e4120f8ad44cbb340a6f506029ea99f4bceeda0a02395687346b09e7e03352
+    size: 712151
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/12/19.yaml
+  original: nightly-2023-12-19
