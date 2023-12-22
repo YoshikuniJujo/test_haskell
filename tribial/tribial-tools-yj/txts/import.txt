@@ -1,0 +1,1 @@
+import qualified Foo.Bar.Baz as Foo
