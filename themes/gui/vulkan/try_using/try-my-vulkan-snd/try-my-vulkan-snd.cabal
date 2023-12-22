@@ -63,6 +63,7 @@ library
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -110,6 +111,7 @@ executable my-glslc
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -158,6 +160,7 @@ executable try-allocation-callbacks
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -206,6 +209,7 @@ executable try-copy-descriptor-set
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -254,6 +258,7 @@ executable try-depth-buffering
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -302,6 +307,7 @@ executable try-depth-buffering-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -350,6 +356,7 @@ executable try-dynamic-dsc-sets
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -398,6 +405,7 @@ executable try-generating-mipmaps
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -446,6 +454,7 @@ executable try-generating-mipmaps-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -494,6 +503,7 @@ executable try-hello-world
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -542,6 +552,7 @@ executable try-image-buffer
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -590,6 +601,7 @@ executable try-loading-models
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -638,6 +650,7 @@ executable try-loading-models-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -686,6 +699,7 @@ executable try-multisampling
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -734,6 +748,7 @@ executable try-multisampling-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -782,6 +797,7 @@ executable try-multisampling-use-groups-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -830,6 +846,7 @@ executable try-no-dynamic-dsc-sets
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -878,6 +895,7 @@ executable try-pipeline-cache
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -926,6 +944,7 @@ executable try-query
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -974,6 +993,7 @@ executable try-rectangle
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1022,6 +1042,7 @@ executable try-rectangle-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1070,6 +1091,7 @@ executable try-saitan
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1118,6 +1140,7 @@ executable try-saitan-float
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1166,6 +1189,7 @@ executable try-saitan-simple
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1214,6 +1238,7 @@ executable try-shaderc
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1262,6 +1287,7 @@ executable try-texel-buffer-float
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1310,6 +1336,7 @@ executable try-texel-buffer-word32
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1358,6 +1385,7 @@ executable try-texture
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1406,6 +1434,7 @@ executable try-texture-descriptor-set-group-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1454,6 +1483,7 @@ executable try-texture-image-manager-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1502,6 +1532,7 @@ executable try-texture-immutable-sampler-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1550,6 +1581,7 @@ executable try-texture-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1598,6 +1630,7 @@ executable try-triangle
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1646,6 +1679,7 @@ executable try-triangle-single
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1694,6 +1728,7 @@ executable try-vulkan-guide
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1742,6 +1777,7 @@ executable try-vulkan-guide-dynamic
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1790,6 +1826,7 @@ executable try-vulkan-guide-storage
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1838,6 +1875,7 @@ executable try-vulkan-guide-texture
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1886,6 +1924,7 @@ executable try-wavefront-obj
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1934,6 +1973,7 @@ executable try-yatteiku
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -1983,6 +2023,7 @@ test-suite try-my-vulkan-snd-test
     , time
     , transformers
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils

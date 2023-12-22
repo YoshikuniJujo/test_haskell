@@ -55,6 +55,7 @@ dependencies:
 - try-gpu-vulkan-khr-glfw
 - try-gpu-vulkan-middle-khr-glfw
 - try-gpu-vulkan-cglm
+- try-glfw-group
 
 - directory
 - temporary

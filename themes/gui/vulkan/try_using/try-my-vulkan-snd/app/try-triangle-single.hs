@@ -38,6 +38,9 @@ import Data.Color
 
 import Data.List.NonEmpty qualified as NE
 import Data.Text.IO qualified as Txt
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Window
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Window
 import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
 import Gpu.Vulkan.Khr.Surface.Glfw qualified as Glfw
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Window
@@ -125,7 +128,7 @@ import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 main :: IO ()
 main = do
 	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
+	(`withWindow` g) \(GlfwG.Window.W win) -> createInstance \inst -> do
 		if enableValidationLayers
 			then setupDebugMessenger inst $ run win inst g
 			else run win inst g
@@ -147,17 +150,18 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
 
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
+withWindow ::
+	(forall s . GlfwG.Window.W s -> IO a) -> FramebufferResized -> IO a
+withWindow f g =
+	GlfwG.init error $ GlfwG.Window.group \grp -> initWindow g grp >>= f
 
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
+initWindow :: FramebufferResized -> GlfwG.Window.Group s () -> IO (GlfwG.Window.W s)
+initWindow frszd g = do
+	Right w <- do
+		GlfwG.Window.hint $ GlfwG.Window.WindowHint'ClientAPI
+			GlfwG.Window.ClientAPI'NoAPI
+		uncurry (GlfwG.Window.create' g ()) windowSize windowName Nothing Nothing
+	w <$ GlfwG.Window.setFramebufferSizeCallback
 		w (Just $ \_ _ _ -> writeIORef frszd True)
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
