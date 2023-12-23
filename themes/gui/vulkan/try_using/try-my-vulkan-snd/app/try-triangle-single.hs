@@ -40,8 +40,6 @@ import Data.List.NonEmpty qualified as NE
 import Data.Text.IO qualified as Txt
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Window
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Window
-import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Window
 import Gpu.Vulkan.Cglm qualified as Cglm
 import Foreign.Storable.Generic qualified
@@ -173,7 +171,7 @@ createInstance f = do
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
+		<$> (GlfwG.getRequiredInstanceExtensions)
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
@@ -222,7 +220,7 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: GlfwG.Window.W s -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w@(GlfwG.Window.W w') inst g =
+run w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -360,7 +358,7 @@ createSwapChainNew :: GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
 	IO a
-createSwapChainNew win@(GlfwG.Window.W win') sfc phdvc qfis dvc f = do
+createSwapChainNew win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	fmt = Vk.Khr.Surface.M.formatFormat
@@ -473,11 +471,11 @@ chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
 chooseSwapExtent :: GlfwG.Window.W s -> Vk.Khr.Surface.M.Capabilities -> IO Vk.Extent2d
-chooseSwapExtent win@(GlfwG.Window.W win') caps
+chooseSwapExtent win caps
 	| Vk.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
 		(fromIntegral -> w, fromIntegral -> h) <-
-			Glfw.getFramebufferSize win'
+			GlfwG.Window.getFramebufferSize win
 		pure $ Vk.Extent2d
 			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
 			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
@@ -946,9 +944,9 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> IO ()
-mainLoop g w@(GlfwG.Window.W w') sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasrfsifs = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasrfsifs = do
 	($ ext0) $ fix \loop ext -> do
-		Glfw.pollEvents
+		GlfwG.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cb iasrfsifs loop
 	Vk.Dvc.waitIdle dvc
 
@@ -965,10 +963,10 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win@(GlfwG.Window.W win') sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cb iasrfsifs loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cb iasrfsifs loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cb iasrfsifs
-	cls <- Glfw.windowShouldClose win'
+	cls <- GlfwG.Window.shouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
@@ -1023,7 +1021,7 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 		'(sl, '[], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win@(GlfwG.Window.W win') sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
+catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
@@ -1043,8 +1041,8 @@ recreateSwapChainEtc :: (
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateSwapChainEtc win@(GlfwG.Window.W win') sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
-	waitFramebufferSize win'
+recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
+	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
 	ext <- recreateSwapChain win sfc phdvc qfis dvc sc
@@ -1054,10 +1052,10 @@ recreateSwapChainEtc win@(GlfwG.Window.W win') sfc phdvc qfis dvc sc scivs rp pp
 		recreateGraphicsPipeline' dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
+waitFramebufferSize :: GlfwG.Window.W s -> IO ()
+waitFramebufferSize win = GlfwG.Window.getFramebufferSize win >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+		GlfwG.waitEvents *> GlfwG.Window.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
