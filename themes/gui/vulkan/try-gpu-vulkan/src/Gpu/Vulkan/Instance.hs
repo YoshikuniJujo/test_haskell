@@ -4,7 +4,7 @@ module Gpu.Vulkan.Instance (
 
 	-- * CREATE
 
-	create, I, CreateInfo(..), ExtensionName,
+	create, I, CreateInfo(..), ExtensionName(..),
 
 	-- * ENUMERATE
 
