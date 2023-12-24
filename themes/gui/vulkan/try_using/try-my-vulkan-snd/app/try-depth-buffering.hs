@@ -148,6 +148,8 @@ import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import Tools
 import Vertex
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized

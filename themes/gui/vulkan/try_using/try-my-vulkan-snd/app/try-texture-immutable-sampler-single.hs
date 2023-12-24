@@ -143,6 +143,8 @@ import qualified Gpu.Vulkan.Sampler.Enum as Vk.Smplr
 
 import Tools
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized

@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2023-12-19
+resolver: nightly-2023-12-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 65bd0df796aa5a2a1544407456fd7f45c8c7eec3
+  commit: 3fae7aeb5ff112553b3b15dad07ae634e28d691e
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
@@ -67,6 +67,7 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
   - themes/gui/vulkan/try-gpu-vulkan-cglm
+  - packages/try-tools-yj
 - union-color-0.1.2.0
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709

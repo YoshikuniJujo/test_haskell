@@ -150,6 +150,8 @@ import Vertex.Wavefront
 import Control.Concurrent.STM
 import Keyboard qualified as K
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = do
 	txfp : mdlfp : mnld : _ <- getArgs

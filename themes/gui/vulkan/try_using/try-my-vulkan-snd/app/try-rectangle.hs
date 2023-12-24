@@ -134,6 +134,8 @@ import Tools
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized

@@ -146,6 +146,8 @@ import Tools
 import Vertex
 import Vertex.Wavefront
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = do
 	txfp : mdlfp : _ <- getArgs

@@ -60,6 +60,8 @@ dependencies:
 - directory
 - temporary
 
+- try-tools-yj
+
 library:
   source-dirs: src
 

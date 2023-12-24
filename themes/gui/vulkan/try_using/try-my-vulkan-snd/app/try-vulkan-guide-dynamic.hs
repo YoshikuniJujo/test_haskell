@@ -143,6 +143,8 @@ import qualified Codec.WavefrontObj.ReadFaceSimple as WvNew
 import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
 import Tools
 
+import Data.Text.ToolsYj
+
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 

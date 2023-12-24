@@ -149,6 +149,8 @@ import Control.Monad.Trans
 
 import Keyboard qualified as K
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = run_ command
 

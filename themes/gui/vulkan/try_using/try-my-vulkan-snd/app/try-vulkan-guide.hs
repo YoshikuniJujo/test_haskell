@@ -139,6 +139,8 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
 import Tools
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = do
 	[objfile] <- getArgs

@@ -148,6 +148,8 @@ import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
 
 import Tools
 
+import Data.Text.ToolsYj
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized

@@ -155,6 +155,8 @@ import Gpu.Vulkan.Sampler as Vk.Smplr
 import Gpu.Vulkan.Sampler.Enum as Vk.Smplr
 import Gpu.Vulkan.Sampler as Vk.Smplr.M
 
+import Data.Text.ToolsYj
+
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 

@@ -77,6 +77,7 @@ library
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -126,6 +127,7 @@ executable my-glslc
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -175,6 +177,7 @@ executable try-allocation-callbacks
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -224,6 +227,7 @@ executable try-copy-descriptor-set
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -273,6 +277,7 @@ executable try-depth-buffering
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -322,6 +327,7 @@ executable try-depth-buffering-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -371,6 +377,7 @@ executable try-dynamic-dsc-sets
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -420,6 +427,7 @@ executable try-generating-mipmaps
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -469,6 +477,7 @@ executable try-generating-mipmaps-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -518,6 +527,7 @@ executable try-hello-world
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -567,6 +577,7 @@ executable try-image-buffer
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -616,6 +627,7 @@ executable try-loading-models
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -665,6 +677,7 @@ executable try-loading-models-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -714,6 +727,7 @@ executable try-multisampling
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -763,6 +777,7 @@ executable try-multisampling-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -812,6 +827,7 @@ executable try-multisampling-use-groups-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -861,6 +877,7 @@ executable try-no-dynamic-dsc-sets
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -910,6 +927,7 @@ executable try-pipeline-cache
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -959,6 +977,7 @@ executable try-query
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1008,6 +1027,7 @@ executable try-rectangle
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1057,6 +1077,7 @@ executable try-rectangle-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1106,6 +1127,7 @@ executable try-saitan
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1155,6 +1177,7 @@ executable try-saitan-float
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1204,6 +1227,7 @@ executable try-saitan-simple
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1253,6 +1277,7 @@ executable try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1302,6 +1327,7 @@ executable try-texel-buffer-float
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1351,6 +1377,7 @@ executable try-texel-buffer-word32
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1400,6 +1427,7 @@ executable try-texture
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1449,6 +1477,7 @@ executable try-texture-descriptor-set-group-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1498,6 +1527,7 @@ executable try-texture-image-manager-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1547,6 +1577,7 @@ executable try-texture-immutable-sampler-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1596,6 +1627,7 @@ executable try-texture-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1645,6 +1677,7 @@ executable try-triangle
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1694,6 +1727,7 @@ executable try-triangle-single
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1743,6 +1777,7 @@ executable try-vulkan-guide
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1792,6 +1827,7 @@ executable try-vulkan-guide-dynamic
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1841,6 +1877,7 @@ executable try-vulkan-guide-storage
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1890,6 +1927,7 @@ executable try-vulkan-guide-texture
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1939,6 +1977,7 @@ executable try-wavefront-obj
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -1988,6 +2027,7 @@ executable try-yatteiku
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -2038,6 +2078,7 @@ test-suite try-my-vulkan-snd-test
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
