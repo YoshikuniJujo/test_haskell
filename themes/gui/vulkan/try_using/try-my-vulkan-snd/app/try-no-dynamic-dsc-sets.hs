@@ -34,7 +34,7 @@ import qualified Data.Vector.Storable as V
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
-import Gpu.Vulkan.Misc
+import Data.TypeLevel.ParMaybe (nil)
 
 import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
@@ -82,7 +82,7 @@ main = do
 			(r1, r2, r3) <- crtDevice \phdvc qFam dvc mxX ->
 				let (da, db, dc) = mkData mxX in
 					Vk.DscSetLyt.create dvc dscSetLayoutInfo
-						nil' \dslyt ->
+						nil \dslyt ->
 					prepDscSets arg phdvc dvc dslyt da db dc
 						$ calc dvc qFam dslyt mxX
 			print . take 20 $ unW1 <$> r1
@@ -100,12 +100,12 @@ type ListW3 =VObj.List 256 W3 ""
 
 crtDevice :: (forall sd .
 	Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
+crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qf <- findQueueFamily phdvc Vk.Queue.ComputeBit
 	lmts <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
 	let	mxX :. _ = Vk.PhDvc.limitsMaxComputeWorkGroupCount lmts
-	Vk.Dvc.create phdvc (dvcInfo qf) nil' $ \dvc ->
+	Vk.Dvc.create phdvc (dvcInfo qf) nil $ \dvc ->
 		f phdvc qf dvc mxX
 	where
 	instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
@@ -160,7 +160,7 @@ prepDscSets ::
 		Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm2 '[ListW2])] ->
 		Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm3 '[ListW3])] -> IO a) -> IO a
 prepDscSets arg phdvc dvc dslyt da db dc f =
-	Vk.DscPool.create dvc dscPoolInfo nil' \dp ->
+	Vk.DscPool.create dvc dscPoolInfo nil \dp ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dp dslyt) \(HeteroParList.Singleton ds) ->
 	storageBufferNew3 phdvc dvc da db dc \(ba, ma) (bb, mb) (bc, mc) ->
 	storageBufferNew3Objs @Word32
@@ -251,10 +251,10 @@ storageBufferNew :: forall {sd} v {nm} obj {a} . (
 		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj])] ->
 		IO a) -> IO a
 storageBufferNew phdvc dvc xs f =
-	Vk.Bffr.create dvc (bufferInfo xs) nil' \bff -> do
+	Vk.Bffr.create dvc (bufferInfo xs) nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
 		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
-			nil' \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
+			nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj dvc m zeroBits xs
 			f bnd m
 
@@ -274,10 +274,10 @@ storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj0, obj1, obj2])] ->
 		IO a) -> IO a
 storageBufferNew3Objs phdvc dvc x y z f =
-	Vk.Bffr.create dvc (bufferInfo' x y z) nil' \bff -> do
+	Vk.Bffr.create dvc (bufferInfo' x y z) nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
 		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
-			nil' \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
+			nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj0 dvc m zeroBits x
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj1 dvc m zeroBits y
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 dvc m zeroBits z
@@ -374,12 +374,12 @@ calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl DscSetLytLstW123 ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm2 '[ListW2])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.BufferArg nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
-	Vk.Ppl.Lyt.create dvc (pplLayoutInfoNew dslyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dvc (pplLayoutInfoNew dslyt) nil \plyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
-		nil' \(ppl :** HeteroParList.Nil) ->
-	Vk.CmdPl.create dvc (commandPoolInfo qFam) nil' \cp ->
+		nil \(ppl :** HeteroParList.Nil) ->
+	Vk.CmdPl.create dvc (commandPoolInfo qFam) nil \cp ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cp) \(cmdBuf :*. HeteroParList.Nil) ->
 		run dvc qFam cmdBuf ppl plyt dss ln ma mb mc
 
@@ -407,7 +407,7 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (shaderModInfo, nil'),
+	Vk.Ppl.ShaderSt.createInfoModule = (shaderModInfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
 		Just $ HeteroParList.Id 3 :** HeteroParList.Id 10 :** HeteroParList.Nil }

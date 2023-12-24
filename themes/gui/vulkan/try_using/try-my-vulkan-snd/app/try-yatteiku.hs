@@ -36,7 +36,7 @@ import qualified Language.SpirV as SpirV
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
 
-import Gpu.Vulkan.Misc
+import Data.TypeLevel.ParMaybe (nil)
 
 import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
@@ -105,7 +105,7 @@ main = do
 		createInfo = def {
 			Vk.Instance.createInfoEnabledLayerNames =
 				[Vk.layerKhronosValidation] }
-	Vk.Instance.create createInfo nil' \inst -> do
+	Vk.Instance.create createInfo nil \inst -> do
 		(physicalDevice, graphicsQueueFamilyIndex) <-
 			selectPhysicalDeviceAndQueueFamily
 				=<< Vk.PhysicalDevice.enumerate inst
@@ -128,7 +128,7 @@ main = do
 					[Vk.layerKhronosValidation],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
-		Vk.Device.create physicalDevice devCreateInfo nil' \dvc ->
+		Vk.Device.create physicalDevice devCreateInfo nil \dvc ->
 			runDevice physicalDevice dvc graphicsQueueFamilyIndex
 
 runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
@@ -173,7 +173,7 @@ makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 			Vk.CommandPool.createInfoFlags = zeroBits,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	Vk.CommandPool.create device cmdPoolCreateInfo nil'
+	Vk.CommandPool.create device cmdPoolCreateInfo nil
 			\(cmdPool :: Vk.CommandPool.C s) -> f graphicsQueue cmdPool
 
 makeCommandBuffer :: forall sd scp a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
@@ -226,7 +226,7 @@ makeImage' phdvc dvc f = do
 			Vk.Img.createInfoQueueFamilyIndices = [] }
 	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	print memProps
-	Vk.Img.create @'Nothing dvc imgCreateInfo nil' \image -> do
+	Vk.Img.create @'Nothing dvc imgCreateInfo nil \image -> do
 		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
 		print imgMemReq
 		let	imgMemReqTypes =
@@ -248,7 +248,7 @@ makeImage' phdvc dvc f = do
 					memoryTypeIndex }
 		Vk.Memory.allocateBind @'Nothing
 			dvc (HeteroParList.Singleton . U2 $ Vk.Memory.Image image)
-			imgMemAllocInfo nil' \(HeteroParList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
+			imgMemAllocInfo nil \(HeteroParList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
@@ -376,11 +376,11 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		Vk.Memory.M sm
 			'[ '(sb, 'Vk.Memory.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
+createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Memory.M.requirementsMemoryTypeBits reqs) props
 	Vk.Memory.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Memory.Buffer b)
-		(allcInfo mt) nil'
+		(allcInfo mt) nil
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Memory.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
@@ -441,7 +441,7 @@ instance KObj.IsImage MyImage where
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded sm si nm fmt ->
 	(forall s . Vk.ImgView.I nm Vk.T.FormatR8g8b8a8Unorm s -> IO a) -> IO a
 makeImageView dvc bimg f =
-	Vk.ImgView.create dvc imgViewCreateInfo nil' \imgView -> do
+	Vk.ImgView.create dvc imgViewCreateInfo nil \imgView -> do
 		putStrLn $ "imgView: " ++ show imgView
 		f imgView
 	where	imgViewCreateInfo = Vk.ImgView.CreateInfo {
@@ -473,7 +473,7 @@ makeImageView dvc bimg f =
 makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I nm fmt si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
 makeFramebuffer dvc rp iv f =
-	Vk.Framebuffer.create @'Nothing dvc frameBufCreateInfo nil' f
+	Vk.Framebuffer.create @'Nothing dvc frameBufCreateInfo nil f
 	where	frameBufCreateInfo = Vk.Framebuffer.CreateInfo {
 			Vk.Framebuffer.createInfoNext = TMaybe.N,
 			Vk.Framebuffer.createInfoFlags =
@@ -559,7 +559,7 @@ makeRenderPass dvc f = do
 				attachmentNew :** HeteroParList.Nil,
 			Vk.RenderPass.createInfoSubpasses = [subpass],
 			Vk.RenderPass.createInfoDependencies = [] }
-	Vk.RenderPass.create dvc renderPassCreateInfoNew nil' f
+	Vk.RenderPass.create dvc renderPassCreateInfoNew nil f
 
 makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
 	(forall s sl . Vk.Ppl.Gr.G s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a
@@ -661,7 +661,7 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.ShSt.CreateFlagsZero,
 			Vk.Ppl.ShSt.createInfoStage = Vk.ShaderStageVertexBit,
 			Vk.Ppl.ShSt.createInfoModule =
-				(vertShaderCreateInfo, nil'),
+				(vertShaderCreateInfo, nil),
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
 		fragShaderCreateInfo = Vk.ShaderModule.CreateInfo {
@@ -676,10 +676,10 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoStage =
 				Vk.ShaderStageFragmentBit,
 			Vk.Ppl.ShSt.createInfoModule =
-				(fragShaderCreateInfo, nil'),
+				(fragShaderCreateInfo, nil),
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
-	Vk.Ppl.Lyt.create dvc layoutCreateInfoNew nil' \plyt -> do
+	Vk.Ppl.Lyt.create dvc layoutCreateInfoNew nil \plyt -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
 					'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 					'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
@@ -714,7 +714,7 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
-			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil'
+			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil
 				\(U3 g :** HeteroParList.Nil) -> f g
 
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd

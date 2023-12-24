@@ -31,7 +31,7 @@ import Data.Char
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
-import Gpu.Vulkan.Misc
+import Data.TypeLevel.ParMaybe (nil)
 
 import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
@@ -82,7 +82,7 @@ bffSize = 30
 
 main :: IO ()
 main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
-	Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
+	Vk.DSLyt.create dv dscSetLayoutInfo nil \dslyt ->
 	prepareMems pd dv dslyt \_dscs dscs' m ->
 	calc qfi dv dslyt dscs' bffSize >>
 	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
@@ -90,13 +90,13 @@ main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 type Word32List = Obj.List 256 Word32 ""
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
-withDevice f = Vk.Inst.create instInfo nil' \inst -> do
+withDevice f = Vk.Inst.create instInfo nil \inst -> do
 	pd <- head <$> Vk.Phd.enumerate inst
 	qfi <- fst . head . filter (
 			checkBits Vk.Queue.ComputeBit .
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
-	Vk.Dv.create pd (dvcInfo qfi) nil' $ f pd qfi
+	Vk.Dv.create pd (dvcInfo qfi) nil $ f pd qfi
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
@@ -140,7 +140,7 @@ prepareMems :: (
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
-	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
+	Vk.DscPool.create dv dscPoolInfo nil \dp ->
 	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(ds :** ds' :** HL.Nil) ->
 	storageBufferNew pd dv \b m ->
 	Vk.DS.updateDs dv
@@ -169,10 +169,10 @@ storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sm sb nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew pd dv f =
-	Vk.Bffr.create dv bufferInfo nil' \bf ->
+	Vk.Bffr.create dv bufferInfo nil \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
-		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
+		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
@@ -234,10 +234,10 @@ calc :: forall slbts sl bts sd sds . (
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	Vk.DS.D sds slbts -> Word32 -> IO ()
 calc qfi dv dslyt ds sz =
-	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil \plyt ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
-		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
-	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
+		(HL.Singleton . U4 $ pplInfo plyt) nil \(pl :** HL.Nil) ->
+	Vk.CmdPool.create dv (commandPoolInfo qfi) nil \cp ->
 	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
 	run qfi dv ds cb plyt pl sz
 
@@ -300,7 +300,7 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil'),
+	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
 	where shdrMdInfo = Vk.ShaderMod.CreateInfo {

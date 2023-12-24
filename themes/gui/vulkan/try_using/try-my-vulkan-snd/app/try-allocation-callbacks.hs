@@ -35,7 +35,7 @@ import Data.Char
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
-import Gpu.Vulkan.Misc
+import Data.TypeLevel.ParMaybe (nil)
 
 import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocCallbacks
 
@@ -88,7 +88,7 @@ bffSize = 30
 
 main :: IO ()
 main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
-	Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
+	Vk.DSLyt.create dv dscSetLayoutInfo nil \dslyt ->
 --		(Just allocationCallbacks)
 --		(Just allocationCallbacks) \dslyt ->
 	prepareMems pd dv dslyt \dscs m ->
@@ -129,7 +129,7 @@ withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
 withDevice f = Vk.Inst.create instInfo
 --		(Just allocationCallbacks)
 --		(Just allocationCallbacks) \inst -> do
-		nil' \inst -> do
+		nil \inst -> do
 	print inst
 	pd <- head <$> Vk.Phd.enumerate inst
 	putStrLn "withDevice: after Vk.PhysicalDevice.enumerate"
@@ -184,7 +184,7 @@ prepareMems :: (
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
-	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
+	Vk.DscPool.create dv dscPoolInfo nil \dp ->
 	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(HL.Singleton ds) ->
 	storageBufferNew pd dv \b m ->
 	Vk.DS.updateDs dv (HL.Singleton . U5 $ writeDscSet ds b) HL.Nil >>
@@ -216,7 +216,7 @@ storageBufferNew pd dv f =
 	Vk.Bffr.create dv bufferInfo (TPMaybe.J $ U2 ac) \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
-		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
+		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
@@ -274,10 +274,10 @@ calc :: forall sd slbts sl bts sds . (
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	Vk.DS.D sds slbts -> Word32 -> IO ()
 calc qfi dv dslyt ds sz =
-	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil \plyt ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
-		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
-	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
+		(HL.Singleton . U4 $ pplInfo plyt) nil \(pl :** HL.Nil) ->
+	Vk.CmdPool.create dv (commandPoolInfo qfi) nil \cp ->
 	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
 	run qfi dv ds cb plyt pl sz
 
@@ -340,7 +340,7 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil'),
+	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
 	where shdrMdInfo = Vk.ShaderMod.CreateInfo {
