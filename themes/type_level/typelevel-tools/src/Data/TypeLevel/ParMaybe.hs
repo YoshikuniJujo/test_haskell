@@ -5,9 +5,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.TypeLevel.ParMaybe where
+module Data.TypeLevel.ParMaybe (M(..), Map, maybe, map, nil) where
 
-import Prelude hiding (map)
+import Prelude hiding (map, maybe)
 import Data.Kind
 
 data M (t :: k -> Type) (m :: Maybe k) where
@@ -34,3 +34,6 @@ maybe _ f (J x) = f x
 map :: (forall s . t s -> t' (f s)) -> M t ms -> M t' (Map f ms)
 map _ N = N
 map f (J x) = J $ f x
+
+nil :: M (t :: k -> Type) 'Nothing
+nil = N
