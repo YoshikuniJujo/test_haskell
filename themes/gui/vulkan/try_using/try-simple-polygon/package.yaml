@@ -49,6 +49,7 @@ dependencies:
 - optparse-declarative
 - mtl
 - stm
+- try-tools-yj
 
 ghc-options:
 - -Wall

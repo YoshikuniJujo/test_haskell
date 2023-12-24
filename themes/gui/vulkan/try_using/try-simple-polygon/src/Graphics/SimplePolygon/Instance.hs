@@ -20,6 +20,8 @@ import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 
 import Graphics.SimplePolygon.DebugMessenger qualified as DbgMsngr
 
+import Data.Text.ToolsYj
+
 create :: Bool -> (forall s . Vk.Ist.I s -> IO a) -> IO a
 create vld = createGen vld \nxt -> \f' -> do
 	when vld $ bool

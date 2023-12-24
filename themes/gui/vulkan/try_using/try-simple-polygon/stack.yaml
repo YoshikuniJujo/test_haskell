@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/7.yaml
+resolver: nightly-2023-12-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4d37338c2aabb0096447387407b0433f36007cd9
+  commit: c3b7e1c80d18bdb2b66b12b7f3ddf34bb38e39ed
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
@@ -68,8 +67,10 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - themes/codec/try-codec-wavefront-obj
   - themes/gui/vulkan/try-glfw-group
+  - packages/try-tools-yj
 - union-color-0.1.2.0
-- optparse-declarative-0.4.2
+- git: https://github.com/tanakh/optparse-declarative
+  commit: d3193db7979f391f1a307849236b870fd8933709
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

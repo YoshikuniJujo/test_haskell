@@ -66,6 +66,7 @@ library
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -107,6 +108,7 @@ executable try-multisampling
     , try-simple-polygon
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -148,6 +150,7 @@ executable try-multisampling-with-image-manager
     , try-simple-polygon
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -189,6 +192,7 @@ executable try-pyramid-single
     , try-simple-polygon
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -229,6 +233,7 @@ executable try-simple-polygon-exe
     , try-simple-polygon
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
@@ -270,6 +275,7 @@ test-suite try-simple-polygon-test
     , try-simple-polygon
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , typelevel-tools
     , union-color
     , vector
