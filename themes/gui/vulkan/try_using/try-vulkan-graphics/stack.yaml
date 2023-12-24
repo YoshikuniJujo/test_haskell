@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/7.yaml
+resolver: nightly-2023-12-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -71,7 +70,8 @@ extra-deps:
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
 - union-color-0.1.2.0
-- optparse-declarative-0.4.2
+- git: https://github.com/tanakh/optparse-declarative
+  commit: d3193db7979f391f1a307849236b870fd8933709
 - git: https://github.com/YoshikuniJujo/simple-cairo
   commit: a7007c8704e03eb830916f202abafe779f1dfbbc
 - git: https://github.com/YoshikuniJujo/cairo-image.git
