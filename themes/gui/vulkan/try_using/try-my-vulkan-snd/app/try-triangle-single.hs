@@ -15,50 +15,44 @@ module Main (main) where
 
 import GHC.Generics
 import Foreign.Storable
+import Foreign.Storable.Generic qualified
 import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
-import Gpu.Vulkan.Object qualified as VObj
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.Tuple.Uncurry
+import Data.Proxy
 import Data.Default
 import Data.Bits
-import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:*.), pattern (:**))
-import Data.Proxy
 import Data.Bool
 import Data.Maybe
 import Data.List
-import Data.IORef
 import Data.List.Length
-import Data.Color
-
 import Data.List.NonEmpty qualified as NE
+import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList qualified as HeteroParList
 import Data.Text.IO qualified as Txt
-import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Window
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Window
-import Gpu.Vulkan.Cglm qualified as Cglm
-import Foreign.Storable.Generic qualified
+import Data.Color
+import Data.IORef
 
-import ThEnv
 import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
-import Gpu.Vulkan.Misc
-import Gpu.Vulkan.Data
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Window
 
 import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Enum qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Exception.Enum qualified as Vk
-import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
-import Gpu.Vulkan.Instance qualified as Vk.Ist.M
+import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.Khr qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
@@ -66,7 +60,6 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
-
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Device qualified as Vk.Dvc.M
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
@@ -118,9 +111,12 @@ import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
 import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.Queue.Enum qualified as Vk.Queue
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
-
-import Tools
 import Gpu.Vulkan.Image.Enum qualified as Vk.Img
+import Gpu.Vulkan.Cglm qualified as Cglm
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Window
+
+import ThEnv
+import Tools
 
 main :: IO ()
 main = do
@@ -168,7 +164,7 @@ createInstance f = do
 		(pure ())
 		=<< null . (validationLayers \\)
 				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
+			<$> Vk.Ist.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
 		<$> (GlfwG.getRequiredInstanceExtensions)
@@ -182,16 +178,16 @@ createInstance f = do
 			Vk.applicationInfoEngineVersion =
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo :: Vk.Ist.M.CreateInfo
+		createInfo :: Vk.Ist.CreateInfo
 			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
 				'Nothing '[] ())) 'Nothing
-		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-			Vk.Ist.M.createInfoFlags = def,
-			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.M.createInfoEnabledLayerNames =
+		createInfo = Vk.Ist.CreateInfo {
+			Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
+			Vk.Ist.createInfoFlags = def,
+			Vk.Ist.createInfoApplicationInfo = Just appInfo,
+			Vk.Ist.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
+			Vk.Ist.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil' \i -> f i
 
 setupDebugMessenger ::
@@ -983,7 +979,7 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc uint64Max (Just ias) Nothing
+		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
