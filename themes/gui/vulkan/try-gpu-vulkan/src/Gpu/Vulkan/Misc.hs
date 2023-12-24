@@ -4,7 +4,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Misc (nil', cstrToText, newDefaultIORef) where
+module Gpu.Vulkan.Misc (nil') where
 
 import Foreign.Ptr
 import Foreign.Storable

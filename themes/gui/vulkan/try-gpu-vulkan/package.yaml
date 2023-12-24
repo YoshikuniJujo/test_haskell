@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.88
+version:             0.1.0.89
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -37,6 +37,7 @@ dependencies:
 - try-hetero-parameter-list-with-typelevel-tools
 - typelevel-tools
 - temporary
+- try-tools-yj
 
 ghc-options:
 - -Wall

@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.88
+version:        0.1.0.89
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -189,6 +189,7 @@ library
     , try-language-spir-v
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-middle
     , typelevel-tools
   default-language: Haskell2010
@@ -218,6 +219,7 @@ test-suite try-gpu-vulkan-test
     , try-language-spir-v
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-middle
     , typelevel-tools
   default-language: Haskell2010

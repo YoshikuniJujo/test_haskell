@@ -63,13 +63,14 @@ import qualified Gpu.Vulkan.DescriptorSet.Write as W
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 import Gpu.Vulkan.DescriptorSet.Copy
-import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.Object.Base qualified as KObj
 
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TSem
 import Data.Map qualified as Map
+
+import Data.IORef.ToolsYj
 
 layoutToMiddle :: U2 Layout.D slbts -> Layout.M.D
 layoutToMiddle (U2 (Layout.D l)) = l
