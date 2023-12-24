@@ -4,7 +4,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Default.ToolsYj (newDefaultIORef) where
+module Data.IORef.ToolsYj (newDefaultIORef) where
 
 import Data.Default
 import Data.IORef
