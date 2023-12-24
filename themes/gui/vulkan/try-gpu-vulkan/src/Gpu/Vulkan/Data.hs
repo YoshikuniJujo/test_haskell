@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Data (uint64Max) where
+module Gpu.Vulkan.Data {-# DEPRECATED "use maxBound instead of uint64Max" #-} (uint64Max) where
 
 import Gpu.Vulkan.Data.Middle
