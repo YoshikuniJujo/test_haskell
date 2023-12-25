@@ -39,7 +39,6 @@ import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.Word
 import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Enum qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
 import Gpu.Vulkan.Device qualified as Vk.Dvc

@@ -73,7 +73,6 @@ import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
 import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Enum qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Exception.Enum qualified as Vk
