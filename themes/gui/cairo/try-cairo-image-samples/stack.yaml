@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/17.yaml
+resolver: nightly-2023-12-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,13 +38,8 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-
-extra-deps:
-- git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 060f2b30db539a22f69cc627ce46b53e785946c3
-- git: https://github.com/YoshikuniJujo/cairo-image.git
-  commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
-- union-color-0.1.2.0
+#
+# extra-deps:
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
