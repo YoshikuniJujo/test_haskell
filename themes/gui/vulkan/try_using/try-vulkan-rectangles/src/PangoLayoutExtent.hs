@@ -30,4 +30,4 @@ getPangoLayoutExtent cr fm sz tx = do
 	pangoLayoutSet pl . pangoFontDescriptionToNullable . Just
 		=<< pangoFontDescriptionFreeze pfd
 	pangoLayoutSet pl tx
-	pangoLayoutInfo @PixelExtents =<< pangoLayoutFreeze pl
+	pangoLayoutInfo @PixelExtents <$> pangoLayoutFreeze pl

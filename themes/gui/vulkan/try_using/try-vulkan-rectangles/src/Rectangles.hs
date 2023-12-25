@@ -51,6 +51,7 @@ import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Foldable
 import Data.Proxy
@@ -129,7 +130,6 @@ import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
 import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.ColorComponent.Enum qualified as Vk.ClrCmp
-import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
 
 import Gpu.Vulkan.Khr qualified as Vk.Khr
@@ -161,7 +161,7 @@ rectangles = do
 	vext <- atomically $ newTVar M.empty
 	_ <- forkIO . GlfwG.init error $ do
 		createInstance \ist ->
-			Vk.Dvc.group nil' \dvcgrp -> bool id (setupDebugMessenger ist)
+			Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
 				enableValidationLayers do
 			(phd', qfis', fmt', dv', gq', pq', n') <-
 				withWindow False \dw ->
@@ -189,7 +189,7 @@ rectangles = do
 	pure (	(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	where setupDebugMessenger ist f =
-		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil' f
+		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
 
 readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
 readTVarOr d mp k = do
@@ -335,7 +335,7 @@ createInstance f = do
 			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
 	print exts
-	Vk.Ist.create (crinfo exts) nil' f
+	Vk.Ist.create (crinfo exts) nil f
 	where
 	crinfo :: [Vk.Ist.ExtensionName] -> Vk.Ist.CreateInfo
 		('Just (Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ())) 'Nothing
@@ -396,18 +396,18 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	let	ubs = (ubds, ubm) in
 
 	GlfwG.Win.group \wgrp ->
-	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
-	Vk.RndrPass.group dv nil' \rpgrp ->
-	Vk.Ppl.Graphics.group dv nil' \gpgrp ->
-	Vk.Semaphore.group dv nil' \iasgrp ->
-	Vk.Semaphore.group dv nil' \rfsgrp ->
-	Vk.Fence.group dv nil' \iffgrp ->
-	Vk.Khr.Swapchain.group dv nil' \scgrp ->
-	Vk.ImgVw.group dv nil'
+	Vk.Khr.Sfc.group ist nil \sfcgrp ->
+	Vk.RndrPass.group dv nil \rpgrp ->
+	Vk.Ppl.Graphics.group dv nil \gpgrp ->
+	Vk.Semaphore.group dv nil \iasgrp ->
+	Vk.Semaphore.group dv nil \rfsgrp ->
+	Vk.Fence.group dv nil \iffgrp ->
+	Vk.Khr.Swapchain.group dv nil \scgrp ->
+	Vk.ImgVw.group dv nil
 		\(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt) ->
-	Vk.Frmbffr.group dv nil'
+	Vk.Frmbffr.group dv nil
 		\(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf (k, Int)) ->
-	Vk.Bffr.group dv nil' \rbgrp -> Vk.Mem.group dv nil' \rmgrp ->
+	Vk.Bffr.group dv nil \rbgrp -> Vk.Mem.group dv nil \rmgrp ->
 	let	rgrps = (rbgrp, rmgrp) in
 
 	let	crwos = winObjs @n @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
@@ -543,7 +543,7 @@ destroyWinObjs
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
 createSurface win ist f =
-	Vk.Khr.Sfc.group ist nil' \sfcgrp ->
+	Vk.Khr.Sfc.group ist nil \sfcgrp ->
 	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp () win >>= f . fromRight
 
 pickPhysicalDevice :: Vk.Ist.I si ->
@@ -676,7 +676,7 @@ withSwapchain ::
 	Vk.Extent2d -> QueueFamilyIndices ->
 	(forall ssc . Vk.Khr.Swapchain.S fmt ssc -> Vk.Extent2d -> IO a) -> IO a
 withSwapchain dvc sfc spp ext qfis f =
-	Vk.Khr.Swapchain.group dvc nil' \scgrp ->
+	Vk.Khr.Swapchain.group dvc nil \scgrp ->
 	uncurry f =<< createSwapchain scgrp () sfc spp ext qfis
 
 createSwapchain ::
@@ -737,7 +737,7 @@ recreateSwapchain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreate @'Nothing dvc crInfo nil' sc
+	ext <$ Vk.Khr.Swapchain.recreate @'Nothing dvc crInfo nil sc
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat = \case
@@ -796,7 +796,7 @@ recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.recreate dvc (mkImageViewCreateInfoNew sci) nil' iv >>
+	Vk.ImgVw.recreate dvc (mkImageViewCreateInfoNew sci) nil iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Img.I and Vk.ImageView.I should be same"
@@ -879,7 +879,7 @@ type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'No
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.D s '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing]]
 	-> IO a) -> IO a
-createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
+createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing
 		'[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 ViewProjection 'Nothing] ]
@@ -906,7 +906,7 @@ createPipelineLayout dvc f =
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts =
 				HeteroParList.Singleton $ U2 dsl } in
-	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil' $ f dsl
+	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
 
 createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 	Vk.Ppl.Graphics.Group sd mac sg k '[ '(
@@ -936,7 +936,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Graphics.recreateGs
-	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U3 gpls :** HeteroParList.Nil)
+	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil (U3 gpls :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
 
 mkGraphicsPipelineCreateInfo' ::
@@ -979,7 +979,7 @@ shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParLi
 		Vk.Ppl.ShdrSt.createInfoFlags = def,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
 		Vk.Ppl.ShdrSt.createInfoModule = (
-			shaderModuleCreateInfo glslVertexShaderMain, nil' ),
+			shaderModuleCreateInfo glslVertexShaderMain, nil ),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
@@ -987,7 +987,7 @@ shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParLi
 		Vk.Ppl.ShdrSt.createInfoFlags = def,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
 		Vk.Ppl.ShdrSt.createInfoModule = (
-			shaderModuleCreateInfo glslFragmentShaderMain, nil' ),
+			shaderModuleCreateInfo glslFragmentShaderMain, nil ),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
@@ -1082,7 +1082,7 @@ recreateFramebuffers' :: forall ts sd sr nm fmt siv sf .
 	HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
 recreateFramebuffers' dvc sce rp =
 	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
-	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfo sce rp sciv) nil' fb
+	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
 
 class Mappable (ts :: [knd]) where
 	type Replicate ts s :: [Type]
@@ -1131,7 +1131,7 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
 createCommandPool qfis dvc f =
-	Vk.CmdPool.create dvc poolInfo nil' \cp -> f cp
+	Vk.CmdPool.create dvc poolInfo nil \cp -> f cp
 	where poolInfo = Vk.CmdPool.CreateInfo {
 		Vk.CmdPool.createInfoNext = TMaybe.N,
 		Vk.CmdPool.createInfoFlags =
@@ -1232,7 +1232,7 @@ type UniformBufferMemory sm sb = Vk.Mem.M sm '[ '(
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
-createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
+createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
 	where
 	poolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = TMaybe.N,
@@ -1316,7 +1316,7 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
 createBuffer p dv ln usg props f =
-	Vk.Bffr.group dv nil' \bgrp -> Vk.Mem.group dv nil' \mgrp ->
+	Vk.Bffr.group dv nil \bgrp -> Vk.Mem.group dv nil \mgrp ->
 	uncurry f =<< createBuffer' p dv bgrp mgrp () ln usg props
 
 createBuffer' :: forall sd sb nm o sm k .

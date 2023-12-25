@@ -29,6 +29,7 @@ module CreateTextureGroup (
 
 import Foreign.Storable
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
 import Data.Bits
@@ -65,7 +66,6 @@ import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
 import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Object.Base qualified as KObj
-import Gpu.Vulkan.Misc
 
 import Tools
 
@@ -77,8 +77,8 @@ type TextureGroup sd si sm siv fmt k = (
 textureGroup :: Vk.Dvc.D sd ->
 	(forall si sm siv . TextureGroup sd si sm siv fmt k -> IO a) -> IO a
 textureGroup dv f =
-	Vk.Img.group dv nil' \mng -> Vk.Mem.group dv nil' \mmng ->
-	Vk.ImgVw.group dv nil' \ivmng -> f (mng, mmng, ivmng)
+	Vk.Img.group dv nil \mng -> Vk.Mem.group dv nil \mmng ->
+	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
 
 createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
 	KObj.IsImage img,
@@ -211,11 +211,11 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		Vk.Mem.M sm
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
+createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.requirementsMemoryTypeBits reqs) props
 	Vk.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
-		(allcInfo mt) nil'
+		(allcInfo mt) nil
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
