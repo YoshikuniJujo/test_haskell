@@ -51,7 +51,6 @@ import Language.SpirV.Shaderc.TH
 import Gpu.Vulkan.Data
 
 import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import Gpu.Vulkan.Object qualified as VObj
 import qualified Gpu.Vulkan.Exception as Vk
