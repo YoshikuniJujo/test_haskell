@@ -50,6 +50,7 @@ dependencies:
 - typelevel-tools
 - temporary
 - try-cairo-image-samples
+- try-tools-yj
 
 ghc-options:
 - -Wall

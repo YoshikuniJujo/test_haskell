@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Gpu.Vulkan.CairoImage
       Vertex
   other-modules:
       Paths_try_vulkan_graphics
@@ -59,6 +58,7 @@ library
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-rectangles
     , typelevel-tools
     , union-color
@@ -68,7 +68,6 @@ library
 executable try-cairo-image-as-texture
   main-is: try-cairo-image-as-texture.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -100,6 +99,7 @@ executable try-cairo-image-as-texture
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -110,7 +110,6 @@ executable try-cairo-image-as-texture
 executable try-cube-single
   main-is: try-cube-single.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -142,6 +141,7 @@ executable try-cube-single
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -152,7 +152,6 @@ executable try-cube-single
 executable try-depth-buffering-single
   main-is: try-depth-buffering-single.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -184,6 +183,7 @@ executable try-depth-buffering-single
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -194,7 +194,6 @@ executable try-depth-buffering-single
 executable try-gamepad-button
   main-is: try-gamepad-button.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -226,6 +225,7 @@ executable try-gamepad-button
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -236,7 +236,6 @@ executable try-gamepad-button
 executable try-move-cube-single
   main-is: try-move-cube-single.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -268,6 +267,7 @@ executable try-move-cube-single
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -278,7 +278,6 @@ executable try-move-cube-single
 executable try-multi-rectangles
   main-is: try-multi-rectangles.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -310,6 +309,7 @@ executable try-multi-rectangles
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -320,7 +320,6 @@ executable try-multi-rectangles
 executable try-multiple-windows
   main-is: try-multiple-windows.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -352,6 +351,7 @@ executable try-multiple-windows
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -362,7 +362,6 @@ executable try-multiple-windows
 executable try-pyramid-single
   main-is: try-pyramid-single.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -394,6 +393,7 @@ executable try-pyramid-single
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -404,7 +404,6 @@ executable try-pyramid-single
 executable try-rectangle-single
   main-is: try-rectangle-single.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -436,6 +435,7 @@ executable try-rectangle-single
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -446,7 +446,6 @@ executable try-rectangle-single
 executable try-triangle-single
   main-is: try-triangle-single.hs
   other-modules:
-      Main
       Paths_try_vulkan_graphics
   hs-source-dirs:
       app
@@ -478,6 +477,7 @@ executable try-triangle-single
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools
@@ -520,6 +520,7 @@ test-suite try-vulkan-graphics-test
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-graphics
     , try-vulkan-rectangles
     , typelevel-tools

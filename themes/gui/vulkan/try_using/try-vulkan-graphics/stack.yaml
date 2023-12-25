@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 3bfa7f05f304622093f6dc76a34b79a643ebae72
+  commit: 98ea79e58884dd54d2245dbb2712338470d39603
   subdirs:
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
   - themes/gui/vulkan/try-gpu-vulkan
@@ -69,13 +69,16 @@ extra-deps:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
-- union-color-0.1.2.0
+  - themes/mfrp/try-moffy-with-gtk3
+  - packages/try-tools-yj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-- git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: a7007c8704e03eb830916f202abafe779f1dfbbc
-- git: https://github.com/YoshikuniJujo/cairo-image.git
-  commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
+- git: https://github.com/YoshikuniJujo/simple-field.git
+  commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
+- git: https://github.com/YoshikuniJujo/simple-gdk3
+  commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+- git: https://github.com/YoshikuniJujo/x-keysym
+  commit: e5e069590dbea7038540b66d9545df33b185e9bf
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
