@@ -14,7 +14,6 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Bits
 import Data.Bool
 import Graphics.UI.GLFW qualified as Glfw
-import Gpu.Vulkan.Misc
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 
