@@ -38,7 +38,7 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.Map qualified as Map
 import Data.Word
 
-import "try-gpu-vulkan" Gpu.Vulkan.Enum
+import Gpu.Vulkan
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Swapchain.Type
 import Gpu.Vulkan.Khr.Swapchain.Enum

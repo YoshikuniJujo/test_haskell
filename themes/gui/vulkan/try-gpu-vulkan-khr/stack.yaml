@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/5.yaml
+resolver: nightly-2023-12-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 48d52a19606234f3743c56388fa5d059c5618490
+  commit: 6b6e440515a34e451916c8bbcab46c9aa30adaa0
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-vulkan-middle
@@ -58,9 +57,9 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
+  - packages/try-tools-yj
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
-- union-color-0.1.2.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
