@@ -26,6 +26,7 @@ import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.List
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
@@ -35,7 +36,6 @@ import qualified Data.Vector.Storable as V
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
-import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
@@ -88,7 +88,7 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		db = V.fromList $ W2 <$> [100, 200 .. 100 * mgcx]
 		dc = V.replicate mgcx $ W3 0
 	(r1, r2, r3) <-
-		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
+		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet mgcx >>
 		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
@@ -105,7 +105,7 @@ newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
 	(forall c . Integral c => c) -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
+withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qFam <- fst . head . filter (
 			(/= zeroBits) . (.&. Vk.Queue.ComputeBit)
@@ -113,7 +113,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 		<$> Vk.PhDvc.getQueueFamilyProperties phdvc
 	mgcx :. _ <- Vk.PhDvc.limitsMaxComputeWorkGroupCount
 		. Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
-	Vk.Dvc.create phdvc (dvcInfo qFam) nil' $ \dvc ->
+	Vk.Dvc.create phdvc (dvcInfo qFam) nil $ \dvc ->
 		f phdvc qFam dvc (fromIntegral mgcx)
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
@@ -164,7 +164,7 @@ prepareMems :: (
 		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.BufferArg "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
-	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
+	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(HeteroParList.Singleton dscSet) ->
 	storageBufferNew dvc phdvc da \ba ma ->
@@ -199,10 +199,10 @@ storageBufferNew :: forall sd nm w a . Storable w =>
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List 256 w ""])] ->
 		IO a) -> IO a
 storageBufferNew dvc phdvc xs f =
-	Vk.Buffer.create dvc (bufferInfo xs) nil' \bf ->
+	Vk.Buffer.create dvc (bufferInfo xs) nil \bf ->
 	getMemoryInfo phdvc dvc bf >>= \mmi ->
 	Vk.Mm.allocateBind dvc
-		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
+		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	Vk.Mm.write @nm @(VObj.List 256 w "") dvc mm def xs >> f bnd mm
 
@@ -280,11 +280,11 @@ calc :: forall slbts sl bts sd sds . (
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl bts ->
 	Vk.DscSet.D sds slbts -> Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet dsz =
-	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil \plyt ->
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
-		nil' \(ppl :** HeteroParList.Nil) ->
-	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
+		nil \(ppl :** HeteroParList.Nil) ->
+	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(cb :*. HeteroParList.Nil) ->
 		run dvc qFam cb ppl plyt dscSet dsz
 
@@ -355,7 +355,7 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = def,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil'),
+	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
 	where shdrMdInfo = Vk.ShaderMod.CreateInfo {

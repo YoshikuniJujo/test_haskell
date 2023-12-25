@@ -32,6 +32,7 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.List
 import Data.HeteroParList qualified as HL
 import Data.HeteroParList (pattern (:*), pattern (:*.), pattern (:**))
@@ -43,7 +44,6 @@ import qualified Data.Vector.Storable as V
 import Language.SpirV qualified as SpirV
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
-import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
@@ -213,10 +213,10 @@ type PixelList = VObj.List 256 Pixel ""
 type PixelFloatList = VObj.List 256 PixelFloat ""
 
 device :: (forall sd . Vk.Phd.P -> Vk.QF.Index -> Vk.Dv.D sd -> IO a) -> IO a
-device f = Vk.Ist.create @_ @'Nothing instInfo nil' \ist -> setupDebugMessenger ist do
+device f = Vk.Ist.create @_ @'Nothing instInfo nil \ist -> setupDebugMessenger ist do
 	phd <- head <$> Vk.Phd.enumerate ist
 	qf <- findQueueFamily phd Vk.Queue.ComputeBit
-	Vk.Dv.create phd (dvcInfo qf) nil' \dv -> f phd qf dv
+	Vk.Dv.create phd (dvcInfo qf) nil \dv -> f phd qf dv
 	where
 	instInfo :: Vk.Ist.CreateInfo
 		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()))
@@ -270,7 +270,7 @@ descriptorSet :: forall bts sd sl a .
 	Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	(forall sds .  Vk.DS.D sds '(sl, bts) -> IO a) -> IO a
 descriptorSet dv lyt f =
-	Vk.DP.create dv poolInfo nil' \pl ->
+	Vk.DP.create dv poolInfo nil \pl ->
 	Vk.DS.allocateDs dv (setInfo pl)
 		\((ds :: Vk.DS.D sds '(sl, bts)) :** HL.Nil) -> f ds
 	where
@@ -298,8 +298,8 @@ type Groups k smgrp sd sbgrp nm sbp sbpf = (
 groups :: Vk.Dv.D sd -> (forall smgrp sbgrp nm sbp sbpf .
 	Groups k smgrp sd sbgrp nm sbp sbpf -> IO a) -> IO a
 groups dv f =
-	Vk.Bff.group dv nil' \bgrp -> Vk.Mm.group dv nil' \mgrp ->
-	Vk.BffVw.group dv nil' \pgrp -> Vk.BffVw.group dv nil' \pfgrp ->
+	Vk.Bff.group dv nil \bgrp -> Vk.Mm.group dv nil \mgrp ->
+	Vk.BffVw.group dv nil \pgrp -> Vk.BffVw.group dv nil \pfgrp ->
 	f (bgrp, mgrp, pgrp, pfgrp)
 
 buffer :: forall bts sd sl nm sds smgrp sbgrp sbp sbpf k . (
@@ -407,15 +407,15 @@ pipeline :: forall sd sl bts a .
 		PplPlyt s1 sl1 '(sl, bts) '[Word32] ->
 		PplPlyt s2 sl2 '(sl, bts) PushConstants -> IO a) -> IO a
 pipeline dv qf dslyt f =
-	Vk.Ppl.Lyt.create dv plytInfo nil' \plyt ->
-	Vk.Ppl.Lyt.create dv plytInfo nil' \plyt2 ->
+	Vk.Ppl.Lyt.create dv plytInfo nil \plyt ->
+	Vk.Ppl.Lyt.create dv plytInfo nil \plyt2 ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
-		(U4 (pplInfo glslComputeShaderMain plyt) :** HL.Nil) nil'
+		(U4 (pplInfo glslComputeShaderMain plyt) :** HL.Nil) nil
 		\(ppl :** HL.Nil) ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
-		(U4 (pplInfo glslComputeShaderMain2 plyt2) :** HL.Nil) nil'
+		(U4 (pplInfo glslComputeShaderMain2 plyt2) :** HL.Nil) nil
 		\(ppl2 :** HL.Nil) ->
-	Vk.CommandPool.create dv cpoolInfo nil' \cp ->
+	Vk.CommandPool.create dv cpoolInfo nil \cp ->
 	Vk.CmdBuf.allocate dv (cbInfo cp) \(cb :*. HL.Nil) -> f cb (ppl, plyt) (ppl2, plyt2)
 	where
 	plytInfo :: Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
@@ -437,7 +437,7 @@ pipeline dv qf dslyt f =
 		Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-		Vk.Ppl.ShaderSt.createInfoModule = (shaderModInfo sdr, nil'),
+		Vk.Ppl.ShaderSt.createInfoModule = (shaderModInfo sdr, nil),
 		Vk.Ppl.ShaderSt.createInfoName = "main",
 		Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
 			Just $ HL.Id 3 :** HL.Id 10 :** HL.Nil }
@@ -642,7 +642,7 @@ setupDebugMessenger ::
 	Vk.Ist.I si ->
 	IO a -> IO a
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil' f
+	debugMessengerCreateInfo nil f
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {

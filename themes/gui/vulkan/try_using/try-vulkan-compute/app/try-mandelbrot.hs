@@ -23,13 +23,13 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe (nil)
 import qualified Data.HeteroParList as HL
 import Data.HeteroParList (pattern(:*), pattern (:*.), pattern (:**))
 import Data.Word
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
-import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
@@ -104,7 +104,7 @@ main = do
 	as <- getArgs
 	case readArgs as of
 		Just ((w, h), ul, lr) -> withDevice \pd qfi dv -> writeResult w h =<<
-			Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
+			Vk.DSLyt.create dv dscSetLayoutInfo nil \dslyt ->
 			prepareMems (fromIntegral w) (fromIntegral h) pd dv dslyt \dscs m ->
 			calc w h ul lr qfi dv dslyt dscs (bffSize w h) >>
 			Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
@@ -126,13 +126,13 @@ readPair s c = case L.findIndex (== c) s of
 type Word32List = Obj.List 256 Word32 ""
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
-withDevice f = Vk.Inst.create instInfo nil' \inst -> do
+withDevice f = Vk.Inst.create instInfo nil \inst -> do
 	pd <- head <$> Vk.Phd.enumerate inst
 	qfi <- fst . head . filter (
 			checkBits Vk.Queue.ComputeBit .
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
-	Vk.Dv.create pd (dvcInfo qfi) nil' $ f pd qfi
+	Vk.Dv.create pd (dvcInfo qfi) nil $ f pd qfi
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
@@ -176,7 +176,7 @@ prepareMems :: (
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems w h pd dv dslyt f =
-	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
+	Vk.DscPool.create dv dscPoolInfo nil \dp ->
 	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(HL.Singleton ds) ->
 	storageBufferNew w h pd dv \b m ->
 	Vk.DS.updateDs dv (HL.Singleton . U5 $ writeDscSet ds b) HL.Nil >>
@@ -203,10 +203,10 @@ storageBufferNew :: forall sd nm a . Vk.Dv.Size -> Vk.Dv.Size -> Vk.Phd.P -> Vk.
 	Vk.Bffr.Binded sm sb nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew w h pd dv f =
-	Vk.Bffr.create dv (bufferInfo w h) nil' \bf ->
+	Vk.Bffr.create dv (bufferInfo w h) nil \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
-		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
+		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
@@ -264,10 +264,10 @@ calc :: forall slbts sl bts sd s . (
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.D sl bts ->
 	Vk.DS.D s slbts -> Word32 -> IO ()
 calc w h ul lr qfi dv dslyt ds sz =
-	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil \plyt ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
-		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
-	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
+		(HL.Singleton . U4 $ pplInfo plyt) nil \(pl :** HL.Nil) ->
+	Vk.CmdPool.create dv (commandPoolInfo qfi) nil \cp ->
 	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
 	run w h ul lr qfi dv ds cb plyt pl sz
 
@@ -311,7 +311,7 @@ run w h ul lr qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 		Vk.Cmd.dispatch ccb (w `div` 8) (h `div` 8) 1
 	Vk.Fence.create dv Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
-		Vk.Fence.createInfoFlags = zeroBits } nil'  \fnc ->
+		Vk.Fence.createInfoFlags = zeroBits } nil  \fnc ->
 		Vk.Queue.submit q (HL.Singleton $ U4 sinfo) (Just fnc) >>
 		 Vk.Queue.waitIdle q >>
 		Vk.Fence.waitForFs dv (HL.Singleton fnc) True Nothing
@@ -341,7 +341,7 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil'),
+	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
 	where shdrMdInfo = Vk.ShaderMod.CreateInfo {

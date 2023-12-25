@@ -26,6 +26,7 @@ import Data.Bool
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.List
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
@@ -35,7 +36,6 @@ import qualified Data.Vector.Storable as V
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
-import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
@@ -121,7 +121,7 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 	print $ map V.length dbs
 	ct0 <- getCurrentTime
 	(r1, r2, r3) <-
-		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
+		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet ma mb das dbs pot >>
 		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
@@ -151,7 +151,7 @@ newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
 	(forall c . Integral c => c) -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
+withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qFam <- fst . head . filter (
 			(/= zeroBits) . (.&. Vk.Queue.ComputeBit)
@@ -162,7 +162,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 	print mgcx
 	print mgcy
 	print mgcz
-	Vk.Dvc.create phdvc (dvcInfo qFam) nil' $ \dvc ->
+	Vk.Dvc.create phdvc (dvcInfo qFam) nil $ \dvc ->
 		f phdvc qFam dvc (fromIntegral mgcx)
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
@@ -213,7 +213,7 @@ prepareMems :: (
 		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg "" '[VObj.List 256 W2 ""])] ->
 		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.BufferArg "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
-	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
+	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(HeteroParList.Singleton dscSet) ->
 	storageBufferNew dvc phdvc da \ba ma ->
@@ -249,10 +249,10 @@ storageBufferNew :: forall sd nm w a . Storable w =>
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List 256 w ""])] ->
 		IO a) -> IO a
 storageBufferNew dvc phdvc xs f =
-	Vk.Buffer.create dvc (bufferInfo xs) nil' \bf ->
+	Vk.Buffer.create dvc (bufferInfo xs) nil \bf ->
 	getMemoryInfo phdvc dvc bf >>= \mmi ->
 	Vk.Mm.allocateBind dvc
-		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
+		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
@@ -331,11 +331,11 @@ calc :: forall slbts sl bts sd sds sm1 sb1 sm2 sb2 . (
 	[V.Vector W1] -> [V.Vector W2] ->
 	Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet ma mb das dbs dsz =
-	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil' \plyt ->
+	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil \plyt ->
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
-		nil' \(ppl :** HeteroParList.Nil) ->
-	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
+		nil \(ppl :** HeteroParList.Nil) ->
+	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil \cmdPool ->
 	Vk.CmdBuf.allocateList dvc (commandBufferInfoList cmdPool) \cbs@(cb0 : cb1 : cb2 : cb3 : cb4 : cb5 : cb6 : _) ->
 		putStrLn "BEGIN CALC" >>
 		runAll dvc qFam ppl plyt dscSet dsz ma mb (L.zip3 cbs das dbs) \fnc ->
@@ -468,10 +468,10 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws f = do
 			Vk.Cmd.dispatch ccb dsz (2 ^ 3) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
-		Vk.Semaphore.createInfoFlags = zeroBits } nil' \s ->
+		Vk.Semaphore.createInfoFlags = zeroBits } nil \s ->
 		Vk.Fence.create dvc Vk.Fence.CreateInfo {
 			Vk.Fence.createInfoNext = TMaybe.N,
-			Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
+			Vk.Fence.createInfoFlags = zeroBits } nil \fnc ->
 			Vk.Queue.submit q (HeteroParList.Singleton . U4 $ submitInfo ws s) (Just fnc) >>
 			Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing >> f s
 	where
@@ -504,7 +504,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws f = do
 			Vk.Cmd.dispatch ccb dsz (2 ^ 3) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
-		Vk.Fence.createInfoFlags = zeroBits } nil' \fnc ->
+		Vk.Fence.createInfoFlags = zeroBits } nil \fnc ->
 		Vk.Queue.submit q (HeteroParList.Singleton . U4 $ submitInfo ws) (Just fnc) >> f fnc
 	where
 	submitInfo :: forall swss' .
@@ -536,7 +536,7 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = def,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil'),
+	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
 	where shdrMdInfo = Vk.ShaderMod.CreateInfo {
