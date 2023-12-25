@@ -47,7 +47,6 @@ import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Window
 
 import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Enum qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Exception qualified as Vk
