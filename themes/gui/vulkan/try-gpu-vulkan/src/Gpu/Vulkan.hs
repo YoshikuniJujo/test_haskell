@@ -75,8 +75,13 @@ module Gpu.Vulkan (
 	extent2dWidth, extent2dHeight,
 
 	Extent3d, pattern Extent3d,
-	extent3dWidth, extent3dHeight, extent3dDepth
+	extent3dWidth, extent3dHeight, extent3dDepth,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Enum,
 
 	) where
 
 import Gpu.Vulkan.Internal
+import Gpu.Vulkan.Enum

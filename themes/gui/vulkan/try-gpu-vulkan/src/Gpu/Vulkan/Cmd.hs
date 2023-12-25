@@ -71,7 +71,6 @@ import Data.Word
 import Data.Int
 
 import Gpu.Vulkan
-import Gpu.Vulkan.Enum
 import Gpu.Vulkan.TypeEnum qualified as T
 
 import qualified Gpu.Vulkan.CommandBuffer as CommandBuffer
