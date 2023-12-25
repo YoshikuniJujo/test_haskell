@@ -40,7 +40,6 @@ import Data.TypeLevel.ParMaybe (nil)
 import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocCallbacks
 
 import qualified Gpu.Vulkan as Vk
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.Queue as Vk.Queue

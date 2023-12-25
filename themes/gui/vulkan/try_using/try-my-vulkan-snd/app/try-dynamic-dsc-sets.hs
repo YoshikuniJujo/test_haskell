@@ -38,7 +38,6 @@ import Language.SpirV.ShaderKind
 import Data.TypeLevel.ParMaybe (nil)
 
 import qualified Gpu.Vulkan as Vk
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
