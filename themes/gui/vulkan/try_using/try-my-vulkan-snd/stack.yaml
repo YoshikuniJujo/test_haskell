@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 7b3aa77403cf59f1791692174e6a8e7c9cc1187b
+  commit: 7a21f95bcef5fe2c58a3848c08cc741d1273444e
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
@@ -68,7 +68,6 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
   - themes/gui/vulkan/try-gpu-vulkan-cglm
   - packages/try-tools-yj
-- union-color-0.1.2.0
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
 
