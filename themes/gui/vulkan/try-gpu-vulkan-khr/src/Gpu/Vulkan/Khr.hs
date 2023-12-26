@@ -23,7 +23,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
-import Gpu.Vulkan.Exception.Enum
+import Gpu.Vulkan.Exception
 
 import qualified Gpu.Vulkan.Device.Internal as Device
 import qualified Gpu.Vulkan.Semaphore.Internal as Semaphore
