@@ -53,12 +53,10 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QF
 import qualified Gpu.Vulkan.Device as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
-import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Memory as Vk.Mm
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mm
-import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
+import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DP
-import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.DP
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
@@ -66,7 +64,6 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
-import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bff
