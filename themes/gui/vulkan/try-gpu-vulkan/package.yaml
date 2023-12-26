@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.95
+version:             0.1.0.96
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -58,10 +58,9 @@ library:
   - Gpu.Vulkan.AllocationCallbacks.Internal
   - Gpu.Vulkan.Attachment
   - Gpu.Vulkan.Buffer
-  - Gpu.Vulkan.Buffer.Enum
   - Gpu.Vulkan.BufferView
   - Gpu.Vulkan.Cmd
-  - Gpu.Vulkan.ColorComponent.Enum
+  - Gpu.Vulkan.ColorComponent
   - Gpu.Vulkan.CommandBuffer
   - Gpu.Vulkan.CommandBuffer.Enum
   - Gpu.Vulkan.CommandPool

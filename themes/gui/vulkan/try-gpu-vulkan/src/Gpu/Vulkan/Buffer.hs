@@ -31,9 +31,14 @@ module Gpu.Vulkan.Buffer (
 
 	-- * MEMORY BARRIER
 
-	MemoryBarrier(..), MemoryBarrierListToMiddle
+	MemoryBarrier(..), MemoryBarrierListToMiddle,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Buffer.Enum
 	
 	) where
 
 import Prelude hiding (lookup)
 import Gpu.Vulkan.Buffer.Internal
+import Gpu.Vulkan.Buffer.Enum
