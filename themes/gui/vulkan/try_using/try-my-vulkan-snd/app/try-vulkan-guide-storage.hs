@@ -62,7 +62,6 @@ import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
 import Data.TypeLevel.ParMaybe (nil)
-import Gpu.Vulkan.Data
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
@@ -1472,7 +1471,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 		model (fromIntegral fn) : [ objectMatrix x y | x <- [- 20 .. 20], y <- [- 20 .. 20] ]
 	Vk.Fnc.waitForFs dv siff True Nothing
 	iid <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dv sc uint64Max (Just ias) Nothing
+		dv sc maxBound (Just ias) Nothing
 	Vk.Fnc.resetFs dv siff
 	Vk.CBffr.reset cb zeroBits
 	HL.index fbs iid \fb -> recordCommandBuffer

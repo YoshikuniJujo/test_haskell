@@ -62,7 +62,6 @@ import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
 import Data.TypeLevel.ParMaybe (nil)
-import Gpu.Vulkan.Data
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
@@ -1678,7 +1677,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs
 	($ HeteroParList.homoListIndex dscss cf) \dscs -> do
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc uint64Max (Just ias) Nothing
+		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
