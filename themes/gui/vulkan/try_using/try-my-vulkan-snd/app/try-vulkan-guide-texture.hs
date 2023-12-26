@@ -97,14 +97,12 @@ import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MltSmplSt
 import qualified Gpu.Vulkan.Sample as Vk.Sample
-import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss.M
@@ -121,7 +119,6 @@ import qualified Gpu.Vulkan.Memory as Vk.Mm.M
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mm
 import qualified Gpu.Vulkan.Queue as Vk.Q
-import qualified Gpu.Vulkan.Queue.Enum as Vk.Q
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
@@ -140,7 +137,6 @@ import Data.Array
 import Codec.Picture
 
 import Gpu.Vulkan.Sampler as Vk.Smplr
-import Gpu.Vulkan.Sampler.Enum as Vk.Smplr
 import Gpu.Vulkan.Sampler as Vk.Smplr.M
 
 import Data.Text.ToolsYj

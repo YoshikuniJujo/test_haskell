@@ -43,7 +43,6 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.Queue as Vk.Queue
-import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool

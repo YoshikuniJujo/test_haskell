@@ -76,14 +76,12 @@ import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
 import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
 import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
 import Gpu.Vulkan.Sample qualified as Vk.Sample
-import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
 import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Layout
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Subpass.Enum qualified as Vk.Subpass
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass.M
@@ -99,7 +97,6 @@ import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mem
 import Gpu.Vulkan.Memory qualified as Vk.Mem.M
 import Gpu.Vulkan.Queue qualified as Vk.Queue
-import Gpu.Vulkan.Queue.Enum qualified as Vk.Queue
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.Cglm qualified as Cglm
