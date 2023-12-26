@@ -132,9 +132,7 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
-import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Codec.WavefrontObj.ReadFaceSimple as WvNew

@@ -49,7 +49,6 @@ import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.Pipeline.Enum qualified as Vk.Ppl
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.Descriptor.Enum qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr

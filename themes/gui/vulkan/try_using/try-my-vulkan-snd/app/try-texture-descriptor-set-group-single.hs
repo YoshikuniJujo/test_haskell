@@ -127,10 +127,8 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
-import qualified "try-gpu-vulkan" Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
