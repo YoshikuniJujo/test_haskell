@@ -120,7 +120,6 @@ import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
-import Gpu.Vulkan.Data
 
 import Gpu.Vulkan.Khr qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
@@ -1791,7 +1790,7 @@ drawFrame dvc gq pq
 	ext <- atomically $ readTVar vext
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc uint64Max (Just ias) Nothing
+		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
