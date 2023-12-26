@@ -12,8 +12,13 @@ module Gpu.Vulkan.Descriptor (
 
 	-- * IMAGE INFO
 
-	ImageInfo(..), ImageInfoNoSampler(..)
+	ImageInfo(..), ImageInfoNoSampler(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Descriptor.Enum
 
 	) where
 
 import Gpu.Vulkan.Descriptor.Internal
+import Gpu.Vulkan.Descriptor.Enum

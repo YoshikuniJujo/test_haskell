@@ -9,7 +9,11 @@ module Gpu.Vulkan.DescriptorPool (
 
 	-- * CREATE
 
-	create, P, M.CreateInfo(..), M.Size(..)
+	create, P, M.CreateInfo(..), M.Size(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.DescriptorPool.Enum
 
 	) where
 
@@ -20,6 +24,7 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 
 import Gpu.Vulkan.DescriptorPool.Type
+import Gpu.Vulkan.DescriptorPool.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks

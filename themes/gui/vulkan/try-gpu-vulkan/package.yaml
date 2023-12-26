@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.97
+version:             0.1.0.98
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -66,9 +66,7 @@ library:
   - Gpu.Vulkan.Component
   - Gpu.Vulkan.Data
   - Gpu.Vulkan.Descriptor
-  - Gpu.Vulkan.Descriptor.Enum
   - Gpu.Vulkan.DescriptorPool
-  - Gpu.Vulkan.DescriptorPool.Enum
   - Gpu.Vulkan.DescriptorSet
   - Gpu.Vulkan.DescriptorSetLayout
   - Gpu.Vulkan.DescriptorSetLayout.Enum
