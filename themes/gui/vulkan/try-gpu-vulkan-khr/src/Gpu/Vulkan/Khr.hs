@@ -16,6 +16,10 @@ module Gpu.Vulkan.Khr (
 
 	acquireNextImage, acquireNextImageResult,
 
+	-- * ENUM
+
+	module Gpu.Vulkan.Khr.Enum
+
 	) where
 
 import Foreign.Storable.PeekPoke
@@ -32,6 +36,7 @@ import qualified Gpu.Vulkan.Queue as Queue
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Khr.Middle as M
+import Gpu.Vulkan.Khr.Enum
 
 queuePresent :: WithPoked (TMaybe.M mn) =>
 	Queue.Q -> PresentInfo mn swss scfmt sscs -> IO ()

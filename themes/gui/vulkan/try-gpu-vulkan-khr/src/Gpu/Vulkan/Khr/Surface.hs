@@ -4,7 +4,14 @@
 module Gpu.Vulkan.Khr.Surface (
 	S, group, Group, destroy, lookup,
 
-	Capabilities(..), Format(..)) where
+	Capabilities(..), Format(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Khr.Surface.Enum
+
+	) where
 
 import Prelude hiding (lookup)
 import Gpu.Vulkan.Khr.Surface.Internal
+import Gpu.Vulkan.Khr.Surface.Enum
