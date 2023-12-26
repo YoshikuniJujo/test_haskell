@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.101
+version:             0.1.0.102
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -64,7 +64,6 @@ library:
   - Gpu.Vulkan.CommandBuffer
   - Gpu.Vulkan.CommandPool
   - Gpu.Vulkan.Component
-  - Gpu.Vulkan.Data
   - Gpu.Vulkan.Descriptor
   - Gpu.Vulkan.DescriptorPool
   - Gpu.Vulkan.DescriptorSet

@@ -39,7 +39,6 @@ import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 import Gpu.Vulkan.PhysicalDevice.Struct qualified as PhysicalDevice
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.Query qualified as Q
-import Gpu.Vulkan.Query.Enum qualified as Q
 import Gpu.Vulkan.QueryPool.Type
 import Gpu.Vulkan.QueryPool.Middle qualified as M
 
