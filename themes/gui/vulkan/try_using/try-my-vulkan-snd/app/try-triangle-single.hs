@@ -80,7 +80,7 @@ import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
 import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
-import Gpu.Vulkan.ColorComponent.Enum qualified as Vk.ClrCmp
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Layout
 import Gpu.Vulkan.Attachment qualified as Vk.Att
