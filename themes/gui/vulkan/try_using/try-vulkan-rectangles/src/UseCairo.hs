@@ -122,13 +122,11 @@ import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 
 import Gpu.Vulkan.Khr qualified as Vk.Khr
-import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
-import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
