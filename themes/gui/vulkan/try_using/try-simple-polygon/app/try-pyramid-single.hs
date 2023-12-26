@@ -53,7 +53,6 @@ import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
-import Gpu.Vulkan.Data
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Exception as Vk
@@ -977,7 +976,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc uint64Max (Just ias) Nothing
+		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
