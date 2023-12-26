@@ -27,7 +27,7 @@ import Data.List qualified as L
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
 import Gpu.Vulkan.PhysicalDevice.Struct qualified as Vk.PhDvc
-import Gpu.Vulkan.Queue.Enum qualified as Vk.Queue
+import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
