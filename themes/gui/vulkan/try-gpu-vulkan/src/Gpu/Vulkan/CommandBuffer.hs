@@ -25,7 +25,11 @@ module Gpu.Vulkan.CommandBuffer (
 
 	-- * BEGIN AND RESET
 
-	begin, reset, M.BeginInfo(..), M.InheritanceInfo(..)
+	begin, reset, M.BeginInfo(..), M.InheritanceInfo(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.CommandBuffer.Enum
 
 	) where
 

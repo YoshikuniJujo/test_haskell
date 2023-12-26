@@ -4,8 +4,14 @@
 module Gpu.Vulkan.Component (
 
 	-- * MAPPING
-	Mapping(..)
+
+	Mapping(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Component.Enum
 
 	) where
 
 import Gpu.Vulkan.Component.Middle
+import Gpu.Vulkan.Component.Enum

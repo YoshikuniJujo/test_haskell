@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.96
+version:        0.1.0.97
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -39,11 +39,8 @@ library
       Gpu.Vulkan.Cmd
       Gpu.Vulkan.ColorComponent
       Gpu.Vulkan.CommandBuffer
-      Gpu.Vulkan.CommandBuffer.Enum
       Gpu.Vulkan.CommandPool
-      Gpu.Vulkan.CommandPool.Enum
       Gpu.Vulkan.Component
-      Gpu.Vulkan.Component.Enum
       Gpu.Vulkan.Data
       Gpu.Vulkan.Descriptor
       Gpu.Vulkan.Descriptor.Enum
@@ -122,8 +119,11 @@ library
       Gpu.Vulkan.Buffer.Type
       Gpu.Vulkan.BufferView.Internal
       Gpu.Vulkan.ColorComponent.Enum
+      Gpu.Vulkan.CommandBuffer.Enum
       Gpu.Vulkan.CommandBuffer.Type
+      Gpu.Vulkan.CommandPool.Enum
       Gpu.Vulkan.CommandPool.Type
+      Gpu.Vulkan.Component.Enum
       Gpu.Vulkan.Descriptor.Internal
       Gpu.Vulkan.DescriptorPool.Type
       Gpu.Vulkan.DescriptorSet.BindingAndArrayElem
