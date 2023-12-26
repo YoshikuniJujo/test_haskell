@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.98
+version:             0.1.0.99
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -69,31 +69,22 @@ library:
   - Gpu.Vulkan.DescriptorPool
   - Gpu.Vulkan.DescriptorSet
   - Gpu.Vulkan.DescriptorSetLayout
-  - Gpu.Vulkan.DescriptorSetLayout.Enum
   - Gpu.Vulkan.DescriptorSetLayout.BindingFlags
   - Gpu.Vulkan.Device
   - Gpu.Vulkan.Device.Internal
-  - Gpu.Vulkan.Device.Enum
   - Gpu.Vulkan.Exception
-  - Gpu.Vulkan.Exception.Enum
   - Gpu.Vulkan.Fence
   - Gpu.Vulkan.Fence.Internal
-  - Gpu.Vulkan.Fence.Enum
   - Gpu.Vulkan.Framebuffer
-  - Gpu.Vulkan.Framebuffer.Enum
   - Gpu.Vulkan.Image
   - Gpu.Vulkan.Image.Internal
-  - Gpu.Vulkan.Image.Enum
   - Gpu.Vulkan.ImageView
-  - Gpu.Vulkan.ImageView.Enum
   - Gpu.Vulkan.Instance
   - Gpu.Vulkan.Instance.Internal
   - Gpu.Vulkan.Memory
-  - Gpu.Vulkan.Memory.Enum
   - Gpu.Vulkan.Object
   - Gpu.Vulkan.Object.Base
   - Gpu.Vulkan.PhysicalDevice
-  - Gpu.Vulkan.PhysicalDevice.Enum
   - Gpu.Vulkan.PhysicalDevice.Struct
   - Gpu.Vulkan.Pipeline.ColorBlendAttachment
   - Gpu.Vulkan.Pipeline.ColorBlendState

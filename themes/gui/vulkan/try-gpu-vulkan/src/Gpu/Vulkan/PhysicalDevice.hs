@@ -30,7 +30,11 @@ module Gpu.Vulkan.PhysicalDevice (
 
 	-- * EXTENSIONS
 
-	maintenance3ExtensionName
+	maintenance3ExtensionName,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.PhysicalDevice.Enum
 
 	) where
 
@@ -38,6 +42,7 @@ import Gpu.Vulkan.Internal
 import Gpu.Vulkan.Instance.Internal qualified as Instance
 import Gpu.Vulkan.Instance.Type qualified as Instance.T
 import Gpu.Vulkan.PhysicalDevice.Middle qualified as M
+import Gpu.Vulkan.PhysicalDevice.Enum
 
 import Gpu.Vulkan.Middle qualified as M
 import Data.Text qualified as T

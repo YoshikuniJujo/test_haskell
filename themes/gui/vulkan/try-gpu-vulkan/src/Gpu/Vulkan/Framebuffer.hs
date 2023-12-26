@@ -17,7 +17,11 @@ module Gpu.Vulkan.Framebuffer (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup
+	group, Group, create', destroy, lookup,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Framebuffer.Enum
 
 	) where
 

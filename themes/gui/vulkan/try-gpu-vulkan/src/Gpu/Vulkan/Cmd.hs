@@ -88,7 +88,6 @@ import qualified Gpu.Vulkan.Buffer.Internal as Buffer.I
 import qualified Gpu.Vulkan.Image as Image
 import qualified Gpu.Vulkan.Image.Internal as Image.I
 import qualified Gpu.Vulkan.Image.Type as Image
-import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 
 import qualified Gpu.Vulkan.RenderPass.Internal as RenderPass

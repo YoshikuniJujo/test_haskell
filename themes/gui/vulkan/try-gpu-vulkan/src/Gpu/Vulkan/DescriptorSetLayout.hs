@@ -21,7 +21,11 @@ module Gpu.Vulkan.DescriptorSetLayout (
 
 	-- ** BindingType
 
-	BindingType(..), BindingTypeListBufferOnlyDynamics
+	BindingType(..), BindingTypeListBufferOnlyDynamics,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.DescriptorSetLayout.Enum
 
 	) where
 

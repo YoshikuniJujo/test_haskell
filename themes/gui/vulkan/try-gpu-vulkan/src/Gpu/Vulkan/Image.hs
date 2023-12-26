@@ -29,9 +29,14 @@ module Gpu.Vulkan.Image (
 
 	-- * BLIT
 
-	Blit(..), SubresourceLayers(..)
+	Blit(..), SubresourceLayers(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Image.Enum
 
 	) where
 
 import Prelude hiding (lookup)
 import Gpu.Vulkan.Image.Internal
+import Gpu.Vulkan.Image.Enum

@@ -15,7 +15,11 @@ module Gpu.Vulkan.ImageView (
 
 	-- ** Manage Multiple Image View
 
-	group, create', destroy, lookup, Group
+	group, create', destroy, lookup, Group,
+	
+	-- * ENUM
+
+	module Gpu.Vulkan.ImageView.Enum
 
 	) where
 

@@ -12,9 +12,14 @@ module Gpu.Vulkan.Fence (
 
 	-- * WAIT FOR FENCES AND RESET FENCES
 
-	waitForFs, resetFs
+	waitForFs, resetFs,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Fence.Enum
 
 	) where
 
 import Prelude hiding (lookup)
 import Gpu.Vulkan.Fence.Internal
+import Gpu.Vulkan.Fence.Enum

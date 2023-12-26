@@ -44,6 +44,10 @@ module Gpu.Vulkan.Memory (
 
 	M.Barrier(..),
 
+	-- * ENUM
+
+	module Gpu.Vulkan.Memory.Enum
+
 	) where
 
 import Prelude hiding (map, read, lookup)
@@ -66,6 +70,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Memory.Middle as M
+import Gpu.Vulkan.Memory.Enum
 
 import Gpu.Vulkan.Memory.Bind
 import Gpu.Vulkan.Memory.OffsetSize

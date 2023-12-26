@@ -17,9 +17,14 @@ module Gpu.Vulkan.Device (
 
 	-- * SIZE
 
-	Size
+	Size,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Device.Enum
 
 	) where
 
 import Prelude hiding (lookup)
 import Gpu.Vulkan.Device.Internal
+import Gpu.Vulkan.Device.Enum
