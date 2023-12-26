@@ -9,8 +9,13 @@ module Gpu.Vulkan.Subpass (
 
 	-- * SUBPASS DEPENDENCY
 
-	Dependency(..), S, pattern SExternal
+	Dependency(..), S, pattern SExternal,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Subpass.Enum
 
 	) where
 
 import Gpu.Vulkan.Subpass.Middle
+import Gpu.Vulkan.Subpass.Enum

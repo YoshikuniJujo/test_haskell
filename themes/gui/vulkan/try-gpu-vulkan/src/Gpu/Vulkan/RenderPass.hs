@@ -12,9 +12,14 @@ module Gpu.Vulkan.RenderPass (
 
 	-- * BEGIN INFO
 
-	BeginInfo(..)
+	BeginInfo(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.RenderPass.Enum
 
 	) where
 
 import Prelude hiding (lookup)
 import Gpu.Vulkan.RenderPass.Internal
+import Gpu.Vulkan.RenderPass.Enum

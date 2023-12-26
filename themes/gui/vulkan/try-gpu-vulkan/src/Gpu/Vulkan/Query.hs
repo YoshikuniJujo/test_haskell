@@ -4,11 +4,16 @@ module Gpu.Vulkan.Query (
 
 	-- * TYPE SYNONYMS
 
-	Q, First, Count
+	Q, First, Count,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Query.Enum
 
 	) where
 
 import Data.Word
+import Gpu.Vulkan.Query.Enum
 
 type First = Word32
 type Count = Word32

@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan
-version:             0.1.0.100
+version:             0.1.0.101
 github:              "githubuser/try-gpu-vulkan"
 license:             BSD3
 author:              "Author name here"
@@ -97,7 +97,6 @@ library:
   - Gpu.Vulkan.Pipeline.MultisampleState
   - Gpu.Vulkan.Pipeline.RasterizationState
   - Gpu.Vulkan.Pipeline.ShaderStage
-  - Gpu.Vulkan.Pipeline.ShaderStage.Enum
   - Gpu.Vulkan.Pipeline.TessellationState
   - Gpu.Vulkan.Pipeline.VertexInputState
   - Gpu.Vulkan.Pipeline.ViewportState
@@ -105,22 +104,16 @@ library:
   - Gpu.Vulkan.PipelineLayout
   - Gpu.Vulkan.PushConstant
   - Gpu.Vulkan.Query
-  - Gpu.Vulkan.Query.Enum
   - Gpu.Vulkan.QueryPool
   - Gpu.Vulkan.Queue
-  - Gpu.Vulkan.Queue.Enum
   - Gpu.Vulkan.QueueFamily
   - Gpu.Vulkan.RenderPass
-  - Gpu.Vulkan.RenderPass.Enum
   - Gpu.Vulkan.Sample
-  - Gpu.Vulkan.Sample.Enum
   - Gpu.Vulkan.Sampler
-  - Gpu.Vulkan.Sampler.Enum
   - Gpu.Vulkan.Semaphore
   - Gpu.Vulkan.Semaphore.Internal
   - Gpu.Vulkan.ShaderModule
   - Gpu.Vulkan.Subpass
-  - Gpu.Vulkan.Subpass.Enum
   - Gpu.Vulkan.TypeEnum
   - Gpu.Vulkan.VertexInput
 

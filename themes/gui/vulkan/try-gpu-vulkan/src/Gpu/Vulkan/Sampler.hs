@@ -9,7 +9,11 @@ module Gpu.Vulkan.Sampler (
 
 	-- * CREATE
 
-	create, S, M.CreateInfo(..)
+	create, S, M.CreateInfo(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Sampler.Enum
 
 	) where
 
@@ -23,6 +27,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Sampler.Middle as M
+import Gpu.Vulkan.Sampler.Enum
 
 import Gpu.Vulkan.Sampler.Type
 

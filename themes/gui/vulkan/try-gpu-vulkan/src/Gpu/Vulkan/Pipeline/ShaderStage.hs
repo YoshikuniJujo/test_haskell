@@ -6,6 +6,11 @@ module Gpu.Vulkan.Pipeline.ShaderStage (
 
 	CreateInfo(..), CreateInfoListToMiddle,
 
+	-- * ENUM
+
+	module Gpu.Vulkan.Pipeline.ShaderStage.Enum
+
 	) where
 
 import Gpu.Vulkan.Pipeline.ShaderStage.Internal
+import Gpu.Vulkan.Pipeline.ShaderStage.Enum

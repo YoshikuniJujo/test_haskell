@@ -4,8 +4,13 @@ module Gpu.Vulkan.Sample (
 
 	-- * COUNT AND MASK
 
-	CountAndMask(..)
+	CountAndMask(..),
+
+	-- ENUM
+
+	module Gpu.Vulkan.Sample.Enum
 
 	) where
 
 import Gpu.Vulkan.Sample.Middle
+import Gpu.Vulkan.Sample.Enum
