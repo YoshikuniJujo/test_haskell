@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.99
+version:        0.1.0.100
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -63,12 +63,12 @@ library
       Gpu.Vulkan.Object.Base
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.PhysicalDevice.Struct
+      Gpu.Vulkan.Pipeline
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
       Gpu.Vulkan.Pipeline.ColorBlendState
       Gpu.Vulkan.Pipeline.Compute
       Gpu.Vulkan.Pipeline.DepthStencilState
       Gpu.Vulkan.Pipeline.DynamicState
-      Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.MultisampleState
@@ -146,6 +146,7 @@ library
       Gpu.Vulkan.Memory.OffsetSize
       Gpu.Vulkan.Memory.Type
       Gpu.Vulkan.PhysicalDevice.Enum
+      Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.ShaderStage.Internal
       Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
