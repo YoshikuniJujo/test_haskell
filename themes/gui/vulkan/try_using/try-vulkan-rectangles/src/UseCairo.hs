@@ -90,7 +90,6 @@ import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Queue qualified as Vk.Queue
-import Gpu.Vulkan.Queue.Enum qualified as Vk.Queue
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPool
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
@@ -101,7 +100,7 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
-import Gpu.Vulkan.Pipeline.Enum qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
@@ -117,10 +116,8 @@ import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
 import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Subpass.Enum qualified as Vk.Subpass
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Sample
-import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
 import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.Data
@@ -162,7 +159,6 @@ import CreateTextureGroup
 import Gpu.Vulkan.CairoImage
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
-import Gpu.Vulkan.Sampler.Enum qualified as Vk.Smplr
 
 import Trial.Followbox.ViewType as FV
 

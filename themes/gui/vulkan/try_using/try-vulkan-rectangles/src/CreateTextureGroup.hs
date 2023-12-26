@@ -47,10 +47,10 @@ import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
-import Gpu.Vulkan.Pipeline.Enum qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
-import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
+import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
