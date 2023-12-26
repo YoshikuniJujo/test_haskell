@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-ext-debug-utils
-version:             0.1.0.5
+version:             0.1.0.6
 github:              "githubuser/try-gpu-vulkan-ext-debug-utils"
 license:             BSD3
 author:              "Author name here"
@@ -40,6 +40,9 @@ ghc-options:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - Gpu.Vulkan.Ext.DebugUtils
+    - Gpu.Vulkan.Ext.DebugUtils.Messenger
 
 tests:
   try-gpu-vulkan-ext-debug-utils-test:

@@ -15,12 +15,17 @@ module Gpu.Vulkan.Ext.DebugUtils (
 
 	M.ObjectNameInfo(..),
 	M.ObjectNameInfoNoNext(..),
-	M.ObjectNameInfoResult(..)
+	M.ObjectNameInfoResult(..),
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Ext.DebugUtils.Enum
 
 	) where
 
 import Gpu.Vulkan.Instance.Internal qualified as Ist
 import Gpu.Vulkan.Ext.DebugUtils.Middle qualified as M
+import Gpu.Vulkan.Ext.DebugUtils.Enum
 
 extensionName :: Ist.ExtensionName
 extensionName = Ist.ExtensionName M.extensionName
