@@ -53,12 +53,9 @@ import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.Image qualified as Vk.Img
-import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
-import Gpu.Vulkan.ImageView.Enum qualified as Vk.ImgVw
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mem
-import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
 import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Object.Base qualified as KObj

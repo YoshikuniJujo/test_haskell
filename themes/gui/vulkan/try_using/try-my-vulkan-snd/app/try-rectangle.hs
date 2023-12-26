@@ -58,7 +58,6 @@ import Gpu.Vulkan.Data
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Exception as Vk
-import qualified Gpu.Vulkan.Exception.Enum as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
@@ -76,11 +75,9 @@ import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Image as Vk.Image
 import qualified Gpu.Vulkan.Image as Vk.Image.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
@@ -106,12 +103,10 @@ import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mem.M
-import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
@@ -125,7 +120,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import Tools
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import "try-gpu-vulkan" Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
 import Data.Text.ToolsYj
 
@@ -397,7 +391,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
-			Vk.Img.UsageColorAttachmentBit,
+			Vk.Image.UsageColorAttachmentBit,
 		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 		Vk.Khr.Swapchain.createInfoPreTransform =
@@ -520,13 +514,13 @@ createRenderPassNew dvc f = do
 			Vk.Att.descriptionStencilStoreOp =
 				Vk.Att.StoreOpDontCare,
 			Vk.Att.descriptionInitialLayout =
-				Vk.Img.LayoutUndefined,
+				Vk.Image.LayoutUndefined,
 			Vk.Att.descriptionFinalLayout =
-				Vk.Img.LayoutPresentSrcKhr }
+				Vk.Image.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = 0,
 			Vk.Att.referenceLayout =
-				Vk.Img.LayoutColorAttachmentOptimal }
+				Vk.Image.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags = zeroBits,
 			Vk.Subpass.descriptionPipelineBindPoint =

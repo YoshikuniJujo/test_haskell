@@ -65,11 +65,9 @@ import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface.M
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
 	Vk.Khr.Surface.PhysicalDevice
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
-import Gpu.Vulkan.Image.Enum qualified as Vk.Image
 import Gpu.Vulkan.Image qualified as Vk.Image
 import Gpu.Vulkan.Image qualified as Vk.Image.M
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
-import Gpu.Vulkan.ImageView.Enum qualified as Vk.ImgVw
 import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
@@ -96,16 +94,14 @@ import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr.M
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
-import Gpu.Vulkan.Fence.Enum qualified as Vk.Fence
 import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mem
 import Gpu.Vulkan.Memory qualified as Vk.Mem.M
-import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
 import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.Queue.Enum qualified as Vk.Queue
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
-import Gpu.Vulkan.Image.Enum qualified as Vk.Img
+import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.Cglm qualified as Cglm
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Window
 

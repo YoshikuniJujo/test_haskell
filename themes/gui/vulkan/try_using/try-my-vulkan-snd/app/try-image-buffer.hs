@@ -49,7 +49,6 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
-import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mem.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
@@ -66,7 +65,6 @@ import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 
 import qualified Gpu.Vulkan.Image as Vk.Image
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 
 import Sample.GetOpt
