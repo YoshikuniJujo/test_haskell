@@ -42,7 +42,6 @@ import Data.IORef
 import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
-
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Window
 
@@ -51,56 +50,52 @@ import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Instance qualified as Vk.Ist
-import Gpu.Vulkan.Khr qualified as Vk.Khr
-import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
-import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
-import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
-import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
+import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.Device qualified as Vk.Dvc
-import Gpu.Vulkan.Device qualified as Vk.Dvc.M
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface.M
-import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
-	Vk.Khr.Surface.PhysicalDevice
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
+import Gpu.Vulkan.Memory qualified as Vk.Mem
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Image qualified as Vk.Image
-import Gpu.Vulkan.Image qualified as Vk.Image.M
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Component qualified as Vk.Component
-import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
 import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
 import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
-import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
-import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Layout
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
-import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass
-import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass.M
-import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
-import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
-import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
-import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
-import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr.M
-import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
-import Gpu.Vulkan.Fence qualified as Vk.Fence
-import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
-import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Memory qualified as Vk.Mem
-import Gpu.Vulkan.Memory qualified as Vk.Mem.M
-import Gpu.Vulkan.Queue qualified as Vk.Queue
-import Gpu.Vulkan.Cmd qualified as Vk.Cmd
-import Gpu.Vulkan.Image qualified as Vk.Img
+
 import Gpu.Vulkan.Cglm qualified as Cglm
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Surface.Glfw.Window
+import Gpu.Vulkan.Khr qualified as Vk.Khr
+import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
+	Vk.Khr.Surface.PhysicalDevice
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as
+	Vk.Khr.Surface.Glfw.Window
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
+import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DbgUtls
 
 import ThEnv
 import Tools
@@ -294,8 +289,8 @@ deviceExtensions :: [Vk.PhDvc.ExtensionName]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	capabilities :: Vk.Khr.Surface.M.Capabilities,
-	formats :: [Vk.Khr.Surface.M.Format],
+	capabilities :: Vk.Khr.Surface.Capabilities,
+	formats :: [Vk.Khr.Surface.Format],
 	presentModes :: [Vk.Khr.PresentMode] }
 	deriving Show
 
@@ -317,15 +312,15 @@ createLogicalDevice phdvc qfis f = let
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] } in
 	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs -> do
-	let	createInfo = Vk.Dvc.M.CreateInfo {
-			Vk.Dvc.M.createInfoNext = TMaybe.N,
-			Vk.Dvc.M.createInfoFlags = def,
-			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
-			Vk.Dvc.M.createInfoEnabledLayerNames =
+	let	createInfo = Vk.Dvc.CreateInfo {
+			Vk.Dvc.createInfoNext = TMaybe.N,
+			Vk.Dvc.createInfoFlags = def,
+			Vk.Dvc.createInfoQueueCreateInfos = qs,
+			Vk.Dvc.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Dvc.M.createInfoEnabledExtensionNames =
+			Vk.Dvc.createInfoEnabledExtensionNames =
 				deviceExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def }
+			Vk.Dvc.createInfoEnabledFeatures = Just def }
 	Vk.Dvc.create phdvc createInfo nil \dvc -> do
 		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
@@ -344,7 +339,7 @@ createSwapChainNew :: GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 createSwapChainNew win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	fmt = Vk.Khr.Surface.M.formatFormat
+	let	fmt = Vk.Khr.Surface.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
@@ -361,15 +356,15 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Surface.M.formatColorSpace fmt,
+			Vk.Khr.Surface.formatColorSpace fmt,
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
-			Vk.Img.UsageColorAttachmentBit,
+			Vk.Image.UsageColorAttachmentBit,
 		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 		Vk.Khr.Swapchain.createInfoPreTransform =
-			Vk.Khr.Surface.M.capabilitiesCurrentTransform caps,
+			Vk.Khr.Surface.capabilitiesCurrentTransform caps,
 		Vk.Khr.Swapchain.createInfoCompositeAlpha =
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
@@ -380,9 +375,9 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
+		$ Vk.Khr.Surface.capabilitiesMaxImageCount caps
 	imgc = clamp
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
+		(Vk.Khr.Surface.capabilitiesMinImageCount caps + 1) 0 maxImgc
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
@@ -410,7 +405,7 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Surface.M.formatColorSpace fmt,
+			Vk.Khr.Surface.formatColorSpace fmt,
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
@@ -418,7 +413,7 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 		Vk.Khr.Swapchain.createInfoPreTransform =
-			Vk.Khr.Surface.M.capabilitiesCurrentTransform caps,
+			Vk.Khr.Surface.capabilitiesCurrentTransform caps,
 		Vk.Khr.Swapchain.createInfoCompositeAlpha =
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
@@ -429,31 +424,31 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
+		$ Vk.Khr.Surface.capabilitiesMaxImageCount caps
 	imgc = clamp
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
+		(Vk.Khr.Surface.capabilitiesMinImageCount caps + 1) 0 maxImgc
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
-chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
+chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
 		$ find preferredSwapSurfaceFormat availableFormats
 	_ -> error "no available swap surface formats"
 
-preferredSwapSurfaceFormat :: Vk.Khr.Surface.M.Format -> Bool
+preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Surface.M.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-	Vk.Khr.Surface.M.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: GlfwG.Window.W s -> Vk.Khr.Surface.M.Capabilities -> IO Vk.Extent2d
+chooseSwapExtent :: GlfwG.Window.W s -> Vk.Khr.Surface.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
 	| Vk.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
@@ -463,9 +458,9 @@ chooseSwapExtent win caps
 			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
 			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
 	where
-	curExt = Vk.Khr.Surface.M.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
+	curExt = Vk.Khr.Surface.capabilitiesCurrentExtent caps
+	n = Vk.Khr.Surface.capabilitiesMinImageExtent caps
+	x = Vk.Khr.Surface.capabilitiesMaxImageExtent caps
 
 createImageViewsNew :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Image.Binded ss ss nm fmt] ->
@@ -482,7 +477,7 @@ recreateImageViewsNew dvc (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.recreate dvc (mkImageViewCreateInfoNew sci) nil iv >>
 	recreateImageViewsNew dvc scis ivs
 recreateImageViewsNew _ _ _ =
-	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
+	error "number of Vk.Image.I and Vk.ImageView.M.I should be same"
 
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
@@ -505,12 +500,12 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
 		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Image.M.SubresourceRange {
-		Vk.Image.M.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
-		Vk.Image.M.subresourceRangeBaseMipLevel = 0,
-		Vk.Image.M.subresourceRangeLevelCount = 1,
-		Vk.Image.M.subresourceRangeBaseArrayLayer = 0,
-		Vk.Image.M.subresourceRangeLayerCount = 1 }
+	subresourceRange = Vk.Image.SubresourceRange {
+		Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
+		Vk.Image.subresourceRangeBaseMipLevel = 0,
+		Vk.Image.subresourceRangeLevelCount = 1,
+		Vk.Image.subresourceRangeBaseArrayLayer = 0,
+		Vk.Image.subresourceRangeLayerCount = 1 }
 
 createRenderPassNew ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
@@ -526,13 +521,13 @@ createRenderPassNew dvc f = do
 			Vk.Att.descriptionStencilStoreOp =
 				Vk.Att.StoreOpDontCare,
 			Vk.Att.descriptionInitialLayout =
-				Vk.Img.LayoutUndefined,
+				Vk.Image.LayoutUndefined,
 			Vk.Att.descriptionFinalLayout =
-				Vk.Img.LayoutPresentSrcKhr }
+				Vk.Image.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = 0,
 			Vk.Att.referenceLayout =
-				Vk.Img.LayoutColorAttachmentOptimal }
+				Vk.Image.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags = zeroBits,
 			Vk.Subpass.descriptionPipelineBindPoint =
@@ -556,12 +551,12 @@ createRenderPassNew dvc f = do
 				Vk.AccessColorAttachmentWriteBit .|.
 				Vk.AccessDepthStencilAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags = zeroBits }
-		renderPassInfo = Vk.RndrPass.M.CreateInfo {
-			Vk.RndrPass.M.createInfoNext = TMaybe.N,
-			Vk.RndrPass.M.createInfoFlags = zeroBits,
-			Vk.RndrPass.M.createInfoAttachments = colorAttachment :** HeteroParList.Nil,
-			Vk.RndrPass.M.createInfoSubpasses = [subpass],
-			Vk.RndrPass.M.createInfoDependencies = [dependency] }
+		renderPassInfo = Vk.RndrPass.CreateInfo {
+			Vk.RndrPass.createInfoNext = TMaybe.N,
+			Vk.RndrPass.createInfoFlags = zeroBits,
+			Vk.RndrPass.createInfoAttachments = colorAttachment :** HeteroParList.Nil,
+			Vk.RndrPass.createInfoSubpasses = [subpass],
+			Vk.RndrPass.createInfoDependencies = [dependency] }
 	Vk.RndrPass.create @'Nothing @'[scifmt] dvc renderPassInfo nil \rp -> f rp
 
 createPipelineLayout' ::
@@ -777,7 +772,7 @@ createVertexBuffer phdvc dvc gq cp f =
 	f b
 
 createBufferList :: forall sd nm t a . Storable t =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
 		Vk.Mem.M sm '[ '(
@@ -797,7 +792,7 @@ createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
 		IO a) -> IO a
 createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
-	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
+	mt <- findMemoryType p (Vk.Mem.requirementsMemoryTypeBits reqs) props
 	Vk.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b)
 		(allcInfo mt) nil
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
@@ -810,20 +805,20 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
+	allcInfo :: Vk.Mem.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
 	allcInfo mt = Vk.Mem.AllocateInfo {
 		Vk.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
-findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
-	IO Vk.Mem.M.TypeIndex
+findMemoryType :: Vk.PhDvc.P -> Vk.Mem.TypeBits -> Vk.Mem.PropertyFlags ->
+	IO Vk.Mem.TypeIndex
 findMemoryType phdvc flt props =
 	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
 	suitable props1 = fst <$> find ((&&)
-		<$> (`Vk.Mem.M.elemTypeIndex` flt) . fst
-		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
+		<$> (`Vk.Mem.elemTypeIndex` flt) . fst
+		<*> checkBits props . Vk.Mem.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
@@ -850,7 +845,7 @@ copyBuffer dvc gq cp src dst = do
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
-	beginInfo = Vk.CmdBffr.M.BeginInfo {
+	beginInfo = Vk.CmdBffr.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
