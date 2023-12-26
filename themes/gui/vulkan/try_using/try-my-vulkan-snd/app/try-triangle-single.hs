@@ -94,14 +94,13 @@ import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandPool.Enum qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
-import Gpu.Vulkan.CommandBuffer.Enum qualified as Vk.CmdBffr
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr.M
+import Gpu.Vulkan.CommandBuffer.Enum qualified as Vk.CmdBffr
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Gpu.Vulkan.Fence.Enum qualified as Vk.Fence
 import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Buffer.Enum qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mem
 import Gpu.Vulkan.Memory qualified as Vk.Mem.M
 import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
