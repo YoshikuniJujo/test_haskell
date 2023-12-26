@@ -14,7 +14,11 @@ module Gpu.Vulkan.Attachment (
 
 	-- * REFERENCE
 
-	M.Reference(..), M.A
+	M.Reference(..), M.A,
+
+	-- * ENUM
+
+	module Gpu.Vulkan.Attachment.Enum
 
 	) where
 
