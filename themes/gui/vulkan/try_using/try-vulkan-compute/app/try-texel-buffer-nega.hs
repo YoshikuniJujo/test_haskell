@@ -54,7 +54,6 @@ import qualified Gpu.Vulkan.QueueFamily as Vk.QF
 import qualified Gpu.Vulkan.Device as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.Memory as Vk.Mm
-import qualified Gpu.Vulkan.Memory.Enum as Vk.Mm
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DP
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
