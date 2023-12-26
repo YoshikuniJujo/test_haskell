@@ -98,7 +98,6 @@ import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.Memory qualified as Vk.Mem
 import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Buffer.Enum qualified as Vk.Bffr
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
@@ -124,11 +123,10 @@ import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
 import Gpu.Vulkan.Subpass.Enum qualified as Vk.Subpass
 import Gpu.Vulkan.Attachment qualified as Vk.Att
-import Gpu.Vulkan.Attachment.Enum qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Sample.Enum qualified as Vk.Sample
 import Gpu.Vulkan.Component qualified as Vk.Component
-import Gpu.Vulkan.ColorComponent.Enum qualified as Vk.ClrCmp
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.Data
 
 import Gpu.Vulkan.Khr qualified as Vk.Khr

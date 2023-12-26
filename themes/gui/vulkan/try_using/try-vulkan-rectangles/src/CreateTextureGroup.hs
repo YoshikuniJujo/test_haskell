@@ -59,7 +59,6 @@ import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.ImageView.Enum qualified as Vk.ImgVw
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Buffer.Enum qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mem
 import Gpu.Vulkan.Memory.Enum qualified as Vk.Mem
 import Gpu.Vulkan.Component qualified as Vk.Component
