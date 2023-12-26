@@ -38,7 +38,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 322e21e21716d1ea2b92ba35fd8e5c881bf8539a
+  commit: 743abaaa667e25be5ed7856651bda7c1a2092ce4
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr
@@ -66,7 +66,6 @@ extra-deps:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/cairo/try-cairo-image-samples
   - packages/try-tools-yj
-- union-color-0.1.2.1
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
 - git: https://github.com/YoshikuniJujo/simple-field.git

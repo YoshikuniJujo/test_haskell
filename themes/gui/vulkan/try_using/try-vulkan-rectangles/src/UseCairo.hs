@@ -89,15 +89,11 @@ import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
-import Gpu.Vulkan.CommandPool.Enum qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
-import Gpu.Vulkan.CommandBuffer.Enum qualified as Vk.CmdBffr
 import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.Queue.Enum qualified as Vk.Queue
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.Descriptor.Enum qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPool
-import Gpu.Vulkan.DescriptorPool.Enum qualified as Vk.DscPool
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.Memory qualified as Vk.Mem
