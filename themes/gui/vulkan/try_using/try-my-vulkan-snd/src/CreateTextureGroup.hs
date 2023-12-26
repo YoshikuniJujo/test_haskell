@@ -44,7 +44,6 @@ import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
-import Gpu.Vulkan.CommandBuffer.Enum qualified as Vk.CmdBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily

@@ -48,7 +48,6 @@ import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
-import qualified "try-gpu-vulkan" Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer.M
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
@@ -83,7 +82,6 @@ import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.ImageView as Vk.ImgView
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd

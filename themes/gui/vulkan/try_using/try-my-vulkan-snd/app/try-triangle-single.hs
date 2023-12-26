@@ -92,10 +92,8 @@ import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass.M
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
 import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
-import Gpu.Vulkan.CommandPool.Enum qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr.M
-import Gpu.Vulkan.CommandBuffer.Enum qualified as Vk.CmdBffr
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Gpu.Vulkan.Fence.Enum qualified as Vk.Fence
