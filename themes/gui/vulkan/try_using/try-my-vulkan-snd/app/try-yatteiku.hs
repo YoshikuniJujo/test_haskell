@@ -60,7 +60,7 @@ import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Attachment as Vk.Attachment
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Subpass.Enum as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RenderPass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.RenderPass.Enum as Vk.RenderPass
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportState
