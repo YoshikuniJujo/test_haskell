@@ -77,7 +77,6 @@ import System.Environment
 
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 
 import Data.Text.IO qualified as Txt
 

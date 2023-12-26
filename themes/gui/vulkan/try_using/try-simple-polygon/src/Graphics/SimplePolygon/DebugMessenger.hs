@@ -14,7 +14,6 @@ import Data.List qualified as L
 import Data.Text.IO qualified as Txt
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
-import Gpu.Vulkan.Ext.DebugUtils.Enum qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 
