@@ -86,7 +86,6 @@ import Gpu.Vulkan.Subpass qualified as Vk.Subpass
 
 import Gpu.Vulkan.Cglm qualified as Cglm
 import Gpu.Vulkan.Khr qualified as Vk.Khr
-import Gpu.Vulkan.Khr.Enum qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
 	Vk.Khr.Surface.PhysicalDevice
