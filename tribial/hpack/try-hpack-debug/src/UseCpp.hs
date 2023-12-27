@@ -3,11 +3,18 @@
 
 module UseCpp where
 
-foo :: Int
+foo :: String
 foo =
 #ifdef FOO
-	8
+	"foo is true"
 #else
-	123
+	"foo is false"
 #endif
 
+bar :: String
+bar =
+#ifdef BAR
+	"bar is true"
+#else
+	"bar is false"
+#endif

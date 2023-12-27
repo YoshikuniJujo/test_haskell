@@ -22,11 +22,16 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 flags:
   foo:
     manual: true
+    default: false
+  bar:
+    manual: true
     default: true
 
 when:
   - condition: flag(foo)
     cpp-options: -DFOO
+  - condition: flag(bar)
+    cpp-options: -DBAR
 
 dependencies:
 - base >= 4.7 && < 5
