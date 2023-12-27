@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Concurrent.STM.ToolsYj
+      Data.Bits.ToolsYj
       Data.Bool.ToolsYj
       Data.IORef.ToolsYj
       Data.Ord.ToolsYj
