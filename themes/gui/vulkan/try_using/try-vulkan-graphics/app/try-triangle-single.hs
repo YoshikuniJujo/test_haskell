@@ -393,7 +393,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreate dvc crInfo nil sc
+	ext <$ Vk.Khr.Swapchain.unsafeRecreate dvc crInfo nil sc
 
 mkSwapchainCreateInfoRaw :: forall fmt ss .
 	Vk.Khr.Surface.S ss -> QueueFamilyIndices ->

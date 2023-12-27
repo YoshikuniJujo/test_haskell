@@ -454,7 +454,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreate @'Nothing dvc crInfo nil sc
+	ext <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing dvc crInfo nil sc
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
