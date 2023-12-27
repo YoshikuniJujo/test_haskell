@@ -30,6 +30,8 @@ import Data.Default
 import Data.Ord.ToolsYj
 import Data.Bits
 import Data.Bits.ToolsYj
+import Data.Function.ToolsYj
+import Data.Tuple.ToolsYj
 import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Maybe
@@ -47,7 +49,7 @@ import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Window
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -102,23 +104,16 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 import Debug
 
 main :: IO ()
-main = do
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
-		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g
-			else run win inst g
+main = newIORef False >>= \g -> (`withWindow` g) \win -> createInstance \inst ->
+	bool id (setupDebugMessenger inst) debug $ run win inst g
 
 type FramebufferResized = IORef Bool
 
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
+winSizeName :: ((Width, Height), String)
+winSizeName = (winSize, winName)
+	where winName = "Triangle"; winSize = (800, 600)
 
-windowName :: String
-windowName = "Triangle"
-
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
+type Width = Int; type Height = Int
 
 enableValidationLayers :: Bool
 enableValidationLayers = debug
@@ -126,19 +121,17 @@ enableValidationLayers = debug
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
 
-withWindow ::
-	(forall s . GlfwG.Window.W s -> IO a) -> FramebufferResized -> IO a
-withWindow f g =
-	GlfwG.init error $ GlfwG.Window.group \grp -> initWindow g grp >>= f
+withWindow :: (forall s . GlfwG.Win.W s -> IO a) -> FramebufferResized -> IO a
+withWindow a fr = GlfwG.init error $ GlfwG.Win.group \g -> initWindow fr g >>= a
 
-initWindow :: FramebufferResized -> GlfwG.Window.Group s () -> IO (GlfwG.Window.W s)
-initWindow frszd g = do
+initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWindow fr g = do
 	Right w <- do
-		GlfwG.Window.hint $ GlfwG.Window.WindowHint'ClientAPI
-			GlfwG.Window.ClientAPI'NoAPI
-		uncurry (GlfwG.Window.create' g ()) windowSize windowName Nothing Nothing
-	w <$ GlfwG.Window.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
+		GlfwG.Win.hint noApi
+		uncurryDup (GlfwG.Win.create' g ()) winSizeName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback
+		w (Just . const3 $ writeIORef fr True)
+	where noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
@@ -208,7 +201,7 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: GlfwG.Window.W s -> Vk.Ist.I si -> FramebufferResized -> IO ()
+run :: GlfwG.Win.W s -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
@@ -227,7 +220,7 @@ run w inst g =
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cb sos
 
-createSurface :: GlfwG.Window.W s -> Vk.Ist.I si ->
+createSurface :: GlfwG.Win.W s -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
 createSurface win ist = Vk.Khr.Surface.Glfw.Window.create ist win nil
 
@@ -342,7 +335,7 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-createSwapChainNew :: GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapChainNew :: GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
@@ -397,7 +390,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
 recreateSwapChain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
-	GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S fmt ssc ->
 	IO Vk.Extent2d
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
@@ -461,12 +454,12 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: GlfwG.Window.W s -> Vk.Khr.Surface.Capabilities -> IO Vk.Extent2d
+chooseSwapExtent :: GlfwG.Win.W s -> Vk.Khr.Surface.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
 	| Vk.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
 		(fromIntegral -> w, fromIntegral -> h) <-
-			GlfwG.Window.getFramebufferSize win
+			GlfwG.Win.getFramebufferSize win
 		pure $ Vk.Extent2d
 			(clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
 			(clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
@@ -922,7 +915,7 @@ recordCommandBuffer cb rp fb sce gpl vb =
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
-	FramebufferResized -> GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc ->
+	FramebufferResized -> GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S fmt ssc -> Vk.Extent2d ->
@@ -942,7 +935,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasr
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
-	GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S fmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
@@ -957,7 +950,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cb iasrfsifs loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cb iasrfsifs
-	cls <- GlfwG.Window.shouldClose win
+	cls <- GlfwG.Win.shouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
@@ -1001,7 +994,7 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
-	GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S fmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
@@ -1023,7 +1016,7 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 
 recreateSwapChainEtc :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt ) =>
-	GlfwG.Window.W s -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S fmt ssc -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
@@ -1043,10 +1036,10 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 		recreateGraphicsPipeline' dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
-waitFramebufferSize :: GlfwG.Window.W s -> IO ()
-waitFramebufferSize win = GlfwG.Window.getFramebufferSize win >>= \sz ->
+waitFramebufferSize :: GlfwG.Win.W s -> IO ()
+waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		GlfwG.waitEvents *> GlfwG.Window.getFramebufferSize win
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
