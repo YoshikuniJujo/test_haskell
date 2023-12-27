@@ -518,8 +518,8 @@ destroyWinObjs
 	Glfw.setWindowShouldClose w True
 	either error pure =<< destroy wgrp k
 
-	either error pure =<< Vk.Khr.Swapchain.destroy scgrp k
-	either error pure =<< Vk.Khr.Sfc.destroy sfcgrp k
+	either error pure =<< Vk.Khr.Swapchain.unsafeDestroy scgrp k
+	either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcgrp k
 
 	either error pure =<< Vk.RndrPass.unsafeDestroy rpgrp k
 	either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpgrp k
@@ -729,7 +729,7 @@ recreateSwapchain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreate @'Nothing dvc crInfo nil sc
+	ext <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing dvc crInfo nil sc
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat = \case
