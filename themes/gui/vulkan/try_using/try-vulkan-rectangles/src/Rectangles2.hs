@@ -521,15 +521,15 @@ destroyWinObjs
 	either error pure =<< Vk.Khr.Swapchain.destroy scgrp k
 	either error pure =<< Vk.Khr.Sfc.destroy sfcgrp k
 
-	either error pure =<< Vk.RndrPass.destroy rpgrp k
-	either error pure =<< Vk.Ppl.Graphics.destroyGs gpgrp k
+	either error pure =<< Vk.RndrPass.unsafeDestroy rpgrp k
+	either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpgrp k
 	either error pure =<< Vk.Bffr.unsafeDestroy rbgrp k
-	either error pure =<< Vk.Mem.free rmgrp k
-	either error pure =<< Vk.Semaphore.destroy iasgrp k
-	either error pure =<< Vk.Semaphore.destroy rfsgrp k
+	either error pure =<< Vk.Mem.unsafeFree rmgrp k
+	either error pure =<< Vk.Semaphore.unsafeDestroy iasgrp k
+	either error pure =<< Vk.Semaphore.unsafeDestroy rfsgrp k
 	either error pure =<< Vk.Fence.unsafeDestroy iffgrp k
 	for_ [0 .. numToValue @n - 1] \i -> do
-		either error pure =<< Vk.ImgVw.destroy ivgrp (k, i)
+		either error pure =<< Vk.ImgVw.unsafeDestroy ivgrp (k, i)
 		either error pure =<< Vk.Frmbffr.unsafeDestroy fbgrp (k, i)
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
@@ -788,7 +788,7 @@ recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.recreate dvc (mkImageViewCreateInfoNew sci) nil iv >>
+	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfoNew sci) nil iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Img.I and Vk.ImageView.I should be same"
@@ -927,7 +927,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
-recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Graphics.recreateGs
+recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Graphics.unsafeRecreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil (U3 gpls :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
 
@@ -1197,7 +1197,7 @@ createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
 
 destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm k -> k -> IO ()
 destroyRectangleBuffer (bgrp, mgrp) k = do
-	r1 <- Vk.Mem.free mgrp k
+	r1 <- Vk.Mem.unsafeFree mgrp k
 	r2 <- Vk.Bffr.unsafeDestroy bgrp k
 	case (r1, r2) of
 		(Left msg, _) -> error msg

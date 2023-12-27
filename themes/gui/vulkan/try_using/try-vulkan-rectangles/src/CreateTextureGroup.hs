@@ -93,8 +93,8 @@ createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 destroyTexture :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
 destroyTexture (mng, mmng, ivmng) k = do
 	Vk.Img.unsafeDestroy mng k
-	Vk.Mem.free mmng k
-	Vk.ImgVw.destroy ivmng k
+	Vk.Mem.unsafeFree mmng k
+	Vk.ImgVw.unsafeDestroy ivmng k
 	pure ()
 
 updateTexture :: (
