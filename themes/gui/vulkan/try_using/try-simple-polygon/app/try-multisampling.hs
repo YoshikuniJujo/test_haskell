@@ -439,7 +439,7 @@ recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil iv >>
+	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -457,14 +457,14 @@ recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Img.AspectFlags ->
 	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO ()
 recreateImageView dvc timg asps iv mplvs =
-	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo timg asps mplvs) nil iv
+	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfo timg asps mplvs) nil iv
 
 recreateImageView' :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
 	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO a -> IO ()
 recreateImageView' dvc timg asps iv mplvs =
-	Vk.ImgVw.recreate' dvc (mkImageViewCreateInfo timg asps mplvs) nil iv
+	Vk.ImgVw.unsafeRecreate' dvc (mkImageViewCreateInfo timg asps mplvs) nil iv
 
 mkImageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
@@ -686,7 +686,7 @@ recreateGraphicsPipeline :: Culling -> Vk.Dvc.D sd ->
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl, AtomModel sdsl'], '[]) -> IO ()
-recreateGraphicsPipeline cll dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.recreateGs
+recreateGraphicsPipeline cll dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.unsafeRecreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil (U3 gpls :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo cll sce rp ppllyt mss
 
@@ -1449,7 +1449,7 @@ imageReallocateBind ::
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
-	Vk.Mem.reallocateBind @'Nothing dvc
+	Vk.Mem.unsafeReallocateBind @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.ImageBinded img) memInfo
 		nil m
 
@@ -1459,7 +1459,7 @@ imageReallocateBind' ::
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.ImageArg nm fmt)] -> IO a -> IO ()
 imageReallocateBind' dvc img memInfo m =
-	Vk.Mem.reallocateBind' @'Nothing dvc
+	Vk.Mem.unsafeReallocateBind' @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.ImageBinded img) memInfo
 		nil m
 
