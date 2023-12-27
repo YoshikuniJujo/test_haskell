@@ -27,8 +27,11 @@ import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Proxy
 import Data.Default
+import Data.Ord.ToolsYj
 import Data.Bits
+import Data.Bits.ToolsYj
 import Data.Bool
+import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.List
 import Data.List.Length
@@ -38,6 +41,7 @@ import Data.HeteroParList qualified as HeteroParList
 import Data.Text.IO qualified as Txt
 import Data.Color
 import Data.IORef
+import Data.IORef.ToolsYj
 
 import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
@@ -96,7 +100,6 @@ import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 
 import Debug
-import Tools
 
 main :: IO ()
 main = do
@@ -385,7 +388,8 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Surface.capabilitiesMaxImageCount caps
 	imgc = clamp
-		(Vk.Khr.Surface.capabilitiesMinImageCount caps + 1) 0 maxImgc
+		0 maxImgc
+		(Vk.Khr.Surface.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
@@ -434,7 +438,8 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Surface.capabilitiesMaxImageCount caps
 	imgc = clamp
-		(Vk.Khr.Surface.capabilitiesMinImageCount caps + 1) 0 maxImgc
+		0 maxImgc
+		(Vk.Khr.Surface.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
@@ -463,8 +468,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			GlfwG.Window.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
+			(clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
 	where
 	curExt = Vk.Khr.Surface.capabilitiesCurrentExtent caps
 	n = Vk.Khr.Surface.capabilitiesMinImageExtent caps
