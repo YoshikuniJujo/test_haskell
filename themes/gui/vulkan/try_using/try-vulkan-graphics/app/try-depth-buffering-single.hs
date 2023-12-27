@@ -818,7 +818,7 @@ instance RecreateFramebuffers '[] '[] where
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :** scivs) divw (fb :** fbs) =
-		Vk.Frmbffr.recreate dvc
+		Vk.Frmbffr.unsafeRecreate dvc
 			(mkFramebufferCreateInfo sce rp sciv divw) nil fb >>
 		recreateFramebuffers dvc sce rp scivs divw fbs
 
@@ -1001,7 +1001,7 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.Mem.ImageBuffer.M
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt)] -> IO ()
 recreateImage pd dvc wdt hgt tlng usg prps img mem = do
-	Vk.Img.recreate @'Nothing dvc
+	Vk.Img.unsafeRecreate @'Nothing dvc
 		(imageInfo wdt hgt tlng usg) nil img
 	memInfo <- imageMemoryInfoBinded pd dvc prps img
 	imageReallocateBind dvc img memInfo mem

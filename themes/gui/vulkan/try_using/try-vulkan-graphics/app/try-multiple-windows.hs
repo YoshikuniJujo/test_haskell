@@ -946,7 +946,7 @@ recreateFramebuffers :: forall ts sd sr nm fmt siv sf .
 	HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
 recreateFramebuffers dvc sce rp =
 	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
-	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
+	Vk.Frmbffr.unsafeRecreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
 
 class Mappable (ts :: [knd]) where
 	type Replicate ts s :: [Type]
