@@ -632,7 +632,7 @@ instance RecreateFramebuffers '[] '[] where
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :** scivs) (fb :** fbs) =
-		Vk.Frmbffr.recreate dvc
+		Vk.Frmbffr.unsafeRecreate dvc
 			(mkFramebufferCreateInfoNew sce rp sciv) nil fb >>
 		recreateFramebuffers dvc sce rp scivs fbs
 
