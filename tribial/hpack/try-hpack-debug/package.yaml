@@ -26,6 +26,9 @@ flags:
   bar:
     manual: true
     default: true
+  debug:
+    manual: true
+    default: true
 
 when:
   - condition: flag(foo)
@@ -49,10 +52,26 @@ ghc-options:
 
 library:
   source-dirs: src
+  when:
+    - condition: flag(debug)
+      then:
+        source-dirs: debug
+      else:
+        source-dirs: nodebug
 
 executables:
   try-hpack-debug-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-hpack-debug
+  try-debug:
+    main:                try-debug.hs
+    other-modules:       []
     source-dirs:         app
     ghc-options:
     - -threaded

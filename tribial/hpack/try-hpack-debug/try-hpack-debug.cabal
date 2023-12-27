@@ -27,6 +27,10 @@ flag bar
   manual: True
   default: True
 
+flag debug
+  manual: True
+  default: True
+
 flag foo
   manual: True
   default: False
@@ -35,6 +39,7 @@ library
   exposed-modules:
       Lib
       UseCpp
+      UseDebug
   other-modules:
       Paths_try_hpack_debug
   autogen-modules:
@@ -44,6 +49,30 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+  default-language: Haskell2010
+  if flag(foo)
+    cpp-options: -DFOO
+  if flag(bar)
+    cpp-options: -DBAR
+  if flag(debug)
+    other-modules:
+        Debug
+    hs-source-dirs:
+        debug
+  else
+    other-modules:
+        Debug
+    hs-source-dirs:
+        nodebug
+
+executable try-debug
+  main-is: try-debug.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , try-hpack-debug
   default-language: Haskell2010
   if flag(foo)
     cpp-options: -DFOO
