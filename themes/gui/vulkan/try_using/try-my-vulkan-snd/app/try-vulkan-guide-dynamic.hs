@@ -793,7 +793,7 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
 recreateImage pd dv ex tlng usg prs i m = do
-	Vk.Img.recreate @'Nothing dv (imageInfo ex tlng usg) nil i
+	Vk.Img.unsafeRecreate @'Nothing dv (imageInfo ex tlng usg) nil i
 	imageMemoryInfoB pd dv prs i >>= \ii -> imageReallocateBind dv i ii m
 
 imageInfo :: Vk.Extent2d ->
@@ -956,7 +956,7 @@ instance RecreateFramebuffers '[] '[] where
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dv sce rp (sciv :** scivs) dptiv (fb :** fbs) =
-		Vk.Frmbffr.recreate dv
+		Vk.Frmbffr.unsafeRecreate dv
 			(framebufferInfo sce rp sciv dptiv) nil fb >>
 		recreateFramebuffers dv sce rp scivs dptiv fbs
 
