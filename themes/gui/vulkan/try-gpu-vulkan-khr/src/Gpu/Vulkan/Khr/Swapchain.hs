@@ -17,11 +17,11 @@ module Gpu.Vulkan.Khr.Swapchain (
 
 	-- * CREATE
 
-	create, recreate, S, CreateInfo(..),
+	create, unsafeRecreate, S, CreateInfo(..),
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * GET IMAGES
 
@@ -70,12 +70,12 @@ create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 	(M.create dvc (createInfoToMiddle ci) mac)
 	(\sc -> M.destroy dvc sc mac) (f . S)
 
-recreate :: (
+unsafeRecreate :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
 	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn ssfc fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac -> S fmt ssc -> IO ()
-recreate (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) (S sc) =
+unsafeRecreate (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) (S sc) =
 	M.recreate dvc (createInfoToMiddle ci) mac sc
 
 data CreateInfo mn ssfc (fmt :: T.Format) = CreateInfo {
@@ -169,9 +169,9 @@ create' (Group (Device.D mdvc)
 	else pure . Left $
 		"Gpu.Vulkan.Khr.Swapchain.create': The key already exist"
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma fmt ssc k -> k -> IO (Either String ())
-destroy (Group (Device.D mdvc)
+unsafeDestroy (Group (Device.D mdvc)
 	(AllocationCallbacks.toMiddle -> ma) sem scs) k = do
 	msc <- atomically do
 		mx <- Map.lookup k <$> readTVar scs

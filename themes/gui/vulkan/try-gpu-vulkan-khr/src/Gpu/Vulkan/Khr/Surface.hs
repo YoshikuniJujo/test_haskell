@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface (
-	S, group, Group, destroy, lookup,
+	S, group, Group, unsafeDestroy, lookup,
 
 	Capabilities(..), Format(..),
 

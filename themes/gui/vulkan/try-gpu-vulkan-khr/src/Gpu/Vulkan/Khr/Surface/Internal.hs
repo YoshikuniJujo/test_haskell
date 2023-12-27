@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface.Internal (
-	S(..), group, destroy, lookup, Group(..),
+	S(..), group, unsafeDestroy, lookup, Group(..),
 
 	M.Capabilities(..), M.Format(..)) where
 
@@ -34,9 +34,9 @@ group i@(Instance.I mi) mac@(AllocationCallbacks.toMiddle -> ma) f = do
 	((\(S s) -> M.destroy mi s ma) `mapM_`) =<< atomically (readTVar m)
 	pure rtn
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group si ma s k -> k -> IO (Either String ())
-destroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss) k =
+unsafeDestroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss) k =
 	do	mbs <- atomically do
 			mx <- Map.lookup k <$> readTVar ss
 			case mx of
@@ -44,7 +44,7 @@ destroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss) k =
 				Just _ -> waitTSem sem >> pure mx
 		case mbs of
 			Nothing -> pure $ Left
-				"Gpu.Vulkan.Khr.Surface.Internal: No such key"
+				"Gpu.Vulkan.Khr.Surface.Internal.unsafeDestroy: No such key"
 			Just (S ms) -> do
 				M.destroy mi ms ma
 				atomically do
