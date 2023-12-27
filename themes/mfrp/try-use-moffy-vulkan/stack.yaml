@@ -17,8 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/12.yaml
+
+resolver: nightly-2023-12-26
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,14 +41,8 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-- optparse-declarative-0.4.2
-- moffy-0.1.0.0
-- freer-par-monad-0.1.0.0
-- type-set-0.1.0.0
-- type-flip-0.1.0.0
-- extra-data-yj-0.1.0.0
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 82b1b9cb7d43938edcf57f6657c7e1846c24c02e
+  commit: 76d722116a3225d82c6a19bd24f290bbb7d0c717
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
@@ -77,22 +71,15 @@ extra-deps:
   - themes/type_level/typelevel-tools
   - themes/gui/cairo/try-cairo-image-samples
   - themes/mfrp/try-moffy-core
+  - packages/try-tools-yj
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 - git: https://github.com/YoshikuniJujo/simple-gdk3
   commit: b5efabfd256a7bea9ed865b76fb83990476932f9
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
-- git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 6a520b14a84e144faff4efb823c58ccb346104db
-- git: https://github.com/YoshikuniJujo/cairo-image
-  commit: 59dfe9365c64f03daadfe83e06af841c000ef0e6
-- git: https://github.com/YoshikuniJujo/glib-stopgap
-  commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
-- git: https://github.com/YoshikuniJujo/union-color.git
-  commit: 8ce701b42c2c82a37e908c526caad0dd3ffb9607
-- git: https://github.com/YoshikuniJujo/simple-pango
-  commit: 4219ecf5de6caed418269577834f26eb0199068d
+- git: https://github.com/tanakh/optparse-declarative
+  commit: d3193db7979f391f1a307849236b870fd8933709
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
