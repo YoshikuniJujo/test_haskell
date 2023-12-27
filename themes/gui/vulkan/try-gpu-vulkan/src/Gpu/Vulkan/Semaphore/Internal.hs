@@ -14,7 +14,7 @@ module Gpu.Vulkan.Semaphore.Internal (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup
+	group, Group, create', unsafeDestroy, lookup
 
 	) where
 
@@ -73,9 +73,9 @@ create' (Group (Device.D mdvc)
 	else pure . Left $
 		"Gpu.Vulkan.Semaphore.Internal.create': The key already exist"
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma ss k -> k -> IO (Either String ())
-destroy (Group (Device.D mdvc)
+unsafeDestroy (Group (Device.D mdvc)
 	(AllocationCallbacks.toMiddle -> ma) sem ss) k = do
 	ms <- atomically do
 		mx <- Map.lookup k <$> readTVar ss
@@ -84,7 +84,7 @@ destroy (Group (Device.D mdvc)
 			Just _ -> waitTSem sem >> pure mx
 	case ms of
 		Nothing -> pure $ Left
-			"Gpu.Vulkan.Semaphore.destroy: No such key"
+			"Gpu.Vulkan.Semaphore.unsafeDestroy: No such key"
 		Just (S s) -> do
 			M.destroy mdvc s ma
 			atomically do

@@ -14,12 +14,12 @@ module Gpu.Vulkan.Pipeline.Graphics (
 
 	-- * CREATE AND RECREATE
 
-	createGs, recreateGs, G, CreateInfo(..),
+	createGs, unsafeRecreateGs, G, CreateInfo(..),
 	CreateInfoListArgsToGArgs, CreateInfoListToMiddle,
 
 	-- ** Group
 
-	group, Group, createGs', destroyGs, lookup
+	group, Group, createGs', unsafeDestroyGs, lookup
 
 	) where
 
@@ -99,11 +99,11 @@ instance GListFromMiddle ss => GListFromMiddle ('(s, t, foo) ': ss) where
 		g : gs -> U3 (G @_ @s @t g) :** gListFromMiddle @ss gs
 		[] -> error "Wrong number of elements"
 
-recreateGs :: (CreateInfoListToMiddle cias, AllocationCallbacks.ToMiddle mac) =>
+unsafeRecreateGs :: (CreateInfoListToMiddle cias, AllocationCallbacks.ToMiddle mac) =>
 	Device.D sd -> Maybe (Cache.P s) -> HeteroParList.PL (U14 CreateInfo) cias ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	HeteroParList.PL (U3 (G sg)) (CreateInfoListArgsToGArgs cias) -> IO ()
-recreateGs d@(Device.D dvc) ((Cache.pToMiddle <$>) -> mc) cis macc gpls = do
+unsafeRecreateGs d@(Device.D dvc) ((Cache.pToMiddle <$>) -> mc) cis macc gpls = do
 	cis' <- createInfoListToMiddle d cis
 	M.recreateGs dvc mc cis'
 		(AllocationCallbacks.toMiddle macc) $ gListToMiddle gpls
@@ -338,9 +338,9 @@ createGs' (Group d@(Device.D dvc)
 	else pure . Left $
 		"Gpu.Vulkan.Pipeline.Graphics.create' :: The key already exist"
 
-destroyGs :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroyGs :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma sg k gas -> k -> IO (Either String ())
-destroyGs (Group (Device.D mdvc)
+unsafeDestroyGs (Group (Device.D mdvc)
 	(AllocationCallbacks.toMiddle -> mma) sem gss) k = do
 	mgs <- atomically do
 		mx <- Map.lookup k <$> readTVar gss
@@ -349,7 +349,7 @@ destroyGs (Group (Device.D mdvc)
 			Just _ -> waitTSem sem >> pure mx
 	case mgs of
 		Nothing -> pure $ Left
-			"Gpu.Vulkan.Pipeline.Graphics.destroyGs: No such key"
+			"Gpu.Vulkan.Pipeline.Graphics.unsafeDestroyGs: No such key"
 		Just gs -> do
 			atomically . modifyTVar gss $ Map.delete k
 			M.destroyGs mdvc (gListToMiddle gs) mma

@@ -8,7 +8,7 @@ module Gpu.Vulkan.Semaphore (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup
+	group, Group, create', unsafeDestroy, lookup
 
 	) where
 

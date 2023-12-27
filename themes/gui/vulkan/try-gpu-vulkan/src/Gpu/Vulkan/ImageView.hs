@@ -11,11 +11,11 @@ module Gpu.Vulkan.ImageView (
 
 	-- * CREATE
 
-	create, recreate, recreate', I, CreateInfo(..),
+	create, unsafeRecreate, unsafeRecreate', I, CreateInfo(..),
 
 	-- ** Manage Multiple Image View
 
-	group, create', destroy, lookup, Group,
+	group, create', unsafeDestroy, lookup, Group,
 	
 	-- * ENUM
 
@@ -99,29 +99,29 @@ create' (Group (Device.D d)
 	(AllocationCallbacks.toMiddle -> mac) mng) k ci =
 	(I <$>) <$> M.create' d mng k (createInfoToMiddle ci) mac
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma sm k nm ivfmt  -> k -> IO (Either String ())
-destroy (Group (Device.D d)
+unsafeDestroy (Group (Device.D d)
 	(AllocationCallbacks.toMiddle -> mac) mng) k =
 	M.destroy' d mng k mac
 
 lookup :: Ord k => Group sd ma smng k nm ivfmt -> k -> IO (Maybe (I nm ivfmt smng))
 lookup (Group _ _ mng) k = (I <$>) <$> M.lookup mng k
 
-recreate :: (
+unsafeRecreate :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
 	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn sm si nm ifmt ivfmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac -> I nm ivfmt siv -> IO ()
-recreate (Device.D d) ci
+unsafeRecreate (Device.D d) ci
 	(AllocationCallbacks.toMiddle -> mac) (I i) =
 	M.recreate d (createInfoToMiddle ci) mac mac i
 
-recreate' :: (
+unsafeRecreate' :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue ivfmt,
 	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> CreateInfo mn sm si nm ifmt ivfmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac -> I nm ivfmt siv -> IO a -> IO ()
-recreate' (Device.D d) ci
+unsafeRecreate' (Device.D d) ci
 	(AllocationCallbacks.toMiddle -> mac) (I i) =
 	M.recreate' d (createInfoToMiddle ci) mac mac i

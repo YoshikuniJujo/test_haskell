@@ -14,11 +14,11 @@ module Gpu.Vulkan.Memory (
 
 	-- * ALLOCATE AND BIND
 
-	allocateBind, reallocateBind, reallocateBind',
+	allocateBind, unsafeReallocateBind, unsafeReallocateBind',
 
 	-- ** Destruction Group
 
-	Group, group, allocateBind', free, lookup,
+	Group, group, allocateBind', unsafeFree, lookup,
 
 	-- ** MEMORY
 
@@ -141,9 +141,9 @@ allocate' dv@(Device.D mdv) mng k ibs ai (AllocationCallbacks.toMiddle -> mac) =
 	mai <- allocateInfoToMiddle dv ibs ai
 	(newM ibs `mapM`) =<< M.allocate' mdv mng k mai mac
 
-free :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeFree :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma smng k ibargs -> k -> IO (Either String ())
-free (Group (Device.D mdv) (AllocationCallbacks.toMiddle -> mac) _ mng) k =
+unsafeFree (Group (Device.D mdv) (AllocationCallbacks.toMiddle -> mac) _ mng) k =
 	M.free' mdv mng k mac
 
 data Group sd ma s k ibargs = Group (Device.D sd)
@@ -160,22 +160,22 @@ lookup (Group _ _ ibargss mmng) k = do
 
 -- Reallocate Bind
 
-reallocateBind :: (
+unsafeReallocateBind :: (
 	WithPoked (TMaybe.M mn), Rebindable ibargs,
 	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
 	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	M sm ibargs -> IO ()
-reallocateBind dv ibs ai mac m =
+unsafeReallocateBind dv ibs ai mac m =
 	reallocate dv ibs ai mac m >> rebindAll dv ibs m 0
 
-reallocateBind' :: (
+unsafeReallocateBind' :: (
 	WithPoked (TMaybe.M mn), Rebindable ibargs,
 	AllocationCallbacks.ToMiddle mac ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) ibargs ->
 	AllocateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	M sm ibargs -> IO a -> IO ()
-reallocateBind' dv ibs ai mac m act =
+unsafeReallocateBind' dv ibs ai mac m act =
 	reallocate' dv ibs ai mac m $ rebindAll dv ibs m 0 >> act
 
 reallocate :: (

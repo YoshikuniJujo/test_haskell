@@ -14,7 +14,7 @@ module Gpu.Vulkan.RenderPass.Internal (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * BEGIN INFO
 
@@ -118,9 +118,9 @@ create' (Group (Device.D mdvc)
 	else pure . Left $
 		"Gpu.Vulkan.RenderPass.Internal.create': The key already exist"
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma sr k -> k -> IO (Either String ())
-destroy (Group (Device.D mdvc)
+unsafeDestroy (Group (Device.D mdvc)
 	(AllocationCallbacks.toMiddle -> ma) sem rs) k = do
 	mr <- atomically do
 		mx <- Map.lookup k <$> readTVar rs
@@ -129,7 +129,7 @@ destroy (Group (Device.D mdvc)
 			Just _ -> waitTSem sem >> pure mx
 	case mr of
 		Nothing -> pure $ Left
-			"Gpu.Vulkan.RenderPass.Internal.destroy: No such key"
+			"Gpu.Vulkan.RenderPass.Internal.unsafeDestroy: No such key"
 		Just (R r) -> do
 			M.destroy mdvc r ma
 			atomically do

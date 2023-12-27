@@ -8,7 +8,7 @@ module Gpu.Vulkan.RenderPass (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * BEGIN INFO
 
