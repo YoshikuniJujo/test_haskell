@@ -19,7 +19,7 @@ module Gpu.Vulkan.Buffer (
 
 	-- ** Buffer Group
 
-	Group, group, create', destroy, lookup,
+	Group, group, create', unsafeDestroy, lookup,
 
 	-- * BINDED
 

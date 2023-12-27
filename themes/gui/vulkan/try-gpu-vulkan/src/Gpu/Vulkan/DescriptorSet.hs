@@ -18,7 +18,7 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- ** Descriptor Set Group
 
-	Group, group, allocateDs', freeDs, lookup,
+	Group, group, allocateDs', unsafeFreeDs, lookup,
 
 	-- * UPDATE
 
@@ -157,15 +157,15 @@ allocateDs' (Device.D dvc) (Group sem mp) k ai = do
 --	where Descriptor.Pool.P sp  = allocateInfoDescriptorPool ai
 	where sp  = allocateInfoDescriptorPool ai
 
-freeDs :: Ord k => Device.D sd -> Group sg k sp slbtss -> k -> IO (Either String ())
-freeDs (Device.D mdvc) (Group sem mp) k = do
+unsafeFreeDs :: Ord k => Device.D sd -> Group sg k sp slbtss -> k -> IO (Either String ())
+unsafeFreeDs (Device.D mdvc) (Group sem mp) k = do
 	md <- atomically do
 		mx <- Map.lookup k <$> readTVar mp
 		case mx of
 			Nothing -> pure Nothing
 			Just _ -> waitTSem sem >> pure mx
 	case md of
-		Nothing -> pure $ Left "Gpu.Vulkan.DescriptorSet.freeDs"
+		Nothing -> pure $ Left "Gpu.Vulkan.DescriptorSet.unsafeFreeDs"
 		Just (Descriptor.Pool.P p, ds) -> do
 			M.freeDs mdvc p (dListToMiddle ds)
 			atomically do

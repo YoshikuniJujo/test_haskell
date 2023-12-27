@@ -13,11 +13,12 @@ module Gpu.Vulkan.Image.Internal (
 
 	-- * CREATE
 
-	create, recreate, recreate', I(..), Binded(..), CreateInfo(..),
+	create, unsafeRecreate, unsafeRecreate',
+	I(..), Binded(..), CreateInfo(..),
 
 	-- ** Manage Destruction
 
-	Group, group, create', destroy, lookup,
+	Group, group, create', unsafeDestroy, lookup,
 
 	-- * GET MEMORY REQUIREMENTS
 
@@ -90,31 +91,31 @@ create' :: (
 create' (Group (Device.D mdvc) (AllocationCallbacks.toMiddle -> macd) mngr) k ci =
 	(I <$>) <$> M.create' mdvc mngr k (createInfoToMiddle ci) macd
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle mac) =>
 	Group sd mac sm k nm fmt -> k -> IO (Either String ())
-destroy (Group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) mngr) k =
+unsafeDestroy (Group (Device.D mdvc) (AllocationCallbacks.toMiddle -> mac) mngr) k =
 	M.destroy' mdvc mngr k mac
 
 lookup :: Ord k => Group sd ma smng k nm fmt -> k -> IO (Maybe (I smng nm fmt))
 lookup (Group _ _ mng) k = (I <$>) <$> M.lookup mng k
 
-recreate :: (
+unsafeRecreate :: (
 	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
 	T.FormatToValue fmt ) =>
 	Device.D sd -> CreateInfo mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	Binded sm si nm fmt -> IO ()
-recreate (Device.D mdvc) ci
+unsafeRecreate (Device.D mdvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (Binded i) =
 	M.recreate mdvc (createInfoToMiddle ci) macc macc i
 
-recreate' :: (
+unsafeRecreate' :: (
 	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac,
 	T.FormatToValue fmt ) =>
 	Device.D sd -> CreateInfo mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	Binded sm si nm fmt -> IO a -> IO ()
-recreate' (Device.D mdvc) ci
+unsafeRecreate' (Device.D mdvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (Binded i) =
 	M.recreate' mdvc (createInfoToMiddle ci) macc macc i
 

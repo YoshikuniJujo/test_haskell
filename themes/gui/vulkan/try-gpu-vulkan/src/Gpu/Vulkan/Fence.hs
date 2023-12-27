@@ -8,7 +8,7 @@ module Gpu.Vulkan.Fence (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * WAIT FOR FENCES AND RESET FENCES
 

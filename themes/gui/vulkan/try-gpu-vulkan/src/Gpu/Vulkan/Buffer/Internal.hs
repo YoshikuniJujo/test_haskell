@@ -19,7 +19,7 @@ module Gpu.Vulkan.Buffer.Internal (
 
 	-- ** Buffer Group
 
-	Group, group, create', destroy, lookup,
+	Group, group, create', unsafeDestroy, lookup,
 
 	-- * BINDED
 
@@ -145,9 +145,9 @@ create' (Group (Device.D dvc)
 		pure $ Right b'
 	else pure . Left $ "Gpu.Vulkan.Buffer.create': The key already exist"
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma sg k nm objs -> k -> IO (Either String ())
-destroy (Group (Device.D mdvc)
+unsafeDestroy (Group (Device.D mdvc)
 	(AllocationCallbacks.toMiddle -> ma) sem bs) k = do
 	mb <- atomically do
 		mx <- Map.lookup k <$> readTVar bs
@@ -155,7 +155,7 @@ destroy (Group (Device.D mdvc)
 			Nothing -> pure Nothing
 			Just _ -> waitTSem sem >> pure mx
 	case mb of
-		Nothing -> pure $ Left "Gpu.Vulkan.Buffer.destroy: No such key"
+		Nothing -> pure $ Left "Gpu.Vulkan.Buffer.unsafeDestroy: No such key"
 		Just (B _ b) -> do
 			M.destroy mdvc b ma
 			atomically do

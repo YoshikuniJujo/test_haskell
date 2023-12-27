@@ -14,7 +14,7 @@ module Gpu.Vulkan.Fence.Internal (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * WAIT FOR FENCES AND RESET FENCES
 
@@ -89,10 +89,10 @@ create' (Group (Device.D mdvc)
 	else pure . Left $
 		"Gpu.Vulkan.Fence.Internal.create': The key already exist"
 
-destroy :: (
+unsafeDestroy :: (
 	Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma sf k -> k -> IO (Either String ())
-destroy (Group (Device.D mdvc)
+unsafeDestroy (Group (Device.D mdvc)
 	(AllocationCallbacks.toMiddle -> ma) sem fs) k = do
 	mf <- atomically do
 		mx <- Map.lookup k <$> readTVar fs
@@ -101,7 +101,7 @@ destroy (Group (Device.D mdvc)
 			Just _ -> waitTSem sem >> pure mx
 	case mf of
 		Nothing -> pure $ Left
-			"Gpu.Vulkan.Fence.destroy: No such key"
+			"Gpu.Vulkan.Fence.unsafeDestroy: No such key"
 		Just (F f) -> do
 			M.destroy mdvc f ma
 			atomically do

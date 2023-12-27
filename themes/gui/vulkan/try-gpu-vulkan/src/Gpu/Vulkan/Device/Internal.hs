@@ -16,7 +16,7 @@ module Gpu.Vulkan.Device.Internal (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * GET QUEUE AND WAIT IDLE
 
@@ -127,9 +127,9 @@ create' phd (Group
 		pure $ Right d'
 	else pure . Left $ "Gpu.Vulkan.Device.create': The key already exist"
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group ma sd k -> k -> IO (Either String ())
-destroy (Group
+unsafeDestroy (Group
 	(AllocationCallbacks.toMiddle -> ma) sem ds) k = do
 	md <- atomically do
 		mx <- Map.lookup k <$> readTVar ds
@@ -137,7 +137,7 @@ destroy (Group
 			Nothing -> pure Nothing
 			Just _ -> waitTSem sem >> pure mx
 	case md of
-		Nothing -> pure $ Left "Gpu.Vulkan.Device.destroy: No such key"
+		Nothing -> pure $ Left "Gpu.Vulkan.Device.unsafaDestroy: No such key"
 		Just (D d) -> do
 			M.destroy d ma
 			atomically do

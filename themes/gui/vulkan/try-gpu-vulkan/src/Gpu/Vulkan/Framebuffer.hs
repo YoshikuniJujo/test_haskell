@@ -13,11 +13,11 @@ module Gpu.Vulkan.Framebuffer (
 
 	-- * CREATE
 
-	create, recreate, F, CreateInfo(..),
+	create, unsafeRecreate, F, CreateInfo(..),
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * ENUM
 
@@ -87,11 +87,11 @@ create (Device.D dvc) ci
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\fb -> M.destroy dvc fb macc) (f . F)
 
-recreate :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac) =>
+unsafeRecreate :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac) =>
 	Device.D sd -> CreateInfo mn sr aargs ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
 	F sf -> IO ()
-recreate (Device.D dvc) ci
+unsafeRecreate (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) (F fb) =
 	M.recreate dvc (createInfoToMiddle ci) macc macc fb
 
@@ -126,9 +126,9 @@ create' (Group (Device.D mdvc)
 	else pure . Left $
 		"Gpu.Vulkan.Framebuffer.create': The key already exist"
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Group sd ma sf k -> k -> IO (Either String ())
-destroy (Group (Device.D mdvc)
+unsafeDestroy (Group (Device.D mdvc)
 	(AllocationCallbacks.toMiddle -> ma) sem fs) k = do
 	mf <- atomically do
 		mx <- Map.lookup k <$> readTVar fs
@@ -137,7 +137,7 @@ destroy (Group (Device.D mdvc)
 			Just _ -> waitTSem sem >> pure mx
 	case mf of
 		Nothing -> pure $ Left
-			"Gpu.Vulkan.Framebuffer.destroy: No such key"
+			"Gpu.Vulkan.Framebuffer.unsafeDestroy: No such key"
 		Just (F f) -> do
 			M.destroy mdvc f ma
 			atomically do

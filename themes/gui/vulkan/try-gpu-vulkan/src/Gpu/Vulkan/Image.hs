@@ -13,11 +13,11 @@ module Gpu.Vulkan.Image (
 
 	-- * CREATE
 
-	create, recreate, recreate', I, Binded, CreateInfo(..),
+	create, unsafeRecreate, unsafeRecreate', I, Binded, CreateInfo(..),
 
 	-- ** Manage Multiple Image
 
-	Group, group, create', destroy, lookup,
+	Group, group, create', unsafeDestroy, lookup,
 
 	-- * GET MEMORY REQUIREMENTS
 

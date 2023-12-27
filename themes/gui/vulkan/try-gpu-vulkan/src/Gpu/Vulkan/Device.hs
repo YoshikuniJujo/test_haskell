@@ -9,7 +9,7 @@ module Gpu.Vulkan.Device (
 
 	-- ** Group
 
-	group, Group, create', destroy, lookup,
+	group, Group, create', unsafeDestroy, lookup,
 
 	-- * GET QUEUE AND WAIT IDLE
 

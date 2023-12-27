@@ -7,7 +7,7 @@ module Gpu.Vulkan.BufferView (
 	create, B, CreateInfo(..), FormatOf,
 
 	-- ** Buffer View Group
-	Group, group, create', destroy, lookup
+	Group, group, create', unsafeDestroy, lookup
 
 	) where
 

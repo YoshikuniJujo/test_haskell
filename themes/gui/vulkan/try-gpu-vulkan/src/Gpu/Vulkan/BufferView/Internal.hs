@@ -16,7 +16,7 @@ module Gpu.Vulkan.BufferView.Internal (
 	create, B(..), CreateInfo(..), FormatOf,
 
 	-- ** Buffer View Group
-	Group, group, create', destroy, lookup
+	Group, group, create', unsafeDestroy, lookup
 
 	) where
 
@@ -122,9 +122,9 @@ create' (Device.D dvc)
 		pure $ Right b'
 	else pure . Left $ "Gpu.Vulkan.BufferView.create': The key already exist"
 
-destroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+unsafeDestroy :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
 	Device.D sd -> Group ma sg k nm t -> k -> IO (Either String ())
-destroy (Device.D mdvc)
+unsafeDestroy (Device.D mdvc)
 	(Group (AllocationCallbacks.toMiddle -> ma) sem bs) k = do
 	mb <- atomically do
 		mx <- Map.lookup k <$> readTVar bs
@@ -132,7 +132,7 @@ destroy (Device.D mdvc)
 			Nothing -> pure Nothing
 			Just _ -> waitTSem sem >> pure mx
 	case mb of
-		Nothing -> pure $ Left "Gp[u.Vulkan.BufferView.destroy: No such key"
+		Nothing -> pure $ Left "Gp[u.Vulkan.BufferView.unsafeDestroy: No such key"
 		Just (B b) -> do
 			M.destroy mdvc b ma
 			atomically do
