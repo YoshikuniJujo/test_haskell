@@ -95,7 +95,7 @@ import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 
-import ThEnv
+import Debug
 import Tools
 
 main :: IO ()
@@ -118,7 +118,7 @@ windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
 
 enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
+enableValidationLayers = debug
 
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
@@ -168,7 +168,17 @@ createInstance f = do
 			Vk.Ist.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Ist.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil \i -> f i
+		createInfo' :: Vk.Ist.CreateInfo 'Nothing 'Nothing
+		createInfo' = Vk.Ist.CreateInfo {
+			Vk.Ist.createInfoNext = TMaybe.N,
+			Vk.Ist.createInfoFlags = def,
+			Vk.Ist.createInfoApplicationInfo = Just appInfo,
+			Vk.Ist.createInfoEnabledLayerNames =
+				bool [] validationLayers enableValidationLayers,
+			Vk.Ist.createInfoEnabledExtensionNames = extensions }
+	if enableValidationLayers
+	then Vk.Ist.create createInfo nil \i -> f i
+	else Vk.Ist.create createInfo' nil \i -> f i
 
 setupDebugMessenger ::
 	Vk.Ist.I si ->

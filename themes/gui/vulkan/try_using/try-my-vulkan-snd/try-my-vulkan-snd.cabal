@@ -18,6 +18,8 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+    debug/Debug.hs
+    nodebug/Debug.hs
 data-files:
     th/vkPhysicalDeviceLimits.txt
     th/vkPhysicalDeviceFeatures.txt
@@ -25,6 +27,10 @@ data-files:
 source-repository head
   type: git
   location: https://github.com/githubuser/try-my-vulkan-snd
+
+flag debug
+  manual: True
+  default: True
 
 library
   exposed-modules:
@@ -82,6 +88,16 @@ library
     , union-color
     , vector
   default-language: Haskell2010
+  if flag(debug)
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        debug
+  else
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        nodebug
 
 executable my-glslc
   main-is: my-glslc.hs
