@@ -9,6 +9,8 @@ copyright:           "Copyright (c) 2023 Yoshikuni Jujo"
 extra-source-files:
 - README.md
 - CHANGELOG.md
+- debug/Debug.hs
+- nodebug/Debug.hs
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package

@@ -18,6 +18,8 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+    debug/Debug.hs
+    nodebug/Debug.hs
 
 source-repository head
   type: git
