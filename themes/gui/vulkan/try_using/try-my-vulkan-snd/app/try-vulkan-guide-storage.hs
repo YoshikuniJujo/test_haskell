@@ -364,7 +364,7 @@ recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 	IO Vk.Extent2d
 recreateSwapchain w sfc ph qfs dv sc = getSwapchainSupport ph sfc >>= \spp -> do
 	ex <- chooseSwapExtent w $ capabilities spp
-	ex <$ Vk.Khr.Swpch.recreate @'Nothing dv
+	ex <$ Vk.Khr.Swpch.unsafeRecreate @'Nothing dv
 		(swapchainCreateInfo sfc qfs spp ex) nil sc
 
 getSwapchainSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapchainSupportDetails

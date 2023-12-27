@@ -436,7 +436,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @'Nothing dvc crInfo nil sc
+	(scifmt, ext) <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing dvc crInfo nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->

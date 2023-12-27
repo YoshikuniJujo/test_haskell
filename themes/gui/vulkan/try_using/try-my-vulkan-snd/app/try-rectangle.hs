@@ -418,7 +418,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
 		fmt = chooseSwapSurfaceFormat $ formats spp
 		scifmt = Vk.Khr.Surface.M.formatFormat fmt
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @'Nothing dvc crInfo nil sc
+	(scifmt, ext) <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing dvc crInfo nil sc
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
