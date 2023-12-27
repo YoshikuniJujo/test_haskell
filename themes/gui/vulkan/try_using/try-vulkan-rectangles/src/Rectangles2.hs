@@ -523,14 +523,14 @@ destroyWinObjs
 
 	either error pure =<< Vk.RndrPass.destroy rpgrp k
 	either error pure =<< Vk.Ppl.Graphics.destroyGs gpgrp k
-	either error pure =<< Vk.Bffr.destroy rbgrp k
+	either error pure =<< Vk.Bffr.unsafeDestroy rbgrp k
 	either error pure =<< Vk.Mem.free rmgrp k
 	either error pure =<< Vk.Semaphore.destroy iasgrp k
 	either error pure =<< Vk.Semaphore.destroy rfsgrp k
-	either error pure =<< Vk.Fence.destroy iffgrp k
+	either error pure =<< Vk.Fence.unsafeDestroy iffgrp k
 	for_ [0 .. numToValue @n - 1] \i -> do
 		either error pure =<< Vk.ImgVw.destroy ivgrp (k, i)
-		either error pure =<< Vk.Frmbffr.destroy fbgrp (k, i)
+		either error pure =<< Vk.Frmbffr.unsafeDestroy fbgrp (k, i)
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -1074,7 +1074,7 @@ recreateFramebuffers' :: forall ts sd sr nm fmt siv sf .
 	HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
 recreateFramebuffers' dvc sce rp =
 	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
-	Vk.Frmbffr.recreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
+	Vk.Frmbffr.unsafeRecreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
 
 class Mappable (ts :: [knd]) where
 	type Replicate ts s :: [Type]
@@ -1198,7 +1198,7 @@ createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
 destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm k -> k -> IO ()
 destroyRectangleBuffer (bgrp, mgrp) k = do
 	r1 <- Vk.Mem.free mgrp k
-	r2 <- Vk.Bffr.destroy bgrp k
+	r2 <- Vk.Bffr.unsafeDestroy bgrp k
 	case (r1, r2) of
 		(Left msg, _) -> error msg
 		(_, Left msg) -> error msg
