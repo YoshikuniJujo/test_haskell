@@ -465,7 +465,7 @@ recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags -> Vk.ImgVw.I nm ivfmt s -> IO ()
 recreateImageView dv img asps iv =
-	Vk.ImgVw.recreate dv (imageViewCreateInfo img asps) nil iv
+	Vk.ImgVw.unsafeRecreate dv (imageViewCreateInfo img asps) nil iv
 
 imageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
@@ -660,7 +660,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)],
 			'[WMeshPushConstants]) -> IO ()
-recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
+recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.unsafeRecreateGs dv Nothing
 	(U14 (graphicsPipelineCreateInfo sce rp lyt) :** HL.Nil) nil
 	(U3 gpls :** HL.Nil)
 
@@ -897,7 +897,7 @@ imageAllocateBind dv i mi f = Vk.Mm.allocateBind @'Nothing dv
 imageReallocateBind :: Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mem.AllocateInfo 'Nothing ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
-imageReallocateBind dv i mi m = Vk.Mm.reallocateBind @'Nothing dv
+imageReallocateBind dv i mi m = Vk.Mm.unsafeReallocateBind @'Nothing dv
 	(HL.Singleton . U2 $ Vk.Mm.ImageBinded i) mi nil m
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
