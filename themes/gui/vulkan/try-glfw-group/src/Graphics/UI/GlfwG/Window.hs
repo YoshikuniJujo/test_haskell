@@ -8,7 +8,7 @@ module Graphics.UI.GlfwG.Window (
 
 	-- * CREATE AND DESTROY
 
-	W, Group, group, create', destroy, lookup,
+	W, Group, group, create', unsafeDestroy, lookup,
 
 	shouldClose,
 
@@ -67,8 +67,8 @@ create' (Group sem ws) k wd hg ttl mm mws = do
 	else pure . Left $ "Gpu.Vulkan.Khr.Surface.Glfw.Window.create': " ++
 		"The key already exist"
 
-destroy :: Ord k => Group s k -> k -> IO (Either String ())
-destroy (Group sem ws) k = do
+unsafeDestroy :: Ord k => Group s k -> k -> IO (Either String ())
+unsafeDestroy (Group sem ws) k = do
 	mw <- atomically do
 		mx <- M.lookup k <$> readTVar ws
 		case mx of
