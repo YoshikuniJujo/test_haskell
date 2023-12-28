@@ -309,49 +309,10 @@ chooseSwpSfcFormat = \case
 		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
 		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
-mkSwapchainCreateInfo ::
+mkSwapchainCreateInfo :: forall fmt ss .
 	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfo sfc qfis0 spp ext =
-	Vk.Khr.Swapchain.CreateInfo {
-		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
-		Vk.Khr.Swapchain.createInfoFlags = zeroBits,
-		Vk.Khr.Swapchain.createInfoSurface = sfc,
-		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
-		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Sfc.formatColorSpace fmt,
-		Vk.Khr.Swapchain.createInfoImageExtent = ext,
-		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
-		Vk.Khr.Swapchain.createInfoImageUsage =
-			Vk.Image.UsageColorAttachmentBit,
-		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
-		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
-		Vk.Khr.Swapchain.createInfoPreTransform =
-			Vk.Khr.Sfc.capabilitiesCurrentTransform caps,
-		Vk.Khr.Swapchain.createInfoCompositeAlpha =
-			Vk.Khr.CompositeAlphaOpaqueBit,
-		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
-		Vk.Khr.Swapchain.createInfoClipped = True,
-		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
-	where
-	fmt = chooseSwpSfcFormat $ formats spp
-	presentMode = chooseSwapPresentMode $ presentModes spp
-	caps = capabilities spp
-	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
-	imgc = clamp
-		0 maxImgc
-		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1)
-	(ism, qfis) = bool
-		(Vk.SharingModeConcurrent,
-			[graphicsFamily qfis0, presentFamily qfis0])
-		(Vk.SharingModeExclusive, [])
-		(graphicsFamily qfis0 == presentFamily qfis0)
-
-mkSwapchainCreateInfoRaw :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails -> Vk.Extent2d ->
-	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
-mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlags = zeroBits,
@@ -394,7 +355,7 @@ recreateSwapchain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
 recreateSwapchain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapchainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	crInfo = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
+	let	crInfo = mkSwapchainCreateInfo @fmt sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swapchain.unsafeRecreate dvc crInfo nil sc
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
