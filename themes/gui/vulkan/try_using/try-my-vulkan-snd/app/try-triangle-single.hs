@@ -106,7 +106,7 @@ import Debug
 
 main :: IO ()
 main = newIORef False >>= \fr -> withWindow fr \win -> createInstance \inst ->
-	bool id (setupDebugMessenger inst) debug $ run fr win inst
+	bool id (setupDbgMessenger inst) debug $ run fr win inst
 
 winSizeName :: ((Width, Height), String)
 winSizeName = (winSize, winName)
@@ -146,7 +146,7 @@ createInstance f = do
 			Vk.Ist.createInfoEnabledLayerNames = [],
 			Vk.Ist.createInfoEnabledExtensionNames = exts }
 		createInfoDbg = Vk.Ist.CreateInfo {
-			Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
+			Vk.Ist.createInfoNext = TMaybe.J dbgMessengerCreateInfo,
 			Vk.Ist.createInfoFlags = def,
 			Vk.Ist.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.createInfoEnabledLayerNames = validationLayers,
@@ -164,12 +164,11 @@ createInstance f = do
 		(Vk.Ist.create createInfoDbg nil f) debug
 	where emsg = "validation layers requested, but not available!"
 
-setupDebugMessenger :: Vk.Ist.I si -> IO a -> IO a
-setupDebugMessenger ist =
-	Vk.Ext.DbgUtls.Msngr.create ist debugMessengerCreateInfo nil
+setupDbgMessenger :: Vk.Ist.I si -> IO a -> IO a
+setupDbgMessenger i = Vk.Ext.DbgUtls.Msngr.create i dbgMessengerCreateInfo nil
 
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
+dbgMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+dbgMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
 	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
 	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
@@ -184,27 +183,27 @@ debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
 
 debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
+debugCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: FramebufferResized -> GlfwG.Win.W s -> Vk.Ist.I si -> IO ()
-run g w inst =
+run fr w inst =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
-	createSwapChainNew w sfc phdv qfis dv
+	createSwapchain w sfc phdv qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
-	createImageViewsNew dv imgs \scivs ->
-	createRenderPassNew @scifmt dv \rp ->
-	createPipelineLayout' dv \ppllyt ->
-	createGraphicsPipeline' dv ext rp ppllyt \gpl ->
+	createImageViews dv imgs \scivs ->
+	createRenderPass @scifmt dv \rp ->
+	createPipelineLayout dv \ppllyt ->
+	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cb sos
+	mainLoop fr w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cb sos
 
 createSurface :: GlfwG.Win.W s -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -321,12 +320,12 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-createSwapChainNew :: GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapchain :: GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
 	IO a
-createSwapChainNew win sfc phdvc qfis dvc f = do
+createSwapchain win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	fmt = Vk.Khr.Surface.formatFormat
@@ -375,11 +374,11 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
-recreateSwapChain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
+recreateSwapchain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S fmt ssc ->
 	IO Vk.Extent2d
-recreateSwapChain win sfc phdvc qfis0 dvc sc = do
+recreateSwapchain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
@@ -454,21 +453,21 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Surface.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Surface.capabilitiesMaxImageExtent caps
 
-createImageViewsNew :: Vk.T.FormatToValue fmt =>
+createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Image.Binded ss ss nm fmt] ->
 	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
-createImageViewsNew _dvc [] f = f HeteroParList.Nil
-createImageViewsNew dvc (sci : scis) f =
+createImageViews _dvc [] f = f HeteroParList.Nil
+createImageViews dvc (sci : scis) f =
 	createImageView dvc sci \sciv ->
-	createImageViewsNew dvc scis \scivs -> f $ sciv :** scivs
+	createImageViews dvc scis \scivs -> f $ sciv :** scivs
 
-recreateImageViewsNew :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
+recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Image.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
-recreateImageViewsNew _dvc [] HeteroParList.Nil = pure ()
-recreateImageViewsNew dvc (sci : scis) (iv :** ivs) =
+recreateImageViews _dvc [] HeteroParList.Nil = pure ()
+recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfoNew sci) nil iv >>
-	recreateImageViewsNew dvc scis ivs
-recreateImageViewsNew _ _ _ =
+	recreateImageViews dvc scis ivs
+recreateImageViews _ _ _ =
 	error "number of Vk.Image.I and Vk.ImageView.M.I should be same"
 
 createImageView :: forall ivfmt sd si sm nm ifmt a .
@@ -499,10 +498,10 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 		Vk.Image.subresourceRangeBaseArrayLayer = 0,
 		Vk.Image.subresourceRangeLayerCount = 1 }
 
-createRenderPassNew ::
+createRenderPass ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPassNew dvc f = do
+createRenderPass dvc f = do
 	let	colorAttachment :: Vk.Att.Description scifmt
 		colorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = zeroBits,
@@ -551,33 +550,33 @@ createRenderPassNew dvc f = do
 			Vk.RndrPass.createInfoDependencies = [dependency] }
 	Vk.RndrPass.create @'Nothing @'[scifmt] dvc renderPassInfo nil \rp -> f rp
 
-createPipelineLayout' ::
+createPipelineLayout ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.P sl '[] '[] -> IO b) -> IO b
-createPipelineLayout' dvc f = do
+createPipelineLayout dvc f = do
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts = HeteroParList.Nil }
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil f
 
-createGraphicsPipeline' :: Vk.Dvc.D sd ->
+createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) -> IO a) -> IO a
-createGraphicsPipeline' dvc sce rp ppllyt f =
+createGraphicsPipeline dvc sce rp ppllyt f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
 			nil \(U3 gpl :** HeteroParList.Nil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
-recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
+recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) -> IO ()
-recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.unsafeRecreateGs
+recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.unsafeRecreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil (U3 gpls :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
@@ -938,7 +937,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cb 
 		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cb iasrfsifs
 	cls <- GlfwG.Win.shouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
+		(loop =<< recreateSwapchainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
 drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff sl .
@@ -997,10 +996,10 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapChainEtc
+	\_ -> loop =<< recreateSwapchainEtc
 		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 
-recreateSwapChainEtc :: (
+recreateSwapchainEtc :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt ) =>
 	GlfwG.Win.W s -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1011,15 +1010,15 @@ recreateSwapChainEtc :: (
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
+recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
-	ext <- recreateSwapChain win sfc phdvc qfis dvc sc
+	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
 	ext <$ do
 		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
-			recreateImageViewsNew dvc imgs scivs
-		recreateGraphicsPipeline' dvc ext rp ppllyt gpl
+			recreateImageViews dvc imgs scivs
+		recreateGraphicsPipeline dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
 waitFramebufferSize :: GlfwG.Win.W s -> IO ()
