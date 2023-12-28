@@ -113,8 +113,8 @@ winSizeName = (winSize, winName)
 
 type Width = Int; type Height = Int
 
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
 withWindow :: FramebufferResized -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
 withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> initWindow fr g >>= a
@@ -132,7 +132,7 @@ type FramebufferResized = IORef Bool
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	errorIf emsg . (debug &&) . elemNotAll validationLayers
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
 		. (Vk.layerPropertiesLayerName <$>)
 		=<< Vk.Ist.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) debug
@@ -140,15 +140,15 @@ createInstance f = do
 		<$> GlfwG.getRequiredInstanceExtensions
 	let	createInfo = Vk.Ist.CreateInfo {
 			Vk.Ist.createInfoNext = TMaybe.N,
-			Vk.Ist.createInfoFlags = def,
+			Vk.Ist.createInfoFlags = zeroBits,
 			Vk.Ist.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.createInfoEnabledLayerNames = [],
 			Vk.Ist.createInfoEnabledExtensionNames = exts }
 		createInfoDbg = Vk.Ist.CreateInfo {
 			Vk.Ist.createInfoNext = TMaybe.J dbgMessengerCreateInfo,
-			Vk.Ist.createInfoFlags = def,
+			Vk.Ist.createInfoFlags = zeroBits,
 			Vk.Ist.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.createInfoEnabledLayerNames = validationLayers,
+			Vk.Ist.createInfoEnabledLayerNames = vldLayers,
 			Vk.Ist.createInfoEnabledExtensionNames = exts }
 		appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
@@ -169,7 +169,7 @@ setupDbgMessenger i = Vk.Ext.DbgUtls.Msngr.create i dbgMessengerCreateInfo nil
 dbgMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 dbgMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
+	Vk.Ext.DbgUtls.Msngr.createInfoFlags = zeroBits,
 	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
 		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
 		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
@@ -251,31 +251,29 @@ querySwapChainSupport dvc sfc = SwpchSupportDetails
 
 createLogicalDevice :: Vk.PhDvc.P -> QFamIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
-createLogicalDevice pd qfis act = let
-	uniqueQueueFamilies = nub [graphicsFamily qfis, presentFamily qfis]
-	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
+createLogicalDevice pd qfis act = toHetero mkQCreateInfo uniqueQFams \qs -> let
+	createInfo = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def } in
+	Vk.Dvc.create pd createInfo nil \dvc -> join $ act dvc
+		<$> Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
+		<*> Vk.Dvc.getQueue dvc (presentFamily qfis) 0
+	where
+	uniqueQFams = nub [graphicsFamily qfis, presentFamily qfis]
+	mkQCreateInfo qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] } in
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs -> do
-	let	createInfo = Vk.Dvc.CreateInfo {
-			Vk.Dvc.createInfoNext = TMaybe.N,
-			Vk.Dvc.createInfoFlags = def,
-			Vk.Dvc.createInfoQueueCreateInfos = qs,
-			Vk.Dvc.createInfoEnabledLayerNames =
-				bool [] validationLayers debug,
-			Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
-			Vk.Dvc.createInfoEnabledFeatures = Just def }
-	Vk.Dvc.create pd createInfo nil \dvc -> do
-		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		act dvc gq pq
-
-mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
-mkHeteroParList _k [] f = f HeteroParList.Nil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	toHetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HeteroParList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HeteroParList.PL t ss -> b) -> b
+	toHetero _k [] f = f HeteroParList.Nil
+	toHetero k (x : xs) f = toHetero k xs \xs' -> f (k x :** xs')
 
 createSwapchain :: GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QFamIndices -> Vk.Dvc.D sd ->
@@ -298,7 +296,7 @@ mkSwapchainCreateInfoNew :: Vk.Khr.Sfc.S ss -> QFamIndices ->
 mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
-		Vk.Khr.Swapchain.createInfoFlags = def,
+		Vk.Khr.Swapchain.createInfoFlags = zeroBits,
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
@@ -348,7 +346,7 @@ mkSwapchainCreateInfoRaw :: forall fmt ss .
 mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
-		Vk.Khr.Swapchain.createInfoFlags = def,
+		Vk.Khr.Swapchain.createInfoFlags = zeroBits,
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
@@ -571,7 +569,7 @@ shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParLi
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
-		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
 		Vk.Ppl.ShdrSt.createInfoModule = (
 			shaderModuleCreateInfo glslVertexShaderMain, nil ),
@@ -579,7 +577,7 @@ shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParLi
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
-		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
 		Vk.Ppl.ShdrSt.createInfoModule = (
 			shaderModuleCreateInfo glslFragmentShaderMain, nil ),
@@ -1009,7 +1007,7 @@ vertices = [
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
-	Vk.ShaderModule.createInfoFlags = def,
+	Vk.ShaderModule.createInfoFlags = zeroBits,
 	Vk.ShaderModule.createInfoCode = code }
 
 [glslVertexShader|
