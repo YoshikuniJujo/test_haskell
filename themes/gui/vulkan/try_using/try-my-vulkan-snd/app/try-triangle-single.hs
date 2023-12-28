@@ -36,6 +36,7 @@ import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.List
+import Data.List.ToolsYj
 import Data.List.Length
 import Data.List.NonEmpty qualified as NE
 import Data.HeteroParList (pattern (:*.), pattern (:**))
@@ -104,10 +105,8 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 import Debug
 
 main :: IO ()
-main = newIORef False >>= \g -> (`withWindow` g) \win -> createInstance \inst ->
-	bool id (setupDebugMessenger inst) debug $ run win inst g
-
-type FramebufferResized = IORef Bool
+main = newIORef False >>= \fr -> withWindow fr \win -> createInstance \inst ->
+	bool id (setupDebugMessenger inst) debug $ run fr win inst
 
 winSizeName :: ((Width, Height), String)
 winSizeName = (winSize, winName)
@@ -115,14 +114,11 @@ winSizeName = (winSize, winName)
 
 type Width = Int; type Height = Int
 
-enableValidationLayers :: Bool
-enableValidationLayers = debug
-
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
 
-withWindow :: (forall s . GlfwG.Win.W s -> IO a) -> FramebufferResized -> IO a
-withWindow a fr = GlfwG.init error $ GlfwG.Win.group \g -> initWindow fr g >>= a
+withWindow :: FramebufferResized -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
+withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> initWindow fr g >>= a
 
 initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
 initWindow fr g = do
@@ -133,19 +129,29 @@ initWindow fr g = do
 		w (Just . const3 $ writeIORef fr True)
 	where noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 
+type FramebufferResized = IORef Bool
+
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers \\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.enumerateLayerProperties
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> (GlfwG.getRequiredInstanceExtensions)
-	print extensions
-	let	appInfo = Vk.ApplicationInfo {
+	errorIf emsg . (debug &&) . elemNotAll validationLayers
+		. (Vk.layerPropertiesLayerName <$>)
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	let	createInfo = Vk.Ist.CreateInfo {
+			Vk.Ist.createInfoNext = TMaybe.N,
+			Vk.Ist.createInfoFlags = def,
+			Vk.Ist.createInfoApplicationInfo = Just appInfo,
+			Vk.Ist.createInfoEnabledLayerNames = [],
+			Vk.Ist.createInfoEnabledExtensionNames = exts }
+		createInfoDbg = Vk.Ist.CreateInfo {
+			Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
+			Vk.Ist.createInfoFlags = def,
+			Vk.Ist.createInfoApplicationInfo = Just appInfo,
+			Vk.Ist.createInfoEnabledLayerNames = validationLayers,
+			Vk.Ist.createInfoEnabledExtensionNames = exts }
+		appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = TMaybe.N,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
 			Vk.applicationInfoApplicationVersion =
@@ -154,33 +160,13 @@ createInstance f = do
 			Vk.applicationInfoEngineVersion =
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo :: Vk.Ist.CreateInfo
-			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
-				'Nothing '[] ())) 'Nothing
-		createInfo = Vk.Ist.CreateInfo {
-			Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-			Vk.Ist.createInfoFlags = def,
-			Vk.Ist.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.createInfoEnabledExtensionNames = extensions }
-		createInfo' :: Vk.Ist.CreateInfo 'Nothing 'Nothing
-		createInfo' = Vk.Ist.CreateInfo {
-			Vk.Ist.createInfoNext = TMaybe.N,
-			Vk.Ist.createInfoFlags = def,
-			Vk.Ist.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.createInfoEnabledExtensionNames = extensions }
-	if enableValidationLayers
-	then Vk.Ist.create createInfo nil \i -> f i
-	else Vk.Ist.create createInfo' nil \i -> f i
+	bool	(Vk.Ist.create createInfo nil f)
+		(Vk.Ist.create createInfoDbg nil f) debug
+	where emsg = "validation layers requested, but not available!"
 
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil f
+setupDebugMessenger :: Vk.Ist.I si -> IO a -> IO a
+setupDebugMessenger ist =
+	Vk.Ext.DbgUtls.Msngr.create ist debugMessengerCreateInfo nil
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
@@ -201,8 +187,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: GlfwG.Win.W s -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w inst g =
+run :: FramebufferResized -> GlfwG.Win.W s -> Vk.Ist.I si -> IO ()
+run g w inst =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -321,7 +307,7 @@ createLogicalDevice phdvc qfis f = let
 			Vk.Dvc.createInfoFlags = def,
 			Vk.Dvc.createInfoQueueCreateInfos = qs,
 			Vk.Dvc.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
+				bool [] validationLayers debug,
 			Vk.Dvc.createInfoEnabledExtensionNames =
 				deviceExtensions,
 			Vk.Dvc.createInfoEnabledFeatures = Just def }
