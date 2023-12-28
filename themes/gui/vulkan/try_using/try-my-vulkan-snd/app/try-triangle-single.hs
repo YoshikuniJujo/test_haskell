@@ -214,7 +214,7 @@ pickPhDevice ist sfc = Vk.PhDvc.enumerate ist >>= \case
 deviceSuitable :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
 deviceSuitable pd sfc = dvcExtensionSupport pd >>= bool (pure Nothing) do
 	qfis <- findQueueFamilies pd sfc
-	(<$> querySwapChainSupport pd sfc) \ss ->
+	(<$> querySwapchainSupport pd sfc) \ss ->
 		bool qfis Nothing $ null (formats ss) || null (presentModes ss)
 
 dvcExtensionSupport :: Vk.PhDvc.P -> IO Bool
@@ -243,8 +243,8 @@ data SwpchSupportDetails = SwpchSupportDetails {
 	presentModes :: [Vk.Khr.PresentMode] }
 	deriving Show
 
-querySwapChainSupport :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO SwpchSupportDetails
-querySwapChainSupport dvc sfc = SwpchSupportDetails
+querySwapchainSupport :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO SwpchSupportDetails
+querySwapchainSupport dvc sfc = SwpchSupportDetails
 	<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
 	<*> Vk.Khr.Sfc.PhDvc.getFormats dvc sfc
 	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
@@ -276,24 +276,43 @@ createLogicalDevice pd qfis act = toHetero mkQCreateInfo uniqueQFams \qs -> let
 	toHetero k (x : xs) f = toHetero k xs \xs' -> f (k x :** xs')
 
 createSwapchain :: GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
-	QFamIndices -> Vk.Dvc.D sd ->
-	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
-		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
-	IO a
-createSwapchain win sfc phdvc qfis dvc f = do
-	spp <- querySwapChainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilities spp
-	let	fmt = Vk.Khr.Sfc.formatFormat
-			. chooseSwapSurfaceFormat $ formats spp
+	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
+		Vk.T.FormatToValue scfmt =>
+		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
+createSwapchain win sfc pd qfis dvc f = do
+	ss <- querySwapchainSupport pd sfc
+	ext <- chooseSwapExtent win $ capabilities ss
+	let	fmt = Vk.Khr.Sfc.formatFormat . chooseSwpSfcFormat $ formats ss
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
-		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil
-			\sc -> f sc ext
+		let	crInfo = mkSwapchainCreateInfo sfc qfis ss ext
+		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil (`f` ext)
 
-mkSwapchainCreateInfoNew :: Vk.Khr.Sfc.S ss -> QFamIndices ->
-	SwpchSupportDetails -> Vk.Extent2d ->
+chooseSwapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+chooseSwapExtent win caps
+	| Vk.extent2dWidth cur /= maxBound = pure cur
+	| otherwise = do
+		(fromIntegral -> w, fromIntegral -> h) <-
+			GlfwG.Win.getFramebufferSize win
+		pure $ Vk.Extent2d
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth n) w)
+			(clamp (Vk.extent2dHeight x) (Vk.extent2dHeight x) h)
+	where
+	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
+	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
+	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
+
+chooseSwpSfcFormat  :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
+chooseSwpSfcFormat = \case
+	fs@(f0 : _) -> fromMaybe f0 $ find preferred fs
+	_ -> error "no available swap surface formats"
+	where preferred f =
+		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+
+mkSwapchainCreateInfo ::
+	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
-mkSwapchainCreateInfoNew sfc qfis0 spp ext =
+mkSwapchainCreateInfo sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlags = zeroBits,
@@ -315,7 +334,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoClipped = True,
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
+	fmt = chooseSwpSfcFormat $ formats spp
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
@@ -329,19 +348,8 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
-recreateSwapchain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
-	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S fmt ssc ->
-	IO Vk.Extent2d
-recreateSwapchain win sfc phdvc qfis0 dvc sc = do
-	spp <- querySwapChainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilities spp
-	let	crInfo = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.unsafeRecreate dvc crInfo nil sc
-
 mkSwapchainCreateInfoRaw :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> QFamIndices ->
-	SwpchSupportDetails -> Vk.Extent2d ->
+	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
@@ -365,7 +373,7 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoClipped = True,
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
+	fmt = chooseSwpSfcFormat $ formats spp
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
@@ -379,34 +387,19 @@ mkSwapchainCreateInfoRaw sfc qfis0 spp ext =
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
-chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
-chooseSwapSurfaceFormat = \case
-	availableFormats@(af0 : _) -> fromMaybe af0
-		$ find preferredSwapSurfaceFormat availableFormats
-	_ -> error "no available swap surface formats"
-
-preferredSwapSurfaceFormat :: Vk.Khr.Sfc.Format -> Bool
-preferredSwapSurfaceFormat f =
-	Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-	Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+recreateSwapchain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
+	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
+	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S fmt ssc ->
+	IO Vk.Extent2d
+recreateSwapchain win sfc phdvc qfis0 dvc sc = do
+	spp <- querySwapchainSupport phdvc sfc
+	ext <- chooseSwapExtent win $ capabilities spp
+	let	crInfo = mkSwapchainCreateInfoRaw @fmt sfc qfis0 spp ext
+	ext <$ Vk.Khr.Swapchain.unsafeRecreate dvc crInfo nil sc
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
-
-chooseSwapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
-chooseSwapExtent win caps
-	| Vk.extent2dWidth curExt /= maxBound = pure curExt
-	| otherwise = do
-		(fromIntegral -> w, fromIntegral -> h) <-
-			GlfwG.Win.getFramebufferSize win
-		pure $ Vk.Extent2d
-			(clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
-			(clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
-	where
-	curExt = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Image.Binded ss ss nm fmt] ->
