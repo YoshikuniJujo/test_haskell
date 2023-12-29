@@ -7,7 +7,7 @@ module Gpu.Vulkan.Khr.Surface.PhysicalDevice (
 
 	-- * GET SUPPORT, FORMATS, CAPABILITIES AND PRESENT MODES
 
-	getSupport, getFormats, getFormatsNew, getCapabilities, getPresentModes
+	getSupport, getFormats, getFormatsNew, getFormatsFiltered, getCapabilities, getPresentModes
 
 	) where
 
@@ -35,6 +35,9 @@ getFormats phdvc (S sfc) = M.getFormats phdvc sfc
 getFormatsNew :: PhysicalDevice.P -> S ss ->
 	(forall fmts . HeteroParList.ToListWithC T.FormatToValue fmts => HeteroParList.PL FormatNew fmts -> IO a) -> IO a
 getFormatsNew pd sfc f = getFormats pd sfc >>= \fmts -> formatListToNew fmts f
+
+getFormatsFiltered :: T.FormatToValue fmt => PhysicalDevice.P -> S ss -> IO [FormatNew fmt]
+getFormatsFiltered pd sfc = formatFilter <$> getFormats pd sfc
 
 getPresentModes :: PhysicalDevice.P -> S ss -> IO [PresentMode]
 getPresentModes phdvc (S sfc) = M.getPresentModes phdvc sfc

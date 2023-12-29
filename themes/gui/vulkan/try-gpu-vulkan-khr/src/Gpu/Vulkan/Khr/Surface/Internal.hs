@@ -9,7 +9,8 @@
 module Gpu.Vulkan.Khr.Surface.Internal (
 	S(..), group, unsafeDestroy, lookup, Group(..),
 
-	M.Capabilities(..), M.Format(..), FormatNew(..), formatListToNew ) where
+	M.Capabilities(..), M.Format(..),
+	FormatNew(..), formatListToNew, formatFilter ) where
 
 import Prelude hiding (lookup)
 import Control.Concurrent.STM
@@ -17,9 +18,10 @@ import Control.Concurrent.STM.TSem
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Proxy
-import Data.Map qualified as Map
+import Data.Maybe
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
+import Data.Map qualified as Map
 
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Instance.Internal qualified as Instance
@@ -75,3 +77,13 @@ formatListToNew :: [M.Format] -> (forall fmts .
 formatListToNew [] f = f HeteroParList.Nil
 formatListToNew (fmt : fmts) f = formatToNew fmt \fmt' ->
 	formatListToNew fmts \fmts' -> f $ fmt' :** fmts'
+
+formatMatched :: forall fmt . T.FormatToValue fmt =>
+	M.Format -> Maybe (FormatNew fmt)
+formatMatched (M.Format fmt cs)
+	| T.formatToValue @fmt == fmt = Just $ FormatNew cs
+	| otherwise = Nothing
+
+formatFilter :: forall fmt . T.FormatToValue fmt =>
+	[M.Format] -> [FormatNew fmt]
+formatFilter = catMaybes . (formatMatched <$>)
