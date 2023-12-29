@@ -1,15 +1,22 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface.PhysicalDevice (
 
 	-- * GET SUPPORT, FORMATS, CAPABILITIES AND PRESENT MODES
 
-	getSupport, getFormats, getCapabilities, getPresentModes
+	getSupport, getFormats, getFormatsNew, getCapabilities, getPresentModes
 
 	) where
 
+import Data.HeteroParList qualified as HeteroParList
+
+import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Surface.Type
+import Gpu.Vulkan.Khr.Surface.Internal
 
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as QueueFamily
@@ -24,6 +31,10 @@ getCapabilities phdvc (S sfc) = M.getCapabilities phdvc sfc
 
 getFormats :: PhysicalDevice.P -> S ss -> IO [M.Format]
 getFormats phdvc (S sfc) = M.getFormats phdvc sfc
+
+getFormatsNew :: PhysicalDevice.P -> S ss ->
+	(forall fmts . HeteroParList.ToListWithC T.FormatToValue fmts => HeteroParList.PL FormatNew fmts -> IO a) -> IO a
+getFormatsNew pd sfc f = getFormats pd sfc >>= \fmts -> formatListToNew fmts f
 
 getPresentModes :: PhysicalDevice.P -> S ss -> IO [PresentMode]
 getPresentModes phdvc (S sfc) = M.getPresentModes phdvc sfc

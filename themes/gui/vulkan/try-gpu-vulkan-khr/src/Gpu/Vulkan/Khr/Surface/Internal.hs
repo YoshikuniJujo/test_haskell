@@ -1,23 +1,30 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface.Internal (
 	S(..), group, unsafeDestroy, lookup, Group(..),
 
-	M.Capabilities(..), M.Format(..)) where
+	M.Capabilities(..), M.Format(..), FormatNew(..), formatListToNew ) where
 
 import Prelude hiding (lookup)
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TSem
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
+import Data.Proxy
 import Data.Map qualified as Map
+import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList qualified as HeteroParList
 
+import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Instance.Internal qualified as Instance
 import Gpu.Vulkan.AllocationCallbacks.Internal qualified as AllocationCallbacks
+import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Surface.Type
 import Gpu.Vulkan.Khr.Surface.Middle qualified as M
 
@@ -54,3 +61,17 @@ unsafeDestroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss
 
 lookup :: Ord k => Group si ma s k -> k -> IO (Maybe (S s))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
+
+data FormatNew (fmt :: T.Format) =
+	FormatNew { formatNewColorSpace :: ColorSpace } deriving Show
+
+formatToNew :: M.Format ->
+	(forall fmt . T.FormatToValue fmt => FormatNew fmt -> a) -> a
+formatToNew (M.Format fmt cs) f = T.formatToType fmt \(_ :: Proxy fmt) -> f $ FormatNew @fmt cs
+
+formatListToNew :: [M.Format] -> (forall fmts .
+	HeteroParList.ToListWithC T.FormatToValue fmts =>
+	HeteroParList.PL FormatNew fmts -> a) -> a
+formatListToNew [] f = f HeteroParList.Nil
+formatListToNew (fmt : fmts) f = formatToNew fmt \fmt' ->
+	formatListToNew fmts \fmts' -> f $ fmt' :** fmts'
