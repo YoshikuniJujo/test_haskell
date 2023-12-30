@@ -1,6 +1,6 @@
 {-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
@@ -245,7 +245,10 @@ data SwpchSupportDetails = SwpchSupportDetails {
 
 data SwpchSupportDetailsNew fmts = SwpchSupportDetailsNew {
 	capabilitiesNew :: Vk.Khr.Sfc.Capabilities,
-	formatsNew :: HeteroParList.PL Vk.Khr.Sfc.FormatNew fmts,
+	formatsNew :: (
+		[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
+		HeteroParList.PL Vk.Khr.Sfc.FormatNew fmts
+		),
 	presentModesNew :: [Vk.Khr.PresentMode] }
 
 querySwapchainSupport :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO SwpchSupportDetails
@@ -254,16 +257,14 @@ querySwapchainSupport dvc sfc = SwpchSupportDetails
 	<*> Vk.Khr.Sfc.PhDvc.getFormats dvc sfc
 	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
 
-{-
 querySwapchainSupportNew :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss ->
-	(forall fmts . ChooseSwpSfcFormatNew fmts => SwpchSupportDetailsNew fmts -> IO a) -> IO a
+	(forall fmts . SwpchSupportDetailsNew fmts -> IO a) -> IO a
 querySwapchainSupportNew dvc sfc f =
 	Vk.Khr.Sfc.PhDvc.getFormatsNew dvc sfc \fmts ->
 		f =<< SwpchSupportDetailsNew
 			<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
-			<*> pure fmts
+			<*> ((, fmts) <$> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc)
 			<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
-			-}
 
 createLogicalDevice :: Vk.PhDvc.P -> QFamIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
@@ -339,6 +340,19 @@ chooseSwpSfcFormat = \case
 		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
 		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
+chooseSwpSfcFormatNew :: Vk.T.FormatToValue fmt =>
+		[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb] ->
+		HeteroParList.PL Vk.Khr.Sfc.FormatNew (fmt ': fmts) -> (forall fmt .
+			Vk.T.FormatToValue fmt =>
+			Vk.Khr.Sfc.FormatNew fmt -> a) -> a
+chooseSwpSfcFormatNew fmts (fmt0 :** _) f =
+	case find (\(Vk.Khr.Sfc.FormatNew cs) ->
+		cs == Vk.Khr.ColorSpaceSrgbNonlinear) fmts of
+		Nothing -> f fmt0
+		Just fmt -> f fmt
+	
+
+{-
 class ChooseSwpSfcFormatNew fmts where
 	chooseSwpSfcFormatNew :: HeteroParList.PL Vk.Khr.Sfc.FormatNew fmts ->
 		(forall fmt .
@@ -367,6 +381,7 @@ instance ChooseSwpSfcFormat fmts =>
 instance {-# OVERLAPPABLE #-} ChooseSwpSfcFormat fmts =>
 	ChooseSwpSfcFormat (fmt ': fmts) where
 	chooseSwpSfcFormat' fmt0 (_ :** fmts) = chooseSwpSfcFormat' fmt0 fmts
+	-}
 
 {-
 chooseSwpSfcFormat' :: HeteroParList.ToListWithC Vk.T.FormatToValue fmts =>
@@ -414,6 +429,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
+{-
 mkSwapchainCreateInfoNew :: forall fmt ss fmts .
 	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetailsNew fmts ->
 	Vk.Khr.Sfc.FormatNew fmt -> Vk.Extent2d ->
@@ -453,6 +469,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp fmt0 ext =
 			[graphicsFamily qfis0, presentFamily qfis0])
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
+		-}
 
 recreateSwapchain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
