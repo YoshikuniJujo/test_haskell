@@ -2,7 +2,8 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -86,3 +87,19 @@ formatMatched (M.Format fmt cs)
 formatFilter :: forall fmt . T.FormatToValue fmt =>
 	[M.Format] -> [FormatNew fmt]
 formatFilter = catMaybes . (formatMatched <$>)
+
+{-
+type FormatConstraint fmt = (
+	T.FormatToValue fmt,
+	MaybeFormat fmt )
+
+-- class FilterFormat (fmts :: [T.Format]) where
+--	filterFormat :: HeteroParListC.
+
+class MaybeFormat (fmt0 :: T.Format) (fmt :: T.Format) where
+	maybeFormat :: FormatNew fmt -> Maybe (FormatNew fmt0)
+
+instance MaybeFormat fmt fmt where maybeFormat = Just
+
+instance {-# OVERLAPPABLE #-} MaybeFormat fmt0 fmt where maybeFormat _ = Nothing
+-}
