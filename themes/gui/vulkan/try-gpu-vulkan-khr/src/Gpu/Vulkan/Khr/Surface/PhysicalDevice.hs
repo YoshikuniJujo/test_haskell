@@ -11,7 +11,7 @@ module Gpu.Vulkan.Khr.Surface.PhysicalDevice (
 
 	) where
 
-import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList.Constrained qualified as HeteroParListC
 
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Khr.Enum
@@ -33,7 +33,7 @@ getFormats :: PhysicalDevice.P -> S ss -> IO [M.Format]
 getFormats phdvc (S sfc) = M.getFormats phdvc sfc
 
 getFormatsNew :: PhysicalDevice.P -> S ss ->
-	(forall fmts . HeteroParList.ToListWithC T.FormatToValue fmts => HeteroParList.PL FormatNew fmts -> IO a) -> IO a
+	(forall fmts . HeteroParListC.PL T.FormatToValue FormatNew fmts -> IO a) -> IO a
 getFormatsNew pd sfc f = getFormats pd sfc >>= \fmts -> formatListToNew fmts f
 
 getFormatsFiltered :: T.FormatToValue fmt => PhysicalDevice.P -> S ss -> IO [FormatNew fmt]

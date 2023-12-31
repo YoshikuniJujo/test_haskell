@@ -19,8 +19,8 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Proxy
 import Data.Maybe
-import Data.HeteroParList (pattern (:**))
-import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList.Constrained (pattern (:***))
+import Data.HeteroParList.Constrained qualified as HeteroParListC
 import Data.Map qualified as Map
 
 import Gpu.Vulkan.TypeEnum qualified as T
@@ -72,11 +72,10 @@ formatToNew :: M.Format ->
 formatToNew (M.Format fmt cs) f = T.formatToType fmt \(_ :: Proxy fmt) -> f $ FormatNew @fmt cs
 
 formatListToNew :: [M.Format] -> (forall fmts .
-	HeteroParList.ToListWithC T.FormatToValue fmts =>
-	HeteroParList.PL FormatNew fmts -> a) -> a
-formatListToNew [] f = f HeteroParList.Nil
+	HeteroParListC.PL T.FormatToValue FormatNew fmts -> a) -> a
+formatListToNew [] f = f HeteroParListC.Nil
 formatListToNew (fmt : fmts) f = formatToNew fmt \fmt' ->
-	formatListToNew fmts \fmts' -> f $ fmt' :** fmts'
+	formatListToNew fmts \fmts' -> f $ fmt' :*** fmts'
 
 formatMatched :: forall fmt . T.FormatToValue fmt =>
 	M.Format -> Maybe (FormatNew fmt)
