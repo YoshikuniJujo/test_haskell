@@ -42,6 +42,8 @@ import Data.List.Length
 import Data.List.NonEmpty qualified as NE
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList.Constrained (pattern (:***))
+import Data.HeteroParList.Constrained qualified as HeteroParListC
 import Data.Text.IO qualified as Txt
 import Data.Color
 import Data.IORef
@@ -247,7 +249,7 @@ data SwpchSupportDetailsNew fmts = SwpchSupportDetailsNew {
 	capabilitiesNew :: Vk.Khr.Sfc.Capabilities,
 	formatsNew :: (
 		[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
-		HeteroParList.PL Vk.Khr.Sfc.FormatNew fmts
+		HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts
 		),
 	presentModesNew :: [Vk.Khr.PresentMode] }
 
