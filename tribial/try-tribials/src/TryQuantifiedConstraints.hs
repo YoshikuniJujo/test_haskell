@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
