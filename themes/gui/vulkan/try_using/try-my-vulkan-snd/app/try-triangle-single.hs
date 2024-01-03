@@ -25,7 +25,7 @@ import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
-import Data.Proxy
+-- import Data.Proxy
 import Data.Default
 import Data.Ord.ToolsYj
 import Data.Bits
@@ -216,8 +216,15 @@ pickPhDevice ist sfc = Vk.PhDvc.enumerate ist >>= \case
 deviceSuitable :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
 deviceSuitable pd sfc = dvcExtensionSupport pd >>= bool (pure Nothing) do
 	qfis <- findQueueFamilies pd sfc
-	(<$> querySwapchainSupport pd sfc) \ss ->
-		bool qfis Nothing $ null (formats ss) || null (presentModes ss)
+	querySwapchainSupportNew pd sfc \ss -> pure .
+		bool qfis Nothing $ nullFormats (formatsNew ss) || null (presentModesNew ss)
+
+nullFormats :: (
+	[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
+	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts ) -> Bool
+nullFormats (_ : _, _) = False
+nullFormats ([], _ :*** _) = False
+nullFormats _ = True
 
 dvcExtensionSupport :: Vk.PhDvc.P -> IO Bool
 dvcExtensionSupport pd = elemAll dvcExtensions
@@ -239,9 +246,9 @@ findQueueFamilies pd sfc = do
 	where checkGraphicBit =
 		checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
-data SwpchSupportDetails = SwpchSupportDetails {
+data SwpchSupportDetails fmt = SwpchSupportDetails {
 	capabilities :: Vk.Khr.Sfc.Capabilities,
-	formats :: [Vk.Khr.Sfc.Format],
+	formats :: [Vk.Khr.Sfc.FormatNew fmt],
 	presentModes :: [Vk.Khr.PresentMode] }
 	deriving Show
 
@@ -253,10 +260,11 @@ data SwpchSupportDetailsNew fmts = SwpchSupportDetailsNew {
 		),
 	presentModesNew :: [Vk.Khr.PresentMode] }
 
-querySwapchainSupport :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO SwpchSupportDetails
+querySwapchainSupport :: Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetails fmt)
 querySwapchainSupport dvc sfc = SwpchSupportDetails
 	<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
-	<*> Vk.Khr.Sfc.PhDvc.getFormats dvc sfc
+	<*> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc
 	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
 
 querySwapchainSupportNew :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss ->
@@ -334,14 +342,6 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
 
-chooseSwpSfcFormat  :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
-chooseSwpSfcFormat = \case
-	fs@(f0 : _) -> fromMaybe f0 $ find preferred fs
-	_ -> error "no available swap surface formats"
-	where preferred f =
-		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
-
 chooseSwpSfcFormatNew :: ( -- Vk.T.FormatToValue fmt =>
 	[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
 	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts ) -> (forall fmt .
@@ -356,7 +356,7 @@ chooseSwpSfcFormatNew (_, HeteroParListC.Nil) _ =
 	error "no available swap surface formats"
 
 mkSwapchainCreateInfo :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails -> Vk.Extent2d ->
+	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails fmt -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfo sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
@@ -364,9 +364,8 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoFlags = zeroBits,
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
-		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Sfc.formatColorSpace fmt,
-		Vk.Khr.Swapchain.createInfoImageExtent = ext,
+		Vk.Khr.Swapchain.createInfoImageColorSpace = cs,
+		Vk.Khr.Swapchain.createInfoImageExtent = ext, 
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
 			Vk.Image.UsageColorAttachmentBit,
@@ -380,7 +379,8 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoClipped = True,
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
-	fmt = chooseSwpSfcFormat $ formats spp
+	cs = case formats spp of
+		Vk.Khr.Sfc.FormatNew cs' : _ -> cs'; _ -> error "bad"
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
