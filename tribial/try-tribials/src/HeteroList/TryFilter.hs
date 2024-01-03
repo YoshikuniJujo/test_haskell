@@ -1,13 +1,17 @@
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module HeteroList.TryFilter where
 
 import GHC.TypeLits
+import Data.Proxy
 
 import HeteroList.Type
 
@@ -28,9 +32,8 @@ instance (FooMatch want name, FooFilter want names) =>
 	FooFilter want (name ': names) where
 	fooFilter (foo :*** foos) = maybe id (:) (fooMatch foo) $ fooFilter foos
 
--- exampleFoos :: PLC (FooMatch want) '["foo", "bar", "baz", "foo", "foo", "bar"]
-exampleFoos :: (
-	FooMatch want "foo", FooMatch want "bar", FooMatch want "baz" ) =>
+exampleFoos :: (forall nm . FooMatch want nm) =>
+--	FooMatch want "foo", FooMatch want "bar", FooMatch want "baz" ) =>
 	PLC (FooMatch want) (Foo want) '["foo", "bar", "baz", "foo", "foo", "bar"]
 exampleFoos =
 	Foo 123 :***
@@ -40,3 +43,10 @@ exampleFoos =
 	Foo 789 :***
 	Foo 999 :***
 	Nil
+
+symbolToType :: String -> (forall (sym :: Symbol) . Proxy sym -> a) -> a
+symbolToType str f = (\(SomeSymbol sym) -> f sym) $ someSymbolVal str
+
+mkFoo :: (forall nm . FooMatch want nm) =>
+	String -> Int -> (forall name . FooMatch want name => Foo want name -> a) -> a
+mkFoo str n f = symbolToType str \(_ :: Proxy nm) -> f (Foo n :: Foo want nm)
