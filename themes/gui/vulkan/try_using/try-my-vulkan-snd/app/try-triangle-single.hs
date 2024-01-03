@@ -192,7 +192,7 @@ run fr w ist =
 	Vk.Khr.Sfc.Glfw.Window.create ist w nil \sfc ->
 	pickPhDevice ist sfc >>= \(pd, qfis) ->
 	createLogicalDevice pd qfis \dv gq pq ->
-	createSwapchain w sfc pd qfis dv
+	createSwapchain' w sfc pd qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
@@ -294,6 +294,7 @@ createLogicalDevice pd qfis act = toHetero mkQCreateInfo uniqueQFams \qs -> let
 	toHetero _k [] f = f HeteroParList.Nil
 	toHetero k (x : xs) f = toHetero k xs \xs' -> f (k x :** xs')
 
+{-
 createSwapchain :: GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
@@ -305,8 +306,8 @@ createSwapchain win sfc pd qfis dvc f = do
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfo sfc qfis ss ext
 		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil (`f` ext)
+		-}
 
-{-
 createSwapchain' ::
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
@@ -316,9 +317,8 @@ createSwapchain' win sfc pd qfis dvc f = querySwapchainSupportNew pd sfc \ss -> 
 	ext <- chooseSwapExtent win $ capabilitiesNew ss
 	chooseSwpSfcFormatNew (formatsNew ss) \(fmt :: Vk.Khr.Sfc.FormatNew fmt) -> do
 --		Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-			let	crInfo = mkSwapchainCreateInfoNew sfc qfis ss fmt ext
+			let	crInfo = mkSwapchainCreateInfoNew @fmt sfc qfis ss fmt ext
 			Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil (`f` ext)
-			-}
 
 chooseSwapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
@@ -342,55 +342,18 @@ chooseSwpSfcFormat = \case
 		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
 		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
-chooseSwpSfcFormatNew :: Vk.T.FormatToValue fmt =>
-		[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb] ->
-		HeteroParList.PL Vk.Khr.Sfc.FormatNew (fmt ': fmts) -> (forall fmt .
-			Vk.T.FormatToValue fmt =>
-			Vk.Khr.Sfc.FormatNew fmt -> a) -> a
-chooseSwpSfcFormatNew fmts (fmt0 :** _) f =
+chooseSwpSfcFormatNew :: ( -- Vk.T.FormatToValue fmt =>
+	[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
+	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts ) -> (forall fmt .
+		Vk.T.FormatToValue fmt =>
+		Vk.Khr.Sfc.FormatNew fmt -> a) -> a
+chooseSwpSfcFormatNew (fmts, (fmt0 :*** _)) f =
 	case find (\(Vk.Khr.Sfc.FormatNew cs) ->
 		cs == Vk.Khr.ColorSpaceSrgbNonlinear) fmts of
 		Nothing -> f fmt0
 		Just fmt -> f fmt
-	
-
-{-
-class ChooseSwpSfcFormatNew fmts where
-	chooseSwpSfcFormatNew :: HeteroParList.PL Vk.Khr.Sfc.FormatNew fmts ->
-		(forall fmt .
-			Vk.T.FormatToValue fmt =>
-			Vk.Khr.Sfc.FormatNew fmt -> a) -> a
-
-instance (Vk.T.FormatToValue fmt, ChooseSwpSfcFormat fmts) =>
-	ChooseSwpSfcFormatNew (fmt ': fmts) where
-	chooseSwpSfcFormatNew fmts@(fmt0 :** _) = chooseSwpSfcFormat' fmt0 fmts
-
-class ChooseSwpSfcFormat fmts where
-	chooseSwpSfcFormat' :: Vk.T.FormatToValue fmt0 =>
-		Vk.Khr.Sfc.FormatNew fmt0 -> HeteroParList.PL Vk.Khr.Sfc.FormatNew fmts ->
-		(forall fmt .
-			Vk.T.FormatToValue fmt =>
-			Vk.Khr.Sfc.FormatNew fmt -> a) -> a
-
-instance ChooseSwpSfcFormat '[] where chooseSwpSfcFormat' fmt _ = ($ fmt)
-
-instance ChooseSwpSfcFormat fmts =>
-	ChooseSwpSfcFormat (Vk.T.FormatB8g8r8a8Srgb ': fmts) where
-	chooseSwpSfcFormat' fmt0 (fmt@(Vk.Khr.Sfc.FormatNew cs) :** fmts) f
-		| cs == Vk.Khr.ColorSpaceSrgbNonlinear = f fmt
-		| otherwise = chooseSwpSfcFormat' fmt0 fmts f
-
-instance {-# OVERLAPPABLE #-} ChooseSwpSfcFormat fmts =>
-	ChooseSwpSfcFormat (fmt ': fmts) where
-	chooseSwpSfcFormat' fmt0 (_ :** fmts) = chooseSwpSfcFormat' fmt0 fmts
-	-}
-
-{-
-chooseSwpSfcFormat' :: HeteroParList.ToListWithC Vk.T.FormatToValue fmts =>
-	HeteroParList.PL Vk.Khr.Sfc.FormatNew fmts ->
-	(forall fmt . Vk.T.FormatToValue fmt => Vk.Khr.Sfc.FormatNew fmt -> a) -> a
-chooseSwpSfcFormat' (fmt :** _) f = f fmt
--}
+chooseSwpSfcFormatNew (_, HeteroParListC.Nil) _ =
+	error "no available swap surface formats"
 
 mkSwapchainCreateInfo :: forall fmt ss .
 	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails -> Vk.Extent2d ->
@@ -431,7 +394,6 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
-{-
 mkSwapchainCreateInfoNew :: forall fmt ss fmts .
 	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetailsNew fmts ->
 	Vk.Khr.Sfc.FormatNew fmt -> Vk.Extent2d ->
@@ -471,7 +433,6 @@ mkSwapchainCreateInfoNew sfc qfis0 spp fmt0 ext =
 			[graphicsFamily qfis0, presentFamily qfis0])
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
-		-}
 
 recreateSwapchain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
