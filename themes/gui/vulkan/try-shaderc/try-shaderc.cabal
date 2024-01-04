@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-shaderc
-version:        0.1.0.4
+version:        0.1.0.5
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-shaderc#readme>
 homepage:       https://github.com/githubuser/try-shaderc#readme
 bug-reports:    https://github.com/githubuser/try-shaderc/issues
@@ -54,7 +54,7 @@ library
     , c-struct
     , data-default
     , exception-hierarchy
-    , monads-tf
+    , mtl
     , nowdoc
     , template-haskell
     , try-language-spir-v
@@ -75,7 +75,7 @@ executable try-shaderc-exe
     , c-struct
     , data-default
     , exception-hierarchy
-    , monads-tf
+    , mtl
     , nowdoc
     , template-haskell
     , try-language-spir-v
@@ -98,7 +98,7 @@ test-suite try-shaderc-test
     , c-struct
     , data-default
     , exception-hierarchy
-    , monads-tf
+    , mtl
     , nowdoc
     , template-haskell
     , try-language-spir-v

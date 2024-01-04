@@ -9,6 +9,7 @@ module Language.SpirV.Shaderc (
 	compile, SourceText, InputFileName, EntryPointName ) where
 
 import Foreign.Storable
+import Control.Monad.Trans
 import Control.Monad.Cont
 
 import qualified Data.ByteString as BS

@@ -1,5 +1,5 @@
 name:                try-shaderc
-version:             0.1.0.4
+version:             0.1.0.5
 github:              "githubuser/try-shaderc"
 license:             BSD3
 author:              "Author name here"
@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - template-haskell
 - bytestring
-- monads-tf
+- mtl
 - data-default
 - try-language-spir-v
 - nowdoc

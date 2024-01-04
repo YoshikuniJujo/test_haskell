@@ -9,6 +9,7 @@ module Language.SpirV.Shaderc.CompileOptions.Internal where
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Control.Monad.Trans
 import Control.Monad.Cont
 import Data.Default
 import Data.Bool

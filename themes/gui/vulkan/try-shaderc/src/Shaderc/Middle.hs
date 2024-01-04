@@ -4,6 +4,7 @@
 module Shaderc.Middle where
 
 import Foreign.Storable
+import Control.Monad.Trans
 import Control.Monad.Cont
 
 import qualified Data.ByteString as BS
