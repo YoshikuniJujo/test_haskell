@@ -1,10 +1,13 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface (
 	S, group, Group, unsafeDestroy, lookup,
 
-	Capabilities(..), Format(..), FormatNew(..),
+	Capabilities(..),
+	Format, pattern Format, formatFormat, formatColorSpace,
+	FormatNew(..),
 
 	-- * ENUM
 

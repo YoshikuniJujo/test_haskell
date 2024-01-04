@@ -10,7 +10,7 @@
 module Gpu.Vulkan.Khr.Surface.Internal (
 	S(..), group, unsafeDestroy, lookup, Group(..),
 
-	M.Capabilities(..), M.Format(..),
+	M.Capabilities(..), Format, pattern Format, formatFormat, formatColorSpace,
 	FormatNew(..), formatListToNew, formatFilter ) where
 
 import Prelude hiding (lookup)
@@ -24,6 +24,7 @@ import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HeteroParListC
 import Data.Map qualified as Map
 
+import Gpu.Vulkan qualified as Enum
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Instance.Internal qualified as Instance
 import Gpu.Vulkan.AllocationCallbacks.Internal qualified as AllocationCallbacks
@@ -64,6 +65,12 @@ unsafeDestroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss
 
 lookup :: Ord k => Group si ma s k -> k -> IO (Maybe (S s))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
+
+type Format = M.Format
+
+pattern Format :: Enum.Format -> ColorSpace -> Format
+pattern Format { formatFormat, formatColorSpace } =
+		M.Format formatFormat formatColorSpace
 
 data FormatNew (fmt :: T.Format) =
 	FormatNew { formatNewColorSpace :: ColorSpace }
