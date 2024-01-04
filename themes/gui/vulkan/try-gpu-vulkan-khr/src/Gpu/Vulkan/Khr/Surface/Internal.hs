@@ -66,7 +66,12 @@ lookup :: Ord k => Group si ma s k -> k -> IO (Maybe (S s))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
 
 data FormatNew (fmt :: T.Format) =
-	FormatNew { formatNewColorSpace :: ColorSpace } deriving Show
+	FormatNew { formatNewColorSpace :: ColorSpace }
+
+instance T.FormatToValue fmt => Show (FormatNew fmt) where
+	show (FormatNew cs) =
+		"(FormatNew {- " ++ show (T.formatToValue @fmt) ++ " -} " ++
+		show cs ++ ")"
 
 formatToNew :: M.Format ->
 	(forall fmt . T.FormatToValue fmt => FormatNew fmt -> a) -> a
