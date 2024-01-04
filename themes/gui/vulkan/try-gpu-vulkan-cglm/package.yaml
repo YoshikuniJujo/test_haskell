@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-cglm
-version:             0.1.0.6
+version:             0.1.0.7
 github:              "githubuser/try-gpu-vulkan-cglm"
 license:             BSD3
 author:              "Author name here"
@@ -21,7 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- monads-tf
+- mtl
 - try-gpu-vulkan
 - ranged-list
 

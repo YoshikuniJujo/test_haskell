@@ -11,6 +11,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Control.Monad.Trans
 import Control.Monad.Cont
 import Data.Foldable
 import Data.Either
