@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2023-12-26
+resolver: nightly-2024-01-03
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 76d722116a3225d82c6a19bd24f290bbb7d0c717
+  commit: f8e7adb91714bf5ec0fbbc1e2b9bdad6bb61b69d
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
@@ -80,6 +80,7 @@ extra-deps:
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
+- simple-pango-0.1.0.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
