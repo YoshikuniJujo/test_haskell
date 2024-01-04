@@ -6,9 +6,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE StandaloneDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -260,6 +260,10 @@ data SwpchSupportDetailsNew fmts = SwpchSupportDetailsNew {
 		),
 	presentModesNew :: [Vk.Khr.PresentMode] }
 
+deriving instance
+	Show (HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts) =>
+	Show (SwpchSupportDetailsNew fmts)
+
 querySwapchainSupport :: Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetails fmt)
 querySwapchainSupport dvc sfc = SwpchSupportDetails
@@ -268,7 +272,10 @@ querySwapchainSupport dvc sfc = SwpchSupportDetails
 	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
 
 querySwapchainSupportNew :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss ->
-	(forall fmts . SwpchSupportDetailsNew fmts -> IO a) -> IO a
+	(forall fmts .
+		Show (HeteroParListC.PL
+			Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts) =>
+		SwpchSupportDetailsNew fmts -> IO a) -> IO a
 querySwapchainSupportNew dvc sfc f =
 	Vk.Khr.Sfc.PhDvc.getFormatsNew dvc sfc \fmts ->
 		f =<< SwpchSupportDetailsNew
@@ -322,6 +329,7 @@ createSwapchain' ::
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
 createSwapchain' win sfc pd qfis dvc f = querySwapchainSupportNew pd sfc \ss -> do
+	print $ formatsNew ss
 	ext <- chooseSwapExtent win $ capabilitiesNew ss
 	chooseSwpSfcFormatNew (formatsNew ss) \(fmt :: Vk.Khr.Sfc.FormatNew fmt) -> do
 --		Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
