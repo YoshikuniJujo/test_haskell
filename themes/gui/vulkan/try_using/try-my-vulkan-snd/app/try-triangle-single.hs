@@ -216,7 +216,7 @@ deviceSuitable :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
 deviceSuitable pd sfc = dvcExtensionSupport pd >>= bool (pure Nothing) do
 	qfis <- findQueueFamilies pd sfc
 	querySwapchainSupportNew pd sfc \ss -> pure .
-		bool qfis Nothing $ nullFormats (formats ss) || null (presentModes ss)
+		bool qfis Nothing $ HeteroParListC.null (snd $ formats ss) || null (presentModes ss)
 
 dvcExtensionSupport :: Vk.PhDvc.P -> IO Bool
 dvcExtensionSupport pd = elemAll dvcExtensions
@@ -237,13 +237,6 @@ findQueueFamilies pd sfc = do
 	pure $ QFamIndices <$> (fst <$> find (checkGraphicBit . snd) prps) <*> p
 	where checkGraphicBit =
 		checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
-
-nullFormats :: (
-	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) -> Bool
-nullFormats (_ : _, _) = False
-nullFormats ([], _ :^* _) = False
-nullFormats _ = True
 
 data SwpchSupportDetails fmts = SwpchSupportDetails {
 	capabilities :: Vk.Khr.Sfc.Capabilities,
