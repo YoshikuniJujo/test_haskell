@@ -220,8 +220,8 @@ deviceSuitable pd sfc = dvcExtensionSupport pd >>= bool (pure Nothing) do
 		bool qfis Nothing $ nullFormats (formatsNew ss) || null (presentModesNew ss)
 
 nullFormats :: (
-	[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
-	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts ) -> Bool
+	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) -> Bool
 nullFormats (_ : _, _) = False
 nullFormats ([], _ :^* _) = False
 nullFormats _ = True
@@ -248,20 +248,20 @@ findQueueFamilies pd sfc = do
 
 data SwpchSupportDetails fmt = SwpchSupportDetails {
 	capabilities :: Vk.Khr.Sfc.Capabilities,
-	formats :: [Vk.Khr.Sfc.FormatNew fmt],
+	formats :: [Vk.Khr.Sfc.Format fmt],
 	presentModes :: [Vk.Khr.PresentMode] }
 	deriving Show
 
 data SwpchSupportDetailsNew fmts = SwpchSupportDetailsNew {
 	capabilitiesNew :: Vk.Khr.Sfc.Capabilities,
 	formatsNew :: (
-		[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
-		HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts
+		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+		HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts
 		),
 	presentModesNew :: [Vk.Khr.PresentMode] }
 
 deriving instance
-	Show (HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts) =>
+	Show (HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
 	Show (SwpchSupportDetailsNew fmts)
 
 querySwapchainSupport :: Vk.T.FormatToValue fmt =>
@@ -274,10 +274,10 @@ querySwapchainSupport dvc sfc = SwpchSupportDetails
 querySwapchainSupportNew :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss ->
 	(forall fmts .
 		Show (HeteroParListC.PL
-			Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts) =>
+			Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
 		SwpchSupportDetailsNew fmts -> IO a) -> IO a
 querySwapchainSupportNew dvc sfc f =
-	Vk.Khr.Sfc.PhDvc.getFormatsNew dvc sfc \fmts ->
+	Vk.Khr.Sfc.PhDvc.getFormats dvc sfc \fmts ->
 		f =<< SwpchSupportDetailsNew
 			<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
 			<*> ((, fmts) <$> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc)
@@ -331,7 +331,7 @@ createSwapchain' ::
 createSwapchain' win sfc pd qfis dvc f = querySwapchainSupportNew pd sfc \ss -> do
 	print $ formatsNew ss
 	ext <- chooseSwapExtent win $ capabilitiesNew ss
-	chooseSwpSfcFormatNew (formatsNew ss) \(fmt :: Vk.Khr.Sfc.FormatNew fmt) -> do
+	chooseSwpSfcFormatNew (formatsNew ss) \(fmt :: Vk.Khr.Sfc.Format fmt) -> do
 --		Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 			let	crInfo = mkSwapchainCreateInfoNew @fmt sfc qfis ss fmt ext
 			Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil (`f` ext)
@@ -351,12 +351,12 @@ chooseSwapExtent win caps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
 
 chooseSwpSfcFormatNew :: ( -- Vk.T.FormatToValue fmt =>
-	[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
-	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts ) -> (forall fmt .
+	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) -> (forall fmt .
 		Vk.T.FormatToValue fmt =>
-		Vk.Khr.Sfc.FormatNew fmt -> a) -> a
+		Vk.Khr.Sfc.Format fmt -> a) -> a
 chooseSwpSfcFormatNew (fmts, (fmt0 :^* _)) f =
-	case find (\(Vk.Khr.Sfc.FormatNew cs) ->
+	case find (\(Vk.Khr.Sfc.Format cs) ->
 		cs == Vk.Khr.ColorSpaceSrgbNonlinear) fmts of
 		Nothing -> f fmt0
 		Just fmt -> f fmt
@@ -388,7 +388,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
 	cs = case formats spp of
-		Vk.Khr.Sfc.FormatNew cs' : _ -> cs'; _ -> error "bad"
+		Vk.Khr.Sfc.Format cs' : _ -> cs'; _ -> error "bad"
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
@@ -404,7 +404,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 
 mkSwapchainCreateInfoNew :: forall fmt ss fmts .
 	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetailsNew fmts ->
-	Vk.Khr.Sfc.FormatNew fmt -> Vk.Extent2d ->
+	Vk.Khr.Sfc.Format fmt -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfoNew sfc qfis0 spp fmt0 ext =
 	Vk.Khr.Swapchain.CreateInfo {
@@ -413,7 +413,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp fmt0 ext =
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Sfc.formatNewColorSpace fmt0,
+			Vk.Khr.Sfc.formatColorSpace fmt0,
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =

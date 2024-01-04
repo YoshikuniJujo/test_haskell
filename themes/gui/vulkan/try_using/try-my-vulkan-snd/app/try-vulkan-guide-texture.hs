@@ -378,7 +378,7 @@ createSwapchain :: Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
 createSwapchain w sfc ph qfs dv f = getSwapchainSupport ph sfc >>= \spp -> do
 	ex <- chooseSwapExtent w $ capabilities spp
-	let	fmt = Vk.Khr.Sfc.M.formatFormat
+	let	fmt = Vk.Khr.Sfc.M.formatOldFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
 		Vk.Khr.Swpch.create @'Nothing @fmt dv
@@ -396,7 +396,7 @@ recreateSwapchain w sfc ph qfs dv sc = getSwapchainSupport ph sfc >>= \spp -> do
 getSwapchainSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapchainSupportDetails
 getSwapchainSupport dv sfc = SwapchainSupportDetails
 	<$> Vk.Khr.Sfc.Phd.getCapabilities dv sfc
-	<*> Vk.Khr.Sfc.Phd.getFormats dv sfc
+	<*> Vk.Khr.Sfc.Phd.getFormatsOld dv sfc
 	<*> Vk.Khr.Sfc.Phd.getPresentModes dv sfc
 
 chooseSwapExtent :: Glfw.Window -> Vk.Khr.Sfc.M.Capabilities -> IO Vk.Extent2d
@@ -416,7 +416,7 @@ chooseSwapExtent win caps
 
 data SwapchainSupportDetails = SwapchainSupportDetails {
 	capabilities :: Vk.Khr.Sfc.M.Capabilities,
-	formats :: [Vk.Khr.Sfc.M.Format],
+	formats :: [Vk.Khr.Sfc.M.FormatOld],
 	presentModes :: [Vk.Khr.PresentMode] }
 
 swapchainCreateInfo :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
@@ -428,7 +428,7 @@ swapchainCreateInfo sfc qfs spp ext = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoSurface = sfc,
 	Vk.Khr.Swpch.createInfoMinImageCount = imgc,
 	Vk.Khr.Swpch.createInfoImageColorSpace =
-		Vk.Khr.Sfc.M.formatColorSpace fmt,
+		Vk.Khr.Sfc.M.formatOldColorSpace fmt,
 	Vk.Khr.Swpch.createInfoImageExtent = ext,
 	Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
 	Vk.Khr.Swpch.createInfoImageUsage = Vk.Img.UsageColorAttachmentBit,
@@ -453,13 +453,13 @@ swapchainCreateInfo sfc qfs spp ext = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfs == presentFamily qfs)
 
-chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.M.Format] -> Vk.Khr.Sfc.M.Format
+chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.M.FormatOld] -> Vk.Khr.Sfc.M.FormatOld
 chooseSwapSurfaceFormat = \case
 	fs@(f : _) -> fromMaybe f $ find preferred fs
 	_ -> error "no available swap surface formats"
 	where
-	preferred f = Vk.Khr.Sfc.M.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-		Vk.Khr.Sfc.M.formatColorSpace f ==
+	preferred f = Vk.Khr.Sfc.M.formatOldFormat f == Vk.FormatB8g8r8a8Srgb &&
+		Vk.Khr.Sfc.M.formatOldColorSpace f ==
 			Vk.Khr.ColorSpaceSrgbNonlinear
 
 createImageViews :: Vk.T.FormatToValue fmt =>
