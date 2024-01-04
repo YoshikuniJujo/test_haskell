@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -17,3 +18,6 @@ instance Show (PL c t '[]) where show Nil = "Nil"
 instance (Show (t s), Show (PL c t ss)) =>
 	Show (PL c t (s ': ss)) where
 	show (x :^* xs) = show x ++ " :^* " ++ show xs
+
+null :: PL c t ss -> Bool
+null = \case Nil -> True; _ :^* _ -> False
