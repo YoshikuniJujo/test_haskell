@@ -122,11 +122,11 @@ separate c str = case span (/= c) str of
 
 vkPhysicalDeviceFromFunSig :: String -> DecQ
 vkPhysicalDeviceFromFunSig dtnm = sigD (mkName $ map toLower dtnm ++ "FromCore")
-	$ (conT =<< (fromJust <$> lookupTypeName ("C." ++ dtnm))) `arrT` conT (mkName dtnm)
+	$ (conT =<< (fromJustMsg "vkPhysicalDeviceFromFunSig" <$> lookupTypeName ("C." ++ dtnm))) `arrT` conT (mkName dtnm)
 
 vkPhysicalDeviceToFunSig :: String -> DecQ
 vkPhysicalDeviceToFunSig dtnm = sigD (mkName $ map toLower dtnm ++ "ToCore")
-	$ conT (mkName dtnm) `arrT` (conT =<< (fromJust <$> lookupTypeName ("C." ++ dtnm)))
+	$ conT (mkName dtnm) `arrT` (conT =<< (fromJustMsg "vkPhysicalDeviceToFunSig" <$> lookupTypeName ("C." ++ dtnm)))
 
 arrT :: TypeQ -> TypeQ -> TypeQ
 arrT t1 t2 = arrowT `appT` t1 `appT` t2
@@ -139,7 +139,7 @@ vkPhysicalDeviceFromFunBody dtnm = do
 		nvs = zip (map snd ds) xs
 		nws = zip (zip (map snd ds) xs) fs
 	funD (mkName $ map toLower dtnm ++ "FromCore") [
-		clause [(`recP` exFieldPats dtnm nvs) =<< fromJust <$> lookupValueName ("C." ++ dtnm)]
+		clause [(`recP` exFieldPats dtnm nvs) =<< fromJustMsg "vkPhysicalDeviceFromFunBody" <$> lookupValueName' ("C." ++ dtnm)]
 			(normalB $ recConE (mkName dtnm) (exFieldExps dtnm nws)) []
 		]
 
@@ -151,7 +151,7 @@ vkPhysicalDeviceToFunBody dtnm = do
 		nvs = zip (zip (map snd ds) xs) pes
 	funD (mkName $ map toLower dtnm ++ "ToCore") [
 		clause [(recP (mkName dtnm) $ toFieldPats dtnm nvs)]
-			(normalB $ (`recConE` toFieldExps dtnm nvs) =<< fromJust <$> lookupValueName ("C." ++ dtnm)) []]
+			(normalB $ (`recConE` toFieldExps dtnm nvs) =<< fromJustMsg "vkPhysicalDeviceToFunBody" <$> lookupValueName' ("C." ++ dtnm)) []]
 
 typeToFun :: String -> (Name -> ExpQ)
 typeToFun nm = let Just (_, f) = lookup nm dict in f
@@ -164,8 +164,10 @@ exFieldPat1 pfx fn x = do
 	let	nm = case fn of
 			Atom n -> n
 			List n _ -> n
-	n <- fromJust <$> lookupValueName ("C." ++ pfx ++ capitalize nm)
+	n <- fromJustMsg (mkMsg pfx nm) <$> lookupValueName' ("C." ++ pfx ++ capitalize nm)
 	fieldPat n (varP x)
+	where
+	mkMsg p n = "exFieldPat1: pfx = " ++ show p ++ " nm = " ++ show n
 
 exFieldExps :: String -> [((FieldName, Name), Name -> ExpQ)] -> [Q (Name, Exp)]
 exFieldExps dtnm = map . uncurry $ uncurry (exFieldExp1 $ map toLower dtnm)
@@ -186,7 +188,7 @@ exFieldExp1 pfx (List nm _) x f = do
 f .<$> x = infixApp f (varE '(<$>)) x
 
 typeToPatExp :: String -> (Name -> PatQ, Name -> ExpQ)
-typeToPatExp = fromJust . (`lookup` dict2)
+typeToPatExp = fromJustMsg "typeToPatExp" . (`lookup` dict2)
 
 toFieldPats :: String -> [((FieldName, Name), (Name -> PatQ, a))] -> [Q FieldPat]
 toFieldPats dtnm = map . uncurry $ uncurry (toFieldPat1 $ map toLower dtnm)
@@ -200,9 +202,16 @@ toFieldExps dtnm = map . uncurry $ uncurry (toFieldExp1 $ map toLower dtnm)
 
 toFieldExp1 :: String -> FieldName -> Name -> (Name -> PatQ, Name -> ExpQ) -> Q (Name, Exp)
 toFieldExp1 pfx (Atom nm) x (_, f) = do
-	n <- fromJust <$> lookupValueName ("C." ++ pfx ++ capitalize nm)
+	n <- fromJustMsg "toFieldExp1" <$> lookupValueName' ("C." ++ pfx ++ capitalize nm)
 	fieldExp n (f x)
 toFieldExp1 pfx (List nm _) x (pf, f) = do
-	n <- fromJust <$> lookupValueName ("C." ++ pfx ++ capitalize nm)
+	n <- fromJustMsg "toFieldExp1" <$> lookupValueName' ("C." ++ pfx ++ capitalize nm)
 	y <- newName "y"
 	fieldExp n $ lam1E (pf y) (f y) .<$> (varE 'toList `appE` varE x)
+
+fromJustMsg :: String -> Maybe a -> a
+fromJustMsg msg Nothing = error msg
+fromJustMsg _ (Just x) = x
+
+lookupValueName' :: String -> Q (Maybe Name)
+lookupValueName' = pure . Just . mkName

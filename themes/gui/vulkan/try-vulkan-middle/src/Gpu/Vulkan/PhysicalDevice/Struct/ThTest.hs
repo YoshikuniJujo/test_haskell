@@ -140,7 +140,8 @@ data Debug = Production | Debug deriving Show
 
 lookupValueName' :: Debug -> String -> Q (Maybe Name)
 lookupValueName' = \case
-	Production -> lookupValueName
+--	Production -> lookupValueName
+	Production -> pure . Just . mkName
 	Debug -> pure . Just . mkName
 
 lookupTypeName' :: Debug -> String -> Q (Maybe Name)

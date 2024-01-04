@@ -1,5 +1,5 @@
 name:                try-vulkan-middle
-version:             0.1.0.42
+version:             0.1.0.43
 github:              "githubuser/try-vulkan-middle"
 license:             BSD3
 author:              "Author name here"
@@ -28,7 +28,7 @@ dependencies:
 - try-text-misc-yj
 - bytestring
 - data-default
-- monads-tf
+- mtl
 - try-monads-tf-misc-yj
 - uuid
 - c-enum

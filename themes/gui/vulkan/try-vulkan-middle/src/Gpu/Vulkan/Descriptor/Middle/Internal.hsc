@@ -9,6 +9,8 @@ module Gpu.Vulkan.Descriptor.Middle.Internal (
 	indexingExtensionName,
 	ImageInfo(..), imageInfoToCore, BufferInfo(..), bufferInfoToCore ) where
 
+import Control.Monad.Trans
+
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer
 import qualified Gpu.Vulkan.Image.Enum as Image

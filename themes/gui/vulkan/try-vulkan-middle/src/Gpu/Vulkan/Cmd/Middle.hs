@@ -47,6 +47,8 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke (WithPoked)
 import Foreign.Storable.HeteroList
 import Control.Arrow
+import Control.Monad
+import Control.Monad.Trans
 import Control.Monad.Cont
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HeteroParList

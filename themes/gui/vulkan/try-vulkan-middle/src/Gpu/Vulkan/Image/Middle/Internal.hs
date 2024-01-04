@@ -42,6 +42,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (withPoked, WithPoked, withPoked', withPtrS)
 import Control.Arrow
+import Control.Monad.Trans
 import Control.Monad.Cont
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TSem
