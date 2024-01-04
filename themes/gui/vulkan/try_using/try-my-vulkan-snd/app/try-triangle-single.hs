@@ -25,7 +25,6 @@ import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
--- import Data.Proxy
 import Data.Default
 import Data.Ord.ToolsYj
 import Data.Bits
@@ -192,7 +191,7 @@ run fr w ist =
 	Vk.Khr.Sfc.Glfw.Window.create ist w nil \sfc ->
 	pickPhDevice ist sfc >>= \(pd, qfis) ->
 	createLogicalDevice pd qfis \dv gq pq ->
-	createSwapchain' w sfc pd qfis dv
+	createSwapchain w sfc pd qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
@@ -217,14 +216,7 @@ deviceSuitable :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
 deviceSuitable pd sfc = dvcExtensionSupport pd >>= bool (pure Nothing) do
 	qfis <- findQueueFamilies pd sfc
 	querySwapchainSupportNew pd sfc \ss -> pure .
-		bool qfis Nothing $ nullFormats (formatsNew ss) || null (presentModesNew ss)
-
-nullFormats :: (
-	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) -> Bool
-nullFormats (_ : _, _) = False
-nullFormats ([], _ :^* _) = False
-nullFormats _ = True
+		bool qfis Nothing $ nullFormats (formats ss) || null (presentModes ss)
 
 dvcExtensionSupport :: Vk.PhDvc.P -> IO Bool
 dvcExtensionSupport pd = elemAll dvcExtensions
@@ -246,39 +238,33 @@ findQueueFamilies pd sfc = do
 	where checkGraphicBit =
 		checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
-data SwpchSupportDetails fmt = SwpchSupportDetails {
-	capabilities :: Vk.Khr.Sfc.Capabilities,
-	formats :: [Vk.Khr.Sfc.Format fmt],
-	presentModes :: [Vk.Khr.PresentMode] }
-	deriving Show
+nullFormats :: (
+	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) -> Bool
+nullFormats (_ : _, _) = False
+nullFormats ([], _ :^* _) = False
+nullFormats _ = True
 
-data SwpchSupportDetailsNew fmts = SwpchSupportDetailsNew {
-	capabilitiesNew :: Vk.Khr.Sfc.Capabilities,
-	formatsNew :: (
+data SwpchSupportDetails fmts = SwpchSupportDetails {
+	capabilities :: Vk.Khr.Sfc.Capabilities,
+	formats :: (
 		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
 		HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts
 		),
-	presentModesNew :: [Vk.Khr.PresentMode] }
+	presentModes :: [Vk.Khr.PresentMode] }
 
 deriving instance
 	Show (HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
-	Show (SwpchSupportDetailsNew fmts)
-
-querySwapchainSupport :: Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetails fmt)
-querySwapchainSupport dvc sfc = SwpchSupportDetails
-	<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
-	<*> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc
-	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
+	Show (SwpchSupportDetails fmts)
 
 querySwapchainSupportNew :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss ->
 	(forall fmts .
 		Show (HeteroParListC.PL
 			Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
-		SwpchSupportDetailsNew fmts -> IO a) -> IO a
+		SwpchSupportDetails fmts -> IO a) -> IO a
 querySwapchainSupportNew dvc sfc f =
 	Vk.Khr.Sfc.PhDvc.getFormats dvc sfc \fmts ->
-		f =<< SwpchSupportDetailsNew
+		f =<< SwpchSupportDetails
 			<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
 			<*> ((, fmts) <$> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc)
 			<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
@@ -309,32 +295,17 @@ createLogicalDevice pd qfis act = toHetero mkQCreateInfo uniqueQFams \qs -> let
 	toHetero _k [] f = f HeteroParList.Nil
 	toHetero k (x : xs) f = toHetero k xs \xs' -> f (k x :** xs')
 
-{-
-createSwapchain :: GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
-	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
-		Vk.T.FormatToValue scfmt =>
-		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwapchain win sfc pd qfis dvc f = do
-	ss <- querySwapchainSupport pd sfc
-	ext <- chooseSwapExtent win $ capabilities ss
-	let	fmt = Vk.Khr.Sfc.formatFormat . chooseSwpSfcFormat $ formats ss
-	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-		let	crInfo = mkSwapchainCreateInfo sfc qfis ss ext
-		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil (`f` ext)
-		-}
-
-createSwapchain' ::
+createSwapchain ::
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwapchain' win sfc pd qfis dvc f = querySwapchainSupportNew pd sfc \ss -> do
-	print $ formatsNew ss
-	ext <- chooseSwapExtent win $ capabilitiesNew ss
-	chooseSwpSfcFormatNew (formatsNew ss) \(fmt :: Vk.Khr.Sfc.Format fmt) -> do
---		Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-			let	crInfo = mkSwapchainCreateInfoNew @fmt sfc qfis ss fmt ext
-			Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil (`f` ext)
+createSwapchain win sfc pd qfis dvc f = querySwapchainSupportNew pd sfc \ss -> do
+	print $ formats ss
+	ext <- chooseSwapExtent win $ capabilities ss
+	chooseSwpSfcFormatNew (formats ss) \(fmt :: Vk.Khr.Sfc.Format fmt) -> do
+		let	crInfo = mkSwapchainCreateInfoNew @fmt sfc qfis ss fmt ext
+		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil (`f` ext)
 
 chooseSwapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
@@ -364,7 +335,7 @@ chooseSwpSfcFormatNew (_, HeteroParListC.Nil) _ =
 	error "no available swap surface formats"
 
 mkSwapchainCreateInfo :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails fmt -> Vk.Extent2d ->
+	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetailsFormat fmt -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfo sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfo {
@@ -387,10 +358,10 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoClipped = True,
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
-	cs = case formats spp of
+	cs = case formatsFormat spp of
 		Vk.Khr.Sfc.Format cs' : _ -> cs'; _ -> error "bad"
-	presentMode = chooseSwapPresentMode $ presentModes spp
-	caps = capabilities spp
+	presentMode = chooseSwapPresentMode $ presentModesFormat spp
+	caps = capabilitiesFormat spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
 	imgc = clamp
@@ -403,7 +374,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
 mkSwapchainCreateInfoNew :: forall fmt ss fmts .
-	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetailsNew fmts ->
+	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails fmts ->
 	Vk.Khr.Sfc.Format fmt -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfoNew sfc qfis0 spp fmt0 ext =
@@ -429,8 +400,8 @@ mkSwapchainCreateInfoNew sfc qfis0 spp fmt0 ext =
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
 --	fmt = chooseSwpSfcFormat $ formatsNew spp
-	presentMode = chooseSwapPresentMode $ presentModesNew spp
-	caps = capabilitiesNew spp
+	presentMode = chooseSwapPresentMode $ presentModes spp
+	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
 	imgc = clamp
@@ -447,10 +418,23 @@ recreateSwapchain :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S fmt ssc ->
 	IO Vk.Extent2d
 recreateSwapchain win sfc phdvc qfis0 dvc sc = do
-	spp <- querySwapchainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilities spp
+	spp <- querySwapchainSupportFormat phdvc sfc
+	ext <- chooseSwapExtent win $ capabilitiesFormat spp
 	let	crInfo = mkSwapchainCreateInfo @fmt sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swapchain.unsafeRecreate dvc crInfo nil sc
+
+data SwpchSupportDetailsFormat fmt = SwpchSupportDetailsFormat {
+	capabilitiesFormat :: Vk.Khr.Sfc.Capabilities,
+	formatsFormat :: [Vk.Khr.Sfc.Format fmt],
+	presentModesFormat :: [Vk.Khr.PresentMode] }
+	deriving Show
+
+querySwapchainSupportFormat :: Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFormat fmt)
+querySwapchainSupportFormat dvc sfc = SwpchSupportDetailsFormat
+	<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
+	<*> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc
+	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
