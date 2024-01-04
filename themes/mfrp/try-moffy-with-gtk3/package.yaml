@@ -1,5 +1,5 @@
 name:                try-moffy-with-gtk3
-version:             0.1.0.3
+version:             0.1.0.4
 github:              "githubuser/try-moffy-with-gtk3"
 license:             BSD-3-Clause
 author:              "Author name here"
@@ -32,7 +32,7 @@ dependencies:
 - random
 - time
 - transformers
-- monads-tf
+- mtl
 - X11-xft
 - JuicyPixels
 - JuicyPixels-extra

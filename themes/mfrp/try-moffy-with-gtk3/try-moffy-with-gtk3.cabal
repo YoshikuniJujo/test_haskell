@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-moffy-with-gtk3
-version:        0.1.0.3
+version:        0.1.0.4
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-moffy-with-gtk3#readme>
 homepage:       https://github.com/githubuser/try-moffy-with-gtk3#readme
 bug-reports:    https://github.com/githubuser/try-moffy-with-gtk3/issues
@@ -130,7 +130,7 @@ library
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -169,7 +169,7 @@ executable draw
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -209,7 +209,7 @@ executable followbox
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -249,7 +249,7 @@ executable followboxGtk
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -289,7 +289,7 @@ executable try-gdk-boxes
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -329,7 +329,7 @@ executable try-gdk-gui
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -369,7 +369,7 @@ executable try-glfw-boxes
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -409,7 +409,7 @@ executable try-moffy-with-gtk3-exe
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -449,7 +449,7 @@ executable tryCairo
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -489,7 +489,7 @@ executable tryCairoText
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -529,7 +529,7 @@ executable tryCairoTextExtents
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -569,7 +569,7 @@ executable tryConfigure
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -609,7 +609,7 @@ executable tryCount
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -649,7 +649,7 @@ executable tryDefaultWindow
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -689,7 +689,7 @@ executable tryDeleteEvent
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -729,7 +729,7 @@ executable tryFillPolygon
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -769,7 +769,7 @@ executable tryGdk
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -809,7 +809,7 @@ executable tryGtk
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -849,7 +849,7 @@ executable tryKey
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -889,7 +889,7 @@ executable tryMultiWindow
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -929,7 +929,7 @@ executable tryPango
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -969,7 +969,7 @@ executable tryPngCursor
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -1009,7 +1009,7 @@ executable tryPngCursorEvent
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -1049,7 +1049,7 @@ executable tryScroll
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
@@ -1090,7 +1090,7 @@ test-suite try-moffy-with-gtk3-test
     , freer-par-monad
     , http-conduit
     , moffy
-    , monads-tf
+    , mtl
     , process
     , random
     , serialise
