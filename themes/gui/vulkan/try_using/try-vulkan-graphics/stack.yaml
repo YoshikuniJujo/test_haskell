@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2023-12-23
+resolver: nightly-2024-01-03
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: c74e02b0cefc29c8ff98ad399e070ed53fd2a338
+  commit: 29bd555c35b33ec9d571ae815702a2b07c141d1f
   subdirs:
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
   - themes/gui/vulkan/try-gpu-vulkan
@@ -79,6 +79,7 @@ extra-deps:
   commit: b5efabfd256a7bea9ed865b76fb83990476932f9
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
+- simple-pango-0.1.0.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
