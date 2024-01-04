@@ -66,6 +66,8 @@ unsafeDestroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss
 lookup :: Ord k => Group si ma s k -> k -> IO (Maybe (S s))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
 
+{-# DEPRECATED Format, formatFormat, formatColorSpace "Use FormatNew" #-}
+
 type Format = M.Format
 
 pattern Format :: Enum.Format -> ColorSpace -> Format
