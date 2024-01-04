@@ -10,7 +10,8 @@
 module Gpu.Vulkan.Khr.Surface.Internal (
 	S(..), group, unsafeDestroy, lookup, Group(..),
 
-	M.Capabilities(..), Format, pattern Format, formatFormat, formatColorSpace,
+	M.Capabilities(..),
+	FormatOld, pattern FormatOld, formatOldFormat, formatOldColorSpace,
 	FormatNew(..), formatListToNew, formatFilter ) where
 
 import Prelude hiding (lookup)
@@ -66,13 +67,13 @@ unsafeDestroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss
 lookup :: Ord k => Group si ma s k -> k -> IO (Maybe (S s))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
 
-{-# DEPRECATED Format, formatFormat, formatColorSpace "Use FormatNew" #-}
+{-# DEPRECATED FormatOld, formatOldFormat, formatOldColorSpace "Use FormatNew" #-}
 
-type Format = M.Format
+type FormatOld = M.Format
 
-pattern Format :: Enum.Format -> ColorSpace -> Format
-pattern Format { formatFormat, formatColorSpace } =
-		M.Format formatFormat formatColorSpace
+pattern FormatOld :: Enum.Format -> ColorSpace -> FormatOld
+pattern FormatOld { formatOldFormat, formatOldColorSpace } =
+		M.Format formatOldFormat formatOldColorSpace
 
 data FormatNew (fmt :: T.Format) =
 	FormatNew { formatNewColorSpace :: ColorSpace }
