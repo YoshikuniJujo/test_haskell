@@ -42,7 +42,7 @@ import Data.List.Length
 import Data.List.NonEmpty qualified as NE
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList.Constrained (pattern (:***))
+import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HeteroParListC
 import Data.Text.IO qualified as Txt
 import Data.Color
@@ -223,7 +223,7 @@ nullFormats :: (
 	[Vk.Khr.Sfc.FormatNew Vk.T.FormatB8g8r8a8Srgb],
 	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts ) -> Bool
 nullFormats (_ : _, _) = False
-nullFormats ([], _ :*** _) = False
+nullFormats ([], _ :^* _) = False
 nullFormats _ = True
 
 dvcExtensionSupport :: Vk.PhDvc.P -> IO Bool
@@ -347,7 +347,7 @@ chooseSwpSfcFormatNew :: ( -- Vk.T.FormatToValue fmt =>
 	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.FormatNew fmts ) -> (forall fmt .
 		Vk.T.FormatToValue fmt =>
 		Vk.Khr.Sfc.FormatNew fmt -> a) -> a
-chooseSwpSfcFormatNew (fmts, (fmt0 :*** _)) f =
+chooseSwpSfcFormatNew (fmts, (fmt0 :^* _)) f =
 	case find (\(Vk.Khr.Sfc.FormatNew cs) ->
 		cs == Vk.Khr.ColorSpaceSrgbNonlinear) fmts of
 		Nothing -> f fmt0

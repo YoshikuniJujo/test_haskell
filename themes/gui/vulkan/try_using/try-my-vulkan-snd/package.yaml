@@ -35,7 +35,7 @@ dependencies:
 - bytestring
 - text
 - transformers
-- monads-tf
+- mtl
 - filepath
 - optparse-declarative
 - JuicyPixels

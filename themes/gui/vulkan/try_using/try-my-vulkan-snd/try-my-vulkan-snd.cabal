@@ -58,8 +58,8 @@ library
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -117,8 +117,8 @@ executable my-glslc
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -167,8 +167,8 @@ executable try-allocation-callbacks
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -217,8 +217,8 @@ executable try-copy-descriptor-set
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -267,8 +267,8 @@ executable try-depth-buffering
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -317,8 +317,8 @@ executable try-depth-buffering-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -367,8 +367,8 @@ executable try-dynamic-dsc-sets
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -417,8 +417,8 @@ executable try-generating-mipmaps
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -467,8 +467,8 @@ executable try-generating-mipmaps-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -517,8 +517,8 @@ executable try-hello-world
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -567,8 +567,8 @@ executable try-image-buffer
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -617,8 +617,8 @@ executable try-loading-models
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -667,8 +667,8 @@ executable try-loading-models-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -717,8 +717,8 @@ executable try-multisampling
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -767,8 +767,8 @@ executable try-multisampling-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -817,8 +817,8 @@ executable try-multisampling-use-groups-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -867,8 +867,8 @@ executable try-no-dynamic-dsc-sets
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -917,8 +917,8 @@ executable try-pipeline-cache
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -967,8 +967,8 @@ executable try-query
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1017,8 +1017,8 @@ executable try-rectangle
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1067,8 +1067,8 @@ executable try-rectangle-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1117,8 +1117,8 @@ executable try-saitan
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1167,8 +1167,8 @@ executable try-saitan-float
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1217,8 +1217,8 @@ executable try-saitan-simple
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1267,8 +1267,8 @@ executable try-shaderc
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1317,8 +1317,8 @@ executable try-texel-buffer-float
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1367,8 +1367,8 @@ executable try-texel-buffer-word32
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1417,8 +1417,8 @@ executable try-texture
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1467,8 +1467,8 @@ executable try-texture-descriptor-set-group-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1517,8 +1517,8 @@ executable try-texture-image-manager-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1567,8 +1567,8 @@ executable try-texture-immutable-sampler-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1617,8 +1617,8 @@ executable try-texture-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1667,8 +1667,8 @@ executable try-triangle
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1717,8 +1717,8 @@ executable try-triangle-single
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1767,8 +1767,8 @@ executable try-vulkan-guide
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1817,8 +1817,8 @@ executable try-vulkan-guide-dynamic
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1867,8 +1867,8 @@ executable try-vulkan-guide-storage
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1917,8 +1917,8 @@ executable try-vulkan-guide-texture
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -1967,8 +1967,8 @@ executable try-wavefront-obj
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -2017,8 +2017,8 @@ executable try-yatteiku
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
@@ -2068,8 +2068,8 @@ test-suite try-my-vulkan-snd-test
     , directory
     , filepath
     , ghc-prim
-    , monads-tf
     , mono-traversable
+    , mtl
     , optparse-declarative
     , ranged-list
     , stm
