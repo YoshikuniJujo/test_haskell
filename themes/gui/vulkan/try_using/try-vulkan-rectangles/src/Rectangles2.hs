@@ -516,7 +516,7 @@ destroyWinObjs
 	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k = do
 	Just (GlfwG.Win.W w) <- GlfwG.Win.lookup wgrp k
 	Glfw.setWindowShouldClose w True
-	either error pure =<< destroy wgrp k
+	either error pure =<< unsafeDestroy wgrp k
 
 	either error pure =<< Vk.Khr.Swapchain.unsafeDestroy scgrp k
 	either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcgrp k
