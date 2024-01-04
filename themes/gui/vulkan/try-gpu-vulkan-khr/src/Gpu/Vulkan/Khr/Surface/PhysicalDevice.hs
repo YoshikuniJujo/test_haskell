@@ -7,7 +7,7 @@ module Gpu.Vulkan.Khr.Surface.PhysicalDevice (
 
 	-- * GET SUPPORT, FORMATS, CAPABILITIES AND PRESENT MODES
 
-	getSupport, getFormatsOld, getFormatsNew, getFormatsFiltered, getCapabilities, getPresentModes
+	getSupport, getFormatsOld, getFormats, getFormatsFiltered, getCapabilities, getPresentModes
 
 	) where
 
@@ -32,13 +32,13 @@ getCapabilities phdvc (S sfc) = M.getCapabilities phdvc sfc
 getFormatsOld :: PhysicalDevice.P -> S ss -> IO [M.Format]
 getFormatsOld phdvc (S sfc) = M.getFormats phdvc sfc
 
-getFormatsNew :: PhysicalDevice.P -> S ss ->
+getFormats :: PhysicalDevice.P -> S ss ->
 	(forall fmts .
-		Show (HeteroParListC.PL T.FormatToValue FormatNew fmts) =>
-		HeteroParListC.PL T.FormatToValue FormatNew fmts -> IO a) -> IO a
-getFormatsNew pd sfc f = getFormatsOld pd sfc >>= \fmts -> formatListToNew fmts f
+		Show (HeteroParListC.PL T.FormatToValue Format fmts) =>
+		HeteroParListC.PL T.FormatToValue Format fmts -> IO a) -> IO a
+getFormats pd sfc f = getFormatsOld pd sfc >>= \fmts -> formatListToNew fmts f
 
-getFormatsFiltered :: T.FormatToValue fmt => PhysicalDevice.P -> S ss -> IO [FormatNew fmt]
+getFormatsFiltered :: T.FormatToValue fmt => PhysicalDevice.P -> S ss -> IO [Format fmt]
 getFormatsFiltered pd sfc = formatFilter <$> getFormatsOld pd sfc
 
 getPresentModes :: PhysicalDevice.P -> S ss -> IO [PresentMode]

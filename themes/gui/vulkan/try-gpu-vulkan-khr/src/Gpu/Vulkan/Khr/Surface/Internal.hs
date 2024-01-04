@@ -12,7 +12,7 @@ module Gpu.Vulkan.Khr.Surface.Internal (
 
 	M.Capabilities(..),
 	FormatOld, pattern FormatOld, formatOldFormat, formatOldColorSpace,
-	FormatNew(..), formatListToNew, formatFilter ) where
+	Format(..), formatListToNew, formatFilter ) where
 
 import Prelude hiding (lookup)
 import Control.Concurrent.STM
@@ -67,7 +67,7 @@ unsafeDestroy (Group (Instance.I mi) (AllocationCallbacks.toMiddle -> ma) sem ss
 lookup :: Ord k => Group si ma s k -> k -> IO (Maybe (S s))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
 
-{-# DEPRECATED FormatOld, formatOldFormat, formatOldColorSpace "Use FormatNew" #-}
+{-# DEPRECATED FormatOld, formatOldFormat, formatOldColorSpace "Use Format" #-}
 
 type FormatOld = M.Format
 
@@ -75,33 +75,33 @@ pattern FormatOld :: Enum.Format -> ColorSpace -> FormatOld
 pattern FormatOld { formatOldFormat, formatOldColorSpace } =
 		M.Format formatOldFormat formatOldColorSpace
 
-data FormatNew (fmt :: T.Format) =
-	FormatNew { formatNewColorSpace :: ColorSpace }
+data Format (fmt :: T.Format) =
+	Format { formatColorSpace :: ColorSpace }
 
-instance T.FormatToValue fmt => Show (FormatNew fmt) where
-	show (FormatNew cs) =
-		"(FormatNew {- " ++ show (T.formatToValue @fmt) ++ " -} " ++
+instance T.FormatToValue fmt => Show (Format fmt) where
+	show (Format cs) =
+		"(Format {- " ++ show (T.formatToValue @fmt) ++ " -} " ++
 		show cs ++ ")"
 
 formatToNew :: M.Format ->
-	(forall fmt . T.FormatToValue fmt => FormatNew fmt -> a) -> a
-formatToNew (M.Format fmt cs) f = T.formatToType fmt \(_ :: Proxy fmt) -> f $ FormatNew @fmt cs
+	(forall fmt . T.FormatToValue fmt => Format fmt -> a) -> a
+formatToNew (M.Format fmt cs) f = T.formatToType fmt \(_ :: Proxy fmt) -> f $ Format @fmt cs
 
 formatListToNew :: [M.Format] -> (forall fmts .
-	Show (HeteroParListC.PL T.FormatToValue FormatNew fmts) =>
-	HeteroParListC.PL T.FormatToValue FormatNew fmts -> a) -> a
+	Show (HeteroParListC.PL T.FormatToValue Format fmts) =>
+	HeteroParListC.PL T.FormatToValue Format fmts -> a) -> a
 formatListToNew [] f = f HeteroParListC.Nil
 formatListToNew (fmt : fmts) f = formatToNew fmt \fmt' ->
 	formatListToNew fmts \fmts' -> f $ fmt' :^* fmts'
 
 formatMatched :: forall fmt . T.FormatToValue fmt =>
-	M.Format -> Maybe (FormatNew fmt)
+	M.Format -> Maybe (Format fmt)
 formatMatched (M.Format fmt cs)
-	| T.formatToValue @fmt == fmt = Just $ FormatNew cs
+	| T.formatToValue @fmt == fmt = Just $ Format cs
 	| otherwise = Nothing
 
 formatFilter :: forall fmt . T.FormatToValue fmt =>
-	[M.Format] -> [FormatNew fmt]
+	[M.Format] -> [Format fmt]
 formatFilter = catMaybes . (formatMatched <$>)
 
 {-
