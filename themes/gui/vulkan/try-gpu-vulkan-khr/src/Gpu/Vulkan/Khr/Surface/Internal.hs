@@ -73,6 +73,7 @@ formatToNew :: M.Format ->
 formatToNew (M.Format fmt cs) f = T.formatToType fmt \(_ :: Proxy fmt) -> f $ FormatNew @fmt cs
 
 formatListToNew :: [M.Format] -> (forall fmts .
+	Show (HeteroParListC.PL T.FormatToValue FormatNew fmts) =>
 	HeteroParListC.PL T.FormatToValue FormatNew fmts -> a) -> a
 formatListToNew [] f = f HeteroParListC.Nil
 formatListToNew (fmt : fmts) f = formatToNew fmt \fmt' ->
