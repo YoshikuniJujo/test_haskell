@@ -20,7 +20,7 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Proxy
 import Data.Maybe
-import Data.HeteroParList.Constrained (pattern (:***))
+import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HeteroParListC
 import Data.Map qualified as Map
 
@@ -76,7 +76,7 @@ formatListToNew :: [M.Format] -> (forall fmts .
 	HeteroParListC.PL T.FormatToValue FormatNew fmts -> a) -> a
 formatListToNew [] f = f HeteroParListC.Nil
 formatListToNew (fmt : fmts) f = formatToNew fmt \fmt' ->
-	formatListToNew fmts \fmts' -> f $ fmt' :*** fmts'
+	formatListToNew fmts \fmts' -> f $ fmt' :^* fmts'
 
 formatMatched :: forall fmt . T.FormatToValue fmt =>
 	M.Format -> Maybe (FormatNew fmt)
