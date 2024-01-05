@@ -200,16 +200,16 @@ run fr w ist =
 pickPhDvc :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.PhDvc.P, QFamIndices)
 pickPhDvc ist sfc = Vk.PhDvc.enumerate ist >>= \case
 	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
-	pds -> findMaybeM dvcSuitable pds >>= \case
+	pds -> findMaybeM suitable pds >>= \case
 		Nothing -> error "failed to find a suitable GPU!"
 		Just pdqfi -> pure pdqfi
 	where
-	dvcSuitable pd = dvcExtensionSupport pd >>= bool (pure Nothing) do
+	suitable pd = extensionSupport pd >>= bool (pure Nothing) do
 		qfis <- findQFams pd sfc
 		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
 			$	HeteroParListC.null (snd $ formats ss) ||
 				null (presentModes ss)
-	dvcExtensionSupport pd = elemAll dvcExtensions
+	extensionSupport pd = elemAll dvcExtensions
 		. (Vk.PhDvc.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhDvc.enumerateExtensionProperties pd Nothing
 
@@ -227,6 +227,46 @@ findQFams pd sfc = do
 	pure $ QFamIndices <$> (fst <$> find (grbit . snd) prps) <*> mp
 	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
+createLgDvc :: Vk.PhDvc.P -> QFamIndices ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
+createLgDvc pd qfis act = hetero mkQCreateInfo uniqueQFams \qs ->
+	Vk.Dvc.create pd (mkCreateInfo qs) nil \dv -> join $ act dv
+		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
+		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
+	where
+	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HeteroParList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HeteroParList.PL t ss -> b) -> b
+	hetero _k [] f = f HeteroParList.Nil
+	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
+	uniqueQFams = nub [grFam qfis, prFam qfis]
+	mkCreateInfo qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def }
+	mkQCreateInfo qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+
+createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
+	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
+		Vk.T.FormatToValue scfmt =>
+		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
+createSwpch win sfc pd qfis dv f = querySwpchSupport pd sfc \ss -> do
+	ext <- swapExtent win $ capabilities ss
+	let	cps = capabilities ss
+		pm = findDefault Vk.Khr.PresentModeFifo
+			(== Vk.Khr.PresentModeMailbox) $ presentModes ss
+	chooseSwpSfcFormat (formats ss)
+		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
+		Vk.Khr.Swpch.create @_ @fmt dv
+			(mkSwpchCreateInfo sfc qfis cps sc pm ext) nil (`f` ext)
+
 data SwpchSupportDetails fmts = SwpchSupportDetails {
 	capabilities :: Vk.Khr.Sfc.Capabilities,
 	formats :: (
@@ -241,169 +281,40 @@ deriving instance
 querySwpchSupport :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
 	Show (HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
 	SwpchSupportDetails fmts -> IO a) -> IO a
-querySwpchSupport dvc sfc f = Vk.Khr.Sfc.PhDvc.getFormats dvc sfc \fmts ->
+querySwpchSupport pd sfc f = Vk.Khr.Sfc.PhDvc.getFormats pd sfc \fmts ->
 	f =<< SwpchSupportDetails
-		<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
-		<*> ((, fmts) <$> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc)
-		<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
+		<$> Vk.Khr.Sfc.PhDvc.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Khr.Sfc.PhDvc.getFormatsFiltered pd sfc)
+		<*> Vk.Khr.Sfc.PhDvc.getPresentModes pd sfc
 
-createLgDvc :: Vk.PhDvc.P -> QFamIndices ->
-	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
-createLgDvc pd qfis act = toHetero mkQCreateInfo uniqueQFams \qs ->
-	Vk.Dvc.create pd (mkCreateInfo qs) nil \dvc -> join $ act dvc
-		<$> Vk.Dvc.getQueue dvc (grFam qfis) 0
-		<*> Vk.Dvc.getQueue dvc (prFam qfis) 0
-	where
-	uniqueQFams = nub [grFam qfis, prFam qfis]
-	mkCreateInfo qs = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = TMaybe.N,
-		Vk.Dvc.createInfoFlags = zeroBits,
-		Vk.Dvc.createInfoQueueCreateInfos = qs,
-		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
-		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
-		Vk.Dvc.createInfoEnabledFeatures = Just def }
-	mkQCreateInfo qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = zeroBits,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
-	toHetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
-		HeteroParList.ToListWithCM' WithPoked TMaybe.M ss =>
-		HeteroParList.PL t ss -> b) -> b
-	toHetero _k [] f = f HeteroParList.Nil
-	toHetero k (x : xs) f = toHetero k xs \xs' -> f (k x :** xs')
-
-createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
-	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
-		Vk.T.FormatToValue scfmt =>
-		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwpch win sfc pd qfis dvc f = querySwpchSupport pd sfc \ss -> do
-	print $ formats ss
-	ext <- chooseSwapExtent win $ capabilities ss
-	chooseSwpSfcFormatNew (formats ss) \(fmt :: Vk.Khr.Sfc.Format fmt) -> do
-		let	crInfo = mkSwapchainCreateInfoNew @fmt sfc qfis ss fmt ext
-		Vk.Khr.Swpch.create @'Nothing @fmt dvc crInfo nil (`f` ext)
-
-chooseSwapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
-chooseSwapExtent win caps
-	| Vk.extent2dWidth cur /= maxBound = pure cur
-	| otherwise = do
-		(fromIntegral -> w, fromIntegral -> h) <-
-			GlfwG.Win.getFramebufferSize win
-		pure $ Vk.Extent2d
-			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth n) w)
-			(clamp (Vk.extent2dHeight x) (Vk.extent2dHeight x) h)
-	where
-	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
-
-chooseSwpSfcFormatNew :: ( -- Vk.T.FormatToValue fmt =>
+chooseSwpSfcFormat :: (
 	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) -> (forall fmt .
-		Vk.T.FormatToValue fmt =>
-		Vk.Khr.Sfc.Format fmt -> a) -> a
-chooseSwpSfcFormatNew (fmts, (fmt0 :^* _)) f =
-	case find (\(Vk.Khr.Sfc.Format cs) ->
-		cs == Vk.Khr.ColorSpaceSrgbNonlinear) fmts of
-		Nothing -> f fmt0
-		Just fmt -> f fmt
-chooseSwpSfcFormatNew (_, HeteroParListC.Nil) _ =
+	HeteroParListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) ->
+	(forall fmt . Vk.T.FormatToValue fmt => Vk.Khr.Sfc.Format fmt -> a) -> a
+chooseSwpSfcFormat (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`find` fmts)
+	$ (== Vk.Khr.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
+chooseSwpSfcFormat (_, HeteroParListC.Nil) _ =
 	error "no available swap surface formats"
 
-mkSwapchainCreateInfo :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetailsFormat fmt -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-mkSwapchainCreateInfo sfc qfis0 spp ext =
-	Vk.Khr.Swpch.CreateInfo {
-		Vk.Khr.Swpch.createInfoNext = TMaybe.N,
-		Vk.Khr.Swpch.createInfoFlags = zeroBits,
-		Vk.Khr.Swpch.createInfoSurface = sfc,
-		Vk.Khr.Swpch.createInfoMinImageCount = imgc,
-		Vk.Khr.Swpch.createInfoImageColorSpace = cs,
-		Vk.Khr.Swpch.createInfoImageExtent = ext, 
-		Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
-		Vk.Khr.Swpch.createInfoImageUsage =
-			Vk.Image.UsageColorAttachmentBit,
-		Vk.Khr.Swpch.createInfoImageSharingMode = ism,
-		Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
-		Vk.Khr.Swpch.createInfoPreTransform =
-			Vk.Khr.Sfc.capabilitiesCurrentTransform caps,
-		Vk.Khr.Swpch.createInfoCompositeAlpha =
-			Vk.Khr.CompositeAlphaOpaqueBit,
-		Vk.Khr.Swpch.createInfoPresentMode = presentMode,
-		Vk.Khr.Swpch.createInfoClipped = True,
-		Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
-	where
-	cs = case formatsFormat spp of
-		Vk.Khr.Sfc.Format cs' : _ -> cs'; _ -> error "bad"
-	presentMode = chooseSwapPresentMode $ presentModesFormat spp
-	caps = capabilitiesFormat spp
-	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
-	imgc = clamp
-		0 maxImgc
-		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1)
-	(ism, qfis) = bool
-		(Vk.SharingModeConcurrent,
-			[grFam qfis0, prFam qfis0])
-		(Vk.SharingModeExclusive, [])
-		(grFam qfis0 == prFam qfis0)
-
-mkSwapchainCreateInfoNew :: forall fmt ss fmts .
-	Vk.Khr.Sfc.S ss -> QFamIndices -> SwpchSupportDetails fmts ->
-	Vk.Khr.Sfc.Format fmt -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-mkSwapchainCreateInfoNew sfc qfis0 spp fmt0 ext =
-	Vk.Khr.Swpch.CreateInfo {
-		Vk.Khr.Swpch.createInfoNext = TMaybe.N,
-		Vk.Khr.Swpch.createInfoFlags = zeroBits,
-		Vk.Khr.Swpch.createInfoSurface = sfc,
-		Vk.Khr.Swpch.createInfoMinImageCount = imgc,
-		Vk.Khr.Swpch.createInfoImageColorSpace =
-			Vk.Khr.Sfc.formatColorSpace fmt0,
-		Vk.Khr.Swpch.createInfoImageExtent = ext,
-		Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
-		Vk.Khr.Swpch.createInfoImageUsage =
-			Vk.Image.UsageColorAttachmentBit,
-		Vk.Khr.Swpch.createInfoImageSharingMode = ism,
-		Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
-		Vk.Khr.Swpch.createInfoPreTransform =
-			Vk.Khr.Sfc.capabilitiesCurrentTransform caps,
-		Vk.Khr.Swpch.createInfoCompositeAlpha =
-			Vk.Khr.CompositeAlphaOpaqueBit,
-		Vk.Khr.Swpch.createInfoPresentMode = presentMode,
-		Vk.Khr.Swpch.createInfoClipped = True,
-		Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
-	where
-	presentMode = chooseSwapPresentMode $ presentModes spp
-	caps = capabilities spp
-	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
-	imgc = clamp
-		0 maxImgc
-		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1)
-	(ism, qfis) = bool
-		(Vk.SharingModeConcurrent,
-			[grFam qfis0, prFam qfis0])
-		(Vk.SharingModeExclusive, [])
-		(grFam qfis0 == prFam qfis0)
-
-recreateSwpch :: forall s ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
-	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
-	IO Vk.Extent2d
+recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
+	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
 recreateSwpch win sfc phdvc qfis0 dvc sc = do
-	spp <- querySwpchSupportFormat phdvc sfc
-	ext <- chooseSwapExtent win $ capabilitiesFormat spp
-	let	crInfo = mkSwapchainCreateInfo @fmt sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swpch.unsafeRecreate dvc crInfo nil sc
+	ss <- querySwpchSupportFormat @fmt phdvc sfc
+	ext <- swapExtent win $ capabilitiesFormat ss
+	let	cps = capabilitiesFormat ss
+		Vk.Khr.Sfc.Format cs = fromMaybe
+			(error "no available swap surface formats")
+			. listToMaybe $ formatsFormat ss
+		pm = findDefault Vk.Khr.PresentModeFifo
+			(== Vk.Khr.PresentModeMailbox) $ presentModesFormat ss
+	ext <$ Vk.Khr.Swpch.unsafeRecreate dvc
+		(mkSwpchCreateInfo @fmt sfc qfis0 cps cs pm ext) nil sc
 
 data SwpchSupportDetailsFormat fmt = SwpchSupportDetailsFormat {
 	capabilitiesFormat :: Vk.Khr.Sfc.Capabilities,
 	formatsFormat :: [Vk.Khr.Sfc.Format fmt],
-	presentModesFormat :: [Vk.Khr.PresentMode] }
-	deriving Show
+	presentModesFormat :: [Vk.Khr.PresentMode] } deriving Show
 
 querySwpchSupportFormat :: Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFormat fmt)
@@ -412,9 +323,47 @@ querySwpchSupportFormat dvc sfc = SwpchSupportDetailsFormat
 	<*> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc
 	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
 
-chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
-chooseSwapPresentMode =
-	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
+swapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+swapExtent win cps
+	| Vk.extent2dWidth cur /= maxBound = pure cur
+	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
+		\(fromIntegral -> w, fromIntegral -> h) ->
+		Vk.Extent2d
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
+			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
+	where
+	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
+	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
+	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
+
+mkSwpchCreateInfo :: forall fmt ss .
+	Vk.Khr.Sfc.S ss -> QFamIndices -> Vk.Khr.Sfc.Capabilities ->
+	Vk.Khr.ColorSpace -> Vk.Khr.PresentMode -> Vk.Extent2d ->
+	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
+mkSwpchCreateInfo sfc qfis0 cps cs pm ext = Vk.Khr.Swpch.CreateInfo {
+	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
+	Vk.Khr.Swpch.createInfoFlags = zeroBits,
+	Vk.Khr.Swpch.createInfoSurface = sfc,
+	Vk.Khr.Swpch.createInfoMinImageCount = imgc,
+	Vk.Khr.Swpch.createInfoImageColorSpace = cs,
+	Vk.Khr.Swpch.createInfoImageExtent = ext,
+	Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
+	Vk.Khr.Swpch.createInfoImageUsage = Vk.Image.UsageColorAttachmentBit,
+	Vk.Khr.Swpch.createInfoImageSharingMode = ism,
+	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
+	Vk.Khr.Swpch.createInfoPreTransform =
+		Vk.Khr.Sfc.capabilitiesCurrentTransform cps,
+	Vk.Khr.Swpch.createInfoCompositeAlpha = Vk.Khr.CompositeAlphaOpaqueBit,
+	Vk.Khr.Swpch.createInfoPresentMode = pm,
+	Vk.Khr.Swpch.createInfoClipped = True,
+	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
+	where
+	imgc = clamp 0 imgcx (Vk.Khr.Sfc.capabilitiesMinImageCount cps + 1)
+	imgcx = fromMaybe maxBound
+		. onlyIf (> 0) $ Vk.Khr.Sfc.capabilitiesMaxImageCount cps
+	(ism, qfis) = bool
+		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
+		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Image.Binded ss ss nm fmt] ->
