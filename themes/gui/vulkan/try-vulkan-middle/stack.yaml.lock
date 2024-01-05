@@ -110,7 +110,7 @@ packages:
     subdir: themes/type_level/typelevel-tools
 snapshots:
 - completed:
-    sha256: 5362057cb009c3df7b588bcb37ade11ffeecf2feb056dae9b418116680117383
-    size: 529494
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/1/3.yaml
-  original: nightly-2024-01-03
+    sha256: 05deb6786b36ebc4310c0888acf60beac074c60ce4e6e877da6d2cc613e8f930
+    size: 552863
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/1/5.yaml
+  original: nightly-2024-01-05
