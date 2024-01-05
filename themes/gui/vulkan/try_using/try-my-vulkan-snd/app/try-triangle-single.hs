@@ -83,7 +83,7 @@ import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
 import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
 import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
 import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
-import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Layout
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
 import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
 import Gpu.Vulkan.Sample qualified as Vk.Sample
@@ -187,7 +187,7 @@ run fr w ist =
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
 	createImgVws dv scis \scivs ->
 	createRndrPss @scifmt dv \rp ->
-	createPipelineLayout dv \pl ->
+	createPplLyt dv \pl ->
 	createGraphicsPipeline dv ext rp pl \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
@@ -443,17 +443,16 @@ createRndrPss dv = Vk.RndrPass.create @'Nothing @'[fmt] dv createInfo nil
 			Vk.AccessDepthStencilAttachmentWriteBit,
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
-createPipelineLayout ::
-	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.P sl '[] '[] -> IO b) -> IO b
-createPipelineLayout dvc f = do
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
-			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
-			Vk.Ppl.Layout.createInfoFlags = zeroBits,
-			Vk.Ppl.Layout.createInfoSetLayouts = HeteroParList.Nil }
-	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil f
+createPplLyt ::
+	Vk.Dvc.D sd -> (forall sp . Vk.PplLyt.P sp '[] '[] -> IO b) -> IO b
+createPplLyt dv f = Vk.PplLyt.create @_ @_ @_ @'[] dv createInfo nil f
+	where createInfo = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HeteroParList.Nil }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
@@ -464,7 +463,7 @@ createGraphicsPipeline dvc sce rp ppllyt f =
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
@@ -474,7 +473,7 @@ recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.unsafeRecreate
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 mkGraphicsPipelineCreateInfo ::
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
@@ -798,7 +797,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
 	Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPass.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
@@ -817,7 +816,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Vk.RndrPass.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
@@ -876,7 +875,7 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S fmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Vk.RndrPass.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
@@ -897,7 +896,7 @@ recreateSwapchainEtc :: (
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S fmt ssc -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[] '[] ->
+	Vk.RndrPass.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
