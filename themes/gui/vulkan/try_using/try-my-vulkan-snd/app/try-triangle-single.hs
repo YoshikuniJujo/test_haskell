@@ -185,8 +185,8 @@ run fr w ist =
 	pickPhDvc ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \dv gq pq ->
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ext ->
-	Vk.Khr.Swpch.getImages dv sc >>= \imgs ->
-	createImageViews dv imgs \scivs ->
+	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
+	createImgVws dv scis \scivs ->
 	createRenderPass @scifmt dv \rp ->
 	createPipelineLayout dv \pl ->
 	createGraphicsPipeline dv ext rp pl \gpl ->
@@ -365,50 +365,39 @@ mkSwpchCreateInfo sfc qfis0 cps cs pm ext = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
-createImageViews :: Vk.T.FormatToValue fmt =>
+createImgVws :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Image.Binded ss ss nm fmt] ->
 	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
-createImageViews _dvc [] f = f HeteroParList.Nil
-createImageViews dvc (sci : scis) f =
-	createImageView dvc sci \sciv ->
-	createImageViews dvc scis \scivs -> f $ sciv :** scivs
+createImgVws _dv [] f = f HeteroParList.Nil
+createImgVws dv (i : is) f =
+	Vk.ImgVw.create dv (mkImgVwCreateInfo i) nil \iv ->
+	createImgVws dv is \ivs -> f $ iv :** ivs
 
-recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Image.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
-recreateImageViews _dvc [] HeteroParList.Nil = pure ()
-recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfoNew sci) nil iv >>
-	recreateImageViews dvc scis ivs
-recreateImageViews _ _ _ =
+recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
+	[Vk.Image.Binded ss ss nm fmt] ->
+	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis -> IO ()
+recreateImgVws _dv [] HeteroParList.Nil = pure ()
+recreateImgVws dv (sci : scis) (iv :** ivs) =
+	Vk.ImgVw.unsafeRecreate dv (mkImgVwCreateInfo sci) nil iv >>
+	recreateImgVws dv scis ivs
+recreateImgVws _ _ _ =
 	error "number of Vk.Image.I and Vk.ImageView.M.I should be same"
 
-createImageView :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Image.Binded sm si nm ifmt ->
-	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
-createImageView dvc timg f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfoNew timg) nil f
-
-mkImageViewCreateInfoNew ::
+mkImgVwCreateInfo ::
 	Vk.Image.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
+mkImgVwCreateInfo i = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
-	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
-	Vk.ImgVw.createInfoImage = sci,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = i,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponents = components,
-	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
-	where
-	components = Vk.Component.Mapping {
-		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
-		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Image.SubresourceRange {
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Image.SubresourceRange {
 		Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
 		Vk.Image.subresourceRangeBaseMipLevel = 0,
 		Vk.Image.subresourceRangeLevelCount = 1,
 		Vk.Image.subresourceRangeBaseArrayLayer = 0,
-		Vk.Image.subresourceRangeLayerCount = 1 }
+		Vk.Image.subresourceRangeLayerCount = 1 } }
 
 createRenderPass ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
@@ -929,7 +918,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	ext <- recreateSwpch win sfc phdvc qfis dvc sc
 	ext <$ do
 		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-			recreateImageViews dvc imgs scivs
+			recreateImgVws dvc imgs scivs
 		recreateGraphicsPipeline dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
