@@ -186,13 +186,13 @@ run fr w ist =
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ext ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scivs ->
 	createRndrPss @scifmt dv \rp ->
-	createPplLyt dv \pl -> createGrPpl dv ext rp pl \gpl ->
-	createFramebuffers dv ext rp scivs \fbs ->
+	createPplLyt dv \pl -> createGrPpl dv ext rp pl \gp ->
+	createFrmbffrs dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer pd dv gq cp \vb ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
-	mainLoop fr w sfc pd qfis dv gq pq sc ext scivs rp pl gpl fbs vb cb sos
+	mainLoop fr w sfc pd qfis dv gq pq sc ext scivs rp pl gp fbs vb cb sos
 
 pickPhDvc :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.PhDvc.P, QFamIndices)
 pickPhDvc ist sfc = Vk.PhDvc.enumerate ist >>= \case
@@ -587,42 +587,41 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 		Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 		Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
-	(forall sfs . RecreateFramebuffers sis sfs =>
+createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPass.R sr ->
+	HeteroParList.PL (Vk.ImgVw.I nm fmt) sis -> (forall sfs .
+		RecreateFrmbffrs sis sfs =>
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFramebuffers _ _ _ HeteroParList.Nil f = f HeteroParList.Nil
-createFramebuffers dvc sce rp (iv :** ivs) f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfoNew sce rp iv) nil \fb ->
-	createFramebuffers dvc sce rp ivs \fbs -> f (fb :** fbs)
+createFrmbffrs _ _ _ HeteroParList.Nil f = f HeteroParList.Nil
+createFrmbffrs dv ext rp (iv :** ivs) f =
+	Vk.Frmbffr.create dv (mkFrmbffrCreateInfo ext rp iv) nil \fb ->
+	createFrmbffrs dv ext rp ivs \fbs -> f (fb :** fbs)
 
-class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
-	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
+class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
+	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPass.R sr ->
+		HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO ()
 
-instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce _rp HeteroParList.Nil HeteroParList.Nil = pure ()
+instance RecreateFrmbffrs '[] '[] where
+	recreateFrmbffrs _ _ _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
-instance RecreateFramebuffers sis sfs =>
-	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce rp (sciv :** scivs) (fb :** fbs) =
-		Vk.Frmbffr.unsafeRecreate dvc
-			(mkFramebufferCreateInfoNew sce rp sciv) nil fb >>
-		recreateFramebuffers dvc sce rp scivs fbs
+instance RecreateFrmbffrs sis sfs =>
+	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
+	recreateFrmbffrs dv ext rp (iv :** ivs) (fb :** fbs) =
+		Vk.Frmbffr.unsafeRecreate
+			dv (mkFrmbffrCreateInfo ext rp iv) nil fb >>
+		recreateFrmbffrs dv ext rp ivs fbs
 
-mkFramebufferCreateInfoNew ::
+mkFrmbffrCreateInfo ::
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)]
-mkFramebufferCreateInfoNew sce rp attch = Vk.Frmbffr.CreateInfo {
+mkFrmbffrCreateInfo ext rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 attch :** HeteroParList.Nil,
+	Vk.Frmbffr.createInfoAttachments = HeteroParList.Singleton $ U3 att,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
-	where
-	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
+	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ext
 
 createCommandPool :: QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
@@ -786,7 +785,7 @@ recordCommandBuffer cb rp fb sce gpl vb =
 		Vk.RndrPass.beginInfoClearValues = HeteroParList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
-mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
+mainLoop :: (RecreateFrmbffrs ss sfs, Vk.T.FormatToValue fmt) =>
 	FramebufferResized -> GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q ->
@@ -806,7 +805,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasr
 		runLoop w sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cb iasrfsifs loop
 	Vk.Dvc.waitIdle dvc
 
-runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
+runLoop :: (RecreateFrmbffrs sis sfs, Vk.T.FormatToValue fmt) =>
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> FramebufferResized -> Vk.Extent2d ->
@@ -865,7 +864,7 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
+catchAndRecreate :: (RecreateFrmbffrs sis sfs, Vk.T.FormatToValue fmt) =>
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S fmt ssc ->
@@ -887,7 +886,7 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 
 recreateSwapchainEtc :: (
-	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt ) =>
+	RecreateFrmbffrs sis sfs, Vk.T.FormatToValue fmt ) =>
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S fmt ssc -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
@@ -906,7 +905,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 			recreateImgVws dvc imgs scivs
 		recreateGrPpl dvc ext rp ppllyt gpl
-		recreateFramebuffers dvc ext rp scivs fbs
+		recreateFrmbffrs dvc ext rp scivs fbs
 
 waitFramebufferSize :: GlfwG.Win.W s -> IO ()
 waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
