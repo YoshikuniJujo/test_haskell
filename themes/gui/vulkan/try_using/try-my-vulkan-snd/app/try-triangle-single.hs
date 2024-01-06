@@ -638,8 +638,9 @@ createVtxBffr :: forall sd sc nm a .
 	(forall sm sb algn . KnownNat algn =>
 		Vk.Bffr.Binded sm sb nm '[VObj.List algn Vertex ""] -> IO a ) -> IO a
 createVtxBffr pd dv gq cp f =
---	natToType 256 \(_ :: Proxy algn) ->
-	natToType 1 \(_ :: Proxy algn) ->
+	bufferListAlignment @Vertex pd dv (fromIntegral $ length vertices)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mem.PropertyDeviceLocalBit \(_ :: Proxy algn) ->
 	createBufferList pd dv (fromIntegral $ length vertices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
@@ -666,7 +667,7 @@ createBufferList :: forall algn sd nm t a . (KnownNat algn, Storable t) =>
 createBufferList p dv ln usg props f =
 	createBuffer' p dv (VObj.LengthList ln) usg props \b m pa -> f b m
 
-bufferListAlignment :: forall sd t a . Storable t =>
+bufferListAlignment :: forall t sd a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> -- VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall (algn :: Natural) . KnownNat algn =>
 		Proxy algn -> IO a) -> IO a
