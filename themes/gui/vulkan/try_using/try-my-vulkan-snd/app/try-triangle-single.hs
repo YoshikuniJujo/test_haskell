@@ -643,14 +643,15 @@ createVtxBffr pd dv gq cp f =
 		\(_ :: Proxy algn) ->
 	createBufferList pd dv verticesLen
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList pd dv verticesLen
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List algn t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List algn Vertex "") dv bm' zeroBits vertices
-	copyBuffer dv gq cp b' b
-	f b
+		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+		createBufferList pd dv verticesLen
+			Vk.Bffr.UsageTransferSrcBit (
+			Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit )
+			\(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List algn t ""]) bm' -> do
+			Vk.Mem.write @"vertex-buffer" @(VObj.List algn Vertex "") dv bm' zeroBits vertices
+			copyBuffer dv gq cp b' b
+		f b
 
 natToType :: Natural -> (forall n . KnownNat n => Proxy n -> a) -> a
 natToType n f = (\(SomeNat p) -> f p) $ someNatVal n
