@@ -666,6 +666,12 @@ createBufferList :: forall algn sd nm t a . (KnownNat algn, Storable t) =>
 createBufferList p dv ln usg props f =
 	createBuffer' p dv (VObj.LengthList ln) usg props \b m pa -> f b m
 
+bufferListAlignment :: forall sd t a . Storable t =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> -- VObj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall (algn :: Natural) . KnownNat algn =>
+		Proxy algn -> IO a) -> IO a
+bufferListAlignment p dv ln = bufferAlignment @(VObj.List 256 t "") p dv (VObj.LengthList ln)
+
 createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb algn . KnownNat algn =>
@@ -674,7 +680,7 @@ createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
 			'[ '(sb, 'Vk.Mem.BufferArg nm '[o])] ->
 		Proxy algn ->
 		IO a) -> IO a
-createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
+createBuffer' p dv ln usg props f = Vk.Bffr.create dv (bffrInfo ln usg) nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	print $ "createBuffer': alignment = " ++
 		show (Vk.Mem.requirementsAlignment reqs)
@@ -684,19 +690,30 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 			(allcInfo mt) nil
 			$ (\b' m -> f b' m pa)
 			. \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
-	where
-	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
-	bffrInfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = TMaybe.N,
-		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
-		Vk.Bffr.createInfoUsage = usg,
-		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
-	allcInfo mt = Vk.Mem.AllocateInfo {
-		Vk.Mem.allocateInfoNext = TMaybe.N,
-		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
+
+bufferAlignment :: forall o sd a . VObj.SizeAlignment o =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall (algn :: Natural) . KnownNat algn =>
+		Proxy algn -> IO a) -> IO a
+bufferAlignment p dv ln usg props f = Vk.Bffr.create dv (bffrInfo ln usg) nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	print $ "createBuffer': alignment = " ++
+		show (Vk.Mem.requirementsAlignment reqs)
+	natToType 256 \pa -> f pa
+
+bffrInfo :: VObj.Length o -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
+bffrInfo ln usg = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N,
+	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
+	Vk.Bffr.createInfoUsage = usg,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	
+allcInfo :: Vk.Mem.TypeIndex -> Vk.Mem.AllocateInfo 'Nothing
+allcInfo mt = Vk.Mem.AllocateInfo {
+	Vk.Mem.allocateInfoNext = TMaybe.N,
+	Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.TypeIndex
