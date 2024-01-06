@@ -633,18 +633,18 @@ createCmdPl qfis dv = Vk.CmdPl.create dv crinfo nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-createVtxBffr :: forall sd sc nm a .
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+createVtxBffr :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall sm sb algn . KnownNat algn =>
-		Vk.Bffr.Binded sm sb nm '[VObj.List algn Vertex ""] -> IO a ) -> IO a
+		Vk.Bffr.Binded sm sb nm '[VObj.List algn Vertex ""] -> IO a) ->
+	IO a
 createVtxBffr pd dv gq cp f =
-	bufferListAlignment @Vertex pd dv (fromIntegral $ length vertices)
+	bufferListAlignment @Vertex pd dv verticesLen
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \(_ :: Proxy algn) ->
-	createBufferList pd dv (fromIntegral $ length vertices)
+		\(_ :: Proxy algn) ->
+	createBufferList pd dv verticesLen
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList pd dv (fromIntegral $ length vertices)
+	createBufferList pd dv verticesLen
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List algn t ""]) bm' -> do
@@ -669,7 +669,7 @@ createBufferList p dv ln usg props f =
 
 bufferListAlignment :: forall t sd a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> -- VObj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall (algn :: Natural) . KnownNat algn =>
+	Vk.Bffr.UsageFlags -> (forall (algn :: Natural) . KnownNat algn =>
 		Proxy algn -> IO a) -> IO a
 bufferListAlignment p dv ln = bufferAlignment @(VObj.List 256 t "") p dv (VObj.LengthList ln)
 
@@ -694,9 +694,9 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv (bffrInfo ln usg) nil \b -
 
 bufferAlignment :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall (algn :: Natural) . KnownNat algn =>
+	Vk.Bffr.UsageFlags -> (forall (algn :: Natural) . KnownNat algn =>
 		Proxy algn -> IO a) -> IO a
-bufferAlignment p dv ln usg props f = Vk.Bffr.create dv (bffrInfo ln usg) nil \b -> do
+bufferAlignment p dv ln usg f = Vk.Bffr.create dv (bffrInfo ln usg) nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	print $ "createBuffer': alignment = " ++
 		show (Vk.Mem.requirementsAlignment reqs)
@@ -954,6 +954,9 @@ instance Storable Vertex where
 
 
 instance Foreign.Storable.Generic.G Vertex where
+
+verticesLen :: Vk.Dvc.Size
+verticesLen = fromIntegral $ length vertices
 
 vertices :: [Vertex]
 vertices = [
