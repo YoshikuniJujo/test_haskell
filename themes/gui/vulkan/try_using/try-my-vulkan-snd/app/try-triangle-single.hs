@@ -634,26 +634,25 @@ createCmdPl qfis dv = Vk.CmdPl.create dv crinfo nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
 createVtxBffr :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	(forall sm sb algn . KnownNat algn => Vk.Bffr.Binded sm sb nm
-		'[VObj.List algn Vertex nm'''] -> IO a) -> IO a
+	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
+		'[VObj.List al Vertex lnm] -> IO a) -> IO a
 createVtxBffr pd dv gq cp f =
 	bufferListAlignment @Vertex dv verticesLen
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		\(_ :: Proxy algn) ->
+		\(_ :: Proxy al) ->
 	createBufferList pd dv verticesLen
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
 		createBufferList pd dv verticesLen
 			Vk.Bffr.UsageTransferSrcBit (
 			Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit )
-			\(b' :: Vk.Bffr.Binded sm sb nm' '[VObj.List algn t nm'']) bm' -> do
-			Vk.Mem.write @nm' @(VObj.List algn t nm'') dv bm' zeroBits vertices
+			Vk.Mem.PropertyHostCoherentBit ) \
+			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
+			bm' -> do
+			Vk.Mem.write @bnm' @(VObj.List al t lnm')
+				dv bm' zeroBits vertices
 			copyBuffer dv gq cp b' b
 		f b
-
-natToType :: Natural -> (forall n . KnownNat n => Proxy n -> a) -> a
-natToType n f = (\(SomeNat p) -> f p) $ someNatVal n
 
 createBufferList :: forall algn sd nm nm' t a . (KnownNat algn, Storable t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
@@ -694,9 +693,12 @@ bufferAlignment :: forall o sd a . VObj.SizeAlignment o =>
 		Proxy algn -> IO a) -> IO a
 bufferAlignment dv ln usg f = Vk.Bffr.create dv (bffrInfo ln usg) nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
-	print $ "createBuffer': alignment = " ++
-		show (Vk.Mem.requirementsAlignment reqs)
-	natToType 256 \pa -> f pa
+	let	al = Vk.Mem.requirementsAlignment reqs
+	print $ "createBuffer': alignment = " ++ show al
+	natToType al \pa -> f pa
+
+natToType :: Integral i => i -> (forall n . KnownNat n => Proxy n -> a) -> a
+natToType n f = (\(SomeNat p) -> f p) . someNatVal $ fromIntegral n
 
 bffrInfo :: VObj.Length o -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
 bffrInfo ln usg = Vk.Bffr.CreateInfo {
