@@ -192,7 +192,7 @@ run fr w ist =
 	createFrmbffrs dv ext rp scivs \fbs ->
 	createCmdPl qfis dv \cp ->
 	createVtxBffr pd dv gq cp \vb ->
-	createCommandBuffer dv cp \cb ->
+	createCmdBffr dv cp \cb ->
 	createSyncObjects dv \sos ->
 	mainLoop fr w sfc pd qfis dv gq pq sc ext scivs rp pl gp fbs vb cb sos
 
@@ -715,18 +715,12 @@ copyBffr :: forall sd sc sm sb sm' sb' bnm bnm' al t lnm .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
 	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
-copyBffr dv gq cp src dst =
-	Vk.CmdBffr.allocate dv ainfo \(cb :*. HeteroParList.Nil) -> do
-		Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo $
-			Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb src dst
-		Vk.Q.submit gq (HeteroParList.Singleton $ U4 (sinfo cb)) Nothing
-		Vk.Q.waitIdle gq
+copyBffr dv gq cp src dst = createCmdBffr dv cp \cb -> do
+	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo $
+		Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb src dst
+	Vk.Q.submit gq (HeteroParList.Singleton $ U4 (sinfo cb)) Nothing
+	Vk.Q.waitIdle gq
 	where
-	ainfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
-	ainfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 	binfo = Vk.CmdBffr.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -738,15 +732,13 @@ copyBffr dv gq cp src dst =
 		Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
-createCommandBuffer ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb . Vk.CmdBffr.C scb -> IO a) ->
-	IO a
-createCommandBuffer dvc cp f =
-	Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
+createCmdBffr :: forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
+	(forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
+createCmdBffr dv cp f =
+	Vk.CmdBffr.allocate dv (info cp) $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
+	info :: Vk.CmdPl.C scp -> Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
+	info cp = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
