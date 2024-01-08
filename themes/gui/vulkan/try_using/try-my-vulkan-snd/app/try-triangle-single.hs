@@ -650,7 +650,7 @@ createVtxBffr pd dv gq cp f =
 			bm' -> do
 			Vk.Mm.write @bnm' @(VObj.List al t lnm')
 				dv bm' zeroBits vertices
-			copyBuffer dv gq cp b' b
+			copyBffr dv gq cp b' b
 		f b
 
 bufferListAlignment :: forall t sd a (lnm :: Symbol) . Storable t =>
@@ -710,34 +710,33 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
-copyBuffer :: forall algn sd sc sm sb nm sm' sb' nm' nm'' t .
-	(KnownNat algn, Sizable t, Storable t) =>
+copyBffr :: forall sd sc sm sb sm' sb' bnm bnm' al t lnm .
+	(KnownNat al, Sizable t, Storable t) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List algn t nm''] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List algn t nm''] -> IO ()
-copyBuffer dvc gq cp src dst = do
-	Vk.CmdBffr.allocate
-		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
-		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
-			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = TMaybe.N,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[VObj.List algn t nm'']] cb src dst
-		Vk.Q.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
+	Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
+	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
+copyBffr dv gq cp src dst =
+	Vk.CmdBffr.allocate dv ainfo \(cb :*. HeteroParList.Nil) -> do
+		Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo $
+			Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb src dst
+		Vk.Q.submit gq (HeteroParList.Singleton $ U4 (sinfo cb)) Nothing
 		Vk.Q.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
+	ainfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
+	ainfo = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
-	beginInfo = Vk.CmdBffr.BeginInfo {
+	binfo = Vk.CmdBffr.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+	sinfo :: Vk.CmdBffr.C s -> Vk.SubmitInfo 'Nothing '[] '[s] '[]
+	sinfo cb = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
+		Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
 createCommandBuffer ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
