@@ -119,7 +119,7 @@ import Data.Text.ToolsYj
 import Debug
 
 main :: IO ()
-main = valNat maxFramesInFlight \(_ :: Proxy n) -> do
+main = do
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
@@ -234,8 +234,9 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
-	createCommandBuffers dv cp \cbs ->
-	createSyncObjects dv \sos ->
+	mkVss maxFramesInFlight \(_ :: Proxy vss1) ->
+	createCommandBuffers' @vss1 dv cp \cbs ->
+	createSyncObjects' @vss1 dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs sos
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -830,14 +831,13 @@ copyBuffer dvc gq cp src dst = do
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
-createCommandBuffers ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
-	(forall scb vss . HeteroParList.HomoList '() vss =>
+createCommandBuffers' :: forall vss sd scp a .
+	(TpLvlLst.Length vss, HeteroParList.FromList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
+	Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	(forall scb .
 		HeteroParList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
 	IO a
-createCommandBuffers dvc cp f =
-	mkVss maxFramesInFlight \(_ :: Proxy vss1) ->
-	Vk.CmdBffr.allocate dvc (allocInfo @vss1) f
+createCommandBuffers' dvc cp f = Vk.CmdBffr.allocate dvc (allocInfo @vss) f
 	where
 	allocInfo :: forall n . Vk.CmdBffr.AllocateInfo 'Nothing scp n
 	allocInfo = Vk.CmdBffr.AllocateInfo {
@@ -845,8 +845,10 @@ createCommandBuffers dvc cp f =
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 		
-mkVss :: Int -> (forall (vss :: [()]) .
-	(TpLvlLst.Length vss, HeteroParList.FromList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
+mkVss :: Int -> (forall (vss :: [()]) . (
+	TpLvlLst.Length vss, HeteroParList.FromList vss,
+	HeteroParList.HomoList '() vss, TLength.Length vss,
+	HeteroParList.RepM vss ) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
@@ -861,14 +863,14 @@ data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 		inFlightFences :: HeteroParList.PL Vk.Fence.F sfss } ->
 		SyncObjects '(siass, srfss, sfss)
 
-createSyncObjects ::
+createSyncObjects' :: forall (vss :: [()]) sd a . HeteroParList.RepM vss =>
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
-createSyncObjects dvc f =
-	HeteroParList.replicateM maxFramesInFlight
+createSyncObjects' dvc f =
+	HeteroParList.repM @vss
 		(Vk.Semaphore.create @'Nothing dvc def nil) \iass ->
-	HeteroParList.replicateM maxFramesInFlight
+	HeteroParList.repM @vss
 		(Vk.Semaphore.create @'Nothing dvc def nil) \rfss ->
-	HeteroParList.replicateM maxFramesInFlight
+	HeteroParList.repM @vss
 		(Vk.Fence.create @'Nothing dvc fncInfo nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
