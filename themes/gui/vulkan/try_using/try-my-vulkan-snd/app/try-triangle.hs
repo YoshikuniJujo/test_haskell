@@ -11,9 +11,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
+import GHC.Natural
+import GHC.TypeNats
+
+import Gpu.Vulkan.Memory qualified as Vk.Mem
 
 import GHC.Generics
 import Foreign.Storable
@@ -30,7 +33,7 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
 import Data.TypeLevel.List qualified as TpLvlLst
-import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.Proxy
 import Data.Bool
@@ -42,76 +45,78 @@ import Data.Color
 
 import TypeLevel.Nat
 
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
-import qualified Gpu.Vulkan.Cglm as Cglm
+import Data.List.NonEmpty qualified as NE
+import Data.Text.IO qualified as Txt
+import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
+import Gpu.Vulkan.Khr.Surface.Glfw qualified as Glfw
+import Gpu.Vulkan.Cglm qualified as Cglm
 import qualified Foreign.Storable.Generic
 
 import ThEnv
-import qualified Language.SpirV as SpirV
+import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
 import Data.TypeLevel.ParMaybe (nil)
 
-import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.Exception as Vk
-import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
-import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
-import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.Exception qualified as Vk
+import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
+import Gpu.Vulkan.Instance qualified as Vk.Ist.M
+import Gpu.Vulkan.Khr qualified as Vk.Khr
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
+import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 
-import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.Device as Vk.Dvc.M
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface.M
-import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
+import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Device qualified as Vk.Dvc.M
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface.M
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
 	Vk.Khr.Surface.PhysicalDevice
-import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
-import qualified Gpu.Vulkan.Image as Vk.Image
-import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.Image as Vk.Image.M
-import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
-import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
-import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
-import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MltSmplSt
-import qualified Gpu.Vulkan.Sample as Vk.Sample
-import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
-import qualified Gpu.Vulkan.ColorComponent as Vk.ClrCmp
-import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
-import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Layout
-import qualified Gpu.Vulkan.Attachment as Vk.Att
-import qualified Gpu.Vulkan.Subpass as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr.M
-import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
-import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
-import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.Memory as Vk.Mem.M
-import qualified Gpu.Vulkan.Queue as Vk.Queue
-import qualified Gpu.Vulkan.Cmd as Vk.Cmd
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
+import Gpu.Vulkan.Image qualified as Vk.Image
+import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.Image qualified as Vk.Image.M
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Component qualified as Vk.Component
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
+import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
+import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
+import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Layout
+import Gpu.Vulkan.Attachment qualified as Vk.Att
+import Gpu.Vulkan.Subpass qualified as Vk.Subpass
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass.M
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr.M
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.Memory qualified as Vk.Mem.M
+import Gpu.Vulkan.Queue qualified as Vk.Queue
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 
 import Tools
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 import Data.Text.ToolsYj
+
+import Debug
 
 main :: IO ()
 main = valNat maxFramesInFlight \(_ :: Proxy n) -> do
@@ -831,15 +836,15 @@ createCommandBuffers ::
 		HeteroParList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f =
-	mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	Vk.CmdBffr.allocate @_ @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
+	mkVss maxFramesInFlight \(_ :: Proxy vss1) ->
+	Vk.CmdBffr.allocate dvc (allocInfo @vss1) f
 	where
 	allocInfo :: forall n . Vk.CmdBffr.AllocateInfo 'Nothing scp n
 	allocInfo = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
-
+		
 mkVss :: Int -> (forall (vss :: [()]) .
 	(TpLvlLst.Length vss, HeteroParList.FromList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
 	Proxy vss -> a) -> a
