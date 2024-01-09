@@ -61,7 +61,7 @@ module Data.HeteroParList (
 	-- * Map and ReplicateM
 
 	map, mapM, MapM'(..),
-	replicate, replicateM,
+	Rep(..), RepM(..), replicate, replicateM,
 
 	) where
 
@@ -302,13 +302,35 @@ instance MapM' f ss => MapM' f (s ': ss) where
 	type Ss' f (s ': ss) = f s ': Ss' f ss
 	mapM' g (x :** xs) = (:**) <$> g x <*> mapM' g xs
 
+class Rep n where
+	rep :: (forall a . (forall s . t s -> a) -> a) ->
+		(forall ss . PL t ss -> b) -> b
+
+instance Rep 0 where rep _ f = f Nil
+
+instance {-# OVERLAPPABLE #-} Rep (n - 1) => Rep n where
+	rep x f = x \v -> rep @(n - 1) x \vs -> f $ v :** vs
+
+class RepM n where
+	repM :: (forall a . (forall s . t s -> m a) -> m a) ->
+		(forall ss . PL t ss -> m b) -> m b
+
+instance RepM 0 where repM _ f = f Nil
+
+instance {-# OVERLAPPABLE #-} RepM (n - 1) => RepM n where
+	repM x f = x \v -> repM @(n - 1) x \vs -> f $ v :** vs
+
+instance RepM '[] where repM _ f = f Nil
+
+instance {-# OVERLAPPABLE #-} RepM n => RepM ('() ': n) where
+	repM x f = x \v -> repM @n x \vs -> f $ v :** vs
+
 replicate :: Int -> (forall a . (forall s . t s -> a) -> a) ->
 	(forall ss . PL t ss -> b) -> b
 replicate 0 _ f = f Nil
 replicate n x f = x \v -> replicate (n - 1) x \vs -> f $ v :** vs
 
-replicateM :: Monad m =>
-	Int -> (forall a . (forall s . t s -> m a) -> m a) ->
+replicateM :: Int -> (forall a . (forall s . t s -> m a) -> m a) ->
 	(forall ss . PL t ss -> m b) -> m b
 replicateM 0 _ f = f Nil
 replicateM n x f = x \v -> replicateM (n - 1) x \vs ->
