@@ -97,7 +97,7 @@ import Gpu.Vulkan.Cglm qualified as Cglm
 import Gpu.Vulkan.Khr qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.PhDvc
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Window
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
@@ -105,9 +105,9 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 import Debug
 
 main :: IO ()
-main = newIORef False >>= \fr -> withWindow fr \win -> createIst \inst ->
-	bool id (setupDbgMsngr inst) debug $ body fr win inst
-	where setupDbgMsngr i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
+main = newIORef False >>= \fr -> withWindow fr \w ->
+	createIst \ist -> bool id (dbgm ist) debug $ body fr w ist
+	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = IORef Bool
 
@@ -140,16 +140,16 @@ createIst f = do
 	info exts = Vk.Ist.CreateInfo {
 		Vk.Ist.createInfoNext = TMaybe.N,
 		Vk.Ist.createInfoFlags = zeroBits,
-		Vk.Ist.createInfoApplicationInfo = Just appInfo,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
 		Vk.Ist.createInfoEnabledLayerNames = [],
 		Vk.Ist.createInfoEnabledExtensionNames = exts }
 	infoDbg exts = Vk.Ist.CreateInfo {
 		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
 		Vk.Ist.createInfoFlags = zeroBits,
-		Vk.Ist.createInfoApplicationInfo = Just appInfo,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
 		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
 		Vk.Ist.createInfoEnabledExtensionNames = exts }
-	appInfo = Vk.ApplicationInfo {
+	ainfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
 		Vk.applicationInfoApplicationName = "Hello Triangle",
 		Vk.applicationInfoApplicationVersion =
@@ -181,7 +181,7 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 
 body :: FramebufferResized -> GlfwG.Win.W s -> Vk.Ist.I si -> IO ()
 body fr w ist =
-	Vk.Khr.Sfc.Glfw.Window.create ist w nil \sfc ->
+	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhDvc ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \dv gq pq ->
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
