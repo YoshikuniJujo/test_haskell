@@ -406,8 +406,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			Glfw.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clamp w (Vk.extent2dWidth n) (Vk.extent2dWidth x))
-			(clamp h (Vk.extent2dHeight n)
+			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dWidth x))
+			(clampOld h (Vk.extent2dHeight n)
 				(Vk.extent2dHeight x))
 	where
 	curExt = Vk.Khr.Sfc.M.capabilitiesCurrentExtent caps
@@ -442,7 +442,7 @@ swapchainCreateInfo sfc qfs spp ext = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoClipped = True,
 	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
 	where
-	imgc = clamp (Vk.Khr.Sfc.M.capabilitiesMinImageCount caps + 1) 0
+	imgc = clampOld (Vk.Khr.Sfc.M.capabilitiesMinImageCount caps + 1) 0
 		. fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.M.capabilitiesMaxImageCount caps
 	fmt = chooseSwapSurfaceFormat $ formats spp

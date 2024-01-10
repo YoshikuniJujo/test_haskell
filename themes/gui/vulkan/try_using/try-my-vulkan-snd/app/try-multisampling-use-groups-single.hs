@@ -467,7 +467,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
-	imgc = clamp
+	imgc = clampOld
 		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
@@ -497,8 +497,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			Glfw.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
+			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
+			(clampOld h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
 	where
 	curExt = Vk.Khr.Surface.M.capabilitiesCurrentExtent caps
 	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps

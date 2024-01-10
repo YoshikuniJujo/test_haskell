@@ -6,7 +6,7 @@ module Tools (
 
 	-- * BASIC
 
-	clamp, onlyIf, checkFlag, findPlusM, findBySnd,
+	clampOld, onlyIf, checkFlag, findPlusM, findBySnd,
 
 	-- * LIST
 
@@ -46,8 +46,8 @@ toBits x =
 checkBit :: FiniteBits a => a -> a -> Maybe a
 checkBit bs b = bool Nothing (Just b) $ bs .&. b /= zeroBits
 
-clamp :: Ord a => a -> a -> a -> a
-clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
+clampOld :: Ord a => a -> a -> a -> a
+clampOld x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 onlyIf :: (a -> Bool) -> a -> Maybe a
 onlyIf p x | p x = Just x | otherwise = Nothing
