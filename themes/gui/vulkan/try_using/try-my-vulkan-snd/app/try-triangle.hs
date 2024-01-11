@@ -45,6 +45,8 @@ import Data.List.Length
 import Data.Color
 import Data.Text.ToolsYj
 
+import Data.Word
+
 import Data.List.NonEmpty qualified as NE
 import Data.Text.IO qualified as Txt
 import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
@@ -836,43 +838,45 @@ draw :: forall sd fmt ssc sr sg sl sfs sm sb bnm al lnm scb mff ssos .
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
 	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssos -> Int -> IO ()
 draw dv gq pq sc ex rp gp fbs vb cbs (SyncObjs iass rfss iffs) cf =
-	HPList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
-	HPList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) -> do
-	Vk.Fence.waitForFs dv siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dv sc maxBound (Just ias) Nothing
-	Vk.Fence.resetFs dv siff
+	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
+	ii <- Vk.Khr.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.CmdBffr.reset cb def
-	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ex gp vb
-	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
-		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-				$ Vk.SemaphorePipelineStageFlags ias
-					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
-	where	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
-			HPList.Dummy (Vk.CmdBffr.C scb) '()
+	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff
+	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ pinfo rfs ii
+	where
+	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
+		HPList.Dummy (Vk.CmdBffr.C scb) '()
+	sinfo :: Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
+		Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
+	sinfo ias rfs = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
+	pinfo :: Vk.Semaphore.S srfs -> Word32 ->
+		Vk.Khr.PresentInfo Nothing '[srfs] fmt '[ssc]
+	pinfo rfs ii = Vk.Khr.PresentInfo {
+		Vk.Khr.presentInfoNext = TMaybe.N,
+		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
-recordCommandBuffer :: forall scb sr sf sg sm sb nm slbtss al lnm . KnownNat al =>
+recordCmdBffr :: forall scb sr sf sg sm sb nm slbtss al lnm . KnownNat al =>
 	Vk.CmdBffr.C scb ->
-	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
+	Vk.Extent2d ->
+	Vk.RndrPss.R sr ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		slbtss ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] slbtss ->
+	Vk.Frmbffr.F sf ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] -> IO ()
-recordCommandBuffer cb rp fb sce gp vb =
+recordCmdBffr cb sce rp gp fb vb =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb ->

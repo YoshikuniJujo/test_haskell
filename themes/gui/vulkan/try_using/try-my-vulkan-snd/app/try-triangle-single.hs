@@ -809,7 +809,7 @@ draw dv gq pq sc ex rp gp fbs vb cb (SyncObjs ias rfs iff) = do
 	Vk.CmdBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq (pinfo ii)
+	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ pinfo ii
 	where
 	siff = HPList.Singleton iff
 	sinfo = Vk.SubmitInfo {
@@ -817,7 +817,7 @@ draw dv gq pq sc ex rp gp fbs vb cb (SyncObjs ias rfs iff) = do
 		Vk.submitInfoWaitSemaphoreDstStageMasks =
 			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
 				ias Vk.Ppl.StageColorAttachmentOutputBit,
-		Vk.submitInfoCommandBuffers = HPList.Singleton  cb,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
 	pinfo ii = Vk.Khr.PresentInfo {
 		Vk.Khr.presentInfoNext = TMaybe.N,
