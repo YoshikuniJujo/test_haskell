@@ -775,7 +775,7 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb cb sos = do
 	Vk.Dvc.waitIdle dv
 
 run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al) =>
-	FramebufferResized -> GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
@@ -785,12 +785,12 @@ run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al) =>
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
 	Vk.CmdBffr.C scb -> SyncObjs ssos -> (Vk.Extent2d -> IO ()) -> IO ()
-run fr w sfc pd qfis dv gq pq sc ext vs rp pl gp fbs vb cb sos go = do
+run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb cb sos go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
-		$ draw dv gq pq sc ext rp gp fbs vb cb sos
+		$ draw dv gq pq sc ex rp gp fbs vb cb sos
 	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
 		(True, _) -> pure ()
-		(_, False) -> go ext
+		(_, False) -> go ex
 		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 draw :: forall sd fmt ssc sr sg sl sfs sm sb bnm al lnm scb ssos .
@@ -802,12 +802,12 @@ draw :: forall sd fmt ssc sr sg sl sfs sm sb bnm al lnm scb ssos .
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
 	Vk.CmdBffr.C scb -> SyncObjs ssos -> IO ()
-draw dv gq pq sc ext rp gp fbs vb cb (SyncObjs ias rfs iff) = do
+draw dv gq pq sc ex rp gp fbs vb cb (SyncObjs ias rfs iff) = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.CmdBffr.reset cb def
-	HPList.index fbs ii \fb -> recordCmdBffr cb ext rp gp fb vb
+	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq (pinfo ii)
 	where

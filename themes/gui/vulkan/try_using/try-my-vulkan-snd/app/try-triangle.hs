@@ -805,53 +805,47 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb cbs sos = do
 			sc ex vs rp pl gp fbs vb cbs sos cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
 
-run :: (RecreateFrmbffrs svs sfs,
-	Vk.T.FormatToValue scfmt, HPList.HomoList '() vss, KnownNat al) =>
-	FramebufferResized ->
-	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc ->
-	Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I inm scfmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[], '[]) ->
+run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al,
+	HPList.HomoList '() mff) =>
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	 Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] ->
-	HPList.LL (Vk.CmdBffr.C scb) vss ->
-	SyncObjs siassrfssfs ->
-	Int ->
+	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
+	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs siassrfssfs -> Int ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-run fr win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs iasrfsifs cf
-	cls <- GlfwG.Win.shouldClose win
-	if cls then (pure ()) else checkFlag fr >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
-			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
+run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb cbs sos cf go = do
+	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
+		$ draw dv gq pq sc ex rp gp fbs vb cbs sos cf
+	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
+		(True, _) -> pure ()
+		(_, False) -> go ex
+		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-drawFrame :: forall sfs sd ssc sr sg sm sb nm scb ssos vss scfmt sl al lnm .
-	(HPList.HomoList '() vss, KnownNat al) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
-	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[], '[]) ->
+draw :: forall sd fmt ssc sr sg sl sfs sm sb bnm al lnm scb mff ssos .
+	(KnownNat al, HPList.HomoList '() mff) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] ->
-	HPList.LL (Vk.CmdBffr.C scb) vss -> SyncObjs ssos -> Int -> IO ()
-drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjs iass rfss iffs) cf =
+	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
+	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssos -> Int -> IO ()
+draw dv gq pq sc ex rp gp fbs vb cbs (SyncObjs iass rfss iffs) cf =
 	HPList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
 	HPList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) -> do
-	Vk.Fence.waitForFs dvc siff True Nothing
+	Vk.Fence.waitForFs dv siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc maxBound (Just ias) Nothing
-	Vk.Fence.resetFs dvc siff
+		dv sc maxBound (Just ias) Nothing
+	Vk.Fence.resetFs dv siff
 	Vk.CmdBffr.reset cb def
 	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext gpl vb
+		recordCommandBuffer cb rp fb ex gp vb
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
@@ -878,10 +872,10 @@ recordCommandBuffer :: forall scb sr sf sg sm sb nm slbtss al lnm . KnownNat al 
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		slbtss ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] -> IO ()
-recordCommandBuffer cb rp fb sce gpl vb =
+recordCommandBuffer cb rp fb sce gp vb =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
-	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb (HPList.Singleton
 		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @lnm vb) >>
 	Vk.Cmd.draw cbb 3 1 0 0
@@ -921,10 +915,10 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapChainEtc
+	\_ -> loop =<< recreateAll
 		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 
-recreateSwapChainEtc ::
+recreateAll ::
 	(RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
@@ -935,7 +929,7 @@ recreateSwapChainEtc ::
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
+recreateAll win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
