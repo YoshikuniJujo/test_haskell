@@ -798,19 +798,21 @@ mainloop :: (HPList.HomoList '() mff,
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
 	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssos -> IO ()
 mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb cbs sos = do
-	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ex0) $ fix \loop ext (cf : cfs) -> do
-		Glfw.pollEvents
-		runLoop w sfc pd qfis dv gq pq
-			sc fr ext vs rp pl gp fbs vb cbs sos cf (`loop` cfs)
+	($ cycle [0 .. maxFramesInFlight - 1])
+		. ($ ex0) $ fix \go ex (cf : cfs) ->
+		Glfw.pollEvents >>
+		run fr w sfc pd qfis dv gq pq
+			sc ex vs rp pl gp fbs vb cbs sos cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
 
-runLoop :: (
-	RecreateFrmbffrs sis sfs,
-	Vk.T.FormatToValue scfmt, HPList.HomoList '() vss, KnownNat al ) =>
+run :: (RecreateFrmbffrs svs sfs,
+	Vk.T.FormatToValue scfmt, HPList.HomoList '() vss, KnownNat al) =>
+	FramebufferResized ->
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I inm scfmt) sis ->
+	Vk.Khr.Swpch.S scfmt ssc ->
+	Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm scfmt) svs ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
@@ -821,11 +823,11 @@ runLoop :: (
 	SyncObjs siassrfssfs ->
 	Int ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
+run fr win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs iasrfsifs cf
 	cls <- GlfwG.Win.shouldClose win
-	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
+	if cls then (pure ()) else checkFlag fr >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
