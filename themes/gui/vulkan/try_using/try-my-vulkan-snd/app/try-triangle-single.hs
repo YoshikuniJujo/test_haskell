@@ -827,7 +827,7 @@ draw dv gq pq sc ex rp gp fbs vb cb (SyncObjs ias rfs iff) = do
 	
 
 recordCmdBffr :: forall scb sr sg sl sf sm sb bnm al lnm . KnownNat al =>
-	Vk.CmdBffr.C scb  -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.CmdBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->

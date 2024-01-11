@@ -867,32 +867,29 @@ draw dv gq pq sc ex rp gp fbs vb cbs (SyncObjs iass rfss iffs) cf =
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
-recordCmdBffr :: forall scb sr sf sg sm sb nm slbtss al lnm . KnownNat al =>
-	Vk.CmdBffr.C scb ->
-	Vk.Extent2d ->
-	Vk.RndrPss.R sr ->
+recordCmdBffr :: forall scb sr sg sl sf sm sb bnm al lnm . KnownNat al =>
+	Vk.CmdBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] slbtss ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] -> IO ()
-recordCmdBffr cb sce rp gp fb vb =
-	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
-	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb ->
-	Vk.Cmd.bindVertexBuffers cbb (HPList.Singleton
-		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @lnm vb) >>
-	Vk.Cmd.draw cbb 3 1 0 0
+	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] -> IO ()
+recordCmdBffr cb ex rp gp fb vb = Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
+	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
+	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
+		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @lnm vb
+	Vk.Cmd.draw cbb verticesNum 1 0 0
 	where
-	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
+	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
-	rpInfo = Vk.RndrPss.BeginInfo {
+	info = Vk.RndrPss.BeginInfo {
 		Vk.RndrPss.beginInfoNext = TMaybe.N,
 		Vk.RndrPss.beginInfoRenderPass = rp,
 		Vk.RndrPss.beginInfoFramebuffer = fb,
 		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
-			Vk.rect2dExtent = sce },
+			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
@@ -900,27 +897,19 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreate :: (
-	RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt ) =>
-	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
-	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Graphics.G sg
+catchAndRecreate :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
-	catchJust
+	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
+catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just ()
-		_ -> Nothing)
-	act
-	\_ -> loop =<< recreateAll
-		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
+	\_ -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 recreateAll ::
 	(RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
@@ -933,7 +922,7 @@ recreateAll ::
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
+recreateAll win sfc phdvc qfis dvc sc scivs rp pl gp fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
@@ -941,7 +930,7 @@ recreateAll win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	ext <$ do
 		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 			recreateImgVws dvc imgs scivs
-		recreateGrPpl dvc ext rp ppllyt gpl
+		recreateGrPpl dvc ext rp pl gp
 		recreateFrmbffrs dvc ext rp scivs fbs
 
 waitFramebufferSize :: GlfwG.Win.W s -> IO ()
@@ -957,6 +946,7 @@ data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 
 instance Foreign.Storable.Generic.G Vertex
 
+verticesNum :: Integral n => n
 verticesNum = fromIntegral $ length vertices
 
 vertices :: [WVertex]
