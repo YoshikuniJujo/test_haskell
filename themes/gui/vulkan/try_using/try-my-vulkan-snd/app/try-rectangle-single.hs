@@ -12,7 +12,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import GHC.Generics
 import Foreign.Storable
@@ -116,12 +116,11 @@ import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Data.Text.ToolsYj
 
 main :: IO ()
-main = do
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
+main = newIORef False >>= \fr -> withWindow fr \w ->
+	createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g
-			else run win inst g
+			then setupDebugMessenger inst $ run w inst fr
+			else run w inst fr
 
 type FramebufferResized = IORef Bool
 
@@ -146,8 +145,8 @@ validationLayers = [Vk.layerKhronosValidation]
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 1
 
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
+withWindow :: FramebufferResized -> (Glfw.Window -> IO a) -> IO a
+withWindow g f = initWindow g >>= \w ->
 	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
 
 initWindow :: FramebufferResized -> IO Glfw.Window
