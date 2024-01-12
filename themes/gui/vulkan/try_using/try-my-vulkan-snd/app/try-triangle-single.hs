@@ -749,10 +749,10 @@ data SyncObjs (ssos :: (Type, Type, Type)) where
 		SyncObjs '(sias, srfs, sfs)
 
 createSyncObjs :: Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
-createSyncObjs dvc f =
-	Vk.Semaphore.create @'Nothing dvc def nil \ias ->
-	Vk.Semaphore.create @'Nothing dvc def nil \rfs ->
-	Vk.Fence.create @'Nothing dvc finfo nil \iff ->
+createSyncObjs dv f =
+	Vk.Semaphore.create @'Nothing dv def nil \ias ->
+	Vk.Semaphore.create @'Nothing dv def nil \rfs ->
+	Vk.Fence.create @'Nothing dv finfo nil \iff ->
 	f $ SyncObjs ias rfs iff
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
@@ -769,8 +769,8 @@ mainloop :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al) =>
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
 	Vk.CmdBffr.C scb -> SyncObjs ssos -> IO ()
 mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb cb sos = do
-	($ ex0) $ fix \go ex -> do
-		GlfwG.pollEvents
+	($ ex0) $ fix \go ex ->
+		GlfwG.pollEvents >>
 		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb cb sos go
 	Vk.Dvc.waitIdle dv
 
@@ -871,7 +871,7 @@ catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 	\_ -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
-	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P -> QFamIndices ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm fmt) svs ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
@@ -897,7 +897,7 @@ type WVertex = Foreign.Storable.Generic.W Vertex
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
-instance Foreign.Storable.Generic.G Vertex where
+instance Foreign.Storable.Generic.G Vertex
 
 verticesNum :: Integral n => n
 verticesNum = fromIntegral $ length vertices

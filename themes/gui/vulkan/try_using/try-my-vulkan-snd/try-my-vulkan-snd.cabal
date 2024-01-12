@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -56,6 +56,7 @@ library
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -115,6 +116,7 @@ executable my-glslc
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -165,6 +167,7 @@ executable try-allocation-callbacks
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -215,6 +218,7 @@ executable try-copy-descriptor-set
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -265,6 +269,7 @@ executable try-depth-buffering
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -315,6 +320,7 @@ executable try-depth-buffering-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -365,6 +371,7 @@ executable try-dynamic-dsc-sets
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -415,6 +422,7 @@ executable try-generating-mipmaps
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -465,6 +473,7 @@ executable try-generating-mipmaps-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -515,6 +524,7 @@ executable try-hello-world
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -565,6 +575,7 @@ executable try-image-buffer
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -615,6 +626,7 @@ executable try-loading-models
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -665,6 +677,7 @@ executable try-loading-models-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -715,6 +728,7 @@ executable try-multisampling
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -765,6 +779,7 @@ executable try-multisampling-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -815,6 +830,7 @@ executable try-multisampling-use-groups-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -865,6 +881,7 @@ executable try-no-dynamic-dsc-sets
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -915,6 +932,7 @@ executable try-pipeline-cache
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -965,6 +983,7 @@ executable try-query
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1015,6 +1034,7 @@ executable try-rectangle
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1065,6 +1085,7 @@ executable try-rectangle-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1115,6 +1136,7 @@ executable try-saitan
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1165,6 +1187,7 @@ executable try-saitan-float
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1215,6 +1238,7 @@ executable try-saitan-simple
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1265,6 +1289,7 @@ executable try-shaderc
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1315,6 +1340,7 @@ executable try-texel-buffer-float
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1365,6 +1391,7 @@ executable try-texel-buffer-word32
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1415,6 +1442,7 @@ executable try-texture
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1465,6 +1493,7 @@ executable try-texture-descriptor-set-group-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1515,6 +1544,7 @@ executable try-texture-image-manager-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1565,6 +1595,7 @@ executable try-texture-immutable-sampler-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1615,6 +1646,7 @@ executable try-texture-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1665,6 +1697,7 @@ executable try-triangle
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1715,6 +1748,7 @@ executable try-triangle-single
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1765,6 +1799,7 @@ executable try-vulkan-guide
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1815,6 +1850,7 @@ executable try-vulkan-guide-dynamic
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1865,6 +1901,7 @@ executable try-vulkan-guide-storage
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1915,6 +1952,7 @@ executable try-vulkan-guide-texture
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -1965,6 +2003,7 @@ executable try-wavefront-obj
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -2015,6 +2054,7 @@ executable try-yatteiku
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable
@@ -2066,6 +2106,7 @@ test-suite try-my-vulkan-snd-test
     , containers
     , data-default
     , directory
+    , extra-data-yj
     , filepath
     , ghc-prim
     , mono-traversable

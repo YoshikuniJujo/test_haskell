@@ -2,7 +2,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Tools (
+module Tools {-# DEPRECATED "use package try-tools-yj" #-} (
 
 	-- * BASIC
 

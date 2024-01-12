@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -17,104 +17,96 @@ import GHC.Generics
 import GHC.Types
 import GHC.TypeNats
 import Foreign.Storable
+import Foreign.Storable.Generic qualified
 import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
-import Data.Kind
+import Data.Proxy
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.List qualified as TList
+import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.List qualified as TList
 import Data.Default
 import Data.Ord.ToolsYj
 import Data.Bits
-import Data.HeteroParList qualified as HPList
-import Data.HeteroParList (pattern (:**), pattern (:*.))
-import Data.HeteroParList.Constrained qualified as HPListC
-import Data.HeteroParList.Constrained (pattern (:^*))
-import Data.Proxy
+import Data.Bits.ToolsYj
+import Data.Function.ToolsYj
+import Data.Tuple.ToolsYj
 import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List
 import Data.List.ToolsYj
-import Data.IORef
 import Data.List.Length
-import Data.Color
-import Data.Text.ToolsYj
-
-import Data.Word
-
 import Data.List.NonEmpty qualified as NE
+import Data.List.Infinite qualified as Inf
+import Data.List.Infinite (pattern (:~))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList qualified as HPList
+import Data.HeteroParList.Constrained (pattern (:^*))
+import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Text.IO qualified as Txt
-import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
-import qualified Foreign.Storable.Generic
+import Data.Word
+import Data.Color
+import Data.IORef
+import Data.IORef.ToolsYj
 
-import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
-import Data.TypeLevel.ParMaybe (nil)
-
-import Gpu.Vulkan.Object qualified as VObj
-import Gpu.Vulkan.Memory qualified as Vk.Mm
-import Gpu.Vulkan.Cglm qualified as Cglm
 import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Exception qualified as Vk
-import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.Instance qualified as Vk.Ist
-import Gpu.Vulkan.Khr qualified as Vk.Khr
-import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
-import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
+import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
-
 import Gpu.Vulkan.Device qualified as Vk.Dvc
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
-import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.PhDvc
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
-import Gpu.Vulkan.Component qualified as Vk.Component
-import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
 import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
 import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
-import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
-import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
-import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
-import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
-import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
-import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
-import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
-import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
-import Gpu.Vulkan.Fence qualified as Vk.Fence
-import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
-import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Memory qualified as Vk.Mm
-import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.Cmd qualified as Vk.Cmd
-import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
-import Tools hiding (onlyIf)
+import Gpu.Vulkan.Cglm qualified as Cglm
+import Gpu.Vulkan.Khr qualified as Vk.Khr
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.PhDvc
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
+
 import Debug
-
-import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-
-import Data.Function.ToolsYj
-import Data.Tuple.ToolsYj
 
 main :: IO ()
 main = newIORef False >>= \fr -> withWindow fr \w ->
@@ -210,8 +202,7 @@ body fr w ist =
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
-		HPList.HomoList '() n, HPList.RepM n ) =>
-		Proxy n -> a) -> a
+		HPList.HomoList '() n, HPList.RepM n ) => Proxy n -> a) -> a
 	tnum 0 f = f (Proxy @'[])
 	tnum n f = tnum (n - 1) \p -> f $ plus1 p
 		where plus1 :: Proxy n -> Proxy ('() ': n); plus1 Proxy = Proxy
@@ -345,9 +336,9 @@ querySwpchSupportFmt dvc sfc = SwpchSupportDetailsFmt
 	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
 
 swapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
-swapExtent w cps
+swapExtent win cps
 	| Vk.extent2dWidth cur /= maxBound = pure cur
-	| otherwise = (<$> GlfwG.Win.getFramebufferSize w)
+	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
 		\(fromIntegral -> w, fromIntegral -> h) ->
 		Vk.Extent2d
 			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
@@ -762,10 +753,8 @@ copyBffr dv gq cp s d = Vk.CmdBffr.allocate dv ainfo \(cb :*. HPList.Nil) -> do
 createCmdBffrs :: forall n sd scp a . (TList.Length n, HPList.FromList n) =>
 	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . HPList.LL (Vk.CmdBffr.C scb) n -> IO a) -> IO a
-createCmdBffrs dv cp f = Vk.CmdBffr.allocate dv (info @n) f
-	where
-	info :: forall n . Vk.CmdBffr.AllocateInfo 'Nothing scp n
-	info = Vk.CmdBffr.AllocateInfo {
+createCmdBffrs dv cp f = Vk.CmdBffr.allocate dv info f
+	where info = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
@@ -777,7 +766,7 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 		_inFlightFences :: HPList.PL Vk.Fence.F sfss } ->
 		SyncObjs '(siass, srfss, sfss)
 
-createSyncObjs :: forall (n :: [()]) sd a . HPList.RepM n =>
+createSyncObjs :: forall n sd a . HPList.RepM n =>
 	Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
 createSyncObjs dv f =
 	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \iass ->
@@ -800,15 +789,15 @@ mainloop :: (HPList.HomoList '() mff,
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
 	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssos -> IO ()
 mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb cbs sos = do
-	($ cycle [0 .. maxFramesInFlight - 1])
-		. ($ ex0) $ fix \go ex (cf : cfs) ->
-		Glfw.pollEvents >>
+	($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
+		. ($ ex0) $ fix \go ex (cf :~ cfs) ->
+		GlfwG.pollEvents >>
 		run fr w sfc pd qfis dv gq pq
 			sc ex vs rp pl gp fbs vb cbs sos cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
 
-run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al,
-	HPList.HomoList '() mff) =>
+run :: (HPList.HomoList '() mff,
+	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
@@ -818,7 +807,7 @@ run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al,
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] ->
-	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs siassrfssfs -> Int ->
+	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssos -> Int ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb cbs sos cf go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
@@ -911,32 +900,27 @@ catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
 	\_ -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-recreateAll ::
-	(RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
-	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
-	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Graphics.G sg
+recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
+	HPList.PL (Vk.ImgVw.I nm fmt) svs ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[], '[]) ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll win sfc phdvc qfis dvc sc scivs rp pl gp fbs = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
+recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
 
-	ext <- recreateSwpch win sfc phdvc qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-			recreateImgVws dvc imgs scivs
-		recreateGrPpl dvc ext rp pl gp
-		recreateFrmbffrs dvc ext rp scivs fbs
+	ex <- recreateSwpch w sfc pd qfis dv sc
+	ex <$ do
+		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
+		recreateGrPpl dv ex rp pl gp
+		recreateFrmbffrs dv ex rp vs fbs
 
 waitFramebufferSize :: GlfwG.Win.W s -> IO ()
-waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> GlfwG.Win.getFramebufferSize win
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 type WVertex = Foreign.Storable.Generic.W Vertex
@@ -952,7 +936,6 @@ verticesNum = fromIntegral $ length vertices
 vertices :: [WVertex]
 vertices = Foreign.Storable.Generic.W <$> [
 	Vertex (Cglm.Vec2 $ 0.0 :. (- 0.5) :. NilL)
---		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
 		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
 	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
