@@ -397,9 +397,9 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 
 createRndrPss :: forall fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
-createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv crinfo nil
+createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 	where
-	crinfo = Vk.RndrPss.CreateInfo {
+	info = Vk.RndrPss.CreateInfo {
 		Vk.RndrPss.createInfoNext = TMaybe.N,
 		Vk.RndrPss.createInfoFlags = zeroBits,
 		Vk.RndrPss.createInfoAttachments = ca :** HPList.Nil,
