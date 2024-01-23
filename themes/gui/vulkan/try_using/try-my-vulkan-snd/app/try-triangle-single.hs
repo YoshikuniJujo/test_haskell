@@ -320,7 +320,7 @@ querySwpchSupportFmt dvc sfc = SwpchSupportDetailsFmt
 	<*> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc
 	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
 
-swapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
 swapExtent win cps
 	| Vk.extent2dWidth cur /= maxBound = pure cur
 	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
