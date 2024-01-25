@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PhysicalDevice.Struct.Th (
@@ -25,7 +26,7 @@ import Gpu.Vulkan.Base.Middle.Internal
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 
 newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
-	deriving Show
+	deriving (Show, Eq, Ord, Enum, Num, Real, Integral)
 
 newtype Size = Size Word64 deriving Show
 
