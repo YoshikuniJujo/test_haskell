@@ -77,6 +77,10 @@ module Gpu.Vulkan (
 	Extent3d, pattern Extent3d,
 	extent3dWidth, extent3dHeight, extent3dDepth,
 
+	-- * OTHERS
+
+	Size(..),
+
 	-- * ENUM
 
 	module Gpu.Vulkan.Enum,

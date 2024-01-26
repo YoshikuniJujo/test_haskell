@@ -75,7 +75,11 @@ module Gpu.Vulkan.Internal (
 	M.extent2dWidth, M.extent2dHeight,
 
 	M.Extent3d, pattern M.Extent3d,
-	M.extent3dWidth, M.extent3dHeight, M.extent3dDepth
+	M.extent3dWidth, M.extent3dHeight, M.extent3dDepth,
+
+	-- * OTHERS
+
+	M.Size(..)
 
 	) where
 
