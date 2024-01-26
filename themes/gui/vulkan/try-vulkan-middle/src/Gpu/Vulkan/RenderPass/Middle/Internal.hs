@@ -29,7 +29,7 @@ import Gpu.Vulkan.Misc.Middle.Internal
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
-import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
+import qualified Gpu.Vulkan.Device.Middle.Types as Device
 import qualified Gpu.Vulkan.Attachment.Middle.Internal as Attachment
 import qualified Gpu.Vulkan.Subpass.Middle.Internal as Subpass
 import qualified Gpu.Vulkan.Framebuffer.Middle.Internal as Framebuffer

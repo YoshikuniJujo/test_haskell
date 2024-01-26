@@ -39,7 +39,9 @@ module Gpu.Vulkan.Middle.Internal (
 
 	C.Viewport, pattern C.Viewport,
 	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
-	C.viewportMinDepth, C.viewportMaxDepth
+	C.viewportMinDepth, C.viewportMaxDepth,
+
+	Size(..)
 
 	) where
 
@@ -67,9 +69,11 @@ import Gpu.Vulkan.Enum
 import qualified Gpu.Vulkan.Core as C
 
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
-import {-# SOURCE #-} qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore
+import qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore
 import {-# SOURCE #-} qualified
 	Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
+
+import Gpu.Vulkan.Middle.Types
 
 #include <vulkan/vulkan.h>
 

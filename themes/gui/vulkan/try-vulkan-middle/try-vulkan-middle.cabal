@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-vulkan-middle
-version:        0.1.0.45
+version:        0.1.0.46
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-middle#readme>
 homepage:       https://github.com/githubuser/try-vulkan-middle#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-middle/issues
@@ -129,11 +129,13 @@ library
       Gpu.Vulkan.DescriptorSet.Middle.Internal
       Gpu.Vulkan.DescriptorSetLayout.BindingFlags.Middle.Internal
       Gpu.Vulkan.DescriptorSetLayout.Middle.Internal
+      Gpu.Vulkan.Device.Middle.Types
       Gpu.Vulkan.Exception.Middle.Internal
       Gpu.Vulkan.Framebuffer.Middle.Internal
       Gpu.Vulkan.ImageView.Middle.Internal
       Gpu.Vulkan.Memory.Middle.Internal
       Gpu.Vulkan.Middle.Internal
+      Gpu.Vulkan.Middle.Types
       Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Struct.Th
       Gpu.Vulkan.PhysicalDevice.Struct.ThTest

@@ -32,7 +32,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandBuffer.Enum
 import Gpu.Vulkan.Base.Middle.Internal
 
-import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
+import qualified Gpu.Vulkan.Device.Middle.Types as Device
 import qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderPass
 import qualified Gpu.Vulkan.Framebuffer.Middle.Internal as Framebuffer
 import qualified Gpu.Vulkan.CommandPool.Middle.Internal as CommandPool

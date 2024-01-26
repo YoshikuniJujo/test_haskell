@@ -22,7 +22,7 @@ import Gpu.Vulkan.CommandPool.Enum
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
-import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
+import qualified Gpu.Vulkan.Device.Middle.Types as Device
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.CommandPool.Core as C
 

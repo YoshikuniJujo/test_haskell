@@ -62,9 +62,9 @@ import qualified Gpu.Vulkan.Queue.Middle.Internal as Queue
 
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 
-#include <vulkan/vulkan.h>
+import Gpu.Vulkan.Device.Middle.Types
 
-newtype D = D C.D deriving Show
+#include <vulkan/vulkan.h>
 
 enum "CreateFlagBits" ''#{type VkDeviceCreateFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
@@ -170,7 +170,3 @@ queueCreateInfoToCore QueueCreateInfo {
 			C.queueCreateInfoQueueFamilyIndex = qfi,
 			C.queueCreateInfoQueueCount = genericLength qps,
 			C.queueCreateInfoPQueuePriorities = pqps }
-
-enum "Size" ''#{type VkDeviceSize}
-		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral, ''Ix]
-	[("WholeSize", #{const VK_WHOLE_SIZE})]

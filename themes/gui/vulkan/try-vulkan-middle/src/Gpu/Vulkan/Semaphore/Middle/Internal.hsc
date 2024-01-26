@@ -33,7 +33,7 @@ import Gpu.Vulkan.Exception.Enum
 import qualified Gpu.Vulkan.AllocationCallbacks.Middle.Internal as AllocationCallbacks
 import qualified Gpu.Vulkan.Semaphore.Core as C
 
-import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
+import qualified Gpu.Vulkan.Device.Middle.Types as Device
 
 #include <vulkan/vulkan.h>
 

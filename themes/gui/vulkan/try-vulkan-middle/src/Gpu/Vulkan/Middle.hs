@@ -64,6 +64,10 @@ module Gpu.Vulkan.Middle (
 	Extent2d, pattern Extent2d, extent2dWidth, extent2dHeight,
 	Extent3d, pattern Extent3d, extent3dWidth, extent3dHeight, extent3dDepth,
 
+	-- * OTHERS
+
+	Size(..)
+
 	) where
 
 import Gpu.Vulkan.Middle.Internal

@@ -21,14 +21,15 @@ import Data.Word
 import Data.Int
 import Data.Char
 
+import Gpu.Vulkan.Middle.Types
 import Gpu.Vulkan.Base.Middle.Internal
 
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 
+import qualified Gpu.Vulkan.Device.Middle.Types as Device
+
 newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
 	deriving (Show, Eq, Ord, Enum, Num, Real, Integral)
-
-newtype Size = Size Word64 deriving Show
 
 vkPhysicalDeviceLimits :: DecsQ
 vkPhysicalDeviceLimits = makeData "Limits"
@@ -75,8 +76,8 @@ dictGen = [
 		(varP, appE (varE 'boolToBool32) . varE)),
 	("size_t", (conT ''Size, appE (conE 'Size) . varE),
 		(conP 'Size . (: []) . varP, varE)),
-	("VkDeviceSize", (conT ''DeviceSize, appE (conE 'DeviceSize) . varE),
-		(conP 'DeviceSize . (: []) . varP, varE)),
+	("VkDeviceSize", (conT ''Device.Size, appE (conE 'Device.Size) . varE),
+		(conP 'Device.Size . (: []) . varP, varE)),
 	("VkSampleCountFlags",
 		(conT ''Sample.CountFlags,
 			appE (conE 'Sample.CountFlagBits) . varE),
