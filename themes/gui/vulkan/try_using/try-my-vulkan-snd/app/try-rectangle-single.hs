@@ -71,15 +71,15 @@ import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
-import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
+import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Sfc.PhysicalDevice
-import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.PhDvc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swpch
 import qualified Gpu.Vulkan.Image as Vk.Img
@@ -208,30 +208,26 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 body :: FramebufferResized -> GlfwG.Win.W s -> Vk.Ist.I si -> IO ()
 body fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
-	pickPhDvc ist sfc >>= \(pd, qfis) ->
+	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \dv gq pq ->
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
 	createRndrPss @scifmt dv \rp ->
-	(Vk.PhDvc.limitsMinUniformBufferOffsetAlignment
-		. Vk.PhDvc.propertiesLimits
-		<$> Vk.PhDvc.getProperties pd) >>= \aln ->
-	natType (fromIntegral aln) \(_ :: Proxy aln) ->
+	unfrmBffrOstAlgn pd \(_ :: Proxy aln) ->
 	createPplLyt @aln dv \dsl pl -> createGrPpl dv ex rp pl \gp ->
 	createFrmbffrs dv ex rp scvs \fbs ->
 	createCmdPl qfis dv \cp ->
-	createVtxBffr pd dv gq cp \vb ->
-	createIdxBffr pd dv gq cp \ib ->
+	createVtxBffr pd dv gq cp \vb -> createIdxBffr pd dv gq cp \ib ->
 	createUfmBffr pd dv \ub ubm ->
-	createDscPl dv \dp ->
-	createDscSt dv dp ub dsl \ds ->
+	createDscPl dv \dp -> createDscSt dv dp ub dsl \ds ->
 	createCmdBffr dv cp \cb ->
 	createSyncObjs dv \sos ->
-	getCurrentTime >>= \tm ->
-	mainLoop fr w sfc pd qfis dv gq pq sc ex scvs rp pl gp fbs vb ib ubm ds cb sos tm
+	getCurrentTime >>=
+	mainLoop fr w sfc pd qfis dv gq pq
+		sc ex scvs rp pl gp fbs vb ib ubm ds cb sos
 
-pickPhDvc :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.PhDvc.P, QFamIndices)
-pickPhDvc ist sfc = Vk.PhDvc.enumerate ist >>= \case
+pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
+pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
 	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
 	pds -> findMaybeM suit pds >>= \case
 		Nothing -> error "failed to find a suitable GPU!"
@@ -243,24 +239,24 @@ pickPhDvc ist sfc = Vk.PhDvc.enumerate ist >>= \case
 			$	HPListC.null (snd $ formats ss) ||
 				null (presentModes ss)
 	espt pd = elemAll dvcExtensions
-		. (Vk.PhDvc.extensionPropertiesExtensionName <$>)
-		<$> Vk.PhDvc.enumerateExtensionProperties pd Nothing
+		. (Vk.Phd.extensionPropertiesExtensionName <$>)
+		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
 
-dvcExtensions :: [Vk.PhDvc.ExtensionName]
+dvcExtensions :: [Vk.Phd.ExtensionName]
 dvcExtensions = [Vk.Khr.Swpch.extensionName]
 
 data QFamIndices =
 	QFamIndices { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
 
-findQFams :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
+findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
 findQFams pd sfc = do
-	prps@((fst <$>) -> is) <- Vk.PhDvc.getQueueFamilyProperties pd
+	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
 	mp <- listToMaybe
-		<$> filterM (flip (Vk.Khr.Sfc.PhDvc.getSupport pd) sfc) is
+		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
 	pure $ QFamIndices <$> (fst <$> find (grbit . snd) prps) <*> mp
 	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
-createLgDvc :: Vk.PhDvc.P -> QFamIndices ->
+createLgDvc :: Vk.Phd.P -> QFamIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
 createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
@@ -286,7 +282,7 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
-createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
+createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
@@ -311,14 +307,14 @@ deriving instance
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
 	Show (SwpchSupportDetails fmts)
 
-querySwpchSupport :: Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
+querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
 	SwpchSupportDetails fmts -> IO a) -> IO a
-querySwpchSupport pd sfc f = Vk.Khr.Sfc.PhDvc.getFormats pd sfc \fmts ->
+querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
 	f =<< SwpchSupportDetails
-		<$> Vk.Khr.Sfc.PhDvc.getCapabilities pd sfc
-		<*> ((, fmts) <$> Vk.Khr.Sfc.PhDvc.getFormatsFiltered pd sfc)
-		<*> Vk.Khr.Sfc.PhDvc.getPresentModes pd sfc
+		<$> Vk.Khr.Sfc.Phd.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Khr.Sfc.Phd.getFormatsFiltered pd sfc)
+		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
 
 chooseSwpSfcFmt :: (
 	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
@@ -329,7 +325,7 @@ chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`find` fmts)
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
 recreateSwpch win sfc phdvc qfis0 dvc sc = do
 	ss <- querySwpchSupportFmt @fmt phdvc sfc
@@ -349,11 +345,11 @@ data SwpchSupportDetailsFmt fmt = SwpchSupportDetailsFmt {
 	presentModesFmt :: [Vk.Khr.PresentMode] } deriving Show
 
 querySwpchSupportFmt :: Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFmt fmt)
+	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFmt fmt)
 querySwpchSupportFmt dvc sfc = SwpchSupportDetailsFmt
-	<$> Vk.Khr.Sfc.PhDvc.getCapabilities dvc sfc
-	<*> Vk.Khr.Sfc.PhDvc.getFormatsFiltered dvc sfc
-	<*> Vk.Khr.Sfc.PhDvc.getPresentModes dvc sfc
+	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getFormatsFiltered dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
 
 swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
 swapExtent win cps
@@ -475,8 +471,11 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 			Vk.AccessDepthStencilAttachmentWriteBit,
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
-natType :: Natural -> (forall n . KnownNat n => Proxy n -> a) -> a
-natType n f = (\(SomeNat p) -> f p) $ someNatVal n
+unfrmBffrOstAlgn ::
+	Vk.Phd.P -> (forall (a :: Nat) . KnownNat a => Proxy a -> IO b) -> IO b
+unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
+	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
+	=<< Vk.Phd.getProperties pd
 
 createPplLyt :: forall (aln :: Nat) sd b . Vk.Dvc.D sd -> (forall sdsl sl .
 	Vk.DscSetLyt.D sdsl (AtomModelViewProj aln) ->
@@ -697,7 +696,7 @@ createCmdPl qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = grFam qfis }
 
-createVtxBffr :: Vk.PhDvc.P ->
+createVtxBffr :: Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVtxBffr phdvc dvc gq cp f =
@@ -712,7 +711,7 @@ createVtxBffr phdvc dvc gq cp f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createIdxBffr :: Vk.PhDvc.P ->
+createIdxBffr :: Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Word16 ""] -> IO a) -> IO a
 createIdxBffr phdvc dvc gq cp f =
@@ -727,7 +726,7 @@ createIdxBffr phdvc dvc gq cp f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createUfmBffr :: KnownNat aln => Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
+createUfmBffr :: KnownNat aln => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom aln WModelViewProj 'Nothing]  ->
 		UniformBufferMemory aln sm sb ->
 		IO b) -> IO b
@@ -785,7 +784,7 @@ descriptorWrite ub dscs = Vk.DscSet.Write {
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 createBufferAtom' :: forall aln sd nm a b . (KnownNat aln, Storable a) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom aln a 'Nothing] ->
@@ -796,7 +795,7 @@ createBufferAtom' :: forall aln sd nm a b . (KnownNat aln, Storable a) =>
 createBufferAtom' p dv usg props = createBuffer' p dv VObj.LengthAtom usg props
 
 createBufferList' :: forall sd nm t a . Storable t =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
 		Vk.Mem.M sm '[ '(
@@ -808,7 +807,7 @@ createBufferList' p dv ln usg props =
 	createBuffer' p dv (VObj.LengthList ln) usg props
 
 createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mem.M sm
@@ -834,16 +833,16 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 		Vk.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
-findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
+findMemoryType :: Vk.Phd.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.M.TypeIndex
 findMemoryType phdvc flt props =
-	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
+	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
 	suitable props1 = fst <$> find ((&&)
 		<$> (`Vk.Mem.M.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
-		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
+		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
@@ -947,7 +946,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 mainLoop :: (KnownNat aln, RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	FramebufferResized ->
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
-	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d -> HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUboS sdsl aln] '[] -> Vk.Ppl.Graphics.G sg
@@ -971,7 +970,7 @@ mainLoop g win@(GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt 
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (KnownNat aln, RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.PhDvc.P ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -1059,7 +1058,7 @@ catchAndSerialize =
 
 catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
-	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUboS sdsl aln] '[] ->
@@ -1081,7 +1080,7 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 recreateSwapChainEtc :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
-	Vk.PhDvc.P -> QFamIndices -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUboS sdsl aln] '[] ->
