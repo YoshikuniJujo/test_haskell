@@ -441,7 +441,7 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
 createPplLyt ::
-	Vk.Dvc.D sd -> (forall sl . Vk.PplLyt.P sl '[] '[] -> IO b) -> IO b
+	Vk.Dvc.D sd -> (forall sl . Vk.PplLyt.P sl '[] '[] -> IO a) -> IO a
 createPplLyt dv f = Vk.PplLyt.create @_ @_ @_ @'[] dv info nil f
 	where info = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
@@ -658,6 +658,13 @@ bffrLstAlignment :: forall t sd a (lnm :: Symbol) . Storable t =>
 bffrLstAlignment dv sz =
 	bffrAlignment @(VObj.List 256 t lnm) dv (VObj.LengthList sz)
 
+bffrAlignment :: forall o sd a . VObj.SizeAlignment o =>
+	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
+	(forall al . KnownNat al => Proxy al -> IO a) -> IO a
+bffrAlignment dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
+	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
+	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
+
 createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mm.PropertyFlags -> (forall sm sb .
@@ -666,13 +673,6 @@ createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
 			'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List al t lnm])] ->
 		IO a) -> IO a
 createBffrLst p dv ln = createBffr p dv $ VObj.LengthList ln
-
-bffrAlignment :: forall o sd a . VObj.SizeAlignment o =>
-	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
-	(forall al . KnownNat al => Proxy al -> IO a) -> IO a
-bffrAlignment dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
-	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
-	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
 createBffr :: forall sd bnm o a . VObj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
