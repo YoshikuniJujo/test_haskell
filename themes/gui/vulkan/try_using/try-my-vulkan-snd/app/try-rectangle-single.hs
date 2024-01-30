@@ -218,7 +218,8 @@ body fr w ist =
 	createPplLyt @aln dv \dsl pl -> createGrPpl dv ex rp pl \gp ->
 	createFrmbffrs dv ex rp scvs \fbs ->
 	createCmdPl qfis dv \cp ->
-	createVtxBffr pd dv gq cp \vb -> createIdxBffr pd dv gq cp \ib ->
+	createVtxBffr pd dv gq cp vertices \vb ->
+	createIdxBffr pd dv gq cp indices \ib ->
 	createUfmBffr pd dv \ub ubm ->
 	createDscPl dv \dp -> createDscSt dv dp ub dsl \ds ->
 	createCmdBffr dv cp \cb ->
@@ -696,40 +697,35 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
 createVtxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
+	[WVertex] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
 		'[VObj.List al WVertex lnm] -> IO a) -> IO a
-createVtxBffr pd dv gq cp f =
-	bffrLstAlignment @WVertex dv verticesNum
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+createVtxBffr = createBffrMem Vk.Bffr.UsageVertexBufferBit
+
+createIdxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	[Word16] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
+		'[VObj.List al Word16 lnm] -> IO a) -> IO a
+createIdxBffr = createBffrMem Vk.Bffr.UsageIndexBufferBit
+
+createBffrMem :: forall sd sc nm t lnm a . Storable' t =>
+	Vk.Bffr.UsageFlags -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.CmdPl.C sc -> [t] ->
+	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
+		'[VObj.List al t lnm] -> IO a) -> IO a
+createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
+	bffrLstAlignment @t dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
 		\(_ :: Proxy al) ->
-	createBffrLst pd dv verticesNum
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+	createBffrLst pd dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
 		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
-		createBffrLst pd dv verticesNum
+		createBffrLst pd dv ln
 			Vk.Bffr.UsageTransferSrcBit (
 			Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) \
 			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
 			bm' -> do
-			Vk.Mm.write @bnm' @(VObj.List al t lnm')
-				dv bm' zeroBits vertices
+			Vk.Mm.write
+				@bnm' @(VObj.List al t lnm') dv bm' zeroBits xs
 			copyBffr dv gq cp b' b
 		f b
-
-createIdxBffr :: Vk.Phd.P ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Word16 ""] -> IO a) -> IO a
-createIdxBffr phdvc dvc gq cp f =
-	createBffrLst phdvc dvc (fromIntegral $ length indices)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
-		Vk.Mm.PropertyDeviceLocalBit \b _ ->
-	createBffrLst phdvc dvc (fromIntegral $ length indices)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mm.write @"vertex-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices
-	copyBffr dvc gq cp b' b
-	f b
 
 bffrLstAlignment :: forall t sd a (lnm :: Symbol) . Storable t =>
 	Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags -> (forall al .
@@ -918,8 +914,8 @@ createSyncObjs dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall aln scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds al .
-	KnownNat al =>
+recordCommandBuffer :: forall aln scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds al ali .
+	(KnownNat al, KnownNat ali) =>
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.PplLyt.P sl '[AtomUboS sdsl aln] '[] ->
@@ -927,7 +923,7 @@ recordCommandBuffer :: forall aln scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds 
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[AtomUboS sdsl aln], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
 	Vk.DscSet.D sds (AtomUboS sdsl aln) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
@@ -942,7 +938,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 		(HPList.Singleton (
 			HPList.Nil :**
 			HPList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) 1 0 0 0
+	Vk.Cmd.drawIndexed cbb indicesNum 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -956,7 +952,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
-mainLoop :: (KnownNat aln, KnownNat al, RecreateFrmbffrs ss sfs, Vk.T.FormatToValue scfmt) =>
+mainLoop :: (KnownNat aln, KnownNat al, KnownNat ali, RecreateFrmbffrs ss sfs, Vk.T.FormatToValue scfmt) =>
 	FramebufferResized ->
 	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
@@ -968,7 +964,7 @@ mainLoop :: (KnownNat aln, KnownNat al, RecreateFrmbffrs ss sfs, Vk.T.FormatToVa
 		'(sl, '[AtomUboS sdsl aln], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
 	UniformBufferMemory (aln :: Nat) sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUboS sdsl aln) ->
 	Vk.CmdBffr.C scb ->
@@ -982,7 +978,7 @@ mainLoop g win@(GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt 
 			(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 
-runLoop :: (KnownNat aln, KnownNat al, RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
+runLoop :: (KnownNat aln, KnownNat al, KnownNat ali, RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
@@ -993,7 +989,7 @@ runLoop :: (KnownNat aln, KnownNat al, RecreateFrmbffrs sis sfs, Vk.T.FormatToVa
 		'(sl, '[AtomUboS sdsl aln], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
 	UniformBufferMemory aln sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUboS sdsl aln) ->
 	Vk.CmdBffr.C scb ->
@@ -1007,8 +1003,8 @@ runLoop win@(GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc frszd ext scivs rp pplly
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall aln sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds al .
-	(KnownNat aln, KnownNat al) =>
+drawFrame :: forall aln sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds al ali .
+	(KnownNat aln, KnownNat al, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[AtomUboS sdsl aln] '[] ->
@@ -1017,7 +1013,7 @@ drawFrame :: forall aln sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sia
 		'(sl, '[AtomUboS sdsl aln], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
 	UniformBufferMemory aln sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUboS sdsl aln) ->
 	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
@@ -1126,9 +1122,6 @@ instance Foreign.Storable.Generic.G Vertex where
 
 type WVertex = Foreign.Storable.Generic.W Vertex
 
-verticesNum :: Integral n => n
-verticesNum = fromIntegral $ length vertices
-
 vertices :: [WVertex]
 vertices = Foreign.Storable.Generic.W <$> [
 	Vertex (Cglm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
@@ -1139,6 +1132,9 @@ vertices = Foreign.Storable.Generic.W <$> [
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+
+indicesNum :: Integral n => n
+indicesNum = fromIntegral $ length indices
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
