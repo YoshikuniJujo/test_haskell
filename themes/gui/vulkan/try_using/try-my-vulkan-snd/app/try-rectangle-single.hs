@@ -54,12 +54,9 @@ import Data.Time
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
-import ThEnv
-import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
@@ -68,7 +65,6 @@ import Data.TypeLevel.ParMaybe (nil)
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
@@ -78,14 +74,11 @@ import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
-import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
-	Vk.Khr.Sfc.PhysicalDevice
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swpch
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
@@ -119,15 +112,13 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
-import Tools (clampOld, checkBits, checkFlag)
+import Tools (checkBits, checkFlag)
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
-
-import Data.Text.ToolsYj
 
 import Debug
 
@@ -753,6 +744,90 @@ type UniformBufferMemory (aln :: Nat) sm sb = Vk.Mm.M sm '[ '(
 	'Vk.Mm.BufferArg "uniform-buffer" '[VObj.Atom aln WModelViewProj 'Nothing]
 	)]
 
+createBufferAtom' :: forall aln sd nm a b . (KnownNat aln, Storable a) =>
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (
+		forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[VObj.Atom aln a 'Nothing] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg nm '[VObj.Atom aln a 'Nothing] )] ->
+			IO b) -> IO b
+createBufferAtom' p dv usg props = createBffr p dv VObj.LengthAtom usg props
+
+createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
+		Vk.Mm.M sm
+			'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List al t lnm])] ->
+		IO a) -> IO a
+createBffrLst p dv ln = createBffr p dv $ VObj.LengthList ln
+
+createBffr :: forall sd bnm o a . VObj.SizeAlignment o =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[o] -> Vk.Mm.M sm
+			'[ '(sb, 'Vk.Mm.BufferArg bnm '[o])] -> IO a) -> IO a
+createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMemoryType p (Vk.Mm.M.requirementsMemoryTypeBits reqs) prs
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
+		(ainfo mt) nil
+		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
+	where ainfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+findMemoryType :: Vk.Phd.P -> Vk.Mm.M.TypeBits -> Vk.Mm.PropertyFlags ->
+	IO Vk.Mm.M.TypeIndex
+findMemoryType phdvc flt props =
+	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
+	where
+	msg = "failed to find suitable memory type!"
+	suitable props1 = fst <$> find ((&&)
+		<$> (`Vk.Mm.M.elemTypeIndex` flt) . fst
+		<*> checkBits props . Vk.Mm.M.mTypePropertyFlags . snd) tps
+		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
+
+bffrInfo ::
+	VObj.Length o -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
+bffrInfo ln us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+copyBffr :: forall sd sc sm sb nm sm' sb' nm' al a lnm . (Storable' a, KnownNat al) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List al a lnm] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List al a lnm] -> IO ()
+copyBffr dvc gq cp src dst = do
+	Vk.CmdBffr.allocate
+		dvc allocInfo \(cb :*. HPList.Nil) -> do
+		let	submitInfo = Vk.SubmitInfo {
+				Vk.submitInfoNext = TMaybe.N,
+				Vk.submitInfoWaitSemaphoreDstStageMasks =
+					HPList.Nil,
+				Vk.submitInfoCommandBuffers =
+					HPList.Singleton cb,
+				Vk.submitInfoSignalSemaphores = HPList.Nil }
+		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
+			Vk.Cmd.copyBuffer @'[ '[VObj.List al a lnm]] cb src dst
+		Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) Nothing
+		Vk.Q.waitIdle gq
+	where
+	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
+	allocInfo = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	beginInfo = Vk.CmdBffr.BeginInfo {
+		Vk.CmdBffr.beginInfoNext = TMaybe.N,
+		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
+		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+
 createDscPl ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
 createDscPl dvc = Vk.DscPool.create dvc poolInfo nil
@@ -796,90 +871,6 @@ descriptorWrite ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		HPList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
-
-createBufferAtom' :: forall aln sd nm a b . (KnownNat aln, Storable a) =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (
-		forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.Atom aln a 'Nothing] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[VObj.Atom aln a 'Nothing] )] ->
-			IO b) -> IO b
-createBufferAtom' p dv usg props = createBffr p dv VObj.LengthAtom usg props
-
-createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
-	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
-		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List al t lnm])] ->
-		IO a) -> IO a
-createBffrLst p dv ln = createBffr p dv $ VObj.LengthList ln
-
-createBffr :: forall sd bnm o a . VObj.SizeAlignment o =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[o] -> Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg bnm '[o])] -> IO a) -> IO a
-createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
-	reqs <- Vk.Bffr.getMemoryRequirements dv b
-	mt <- findMemoryType p (Vk.Mm.M.requirementsMemoryTypeBits reqs) prs
-	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
-		(ainfo mt) nil
-		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
-	where ainfo mt = Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
-
-bffrInfo ::
-	VObj.Length o -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
-bffrInfo ln us = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
-	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
-	Vk.Bffr.createInfoUsage = us,
-	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-	Vk.Bffr.createInfoQueueFamilyIndices = [] }
-
-findMemoryType :: Vk.Phd.P -> Vk.Mm.M.TypeBits -> Vk.Mm.PropertyFlags ->
-	IO Vk.Mm.M.TypeIndex
-findMemoryType phdvc flt props =
-	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
-	where
-	msg = "failed to find suitable memory type!"
-	suitable props1 = fst <$> find ((&&)
-		<$> (`Vk.Mm.M.elemTypeIndex` flt) . fst
-		<*> checkBits props . Vk.Mm.M.mTypePropertyFlags . snd) tps
-		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
-
-copyBffr :: forall sd sc sm sb nm sm' sb' nm' al a lnm . (Storable' a, KnownNat al) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List al a lnm] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List al a lnm] -> IO ()
-copyBffr dvc gq cp src dst = do
-	Vk.CmdBffr.allocate
-		dvc allocInfo \(cb :*. HPList.Nil) -> do
-		let	submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = TMaybe.N,
-				Vk.submitInfoWaitSemaphoreDstStageMasks =
-					HPList.Nil,
-				Vk.submitInfoCommandBuffers =
-					HPList.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HPList.Nil }
-		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[VObj.List al a lnm]] cb src dst
-		Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) Nothing
-		Vk.Q.waitIdle gq
-	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
-	beginInfo = Vk.CmdBffr.BeginInfo {
-		Vk.CmdBffr.beginInfoNext = TMaybe.N,
-		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
-		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createCmdBffr ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
