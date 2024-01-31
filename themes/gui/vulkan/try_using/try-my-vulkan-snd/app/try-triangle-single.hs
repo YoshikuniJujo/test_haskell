@@ -887,7 +887,7 @@ recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
 		recreateGrPpl dv ex rp pl gp
 		recreateFrmbffrs dv ex rp vs fbs
 
-waitFramebufferSize :: GlfwG.Win.W s -> IO ()
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 	when (zero sz) $ fix \go -> (`when` go) . zero =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w

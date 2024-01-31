@@ -1051,12 +1051,10 @@ catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
 	\_ -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-recreateAll :: (
-	RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt ) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
+recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
+	HPList.PL (Vk.ImgVw.I nm fmt) svs ->
 	Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1064,29 +1062,26 @@ recreateAll :: (
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
-
-	ext <- recreateSwpch win sfc phdvc qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-			recreateImgVws dvc imgs scivs
-		recreateGrPpl dvc ext rp ppllyt gpl
-		recreateFrmbffrs dvc ext rp scivs fbs
+recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
+	ex <- recreateSwpch w sfc pd qfis dv sc
+	ex <$ do
+		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
+		recreateGrPpl dv ex rp pl gp
+		recreateFrmbffrs dv ex rp vs fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
-waitFramebufferSize (GlfwG.Win.W win) = Glfw.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
+
+type WVertex = Foreign.Storable.Generic.W Vertex
 
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
-instance Foreign.Storable.Generic.G Vertex where
-
-type WVertex = Foreign.Storable.Generic.W Vertex
+instance Foreign.Storable.Generic.G Vertex
 
 vertices :: [WVertex]
 vertices = Foreign.Storable.Generic.W <$> [
@@ -1105,11 +1100,11 @@ indicesNum = fromIntegral $ length indices
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
+type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
+
 data ModelViewProj = ModelViewProj {
 	model :: Cglm.Mat4, view :: Cglm.Mat4, projection :: Cglm.Mat4 }
 	deriving (Show, Generic)
-
-type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
 
 instance Foreign.Storable.Generic.G ModelViewProj
 
@@ -1117,11 +1112,8 @@ instance Foreign.Storable.Generic.G ModelViewProj
 
 #version 450
 
-layout(binding = 0) uniform UniformBufferObject {
-	mat4 model;
-	mat4 view;
-	mat4 proj;
-} ubo;
+layout(binding = 0) uniform
+	UniformBufferObject { mat4 model; mat4 view; mat4 proj; } mvp;
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -1131,7 +1123,7 @@ layout(location = 0) out vec3 fragColor;
 void
 main()
 {
-	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 0.0, 1.0);
+	gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 0.0, 1.0);
 	fragColor = inColor;
 }
 
