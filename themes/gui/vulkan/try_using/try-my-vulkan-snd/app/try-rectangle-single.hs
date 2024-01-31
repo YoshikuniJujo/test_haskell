@@ -9,63 +9,60 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving, DeriveGeneric #-}
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
 import GHC.Generics
+import GHC.Types
 import GHC.TypeNats
-import GHC.TypeLits (Symbol)
 import Foreign.Storable
+import Foreign.Storable.Generic qualified
 import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
-import Data.Kind
-import Gpu.Vulkan.Object qualified as VObj
+import Data.Proxy
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe (nil)
+import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
 import Data.Ord.ToolsYj
 import Data.Bits
 import Data.Bits.ToolsYj
-import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Maybe qualified as TMaybe
-
 import Data.Function.ToolsYj
 import Data.Tuple.ToolsYj
-import Data.Maybe.ToolsYj
-import Data.List.ToolsYj
-import Data.Bool.ToolsYj
-
-import Data.HeteroParList qualified as HPList
-import Data.HeteroParList (pattern (:*.), pattern (:**))
-import Data.HeteroParList.Constrained qualified as HPListC
-import Data.HeteroParList.Constrained (pattern (:^*))
-import Data.Proxy
 import Data.Bool
+import Data.Bool.ToolsYj
 import Data.Maybe
+import Data.Maybe.ToolsYj
 import Data.List
+import Data.List.ToolsYj
+import Data.List.Length
+import Data.List.NonEmpty qualified as NE
+import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList qualified as HPList
+import Data.HeteroParList.Constrained (pattern (:^*))
+import Data.HeteroParList.Constrained qualified as HPListC
+import Data.Text.IO qualified as Txt
+import Data.Word
+import Data.Time
+import Data.Color
 import Data.IORef
 import Data.IORef.ToolsYj
-import Data.List.Length
-import Data.Word
-import Data.Color
-import Data.Time
-
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Cglm as Cglm
-import qualified Foreign.Storable.Generic
 
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
-import Data.TypeLevel.ParMaybe (nil)
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Exception qualified as Vk
 
-import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.Exception as Vk
+import Gpu.Vulkan.Object qualified as VObj
+import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
@@ -112,12 +109,6 @@ import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
-
-import Gpu.Vulkan.TypeEnum qualified as Vk.T
-
-import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 
 import Debug
 
