@@ -827,18 +827,18 @@ draw dv gq pq sc ex rp gp fbs vb cb (SyncObjs ias rfs iff) = do
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 	
 
-recordCmdBffr :: forall scb sr sg sl sf sm sb bnm al lnm . KnownNat al =>
+recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv alv nmv . KnownNat alv =>
 	Vk.CmdBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded sm sb bnm '[VObj.List al WVertex lnm] -> IO ()
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] -> IO ()
 recordCmdBffr cb ex rp gp fb vb = Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
 	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
-		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @lnm vb
+		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
 	Vk.Cmd.draw cbb verticesNum 1 0 0
 	where
 	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf
