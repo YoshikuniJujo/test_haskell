@@ -32,9 +32,12 @@ module Gpu.Vulkan.PhysicalDevice (
 
 	maintenance3ExtensionName,
 
-	-- * ENUM
+	-- * ENUM AND STRUCT
 
-	module Gpu.Vulkan.PhysicalDevice.Enum
+	module Gpu.Vulkan.PhysicalDevice.Enum,
+
+	Limits(..), Features(..),
+	DescriptorIndexingFeatures(..), DescriptorIndexingFeaturesNoNext(..)
 
 	) where
 
@@ -43,6 +46,7 @@ import Gpu.Vulkan.Instance.Internal qualified as Instance
 import Gpu.Vulkan.Instance.Type qualified as Instance.T
 import Gpu.Vulkan.PhysicalDevice.Middle qualified as M
 import Gpu.Vulkan.PhysicalDevice.Enum
+import Gpu.Vulkan.PhysicalDevice.Struct
 
 import Gpu.Vulkan.Middle qualified as M
 import Data.Text qualified as T

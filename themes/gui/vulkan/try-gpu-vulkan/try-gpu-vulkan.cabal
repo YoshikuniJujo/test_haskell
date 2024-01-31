@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.105
+version:        0.1.0.106
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -61,7 +61,6 @@ library
       Gpu.Vulkan.Object
       Gpu.Vulkan.Object.Base
       Gpu.Vulkan.PhysicalDevice
-      Gpu.Vulkan.PhysicalDevice.Struct
       Gpu.Vulkan.Pipeline
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
       Gpu.Vulkan.Pipeline.ColorBlendState
@@ -138,6 +137,7 @@ library
       Gpu.Vulkan.Memory.OffsetSize
       Gpu.Vulkan.Memory.Type
       Gpu.Vulkan.PhysicalDevice.Enum
+      Gpu.Vulkan.PhysicalDevice.Struct
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.ShaderStage.Enum
