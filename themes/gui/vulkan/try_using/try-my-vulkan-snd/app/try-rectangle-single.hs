@@ -747,7 +747,7 @@ createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
 			sb,
-			'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] ) ] ->
+			'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv VObj.LengthAtom us prs
 
@@ -827,49 +827,45 @@ createCmdBffr dv cp f =
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-createDscPl ::
-	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
-createDscPl dvc = Vk.DscPool.create dvc poolInfo nil
-	where
-	poolInfo = Vk.DscPool.CreateInfo {
+createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
+createDscPl dv = Vk.DscPool.create dv info nil
+	where info = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = TMaybe.N,
 		Vk.DscPool.createInfoFlags =
 			Vk.DscPool.CreateFreeDescriptorSetBit,
 		Vk.DscPool.createInfoMaxSets = 1,
-		Vk.DscPool.createInfoPoolSizes = [poolSize] }
-	poolSize = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPool.sizeDescriptorCount = 1 }
+		Vk.DscPool.createInfoPoolSizes = [
+			Vk.DscPool.Size {
+				Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
+				Vk.DscPool.sizeDescriptorCount = 1 } ] }
 
-createDscSt :: KnownNat aln =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom aln WModelViewProj 'Nothing] ->
-	Vk.DscSetLyt.D sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom aln WModelViewProj 'Nothing]] ->
-	(forall sds .
-		Vk.DscSet.D sds '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom aln WModelViewProj 'Nothing]]) -> IO a) -> IO a
-createDscSt dvc dscp ub dscslyt f =
-	Vk.DscSet.allocateDs dvc allocInfo \(HPList.Singleton dscs) -> do
-	Vk.DscSet.updateDs dvc
-		(HPList.Singleton . U5 $ descriptorWrite ub dscs) HPList.Nil
-	f dscs
-	where
-	allocInfo = Vk.DscSet.AllocateInfo {
+createDscSt :: KnownNat al =>
+	Vk.Dvc.D sd -> Vk.DscPool.P sp ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj al] ->
+	Vk.DscSetLyt.D sdsc '[BufferModelViewProj al] -> (forall sds .
+		Vk.DscSet.D sds '(sdsc, '[BufferModelViewProj al]) -> IO a) ->
+	IO a
+createDscSt dv dp ub dl f =
+	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> do
+	Vk.DscSet.updateDs dv
+		(HPList.Singleton . U5 $ dscWrite ub ds) HPList.Nil
+	f ds
+	where info = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dscp,
-		Vk.DscSet.allocateInfoSetLayouts =
-			HPList.Singleton $ U2 dscslyt }
+		Vk.DscSet.allocateInfoDescriptorPool = dp,
+		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
-descriptorWrite :: KnownNat aln =>
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom aln WModelViewProj 'Nothing] ->
+dscWrite :: KnownNat al =>
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj al] ->
 	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom aln WModelViewProj 'Nothing)]) 0
-descriptorWrite ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.Write 'Nothing sds slbts
+		('Vk.DscSet.WriteSourcesArgBuffer
+			'[ '(sm, sb, bnm, AtomModelViewProj al)]) 0
+dscWrite ub ds = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		HPList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
+		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
 
 data SyncObjs (ssos :: (Type, Type, Type)) where
 	SyncObjs :: {
@@ -887,35 +883,61 @@ createSyncObjs dv f =
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-mainloop :: (KnownNat aln, KnownNat al, KnownNat ali, RecreateFrmbffrs ss sfs, Vk.T.FormatToValue scfmt) =>
-	FramebufferResized ->
-	GlfwG.Win.W s -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d -> HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
+mainloop :: (
+	Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs,
+	KnownNat alm, KnownNat alv, KnownNat ali ) =>
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
+	HPList.PL Vk.Frmbffr.F sfs ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	ModelViewProjMemory smm sbm nmm alm ->
+	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) ->
+	Vk.CmdBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
+mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb ib mm mds cb sos tm0 = do
+	($ ex0) $ fix \go ex ->
+		GlfwG.pollEvents >>
+		getCurrentTime >>= \tm ->
+		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds
+			cb sos (realToFrac $ tm `diffUTCTime` tm0) go
+	Vk.Dvc.waitIdle dv
+
+run :: (KnownNat aln, KnownNat al, KnownNat ali, RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Vk.Khr.Swpch.S scfmt ssc ->
+	Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm scfmt) sis ->
+	Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
+	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
-	ModelViewProjMemory sm2 sb2 "uniform-buffer" (aln :: Nat) ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
+	ModelViewProjMemory sm2 sb2 nmm aln ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj aln]) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjs ssos -> UTCTime -> IO ()
-mainloop g win@(GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
-	($ ext0) $ fix \loop ext -> do
-		Glfw.pollEvents
-		tm <- getCurrentTime
-		run win sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) loop
-	Vk.Dvc.waitIdle dvc
+	SyncObjs ssos -> Float ->
+	(Vk.Extent2d -> IO ()) -> IO ()
+run frszd win@(GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
+	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
+	cls <- Glfw.windowShouldClose w
+	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
+		(loop =<< recreateSwapChainEtc
+			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-recordCommandBuffer :: forall aln scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds al ali .
+recordCommandBuffer :: forall aln scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds al ali lnm nmi .
 	(KnownNat al, KnownNat ali) =>
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
@@ -924,8 +946,8 @@ recordCommandBuffer :: forall aln scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds 
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[]) ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj aln]) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
@@ -933,8 +955,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb
-		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @"" ib) >>
+		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @lnm vb) >>
+	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
 		(HPList.Singleton $ U2 ubds)
 		(HPList.Singleton (
@@ -954,33 +976,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
-run :: (KnownNat aln, KnownNat al, KnownNat ali, RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
-	ModelViewProjMemory sm2 sb2 "uniform-buffer" aln ->
-	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj aln]) ->
-	Vk.CmdBffr.C scb ->
-	SyncObjs ssos -> Float ->
-	(Vk.Extent2d -> IO ()) -> IO ()
-run win@(GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
-	cls <- Glfw.windowShouldClose w
-	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
-			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
-
-drawFrame :: forall aln sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds al ali ssos .
+drawFrame :: forall aln sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds al ali ssos lnm nmm nmi .
 	(KnownNat aln, KnownNat al, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -989,9 +985,9 @@ drawFrame :: forall aln sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sia
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
-	ModelViewProjMemory sm2 sb2 "uniform-buffer" aln ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List al WVertex lnm] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
+	ModelViewProjMemory sm2 sb2 nmm aln ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj aln]) ->
 	Vk.CmdBffr.C scb -> SyncObjs ssos -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
@@ -1020,10 +1016,10 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs
 	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 
-updateUniformBuffer :: forall aln sd sm2 sb2 . KnownNat aln => Vk.Dvc.D sd ->
-	ModelViewProjMemory sm2 sb2 "uniform-buffer" aln -> Vk.Extent2d -> Float -> IO ()
+updateUniformBuffer :: forall aln sd sm2 sb2 nmm . KnownNat aln => Vk.Dvc.D sd ->
+	ModelViewProjMemory sm2 sb2 nmm aln -> Vk.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc um sce tm = do
-	Vk.Mm.write @"uniform-buffer" @(VObj.Atom aln WModelViewProj 'Nothing)
+	Vk.Mm.write @nmm @(VObj.Atom aln WModelViewProj 'Nothing)
 		dvc um zeroBits ubo
 	where ubo = Foreign.Storable.Generic.W ModelViewProj {
 		model = Cglm.rotate Cglm.mat4Identity (tm * Cglm.rad 90)
