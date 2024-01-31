@@ -38,7 +38,6 @@ import Data.TypeLevel.ParMaybe (nil)
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
-import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
@@ -143,7 +142,7 @@ dvcInfo qfi = Vk.Dv.CreateInfo {
 	Vk.Dv.createInfoQueueCreateInfos = HL.Singleton qinfo,
 	Vk.Dv.createInfoEnabledLayerNames = [Vk.layerKhronosValidation],
 	Vk.Dv.createInfoEnabledExtensionNames = [],
-	Vk.Dv.createInfoEnabledFeatures = Just $ Vk.Phd.featuresZero {
+	Vk.Dv.createInfoEnabledFeatures = Just $ def {
 		Vk.Phd.featuresPipelineStatisticsQuery = True } }
 	where qinfo = Vk.Dv.QueueCreateInfo {
 		Vk.Dv.queueCreateInfoNext = TMaybe.N,

@@ -108,8 +108,6 @@ import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
-import Gpu.Vulkan.PhysicalDevice.Struct qualified as Vk.Phd
-
 import Debug
 
 main :: IO ()
@@ -195,19 +193,19 @@ body fr w ist =
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
 	createRndrPss @scifmt dv \rp ->
-	unfrmBffrOstAlgn pd \(_ :: Proxy aln) ->
-	createPplLyt @aln dv \dsl pl -> createGrPpl dv ex rp pl \gp ->
+	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
+	createPplLyt @alu dv \dsl pl -> createGrPpl dv ex rp pl \gp ->
 	createFrmbffrs dv ex rp scvs \fbs ->
 	createCmdPl qfis dv \cp ->
 	createVtxBffr pd dv gq cp vertices \vb ->
 	createIdxBffr pd dv gq cp indices \ib ->
-	createMvpBffr pd dv \ub ubm ->
-	createDscPl dv \dp -> createDscSt dv dp ub dsl \ds ->
+	createMvpBffr pd dv \mb mbm ->
+	createDscPl dv \dp -> createDscSt dv dp mb dsl \ds ->
 	createCmdBffr dv cp \cb ->
 	createSyncObjs dv \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis dv gq pq
-		sc ex scvs rp pl gp fbs vb ib ubm ds cb sos
+		sc ex scvs rp pl gp fbs vb ib mbm ds cb sos
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -460,7 +458,7 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-createPplLyt :: forall aln sd a . Vk.Dvc.D sd -> (forall sdsl sl .
+createPplLyt :: forall aln sd a . Vk.Dvc.D sd -> (forall sl sdsl .
 	Vk.DscSetLyt.D sdsl '[BufferModelViewProj aln] ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] -> IO a) ->
 	IO a
@@ -471,18 +469,18 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createDscStLyt :: forall aln sd a . Vk.Dvc.D sd ->
-	(forall s . Vk.DscSetLyt.D s '[BufferModelViewProj aln] -> IO a) -> IO a
+createDscStLyt :: forall alm sd a . Vk.Dvc.D sd ->
+	(forall s . Vk.DscSetLyt.D s '[BufferModelViewProj alm] -> IO a) -> IO a
 createDscStLyt dv = Vk.DscSetLyt.create dv info nil
-	where
-	info = Vk.DscSetLyt.CreateInfo {
+	where info = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = HPList.Singleton binding }
-	binding = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeUniformBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+		Vk.DscSetLyt.createInfoBindings =
+			HPList.Singleton $ Vk.DscSetLyt.BindingBuffer {
+				Vk.DscSetLyt.bindingBufferDescriptorType =
+					Vk.Dsc.TypeUniformBuffer,
+				Vk.DscSetLyt.bindingBufferStageFlags =
+					Vk.ShaderStageVertexBit } }
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
@@ -689,7 +687,7 @@ createBffrMem :: forall sd sc nm t lnm a . Storable' t =>
 	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
 		'[VObj.List al t lnm] -> IO a) -> IO a
 createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
-	bffrLstAlignment @t dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
+	bffrLstAlgn @t dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
 		\(_ :: Proxy al) ->
 	createBffrLst pd dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
 		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
@@ -704,16 +702,15 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 			copyBffr dv gq cp b' b
 		f b
 
-bffrLstAlignment :: forall t sd a (lnm :: Symbol) . Storable t =>
+bffrLstAlgn :: forall t sd a (lnm :: Symbol) . Storable t =>
 	Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags -> (forall al .
 		KnownNat al => Proxy al -> IO a) -> IO a
-bffrLstAlignment dv sz =
-	bffrAlignment @(VObj.List 256 t lnm) dv (VObj.LengthList sz)
+bffrLstAlgn dv sz = bffrAlgn @(VObj.List 256 t lnm) dv (VObj.LengthList sz)
 
-bffrAlignment :: forall o sd a . VObj.SizeAlignment o =>
+bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
 	(forall al . KnownNat al => Proxy al -> IO a) -> IO a
-bffrAlignment dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
+bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 

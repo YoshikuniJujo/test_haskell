@@ -635,7 +635,7 @@ createVtxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
 		'[VObj.List al WVertex lnm] -> IO a) -> IO a
 createVtxBffr pd dv gq cp f =
-	bffrLstAlignment @WVertex dv verticesNum
+	bffrLstAlgn @WVertex dv verticesNum
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		\(_ :: Proxy al) ->
 	createBffrLst pd dv verticesNum
@@ -652,16 +652,15 @@ createVtxBffr pd dv gq cp f =
 			copyBffr dv gq cp b' b
 		f b
 
-bffrLstAlignment :: forall t sd a (lnm :: Symbol) . Storable t =>
+bffrLstAlgn :: forall t sd a (lnm :: Symbol) . Storable t =>
 	Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags -> (forall al .
 		KnownNat al => Proxy al -> IO a) -> IO a
-bffrLstAlignment dv sz =
-	bffrAlignment @(VObj.List 256 t lnm) dv (VObj.LengthList sz)
+bffrLstAlgn dv sz = bffrAlgn @(VObj.List 256 t lnm) dv (VObj.LengthList sz)
 
-bffrAlignment :: forall o sd a . VObj.SizeAlignment o =>
+bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
 	(forall al . KnownNat al => Proxy al -> IO a) -> IO a
-bffrAlignment dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
+bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
