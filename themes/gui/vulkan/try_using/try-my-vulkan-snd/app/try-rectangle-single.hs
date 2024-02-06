@@ -721,10 +721,10 @@ createMvpBffr = createBffrAtm
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
-type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
-
-type ModelViewProjMemory sm sb mnm (alm :: Nat) =
+type ModelViewProjMemory sm sb mnm alm =
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
+
+type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
 
 type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
 
@@ -844,15 +844,14 @@ createDscSt dv dp ub dl f =
 
 dscWrite :: KnownNat al =>
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj al] ->
-	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.Write 'Nothing sds slbts
+	Vk.DscSet.D sds slbts -> Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer
 			'[ '(sm, sb, bnm, AtomModelViewProj al)]) 0
-dscWrite ub ds = Vk.DscSet.Write {
+dscWrite mb ds = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
-		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
+		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo mb }
 
 data SyncObjs (ssos :: (Type, Type, Type)) where
 	SyncObjs :: {
@@ -889,12 +888,13 @@ mainloop :: (
 	ModelViewProjMemory smm sbm nmm alm ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) ->
 	Vk.CmdBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
-mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb ib mm mds cb sos tm0 = do
+mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
+	vb ib mm mds cb sos tm0 = do
 	($ ex0) $ fix \go ex ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
-		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds
-			cb sos (realToFrac $ tm `diffUTCTime` tm0) go
+		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib
+			mm mds cb sos (realToFrac $ tm `diffUTCTime` tm0) go
 	Vk.Dvc.waitIdle dv
 
 run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
@@ -904,16 +904,16 @@ run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsc, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
+		'(sl, '[ '(sdsc, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm nmm alm ->
-	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) ->
+	Vk.DscSet.D sds '(sdsc, '[BufferModelViewProj alm]) ->
 	Vk.CmdBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
 run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds cb sos tm go = do

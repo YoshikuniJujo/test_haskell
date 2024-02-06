@@ -698,9 +698,9 @@ createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) prs
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
-		(allcInfo mt) nil
+		(ainfo mt) nil
 		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
-	where allcInfo mt = Vk.Mm.AllocateInfo {
+	where ainfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
@@ -792,12 +792,13 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb cbs sos = do
 	($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
 		. ($ ex0) $ fix \go ex (cf :~ cfs) ->
 		GlfwG.pollEvents >>
-		run fr w sfc pd qfis dv gq pq
-			sc ex vs rp pl gp fbs vb cbs sos cf (`go` cfs)
+		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb
+			cbs sos cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
 
 run :: (HPList.HomoList '() mff,
-	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat al) =>
+	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
+	KnownNat al) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
