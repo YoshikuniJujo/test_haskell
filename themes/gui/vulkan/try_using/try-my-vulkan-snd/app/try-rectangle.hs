@@ -223,9 +223,10 @@ body fr w ist =
 	createCmdPl qfis dv \cp ->
 	createVtxBffr pd dv gq cp vertices \vb ->
 	createIdxBffr pd dv gq cp indices \ib ->
-	createMvpBffrsOld pd dv dsl maxFramesInFlight \dsls mbs mbms ->
+	mkVss maxFramesInFlight \(_ :: Proxy mff) ->
+	createMvpBffrs @mff pd dv dsl \dsls mbs mbms ->
 	createDscPl dv \dp -> createDscSts dv dp mbs dsls \dss ->
-	createCmdBffrs dv cp \cbs ->
+	createCmdBffrs @mff dv cp \cbs ->
 	createSyncObjs dv \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis dv gq pq
@@ -808,26 +809,6 @@ instance CreateMvpBffrs mff => CreateMvpBffrs ('() ': mff) where
 				(b :** bs :: HPList.PL (BindedUboNew al) (smsb ': smsbs))
 				(m :** ms)
 
-createMvpBffrsOld ::
-	KnownNat al =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.D sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom al UniformBufferObject 'Nothing]] ->
-	Int -> (forall slyts smsbs . (
-		Vk.DscSet.DListFromMiddle slyts,
-		HPList.FromList slyts,
-		UpdateNew al smsbs slyts,
-		HPList.HomoList (AtomUboNew sdsc al) slyts) =>
-		HPList.PL (U2 Vk.DscSetLyt.D) slyts ->
-		HPList.PL (BindedUboNew al) smsbs ->
-		HPList.PL (MemoryUboNew al) smsbs -> IO a) -> IO a
-createMvpBffrsOld _ _ _ 0 f = f HPList.Nil HPList.Nil HPList.Nil
-createMvpBffrsOld ph dvc dscslyt n f =
-	createUniformBuffer1New ph dvc \(b :: BindedUboNew al smsb) m ->
-		createMvpBffrsOld ph dvc dscslyt (n - 1) \ls (bs :: HPList.PL (BindedUboNew al) smsbs) ms -> f
-			(U2 dscslyt :** ls)
-			(b :** bs :: HPList.PL (BindedUboNew al) (smsb ': smsbs))
-			(m :** ms)
-
 type family MapFst abs where
 	MapFst '[] = '[]
 	MapFst ( '(a, b, c :: k) ': abs) = a ': MapFst abs
@@ -1030,20 +1011,21 @@ createCmdBffr dv cp f =
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-createCmdBffrs :: forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
-	(forall scb vss . (TLength.Length vss, HPList.HomoList '() vss) =>
-		HPList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
+createCmdBffrs :: forall vss sd scp a .
+	(TLength.Length vss, HPList.FromList vss, HPList.HomoList '() vss) =>
+	Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	(forall scb . HPList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
 	IO a
-createCmdBffrs dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	Vk.CmdBffr.allocate @_ @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
+createCmdBffrs dvc cp f = Vk.CmdBffr.allocate dvc allocInfo f
 	where
-	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfo 'Nothing scp vss
+	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing scp vss
 	allocInfo = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
 mkVss :: Int -> (forall (vss :: [()]) . TLength.Length vss => (
+	CreateMvpBffrs vss,
 	TpLvlLst.Length vss, HPList.FromList vss,
 	HPList.HomoList '() vss ) =>
 	Proxy vss -> a) -> a
