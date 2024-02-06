@@ -1015,42 +1015,42 @@ run fr w sfc pd qfis dv gq pq sc ex
 		(_, False) -> go ex
 		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-draw :: forall sfs sd ssc fmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs slyts sds al alv ali nmu nmv nmi . (
-	HPList.HomoList '() vss,
-	HPList.HomoList (AtomUboNew sdsc al) slyts,
-	KnownNat al,
-	KnownNat alv,
-	KnownNat ali
-	) =>
+draw :: forall
+	sd fmt ssc sr sl sdsl sg sfs smv sbv bnmv alv nmv smi sbi bnmi ali nmi
+	alm nmm smsbs sds sls scb mff ssos . (
+	KnownNat alm, KnownNat alv, KnownNat ali,
+	HPList.HomoList '() mff,
+	HPList.HomoList '(sdsl, '[BufferModelViewProj alm]) sls ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUboNew sdsc al] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj  alm])] '[] ->
+	Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[AtomUboNew sdsc al], '[]) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
-	HPList.PL (MemoryModelViewProj al nmu) smsbs ->
-	HPList.PL (Vk.DscSet.D sds) slyts ->
-	HPList.LL (Vk.CmdBffr.C scb) vss -> SyncObjs ssos ->
-	Float ->
-	Int -> IO ()
-draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib ums dscss cbs (SyncObjs iass rfss iffs) tm cf =
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
+	HPList.PL (Vk.DscSet.D sds) sls ->
+	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssos -> Float -> Int ->
+	IO ()
+draw dv gq pq sc ex rp pl gp fbs
+	vb ib mms mdss cbs (SyncObjs iass rfss iffs) tm cf =
 	HPList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
+--	HPList.index iass cf \ias ->
 	HPList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
---	HPList.index ubs cf \_ub -> HPList.index ums cf \um ->
-	HPList.index ums cf \um ->
-	($ HPList.homoListIndex dscss cf) \(dscs :: Vk.DscSet.D sds (AtomUboNew sdsc al)) -> do
-	Vk.Fence.waitForFs dvc siff True Nothing
+	HPList.index mms cf \um ->
+	($ HPList.homoListIndex mdss cf) \(dscs :: Vk.DscSet.D sds (AtomUboNew sdsl alm)) -> do
+	Vk.Fence.waitForFs dv siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc maxBound (Just ias) Nothing
-	Vk.Fence.resetFs dvc siff
+		dv sc maxBound (Just ias) Nothing
+	Vk.Fence.resetFs dv siff
 	Vk.CmdBffr.reset cb def
 	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib dscs
-	updateUniformBufferNew dvc um ext tm
+		recordCommandBuffer cb rp fb ex pl gp vb ib dscs
+	updateUniformBufferNew dv um ex tm
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
