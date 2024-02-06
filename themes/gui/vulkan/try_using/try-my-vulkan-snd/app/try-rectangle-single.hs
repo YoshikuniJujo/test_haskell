@@ -469,48 +469,48 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createDscStLyt :: forall alm sd a . Vk.Dvc.D sd ->
+createDscStLyt :: Vk.Dvc.D sd ->
 	(forall s . Vk.DscSetLyt.D s '[BufferModelViewProj alm] -> IO a) -> IO a
 createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 	where info = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings =
-			HPList.Singleton $ Vk.DscSetLyt.BindingBuffer {
+			HPList.Singleton Vk.DscSetLyt.BindingBuffer {
 				Vk.DscSetLyt.bindingBufferDescriptorType =
 					Vk.Dsc.TypeUniformBuffer,
 				Vk.DscSetLyt.bindingBufferStageFlags =
 					Vk.ShaderStageVertexBit } }
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[]) -> IO a) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[]) -> IO a) ->
 	IO a
 createGrPpl dv ex rp pl f = Vk.Ppl.Graphics.createGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	\(HPList.Singleton (U3 p)) -> f p
 
 recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[]) -> IO ()
+		'(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[]) -> IO ()
 recreateGrPpl dv ex rp pl p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	(HPList.Singleton $ U3 p)
 
 grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
-		'Nothing '(sl, '[ '(sdsl, '[BufferModelViewProj aln])], '[])
+		'Nothing '(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[])
 		sr '(sb, vs, ts, plas)
 grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
@@ -714,9 +714,9 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
-createMvpBffr :: KnownNat alm => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj alm] ->
-	ModelViewProjMemory sm sb mnm alm -> IO b) -> IO b
+createMvpBffr :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj al] ->
+	ModelViewProjMemory sm sb mnm al -> IO b) -> IO b
 createMvpBffr = createBffrAtm
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
