@@ -365,7 +365,7 @@ querySwpchSupportFmt dvc sfc = SwpchSupportDetailsFmt
 	<*> Vk.Khr.Sfc.Phd.getFormatsFiltered dvc sfc
 	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
 
-swapExtent :: GlfwG.Win.W s -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
 swapExtent win cps
 	| Vk.extent2dWidth cur /= maxBound = pure cur
 	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
@@ -491,6 +491,28 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
+createPplLyt :: forall alm sd a . Vk.Dvc.D sd -> (forall sl sdsl .
+	Vk.DscSetLyt.D sdsl
+		'[ 'Vk.DscSetLyt.Buffer '[VObj.Atom alm UniformBufferObject 'Nothing]] ->
+	Vk.Ppl.Layout.P sl '[AtomUboNew sdsl alm] '[] -> IO a) -> IO a
+createPplLyt dvc f =
+	createDescriptorSetLayout dvc \dsl ->
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
+			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
+			Vk.Ppl.Layout.createInfoFlags = zeroBits,
+			Vk.Ppl.Layout.createInfoSetLayouts =
+				HPList.Singleton $ U2 dsl } in
+	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
+
+{-
+type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
+
+type ModelViewProjMemory sm sb mnm (alm :: Nat) =
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
+
+type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
+-}
+
 type AtomUboNew s al = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom al UniformBufferObject 'Nothing]])
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
@@ -510,20 +532,6 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
-
-createPplLyt :: forall al sd b .
-	Vk.Dvc.D sd -> (forall sdsl sl .
-		Vk.DscSetLyt.D sdsl
-			'[ 'Vk.DscSetLyt.Buffer '[VObj.Atom al UniformBufferObject 'Nothing]] ->
-		Vk.Ppl.Layout.P sl '[AtomUboNew sdsl al] '[] -> IO b) -> IO b
-createPplLyt dvc f =
-	createDescriptorSetLayout dvc \dsl ->
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
-			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
-			Vk.Ppl.Layout.createInfoFlags = zeroBits,
-			Vk.Ppl.Layout.createInfoSetLayouts =
-				HPList.Singleton $ U2 dsl } in
-	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
 
 createGrPpl :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUboNew sdsl al] '[] ->
@@ -786,10 +794,6 @@ type family MapFst abs where
 	MapFst '[] = '[]
 	MapFst ( '(a, b, c :: k) ': abs) = a ': MapFst abs
 
-data BindedUbo smsb where
-	BindedUbo :: Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-		BindedUbo '(sm, sb)
-
 data BindedUboNew al smsb where
 	BindedUboNew :: Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom al UniformBufferObject 'Nothing] ->
 		BindedUboNew al '(sm, sb)
@@ -852,28 +856,6 @@ descriptorWrite ub dscs = Vk.DscSet.Write {
 		HPList.Singleton bufferInfo
 	}
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
-
-class Update smsbs slbtss where
-	update :: Vk.Dvc.D sd -> HPList.PL BindedUbo smsbs ->
-		HPList.PL (Vk.DscSet.D sds) slbtss -> IO ()
-
-instance Update '[] '[] where update _ HPList.Nil HPList.Nil = pure ()
-
-instance Update '[t] '[] where update _ (HPList.Singleton _) HPList.Nil = pure ()
-
-instance (
-	Vk.DscSet.BindingAndArrayElemBuffer
-		(TIndex.I1_2 '(ds, cs))
-		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
-	Vk.DscSet.UpdateDynamicLength
-		(TIndex.I1_2 '(ds, cs))
-		'[VObj.Atom 256 UniformBufferObject 'Nothing],
-	Update ubs dscss ) =>
-	Update (ub ': ubs) ('(ds, cs) ': dscss ) where
-	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) = do
-		Vk.DscSet.updateDs dvc
-			(HPList.Singleton . U5 $ descriptorWrite ub dscs) HPList.Nil
-		update dvc ubs dscss
 
 class UpdateNew al smsbs slbtss where
 	updateNew :: Vk.Dvc.D sd -> HPList.PL (BindedUboNew al) smsbs ->

@@ -267,8 +267,8 @@ createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwpch win sfc pd qfis dv f = querySwpchSupport pd sfc \ss -> do
-	ex <- swapExtent win $ capabilities ss
+createSwpch w sfc pd qfis dv f = querySwpchSupport pd sfc \ss -> do
+	ex <- swapExtent w $ capabilities ss
 	let	cps = capabilities ss
 		pm = findDefault Vk.Khr.PresentModeFifo
 			(== Vk.Khr.PresentModeMailbox) $ presentModes ss
@@ -415,8 +415,8 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 		Vk.RndrPss.createInfoNext = TMaybe.N,
 		Vk.RndrPss.createInfoFlags = zeroBits,
 		Vk.RndrPss.createInfoAttachments = ca :** HPList.Nil,
-		Vk.RndrPss.createInfoSubpasses = [subpass],
-		Vk.RndrPss.createInfoDependencies = [dependency] }
+		Vk.RndrPss.createInfoSubpasses = [sbpss],
+		Vk.RndrPss.createInfoDependencies = [dpnd] }
 	ca = Vk.Att.Description {
 		Vk.Att.descriptionFlags = zeroBits,
 		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
@@ -426,7 +426,7 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 		Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
 		Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
 		Vk.Att.descriptionFinalLayout = Vk.Img.LayoutPresentSrcKhr }
-	subpass = Vk.Subpass.Description {
+	sbpss = Vk.Subpass.Description {
 		Vk.Subpass.descriptionFlags = zeroBits,
 		Vk.Subpass.descriptionPipelineBindPoint =
 			Vk.Ppl.BindPointGraphics,
@@ -437,7 +437,7 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 	car = Vk.Att.Reference {
 		Vk.Att.referenceAttachment = 0,
 		Vk.Att.referenceLayout = Vk.Img.LayoutColorAttachmentOptimal }
-	dependency = Vk.Subpass.Dependency {
+	dpnd = Vk.Subpass.Dependency {
 		Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
 		Vk.Subpass.dependencyDstSubpass = 0,
 		Vk.Subpass.dependencySrcStageMask =
@@ -458,9 +458,9 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-createPplLyt :: forall aln sd a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscSetLyt.D sdsl '[BufferModelViewProj aln] ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj aln])] '[] -> IO a) ->
+createPplLyt :: forall alm sd a . Vk.Dvc.D sd -> (forall sl sdsl .
+	Vk.DscSetLyt.D sdsl '[BufferModelViewProj alm] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] -> IO a) ->
 	IO a
 createPplLyt dv f = createDscStLyt dv \dsl ->
 	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
