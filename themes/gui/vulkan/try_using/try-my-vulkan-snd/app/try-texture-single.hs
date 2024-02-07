@@ -1,14 +1,14 @@
 {-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -81,11 +81,9 @@ import Gpu.Vulkan.Khr qualified as Vk.Khr
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
-import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 
 import Gpu.Vulkan.Device qualified as Vk.Dvc
-import Gpu.Vulkan.Device qualified as Vk.Dvc.M
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc.M
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
@@ -220,7 +218,7 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 body :: FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
-	pickPhdOld ist sfc >>= \(pd, qfis) ->
+	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \dv gq pq ->
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
@@ -242,7 +240,6 @@ body fr w ist =
 	mainloop fr w sfc pd qfis dv gq pq
 		sc ex scvs rp pl gp fbs vb ib mbm ds cb sos
 
-{-
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
 	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
@@ -258,7 +255,67 @@ pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
 	espt pd = elemAll dvcExtensions
 		. (Vk.Phd.extensionPropertiesExtensionName <$>)
 		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
-		-}
+
+dvcExtensions :: [Vk.Phd.ExtensionName]
+dvcExtensions = [Vk.Khr.Swpch.extensionName]
+
+data QFamIndices =
+	QFamIndices { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
+
+findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
+findQFams pd sfc = do
+	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
+	mp <- listToMaybe
+		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
+	pure $ QFamIndices <$> (fst <$> find (grbit . snd) prps) <*> mp
+	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
+
+createLgDvc :: Vk.Phd.P -> QFamIndices ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
+createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
+	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
+		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
+		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
+	where
+	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HPList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HPList.PL t ss -> b) -> b
+	hetero _k [] f = f HPList.Nil
+	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
+	uniqueQFams = nub [grFam qfis, prFam qfis]
+	qinfo qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	info qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def {
+			Vk.Phd.featuresSamplerAnisotropy = True } }
+
+data SwpchSupportDetails fmts = SwpchSupportDetails {
+	capabilities :: Vk.Khr.Sfc.Capabilities,
+	formats :: (
+		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
+	presentModes :: [Vk.Khr.PresentMode] }
+
+deriving instance
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+	Show (SwpchSupportDetails fmts)
+
+querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+	SwpchSupportDetails fmts -> IO a) -> IO a
+querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
+	f =<< SwpchSupportDetails
+		<$> Vk.Khr.Sfc.Phd.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Khr.Sfc.Phd.getFormatsFiltered pd sfc)
+		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
 
 pickPhdOld :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhdOld ist sfc = do
@@ -281,13 +338,19 @@ isDeviceSuitable ::
 isDeviceSuitable phdvc sfc = do
 	_deviceProperties <- Vk.Phd.getProperties phdvc
 	deviceFeatures <- Vk.Phd.getFeatures phdvc
-	is <- findQueueFamilies phdvc sfc
+--	is <- findQueueFamilies phdvc sfc
+	is <- findQFams phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
 	if extensionSupported && Vk.Phd.featuresSamplerAnisotropy deviceFeatures
 	then (<$> querySwapChainSupport phdvc sfc) \spp ->
-		bool (completeQueueFamilies is) Nothing
-			$ null (formats spp) || null (presentModes spp)
+--		bool (completeQueueFamilies is) Nothing
+		bool is Nothing $ null (formatsOld spp) || null (presentModesOld spp)
 	else pure Nothing
+
+checkDeviceExtensionSupport :: Vk.Phd.P -> IO Bool
+checkDeviceExtensionSupport dvc =
+	null . (dvcExtensions \\) . (Vk.Phd.extensionPropertiesExtensionName <$>)
+		<$> Vk.Phd.enumerateExtensionProperties dvc Nothing
 
 unfrmBffrOstAlgn ::
 	Vk.Phd.P -> (forall a . KnownNat a => Proxy a -> IO b) -> IO b
@@ -295,56 +358,10 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-data QFamIndices = QFamIndices {
-	graphicsFamily :: Vk.QueueFamily.Index,
-	presentFamily :: Vk.QueueFamily.Index }
-
-data QFamIndicesMaybe = QFamIndicesMaybe {
-	graphicsFamilyMaybe :: Maybe Vk.QueueFamily.Index,
-	presentFamilyMaybe :: Maybe Vk.QueueFamily.Index }
-
-completeQueueFamilies :: QFamIndicesMaybe -> Maybe QFamIndices
-completeQueueFamilies = \case
-	QFamIndicesMaybe {
-		graphicsFamilyMaybe = Just gf, presentFamilyMaybe = Just pf } ->
-		Just QFamIndices {
-			graphicsFamily = gf, presentFamily = pf }
-	_ -> Nothing
-
-findQueueFamilies ::
-	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO QFamIndicesMaybe
-findQueueFamilies device sfc = do
-	queueFamilies <- Vk.Phd.getQueueFamilyProperties device
-	pfis <- filterM
-		(\i -> Vk.Khr.Sfc.PhysicalDevice.getSupport device i sfc)
-		(fst <$> queueFamilies)
-	pure QFamIndicesMaybe {
-		graphicsFamilyMaybe = fst <$> find
-			(checkBits Vk.Q.GraphicsBit
-				. Vk.QueueFamily.propertiesQueueFlags . snd)
-			queueFamilies,
-		presentFamilyMaybe = listToMaybe pfis }
-
-checkDeviceExtensionSupport :: Vk.Phd.P -> IO Bool
-checkDeviceExtensionSupport dvc =
-	null . (dvcExtensions \\) . (Vk.Phd.extensionPropertiesExtensionName <$>)
-		<$> Vk.Phd.enumerateExtensionProperties dvc Nothing
-
-dvcExtensions :: [Vk.Phd.ExtensionName]
-dvcExtensions = [Vk.Khr.Swpch.extensionName]
-
-findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
-findQFams pd sfc = do
-	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
-	mp <- listToMaybe
-		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
-	pure $ QFamIndices <$> (fst <$> find (grbit . snd) prps) <*> mp
-	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
-
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	capabilities :: Vk.Khr.Sfc.M.Capabilities,
-	formats :: [Vk.Khr.Sfc.M.FormatOld],
-	presentModes :: [Vk.Khr.PresentMode] }
+	capabilitiesOld :: Vk.Khr.Sfc.M.Capabilities,
+	formatsOld :: [Vk.Khr.Sfc.M.FormatOld],
+	presentModesOld :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
 	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapChainSupportDetails
@@ -353,37 +370,6 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Sfc.PhysicalDevice.getFormatsOld dvc sfc
 	<*> Vk.Khr.Sfc.PhysicalDevice.getPresentModes dvc sfc
 
-createLgDvc :: Vk.Phd.P -> QFamIndices -> (forall sd .
-		Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
-createLgDvc phdvc qfis f =
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
-	let	createInfo = Vk.Dvc.M.CreateInfo {
-			Vk.Dvc.M.createInfoNext = TMaybe.N,
-			Vk.Dvc.M.createInfoFlags = def,
-			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
-			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] vldLayers debug,
-			Vk.Dvc.M.createInfoEnabledExtensionNames =
-				dvcExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
-				Vk.Phd.featuresSamplerAnisotropy = True } } in
-	Vk.Dvc.create phdvc createInfo nil \dvc -> do
-		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		f dvc gq pq
-	where
-	uniqueQueueFamilies = nub [graphicsFamily qfis, presentFamily qfis]
-	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = def,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
-
-mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . HPList.ToListWithCM' WithPoked TMaybe.M ss => HPList.PL t ss -> b) -> b
-mkHeteroParList _k [] f = f HPList.Nil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
-
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
@@ -391,9 +377,9 @@ createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	IO a
 createSwpch (GlfwG.Win.W win) sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilities spp
+	ext <- chooseSwapExtent win $ capabilitiesOld spp
 	let	fmt = Vk.Khr.Sfc.M.formatOldFormat
-			. chooseSwapSurfaceFormat $ formats spp
+			. chooseSwapSurfaceFormat $ formatsOld spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
 		Vk.Khr.Swpch.create @'Nothing @fmt dvc crInfo nil
@@ -424,18 +410,18 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swpch.createInfoClipped = True,
 		Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
 	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
-	presentMode = chooseSwapPresentMode $ presentModes spp
-	caps = capabilities spp
+	fmt = chooseSwapSurfaceFormat $ formatsOld spp
+	presentMode = chooseSwapPresentMode $ presentModesOld spp
+	caps = capabilitiesOld spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.M.capabilitiesMaxImageCount caps
 	imgc = clampOld
 		(Vk.Khr.Sfc.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
-			[graphicsFamily qfis0, presentFamily qfis0])
+			[grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, [])
-		(graphicsFamily qfis0 == presentFamily qfis0)
+		(grFam qfis0 == prFam qfis0)
 
 recreateSwapChain :: forall ssfc sd ssc scfmt .
 	Vk.T.FormatToValue scfmt =>
@@ -444,7 +430,7 @@ recreateSwapChain :: forall ssfc sd ssc scfmt .
 	IO Vk.Extent2d
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilities spp
+	ext <- chooseSwapExtent win $ capabilitiesOld spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swpch.unsafeRecreate @'Nothing @scfmt dvc crInfo nil sc
 
@@ -473,19 +459,19 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 		Vk.Khr.Swpch.createInfoClipped = True,
 		Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }, scifmt )
 	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
+	fmt = chooseSwapSurfaceFormat $ formatsOld spp
 	scifmt = Vk.Khr.Sfc.M.formatOldFormat fmt
-	presentMode = chooseSwapPresentMode $ presentModes spp
-	caps = capabilities spp
+	presentMode = chooseSwapPresentMode $ presentModesOld spp
+	caps = capabilitiesOld spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.M.capabilitiesMaxImageCount caps
 	imgc = clampOld
 		(Vk.Khr.Sfc.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
-			[graphicsFamily qfis0, presentFamily qfis0])
+			[grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, [])
-		(graphicsFamily qfis0 == presentFamily qfis0)
+		(grFam qfis0 == prFam qfis0)
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.M.FormatOld] -> Vk.Khr.Sfc.M.FormatOld
 chooseSwapSurfaceFormat = \case
@@ -850,7 +836,7 @@ createCmdPl qfis dvc f =
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags =
 			Vk.CmdPl.CreateResetCommandBufferBit,
-		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfis }
+		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
 createTextureImage ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (
@@ -966,9 +952,9 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
+				Vk.QFam.Ignored,
 			Vk.Img.memoryBarrierDstQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
+				Vk.QFam.Ignored,
 			Vk.Img.memoryBarrierImage = img,
 			Vk.Img.memoryBarrierSubresourceRange = srr,
 			Vk.Img.memoryBarrierSrcAccessMask = sam,
@@ -1181,7 +1167,7 @@ createBufferAtom :: forall sd nm a b al . (Storable a, KnownNat al) => Vk.Phd.P 
 createBufferAtom p dv usg props = createBuffer p dv VObj.LengthAtom usg props
 
 createBufferImage :: Storable (KObj.ImagePixel t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
