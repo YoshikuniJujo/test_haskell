@@ -117,7 +117,7 @@ main = newIORef False >>= \fr -> withWindow fr \w ->
 
 type FramebufferResized = IORef Bool
 
-withWindow :: FramebufferResized -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
+withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
 withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
 
 initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
