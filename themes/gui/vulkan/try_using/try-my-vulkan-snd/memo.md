@@ -83,3 +83,11 @@ app
 * try-generating-mipmaps-single.hs
 * try-generating-mipmaps.hs
 * try-multisampling.hs
+
+app refactored
+--------------
+
+* try-triangle-single.hs
+* try-triangle.hs
+* try-rectangle-single.hs
+* try-rectangle.hs
