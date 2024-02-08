@@ -189,22 +189,22 @@ body :: FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
-	createLgDvc pd qfis \dv gq pq ->
-	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
-	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
-	createRndrPss @scifmt dv \rp ->
+	createLgDvc pd qfis \d gq pq ->
+	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
+	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
+	createRndrPss @scifmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
-	createPplLyt @alu dv \dsl pl -> createGrPpl dv ex rp pl \gp ->
-	createFrmbffrs dv ex rp scvs \fbs ->
-	createCmdPl qfis dv \cp ->
-	createVtxBffr pd dv gq cp vertices \vb ->
-	createIdxBffr pd dv gq cp indices \ib ->
-	createMvpBffr pd dv \mb mbm ->
-	createDscPl dv \dp -> createDscSt dv dp mb dsl \ds ->
-	createCmdBffr dv cp \cb ->
-	createSyncObjs dv \sos ->
+	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
+	createFrmbffrs d ex rp scvs \fbs ->
+	createCmdPl qfis d \cp ->
+	createVtxBffr pd d gq cp vertices \vb ->
+	createIdxBffr pd d gq cp indices \ib ->
+	createMvpBffr pd d \mb mbm ->
+	createDscPl d \dp -> createDscSt d dp mb dsl \ds ->
+	createCmdBffr d cp \cb ->
+	createSyncObjs d \sos ->
 	getCurrentTime >>=
-	mainloop fr w sfc pd qfis dv gq pq
+	mainloop fr w sfc pd qfis d gq pq
 		sc ex scvs rp pl gp fbs vb ib mbm ds cb sos
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
@@ -390,7 +390,7 @@ recreateImgVws dv (i : is) (v :** vs) =
 	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil v >>
 	recreateImgVws dv is vs
 recreateImgVws _ _ _ =
-	error "number of Vk.Img.I and Vk.ImageView.I should be same"
+	error "number of Vk.Image.I and Vk.ImageView.I should be same"
 
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
