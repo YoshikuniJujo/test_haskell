@@ -488,7 +488,7 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 
 createPplLyt :: forall alm sd a . Vk.Dvc.D sd -> (forall sl sdsl .
 		Vk.DscSetLyt.D sdsl '[
-			'Vk.DscSetLyt.Buffer '[VObj.Atom alm UniformBufferObject 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
 			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 		Vk.Ppl.Layout.P sl '[AtomUbo sdsl alm] '[] -> IO a) -> IO a
 createPplLyt dvc f =
@@ -500,11 +500,9 @@ createPplLyt dvc f =
 				HPList.Singleton $ U2 dsl } in
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
 
-{-
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
 
 type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
--}
 
 checkDeviceExtensionSupport :: Vk.Phd.P -> IO Bool
 checkDeviceExtensionSupport dvc =
@@ -547,18 +545,18 @@ chooseSwapExtent (GlfwG.Win.W win) caps
 	x = Vk.Khr.Sfc.M.capabilitiesMaxImageExtent caps
 
 type AtomUbo s al = '(s, '[
-	'Vk.DscSetLyt.Buffer '[VObj.Atom al UniformBufferObject 'Nothing],
+	'Vk.DscSetLyt.Buffer '[VObj.Atom al WModelViewProj 'Nothing],
 	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
 	Vk.DscSetLyt.D s '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alm UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alm UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
@@ -568,7 +566,7 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil
 			samplerLayoutBinding :**
 			HPList.Nil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Buffer '[VObj.Atom alm UniformBufferObject 'Nothing])
+		('Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing])
 	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
@@ -1009,11 +1007,11 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
 createMvpBffr :: KnownNat alm => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom alm UniformBufferObject 'Nothing]  ->
+		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom alm WModelViewProj 'Nothing]  ->
 		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mm.BufferArg "uniform-buffer"
-				'[VObj.Atom alm UniformBufferObject 'Nothing]) ] ->
+				'[VObj.Atom alm WModelViewProj 'Nothing]) ] ->
 		IO b) -> IO b
 createMvpBffr phdvc dvc = createBufferAtom phdvc dvc
 	Vk.Bffr.UsageUniformBufferBit
@@ -1037,13 +1035,13 @@ createDscPl dvc = Vk.DscPool.create dvc poolInfo nil
 		Vk.DscPool.sizeDescriptorCount = 1 }
 
 createDscSt :: KnownNat alm =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom alm UniformBufferObject 'Nothing] ->
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom alm WModelViewProj 'Nothing] ->
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss ->
 	Vk.DscSetLyt.D sdsc '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alm UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 	(forall sds . Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alm UniformBufferObject 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
 createDscSt dvc dscp ub tximgvw txsmp dscslyt f =
 	Vk.DscSet.allocateDs dvc allocInfo \(HPList.Singleton dscs) -> do
@@ -1061,10 +1059,10 @@ createDscSt dvc dscp ub tximgvw txsmp dscslyt f =
 			HPList.Singleton $ U2 dscslyt }
 
 descriptorWrite0 :: KnownNat alm =>
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom alm UniformBufferObject 'Nothing] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.Atom alm WModelViewProj 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom alm UniformBufferObject  'Nothing)]) 0
+		sm, sb, nm, VObj.Atom alm WModelViewProj  'Nothing)]) 0
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1337,7 +1335,7 @@ mainloop ::
 	Vk.Dvc.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mm.BufferArg "uniform-buffer"
-			'[VObj.Atom alm UniformBufferObject 'Nothing] )] ->
+			'[VObj.Atom alm WModelViewProj 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl alm) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
@@ -1368,7 +1366,7 @@ runLoop ::
 	Vk.Dvc.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mm.BufferArg "uniform-buffer"
-			'[VObj.Atom alm UniformBufferObject 'Nothing] )] ->
+			'[VObj.Atom alm WModelViewProj 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl alm) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
@@ -1397,7 +1395,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 	Vk.Dvc.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mm.BufferArg "uniform-buffer"
-			'[VObj.Atom alm UniformBufferObject 'Nothing] )] ->
+			'[VObj.Atom alm WModelViewProj 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl alm) ->
 	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
@@ -1430,12 +1428,12 @@ updateUniformBuffer :: forall sd sm sb alm . KnownNat alm => Vk.Dvc.D sd ->
 	Vk.Dvc.Mem.M sm '[ '(
 		sb,
 		'Vk.Mm.BufferArg "uniform-buffer"
-			'[VObj.Atom alm UniformBufferObject 'Nothing] )] ->
+			'[VObj.Atom alm WModelViewProj 'Nothing] )] ->
 	Vk.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc um sce tm = do
 	Vk.Dvc.Mem.write @"uniform-buffer"
-		@(VObj.Atom alm UniformBufferObject 'Nothing) dvc um zeroBits ubo
-	where ubo = UniformBufferObject {
+		@(VObj.Atom alm WModelViewProj 'Nothing) dvc um zeroBits ubo
+	where ubo = Foreign.Storable.Generic.W ModelViewProj {
 		uniformBufferObjectModel = Cglm.rotate
 			Cglm.mat4Identity
 			(tm * Cglm.rad 90)
@@ -1536,19 +1534,21 @@ vertices = Foreign.Storable.Generic.W <$> [
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
-data UniformBufferObject = UniformBufferObject {
+type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
+
+data ModelViewProj = ModelViewProj {
 	uniformBufferObjectModel :: Cglm.Mat4,
 	uniformBufferObjectView :: Cglm.Mat4,
 	uniformBufferObjectProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
-instance Storable UniformBufferObject where
+instance Storable ModelViewProj where
 	sizeOf = Foreign.Storable.Generic.gSizeOf
 	alignment = Foreign.Storable.Generic.gAlignment
 	peek = Foreign.Storable.Generic.gPeek
 	poke = Foreign.Storable.Generic.gPoke
 
-instance Foreign.Storable.Generic.G UniformBufferObject
+instance Foreign.Storable.Generic.G ModelViewProj
 
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
@@ -1560,7 +1560,7 @@ shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 
 #version 450
 
-layout(binding = 0) uniform UniformBufferObject {
+layout(binding = 0) uniform ModelViewProj {
 	mat4 model;
 	mat4 view;
 	mat4 proj;
