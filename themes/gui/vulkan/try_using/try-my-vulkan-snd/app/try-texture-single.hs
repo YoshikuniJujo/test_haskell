@@ -140,9 +140,18 @@ import Data.Text.ToolsYj
 
 import Debug
 
+import Control.Monad.Trans
+import Options.Declarative
+
 main :: IO ()
-main = newIORef False >>= \fr -> withWindow fr \w ->
-	createIst \ist -> bool id (dbgm ist) debug $ body fr w ist
+main = run_ realMain
+
+realMain ::
+	Flag "t" '["texture"] "FILEPATH" "texture filepath"
+		(Def "../../../../../files/images/texture.jpg" String) ->
+	Cmd "Try Vulkan Texture" ()
+realMain tx = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
+	createIst \ist -> bool id (dbgm ist) debug $ body (get tx) fr w ist
 	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = IORef Bool
@@ -215,8 +224,8 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		"validation layer: " <>
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-body :: FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
-body fr w ist =
+body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+body tx fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \d gq pq ->
@@ -227,7 +236,7 @@ body fr w ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
 	createCmdPl qfis d \cp ->
-	createTxImg pd d gq cp \ti ->
+	createTxImg tx pd d gq cp \ti ->
 	Vk.ImgVw.create @_ @'Vk.T.FormatR8g8b8a8Srgb d (imgVwInfo ti) nil \tv ->
 	createTextureSampler pd d \txsp ->
 	createVtxBffr pd d gq cp vertices \vb ->
@@ -707,15 +716,14 @@ createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
 createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 	where info = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
-		Vk.CmdPl.createInfoFlags =
-			Vk.CmdPl.CreateResetCommandBufferBit,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
 createTxImg ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall si sm .
+	FilePath -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall si sm .
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a) -> IO a
-createTxImg pd dv gq cp f = do
-	img <- readRgba8 "../../../../../files/images/texture.jpg"
+createTxImg tx pd dv gq cp f = do
+	img <- readRgba8 tx
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
