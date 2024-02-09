@@ -134,7 +134,7 @@ import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr.M
 
-import Tools (readRgba8, clampOld, checkBits, checkFlag)
+import Tools (clampOld, checkBits, checkFlag)
 
 import Data.Text.ToolsYj
 
@@ -150,8 +150,8 @@ realMain ::
 	Flag "t" '["texture"] "FILEPATH" "texture filepath"
 		(Def "../../../../../files/images/texture.jpg" String) ->
 	Cmd "Try Vulkan Texture" ()
-realMain tx = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
-	createIst \ist -> bool id (dbgm ist) debug $ body (get tx) fr w ist
+realMain txfp = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
+	createIst \ist -> bool id (dbgm ist) debug $ body (get txfp) fr w ist
 	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = IORef Bool
@@ -225,7 +225,7 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
 body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
-body tx fr w ist =
+body txfp fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \d gq pq ->
@@ -236,8 +236,9 @@ body tx fr w ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
 	createCmdPl qfis d \cp ->
-	createTxImg tx pd d gq cp \ti ->
-	Vk.ImgVw.create @_ @'Vk.T.FormatR8g8b8a8Srgb d (imgVwInfo ti) nil \tv ->
+	either error convertRGBA8 <$> readImage txfp >>= \txi ->
+	createImg pd d gq cp (MyImage txi) \tx ->
+	Vk.ImgVw.create @_ @'Vk.T.FormatR8g8b8a8Srgb d (imgVwInfo tx) nil \tv ->
 	createTextureSampler pd d \txsp ->
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
@@ -719,62 +720,35 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-createTxImg ::
-	FilePath -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall si sm .
-		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a) -> IO a
-createTxImg tx pd dv gq cp f = do
-	img <- readRgba8 tx
-	print . V.length $ imageData img
-	let	wdt = fromIntegral $ imageWidth img
-		hgt = fromIntegral $ imageHeight img
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb pd dv wdt hgt Vk.Img.TilingOptimal
-		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
-		Vk.Mm.PropertyDeviceLocalBit \tximg _txmem -> do
-		createBufferImage @MyImage @_ pd dv
-			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
+createImg :: forall sd sc img nm a . KObj.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> img ->
+	(forall si sm .
+		Vk.Img.Binded sm si nm (KObj.ImageFormat img) -> IO a) -> IO a
+createImg pd dv gq cp img f =
+	prepareImg pd dv w h Vk.Img.TilingOptimal
+		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
+		Vk.Mm.PropertyDeviceLocalBit \i _m -> do
+		createBufferImage @img pd dv (r, w, h, d)
 			Vk.Bffr.UsageTransferSrcBit
 			(	Vk.Mm.PropertyHostVisibleBit .|.
 				Vk.Mm.PropertyHostCoherentBit )
-			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
-			Vk.Dvc.Mem.write @"texture-buffer"
-				@(VObj.Image 1 MyImage inm) dv sbm zeroBits (MyImage img)
-			print sb
-			transitionImageLayout dv gq cp tximg
+			\(b :: Vk.Bffr.Binded sm sb inmb '[bimg]) bm -> do
+			Vk.Dvc.Mem.write @inmb @bimg dv bm zeroBits img
+			transitionImageLayout dv gq cp i
 				Vk.Img.LayoutUndefined
 				Vk.Img.LayoutTransferDstOptimal
-			copyBufferToImage dv gq cp sb tximg wdt hgt
-			transitionImageLayout dv gq cp tximg
-				Vk.Img.LayoutTransferDstOptimal
-				Vk.Img.LayoutShaderReadOnlyOptimal
-			f tximg
+			copyBufferToImage dv gq cp b i w h
+		transitionImageLayout dv gq cp i
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutShaderReadOnlyOptimal
+		f i
+	where
+	r :: Integral i => i; r = fromIntegral $ KObj.imageRow img
+	w :: Integral i => i; w = fromIntegral $ KObj.imageWidth img
+	h :: Integral i => i; h = fromIntegral $ KObj.imageHeight img
+	d :: Integral i => i; d = fromIntegral $ KObj.imageDepth img
 
-newtype MyImage = MyImage (Image PixelRGBA8)
-
-newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
-
-instance Storable MyRgba8 where
-	sizeOf _ = 4 * sizeOf @Pixel8 undefined
-	alignment _ = alignment @Pixel8 undefined
-	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
-		<$> peekArray 4 (castPtr p)
-	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
-		pokeArray (castPtr p) [r, g, b, a]
-
-instance KObj.IsImage MyImage where
-	type ImagePixel MyImage = MyRgba8
-	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow = KObj.imageWidth
-	imageWidth (MyImage img) = fromIntegral $ imageWidth img
-	imageHeight (MyImage img) = fromIntegral $ imageHeight img
-	imageDepth _ = 1
-	imageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
-		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	imageMake w h _d pss = MyImage
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
-		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
-
-createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
+prepareImg :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> (forall si sm .
@@ -782,7 +756,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 		Vk.Dvc.Mem.M sm
 			'[ '(si, 'Vk.Mm.ImageArg nm fmt) ] ->
 		IO a) -> IO a
-createImage pd dvc wdt hgt tlng usg prps f =
+prepareImg pd dvc wdt hgt tlng usg prps f =
 	Vk.Img.create @'Nothing dvc imageInfo nil \img -> do
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
@@ -873,6 +847,31 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyBufferToImage @1
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
+
+newtype MyImage = MyImage (Image PixelRGBA8)
+
+newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+
+instance Storable MyRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
+		<$> peekArray 4 (castPtr p)
+	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
+
+instance KObj.IsImage MyImage where
+	type ImagePixel MyImage = MyRgba8
+	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+	imageRow = KObj.imageWidth
+	imageWidth (MyImage img) = fromIntegral $ imageWidth img
+	imageHeight (MyImage img) = fromIntegral $ imageHeight img
+	imageDepth _ = 1
+	imageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
+	imageMake w h _d pss = MyImage
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
+		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 createTextureSampler ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
@@ -1167,18 +1166,6 @@ createCmdBffr dv cp f =
 	where
 	info :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
 	info = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
-
-createCmdBffrOld ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb . Vk.CmdBffr.C scb -> IO a) ->
-	IO a
-createCmdBffrOld dvc cp f = Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. HPList.Nil) -> cb
-	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
