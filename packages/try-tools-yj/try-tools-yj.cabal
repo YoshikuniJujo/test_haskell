@@ -1,11 +1,11 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
 name:           try-tools-yj
-version:        0.1.0.8
+version:        0.1.0.9
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-tools-yj#readme>
 homepage:       https://github.com/YoshikuniJujo/try-tools-yj#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-tools-yj/issues
