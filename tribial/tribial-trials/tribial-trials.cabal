@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -113,8 +113,8 @@ library
     , c-enum
     , containers
     , deepseq
-    , monads-tf
     , mono-traversable
+    , mtl
     , random
     , template-haskell
     , time
@@ -135,8 +135,8 @@ executable chokkaku
     , c-enum
     , containers
     , deepseq
-    , monads-tf
     , mono-traversable
+    , mtl
     , random
     , template-haskell
     , time
@@ -158,8 +158,8 @@ executable endless
     , c-enum
     , containers
     , deepseq
-    , monads-tf
     , mono-traversable
+    , mtl
     , random
     , template-haskell
     , time
@@ -180,8 +180,8 @@ executable tribial-trials-exe
     , c-enum
     , containers
     , deepseq
-    , monads-tf
     , mono-traversable
+    , mtl
     , random
     , template-haskell
     , time
@@ -203,8 +203,8 @@ executable tryRecursionOverModules
     , c-enum
     , containers
     , deepseq
-    , monads-tf
     , mono-traversable
+    , mtl
     , random
     , template-haskell
     , time
@@ -226,8 +226,8 @@ test-suite tribial-trials-test
     , c-enum
     , containers
     , deepseq
-    , monads-tf
     , mono-traversable
+    , mtl
     , random
     , template-haskell
     , time

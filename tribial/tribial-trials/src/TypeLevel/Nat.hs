@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -9,6 +9,7 @@
 module TypeLevel.Nat where
 
 import GHC.TypeNats
+import Data.Type.Bool
 import Data.Proxy
 
 data Foo (n :: Nat) = Foo String deriving Show
@@ -43,3 +44,5 @@ getMyNat f = do
 	n <- read <$> getLine
 	($ someNatVal n) \(SomeNat (_ :: Proxy n)) -> f (Foo "Hello" :: Foo n)
 	-}
+
+-- type Max (a :: k) (b :: k) = If (a <=? b) b a

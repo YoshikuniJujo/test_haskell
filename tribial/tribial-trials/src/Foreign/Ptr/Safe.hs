@@ -9,7 +9,7 @@ module Foreign.Ptr.Safe (
 	sample0
 	) where
 
-import Control.Monad.Trans
+import Control.Monad
 import Control.Monad.Cont
 import Foreign.Ptr
 import Foreign.Marshal.Alloc

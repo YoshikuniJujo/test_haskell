@@ -7,6 +7,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
+import Control.Monad.Trans
 import Control.Monad.Cont
 
 alloca2 :: (Storable a, Storable b) => (Ptr a -> Ptr b -> IO c) -> IO c

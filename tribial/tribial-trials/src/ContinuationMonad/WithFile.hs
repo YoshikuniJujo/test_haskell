@@ -3,6 +3,7 @@
 
 module ContinuationMonad.WithFile where
 
+import Control.Monad.Trans
 import Control.Monad.Cont
 import System.IO
 
