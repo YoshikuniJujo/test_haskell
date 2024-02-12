@@ -714,7 +714,7 @@ createImg :: forall sd sc img nm a . KObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> img ->
 	(forall si sm .
 		Vk.Img.Binded sm si nm (KObj.ImageFormat img) -> IO a) -> IO a
-createImg pd dv gq cp img f = prepareImg pd dv img Vk.Img.TilingOptimal
+createImg pd dv gq cp img a = prepareImg pd dv img Vk.Img.TilingOptimal
 	(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 	Vk.Mm.PropertyDeviceLocalBit \i _m -> do
 	createBffrImg @img pd dv img
@@ -725,14 +725,11 @@ createImg pd dv gq cp img f = prepareImg pd dv img Vk.Img.TilingOptimal
 		Vk.Dvc.Mem.write @inmb @bimg dv bm zeroBits img
 		transitionImageLayout dv gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-		copyBufferToImage dv gq cp b i w h
+		copyBufferToImage dv gq cp b i
 	transitionImageLayout dv gq cp i
 		Vk.Img.LayoutTransferDstOptimal
 		Vk.Img.LayoutShaderReadOnlyOptimal
-	f i
-	where
-	w :: Integral i => i; w = fromIntegral $ KObj.imageWidth img
-	h :: Integral i => i; h = fromIntegral $ KObj.imageHeight img
+	a i
 
 prepareImg :: forall nm fmt sd img a . (Vk.T.FormatToValue fmt, KObj.IsImage img) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> img -> Vk.Img.Tiling ->
@@ -816,16 +813,15 @@ copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.ImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
---	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
-	Word32 -> Word32 -> IO ()
-copyBufferToImage dvc gq cp bf img wdt hgt =
+	IO ()
+copyBufferToImage dvc gq cp bf img =
 	beginSingleTimeCommands dvc gq cp \cb -> do
 	let	region :: Vk.Bffr.ImageCopy img inm
 		region = Vk.Bffr.ImageCopy {
 			Vk.Bffr.imageCopyImageSubresource = isr,
 			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
-			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d wdt hgt 1 }
+			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
 		isr = Vk.Img.SubresourceLayers {
 			Vk.Img.subresourceLayersAspectMask =
 				Vk.Img.AspectColorBit,
@@ -834,6 +830,9 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyBufferToImage @1
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
+	where
+	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
+		VObj.lengthOf @(VObj.Image 1 img inm) $ Vk.Bffr.lengthBinded bf
 
 createTextureSampler ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
