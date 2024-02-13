@@ -803,23 +803,19 @@ copyBffrToImg :: forall sd sc smb sbb nmb al img imgnm smi si nmi .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded smb sbb nmb '[ VObj.Image al img imgnm]  ->
 	Vk.Img.Binded smi si nmi (KObj.ImageFormat img) -> IO ()
-copyBffrToImg dvc gq cp bf img =
-	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	-- region :: Vk.Bffr.ImageCopy img inm
-		region = Vk.Bffr.ImageCopy {
+copyBffrToImg dv gq cp bf img = beginSingleTimeCommands dv gq cp \cb ->
+	Vk.Cmd.copyBufferToImage @al @img @'[imgnm] cb bf img
+		Vk.Img.LayoutTransferDstOptimal
+		$ HPList.Singleton Vk.Bffr.ImageCopy {
 			Vk.Bffr.imageCopyImageSubresource = isr,
 			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
 			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
-		isr = Vk.Img.SubresourceLayers {
-			Vk.Img.subresourceLayersAspectMask =
-				Vk.Img.AspectColorBit,
-			Vk.Img.subresourceLayersMipLevel = 0,
-			Vk.Img.subresourceLayersBaseArrayLayer = 0,
-			Vk.Img.subresourceLayersLayerCount = 1 }
---	Vk.Cmd.copyBufferToImage @al @_ @img @'[imgnm] @_ @_ @_ @nmb @_ @_ @nmi
-	Vk.Cmd.copyBufferToImage @al @img @'[imgnm]
-		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
 	where
+	isr = Vk.Img.SubresourceLayers {
+		Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceLayersMipLevel = 0,
+		Vk.Img.subresourceLayersBaseArrayLayer = 0,
+		Vk.Img.subresourceLayersLayerCount = 1 }
 	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
 		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
 
