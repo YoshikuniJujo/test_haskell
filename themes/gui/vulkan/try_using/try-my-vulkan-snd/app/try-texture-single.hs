@@ -710,19 +710,19 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-createImg :: forall sd sc img nm a . KObj.IsImage img =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> img ->
+createImg :: forall sd scp img inm a . KObj.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> img ->
 	(forall si sm .
-		Vk.Img.Binded sm si nm (KObj.ImageFormat img) -> IO a) -> IO a
-createImg pd dv gq cp img a = prepareImg pd dv img Vk.Img.TilingOptimal
+		Vk.Img.Binded sm si inm (KObj.ImageFormat img) -> IO a) -> IO a
+createImg pd dv gq cp img a = prepareImg pd dv Vk.Img.TilingOptimal
 	(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
-	Vk.Mm.PropertyDeviceLocalBit \i _m -> do
-	createBffrImg @img pd dv img
+	Vk.Mm.PropertyDeviceLocalBit img \i _m -> do
+	createBffrImg pd dv
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		\(b :: Vk.Bffr.Binded sm sb inmb '[bimg]) bm -> do
-		Vk.Dvc.Mem.write @inmb @bimg dv bm zeroBits img
+			Vk.Mm.PropertyHostCoherentBit ) img
+		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm -> do
+		Vk.Dvc.Mem.write @inm @bimg dv bm zeroBits img
 		transitionImageLayout dv gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyBufferToImage dv gq cp b i
@@ -732,13 +732,13 @@ createImg pd dv gq cp img a = prepareImg pd dv img Vk.Img.TilingOptimal
 	a i
 
 prepareImg :: forall nm fmt sd img a . (Vk.T.FormatToValue fmt, KObj.IsImage img) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> img -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> (forall si sm .
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> img -> (forall si sm .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Dvc.Mem.M sm
 			'[ '(si, 'Vk.Mm.ImageArg nm fmt) ] ->
 		IO a) -> IO a
-prepareImg pd dvc img tlng usg prps f =
+prepareImg pd dvc tlng usg prps img f =
 	Vk.Img.create @'Nothing dvc imageInfo nil \img -> do
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
@@ -996,14 +996,14 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 	}
 
 createBffrImg :: KObj.IsImage img =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> img ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> img -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm] ->
 		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mm.BufferArg nm '[ VObj.Image 1 img inm])] ->
 		IO a) -> IO a
-createBffrImg p dv img usg props =
+createBffrImg p dv usg props img =
 	createBuffer p dv (VObj.LengthImage r w h d) usg props
 	where
 	r :: Integral i => i; r = fromIntegral $ KObj.imageRow img
