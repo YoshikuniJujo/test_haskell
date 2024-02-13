@@ -113,7 +113,7 @@ import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Memory qualified as Vk.Mm.M
+import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Memory qualified as Vk.Dvc.Mem
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
@@ -731,45 +731,39 @@ createImg pd dv gq cp img a = prepareImg pd dv Vk.Img.TilingOptimal
 		Vk.Img.LayoutShaderReadOnlyOptimal
 	a i
 
-prepareImg :: forall nm fmt sd img a . (Vk.T.FormatToValue fmt, KObj.IsImage img) =>
+prepareImg :: forall sd img nm fmt a .
+	(KObj.IsImage img, Vk.T.FormatToValue fmt) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> img -> (forall si sm .
 		Vk.Img.Binded sm si nm fmt ->
-		Vk.Dvc.Mem.M sm
-			'[ '(si, 'Vk.Mm.ImageArg nm fmt) ] ->
-		IO a) -> IO a
-prepareImg pd dvc tlng usg prps img f =
-	Vk.Img.create @'Nothing dvc imageInfo nil \img -> do
-	reqs <- Vk.Img.getMemoryRequirements dvc img
-	print reqs
-	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits reqs) prps
-	print mt
-	Vk.Dvc.Mem.allocateBind @'Nothing dvc
-		(HPList.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
-		nil \(HPList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd))) m -> do
-		f bnd m
+		Vk.Dvc.Mem.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)] -> IO a) ->
+	IO a
+prepareImg pd dv tl us pr img a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+	rqs <- Vk.Img.getMemoryRequirements dv i
+	mt <- findMemoryType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
+	Vk.Dvc.Mem.allocateBind @'Nothing dv
+		(HPList.Singleton . U2 $ Vk.Dvc.Mem.Image i) (minfo mt) nil
+		\(HPList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded b))) m -> a b m
 	where
-	imageInfo = Vk.Img.CreateInfo {
+	iinfo = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNext = TMaybe.N,
 		Vk.Img.createInfoImageType = Vk.Img.Type2d,
 		Vk.Img.createInfoExtent = Vk.Extent3d {
-			Vk.extent3dWidth = w,
-			Vk.extent3dHeight = h,
+			Vk.extent3dWidth = fromIntegral $ KObj.imageWidth img,
+			Vk.extent3dHeight = fromIntegral $ KObj.imageHeight img,
 			Vk.extent3dDepth = 1 },
 		Vk.Img.createInfoMipLevels = 1,
 		Vk.Img.createInfoArrayLayers = 1,
-		Vk.Img.createInfoTiling = tlng,
+		Vk.Img.createInfoTiling = tl,
 		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined,
-		Vk.Img.createInfoUsage = usg,
+		Vk.Img.createInfoUsage = us,
 		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
 		Vk.Img.createInfoFlags = zeroBits,
 		Vk.Img.createInfoQueueFamilyIndices = [] }
-	memInfo mt = Vk.Mm.AllocateInfo {
+	minfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
-	w :: Integral i => i; w = fromIntegral $ KObj.imageWidth img
-	h :: Integral i => i; h = fromIntegral $ KObj.imageHeight img
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
@@ -1030,7 +1024,7 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		IO a) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
-	mt <- findMemoryType p (Vk.Mm.M.requirementsMemoryTypeBits reqs) props
+	mt <- findMemoryType p (Vk.Mm.requirementsMemoryTypeBits reqs) props
 	Vk.Dvc.Mem.allocateBind dv (HPList.Singleton . U2 $ Vk.Dvc.Mem.Buffer b)
 		(allcInfo mt) nil
 		$ f . \(HPList.Singleton (U2 (Vk.Dvc.Mem.BufferBinded bnd))) -> bnd
@@ -1043,20 +1037,20 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mm.M.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
+	allcInfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
 	allcInfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-findMemoryType :: Vk.Phd.P -> Vk.Mm.M.TypeBits -> Vk.Mm.PropertyFlags ->
-	IO Vk.Mm.M.TypeIndex
+findMemoryType :: Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags ->
+	IO Vk.Mm.TypeIndex
 findMemoryType phdvc flt props =
 	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
 	suitable props1 = fst <$> find ((&&)
-		<$> (`Vk.Mm.M.elemTypeIndex` flt) . fst
-		<*> checkBits props . Vk.Mm.M.mTypePropertyFlags . snd) tps
+		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
+		<*> checkBits props . Vk.Mm.mTypePropertyFlags . snd) tps
 		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
 createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
