@@ -723,10 +723,10 @@ createImg pd dv gq cp img a = prepareImg pd dv Vk.Img.TilingOptimal
 			Vk.Mm.PropertyHostCoherentBit ) img
 		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm -> do
 		Vk.Dvc.Mem.write @inm @bimg dv bm zeroBits img
-		transitionImageLayout dv gq cp i
+		transitionImgLyt dv gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-		copyBufferToImage dv gq cp b i
-	transitionImageLayout dv gq cp i
+		copyBffrToImg dv gq cp b i
+	transitionImgLyt dv gq cp i
 		Vk.Img.LayoutTransferDstOptimal
 		Vk.Img.LayoutShaderReadOnlyOptimal
 	a i
@@ -765,10 +765,10 @@ prepareImg pd dv tl us pr img a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-transitionImageLayout :: forall sd sc si sm nm fmt .
+transitionImgLyt :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Img.Binded sm si nm fmt ->
 	Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
+transitionImgLyt dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
 	Vk.Cmd.pipelineBarrier cb ss ds
 		zeroBits HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
 	where
@@ -798,15 +798,14 @@ transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
 		_ -> error "unsupported layout transition!"
 
-copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
-	Storable (KObj.ImagePixel img) =>
+copyBffrToImg :: forall sd sc smb sbb nmb al img imgnm smi si nmi .
+	(KnownNat al, Storable (KObj.ImagePixel img)) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
-	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
-	IO ()
-copyBufferToImage dvc gq cp bf img =
+	Vk.Bffr.Binded smb sbb nmb '[ VObj.Image al img imgnm]  ->
+	Vk.Img.Binded smi si nmi (KObj.ImageFormat img) -> IO ()
+copyBffrToImg dvc gq cp bf img =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	region :: Vk.Bffr.ImageCopy img inm
+	let	-- region :: Vk.Bffr.ImageCopy img inm
 		region = Vk.Bffr.ImageCopy {
 			Vk.Bffr.imageCopyImageSubresource = isr,
 			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
@@ -817,11 +816,12 @@ copyBufferToImage dvc gq cp bf img =
 			Vk.Img.subresourceLayersMipLevel = 0,
 			Vk.Img.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyBufferToImage @1
+--	Vk.Cmd.copyBufferToImage @al @_ @img @'[imgnm] @_ @_ @_ @nmb @_ @_ @nmi
+	Vk.Cmd.copyBufferToImage @al @img @'[imgnm]
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
 	where
 	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
-		VObj.lengthOf @(VObj.Image 1 img inm) $ Vk.Bffr.lengthBinded bf
+		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
 
 createTextureSampler ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a

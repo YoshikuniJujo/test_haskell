@@ -40,7 +40,6 @@ import Language.SpirV.ShaderKind
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
-import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc

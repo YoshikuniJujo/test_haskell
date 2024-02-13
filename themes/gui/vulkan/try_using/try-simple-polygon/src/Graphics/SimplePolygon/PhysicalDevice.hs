@@ -25,7 +25,6 @@ import Data.Maybe
 import Data.List qualified as L
 
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
-import Gpu.Vulkan.PhysicalDevice.Struct qualified as Vk.PhDvc
 import Gpu.Vulkan.Queue qualified as Vk.Queue
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.Khr qualified as Vk.Khr
@@ -111,10 +110,10 @@ querySwapChainSupport ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
+	<*> Vk.Khr.Surface.PhysicalDevice.getFormatsOld dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	_capabilities :: Vk.Khr.Surface.Capabilities,
-	formats :: [Vk.Khr.Surface.Format],
+	formats :: [Vk.Khr.Surface.FormatOld],
 	presentModes :: [Vk.Khr.PresentMode] }
