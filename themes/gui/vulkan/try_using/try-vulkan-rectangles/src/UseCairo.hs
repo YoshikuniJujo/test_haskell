@@ -83,7 +83,6 @@ import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocationCallbacks
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
-import Gpu.Vulkan.PhysicalDevice.Struct qualified as Vk.PhDvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
@@ -173,14 +172,14 @@ rectangles2 inp outp vext = GlfwG.init error $ do
 				createLogicalDevice phd dvcgrp () qfis
 			spp <- querySwapChainSupport phd dsfc
 			ext <- chooseSwapExtent dw $ capabilities spp
-			let	fmt = Vk.Khr.Sfc.formatFormat
+			let	fmt = Vk.Khr.Sfc.formatOldFormat
 					. chooseSwapSurfaceFormat
 					$ formats spp
 			Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 				n <- getSwapchainImageNum
 					@fmt dv dsfc spp ext qfis
 				pure (	phd, qfis,
-					Vk.Khr.Sfc.formatFormat
+					Vk.Khr.Sfc.formatOldFormat
 						. chooseSwapSurfaceFormat
 						$ formats spp, dv, gq, pq, n )
 		getNum n' \(_ :: Proxy n) ->
@@ -640,14 +639,14 @@ deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	capabilities :: Vk.Khr.Sfc.Capabilities,
-	formats :: [Vk.Khr.Sfc.Format],
+	formats :: [Vk.Khr.Sfc.FormatOld],
 	presentModes :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
 	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
-	<*> Vk.Khr.Sfc.Phd.getFormats dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getFormatsOld dvc sfc
 	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
 
 createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
@@ -689,7 +688,7 @@ prepareSwapchain win sfc phdvc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	fmt0 = Vk.T.formatToValue @scfmt
-		fmt = Vk.Khr.Sfc.formatFormat
+		fmt = Vk.Khr.Sfc.formatOldFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	when (fmt0 /= fmt) $ error
 		"Rectangles: prepareSwapchain format not match"
@@ -726,7 +725,7 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Sfc.formatColorSpace fmt,
+			Vk.Khr.Sfc.formatOldColorSpace fmt,
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
@@ -764,16 +763,16 @@ recreateSwapchain win sfc phdvc qfis0 dvc sc = do
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing dvc crInfo nil sc
 
-chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
+chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.FormatOld] -> Vk.Khr.Sfc.FormatOld
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
 		$ L.find preferredSwapSurfaceFormat availableFormats
 	_ -> error "no available swap surface formats"
 
-preferredSwapSurfaceFormat :: Vk.Khr.Sfc.Format -> Bool
+preferredSwapSurfaceFormat :: Vk.Khr.Sfc.FormatOld -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-	Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+	Vk.Khr.Sfc.formatOldFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Sfc.formatOldColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
