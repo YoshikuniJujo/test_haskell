@@ -895,13 +895,13 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
 createMvpBffr :: KnownNat alm => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom alm WModelViewProj 'Nothing]  ->
-		Vk.Dvc.Mem.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg "uniform-buffer"
-				'[VObj.Atom alm WModelViewProj 'Nothing]) ] ->
-		IO b) -> IO b
-createMvpBffr phdvc dvc = createBufferAtom phdvc dvc
+	Vk.Bffr.Binded sm sb mnm '[VObj.Atom alm WModelViewProj 'Nothing]  ->
+	Vk.Dvc.Mem.M sm '[ '(
+		sb,
+		'Vk.Mm.BufferArg mnm
+			'[VObj.Atom alm WModelViewProj 'Nothing]) ] ->
+	IO b) -> IO b
+createMvpBffr = createBffrAtm
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
@@ -996,15 +996,17 @@ createBffrImg p dv usg props img =
 	h :: Integral i => i; h = fromIntegral $ KObj.imageHeight img
 	d :: Integral i => i; d = fromIntegral $ KObj.imageDepth img
 
-createBufferAtom :: forall sd nm a b al . (Storable a, KnownNat al) => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (
+createBffrAtm :: forall sd nm a b al . (Storable a, KnownNat al) =>
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	(
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom al a 'Nothing] ->
 		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
 			IO b) -> IO b
-createBufferAtom p dv usg props = createBuffer p dv VObj.LengthAtom usg props
+createBffrAtm usg props p dv = createBuffer p dv VObj.LengthAtom usg props
 
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->

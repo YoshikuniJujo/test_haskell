@@ -714,9 +714,9 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
-createMvpBffr :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj al] ->
-	ModelViewProjMemory sm sb mnm al -> IO b) -> IO b
+createMvpBffr :: KnownNat alm => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj alm] ->
+	ModelViewProjMemory sm sb mnm alm -> IO b) -> IO b
 createMvpBffr = createBffrAtm
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
