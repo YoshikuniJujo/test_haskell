@@ -766,39 +766,34 @@ prepareImg pd dv tl us pr img a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
-	IO ()
-transitionImageLayout dvc gq cp img olyt nlyt =
-	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
-		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = TMaybe.N,
-			Vk.Img.memoryBarrierOldLayout = olyt,
-			Vk.Img.memoryBarrierNewLayout = nlyt,
-			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-				Vk.QFam.Ignored,
-			Vk.Img.memoryBarrierDstQueueFamilyIndex =
-				Vk.QFam.Ignored,
-			Vk.Img.memoryBarrierImage = img,
-			Vk.Img.memoryBarrierSubresourceRange = srr,
-			Vk.Img.memoryBarrierSrcAccessMask = sam,
-			Vk.Img.memoryBarrierDstAccessMask = dam }
-		srr = Vk.Img.SubresourceRange {
-			Vk.Img.subresourceRangeAspectMask =
-				Vk.Img.AspectColorBit,
-			Vk.Img.subresourceRangeBaseMipLevel = 0,
-			Vk.Img.subresourceRangeLevelCount = 1,
-			Vk.Img.subresourceRangeBaseArrayLayer = 0,
-			Vk.Img.subresourceRangeLayerCount = 1 }
-	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HPList.Nil HPList.Nil (HPList.Singleton $ U5 barrier)
-	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Img.Binded sm si nm fmt ->
+	Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
+	Vk.Cmd.pipelineBarrier cb ss ds
+		zeroBits HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
+	where
+	brrr = Vk.Img.MemoryBarrier {
+		Vk.Img.memoryBarrierNext = TMaybe.N,
+		Vk.Img.memoryBarrierOldLayout = ol,
+		Vk.Img.memoryBarrierNewLayout = nl,
+		Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrierImage = i,
+		Vk.Img.memoryBarrierSubresourceRange = srr,
+		Vk.Img.memoryBarrierSrcAccessMask = sam,
+		Vk.Img.memoryBarrierDstAccessMask = dam }
+	srr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
+	(sam, dam, ss, ds) = case (ol, nl) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
 		(Vk.Img.LayoutTransferDstOptimal,
-			Vk.Img.LayoutShaderReadOnlyOptimal ) -> (
+			Vk.Img.LayoutShaderReadOnlyOptimal) -> (
 			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
 		_ -> error "unsupported layout transition!"
