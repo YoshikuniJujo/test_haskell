@@ -733,8 +733,7 @@ createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv VObj.LengthAtom us prs
 
@@ -826,17 +825,16 @@ createDscPl dv = Vk.DscPool.create dv info nil
 				Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
 				Vk.DscPool.sizeDescriptorCount = 1 } ] }
 
-createDscSt :: KnownNat al =>
+createDscSt :: KnownNat alm =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp ->
-	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj al] ->
-	Vk.DscSetLyt.D sdsc '[BufferModelViewProj al] -> (forall sds .
-		Vk.DscSet.D sds '(sdsc, '[BufferModelViewProj al]) -> IO a) ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	Vk.DscSetLyt.D sdsl '[BufferModelViewProj alm] -> (forall sds .
+		Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) -> IO a) ->
 	IO a
-createDscSt dv dp ub dl f =
-	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> do
-	Vk.DscSet.updateDs dv
-		(HPList.Singleton . U5 $ dscWrite ub ds) HPList.Nil
-	f ds
+createDscSt dv dp bm dl a =
+	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
+	$ Vk.DscSet.updateDs dv
+		(HPList.Singleton . U5 $ dscWrite bm ds) HPList.Nil
 	where info = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dp,
