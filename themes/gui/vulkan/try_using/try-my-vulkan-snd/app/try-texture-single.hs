@@ -765,6 +765,22 @@ prepareImg pd dv tl us pr img a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
+createBffrImg :: forall sd img nm inm a . KObj.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	img -> (forall sm sb al . KnownNat al =>
+		Vk.Bffr.Binded sm sb nm '[VObj.Image al img inm] ->
+		Vk.Dvc.Mem.M sm '[
+			'(sb, 'Vk.Mm.BufferArg nm '[VObj.Image al img inm]) ] ->
+		IO a) -> IO a
+createBffrImg p dv us prs img a =
+	bffrAlgn @(VObj.Image 256 img inm) dv ln us \(_ :: Proxy al) ->
+	createBuffer @_ @_ @(VObj.Image al img inm) p dv ln us prs a
+	where
+	ln :: VObj.Length (VObj.Image al img inm)
+	ln = VObj.LengthImage
+		(KObj.imageRow img) (KObj.imageWidth img)
+		(KObj.imageHeight img) (KObj.imageDepth img)
+
 transitionImgLyt :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Img.Binded sm si nm fmt ->
 	Vk.Img.Layout -> Vk.Img.Layout -> IO ()
@@ -979,22 +995,6 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 			Vk.Dsc.imageInfoImageView = tiv,
 			Vk.Dsc.imageInfoSampler = tsmp }
 	}
-
-createBffrImg :: KObj.IsImage img =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> img -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm] ->
-		Vk.Dvc.Mem.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[ VObj.Image 1 img inm])] ->
-		IO a) -> IO a
-createBffrImg p dv usg props img =
-	createBuffer p dv (VObj.LengthImage r w h d) usg props
-	where
-	r :: Integral i => i; r = fromIntegral $ KObj.imageRow img
-	w :: Integral i => i; w = fromIntegral $ KObj.imageWidth img
-	h :: Integral i => i; h = fromIntegral $ KObj.imageHeight img
-	d :: Integral i => i; d = fromIntegral $ KObj.imageDepth img
 
 createBffrAtm :: forall sd nm a b al . (Storable a, KnownNat al) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
