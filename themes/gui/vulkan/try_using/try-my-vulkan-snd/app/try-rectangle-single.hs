@@ -24,9 +24,9 @@ import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
 import Data.Proxy
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
-import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
 import Data.Ord.ToolsYj
 import Data.Bits
@@ -72,7 +72,7 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
-import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
@@ -787,15 +787,15 @@ copyBffr :: forall sd sc sm sb sm' sb' bnm bnm' al t lnm .
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
 	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
 copyBffr dv gq cp s d = createCmdBffr dv cp \cb -> do
-	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo $
+	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
 		Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb s d
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
-	binfo = Vk.CmdBffr.BeginInfo {
-		Vk.CmdBffr.beginInfoNext = TMaybe.N,
-		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
-		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+	binfo = Vk.CBffr.BeginInfo {
+		Vk.CBffr.beginInfoNext = TMaybe.N,
+		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
+		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 	sinfo cb = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
@@ -803,15 +803,15 @@ copyBffr dv gq cp s d = createCmdBffr dv cp \cb -> do
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
 createCmdBffr :: forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
+	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
 createCmdBffr dv cp f =
-	Vk.CmdBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
+	Vk.CBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
 	where
-	info :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
-	info = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
+	info = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cp,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
 createDscPl dv = Vk.DscPool.create dv info nil
@@ -885,7 +885,7 @@ mainloop :: (
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm nmm alm ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) ->
-	Vk.CmdBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
+	Vk.CBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
 mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
 	vb ib mm mds cb sos tm0 = do
 	($ ex0) $ fix \go ex ->
@@ -912,7 +912,7 @@ run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm nmm alm ->
 	Vk.DscSet.D sds '(sdsc, '[BufferModelViewProj alm]) ->
-	Vk.CmdBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
 run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds cb sos tm go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
@@ -937,12 +937,12 @@ draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm nmm alm ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) ->
-	Vk.CmdBffr.C scb -> SyncObjs ssos -> Float -> IO ()
+	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
 draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb (SyncObjs ias rfs iff) tm = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
-	Vk.CmdBffr.reset cb def
+	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ib mds
 	updateModelViewProj dv mm ex tm
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
@@ -982,7 +982,7 @@ updateModelViewProj dv mm Vk.Extent2d {
 recordCmdBffr :: forall scb sr sl sg sf
 	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alm .
 	(KnownNat alv, KnownNat ali) =>
-	Vk.CmdBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -993,7 +993,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb ib mds =
-	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
 	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
@@ -1099,7 +1099,7 @@ instance Foreign.Storable.Generic.G ModelViewProj
 #version 450
 
 layout(binding = 0) uniform
-	UniformBufferObject { mat4 model; mat4 view; mat4 proj; } mvp;
+	ModelViewProj { mat4 model; mat4 view; mat4 proj; } mvp;
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
