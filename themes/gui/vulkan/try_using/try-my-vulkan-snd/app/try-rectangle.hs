@@ -194,23 +194,23 @@ body :: FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
-	createLgDvc pd qfis \dv gq pq ->
-	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
-	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
-	createRndrPss @scifmt dv \rp ->
+	createLgDvc pd qfis \d gq pq ->
+	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
+	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
+	createRndrPss @scifmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
-	createPplLyt @alu dv \dsl pl -> createGrPpl dv ex rp pl \gp ->
-	createFrmbffrs dv ex rp scvs \fbs ->
-	createCmdPl qfis dv \cp ->
-	createVtxBffr pd dv gq cp vertices \vb ->
-	createIdxBffr pd dv gq cp indices \ib ->
+	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
+	createFrmbffrs d ex rp scvs \fbs ->
+	createCmdPl qfis d \cp ->
+	createVtxBffr pd d gq cp vertices \vb ->
+	createIdxBffr pd d gq cp indices \ib ->
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
-	createMvpBffrs @mff pd dv dsl \dsls mbs mbms ->
-	createDscPl dv \dp -> createDscSts dv dp mbs dsls \dss ->
-	Vk.CmdBffr.allocate @_ @mff dv (cmdBffrInfo cp) \cbs ->
-	createSyncObjs @mff dv \sos ->
+	createMvpBffrs @mff pd d dsl \dsls mbs mbms ->
+	createDscPl d \dp -> createDscSts d dp mbs dsls \dss ->
+	Vk.CmdBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
+	createSyncObjs @mff d \sos ->
 	getCurrentTime >>=
-	mainloop fr w sfc pd qfis dv gq pq
+	mainloop fr w sfc pd qfis d gq pq
 		sc ex scvs rp pl gp fbs vb ib mbms dss cbs sos
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
