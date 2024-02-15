@@ -20,10 +20,10 @@ main = either error (writeArgb32 "fish.png") $ runST draw
 
 draw :: PrimMonad m => m (Either String Argb32)
 draw = do
-	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 1024 1024
+	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 700 700
 	cr <- cairoCreate sfc0
 
-	cairoTranslate cr 512 512
+	cairoTranslate cr 350 350
 	left cr 7 100 0 0
 	right cr 7 100 0 0
 	up cr 7 100 0 0
