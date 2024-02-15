@@ -19,11 +19,11 @@ main = do
 
 	putStrLn "*** TEST ARGB 32 BEGIN ***"
 
-	writeArgb32 "HaskellLogoRotated.png" $ runST $ draw logo
+	either error (writeArgb32 "HaskellLogoRotated.png") $ runST $ draw logo
 
 	putStrLn "*** TEST ARGB 32 END ***"
 
-draw :: PrimMonad m => CairoImage -> m Argb32
+draw :: PrimMonad m => CairoImage -> m (Either String Argb32)
 draw logo = do
 	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
 	cr <- cairoCreate sfc0
@@ -35,5 +35,5 @@ draw logo = do
 	cairoSetSource cr ptn
 	cairoPaint cr
 	(<$> cairoImageSurfaceGetCairoImage sfc0) \case
-		CairoImageArgb32 i -> i -- writeArgb32 "HaskellLogoRotated.png" i
-		_ -> error "image format error"
+		CairoImageArgb32 i -> Right i
+		_ -> Left "image format error"
