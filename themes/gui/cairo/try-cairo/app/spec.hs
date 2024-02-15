@@ -41,11 +41,11 @@ red :: forall s . ST s (DynamicImage, CairoFormatT, CInt) -- (Vector Word8, Cair
 red = do
 	(s, cr) <- makeRed
 	cairoPaint cr
-	(,,) <$> cairoImageSurfaceGetJuicyImage s <*> cairoImageSurfaceGetFormat s <*> cairoImageSurfaceGetStride s
+	(,,) <$> cairoImageSurfaceGetJuicyImage s <*> cairoImageSurfaceGetFormat s <*> cairoImageSurfaceGetStride' s
 
 cairoImageSurfaceGetFormat s = cairoImageFormat <$> cairoImageSurfaceGetCairoImage s
 
-cairoImageSurfaceGetStride s = cairoImageStride <$> cairoImageSurfaceGetCairoImage s
+cairoImageSurfaceGetStride' s = cairoImageStride <$> cairoImageSurfaceGetCairoImage s
 
 redIo :: IO (Either String Bool) -- DynamicImage -- (Vector Word8)
 redIo = do
