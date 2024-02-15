@@ -5,16 +5,12 @@
 
 packages:
 - completed:
-    commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
-    git: https://github.com/YoshikuniJujo/JuicyCairo
-    name: JuicyCairo
+    hackage: JuicyCairo-0.1.0.0@sha256:af9c3d6e4b9332defda818a489689c38238f232b47ee0cef226d91fa12e0ab28,1467
     pantry-tree:
-      sha256: ce9e0bbbc4b9db6d85c209040f73222f7e9ab66b95f85536dd71f3aa6ec19a09
-      size: 622
-    version: 0.1.0.0
+      sha256: f2fca4594230663af139cf9d9744b4645ea5cf0f2973168187b7983d290959da
+      size: 367
   original:
-    commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
-    git: https://github.com/YoshikuniJujo/JuicyCairo
+    hackage: JuicyCairo-0.1.0.0
 snapshots:
 - completed:
     sha256: 62f2f54aac083e25613ce5aefd04b390f1e8853631b2059e31d7a039e5f50e03
