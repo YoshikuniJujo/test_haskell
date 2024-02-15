@@ -16,7 +16,7 @@ import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 
 main :: IO ()
-main = either error (writeArgb32 "fish.png") $ runST draw
+main = either error (writeArgb32 "fish_halfway.png") $ runST draw
 
 draw :: PrimMonad m => m (Either String Argb32)
 draw = do
@@ -24,7 +24,8 @@ draw = do
 	cr <- cairoCreate sfc0
 
 	cairoTranslate cr 350 350
-	left cr 7 100 0 0
+	left cr 1 100 0 0
+--	left cr 7 100 0 0
 --	right cr 7 100 0 0
 --	up cr 7 100 0 0
 --	down cr 7 100 0 0
@@ -35,12 +36,56 @@ draw = do
 triangle :: PrimMonad m => CairoT r (PrimState m) ->
 	CDouble -> CDouble -> CDouble -> CDouble -> m ()
 -- triangle = polygon [(0, 0), (1, 0), (1 / 2, 1 / 2)]
-triangle = polygon [
-	(0, 0),
-	(1 / 4, - 1 / 8), (1 / 2, 0), (3 / 4, 1 / 8),
-	(1, 0), (5 / 8, 1 / 8),
-	(1 / 2, 1 / 2), (1 / 8, 3 / 8)
-	]
+triangle = polygon $ mkFish [(0, 0), (10, 1), (13, 0)]
+
+data Line = Line {
+	lineX1 :: CDouble,
+	lineY1 :: CDouble,
+	lineX2 :: CDouble,
+	lineY2 :: CDouble } deriving Show
+
+data Line' = Line' {
+	lineX1' :: CDouble,
+	lineY1' :: CDouble,
+	lineUnit :: (CDouble, CDouble),
+	lineLength :: CDouble } deriving Show
+
+convert :: Line -> Line'
+convert (Line x1 y1 x2 y2) =
+	Line' x1 y1 (xd / d, yd / d) d
+	where
+	xd = x2 - x1; yd = y2 - y1
+	d = sqrt $ xd ^ 2 + yd ^ 2
+
+toFlat :: Line' -> (CDouble, CDouble) -> (CDouble, CDouble)
+toFlat (Line' x1 y1 (xu, yu) d) (x, y) = (x'' / d, y'' / d)
+	where
+	x' = x - x1; y' = y - y1
+	x'' = x' * xu + y' * yu
+	y'' = - x' * yu + y' * xu
+
+fromFlat :: Line' -> (CDouble, CDouble) -> (CDouble, CDouble)
+fromFlat (Line' x1 y1 (xu, yu) d) (x, y) = (x'' + x1, y'' + y1)
+	where
+	x' = x * d; y' = y * d
+	x'' = x' * xu - y' * yu
+	y'' = x' * yu + y' * xu
+
+lineToLine :: Line -> Line -> (CDouble, CDouble) -> (CDouble, CDouble)
+lineToLine l1 l2 = fromFlat (convert l2) . toFlat (convert l1)
+
+-- data Line' = Line' 
+
+mkFish :: [(CDouble, CDouble)] -> [(CDouble, CDouble)]
+mkFish ps =
+	(fromFlat (convert $ Line 0 0 (1 / 2) 0) <$> us) ++
+	reverse (fromFlat (convert $ Line 1 0 (1 / 2) 0) <$> us) ++
+	(fromFlat (convert $ Line 1 0 (1 / 2) (1 / 2)) <$> us) ++
+	reverse (fromFlat (convert $ Line 0 0 (1 / 2) (1 / 2)) <$> us)
+	where
+	(xa, ya) = head ps
+	(xb, yb) = last ps
+	us = toFlat (convert $ Line xa ya xb yb) <$> ps
 
 polygon :: PrimMonad m => [(CDouble, CDouble)] -> CairoT r (PrimState m) ->
 	CDouble -> CDouble -> CDouble -> CDouble -> m ()
@@ -84,6 +129,7 @@ make :: PrimMonad m =>
 make _ _ _ _ _ n _ _ _ | n < 0 = pure ()
 make tr c1 c2 c3 cr n sz x y = do
 	setColor cr c1; tr cr p2 p5
+	{-
 	setColor cr c2; tr cr p1 p2
 	setColor cr c3; tr cr p2 p1
 	setColor cr c2; tr cr p2 p3
@@ -94,6 +140,7 @@ make tr c1 c2 c3 cr n sz x y = do
 	make tr c1 c2 c3 cr (n - 1) (sz / 2) (x - sz - sz / 2) (y - sz / 2)
 	make tr c1 c2 c3 cr (n - 1) (sz / 2) (x - sz - sz / 2) (y + sz / 2)
 	make tr c1 c2 c3 cr (n - 1) (sz / 2) (x - sz * 3 / 2) (y + sz + sz / 2)
+	-}
 	where
 	p1 = (x - sz * 2, y - sz); p2 = (x - sz, y - sz)
 	p3 = (x - sz * 2, y)
