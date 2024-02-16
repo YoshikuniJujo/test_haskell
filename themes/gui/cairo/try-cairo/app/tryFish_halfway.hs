@@ -36,7 +36,7 @@ draw = do
 triangle :: PrimMonad m => CairoT r (PrimState m) ->
 	CDouble -> CDouble -> CDouble -> CDouble -> m ()
 -- triangle = polygon [(0, 0), (1, 0), (1 / 2, 1 / 2)]
-triangle = polygon $ mkFish [(0, 0), (10, 1), (13, 0)]
+triangle = polygon $ mkFish [(0, 0), (3, 0.8), (6, 0.6), (7, 2), (9.5, 2.5), (13, 0)]
 
 data Line = Line {
 	lineX1 :: CDouble,
@@ -76,16 +76,20 @@ lineToLine l1 l2 = fromFlat (convert l2) . toFlat (convert l1)
 
 -- data Line' = Line' 
 
+flipY :: (CDouble, CDouble) -> (CDouble, CDouble)
+flipY (x, y) = (x, - y)
+
 mkFish :: [(CDouble, CDouble)] -> [(CDouble, CDouble)]
 mkFish ps =
 	(fromFlat (convert $ Line 0 0 (1 / 2) 0) <$> us) ++
 	reverse (fromFlat (convert $ Line 1 0 (1 / 2) 0) <$> us) ++
-	(fromFlat (convert $ Line 1 0 (1 / 2) (1 / 2)) <$> us) ++
-	reverse (fromFlat (convert $ Line 0 0 (1 / 2) (1 / 2)) <$> us)
+	(fromFlat (convert $ Line 1 0 (1 / 2) (1 / 2)) <$> fus) ++
+	reverse (fromFlat (convert $ Line 0 0 (1 / 2) (1 / 2)) <$> fus)
 	where
 	(xa, ya) = head ps
 	(xb, yb) = last ps
 	us = toFlat (convert $ Line xa ya xb yb) <$> ps
+	fus = flipY <$> us
 
 polygon :: PrimMonad m => [(CDouble, CDouble)] -> CairoT r (PrimState m) ->
 	CDouble -> CDouble -> CDouble -> CDouble -> m ()
