@@ -22,29 +22,62 @@ import Graphics.Cairo.Drawing.CairoT.Setting
 import Fish
 
 result :: Picture
-result = pictureLeft 7
+result =
+	pictureLeft Brown Red White 7 `overlap`
+	(iterate rot45 (pictureLeft Red Brown White 7) !! 2) `overlap`
+	(iterate rot45 (pictureLeft Brown Red White 7) !! 4) `overlap`
+	(iterate rot45 (pictureLeft Red Brown White 7) !! 6)
 
-pictureLeft :: Int -> Picture
-pictureLeft n | n < 1 = empty
-pictureLeft n = let
-	br = color Brown
+pictureLeft :: Color -> Color -> Color -> Int -> Picture
+pictureLeft c1 c2 c3 n = let
+	rs = color c2 . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
+	in
+	pictureLeftUp c1 c2 c3 n `overlap`
+	(!! 3) (iterate down $ iterate left rs !! 3) `overlap`
+	(!! 3) (iterate down $ iterate left (iterate half (pictureLeftDown c1 c2 c3 (n - 1)) !! 2) !! 3)
+	
+
+pictureLeftUp :: Color -> Color -> Color -> Int -> Picture
+pictureLeftUp _ _ _ n | n < 1 = empty
+pictureLeftUp c1 c2 c3 n = let
+	foo = (!! 2) . iterate half . pictureLeftUp c1 c2 c3 $ n - 1
+	ws = color c3 . (!! 5) $ iterate half triangle
+	in
+	(!! 3) (iterate up $ iterate left foo !! 3) `overlap`
+	(!! 3) (iterate up $ iterate left ws !! 3) `overlap`
+	pictureLeft1 c1 c2 c3 n
+
+pictureLeftDown :: Color -> Color -> Color -> Int -> Picture
+pictureLeftDown _ _ _ n | n < 1 = empty
+pictureLeftDown c1 c2 c3 n = let
+	foo = (!! 2) . iterate half . pictureLeftDown c1 c2 c3 $ n - 1
+	rs = color c2 . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
+	in
+	pictureLeft1 c1 c2 c3 n `overlap`
+	(!! 3) (iterate down $ iterate left rs !! 3) `overlap`
+	(!! 3) (iterate down $ iterate left foo !! 3)
+
+pictureLeft1 :: Color -> Color -> Color -> Int -> Picture
+pictureLeft1 _ _ _ n | n < 1 = empty
+pictureLeft1 c1 c2 c3 n = let
+	br = color c1
 		. (!! 3) . iterate half . (!! 6) $ iterate rot45 triangle
-	wm = color White
+	wm = color c3
 		. (!! 4) . iterate half . (!! 5) $ iterate rot45 $ flipX triangle
-	rm = color Red . (!! 4) . iterate half . (!! 7) $ iterate rot45 $ flipX triangle
-	ws = color White . (!! 5) $ iterate half triangle
-	rs = color Red . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
-	rec = (!! 2) . iterate half $ pictureLeft (n - 1)
+	rm = color c2 . (!! 4) . iterate half . (!! 7) $ iterate rot45 $ flipX triangle
+	ws = color c3 . (!! 5) $ iterate half triangle
+	rs = color c2 . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
+	rec = (!! 2) . iterate half $ pictureLeft1 c1 c2 c3 (n - 1)
 	in
 	br `overlap` left' wm `overlap` left' rm `overlap`
-	(!! 3) (iterate up $ iterate left ws !! 3) `overlap`
+--	(!! 3) (iterate up $ iterate left ws !! 3) `overlap`
 	up (iterate left rs !! 3) `overlap`
 	down (iterate left ws !! 3) `overlap`
-	(!! 3) (iterate down $ iterate left rs !! 3) `overlap`
-	(!! 3) (iterate up $ iterate left rec !! 3) `overlap`
+--	(!! 3) (iterate down $ iterate left rs !! 3) `overlap`
+{-	(!! 3) (iterate up $ iterate left rec !! 3) `overlap` -}
 	up (iterate left rec !! 3) `overlap`
-	down (iterate left rec !! 3) `overlap`
-	(!! 3) (iterate down $ iterate left rec !! 3)
+	down (iterate left rec !! 3) -- `overlap`
+{-	(!! 3) (iterate down $ iterate left rec !! 3) -}
 
 triangle :: Picture
 triangle = flipX $ Picture 1 \cr clr -> do
@@ -74,7 +107,7 @@ triangle = flipX $ Picture 1 \cr clr -> do
 	cairoMoveTo cr (10 / 20) (5 / 20)
 	cairoLineTo cr (15 / 20) (7 / 30)
 
-	cairoSet cr $ LineWidth (1 / 200)
+	cairoSet cr $ LineWidth (1 / 400)
 	cairoStroke cr
 	cairoNewPath cr
 {-
@@ -153,10 +186,10 @@ data Picture = Picture {
 
 drawPicture :: FilePath -> Picture -> IO ()
 drawPicture fp (Picture _ act) = either error (writeArgb32 fp) $ runST do
-	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 700 700
+	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 900 900
 	cr <- cairoCreate sfc0
 
-	cairoSetMatrix cr =<< cairoMatrixNew 600 0 0 (- 600) 50 650
+	cairoSetMatrix cr =<< cairoMatrixNew 800 0 0 (- 800) 50 850
 
 	act cr White
 
