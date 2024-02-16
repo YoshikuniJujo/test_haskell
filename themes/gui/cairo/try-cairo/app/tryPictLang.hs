@@ -17,6 +17,7 @@ import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Utilities.CairoMatrixT
+import Graphics.Cairo.Drawing.CairoT.Setting
 
 import Fish
 
@@ -46,13 +47,21 @@ pictureLeft n = let
 	(!! 3) (iterate down $ iterate left rec !! 3)
 
 triangle :: Picture
-triangle = flipX $ Picture 1 \cr -> do
+triangle = flipX $ Picture 1 \cr clr -> do
 	uncurry (cairoMoveTo cr) $ head fish
 	uncurry (cairoLineTo cr) `mapM_` tail fish
+	cairoClosePath cr
 	cairoFill cr
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
-	cairoRectangle cr (4 / 5) (1 / 10) (1 / 20) (1 / 20)
-	cairoFill cr
+	cairoSetSourceRgb cr $ getColor if clr /= White then White else Brown
+		
+--	cairoRectangle cr (4 / 5) (1 / 10) (1 / 20) (1 / 20)
+	cairoMoveTo cr (4 / 5) (1 / 10)
+	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 10 + 1 / 20)
+	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 10)
+	cairoClosePath cr
+	cairoSet cr $ LineWidth (1 / 150)
+	cairoStroke cr
+	cairoNewPath cr
 {-
 triangle = Picture 1 \cr -> do
 	cairoMoveTo cr 0 0
@@ -62,58 +71,59 @@ triangle = Picture 1 \cr -> do
 	-}
 
 empty :: Picture
-empty = Picture 0 $ const $ pure ()
+empty = Picture 0 $ const . const $ pure ()
 
 left :: Picture -> Picture
-left (Picture sz a) = Picture sz \cr -> local cr
-	$ cairoTranslate cr (- sz / 2) 0 >> a cr
+left (Picture sz a) = Picture sz \cr clr -> local cr
+	$ cairoTranslate cr (- sz / 2) 0 >> a cr clr
 
 up :: Picture -> Picture
-up (Picture sz a) = Picture sz \cr -> local cr
-	$ cairoTranslate cr 0 (sz / 2) >> a cr
+up (Picture sz a) = Picture sz \cr clr -> local cr
+	$ cairoTranslate cr 0 (sz / 2) >> a cr clr
 
 down :: Picture -> Picture
-down (Picture sz a) = Picture sz \cr -> local cr
-	$ cairoTranslate cr 0 (- sz / 2) >> a cr
+down (Picture sz a) = Picture sz \cr clr -> local cr
+	$ cairoTranslate cr 0 (- sz / 2) >> a cr clr
 
 left' :: Picture -> Picture
-left' (Picture sz a) = Picture sz \cr -> local cr do
+left' (Picture sz a) = Picture sz \cr clr -> local cr do
 	cairoTranslate cr (- sz / sqrt 2) 0
-	a cr
+	a cr clr
 
 half :: Picture -> Picture
-half (Picture sz a) = Picture (sz / sqrt 2) \cr -> local cr do
+half (Picture sz a) = Picture (sz / sqrt 2) \cr clr -> local cr do
 	cairoTranslate cr (1 / 2) (1 / 2)
 	cairoScale cr (1 / sqrt 2) (1 / sqrt 2)
 	cairoTranslate cr (- 1 / 2) (- 1 / 2)
-	a cr
+	a cr clr
 
 rot45 :: Picture -> Picture
-rot45 (Picture sz a) = Picture sz \cr -> local cr do
+rot45 (Picture sz a) = Picture sz \cr clr -> local cr do
 	cairoTranslate cr (1 / 2) (1 / 2)
 	cairoRotate cr (pi / 4)
 	cairoTranslate cr (- 1 / 2) (- 1 / 2)
-	a cr
+	a cr clr
 
 flipX :: Picture -> Picture
-flipX (Picture sz a) = Picture sz \cr -> local cr do
+flipX (Picture sz a) = Picture sz \cr clr -> local cr do
 	cairoTransform cr =<< cairoMatrixNew (- 1) 0 0 1 sz 0
-	a cr
+	a cr clr
 
 overlap :: Picture -> Picture -> Picture
-overlap (Picture sza a) (Picture szb b) = Picture (max sza szb) \cr -> a cr >> b cr
+overlap (Picture sza a) (Picture szb b) = Picture (max sza szb) \cr clr -> a cr clr >> b cr clr
 
-data Color = Red | Brown | White deriving Show
+data Color = Red | Brown | White deriving (Show, Eq)
 
 color :: Color -> Picture -> Picture
-color clr (Picture sz a) = Picture sz \cr -> local cr do
+color clr (Picture sz a) = Picture sz \cr _ -> local cr do
 	cairoSetSourceRgb cr $ getColor clr
-	a cr
+	a cr clr
 	where
-	getColor = \case
-		Red -> fromJust $ rgbDouble 0.7 0.2 0.1
-		Brown -> fromJust $ rgbDouble 0.6 0.4 0.1
-		White -> fromJust $ rgbDouble 0.8 0.8 0.8
+
+getColor = \case
+	Red -> fromJust $ rgbDouble 0.7 0.2 0.1
+	Brown -> fromJust $ rgbDouble 0.6 0.4 0.1
+	White -> fromJust $ rgbDouble 0.8 0.8 0.8
 
 local :: PrimMonad m => CairoT r (PrimState m) -> m a -> m a
 local cr a = cairoSave cr >> a <* cairoRestore cr
@@ -123,8 +133,8 @@ main = drawPicture "fishPict.png" result
 
 data Picture = Picture {
 	pictureSize :: CDouble,
-	pictureDraw ::
-		(forall r m . PrimMonad m => CairoT r (PrimState m) -> m ()) }
+	pictureDraw :: (forall r m . PrimMonad m =>
+		CairoT r (PrimState m) -> Color -> m ()) }
 
 drawPicture :: FilePath -> Picture -> IO ()
 drawPicture fp (Picture _ act) = either error (writeArgb32 fp) $ runST do
@@ -133,7 +143,7 @@ drawPicture fp (Picture _ act) = either error (writeArgb32 fp) $ runST do
 
 	cairoSetMatrix cr =<< cairoMatrixNew 600 0 0 (- 600) 50 650
 
-	act cr
+	act cr White
 
 	(<$> cairoImageSurfaceGetCairoImage sfc0) \case
 		CairoImageArgb32 i -> Right i; _ -> Left "image format error"
@@ -142,15 +152,15 @@ writeArgb32 :: FilePath -> Argb32 -> IO ()
 writeArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8
 
 scale :: CDouble -> Picture -> Picture
-scale r (Picture s a) = Picture (r * s) \cr -> do
+scale r (Picture s a) = Picture (r * s) \cr clr -> do
 	m <- cairoGetMatrix cr
 	cairoScale cr r r
-	a cr
+	a cr clr
 	cairoSetMatrix cr m
 
 translate :: CDouble -> CDouble -> Picture -> Picture
-translate dx dy (Picture sz a) = Picture sz \cr -> do
+translate dx dy (Picture sz a) = Picture sz \cr clr -> do
 	m <- cairoGetMatrix cr
 	cairoTranslate cr dx dy
-	a cr
+	a cr clr
 	cairoSetMatrix cr m
