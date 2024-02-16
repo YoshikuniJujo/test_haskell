@@ -55,11 +55,26 @@ triangle = flipX $ Picture 1 \cr clr -> do
 	cairoSetSourceRgb cr $ getColor if clr /= White then White else Brown
 		
 --	cairoRectangle cr (4 / 5) (1 / 10) (1 / 20) (1 / 20)
-	cairoMoveTo cr (4 / 5) (1 / 10)
+	cairoMoveTo cr (4 / 5 + 1 / 20) (1 / 10 + 1 / 80)
 	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 10 + 1 / 20)
-	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 10)
+	cairoLineTo cr (4 / 5 + 9 / 80) (1 / 10)
 	cairoClosePath cr
-	cairoSet cr $ LineWidth (1 / 150)
+	cairoMoveTo cr (4 / 5 + 1 / 20) (1 / 30 + 1 / 80)
+	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 30 + 1 / 20)
+	cairoLineTo cr (4 / 5 + 9 / 80) (1 / 30)
+	cairoClosePath cr
+
+	cairoMoveTo cr (4 / 20) (7 / 80)
+	cairoLineTo cr (2 / 5) (12 / 80)
+	cairoLineTo cr (4 / 5) (1 / 30 + 3 / 40)
+
+	cairoMoveTo cr (2 / 5) (16 / 160)
+	cairoLineTo cr (15 / 20) (1 / 40)
+
+	cairoMoveTo cr (10 / 20) (5 / 20)
+	cairoLineTo cr (15 / 20) (7 / 30)
+
+	cairoSet cr $ LineWidth (1 / 200)
 	cairoStroke cr
 	cairoNewPath cr
 {-
