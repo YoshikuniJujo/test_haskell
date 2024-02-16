@@ -66,6 +66,7 @@ library
       Qualified.C
       Qualified.D
       RankNTypes
+      Rec.DepthWidth
       RecursionOverModules.List
       RecursionOverModules.NonEmpty
       SequenceCombination
