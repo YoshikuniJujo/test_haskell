@@ -107,6 +107,24 @@ triangle = flipX $ Picture 1 \cr clr -> do
 	cairoMoveTo cr (10 / 20) (5 / 20)
 	cairoLineTo cr (15 / 20) (7 / 30)
 
+	cairoMoveTo cr (20 / 40) (2 / 60)
+	cairoLineTo cr (21 / 40) (3 / 60)
+
+	cairoMoveTo cr (11 / 20) 0
+	cairoLineTo cr (12 / 20) (2 / 60)
+
+	cairoMoveTo cr (25 / 40) (- 2 / 120)
+	cairoLineTo cr (27 / 40) (2 / 120)
+
+	cairoMoveTo cr (11 / 20) (11 / 40)
+	cairoLineTo cr (11 / 20) (17 / 40)
+
+	cairoMoveTo cr (25 / 40) (11 / 40)
+	cairoLineTo cr (25 / 40) (17 / 40)
+
+	cairoMoveTo cr (28 / 40) (11 / 40)
+	cairoLineTo cr (28 / 40) (17 / 40)
+
 	cairoSet cr $ LineWidth (1 / 400)
 	cairoStroke cr
 	cairoNewPath cr
