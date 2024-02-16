@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 79cbb5a106da499e4e252d3f8096ece5f13208245a855c161db1666f0d090460
+-- hash: 685fcc42d0c8f89663e7e4e6dc1599e0baaa26ab4cdf829e2b8d86450ef433e3
 
 name:           try-cairo
 version:        0.1.0.0
@@ -636,6 +636,26 @@ executable tryFish_halfway
 
 executable tryPath
   main-is: tryPath.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+    , union-color
+  default-language: Haskell2010
+
+executable tryPictLang
+  main-is: tryPictLang.hs
   other-modules:
       Main
       Paths_try_cairo
