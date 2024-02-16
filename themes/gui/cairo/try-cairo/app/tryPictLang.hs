@@ -125,7 +125,7 @@ triangle = flipX $ Picture 1 \cr clr -> do
 	cairoMoveTo cr (28 / 40) (11 / 40)
 	cairoLineTo cr (28 / 40) (17 / 40)
 
-	cairoSet cr $ LineWidth (1 / 400)
+	cairoSet cr $ LineWidth (1 / 100)
 	cairoStroke cr
 	cairoNewPath cr
 {-
@@ -189,7 +189,7 @@ color clr (Picture sz a) = Picture sz \cr _ -> local cr do
 getColor = \case
 	Red -> fromJust $ rgbDouble 0.7 0.2 0.1
 	Brown -> fromJust $ rgbDouble 0.6 0.4 0.1
-	White -> fromJust $ rgbDouble 0.8 0.8 0.8
+	White -> fromJust $ rgbDouble 0.5 0.5 0.3
 
 local :: PrimMonad m => CairoT r (PrimState m) -> m a -> m a
 local cr a = cairoSave cr >> a <* cairoRestore cr
