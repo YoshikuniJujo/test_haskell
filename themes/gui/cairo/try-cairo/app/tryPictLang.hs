@@ -18,6 +18,8 @@ import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Utilities.CairoMatrixT
 
+import Fish
+
 result :: Picture
 result = pictureLeft 7
 
@@ -27,8 +29,8 @@ pictureLeft n = let
 	br = color Brown
 		. (!! 3) . iterate half . (!! 6) $ iterate rot45 triangle
 	wm = color White
-		. (!! 4) . iterate half . (!! 5) $ iterate rot45 triangle
-	rm = color Red . (!! 4) . iterate half . (!! 7) $ iterate rot45 triangle
+		. (!! 4) . iterate half . (!! 5) $ iterate rot45 $ flipX triangle
+	rm = color Red . (!! 4) . iterate half . (!! 7) $ iterate rot45 $ flipX triangle
 	ws = color White . (!! 5) $ iterate half triangle
 	rs = color Red . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
 	rec = (!! 2) . iterate half $ pictureLeft (n - 1)
@@ -44,11 +46,20 @@ pictureLeft n = let
 	(!! 3) (iterate down $ iterate left rec !! 3)
 
 triangle :: Picture
+triangle = flipX $ Picture 1 \cr -> do
+	uncurry (cairoMoveTo cr) $ head fish
+	uncurry (cairoLineTo cr) `mapM_` tail fish
+	cairoFill cr
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
+	cairoRectangle cr (4 / 5) (1 / 10) (1 / 20) (1 / 20)
+	cairoFill cr
+{-
 triangle = Picture 1 \cr -> do
 	cairoMoveTo cr 0 0
 	cairoLineTo cr 1 0
 	cairoLineTo cr (1 / 2) (1 / 2)
 	cairoFill cr
+	-}
 
 empty :: Picture
 empty = Picture 0 $ const $ pure ()
@@ -82,6 +93,11 @@ rot45 (Picture sz a) = Picture sz \cr -> local cr do
 	cairoTranslate cr (1 / 2) (1 / 2)
 	cairoRotate cr (pi / 4)
 	cairoTranslate cr (- 1 / 2) (- 1 / 2)
+	a cr
+
+flipX :: Picture -> Picture
+flipX (Picture sz a) = Picture sz \cr -> local cr do
+	cairoTransform cr =<< cairoMatrixNew (- 1) 0 0 1 sz 0
 	a cr
 
 overlap :: Picture -> Picture -> Picture
