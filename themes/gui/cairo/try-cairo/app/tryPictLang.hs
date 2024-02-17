@@ -1,11 +1,15 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 import Foreign.C.Types
+import Control.Arrow ((&&&), second)
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Maybe
+import Data.List.NonEmpty qualified as NE
 import Data.Color
 import Data.CairoImage.Internal
 import Data.CairoContext
@@ -19,70 +23,61 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Utilities.CairoMatrixT
 import Graphics.Cairo.Drawing.CairoT.Setting
 
-import Fish
+-- FILL BY FISH
 
 result :: Picture
-result =
-	pictureLeft Brown Red White 7 `overlap`
-	(iterate rot45 (pictureLeft Red Brown White 7) !! 2) `overlap`
-	(iterate rot45 (pictureLeft Brown Red White 7) !! 4) `overlap`
-	(iterate rot45 (pictureLeft Red Brown White 7) !! 6)
+result = picture 7
+
+picture :: Int -> Picture
+picture n =
+	pictureLeft Brown Red White n `overlap`
+	(2 `times` rot45) (pictureLeft Red Brown White n) `overlap`
+	(4 `times` rot45) (pictureLeft Brown Red White n) `overlap`
+	(6 `times` rot45) (pictureLeft Red Brown White n)
 
 pictureLeft :: Color -> Color -> Color -> Int -> Picture
-pictureLeft c1 c2 c3 n = let
-	rs = color c2 . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
-	in
+pictureLeft c1 c2 c3 n =
 	pictureLeftUp c1 c2 c3 n `overlap`
-	(!! 3) (iterate down $ iterate left rs !! 3) `overlap`
-	(!! 3) (iterate down $ iterate left (iterate half (pictureLeftDown c1 c2 c3 (n - 1)) !! 2) !! 3)
-	
+	(3 `times` leftDown)
+		((5 `times` half) . (4 `times` rot45) $ color c2 fish) `overlap`
+	(3 `times` leftDown)
+		((2 `times` half) . pictureLeftDown c1 c2 c3 $ n - 1)
 
 pictureLeftUp :: Color -> Color -> Color -> Int -> Picture
 pictureLeftUp _ _ _ n | n < 1 = empty
-pictureLeftUp c1 c2 c3 n = let
-	foo = (!! 2) . iterate half . pictureLeftUp c1 c2 c3 $ n - 1
-	ws = color c3 . (!! 5) $ iterate half triangle
-	in
-	(!! 3) (iterate up $ iterate left foo !! 3) `overlap`
-	(!! 3) (iterate up $ iterate left ws !! 3) `overlap`
+pictureLeftUp c1 c2 c3 n =
+	(3 `times` leftUp)
+		((2 `times` half) . pictureLeftUp c1 c2 c3 $ n - 1) `overlap`
+	(3 `times` leftUp) ((5 `times` half) $ color c3 fish) `overlap`
 	pictureLeft1 c1 c2 c3 n
 
 pictureLeftDown :: Color -> Color -> Color -> Int -> Picture
 pictureLeftDown _ _ _ n | n < 1 = empty
-pictureLeftDown c1 c2 c3 n = let
-	foo = (!! 2) . iterate half . pictureLeftDown c1 c2 c3 $ n - 1
-	rs = color c2 . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
-	in
+pictureLeftDown c1 c2 c3 n =
 	pictureLeft1 c1 c2 c3 n `overlap`
-	(!! 3) (iterate down $ iterate left rs !! 3) `overlap`
-	(!! 3) (iterate down $ iterate left foo !! 3)
+	(3 `times` leftDown)
+		((5 `times` half) . (4 `times` rot45) $ color c2 fish) `overlap`
+	(3 `times` leftDown)
+		((2 `times` half) . pictureLeftDown c1 c2 c3 $ n - 1)
 
 pictureLeft1 :: Color -> Color -> Color -> Int -> Picture
 pictureLeft1 _ _ _ n | n < 1 = empty
-pictureLeft1 c1 c2 c3 n = let
-	br = color c1
-		. (!! 3) . iterate half . (!! 6) $ iterate rot45 triangle
-	wm = color c3
-		. (!! 4) . iterate half . (!! 5) $ iterate rot45 $ flipX triangle
-	rm = color c2 . (!! 4) . iterate half . (!! 7) $ iterate rot45 $ flipX triangle
-	ws = color c3 . (!! 5) $ iterate half triangle
-	rs = color c2 . (!! 5) . iterate half . (!! 4) $ iterate rot45 triangle
-	rec = (!! 2) . iterate half $ pictureLeft1 c1 c2 c3 (n - 1)
-	in
-	br `overlap` left' wm `overlap` left' rm `overlap`
---	(!! 3) (iterate up $ iterate left ws !! 3) `overlap`
-	up (iterate left rs !! 3) `overlap`
-	down (iterate left ws !! 3) `overlap`
---	(!! 3) (iterate down $ iterate left rs !! 3) `overlap`
-{-	(!! 3) (iterate up $ iterate left rec !! 3) `overlap` -}
-	up (iterate left rec !! 3) `overlap`
-	down (iterate left rec !! 3) -- `overlap`
-{-	(!! 3) (iterate down $ iterate left rec !! 3) -}
+pictureLeft1 c1 c2 c3 n =
+	(3 `times` half) ((6 `times` rot45) $ color c1 fish) `overlap`
+	left' ((4 `times` half) . (5 `times` rot45) . color c3 $ flipX fish) `overlap`
+	left' ((4 `times` half) . (7 `times` rot45) . color c2 $ flipX fish) `overlap`
+	up ((3 `times` left) . (5 `times` half) . (4 `times` rot45) $ color c2 fish) `overlap`
+	down ((3 `times` left) . (5 `times` half) $ color c3 fish) `overlap`
+	up rec `overlap` down rec
+	where
+	rec = (3 `times` left) . (2 `times` half) . pictureLeft1 c1 c2 c3 $ n - 1
 
-triangle :: Picture
-triangle = flipX $ Picture 1 \cr clr -> do
-	uncurry (cairoMoveTo cr) $ head fish
-	uncurry (cairoLineTo cr) `mapM_` tail fish
+-- FISH PICTURE
+
+fish :: Picture
+fish = flipX $ Picture 1 \cr clr -> do
+	uncurry (cairoMoveTo cr) $ NE.head fishShape
+	uncurry (cairoLineTo cr) `mapM_` NE.tail fishShape
 	cairoClosePath cr
 
 	cairoSet cr $ LineWidth (1 / 400)
@@ -90,7 +85,6 @@ triangle = flipX $ Picture 1 \cr clr -> do
 	cairoFill cr
 	cairoSetSourceRgb cr $ getColor if clr /= White then White else Brown
 		
---	cairoRectangle cr (4 / 5) (1 / 10) (1 / 20) (1 / 20)
 	cairoMoveTo cr (4 / 5 + 1 / 20) (1 / 10 + 1 / 80)
 	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 10 + 1 / 20)
 	cairoLineTo cr (4 / 5 + 9 / 80) (1 / 10)
@@ -131,13 +125,37 @@ triangle = flipX $ Picture 1 \cr clr -> do
 	cairoSet cr $ LineWidth (1 / 100)
 	cairoStroke cr
 	cairoNewPath cr
-{-
-triangle = Picture 1 \cr -> do
-	cairoMoveTo cr 0 0
-	cairoLineTo cr 1 0
-	cairoLineTo cr (1 / 2) (1 / 2)
-	cairoFill cr
-	-}
+
+-- FISH SHAPE
+
+fishShape :: NE.NonEmpty (CDouble, CDouble)
+fishShape = mkFish $ (0, 0) NE.:| [(30, 8), (60, 6), (70, 20), (95, 25), (130, 0)]
+
+mkFish :: NE.NonEmpty (CDouble, CDouble) -> NE.NonEmpty (CDouble, CDouble)
+mkFish ((NE.head &&& NE.last) &&& id -> ((h, l), ps)) =
+	(along (line a b) <$> u) <> (along (line c b) <$> NE.reverse u) <>
+	(along (line c d) <$> u') <> (along (line a d) <$> NE.reverse u') where
+	a = (0, 0); b = (1 / 2, 0); c = (1, 0); d = (1 / 2, 1 / 2)
+	u = unit (line h l) <$> ps; u' = second negate <$> u
+
+along :: Line -> (CDouble, CDouble) -> (CDouble, CDouble)
+along (Line x0 y0 (rx, ry) d) (x, y) = (x'' + x0, y'' + y0) where
+	x' = x * d; y' = y * d; x'' = x' * rx - y' * ry; y'' = x' * ry + y' * rx
+
+unit :: Line -> (CDouble, CDouble) -> (CDouble, CDouble)
+unit (Line x0 y0 (rx, ry) d) (x, y) = (x'' / d, y'' / d) where
+	x' = x - x0; y' = y - y0
+	x'' = x' * rx + y' * ry; y'' = - x' * ry + y' * rx
+
+data Line = Line {
+	lineX1 :: CDouble, lineY1 :: CDouble,
+	lineUnit :: (CDouble, CDouble), lineLength :: CDouble } deriving Show
+
+line :: (CDouble, CDouble) -> (CDouble, CDouble) -> Line
+line (x1, y1) (x2, y2) = Line x1 y1 (xd / d, yd / d) d where
+	xd = x2 - x1; yd = y2 - y1; d = sqrt $ xd ^ (2 :: Int) + yd ^ (2 :: Int)
+
+-- PICTURE LANGUAGE
 
 empty :: Picture
 empty = Picture 0 $ const . const $ pure ()
@@ -153,6 +171,10 @@ up (Picture sz a) = Picture sz \cr clr -> local cr
 down :: Picture -> Picture
 down (Picture sz a) = Picture sz \cr clr -> local cr
 	$ cairoTranslate cr 0 (- sz / 2) >> a cr clr
+
+leftUp, leftDown :: Picture -> Picture
+leftUp = up . left
+leftDown = down . left
 
 left' :: Picture -> Picture
 left' (Picture sz a) = Picture sz \cr clr -> local cr do
@@ -189,6 +211,7 @@ color clr (Picture sz a) = Picture sz \cr _ -> local cr do
 	a cr clr
 	where
 
+getColor :: Color -> Rgb CDouble
 getColor = \case
 	Red -> fromJust $ rgbDouble 0.7 0.2 0.1
 	Brown -> fromJust $ rgbDouble 0.6 0.4 0.1
@@ -197,13 +220,18 @@ getColor = \case
 local :: PrimMonad m => CairoT r (PrimState m) -> m a -> m a
 local cr a = cairoSave cr >> a <* cairoRestore cr
 
-main :: IO ()
-main = drawPicture "fishPict.png" result
+times :: Int -> (a -> a) -> a -> a
+times n f = (!! n) . iterate f
 
 data Picture = Picture {
-	pictureSize :: CDouble,
-	pictureDraw :: (forall r m . PrimMonad m =>
+	_pictureSize :: CDouble,
+	_pictureDraw :: (forall r m . PrimMonad m =>
 		CairoT r (PrimState m) -> Color -> m ()) }
+
+-- OUTPUT PICTURE
+
+main :: IO ()
+main = drawPicture "fishPict.png" result
 
 drawPicture :: FilePath -> Picture -> IO ()
 drawPicture fp (Picture _ act) = either error (writeArgb32 fp) $ runST do
@@ -219,17 +247,3 @@ drawPicture fp (Picture _ act) = either error (writeArgb32 fp) $ runST do
 
 writeArgb32 :: FilePath -> Argb32 -> IO ()
 writeArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8
-
-scale :: CDouble -> Picture -> Picture
-scale r (Picture s a) = Picture (r * s) \cr clr -> do
-	m <- cairoGetMatrix cr
-	cairoScale cr r r
-	a cr clr
-	cairoSetMatrix cr m
-
-translate :: CDouble -> CDouble -> Picture -> Picture
-translate dx dy (Picture sz a) = Picture sz \cr clr -> do
-	m <- cairoGetMatrix cr
-	cairoTranslate cr dx dy
-	a cr clr
-	cairoSetMatrix cr m
