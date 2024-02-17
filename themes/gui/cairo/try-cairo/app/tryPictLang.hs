@@ -84,6 +84,9 @@ triangle = flipX $ Picture 1 \cr clr -> do
 	uncurry (cairoMoveTo cr) $ head fish
 	uncurry (cairoLineTo cr) `mapM_` tail fish
 	cairoClosePath cr
+
+	cairoSet cr $ LineWidth (1 / 400)
+	cairoStrokePreserve cr
 	cairoFill cr
 	cairoSetSourceRgb cr $ getColor if clr /= White then White else Brown
 		
