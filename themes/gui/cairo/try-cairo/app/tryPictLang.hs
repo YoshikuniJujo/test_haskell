@@ -66,9 +66,9 @@ pictureLeft1 :: Color -> Color -> Color -> Int -> Picture
 pictureLeft1 _ _ _ n | n < 1 = empty
 pictureLeft1 c1 c2 c3 n =
 	(3 `times` half) ((6 `times` rot45) $ color c1 fish) `overlap`
-	left' ((4 `times` half)
+	left ((4 `times` half)
 		. (5 `times` rot45) . color c3 $ flipX fish) `overlap`
-	left' ((4 `times` half)
+	left ((4 `times` half)
 		. (7 `times` rot45) . color c2 $ flipX fish) `overlap`
 	up ((3 `times` left) . (5 `times` half)
 		. (4 `times` rot45) $ color c2 fish) `overlap`
@@ -79,22 +79,11 @@ pictureLeft1 c1 c2 c3 n =
 		. (2 `times` half) . pictureLeft1 c1 c2 c3 $ n - 1
 
 fish :: Picture
-fish = fishBackground `overlap` fishForeground
+fish = flipX $ shape 1 fishShape `overlap` pattern White Brown fishPattern
 
 --------------------------------------------------
--- FISH BACKGROUND
+-- FISH SHAPE
 --------------------------------------------------
-
-fishBackground :: Picture
-fishBackground = flipX $ Picture 1 \cr _ -> do
-	uncurry (cairoMoveTo cr) $ NE.head fishShape
-	uncurry (cairoLineTo cr) `mapM_` NE.tail fishShape
-	cairoClosePath cr
-	cairoSet cr $ LineWidth (1 / 400)
-	cairoStrokePreserve cr
-	cairoFill cr
-
--- fish shape
 
 fishShape :: NE.NonEmpty (CDouble, CDouble)
 fishShape =
@@ -125,11 +114,11 @@ line (x1, y1) (x2, y2) = Line x1 y1 (xd / d, yd / d) d where
 	xd = x2 - x1; yd = y2 - y1; d = sqrt $ xd ^ (2 :: Int) + yd ^ (2 :: Int)
 
 --------------------------------------------------
--- FISH FOREGROUND
+-- FISH PATTERN
 --------------------------------------------------
 
-fishForeground :: Picture
-fishForeground = flipX . mkForeground $ [
+fishPattern :: [Poly]
+fishPattern = [
 	Polygon (
 		(4 / 5 + 1 / 20, 1 / 10 + 1 / 80) NE.:| [
 		(4 / 5 + 1 / 20, 1 / 10 + 1 / 20),
@@ -138,102 +127,75 @@ fishForeground = flipX . mkForeground $ [
 		(4 / 5 + 1 / 20, 1 / 30 + 1 / 80) NE.:| [
 		(4 / 5 + 1 / 20, 1 / 30 + 1 / 20),
 		(4 / 5 + 9 / 80, 1 / 30) ] ),
-	PolyLine (
+	Polyline (
 		(4 / 20, 7 / 80) NE.:| [
 		(2 / 5, 13 / 80), (4 / 5, 1 / 30 + 3 / 40) ] ),
-	PolyLine ((2 / 5, 16 / 160) NE.:| [(15 / 20, 1 / 40)]),
-	PolyLine ((10 / 20, 5 / 20) NE.:| [(15 / 20, 7 / 30)]),
-	PolyLine ((20 / 40, 2 / 60) NE.:| [(21 / 40, 3 / 60)]),
-	PolyLine ((11 / 20, 0) NE.:| [(12 / 20, 2 / 60)]),
-	PolyLine ((25 / 40, - 2 / 120) NE.:| [(27 / 40, 2 / 120)]),
-	PolyLine ((11 / 20, 11 / 40) NE.:| [(11 / 20, 17 / 40)]),
-	PolyLine ((25 / 40, 11/ 40) NE.:| [(25 / 40, 17 / 40)]),
-	PolyLine ((28 / 40, 11 / 40) NE.:| [(28 / 40, 17 / 40)]) ]
-
-mkForeground :: [Poly] -> Picture
-mkForeground ps = Picture 1 \cr clr -> do
-	cairoSetSourceRgb cr $ getColor if clr /= White then White else Brown
-	drawForeground cr ps
-	cairoSet cr $ LineWidth (1 / 100)
-	cairoStroke cr
-
-data Poly
-	= PolyLine (NE.NonEmpty (CDouble, CDouble))
-	| Polygon (NE.NonEmpty (CDouble, CDouble))
-	deriving Show
-
-drawPoly :: PrimMonad m => CairoT r (PrimState m) -> Poly -> m ()
-drawPoly cr = \case
-	PolyLine (h NE.:| t) -> do
-		uncurry (cairoMoveTo cr) h
-		uncurry (cairoLineTo cr) `mapM_` t
-	Polygon (h NE.:| t) -> do
-		uncurry (cairoMoveTo cr) h
-		uncurry (cairoLineTo cr) `mapM_` t
-		cairoClosePath cr
-
-drawForeground :: PrimMonad m => CairoT r (PrimState m) -> [Poly] -> m ()
-drawForeground cr = mapM_ $ drawPoly cr
+	Polyline ((2 / 5, 16 / 160) NE.:| [(15 / 20, 1 / 40)]),
+	Polyline ((10 / 20, 5 / 20) NE.:| [(15 / 20, 7 / 30)]),
+	Polyline ((20 / 40, 2 / 60) NE.:| [(21 / 40, 3 / 60)]),
+	Polyline ((11 / 20, 0) NE.:| [(12 / 20, 2 / 60)]),
+	Polyline ((25 / 40, - 2 / 120) NE.:| [(27 / 40, 2 / 120)]),
+	Polyline ((11 / 20, 11 / 40) NE.:| [(11 / 20, 17 / 40)]),
+	Polyline ((25 / 40, 11/ 40) NE.:| [(25 / 40, 17 / 40)]),
+	Polyline ((28 / 40, 11 / 40) NE.:| [(28 / 40, 17 / 40)]) ]
 
 --------------------------------------------------
 -- PICTURE LANGUAGE
 --------------------------------------------------
 
-data Picture = Picture {
-	_pictureSize :: CDouble,
-	_pictureDraw :: (forall r m . PrimMonad m =>
-		CairoT r (PrimState m) -> Color -> m ()) }
-
-empty :: Picture
-empty = Picture 0 $ const . const $ pure ()
-
-left :: Picture -> Picture
-left (Picture sz a) = Picture sz \cr clr -> local cr
-	$ cairoTranslate cr (- sz / 2) 0 >> a cr clr
-
-up :: Picture -> Picture
-up (Picture sz a) = Picture sz \cr clr -> local cr
-	$ cairoTranslate cr 0 (sz / 2) >> a cr clr
-
-down :: Picture -> Picture
-down (Picture sz a) = Picture sz \cr clr -> local cr
-	$ cairoTranslate cr 0 (- sz / 2) >> a cr clr
+-- TRANSFORM
 
 leftUp, leftDown :: Picture -> Picture
 leftUp = up . left; leftDown = down . left
 
-left' :: Picture -> Picture
-left' (Picture sz a) = Picture sz \cr clr -> local cr
-	$ cairoTranslate cr (- sz / sqrt 2) 0 >> a cr clr
+left :: Picture -> Picture
+left (Picture sz sz' a) = Picture sz sz' \cr clr -> local cr
+	$ cairoTranslate cr (- sz / 2) 0 >> a cr clr
+
+up :: Picture -> Picture
+up (Picture sz sz' a) = Picture sz sz' \cr clr -> local cr
+	$ cairoTranslate cr 0 (sz / 2) >> a cr clr
+
+down :: Picture -> Picture
+down (Picture sz sz' a) = Picture sz sz' \cr clr -> local cr
+	$ cairoTranslate cr 0 (- sz / 2) >> a cr clr
 
 half :: Picture -> Picture
-half (Picture sz a) = Picture (sz / sqrt 2) \cr clr -> local cr do
+half (Picture sz sz' a) = Picture (sz / sqrt 2) (sz' / sqrt 2) \cr clr -> local cr do
 	cairoTranslate cr (1 / 2) (1 / 2)
 	cairoScale cr (1 / sqrt 2) (1 / sqrt 2)
 	cairoTranslate cr (- 1 / 2) (- 1 / 2)
 	a cr clr
 
 rot45 :: Picture -> Picture
-rot45 (Picture sz a) = Picture sz \cr clr -> local cr do
+rot45 (Picture sz sz' a) = Picture sz' sz \cr clr -> local cr do
 	cairoTranslate cr (1 / 2) (1 / 2)
 	cairoRotate cr (pi / 4)
 	cairoTranslate cr (- 1 / 2) (- 1 / 2)
 	a cr clr
 
 flipX :: Picture -> Picture
-flipX (Picture sz a) = Picture sz \cr clr -> local cr do
+flipX (Picture sz sz' a) = Picture sz sz' \cr clr -> local cr do
 	cairoTransform cr =<< cairoMatrixNew (- 1) 0 0 1 sz 0
 	a cr clr
 
 overlap :: Picture -> Picture -> Picture
-overlap (Picture sza a) (Picture szb b) =
-	Picture (max sza szb) \cr clr -> a cr clr >> b cr clr
+overlap (Picture sza sza' a) (Picture szb szb' b) =
+	Picture (max sza szb) (max sza' szb') \cr clr -> a cr clr >> b cr clr
 
-data Color = Red | Brown | White deriving (Show, Eq)
+times :: Int -> (a -> a) -> a -> a
+times n f = (!! n) . iterate f
+
+local :: PrimMonad m => CairoT r (PrimState m) -> m a -> m a
+local cr a = cairoSave cr >> a <* cairoRestore cr
+
+-- Color
 
 color :: Color -> Picture -> Picture
-color clr (Picture sz a) = Picture sz \cr _ -> local cr
+color clr (Picture sz sz' a) = Picture sz sz' \cr _ -> local cr
 	$ cairoSetSourceRgb cr (getColor clr) >> a cr clr
+
+data Color = Red | Brown | White deriving (Show, Eq)
 
 getColor :: Color -> Rgb CDouble
 getColor = \case
@@ -241,11 +203,45 @@ getColor = \case
 	Brown -> fromJust $ rgbDouble 0.6 0.4 0.1
 	White -> fromJust $ rgbDouble 0.5 0.5 0.3
 
-local :: PrimMonad m => CairoT r (PrimState m) -> m a -> m a
-local cr a = cairoSave cr >> a <* cairoRestore cr
+-- Picture
 
-times :: Int -> (a -> a) -> a -> a
-times n f = (!! n) . iterate f
+data Picture = Picture {
+	_pictureSize :: CDouble,
+	_pictureSize2 :: CDouble,
+	_pictureDraw :: (forall r m . PrimMonad m =>
+		CairoT r (PrimState m) -> Color -> m ()) }
+
+empty :: Picture
+empty = Picture 0 0 $ const . const $ pure ()
+
+shape :: CDouble -> NE.NonEmpty (CDouble, CDouble) -> Picture
+shape sz sp = Picture sz (sz * sqrt 2) \cr _ -> local cr do
+	uncurry (cairoMoveTo cr) $ NE.head fishShape
+	uncurry (cairoLineTo cr) `mapM_` NE.tail sp
+	cairoClosePath cr
+	cairoSet cr $ LineWidth (1 / 400)
+	cairoStrokePreserve cr
+	cairoFill cr
+
+pattern :: Color -> Color -> [Poly] -> Picture
+pattern clr1 clr2 ps = Picture 1 (sqrt 2) \cr spclr -> do
+	cairoSetSourceRgb cr $ getColor if spclr /= clr1 then clr1 else clr2
+	poly cr `mapM_` ps
+	cairoSet cr $ LineWidth (1 / 100)
+	cairoStroke cr
+
+data Poly
+	= Polyline (NE.NonEmpty (CDouble, CDouble))
+	| Polygon (NE.NonEmpty (CDouble, CDouble))
+	deriving Show
+
+poly :: PrimMonad m => CairoT r (PrimState m) -> Poly -> m ()
+poly cr = \case
+	Polyline (h NE.:| t) ->
+		uncurry (cairoMoveTo cr) h >> uncurry (cairoLineTo cr) `mapM_` t
+	Polygon (h NE.:| t) -> do
+		uncurry (cairoMoveTo cr) h >> uncurry (cairoLineTo cr) `mapM_` t
+		cairoClosePath cr
 
 --------------------------------------------------
 -- OUTPUT PICTURE
@@ -255,7 +251,7 @@ main :: IO ()
 main = drawPicture "fishPict.png" result
 
 drawPicture :: FilePath -> Picture -> IO ()
-drawPicture fp (Picture _ act) = either error (writeArgb32 fp) $ runST do
+drawPicture fp (Picture _ _ act) = either error (writeArgb32 fp) $ runST do
 	sfc <- cairoImageSurfaceCreate CairoFormatArgb32 900 900
 	cr <- cairoCreate sfc
 	cairoSetMatrix cr =<< cairoMatrixNew 800 0 0 (- 800) 50 850
