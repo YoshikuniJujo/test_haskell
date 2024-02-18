@@ -129,42 +129,51 @@ line (x1, y1) (x2, y2) = Line x1 y1 (xd / d, yd / d) d where
 --------------------------------------------------
 
 fishForeground :: Picture
-fishForeground = flipX $ Picture 1 \cr clr -> do
+fishForeground = flipX . mkForeground $ [
+	Polygon (
+		(4 / 5 + 1 / 20, 1 / 10 + 1 / 80) NE.:| [
+		(4 / 5 + 1 / 20, 1 / 10 + 1 / 20),
+		(4 / 5 + 9 / 80, 1 / 10) ] ),
+	Polygon (
+		(4 / 5 + 1 / 20, 1 / 30 + 1 / 80) NE.:| [
+		(4 / 5 + 1 / 20, 1 / 30 + 1 / 20),
+		(4 / 5 + 9 / 80, 1 / 30) ] ),
+	PolyLine (
+		(4 / 20, 7 / 80) NE.:| [
+		(2 / 5, 13 / 80), (4 / 5, 1 / 30 + 3 / 40) ] ),
+	PolyLine ((2 / 5, 16 / 160) NE.:| [(15 / 20, 1 / 40)]),
+	PolyLine ((10 / 20, 5 / 20) NE.:| [(15 / 20, 7 / 30)]),
+	PolyLine ((20 / 40, 2 / 60) NE.:| [(21 / 40, 3 / 60)]),
+	PolyLine ((11 / 20, 0) NE.:| [(12 / 20, 2 / 60)]),
+	PolyLine ((25 / 40, - 2 / 120) NE.:| [(27 / 40, 2 / 120)]),
+	PolyLine ((11 / 20, 11 / 40) NE.:| [(11 / 20, 17 / 40)]),
+	PolyLine ((25 / 40, 11/ 40) NE.:| [(25 / 40, 17 / 40)]),
+	PolyLine ((28 / 40, 11 / 40) NE.:| [(28 / 40, 17 / 40)]) ]
+
+mkForeground :: [Poly] -> Picture
+mkForeground ps = Picture 1 \cr clr -> do
 	cairoSetSourceRgb cr $ getColor if clr /= White then White else Brown
-		
-	cairoMoveTo cr (4 / 5 + 1 / 20) (1 / 10 + 1 / 80)
-	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 10 + 1 / 20)
-	cairoLineTo cr (4 / 5 + 9 / 80) (1 / 10)
-	cairoClosePath cr
-	cairoMoveTo cr (4 / 5 + 1 / 20) (1 / 30 + 1 / 80)
-	cairoLineTo cr (4 / 5 + 1 / 20) (1 / 30 + 1 / 20)
-	cairoLineTo cr (4 / 5 + 9 / 80) (1 / 30)
-	cairoClosePath cr
-
-	cairoMoveTo cr (4 / 20) (7 / 80)
-	cairoLineTo cr (2 / 5) (12 / 80)
-	cairoLineTo cr (4 / 5) (1 / 30 + 3 / 40)
-	cairoMoveTo cr (2 / 5) (16 / 160)
-	cairoLineTo cr (15 / 20) (1 / 40)
-	cairoMoveTo cr (10 / 20) (5 / 20)
-	cairoLineTo cr (15 / 20) (7 / 30)
-
-	cairoMoveTo cr (20 / 40) (2 / 60)
-	cairoLineTo cr (21 / 40) (3 / 60)
-	cairoMoveTo cr (11 / 20) 0
-	cairoLineTo cr (12 / 20) (2 / 60)
-	cairoMoveTo cr (25 / 40) (- 2 / 120)
-	cairoLineTo cr (27 / 40) (2 / 120)
-
-	cairoMoveTo cr (11 / 20) (11 / 40)
-	cairoLineTo cr (11 / 20) (17 / 40)
-	cairoMoveTo cr (25 / 40) (11 / 40)
-	cairoLineTo cr (25 / 40) (17 / 40)
-	cairoMoveTo cr (28 / 40) (11 / 40)
-	cairoLineTo cr (28 / 40) (17 / 40)
-
+	drawForeground cr ps
 	cairoSet cr $ LineWidth (1 / 100)
 	cairoStroke cr
+
+data Poly
+	= PolyLine (NE.NonEmpty (CDouble, CDouble))
+	| Polygon (NE.NonEmpty (CDouble, CDouble))
+	deriving Show
+
+drawPoly :: PrimMonad m => CairoT r (PrimState m) -> Poly -> m ()
+drawPoly cr = \case
+	PolyLine (h NE.:| t) -> do
+		uncurry (cairoMoveTo cr) h
+		uncurry (cairoLineTo cr) `mapM_` t
+	Polygon (h NE.:| t) -> do
+		uncurry (cairoMoveTo cr) h
+		uncurry (cairoLineTo cr) `mapM_` t
+		cairoClosePath cr
+
+drawForeground :: PrimMonad m => CairoT r (PrimState m) -> [Poly] -> m ()
+drawForeground cr = mapM_ $ drawPoly cr
 
 --------------------------------------------------
 -- PICTURE LANGUAGE
