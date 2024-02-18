@@ -28,43 +28,41 @@ import Graphics.Cairo.Utilities.CairoMatrixT
 --------------------------------------------------
 
 result :: Picture
-result = picture 7
+result = filled 7
 
-picture :: Int -> Picture
-picture n =
-	pictureLeft Brown Red White n `overlap`
-	(2 `times` rot45) (pictureLeft Red Brown White n) `overlap`
-	(4 `times` rot45) (pictureLeft Brown Red White n) `overlap`
-	(6 `times` rot45) (pictureLeft Red Brown White n)
+filled :: Int -> Picture
+filled n = let p f = f filledLeft Brown Red White n in
+	p id `overlap` (2 `times` rot45) (p flip) `overlap`
+	(4 `times` rot45) (p id) `overlap` (6 `times` rot45) (p flip)
 
-pictureLeft :: Color -> Color -> Color -> Int -> Picture
-pictureLeft c1 c2 c3 n =
-	pictureLeftUp c1 c2 c3 n `overlap`
+filledLeft :: Color -> Color -> Color -> Int -> Picture
+filledLeft c1 c2 c3 n =
+	filledLeftUp c1 c2 c3 n `overlap`
 	(3 `times` leftDown)
 		((5 `times` half) . (4 `times` rot45) $ color c2 fish) `overlap`
 	(3 `times` leftDown)
-		((2 `times` half) . pictureLeftDown c1 c2 c3 $ n - 1)
+		((2 `times` half) . filledLeftDown c1 c2 c3 $ n - 1)
 
-pictureLeftUp :: Color -> Color -> Color -> Int -> Picture
-pictureLeftUp _ _ _ n | n < 1 = empty
-pictureLeftUp c1 c2 c3 n =
+filledLeftUp :: Color -> Color -> Color -> Int -> Picture
+filledLeftUp _ _ _ n | n < 1 = empty
+filledLeftUp c1 c2 c3 n =
 	(3 `times` leftUp)
-		((2 `times` half) . pictureLeftUp c1 c2 c3 $ n - 1) `overlap`
+		((2 `times` half) . filledLeftUp c1 c2 c3 $ n - 1) `overlap`
 	(3 `times` leftUp) ((5 `times` half) $ color c3 fish) `overlap`
-	pictureLeft1 c1 c2 c3 n
+	filledLeft1 c1 c2 c3 n
 
-pictureLeftDown :: Color -> Color -> Color -> Int -> Picture
-pictureLeftDown _ _ _ n | n < 1 = empty
-pictureLeftDown c1 c2 c3 n =
-	pictureLeft1 c1 c2 c3 n `overlap`
+filledLeftDown :: Color -> Color -> Color -> Int -> Picture
+filledLeftDown _ _ _ n | n < 1 = empty
+filledLeftDown c1 c2 c3 n =
+	filledLeft1 c1 c2 c3 n `overlap`
 	(3 `times` leftDown)
 		((5 `times` half) . (4 `times` rot45) $ color c2 fish) `overlap`
 	(3 `times` leftDown)
-		((2 `times` half) . pictureLeftDown c1 c2 c3 $ n - 1)
+		((2 `times` half) . filledLeftDown c1 c2 c3 $ n - 1)
 
-pictureLeft1 :: Color -> Color -> Color -> Int -> Picture
-pictureLeft1 _ _ _ n | n < 1 = empty
-pictureLeft1 c1 c2 c3 n =
+filledLeft1 :: Color -> Color -> Color -> Int -> Picture
+filledLeft1 _ _ _ n | n < 1 = empty
+filledLeft1 c1 c2 c3 n =
 	(3 `times` half) ((6 `times` rot45) $ color c1 fish) `overlap`
 	left ((4 `times` half)
 		. (5 `times` rot45) . color c3 $ flipX fish) `overlap`
@@ -75,8 +73,7 @@ pictureLeft1 c1 c2 c3 n =
 	down ((3 `times` left) . (5 `times` half) $ color c3 fish) `overlap`
 	up rec `overlap` down rec
 	where
-	rec = (3 `times` left)
-		. (2 `times` half) . pictureLeft1 c1 c2 c3 $ n - 1
+	rec = (3 `times` left) . (2 `times` half) . filledLeft1 c1 c2 c3 $ n - 1
 
 fish :: Picture
 fish = flipX $ shape 1 fishShape `overlap` pattern White Brown fishPattern
