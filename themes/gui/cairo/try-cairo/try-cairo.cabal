@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 685fcc42d0c8f89663e7e4e6dc1599e0baaa26ab4cdf829e2b8d86450ef433e3
+-- hash: aa30e5ff0f577ea8f586756b571e4382d34dd4d5620631728180f50a0b60ffaa
 
 name:           try-cairo
 version:        0.1.0.0
@@ -50,6 +50,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , union-color
@@ -69,6 +70,7 @@ executable colorsAsSource
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -89,6 +91,7 @@ executable createdAsSource
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -109,6 +112,7 @@ executable fromPng
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -129,6 +133,7 @@ executable gradientsAsSource
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -149,6 +154,7 @@ executable grayscale
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -169,6 +175,7 @@ executable grayscale-with-alpha
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -189,6 +196,7 @@ executable helloWriteImageSurface
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -209,6 +217,7 @@ executable picture8To16
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -229,6 +238,7 @@ executable removeAlpha
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -249,6 +259,7 @@ executable spec
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -269,6 +280,7 @@ executable testA1
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -289,6 +301,7 @@ executable testA1asDest
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -309,6 +322,7 @@ executable testA1asDestRGBA
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -329,6 +343,7 @@ executable testA1hs
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -349,6 +364,7 @@ executable testA1hsRGBA
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -369,6 +385,7 @@ executable testA8
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -389,6 +406,7 @@ executable testA8asDest
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -409,6 +427,7 @@ executable testA8asDestRGBA
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -429,6 +448,7 @@ executable testA8hs
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -449,6 +469,7 @@ executable testA8hsRGBA
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -469,6 +490,7 @@ executable testArgb32
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -489,6 +511,7 @@ executable testArgb32Mut
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -509,6 +532,7 @@ executable testParts
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -529,6 +553,7 @@ executable testRgb16_565
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -549,6 +574,7 @@ executable testRgb24
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -569,6 +595,7 @@ executable testRgb30
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -588,6 +615,7 @@ executable try-cairo-exe
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -608,6 +636,7 @@ executable tryFish
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -628,6 +657,7 @@ executable tryFish_halfway
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -648,6 +678,7 @@ executable tryPath
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -668,6 +699,7 @@ executable tryPictLang
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -688,6 +720,7 @@ executable tryST
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo
@@ -708,6 +741,7 @@ test-suite try-cairo-test
     , base >=4.7 && <5
     , bytestring
     , cairo-image
+    , dhall
     , primitive
     , simple-cairo
     , try-cairo

@@ -49,6 +49,10 @@ extra-deps:
 #  commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
 #- union-color-0.1.2.0
 - JuicyCairo-0.1.0.0
+- git: https://github.com/YoshikuniJujo/dhall-haskell
+  commit: e9b4715fad553fcfa0f31d63d8149757abbf1087
+  subdirs:
+    - dhall
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

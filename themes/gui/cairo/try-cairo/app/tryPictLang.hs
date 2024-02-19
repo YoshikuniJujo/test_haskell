@@ -1,9 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DerivingStrategies, DeriveGeneric, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+import GHC.Generics
 import Foreign.C.Types
 import Control.Arrow ((***), (&&&), second)
 import Control.Monad.Primitive
@@ -23,68 +26,72 @@ import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Utilities.CairoMatrixT
 
+import Dhall hiding (unit)
+
 --------------------------------------------------
 -- FILL BY FISH
 --------------------------------------------------
 
-result :: Picture
-result = filled 7
+result :: FishParams -> Picture
+result fp = filled fish (color1 clrs) (color2 clrs) (color3 clrs) 7
+	where
+	fish = flipX $ shape 1 fishShape `overlap`
+		pattern (patternColor1 pt) (patternColor2 pt) fishPattern'
+	pt = fishPattern fp
+	clrs = colors fp
+	fishShape = mkShape . ((realToFrac *** realToFrac) <$>)
+		. nonEmpty $ oneSide fp
+	fishPattern' = (`scale` (1 / patternSize (fishPattern fp)))
+		<$> patternBody (fishPattern fp)
 
-filled :: Int -> Picture
-filled n = let p f = f filledLeft Brown Red White n in
+filled :: Picture -> Color -> Color -> Color -> Int -> Picture
+filled p0 c1 c2 c3 n = let p f = f (filledLeft p0) c1 c2 c3 n in
 	p id `overlap` (2 `times` rot45) (p flip) `overlap`
 	(4 `times` rot45) (p id) `overlap` (6 `times` rot45) (p flip)
 
-filledLeft :: Color -> Color -> Color -> Int -> Picture
-filledLeft c1 c2 c3 n =
-	filledLeftUp c1 c2 c3 n `overlap`
+filledLeft :: Picture -> Color -> Color -> Color -> Int -> Picture
+filledLeft p c1 c2 c3 n =
+	filledLeftUp p c1 c2 c3 n `overlap`
 	(3 `times` leftDown)
-		((5 `times` half) . (4 `times` rot45) $ color c2 fish) `overlap`
+		((5 `times` half) . (4 `times` rot45) $ color c2 p) `overlap`
 	(3 `times` leftDown)
-		((2 `times` half) . filledLeftDown c1 c2 c3 $ n - 1)
+		((2 `times` half) . filledLeftDown p c1 c2 c3 $ n - 1)
 
-filledLeftUp :: Color -> Color -> Color -> Int -> Picture
-filledLeftUp _ _ _ n | n < 1 = empty
-filledLeftUp c1 c2 c3 n =
+filledLeftUp :: Picture -> Color -> Color -> Color -> Int -> Picture
+filledLeftUp _ _ _ _ n | n < 1 = empty
+filledLeftUp p c1 c2 c3 n =
 	(3 `times` leftUp)
-		((2 `times` half) . filledLeftUp c1 c2 c3 $ n - 1) `overlap`
-	(3 `times` leftUp) ((5 `times` half) $ color c3 fish) `overlap`
-	filledLeft1 c1 c2 c3 n
+		((2 `times` half) . filledLeftUp p c1 c2 c3 $ n - 1) `overlap`
+	(3 `times` leftUp) ((5 `times` half) $ color c3 p) `overlap`
+	filledLeft1 p c1 c2 c3 n
 
-filledLeftDown :: Color -> Color -> Color -> Int -> Picture
-filledLeftDown _ _ _ n | n < 1 = empty
-filledLeftDown c1 c2 c3 n =
-	filledLeft1 c1 c2 c3 n `overlap`
+filledLeftDown :: Picture -> Color -> Color -> Color -> Int -> Picture
+filledLeftDown _ _ _ _ n | n < 1 = empty
+filledLeftDown p c1 c2 c3 n =
+	filledLeft1 p c1 c2 c3 n `overlap`
 	(3 `times` leftDown)
-		((5 `times` half) . (4 `times` rot45) $ color c2 fish) `overlap`
+		((5 `times` half) . (4 `times` rot45) $ color c2 p) `overlap`
 	(3 `times` leftDown)
-		((2 `times` half) . filledLeftDown c1 c2 c3 $ n - 1)
+		((2 `times` half) . filledLeftDown p c1 c2 c3 $ n - 1)
 
-filledLeft1 :: Color -> Color -> Color -> Int -> Picture
-filledLeft1 _ _ _ n | n < 1 = empty
-filledLeft1 c1 c2 c3 n =
-	(3 `times` half) ((6 `times` rot45) $ color c1 fish) `overlap`
+filledLeft1 :: Picture -> Color -> Color -> Color -> Int -> Picture
+filledLeft1 _ _ _ _ n | n < 1 = empty
+filledLeft1 p c1 c2 c3 n =
+	(3 `times` half) ((6 `times` rot45) $ color c1 p) `overlap`
 	left ((4 `times` half)
-		. (5 `times` rot45) . color c3 $ flipX fish) `overlap`
+		. (5 `times` rot45) . color c3 $ flipX p) `overlap`
 	left ((4 `times` half)
-		. (7 `times` rot45) . color c2 $ flipX fish) `overlap`
+		. (7 `times` rot45) . color c2 $ flipX p) `overlap`
 	up ((3 `times` left) . (5 `times` half)
-		. (4 `times` rot45) $ color c2 fish) `overlap`
-	down ((3 `times` left) . (5 `times` half) $ color c3 fish) `overlap`
+		. (4 `times` rot45) $ color c2 p) `overlap`
+	down ((3 `times` left) . (5 `times` half) $ color c3 p) `overlap`
 	up rec `overlap` down rec
 	where
-	rec = (3 `times` left) . (2 `times` half) . filledLeft1 c1 c2 c3 $ n - 1
-
-fish :: Picture
-fish = flipX $ shape 1 fishShape `overlap` pattern White Brown fishPattern
+	rec = (3 `times` left) . (2 `times` half) . filledLeft1 p c1 c2 c3 $ n - 1
 
 --------------------------------------------------
 -- FISH SHAPE
 --------------------------------------------------
-
-fishShape :: NE.NonEmpty (CDouble, CDouble)
-fishShape =
-	mkShape $ (0, 0) NE.:| [(30, 8), (60, 6), (70, 20), (95, 25), (130, 0)]
 
 mkShape :: NE.NonEmpty (CDouble, CDouble) -> NE.NonEmpty (CDouble, CDouble)
 mkShape ps@(NE.head &&& NE.last -> (h, l)) =
@@ -114,19 +121,36 @@ line (x1, y1) (x2, y2) = Line x1 y1 (xd / d, yd / d) d where
 -- FISH PATTERN
 --------------------------------------------------
 
-fishPattern :: [Poly]
-fishPattern = (`scale` (1 / 80)) <$> [
-	Polygon ((68, 9) NE.:| [(68, 12), (73, 8)]),
-	Polygon ((68 , 4) NE.:| [(68, 7), (73, 3)]),
-	Polyline ((16, 7) NE.:| [(32, 13), (64, 10)]),
-	Polyline ((32, 8) NE.:| [(60, 2)]),
-	Polyline ((40, 20) NE.:| [(60, 19)]),
-	Polyline ((40, 3) NE.:| [(42, 4)]),
-	Polyline ((44, 0) NE.:| [(48, 3)]),
-	Polyline ((50, - 2) NE.:| [(54, 1)]),
-	Polyline ((44, 22) NE.:| [(44, 34)]),
-	Polyline ((50, 22) NE.:| [(50, 34)]),
-	Polyline ((56, 22) NE.:| [(56, 34)]) ]
+--------------------------------------------------
+-- FISH PARAMS
+--------------------------------------------------
+
+data FishParams = FishParams {
+	oneSide :: NonEmpty (Double, Double),
+	fishPattern :: Pattern,
+	colors :: Colors }
+	deriving (Show, Generic)
+
+instance FromDhall FishParams
+
+data Pattern = Pattern {
+	patternColor1 :: Color,
+	patternColor2 :: Color,
+	patternSize :: Double,
+	patternBody :: [Poly] }
+	deriving (Show, Generic)
+
+instance FromDhall Pattern
+
+data Colors = Colors { color1 :: Color, color2 :: Color, color3 :: Color }
+	deriving (Show, Generic)
+
+instance FromDhall Colors
+
+newtype NonEmpty a = NonEmpty { nonEmpty :: NE.NonEmpty a }
+	deriving Show deriving newtype (Generic, Functor, Applicative, Monad)
+
+instance FromDhall a => FromDhall (NonEmpty a)
 
 --------------------------------------------------
 -- PICTURE LANGUAGE
@@ -184,7 +208,9 @@ color :: Color -> Picture -> Picture
 color clr (Picture sz sz' a) = Picture sz sz' \cr _ -> local cr
 	$ cairoSetSourceRgb cr (getColor clr) >> a cr clr
 
-data Color = Red | Brown | White deriving (Show, Eq)
+data Color = Red | Brown | White deriving (Show, Eq, Generic)
+
+instance FromDhall Color
 
 getColor :: Color -> Rgb CDouble
 getColor = \case
@@ -205,7 +231,7 @@ empty = Picture 0 0 $ const . const $ pure ()
 
 shape :: CDouble -> NE.NonEmpty (CDouble, CDouble) -> Picture
 shape sz sp = Picture sz (sz * sqrt 2) \cr _ -> local cr do
-	uncurry (cairoMoveTo cr) $ NE.head fishShape
+	uncurry (cairoMoveTo cr) $ NE.head sp
 	uncurry (cairoLineTo cr) `mapM_` NE.tail sp
 	cairoClosePath cr
 	cairoSet cr $ LineWidth (1 / 400)
@@ -220,19 +246,25 @@ pattern clr1 clr2 ps = Picture 1 (sqrt 2) \cr spclr -> do
 	cairoStroke cr
 
 data Poly
-	= Polyline (NE.NonEmpty (CDouble, CDouble))
-	| Polygon (NE.NonEmpty (CDouble, CDouble))
-	deriving Show
+	= Polyline (NonEmpty (Double, Double))
+	| Polygon (NonEmpty (Double, Double))
+	deriving (Show, Generic)
+
+instance FromDhall Poly
 
 poly :: PrimMonad m => CairoT r (PrimState m) -> Poly -> m ()
 poly cr = \case
-	Polyline (h NE.:| t) ->
-		uncurry (cairoMoveTo cr) h >> uncurry (cairoLineTo cr) `mapM_` t
-	Polygon (h NE.:| t) -> do
-		uncurry (cairoMoveTo cr) h >> uncurry (cairoLineTo cr) `mapM_` t
+	Polyline (NonEmpty (h NE.:| t)) -> do
+		uncurry (cairoMoveTo cr) $ (realToFrac *** realToFrac) h
+		(uncurry (cairoLineTo cr)
+			. (realToFrac *** realToFrac)) `mapM_` t
+	Polygon (NonEmpty (h NE.:| t)) -> do
+		uncurry (cairoMoveTo cr) $ (realToFrac *** realToFrac) h
+		(uncurry (cairoLineTo cr)
+			. (realToFrac *** realToFrac)) `mapM_` t
 		cairoClosePath cr
 
-scale :: Poly -> CDouble -> Poly
+scale :: Poly -> Double -> Poly
 scale (Polyline ps) s = Polyline $ ((* s) *** (* s)) <$> ps
 scale (Polygon ps) s = Polygon $ ((* s) *** (* s)) <$> ps
 
@@ -241,7 +273,10 @@ scale (Polygon ps) s = Polygon $ ((* s) *** (* s)) <$> ps
 --------------------------------------------------
 
 main :: IO ()
-main = drawPicture "fishPict.png" result
+main = do
+	fp <- input auto "./defaultFishParams"
+--	drawPicture "fishPict.png" (result defaultFishParams)
+	drawPicture "fishPict.png" (result fp)
 
 drawPicture :: FilePath -> Picture -> IO ()
 drawPicture fp (Picture _ _ act) = either error (writeArgb32 fp) $ runST do

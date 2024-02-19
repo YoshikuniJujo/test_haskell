@@ -11,6 +11,19 @@ packages:
       size: 367
   original:
     hackage: JuicyCairo-0.1.0.0
+- completed:
+    commit: e9b4715fad553fcfa0f31d63d8149757abbf1087
+    git: https://github.com/YoshikuniJujo/dhall-haskell
+    name: dhall
+    pantry-tree:
+      sha256: b62176f7b426fe36c2f9e0be9f07c0805a0345890112ac8498c2e440b76b7f88
+      size: 402807
+    subdir: dhall
+    version: 1.42.1
+  original:
+    commit: e9b4715fad553fcfa0f31d63d8149757abbf1087
+    git: https://github.com/YoshikuniJujo/dhall-haskell
+    subdir: dhall
 snapshots:
 - completed:
     sha256: 62f2f54aac083e25613ce5aefd04b390f1e8853631b2059e31d7a039e5f50e03
