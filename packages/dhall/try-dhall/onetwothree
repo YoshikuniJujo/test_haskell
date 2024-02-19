@@ -1,0 +1,7 @@
+let
+
+OneTwoThree = <One | Two | Three>
+
+in
+
+OneTwoThree.Two

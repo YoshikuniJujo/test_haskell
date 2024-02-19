@@ -20,6 +20,10 @@ data Foo = Foo Natural | Bar String
 
 instance FromDhall Foo
 
+data OneTwoThree = One | Two | Three deriving (Generic, Show)
+
+instance FromDhall OneTwoThree
+
 main :: IO ()
 main = do
 	x <- input auto "./config"
@@ -27,11 +31,36 @@ main = do
 	z <- input auto "./dummy"
 	w <- input auto "./poly"
 	a <- input auto "./nonempty"
+	b <- input auto "./onetwothree"
 	print (x :: Example)
 	print (y :: Foo)
 	print (z :: Dummy)
-	print (w :: [Poly])
+	print (w :: FishParam)
 	print (a :: NonEmpty Double)
+	print (b :: OneTwoThree)
+
+data FishParam = FishParam {
+	oneSide :: OneSide,
+	pattern :: [Poly],
+	colors :: Colors }
+	deriving (Generic, Show)
+
+instance FromDhall FishParam
+
+data Colors = Colors {
+	color1 :: Color, color2 :: Color, color3 :: Color }
+	deriving (Generic, Show)
+
+instance FromDhall Colors
+
+data Color = Brown | Red | White deriving (Generic, Show)
+
+instance FromDhall Color
+
+data OneSide = OneSide (NonEmpty (Double, Double))
+	deriving (Generic, Show)
+
+instance FromDhall OneSide
 
 data Poly
 	= Polyline (NonEmpty (Double, Double))
@@ -40,8 +69,6 @@ data Poly
 
 newtype NonEmpty a = NonEmpty (NE.NonEmpty a)
 	deriving Show deriving newtype Generic
-
--- instance FromDhall a => FromDhall (NE.NonEmpty a)
 
 instance FromDhall a => FromDhall (NonEmpty a)
 
