@@ -1,0 +1,16 @@
+let
+
+Foo = <
+	Polyline : { _1 : { _1 : Double, _2 : Double }, _2 : List { _1 : Double, _2 : Double } } |
+	Polygon : { _1 : { _1 : Double, _2 : Double }, _2 : List { _1 : Double, _2 : Double } }  >
+
+in [
+
+Foo.Polyline { _1 = { _1 = 123.0, _2 = 321.0 }, _2 = [] : List { _1 : Double, _2 : Double } },
+
+Foo.Polygon { _1 =
+	{ _1 = 123.0, _2 = 321.0 }, _2 = [
+	{ _1 = 111.0, _2 = 222.0 },
+	{ _1 = 555.0, _2 = 999.0 }
+	] }
+]

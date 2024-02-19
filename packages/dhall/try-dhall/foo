@@ -1,0 +1,7 @@
+let
+
+Ex = <Foo : Natural | Bar : Text>
+
+in
+
+Ex.Foo 123
