@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 import Foreign.C.Types
-import Control.Arrow ((&&&), second)
+import Control.Arrow ((***), (&&&), second)
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Maybe
@@ -115,26 +115,18 @@ line (x1, y1) (x2, y2) = Line x1 y1 (xd / d, yd / d) d where
 --------------------------------------------------
 
 fishPattern :: [Poly]
-fishPattern = [
-	Polygon (
-		(68 / 80, 9 / 80) NE.:| [
-		(68 / 80, 12 / 80),
-		(73 / 80, 8 / 80) ] ),
-	Polygon (
-		(68 / 80, 4 / 80) NE.:| [
-		(68 / 80, 7 / 80),
-		(73 / 80, 3 / 80) ] ),
-	Polyline (
-		(48 / 240, 21 / 240) NE.:| [
-		(96 / 240, 39 / 240), (192 / 240, 8 / 240 + 18 / 240) ] ),
-	Polyline ((96 / 240, 24 / 240) NE.:| [(180 / 240, 6 / 240)]),
-	Polyline ((120 / 240, 60 / 240) NE.:| [(180 / 240, 56 / 240)]),
-	Polyline ((120 / 240, 8 / 240) NE.:| [(126 / 240, 12 / 240)]),
-	Polyline ((132 / 240, 0) NE.:| [(144 / 240, 8 / 240)]),
-	Polyline ((150 / 240, - 4 / 240) NE.:| [(162 / 240, 4 / 240)]),
-	Polyline ((132 / 240, 66 / 240) NE.:| [(132 / 240, 102 / 240)]),
-	Polyline ((150 / 240, 66/ 240) NE.:| [(150 / 240, 102 / 240)]),
-	Polyline ((168 / 240, 66 / 240) NE.:| [(168 / 240, 102 / 240)]) ]
+fishPattern = (`scale` (1 / 80)) <$> [
+	Polygon ((68, 9) NE.:| [(68, 12), (73, 8)]),
+	Polygon ((68 , 4) NE.:| [(68, 7), (73, 3)]),
+	Polyline ((16, 7) NE.:| [(32, 13), (64, 10)]),
+	Polyline ((32, 8) NE.:| [(60, 2)]),
+	Polyline ((40, 20) NE.:| [(60, 19)]),
+	Polyline ((40, 3) NE.:| [(42, 4)]),
+	Polyline ((44, 0) NE.:| [(48, 3)]),
+	Polyline ((50, - 2) NE.:| [(54, 1)]),
+	Polyline ((44, 22) NE.:| [(44, 34)]),
+	Polyline ((50, 22) NE.:| [(50, 34)]),
+	Polyline ((56, 22) NE.:| [(56, 34)]) ]
 
 --------------------------------------------------
 -- PICTURE LANGUAGE
@@ -239,6 +231,10 @@ poly cr = \case
 	Polygon (h NE.:| t) -> do
 		uncurry (cairoMoveTo cr) h >> uncurry (cairoLineTo cr) `mapM_` t
 		cairoClosePath cr
+
+scale :: Poly -> CDouble -> Poly
+scale (Polyline ps) s = Polyline $ ((* s) *** (* s)) <$> ps
+scale (Polygon ps) s = Polygon $ ((* s) *** (* s)) <$> ps
 
 --------------------------------------------------
 -- OUTPUT PICTURE
