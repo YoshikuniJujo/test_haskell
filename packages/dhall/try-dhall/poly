@@ -1,14 +1,21 @@
-let
+let Foo = <
+	Polyline : { _1 : { _1 : Double, _2 : Double },
+		_2 : List { _1 : Double, _2 : Double } } |
+	Polygon : { _1 : { _1 : Double, _2 : Double },
+		_2 : List { _1 : Double, _2 : Double } }  >
 
-Foo = <
-	Polyline : { _1 : { _1 : Double, _2 : Double }, _2 : List { _1 : Double, _2 : Double } } |
-	Polygon : { _1 : { _1 : Double, _2 : Double }, _2 : List { _1 : Double, _2 : Double } }  >
+in let Color = < Brown | Red | White >
 
-in let
+in let oneSide = { _1 =
+	{ _1 = 555.0, _2 = 888.0 }, _2 = [
+	{ _1 = 999.0, _2 = 777.0 }
+	] }
 
-pattern = [
+in let pattern = [
 
-	Foo.Polyline { _1 = { _1 = 123.0, _2 = 321.0 }, _2 = [] : List { _1 : Double, _2 : Double } },
+	Foo.Polyline { _1 =
+		{ _1 = 123.0, _2 = 321.0 }, _2 = [
+		] : List { _1 : Double, _2 : Double } },
 
 	Foo.Polygon { _1 =
 		{ _1 = 123.0, _2 = 321.0 }, _2 = [
@@ -17,21 +24,13 @@ pattern = [
 		] }
 	]
 
-in let
+in let colors = {
+	color1 = Color.Brown, color2 = Color.Red, color3 = Color.White }
 
-oneSide = { _1 =
-	{ _1 = 555.0, _2 = 888.0 }, _2 = [
-	{ _1 = 999.0, _2 = 777.0 }
-	] }
+in {
 
-in let
+oneSide = oneSide,
+pattern = { patternSize = 80.0, patternBody = pattern },
+colors = colors
 
-Color = < Brown | Red | White >
-
-in let
-
-colors = { color1 = Color.Brown, color2 = Color.Red, color3 = Color.White }
-
-in
-
-{ oneSide = oneSide, pattern = pattern, colors = colors }
+}

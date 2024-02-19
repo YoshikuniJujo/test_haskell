@@ -41,11 +41,16 @@ main = do
 
 data FishParam = FishParam {
 	oneSide :: OneSide,
-	pattern :: [Poly],
+	pattern :: Pattern,
 	colors :: Colors }
 	deriving (Generic, Show)
 
 instance FromDhall FishParam
+
+data Pattern = Pattern { patternSize :: Double, patternBody :: [Poly] }
+	deriving (Generic, Show)
+
+instance FromDhall Pattern
 
 data Colors = Colors {
 	color1 :: Color, color2 :: Color, color3 :: Color }
