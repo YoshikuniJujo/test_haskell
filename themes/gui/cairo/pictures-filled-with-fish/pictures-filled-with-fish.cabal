@@ -1,0 +1,100 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           pictures-filled-with-fish
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/pictures-filled-with-fish#readme>
+homepage:       https://github.com/githubuser/pictures-filled-with-fish#readme
+bug-reports:    https://github.com/githubuser/pictures-filled-with-fish/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2024 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/pictures-filled-with-fish
+
+library
+  exposed-modules:
+      DefaultFishParams
+  other-modules:
+      Paths_pictures_filled_with_fish
+  autogen-modules:
+      Paths_pictures_filled_with_fish
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , dhall
+    , mtl
+    , nowdoc
+    , optparse-declarative
+    , primitive
+    , simple-cairo
+    , text
+    , union-color
+  default-language: Haskell2010
+
+executable pictures-filled-with-fish-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_pictures_filled_with_fish
+  autogen-modules:
+      Paths_pictures_filled_with_fish
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , dhall
+    , mtl
+    , nowdoc
+    , optparse-declarative
+    , pictures-filled-with-fish
+    , primitive
+    , simple-cairo
+    , text
+    , union-color
+  default-language: Haskell2010
+
+test-suite pictures-filled-with-fish-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_pictures_filled_with_fish
+  autogen-modules:
+      Paths_pictures_filled_with_fish
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , dhall
+    , mtl
+    , nowdoc
+    , optparse-declarative
+    , pictures-filled-with-fish
+    , primitive
+    , simple-cairo
+    , text
+    , union-color
+  default-language: Haskell2010
