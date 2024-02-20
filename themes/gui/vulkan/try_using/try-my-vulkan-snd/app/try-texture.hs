@@ -239,7 +239,7 @@ body txfp fr w@(GlfwG.Win.W win) ist =
 	createRndrPss @scifmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
-	createFramebuffers d ex rp scvs \fbs ->
+	createFrmbffrs d ex rp scvs \fbs ->
 	createCommandPool qfis d \cp ->
 	createTextureImage pd d gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tximg \(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
@@ -248,12 +248,12 @@ body txfp fr w@(GlfwG.Win.W win) ist =
 	createIndexBuffer pd d gq cp \ib ->
 	createDescriptorPool d \dscp ->
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
-	createMvpBffrs @mff pd d dsl \dscslyts ubs ums ->
-	createDescriptorSets @_ @_ @_ @_ @_ d dscp ubs dscslyts tximgvw txsmplr \dscss ->
-	createCommandBuffers d cp \cbs ->
-	createSyncObjects d \sos ->
+	createMvpBffrs @mff pd d dsl \dsls mbs mbms ->
+	createDescriptorSets @_ @_ @_ @_ @_ d dscp mbs dsls tximgvw txsmplr \dscss ->
+	createCommandBuffers' @mff d cp \cbs ->
+	createSyncObjects' @mff d \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop fr win sfc pd qfis d gq pq sc ex scvs rp pl gp fbs vb ib cbs sos ubs ums dscss tm
+	mainLoop fr win sfc pd qfis d gq pq sc ex scvs rp pl gp fbs vb ib cbs sos mbs mbms dscss tm
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
@@ -1094,26 +1094,15 @@ data MemoryModelViewProj al nm smsb where
 type BindedUbo al = BindedModelViewProj al "uniform-buffer"
 type MemoryUbo al = MemoryModelViewProj al "uniform-buffer"
 
-{-
-data BindedUbo al smsb where
-	BindedUbo :: Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom al WModelViewProj 'Nothing] ->
-		BindedUbo al '(sm, sb)
-
-data MemoryUbo al smsb where
-	MemoryUbo :: Vk.Mm.M sm
-		'[ '( sb, 'Vk.Mm.BufferArg "uniform-buffer"
-			'[VObj.Atom al WModelViewProj 'Nothing] )] ->
-		MemoryUbo al '(sm, sb)
-		-}
-
-createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	(forall sfs . RecreateFramebuffers sis sfs =>
+createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm fmt) sis -> (forall sfs . (
+		RecreateFramebuffers sis sfs,
+		RecreateFrmbffrs sis sfs ) =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFramebuffers _ _ _ HPList.Nil f = f HPList.Nil
-createFramebuffers dvc sce rp (iv :** ivs) f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv) nil \fb ->
-	createFramebuffers dvc sce rp ivs \fbs -> f (fb :** fbs)
+createFrmbffrs _ _ _ HPList.Nil f = f HPList.Nil
+createFrmbffrs dv ex rp (v :** vs) f =
+	Vk.Frmbffr.create dv (frmbffrInfo ex rp v) nil \fb ->
+	createFrmbffrs dv ex rp vs \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
@@ -1142,6 +1131,31 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where
 	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
+
+class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
+	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
+		HPList.PL Vk.Frmbffr.F sfs -> IO ()
+
+instance RecreateFrmbffrs '[] '[] where
+	recreateFrmbffrs _ _ _ HPList.Nil HPList.Nil = pure ()
+
+instance RecreateFrmbffrs sis sfs =>
+	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
+	recreateFrmbffrs dv ex rp (v :** vs) (fb :** fbs) =
+		Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v) nil fb >>
+		recreateFrmbffrs dv ex rp vs fbs
+
+frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
+	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(inm, fmt, si)]
+frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
+	Vk.Frmbffr.createInfoNext = TMaybe.N,
+	Vk.Frmbffr.createInfoFlags = zeroBits,
+	Vk.Frmbffr.createInfoRenderPass = rp,
+	Vk.Frmbffr.createInfoAttachments = HPList.Singleton $ U3 att,
+	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
+	Vk.Frmbffr.createInfoLayers = 1 }
+	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
 
 createCommandPool :: QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
@@ -1609,29 +1623,19 @@ copyBuffer dvc gq cp src dst = do
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
-createCommandBuffers ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
-	(forall scb vss . (TLength.Length vss, HPList.HomoList '() vss) =>
-		HPList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
+createCommandBuffers' :: forall vss1 sd scp a .
+	(TList.Length vss1, HPList.FromList vss1) =>
+	Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	(forall scb . HPList.LL (Vk.CmdBffr.C scb) (vss1 :: [()]) -> IO a) ->
 	IO a
-createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	Vk.CmdBffr.allocate @_ @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
+createCommandBuffers' dvc cp f =
+	Vk.CmdBffr.allocate @_ @vss1 dvc (allocInfo @vss1) f
 	where
 	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfo 'Nothing scp vss
 	allocInfo = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
-
-mkVss :: Int -> (forall (vss :: [()]) . (
-	TpLvlLst.Length vss, TLength.Length vss,
-	HPList.FromList vss, HPList.HomoList '() vss ) =>
-	Proxy vss -> a) -> a
-mkVss 0 f = f (Proxy @'[])
-mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
-	where
-	addTypeToProxy :: Proxy vss -> Proxy ('() ': vss)
-	addTypeToProxy Proxy = Proxy
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
@@ -1640,15 +1644,12 @@ data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 		_inFlightFences :: HPList.PL Vk.Fence.F sfss } ->
 		SyncObjects '(siass, srfss, sfss)
 
-createSyncObjects ::
+createSyncObjects' :: forall n sd a . HPList.RepM n =>
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
-createSyncObjects dvc f =
-	HPList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dvc def nil) \iass ->
-	HPList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dvc def nil) \rfss ->
-	HPList.replicateM maxFramesInFlight
-		(Vk.Fence.create @'Nothing dvc fncInfo nil) \iffs ->
+createSyncObjects' dvc f =
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dvc def nil) \iass ->
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dvc def nil) \rfss ->
+	HPList.repM @n (Vk.Fence.create @'Nothing dvc fncInfo nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
