@@ -240,7 +240,7 @@ body txfp fr w@(GlfwG.Win.W win) ist =
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
-	createCommandPool qfis d \cp ->
+	createCmdPl qfis d \cp ->
 	createTextureImage txfp pd d gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tximg \(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler pd d \(txsmplr :: Vk.Smplr.S ssmp) ->
@@ -1157,9 +1157,9 @@ frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
 
-createCommandPool :: QFamIndices -> Vk.Dvc.D sd ->
+createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
-createCommandPool qfis dvc f =
+createCmdPl qfis dvc f =
 	Vk.CmdPool.create dvc poolInfo nil \cp -> f cp
 	where poolInfo = Vk.CmdPool.CreateInfo {
 		Vk.CmdPool.createInfoNext = TMaybe.N,
