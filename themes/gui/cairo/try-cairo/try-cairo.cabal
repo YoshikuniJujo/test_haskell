@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aa30e5ff0f577ea8f586756b571e4382d34dd4d5620631728180f50a0b60ffaa
+-- hash: a0e1f45aa64bd681d4c5103be67e4f409356dc06d52346e068a427f66e0e6d0d
 
 name:           try-cairo
 version:        0.1.0.0
@@ -53,6 +53,7 @@ library
     , dhall
     , primitive
     , simple-cairo
+    , text
     , union-color
   default-language: Haskell2010
 
@@ -73,6 +74,7 @@ executable colorsAsSource
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -94,6 +96,7 @@ executable createdAsSource
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -115,6 +118,7 @@ executable fromPng
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -136,6 +140,7 @@ executable gradientsAsSource
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -157,6 +162,7 @@ executable grayscale
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -178,6 +184,7 @@ executable grayscale-with-alpha
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -199,6 +206,7 @@ executable helloWriteImageSurface
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -220,6 +228,7 @@ executable picture8To16
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -241,6 +250,7 @@ executable removeAlpha
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -262,6 +272,7 @@ executable spec
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -283,6 +294,7 @@ executable testA1
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -304,6 +316,7 @@ executable testA1asDest
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -325,6 +338,7 @@ executable testA1asDestRGBA
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -346,6 +360,7 @@ executable testA1hs
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -367,6 +382,7 @@ executable testA1hsRGBA
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -388,6 +404,7 @@ executable testA8
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -409,6 +426,7 @@ executable testA8asDest
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -430,6 +448,7 @@ executable testA8asDestRGBA
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -451,6 +470,7 @@ executable testA8hs
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -472,6 +492,7 @@ executable testA8hsRGBA
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -493,6 +514,7 @@ executable testArgb32
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -514,6 +536,7 @@ executable testArgb32Mut
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -535,6 +558,7 @@ executable testParts
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -556,6 +580,7 @@ executable testRgb16_565
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -577,6 +602,7 @@ executable testRgb24
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -598,6 +624,7 @@ executable testRgb30
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -618,6 +645,7 @@ executable try-cairo-exe
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -639,6 +667,7 @@ executable tryFish
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -660,6 +689,7 @@ executable tryFish_halfway
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -681,6 +711,7 @@ executable tryPath
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -702,6 +733,7 @@ executable tryPictLang
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -723,6 +755,7 @@ executable tryST
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010
@@ -744,6 +777,7 @@ test-suite try-cairo-test
     , dhall
     , primitive
     , simple-cairo
+    , text
     , try-cairo
     , union-color
   default-language: Haskell2010

@@ -24,10 +24,10 @@ let patternBody = [
 	Poly.Polyline { _1 = p 50.0 22.0, _2 = [p 50.0 34.0] },
 	Poly.Polyline { _1 = p 56.0 22.0, _2 = [p 56.0 34.0] } ] in
 let pattern = {
-	patternColor1 = Color.White, patternColor2 = Color.Brown,
+	patternColor1 = Color.White, patternColor2 = Color.Blue,
 	patternSize = 80.0, patternBody = patternBody } in
 {
 oneSide = oneSide,
 fishPattern = pattern,
-colors = { color1 = Color.Brown, color2 = Color.Red, color3 = Color.White }
+colors = { color1 = Color.Blue, color2 = Color.Gray, color3 = Color.White }
 }

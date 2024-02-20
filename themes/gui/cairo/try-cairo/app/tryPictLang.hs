@@ -13,10 +13,12 @@ import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Maybe
 import Data.List.NonEmpty qualified as NE
+import Data.Text qualified as T
 import Data.Color
 import Data.CairoImage.Internal
 import Data.CairoContext
 import Data.JuicyCairo
+import System.Environment
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting
@@ -208,15 +210,26 @@ color :: Color -> Picture -> Picture
 color clr (Picture sz sz' a) = Picture sz sz' \cr _ -> local cr
 	$ cairoSetSourceRgb cr (getColor clr) >> a cr clr
 
-data Color = Red | Brown | White deriving (Show, Eq, Generic)
+data Color
+	= White | Black | Red | Green | Yellow | Blue | Brown | Purple | Pink
+	| Orange | Gray
+	deriving (Show, Eq, Generic)
 
 instance FromDhall Color
 
 getColor :: Color -> Rgb CDouble
 getColor = \case
-	Red -> fromJust $ rgbDouble 0.7 0.2 0.1
-	Brown -> fromJust $ rgbDouble 0.6 0.4 0.1
 	White -> fromJust $ rgbDouble 0.5 0.5 0.3
+	Black -> fromJust $ rgbDouble 0.2 0.2 0.1
+	Red -> fromJust $ rgbDouble 0.7 0.2 0.1
+	Green -> fromJust $ rgbDouble 0.2 0.5 0.1
+	Yellow -> fromJust $ rgbDouble 0.5 0.5 0.1
+	Blue -> fromJust $ rgbDouble 0.2 0.2 0.4
+	Brown -> fromJust $ rgbDouble 0.6 0.4 0.1
+	Purple -> fromJust $ rgbDouble 0.6 0.1 0.3
+	Pink -> fromJust $ rgbDouble 0.7 0.3 0.2
+	Orange -> fromJust $ rgbDouble 0.7 0.4 0.2
+	Gray -> fromJust $ rgbDouble 0.3 0.3 0.2
 
 -- Picture
 
@@ -274,8 +287,11 @@ scale (Polygon ps) s = Polygon $ ((* s) *** (* s)) <$> ps
 
 main :: IO ()
 main = do
-	fp <- input auto "./defaultFishParams"
---	drawPicture "fishPict.png" (result defaultFishParams)
+	cfg <- (<$> getArgs) \case
+		[] -> "./defaultFishParams"
+		[fn] -> T.pack fn
+		_ -> error "bad args"
+	fp <- input auto cfg
 	drawPicture "fishPict.png" (result fp)
 
 drawPicture :: FilePath -> Picture -> IO ()
