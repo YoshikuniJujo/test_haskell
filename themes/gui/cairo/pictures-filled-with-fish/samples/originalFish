@@ -1,0 +1,33 @@
+let Poly = <
+	Polyline : { _1 : { _1 : Double, _2 : Double },
+		_2 : List { _1 : Double, _2 : Double } } |
+	Polygon : { _1 : { _1 : Double, _2 : Double },
+		_2 : List { _1 : Double, _2 : Double } } > in
+let Color = <
+	White | Black | Red | Green | Yellow | Blue | Brown | Purple | Pink |
+	Orange | Gray > in
+let p = \(x : Double) -> \(y : Double) -> { _1 = x, _2 = y } in
+
+let oneSide = { _1 =
+	p 0.0 0.0, _2 = [
+	p 30.0 8.0, p 60.0 6.0, p 70.0 20.0, p 95.0 25.0, p 130.0 0.0 ] } in
+let patternBody = [
+	Poly.Polygon { _1 = p 68.0 9.0, _2 = [p 68.0 12.0, p 73.0 8.0] },
+	Poly.Polygon { _1 = p 68.0 4.0, _2 = [p 68.0 7.0, p 73.0 3.0] },
+	Poly.Polyline { _1 = p 16.0 7.0, _2 = [p 32.0 13.0, p 64.0 10.0] },
+	Poly.Polyline { _1 = p 32.0 8.0, _2 = [p 60.0 2.0] },
+	Poly.Polyline { _1 = p 40.0 20.0, _2 = [p 60.0 19.0] },
+	Poly.Polyline { _1 = p 40.0 3.0, _2 = [p 42.0 4.0] },
+	Poly.Polyline { _1 = p 44.0 0.0, _2 = [p 48.0 3.0] },
+	Poly.Polyline { _1 = p 50.0 -2.0, _2 = [p 54.0 1.0] },
+	Poly.Polyline { _1 = p 44.0 22.0, _2 = [p 44.0 34.0] },
+	Poly.Polyline { _1 = p 50.0 22.0, _2 = [p 50.0 34.0] },
+	Poly.Polyline { _1 = p 56.0 22.0, _2 = [p 56.0 34.0] } ] in
+let pattern = {
+	patternColor1 = Color.White, patternColor2 = Color.Brown,
+	patternSize = 80.0, patternBody = patternBody } in
+{
+oneSide = oneSide,
+fishPattern = pattern,
+colors = { color1 = Color.Brown, color2 = Color.Red, color3 = Color.White }
+}
