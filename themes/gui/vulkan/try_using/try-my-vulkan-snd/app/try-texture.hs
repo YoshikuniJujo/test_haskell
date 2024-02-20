@@ -241,7 +241,7 @@ body txfp fr w@(GlfwG.Win.W win) ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
 	createCommandPool qfis d \cp ->
-	createTextureImage pd d gq cp \tximg ->
+	createTextureImage txfp pd d gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tximg \(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler pd d \(txsmplr :: Vk.Smplr.S ssmp) ->
 	createVertexBuffer pd d gq cp \vb ->
@@ -1168,12 +1168,12 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoQueueFamilyIndex = grFam qfis }
 
 createTextureImage ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> (
+	FilePath -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> (
 		forall si sm .
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
-createTextureImage phdvc dvc gq cp f = do
-	img <- readRgba8 "../../../../../files/images/texture.jpg"
+createTextureImage txfp phdvc dvc gq cp f = do
+	img <- readRgba8 txfp
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
