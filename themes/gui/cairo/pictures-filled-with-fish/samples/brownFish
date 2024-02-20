@@ -1,16 +1,3 @@
-{-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-
-module DefaultFishParams (defaultFishParams) where
-
-import Data.Text qualified as T
-import Text.Nowdoc
-
-defaultFishParams :: T.Text
-defaultFishParams = [nowdoc|
-
 let Poly = <
 	Polyline : { _1 : { _1 : Double, _2 : Double },
 		_2 : List { _1 : Double, _2 : Double } } |
@@ -44,5 +31,3 @@ oneSide = oneSide,
 fishPattern = pattern,
 colors = { color1 = Color.Brown, color2 = Color.Red, color3 = Color.White }
 }
-
-|]
