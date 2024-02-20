@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DerivingStrategies, DeriveGeneric, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -9,6 +10,7 @@
 import GHC.Generics
 import Foreign.C.Types
 import Control.Arrow ((***), (&&&), second)
+import Control.Monad.Trans
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Maybe
@@ -18,7 +20,6 @@ import Data.Color
 import Data.CairoImage.Internal
 import Data.CairoContext
 import Data.JuicyCairo
-import System.Environment
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting
@@ -28,6 +29,7 @@ import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Utilities.CairoMatrixT
 
+import Options.Declarative
 import Dhall hiding (unit)
 
 --------------------------------------------------
@@ -286,13 +288,15 @@ scale (Polygon ps) s = Polygon $ ((* s) *** (* s)) <$> ps
 --------------------------------------------------
 
 main :: IO ()
-main = do
-	cfg <- (<$> getArgs) \case
-		[] -> "./defaultFishParams"
-		[fn] -> T.pack fn
-		_ -> error "bad args"
-	fp <- input auto cfg
-	drawPicture "fishPict.png" (result fp)
+main = run_ main'
+
+main' ::
+	Flag "c" '["config"]
+		"FILEPATH" "Configuration File" (Def "defaultFishParams" String)
+	-> Flag "o" '["output"] "FILEPATH" "Result .png File" String
+	-> Cmd "Filled with fishes" ()
+main' cf op = liftIO
+	$ drawPicture (get op) . result =<< input auto ("./" <> T.pack (get cf))
 
 drawPicture :: FilePath -> Picture -> IO ()
 drawPicture fp (Picture _ _ act) = either error (writeArgb32 fp) $ runST do

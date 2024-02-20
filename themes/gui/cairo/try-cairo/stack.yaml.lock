@@ -24,9 +24,20 @@ packages:
     commit: e9b4715fad553fcfa0f31d63d8149757abbf1087
     git: https://github.com/YoshikuniJujo/dhall-haskell
     subdir: dhall
+- completed:
+    commit: d3193db7979f391f1a307849236b870fd8933709
+    git: https://github.com/tanakh/optparse-declarative
+    name: optparse-declarative
+    pantry-tree:
+      sha256: fb9e8378d1025a1615f77e3411c098253031b0381cc8ff04c71eb595bcb79ec0
+      size: 1291
+    version: 0.4.2
+  original:
+    commit: d3193db7979f391f1a307849236b870fd8933709
+    git: https://github.com/tanakh/optparse-declarative
 snapshots:
 - completed:
-    sha256: 62f2f54aac083e25613ce5aefd04b390f1e8853631b2059e31d7a039e5f50e03
-    size: 602427
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/2/12.yaml
-  original: nightly-2024-02-12
+    sha256: 3bd28268c130639f18abdebbf6caa353f8564c2b2da60b30a41558dab66781fa
+    size: 604200
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/2/19.yaml
+  original: nightly-2024-02-19

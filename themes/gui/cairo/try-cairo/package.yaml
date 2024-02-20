@@ -24,7 +24,9 @@ dependencies:
 - primitive
 - bytestring
 - text
+- mtl
 - dhall
+- optparse-declarative
 - simple-cairo
 - cairo-image
 - JuicyCairo
