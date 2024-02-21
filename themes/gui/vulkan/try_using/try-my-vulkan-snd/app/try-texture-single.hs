@@ -217,7 +217,7 @@ body txfp fr w ist =
 	createCmdPl qfis d \cp ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
 	createImg pd d gq cp (ImageRgba8 txi) \tx ->
-	Vk.ImgVw.create @_ @'Vk.T.FormatR8g8b8a8Srgb d (imgVwInfo tx) nil \tv ->
+	Vk.ImgVw.create d (imgVwInfo tx) nil \tv ->
 	createTxSmplr pd d \txsp ->
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
@@ -271,12 +271,12 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 		HPList.PL t ss -> b) -> b
 	hetero _k [] f = f HPList.Nil
 	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
-	uniqueQFams = nub [grFam qfis, prFam qfis]
 	qinfo qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	uniqueQFams = nub [grFam qfis, prFam qfis]
 	info qs = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
 		Vk.Dvc.createInfoFlags = zeroBits,
