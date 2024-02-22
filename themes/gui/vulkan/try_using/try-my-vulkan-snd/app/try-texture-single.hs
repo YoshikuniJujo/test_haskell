@@ -1163,7 +1163,7 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ib ds
 	updateModelViewProj dv mm ex tm
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
-	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ pinfo ii
+	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo ii
 	where
 	siff = HPList.Singleton iff
 	sinfo = Vk.SubmitInfo {
