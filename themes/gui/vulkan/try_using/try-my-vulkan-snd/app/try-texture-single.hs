@@ -1025,15 +1025,15 @@ createDscSt dv dp bm tv ts dl a =
 		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
 dscWrite0 :: KnownNat alm => Vk.DscSet.D sds slbts ->
-	Vk.Bffr.Binded sm sb nm '[AtomModelViewProj alm] ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer
-			'[ '(sm, sb, nm, AtomModelViewProj alm)]) 0
-dscWrite0 ds ub = Vk.DscSet.Write {
+			'[ '(sm, sb, bnm, AtomModelViewProj alm)]) 0
+dscWrite0 ds mb = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
-		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo ub }
+		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo mb }
 
 dscWrite1 :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
 	Vk.DscSet.Write 'Nothing sds slbts

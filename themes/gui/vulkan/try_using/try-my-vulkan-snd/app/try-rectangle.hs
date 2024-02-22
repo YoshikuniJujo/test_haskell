@@ -733,10 +733,10 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 
 class CreateMvpBffrs (mff :: [()]) where
 	createMvpBffrs :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd ->
-		Vk.DscSetLyt.D sdsc '[BufferModelViewProj al] ->
+		Vk.DscSetLyt.D sdsl '[BufferModelViewProj al] ->
 		(forall sls smsbs . (
 			HPList.FromList sls, Vk.DscSet.DListFromMiddle sls,
-			HPList.HomoList '(sdsc, '[BufferModelViewProj al]) sls,
+			HPList.HomoList '(sdsl, '[BufferModelViewProj al]) sls,
 			Update al smsbs sls ) =>
 			HPList.PL (U2 Vk.DscSetLyt.D) sls ->
 			HPList.PL (BindedModelViewProj al nm) smsbs ->
@@ -904,15 +904,15 @@ instance (
 	Update al (smsb ': smsbs) ('(ds, cs) ': slbtss ) where
 	update dv (BindedModelViewProj mb :** mbs) (ds :** dss) =
 		Vk.DscSet.updateDs dv
-			(HPList.Singleton . U5 $ dscWrite mb ds) HPList.Nil >>
+			(HPList.Singleton . U5 $ dscWrite ds mb) HPList.Nil >>
 		update dv mbs dss
 
-dscWrite :: KnownNat al =>
-	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj al] ->
-	Vk.DscSet.D sds slbts -> Vk.DscSet.Write 'Nothing sds slbts
+dscWrite :: KnownNat alm => Vk.DscSet.D sds slbts ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer
-			'[ '(sm, sb, bnm, AtomModelViewProj al)]) 0
-dscWrite mb ds = Vk.DscSet.Write {
+			'[ '(sm, sb, bnm, AtomModelViewProj alm)]) 0
+dscWrite ds mb = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
@@ -925,7 +925,7 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 		_inFlightFences :: HPList.PL Vk.Fence.F sfss } ->
 		SyncObjs '(siass, srfss, sfss)
 
-createSyncObjs :: forall (n :: [()]) sd a . HPList.RepM n =>
+createSyncObjs :: forall n sd a . HPList.RepM n =>
 	Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
 createSyncObjs dv f =
 	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \iass ->
@@ -969,18 +969,18 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
 
 run :: (HPList.HomoList '() mff,
 	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
-	HPList.HomoList '(sdsc, '[BufferModelViewProj alm]) slyts,
+	HPList.HomoList '(sdsl, '[BufferModelViewProj alm]) slyts,
 	KnownNat alm, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsc, '[BufferModelViewProj alm])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsc, '[BufferModelViewProj alm])], '[]) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
