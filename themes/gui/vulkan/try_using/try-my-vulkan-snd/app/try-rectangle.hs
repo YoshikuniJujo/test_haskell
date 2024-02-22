@@ -77,7 +77,7 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
-import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
@@ -207,7 +207,7 @@ body fr w ist =
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
 	createMvpBffrs @mff pd d dsl \dsls mbs mbms ->
 	createDscPl d \dp -> createDscSts d dp mbs dsls \dss ->
-	Vk.CmdBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
+	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
@@ -407,7 +407,7 @@ recreateImgVws dv (i : is) (v :** vs) =
 	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil v >>
 	recreateImgVws dv is vs
 recreateImgVws _ _ _ =
-	error "number of Vk.Img.I and Vk.ImageView.I should be same"
+	error "number of Vk.Image.I and Vk.ImageView.I should be same"
 
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
@@ -748,16 +748,9 @@ instance CreateMvpBffrs '[] where
 
 instance CreateMvpBffrs mff => CreateMvpBffrs ('() ': mff) where
 	createMvpBffrs pd dv dl f = createMvpBffr pd dv \b m ->
-		createMvpBffrs @mff pd dv dl \dls bs ms ->
-		f (U2 dl :** dls) (b :** bs) (m :** ms)
-
-createMvpBffr :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd -> (forall smsb .
-	BindedModelViewProj al nm smsb ->
-	MemoryModelViewProj al nm smsb -> IO b) -> IO b
-createMvpBffr pd dv f = createBffrAtm
-	Vk.Bffr.UsageUniformBufferBit
-	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit) pd dv
-	\b m -> f (BindedModelViewProj b) (MemoryModelViewProj m)
+		createMvpBffrs @mff pd dv dl \dls bs ms -> f (U2 dl :** dls)
+			(BindedModelViewProj b :** bs)
+			(MemoryModelViewProj m :** ms)
 
 data BindedModelViewProj al nm smsb where
 	BindedModelViewProj ::
@@ -770,6 +763,16 @@ data MemoryModelViewProj al nm smsb where
 			'[ '(sb, 'Vk.Mm.BufferArg nm '[AtomModelViewProj al])] ->
 		MemoryModelViewProj al nm '(sm, sb)
 
+createMvpBffr :: KnownNat alm => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj alm] ->
+	ModelViewProjMemory sm sb mnm alm -> IO b) -> IO b
+createMvpBffr = createBffrAtm
+	Vk.Bffr.UsageUniformBufferBit
+	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+
+type ModelViewProjMemory sm sb mnm alm =
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
+
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
 type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
 
@@ -778,8 +781,7 @@ createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.Atom al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv VObj.LengthAtom us prs
 
@@ -832,30 +834,30 @@ copyBffr :: forall sd sc sm sb sm' sb' bnm bnm' al t lnm .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
 	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
-copyBffr dv gq cp s d = createCmdBffr \cb -> do
-	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo $
+copyBffr dv gq cp s d = cmdBffr \cb -> do
+	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
 		Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb s d
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
-	createCmdBffr :: (forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
-	createCmdBffr f = Vk.CmdBffr.allocate dv
+	cmdBffr :: (forall scb . Vk.CBffr.C scb -> IO a) -> IO a
+	cmdBffr f = Vk.CBffr.allocate dv
 		(cmdBffrInfo @_ @'[ '()] cp) $ f . \(cb :*. HPList.Nil) -> cb
-	binfo = Vk.CmdBffr.BeginInfo {
-		Vk.CmdBffr.beginInfoNext = TMaybe.N,
-		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
-		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+	binfo = Vk.CBffr.BeginInfo {
+		Vk.CBffr.beginInfoNext = TMaybe.N,
+		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
+		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 	sinfo cb = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
-cmdBffrInfo :: Vk.CmdPl.C scp -> Vk.CmdBffr.AllocateInfo 'Nothing scp n
-cmdBffrInfo cp = Vk.CmdBffr.AllocateInfo {
-	Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-	Vk.CmdBffr.allocateInfoCommandPool = cp,
-	Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+cmdBffrInfo :: Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
+cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
+	Vk.CBffr.allocateInfoNext = TMaybe.N,
+	Vk.CBffr.allocateInfoCommandPool = cp,
+	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
 createDscPl dv = Vk.DscPool.create dv info nil
@@ -953,7 +955,7 @@ mainloop :: (
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
-	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssoss -> UTCTime -> IO ()
+	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> UTCTime -> IO ()
 mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
 	vb ib mms mdss cbs soss tm0 = do
 	($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
@@ -984,7 +986,7 @@ run :: (HPList.HomoList '() mff,
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
-	HPList.LL (Vk.CmdBffr.C scb) mff ->
+	HPList.LL (Vk.CBffr.C scb) mff ->
 	SyncObjs soss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq sc ex
 	vs rp pl gp fbs vb ib mms mdss cbs soss tm cf go = do
@@ -1013,7 +1015,7 @@ draw :: forall
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) sls ->
-	HPList.LL (Vk.CmdBffr.C scb) mff -> SyncObjs ssos -> Float -> Int ->
+	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Float -> Int ->
 	IO ()
 draw dv gq pq sc ex rp pl gp fbs
 	vb ib mms mdss cbs (SyncObjs iass rfss iffs) tm cf =
@@ -1023,14 +1025,14 @@ draw dv gq pq sc ex rp pl gp fbs
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
-	Vk.CmdBffr.reset cb def
+	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ib mds
 	updateModelViewProj dv mm ex tm
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff
 	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo rfs ii
 	where
 	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
-		HPList.Dummy (Vk.CmdBffr.C scb) '()
+		HPList.Dummy (Vk.CBffr.C scb) '()
 	sinfo :: Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
 		Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 	sinfo ias rfs = Vk.SubmitInfo {
@@ -1068,7 +1070,7 @@ updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 recordCmdBffr :: forall scb sr sl sg sf
 	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alm .
 	(KnownNat alv, KnownNat ali) =>
-	Vk.CmdBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -1079,7 +1081,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb ib mds =
-	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
 	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton

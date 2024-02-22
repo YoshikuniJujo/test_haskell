@@ -223,7 +223,7 @@ body txfp fr w ist =
 	createIdxBffr pd d gq cp indices \ib ->
 	createMvpBffr pd d \mb mbm ->
 	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
-	createCmdBffr d cp \cb ->
+	Vk.CBffr.allocate d (cmdBffrInfo @_ @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	createSyncObjs d \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
@@ -902,11 +902,9 @@ type ModelViewProjMemory sm sb mnm alm =
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
 
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
-
 type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
 
 type TextureImage = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
-
 type TextureImageView siv = Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv
 
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
@@ -967,12 +965,15 @@ copyBffr :: forall sd sc sm sb sm' sb' bnm bnm' al t lnm .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
 	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
-copyBffr dv gq cp s d = createCmdBffr dv cp \cb -> do
+copyBffr dv gq cp s d = cmdBffr \cb -> do
 	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
 		Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb s d
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
+	cmdBffr :: (forall scb . Vk.CBffr.C scb -> IO a) -> IO a
+	cmdBffr f = Vk.CBffr.allocate dv
+		(cmdBffrInfo @_ @'[ '()] cp) $ f . \(cb :*. HPList.Nil) -> cb
 	binfo = Vk.CBffr.BeginInfo {
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
@@ -983,16 +984,11 @@ copyBffr dv gq cp s d = createCmdBffr dv cp \cb -> do
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
-createCmdBffr :: forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-createCmdBffr dv cp f =
-	Vk.CBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
-	where
-	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
-	info = Vk.CBffr.AllocateInfo {
-		Vk.CBffr.allocateInfoNext = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPool = cp,
-		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+cmdBffrInfo :: Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
+cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
+	Vk.CBffr.allocateInfoNext = TMaybe.N,
+	Vk.CBffr.allocateInfoCommandPool = cp,
+	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
 createDscPl dv = Vk.DscPool.create dv info nil
