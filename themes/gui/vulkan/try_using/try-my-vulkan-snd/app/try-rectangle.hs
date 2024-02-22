@@ -104,7 +104,7 @@ import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPool
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
 
-import Gpu.Vulkan.Cglm qualified as Cglm
+import Gpu.Vulkan.Cglm qualified as Glm
 import Gpu.Vulkan.Khr qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -503,7 +503,7 @@ createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[]) -> IO a) ->
 	IO a
 createGrPpl dv ex rp pl f = Vk.Ppl.Graphics.createGs dv Nothing
@@ -514,7 +514,7 @@ recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[]) -> IO ()
 recreateGrPpl dv ex rp pl p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
@@ -525,7 +525,7 @@ grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
-			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
+			'[ '(0, Glm.Vec2), '(1, Glm.Vec3)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'Nothing '(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[])
 		sr '(sb, vs, ts, plas)
@@ -948,7 +948,7 @@ mainloop :: (
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
@@ -967,7 +967,8 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
 			cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
 
-run :: (HPList.HomoList '() mff,
+run :: (
+	HPList.HomoList '() mff,
 	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
 	HPList.HomoList '(sdsl, '[BufferModelViewProj alm]) slyts,
 	KnownNat alm, KnownNat alv, KnownNat ali ) =>
@@ -979,7 +980,7 @@ run :: (HPList.HomoList '() mff,
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
@@ -987,14 +988,13 @@ run :: (HPList.HomoList '() mff,
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff ->
-	SyncObjs soss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
+	SyncObjs ssoss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq sc ex
 	vs rp pl gp fbs vb ib mms mdss cbs soss tm cf go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
 		$ draw dv gq pq sc ex rp pl gp fbs vb ib mms mdss cbs soss tm cf
 	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
-		(True, _) -> pure ()
-		(_, False) -> go ex
+		(True, _) -> pure (); (_, False) -> go ex
 		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 draw :: forall
@@ -1008,15 +1008,14 @@ draw :: forall
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj  alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) sls ->
-	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Float -> Int ->
-	IO ()
+	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Float -> Int -> IO ()
 draw dv gq pq sc ex rp pl gp fbs
 	vb ib mms mdss cbs (SyncObjs iass rfss iffs) tm cf =
 	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
@@ -1058,14 +1057,14 @@ updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 	Vk.extent2dHeight = fromIntegral -> h } tm =
 	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) dv mm zeroBits
 		$ Foreign.Storable.Generic.W ModelViewProj {
-			model = Cglm.rotate Cglm.mat4Identity (tm * Cglm.rad 90)
-				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-			view = Cglm.lookat
-				(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-				(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-			projection = Cglm.modifyMat4 1 1 negate $
-				Cglm.perspective (Cglm.rad 45) (w / h) 0.1 10 }
+			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
+				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			view = Glm.lookat
+				(Glm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+				(Glm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			projection = Glm.modifyMat4 1 1 negate
+				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
 
 recordCmdBffr :: forall scb sr sl sg sf
 	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alm .
@@ -1074,7 +1073,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	Vk.Frmbffr.F sf ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
@@ -1117,7 +1116,7 @@ catchAndRecreate :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
@@ -1133,7 +1132,7 @@ recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
+		'[ '(0, Glm.Vec2), '(1, Glm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
@@ -1152,21 +1151,21 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 
 type WVertex = Foreign.Storable.Generic.W Vertex
 
-data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
+data Vertex = Vertex { vertexPos :: Glm.Vec2, vertexColor :: Glm.Vec3 }
 	deriving (Show, Generic)
 
 instance Foreign.Storable.Generic.G Vertex
 
 vertices :: [WVertex]
 vertices = Foreign.Storable.Generic.W <$> [
-	Vertex (Cglm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+	Vertex (Glm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
+		(Glm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Glm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
+		(Glm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Glm.Vec2 $ 0.5 :. 0.5 :. NilL)
+		(Glm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Glm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
+		(Glm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
 
 indicesNum :: Integral n => n
 indicesNum = fromIntegral $ length indices
@@ -1177,7 +1176,7 @@ indices = [0, 1, 2, 2, 3, 0]
 type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
 
 data ModelViewProj = ModelViewProj {
-	model :: Cglm.Mat4, view :: Cglm.Mat4, projection :: Cglm.Mat4 }
+	model :: Glm.Mat4, view :: Glm.Mat4, projection :: Glm.Mat4 }
 	deriving (Show, Generic)
 
 instance Foreign.Storable.Generic.G ModelViewProj
