@@ -974,8 +974,9 @@ type ModelViewProjMemory sm sb mnm alm =
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
 type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
 
-type TextureImage = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
-type TextureImageView siv = Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv
+type TextureImage = 'Vk.DscSetLyt.Image '[ '("texture", TxFmt)]
+type TextureImageView siv = Vk.ImgVw.I "texture" TxFmt siv
+type TxFmt = Vk.T.FormatR8g8b8a8Srgb
 
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -1082,7 +1083,7 @@ createDscSts :: (
 	Vk.Dvc.D sd -> Vk.DscPool.P sp ->
 	HPList.PL (BindedModelViewProj al nm) smsbs ->
 	HPList.PL (U2 Vk.DscSetLyt.D) sls ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv -> Vk.Smplr.S ssmp ->
+	Vk.ImgVw.I "texture" TxFmt siv -> Vk.Smplr.S ssmp ->
 	(forall sds . HPList.PL (Vk.DscSet.D sds) sls -> IO a) -> IO a
 createDscSts dv dp mbs dls tv tsp f =
 	Vk.DscSet.allocateDs dv info $ (>>) <$> update dv mbs tv tsp <*> f
@@ -1093,8 +1094,7 @@ createDscSts dv dp mbs dls tv tsp f =
 
 class Update al smsbs slbtss where
 	update :: Vk.Dvc.D sd -> HPList.PL (BindedModelViewProj al nm) smsbs ->
-		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv ->
-		Vk.Smplr.S ssmp ->
+		Vk.ImgVw.I "texture" TxFmt siv -> Vk.Smplr.S ssmp ->
 		HPList.PL (Vk.DscSet.D sds) slbtss -> IO ()
 
 instance Update al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
@@ -1109,17 +1109,14 @@ instance (
 		'[VObj.Atom al WModelViewProj 'Nothing],
 	Update al smsbs slbtss,
 	Vk.DscSet.BindingAndArrayElemImage
-		cs '[ '("texture", Vk.T.FormatR8g8b8a8Srgb)] 0,
-	Vk.DscSet.WriteSourcesToMiddle cs
-		('Vk.DscSet.WriteSourcesArgImage
-			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0
-	) =>
+		cs '[ '("texture", TxFmt)] 0,
+	Vk.DscSet.WriteSourcesToMiddle cs ('Vk.DscSet.WriteSourcesArgImage
+		'[ '(ssmp, "texture", TxFmt, siv)]) 0 ) =>
 	Update al (smsb ': smsbs) ('(ds, cs) ': slbtss) where
 	update dv (BindedModelViewProj mb :** mbs) tv tsp (ds :** dss) =
 		Vk.DscSet.updateDs dv (
-				U5 (dscWrite0 mb ds) :**
-				U5 (dscWrite1 ds tv tsp) :** HPList.Nil )
-			HPList.Nil >>
+			U5 (dscWrite0 mb ds) :**
+			U5 (dscWrite1 ds tv tsp) :** HPList.Nil ) HPList.Nil >>
 		update dv mbs tv tsp dss
 
 dscWrite0 :: KnownNat al =>
@@ -1399,7 +1396,7 @@ createImage pd dvc wdt hgt tlng usg prps f =
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
--- type instance Vk.Bffr.ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
+-- type instance Vk.Bffr.ImageFormat ImageRgba8 = TxFmt
 
 newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
 
@@ -1413,7 +1410,7 @@ instance Storable MyRgba8 where
 
 instance BObj.IsImage ImageRgba8 where
 	type ImagePixel ImageRgba8 = MyRgba8
-	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
+	type ImageFormat ImageRgba8 = TxFmt
 	imageRow = BObj.imageWidth
 	imageWidth (ImageRgba8 img) = fromIntegral $ imageWidth img
 	imageHeight (ImageRgba8 img) = fromIntegral $ imageHeight img
