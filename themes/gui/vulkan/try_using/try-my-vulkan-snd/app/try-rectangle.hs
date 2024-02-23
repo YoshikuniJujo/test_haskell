@@ -25,9 +25,9 @@ import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
 import Data.Proxy
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
-import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.List qualified as TList
 import Data.Default
 import Data.Ord.ToolsYj
@@ -40,8 +40,8 @@ import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List
-import Data.List.ToolsYj
 import Data.List.Length
+import Data.List.ToolsYj
 import Data.List.NonEmpty qualified as NE
 import Data.List.Infinite qualified as Inf
 import Data.List.Infinite (pattern (:~))

@@ -100,7 +100,7 @@ apps
 * [x] try-rectangle-single.hs
 * [x] try-rectangle.hs
 * [x] try-texture-single.hs
-* [ ] try-texture.hs
+* [x] try-texture.hs
 * [ ] my-glslc.hs
 * [ ] try-allocation-callbacks.hs
 * [ ] try-copy-descriptor-set.hs

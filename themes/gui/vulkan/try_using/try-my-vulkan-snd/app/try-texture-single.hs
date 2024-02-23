@@ -43,16 +43,16 @@ import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List
-import Data.List.ToolsYj
-import Data.List.Length
 import Data.List.NonEmpty qualified as NE
+import Data.List.Length
+import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Array hiding (indices)
-import Data.Text.IO qualified as Txt
 import Data.Word
+import Data.Text.IO qualified as Txt
 import Data.Time
 import Data.Color
 import Data.IORef
