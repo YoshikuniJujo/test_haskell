@@ -28,7 +28,6 @@ import Data.Proxy
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.List qualified as TList
 import Data.Default
 import Data.Ord.ToolsYj
@@ -895,13 +894,11 @@ instance Update al '[] '[] where update _ HPList.Nil HPList.Nil = pure ()
 instance (
 	KnownNat al,
 	Vk.DscSet.BindingAndArrayElemBuffer
-		(TIndex.I1_2 '(ds, cs))
-		'[VObj.Atom al WModelViewProj 'Nothing] 0,
+		cs '[VObj.Atom al WModelViewProj 'Nothing] 0,
 	Vk.DscSet.UpdateDynamicLength
-		(TIndex.I1_2 '(ds, cs))
-		'[VObj.Atom al WModelViewProj 'Nothing],
+		cs '[VObj.Atom al WModelViewProj 'Nothing],
 	Update al smsbs slbtss ) =>
-	Update al (smsb ': smsbs) ('(ds, cs) ': slbtss ) where
+	Update al (smsb ': smsbs) ('(ds, cs) ': slbtss) where
 	update dv (BindedModelViewProj mb :** mbs) (ds :** dss) =
 		Vk.DscSet.updateDs dv
 			(HPList.Singleton . U5 $ dscWrite ds mb) HPList.Nil >>
