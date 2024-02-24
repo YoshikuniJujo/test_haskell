@@ -23,12 +23,14 @@ import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Monad.Trans
 import Control.Exception
 import Data.Kind
 import Gpu.Vulkan.Object.Base qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
+import Data.Bits.ToolsYj
 import Data.Array hiding (indices)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -36,14 +38,19 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
+import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.List
+import Data.List.ToolsYj
 import Data.IORef
+import Data.IORef.ToolsYj
 import Data.List.Length
 import Data.Word
 import Data.Color
 import Data.Time
 import Codec.Picture
+
+import Options.Declarative (Flag, Def, Cmd, run_, get)
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
@@ -66,8 +73,8 @@ import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
@@ -121,116 +128,106 @@ import qualified Gpu.Vulkan.Sampler as Vk.Smplr
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
-import Tools
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
+import Data.Tuple.ToolsYj
+import Data.Function.ToolsYj
+
+import Tools (readRgba8, clampOld)
 import Vertex
 
 import Data.Text.ToolsYj
 
+import Debug
+
 main :: IO ()
-main = do
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
-		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g
-			else run win inst g
+main = run_ realMain
+
+realMain ::
+	Flag "t" '["texture"] "FILEPATH" "texture filepath"
+		(Def "../../../../../files/images/texture.jpg" String) ->
+	Cmd "Try Vulkan Texture" ()
+realMain txfp = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
+	createIst \ist -> bool id (dbgm ist) debug $ body (get txfp) fr w ist
+	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = IORef Bool
-type WVertex = GStorable.W Vertex
 
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
+withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
 
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
+initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWindow fr g = do
+	Right w <- do
+		GlfwG.Win.hint noApi
+		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback
+		w (Just . const3 $ writeIORef fr True)
+	where
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	sizeName = ((800, 600), "Triangle")
 
-windowName :: String
-windowName = "Triangle"
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
+		. (Vk.layerPropertiesLayerName <$>)
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	bool	(Vk.Ist.create (info exts) nil f)
+		(Vk.Ist.create (infoDbg exts) nil f) debug
+	where
+	emsg = "validation layers requested, but not available!"
+	info exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.N,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = [],
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	infoDbg exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	ainfo = Vk.ApplicationInfo {
+		Vk.applicationInfoNext = TMaybe.N,
+		Vk.applicationInfoApplicationName = "Hello Triangle",
+		Vk.applicationInfoApplicationVersion =
+			Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoEngineName = "No Engine",
+		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
+dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
+	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msngr.createInfoFlags = zeroBits,
+	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msngr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
+	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
+	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
+		"validation layer: " <> Vk.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 1
-
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
-
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when enableValidationLayers $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers \\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	print extensions
-	let	appInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoNext = TMaybe.N,
-			Vk.applicationInfoApplicationName = "Hello Triangle",
-			Vk.applicationInfoApplicationVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoEngineName = "No Engine",
-			Vk.applicationInfoEngineVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo :: Vk.Ist.M.CreateInfo
-			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
-				'Nothing '[] ())) 'Nothing
-		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-			Vk.Ist.M.createInfoFlags = def,
-			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil \i -> f i
-
-setupDebugMessenger ::
+body :: FilePath ->
+	FramebufferResized ->
+	GlfwG.Win.W sw ->
 	Vk.Ist.I si ->
-	IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil f
-
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
-
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
-
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w inst g =
+	IO ()
+body txfp g (GlfwG.Win.W w) inst =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -246,7 +243,7 @@ run w inst g =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
-	createTextureImage phdv dv gq cp \tximg ->
+	createTextureImage txfp phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
 	createVertexBuffer phdv dv gq cp \vb ->
@@ -352,7 +349,7 @@ createLogicalDevice phdvc qfis f =
 			Vk.Dvc.M.createInfoFlags = def,
 			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
+				bool [] vldLayers debug,
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
@@ -917,12 +914,12 @@ checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
 checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 
 createTextureImage ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
+	FilePath -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
 		forall si sm .
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
-createTextureImage phdvc dvc gq cp f = do
-	img <- readRgba8 "../../../../../files/images/texture.jpg"
+createTextureImage txfp phdvc dvc gq cp f = do
+	img <- readRgba8 txfp
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
@@ -961,10 +958,6 @@ instance Storable MyRgba8 where
 		<$> peekArray 4 (castPtr p)
 	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
-
-listToTuple4 :: [a] -> (a, a, a, a)
-listToTuple4 [r, g, b, a] = (r, g, b, a)
-listToTuple4 _ = error "The length of the list is not 4"
 
 instance KObj.IsImage MyImage where
 	type ImagePixel MyImage = MyRgba8
@@ -1692,6 +1685,8 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
 		Glfw.waitEvents *> Glfw.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
+
+type WVertex = GStorable.W Vertex
 
 vertices :: [Vertex]
 vertices = [

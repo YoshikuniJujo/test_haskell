@@ -101,11 +101,11 @@ apps
 * [x] try-rectangle.hs
 * [x] try-texture-single.hs
 * [x] try-texture.hs
+* [ ] try-depth-buffering-single.hs
+* [ ] try-depth-buffering.hs
 * [ ] my-glslc.hs
 * [ ] try-allocation-callbacks.hs
 * [ ] try-copy-descriptor-set.hs
-* [ ] try-depth-buffering-single.hs
-* [ ] try-depth-buffering.hs
 * [ ] try-dynamic-dsc-sets.hs
 * [ ] try-generating-mipmaps-single.hs
 * [ ] try-generating-mipmaps.hs
