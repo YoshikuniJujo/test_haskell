@@ -56,11 +56,10 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
+import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Vk.Khr.Sfc.Glfw.Win
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic as GStorable
 
-import ThEnv
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -71,7 +70,6 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
@@ -137,8 +135,6 @@ import Data.Function.ToolsYj
 
 import Tools (readRgba8, clampOld)
 import Vertex
-
-import Data.Text.ToolsYj
 
 import Debug
 
@@ -229,7 +225,7 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 
 body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body txfp fr w ist =
-	createSurface w ist \sfc ->
+	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
@@ -256,10 +252,6 @@ body txfp fr w ist =
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
 	mainLoop fr w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw vb ib ubm ubds cb sos tm
-
-createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface (GlfwG.Win.W win) ist f = Glfw.createWindowSurface ist win nil \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
