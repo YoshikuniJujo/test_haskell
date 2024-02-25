@@ -142,6 +142,10 @@ import Data.Text.ToolsYj
 
 import Debug
 
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
 main :: IO ()
 main = run_ realMain
 
@@ -220,16 +224,13 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
 	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
 	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
-		"validation layer: " <> Vk.DbgUtls.Msngr.callbackDataMessage cbdt)
+		"validation layer: " <>
+		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-body :: FilePath ->
-	FramebufferResized ->
-	GlfwG.Win.W sw ->
-	Vk.Ist.I si ->
-	IO ()
-body txfp g (GlfwG.Win.W w) inst =
-	createSurface w inst \sfc ->
-	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
+body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+body txfp fr w ist =
+	createSurface w ist \sfc ->
+	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) scifmt ext ->
@@ -254,11 +255,11 @@ body txfp g (GlfwG.Win.W w) inst =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw vb ib ubm ubds cb sos tm
+	mainLoop fr w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw vb ib ubm ubds cb sos tm
 
-createSurface :: Glfw.Window -> Vk.Ist.I si ->
+createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.createWindowSurface ist win nil \sfc -> f sfc
+createSurface (GlfwG.Win.W win) ist f = Glfw.createWindowSurface ist win nil \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -371,11 +372,11 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapChain :: GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss fmt . Vk.T.FormatToValue fmt =>
 		Vk.Khr.Swapchain.S fmt ss -> Vk.Format -> Vk.Extent2d -> IO a) ->
 	IO a
-createSwapChain win sfc phdvc qfis dvc f = do
+createSwapChain (GlfwG.Win.W win) sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	fmt = Vk.Khr.Surface.M.formatOldFormat . chooseSwapSurfaceFormat $ formats spp
@@ -1479,7 +1480,7 @@ mainLoop :: (
 	RecreateFramebuffers ss sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
 	FramebufferResized ->
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> Vk.Extent2d ->
@@ -1504,7 +1505,7 @@ mainLoop :: (
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw vb ib ubm ubds cb iasrfsifs tm0 = do
+mainLoop g (GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw vb ib ubm ubds cb iasrfsifs tm0 = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
