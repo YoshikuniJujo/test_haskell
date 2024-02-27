@@ -124,7 +124,7 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
@@ -245,12 +245,11 @@ body txfp fr w ist =
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
 	createMvpBffr pd d \mb mbm ->
-	createDescriptorPool d \dscp ->
-	createDescriptorSet d dscp mb tv txsp dsl \ubds ->
+	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	createCommandBuffer d cp \cb ->
 	createSyncObjects d \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs cp di dm dv vb ib mbm ubds cb sos tm
+	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs cp di dm dv vb ib mbm ds cb sos tm
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -1511,73 +1510,61 @@ findMmType pd flt prs =
 		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
 			(Vk.Phd.memoryPropertiesMemoryTypes prs1)
 
-createDescriptorPool ::
-	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
-createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
+createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDscPl dv = Vk.DscPl.create dv info nil
 	where
-	poolInfo = Vk.DscPool.CreateInfo {
-		Vk.DscPool.createInfoNext = TMaybe.N,
-		Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
-		Vk.DscPool.createInfoMaxSets = 1,
-		Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
-	poolSize0 = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPool.sizeDescriptorCount = 1 }
-	poolSize1 = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DscPool.sizeDescriptorCount = 1 }
+	info = Vk.DscPl.CreateInfo {
+		Vk.DscPl.createInfoNext = TMaybe.N,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+		Vk.DscPl.createInfoMaxSets = 1,
+		Vk.DscPl.createInfoPoolSizes = [sz0, sz1] }
+	sz0 = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPl.sizeDescriptorCount = 1 }
+	sz1 = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscPl.sizeDescriptorCount = 1 }
 
-createDescriptorSet :: KnownNat alm =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom alm WModelViewProj 'Nothing] ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv  -> Vk.Smplr.S ss ->
-	Vk.DscSetLyt.D sdsc '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-	(forall sds . Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
-createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
-	Vk.DscSet.allocateDs dvc allocInfo \(HPList.Singleton dscs) -> do
-	Vk.DscSet.updateDs dvc (
-		U5 (descriptorWrite0 ub dscs) :**
-		U5 (descriptorWrite1 dscs tximgvw txsmp) :**
-		HPList.Nil )
-		HPList.Nil
-	f dscs
-	where
-	allocInfo = Vk.DscSet.AllocateInfo {
+createDscSt :: KnownNat alm =>
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	TextureImageView siv -> Vk.Smplr.S ss ->
+	Vk.DscSetLyt.D sdsl '[BufferModelViewProj alm, TxImg] ->
+	(forall sds . Vk.DscSet.D sds
+		'(sdsl, '[BufferModelViewProj alm, TxImg]) -> IO a) -> IO a
+createDscSt dv dp bm tv ts dl a =
+	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
+	$ Vk.DscSet.updateDs dv (
+		U5 (dscWrite0 ds bm) :** U5 (dscWrite1 ds tv ts) :**
+		HPList.Nil ) HPList.Nil
+	where info = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dscp,
-		Vk.DscSet.allocateInfoSetLayouts =
-			HPList.Singleton $ U2 dscslyt }
+		Vk.DscSet.allocateInfoDescriptorPool = dp,
+		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
-descriptorWrite0 :: KnownNat alm =>
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom alm WModelViewProj 'Nothing] ->
-	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom alm WModelViewProj  'Nothing)]) 0
-descriptorWrite0 ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
+dscWrite0 :: KnownNat alm => Vk.DscSet.D sds slbts ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	Vk.DscSet.Write 'Nothing sds slbts
+		('Vk.DscSet.WriteSourcesArgBuffer
+			'[ '(sm, sb, bnm, AtomModelViewProj alm)]) 0
+dscWrite0 ds mb = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ HPList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
+		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo mb }
 
-descriptorWrite1 ::
-	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
+dscWrite1 :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
-descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
+dscWrite1 ds v s = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
 	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton
 		$ U4 Vk.Dsc.ImageInfo {
 			Vk.Dsc.imageInfoImageLayout =
 				Vk.Img.LayoutShaderReadOnlyOptimal,
-			Vk.Dsc.imageInfoImageView = tiv,
-			Vk.Dsc.imageInfoSampler = tsmp }
-	}
+			Vk.Dsc.imageInfoImageView = v,
+			Vk.Dsc.imageInfoSampler = s } }
 
 findMemoryType :: Vk.Phd.P -> Vk.Mm.M.TypeBits -> Vk.Mm.PropertyFlags ->
 	IO Vk.Mm.M.TypeIndex
