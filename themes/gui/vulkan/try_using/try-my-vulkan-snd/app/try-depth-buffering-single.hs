@@ -223,9 +223,8 @@ body txfp fr w ist =
 	createCmdPl qfis d \cp ->
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
-	findDepthFormat pd >>= \dfmt ->
-	Vk.T.formatToType dfmt \(_ :: Proxy dfmt) ->
-	createDepthResources pd d gq cp ex \di dm dv ->
+	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
+	createDepthResources @dfmt pd d gq cp ex \di dm dv ->
 	createRndrPss @scifmt @dfmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
@@ -412,54 +411,38 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
-findDepthFormat :: Vk.Phd.P -> IO Vk.Format
-findDepthFormat phdvc = findSupportedFormat phdvc
+dptFmt :: Vk.Phd.P -> Vk.Img.Tiling ->
+	(forall (f :: Vk.T.Format) . Vk.T.FormatToValue f => Proxy f -> IO a) ->
+	IO a
+dptFmt pd tl a = (`Vk.T.formatToType` a) =<< spprt
 	[Vk.FormatD32Sfloat, Vk.FormatD32SfloatS8Uint, Vk.FormatD24UnormS8Uint]
-	Vk.Img.TilingOptimal
-	Vk.FormatFeatureDepthStencilAttachmentBit
-
-findSupportedFormat ::
-	Vk.Phd.P -> [Vk.Format] -> Vk.Img.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
-findSupportedFormat phdvc fs tlng fffs = do
-	props <- Vk.Phd.getFormatProperties phdvc `mapM` fs
-	case tlng of
-		Vk.Img.TilingLinear -> do
-			putStrLn "LINEAR"
-			pure . orError . find (checkFeatures fffs . snd) . zip fs
-				$ Vk.formatPropertiesLinearTilingFeatures <$> props
-		Vk.Img.TilingOptimal -> do
-			putStrLn "OPTIMAL"
-			pure . orError . find (checkFeatures fffs . snd) . zip fs
-				$ Vk.formatPropertiesOptimalTilingFeatures <$> props
+	Vk.FormatFeatureDepthStencilAttachmentBit where
+	spprt fs fffs = (fst <$>) . orErrorIO emsg
+			. find (checkBits fffs . snd) . zip fs . (ftrs <$>) =<<
+		Vk.Phd.getFormatProperties pd `mapM` fs
+	ftrs = case tl of
+		Vk.Img.TilingLinear -> Vk.formatPropertiesLinearTilingFeatures
+		Vk.Img.TilingOptimal -> Vk.formatPropertiesOptimalTilingFeatures
 		_ -> error "no such image tiling"
-	where
-	orError = \case
-		Just (x, _) -> x
-		Nothing -> error "failed to find supported format!"
-	checkFeatures wntd ftrs = wntd .&. ftrs == wntd
+	emsg = "failed to find supported format!"
 
-createDepthResources ::
+createDepthResources :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Extent2d ->
-	(forall si sm fmt siv . Vk.T.FormatToValue fmt =>
+	(forall si sm siv .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt) ] ->
 		Vk.ImgVw.I nm fmt siv ->
 		IO a) -> IO a
-createDepthResources phdvc dvc gq cp ext f = do
-	fmt <- findDepthFormat phdvc
-	print fmt
-	print ext
-	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-		createImage @_ @fmt phdvc dvc
-			(Vk.extent2dWidth ext) (Vk.extent2dHeight ext)
-			Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
-			Vk.Mm.PropertyDeviceLocalBit \dptImg dptImgMem ->
-			Vk.ImgVw.create dvc (imgVwInfo dptImg Vk.Img.AspectDepthBit) nil \dptImgVw -> do
-			transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
-				Vk.Img.LayoutDepthStencilAttachmentOptimal
-			f dptImg dptImgMem dptImgVw
+createDepthResources phdvc dvc gq cp ext f = createImage @_ @fmt phdvc dvc
+	(Vk.extent2dWidth ext) (Vk.extent2dHeight ext)
+	Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
+	Vk.Mm.PropertyDeviceLocalBit \dptImg dptImgMem ->
+	Vk.ImgVw.create dvc (imgVwInfo dptImg Vk.Img.AspectDepthBit) nil \dptImgVw -> do
+	transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
+		Vk.Img.LayoutDepthStencilAttachmentOptimal
+	f dptImg dptImgMem dptImgVw
 
 recreateDepthResources :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
