@@ -213,8 +213,8 @@ body txfp fr w ist =
 	createRndrPss @scifmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
-	createFrmbffrs d ex rp scvs \fbs ->
 	createCmdPl qfis d \cp ->
+	createFrmbffrs d ex rp scvs \fbs ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
 	createImg pd d gq cp (ImageRgba8 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx) nil \tv ->
