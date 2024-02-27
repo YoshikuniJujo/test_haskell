@@ -821,29 +821,16 @@ prepareImg :: forall sd img nm fmt a .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)] -> IO a) ->
 	IO a
-prepareImg pd dv tl us pr img a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+prepareImg pd dv tl us pr img a =
+	Vk.Img.create @'Nothing dv (imgInfo w h tl us) nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
 	Vk.Mm.allocateBind @'Nothing dv
 		(HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt) nil
 		\(HPList.Singleton (U2 (Vk.Mm.ImageBinded b))) m -> a b m
 	where
-	iinfo = Vk.Img.CreateInfo {
-		Vk.Img.createInfoNext = TMaybe.N,
-		Vk.Img.createInfoImageType = Vk.Img.Type2d,
-		Vk.Img.createInfoExtent = Vk.Extent3d {
-			Vk.extent3dWidth = fromIntegral $ BObj.imageWidth img,
-			Vk.extent3dHeight = fromIntegral $ BObj.imageHeight img,
-			Vk.extent3dDepth = 1 },
-		Vk.Img.createInfoMipLevels = 1,
-		Vk.Img.createInfoArrayLayers = 1,
-		Vk.Img.createInfoTiling = tl,
-		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined,
-		Vk.Img.createInfoUsage = us,
-		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
-		Vk.Img.createInfoFlags = zeroBits,
-		Vk.Img.createInfoQueueFamilyIndices = [] }
+	w = fromIntegral $ BObj.imageWidth img
+	h = fromIntegral $ BObj.imageHeight img
 	minfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
@@ -982,9 +969,31 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt) ] ->
 		IO a) -> IO a
 createImage pd dv tl us pr wdt hgt a = Vk.Img.create @'Nothing dv
-		(imageInfo wdt hgt tl us) nil \img -> do
+		(imgInfo wdt hgt tl us) nil \img -> do
 	memInfo <- imageMemoryInfo pd dv pr img
 	imageAllocateBind dv img memInfo a
+
+imageMemoryInfo ::
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
+	Vk.Img.I s nm fmt -> IO (Vk.Mm.AllocateInfo 'Nothing)
+imageMemoryInfo pd dvc prps img = do
+	reqs <- Vk.Img.getMemoryRequirements dvc img
+	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits reqs) prps
+	pure Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
+	Vk.Mm.AllocateInfo 'Nothing -> (forall sm .
+		Vk.Img.Binded sm si nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt) ] ->
+		IO a) -> IO a
+imageAllocateBind dvc img memInfo f =
+	Vk.Dvc.Mem.ImageBuffer.allocateBind @'Nothing dvc
+		(HPList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Image img) memInfo
+		nil \(HPList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
+		f bnd m
 
 {-
 prepareImg :: forall sd img nm fmt a .
@@ -1022,22 +1031,10 @@ prepareImg pd dv tl us pr img a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 		-}
 
-recreateImage :: Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
-	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Dvc.Mem.ImageBuffer.M
-		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt)] -> IO ()
-recreateImage pd dvc wdt hgt tlng usg prps img mem = do
-	Vk.Img.unsafeRecreate @'Nothing dvc
-		(imageInfo wdt hgt tlng usg) nil img
-	memInfo <- imageMemoryInfoBinded pd dvc prps img
-	imageReallocateBind dvc img memInfo mem
-
-imageInfo ::
+imgInfo ::
 	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
 	Vk.Img.CreateInfo 'Nothing fmt
-imageInfo wdt hgt tlng usg = Vk.Img.CreateInfo {
+imgInfo wdt hgt tlng usg = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNext = TMaybe.N,
 		Vk.Img.createInfoImageType = Vk.Img.Type2d,
 		Vk.Img.createInfoExtent = Vk.Extent3d {
@@ -1054,17 +1051,17 @@ imageInfo wdt hgt tlng usg = Vk.Img.CreateInfo {
 		Vk.Img.createInfoFlags = zeroBits,
 		Vk.Img.createInfoQueueFamilyIndices = [] }
 
-imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
-	Vk.Mm.AllocateInfo 'Nothing -> (forall sm .
-		Vk.Img.Binded sm si nm fmt ->
-		Vk.Dvc.Mem.ImageBuffer.M sm
-			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt) ] ->
-		IO a) -> IO a
-imageAllocateBind dvc img memInfo f =
-	Vk.Dvc.Mem.ImageBuffer.allocateBind @'Nothing dvc
-		(HPList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Image img) memInfo
-		nil \(HPList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
-		f bnd m
+recreateImage :: Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
+	Vk.Img.Binded sm sb nm fmt ->
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt)] -> IO ()
+recreateImage pd dvc wdt hgt tlng usg prps img mem = do
+	Vk.Img.unsafeRecreate @'Nothing dvc
+		(imgInfo wdt hgt tlng usg) nil img
+	memInfo <- imageMemoryInfoBinded pd dvc prps img
+	imageReallocateBind dvc img memInfo mem
 
 imageReallocateBind ::
 	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
@@ -1075,16 +1072,6 @@ imageReallocateBind dvc img memInfo m =
 	Vk.Dvc.Mem.ImageBuffer.unsafeReallocateBind @'Nothing dvc
 		(HPList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.ImageBinded img) memInfo
 		nil m
-
-imageMemoryInfo ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
-	Vk.Img.I s nm fmt -> IO (Vk.Mm.AllocateInfo 'Nothing)
-imageMemoryInfo pd dvc prps img = do
-	reqs <- Vk.Img.getMemoryRequirements dvc img
-	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits reqs) prps
-	pure Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 imageMemoryInfoBinded ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
