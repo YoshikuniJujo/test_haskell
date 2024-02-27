@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-tools-yj
-version:        0.1.0.9
+version:        0.1.0.10
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-tools-yj#readme>
 homepage:       https://github.com/YoshikuniJujo/try-tools-yj#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-tools-yj/issues
