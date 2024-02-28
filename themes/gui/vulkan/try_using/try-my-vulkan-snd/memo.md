@@ -101,7 +101,7 @@ apps
 * [x] try-rectangle.hs
 * [x] try-texture-single.hs
 * [x] try-texture.hs
-* [ ] try-depth-buffering-single.hs
+* [x] try-depth-buffering-single.hs
 * [ ] try-depth-buffering.hs
 * [ ] my-glslc.hs
 * [ ] try-allocation-callbacks.hs
