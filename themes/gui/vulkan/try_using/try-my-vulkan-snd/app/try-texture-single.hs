@@ -1180,7 +1180,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) -> IO ()
-recordCmdBffr cb ex rp pl gp fb vb ib mds =
+recordCmdBffr cb ex rp pl gp fb vb ib ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
@@ -1189,7 +1189,7 @@ recordCmdBffr cb ex rp pl gp fb vb ib mds =
 	Vk.Cmd.bindIndexBuffer cbb
 		$ Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
-		(HPList.Singleton $ U2 mds)
+		(HPList.Singleton $ U2 ds)
 		(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
 	Vk.Cmd.drawIndexed cbb indicesNum 1 0 0 0
 	where
@@ -1219,9 +1219,9 @@ catchAndRecreate :: (Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs) =>
 		'[ '(0, Glm.Vec2), '(1, Glm.Vec3), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
+catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go a = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) a
 	\_ -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 recreateAll :: (Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs) =>

@@ -142,8 +142,6 @@ main = do
 
 type FramebufferResized = IORef Bool
 
-type WVertex = GStorable.W Vertex
-
 globalFramebufferResized :: IORef Bool -> IORef Bool
 globalFramebufferResized = id
 
