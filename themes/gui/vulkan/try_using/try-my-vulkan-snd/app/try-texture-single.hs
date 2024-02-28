@@ -19,7 +19,7 @@ import GHC.TypeNats
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.Generic qualified
+import Foreign.Storable.Generic qualified as GStorable
 import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
@@ -1075,18 +1075,18 @@ mainloop :: (
 	ModelViewProjMemory smm sbm nmm alm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
-mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
+mainloop fr w sfc pd qfis d gq pq sc ex0 vs rp pl gp fbs
 	vb ib mm ds cb sos tm0 = do
 	($ ex0) $ fix \go ex ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
-		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib
+		run fr w sfc pd qfis d gq pq sc ex vs rp pl gp fbs vb ib
 			mm ds cb sos (realToFrac $ tm `diffUTCTime` tm0) go
-	Vk.Dvc.waitIdle dv
+	Vk.Dvc.waitIdle d
 
 run :: (
-	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
-	KnownNat alm, KnownNat alv, KnownNat ali) =>
+	Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs,
+	KnownNat alm, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
@@ -1151,13 +1151,13 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
 updateModelViewProj :: forall sd smm sbm nmm alm . KnownNat alm =>
-	Vk.Dvc.D sd ->
-	ModelViewProjMemory smm sbm nmm alm -> Vk.Extent2d -> Float -> IO ()
+	Vk.Dvc.D sd -> ModelViewProjMemory smm sbm nmm alm ->
+	Vk.Extent2d -> Float -> IO ()
 updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
 	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) dv mm zeroBits
-		$ Foreign.Storable.Generic.W ModelViewProj {
+		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 			view = Glm.lookat
@@ -1249,7 +1249,7 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-type WVertex = Foreign.Storable.Generic.W Vertex
+type WVertex = GStorable.W Vertex
 
 data Vertex = Vertex {
 	vertexPos :: Glm.Vec2, vertexColor :: Glm.Vec3,
@@ -1259,10 +1259,10 @@ data Vertex = Vertex {
 newtype TexCoord = TexCoord Glm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-instance Foreign.Storable.Generic.G Vertex
+instance GStorable.G Vertex
 
 vertices :: [WVertex]
-vertices = Foreign.Storable.Generic.W <$> [
+vertices = GStorable.W <$> [
 	Vertex (Glm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
 		(Glm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
 		(TexCoord . Glm.Vec2 $ 1.0 :. 0.0 :. NilL),
@@ -1282,13 +1282,13 @@ indicesNum = fromIntegral $ length indices
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
-type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
+type WModelViewProj = GStorable.W ModelViewProj
 
 data ModelViewProj = ModelViewProj {
 	model :: Glm.Mat4, view :: Glm.Mat4, projection :: Glm.Mat4 }
 	deriving (Show, Generic)
 
-instance Foreign.Storable.Generic.G ModelViewProj
+instance GStorable.G ModelViewProj
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 newtype PixelRgba8 = PixelRgba8 PixelRGBA8
