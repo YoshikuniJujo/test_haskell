@@ -15,7 +15,6 @@ module Main (main) where
 
 import GHC.Generics
 import GHC.TypeNats
-
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
