@@ -310,7 +310,7 @@ body txfp g (GlfwG.Win.W w) inst =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
-	createTextureImage phdv dv gq cp \tximg ->
+	createTextureImage txfp phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit
 		\(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
 	createTextureSampler phdv dv \(txsmplr :: Vk.Smplr.S ssmp) ->
@@ -988,12 +988,12 @@ checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
 checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 
 createTextureImage ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
+	FilePath -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
 		forall si sm .
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
-createTextureImage phdvc dvc gq cp f = do
-	img <- readRgba8 "../../../../../files/images/texture.jpg"
+createTextureImage txfp phdvc dvc gq cp f = do
+	img <- readRgba8 txfp
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
