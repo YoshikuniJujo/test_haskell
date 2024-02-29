@@ -155,27 +155,6 @@ realMain txfp = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
 
 type FramebufferResized = IORef Bool
 
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
-
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
-
-windowName :: String
-windowName = "Triangle"
-
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
-vldLayers :: [Vk.LayerName]
-vldLayers = [Vk.layerKhronosValidation]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 2
-
 withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
 withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
 
@@ -189,19 +168,6 @@ initWindow fr g = do
 	where
 	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 	sizeName = ((800, 600), "Triangle")
-
-withWindowOld :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindowOld f g = initWindowOld g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindowOld :: FramebufferResized -> IO Glfw.Window
-initWindowOld frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
@@ -236,48 +202,13 @@ createIst f = do
 		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when enableValidationLayers $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (vldLayers \\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- bool id (Vk.DbgUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	print extensions
-	let	appInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoNext = TMaybe.N,
-			Vk.applicationInfoApplicationName = "Hello Triangle",
-			Vk.applicationInfoApplicationVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoEngineName = "No Engine",
-			Vk.applicationInfoEngineVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo :: Vk.Ist.M.CreateInfo
-			('Just (Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ())) 'Nothing
-		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J dbgMsngrInfo,
-			Vk.Ist.M.createInfoFlags = def,
-			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] vldLayers enableValidationLayers,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil \i -> f i
-
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	IO a -> IO a
-setupDebugMessenger ist f = Vk.DbgUtls.Msngr.create ist
-	dbgMsngrInfo nil f
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
 dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.DbgUtls.Msngr.createInfoFlags = def,
+	Vk.DbgUtls.Msngr.createInfoFlags = zeroBits,
 	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
 		Vk.DbgUtls.MessageSeverityVerboseBit .|.
 		Vk.DbgUtls.MessageSeverityWarningBit .|.
@@ -286,12 +217,11 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		Vk.DbgUtls.MessageTypeGeneralBit .|.
 		Vk.DbgUtls.MessageTypeValidationBit .|.
 		Vk.DbgUtls.MessageTypePerformanceBit,
-	Vk.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
 	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
-
-debugCallback :: Vk.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.DbgUtls.Msngr.callbackDataMessage cbdt)
+	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
+		"validation layer: " <>
+		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
 body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body txfp g (GlfwG.Win.W w) inst =
@@ -323,6 +253,9 @@ body txfp g (GlfwG.Win.W w) inst =
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp (dptImg, dptImgMem, dptImgVw) vb ib cbs sos ums dscss tm
+
+maxFramesInFlight :: Integral n => n
+maxFramesInFlight = 2
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -417,7 +350,7 @@ createLogicalDevice phdvc qfis f =
 			Vk.Dvc.M.createInfoFlags = def,
 			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] vldLayers enableValidationLayers,
+				bool [] vldLayers debug,
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
