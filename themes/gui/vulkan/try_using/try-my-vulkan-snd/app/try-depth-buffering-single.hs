@@ -568,6 +568,10 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
+type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
+type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
+type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
+
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
@@ -656,8 +660,6 @@ grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoBack = def,
 		Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
 		Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
-
-type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
 
 shaderStages :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo)
 	'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
@@ -952,13 +954,6 @@ singleTimeCmds dv gq cp cmd =
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 
-cmdBffrInfo :: forall n scp .
-	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
-cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
-	Vk.CBffr.allocateInfoNext = TMaybe.N,
-	Vk.CBffr.allocateInfoCommandPool = cp,
-	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
-
 createTxSmplr ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
 createTxSmplr pd dv a = Vk.Phd.getProperties pd >>= \pr ->
@@ -1110,9 +1105,8 @@ createDscSt :: KnownNat alm =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
 	TextureImageView siv -> Vk.Smplr.S ss ->
-	Vk.DscSetLyt.D sdsl '[BufferModelViewProj alm, TxImg] ->
-	(forall sds . Vk.DscSet.D sds
-		'(sdsl, '[BufferModelViewProj alm, TxImg]) -> IO a) -> IO a
+	Vk.DscSetLyt.D sdsl (DscStLytArg alm) ->
+	(forall sds . Vk.DscSet.D sds '(sdsl, DscStLytArg alm) -> IO a) -> IO a
 createDscSt dv dp bm tv ts dl a =
 	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
 	$ Vk.DscSet.updateDs dv (
@@ -1124,8 +1118,6 @@ createDscSt dv dp bm tv ts dl a =
 		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
 type TextureImageView siv = Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv
-type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
-type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
 dscWrite0 :: KnownNat alm => Vk.DscSet.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
@@ -1150,6 +1142,13 @@ dscWrite1 ds v s = Vk.DscSet.Write {
 				Vk.Img.LayoutShaderReadOnlyOptimal,
 			Vk.Dsc.imageInfoImageView = v,
 			Vk.Dsc.imageInfoSampler = s } }
+
+cmdBffrInfo :: forall n scp .
+	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
+cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
+	Vk.CBffr.allocateInfoNext = TMaybe.N,
+	Vk.CBffr.allocateInfoCommandPool = cp,
+	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 createSyncObjs :: Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
 createSyncObjs dv f =
