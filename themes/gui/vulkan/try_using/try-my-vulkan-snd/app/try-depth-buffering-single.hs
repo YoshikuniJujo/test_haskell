@@ -227,7 +227,7 @@ body txfp fr w ist =
 	createSyncObjs d \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq cp
-		sc ex scvs rp pl gp fbs di dm dv vb ib mbm ds cb sos
+		sc ex scvs rp pl gp fbs (di, dm, dv) vb ib mbm ds cb sos
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -1181,16 +1181,16 @@ mainloop :: (
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
-	Vk.Mm.M sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I "depth-buffer" dptfmt sdvw ->
+	(	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
+		Vk.Mm.M sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)],
+		Vk.ImgVw.I "depth-buffer" dptfmt sdvw ) ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm nmm alm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
 mainloop fr w sf pd qfis d gq pq cp sc ex0 vs rp pl gp fbs
-	di dm dv vb ib mm ds cb sos tm0 = do
+	(di, dm, dv) vb ib mm ds cb sos tm0 = do
 	($ ex0) $ fix \go ex ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
