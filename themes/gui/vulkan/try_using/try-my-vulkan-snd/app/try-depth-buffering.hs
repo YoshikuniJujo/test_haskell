@@ -597,6 +597,8 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
+type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
+
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
@@ -685,8 +687,6 @@ grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoBack = def,
 		Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
 		Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
-
-type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
 
 shaderStages :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo)
 	'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
