@@ -241,17 +241,13 @@ body txfp fr w ist =
 	createFrmbffrs d ex rp scvs dv \fbs ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
 	createImg pd d gq cp (ImageRgba8 txi) \tx ->
---	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit) nil \tximgvw ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tx Vk.Img.AspectColorBit
-		\(tximgvw :: Vk.ImgVw.I "texture" txfmt siv) ->
-	createTextureSampler pd d \(txsmplr :: Vk.Smplr.S ssmp) ->
+	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit) nil \tv ->
+	createTxSmplr pd d \txsp ->
 	createVertexBuffer pd d gq cp \vb ->
 	createIndexBuffer pd d gq cp \ib ->
+	createUniformBuffers pd d dsl maxFramesInFlight \dscslyts ubs ums ->
 	createDescriptorPool d \dscp ->
---	createUniformBuffers @_ @ssmp pd d dsl maxFramesInFlight \dscslyts ubs ums ->
---	createDescriptorSets @_ @_ @_ @ssmp d dscp ubs dscslyts tximgvw txsmplr \dscss ->
-	createUniformBuffers @_ @ssmp @siv pd d dsl maxFramesInFlight \dscslyts ubs ums ->
-	createDescriptorSets @_ @_ @_ @ssmp @siv d dscp ubs dscslyts tximgvw txsmplr \dscss ->
+	createDescriptorSets d dscp ubs dscslyts tv txsp \dscss ->
 	createCommandBuffers d cp \cbs ->
 	createSyncObjects d \sos ->
 	getCurrentTime >>= \tm ->
@@ -523,14 +519,6 @@ recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
-
-createImageView :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
-	Vk.Img.AspectFlags ->
-	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
-createImageView dvc timg asps f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfo timg asps) nil f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
@@ -1460,37 +1448,29 @@ instance BObj.IsImage ImageRgba8 where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
-createTextureSampler ::
+createTxSmplr ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler phdv dvc f = do
-	prp <- Vk.Phd.getProperties phdv
-	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
-	let	samplerInfo = Vk.Smplr.M.CreateInfo {
-			Vk.Smplr.M.createInfoNext = TMaybe.N,
-			Vk.Smplr.M.createInfoFlags = zeroBits,
-			Vk.Smplr.M.createInfoMagFilter = Vk.FilterLinear,
-			Vk.Smplr.M.createInfoMinFilter = Vk.FilterLinear,
-			Vk.Smplr.M.createInfoMipmapMode =
-				Vk.Smplr.MipmapModeLinear,
-			Vk.Smplr.M.createInfoAddressModeU =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoAddressModeV =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoAddressModeW =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoMipLodBias = 0,
-			Vk.Smplr.M.createInfoAnisotropyEnable = True,
-			Vk.Smplr.M.createInfoMaxAnisotropy =
-				Vk.Phd.limitsMaxSamplerAnisotropy
-					$ Vk.Phd.propertiesLimits prp,
-			Vk.Smplr.M.createInfoCompareEnable = False,
-			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.M.createInfoMinLod = 0,
-			Vk.Smplr.M.createInfoMaxLod = 0,
-			Vk.Smplr.M.createInfoBorderColor =
-				Vk.BorderColorIntOpaqueBlack,
-			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
+createTxSmplr pd dv a = Vk.Phd.getProperties pd >>= \pr ->
+	Vk.Smplr.create @'Nothing dv (info pr) nil a
+	where info (Vk.Phd.propertiesLimits -> lm) = Vk.Smplr.CreateInfo {
+		Vk.Smplr.createInfoNext = TMaybe.N,
+		Vk.Smplr.createInfoFlags = zeroBits,
+		Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMipmapMode = Vk.Smplr.MipmapModeLinear,
+		Vk.Smplr.createInfoAddressModeU = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeV = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeW = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoMipLodBias = 0,
+		Vk.Smplr.createInfoAnisotropyEnable = True,
+		Vk.Smplr.createInfoMaxAnisotropy =
+			Vk.Phd.limitsMaxSamplerAnisotropy lm,
+		Vk.Smplr.createInfoCompareEnable = False,
+		Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+		Vk.Smplr.createInfoMinLod = 0,
+		Vk.Smplr.createInfoMaxLod = 0,
+		Vk.Smplr.createInfoBorderColor = Vk.BorderColorIntOpaqueBlack,
+		Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 
 createVertexBuffer :: Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall sm sb .
@@ -1533,7 +1513,7 @@ createIndexBuffer phdvc dvc gq cp f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createUniformBuffers :: forall alm ssmp siv sd sdsc a . KnownNat alm =>
+createUniformBuffers :: forall alm sd sdsc a . KnownNat alm =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.DscSetLyt.D sdsc '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WModelViewProj 'Nothing],
@@ -1541,7 +1521,7 @@ createUniformBuffers :: forall alm ssmp siv sd sdsc a . KnownNat alm =>
 	Int -> (forall slyts smsbs . (
 		Vk.DscSet.DListFromMiddle slyts,
 		HPList.FromList slyts,
-		Update alm smsbs slyts ssmp siv,
+		Update alm smsbs slyts,
 		HPList.HomoList (AtomUbo sdsc alm) slyts
 		) =>
 		HPList.PL (U2 Vk.DscSetLyt.D) slyts ->
@@ -1550,7 +1530,7 @@ createUniformBuffers :: forall alm ssmp siv sd sdsc a . KnownNat alm =>
 createUniformBuffers _ _ _ 0 f = f HPList.Nil HPList.Nil HPList.Nil
 createUniformBuffers ph dvc dscslyt n f =
 	createUniformBuffer1 @alm ph dvc \(b :: BindedUbo alm smsb) m ->
-		createUniformBuffers @alm @ssmp @siv ph dvc dscslyt (n - 1) \ls (bs :: HPList.PL (BindedUbo alm) smsbs) ms -> f
+		createUniformBuffers @alm ph dvc dscslyt (n - 1) \ls (bs :: HPList.PL (BindedUbo alm) smsbs) ms -> f
 			(U2 dscslyt :** ls)
 			(b :** bs :: HPList.PL (BindedUbo alm) (smsb ': smsbs))
 			(m :** ms)
@@ -1596,7 +1576,7 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
 
 createDescriptorSets :: (
 	Vk.DscSet.DListFromMiddle ss,
-	HPList.FromList ss, Update alm smsbs ss ssmp siv) =>
+	HPList.FromList ss, Update alm smsbs ss) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HPList.PL (BindedUbo alm) smsbs ->
 	HPList.PL (U2 Vk.DscSetLyt.D) ss ->
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv -> Vk.Smplr.S ssmp ->
@@ -1640,7 +1620,7 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 			Vk.Dsc.imageInfoImageView = tiv,
 			Vk.Dsc.imageInfoSampler = tsmp } }
 
-class Update alm smsbs slbtss ssmp siv where
+class Update alm smsbs slbtss where
 	update ::
 		Vk.Dvc.D sd ->
 		HPList.PL (BindedUbo alm) smsbs ->
@@ -1649,18 +1629,19 @@ class Update alm smsbs slbtss ssmp siv where
 		Vk.Smplr.S ssmp ->
 		IO ()
 
-instance Update _alm '[] '[] ssmp siv where update _ HPList.Nil HPList.Nil _ _ = pure ()
+instance Update _alm '[] '[] where update _ HPList.Nil HPList.Nil _ _ = pure ()
 
 instance (
 	Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[VObj.Atom alm WModelViewProj 'Nothing] 0,
 	Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[VObj.Atom alm WModelViewProj 'Nothing],
-	Update alm ubs dscss ssmp siv,
+	Vk.DscSet.BindingAndArrayElemImage cs '[ '(Tx, TxFmt)] 0,
+	Update alm ubs dscss,
 	Vk.DscSet.WriteSourcesToMiddle cs
 		('Vk.DscSet.WriteSourcesArgImage
 			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0,
 	KnownNat alm
 	) =>
-	Update alm (ub ': ubs) ('(ds, cs) ': dscss) ssmp siv where
+	Update alm (ub ': ubs) ('(ds, cs) ': dscss) where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) tximgvw txsmp = do
 		Vk.DscSet.updateDs dvc (
 			U5 (descriptorWrite0 ub dscs) :**
@@ -1668,6 +1649,9 @@ instance (
 			HPList.Nil )
 			HPList.Nil
 		update dvc ubs dscss tximgvw txsmp
+
+type Tx = "texture"
+type TxFmt = Vk.T.FormatR8g8b8a8Srgb
 
 findMemoryType :: Vk.Phd.P -> Vk.Mm.M.TypeBits -> Vk.Mm.PropertyFlags ->
 	IO Vk.Mm.M.TypeIndex
