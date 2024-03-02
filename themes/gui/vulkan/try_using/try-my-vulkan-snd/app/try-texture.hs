@@ -505,8 +505,8 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createDscStLyt :: Vk.Dvc.D sd ->
-	(forall (s :: Type) . Vk.DscSetLyt.D s (DscStLytArg alm) -> IO a) -> IO a
+createDscStLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
+	Vk.DscSetLyt.D s (DscStLytArg alm) -> IO a) -> IO a
 createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 	where
 	info = Vk.DscSetLyt.CreateInfo {
@@ -1084,7 +1084,7 @@ class Update al smsbs slbtss where
 		Vk.ImgVw.I Tx TxFmt siv -> Vk.Smplr.S ssmp ->
 		HPList.PL (Vk.DscSet.D sds) slbtss -> IO ()
 
-instance Update al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
+instance Update _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
 
 instance (
 	KnownNat al,
@@ -1153,8 +1153,7 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 
 mainloop :: (
 	Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs,
-	HPList.HomoList '(sdsl, DscStLytArg alm) slyts,
-	HPList.HomoList '() mff,
+	HPList.HomoList '(sdsl, DscStLytArg alm) slyts, HPList.HomoList '() mff,
 	KnownNat alm, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
@@ -1171,8 +1170,8 @@ mainloop :: (
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> UTCTime -> IO ()
-mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
-	vb ib mms dss cbs soss tm0 = do
+mainloop fr w sfc pd qfis dv gq pq
+	sc ex0 vs rp pl gp fbs vb ib mms dss cbs soss tm0 = do
 	($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
 		. ($ ex0) $ fix \go ex (cf :~ cfs) ->
 		GlfwG.pollEvents >>
