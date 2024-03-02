@@ -111,8 +111,6 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
-import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
-
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
@@ -1390,49 +1388,46 @@ updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 			projection = Glm.modifyMat4 1 1 negate
 				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
 
-recordCmdBffr :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alm alv ali nmv nmi . (KnownNat alv, KnownNat ali) =>
-	Vk.CBffr.C scb -> Vk.Extent2d ->
-	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alm] '[] ->
+recordCmdBffr :: forall scb sr sl sg sf
+	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alm .
+	(KnownNat alv, KnownNat ali) =>
+	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alm], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
-	Vk.DscSet.D sds (AtomUbo sdsl alm) ->
-	IO ()
-recordCmdBffr cb sce rp ppllyt gpl fb vb ib ubds =
-	Vk.CBffr.begin cb (def :: Vk.CBffr.BeginInfo 'Nothing 'Nothing) $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
-	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
-	Vk.Cmd.bindVertexBuffers cbb
-		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
-	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
-		(HPList.Singleton $ U2 ubds)
-		(HPList.Singleton (
-			HPList.Nil :** HPList.Nil :**
-			HPList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) 1 0 0 0
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) -> IO ()
+recordCmdBffr cb ex rp pl gp fb vb ib ds =
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
+	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
+	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
+		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
+	Vk.Cmd.bindIndexBuffer cbb
+		$ Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib
+	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
+		(HPList.Singleton $ U2 ds)
+		(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
+	Vk.Cmd.drawIndexed cbb indicesNum 1 0 0 0
 	where
-	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
+	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
 		'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32,
 		'Vk.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPss.BeginInfo {
+	info = Vk.RndrPss.BeginInfo {
 		Vk.RndrPss.beginInfoNext = TMaybe.N,
 		Vk.RndrPss.beginInfoRenderPass = rp,
 		Vk.RndrPss.beginInfoFramebuffer = fb,
 		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
-			Vk.rect2dExtent = sce },
+			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues =
 			Vk.ClearValueColor (fromJust $ rgbaDouble 0 0 0 1) :**
 			Vk.ClearValueDepthStencil (Vk.ClearDepthStencilValue 1 0) :**
 			HPList.Nil }
-
-type AtomUbo s alm = '(s, DscStLytArg alm)
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
@@ -1441,9 +1436,8 @@ catchAndSerialize =
 catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs sis sfs ) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alm] '[] ->
@@ -1462,6 +1456,8 @@ catchAndRecreate w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl fbs drsrcs lo
 	act
 	\_ -> loop =<< recreateAll
 		w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl drsrcs fbs
+
+type AtomUbo s alm = '(s, DscStLytArg alm)
 
 recreateAll :: (
 	Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt,
@@ -1521,6 +1517,8 @@ vertices = GStorable.W <$> [
 	Vertex (Pos . Glm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
 		(Color . Glm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
 		(TexCoord . Glm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
+
+indicesNum = fromIntegral $ length indices
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4]
