@@ -1176,14 +1176,15 @@ mainloop fr w sfc pd qfis dv gq pq
 		. ($ ex0) $ fix \go ex (cf :~ cfs) ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
-		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib
+		run fr w sfc pd qfis dv gq pq
+			sc ex vs rp pl gp fbs vb ib
 			mms dss cbs soss (realToFrac $ tm `diffUTCTime` tm0)
 			cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
 
 run :: (
-	HPList.HomoList '() mff,
-	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
+	HPList.HomoList '() mff, RecreateFrmbffrs svs sfs,
+	Vk.T.FormatToValue fmt,
 	HPList.HomoList '(sdsl, DscStLytArg alm) slyts,
 	KnownNat alm, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
@@ -1201,8 +1202,8 @@ run :: (
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff ->
 	SyncObjs ssoss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
-run fr w sfc pd qfis dv gq pq sc ex
-	vs rp pl gp fbs vb ib mms dss cbs soss tm cf go = do
+run fr w sfc pd qfis dv gq pq
+	sc ex vs rp pl gp fbs vb ib mms dss cbs soss tm cf go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
 		$ draw dv gq pq sc ex rp pl gp fbs vb ib mms dss cbs soss tm cf
 	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
