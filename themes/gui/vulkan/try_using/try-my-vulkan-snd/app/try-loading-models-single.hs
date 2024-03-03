@@ -23,6 +23,7 @@ import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Monad.Trans
 import Control.Exception
 import Data.Kind
 import Gpu.Vulkan.Object.Base qualified as KObj
@@ -67,8 +68,8 @@ import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
@@ -128,9 +129,29 @@ import Vertex.Wavefront
 
 import Data.Text.ToolsYj
 
+import Options.Declarative (Flag, Def, Cmd, run_, get)
+
+import Debug
+
 main :: IO ()
-main = do
-	txfp : mdlfp : _ <- getArgs
+main = run_ realMain
+
+realMain ::
+	Flag "t" '["texture"] "FILEPATH" "texture filepath"
+		(Def "../../../../../files/models/viking_room.png" String) ->
+	Flag "m" '["model"] "FILEPATH" "model filepath"
+		(Def "../../../../../files/models/viking_room.obj" String) ->
+	Cmd "Try Vulkan Texture" ()
+realMain txfp mdlfp = liftIO $ main' (get txfp) (get mdlfp)
+
+{-
+  liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
+	createIst \ist -> bool id (dbgm ist) debug $ body (get txfp) fr w ist
+	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
+	-}
+
+main' :: FilePath -> FilePath -> IO ()
+main' txfp mdlfp = do
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
@@ -182,7 +203,7 @@ createInstance f = do
 		=<< null . (validationLayers \\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
+	extensions <- bool id (Vk.DbgUtls.extensionName :)
 			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	print extensions
@@ -196,7 +217,7 @@ createInstance f = do
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
-			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
+			('Just (Vk.DbgUtls.Msngr.CreateInfo
 				'Nothing '[] ())) 'Nothing
 		createInfo = Vk.Ist.M.CreateInfo {
 			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
@@ -210,27 +231,27 @@ createInstance f = do
 setupDebugMessenger ::
 	Vk.Ist.I si ->
 	IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
+setupDebugMessenger ist f = Vk.DbgUtls.Msngr.create ist
 	debugMessengerCreateInfo nil f
 
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
+debugMessengerCreateInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+debugMessengerCreateInfo = Vk.DbgUtls.Msngr.CreateInfo {
+	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msngr.createInfoFlags = def,
+	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msngr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
+	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
 
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
+debugCallback :: Vk.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
+	("validation layer: " <> Vk.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: FilePath -> FilePath -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run txfp mdlfp w inst g =
