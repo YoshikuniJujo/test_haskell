@@ -102,7 +102,9 @@ apps
 * [x] try-texture-single.hs
 * [x] try-texture.hs
 * [x] try-depth-buffering-single.hs
-* [ ] try-depth-buffering.hs
+* [x] try-depth-buffering.hs
+* [ ] try-loading-models-single.hs
+* [ ] try-loading-models.hs
 * [ ] my-glslc.hs
 * [ ] try-allocation-callbacks.hs
 * [ ] try-copy-descriptor-set.hs
@@ -111,8 +113,6 @@ apps
 * [ ] try-generating-mipmaps.hs
 * [ ] try-hello-world.hs
 * [ ] try-image-buffer.hs
-* [ ] try-loading-models-single.hs
-* [ ] try-loading-models.hs
 * [ ] try-multisampling-single.hs
 * [ ] try-multisampling-use-groups-single.hs
 * [ ] try-multisampling.hs
