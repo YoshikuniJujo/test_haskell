@@ -120,7 +120,6 @@ import Options.Declarative (Flag, Def, Cmd, run_, get)
 import Debug
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
@@ -1435,29 +1434,24 @@ catchAndSerialize =
 
 catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFrmbffrs sis sfs ) =>
+	RecreateFrmbffrs svs sfs ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alm] '[] ->
+	HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc alm], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl fbs drsrcs loop act =
+catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp fbs drs go act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just ()
-		_ -> Nothing)
-	act
-	\_ -> loop =<< recreateAll
-		w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl drsrcs fbs
-
-type AtomUbo s alm = '(s, DscStLytArg alm)
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
+	\_ -> go =<< recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
 recreateAll :: (
 	Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt,
@@ -1470,9 +1464,7 @@ recreateAll :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
-	(	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
-		Vk.Mm.M sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)],
-		Vk.ImgVw.I "depth-buffer" dptfmt sdvw ) ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvs ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp (di, dm, dvw) fbs = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
@@ -1485,9 +1477,9 @@ recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp (di, dm, dvw) fbs = do
 		recreateFrmbffrs dv ex rp vs dvw fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
-waitFramebufferSize (GlfwG.Win.W win) = Glfw.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 vertices :: [WVertex]
@@ -1518,6 +1510,7 @@ vertices = GStorable.W <$> [
 		(Color . Glm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
 		(TexCoord . Glm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
 
+indicesNum :: Word32
 indicesNum = fromIntegral $ length indices
 
 indices :: [Word16]
@@ -1526,43 +1519,36 @@ indices = [0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4]
 type WModelViewProj = GStorable.W ModelViewProj
 
 data ModelViewProj = ModelViewProj {
-	model :: Glm.Mat4,
-	view :: Glm.Mat4,
-	projection :: Glm.Mat4 }
+	model :: Glm.Mat4, view :: Glm.Mat4, projection :: Glm.Mat4 }
 	deriving (Show, Generic)
-
-instance Storable ModelViewProj where
-	sizeOf = GStorable.gSizeOf
-	alignment = GStorable.gAlignment
-	peek = GStorable.gPeek
-	poke = GStorable.gPoke
 
 instance GStorable.G ModelViewProj
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
-newtype MyRgba8 = MyRgba8 PixelRGBA8
+newtype PixelRgba8 = PixelRgba8 PixelRGBA8
 
-instance Storable MyRgba8 where
+instance Storable PixelRgba8 where
 	sizeOf _ = 4 * sizeOf @Pixel8 undefined
 	alignment _ = alignment @Pixel8 undefined
-	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
-		<$> peekArray 4 (castPtr p)
-	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+	peek p = PixelRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a)
+		. listToTuple4 <$> peekArray 4 (castPtr p)
+	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
 
 instance BObj.IsImage ImageRgba8 where
-	type ImagePixel ImageRgba8 = MyRgba8
-	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
+	type ImagePixel ImageRgba8 = PixelRgba8
+	type ImageFormat ImageRgba8 = TxFmt
 	imageRow = BObj.imageWidth
-	imageWidth (ImageRgba8 img) = fromIntegral $ imageWidth img
-	imageHeight (ImageRgba8 img) = fromIntegral $ imageHeight img
+	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
+	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
 	imageDepth _ = 1
-	imageBody (ImageRgba8 img) = (<$> [0 .. imageHeight img - 1]) \y ->
-		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	imageMake w h _d pss = ImageRgba8
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
-		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
+	imageBody (ImageRgba8 i) = (<$> [0 .. imageHeight i - 1]) \y ->
+		(<$> [0 .. imageWidth i - 1]) \x -> PixelRgba8 $ pixelAt i x y
+	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
+		ImageRgba8 $ generateImage
+			(\x y -> let PixelRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 [glslVertexShader|
 
