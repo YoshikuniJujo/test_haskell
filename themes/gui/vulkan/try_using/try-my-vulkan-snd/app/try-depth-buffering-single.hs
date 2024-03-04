@@ -210,7 +210,7 @@ body txfp fr w ist =
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
 	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
-	createDptRsrcs @dfmt pd d gq cp ex \di dm dv ->
+	createDptRsrcs @dfmt pd d gq cp ex \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
@@ -227,7 +227,7 @@ body txfp fr w ist =
 	createSyncObjs d \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq cp
-		sc ex scvs rp pl gp fbs (di, dm, dv) vb ib mbm ds cb sos
+		sc ex scvs rp pl gp fbs drs vb ib mbm ds cb sos
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -416,9 +416,7 @@ dptFmt pd tl a = (`Vk.T.formatToType` a) =<< spprt
 createDptRsrcs :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
 	(forall sm si sv .
-		Vk.Img.Binded sm si nm fmt ->
-		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt) ] ->
-		Vk.ImgVw.I nm fmt sv -> IO a) -> IO a
+		DptRsrcs si sm nm fmt sv -> IO a) -> IO a
 createDptRsrcs pd dv gq cp (Vk.Extent2d w h) a =
 	prepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
@@ -426,14 +424,15 @@ createDptRsrcs pd dv gq cp (Vk.Extent2d w h) a =
 	Vk.ImgVw.create dv (imgVwInfo di Vk.Img.AspectDepthBit) nil \dvw ->
 	transitionImgLyt dv gq cp di Vk.Img.LayoutUndefined
 		Vk.Img.LayoutDepthStencilAttachmentOptimal >>
-	a di dm dvw
+	a (di, dm, dvw)
 
 recreateDptRsrcs :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
-	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] ->
-	Vk.ImgVw.I nm fmt sdvw -> IO ()
-recreateDptRsrcs pd dv gq cp (Vk.Extent2d w h) di dm dvw = do
+	(
+		Vk.Img.Binded sm sb nm fmt,
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)],
+		Vk.ImgVw.I nm fmt sdvw ) -> IO ()
+recreateDptRsrcs pd dv gq cp (Vk.Extent2d w h) (di, dm, dvw) = do
 	reprepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 		Vk.Mm.PropertyDeviceLocalBit w h di dm
@@ -1184,20 +1183,18 @@ mainloop :: (
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	(	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
-		Vk.Mm.M sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)],
-		Vk.ImgVw.I "depth-buffer" dptfmt sdvw ) ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm nmm alm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
 mainloop fr w sf pd qfis d gq pq cp sc ex0 vs rp pl gp fbs
-	(di, dm, dv) vb ib mm ds cb sos tm0 = do
+	drs vb ib mm ds cb sos tm0 = do
 	($ ex0) $ fix \go ex ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
-		run fr w sf pd qfis d gq pq cp sc ex vs rp pl gp fbs di dm dv vb
+		run fr w sf pd qfis d gq pq cp sc ex vs rp pl gp fbs drs vb
 			ib mm ds cb sos (realToFrac $ tm `diffUTCTime` tm0) go
 	Vk.Dvc.waitIdle d
 
@@ -1215,9 +1212,7 @@ run :: (
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
-	Vk.Mm.M sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I "depth-buffer" dptfmt sdvw ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm nmm alm ->
@@ -1225,13 +1220,13 @@ run :: (
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
 run fr w sfc pd qfis dv gq pq cp sc ex vs rp pl gp fbs
-	di dm dvw vb ib mm ds cb sos tm go = do
-	catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp di dm dvw fbs go
+	drs vb ib mm ds cb sos tm go = do
+	catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs go
 		$ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb sos tm
 	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
 		(True, _) -> pure (); (_, False) -> go ex
 		(_, _) -> go =<< recreateAll
-			w sfc pd qfis dv gq cp sc vs rp pl gp di dm dvw fbs
+			w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
 draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
 	smm sbm alm nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
@@ -1346,16 +1341,14 @@ catchAndRecreate :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
-	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
-	Vk.Mm.M sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I "depth-buffer" dptfmt sdvw ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp di dm dvw fbs go a =
+catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs go a =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just (); _ -> Nothing) a
 	\_ -> go =<< recreateAll
-		w sfc pd qfis dv gq cp sc vs rp pl gp di dm dvw fbs
+		w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
 recreateAll :: (
 	Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt,
@@ -1368,17 +1361,15 @@ recreateAll :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
-	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
-	Vk.Mm.M sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I "depth-buffer" dptfmt sdvw ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp di dm dvw fbs = do
+recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs@(_, _, dvw) fbs = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
 
 	ex <- recreateSwpch w sfc pd qfis dv sc
 	ex <$ do
 		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
-		recreateDptRsrcs pd dv gq cp ex di dm dvw
+		recreateDptRsrcs pd dv gq cp ex drs
 		recreateGrPpl dv ex rp pl gp
 		recreateFrmbffrs dv ex rp vs dvw fbs
 
