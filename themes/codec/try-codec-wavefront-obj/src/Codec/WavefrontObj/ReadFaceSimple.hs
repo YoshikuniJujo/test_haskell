@@ -14,7 +14,7 @@ module Codec.WavefrontObj.ReadFaceSimple (
 	-- * POSITIONS, TEXTURE COORDINATES AND NORMALS
 
 	pos, posTex, posNormal, posTexNormal,
-	Position(..), TexCoord(..), Normal(..),
+	Position(..), TexCoord(..), Normal(..), Face(..), Indices
 
 	) where
 
