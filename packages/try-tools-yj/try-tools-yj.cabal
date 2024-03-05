@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-tools-yj
-version:        0.1.0.10
+version:        0.1.0.11
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-tools-yj#readme>
 homepage:       https://github.com/YoshikuniJujo/try-tools-yj#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-tools-yj/issues
@@ -33,6 +33,7 @@ library
       Data.List.ToolsYj
       Data.Maybe.ToolsYj
       Data.Ord.ToolsYj
+      Data.Sequences.ToolsYj
       Data.Text.ToolsYj
       Data.Tuple.ToolsYj
   other-modules:
@@ -44,7 +45,9 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , containers
     , data-default
+    , mono-traversable
     , stm
     , text
   default-language: Haskell2010
@@ -61,7 +64,9 @@ test-suite try-tools-yj-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , containers
     , data-default
+    , mono-traversable
     , stm
     , text
     , try-tools-yj
