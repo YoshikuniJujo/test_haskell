@@ -9,42 +9,26 @@ module Vertex.Wavefront (
 
 	-- * FUNCTIONS
 
-	verticesIndices,
+	readVertices
 
 	) where
 
+import Foreign.Storable.Generic qualified as GStorable
 import Data.List.Length
-import Data.Word
-
-import qualified Data.Vector.Storable as V
-import qualified Data.ByteString as BS
-import qualified Foreign.Storable.Generic as GStorable
-
-import qualified Vertex as Vtx
-import Gpu.Vulkan.Cglm qualified as Cglm
-
+import Data.Vector.Storable qualified as V
+import Data.ByteString qualified as BS
 import Codec.WavefrontObj.ReadFaceSimple qualified as Wf.Read
 
-verticesIndices ::
-	FilePath -> IO (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
-verticesIndices fp =
-	either error pure =<< readVerticesIndices <$> BS.readFile fp
-	where
-	readVerticesIndices :: BS.ByteString ->
-		Either String (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
-	readVerticesIndices bs =
-		(\vs -> (vs, makeIndices vs)) <$> readVertices bs
-	makeIndices :: V.Vector (GStorable.W Vtx.Vertex) -> V.Vector Word32
-	makeIndices vs = V.generate (V.length vs) \i -> fromIntegral i
+import Gpu.Vulkan.Cglm qualified as Cglm
+import Vertex qualified as Vtx
 
-type W = GStorable.W
 
-readVertices :: BS.ByteString -> Either String (V.Vector (GStorable.W Vtx.Vertex))
-readVertices bs =
-	V.map posTexToVertex <$> Wf.Read.posTex (Wf.Read.r bs)
-	where
-	posTexToVertex :: W (W Wf.Read.Position, W Wf.Read.TexCoord) -> W Vtx.Vertex
-	posTexToVertex (GStorable.W (
+readVertices :: FilePath -> IO (V.Vector (GStorable.W Vtx.Vertex))
+readVertices fp = either error pure =<< vertices <$> BS.readFile fp
+
+vertices :: BS.ByteString -> Either String (V.Vector (GStorable.W Vtx.Vertex))
+vertices bs = V.map tov <$> Wf.Read.posTex (Wf.Read.r bs)
+	where tov (GStorable.W (
 		GStorable.W (Wf.Read.Position x y z),
 		GStorable.W (Wf.Read.TexCoord u v) )) = GStorable.W $ Vtx.Vertex
 		(Vtx.Pos . Cglm.Vec3 $ x :. y :. z :. NilL)

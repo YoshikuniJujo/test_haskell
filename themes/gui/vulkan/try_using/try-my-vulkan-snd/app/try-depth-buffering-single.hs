@@ -573,6 +573,7 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 
 type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
+type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
 type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1025,16 +1026,15 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
-type ModelViewProjMemory sm sb mnm alm =
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
-type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
-
 createMvpBffr :: KnownNat alm => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj alm] ->
 	ModelViewProjMemory sm sb mnm alm -> IO b) -> IO b
 createMvpBffr = createBffrAtm
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+
+type ModelViewProjMemory sm sb mnm alm =
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
 
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -1186,7 +1186,7 @@ mainloop :: (
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
+	ModelViewProjMemory smm sbm bnmm alm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
 mainloop fr w sf pd qfis d gq pq cp sc ex0 vs rp pl gp fbs
@@ -1194,8 +1194,8 @@ mainloop fr w sf pd qfis d gq pq cp sc ex0 vs rp pl gp fbs
 	($ ex0) $ fix \go ex ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
-		run fr w sf pd qfis d gq pq cp sc ex vs rp pl gp fbs drs vb
-			ib mm ds cb sos (realToFrac $ tm `diffUTCTime` tm0) go
+		run fr w sf pd qfis d gq pq cp sc ex vs rp pl gp fbs drs vb ib
+			mm ds cb sos (realToFrac $ tm `diffUTCTime` tm0) go
 	Vk.Dvc.waitIdle d
 
 run :: (
@@ -1215,7 +1215,7 @@ run :: (
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
+	ModelViewProjMemory smm sbm bnmm alm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
@@ -1229,7 +1229,7 @@ run fr w sfc pd qfis dv gq pq cp sc ex vs rp pl gp fbs
 			w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
 draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
-	smm sbm alm nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
+	smm sbm bnmm alm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
 	(KnownNat alm, KnownNat alv, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1241,7 +1241,7 @@ draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
+	ModelViewProjMemory smm sbm bnmm alm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
 draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do

@@ -1294,12 +1294,11 @@ createTextureSampler phdv dvc mplvs mnld f = do
 
 loadModel :: FilePath -> IO (V.Vector (GStorable.W Vertex), V.Vector Word32)
 loadModel fp = do
-	(vtcs, idcs) <- verticesIndices fp
+	vtcs <- readVertices fp
 	let	(vtcs', idcs') = indexingVector vtcs
 	putStrLn "LOAD MODEL"
 	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector (GStorable.W Vertex)))
 	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector (GStorable.W Vertex)))
-	putStrLn $ "idcs : " ++ show (V.length (idcs :: V.Vector Word32))
 	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector Word32))
 	pure (vtcs', idcs')
 
