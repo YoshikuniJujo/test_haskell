@@ -103,7 +103,7 @@ apps
 * [x] try-texture.hs
 * [x] try-depth-buffering-single.hs
 * [x] try-depth-buffering.hs
-* [ ] try-loading-models-single.hs
+* [x] try-loading-models-single.hs
 * [ ] try-loading-models.hs
 * [ ] my-glslc.hs
 * [ ] try-allocation-callbacks.hs
