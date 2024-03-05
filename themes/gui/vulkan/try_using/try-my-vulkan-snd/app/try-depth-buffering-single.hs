@@ -1268,13 +1268,13 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
-updateModelViewProj :: forall sd smm sbm nmm alm . KnownNat alm =>
-	Vk.Dvc.D sd -> ModelViewProjMemory smm sbm nmm alm ->
+updateModelViewProj :: forall sd smm sbm bnmm alm . KnownNat alm =>
+	Vk.Dvc.D sd -> ModelViewProjMemory smm sbm bnmm alm ->
 	Vk.Extent2d -> Float -> IO ()
 updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) dv mm zeroBits
+	Vk.Mm.write @bnmm @(VObj.Atom alm WModelViewProj 'Nothing) dv mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
@@ -1285,7 +1285,8 @@ updateModelViewProj dv mm Vk.Extent2d {
 			projection = Glm.modifyMat4 1 1 negate
 				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
 
-recordCmdBffr :: forall scb sr sf sl sg smv sbv bnmv smi sbi bnmi sdsl sds alm alv ali nmv nmi .
+recordCmdBffr :: forall
+	scb sr sf sl sg smv sbv bnmv smi sbi bnmi sdsl sds alm alv ali nmv nmi .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
