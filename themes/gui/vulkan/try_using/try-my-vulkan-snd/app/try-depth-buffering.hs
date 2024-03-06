@@ -214,7 +214,7 @@ body txfp fr w ist =
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
 	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
-	createDptRsrcs @dfmt pd d gq cp ex \di dm dv ->
+	createDptRsrcs @dfmt pd d gq cp ex \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
@@ -232,7 +232,7 @@ body txfp fr w ist =
 	createSyncObjs @mff d \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq cp
-		sc ex scvs rp pl gp fbs (di, dm, dv) vb ib mbms dss cbs sos
+		sc ex scvs rp pl gp fbs drs vb ib mbms dss cbs sos
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
@@ -432,9 +432,7 @@ dptFmt pd tl a = (`Vk.T.formatToType` a) =<< spprt
 createDptRsrcs :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
 	(forall sm si sv .
-		Vk.Img.Binded sm si nm fmt ->
-		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt) ] ->
-		Vk.ImgVw.I nm fmt sv -> IO a) -> IO a
+		DptRsrcs si sm nm fmt sv -> IO a) -> IO a
 createDptRsrcs pd dv gq cp (Vk.Extent2d w h) a =
 	prepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
@@ -442,14 +440,12 @@ createDptRsrcs pd dv gq cp (Vk.Extent2d w h) a =
 	Vk.ImgVw.create dv (imgVwInfo di Vk.Img.AspectDepthBit) nil \dvw ->
 	transitionImgLyt dv gq cp di Vk.Img.LayoutUndefined
 		Vk.Img.LayoutDepthStencilAttachmentOptimal >>
-	a di dm dvw
+	a (di, dm, dvw)
 
 recreateDptRsrcs :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
-	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] ->
-	Vk.ImgVw.I nm fmt sdvw -> IO ()
-recreateDptRsrcs pd dv gq cp (Vk.Extent2d w h) di dm dvw = do
+	DptRsrcs sb sm nm fmt sdvw -> IO ()
+recreateDptRsrcs pd dv gq cp (Vk.Extent2d w h) (di, dm, dvw) = do
 	reprepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 		Vk.Mm.PropertyDeviceLocalBit w h di dm
@@ -1460,13 +1456,13 @@ recreateAll :: (
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvs ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp (di, dm, dvw) fbs = do
+recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs@(_, _, dvw) fbs = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
 
 	ex <- recreateSwpch w sfc pd qfis dv sc
 	ex <$ do
 		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
-		recreateDptRsrcs pd dv gq cp ex di dm dvw
+		recreateDptRsrcs pd dv gq cp ex drs
 		recreateGrPpl dv ex rp pl gp
 		recreateFrmbffrs dv ex rp vs dvw fbs
 
