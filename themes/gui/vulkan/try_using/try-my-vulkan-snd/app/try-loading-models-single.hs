@@ -439,10 +439,7 @@ createDptRsrcs pd dv gq cp (Vk.Extent2d w h) a =
 
 recreateDptRsrcs :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
-	(
-		Vk.Img.Binded sm sb nm fmt,
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)],
-		Vk.ImgVw.I nm fmt sdvw ) -> IO ()
+	DptRsrcs sb sm nm fmt sdvw -> IO ()
 recreateDptRsrcs pd dv gq cp (Vk.Extent2d w h) (di, dm, dvw) = do
 	reprepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
