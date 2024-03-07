@@ -161,9 +161,6 @@ type FramebufferResized = IORef Bool
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
-vldLayers :: [Vk.LayerName]
-vldLayers = [Vk.layerKhronosValidation]
-
 withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
 withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
 
@@ -210,6 +207,9 @@ createIst f = do
 		Vk.applicationInfoEngineName = "No Engine",
 		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
 dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
 dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
