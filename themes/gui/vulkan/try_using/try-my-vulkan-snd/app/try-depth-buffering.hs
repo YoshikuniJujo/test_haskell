@@ -1444,7 +1444,7 @@ catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp fbs drs go act =
 
 recreateAll :: (
 	Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt,
-	RecreateFrmbffrs svs sfs) =>
+	RecreateFrmbffrs svs sfs ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Khr.Swpch.S fmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->

@@ -104,33 +104,33 @@ apps
 * [x] try-depth-buffering-single.hs
 * [x] try-depth-buffering.hs
 * [x] try-loading-models-single.hs
-* [ ] try-loading-models.hs
-* [ ] my-glslc.hs
-* [ ] try-allocation-callbacks.hs
-* [ ] try-copy-descriptor-set.hs
-* [ ] try-dynamic-dsc-sets.hs
+* [x] try-loading-models.hs
 * [ ] try-generating-mipmaps-single.hs
 * [ ] try-generating-mipmaps.hs
-* [ ] try-hello-world.hs
-* [ ] try-image-buffer.hs
 * [ ] try-multisampling-single.hs
-* [ ] try-multisampling-use-groups-single.hs
 * [ ] try-multisampling.hs
-* [ ] try-no-dynamic-dsc-sets.hs
-* [ ] try-pipeline-cache.hs
-* [ ] try-query.hs
-* [ ] try-saitan-float.hs
+* [ ] try-multisampling-use-groups-single.hs
+* [ ] try-hello-world.hs
+* [ ] try-vulkan-guide-dynamic.hs
+* [ ] try-vulkan-guide-storage.hs
+* [ ] try-vulkan-guide-texture.hs
+* [ ] try-vulkan-guide.hs
+* [ ] try-yatteiku.hs
 * [ ] try-saitan-simple.hs
 * [ ] try-saitan.hs
-* [ ] try-shaderc.hs
+* [ ] try-saitan-float.hs
 * [ ] try-texel-buffer-float.hs
 * [ ] try-texel-buffer-word32.hs
 * [ ] try-texture-descriptor-set-group-single.hs
 * [ ] try-texture-image-manager-single.hs
 * [ ] try-texture-immutable-sampler-single.hs
-* [ ] try-vulkan-guide-dynamic.hs
-* [ ] try-vulkan-guide-storage.hs
-* [ ] try-vulkan-guide-texture.hs
-* [ ] try-vulkan-guide.hs
+* [ ] my-glslc.hs
+* [ ] try-allocation-callbacks.hs
+* [ ] try-copy-descriptor-set.hs
+* [ ] try-dynamic-dsc-sets.hs
+* [ ] try-image-buffer.hs
+* [ ] try-no-dynamic-dsc-sets.hs
+* [ ] try-pipeline-cache.hs
+* [ ] try-query.hs
+* [ ] try-shaderc.hs
 * [ ] try-wavefront-obj.hs
-* [ ] try-yatteiku.hs
