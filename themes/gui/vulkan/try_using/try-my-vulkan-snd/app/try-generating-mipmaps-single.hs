@@ -236,7 +236,7 @@ body txfp mdlfp mnld g w@(GlfwG.Win.W win) ist =
 	createLgDvc pd qfis \d gq pq ->
 	createCmdPl qfis d \cp ->
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
-	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
+	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis 1 \scvs ->
 	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
 	createDptRsrcs @dfmt pd d gq cp ex \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d \rp ->
@@ -493,26 +493,26 @@ chooseSwapExtent win caps
 	x = Vk.Khr.Sfc.M.capabilitiesMaxImageExtent caps
 
 createImgVws :: Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss inm fmt] ->
+	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss inm fmt] -> Word32 ->
 	(forall si . HPList.PL (Vk.ImgVw.I inm fmt) si -> IO a) -> IO a
-createImgVws _dv [] f = f HPList.Nil
-createImgVws dv (i : is) f =
-	Vk.ImgVw.create dv (imgVwInfo i Vk.Img.AspectColorBit) nil \v ->
-	createImgVws dv is \vs -> f $ v :** vs
+createImgVws _dv [] _ml f = f HPList.Nil
+createImgVws dv (i : is) ml f =
+	Vk.ImgVw.create dv (imgVwInfo i Vk.Img.AspectColorBit ml) nil \v ->
+	createImgVws dv is ml \vs -> f $ v :** vs
 
 recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
-	[Vk.Img.Binded ss ss inm fmt] ->
+	[Vk.Img.Binded ss ss inm fmt] -> Word32 ->
 	HPList.PL (Vk.ImgVw.I inm fmt) sis -> IO ()
-recreateImgVws _dv [] HPList.Nil = pure ()
-recreateImgVws dv (i : is) (v :** vs) =
-	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit) nil v >>
-	recreateImgVws dv is vs
-recreateImgVws _ _ _ =
+recreateImgVws _dv [] _ml HPList.Nil = pure ()
+recreateImgVws dv (i : is) ml (v :** vs) =
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit ml) nil v >>
+	recreateImgVws dv is ml vs
+recreateImgVws _ _ _ _ =
 	error "number of Vk.Image.I and Vk.ImageView.I should be same"
 
-imgVwInfo :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
-imgVwInfo i a = Vk.ImgVw.CreateInfo {
+imgVwInfo i a ml = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
 	Vk.ImgVw.createInfoFlags = zeroBits,
 	Vk.ImgVw.createInfoImage = i,
@@ -521,7 +521,7 @@ imgVwInfo i a = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = a,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeLevelCount = ml,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
 
@@ -898,10 +898,10 @@ createDptRsrcs :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 createDptRsrcs pd dv gq cp (Vk.Extent2d w h) a =
 	prepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
-		Vk.Mm.PropertyDeviceLocalBit w h \di dm ->
-	Vk.ImgVw.create dv (imgVwInfo di Vk.Img.AspectDepthBit) nil \dvw ->
+		Vk.Mm.PropertyDeviceLocalBit w h 1 \di dm ->
+	Vk.ImgVw.create dv (imgVwInfo di Vk.Img.AspectDepthBit 1) nil \dvw ->
 	transitionImgLyt dv gq cp di Vk.Img.LayoutUndefined
-		Vk.Img.LayoutDepthStencilAttachmentOptimal >>
+		Vk.Img.LayoutDepthStencilAttachmentOptimal 1 >>
 	a (di, dm, dvw)
 
 recreateDptRsrcs :: Vk.T.FormatToValue fmt =>
@@ -910,10 +910,10 @@ recreateDptRsrcs :: Vk.T.FormatToValue fmt =>
 recreateDptRsrcs pd dv gq cp (Vk.Extent2d w h) (di, dm, dvw) = do
 	reprepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
-		Vk.Mm.PropertyDeviceLocalBit w h di dm
-	Vk.ImgVw.unsafeRecreate dv (imgVwInfo di Vk.Img.AspectDepthBit) nil dvw
+		Vk.Mm.PropertyDeviceLocalBit w h 1 di dm
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo di Vk.Img.AspectDepthBit 1) nil dvw
 	transitionImgLyt dv gq cp di Vk.Img.LayoutUndefined
-		Vk.Img.LayoutDepthStencilAttachmentOptimal
+		Vk.Img.LayoutDepthStencilAttachmentOptimal 1
 
 type DptRsrcs sb sm nm fmt svw = (
 	Vk.Img.Binded sm sb nm fmt,
@@ -921,13 +921,14 @@ type DptRsrcs sb sm nm fmt svw = (
 
 prepareImg :: forall sd nm fmt a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> Word32 -> Word32 ->
+	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits ->
+	Word32 -> Word32 -> Word32 ->
 	(forall si sm .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)] -> IO a) ->
 	IO a
-prepareImg pd dv tl us pr w h a =
-	Vk.Img.create @'Nothing dv (imgInfo w h tl us) nil \i -> do
+prepareImg pd dv tl us pr w h ml a =
+	Vk.Img.create @'Nothing dv (imgInfo w h ml tl us) nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
 	Vk.Mm.allocateBind @'Nothing dv
@@ -936,25 +937,26 @@ prepareImg pd dv tl us pr w h a =
 
 reprepareImg :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags -> Word32 -> Word32 ->
+	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
+	Word32 -> Word32 -> Word32 ->
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
-reprepareImg pd dv tl us pr w h i m = do
-	Vk.Img.unsafeRecreate @'Nothing dv (imgInfo w h tl us) nil i
+reprepareImg pd dv tl us pr w h ml i m = do
+	Vk.Img.unsafeRecreate @'Nothing dv (imgInfo w h ml tl us) nil i
 	rqs <- Vk.Img.getMemoryRequirementsBinded dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
 	Vk.Mm.unsafeReallocateBind @'Nothing dv
 		(HPList.Singleton . U2 $ Vk.Mm.ImageBinded i) (memInfo mt) nil m
 
-imgInfo :: Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
+imgInfo :: Word32 -> Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
 	Vk.Img.CreateInfo 'Nothing fmt
-imgInfo w h tl us = Vk.Img.CreateInfo {
+imgInfo w h ml tl us = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNext = TMaybe.N,
 		Vk.Img.createInfoImageType = Vk.Img.Type2d,
 		Vk.Img.createInfoExtent = Vk.Extent3d {
 			Vk.extent3dWidth = w, Vk.extent3dHeight = h,
 			Vk.extent3dDepth = 1 },
-		Vk.Img.createInfoMipLevels = 1,
+		Vk.Img.createInfoMipLevels = ml,
 		Vk.Img.createInfoArrayLayers = 1,
 		Vk.Img.createInfoTiling = tl,
 		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined,
@@ -971,8 +973,8 @@ memInfo mt = Vk.Mm.AllocateInfo {
 
 transitionImgLyt :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Img.Binded sm si nm fmt ->
-	Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImgLyt dv gq cp i ol nl = singleTimeCmds dv gq cp \cb ->
+	Vk.Img.Layout -> Vk.Img.Layout -> Word32 -> IO ()
+transitionImgLyt dv gq cp i ol nl ml = singleTimeCmds dv gq cp \cb ->
 	Vk.Cmd.pipelineBarrier cb ss ds
 		zeroBits HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
 	where
@@ -989,7 +991,7 @@ transitionImgLyt dv gq cp i ol nl = singleTimeCmds dv gq cp \cb ->
 	srr = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = asps,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeLevelCount = ml,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 }
 	asps = case nl of
@@ -1101,8 +1103,10 @@ createTextureImage phdvc dvc gq cp fp f = do
 		hgt_ = imageHeight img
 		wdt = fromIntegral wdt_
 		hgt = fromIntegral hgt_
-		mipLevels :: Word32 = floor @Double . logBase 2
-			$ max (fromIntegral wdt_) (fromIntegral hgt_)
+		mipLevels :: Word32 =
+			floor @Double (logBase 2
+				$ max (fromIntegral wdt_) (fromIntegral hgt_)) +
+			1
 	print (mipLevels :: Word32)
 	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt mipLevels Vk.Img.TilingOptimal
 		(	Vk.Img.UsageTransferSrcBit .|.
