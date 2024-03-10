@@ -225,7 +225,7 @@ body txfp mdlfp fr w ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs dv \fbs ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
-	createImg pd d gq cp (ImageRgba8 txi) \tx ->
+	createTxImg pd d gq cp (ImageRgba8 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit) nil \tv ->
 	createTxSmplr pd d \txsp ->
 	indexing <$> readVertices mdlfp >>=
@@ -787,12 +787,12 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-createImg :: forall sd scp img inm a .
+createTxImg :: forall sd scp img inm a .
 	(BObj.IsImage img, Vk.T.FormatToValue (BObj.ImageFormat img)) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> img ->
 	(forall si sm .
 		Vk.Img.Binded sm si inm (BObj.ImageFormat img) -> IO a) -> IO a
-createImg pd dv gq cp img a = prepareImg pd dv Vk.Img.TilingOptimal
+createTxImg pd dv gq cp img a = prepareImg pd dv Vk.Img.TilingOptimal
 	(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 	Vk.Mm.PropertyDeviceLocalBit w h \i _m -> do
 	createBffrImg pd dv

@@ -245,7 +245,7 @@ body txfp mdlfp mnld g w@(GlfwG.Win.W win) ist =
 	createFrmbffrs d ex rp scvs dv \fbs ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
 	let	mplvs = calcMipLevels txi in
-	createImg pd d gq cp (ImageRgba8 txi) mplvs \tx ->
+	createTxImg pd d gq cp (ImageRgba8 txi) mplvs \tx ->
 	generateMipmaps pd d gq cp tx mplvs >>
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tx Vk.Img.AspectColorBit mplvs \tximgvw ->
 	createTextureSampler pd d mplvs mnld \txsmplr ->
@@ -1218,13 +1218,13 @@ dptFmt pd tl a = (`Vk.T.formatToType` a) =<< spprt
 		_ -> error "no such image tiling"
 	emsg = "failed to find supported format!"
 
-createImg :: forall sd scp img inm a .
+createTxImg :: forall sd scp img inm a .
 	(BObj.IsImage img, Vk.T.FormatToValue (BObj.ImageFormat img)) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> img ->
 	MipLevels ->
 	(forall si sm .
 		Vk.Img.Binded sm si inm (BObj.ImageFormat img) -> IO a) -> IO a
-createImg pd dv gq cp img (mplvs, _, _) a = prepareImg pd dv Vk.Img.TilingOptimal
+createTxImg pd dv gq cp img (mplvs, _, _) a = prepareImg pd dv Vk.Img.TilingOptimal
 	(	Vk.Img.UsageTransferSrcBit .|.
 		Vk.Img.UsageTransferDstBit .|.
 		Vk.Img.UsageSampledBit )
