@@ -120,7 +120,7 @@ import qualified Gpu.Vulkan.Sampler as Vk.Smplr
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
-import Tools (clampOld, readRgba8)
+import Tools (clampOld)
 import Vertex
 import Vertex.Wavefront
 
@@ -244,17 +244,17 @@ body txfp mdlfp mnld g w@(GlfwG.Win.W win) ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs dv \fbs ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
-	let	mplvs = calcMipLevels txi in
+	let	mplvs@(mplvs', _, _) = calcMipLevels txi in
 	createTxImg pd d gq cp (ImageRgba8 txi) mplvs \tx ->
 	generateMipmaps pd d gq cp tx mplvs >>
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tx Vk.Img.AspectColorBit mplvs \tximgvw ->
+	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit mplvs') nil \tv ->
 	createTextureSampler pd d mplvs mnld \txsmplr ->
 	loadModel mdlfp >>= \(vtcs, idcs) ->
 	createVertexBuffer pd d gq cp vtcs \vb ->
 	createIndexBuffer pd d gq cp idcs \ib ->
 	createUniformBuffer pd d \ub ubm ->
 	createDescriptorPool d \dscp ->
-	createDescriptorSet d dscp ub tximgvw txsmplr dsl \ubds ->
+	createDescriptorSet d dscp ub tv txsmplr dsl \ubds ->
 	createCommandBuffer d cp \cb ->
 	createSyncObjects d \sos ->
 	getCurrentTime >>= \tm ->
@@ -533,14 +533,6 @@ recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
-
-createImageView :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
-	Vk.Img.AspectFlags -> MipLevels ->
-	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
-createImageView dvc timg asps (mplvs, _, _) f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfo timg asps mplvs) nil f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
