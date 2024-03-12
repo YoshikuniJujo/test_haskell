@@ -105,16 +105,16 @@ apps
 * [x] try-depth-buffering.hs
 * [x] try-loading-models-single.hs
 * [x] try-loading-models.hs
-* [ ] try-generating-mipmaps-single.hs
+* [x] try-generating-mipmaps-single.hs
 * [ ] try-generating-mipmaps.hs
 * [ ] try-multisampling-single.hs
 * [ ] try-multisampling.hs
 * [ ] try-multisampling-use-groups-single.hs
-* [ ] try-hello-world.hs
-* [ ] try-vulkan-guide-dynamic.hs
-* [ ] try-vulkan-guide-storage.hs
-* [ ] try-vulkan-guide-texture.hs
 * [ ] try-vulkan-guide.hs
+* [ ] try-vulkan-guide-texture.hs
+* [ ] try-vulkan-guide-storage.hs
+* [ ] try-vulkan-guide-dynamic.hs
+* [ ] try-hello-world.hs
 * [ ] try-yatteiku.hs
 * [ ] try-saitan-simple.hs
 * [ ] try-saitan.hs
