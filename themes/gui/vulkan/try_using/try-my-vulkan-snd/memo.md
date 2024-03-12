@@ -109,11 +109,11 @@ apps
 * [ ] try-generating-mipmaps.hs
 * [ ] try-multisampling-single.hs
 * [ ] try-multisampling.hs
-* [ ] try-multisampling-use-groups-single.hs
 * [ ] try-vulkan-guide.hs
 * [ ] try-vulkan-guide-texture.hs
 * [ ] try-vulkan-guide-storage.hs
 * [ ] try-vulkan-guide-dynamic.hs
+* [ ] try-multisampling-use-groups-single.hs
 * [ ] try-hello-world.hs
 * [ ] try-yatteiku.hs
 * [ ] try-saitan-simple.hs
