@@ -11,9 +11,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
+import Gpu.Vulkan.Memory qualified as Vk.Mem
 
 import GHC.Generics
 import Foreign.Ptr
@@ -36,7 +36,7 @@ import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
 import Data.TypeLevel.Tuple.Uncurry
-import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
@@ -51,88 +51,96 @@ import Data.Time
 import System.Environment
 import Codec.Picture
 
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Vector.Storable as V
-import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
-import qualified Gpu.Vulkan.Cglm as Cglm
-import qualified Foreign.Storable.Generic as GStorable
+import Data.List.NonEmpty qualified as NE
+import Data.Vector.Storable qualified as V
+import Data.Text.IO qualified as Txt
+import Graphics.UI.GLFW qualified as Glfw hiding (createWindowSurface)
+import Gpu.Vulkan.Khr.Surface.Glfw qualified as Glfw
+import Gpu.Vulkan.Cglm qualified as Cglm
+import Foreign.Storable.Generic qualified as GStorable
 
 import ThEnv
-import qualified Language.SpirV as SpirV
+import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 
 import Data.TypeLevel.ParMaybe (nil)
 
-import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.TypeEnum as Vk.T
-import qualified Gpu.Vulkan.Exception as Vk
-import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
-import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
-import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Exception qualified as Vk
+import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
+import Gpu.Vulkan.Instance qualified as Vk.Ist.M
+import Gpu.Vulkan.Khr qualified as Vk.Khr
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
+import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
 
-import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.Device as Vk.Dvc.M
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface.M
-import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
+import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Device qualified as Vk.Dvc.M
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface.M
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
 	Vk.Khr.Surface.PhysicalDevice
-import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
-import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.Image as Vk.Img.M
-import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
-import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
-import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
-import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MltSmplSt
-import qualified Gpu.Vulkan.Sample as Vk.Sample
-import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
-import qualified Gpu.Vulkan.ColorComponent as Vk.ClrCmp
-import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
-import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Layout
-import qualified Gpu.Vulkan.Attachment as Vk.Att
-import qualified Gpu.Vulkan.Subpass as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr.M
-import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
-import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
-import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.Memory as Vk.Mem.M
-import qualified Gpu.Vulkan.Queue as Vk.Queue
-import qualified Gpu.Vulkan.Cmd as Vk.Cmd
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
+import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.Image qualified as Vk.Img.M
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Component qualified as Vk.Component
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
+import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
+import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
+import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Layout
+import Gpu.Vulkan.Attachment qualified as Vk.Att
+import Gpu.Vulkan.Subpass qualified as Vk.Subpass
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPass.M
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr.M
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.Memory qualified as Vk.Mem.M
+import Gpu.Vulkan.Queue qualified as Vk.Queue
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 
-import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
-import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPool
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 
-import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
+import Gpu.Vulkan.Memory qualified as Vk.Dvc.Mem.ImageBuffer
 
-import qualified Gpu.Vulkan.Sampler as Vk.Smplr
-import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
-import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr.M
+import Gpu.Vulkan.Pipeline.DepthStencilState qualified as Vk.Ppl.DptStnSt
 
-import Tools
+import Tools (clampOld, readRgba8)
 import Vertex
 import Vertex.Wavefront
 
 import Data.Text.ToolsYj
+
+import Options.Declarative (Flag, Def, Cmd, run_, get)
+
+import Data.Bits.ToolsYj
+import Data.Sequences.ToolsYj
+import Data.Bool.ToolsYj
+import Data.Maybe.ToolsYj
+import Data.IORef.ToolsYj
 
 main :: IO ()
 main = do
@@ -144,9 +152,6 @@ main = do
 			else run txfp mdfp (read mnld) win inst g
 
 type FramebufferResized = IORef Bool
-
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
 
 newFramebufferResized :: IO FramebufferResized
 newFramebufferResized = newIORef False
@@ -266,7 +271,7 @@ run txfp mdfp mnld w inst g =
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp (dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ubs ums dscss tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp (dptImg, dptImgMem, dptImgVw) idcs vb ib cbs sos ums dscss tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -1321,9 +1326,7 @@ imageMemoryInfoBinded pd dvc prps img = do
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
--- type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
-
-newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+newtype MyRgba8 = MyRgba8 PixelRGBA8
 
 instance Storable MyRgba8 where
 	sizeOf _ = 4 * sizeOf @Pixel8 undefined
@@ -1386,7 +1389,7 @@ createTextureSampler phdv dvc mplvs mnld f = do
 loadModel :: FilePath -> IO (V.Vector WVertex, V.Vector Word32)
 loadModel fp = do
 	vtcs <- readVertices fp
-	let	(vtcs', idcs') = indexingVector vtcs
+	let	(vtcs', idcs') = indexing vtcs
 	putStrLn "LOAD MODEL"
 	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector WVertex))
 	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector WVertex))
@@ -1633,9 +1636,9 @@ mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: HeteroParList.PL Vk.Semaphore.S siass,
-		renderFinishedSemaphores :: HeteroParList.PL Vk.Semaphore.S srfss,
-		inFlightFences :: HeteroParList.PL Vk.Fence.F sfss } ->
+		_imageAvailableSemaphoresOld :: HeteroParList.PL Vk.Semaphore.S siass,
+		_renderFinishedSemaphoresOld :: HeteroParList.PL Vk.Semaphore.S srfss,
+		_inFlightFencesOld :: HeteroParList.PL Vk.Fence.F sfss } ->
 		SyncObjects '(siass, srfss, sfss)
 
 createSyncObjects ::
@@ -1716,17 +1719,16 @@ mainLoop :: (
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word32 ""] ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	HeteroParList.PL BindedUbo smsbs ->
 	HeteroParList.PL MemoryUbo smsbs ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	UTCTime ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss tm0 = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp drsrcs idcs vb ib cbs iasrfsifs ums dscss tm0 = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs cp drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss
+			sc g ext scivs rp ppllyt gpl fbs cp drsrcs idcs vb ib cbs iasrfsifs ums dscss
 			(realToFrac $ tm `diffUTCTime` tm0)
 			cf (`loop` cfs)
 	Vk.Dvc.waitIdle dvc
@@ -1752,7 +1754,6 @@ runLoop :: (
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word32 ""] ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	HeteroParList.PL BindedUbo smsbs ->
 	HeteroParList.PL MemoryUbo smsbs ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Float ->
@@ -1760,9 +1761,9 @@ runLoop :: (
 	(Vk.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext
 	scivs rp ppllyt gpl fbs cp drsrcs idcs vb ib cbs iasrfsifs
-	ubs ums dscss tm cf loop = do
+	ums dscss tm cf loop = do
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp drsrcs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs iasrfsifs ubs ums dscss tm cf
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs iasrfsifs ums dscss tm cf
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
@@ -1782,17 +1783,16 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word32 ""] ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
-	HeteroParList.PL BindedUbo smsbs ->
 	HeteroParList.PL MemoryUbo smsbs ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Float ->
 	Int -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
-	(SyncObjects iass rfss iffs) ubs ums dscss tm cf =
+	(SyncObjects iass rfss iffs) ums dscss tm cf =
 	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
 	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
-	HeteroParList.index ubs cf \ub -> HeteroParList.index ums cf \um ->
+	HeteroParList.index ums cf \um ->
 	($ HeteroParList.homoListIndex dscss cf) \dscs -> do
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
