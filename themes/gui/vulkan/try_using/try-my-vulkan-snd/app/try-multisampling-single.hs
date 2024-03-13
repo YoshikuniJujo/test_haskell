@@ -11,7 +11,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -33,7 +33,7 @@ import Data.Bits
 import Data.Array hiding (indices)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HPList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
@@ -45,7 +45,6 @@ import Data.Word
 import Data.Int
 import Data.Color
 import Data.Time
-import System.Environment
 import Codec.Picture
 
 import qualified Data.List.NonEmpty as NE
@@ -56,7 +55,6 @@ import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic as GStorable
 
-import ThEnv
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -67,19 +65,18 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
-import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
+import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device as Vk.Dvc.M
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface.M
+import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
+import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
-	Vk.Khr.Surface.PhysicalDevice
+	Vk.Khr.Sfc.Phd
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image as Vk.Img.M
@@ -112,7 +109,7 @@ import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.Queue as Vk.Q
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
@@ -124,159 +121,154 @@ import qualified Gpu.Vulkan.Sampler as Vk.Smplr
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
-import Tools
+import Tools (clampOld, readRgba8)
 import Vertex
 import Vertex.Wavefront
 
-import Data.Text.ToolsYj
+import Options.Declarative (Flag, Def, Cmd, run_, get)
+import Control.Monad.Trans
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
+import Debug
+import Data.Sequences.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Tuple.ToolsYj
+import Data.Function.ToolsYj
+import Data.Bool.ToolsYj
+import Data.List.ToolsYj
+import Data.IORef.ToolsYj
 
 main :: IO ()
-main = do
-	txfp : mdlfp : mnld : _ <- getArgs
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
-		if enableValidationLayers
-			then setupDebugMessenger inst
-				$ run txfp mdlfp (read mnld) win inst g
-			else run txfp mdlfp (read mnld) win inst g
+main = run_ realMain
+
+realMain ::
+	Flag "t" '["texture"] "FILEPATH" "texture filepath"
+		(Def "../../../../../files/models/viking_room.png" String) ->
+	Flag "m" '["model"] "FILEPATH" "model filepath"
+		(Def "../../../../../files/models/viking_room.obj" String) ->
+	Flag "l" '["minLod"] "FLOAT" "minimal mip level" (Def "0.0" Double) ->
+	Cmd "Try Vulkan Texture" ()
+realMain txfp mdlfp mnld = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
+	createIst \ist -> bool id (dbgm ist) debug
+		$ body (get txfp) (get mdlfp) (realToFrac $ get mnld) fr w ist
+	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = IORef Bool
 
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
+withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
 
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
+initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWindow fr g = do
+	Right w <- do
+		GlfwG.Win.hint noApi
+		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback
+		w (Just . const3 $ writeIORef fr True)
+	where
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	sizeName = ((800, 600), "Triangle")
 
-windowName :: String
-windowName = "Triangle"
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
+		. (Vk.layerPropertiesLayerName <$>)
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	bool	(Vk.Ist.create (info exts) nil f)
+		(Vk.Ist.create (infoDbg exts) nil f) debug
+	where
+	emsg = "validation layers requested, but not available!"
+	info exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.N,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = [],
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	infoDbg exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	ainfo = Vk.ApplicationInfo {
+		Vk.applicationInfoNext = TMaybe.N,
+		Vk.applicationInfoApplicationName = "Hello Triangle",
+		Vk.applicationInfoApplicationVersion =
+			Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoEngineName = "No Engine",
+		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
+dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
+	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msngr.createInfoFlags = zeroBits,
+	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msngr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
+	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
+	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
+		"validation layer: " <>
+		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 1
-
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
-
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when enableValidationLayers $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers \\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	print extensions
-	let	appInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoNext = TMaybe.N,
-			Vk.applicationInfoApplicationName = "Hello Triangle",
-			Vk.applicationInfoApplicationVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoEngineName = "No Engine",
-			Vk.applicationInfoEngineVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo :: Vk.Ist.M.CreateInfo
-			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
-				'Nothing '[] ())) 'Nothing
-		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-			Vk.Ist.M.createInfoFlags = def,
-			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil \i -> f i
-
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil f
-
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
-
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
-
-run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run txfp mdlfp mnld w inst g =
-	createSurface w inst \sfc ->
-	pickPhysicalDevice inst sfc >>= \(phdv, qfis, spcnt) ->
-	createLogicalDevice phdv qfis \dv gq pq ->
-	createSwapChain w sfc phdv qfis dv
+body :: FilePath -> FilePath -> Float ->
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+body txfp mdlfp mnld g (GlfwG.Win.W w) ist =
+	createSurface w ist \sfc ->
+	pickPhysicalDevice ist sfc >>= \(pd, qfis, spcnt) ->
+	createLgDvc pd qfis \d gq pq ->
+	createSwapChain w sfc pd qfis d
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) scifmt ext ->
-	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
-	createImageViews dv imgs \scivs ->
-	findDepthFormat phdv >>= \dptfmt ->
+	Vk.Khr.Swapchain.getImages d sc >>= \imgs ->
+	createImageViews d imgs \scivs ->
+	findDepthFormat pd >>= \dptfmt ->
 	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
-	createColorResources @scifmt phdv dv ext spcnt \clrimg clrimgm clrimgvw ->
-	createRenderPass @scifmt @dptfmt dv spcnt \rp ->
-	createPipelineLayout' dv \dscslyt ppllyt ->
-	createGraphicsPipeline' dv ext rp ppllyt spcnt \gpl ->
-	createCommandPool qfis dv \cp ->
-	createDepthResources phdv dv gq cp ext spcnt \dptImg dptImgMem dptImgVw ->
-	createFramebuffers dv ext rp scivs dptImgVw clrimgvw \fbs ->
-	createTextureImage phdv dv gq cp txfp \tximg mplvs ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit mplvs \tximgvw ->
-	createTextureSampler phdv dv mplvs mnld \txsmplr ->
+	createColorResources @scifmt pd d ext spcnt \clrimg clrimgm clrimgvw ->
+	createRenderPass @scifmt @dptfmt d spcnt \rp ->
+	createPipelineLayout' d \dscslyt ppllyt ->
+	createGraphicsPipeline' d ext rp ppllyt spcnt \gpl ->
+	createCommandPool qfis d \cp ->
+	createDepthResources pd d gq cp ext spcnt \dptImg dptImgMem dptImgVw ->
+	createFramebuffers d ext rp scivs dptImgVw clrimgvw \fbs ->
+	createTextureImage pd d gq cp txfp \tximg mplvs ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tximg Vk.Img.AspectColorBit mplvs \tximgvw ->
+	createTextureSampler pd d mplvs mnld \txsmplr ->
 	loadModel mdlfp >>= \(vtcs, idcs) ->
-	createVertexBuffer phdv dv gq cp vtcs \vb ->
-	createIndexBuffer phdv dv gq cp idcs \ib ->
-	createUniformBuffer phdv dv \ub ubm ->
-	createDescriptorPool dv \dscp ->
-	createDescriptorSet dv dscp ub tximgvw txsmplr dscslyt \ubds ->
-	createCommandBuffer dv cp \cb ->
-	createSyncObjects dv \sos ->
+	createVertexBuffer pd d gq cp vtcs \vb ->
+	createIndexBuffer pd d gq cp idcs \ib ->
+	createUniformBuffer pd d \ub ubm ->
+	createDescriptorPool d \dscp ->
+	createDescriptorSet d dscp ub tximgvw txsmplr dscslyt \ubds ->
+	createCommandBuffer d cp \cb ->
+	createSyncObjects d \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
+	mainLoop g w sfc pd qfis d gq pq sc ext scivs rp ppllyt gpl fbs cp
 		(clrimg, clrimgm, clrimgvw, spcnt)
 		dptImg dptImgMem dptImgVw idcs vb ib ubm ubds cb sos tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
+	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
 createSurface win ist f = Glfw.createWindowSurface ist win nil \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices, Vk.Sample.CountFlags)
+	Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices, Vk.Sample.CountFlags)
 pickPhysicalDevice ist sfc = do
 	putStrLn "PICK PHYSICAL DEVICE"
-	dvcs <- Vk.PhDvc.enumerate ist
+	dvcs <- Vk.Phd.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
 	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
 		Just (p, q) -> do
@@ -285,10 +277,10 @@ pickPhysicalDevice ist sfc = do
 			pure (p, q, sc)
 		Nothing -> error "failed to find a suitable GPU!"
 
-getMaxUsableSampleCount :: Vk.PhDvc.P -> IO Vk.Sample.CountFlags
+getMaxUsableSampleCount :: Vk.Phd.P -> IO Vk.Sample.CountFlags
 getMaxUsableSampleCount phdvc = do
-	cnts <- Vk.PhDvc.limitsFramebufferDepthSampleCounts . Vk.PhDvc.propertiesLimits
-		<$> Vk.PhDvc.getProperties phdvc
+	cnts <- Vk.Phd.limitsFramebufferDepthSampleCounts . Vk.Phd.propertiesLimits
+		<$> Vk.Phd.getProperties phdvc
 	print cnts
 	pure . fromMaybe Vk.Sample.Count1Bit $ findBit [
 		Vk.Sample.Count64Bit, Vk.Sample.Count32Bit,
@@ -299,123 +291,126 @@ findBit :: Bits b => [b] -> b -> Maybe b
 findBit bl bs = find ((/= zeroBits) . (.&. bs)) bl
 
 findDevice :: Monad m =>
-	(Vk.PhDvc.P -> m (Maybe a)) -> [Vk.PhDvc.P] ->
-	m (Maybe (Vk.PhDvc.P, a))
+	(Vk.Phd.P -> m (Maybe a)) -> [Vk.Phd.P] ->
+	m (Maybe (Vk.Phd.P, a))
 findDevice prd = \case
 	[] -> pure Nothing
 	p : ps -> prd p >>= \case
 		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
 
 isDeviceSuitable ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
+	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
-	_deviceProperties <- Vk.PhDvc.getProperties phdvc
-	deviceFeatures <- Vk.PhDvc.getFeatures phdvc
+	_deviceProperties <- Vk.Phd.getProperties phdvc
+	deviceFeatures <- Vk.Phd.getFeatures phdvc
 	is <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
-	if extensionSupported && Vk.PhDvc.featuresSamplerAnisotropy deviceFeatures
+	if extensionSupported && Vk.Phd.featuresSamplerAnisotropy deviceFeatures
 	then (<$> querySwapChainSupport phdvc sfc) \spp ->
 		bool (completeQueueFamilies is) Nothing
 			$ null (formats spp) || null (presentModes spp)
 	else pure Nothing
 
-data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Vk.QueueFamily.Index,
-	presentFamily :: Vk.QueueFamily.Index }
+data QFamIndices =
+	QFamIndices { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
+
+findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
+findQFams pd sfc = do
+	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
+	mp <- listToMaybe
+		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
+	pure $ QFamIndices <$> (fst <$> find (grbit . snd) prps) <*> mp
+	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
+
+type QueueFamilyIndices = QFamIndices
 
 data QueueFamilyIndicesMaybe = QueueFamilyIndicesMaybe {
-	graphicsFamilyMaybe :: Maybe Vk.QueueFamily.Index,
-	presentFamilyMaybe :: Maybe Vk.QueueFamily.Index }
+	graphicsFamilyMaybe :: Maybe Vk.QFam.Index,
+	presentFamilyMaybe :: Maybe Vk.QFam.Index }
 
 completeQueueFamilies :: QueueFamilyIndicesMaybe -> Maybe QueueFamilyIndices
 completeQueueFamilies = \case
 	QueueFamilyIndicesMaybe {
 		graphicsFamilyMaybe = Just gf, presentFamilyMaybe = Just pf } ->
-		Just QueueFamilyIndices {
-			graphicsFamily = gf, presentFamily = pf }
+		Just QFamIndices { grFam = gf, prFam = pf }
 	_ -> Nothing
 
 findQueueFamilies ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO QueueFamilyIndicesMaybe
+	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
 findQueueFamilies device sfc = do
-	queueFamilies <- Vk.PhDvc.getQueueFamilyProperties device
+	queueFamilies <- Vk.Phd.getQueueFamilyProperties device
 	pfis <- filterM
-		(\i -> Vk.Khr.Surface.PhysicalDevice.getSupport device i sfc)
+		(\i -> Vk.Khr.Sfc.Phd.getSupport device i sfc)
 		(fst <$> queueFamilies)
 	pure QueueFamilyIndicesMaybe {
 		graphicsFamilyMaybe = fst <$> find
-			(checkBits Vk.Queue.GraphicsBit
-				. Vk.QueueFamily.propertiesQueueFlags . snd)
+			(checkBits Vk.Q.GraphicsBit
+				. Vk.QFam.propertiesQueueFlags . snd)
 			queueFamilies,
 		presentFamilyMaybe = listToMaybe pfis }
 
-checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
+checkDeviceExtensionSupport :: Vk.Phd.P -> IO Bool
 checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions \\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
-		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
+	null . (dvcExtensions \\) . (Vk.Phd.extensionPropertiesExtensionName <$>)
+		<$> Vk.Phd.enumerateExtensionProperties dvc Nothing
 
-deviceExtensions :: [Vk.PhDvc.ExtensionName]
-deviceExtensions = [Vk.Khr.Swapchain.extensionName]
+dvcExtensions :: [Vk.Phd.ExtensionName]
+dvcExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	capabilities :: Vk.Khr.Surface.M.Capabilities,
-	formats :: [Vk.Khr.Surface.M.FormatOld],
+	capabilities :: Vk.Khr.Sfc.M.Capabilities,
+	formats :: [Vk.Khr.Sfc.M.FormatOld],
 	presentModes :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
+	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
-	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getFormatsOld dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
+	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getFormatsOld dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
-		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createLogicalDevice phdvc qfis f =
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
-	let	createInfo = Vk.Dvc.M.CreateInfo {
-			Vk.Dvc.M.createInfoNext = TMaybe.N,
-			Vk.Dvc.M.createInfoFlags = def,
-			Vk.Dvc.M.createInfoQueueCreateInfos = qs,
-			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Dvc.M.createInfoEnabledExtensionNames =
-				deviceExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
-				Vk.PhDvc.featuresSamplerAnisotropy = True,
-				Vk.PhDvc.featuresSampleRateShading = True } } in
-	Vk.Dvc.create phdvc createInfo nil \dvc -> do
-		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		f dvc gq pq
+createLgDvc :: Vk.Phd.P -> QFamIndices ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
+createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
+	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
+		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
+		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
 	where
-	uniqueQueueFamilies = nub [graphicsFamily qfis, presentFamily qfis]
-	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
+	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HPList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HPList.PL t ss -> b) -> b
+	hetero _k [] f = f HPList.Nil
+	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
+	qinfo qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	uniqueQFams = nub [grFam qfis, prFam qfis]
+	info qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def {
+			Vk.Phd.featuresSamplerAnisotropy = True } }
 
-mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
-mkHeteroParList _k [] f = f HeteroParList.Nil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
-
-createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapChain :: Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss fmt . Vk.T.FormatToValue fmt =>
 		Vk.Khr.Swapchain.S fmt ss -> Vk.Format -> Vk.Extent2d -> IO a) ->
 	IO a
 createSwapChain win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	fmt = Vk.Khr.Surface.M.formatOldFormat . chooseSwapSurfaceFormat $ formats spp
+	let	fmt = Vk.Khr.Sfc.M.formatOldFormat . chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis spp ext
 		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil \sc -> f sc scifmt ext
 
 recreateSwapChain :: forall ssfc sd ssc scfmt .
 	Vk.T.FormatToValue scfmt =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S scfmt ssc ->
 	IO Vk.Extent2d
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
@@ -424,7 +419,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing @scfmt dvc crInfo nil sc
 
-mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
+mkSwapchainCreateInfo :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
 	(Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt, Vk.Format)
 mkSwapchainCreateInfo sfc qfis0 spp ext = (
@@ -434,7 +429,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Surface.M.formatOldColorSpace fmt,
+			Vk.Khr.Sfc.M.formatOldColorSpace fmt,
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
@@ -442,7 +437,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 		Vk.Khr.Swapchain.createInfoPreTransform =
-			Vk.Khr.Surface.M.capabilitiesCurrentTransform caps,
+			Vk.Khr.Sfc.M.capabilitiesCurrentTransform caps,
 		Vk.Khr.Swapchain.createInfoCompositeAlpha =
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
@@ -450,35 +445,35 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }, scifmt )
 	where
 	fmt = chooseSwapSurfaceFormat $ formats spp
-	scifmt = Vk.Khr.Surface.M.formatOldFormat fmt
+	scifmt = Vk.Khr.Sfc.M.formatOldFormat fmt
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
+		$ Vk.Khr.Sfc.M.capabilitiesMaxImageCount caps
 	imgc = clampOld
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
+		(Vk.Khr.Sfc.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
-			[graphicsFamily qfis0, presentFamily qfis0])
+			[grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, [])
-		(graphicsFamily qfis0 == presentFamily qfis0)
+		(grFam qfis0 == prFam qfis0)
 
-chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.FormatOld] -> Vk.Khr.Surface.M.FormatOld
+chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.M.FormatOld] -> Vk.Khr.Sfc.M.FormatOld
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
 		$ find preferredSwapSurfaceFormat availableFormats
 	_ -> error "no available swap surface formats"
 
-preferredSwapSurfaceFormat :: Vk.Khr.Surface.M.FormatOld -> Bool
+preferredSwapSurfaceFormat :: Vk.Khr.Sfc.M.FormatOld -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Surface.M.formatOldFormat f == Vk.FormatB8g8r8a8Srgb &&
-	Vk.Khr.Surface.M.formatOldColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+	Vk.Khr.Sfc.M.formatOldFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Sfc.M.formatOldColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> IO Vk.Extent2d
+chooseSwapExtent :: Glfw.Window -> Vk.Khr.Sfc.M.Capabilities -> IO Vk.Extent2d
 chooseSwapExtent win caps
 	| Vk.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
@@ -488,21 +483,21 @@ chooseSwapExtent win caps
 			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
 			(clampOld h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
 	where
-	curExt = Vk.Khr.Surface.M.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
+	curExt = Vk.Khr.Sfc.M.capabilitiesCurrentExtent caps
+	n = Vk.Khr.Sfc.M.capabilitiesMinImageExtent caps
+	x = Vk.Khr.Sfc.M.capabilitiesMaxImageExtent caps
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
-	(forall si . HeteroParList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
-createImageViews _dvc [] f = f HeteroParList.Nil
+	(forall si . HPList.PL (Vk.ImgVw.I nm fmt) si -> IO a) -> IO a
+createImageViews _dvc [] f = f HPList.Nil
 createImageViews dvc (sci : scis) f =
 	createImageView dvc sci Vk.Img.AspectColorBit 1 \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :** scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
-recreateImageViews _dvc [] HeteroParList.Nil = pure ()
+	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
+recreateImageViews _dvc [] HPList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil iv >>
 	recreateImageViews dvc scis ivs
@@ -632,7 +627,7 @@ createRenderPass dvc mss f = do
 			Vk.RndrPass.M.createInfoFlags = zeroBits,
 			Vk.RndrPass.M.createInfoAttachments =
 				colorAttachment :** depthAttachment :**
-				colorAttachmentResolve :** HeteroParList.Nil,
+				colorAttachmentResolve :** HPList.Nil,
 			Vk.RndrPass.M.createInfoSubpasses = [subpass],
 			Vk.RndrPass.M.createInfoDependencies = [dependency] }
 	Vk.RndrPass.create @'Nothing @'[scifmt, dptfmt, scifmt] dvc renderPassInfo nil \rp -> f rp
@@ -657,7 +652,7 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil
 		Vk.DscSetLyt.createInfoBindings =
 			uboLayoutBinding :**
 			samplerLayoutBinding :**
-			HeteroParList.Nil }
+			HPList.Nil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding
 		('Vk.DscSetLyt.Buffer '[ VObj.Atom 256 UniformBufferObject 'Nothing])
 	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
@@ -684,7 +679,7 @@ createPipelineLayout' dvc f =
 			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts =
-				HeteroParList.Singleton $ U2 dsl } in
+				HPList.Singleton $ U2 dsl } in
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
@@ -695,8 +690,8 @@ createGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
 createGraphicsPipeline' dvc sce rp ppllyt mss f =
-	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
-			nil \(U3 gpl :** HeteroParList.Nil) -> f gpl
+	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HPList.Nil)
+			nil \(U3 gpl :** HPList.Nil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
@@ -707,7 +702,7 @@ recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline' dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.unsafeRecreateGs
-	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil (U3 gpls :** HeteroParList.Nil)
+	dvc Nothing (U14 pplInfo :** HPList.Nil) nil (U3 gpls :** HPList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
 
 mkGraphicsPipelineCreateInfo' ::
@@ -751,10 +746,10 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
 		Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
 
-shaderStages :: HeteroParList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo) '[
+shaderStages :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo) '[
 	'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 	'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
-shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HeteroParList.Nil
+shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HPList.Nil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
@@ -845,25 +840,25 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm fmt) sis ->
+	Vk.RndrPass.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.ImgVw.I dptfmt dptnm siv ->
 	Vk.ImgVw.I clrfmt clrnm clrsiv ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
-		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFramebuffers _ _ _ HeteroParList.Nil _ _ f = f HeteroParList.Nil
+		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
+createFramebuffers _ _ _ HPList.Nil _ _ f = f HPList.Nil
 createFramebuffers dvc sce rp (iv :** ivs) divw clrvw f =
 	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv divw clrvw) nil \fb ->
 	createFramebuffers dvc sce rp ivs divw clrvw \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
+		Vk.RndrPass.R sr -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 		Vk.ImgVw.I dptfmt dptnm sdiv ->
 		Vk.ImgVw.I clrfmt clrnm clrsdiv ->
-		HeteroParList.PL Vk.Frmbffr.F sfs -> IO ()
+		HPList.PL Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce _rp HeteroParList.Nil _ _ HeteroParList.Nil = pure ()
+	recreateFramebuffers _dvc _sce _rp HPList.Nil _ _ HPList.Nil = pure ()
 
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
@@ -882,7 +877,7 @@ mkFramebufferCreateInfo sce rp attch dpt clr = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 clr :** U3 dpt :** U3 attch :** HeteroParList.Nil,
+	Vk.Frmbffr.createInfoAttachments = U3 clr :** U3 dpt :** U3 attch :** HPList.Nil,
 --	Vk.Frmbffr.createInfoAttachments = attch :** dpt :** HeteroParList.Nil,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
@@ -897,7 +892,7 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoNext = TMaybe.N,
 		Vk.CmdPool.createInfoFlags =
 			Vk.CmdPool.CreateResetCommandBufferBit,
-		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
+		Vk.CmdPool.createInfoQueueFamilyIndex = grFam qfis }
 
 type ColorResources fmt nm si sm siv = (
 	Vk.Img.Binded sm si nm fmt,
@@ -907,7 +902,7 @@ type ColorResources fmt nm si sm siv = (
 	Vk.Sample.CountFlags )
 
 createColorResources :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
 	(forall si sm siv .
 		Vk.Img.Binded sm si nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
@@ -925,7 +920,7 @@ createColorResources phdvc dvc ext msmpls f =
 	f img imgmem imgvw
 
 recreateColorResources :: forall fmt sd nm si sm siv . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
 	Vk.Img.Binded sm si nm fmt ->
 	Vk.Dvc.Mem.ImageBuffer.M sm
 		'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt)] ->
@@ -940,7 +935,7 @@ recreateColorResources phdvc dvc ext msmpls img imgmem imgvw = do
 	recreateImageView dvc img Vk.Img.AspectColorBit imgvw 1
 
 createDepthResources ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
 	Vk.Extent2d -> Vk.Sample.CountFlags ->
 	(forall si sm fmt siv . Vk.T.FormatToValue fmt =>
 		Vk.Img.Binded sm si nm fmt ->
@@ -964,8 +959,8 @@ createDepthResources phdvc dvc gq cp ext mss f = do
 			f dptImg dptImgMem dptImgVw
 
 recreateDepthResources :: Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CmdPool.C sc ->
 	Vk.Extent2d ->
 	Vk.Sample.CountFlags ->
 	Vk.Img.Binded sm sb nm fmt ->
@@ -982,16 +977,16 @@ recreateDepthResources phdvc dvc gq cp ext mss dptImg dptImgMem dptImgVw = do
 	transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
 		Vk.Img.LayoutDepthStencilAttachmentOptimal 1
 
-findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
+findDepthFormat :: Vk.Phd.P -> IO Vk.Format
 findDepthFormat phdvc = findSupportedFormat phdvc
 	[Vk.FormatD32Sfloat, Vk.FormatD32SfloatS8Uint, Vk.FormatD24UnormS8Uint]
 	Vk.Img.TilingOptimal
 	Vk.FormatFeatureDepthStencilAttachmentBit
 
 findSupportedFormat ::
-	Vk.PhDvc.P -> [Vk.Format] -> Vk.Img.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
+	Vk.Phd.P -> [Vk.Format] -> Vk.Img.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
 findSupportedFormat phdvc fs tlng fffs = do
-	props <- Vk.PhDvc.getFormatProperties phdvc `mapM` fs
+	props <- Vk.Phd.getFormatProperties phdvc `mapM` fs
 	case tlng of
 		Vk.Img.TilingLinear -> do
 			putStrLn "LINEAR"
@@ -1010,7 +1005,7 @@ checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
 checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 
 createTextureImage ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> FilePath -> (
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> FilePath -> (
 		forall si sm .
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> Word32 -> IO a ) ->
 	IO a
@@ -1049,10 +1044,10 @@ createTextureImage phdvc dvc gq cp fp f = do
 			f tximg mipLevels
 
 checkImageFilterLinearBit ::
-	forall fmt . Vk.T.FormatToValue fmt => Vk.PhDvc.P -> IO ()
+	forall fmt . Vk.T.FormatToValue fmt => Vk.Phd.P -> IO ()
 checkImageFilterLinearBit phdvc = do
 	let	fmt = Vk.T.formatToValue @fmt
-	formatProperties <- Vk.PhDvc.getFormatProperties phdvc fmt
+	formatProperties <- Vk.Phd.getFormatProperties phdvc fmt
 	let	bt = Vk.formatPropertiesOptimalTilingFeatures
 				formatProperties .&.
 			Vk.FormatFeatureSampledImageFilterLinearBit
@@ -1060,7 +1055,7 @@ checkImageFilterLinearBit phdvc = do
 		"texture image format does not support linear blitting!"
 
 generateMipmaps :: forall sd scp si sm nm fmt . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C scp ->
 	Vk.Img.Binded sm si nm fmt -> Word32 -> Int32 -> Int32 -> IO ()
 generateMipmaps phdvc dvc gq cp img mlvs wdt hgt = do
 	putStrLn "GENERATE MIPMAPS"
@@ -1069,7 +1064,7 @@ generateMipmaps phdvc dvc gq cp img mlvs wdt hgt = do
 		for_ iwhs \(i, (w, h)) -> generateMipmap1 cb img i w h
 		Vk.Cmd.pipelineBarrier cb
 			Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit zeroBits
-			HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ U5 barrier)
+			HPList.Nil HPList.Nil (HPList.Singleton $ U5 barrier)
 	where
 	iwhs = [1 .. mlvs - 1] `zip` (halves wdt `zip` halves hgt)
 	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
@@ -1087,8 +1082,8 @@ mipmapBarrier sam dam olyt nlyt img i = Vk.Img.MemoryBarrier {
 	Vk.Img.memoryBarrierDstAccessMask = dam,
 	Vk.Img.memoryBarrierOldLayout = olyt,
 	Vk.Img.memoryBarrierNewLayout = nlyt,
-	Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QueueFamily.Ignored,
-	Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QueueFamily.Ignored,
+	Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFam.Ignored,
+	Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
 	Vk.Img.memoryBarrierImage = img,
 	Vk.Img.memoryBarrierSubresourceRange = srr }
 	where
@@ -1104,14 +1099,14 @@ generateMipmap1 :: forall scb si sm nm fmt . Vk.CmdBffr.C scb ->
 generateMipmap1 cb img i w h = do
 	Vk.Cmd.pipelineBarrier cb
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit zeroBits
-		HeteroParList.Nil HeteroParList.Nil . HeteroParList.Singleton $ U5 barrier'
+		HPList.Nil HPList.Nil . HPList.Singleton $ U5 barrier'
 	Vk.Cmd.blitImage cb
 		img Vk.Img.LayoutTransferSrcOptimal
 		img Vk.Img.LayoutTransferDstOptimal
 		[blit] Vk.FilterLinear
 	Vk.Cmd.pipelineBarrier cb
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit zeroBits
-		HeteroParList.Nil HeteroParList.Nil . HeteroParList.Singleton $ U5 barrier''
+		HPList.Nil HPList.Nil . HPList.Singleton $ U5 barrier''
 	where
 	barrier' :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
 	barrier' = mipmapBarrier Vk.AccessTransferWriteBit Vk.AccessTransferReadBit
@@ -1149,7 +1144,7 @@ newtype MyImage = MyImage (Image PixelRGBA8)
 
 -- type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
 
-newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+newtype MyRgba8 = MyRgba8 PixelRGBA8
 
 instance Storable MyRgba8 where
 	sizeOf _ = 4 * sizeOf @Pixel8 undefined
@@ -1158,10 +1153,6 @@ instance Storable MyRgba8 where
 		<$> peekArray 4 (castPtr p)
 	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
-
-listToTuple4 :: [a] -> (a, a, a, a)
-listToTuple4 [r, g, b, a] = (r, g, b, a)
-listToTuple4 _ = error "The length of the list is not 4"
 
 instance KObj.IsImage MyImage where
 	type ImagePixel MyImage = MyRgba8
@@ -1177,7 +1168,7 @@ instance KObj.IsImage MyImage where
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P ->
+	Vk.Phd.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
 		Vk.Img.Binded sm si nm fmt ->
@@ -1190,7 +1181,7 @@ createImage pd dvc wdt hgt mplvs nss tlng usg prps f = Vk.Img.create @'Nothing d
 	imageAllocateBind dvc img memInfo f
 
 recreateImage :: Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
 	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
@@ -1229,8 +1220,8 @@ imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.I si nm fmt ->
 		IO a) -> IO a
 imageAllocateBind dvc img memInfo f =
 	Vk.Dvc.Mem.ImageBuffer.allocateBind @'Nothing dvc
-		(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Image img) memInfo
-		nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
+		(HPList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Image img) memInfo
+		nil \(HPList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
 		f bnd m
 
 imageReallocateBind ::
@@ -1240,11 +1231,11 @@ imageReallocateBind ::
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.ImageArg nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
 	Vk.Dvc.Mem.ImageBuffer.unsafeReallocateBind @'Nothing dvc
-		(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.ImageBinded img) memInfo
+		(HPList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.ImageBinded img) memInfo
 		nil m
 
 imageMemoryInfo ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
 	Vk.Img.I s nm fmt -> IO (Vk.Mem.AllocateInfo 'Nothing)
 imageMemoryInfo pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirements dvc img
@@ -1254,7 +1245,7 @@ imageMemoryInfo pd dvc prps img = do
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 imageMemoryInfoBinded ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
 	Vk.Img.Binded sm si nm fmt -> IO (Vk.Mem.AllocateInfo 'Nothing)
 imageMemoryInfoBinded pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirementsBinded dvc img
@@ -1264,7 +1255,7 @@ imageMemoryInfoBinded pd dvc prps img = do
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	Word32 ->
 	IO ()
@@ -1276,9 +1267,9 @@ transitionImageLayout dvc gq cp img olyt nlyt mplvs =
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
+				Vk.QFam.Ignored,
 			Vk.Img.memoryBarrierDstQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
+				Vk.QFam.Ignored,
 			Vk.Img.memoryBarrierImage = img,
 			Vk.Img.memoryBarrierSubresourceRange = srr,
 			Vk.Img.memoryBarrierSrcAccessMask = sam,
@@ -1290,7 +1281,7 @@ transitionImageLayout dvc gq cp img olyt nlyt mplvs =
 			Vk.Img.subresourceRangeBaseArrayLayer = 0,
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ U5 barrier)
+		sstg dstg zeroBits HPList.Nil HPList.Nil (HPList.Singleton $ U5 barrier)
 	where
 	asps = case (nlyt, hasStencilComponentType @fmt) of
 		(Vk.Img.LayoutDepthStencilAttachmentOptimal, hsst) ->
@@ -1326,7 +1317,7 @@ hasStencilComponent = \case
 
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.ImagePixel img) =>
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
 --	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
@@ -1345,13 +1336,13 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyBufferToImage @1
-		cb bf img Vk.Img.LayoutTransferDstOptimal (HeteroParList.Singleton region)
+		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
 
-createTextureSampler :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createTextureSampler :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	Word32 -> Float -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
 createTextureSampler phdv dvc mplvs mnld f = do
-	prp <- Vk.PhDvc.getProperties phdv
-	print . Vk.PhDvc.limitsMaxSamplerAnisotropy $ Vk.PhDvc.propertiesLimits prp
+	prp <- Vk.Phd.getProperties phdv
+	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
 	let	samplerInfo = Vk.Smplr.M.CreateInfo {
 			Vk.Smplr.M.createInfoNext = TMaybe.N,
 			Vk.Smplr.M.createInfoFlags = zeroBits,
@@ -1368,8 +1359,8 @@ createTextureSampler phdv dvc mplvs mnld f = do
 			Vk.Smplr.M.createInfoMipLodBias = 0,
 			Vk.Smplr.M.createInfoAnisotropyEnable = True,
 			Vk.Smplr.M.createInfoMaxAnisotropy =
-				Vk.PhDvc.limitsMaxSamplerAnisotropy
-					$ Vk.PhDvc.propertiesLimits prp,
+				Vk.Phd.limitsMaxSamplerAnisotropy
+					$ Vk.Phd.propertiesLimits prp,
 			Vk.Smplr.M.createInfoCompareEnable = False,
 			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
 			Vk.Smplr.M.createInfoMinLod = mnld,
@@ -1382,15 +1373,15 @@ createTextureSampler phdv dvc mplvs mnld f = do
 loadModel :: FilePath -> IO (V.Vector WVertex, V.Vector Word32)
 loadModel fp = do
 	vtcs <- readVertices fp
-	let	(vtcs', idcs') = indexingVector vtcs
+	let	(vtcs', idcs') = indexing vtcs
 	putStrLn "LOAD MODEL"
 	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector WVertex))
 	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector WVertex))
 	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector Word32))
 	pure (vtcs', idcs')
 
-createVertexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector WVertex ->
+createVertexBuffer :: Vk.Phd.P ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> V.Vector WVertex ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
@@ -1411,8 +1402,8 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createIndexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 -> (forall sm sb .
+createIndexBuffer :: Vk.Phd.P ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> V.Vector Word32 -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 Word32 ""] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp idcs f =
 	createBufferList phdvc dvc (fromIntegral $ V.length idcs)
@@ -1432,7 +1423,7 @@ createIndexBuffer phdvc dvc gq cp idcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
+createUniformBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[ VObj.Atom 256 UniformBufferObject 'Nothing]  ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 			sb,
@@ -1470,19 +1461,19 @@ createDescriptorSet ::
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
 createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
-	Vk.DscSet.allocateDs dvc allocInfo \(HeteroParList.Singleton dscs) -> do
+	Vk.DscSet.allocateDs dvc allocInfo \(HPList.Singleton dscs) -> do
 	Vk.DscSet.updateDs dvc (
 		U5 (descriptorWrite0 ub dscs) :**
 		U5 (descriptorWrite1 dscs tximgvw txsmp) :**
-		HeteroParList.Nil )
-		HeteroParList.Nil
+		HPList.Nil )
+		HPList.Nil
 	f dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts =
-			HeteroParList.Singleton $ U2 dscslyt }
+			HPList.Singleton $ U2 dscslyt }
 
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
@@ -1493,7 +1484,7 @@ descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ HeteroParList.Singleton bufferInfo }
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ HPList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite1 ::
@@ -1504,7 +1495,7 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
-	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HeteroParList.Singleton
+	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton
 		$ U4 Vk.Dsc.ImageInfo {
 			Vk.Dsc.imageInfoImageLayout =
 				Vk.Img.LayoutShaderReadOnlyOptimal,
@@ -1512,7 +1503,7 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 			Vk.Dsc.imageInfoSampler = tsmp }
 	}
 
-createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createBufferAtom :: forall sd nm a b . Storable a => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Atom 256 a 'Nothing] ->
@@ -1523,7 +1514,7 @@ createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 createBufferAtom p dv usg props = createBuffer p dv VObj.LengthAtom usg props
 
 createBufferList :: forall sd nm t a . Storable t =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 t ""] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
@@ -1535,7 +1526,7 @@ createBufferList p dv ln usg props =
 	createBuffer p dv (VObj.LengthList ln) usg props
 
 createBufferImage :: Storable (KObj.ImagePixel t) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
@@ -1547,7 +1538,7 @@ createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer p dv (VObj.LengthImage r w h d) usg props
 
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
@@ -1556,15 +1547,15 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Dvc.Mem.ImageBuffer.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b)
+	Vk.Dvc.Mem.ImageBuffer.allocateBind dv (HPList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b)
 		(allcInfo mt) nil
-		$ f . \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
+		$ f . \(HPList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
+		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -1573,39 +1564,39 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 		Vk.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
-findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
+findMemoryType :: Vk.Phd.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.M.TypeIndex
 findMemoryType phdvc flt props =
-	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
+	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
 	suitable props1 = fst <$> find ((&&)
 		<$> (`Vk.Mem.M.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
-		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
+		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 a ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 a ""] -> IO ()
 copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
 	Vk.Cmd.copyBuffer @'[ '[ VObj.List 256 a ""]] cb src dst
 
 beginSingleTimeCommands :: forall sd sc a .
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
 	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CmdBffr.allocate
-		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
+		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HPList.Nil) -> do
 		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = TMaybe.N,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+				Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+				Vk.submitInfoSignalSemaphores = HPList.Nil }
 		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
-			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
-			Vk.Queue.waitIdle gq
+			Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) Nothing
+			Vk.Q.waitIdle gq
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfo {
@@ -1621,7 +1612,7 @@ createCommandBuffer ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb . Vk.CmdBffr.C scb -> IO a) ->
 	IO a
-createCommandBuffer dvc cp f = Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
+createCommandBuffer dvc cp f = Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. HPList.Nil) -> cb
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfo {
@@ -1629,15 +1620,11 @@ createCommandBuffer dvc cp f = Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. 
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[ '(WVertex, 'Vk.VtxInp.RateVertex)] ': vss)
-addTypeToProxy Proxy = Proxy
-
 data SyncObjects (ssos :: (Type, Type, Type)) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: Vk.Semaphore.S sias,
-		renderFinishedSemaphores :: Vk.Semaphore.S srfs,
-		inFlightFences :: Vk.Fence.F sfs } ->
+		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
+		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
+		_inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
 createSyncObjects ::
@@ -1668,12 +1655,12 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb
-		(HeteroParList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) >>
+		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) >>
 	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word32 @"" ib) >>
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
-		(HeteroParList.Singleton $ U2 ubds)
-		(HeteroParList.Singleton
-			(HeteroParList.Nil :** HeteroParList.Nil :** HeteroParList.Nil)) >>
+		(HPList.Singleton $ U2 ubds)
+		(HPList.Singleton
+			(HPList.Nil :** HPList.Nil :** HPList.Nil)) >>
 	Vk.Cmd.drawIndexed cbb (fromIntegral $ V.length idcs) 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf '[
@@ -1689,23 +1676,23 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 		Vk.RndrPass.beginInfoClearValues =
 			Vk.ClearValueColor (fromJust $ rgbaDouble 0 0 0 1) :**
 			Vk.ClearValueDepthStencil (Vk.ClearDepthStencilValue 1 0) :**
-			HeteroParList.Nil }
+			HPList.Nil }
 
 mainLoop :: (
 	RecreateFramebuffers ss sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
 	FramebufferResized ->
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Queue.Q -> Vk.Queue.Q ->
+	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> Vk.Extent2d ->
-	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss ->
+	HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
-	HeteroParList.PL Vk.Frmbffr.F sfs ->
+	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	ColorResources scfmt crnm crsi crsm crsiv ->
 	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
@@ -1735,10 +1722,10 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp clrrscs
 runLoop :: (
 	RecreateFramebuffers sis sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt) =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
+	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
-	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
+	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
@@ -1749,7 +1736,7 @@ runLoop :: (
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)] ->
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPool.C sc ->
-	HeteroParList.PL Vk.Frmbffr.F sfs ->
+	HPList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""] ->
@@ -1772,13 +1759,13 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs dp
 			rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs)
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swapchain.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
-	HeteroParList.PL Vk.Frmbffr.F sfs ->
+	HPList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""] ->
@@ -1789,29 +1776,29 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
-	let	siff = HeteroParList.Singleton iff
+	let	siff = HPList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	HeteroParList.index fbs imgIdx \fb ->
+	HPList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext ppllyt gpl idcs vb ib ubds
 	updateUniformBuffer dvc ubm ext tm
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Singleton
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
-			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
+			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
 		presentInfo' = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
+			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
+	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo'
 
 updateUniformBuffer :: Vk.Dvc.D sd ->
@@ -1846,10 +1833,10 @@ catchAndSerialize =
 catchAndRecreate :: (
 	RecreateFramebuffers sis sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt) =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q ->
+	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
-	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
+	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -1861,7 +1848,7 @@ catchAndRecreate :: (
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)] ->
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPool.C sc ->
-	HeteroParList.PL Vk.Frmbffr.F sfs ->
+	HPList.PL Vk.Frmbffr.F sfs ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs loop act =
 	catchJust
@@ -1875,9 +1862,9 @@ catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl clrrscs dptImg
 recreateSwapChainEtc :: (
 	RecreateFramebuffers sis sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S scfmt ssc -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
+	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.Khr.Swapchain.S scfmt ssc -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -1889,7 +1876,7 @@ recreateSwapChainEtc :: (
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)] ->
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPool.C sc ->
-	HeteroParList.PL Vk.Frmbffr.F sfs ->
+	HPList.PL Vk.Frmbffr.F sfs ->
 	IO Vk.Extent2d
 recreateSwapChainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl
 	(clrimg, clrimgm, clrimgvw, mss) dptImg dptImgMem dptImgVw cp fbs = do
