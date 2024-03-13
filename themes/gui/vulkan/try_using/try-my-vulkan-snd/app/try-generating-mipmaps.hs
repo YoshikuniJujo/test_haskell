@@ -13,134 +13,122 @@
 
 module Main (main) where
 
-import Gpu.Vulkan.Memory qualified as Vk.Mm
-
 import GHC.Generics
 import GHC.TypeNats
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.Generic qualified as GStorable
 import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Monad.Trans
 import Control.Exception
 import Data.Kind
-import Gpu.Vulkan.Object.Base qualified as BObj
-import Gpu.Vulkan.Object qualified as VObj
-import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.Foldable
-import Data.Default
-import Data.Bits
-import Data.Array hiding (indices)
-import Data.TypeLevel.Tuple.Uncurry
-import Data.HeteroParList qualified as HPList
-import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
+import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe (nil)
+import Data.TypeLevel.List qualified as TList
+import Data.Foldable
+import Data.MonoTraversable (Element, olength)
+import Data.Sequences (IsSequence)
+import Data.Sequences.ToolsYj
+import Data.Default
+import Data.Ord.ToolsYj
+import Data.Bits
+import Data.Bits.ToolsYj
+import Data.Function.ToolsYj
+import Data.Tuple.ToolsYj
 import Data.Bool
+import Data.Bool.ToolsYj
 import Data.Maybe
+import Data.Maybe.ToolsYj
 import Data.List
-import Data.IORef
+import Data.List.NonEmpty qualified as NE
+import Data.List.Infinite qualified as Inf
+import Data.List.Infinite (pattern (:~))
 import Data.List.Length
+import Data.List.ToolsYj
+import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList qualified as HPList
+import Data.HeteroParList.Constrained (pattern (:^*))
+import Data.HeteroParList.Constrained qualified as HPListC
+import Data.Array hiding (indices)
+import Data.Vector.Storable qualified as V
 import Data.Word
 import Data.Int
-import Data.Color
-import Data.Time
-import Codec.Picture
-
-import Data.Vector.Storable qualified as V
 import Data.Text.IO qualified as Txt
-import Gpu.Vulkan.Cglm qualified as Glm
-import Foreign.Storable.Generic qualified as GStorable
+import Data.Time
+import Data.Color
+import Data.IORef
+import Data.IORef.ToolsYj
+import Codec.Picture
+import Options.Declarative (Flag, Def, Cmd, run_, get)
 
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
-
-import Data.TypeLevel.ParMaybe (nil)
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object.Base qualified as BObj
 import Gpu.Vulkan.Exception qualified as Vk
-import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
-import Gpu.Vulkan.Khr qualified as Vk.Khr
-import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
-import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
+import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
-
 import Gpu.Vulkan.Device qualified as Vk.Dvc
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
-import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as 
-	Vk.Khr.Sfc.Phd
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
-import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
 import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
 import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
-import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.Pipeline.DepthStencilState qualified as Vk.Ppl.DptStnSt
 import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
-import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
-import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
-import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
-import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
-import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
-import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
-import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
-import Gpu.Vulkan.Fence qualified as Vk.Fence
-import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
-import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.Cmd qualified as Vk.Cmd
-
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
 
-import Gpu.Vulkan.Sampler qualified as Vk.Smplr
-import Gpu.Vulkan.Pipeline.DepthStencilState qualified as Vk.Ppl.DptStnSt
+import Gpu.Vulkan.Cglm qualified as Glm
+import Gpu.Vulkan.Khr qualified as Vk.Khr
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Vertex
 import Vertex.Wavefront
-
-import Options.Declarative (Flag, Def, Cmd, run_, get)
-
-import Data.Ord.ToolsYj
-import Data.Bits.ToolsYj
-import Data.Sequences.ToolsYj
-import Data.Function.ToolsYj
-import Data.Tuple.ToolsYj
-import Data.Bool.ToolsYj
-import Data.Maybe.ToolsYj
-import Data.List.ToolsYj
-import Data.IORef.ToolsYj
-
-import Control.Monad.Trans
 import Debug
-
-import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
-import Data.HeteroParList.Constrained (pattern (:^*))
-import Data.HeteroParList.Constrained qualified as HPListC
-
-import Data.MonoTraversable (Element, olength)
-import Data.Sequences (IsSequence)
-
-import Data.TypeLevel.List qualified as TList
-
-import Data.List.NonEmpty qualified as NE
-import Data.List.Infinite qualified as Inf
-import Data.List.Infinite (pattern (:~))
 
 main :: IO ()
 main = run_ realMain

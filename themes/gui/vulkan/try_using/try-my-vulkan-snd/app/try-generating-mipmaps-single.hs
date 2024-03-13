@@ -26,14 +26,14 @@ import Control.Monad.Fix
 import Control.Monad.Trans
 import Control.Exception
 import Data.Kind
-import Data.Foldable
-import Data.MonoTraversable (Element, olength)
-import Data.Sequences (IsSequence)
-import Data.Sequences.ToolsYj
 import Data.Proxy
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
+import Data.Foldable
+import Data.MonoTraversable (Element, olength)
+import Data.Sequences (IsSequence)
+import Data.Sequences.ToolsYj
 import Data.Default
 import Data.Ord.ToolsYj
 import Data.Bits
