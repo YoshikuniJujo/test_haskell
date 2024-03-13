@@ -1377,8 +1377,7 @@ draw dv gq pq sc ex rp pl gp fbs
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
-updateModelViewProj :: forall sd alm sm nmm . KnownNat alm =>
-	Vk.Dvc.D sd ->
+updateModelViewProj :: forall sd alm sm nmm . KnownNat alm => Vk.Dvc.D sd ->
 	MemoryModelViewProj alm nmm sm -> Vk.Extent2d -> Float -> IO ()
 updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
