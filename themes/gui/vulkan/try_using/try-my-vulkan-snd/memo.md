@@ -107,7 +107,7 @@ apps
 * [x] try-loading-models.hs
 * [x] try-generating-mipmaps-single.hs
 * [x] try-generating-mipmaps.hs
-* [ ] try-multisampling-single.hs
+* [x] try-multisampling-single.hs
 * [ ] try-multisampling.hs
 * [ ] try-vulkan-guide.hs
 * [ ] try-vulkan-guide-texture.hs
