@@ -490,10 +490,10 @@ imgVwInfo i a ml = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
 
-createRndrPss :: forall scifmt dptfmt sd a .
-	(Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dptfmt) =>
+createRndrPss :: forall fmt dptfmt sd a .
+	(Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt) =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
-createRndrPss dv = Vk.RndrPss.create @'Nothing @'[scifmt, dptfmt] dv info nil
+createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt, dptfmt] dv info nil
 	where
 	info = Vk.RndrPss.CreateInfo {
 		Vk.RndrPss.createInfoNext = TMaybe.N,
@@ -1058,8 +1058,7 @@ mipmapBarrier sam dam olyt nlyt img i = Vk.Img.MemoryBarrier {
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
 
-createTxSmplr ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> MipLevels -> Float ->
+createTxSmplr :: Vk.Phd.P -> Vk.Dvc.D sd -> MipLevels -> Float ->
 	(forall ss . Vk.Smplr.S ss -> IO a) -> IO a
 createTxSmplr pd dv (mls, _, _) mnld a = Vk.Phd.getProperties pd >>= \pr ->
 	Vk.Smplr.create @'Nothing dv (info pr) nil a
