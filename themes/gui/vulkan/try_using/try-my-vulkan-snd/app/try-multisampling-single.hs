@@ -1081,9 +1081,8 @@ generateMipmap1 cb img i w h = do
 		Vk.AccessTransferWriteBit Vk.AccessTransferReadBit
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 		img i
-	br' = HPList.Singleton .U5 $ mipmapBarrier
-		Vk.AccessTransferReadBit Vk.AccessShaderReadBit
-		Vk.Img.LayoutTransferSrcOptimal
+	br' = HPList.Singleton . U5 $ mipmapBarrier Vk.AccessTransferReadBit
+		Vk.AccessShaderReadBit Vk.Img.LayoutTransferSrcOptimal
 		Vk.Img.LayoutShaderReadOnlyOptimal img i
 	blit = Vk.Img.Blit {
 		Vk.Img.blitSrcSubresource = sr $ i - 1,
