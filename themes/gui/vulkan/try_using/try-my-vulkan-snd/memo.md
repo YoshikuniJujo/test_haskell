@@ -108,7 +108,7 @@ apps
 * [x] try-generating-mipmaps-single.hs
 * [x] try-generating-mipmaps.hs
 * [x] try-multisampling-single.hs
-* [ ] try-multisampling.hs
+* [x] try-multisampling.hs
 * [ ] try-vulkan-guide.hs
 * [ ] try-vulkan-guide-storage.hs
 * [ ] try-vulkan-guide-dynamic.hs
