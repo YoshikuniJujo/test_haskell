@@ -11,7 +11,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import GHC.Generics
 import Foreign.Storable
@@ -40,7 +40,6 @@ import Data.IORef
 import Data.List.Length
 import Data.Word
 import Data.Color
-import System.Environment
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
@@ -51,7 +50,6 @@ import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic as GStorable
 
-import ThEnv
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -62,10 +60,9 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
@@ -118,122 +115,112 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
-import Tools
+import Tools (clampOld)
 
-import Data.Text.ToolsYj
+import Control.Monad.Trans
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Function.ToolsYj
+import Data.Tuple.ToolsYj
+import Data.Bool.ToolsYj
+import Data.List.ToolsYj
+import Data.IORef.ToolsYj
+import Data.TypeLevel.List qualified as TList
+import Options.Declarative (Flag, Def, Cmd, run_, get)
+
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+
+import Debug
 
 main :: IO ()
-main = do
-	[objfile] <- getArgs
-	obj <- BS.readFile objfile
-	frszd <- newFramebufferResized
-	(`withWindow` frszd) \win -> createInstance \ist -> do
-		if enableValidationLayers
-			then setupDebugMessenger ist $ run win ist frszd obj
-			else run win ist frszd obj
+main = run_ realMain
+
+realMain ::
+	Flag "m" '["model"] "FILEPATH" "model filepath"
+		(Def "../../../../../files/models/viking_room.obj" String) ->
+	Cmd "Try Vulkan Guide" ()
+realMain mdlfp = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
+	createIst \ist -> bool id (dbgm ist) debug
+		$ body (get mdlfp) fr w ist
+	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = IORef Bool
 
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
+withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
 
-windowName :: String
-windowName = "Triangle"
-
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 2
-
-frashRate :: Num n => n
-frashRate = 2
-
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
-
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when enableValidationLayers $ bool (error msg) (pure ())
-		=<< null . (validationLayers \\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	Vk.Ist.create (crInfo exts) nil f
+initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWindow fr g = do
+	Right w <- do
+		GlfwG.Win.hint noApi
+		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback
+		w (Just . const3 $ writeIORef fr True)
 	where
-	msg = "validation layers requested, but not available!"
-	crInfo :: [Vk.Ist.ExtensionName] -> Vk.Ist.M.CreateInfo
-		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ())) 'Nothing
-	crInfo exts = Vk.Ist.M.CreateInfo {
-		Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-		Vk.Ist.M.createInfoFlags = def,
-		Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-		Vk.Ist.M.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
-		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
-	appInfo = Vk.ApplicationInfo {
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	sizeName = ((800, 600), "Triangle")
+
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
+		. (Vk.layerPropertiesLayerName <$>)
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	bool	(Vk.Ist.create (info exts) nil f)
+		(Vk.Ist.create (infoDbg exts) nil f) debug
+	where
+	emsg = "validation layers requested, but not available!"
+	info exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.N,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = [],
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	infoDbg exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	ainfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
-		Vk.applicationInfoApplicationName =
-			"Example Vulkan Application",
+		Vk.applicationInfoApplicationName = "Hello Triangle",
 		Vk.applicationInfoApplicationVersion =
 			Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoEngineName = "No Engine",
 		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil f
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
+dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
+	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msngr.createInfoFlags = zeroBits,
+	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msngr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
+	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
+	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
+		"validation layer: " <>
+		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
-
-print3 :: (Show a, Show b, Show c) => (a, b, c) -> IO ()
-print3 (x, y, z) = print x >> print y >> print z
-
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> BS.ByteString -> IO ()
-run w ist g obj =
---	print3 (takePosNormalFace 10 vnf) >>
-	let	evns = V.map positionNormalToVertex
-			<$> WNew.posNormal (WNew.r obj) in
-	either error pure evns >>= \vns ->
---	print vns >>
-	Glfw.createWindowSurface ist w nil \sfc ->
+body :: FilePath ->
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+body mdlfp fr w ist =
+	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	putStrLn "MIN ALIGN" >>
 	(print . Vk.PhDvc.limitsMinUniformBufferOffsetAlignment . Vk.PhDvc.propertiesLimits =<< Vk.PhDvc.getProperties phdv) >>
@@ -254,14 +241,21 @@ run w ist g obj =
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
 	createCameraBuffers phdv dv cmdslyt maxFramesInFlight \cmlyts cmbs cmms ->
 	createSceneBuffer phdv dv \scnb scnm ->
+	BS.readFile mdlfp >>= \obj ->
+	let	evns = V.map positionNormalToVertex
+			<$> WNew.posNormal (WNew.r obj) in
+	either error pure evns >>= \vns ->
 	createVertexBuffer phdv dv gq cp vns \vb ->
 	createVertexBuffer phdv dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	createDescriptorPool dv \cmdp ->
 	createDescriptorSets dv cmdp cmbs cmlyts scnb \cmds ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
-		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmbs cmms scnm cmds (fromIntegral $ V.length vns)
+	mainLoop fr w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
+		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
+
+maxFramesInFlight :: Integral n => n
+maxFramesInFlight = 2
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -351,7 +345,7 @@ createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qs ->
 		Vk.Dvc.M.createInfoFlags = def,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.M.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] vldLayers debug,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 	qcrInfo qf = Vk.Dvc.QueueCreateInfo {
@@ -365,12 +359,12 @@ mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
-createSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapchain :: GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d ->
 		IO a) -> IO a
-createSwapchain win sfc ph qfis dv f = do
+createSwapchain (GlfwG.Win.W win) sfc ph qfis dv f = do
 	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	fmt = Vk.Khr.Surface.M.formatOldFormat . chooseSwapSurfaceFormat $ formats spp
@@ -1400,9 +1394,9 @@ mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: HeteroParList.PL Vk.Semaphore.S siass,
-		renderFinishedSemaphores :: HeteroParList.PL Vk.Semaphore.S srfss,
-		inFlightFences :: HeteroParList.PL Vk.Fence.F sfss } ->
+		_imageAvailableSemaphores :: HeteroParList.PL Vk.Semaphore.S siass,
+		_renderFinishedSemaphores :: HeteroParList.PL Vk.Semaphore.S srfss,
+		_inFlightFences :: HeteroParList.PL Vk.Fence.F sfss } ->
 		SyncObjects '(siass, srfss, sfss)
 
 createSyncObjects ::
@@ -1442,7 +1436,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	newIORef Nothing >>= \om ->
-	drawObject om cb sce cmd RenderObject {
+	drawObject om cb cmd RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
@@ -1450,7 +1444,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 		renderObjectTransformMatrix = model } >>
 	newIORef Nothing >>= \omtri ->
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb sce cmd RenderObject {
+		drawObject omtri cb cmd RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
 			renderObjectMesh = vbtri,
@@ -1485,6 +1479,9 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 			HeteroParList.Nil }
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
+frashRate :: Num n => n
+frashRate = 2
+
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectPipeline :: Vk.Ppl.Graphics.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -1503,13 +1500,12 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""])) ->
 	Vk.CmdBffr.C scb ->
-	Vk.Extent2d ->
 	Vk.DscSet.D sds '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
 	RenderObject sg sl sdlyt sm sb nm -> IO ()
-drawObject om cb sce cmd RenderObject {
+drawObject om cb cmd RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
 	renderObjectMesh = vb,
@@ -1554,7 +1550,7 @@ mainLoop :: (
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts,
 	HeteroParList.HomoList '() vss ) =>
 	FramebufferResized ->
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> Vk.Extent2d ->
@@ -1580,7 +1576,6 @@ mainLoop :: (
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.BufferArg
@@ -1589,7 +1584,7 @@ mainLoop :: (
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmbs cmms scnm cmds vn = do
+mainLoop g (GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmms scnm cmds vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn spst0 sdrn -> do
 		Glfw.pollEvents
 		spst <- Glfw.getKey w Glfw.Key'Space
@@ -1599,7 +1594,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrc
 			sdrn' = bool id (+ 1) prsd sdrn
 		when prsd $ print sdrn'
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn' cmbs cmms scnm cmds vn
+			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn' cmms scnm cmds vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)) spst sdrn')
 	Vk.Dvc.waitIdle dvc
 
@@ -1637,7 +1632,6 @@ runLoop :: (
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int -> Int -> Int ->
-	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.BufferArg
@@ -1647,9 +1641,9 @@ runLoop :: (
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms scnm cmds vn loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn cmms scnm cmds vn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms scnm cmds vn
+		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn sdrn cmms scnm cmds vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
@@ -1682,7 +1676,6 @@ drawFrame ::
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
-	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.BufferArg
@@ -1691,7 +1684,7 @@ drawFrame ::
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
-drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
+drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmms scnm cmds vn =
 	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
 	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
@@ -1864,28 +1857,6 @@ instance Storable Vertex where
 
 instance GStorable.G Vertex where
 
-vertices, vertices' :: V.Vector Vertex
-vertices = V.fromList [
-	Vertex (Position . Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ (- 1.0) :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
-vertices' = V.fromList [
-	Vertex (Position . Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ (- 1.0) :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL) ]
-
 data MeshPushConstants = MeshPushConstants {
 	meshPushConstantsData :: Cglm.Vec4,
 	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
@@ -1900,6 +1871,7 @@ data GpuCameraData = GpuCameraData {
 	gpuCameraDAtaViewProj :: ViewProj }
 	deriving (Show, Generic)
 
+gpuCameraData :: Vk.Extent2d -> GpuCameraData
 gpuCameraData sce = GpuCameraData (View view) (Proj $ projection sce)
 --	(ViewProj . Cglm.mat4Mul view $ projection sce)
 	(ViewProj $ Cglm.mat4Mul (projection sce) view)
