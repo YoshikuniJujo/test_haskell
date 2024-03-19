@@ -27,7 +27,6 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
 import Data.TypeLevel.List qualified as TpLvlLst
@@ -47,7 +46,6 @@ import qualified Data.Vector.Storable as V
 import qualified Data.ByteString as BS
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Khr.Surface.Glfw as Glfw
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic as GStorable
 
@@ -240,7 +238,7 @@ body mdlfp fr w ist =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
-	createCameraBuffers phdv dv cmdslyt maxFramesInFlight \cmlyts cmbs cmms ->
+	createCameraBuffersNew @'["scene-data-0", "scene-data-1"] phdv dv cmdslyt maxFramesInFlight \_ cmlyts cmbs cmms ->
 	createSceneBuffer phdv dv \scnb scnm ->
 	BS.readFile mdlfp >>= \obj ->
 	let	evns = V.map positionNormalToVertex
@@ -251,7 +249,7 @@ body mdlfp fr w ist =
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	createDescriptorPool dv \cmdp ->
-	createDescriptorSets dv cmdp cmbs cmlyts scnb \cmds ->
+	createDescriptorSetsNew dv cmdp cmbs cmlyts scnb \cmds ->
 	mainLoop fr w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
 		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
 
@@ -1084,26 +1082,45 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.D sdsc '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
-		'Vk.DscSetLyt.Buffer '[
-			VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
-	Int ->
-	(forall slyts sbsms . (
-		Vk.DscSet.DListFromMiddle slyts,
-		HeteroParList.FromList slyts, Update sbsms slyts,
-		HeteroParList.HomoList '(sdsc, '[
+class CreateCameraBuffersNew (sds :: [Symbol]) where
+	createCameraBuffersNew ::
+		snb ~ '[
+			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] =>
+		Vk.PhDvc.P -> Vk.Dvc.D sd ->
+		Vk.DscSetLyt.D sdsc '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
-		HeteroParList.PL (U2 Vk.DscSetLyt.D) slyts ->
-		HeteroParList.PL BindedGcd sbsms ->
-		HeteroParList.PL MemoryGcd sbsms -> IO a) -> IO a
-createCameraBuffers _ _ _ n f | n < 1 = f HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
-createCameraBuffers phdvc dvc lyt n f = createCameraBuffer phdvc dvc \bnd mem ->
-	createCameraBuffers phdvc dvc lyt (n - 1) \lyts bnds mems ->
-	f (U2 lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
+		Int ->
+--		(forall slyts sbsms sds . (
+		(forall slyts sbsms . (
+			Vk.DscSet.DListFromMiddle slyts,
+			HeteroParList.FromList slyts,
+			UpdateNew snb sbsms slyts sds,
+			HeteroParList.HomoList '(sdsc, '[
+				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
+				'Vk.DscSetLyt.Buffer '[
+					VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
+			Proxy sds ->
+			HeteroParList.PL (U2 Vk.DscSetLyt.D) slyts ->
+			HeteroParList.PL BindedGcd sbsms ->
+			HeteroParList.PL MemoryGcd sbsms -> IO a) -> IO a
+
+instance CreateCameraBuffersNew '[] where
+	createCameraBuffersNew _ _ _ n f | n < 1 = f @_ @_ Proxy HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
+
+instance (
+	snb ~ '[
+		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ],
+	VObj.OffsetRange (VObj.Atom 256 GpuSceneData0 (Just sd)) snb,
+	CreateCameraBuffersNew sds ) =>
+	CreateCameraBuffersNew (sd ': sds) where
+	createCameraBuffersNew phdvc dvc lyt n f = createCameraBuffer phdvc dvc \bnd mem ->
+		createCameraBuffersNew @sds phdvc dvc lyt (n - 1) \(Proxy :: Proxy sds) lyts bnds mems ->
+		f (Proxy :: Proxy (sd ': sds)) (U2 lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
+--		f (Proxy :: Proxy ("scene-data-0" ': sds)) (U2 lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
 
 createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
@@ -1257,32 +1274,13 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
 		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
-createDescriptorSets :: forall snb ss sd sp smsbs sm sb a . (
-	snb ~ '[
-		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ],
-	Vk.DscSet.DListFromMiddle ss,
-	HeteroParList.FromList ss, Update smsbs ss ) =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
-	HeteroParList.PL (U2 Vk.DscSetLyt.D) ss ->
-	Vk.Bffr.Binded sm sb "scene-buffer" snb ->
-	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
-createDescriptorSets dvc dscp ubs dscslyts scnb f =
-	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do
-	update dvc ubs dscss scnb 0
-	f dscss
-	where
-	allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dscp,
-		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
-
 createDescriptorSetsNew :: forall snb ss sd sp smsbs sm sb a . (
 	snb ~ '[
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ],
 	Vk.DscSet.DListFromMiddle ss,
-	HeteroParList.FromList ss, Update smsbs ss, UpdateNew snb smsbs ss '["scene-data-0", "scene-data-1"] ) =>
+	HeteroParList.FromList ss,
+	UpdateNew snb smsbs ss '["scene-data-0", "scene-data-1"] ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
 	HeteroParList.PL (U2 Vk.DscSetLyt.D) ss ->
 	Vk.Bffr.Binded sm sb "scene-buffer" snb ->
@@ -1310,10 +1308,8 @@ instance UpdateNew _snb '[] '[] '[] where
 instance (
 	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
 	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuSceneData0 ('Just sn)] 0,
---	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
 	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuCameraData 'Nothing],
 	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuSceneData0 ('Just sn)],
---	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],
 	UpdateNew snb ubs dscss sns,
 	VObj.OffsetRange (VObj.Atom 256 GpuSceneData0 (Just sn)) snb,
 
@@ -1326,43 +1322,6 @@ instance (
 			U5 (descriptorWrite0 @GpuSceneData0 @('Just sn) scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HeteroParList.Nil ) HeteroParList.Nil
 		updateNew @snb @_ @_ @sns dvc ubs dscss scnb
-	updateNew _ _ _ _ = error "bad"
-
-class Update smsbs slbtss where
-	update ::
-		Vk.Dvc.D sd ->
-		HeteroParList.PL BindedGcd smsbs ->
-		HeteroParList.PL (Vk.DscSet.D sds) slbtss ->
-		Vk.Bffr.Binded sm sb "scene-buffer" '[
-			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] -> Int -> IO ()
-
-instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
-
-instance (
-	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
-	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
-	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
-	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuCameraData 'Nothing],
-	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")],
-	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],
-	Update ubs dscss
-	) =>
-	Update (ub ': ubs) ('(ds, cs) ': dscss) where
-	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 0 = do
-		Vk.DscSet.updateDs dvc (
-			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
-			HeteroParList.Nil ) HeteroParList.Nil
-		update dvc ubs dscss scnb 1
-	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 1 = do
-		Vk.DscSet.updateDs dvc (
-			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
-			HeteroParList.Nil )
-			HeteroParList.Nil
-		update dvc ubs dscss scnb 2
-	update _ _ _ _ _ = error "bad"
 
 descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
 	Show (HeteroParList.PL VObj.Length objs),
