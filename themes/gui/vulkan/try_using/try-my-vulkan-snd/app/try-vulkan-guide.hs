@@ -962,13 +962,13 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 
 type SceneNames = '["scene-data-0", "scene-data-1"]
 
-type family SceneBufferArg snns where
-	SceneBufferArg '[] = '[]
-	SceneBufferArg (snn ': snns) =
-		VObj.Atom 256 GpuSceneData0 ('Just snn) ': SceneBufferArg snns
+type family SceneBufferArg al snns where
+	SceneBufferArg _al '[] = '[]
+	SceneBufferArg al (snn ': snns) =
+		VObj.Atom al GpuSceneData0 ('Just snn) ': SceneBufferArg al snns
 
 class CreateCameraBuffersNew (sds :: [Symbol]) where
-	createCameraBuffersNew :: snb ~ SceneBufferArg SceneNames =>
+	createCameraBuffersNew :: snb ~ SceneBufferArg 256 SceneNames =>
 		Vk.Phd.P -> Vk.Dvc.D sd ->
 		Vk.DscSetLyt.D sdsc '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -991,7 +991,7 @@ instance CreateCameraBuffersNew '[] where
 	createCameraBuffersNew _ _ _ f = f @_ @_ Proxy HPList.Nil HPList.Nil HPList.Nil
 
 instance (
-	snb ~ SceneBufferArg SceneNames,
+	snb ~ SceneBufferArg 256 SceneNames,
 	VObj.OffsetRange (VObj.Atom 256 GpuSceneData0 (Just sd)) snb,
 	CreateCameraBuffersNew sds ) =>
 	CreateCameraBuffersNew (sd ': sds) where
@@ -1010,11 +1010,15 @@ createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
 createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HPList.Singleton VObj.LengthAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
+class TlLength (xs :: [k]) where tlLength :: Int
+instance TlLength '[] where tlLength = 0
+instance TlLength xs => TlLength (x ': xs) where tlLength = 1 + (tlLength @_ @xs)
+
 createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm (SceneBufferArg SceneNames) ->
+		Vk.Bffr.Binded sm sb nm (SceneBufferArg 256 SceneNames) ->
 		Vk.Mm.M sm '[
-			'(sb, 'Vk.Mm.BufferArg nm (SceneBufferArg SceneNames)) ] ->
+			'(sb, 'Vk.Mm.BufferArg nm (SceneBufferArg 256 SceneNames)) ] ->
 		IO a) -> IO a
 createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
 	(VObj.LengthAtom :** VObj.LengthAtom :** HPList.Nil)
@@ -1147,7 +1151,7 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 createDescriptorSetsNew :: forall snb ss sd sp smsbs sm sb a . (
-	snb ~ SceneBufferArg SceneNames,
+	snb ~ SceneBufferArg 256 SceneNames,
 	Vk.DscSet.DListFromMiddle ss,
 	HPList.FromList ss, UpdateNew snb smsbs ss SceneNames ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HPList.PL BindedGcd smsbs ->
@@ -1464,12 +1468,12 @@ mainLoop :: (
 	HPList.PL MemoryGcd sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
-			"scene-buffer" (SceneBufferArg SceneNames))] ->
+			"scene-buffer" (SceneBufferArg 256 SceneNames))] ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
 mainLoop g w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmms scnm cmds vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0)
-		. ($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
+		. ($ Inf.cycle $ NE.fromList [0 .. (tlLength @_ @SceneNames) - 1])
 		. ($ ext0) $ fix \loop ext (cf :~ cfs) fn spst0 sdrn -> do
 		Glfw.pollEvents
 		spst <- Glfw.getKey win Glfw.Key'Space
@@ -1520,7 +1524,7 @@ runLoop :: (
 	HPList.PL MemoryGcd sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
-			"scene-buffer" (SceneBufferArg SceneNames))] ->
+			"scene-buffer" (SceneBufferArg 256 SceneNames))] ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 ->
 	(Vk.Extent2d -> IO ()) -> IO ()
@@ -1562,7 +1566,7 @@ drawFrame ::
 	HPList.PL MemoryGcd sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
-			"scene-buffer" (SceneBufferArg SceneNames))] ->
+			"scene-buffer" (SceneBufferArg 256 SceneNames))] ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmms scnm cmds vn =
