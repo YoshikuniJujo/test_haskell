@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -87,7 +87,6 @@ import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss.M
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
@@ -119,7 +118,6 @@ import Data.Bool.ToolsYj
 import Data.Maybe.ToolsYj
 import Data.List.ToolsYj
 import Data.IORef.ToolsYj
-import Data.TypeLevel.List qualified as TList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.List.Infinite qualified as Inf
@@ -234,7 +232,7 @@ body mdlfp fr w ist =
 	createGraphicsPipeline d ex rp ppllyt 0 \gpl0 ->
 	createGraphicsPipeline d ex rp ppllyt 1 \gpl1 ->
 	createFramebuffers d ex rp scvs dv \fbs ->
-	createCameraBuffersNew @'["scene-data-0", "scene-data-1"] pd d cmdslyt \_ cmlyts cmbs cmms ->
+	createCameraBuffersNew @SceneNames pd d cmdslyt \_ cmlyts cmbs cmms ->
 	createSceneBuffer pd d \scnb scnm ->
 	BS.readFile mdlfp >>= \obj ->
 	let	evns = V.map positionNormalToVertex
@@ -242,20 +240,13 @@ body mdlfp fr w ist =
 	either error pure evns >>= \vns ->
 	createVertexBuffer pd d gq cp vns \vb ->
 	createVertexBuffer pd d gq cp triangle \vbtri ->
-	tnum maxFramesInFlight \(_ :: Proxy mff) ->
+	($ (Proxy :: Proxy (MapToUnit SceneNames))) \(_ :: Proxy mff) ->
 	createCommandBuffers d cp \cbs ->
 	createSyncObjects d \sos ->
 	createDescriptorPool d \cmdp ->
 	createDescriptorSetsNew d cmdp cmbs cmlyts scnb \cmds ->
 	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp ppllyt
 		gpl0 gpl1 cp drs fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
-	where
-	tnum :: Int -> (forall (n :: [()]) . (
-		TList.Length n, HPList.FromList n,
-		HPList.HomoList '() n, HPList.RepM n ) => Proxy n -> a) -> a
-	tnum 0 f = f (Proxy @'[])
-	tnum n f = tnum (n - 1) \p -> f $ plus1 p
-		where plus1 :: Proxy n -> Proxy ('() ': n); plus1 Proxy = Proxy
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -969,18 +960,20 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
+type SceneNames = '["scene-data-0", "scene-data-1"]
+
+type family SceneBufferArg snns where
+	SceneBufferArg '[] = '[]
+	SceneBufferArg (snn ': snns) =
+		VObj.Atom 256 GpuSceneData0 ('Just snn) ': SceneBufferArg snns
+
 class CreateCameraBuffersNew (sds :: [Symbol]) where
-	createCameraBuffersNew ::
-		snb ~ '[
-			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] =>
+	createCameraBuffersNew :: snb ~ SceneBufferArg SceneNames =>
 		Vk.Phd.P -> Vk.Dvc.D sd ->
 		Vk.DscSetLyt.D sdsc '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
---		Int ->
---		(forall slyts sbsms sds . (
 		(forall slyts sbsms . (
 			Vk.DscSet.DListFromMiddle slyts,
 			HPList.FromList slyts,
@@ -998,16 +991,13 @@ instance CreateCameraBuffersNew '[] where
 	createCameraBuffersNew _ _ _ f = f @_ @_ Proxy HPList.Nil HPList.Nil HPList.Nil
 
 instance (
-	snb ~ '[
-		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ],
+	snb ~ SceneBufferArg SceneNames,
 	VObj.OffsetRange (VObj.Atom 256 GpuSceneData0 (Just sd)) snb,
 	CreateCameraBuffersNew sds ) =>
 	CreateCameraBuffersNew (sd ': sds) where
 	createCameraBuffersNew phdvc dvc lyt f = createCameraBuffer phdvc dvc \bnd mem ->
 		createCameraBuffersNew @sds phdvc dvc lyt \(Proxy :: Proxy sds) lyts bnds mems ->
 		f (Proxy :: Proxy (sd ': sds)) (U2 lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
---		f (Proxy :: Proxy ("scene-data-0" ': sds)) (U2 lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
 
 createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
@@ -1022,14 +1012,9 @@ createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HPList.Singleton VObj.Len
 
 createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[
-			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ) ] ->
+		Vk.Bffr.Binded sm sb nm (SceneBufferArg SceneNames) ->
+		Vk.Mm.M sm '[
+			'(sb, 'Vk.Mm.BufferArg nm (SceneBufferArg SceneNames)) ] ->
 		IO a) -> IO a
 createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
 	(VObj.LengthAtom :** VObj.LengthAtom :** HPList.Nil)
@@ -1162,19 +1147,16 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 createDescriptorSetsNew :: forall snb ss sd sp smsbs sm sb a . (
-	snb ~ '[
-		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ],
+	snb ~ SceneBufferArg SceneNames,
 	Vk.DscSet.DListFromMiddle ss,
-	HPList.FromList ss,
-	UpdateNew snb smsbs ss '["scene-data-0", "scene-data-1"] ) =>
+	HPList.FromList ss, UpdateNew snb smsbs ss SceneNames ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HPList.PL BindedGcd smsbs ->
 	HPList.PL (U2 Vk.DscSetLyt.D) ss ->
 	Vk.Bffr.Binded sm sb "scene-buffer" snb ->
 	(forall sds . HPList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSetsNew dvc dscp ubs dscslyts scnb f =
 	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do
-	updateNew @snb @_ @_ @'["scene-data-0", "scene-data-1"] dvc ubs dscss scnb
+	updateNew @snb @_ @_ @SceneNames dvc ubs dscss scnb
 	f dscss
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
@@ -1280,6 +1262,10 @@ createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 		Vk.CBffr.allocateInfoNext = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPool = cp,
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+
+type family MapToUnit (xs :: [k]) where
+	MapToUnit '[] = '[]
+	MapToUnit (x ': xs) = '() ': MapToUnit xs
 
 mkVss :: Int -> (forall (vss :: [()]) . (
 	TpLvlLst.Length vss, TLength.Length vss,
@@ -1478,9 +1464,7 @@ mainLoop :: (
 	HPList.PL MemoryGcd sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
-			"scene-buffer" '[
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
+			"scene-buffer" (SceneBufferArg SceneNames))] ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
 mainLoop g w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmms scnm cmds vn = do
@@ -1536,9 +1520,7 @@ runLoop :: (
 	HPList.PL MemoryGcd sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
-			"scene-buffer" '[
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
+			"scene-buffer" (SceneBufferArg SceneNames))] ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 ->
 	(Vk.Extent2d -> IO ()) -> IO ()
@@ -1580,9 +1562,7 @@ drawFrame ::
 	HPList.PL MemoryGcd sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
-			"scene-buffer" '[
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
+			"scene-buffer" (SceneBufferArg SceneNames))] ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmms scnm cmds vn =
