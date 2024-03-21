@@ -230,14 +230,11 @@ body mdlfp fr w ist =
 	createPplLyt @alu d \dsl pl ->
 	createGrPpl 0 d ex rp pl \gp0 -> createGrPpl 1 d ex rp pl \gp1 ->
 	createFrmbffrs d ex rp scvs dv \fbs ->
-	createCameraBuffersNew @alu @SceneNames pd d dsl \_ cmlyts cmbs cmms ->
-	createSceneBuffer pd d \scnb scnm ->
-	BS.readFile mdlfp >>= \obj ->
-	let	evns = V.map positionNormalToVertex
-			<$> WNew.posNormal (WNew.r obj) in
-	either error pure evns >>= \vns ->
+	readVertices mdlfp >>= \vns ->
 	createVertexBuffer pd d gq cp vns \vb ->
 	createVertexBuffer pd d gq cp triangle \vbtri ->
+	createCameraBuffersNew @alu @SceneNames pd d dsl \_ cmlyts cmbs cmms ->
+	createSceneBuffer pd d \scnb scnm ->
 	($ (Proxy :: Proxy (MapToUnit SceneNames))) \(_ :: Proxy mff) ->
 	createCommandBuffers d cp \cbs ->
 	createSyncObjects d \sos ->
@@ -245,6 +242,12 @@ body mdlfp fr w ist =
 	createDescriptorSetsNew d cmdp cmbs cmlyts scnb \cmds ->
 	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl
 		gp0 gp1 cp drs fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
+
+readVertices :: FilePath -> IO (V.Vector WVertex)
+readVertices fp = do
+	evns <- (V.map positionNormalToVertex <$>)
+		. WNew.posNormal . WNew.r <$> BS.readFile fp
+	either error pure evns
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
