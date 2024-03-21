@@ -229,7 +229,7 @@ body mdlfp fr w ist =
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl ->
 	createGrPpl 0 d ex rp pl \gp0 -> createGrPpl 1 d ex rp pl \gp1 ->
-	createFramebuffers d ex rp scvs dv \fbs ->
+	createFrmbffrs d ex rp scvs dv \fbs ->
 	createCameraBuffersNew @alu @SceneNames pd d dsl \_ cmlyts cmbs cmms ->
 	createSceneBuffer pd d \scnb scnm ->
 	BS.readFile mdlfp >>= \obj ->
@@ -889,46 +889,42 @@ cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoCommandPool = cp,
 	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
-	Vk.ImgVw.I dptfmt dptnm siv ->
-	(forall sfs . RecreateFramebuffers sis sfs =>
+createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm fmt) sis -> Vk.ImgVw.I dptnm dptfmt siv ->
+	(forall sfs . RecreateFrmbffrs sis sfs =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFramebuffers _ _ _ HPList.Nil _ f = f HPList.Nil
-createFramebuffers dvc sce rp (iv :** ivs) dptiv f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv dptiv) nil \fb ->
-	createFramebuffers dvc sce rp ivs dptiv \fbs -> f (fb :** fbs)
+createFrmbffrs _ _ _ HPList.Nil _ f = f HPList.Nil
+createFrmbffrs dv ex rp (v :** vs) dvw f =
+	Vk.Frmbffr.create dv (frmbffrInfo ex rp v dvw) nil \fb ->
+	createFrmbffrs dv ex rp vs dvw \fbs -> f (fb :** fbs)
 
-class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
-	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-		Vk.ImgVw.I dptfmt dptnm sdiv ->
+class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
+	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
+		Vk.ImgVw.I dptnm dptfmt siv ->
 		HPList.PL Vk.Frmbffr.F sfs -> IO ()
 
-instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce _rp HPList.Nil _ HPList.Nil = pure ()
+instance RecreateFrmbffrs '[] '[] where
+	recreateFrmbffrs _ _ _ HPList.Nil _ HPList.Nil = pure ()
 
-instance RecreateFramebuffers sis sfs =>
-	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce rp (sciv :** scivs) dptiv (fb :** fbs) =
-		Vk.Frmbffr.unsafeRecreate dvc
-			(mkFramebufferCreateInfo sce rp sciv dptiv) nil fb >>
-		recreateFramebuffers dvc sce rp scivs dptiv fbs
+instance RecreateFrmbffrs sis sfs =>
+	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
+	recreateFrmbffrs dv ex rp (v :** vs) dvw (fb :** fbs) =
+		Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v dvw) nil fb >>
+		recreateFrmbffrs dv ex rp vs dvw fbs
 
-mkFramebufferCreateInfo ::
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
-	Vk.ImgVw.I dptfmt dptnm sdiv ->
+frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
+	Vk.ImgVw.I dptnm dptfmt sdiv ->
 	Vk.Frmbffr.CreateInfo 'Nothing sr
-		'[ '(nm, fmt, si), '(dptfmt, dptnm, sdiv)]
-mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfo {
+		'[ '(inm, fmt, si), '(dptnm, dptfmt, sdiv)]
+frmbffrInfo ex rp att dpt = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 attch :** U3 dpt :** HPList.Nil,
+	Vk.Frmbffr.createInfoAttachments = U3 att :** U3 dpt :** HPList.Nil,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
-	where
-	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
+	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
 
 createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
@@ -1426,7 +1422,7 @@ projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.perspective
 mainLoop :: (
 	KnownNat alm,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers ss sfs,
+	RecreateFrmbffrs ss sfs,
 	HPList.HomoList '(s, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom alm WViewProj 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
@@ -1484,7 +1480,7 @@ mainLoop g w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt 
 runLoop :: (
 	KnownNat alm,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs,
+	RecreateFrmbffrs sis sfs,
 	HPList.HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom alm WViewProj 'Nothing],
@@ -1612,7 +1608,7 @@ catchAndSerialize =
 
 catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs ) =>
+	RecreateFrmbffrs sis sfs ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q ->
@@ -1648,7 +1644,7 @@ catchAndRecreate w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs 
 
 recreateSwapchainEtc :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs ) =>
+	RecreateFrmbffrs sis sfs ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q ->
@@ -1683,7 +1679,7 @@ recreateSwapchainEtc w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp pplly
 		recreateDptRsrcs phdvc dvc gq cp ext (dimg, dim, divw)
 		recreateGrPpl 0 dvc ext rp ppllyt gpl0
 		recreateGrPpl 1 dvc ext rp ppllyt gpl1
-		recreateFramebuffers dvc ext rp scivs divw fbs
+		recreateFrmbffrs dvc ext rp scivs divw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
 waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
