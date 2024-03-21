@@ -14,7 +14,8 @@
 module Main (main) where
 
 import GHC.Generics
-import GHC.TypeLits
+import GHC.TypeLits (Symbol)
+import GHC.TypeNats
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
@@ -82,7 +83,7 @@ import qualified Gpu.Vulkan.Sample as Vk.Sample
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
-import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Layout
+import qualified Gpu.Vulkan.PipelineLayout as Vk.PplLyt
 import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
@@ -225,6 +226,7 @@ body mdlfp fr w ist =
 	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
 	createDptRsrcs @dfmt pd d gq cp ex \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d \rp ->
+	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	putStrLn "MIN ALIGN" >>
 	(print . Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits =<< Vk.Phd.getProperties pd) >>
 	createDescriptorSetLayout d \cmdslyt ->
@@ -232,7 +234,7 @@ body mdlfp fr w ist =
 	createGraphicsPipeline d ex rp ppllyt 0 \gpl0 ->
 	createGraphicsPipeline d ex rp ppllyt 1 \gpl1 ->
 	createFramebuffers d ex rp scvs dv \fbs ->
-	createCameraBuffersNew @SceneNames pd d cmdslyt \_ cmlyts cmbs cmms ->
+	createCameraBuffersNew @256 @SceneNames pd d cmdslyt \_ cmlyts cmbs cmms ->
 	createSceneBuffer pd d \scnb scnm ->
 	BS.readFile mdlfp >>= \obj ->
 	let	evns = V.map positionNormalToVertex
@@ -454,6 +456,12 @@ imgVwInfo i a = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
 
+unfrmBffrOstAlgn ::
+	Vk.Phd.P -> (forall a . KnownNat a => Proxy a -> IO b) -> IO b
+unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
+	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
+	=<< Vk.Phd.getProperties pd
+
 createRndrPss :: forall scifmt dptfmt sd a .
 	(Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dptfmt) =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
@@ -514,22 +522,38 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[scifmt, dptfmt] dv info nil
 			Vk.AccessDepthStencilAttachmentWriteBit,
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
+createPplLyt :: forall alm sd a . Vk.Dvc.D sd -> (forall sl sdsl .
+	Vk.DscSetLyt.D sdsl (DscStLytArg alm) ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] -> IO a) -> IO a
+createPplLyt dv f = createDscStLyt dv \dsl ->
+	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
+	where info dsl = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
+type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
+type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
+type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
+
+type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
+
 createPipelineLayout :: forall sd s b .
 	Vk.Dvc.D sd ->
 	Vk.DscSetLyt.D s '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ] -> (forall sl .
-		Vk.Ppl.Layout.P sl
+		Vk.PplLyt.P sl
 			'[ '(s, '[
 				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
 					VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 			'[WrapMeshPushConstants] ->
 		IO b) -> IO b
-createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.create dvc crInfo nil f
+createPipelineLayout dvc cmdslyt f = Vk.PplLyt.create dvc crInfo nil f
 	where
-	crInfo :: Vk.Ppl.Layout.CreateInfo 'Nothing
+	crInfo :: Vk.PplLyt.CreateInfo 'Nothing
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -539,14 +563,14 @@ createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.create dvc crInfo nil f
 			'[ WrapMeshPushConstants]
 			'[ 'Vk.PushConstant.Range
 				'[ 'Vk.T.ShaderStageVertexBit] '[WrapMeshPushConstants] ])
-	crInfo = Vk.Ppl.Layout.CreateInfo {
-		Vk.Ppl.Layout.createInfoNext = TMaybe.N,
-		Vk.Ppl.Layout.createInfoFlags = zeroBits,
-		Vk.Ppl.Layout.createInfoSetLayouts = HPList.Singleton $ U2 cmdslyt }
+	crInfo = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 cmdslyt }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Layout.P sl
+	Vk.PplLyt.P sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -569,7 +593,7 @@ type Foo s = '[ '(s, '[
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Layout.P sl
+	Vk.PplLyt.P sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -585,7 +609,7 @@ recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.unsafeRec
 
 mkGraphicsPipelineCreateInfo ::
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Layout.P sl
+	Vk.PplLyt.P sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -967,45 +991,46 @@ type family SceneBufferArg al snns where
 	SceneBufferArg al (snn ': snns) =
 		VObj.Atom al GpuSceneData0 ('Just snn) ': SceneBufferArg al snns
 
-class CreateCameraBuffersNew (sds :: [Symbol]) where
-	createCameraBuffersNew :: snb ~ SceneBufferArg 256 SceneNames =>
+class CreateCameraBuffersNew al (sds :: [Symbol]) where
+	createCameraBuffersNew :: snb ~ SceneBufferArg al SceneNames =>
 		Vk.Phd.P -> Vk.Dvc.D sd ->
 		Vk.DscSetLyt.D sdsc '[
-			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom al GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
+				VObj.Atom al GpuSceneData0 'Nothing ] ] ->
 		(forall slyts sbsms . (
 			Vk.DscSet.DListFromMiddle slyts,
 			HPList.FromList slyts,
-			UpdateNew snb sbsms slyts sds,
+			UpdateNew al snb sbsms slyts sds,
 			HPList.HomoList '(sdsc, '[
-				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
+				'Vk.DscSetLyt.Buffer '[VObj.Atom al GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
-					VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
+					VObj.Atom al GpuSceneData0 'Nothing ] ]) slyts ) =>
 			Proxy sds ->
 			HPList.PL (U2 Vk.DscSetLyt.D) slyts ->
-			HPList.PL BindedGcd sbsms ->
-			HPList.PL MemoryGcd sbsms -> IO a) -> IO a
+			HPList.PL (BindedGcd al) sbsms ->
+			HPList.PL (MemoryGcd al) sbsms -> IO a) -> IO a
 
-instance CreateCameraBuffersNew '[] where
+instance CreateCameraBuffersNew al '[] where
 	createCameraBuffersNew _ _ _ f = f @_ @_ Proxy HPList.Nil HPList.Nil HPList.Nil
 
 instance (
-	snb ~ SceneBufferArg 256 SceneNames,
-	VObj.OffsetRange (VObj.Atom 256 GpuSceneData0 (Just sd)) snb,
-	CreateCameraBuffersNew sds ) =>
-	CreateCameraBuffersNew (sd ': sds) where
+	KnownNat al,
+	snb ~ SceneBufferArg al SceneNames,
+	VObj.OffsetRange (VObj.Atom al GpuSceneData0 (Just sd)) snb,
+	CreateCameraBuffersNew al sds ) =>
+	CreateCameraBuffersNew al (sd ': sds) where
 	createCameraBuffersNew phdvc dvc lyt f = createCameraBuffer phdvc dvc \bnd mem ->
-		createCameraBuffersNew @sds phdvc dvc lyt \(Proxy :: Proxy sds) lyts bnds mems ->
+		createCameraBuffersNew @al @sds phdvc dvc lyt \(Proxy :: Proxy sds) lyts bnds mems ->
 		f (Proxy :: Proxy (sd ': sds)) (U2 lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
 
-createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
+createCameraBuffer :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 GpuCameraData 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[VObj.Atom al GpuCameraData 'Nothing] ->
 		Vk.Mm.M sm '[ '(
 			sb,
 			'Vk.Mm.BufferArg nm
-				'[VObj.Atom 256 GpuCameraData 'Nothing]) ] ->
+				'[VObj.Atom al GpuCameraData 'Nothing]) ] ->
 		IO a) -> IO a
 createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HPList.Singleton VObj.LengthAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
@@ -1103,6 +1128,24 @@ findMemoryType phdvc flt props =
 		<*> checkBits props . Vk.Mm.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
+createDscStLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
+	Vk.DscSetLyt.D s (DscStLytArg alm) -> IO a) -> IO a
+createDscStLyt dv = Vk.DscSetLyt.create dv info nil
+	where
+	info = Vk.DscSetLyt.CreateInfo {
+		Vk.DscSetLyt.createInfoNext = TMaybe.N,
+		Vk.DscSetLyt.createInfoFlags = zeroBits,
+		Vk.DscSetLyt.createInfoBindings = mbd :** tbd :** HPList.Nil }
+	mbd = Vk.DscSetLyt.BindingBuffer {
+		Vk.DscSetLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeUniformBuffer,
+		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	tbd = Vk.DscSetLyt.BindingImage {
+		Vk.DscSetLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscSetLyt.bindingImageStageFlags =
+			Vk.ShaderStageFragmentBit }
+
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.D s '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1153,14 +1196,14 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
 createDescriptorSetsNew :: forall snb ss sd sp smsbs sm sb a . (
 	snb ~ SceneBufferArg 256 SceneNames,
 	Vk.DscSet.DListFromMiddle ss,
-	HPList.FromList ss, UpdateNew snb smsbs ss SceneNames ) =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HPList.PL BindedGcd smsbs ->
+	HPList.FromList ss, UpdateNew 256 snb smsbs ss SceneNames ) =>
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HPList.PL (BindedGcd 256) smsbs ->
 	HPList.PL (U2 Vk.DscSetLyt.D) ss ->
 	Vk.Bffr.Binded sm sb "scene-buffer" snb ->
 	(forall sds . HPList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSetsNew dvc dscp ubs dscslyts scnb f =
 	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do
-	updateNew @snb @_ @_ @SceneNames dvc ubs dscss scnb
+	updateNew @256 @snb @_ @_ @SceneNames dvc ubs dscss scnb
 	f dscss
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
@@ -1168,41 +1211,43 @@ createDescriptorSetsNew dvc dscp ubs dscslyts scnb f =
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
-class UpdateNew snb smsbs slbtss (sns :: [Symbol]) where
+class UpdateNew al snb smsbs slbtss (sns :: [Symbol]) where
 	updateNew ::
 		Vk.Dvc.D sd ->
-		HPList.PL BindedGcd smsbs ->
+		HPList.PL (BindedGcd al) smsbs ->
 		HPList.PL (Vk.DscSet.D sds) slbtss ->
 		Vk.Bffr.Binded sm sb "scene-buffer" snb -> IO ()
 
-instance UpdateNew _snb '[] '[] '[] where
+instance UpdateNew al _snb '[] '[] '[] where
 	updateNew _ HPList.Nil HPList.Nil _ = pure ()
 
 instance (
-	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
-	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom 256 GpuSceneData0 ('Just sn)] 0,
-	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuCameraData 'Nothing],
-	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom 256 GpuSceneData0 ('Just sn)],
-	UpdateNew snb ubs dscss sns,
-	VObj.OffsetRange (VObj.Atom 256 GpuSceneData0 (Just sn)) snb,
+	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom al GpuCameraData 'Nothing] 0,
+	Vk.DscSet.BindingAndArrayElemBuffer cs '[VObj.Atom al GpuSceneData0 ('Just sn)] 0,
+	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom al GpuCameraData 'Nothing],
+	Vk.DscSet.UpdateDynamicLength cs '[VObj.Atom al GpuSceneData0 ('Just sn)],
+	UpdateNew al snb ubs dscss sns,
+	VObj.OffsetRange (VObj.Atom al GpuSceneData0 (Just sn)) snb,
 
-	Show (HPList.PL VObj.Length snb)
+	Show (HPList.PL VObj.Length snb),
+
+	KnownNat al
 	) =>
-	UpdateNew snb (ub ': ubs) ('(ds, cs) ': dscss) (sn ': sns) where
+	UpdateNew al snb (ub ': ubs) ('(ds, cs) ': dscss) (sn ': sns) where
 	updateNew dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb = do
 		Vk.DscSet.updateDs dvc (
-			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U5 (descriptorWrite0 @GpuSceneData0 @('Just sn) scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @al @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @al @GpuSceneData0 @('Just sn) scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HPList.Nil ) HPList.Nil
-		updateNew @snb @_ @_ @sns dvc ubs dscss scnb
+		updateNew @al @snb @_ @_ @sns dvc ubs dscss scnb
 
-descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
+descriptorWrite0 :: forall al tp objnm objs sm sb nm slbts sds . (
 	Show (HPList.PL VObj.Length objs),
-	VObj.OffsetRange (VObj.Atom 256 tp objnm) objs ) =>
+	VObj.OffsetRange (VObj.Atom al tp objnm) objs ) =>
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom 256 tp objnm )]) 0
+		sm, sb, nm, VObj.Atom al tp objnm )]) 0
 descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1211,18 +1256,18 @@ descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 		HPList.Singleton bufferInfo }
 	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
 
-data BindedGcd smsb where
+data BindedGcd al smsb where
 	BindedGcd ::
-		Vk.Bffr.Binded sm sb "camera-buffer" '[VObj.Atom 256 GpuCameraData 'Nothing] ->
-		BindedGcd '(sm, sb)
+		Vk.Bffr.Binded sm sb "camera-buffer" '[VObj.Atom al GpuCameraData 'Nothing] ->
+		BindedGcd al '(sm, sb)
 
-data MemoryGcd smsb where
+data MemoryGcd al smsb where
 	MemoryGcd ::
 		Vk.Mm.M sm '[ '(
 			sb,
 			'Vk.Mm.BufferArg "camera-buffer"
-				'[VObj.Atom 256 GpuCameraData 'Nothing] )] ->
-		MemoryGcd '(sm, sb)
+				'[VObj.Atom al GpuCameraData 'Nothing] )] ->
+		MemoryGcd al '(sm, sb)
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
@@ -1308,7 +1353,7 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt, Foo sdlyt, '[WrapMeshPushConstants]) ->
-	Vk.Ppl.Layout.P slyt
+	Vk.PplLyt.P slyt
 		'[ '(sdlyt, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1377,7 +1422,7 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo sdlyt, '[WrapMeshPushConstants]),
 	renderObjectPipelineLayout ::
-		Vk.Ppl.Layout.P sl
+		Vk.PplLyt.P sl
 			'[ '(sdlyt, '[
 				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
@@ -1445,7 +1490,7 @@ mainLoop :: (
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPss.R sr ->
-	Vk.Ppl.Layout.P sl '[ '(s, '[
+	Vk.PplLyt.P sl '[ '(s, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
@@ -1465,7 +1510,7 @@ mainLoop :: (
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
 	HPList.LL (Vk.CBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	HPList.PL MemoryGcd sbsms ->
+	HPList.PL (MemoryGcd 256) sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
 			"scene-buffer" (SceneBufferArg 256 SceneNames))] ->
@@ -1501,7 +1546,7 @@ runLoop :: (
 	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr ->
-	Vk.Ppl.Layout.P sl
+	Vk.PplLyt.P sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1521,7 +1566,7 @@ runLoop :: (
 	HPList.LL (Vk.CBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int -> Int -> Int ->
-	HPList.PL MemoryGcd sbsms ->
+	HPList.PL (MemoryGcd 256) sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
 			"scene-buffer" (SceneBufferArg 256 SceneNames))] ->
@@ -1553,7 +1598,7 @@ drawFrame ::
 	Vk.Ppl.Graphics.G sg1 '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt, Foo s, '[WrapMeshPushConstants]) ->
-	Vk.Ppl.Layout.P slyt
+	Vk.PplLyt.P slyt
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1563,7 +1608,7 @@ drawFrame ::
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
 	HPList.LL (Vk.CBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
-	HPList.PL MemoryGcd sbsms ->
+	HPList.PL (MemoryGcd 256) sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
 			"scene-buffer" (SceneBufferArg 256 SceneNames))] ->
@@ -1623,7 +1668,7 @@ catchAndRecreate :: (
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr ->
-	Vk.Ppl.Layout.P sl
+	Vk.PplLyt.P sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1659,7 +1704,7 @@ recreateSwapchainEtc :: (
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr ->
-	Vk.Ppl.Layout.P sl
+	Vk.PplLyt.P sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1749,6 +1794,8 @@ data MeshPushConstants = MeshPushConstants {
 type WrapMeshPushConstants = GStorable.W MeshPushConstants
 
 instance GStorable.G MeshPushConstants
+
+type WModelViewProj = GStorable.W GpuCameraData
 
 data GpuCameraData = GpuCameraData {
 	gpuCameraDataView :: View,
