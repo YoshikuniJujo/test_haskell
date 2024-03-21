@@ -530,12 +530,6 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
-type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
-type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
-
-type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
-
 createPipelineLayout :: forall al sd s b .
 	Vk.Dvc.D sd ->
 	Vk.DscSetLyt.D s '[
@@ -1143,6 +1137,12 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 			Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
+
+type DscStLytArg alm = '[BufferViewProj alm, TxImg]
+type BufferViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomViewProj alm]
+type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
+
+type AtomViewProj alm = VObj.Atom alm WViewProj 'Nothing
 
 createDescriptorSetLayout :: forall al sd a . Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.D s '[
@@ -1796,7 +1796,7 @@ type WrapMeshPushConstants = GStorable.W MeshPushConstants
 
 instance GStorable.G MeshPushConstants
 
-type WModelViewProj = GStorable.W GpuCameraData
+type WViewProj = GStorable.W GpuCameraData
 
 data GpuCameraData = GpuCameraData {
 	gpuCameraDataView :: View,
