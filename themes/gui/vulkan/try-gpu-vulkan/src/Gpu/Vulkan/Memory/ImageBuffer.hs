@@ -131,6 +131,12 @@ instance (VObj.SizeAlignment obj, Alignments ibs) =>
 	Alignments ('(_s, 'BufferArg _nm (obj ': _objs)) ': ibs) where
 	alignments = Just (VObj.alignment @obj) : alignments @ibs
 
+class Alignments '[ '(s, 'BufferArg nm os)] =>
+	AlignmentsBuffer s nm (os :: [VObj.O])
+
+instance (VObj.SizeAlignment o, AlignmentsBuffer s nm os) =>
+	AlignmentsBuffer s nm (o ': os)
+
 -- OBJECT LENGTH
 
 class ObjectLength (nm :: Symbol) (obj :: VObj.O) ibargs where
