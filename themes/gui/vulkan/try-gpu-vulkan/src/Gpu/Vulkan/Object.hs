@@ -62,7 +62,7 @@ module Gpu.Vulkan.Object (
 
 	-- ** Whole Size
 
-	wholeSize,
+	wholeSize, WholeAlign(..),
 
 	-- ** Offset Range
 
@@ -235,6 +235,14 @@ wholeSizeFromSzAlgns ::
 wholeSizeFromSzAlgns sz0 HeteroParList.Nil = sz0
 wholeSizeFromSzAlgns sz0 (SizeAlignmentOf dn sz algn :** saoo) =
 	wholeSizeFromSzAlgns (adjust algn sz0 + dn * sz) saoo
+
+class WholeAlign (objs :: [O]) where wholeAlign :: Size
+
+instance WholeAlign '[] where wholeAlign = 1
+
+instance (SizeAlignment obj, WholeAlign objs) =>
+	WholeAlign (obj ': objs) where
+	wholeAlign = alignment @obj `lcm` wholeAlign @objs
 
 -- OffsetRange
 
