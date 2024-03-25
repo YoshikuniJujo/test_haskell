@@ -989,7 +989,7 @@ data MemoryVp alvp nmvp smsb where
 		MemoryVp alvp nmvp '(sm, sb)
 
 instance CreateVpBffrs al '[] where
-	createVpBffrs _ _ _ f = f @_ @_ HPList.Nil HPList.Nil HPList.Nil
+	createVpBffrs _ _ _ f = f HPList.Nil HPList.Nil HPList.Nil
 
 instance (
 	KnownNat alvp,
@@ -1000,11 +1000,10 @@ instance (
 		createVpBffrs @alvp @sds pd dv dl \dls bnds mms ->
 		f (U2 dl :** dls) (BindedVp bnd :** bnds) (MemoryVp mm :** mms)
 
-createVpBffr :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[AtomViewProj al] ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[AtomViewProj al])] ->
-		IO a) -> IO a
+createVpBffr :: KnownNat alvp => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[AtomViewProj alvp] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[AtomViewProj alvp])] ->
+	IO a) -> IO a
 createVpBffr =
 	createBffrAtm Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
@@ -1127,14 +1126,16 @@ instance (
 	Vk.DscSet.UpdateDynamicLength cs
 		'[VObj.Atom alvp WSceneData ('Just sn)],
 	VObj.OffsetRange (VObj.Atom alvp WSceneData (Just sn)) snb,
-	Show (HPList.PL VObj.Length snb), Update alvp snb smsbs dscss sns ) =>
-	Update alvp snb (smsb ': smsbs) ('(ds, cs) ': dscss) (sn ': sns) where
-	update dvc (BindedVp ub :** ubs) (dscs :** dscss) scnb = do
-		Vk.DscSet.updateDs dvc (
-			U5 (dscWrite0 @alvp @WViewProj @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U5 (dscWrite0 @alvp @WSceneData @('Just sn) scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+	Show (HPList.PL VObj.Length snb), Update alvp snb smsbs dss sns ) =>
+	Update alvp snb (smsb ': smsbs) ('(ds, cs) ': dss) (sn ': sns) where
+	update dv (BindedVp ub :** ubs) (ds :** dss) scnb = do
+		Vk.DscSet.updateDs dv (
+			U5 (dscWrite0 @alvp @WViewProj @Nothing
+				ub ds Vk.Dsc.TypeUniformBuffer) :**
+			U5 (dscWrite0 @alvp @WSceneData @('Just sn)
+				scnb ds Vk.Dsc.TypeUniformBuffer) :**
 			HPList.Nil ) HPList.Nil
-		update @alvp @snb @_ @_ @sns dvc ubs dscss scnb
+		update @alvp @snb @_ @_ @sns dv ubs dss scnb
 
 dscWrite0 :: forall al tp objnm objs sm sb nm slbts sds . (
 	Show (HPList.PL VObj.Length objs),
