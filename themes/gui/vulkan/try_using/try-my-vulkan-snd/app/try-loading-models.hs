@@ -1190,10 +1190,8 @@ instance Update _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
 
 instance (
 	KnownNat al,
-	Vk.DscSet.BindingAndArrayElemBuffer
-		cs '[VObj.Atom al WModelViewProj 'Nothing] 0,
-	Vk.DscSet.UpdateDynamicLength
-		cs '[VObj.Atom al WModelViewProj 'Nothing],
+	Vk.DscSet.BindingAndArrayElemBuffer cs '[AtomModelViewProj al] 0,
+	Vk.DscSet.UpdateDynamicLength cs '[AtomModelViewProj al],
 	Vk.DscSet.BindingAndArrayElemImage cs '[ '(Tx, TxFmt)] 0,
 	Vk.DscSet.WriteSourcesToMiddle cs
 		('Vk.DscSet.WriteSourcesArgImage
