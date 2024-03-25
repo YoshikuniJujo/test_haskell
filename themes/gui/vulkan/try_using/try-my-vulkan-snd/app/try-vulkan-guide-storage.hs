@@ -1084,7 +1084,9 @@ createCameraBuffer pd dv = createBuffer pd dv
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
 createBuffer :: forall objs nm sd a . (
-	Obj.SizeAlignmentList objs, forall s . SizeAlignmentAll s nm objs ) =>
+	Obj.SizeAlignmentList objs,
+	forall s . SizeAlignmentAll s nm objs,
+	Obj.WholeAlign objs ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.Length objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm objs ->
@@ -1105,7 +1107,7 @@ instance Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm '[obj])] =>
 	SizeAlignmentAll s nm '[obj]
 
 instance {-# OVERLAPPABLE #-} (
-	Obj.SizeAlignment obj, SizeAlignmentAll s nm objs ) =>
+	Obj.SizeAlignment obj, SizeAlignmentAll s nm objs, Obj.WholeAlign objs ) =>
 	SizeAlignmentAll s nm (obj ': objs)
 
 bufferInfo :: HL.PL Obj.Length objs ->
