@@ -1258,24 +1258,22 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 mainloop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs ss sfs,
-	HPList.HomoList '(sdsl, DscStLytArg alm) slyts, HPList.HomoList '() mff,
-	KnownNat alm, KnownNat alv, KnownNat ali ) =>
+	HPList.HomoList '(sdsl, DscStLytArg alu) dlas, HPList.HomoList '() mff,
+	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.CmdPl.C sc ->
-	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm scfmt) ss -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	IndexBuffer smi sbi bnmi ali nmi ->
-	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
-	HPList.PL (Vk.DscSet.D sds) slyts ->
+	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
+	HPList.PL (Vk.DscSet.D sds) dlas ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> UTCTime -> IO ()
 mainloop fr w sfc pd qfis dv gq pq cp
 	sc ex0 vs rp pl gp fbs drs vb ib mms dss cbs soss tm0 = do
