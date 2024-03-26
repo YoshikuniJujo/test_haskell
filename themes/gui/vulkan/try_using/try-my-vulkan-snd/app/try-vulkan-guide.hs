@@ -227,7 +227,8 @@ body mdlfp fr w ist =
 	createRndrPss @scifmt @dfmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl ->
-	createGrPpl 0 d ex rp pl \gp0 -> createGrPpl 1 d ex rp pl \gp1 ->
+	createGrPpl Shader0 d ex rp pl \gp0 ->
+	createGrPpl Shader1 d ex rp pl \gp1 ->
 	createFrmbffrs d ex rp scvs dv \fbs ->
 	readVtcs mdlfp >>= \vns ->
 	createVtxBffr pd d gq cp vns \vb ->
@@ -601,7 +602,7 @@ type BufferSceneData alu = 'Vk.DscSetLyt.Buffer '[AtomSceneData alu]
 type AtomViewProj alu = VObj.Atom alu WViewProj 'Nothing
 type AtomSceneData alu = VObj.Atom alu WSceneData 'Nothing
 
-createGrPpl :: Int -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+createGrPpl :: ShaderX -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WrapMeshPushConstants] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -612,7 +613,7 @@ createGrPpl sdrn dv ex rp pl f = Vk.Ppl.Graphics.createGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo sdrn ex rp pl) nil
 	\(HPList.Singleton (U3 p)) -> f p
 
-recreateGrPpl :: Int -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+recreateGrPpl :: ShaderX -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -623,7 +624,7 @@ recreateGrPpl sdrn dv ex rp pl p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo sdrn ex rp pl) nil
 	(HPList.Singleton $ U3 p)
 
-grPplInfo :: Int -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+grPplInfo :: ShaderX -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
@@ -636,9 +637,7 @@ grPplInfo sdrn ex rp pl = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = zeroBits,
 	Vk.Ppl.Graphics.createInfoStages = uncurry shaderStages
-		case sdrn `mod` 2 of
-			0 -> shaderPair0; 1 -> shaderPair1
-			_ -> error "never occur",
+		case sdrn of Shader0 -> shaderPair0; Shader1 -> shaderPair1,
 	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ U3 def,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just ia,
 	Vk.Ppl.Graphics.createInfoViewportState = Just $ vwpSt ex,
@@ -719,6 +718,11 @@ shaderStages vs fs = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.ShaderModule.createInfoNext = TMaybe.N,
 		Vk.ShaderModule.createInfoFlags = zeroBits,
 		Vk.ShaderModule.createInfoCode = code }
+
+data ShaderX = Shader0 | Shader1 deriving Show
+
+nextShaderX :: ShaderX -> ShaderX
+nextShaderX = \case Shader0 -> Shader1; Shader1 -> Shader0
 
 type GlslVertexShaderArgs = '(
 	'Nothing, 'Nothing,
@@ -1220,41 +1224,38 @@ mainloop :: (
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> IO ()
 mainloop fr w sfc pd qfis dv gq pq cp
 	sc ex0 vs rp pl gpmk gptr fbs drs vbmk bvtr vpms snm dss cbs soss = do
-	($ 0) . ($ Glfw.KeyState'Released) . ($ 0)
+	($ Shader0) . ($ Glfw.KeyState'Released) . ($ 0)
 		. ($ Inf.cycle $ NE.fromList [0 .. (tlLength @_ @SceneNames) - 1])
 		. ($ ex0) $ fix \go ex (cf :~ cfs) fn spst0 sdrn0 -> do
 		Glfw.pollEvents
 		spst <- GlfwG.Win.getKey w Glfw.Key'Space
 		let	prsd = case (spst0, spst) of
-				(Glfw.KeyState'Released, Glfw.KeyState'Pressed) -> True
+				(Glfw.KeyState'Released,
+					Glfw.KeyState'Pressed) -> True
 				_ -> False
-			sdrn' = bool id (+ 1) prsd sdrn0
-		when prsd $ print sdrn'
+			sdrn = bool id nextShaderX prsd sdrn0
 		run fr w sfc pd qfis dv gq pq cp
 			sc ex vs rp pl gpmk gptr fbs drs vbmk bvtr
-			vpms snm dss cbs soss cf fn sdrn'
-			(\e -> go e cfs ((fn + 1) `mod` (360 * frashRate)) spst sdrn')
+			vpms snm dss cbs soss cf fn sdrn
+			(\e -> go e cfs ((fn + 1) `mod`
+				(360 * frashRate)) spst sdrn)
 	Vk.Dvc.waitIdle dv
 
-type VtxBffr smv sbv bnmv alv nmv =
-	(Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv], Word32)
+class TlLength (xs :: [k]) where tlLength :: Int
+instance TlLength '[] where tlLength = 0
+instance TlLength s => TlLength (x ': s) where tlLength = 1 + (tlLength @_ @s)
 
 frashRate :: Num n => n
 frashRate = 2
 
-class TlLength (xs :: [k]) where tlLength :: Int
-instance TlLength '[] where tlLength = 0
-instance TlLength xs => TlLength (x ': xs) where tlLength = 1 + (tlLength @_ @xs)
+type VtxBffr smv sbv bnmv alv nmv =
+	(Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv], Word32)
 
 run :: (
 	KnownNat alu, KnownNat alv1, KnownNat alv2,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs sis sfs,
-	HPList.HomoList
-		'(s, '[
-			'Vk.DscSetLyt.Buffer '[VObj.Atom alu WViewProj 'Nothing],
-			'Vk.DscSetLyt.Buffer '[
-				VObj.Atom alu WSceneData 'Nothing ] ]) slyts,
+	HPList.HomoList '(s, DscStLytArg alu) slyts,
 	HPList.HomoList '() vss ) =>
 	FramebufferResized ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
@@ -1289,7 +1290,7 @@ run :: (
 
 	HPList.LL (Vk.CBffr.C scb) vss ->
 	SyncObjs siassrfssfs ->
-	Int -> Int -> Int ->
+	Int -> Int -> ShaderX ->
 
 	(Vk.Extent2d -> IO ()) -> IO ()
 run frszd w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq cp sc ext scivs rp ppllyt gpl0 gpl1 fbs drsrcs (vb, vn) (vbtri, vntri)
@@ -1332,7 +1333,7 @@ drawFrame ::
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List alv1 WVertex nmvmk] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List alv2 WVertex nmvtr] ->
-	HPList.LL (Vk.CBffr.C scb) vss -> SyncObjs ssos -> Int -> Int -> Int ->
+	HPList.LL (Vk.CBffr.C scb) vss -> SyncObjs ssos -> Int -> Int -> ShaderX ->
 	HPList.PL (MemoryVp alu nmvp) sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
@@ -1358,10 +1359,9 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjs iass rfss
 		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CBffr.reset cb def
-	HPList.index fbs imgIdx \fb -> case sdrn `mod` 2 of
-		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
-		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
-		_ -> error "never occur"
+	HPList.index fbs imgIdx \fb -> case sdrn of
+		Shader0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
+		Shader1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
@@ -1573,8 +1573,8 @@ recreateSwapchainEtc w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp pplly
 		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 			recreateImgVws dvc imgs scivs
 		recreateDptRsrcs phdvc dvc gq cp ext (dimg, dim, divw)
-		recreateGrPpl 0 dvc ext rp ppllyt gpl0
-		recreateGrPpl 1 dvc ext rp ppllyt gpl1
+		recreateGrPpl Shader0 dvc ext rp ppllyt gpl0
+		recreateGrPpl Shader1 dvc ext rp ppllyt gpl1
 		recreateFrmbffrs dvc ext rp scivs divw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
