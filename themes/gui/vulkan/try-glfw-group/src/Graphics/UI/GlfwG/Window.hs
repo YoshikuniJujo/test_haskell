@@ -17,14 +17,18 @@ module Graphics.UI.GlfwG.Window (
 	hint, B.WindowHint(..),
 	B.ClientAPI(..),
 
+	-- * PARAMETER
+
+	getFramebufferSize,
+
 	-- * CALLBACK
 
 	setKeyCallback, KeyCallback,
 	setFramebufferSizeCallback, B.FramebufferSizeCallback,
 
-	-- * PARAMETER
+	-- * STATE
 
-	getFramebufferSize
+	getKey
 
 	) where
 
@@ -104,3 +108,6 @@ type KeyCallback s = W s -> B.Key -> Int -> B.KeyState -> B.ModifierKeys -> IO (
 
 shouldClose :: W sw -> IO Bool
 shouldClose (W w) = B.windowShouldClose w
+
+getKey :: W sw -> B.Key -> IO B.KeyState
+getKey (W w) = B.getKey w
