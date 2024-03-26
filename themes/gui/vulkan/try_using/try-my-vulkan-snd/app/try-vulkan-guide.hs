@@ -1379,16 +1379,16 @@ recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtri, vntri) fn ds =
 	Vk.CBffr.begin cb cbinfo $
 	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline $
 	newIORef Nothing >>= \om ->
-	drawObject om cb ds RenderObj {
+	drawObj om cb ds RenderObj {
 		renderObjPipeline = gp, renderObjPipelineLayout = pl,
 		renderObjMesh = vbmk, renderObjMeshSize = vnmk,
 		renderObjTransformMtx = mdl } >>
 	newIORef Nothing >>= \omtri ->
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb ds RenderObj {
+		drawObj omtri cb ds RenderObj {
 			renderObjPipeline = gp, renderObjPipelineLayout = pl,
 			renderObjMesh = vbtri, renderObjMeshSize = vntri,
-			renderObjTransformMtx = Cglm.mat4Mul (trans x y) scl }
+			renderObjTransformMtx = Cglm.mat4Mul (trns x y) scl }
 	where
 	cbinfo :: Vk.CBffr.BeginInfo 'Nothing 'Nothing
 	cbinfo = def {
@@ -1410,12 +1410,12 @@ recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtri, vntri) fn ds =
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 	mdl = Cglm.rotate Cglm.mat4Identity
 		(fromIntegral fn * Cglm.rad 1) (Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-	trans x y = Cglm.translate
+	trns x y = Cglm.translate
 		Cglm.mat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
 	scl = Cglm.scale
 		Cglm.mat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 
-drawObject :: forall sm sb nm alv nmvmk scb sds sdlyt alu sg sl .
+drawObj :: forall sm sb nm alv nmvmk scb sds sdlyt alu sg sl .
 	KnownNat alv =>
 	IORef (Maybe (Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex nmvmk])) ->
 	Vk.CBffr.C scb ->
@@ -1423,11 +1423,9 @@ drawObject :: forall sm sb nm alv nmvmk scb sds sdlyt alu sg sl .
 		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WViewProj 'Nothing],
 		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WScene 'Nothing] ]) ->
 	RenderObj alu alv sg sl sdlyt sm sb nm nmvmk -> IO ()
-drawObject om cb cmd RenderObj {
-	renderObjPipeline = gpl,
-	renderObjPipelineLayout = lyt,
-	renderObjMesh = vb,
-	renderObjMeshSize = vn,
+drawObj om cb cmd RenderObj {
+	renderObjPipeline = gpl, renderObjPipelineLayout = lyt,
+	renderObjMesh = vb, renderObjMeshSize = vn,
 	renderObjTransformMtx = mdl } =
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics lyt
