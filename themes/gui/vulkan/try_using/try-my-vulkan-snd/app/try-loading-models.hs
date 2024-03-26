@@ -1294,21 +1294,21 @@ type IndexBuffer smi sbi bnmi ali nmi = (
 run :: (
 	HPList.HomoList '() mff, RecreateFrmbffrs svs sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	HPList.HomoList '(sdsl, DscStLytArg alm) slyts,
-	KnownNat alm, KnownNat alv, KnownNat ali ) =>
+	HPList.HomoList '(sdsl, DscStLytArg alu) slyts,
+	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	IndexBuffer smi sbi bnmi ali nmi ->
-	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
+	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff ->
 	SyncObjs ssoss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
@@ -1404,7 +1404,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb (ib, idcs) ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
-	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
+	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
 	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
 		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
@@ -1416,10 +1416,10 @@ recordCmdBffr cb ex rp pl gp fb vb (ib, idcs) ds =
 	Vk.Cmd.drawIndexed cbb idcs 1 0 0 0
 
 	where
-	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
+	rpinfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
 		'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32,
 		'Vk.ClearTypeDepthStencil ]
-	info = Vk.RndrPss.BeginInfo {
+	rpinfo = Vk.RndrPss.BeginInfo {
 		Vk.RndrPss.beginInfoNext = TMaybe.N,
 		Vk.RndrPss.beginInfoRenderPass = rp,
 		Vk.RndrPss.beginInfoFramebuffer = fb,
