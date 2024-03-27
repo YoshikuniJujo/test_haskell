@@ -12,8 +12,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
-
+module Main (main) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -33,7 +32,6 @@ import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.Bool qualified as TBool
 import Data.HeteroParList qualified as HL
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
@@ -44,7 +42,6 @@ import Data.IORef
 import Data.List.Length
 import Data.Word
 import Data.Color
-import System.Environment
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
@@ -67,10 +64,9 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFmly
 import qualified Gpu.Vulkan.Device as Vk.Dvc
@@ -122,9 +118,22 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Codec.WavefrontObj.ReadFaceSimple as WvNew
 import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
-import Tools
+import Tools (clampOld, pattern (:-), cycleI, findBySnd, findPlusM)
 
-import Data.Text.ToolsYj
+import Control.Monad.Trans
+import Options.Declarative (Flag, Def, Cmd, run_, get)
+
+import Data.Bits.ToolsYj
+import Data.Tuple.ToolsYj
+import Data.Function.ToolsYj
+import Data.Bool.ToolsYj
+import Data.List.ToolsYj
+import Data.IORef.ToolsYj
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
+import Debug
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -135,90 +144,92 @@ frashRate :: Num n => n
 frashRate = 2
 
 main :: IO ()
-main = do
-	[objfile] <- getArgs
-	evns <- vertices <$> BS.readFile objfile
+main = run_ realMain
+
+realMain ::
+	Flag "m" '["model"] "FILEPATH" "model filepath"
+		(Def "../../../../../files/models/viking_room.obj" String) ->
+	Cmd "Try Vulkan Guide" ()
+realMain mdlfp = liftIO $ newIORef False >>= \fr -> withWindow fr \(GlfwG.Win.W w) -> do
+	evns <- vertices <$> BS.readFile (get mdlfp)
 	vns <- either error pure evns
-	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
-		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil
-			$ run w ist frszd vns
-		else run w ist frszd vns
-	where vertices s =
+	createIst \ist -> bool id (dbgm ist) debug
+		$ body (get mdlfp) fr w ist vns
+	where
+	dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
+	vertices s =
 		V.map posNormalToVertex <$> WvNew.posNormal (WvNew.r s)
 
-withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
-withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->
-	f w frszd <* (Glfw.destroyWindow w >> Glfw.terminate)
-	where
-	initWindow frszd = do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		Just w <- Glfw.createWindow wdt hgt nm Nothing Nothing
-		(w <$) . Glfw.setFramebufferSizeCallback w $ Just \_ _ _ ->
-			writeIORef frszd True
-	nm = "Spinning Monkey"; wdt = 800; hgt = 600
+withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
 
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when enableValidationLayers $ bool (error msg) (pure ()) =<< null
-		. ([Vk.layerKhronosValidation] \\)
+initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWindow fr g = do
+	Right w <- do
+		GlfwG.Win.hint noApi
+		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback
+		w (Just . const3 $ writeIORef fr True)
+	where
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	sizeName = ((800, 600), "Triangle")
+
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
 		. (Vk.layerPropertiesLayerName <$>)
-		<$> Vk.Ist.M.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers . (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	instInfo enableValidationLayers exts \ci ->
-		Vk.Ist.create ci nil f
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	bool	(Vk.Ist.create (info exts) nil f)
+		(Vk.Ist.create (infoDbg exts) nil f) debug
 	where
-	msg = "validation layers requested, but not available!"
-
-instInfo :: Bool -> [Vk.Ist.ExtensionName] -> (
-	forall mn . WithPoked (TMaybe.M mn) => Vk.Ist.M.CreateInfo mn 'Nothing -> b
-	) -> b
-instInfo b exts f = istCreateInfoNext b \mn ->
-	f Vk.Ist.M.CreateInfo {
-		Vk.Ist.M.createInfoNext = mn,
-		Vk.Ist.M.createInfoFlags = zeroBits,
-		Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-		Vk.Ist.M.createInfoEnabledLayerNames = bool
-			[] [Vk.layerKhronosValidation] enableValidationLayers,
-		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
-	where
-	appInfo = Vk.ApplicationInfo {
+	emsg = "validation layers requested, but not available!"
+	info exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.N,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = [],
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	infoDbg exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	ainfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
-		Vk.applicationInfoApplicationName =
-			"Vulkan Guide with Dynamic Descriptor Sets",
+		Vk.applicationInfoApplicationName = "Hello Triangle",
 		Vk.applicationInfoApplicationVersion =
 			Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoEngineName = "No Engine",
 		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
-		Vk.applicationInfoApiVersion = Vk.apiVersion_1_1 }
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
-istCreateInfoNext :: Bool ->
-	(forall mn . WithPoked (TMaybe.M mn) => TMaybe.M mn -> b) -> b
-istCreateInfoNext = TBool.b @WithPoked TMaybe.N (TMaybe.J debugMessengerInfo)
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
+dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
+	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msngr.createInfoFlags = zeroBits,
+	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msngr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
+	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
+	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
+		"validation layer: " <>
+		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-debugMessengerInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = zeroBits,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
-	where debugCallback _msgSeverity _msgType callbackData _userData =
-		False <$ Txt.putStrLn (
-			"validation layer: " <>
-			Vk.Ext.DbgUtls.Msngr.callbackDataMessage callbackData )
-
-run :: Glfw.Window -> Vk.Ist.I s -> FramebufferResized -> V.Vector Vertex -> IO ()
-run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
+body :: FilePath -> FramebufferResized -> Glfw.Window -> Vk.Ist.I s -> V.Vector Vertex -> IO ()
+body mdlfp rszd w ist (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 	Glfw.createWindowSurface ist w nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(pd, qfs) ->
 	putStrLn "MIN ALIGN" >>
@@ -1171,9 +1182,9 @@ createSyncObjects dv f =
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: HL.PL Vk.Semaphore.S siass,
-		renderFinishedSemaphores :: HL.PL Vk.Semaphore.S srfss,
-		inFlightFences :: HL.PL Vk.Fnc.F sffs } ->
+		_imageAvailableSemaphores :: HL.PL Vk.Semaphore.S siass,
+		_renderFinishedSemaphores :: HL.PL Vk.Semaphore.S srfss,
+		_inFlightFences :: HL.PL Vk.Fnc.F sffs } ->
 		SyncObjects '(siass, srfss, siffs)
 
 mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
@@ -1575,12 +1586,6 @@ shaderStages vs fs = U5 vertinfo :** U5 fraginfo :** HL.Nil where
 			Vk.ShaderModule.createInfoNext = TMaybe.N,
 			Vk.ShaderModule.createInfoFlags = zeroBits,
 			Vk.ShaderModule.createInfoCode = cd }
-
-shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
-shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
-	Vk.ShaderModule.createInfoNext = TMaybe.N,
-	Vk.ShaderModule.createInfoFlags = def,
-	Vk.ShaderModule.createInfoCode = code }
 
 [glslVertexShader|
 
