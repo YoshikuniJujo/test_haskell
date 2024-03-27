@@ -358,8 +358,8 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
-recreateSwpch win sfc phdvc qfis0 dvc sc = do
-	ss <- querySwpchSupportFmt @fmt phdvc sfc
+recreateSwpch win sfc pd qfis0 dv sc = do
+	ss <- querySwpchSupportFmt @fmt pd sfc
 	ex <- swapExtent win $ capabilitiesFmt ss
 	let	cps = capabilitiesFmt ss
 		Vk.Khr.Sfc.Format cs = fromMaybe
@@ -367,7 +367,7 @@ recreateSwpch win sfc phdvc qfis0 dvc sc = do
 			. listToMaybe $ formatsFmt ss
 		pm = findDefault Vk.Khr.PresentModeFifo
 			(== Vk.Khr.PresentModeMailbox) $ presentModesFmt ss
-	ex <$ Vk.Khr.Swpch.unsafeRecreate dvc
+	ex <$ Vk.Khr.Swpch.unsafeRecreate dv
 		(swpchInfo @fmt sfc qfis0 cps cs pm ex) nil sc
 
 querySwpchSupportFmt :: Vk.T.FormatToValue fmt =>
@@ -1440,8 +1440,7 @@ catchAndRecreate :: (
 	RecreateFrmbffrs svs sfs ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
+	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -1453,8 +1452,8 @@ catchAndRecreate :: (
 catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp fbs drs go act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
-	\_ -> go =<< recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act \_ ->
+	go =<< recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
 recreateAll :: (
 	Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt,
