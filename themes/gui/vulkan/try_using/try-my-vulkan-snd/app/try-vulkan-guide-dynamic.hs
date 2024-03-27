@@ -150,7 +150,7 @@ realMain ::
 	Flag "m" '["model"] "FILEPATH" "model filepath"
 		(Def "../../../../../files/models/viking_room.obj" String) ->
 	Cmd "Try Vulkan Guide" ()
-realMain mdlfp = liftIO $ newIORef False >>= \fr -> withWindow fr \(GlfwG.Win.W w) -> do
+realMain mdlfp = liftIO $ newIORef False >>= \fr -> withWindow fr \w -> do
 	evns <- vertices <$> BS.readFile (get mdlfp)
 	vns <- either error pure evns
 	createIst \ist -> bool id (dbgm ist) debug
@@ -228,8 +228,8 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		"validation layer: " <>
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-body :: FilePath -> FramebufferResized -> Glfw.Window -> Vk.Ist.I s -> V.Vector Vertex -> IO ()
-body mdlfp rszd w ist (id &&& fromIntegral . V.length -> (vns, vnsln)) =
+body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I s -> V.Vector Vertex -> IO ()
+body mdlfp rszd (GlfwG.Win.W w) ist (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 	Glfw.createWindowSurface ist w nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(pd, qfs) ->
 	putStrLn "MIN ALIGN" >>
