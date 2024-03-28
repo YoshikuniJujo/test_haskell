@@ -52,7 +52,6 @@ import qualified Gpu.Vulkan.Cglm as Glm
 
 import Foreign.Storable.Generic qualified as Str.G
 
-import ThEnv
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -69,9 +68,7 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.Device as Vk.Dvc.M
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.Phd
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swpch
 import qualified Gpu.Vulkan.Image as Vk.Img
@@ -115,14 +112,12 @@ import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
-import qualified Codec.WavefrontObj.ReadFaceSimple as WvNew
-import qualified Codec.WavefrontObj.ReadFaceSimple as WNew
 import qualified Codec.WavefrontObj.ReadFaceSimple as WvRf
-import Tools (clampOld, pattern (:-), cycleI, findBySnd, findPlusM)
 
 import Control.Monad.Trans
 import Options.Declarative (Flag, Def, Cmd, run_, get)
 
+import Data.Ord.ToolsYj
 import Data.Bits.ToolsYj
 import Data.Tuple.ToolsYj
 import Data.Function.ToolsYj
@@ -136,6 +131,8 @@ import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
+import Data.List.Infinite (pattern (:~))
+import Data.List.Infinite qualified as Inf
 
 import Debug
 
@@ -224,37 +221,36 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body mdlfp fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
-	pickPhysicalDevice ist sfc >>= \(pd, qfs) ->
+	pickPhd ist sfc >>= \(pd, qfis) ->
+	createLgDvc pd qfis \d gq pq ->
+	createCmdPl qfis d \cp ->
+	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
+	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
+	findDepthFormat pd >>= \dfmt ->
+	Vk.T.formatToType dfmt \(_ :: Proxy dfmt) ->
+	createRenderPass @scifmt @dfmt d \rp ->
+
 	putStrLn "MIN ALIGN" >>
 	(print . Vk.Phd.limitsMinUniformBufferOffsetAlignment
 		. Vk.Phd.propertiesLimits =<< Vk.Phd.getProperties pd) >>
-	createDevice pd qfs \dv gq pq ->
-	createSwapchain w sfc pd qfs dv \(sc :: Vk.Khr.Swpch.S fmt ss) ex ->
-	Vk.Khr.Swpch.getImages dv sc >>= \imgs ->
-	createImageViews dv imgs \scivs ->
-	findDepthFormat pd >>= \dfmt ->
-	Vk.T.formatToType dfmt \(_ :: Proxy dfmt) ->
-	createRenderPass @fmt @dfmt dv \rp ->
+	createDescriptorSetLayout d \dslyt ->
+	createPipelineLayout d dslyt \lyt ->
+	createGraphicsPipeline d ex rp lyt \gpl ->
 
-	createDescriptorSetLayout dv \dslyt ->
-	createPipelineLayout dv dslyt \lyt ->
-	createGraphicsPipeline dv ex rp lyt \gpl ->
+	createDepthResources @dfmt pd d gq cp ex \drs@(_, _, dimgv) ->
+	createFramebuffers d ex rp scvs dimgv \fbs ->
 
-	createCommandPool dv qfs \cp ->
-	createDepthResources @dfmt pd dv gq cp ex \drs@(_, _, dimgv) ->
-	createFramebuffers dv ex rp scivs dimgv \fbs ->
-
-	createCameraBuffers pd dv dslyt maxFramesInFlight \lyts cmbs cmms ->
-	createSceneBuffer pd dv \scnb scnm ->
-	createDescriptorPool dv \dp ->
-	createDescriptorSets dv dp cmbs lyts scnb \dss ->
+	createCameraBuffers pd d dslyt maxFramesInFlight \lyts cmbs cmms ->
+	createSceneBuffer pd d \scnb scnm ->
+	createDescriptorPool d \dp ->
+	createDescriptorSets d dp cmbs lyts scnb \dss ->
 	readVtcs mdlfp >>= \(id &&& fromIntegral . V.length -> (vns, vnsln)) ->
-	createVertexBuffer pd dv gq cp vns \vb ->
-	createVertexBuffer pd dv gq cp triangle \vbtri ->
-	createCommandBuffers dv cp \cbs ->
-	createSyncObjects dv \sos ->
+	createVertexBuffer pd d gq cp vns \vb ->
+	createVertexBuffer pd d gq cp triangle \vbtri ->
+	createCommandBuffers d cp \cbs ->
+	createSyncObjects d \sos ->
 
-	mainLoop w fr sfc pd qfs dv gq pq sc ex scivs rp lyt gpl cp drs fbs
+	mainLoop w fr sfc pd qfis d gq pq sc ex scvs rp lyt gpl cp drs fbs
 		cmms scnm dss vb vbtri cbs sos vnsln
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
@@ -289,40 +285,8 @@ readVtcs fp = either error pure
 			vtxNormal = Normal . Glm.Vec3 $ v :. w :. u :. NilL,
 			vtxColor = Color . Glm.Vec3 $ v :. w :. u :. NilL }
 
-pickPhysicalDevice ::
-	Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices)
-pickPhysicalDevice ist sfc = Vk.Phd.enumerate ist >>= \dvs -> do
-	when (null dvs) $ error "failed to find GPUs with Gpu.Vulkan support!"
-	findPlusM (`isPhysicalDeviceSuitable` sfc) dvs >>= \case
-		Just ph -> pure ph
-		Nothing -> error "failed to find a suitable GPU!"
-
-isPhysicalDeviceSuitable ::
-	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QueueFamilyIndices)
-isPhysicalDeviceSuitable ph sfc =
-	(checkDeviceExtensionSupport ph >>=) . bool (pure Nothing) $
-	findQueueFamilies ph sfc >>= \qfis ->
-	((<$> getSwapchainSupport ph sfc) \spp ->
-	bool (completeQueueFamilies qfis) Nothing
-		$ null (formatsOld spp) || null (presentModesOld spp))
-
-checkDeviceExtensionSupport :: Vk.Phd.P -> IO Bool
-checkDeviceExtensionSupport dv = null
-	. (dvcExtensions \\) . (Vk.Phd.extensionPropertiesExtensionName <$>)
-		<$> Vk.Phd.enumerateExtensionProperties dv Nothing
-
 dvcExtensions :: [Vk.Phd.ExtensionName]
 dvcExtensions = [Vk.Khr.Swpch.extensionName]
-
-findQueueFamilies :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
-findQueueFamilies dv sfc = Vk.Phd.getQueueFamilyProperties dv >>= \qfs ->
-	filterM	(\i -> Vk.Khr.Sfc.Phd.getSupport dv i sfc)
-		(fst <$> qfs) >>= \(listToMaybe -> pfi) ->
-	pure QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = (`findBySnd` qfs)
-			$ checkBits Vk.Q.GraphicsBit
-				. Vk.QFam.propertiesQueueFlags,
-		presentFamilyMaybe = pfi }
 
 data QFamIndices =
 	QFamIndices { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
@@ -335,73 +299,117 @@ findQFams pd sfc = do
 	pure $ QFamIndices <$> (fst <$> find (grbit . snd) prps) <*> mp
 	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
-data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Vk.QFam.Index, presentFamily :: Vk.QFam.Index }
+type QueueFamilyIndices = QFamIndices
 
-data QueueFamilyIndicesMaybe = QueueFamilyIndicesMaybe {
-	graphicsFamilyMaybe :: Maybe Vk.QFam.Index,
-	presentFamilyMaybe :: Maybe Vk.QFam.Index }
-
-completeQueueFamilies :: QueueFamilyIndicesMaybe -> Maybe QueueFamilyIndices
-completeQueueFamilies = \case
-	QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = Just g, presentFamilyMaybe = Just p } ->
-		Just QueueFamilyIndices {
-			graphicsFamily = g, presentFamily = p }
-	_ -> Nothing
-
-createDevice :: Vk.Phd.P -> QueueFamilyIndices ->
+createLgDvc :: Vk.Phd.P -> QFamIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
-createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qcris ->
-	Vk.Dvc.create ph (crInfo qcris) nil \dv -> do
-		gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
-		f dv gq pq
+createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
+	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
+		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
+		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
 	where
-	qfs = nub [graphicsFamily qfis, presentFamily qfis]
-	qcrInfo qf = Vk.Dvc.QueueCreateInfo {
+	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HPList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HPList.PL t ss -> b) -> b
+	hetero _k [] f = f HPList.Nil
+	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
+	qinfo qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
-	crInfo qcris = Vk.Dvc.M.CreateInfo {
-		Vk.Dvc.M.createInfoNext = TMaybe.N,
-		Vk.Dvc.M.createInfoFlags = zeroBits,
-		Vk.Dvc.M.createInfoQueueCreateInfos = qcris,
-		Vk.Dvc.M.createInfoEnabledLayerNames = bool
-			[] [Vk.layerKhronosValidation] enableValidationLayers,
-		Vk.Dvc.M.createInfoEnabledExtensionNames = dvcExtensions,
-		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
+	uniqueQFams = nub [grFam qfis, prFam qfis]
+	info qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def {
+			Vk.Phd.featuresSamplerAnisotropy = True } }
 
-mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . HPList.ToListWithCM' WithPoked TMaybe.M ss => HPList.PL t ss -> b) ->
-	b
-mkHeteroParList _k [] f = f HPList.Nil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
-createSwapchain :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
+createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
+	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwapchain (GlfwG.Win.W w) sfc ph qfs dv f = getSwapchainSupport ph sfc >>= \spp -> do
-	ex <- chooseSwapExtent w $ capabilitiesOld spp
-	let	fmt = Vk.Khr.Sfc.M.formatOldFormat
-			. chooseSwapSurfaceFormat $ formatsOld spp
-	Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
-		Vk.Khr.Swpch.create @'Nothing @fmt dv
-			(swapchainCreateInfo sfc qfs spp ex) nil (`f` ex)
+createSwpch w sfc pd qfis dv f = querySwpchSupport pd sfc \ss -> do
+	ex <- swapExtent w $ capabilities ss
+	let	cps = capabilities ss
+		pm = findDefault Vk.Khr.PresentModeFifo
+			(== Vk.Khr.PresentModeMailbox) $ presentModes ss
+	chooseSwpSfcFmt (formats ss)
+		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
+		Vk.Khr.Swpch.create @_ @fmt dv
+			(swpchInfo sfc qfis cps sc pm ex) nil (`f` ex)
 
-recreateSwapchain :: Vk.T.FormatToValue scfmt =>
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S scfmt ssc ->
-	IO Vk.Extent2d
-recreateSwapchain w sfc ph qfs dv sc = getSwapchainSupport ph sfc >>= \spp -> do
-	ex <- chooseSwapExtent w $ capabilitiesOld spp
-	ex <$ Vk.Khr.Swpch.unsafeRecreate @'Nothing dv
-		(swapchainCreateInfo sfc qfs spp ex) nil sc
+recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
+	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
+recreateSwpch win sfc pd qfis0 dv sc = do
+	ss <- querySwpchSupportFmt @fmt pd sfc
+	ex <- swapExtent win $ capabilitiesFmt ss
+	let	cps = capabilitiesFmt ss
+		Vk.Khr.Sfc.Format cs = fromMaybe
+			(error "no available swap surface formats")
+			. listToMaybe $ formatsFmt ss
+		pm = findDefault Vk.Khr.PresentModeFifo
+			(== Vk.Khr.PresentModeMailbox) $ presentModesFmt ss
+	ex <$ Vk.Khr.Swpch.unsafeRecreate dv
+		(swpchInfo @fmt sfc qfis0 cps cs pm ex) nil sc
+
+querySwpchSupportFmt :: Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFmt fmt)
+querySwpchSupportFmt dvc sfc = SwpchSupportDetailsFmt
+	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getFormatsFiltered dvc sfc
+	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
+
+data SwpchSupportDetailsFmt fmt = SwpchSupportDetailsFmt {
+	capabilitiesFmt :: Vk.Khr.Sfc.Capabilities,
+	formatsFmt :: [Vk.Khr.Sfc.Format fmt],
+	presentModesFmt :: [Vk.Khr.PresentMode] } deriving Show
+
+swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+swapExtent win cps
+	| Vk.extent2dWidth cur /= maxBound = pure cur
+	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
+		\(fromIntegral -> w, fromIntegral -> h) ->
+		Vk.Extent2d
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
+			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
+	where
+	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
+	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
+	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
+
+swpchInfo :: forall fmt ss .
+	Vk.Khr.Sfc.S ss -> QFamIndices -> Vk.Khr.Sfc.Capabilities ->
+	Vk.Khr.ColorSpace -> Vk.Khr.PresentMode -> Vk.Extent2d ->
+	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
+	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
+	Vk.Khr.Swpch.createInfoFlags = zeroBits,
+	Vk.Khr.Swpch.createInfoSurface = sfc,
+	Vk.Khr.Swpch.createInfoMinImageCount = imgc,
+	Vk.Khr.Swpch.createInfoImageColorSpace = cs,
+	Vk.Khr.Swpch.createInfoImageExtent = ex,
+	Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
+	Vk.Khr.Swpch.createInfoImageUsage = Vk.Img.UsageColorAttachmentBit,
+	Vk.Khr.Swpch.createInfoImageSharingMode = ism,
+	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
+	Vk.Khr.Swpch.createInfoPreTransform =
+		Vk.Khr.Sfc.capabilitiesCurrentTransform cps,
+	Vk.Khr.Swpch.createInfoCompositeAlpha = Vk.Khr.CompositeAlphaOpaqueBit,
+	Vk.Khr.Swpch.createInfoPresentMode = pm,
+	Vk.Khr.Swpch.createInfoClipped = True,
+	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
+	where
+	imgc = clamp 0 imgcx (Vk.Khr.Sfc.capabilitiesMinImageCount cps + 1)
+	imgcx = fromMaybe maxBound
+		. onlyIf (> 0) $ Vk.Khr.Sfc.capabilitiesMaxImageCount cps
+	(ism, qfis) = bool
+		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
+		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
 querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
@@ -431,82 +439,38 @@ chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`find` fmts)
 	$ (== Vk.Khr.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
-getSwapchainSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapchainSupportDetails
-getSwapchainSupport dv sfc = SwapchainSupportDetails
-	<$> Vk.Khr.Sfc.Phd.getCapabilities dv sfc
-	<*> Vk.Khr.Sfc.Phd.getFormatsOld dv sfc
-	<*> Vk.Khr.Sfc.Phd.getPresentModes dv sfc
+createImgVws :: Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss inm fmt] ->
+	(forall si . HPList.PL (Vk.ImgVw.I inm fmt) si -> IO a) -> IO a
+createImgVws _dv [] f = f HPList.Nil
+createImgVws dv (i : is) f =
+	Vk.ImgVw.create dv (imgVwInfo i Vk.Img.AspectColorBit) nil \v ->
+	createImgVws dv is \vs -> f $ v :** vs
 
-chooseSwapExtent :: Glfw.Window -> Vk.Khr.Sfc.M.Capabilities -> IO Vk.Extent2d
-chooseSwapExtent win caps
-	| Vk.extent2dWidth curExt /= maxBound = pure curExt
-	| otherwise = do
-		(fromIntegral -> w, fromIntegral -> h) <-
-			Glfw.getFramebufferSize win
-		pure $ Vk.Extent2d
-			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dWidth x))
-			(clampOld h (Vk.extent2dHeight n)
-				(Vk.extent2dHeight x))
-	where
-	curExt = Vk.Khr.Sfc.M.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Sfc.M.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Sfc.M.capabilitiesMaxImageExtent caps
+recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
+	[Vk.Img.Binded ss ss inm fmt] ->
+	HPList.PL (Vk.ImgVw.I inm fmt) sis -> IO ()
+recreateImgVws _dv [] HPList.Nil = pure ()
+recreateImgVws dv (i : is) (v :** vs) =
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit) nil v >>
+	recreateImgVws dv is vs
+recreateImgVws _ _ _ =
+	error "number of Vk.Image.I and Vk.ImageView.I should be same"
 
-data SwapchainSupportDetails = SwapchainSupportDetails {
-	capabilitiesOld :: Vk.Khr.Sfc.M.Capabilities,
-	formatsOld :: [Vk.Khr.Sfc.M.FormatOld],
-	presentModesOld :: [Vk.Khr.PresentMode] }
-
-swapchainCreateInfo :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
-	SwapchainSupportDetails -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-swapchainCreateInfo sfc qfs spp ext = Vk.Khr.Swpch.CreateInfo {
-	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
-	Vk.Khr.Swpch.createInfoFlags = zeroBits,
-	Vk.Khr.Swpch.createInfoSurface = sfc,
-	Vk.Khr.Swpch.createInfoMinImageCount = imgc,
-	Vk.Khr.Swpch.createInfoImageColorSpace =
-		Vk.Khr.Sfc.M.formatOldColorSpace fmt,
-	Vk.Khr.Swpch.createInfoImageExtent = ext,
-	Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
-	Vk.Khr.Swpch.createInfoImageUsage = Vk.Img.UsageColorAttachmentBit,
-	Vk.Khr.Swpch.createInfoImageSharingMode = ism,
-	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
-	Vk.Khr.Swpch.createInfoPreTransform =
-		Vk.Khr.Sfc.M.capabilitiesCurrentTransform caps,
-	Vk.Khr.Swpch.createInfoCompositeAlpha =
-		Vk.Khr.CompositeAlphaOpaqueBit,
-	Vk.Khr.Swpch.createInfoPresentMode = Vk.Khr.PresentModeFifo,
-	Vk.Khr.Swpch.createInfoClipped = True,
-	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
-	where
-	imgc = clampOld (Vk.Khr.Sfc.M.capabilitiesMinImageCount caps + 1) 0
-		. fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Sfc.M.capabilitiesMaxImageCount caps
-	fmt = chooseSwapSurfaceFormat $ formatsOld spp
-	caps = capabilitiesOld spp
-	(ism, qfis) = bool
-		(Vk.SharingModeConcurrent,
-			[graphicsFamily qfs, presentFamily qfs])
-		(Vk.SharingModeExclusive, [])
-		(graphicsFamily qfs == presentFamily qfs)
-
-chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.M.FormatOld] -> Vk.Khr.Sfc.M.FormatOld
-chooseSwapSurfaceFormat = \case
-	fs@(f : _) -> fromMaybe f $ find preferred fs
-	_ -> error "no available swap surface formats"
-	where
-	preferred f = Vk.Khr.Sfc.M.formatOldFormat f == Vk.FormatB8g8r8a8Srgb &&
-		Vk.Khr.Sfc.M.formatOldColorSpace f ==
-			Vk.Khr.ColorSpaceSrgbNonlinear
-
-createImageViews :: Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
-	(forall s . HPList.PL (Vk.ImgVw.I nm fmt) s -> IO a) -> IO a
-createImageViews _ [] f = f HPList.Nil
-createImageViews dv (sci : scis) f =
-	createImageView dv sci Vk.Img.AspectColorBit \sciv ->
-	createImageViews dv scis \scivs -> f $ sciv :** scivs
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
+imgVwInfo i a = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = i,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = a,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 } }
 
 createImageView :: forall ivfmt sd si sm nm ifmt a . Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
@@ -514,16 +478,6 @@ createImageView :: forall ivfmt sd si sm nm ifmt a . Vk.T.FormatToValue ivfmt =>
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dv img asps =
 	Vk.ImgVw.create dv (imageViewCreateInfo img asps) nil
-
-recreateImageViews :: Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
-	HPList.PL (Vk.ImgVw.I nm fmt) sis -> IO ()
-recreateImageViews _dv [] HPList.Nil = pure ()
-recreateImageViews dv (sci : scis) (iv :** ivs) =
-	recreateImageView dv sci Vk.Img.AspectColorBit iv >>
-	recreateImageViews dv scis ivs
-recreateImageViews _ _ _ =
-	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
@@ -813,13 +767,13 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createCommandPool :: Vk.Dvc.D sd ->
-	QueueFamilyIndices -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
-createCommandPool dv qfs = Vk.CmdPl.create dv crInfo nil
-	where crInfo = Vk.CmdPl.CreateInfo {
+createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
+	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl qfis dv = Vk.CmdPl.create dv info nil
+	where info = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
-		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfs }
+		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
 type DepthResources sb sm nm fmt sdiv = (
 	Vk.Img.Binded sm sb nm fmt,
@@ -1270,10 +1224,10 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 WVertex ""] ->
 	HPList.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects sos ->
 	VertexNumber -> IO ()
-mainLoop (GlfwG.Win.W w) rszd sfc pd qfis dv gq pq sc ex0 scivs rp lyt gpl cp drs fbs
+mainLoop w rszd sfc pd qfis dv gq pq sc ex0 scivs rp lyt gpl cp drs fbs
 	cmms scnm dss vb vbtri cbs sos vnsln =
-	($ 0) . ($ cycleI [0 .. maxFramesInFlight - 1]) . ($ ex0) $ fix
-		\loop ex (ffn :- ffns) fn -> Glfw.pollEvents >>
+	($ 0) . ($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1]) . ($ ex0) $ fix
+		\loop ex (ffn :~ ffns) fn -> Glfw.pollEvents >>
 	step w rszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
 		cmms scnm dss vb vbtri cbs sos vnsln ffn fn
 		(\ex' -> loop ex' ffns ((fn + 1) `mod` (360 * frashRate))) >>
@@ -1286,7 +1240,7 @@ type VertexNumber = Word32
 
 step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs, HPList.HomoList '(slyt, Buffers) lyts) =>
-	Glfw.Window -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
+	GlfwG.Win.W sw -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
@@ -1302,19 +1256,19 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 WVertex ""] ->
 	HPList.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects sos ->
 	Word32 -> Int -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
-step w frszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
+step w@(GlfwG.Win.W win) frszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
 	cmms scnm dss vb vbtri cbs sos vnsln ffn fn loop = do
 	catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop
 		$ drawFrame dv gq pq sc ex rp lyt gpl fbs
 			cmms scnm dss vb vbtri cbs sos vnsln ffn fn
-	(Glfw.windowShouldClose w >>=) . flip bool (pure ()) $
+	(Glfw.windowShouldClose win >>=) . flip bool (pure ()) $
 		(checkFlag frszd >>=) . bool (loop ex) $
 		loop =<< recreateAll
 			w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs
 
 catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.P sl '[ '(s, Buffers)] '[WMeshPushConstants] ->
@@ -1334,7 +1288,7 @@ catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop act =
 
 recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.P sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
@@ -1344,11 +1298,11 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 		'(sl, '[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w sfc pd qfs dv gq sc scivs rp lyt gpl cp drs@(_, _, divw) fbs =
-	waitFramebufferSize w >> Vk.Dvc.waitIdle dv >>
-	recreateSwapchain w sfc pd qfs dv sc >>= \ex ->
+recreateAll w@(GlfwG.Win.W win) sfc pd qfs dv gq sc scivs rp lyt gpl cp drs@(_, _, divw) fbs =
+	waitFramebufferSize win >> Vk.Dvc.waitIdle dv >>
+	recreateSwpch w sfc pd qfs dv sc >>= \ex ->
 	ex <$ do
-	Vk.Khr.Swpch.getImages dv sc >>= \i -> recreateImageViews dv i scivs
+	Vk.Khr.Swpch.getImages dv sc >>= \i -> recreateImgVws dv i scivs
 	recreateDepthResources pd dv gq cp ex drs
 	recreateGraphicsPipeline dv ex rp lyt gpl
 	recreateFramebuffers dv ex rp scivs divw fbs
