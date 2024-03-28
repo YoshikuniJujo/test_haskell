@@ -90,6 +90,7 @@ library
       TryTypeLevelNat
       TryUnsafeCoerce
       TryValueToType
+      TypeAsValue
       TypeFamilies.TestAssociated
       TypeFamilies.TryErrors
       TypeInfixOf
