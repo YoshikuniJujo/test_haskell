@@ -101,6 +101,7 @@ library
       TypeLevelProlog.Sazae
       TypeLevelTupleContext
       TypeMatch
+      TypeN
       TypeNat
       TypeValues
       Wrapper
