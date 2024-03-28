@@ -226,8 +226,8 @@ body mdlfp fr w ist =
 	createCmdPl qfis d \cp ->
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
-	findDepthFormat pd >>= \dfmt ->
-	Vk.T.formatToType dfmt \(_ :: Proxy dfmt) ->
+	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
+	createDepthResources @dfmt pd d gq cp ex \drs@(_, _, dimgv) ->
 	createRenderPass @scifmt @dfmt d \rp ->
 
 	putStrLn "MIN ALIGN" >>
@@ -237,7 +237,6 @@ body mdlfp fr w ist =
 	createPipelineLayout d dslyt \lyt ->
 	createGraphicsPipeline d ex rp lyt \gpl ->
 
-	createDepthResources @dfmt pd d gq cp ex \drs@(_, _, dimgv) ->
 	createFramebuffers d ex rp scvs dimgv \fbs ->
 
 	createCameraBuffers pd d dslyt maxFramesInFlight \lyts cmbs cmms ->
@@ -506,24 +505,21 @@ imageViewCreateInfo img asps = Vk.ImgVw.CreateInfo {
 		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.M.subresourceRangeLayerCount = 1 }
 
-findDepthFormat :: Vk.Phd.P -> IO Vk.Format
-findDepthFormat phd = findSupportedFormat phd
+dptFmt :: Vk.Phd.P -> Vk.Img.Tiling ->
+	(forall (f :: Vk.T.Format) . Vk.T.FormatToValue f => Proxy f -> IO a) ->
+	IO a
+dptFmt pd tl a = (`Vk.T.formatToType` a) =<< spprt
 	[Vk.FormatD32Sfloat, Vk.FormatD32SfloatS8Uint, Vk.FormatD24UnormS8Uint]
-	Vk.Img.TilingOptimal Vk.FormatFeatureDepthStencilAttachmentBit
-
-findSupportedFormat :: Vk.Phd.P ->
-	[Vk.Format] -> Vk.Img.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
-findSupportedFormat phd fs tlng fffs = do
-	props <- Vk.Phd.getFormatProperties phd `mapM` fs
-	case tlng of
-		Vk.Img.TilingLinear -> pure . orError
-			. find (checkBits fffs . snd) . zip fs
-			$ Vk.formatPropertiesLinearTilingFeatures <$> props
-		Vk.Img.TilingOptimal -> pure . orError
-			. find (checkBits fffs . snd) . zip fs
-			$ Vk.formatPropertiesOptimalTilingFeatures <$> props
+	Vk.FormatFeatureDepthStencilAttachmentBit where
+	spprt :: [Vk.Format] -> Vk.FormatFeatureFlagBits -> IO Vk.Format
+	spprt fs fffs = (fst <$>) . orErrorIO emsg
+			. find (checkBits fffs . snd) . zip fs . (ftrs <$>) =<<
+		Vk.Phd.getFormatProperties pd `mapM` fs
+	ftrs = case tl of
+		Vk.Img.TilingLinear -> Vk.formatPropertiesLinearTilingFeatures
+		Vk.Img.TilingOptimal -> Vk.formatPropertiesOptimalTilingFeatures
 		_ -> error "no such image tiling"
-	where orError = maybe (error "failed to find supported format!") fst
+	emsg = "failed to find supported format!"
 
 createRenderPass ::
 	forall (scifmt :: Vk.T.Format) (dfmt :: Vk.T.Format) sd a . (
