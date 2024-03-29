@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -131,6 +131,7 @@ import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.List.Infinite (pattern (:~))
 import Data.List.Infinite qualified as Inf
+import Data.TypeLevel.List qualified as TList
 
 import Debug
 
@@ -228,23 +229,35 @@ body mdlfp fr w ist =
 	createDptRsrcs @dfmt pd d gq cp ex \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
-	createPplLyt d \dsl pl ->
-	createGraphicsPipeline d ex rp pl \gpl ->
-
+	tnum' maxFramesInFlight \(_ :: Proxy mff') ->
+	createPplLyt @_ @MaxFramesInFlight d \dsl pl ->
+	createGraphicsPipeline d ex rp pl \gp ->
 	createFramebuffers d ex rp scvs dv \fbs ->
 
-	createCameraBuffers pd d dsl maxFramesInFlight \lyts cmbs cmms ->
-	createSceneBuffer pd d \scnb scnm ->
+	tnum maxFramesInFlight \(_ :: Proxy mff) ->
+	createVpBffrs @256 @mff pd d dsl \lyts cmbs cmms ->
+	createSceneBuffer @MaxFramesInFlight pd d \scnb scnm ->
 	createDescriptorPool d \dp ->
 	createDescriptorSets d dp cmbs lyts scnb \dss ->
 	readVtcs mdlfp >>= \(id &&& fromIntegral . V.length -> (vns, vnsln)) ->
 	createVertexBuffer pd d gq cp vns \vb ->
 	createVertexBuffer pd d gq cp triangle \vbtri ->
-	createCommandBuffers d cp \cbs ->
-	createSyncObjects d \sos ->
+	createCommandBuffers @MaxFramesInFlight d cp \cbs ->
+	createSyncObjs @mff d \sos ->
 
-	mainLoop w fr sfc pd qfis d gq pq sc ex scvs rp pl gpl cp drs fbs
+	mainLoop w fr sfc pd qfis d gq pq sc ex scvs rp pl gp cp drs fbs
 		cmms scnm dss vb vbtri cbs sos vnsln
+	where
+	tnum :: Int -> (forall (n :: [()]) . (
+		TList.Length n, HPList.FromList n,
+		HPList.HomoList '() n, HPList.RepM n,
+--		CreateVpBffrs n ) => Proxy n -> a) -> a
+		CreateVpBffrs 256 n ) => Proxy n -> a) -> a
+	tnum 0 f = f (Proxy @'[])
+	tnum n f = tnum (n - 1) \p -> f $ plus1 p
+		where plus1 :: Proxy n -> Proxy ('() ': n); plus1 Proxy = Proxy
+	tnum' :: Int -> (forall (nt :: Nat) . KnownNat nt => Proxy nt -> a) -> a
+	tnum' n f = ($ someNatVal $ fromIntegral n) \(SomeNat p) -> f p
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -547,8 +560,8 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-createDscStLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.D s (DscStLytArg alu) -> IO a) -> IO a
+createDscStLyt :: forall alu mff sd a . Vk.Dvc.D sd -> (forall (s :: Type) .
+	Vk.DscSetLyt.D s (DscStLytArg alu mff) -> IO a) -> IO a
 createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 	where
 	info = Vk.DscSetLyt.CreateInfo {
@@ -565,12 +578,12 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 		Vk.DscSetLyt.bindingBufferStageFlags =
 			Vk.ShaderStageVertexBit .|. Vk.ShaderStageFragmentBit }
 
-type DscStLytArg alu = '[BufferViewProj alu, BufferSceneData alu]
+type DscStLytArg alu mff = '[BufferViewProj alu, BufferSceneData alu mff]
 type BufferViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomViewProj alu]
-type BufferSceneData alu = 'Vk.DscSetLyt.Buffer '[AtomSceneData alu]
+type BufferSceneData alu mff = 'Vk.DscSetLyt.Buffer '[AtomSceneData alu mff]
 
 type AtomViewProj alu = Obj.Atom alu WViewProj 'Nothing
-type AtomSceneData alu = Obj.DynAtom MaxFramesInFlight alu WScene 'Nothing
+type AtomSceneData alu mff = Obj.DynAtom mff alu WScene 'Nothing
 -- type SceneObj dn = Obj.DynAtom dn 256 SceneData 'Nothing
 
 type Buffers = '[
@@ -579,16 +592,16 @@ type Buffers = '[
 type CameraObj = Obj.Atom 256 WViewProj 'Nothing
 type SceneObj dn = Obj.DynAtom dn 256 WScene 'Nothing
 
-createPplLyt :: forall alu sd a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscSetLyt.D sdsl (DscStLytArg alu) ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
+createPplLyt :: forall alu mff sd a . Vk.Dvc.D sd -> (forall sl sdsl .
+	Vk.DscSetLyt.D sdsl (DscStLytArg alu mff) ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mff)] '[WMeshPushConsts] ->
 	IO a) -> IO a
-createPplLyt dv f = createDscStLyt dv \dsl ->
+createPplLyt dv f = createDscStLyt @_ @mff dv \dsl ->
 	Vk.PplLyt.create dv (info dsl) nil $ f dsl
 	where
-	info :: Vk.DscSetLyt.D s (DscStLytArg alu) ->
+	info :: Vk.DscSetLyt.D s (DscStLytArg alu mff) ->
 		Vk.PplLyt.CreateInfo 'Nothing
-			'[ '(s, DscStLytArg alu)]
+			'[ '(s, DscStLytArg alu mff)]
 			('Vk.PushConstant.Layout '[ WMeshPushConsts]
 				'[ 'Vk.PushConstant.Range
 					'[ 'Vk.T.ShaderStageVertexBit]
@@ -987,35 +1000,86 @@ framebufferInfo Vk.Extent2d {
 		Vk.Frmbffr.createInfoHeight = h,
 		Vk.Frmbffr.createInfoLayers = 1 }
 
-createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sdsc Buffers ->
-	Int -> (forall slyts sbsms . (
-		Vk.DscSet.DListFromMiddle slyts, HPList.FromList slyts,
-		Update sbsms slyts, HPList.HomoList '(sdsc, Buffers) slyts ) =>
-		HPList.PL (U2 Vk.DscSetLyt.D) slyts ->
-		HPList.PL BindedCamera sbsms -> HPList.PL MemoryCamera sbsms ->
-		IO a) -> IO a
-createCameraBuffers _ _ _ n f | n < 1 = f HPList.Nil HPList.Nil HPList.Nil
-createCameraBuffers pd dv lyt n f = createCameraBuffer pd dv \b m ->
-	createCameraBuffers pd dv lyt (n - 1) \lyts bs ms ->
-	f (U2 lyt :** lyts) (BindedCamera b :** bs) (MemoryCamera m :** ms)
+class CreateVpBffrs (alvp :: Nat) (sds :: [()]) where
+	createVpBffrs :: Vk.Phd.P -> Vk.Dvc.D sd ->
+--		Vk.DscSetLyt.D sdsc (DscStLytArg alvp) -> (forall dlas svp . (
+		Vk.DscSetLyt.D sdsc (DscStLytArg 256 MaxFramesInFlight) -> (forall dlas svp . (
+			HPList.FromList dlas, Vk.DscSet.DListFromMiddle dlas,
+			Update svp dlas,
+--			HPList.HomoList '(sdsc, DscStLytArg alvp) dlas ) =>
+			HPList.HomoList '(sdsc, DscStLytArg 256 MaxFramesInFlight) dlas ) =>
+			HPList.PL (U2 Vk.DscSetLyt.D) dlas ->
+			HPList.PL (BindedVp 256 nmvp) svp ->
+			HPList.PL (MemoryVp 256 nmvp) svp -> IO a) -> IO a
+--			HPList.PL (BindedVp alvp nmvp) svp ->
+--			HPList.PL (MemoryVp alvp nmvp) svp -> IO a) -> IO a
 
-data BindedCamera smsb where
-	BindedCamera :: Vk.Bffr.Binded sm sb "camera-buffer" '[CameraObj] ->
-		BindedCamera '(sm, sb)
+data BindedVp alvp nmvp smsb where
+	BindedVp :: Vk.Bffr.Binded sm sb nmvp '[AtomViewProj alvp] ->
+		BindedVp alvp nmvp '(sm, sb)
 
-data MemoryCamera smsb where
-	MemoryCamera ::
+data MemoryVp alvp bnmvp smsb where
+	MemoryVp ::
 		Vk.Mm.M sm '[
-			'(sb, 'Vk.Mm.BufferArg "camera-buffer" '[CameraObj]) ] ->
-		MemoryCamera '(sm, sb)
+			'(sb, 'Vk.Mm.BufferArg bnmvp '[AtomViewProj alvp])] ->
+		MemoryVp alvp bnmvp '(sm, sb)
 
-createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall sm sb . Vk.Bffr.Binded sm sb nm '[CameraObj] ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[CameraObj]) ] ->
-		IO a) -> IO a
-createCameraBuffer pd dv = createBuffer pd dv
-	(HPList.Singleton Obj.LengthAtom)
-	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
+instance CreateVpBffrs al '[] where
+	createVpBffrs _ _ _ f = f HPList.Nil HPList.Nil HPList.Nil
+
+instance (
+	KnownNat alvp,
+--	Obj.OffsetRange (Obj.Atom alvp WScene (Just sd))
+--		(SceneBffrArg alvp SceneNames),
+	CreateVpBffrs alvp sds ) => CreateVpBffrs alvp (sd ': sds) where
+	createVpBffrs pd dv dl f = createVpBffr pd dv \bnd mm ->
+		createVpBffrs @alvp @sds pd dv dl \dls bnds mms ->
+		f (U2 dl :** dls) (BindedVp bnd :** bnds) (MemoryVp mm :** mms)
+
+createVpBffr :: KnownNat alvp => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[AtomViewProj alvp] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[AtomViewProj alvp])] ->
+	IO a) -> IO a
+createVpBffr =
+	createBffrAtm Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
+
+createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
+	(forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
+		Vk.Mm.M sm '[ '(
+			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
+		IO b) -> IO b
+createBffrAtm us prs p dv =
+	createBffr p dv (HPList.Singleton Obj.LengthAtom) us prs
+
+createBffr :: forall sd bnm os a . (
+	Obj.SizeAlignmentList os, Obj.WholeAlign os ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> HPList.PL Obj.Length os ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm os -> Vk.Mm.M sm
+			'[ '(sb, 'Vk.Mm.BufferArg bnm os)] -> IO a) -> IO a
+createBffr p dv lns us prs f = Vk.Bffr.create dv (bffrInfo lns us) nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) prs
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
+		(ainfo mt) nil
+		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
+	where ainfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+bffrInfo :: HPList.PL Obj.Length os ->
+	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing os
+bffrInfo lns us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = lns,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+type BindedCamera = BindedVp 256 "camera-buffer"
+type MemoryCamera = MemoryVp 256 "camera-buffer"
 
 createBuffer :: forall objs nm sd a . (
 	Obj.SizeAlignmentList objs, forall s . SizeAlignmentAll s nm objs, Obj.WholeAlign objs ) =>
@@ -1057,9 +1121,10 @@ memoryInfo mt = Vk.Mem.AllocateInfo {
 	Vk.Mem.allocateInfoNext = TMaybe.N,
 	Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
-createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb nm '[SceneObj MaxFramesInFlight] ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[SceneObj MaxFramesInFlight])] ->
+createSceneBuffer :: forall mff sd nm a . KnownNat mff =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[SceneObj mff] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[SceneObj mff])] ->
 	IO a) -> IO a
 createSceneBuffer pd dv = createBuffer pd dv
 	(HPList.Singleton Obj.LengthDynAtom)
@@ -1117,7 +1182,7 @@ instance (
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj MaxFramesInFlight],
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
-	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
+	update dv (dscs :** dscss) (BindedVp csb :** csbs) scnb = do
 		Vk.DscSet.updateDs dv (
 			U5 (descriptorWrite @CameraObj
 				dscs csb Vk.Dsc.TypeUniformBuffer) :**
@@ -1159,34 +1224,37 @@ createVertexBuffer pd dv gq cp vs f =
 	where lns = HPList.Singleton . Obj.LengthList . fromIntegral $ V.length vs
 
 createCommandBuffers ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb . HPList.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
+	forall mff sd scp a . (
+	TList.Length (HPList.Dummies mff),
+	HPList.FromList (HPList.Dummies mff) ) =>
+	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
+	(forall scb . HPList.LL' (Vk.CBffr.C scb) mff -> IO a) -> IO a
 createCommandBuffers dv cp f = Vk.CBffr.allocate dv allcInfo f
 	where
-	allcInfo :: Vk.CBffr.AllocateInfo 'Nothing scp (HPList.Dummies MaxFramesInFlight)
+	allcInfo :: Vk.CBffr.AllocateInfo 'Nothing scp (HPList.Dummies mff)
 	allcInfo = Vk.CBffr.AllocateInfo {
 		Vk.CBffr.allocateInfoNext = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPool = cp,
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-createSyncObjects ::
-	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
-createSyncObjects dv f =
-	HPList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dv def nil) \iass ->
-	HPList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dv def nil) \rfss ->
-	HPList.replicateM maxFramesInFlight
-		(Vk.Fnc.create @'Nothing dv inf nil) \iffs ->
-	f $ SyncObjects iass rfss iffs
-	where inf = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
+createSyncObjs :: forall n sd a . HPList.RepM n =>
+	Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
+createSyncObjs dv f =
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \iass ->
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \rfss ->
+	HPList.repM @n (Vk.Fnc.create @'Nothing dv finfo nil) \iffs ->
+	f $ SyncObjs iass rfss iffs
+	where
+	finfo = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 
-data SyncObjects (ssos :: ([Type], [Type], [Type])) where
-	SyncObjects :: {
+data SyncObjs (ssos :: ([Type], [Type], [Type])) where
+	SyncObjs :: {
 		_imageAvailableSemaphores :: HPList.PL Vk.Semaphore.S siass,
 		_renderFinishedSemaphores :: HPList.PL Vk.Semaphore.S srfss,
-		_inFlightFences :: HPList.PL Vk.Fnc.F sffs } ->
-		SyncObjects '(siass, srfss, siffs)
+		_inFlightFences :: HPList.PL Vk.Fnc.F sfss } ->
+		SyncObjs '(siass, srfss, sfss)
+
+type SyncObjects = SyncObjs
 
 mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs, HPList.HomoList '(slyt, Buffers) lyts) =>
@@ -1313,11 +1381,12 @@ drawFrame ::
 	HPList.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects ssos ->
 	Word32 -> Int -> Int -> IO ()
 drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
-	(SyncObjects iass rfss iffs) vnsln ffn fn =
+	(SyncObjs iass rfss iffs) vnsln ffn fn =
 	HPList.index iass ffn \(ias :: Vk.Semaphore.S sias) ->
 	HPList.index rfss ffn \(rfs :: Vk.Semaphore.S srfs) ->
 	HPList.index iffs ffn \(id &&& HPList.Singleton -> (iff, siff)) ->
-	HPList.index cmms ffn \(MemoryCamera cmm) -> do
+--	HPList.index cmms ffn \(MemoryCamera cmm) -> do
+	HPList.index cmms ffn \(MemoryVp cmm) -> do
 	Vk.Mm.write @"camera-buffer" @CameraObj dv cmm zeroBits (cameraData ex)
 	Vk.Mm.write @"scene-buffer" @(SceneObj MaxFramesInFlight) dv scnm zeroBits . (!! ffn)
 		$ iterate (Nothing :) [Just $ sceneData fn]
