@@ -229,13 +229,12 @@ body mdlfp fr w ist =
 	createDptRsrcs @dfmt pd d gq cp ex \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
-	tnum' maxFramesInFlight \(_ :: Proxy mff') ->
 	createPplLyt @_ @MaxFramesInFlight d \dsl pl ->
 	createGraphicsPipeline @MaxFramesInFlight d ex rp pl \gp ->
 	createFramebuffers d ex rp scvs dv \fbs ->
 
-	tnum maxFramesInFlight \(_ :: Proxy mff) ->
-	createVpBffrs @256 @mff pd d dsl \lyts cmbs cmms ->
+	tnum @MaxFramesInFlight mff \(_ :: Proxy mff) ->
+	createVpBffrs @256 @MaxFramesInFlight @mff pd d dsl \lyts cmbs cmms ->
 	createSceneBuffer @MaxFramesInFlight pd d \scnb scnm ->
 	createDescriptorPool d \dp ->
 	createDescriptorSets d dp cmbs lyts scnb \dss ->
@@ -248,16 +247,16 @@ body mdlfp fr w ist =
 	mainLoop w fr sfc pd qfis d gq pq sc ex scvs rp pl gp cp drs fbs
 		cmms scnm dss vb vbtri cbs sos vnsln
 	where
-	tnum :: Int -> (forall (n :: [()]) . (
+	tnum :: forall mff a . KnownNat mff => Natural -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
 		HPList.HomoList '() n, HPList.RepM n,
---		CreateVpBffrs n ) => Proxy n -> a) -> a
-		CreateVpBffrs 256 n ) => Proxy n -> a) -> a
+		CreateVpBffrs 256 mff n ) => Proxy n -> a) -> a
 	tnum 0 f = f (Proxy @'[])
-	tnum n f = tnum (n - 1) \p -> f $ plus1 p
+	tnum n f = tnum @mff (n - 1) \p -> f $ plus1 p
 		where plus1 :: Proxy n -> Proxy ('() ': n); plus1 Proxy = Proxy
-	tnum' :: Int -> (forall (nt :: Nat) . KnownNat nt => Proxy nt -> a) -> a
-	tnum' n f = ($ someNatVal $ fromIntegral n) \(SomeNat p) -> f p
+	mff = natVal @MaxFramesInFlight Proxy
+
+type MaxFramesInFlight = 2
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -274,11 +273,6 @@ pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
 	espt pd = elemAll dvcExtensions
 		. (Vk.Phd.extensionPropertiesExtensionName <$>)
 		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 2
-
-type MaxFramesInFlight = 2
 
 readVtcs :: FilePath -> IO (V.Vector WVertex)
 readVtcs fp = either error pure
@@ -584,7 +578,6 @@ type BufferSceneData alu mff = 'Vk.DscSetLyt.Buffer '[AtomSceneData alu mff]
 
 type AtomViewProj alu = Obj.Atom alu WViewProj 'Nothing
 type AtomSceneData alu mff = Obj.DynAtom mff alu WScene 'Nothing
--- type SceneObj dn = Obj.DynAtom dn 256 SceneData 'Nothing
 
 type BuffersMff mff = '[
 	'Vk.DscSetLyt.Buffer '[CameraObj], 'Vk.DscSetLyt.Buffer '[SceneObj mff] ]
@@ -1001,14 +994,14 @@ framebufferInfo Vk.Extent2d {
 		Vk.Frmbffr.createInfoHeight = h,
 		Vk.Frmbffr.createInfoLayers = 1 }
 
-class CreateVpBffrs (alvp :: Nat) (sds :: [()]) where
+class CreateVpBffrs (alvp :: Nat) mff (sds :: [()]) where
 	createVpBffrs :: Vk.Phd.P -> Vk.Dvc.D sd ->
 --		Vk.DscSetLyt.D sdsc (DscStLytArg alvp) -> (forall dlas svp . (
-		Vk.DscSetLyt.D sdsc (DscStLytArg 256 MaxFramesInFlight) -> (forall dlas svp . (
+		Vk.DscSetLyt.D sdsc (DscStLytArg 256 mff) -> (forall dlas svp . (
 			HPList.FromList dlas, Vk.DscSet.DListFromMiddle dlas,
-			Update svp dlas,
+			Update mff svp dlas,
 --			HPList.HomoList '(sdsc, DscStLytArg alvp) dlas ) =>
-			HPList.HomoList '(sdsc, DscStLytArg 256 MaxFramesInFlight) dlas ) =>
+			HPList.HomoList '(sdsc, DscStLytArg 256 mff) dlas ) =>
 			HPList.PL (U2 Vk.DscSetLyt.D) dlas ->
 			HPList.PL (BindedVp 256 nmvp) svp ->
 			HPList.PL (MemoryVp 256 nmvp) svp -> IO a) -> IO a
@@ -1025,16 +1018,14 @@ data MemoryVp alvp bnmvp smsb where
 			'(sb, 'Vk.Mm.BufferArg bnmvp '[AtomViewProj alvp])] ->
 		MemoryVp alvp bnmvp '(sm, sb)
 
-instance CreateVpBffrs al '[] where
+instance CreateVpBffrs al _mff '[] where
 	createVpBffrs _ _ _ f = f HPList.Nil HPList.Nil HPList.Nil
 
 instance (
-	KnownNat alvp,
---	Obj.OffsetRange (Obj.Atom alvp WScene (Just sd))
---		(SceneBffrArg alvp SceneNames),
-	CreateVpBffrs alvp sds ) => CreateVpBffrs alvp (sd ': sds) where
+	KnownNat alvp, KnownNat mff,
+	CreateVpBffrs alvp mff sds ) => CreateVpBffrs alvp mff (sd ': sds) where
 	createVpBffrs pd dv dl f = createVpBffr pd dv \bnd mm ->
-		createVpBffrs @alvp @sds pd dv dl \dls bnds mms ->
+		createVpBffrs @alvp @_ @sds pd dv dl \dls bnds mms ->
 		f (U2 dl :** dls) (BindedVp bnd :** bnds) (MemoryVp mm :** mms)
 
 createVpBffr :: KnownNat alvp => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
@@ -1148,10 +1139,10 @@ createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil
 				Vk.DscPl.sizeDescriptorCount = 10 } ] }
 
 createDescriptorSets ::
-	(Vk.DscSet.DListFromMiddle lyts, HPList.FromList lyts, Update cmbs lyts) =>
+	(Vk.DscSet.DListFromMiddle lyts, HPList.FromList lyts, Update mff cmbs lyts) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	HPList.PL BindedCamera cmbs -> HPList.PL (U2 Vk.DscSetLyt.D) lyts ->
-	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj MaxFramesInFlight] ->
+	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj mff] ->
 	(forall sds . HPList.PL (Vk.DscSet.D sds) lyts -> IO a) -> IO a
 createDescriptorSets dv dscp cmbs lyts scnb f =
 	Vk.DscSet.allocateDs dv allocInfo \dscss -> do
@@ -1162,12 +1153,12 @@ createDescriptorSets dv dscp cmbs lyts scnb f =
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = lyts }
 
-class Update csbs lyts where
+class Update mff csbs lyts where
 	update :: Vk.Dvc.D sd -> HPList.PL (Vk.DscSet.D sds) lyts ->
 		HPList.PL BindedCamera csbs ->
-		Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj MaxFramesInFlight] -> IO ()
+		Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj mff] -> IO ()
 
-instance Update '[] '[] where update _ HPList.Nil HPList.Nil _ = pure ()
+instance Update _mff '[] '[] where update _ HPList.Nil HPList.Nil _ = pure ()
 
 instance (
 	Vk.DscSet.BindingAndArrayElemBuffer
@@ -1175,19 +1166,19 @@ instance (
 		'[CameraObj] 0,
 	Vk.DscSet.BindingAndArrayElemBuffer
 		(TIndex.I1_2 '(slyt, bs))
-		'[SceneObj MaxFramesInFlight] 0,
+		'[SceneObj mff] 0,
 	Vk.DscSet.UpdateDynamicLength
 		(TIndex.I1_2 '(slyt, bs))
 		'[CameraObj],
 	Vk.DscSet.UpdateDynamicLength
 		(TIndex.I1_2 '(slyt, bs))
-		'[SceneObj MaxFramesInFlight],
-	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
+		'[SceneObj mff],
+	Update mff csbs lyts, KnownNat mff ) => Update mff (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedVp csb :** csbs) scnb = do
 		Vk.DscSet.updateDs dv (
 			U5 (descriptorWrite @CameraObj
 				dscs csb Vk.Dsc.TypeUniformBuffer) :**
-			U5 (descriptorWrite @(SceneObj MaxFramesInFlight)
+			U5 (descriptorWrite @(SceneObj mff)
 				dscs scnb Vk.Dsc.TypeUniformBufferDynamic) :**
 			HPList.Nil )
 			HPList.Nil
@@ -1257,32 +1248,36 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 
 type SyncObjects = SyncObjs
 
-mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs, HPList.HomoList '(slyt, BuffersMff MaxFramesInFlight) lyts) =>
+mainLoop :: (
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFramebuffers sis sfs, HPList.HomoList '(slyt, BuffersMff mff) lyts,
+	HPList.HomoList '() (HPList.Dummies mff), KnownNat mff
+	) =>
 	GlfwG.Win.W sw -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(slyt, BuffersMff MaxFramesInFlight)] '[WMeshPushConsts] ->
+	Vk.PplLyt.P sl '[ '(slyt, BuffersMff mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(slyt, BuffersMff MaxFramesInFlight)], '[WMeshPushConsts]) ->
+		'(sl,	'[ '(slyt, BuffersMff mff)], '[WMeshPushConsts]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HPList.PL Vk.Frmbffr.F sfs -> HPList.PL MemoryCamera scms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj MaxFramesInFlight])] ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj mff])] ->
 	HPList.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 WVertex ""] ->
-	HPList.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects sos ->
+	HPList.LL' (Vk.CBffr.C scb) mff -> SyncObjects sos ->
 	VertexNumber -> IO ()
 mainLoop w rszd sfc pd qfis dv gq pq sc ex0 scivs rp lyt gpl cp drs fbs
 	cmms scnm dss vb vbtri cbs sos vnsln =
-	($ 0) . ($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1]) . ($ ex0) $ fix
+	($ 0) . ($ Inf.cycle $ NE.fromList [0 .. mff - 1]) . ($ ex0) $ fix
 		\loop ex (ffn :~ ffns) fn -> Glfw.pollEvents >>
 	step w rszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
 		cmms scnm dss vb vbtri cbs sos vnsln ffn fn
 		(\ex' -> loop ex' ffns ((fn + 1) `mod` (360 * frashRate))) >>
 	Vk.Dvc.waitIdle dv
+	where mff = fromIntegral $ natVal @MaxFramesInFlight Proxy
 
 frashRate :: Num n => n
 frashRate = 2
@@ -1290,22 +1285,24 @@ frashRate = 2
 type VertexNumber = Word32
 
 step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs, HPList.HomoList '(slyt, BuffersMff MaxFramesInFlight) lyts) =>
+	RecreateFramebuffers sis sfs, HPList.HomoList '(slyt, BuffersMff mff) lyts,
+	HPList.HomoList '() (HPList.Dummies mff), KnownNat mff
+	) =>
 	GlfwG.Win.W sw -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(slyt, BuffersMff MaxFramesInFlight)] '[WMeshPushConsts] ->
+	Vk.PplLyt.P sl '[ '(slyt, BuffersMff mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(slyt, BuffersMff MaxFramesInFlight)], '[WMeshPushConsts]) ->
+		'(sl, '[ '(slyt, BuffersMff mff)], '[WMeshPushConsts]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HPList.PL Vk.Frmbffr.F sfs -> HPList.PL MemoryCamera scms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj MaxFramesInFlight])] ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj mff])] ->
 	HPList.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 WVertex ""] ->
-	HPList.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects sos ->
+	HPList.LL' (Vk.CBffr.C scb) mff -> SyncObjects sos ->
 	Word32 -> Int -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 step w@(GlfwG.Win.W win) frszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
 	cmms scnm dss vb vbtri cbs sos vnsln ffn fn loop = do
@@ -1322,11 +1319,11 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(s, BuffersMff MaxFramesInFlight)] '[WMeshPushConsts] ->
+	Vk.PplLyt.P sl '[ '(s, BuffersMff mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(s, BuffersMff MaxFramesInFlight)], '[WMeshPushConsts]) ->
+		'(sl, '[ '(s, BuffersMff mff)], '[WMeshPushConsts]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop act =
@@ -1342,11 +1339,11 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(slyt, BuffersMff MaxFramesInFlight)] '[WMeshPushConsts] ->
+	Vk.PplLyt.P sl '[ '(slyt, BuffersMff mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(slyt, BuffersMff MaxFramesInFlight)], '[WMeshPushConsts]) ->
+		'(sl, '[ '(slyt, BuffersMff mff)], '[WMeshPushConsts]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateAll w@(GlfwG.Win.W win) sfc pd qfs dv gq sc scivs rp lyt gpl cp drs@(_, _, divw) fbs =
@@ -1366,30 +1363,32 @@ waitFramebufferSize w = Glfw.getFramebufferSize w >>= \sz ->
 
 drawFrame ::
 	forall sd ssc scfmt sr slyt sl sg sfs scmmbs ssm ssb lyts
-	sm sb nm smtri sbtri nmtri scb ssos sds .
-	(HPList.HomoList '(sl, BuffersMff MaxFramesInFlight) lyts ) =>
+	sm sb nm smtri sbtri nmtri scb ssos sds mff . (
+	HPList.HomoList '(sl, BuffersMff mff) lyts,
+	HPList.HomoList '() (HPList.Dummies mff),
+	KnownNat mff
+	) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P slyt '[ '(sl, BuffersMff MaxFramesInFlight)] '[WMeshPushConsts] ->
+	Vk.PplLyt.P slyt '[ '(sl, BuffersMff mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(slyt,	'[ '(sl, BuffersMff MaxFramesInFlight)], '[WMeshPushConsts]) ->
+		'(slyt,	'[ '(sl, BuffersMff mff)], '[WMeshPushConsts]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> HPList.PL MemoryCamera scmmbs ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj MaxFramesInFlight])] ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj mff])] ->
 	HPList.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 WVertex ""] ->
-	HPList.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects ssos ->
+	HPList.LL' (Vk.CBffr.C scb) mff -> SyncObjects ssos ->
 	Word32 -> Int -> Int -> IO ()
 drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 	(SyncObjs iass rfss iffs) vnsln ffn fn =
 	HPList.index iass ffn \(ias :: Vk.Semaphore.S sias) ->
 	HPList.index rfss ffn \(rfs :: Vk.Semaphore.S srfs) ->
 	HPList.index iffs ffn \(id &&& HPList.Singleton -> (iff, siff)) ->
---	HPList.index cmms ffn \(MemoryCamera cmm) -> do
 	HPList.index cmms ffn \(MemoryVp cmm) -> do
 	Vk.Mm.write @"camera-buffer" @CameraObj dv cmm zeroBits (cameraData ex)
-	Vk.Mm.write @"scene-buffer" @(SceneObj MaxFramesInFlight) dv scnm zeroBits . (!! ffn)
+	Vk.Mm.write @"scene-buffer" @(SceneObj mff) dv scnm zeroBits . (!! ffn)
 		$ iterate (Nothing :) [Just $ sceneData fn]
 	Vk.Fnc.waitForFs dv siff True Nothing
 	iid <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1418,19 +1417,19 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 		Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
 			$ Vk.Khr.SwapchainImageIndex sc iid }
 	HPList.Dummy cb = HPList.homoListIndex @'() cbs ffn
-	ds = HPList.homoListIndex @'(sl, BuffersMff MaxFramesInFlight) dss ffn
+	ds = HPList.homoListIndex @'(sl, BuffersMff mff) dss ffn
 	catchAndSerialize = (`catch`
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 recordCommandBuffer ::
-	forall sr slyt sg sdlyt sf sm sb nm smtri sbtri nmtri scb sds .
+	forall sr slyt sg sdlyt sf sm sb nm smtri sbtri nmtri scb sds mff .
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P slyt '[ '(sdlyt, BuffersMff MaxFramesInFlight)] '[WMeshPushConsts] ->
+	Vk.PplLyt.P slyt '[ '(sdlyt, BuffersMff mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(slyt,	'[ '(sdlyt, BuffersMff MaxFramesInFlight)], '[WMeshPushConsts]) ->
-	Vk.Frmbffr.F sf -> Vk.DscSet.D sds '(sdlyt, BuffersMff MaxFramesInFlight) ->
+		'(slyt,	'[ '(sdlyt, BuffersMff mff)], '[WMeshPushConsts]) ->
+	Vk.Frmbffr.F sf -> Vk.DscSet.D sds '(sdlyt, BuffersMff mff) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 WVertex ""] ->
 	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
@@ -1479,8 +1478,8 @@ recordCommandBuffer sce rp lyt gpl fb ds vb vbt cb vn ffn (fromIntegral -> fn) =
 
 drawObject ::
 	IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""])) ->
-	Vk.CBffr.C scb -> Vk.DscSet.D sds '(sdlyt, BuffersMff MaxFramesInFlight) ->
-	RenderObject sg sl sdlyt sm sb nm -> Word32 -> IO ()
+	Vk.CBffr.C scb -> Vk.DscSet.D sds '(sdlyt, BuffersMff mff) ->
+	RenderObject mff sg sl sdlyt sm sb nm -> Word32 -> IO ()
 drawObject ovb cb0 ds RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
@@ -1502,13 +1501,13 @@ drawObject ovb cb0 ds RenderObject {
 			meshPushConstantsRenderMatrix = model }) :** HPList.Nil
 	Vk.Cmd.draw cb vn 1 0 0
 
-data RenderObject sg sl sdlyt sm sb nm = RenderObject {
+data RenderObject mff sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectPipeline :: Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(sdlyt, BuffersMff MaxFramesInFlight)], '[WMeshPushConsts]),
+		'(sl, '[ '(sdlyt, BuffersMff mff)], '[WMeshPushConsts]),
 	renderObjectPipelineLayout ::
-		Vk.PplLyt.P sl '[ '(sdlyt, BuffersMff MaxFramesInFlight)] '[WMeshPushConsts],
+		Vk.PplLyt.P sl '[ '(sdlyt, BuffersMff mff)] '[WMeshPushConsts],
 	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""],
 	renderObjectMeshSize :: Word32,
 	renderObjectTransformMatrix :: Glm.Mat4 }
