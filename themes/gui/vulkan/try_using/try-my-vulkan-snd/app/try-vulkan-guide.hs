@@ -90,7 +90,7 @@ import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
-import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Grph
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
@@ -585,8 +585,7 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags =
-			Vk.ShaderStageVertexBit .|.
-			Vk.ShaderStageFragmentBit }
+			Vk.ShaderStageVertexBit .|. Vk.ShaderStageFragmentBit }
 
 type DscStLytArg alu = '[BufferViewProj alu, BufferSceneData alu]
 type BufferViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomViewProj alu]
@@ -597,54 +596,54 @@ type AtomSceneData alu = Obj.Atom alu WScene 'Nothing
 
 createGrPpl :: ShaderX -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
-	(forall sg . Vk.Ppl.Graphics.G sg
+	(forall sg . Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
 		IO a) -> IO a
-createGrPpl sdrn dv ex rp pl f = Vk.Ppl.Graphics.createGs dv Nothing
+createGrPpl sdrn dv ex rp pl f = Vk.Ppl.Grph.createGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo sdrn ex rp pl) nil
 	\(HPList.Singleton (U3 p)) -> f p
 
 recreateGrPpl :: ShaderX -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
 	IO ()
-recreateGrPpl sdrn dv ex rp pl p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
+recreateGrPpl sdrn dv ex rp pl p = Vk.Ppl.Grph.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo sdrn ex rp pl) nil
 	(HPList.Singleton $ U3 p)
 
 grPplInfo :: ShaderX -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.CreateInfo 'Nothing
+	Vk.Ppl.Grph.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] ) 'Nothing
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts])
 		sr '(sb, vs, ts, plas)
-grPplInfo sdrn ex rp pl = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
-	Vk.Ppl.Graphics.createInfoFlags = zeroBits,
-	Vk.Ppl.Graphics.createInfoStages = uncurry shaderStages
+grPplInfo sdrn ex rp pl = Vk.Ppl.Grph.CreateInfo {
+	Vk.Ppl.Grph.createInfoNext = TMaybe.N,
+	Vk.Ppl.Grph.createInfoFlags = zeroBits,
+	Vk.Ppl.Grph.createInfoStages = uncurry shaderStages
 		case sdrn of Shader0 -> shaderPair0; Shader1 -> shaderPair1,
-	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ U3 def,
-	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just ia,
-	Vk.Ppl.Graphics.createInfoViewportState = Just $ vwpSt ex,
-	Vk.Ppl.Graphics.createInfoRasterizationState = Just rst,
-	Vk.Ppl.Graphics.createInfoMultisampleState = Just ms,
-	Vk.Ppl.Graphics.createInfoDepthStencilState = Just ds,
-	Vk.Ppl.Graphics.createInfoColorBlendState = Just clrBlnd,
-	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
-	Vk.Ppl.Graphics.createInfoLayout = U3 pl,
-	Vk.Ppl.Graphics.createInfoRenderPass = rp,
-	Vk.Ppl.Graphics.createInfoSubpass = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+	Vk.Ppl.Grph.createInfoVertexInputState = Just $ U3 def,
+	Vk.Ppl.Grph.createInfoInputAssemblyState = Just ia,
+	Vk.Ppl.Grph.createInfoViewportState = Just $ vwpSt ex,
+	Vk.Ppl.Grph.createInfoRasterizationState = Just rst,
+	Vk.Ppl.Grph.createInfoMultisampleState = Just ms,
+	Vk.Ppl.Grph.createInfoDepthStencilState = Just ds,
+	Vk.Ppl.Grph.createInfoColorBlendState = Just clrBlnd,
+	Vk.Ppl.Grph.createInfoDynamicState = Nothing,
+	Vk.Ppl.Grph.createInfoLayout = U3 pl,
+	Vk.Ppl.Grph.createInfoRenderPass = rp,
+	Vk.Ppl.Grph.createInfoSubpass = 0,
+	Vk.Ppl.Grph.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Grph.createInfoBasePipelineIndex = - 1,
+	Vk.Ppl.Grph.createInfoTessellationState = Nothing }
 	where
 	ia = Vk.Ppl.InpAsmbSt.CreateInfo {
 		Vk.Ppl.InpAsmbSt.createInfoNext = TMaybe.N,
@@ -1202,11 +1201,11 @@ mainloop :: (
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) ss -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.G sgmk
+	Vk.Ppl.Grph.G sgmk
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
-	Vk.Ppl.Graphics.G sg1
+	Vk.Ppl.Grph.G sg1
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
@@ -1259,10 +1258,10 @@ run :: (
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu) ] '[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.G sgmk '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sgmk '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
-	Vk.Ppl.Graphics.G sg1 '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg1 '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
@@ -1297,10 +1296,10 @@ draw :: forall
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.G sg0 '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg0 '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
-	Vk.Ppl.Graphics.G sg1 '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg1 '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
@@ -1365,7 +1364,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)]
 		'[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
@@ -1441,7 +1440,7 @@ drawObj rvbpre cb ds RenderObj {
 data RenderObj sl sdsl alu sg sm sb bnmv alv nmv = RenderObj {
 	renderObjPipelineLayout ::
 		Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts],
-	renderObjPipeline :: Vk.Ppl.Graphics.G sg
+	renderObjPipeline :: Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]),
@@ -1460,11 +1459,11 @@ catchAndRecreate :: (
 	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
 	Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Grph.G sg0
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
-	Vk.Ppl.Graphics.G sg1
+	Vk.Ppl.Grph.G sg1
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
@@ -1484,11 +1483,11 @@ recreateAll :: (
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Khr.Swpch.S fmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Grph.G sg0
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
-	Vk.Ppl.Graphics.G sg1
+	Vk.Ppl.Grph.G sg1
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
