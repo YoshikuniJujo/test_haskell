@@ -87,7 +87,7 @@ import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
-import Gpu.Vulkan.Fence qualified as Vk.Fence
+import Gpu.Vulkan.Fence qualified as Vk.Fnc
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Grph
@@ -1164,8 +1164,8 @@ dscWrite :: forall al tp onm sm sb bnm os dla sds . (
 dscWrite ds b tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = tp,
-	Vk.DscSet.writeSources= Vk.DscSet.BufferInfos .
-		HPList.Singleton . U4 $ Vk.Dsc.BufferInfo b }
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
+		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo b }
 
 cmdBffrInfo :: forall n scp .
 	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
@@ -1179,27 +1179,27 @@ createSyncObjs :: forall n sd a . HPList.RepM n =>
 createSyncObjs dv f =
 	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \iass ->
 	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \rfss ->
-	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \iffs ->
+	HPList.repM @n (Vk.Fnc.create @'Nothing dv finfo nil) \iffs ->
 	f $ SyncObjs iass rfss iffs
 	where
-	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+	finfo = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 
 data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 	SyncObjs :: {
 		_imageAvailableSemaphores :: HPList.PL Vk.Semaphore.S siass,
 		_renderFinishedSemaphores :: HPList.PL Vk.Semaphore.S srfss,
-		_inFlightFences :: HPList.PL Vk.Fence.F sfss } ->
+		_inFlightFences :: HPList.PL Vk.Fnc.F sfss } ->
 		SyncObjs '(siass, srfss, sfss)
 
 mainloop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFrmbffrs ss sfs,
+	RecreateFrmbffrs svs sfs,
 	HPList.HomoList '(sdsl, DscStLytArg alu) dlas, HPList.HomoList '() mff,
 	KnownNat alu, KnownNat alvmk, KnownNat alvtr ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I inm scfmt) ss -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sgmk
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -1318,7 +1318,7 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
 	HPList.index vpms cf \(MemoryVp vpm) ->
 	($ HPList.homoListIndex dss cf) \ds -> do
-	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
+	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
 	Vk.Mm.write @bnmvp @(Obj.Atom alu WViewProj 'Nothing)
 		dv vpm zeroBits (viewProjData ex)
 	case cf of
