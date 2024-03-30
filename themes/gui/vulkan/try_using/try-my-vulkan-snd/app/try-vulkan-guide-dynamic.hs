@@ -139,10 +139,11 @@ main = run_ realMain
 realMain ::
 	Flag "m" '["model"] "FILEPATH" "model filepath"
 		(Def "../../../../../files/models/viking_room.obj" String) ->
+	Flag "f" '["frames"] "NUMBER" "max frames in flight" (Def "2" Int) ->
 	Cmd "Try Vulkan Guide" ()
-realMain mdlfp = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
+realMain mdlfp mff = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
 	createIst \ist -> bool id (dbgm ist) debug
-		$ body (get mdlfp) fr w ist
+		$ body (get mdlfp) (fromIntegral $ get mff) fr w ist
 	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = IORef Bool
@@ -215,8 +216,8 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		"validation layer: " <>
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-body :: FilePath -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
-body mdlfp fr w ist =
+body :: FilePath -> Natural -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+body mdlfp mff fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \d gq pq ->
@@ -227,32 +228,35 @@ body mdlfp fr w ist =
 	createDptRsrcs @dfmt pd d gq cp ex \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
-	createPplLyt @alu @MaxFramesInFlight d \dsl pl ->
+	fromNat @alu mff \(_ :: Proxy mff) (_ :: Proxy mff') ->
+	createPplLyt @alu @mff' d \dsl pl ->
 	createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs dv \fbs ->
 	readVtcs mdlfp >>= \vns ->
 	createVtxBffr pd d gq cp vns \vb ->
 	createVtxBffr pd d gq cp triangle \vbtri ->
-	tnum @alu @MaxFramesInFlight mff \(_ :: Proxy mff) ->
 	createVpBffrs @_ @_ @mff pd d dsl \dsls vpbs vbpms ->
 	createScnBffr pd d \scb scbm ->
 	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
-	createDscPl d \dp -> createDscSts d dp dsls vpbs scb \dss ->
-	mainloop fr w sfc pd qfis d gq pq cp
+	createDscPl mff d \dp -> createDscSts d dp dsls vpbs scb \dss ->
+	mainloop mff fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs drs vb vbtri vbpms scbm dss cbs sos
 	where
+	fromNat :: forall alu a . KnownNat alu => Natural -> (forall n n' . (
+		TList.Length n, HPList.FromList n, HPList.RepM n,
+		HPList.HomoList '() n, KnownNat n', CreateVpBffrs alu n' n ) =>
+		Proxy n -> Proxy n' -> a) -> a
+	fromNat n f = ($ someNatVal n) \(SomeNat (pn' :: Proxy n')) ->
+		tnum @alu @n' n \pn -> f pn pn'
 	tnum :: forall alu mff a . (KnownNat alu, KnownNat mff) => Natural ->
 		(forall (n :: [()]) . (
-			TList.Length n, HPList.FromList n,
-			HPList.HomoList '() n, HPList.RepM n,
-			CreateVpBffrs alu mff n ) => Proxy n -> a) -> a
+			TList.Length n, HPList.FromList n, HPList.RepM n,
+			HPList.HomoList '() n, CreateVpBffrs alu mff n ) =>
+			Proxy n -> a) -> a
 	tnum 0 f = f (Proxy @'[])
 	tnum n f = tnum @alu @mff (n - 1) $ f . scc
 		where scc :: Proxy n -> Proxy ('() ': n); scc Proxy = Proxy
-	mff = natVal @MaxFramesInFlight Proxy
-
-type MaxFramesInFlight = 2
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -1094,20 +1098,20 @@ findMmType pd flt prs =
 		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
 			(Vk.Phd.memoryPropertiesMemoryTypes prs1)
 
-createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
-createDscPl dv = Vk.DscPl.create dv info nil
+createDscPl :: Natural -> Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDscPl (fromIntegral -> mff) dv = Vk.DscPl.create dv info nil
 	where
 	info = Vk.DscPl.CreateInfo {
 		Vk.DscPl.createInfoNext = TMaybe.N,
 		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
-		Vk.DscPl.createInfoMaxSets = 10,
+		Vk.DscPl.createInfoMaxSets = mff,
 		Vk.DscPl.createInfoPoolSizes = [sz0, sz1] }
 	sz0 = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPl.sizeDescriptorCount = 10 }
+		Vk.DscPl.sizeDescriptorCount = mff }
 	sz1 = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBufferDynamic,
-		Vk.DscPl.sizeDescriptorCount = 10 }
+		Vk.DscPl.sizeDescriptorCount = mff }
 
 createDscSts :: (
 	HPList.FromList sls, Vk.DscSet.DListFromMiddle sls,
@@ -1209,8 +1213,9 @@ type SyncObjects = SyncObjs
 mainloop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs sis sfs, HPList.HomoList '(slyt, BuffersMff alu mff) lyts,
-	HPList.HomoList '() (HPList.Dummies mff), KnownNat mff, KnownNat alu, KnownNat alv, KnownNat alvtr,
+	KnownNat mff, KnownNat alu, KnownNat alv, KnownNat alvtr,
 	HPList.HomoList '() mff' ) =>
+	Natural ->
 	FramebufferResized ->
 	GlfwG.Win.W sw ->
 	Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
@@ -1233,21 +1238,19 @@ mainloop :: (
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj alu mff])] ->
 	HPList.PL (Vk.DscSet.D sds) lyts ->
 
---	HPList.LL' (Vk.CBffr.C scb) mff ->
 	HPList.LL (Vk.CBffr.C scb) mff' ->
 	SyncObjects sos ->
 	IO ()
-mainloop rszd w sfc pd qfis dv gq pq cp sc ex0 scivs rp lyt gpl fbs drs
+mainloop mff rszd w sfc pd qfis dv gq pq cp sc ex0 scivs rp lyt gpl fbs drs
 	(vb, vnsln) (vbtri, vntr)
 	cmms scnm dss
 	cbs sos =
 	($ 0) . ($ Inf.cycle $ NE.fromList [0 .. mff - 1]) . ($ ex0) $ fix
 		\loop ex (ffn :~ ffns) fn -> Glfw.pollEvents >>
 	step w rszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
-		cmms scnm dss vb vbtri cbs sos vnsln ffn fn
+		cmms scnm dss vb vbtri cbs sos vnsln (fromIntegral ffn) fn
 		(\ex' -> loop ex' ffns ((fn + 1) `mod` (360 * frashRate))) >>
 	Vk.Dvc.waitIdle dv
-	where mff = fromIntegral $ natVal @MaxFramesInFlight Proxy
 
 frashRate :: Num n => n
 frashRate = 2
@@ -1256,7 +1259,7 @@ type VertexNumber = Word32
 
 step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs sis sfs, HPList.HomoList '(slyt, BuffersMff alu mff) lyts,
-	HPList.HomoList '() (HPList.Dummies mff), KnownNat mff, KnownNat alu, KnownNat alv, KnownNat alvtr,
+	KnownNat mff, KnownNat alu, KnownNat alv, KnownNat alvtr,
 	HPList.HomoList '() mff'
 	) =>
 	GlfwG.Win.W sw -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
@@ -1273,7 +1276,6 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	HPList.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex ""] ->
---	HPList.LL' (Vk.CBffr.C scb) mff ->
 	HPList.LL (Vk.CBffr.C scb) mff' ->
 	SyncObjects sos ->
 	Word32 -> Int -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
@@ -1325,7 +1327,6 @@ recreateAll w@(GlfwG.Win.W win) sfc pd qfs dv gq sc scivs rp lyt gpl cp drs@(_, 
 	ex <$ do
 	Vk.Khr.Swpch.getImages dv sc >>= \i -> recreateImgVws dv i scivs
 	recreateDptRsrcs pd dv gq cp ex drs
---	recreateGraphicsPipeline dv ex rp lyt gpl
 	recreateGrPpl dv ex rp lyt gpl
 	recreateFrmbffrs dv ex rp scivs divw fbs
 
@@ -1339,7 +1340,6 @@ drawFrame ::
 	forall sd ssc scfmt sr slyt sl sg sfs scmmbs ssm ssb lyts
 	sm sb nm smtri sbtri nmtri scb ssos sds mff alu alv alvtr mff' . (
 	HPList.HomoList '(sl, BuffersMff alu mff) lyts,
-	HPList.HomoList '() (HPList.Dummies mff),
 	KnownNat mff, KnownNat alu, KnownNat alv, KnownNat alvtr,
 	HPList.HomoList '() mff'
 	) =>
@@ -1354,7 +1354,6 @@ drawFrame ::
 	HPList.PL (Vk.DscSet.D sds) lyts ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex ""] ->
---	HPList.LL' (Vk.CBffr.C scb) mff ->
 	HPList.LL (Vk.CBffr.C scb) mff' ->
 	SyncObjects ssos ->
 	Word32 -> Int -> Int -> IO ()
