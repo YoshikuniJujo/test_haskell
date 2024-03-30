@@ -1213,7 +1213,7 @@ mainloop :: (
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
-	HPList.PL (MemoryVp alu nmvp) sbsms ->
+	HPList.PL (MemoryVp alu bnmvp) sbsms ->
 	Vk.Mm.M sscnm
 		'[ '(sscnb, 'Vk.Mm.BufferArg
 			bnmsn (SceneBffrArg alu SceneNames))] ->
