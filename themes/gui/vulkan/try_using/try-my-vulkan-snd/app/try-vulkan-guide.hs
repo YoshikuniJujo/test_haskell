@@ -1124,34 +1124,34 @@ createDscSts dv dp dls bvps snb f =
 		Vk.DscSet.allocateInfoDescriptorPool = dp,
 		Vk.DscSet.allocateInfoSetLayouts = dls }
 
-class Update alvp snb smsbs slbtss (sns :: [Symbol]) where
+class Update alu snb smsbsvp slbtss (sns :: [Symbol]) where
 	update :: Vk.Dvc.D sd ->
 		HPList.PL (Vk.DscSet.D sds) slbtss ->
-		HPList.PL (BindedVp alvp nmvp) smsbs ->
-		Vk.Bffr.Binded sm sb bnmsn snb -> IO ()
+		HPList.PL (BindedVp alu bnmvp) smsbsvp ->
+		Vk.Bffr.Binded smsn sbsn bnmsn snb -> IO ()
 
-instance Update _alvp _snb '[] '[] '[] where
+instance Update _alu _snb '[] '[] '[] where
 	update _ HPList.Nil HPList.Nil _ = pure ()
 
 instance (
-	KnownNat alvp,
-	Vk.DscSet.BindingAndArrayElemBuffer cs '[AtomViewProj alvp] 0,
-	Vk.DscSet.UpdateDynamicLength cs '[AtomViewProj alvp],
-	Vk.DscSet.BindingAndArrayElemBuffer cs
-		'[Obj.Atom alvp WScene ('Just sn)] 0,
-	Vk.DscSet.UpdateDynamicLength cs
-		'[Obj.Atom alvp WScene ('Just sn)],
-	Obj.OffsetRange (Obj.Atom alvp WScene (Just sn)) snb,
-	Show (HPList.PL Obj.Length snb), Update alvp snb smsbs dss sns ) =>
-	Update alvp snb (smsb ': smsbs) ('(ds, cs) ': dss) (sn ': sns) where
+	KnownNat alu,
+	Vk.DscSet.BindingAndArrayElemBuffer bts '[AtomViewProj alu] 0,
+	Vk.DscSet.BindingAndArrayElemBuffer bts
+		'[Obj.Atom alu WScene ('Just sn)] 0,
+	Vk.DscSet.UpdateDynamicLength bts '[AtomViewProj alu],
+	Vk.DscSet.UpdateDynamicLength bts
+		'[Obj.Atom alu WScene ('Just sn)],
+	Obj.OffsetRange (Obj.Atom alu WScene (Just sn)) snb,
+	Show (HPList.PL Obj.Length snb), Update alu snb smsbs dss sns ) =>
+	Update alu snb (smsb ': smsbs) ('(ds, bts) ': dss) (sn ': sns) where
 	update dv (ds :** dss) (BindedVp bvp :** bvps) scnb = do
 		Vk.DscSet.updateDs dv (
-			U5 (dscWrite @alvp @WViewProj @Nothing
+			U5 (dscWrite @alu @WViewProj @Nothing
 				ds bvp Vk.Dsc.TypeUniformBuffer) :**
-			U5 (dscWrite @alvp @WScene @('Just sn)
+			U5 (dscWrite @alu @WScene @('Just sn)
 				ds scnb Vk.Dsc.TypeUniformBuffer) :**
 			HPList.Nil ) HPList.Nil
-		update @alvp @snb @_ @_ @sns dv dss bvps scnb
+		update @alu @snb @_ @_ @sns dv dss bvps scnb
 
 dscWrite :: forall al tp onm sm sb bnm os dla sds . (
 	Show (HPList.PL Obj.Length os),
