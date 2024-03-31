@@ -1194,7 +1194,8 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 mainloop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs svs sfs,
-	HPList.HomoList '(sdsl, DscStLytArg alu) dlas, HPList.HomoList '() mff,
+	HPList.HomoList '(sdsl, DscStLytArg alu) dlas,
+	HPList.HomoList '() mff,
 	KnownNat alu, KnownNat alvmk, KnownNat alvtr ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
@@ -1258,17 +1259,19 @@ run :: (
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu) ] '[WMeshPushConsts] ->
-	Vk.Ppl.Grph.G sgmk '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sgmk
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
-	Vk.Ppl.Grph.G sg1 '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg1
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
-	HPList.PL (MemoryVp alu nmvp) sbsms ->
+	HPList.PL (MemoryVp alu bnmvp) sbsms ->
 	Vk.Mm.M smsn
 		'[ '(sbsn, 'Vk.Mm.BufferArg
 			bnmsn (SceneBffrArg alu SceneNames))] ->
@@ -1319,8 +1322,7 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 	HPList.index vpms cf \(MemoryVp vpm) ->
 	($ HPList.homoListIndex dss cf) \ds -> do
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
-	Vk.Mm.write @bnmvp @(Obj.Atom alu WViewProj 'Nothing)
-		dv vpm zeroBits (viewProjData ex)
+	Vk.Mm.write @bnmvp @(AtomViewProj alu) dv vpm zeroBits (viewProjData ex)
 	case cf of
 		0 -> Vk.Mm.write @bnmsn
 			@(Obj.Atom alu WScene ('Just "scene-data-0"))
@@ -1331,7 +1333,7 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 		_ -> error "never occur"
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
-	Vk.CBffr.reset cb def
+	Vk.CBffr.reset cb zeroBits
 	HPList.index fbs ii \fb -> case sdrn of
 		Shader0 -> recordCmdBffr cb ex rp pl gp0 fb vbmk vbtr fn ds
 		Shader1 -> recordCmdBffr cb ex rp pl gp1 fb vbmk vbtr fn ds
