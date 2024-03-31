@@ -1359,6 +1359,10 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
+
 recordCmdBffr :: forall scb sr sl sg sf
 	smvmk sbvmk bnmvmk alvmk nmvmk smvtr sbvtr bnmvtr alvtr nmvtr
 	alu sds sdsl .
@@ -1448,10 +1452,6 @@ data RenderObj sl sdsl alu sg sm sb bnmv alv nmv = RenderObj {
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]),
 	renderObjMesh :: Vk.Bffr.Binded sm sb bnmv '[Obj.List alv WVertex nmv],
 	renderObjMeshSize :: Word32, renderObjTransformMtx :: Glm.Mat4 }
-
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,

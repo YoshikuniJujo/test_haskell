@@ -1301,48 +1301,50 @@ draw dv gq pq sc ex rp lyt gp fbs
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.CBffr.reset cb zeroBits
-	HPList.index fbs ii \fb -> recordCommandBuffer
-		ex rp lyt gp fb ds vb vbtr cb (fromIntegral cf) fn
-	Vk.Q.submit gq (HPList.Singleton . U4 $ submitInfo ias rfs) $ Just iff
-	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ presentInfo rfs ii
+	HPList.index fbs ii \fb ->
+		recordCmdBffr cb ex rp lyt gp fb vb vbtr cf fn ds
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff
+	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo rfs ii
 	where
-	submitInfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
+	HPList.Dummy cb = HPList.homoListIndex @'() cbs cf
+	sinfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
 		Vk.SubmitInfo 'Nothing '[ssi] '[scb] '[ssr]
-	submitInfo ias rfs = Vk.SubmitInfo {
+	sinfo ias rfs = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-			$ Vk.SemaphorePipelineStageFlags ias
-				Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-	presentInfo :: Vk.Semaphore.S ssr -> Word32 ->
+	pinfo :: Vk.Semaphore.S ssr -> Word32 ->
 		Vk.Khr.PresentInfo 'Nothing '[ssr] fmt '[ssc]
-	presentInfo rfs ii = Vk.Khr.PresentInfo {
+	pinfo rfs ii = Vk.Khr.PresentInfo {
 		Vk.Khr.presentInfoNext = TMaybe.N,
 		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-			$ Vk.Khr.SwapchainImageIndex sc ii }
-	HPList.Dummy cb = HPList.homoListIndex @'() cbs cf
---	ds = HPList.homoListIndex @'(sdsl, BuffersMff alu mffn) dss cf
+		Vk.Khr.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 	catchAndSerialize = (`catch`
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 type BuffersMff alu mff = DscStLytArg alu mff
 
-recordCommandBuffer ::
+recordCmdBffr ::
 	forall sr slyt sg sdlyt sf sm sb nm smtri sbtri nmtri scb sds mff alu alv alvtr nmvmk nmvtr .
 	(KnownNat alu, KnownNat alv, KnownNat alvtr) =>
+	Vk.CBffr.C scb ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P slyt '[ '(sdlyt, BuffersMff alu mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sdlyt, BuffersMff alu mff)], '[WMeshPushConsts]) ->
-	Vk.Frmbffr.F sf -> Vk.DscSet.D sds '(sdlyt, BuffersMff alu mff) ->
+	Vk.Frmbffr.F sf ->
 	(Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmvmk], Word32) ->
 	(Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex nmvtr], Word32) ->
-	Vk.CBffr.C scb -> Word32 -> Int -> IO ()
-recordCommandBuffer sce rp lyt gpl fb ds (vb, vn) (vbt, vntr) cb cf (fromIntegral -> fn) =
+	Int -> Int ->
+	Vk.DscSet.D sds '(sdlyt, BuffersMff alu mff) ->
+	IO ()
+recordCmdBffr cb sce rp lyt gpl fb (vb, vn) (vbt, vntr) (fromIntegral -> cf) (fromIntegral -> fn) ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
 	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline do
 	ovb <- newIORef Nothing
