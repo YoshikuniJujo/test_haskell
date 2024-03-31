@@ -461,7 +461,7 @@ createImgVws dv (i : is) f =
 
 recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss inm fmt] ->
-	HPList.PL (Vk.ImgVw.I inm fmt) sis -> IO ()
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> IO ()
 recreateImgVws _dv [] HPList.Nil = pure ()
 recreateImgVws dv (i : is) (v :** vs) =
 	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit) nil v >>
@@ -766,25 +766,25 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 		Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	HPList.PL (Vk.ImgVw.I inm fmt) sis -> Vk.ImgVw.I dptnm dptfmt siv ->
-	(forall sfs . RecreateFrmbffrs sis sfs =>
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> Vk.ImgVw.I dptnm dptfmt siv ->
+	(forall sfs . RecreateFrmbffrs svs sfs =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFrmbffrs _ _ _ HPList.Nil _ f = f HPList.Nil
 createFrmbffrs dv ex rp (v :** vs) dvw f =
 	Vk.Frmbffr.create dv (frmbffrInfo ex rp v dvw) nil \fb ->
 	createFrmbffrs dv ex rp vs dvw \fbs -> f (fb :** fbs)
 
-class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
+class RecreateFrmbffrs (svs :: [Type]) (sfs :: [Type]) where
 	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
+		HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 		Vk.ImgVw.I dptnm dptfmt siv ->
 		HPList.PL Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFrmbffrs '[] '[] where
 	recreateFrmbffrs _ _ _ HPList.Nil _ HPList.Nil = pure ()
 
-instance RecreateFrmbffrs sis sfs =>
-	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
+instance RecreateFrmbffrs svs sfs =>
+	RecreateFrmbffrs (si ': svs) (sf ': sfs) where
 	recreateFrmbffrs dv ex rp (v :** vs) dvw (fb :** fbs) =
 		Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v dvw) nil fb >>
 		recreateFrmbffrs dv ex rp vs dvw fbs
@@ -1375,24 +1375,24 @@ recordCmdBffr :: forall
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr -> Int ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) -> IO ()
-recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtri, vntri) fn ds =
-	Vk.CBffr.begin cb cbinfo $
-	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline $
-	newIORef Nothing >>= \om ->
+recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtr, vntr)
+	(fromIntegral -> fn) ds =
+	Vk.CBffr.begin cb binfo $
+	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline do
+	om <- newIORef Nothing
 	drawObj om cb ds RenderObj {
 		renderObjPipeline = gp, renderObjPipelineLayout = pl,
 		renderObjMesh = vbmk, renderObjMeshSize = vnmk,
-		renderObjTransformMtx = mdl } >>
-	newIORef Nothing >>= \omtri ->
+		renderObjTransformMtx = mdl }
+	omtr <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObj omtri cb ds RenderObj {
+		drawObj omtr cb ds RenderObj {
 			renderObjPipeline = gp, renderObjPipelineLayout = pl,
-			renderObjMesh = vbtri, renderObjMeshSize = vntri,
+			renderObjMesh = vbtr, renderObjMeshSize = vntr,
 			renderObjTransformMtx = Glm.mat4Mul (trns x y) scl }
 	where
-	cbinfo :: Vk.CBffr.BeginInfo 'Nothing 'Nothing
-	cbinfo = def {
-		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
+	binfo :: Vk.CBffr.BeginInfo 'Nothing 'Nothing
+	binfo = def { Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
 	rpinfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
 		'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32,
 		'Vk.ClearTypeDepthStencil ]
@@ -1404,16 +1404,15 @@ recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtri, vntri) fn ds =
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
 			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues =
-			Vk.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
+			Vk.ClearValueColor (fromJust $ rgbaDouble 0 0 bl 1) :**
 			Vk.ClearValueDepthStencil
 				(Vk.ClearDepthStencilValue 1 0) :** HPList.Nil }
-	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
+	bl = 0.5 + sin (fn / (180 * frashRate) * pi) / 2
 	mdl = Glm.rotate Glm.mat4Identity
-		(fromIntegral fn * Glm.rad 1) (Glm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+		(fn * Glm.rad 1) (Glm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 	trns x y = Glm.translate
 		Glm.mat4Identity (Glm.Vec3 $ x :. 0 :. y :. NilL)
-	scl = Glm.scale
-		Glm.mat4Identity (Glm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
+	scl = Glm.scale Glm.mat4Identity (Glm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 
 drawObj :: forall scb sds sdsl alu sl sg sm sb bnmv alv nmv . KnownNat alv =>
 	IORef (Maybe (Vk.Bffr.Binded sm sb bnmv '[Obj.List alv WVertex nmv])) ->
@@ -1427,17 +1426,16 @@ drawObj rvbpre cb ds RenderObj {
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
 		(HPList.Singleton $ U2 ds)
 		(HPList.Singleton (HPList.Nil :** HPList.Nil :** HPList.Nil))
-	vbpre <- readIORef rvbpre
-	case vbpre of
-		Just vbp | vb == vbp -> pure ();
+	readIORef rvbpre >>= \case
+		Just vbp | vb == vbp -> pure ()
 		_ -> do	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton . U5
 				$ Vk.Bffr.IndexedForList
 					@_ @_ @_ @WVertex @nmv vb
 			writeIORef rvbpre $ Just vb
-	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit ] cbb pl
-		(HPList.Id (GStorable.W MeshPushConsts {
+	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cbb pl
+		$ HPList.Id (GStorable.W MeshPushConsts {
 			meshPushConstsDt = Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-			meshPushConstsRenderMtx = mdl }) :** HPList.Nil)
+			meshPushConstsRenderMtx = mdl }) :** HPList.Nil
 	Vk.Cmd.draw cbb vn 1 0 0
 
 data RenderObj sl sdsl alu sg sm sb bnmv alv nmv = RenderObj {
@@ -1467,8 +1465,7 @@ catchAndRecreate :: (
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
+	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp0 gp1 drs fbs go act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
