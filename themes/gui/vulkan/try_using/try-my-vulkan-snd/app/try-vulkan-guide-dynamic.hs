@@ -1449,19 +1449,18 @@ recreateAll :: (
 		'(sl, '[ '(sdsl, DscStLytArg alu mff)], '[WMeshPushConsts]) ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvs ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc pd qfs dv gq cp sc vs rp pl gp drs@(_, _, divw) fbs =
-	waitFramebufferSize win >> Vk.Dvc.waitIdle dv >>
-	recreateSwpch w sfc pd qfs dv sc >>= \ex ->
-	ex <$ do
+recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs@(_, _, dvw) fbs =
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv >>
+	recreateSwpch w sfc pd qfis dv sc >>= \ex -> ex <$ do
 	Vk.Khr.Swpch.getImages dv sc >>= \i -> recreateImgVws dv i vs
 	recreateDptRsrcs pd dv gq cp ex drs
 	recreateGrPpl dv ex rp pl gp
-	recreateFrmbffrs dv ex rp vs divw fbs
+	recreateFrmbffrs dv ex rp vs dvw fbs
 
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize w = Glfw.getFramebufferSize w >>= \sz ->
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 	when (zero sz) $ fix \go -> (`when` go) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize w
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 -- VERTEX

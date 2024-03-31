@@ -1489,15 +1489,14 @@ recreateAll :: (
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]) ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvs ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp0 gp1 drs@(_, _, dvw) fbs = do
-	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
-	ex <- recreateSwpch w sfc pd qfis dv sc
-	ex <$ do
-		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
-		recreateDptRsrcs pd dv gq cp ex drs
-		recreateGrPpl Shader0 dv ex rp pl gp0
-		recreateGrPpl Shader1 dv ex rp pl gp1
-		recreateFrmbffrs dv ex rp vs dvw fbs
+recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp0 gp1 drs@(_, _, dvw) fbs =
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv >>
+	recreateSwpch w sfc pd qfis dv sc >>= \ex -> ex <$ do
+	Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
+	recreateDptRsrcs pd dv gq cp ex drs
+	recreateGrPpl Shader0 dv ex rp pl gp0
+	recreateGrPpl Shader1 dv ex rp pl gp1
+	recreateFrmbffrs dv ex rp vs dvw fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
