@@ -1358,18 +1358,15 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
+	catchAndSerialize = (`catch`
+		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
-
-recordCmdBffr :: forall scb sr sl sg sf
-	smvmk sbvmk bnmvmk alvmk nmvmk smvtr sbvtr bnmvtr alvtr nmvtr
-	alu sds sdsl .
+recordCmdBffr :: forall
+	scb sr sl sdsl sds alu sg sf
+	smvmk sbvmk bnmvmk alvmk nmvmk smvtr sbvtr bnmvtr alvtr nmvtr .
 	(KnownNat alvmk, KnownNat alvtr) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)]
-		'[WMeshPushConsts] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]

@@ -1272,13 +1272,13 @@ draw :: forall
 	alu bnmvp smsn sbsn bnmsn smsbs sds sls scb mffn mff ssos . (
 	KnownNat mffn, KnownNat alu, KnownNat alvmk, KnownNat alvtr,
 	HPList.HomoList '() mff,
-	HPList.HomoList '(sdsl, BuffersMff alu mffn) sls ) =>
+	HPList.HomoList '(sdsl, DscStLytArg alu mffn) sls ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, BuffersMff alu mffn)] '[WMeshPushConsts] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mffn)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(sdsl, BuffersMff alu mffn)], '[WMeshPushConsts]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu mffn)], '[WMeshPushConsts]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
@@ -1306,9 +1306,10 @@ draw dv gq pq sc ex rp lyt gp fbs
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff
 	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo rfs ii
 	where
-	HPList.Dummy cb = HPList.homoListIndex @'() cbs cf
-	sinfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
-		Vk.SubmitInfo 'Nothing '[ssi] '[scb] '[ssr]
+	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
+		HPList.Dummy (Vk.CBffr.C scb) '()
+	sinfo :: Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
+		Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 	sinfo ias rfs = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks =
@@ -1316,8 +1317,8 @@ draw dv gq pq sc ex rp lyt gp fbs
 				ias Vk.Ppl.StageColorAttachmentOutputBit,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-	pinfo :: Vk.Semaphore.S ssr -> Word32 ->
-		Vk.Khr.PresentInfo 'Nothing '[ssr] fmt '[ssc]
+	pinfo :: Vk.Semaphore.S srfs -> Word32 ->
+		Vk.Khr.PresentInfo 'Nothing '[srfs] fmt '[ssc]
 	pinfo rfs ii = Vk.Khr.PresentInfo {
 		Vk.Khr.presentInfoNext = TMaybe.N,
 		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
@@ -1326,23 +1327,21 @@ draw dv gq pq sc ex rp lyt gp fbs
 	catchAndSerialize = (`catch`
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-type BuffersMff alu mff = DscStLytArg alu mff
-
-recordCmdBffr ::
-	forall sr slyt sg sdlyt sf sm sb nm smtri sbtri nmtri scb sds mff alu alv alvtr nmvmk nmvtr .
-	(KnownNat alu, KnownNat alv, KnownNat alvtr) =>
-	Vk.CBffr.C scb ->
-	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P slyt '[ '(sdlyt, BuffersMff alu mff)] '[WMeshPushConsts] ->
+recordCmdBffr :: forall
+	scb sr sl sdsl sds alu sg sf
+	smvmk sbvmk bnmvmk alvmk nmvmk smtri sbtri nmtri alvtr nmvtr mff .
+	(KnownNat alu, KnownNat alvmk, KnownNat alvtr) =>
+	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mff)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(slyt,	'[ '(sdlyt, BuffersMff alu mff)], '[WMeshPushConsts]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu mff)], '[WMeshPushConsts]) ->
 	Vk.Frmbffr.F sf ->
-	(Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmvmk], Word32) ->
+	(Vk.Bffr.Binded smvmk sbvmk bnmvmk '[Obj.List alvmk WVertex nmvmk], Word32) ->
 	(Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex nmvtr], Word32) ->
 	Int -> Int ->
-	Vk.DscSet.D sds '(sdlyt, BuffersMff alu mff) ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu mff) ->
 	IO ()
 recordCmdBffr cb sce rp lyt gpl fb (vb, vn) (vbt, vntr) (fromIntegral -> cf) (fromIntegral -> fn) ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
@@ -1412,6 +1411,8 @@ drawObject ovb cb0 ds RenderObject {
 				Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model }) :** HPList.Nil
 	Vk.Cmd.draw cb vn 1 0 0
+
+type BuffersMff alu mff = DscStLytArg alu mff
 
 data RenderObject alu alv mff sg sl sdlyt sm sb nm nmvmk = RenderObject {
 	renderObjectPipeline :: Vk.Ppl.Grph.G sg
