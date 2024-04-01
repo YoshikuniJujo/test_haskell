@@ -135,14 +135,6 @@ import Data.IORef.ToolsYj
 
 import Debug
 
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 2
-
-type MaxFramesInFlight = 2
-
-frashRate :: Num n => n
-frashRate = 2
-
 main :: IO ()
 main = run_ realMain
 
@@ -155,6 +147,8 @@ realMain mdlfp mff = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
 	createIst \ist -> bool id (dbgm ist) debug
 		$ body (get mdlfp) (fromIntegral $ get mff) fr w ist
 	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
+
+type FramebufferResized = IORef Bool
 
 withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
 withWindow fr a = GlfwG.init error $ GlfwG.Win.group $ (a =<<) . initWindow
@@ -265,6 +259,14 @@ body mdlfp mff rszd (GlfwG.Win.W w) ist =
 
 	mainLoop w rszd sfc pd qfs dv gq pq sc ex scivs rp lyt gpl cp drs fbs
 		cmms scnm dss odms dssod vb vbtri cbs sos vnsln
+
+maxFramesInFlight :: Integral n => n
+maxFramesInFlight = 2
+
+type MaxFramesInFlight = 2
+
+frashRate :: Num n => n
+frashRate = 2
 
 pickPhysicalDevice ::
 	Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices)
@@ -1736,8 +1738,6 @@ instance Storable ObjData where
 instance Str.G.G ObjData
 	
 -- OTHER TYPES
-
-type FramebufferResized = IORef Bool
 
 -- SHADER
 
