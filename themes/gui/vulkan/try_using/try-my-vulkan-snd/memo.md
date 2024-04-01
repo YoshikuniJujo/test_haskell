@@ -110,7 +110,7 @@ apps
 * [x] try-multisampling-single.hs
 * [x] try-multisampling.hs
 * [x] try-vulkan-guide.hs
-* [ ] try-vulkan-guide-dynamic.hs
+* [x] try-vulkan-guide-dynamic.hs
 * [ ] try-vulkan-guide-storage.hs
 * [ ] try-vulkan-guide-texture.hs
 * [ ] try-multisampling-use-groups-single.hs
