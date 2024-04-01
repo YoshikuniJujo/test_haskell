@@ -92,7 +92,7 @@ import Gpu.Vulkan.Fence qualified as Vk.Fnc
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Grph
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
-import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxIptSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
 import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
@@ -1326,10 +1326,10 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 	case cf of
 		0 -> Vk.Mm.write @bnmsn
 			@(Obj.Atom alu WScene ('Just "scene-data-0"))
-			dv snm zeroBits (GStorable.W $ sceneData fn)
+			dv snm zeroBits (sceneData fn)
 		1 -> Vk.Mm.write @bnmsn
 			@(Obj.Atom alu WScene ('Just "scene-data-1"))
-			dv snm zeroBits (GStorable.W $ sceneData fn)
+			dv snm zeroBits (sceneData fn)
 		_ -> error "never occur"
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
@@ -1524,15 +1524,15 @@ data Vertex = Vtx { vtxPos :: Position, vtxNormal :: Normal, vtxColor :: Color }
 	deriving (Show, Generic)
 
 newtype Position = Position Glm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 newtype Normal = Normal Glm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 newtype Color = Color Glm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
-instance GStorable.G Vertex where
+instance GStorable.G Vertex
 
 -- PUSH CONSTANTS
 
@@ -1580,24 +1580,24 @@ instance GStorable.G ViewProjData
 type WScene = GStorable.W Scene
 
 data Scene = Scene {
-	sceneFogColor :: FogColor, sceneFogDistances :: FogDistances,
-	sceneAmbientColor :: AmbientColor,
-	sceneSunlightDir :: SunlightDir, sceneSunlightColor :: SunlightColor }
+	sceneFogColor :: FogColor, sceneFogDists :: FogDists,
+	sceneAmbColor :: AmbColor,
+	sceneSunDir :: SunDir, sceneSunColor :: SunColor }
 	deriving (Show, Generic)
 
 newtype FogColor = FogColor Glm.Vec4 deriving (Show, Storable)
-newtype FogDistances = FogDistances Glm.Vec4 deriving (Show, Storable)
-newtype AmbientColor = AmbientColor Glm.Vec4 deriving (Show, Storable)
-newtype SunlightDir = SunlightDir Glm.Vec4 deriving (Show, Storable)
-newtype SunlightColor = SunlightColor Glm.Vec4 deriving (Show, Storable)
+newtype FogDists = FogDists Glm.Vec4 deriving (Show, Storable)
+newtype AmbColor = AmbColor Glm.Vec4 deriving (Show, Storable)
+newtype SunDir = SunDir Glm.Vec4 deriving (Show, Storable)
+newtype SunColor = SunColor Glm.Vec4 deriving (Show, Storable)
 
-sceneData :: Int -> Scene
-sceneData (fromIntegral -> fn) = Scene {
+sceneData :: Int -> WScene
+sceneData (fromIntegral -> fn) = GStorable.W Scene {
 	sceneFogColor = FogColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneFogDistances = FogDistances . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneAmbientColor = AmbientColor . Glm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
-	sceneSunlightDir = SunlightDir . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneSunlightColor = SunlightColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
+	sceneFogDists = FogDists . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneAmbColor = AmbColor . Glm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
+	sceneSunDir = SunDir . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneSunColor = SunColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
 	where
 	r = sin (fn / (180 * frashRate) * pi)
 	b = cos (fn / (180 * frashRate) * pi)
@@ -1675,10 +1675,9 @@ layout(location = 0) in vec3 inColor;
 layout(location = 0) out vec4 outColor;
 
 layout (set = 0, binding = 1) uniform SceneData {
-	vec4 fogColor; vec4 fogDistances;
+	vec4 fogColor; vec4 fogDists;
 	vec4 ambientColor;
-	vec4 sunlightDirection; vec4 sunlightColor;
-} sceneData;
+	vec4 sunlightDir; vec4 sunlightColor; } sceneData;
 
 void
 main()

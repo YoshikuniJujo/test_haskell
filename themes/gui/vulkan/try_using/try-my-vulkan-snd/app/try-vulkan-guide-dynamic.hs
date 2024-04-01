@@ -48,8 +48,6 @@ import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Cglm as Glm
 
-import Foreign.Storable.Generic qualified as Str.G
-
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -120,7 +118,6 @@ import Data.List.ToolsYj
 import Data.IORef.ToolsYj
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
@@ -1465,27 +1462,6 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 
 -- VERTEX
 
-type WVertex = GStorable.W Vertex
-
-data Vertex = Vtx {
-	vtxPos :: Position, vtxNormal :: Normal, vtxColor :: Color }
-	deriving (Show, Generic)
-
-newtype Position = Position Glm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
-
-newtype Normal = Normal Glm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
-
-newtype Color = Color Glm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
-
-instance Str.G.G Vertex
-
-instance Storable Vertex where
-	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
-	peek = Str.G.gPeek; poke = Str.G.gPoke
-
 triangle :: V.Vector WVertex
 triangle = V.fromList $ GStorable.W <$> [
 	Vtx {	vtxPos = Position . Glm.Vec3 $ 1 :. 1 :. 0.5 :. NilL,
@@ -1498,27 +1474,48 @@ triangle = V.fromList $ GStorable.W <$> [
 		vtxNormal = Normal . Glm.Vec3 $ 1 :. 0 :. 0 :. NilL,
 		vtxColor = Color . Glm.Vec3 $ 0 :. 1 :. 0 :. NilL } ]
 
+type WVertex = GStorable.W Vertex
+
+data Vertex = Vtx { vtxPos :: Position, vtxNormal :: Normal, vtxColor :: Color }
+	deriving (Show, Generic)
+
+newtype Position = Position Glm.Vec3
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
+
+newtype Normal = Normal Glm.Vec3
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
+
+newtype Color = Color Glm.Vec3
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
+
+instance GStorable.G Vertex
+
+-- MESH PUSH CONSTANTS
+
+type WMeshPushConsts = GStorable.W MeshPushConsts
+
+data MeshPushConsts = MeshPushConsts {
+	meshPushConstsDt :: Glm.Vec4,
+	meshPushConstsRenderMtx :: Glm.Mat4 } deriving (Show, Generic)
+
+instance GStorable.G MeshPushConsts
+
 -- CAMERA DATA
 
-type WViewProj = GStorable.W CameraData
+type WViewProj = GStorable.W ViewProjData
 
-data CameraData = CameraData {
-	cameraDataView :: View, cameraDataProj :: Proj,
-	cameraDataViewProj :: ViewProj } deriving (Show, Generic)
+data ViewProjData = ViewProjData {
+	viewProjView :: View, viewProjProj :: Proj,
+	viewProjViewProj :: ViewProj } deriving (Show, Generic)
 
 newtype View = View Glm.Mat4 deriving (Show, Storable)
 newtype Proj = Proj Glm.Mat4 deriving (Show, Storable)
 newtype ViewProj = ViewProj Glm.Mat4 deriving (Show, Storable)
 
-instance Storable CameraData where
-	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
-	peek = Str.G.gPeek; poke = Str.G.gPoke
-
-instance Str.G.G CameraData
-
 viewProjData :: Vk.Extent2d -> WViewProj
-viewProjData ex = GStorable.W $ CameraData (View view) (Proj $ projection ex)
-	(ViewProj $ Glm.mat4Mul (projection ex) view)
+viewProjData ex = GStorable.W
+	$ ViewProjData (View view) (Proj prj) (ViewProj $ Glm.mat4Mul prj view)
+	where prj = projection ex
 
 view :: Glm.Mat4
 view = Glm.lookat
@@ -1529,17 +1526,19 @@ view = Glm.lookat
 projection :: Vk.Extent2d -> Glm.Mat4
 projection Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
-	Vk.extent2dHeight = fromIntegral -> h } = Glm.modifyMat4 1 1 negate
-	$ Glm.perspective (Glm.rad 70) (w / h) 0.1 200
+	Vk.extent2dHeight = fromIntegral -> h } =
+	Glm.modifyMat4 1 1 negate $ Glm.perspective (Glm.rad 70) (w / h) 0.1 200
+
+instance GStorable.G ViewProjData
 
 -- SCENE DATA
 
-type WScene = GStorable.W SceneData
+type WScene = GStorable.W Scene
 
-data SceneData = SceneData {
-	sceneDataFogColor :: FogColor, sceneDataFogDists :: FogDists,
-	sceneDataAmbColor :: AmbColor,
-	sceneDataSunDir :: SunDir, sceneDataSunColor :: SunColor }
+data Scene = Scene {
+	sceneFogColor :: FogColor, sceneFogDists :: FogDists,
+	sceneAmbColor :: AmbColor,
+	sceneSunDir :: SunDir, sceneSunColor :: SunColor }
 	deriving (Show, Generic)
 
 newtype FogColor = FogColor Glm.Vec4 deriving (Show, Storable)
@@ -1548,32 +1547,18 @@ newtype AmbColor = AmbColor Glm.Vec4 deriving (Show, Storable)
 newtype SunDir = SunDir Glm.Vec4 deriving (Show, Storable)
 newtype SunColor = SunColor Glm.Vec4 deriving (Show, Storable)
 
-instance Storable SceneData where
-	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
-	peek = Str.G.gPeek; poke = Str.G.gPoke
-
-instance Str.G.G SceneData
-
 sceneData :: Int -> WScene
-sceneData fn = GStorable.W SceneData {
-	sceneDataFogColor = FogColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneDataFogDists = FogDists . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneDataAmbColor = AmbColor . Glm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
-	sceneDataSunDir = SunDir . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneDataSunColor = SunColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
+sceneData (fromIntegral -> fn) = GStorable.W Scene {
+	sceneFogColor = FogColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneFogDists = FogDists . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneAmbColor = AmbColor . Glm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
+	sceneSunDir = SunDir . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneSunColor = SunColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
 	where
-	r = sin (fromIntegral fn / (180 * frashRate) * pi)
-	b = cos (fromIntegral fn / (180 * frashRate) * pi)
+	r = sin (fn / (180 * frashRate) * pi)
+	b = cos (fn / (180 * frashRate) * pi)
 
--- MESH PUSH CONSTANTS
-
-data MeshPushConsts = MeshPushConsts {
-	meshPushConstsDt :: Glm.Vec4,
-	meshPushConstsRenderMtx :: Glm.Mat4 } deriving (Show, Generic)
-
-type WMeshPushConsts = GStorable.W MeshPushConsts
-
-instance Str.G.G MeshPushConsts
+instance GStorable.G Scene
 
 -- OTHER TYPES
 
@@ -1586,20 +1571,18 @@ instance Str.G.G MeshPushConsts
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColor;
-
 layout(location = 0) out vec3 outColor;
 
-layout (set = 0, binding = 0) uniform CameraBuffer {
-	mat4 view; mat4 proj; mat4 viewproj; } cameraData;
+layout (set = 0, binding = 0) uniform
+	ViewProj { mat4 view; mat4 proj; mat4 viewproj; } viewProj;
 
-layout(push_constant) uniform constants {
-	vec4 data; mat4 render_matrix; } PushConstants;
+layout(push_constant) uniform
+	Constants { vec4 data; mat4 render_matrix; } pushConsts;
 
 void
 main()
 {
-	mat4 transformMatrix =
-		(cameraData.viewproj * PushConstants.render_matrix);
+	mat4 transformMatrix = (viewProj.viewproj * pushConsts.render_matrix);
 	gl_Position = transformMatrix * vec4(inPosition, 1.0);
 	outColor = inColor;
 }
