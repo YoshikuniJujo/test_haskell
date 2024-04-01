@@ -141,18 +141,19 @@ realMain mdlfp mff = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
 type FramebufferResized = IORef Bool
 
 withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
-
-initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
-initWindow fr g = do
-	Right w <- do
-		GlfwG.Win.hint noApi
-		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
-	w <$ GlfwG.Win.setFramebufferSizeCallback
-		w (Just . const3 $ writeIORef fr True)
+withWindow fr a = GlfwG.init error $ GlfwG.Win.group $ (a =<<) . initWindow
 	where
-	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
-	sizeName = ((800, 600), "Triangle")
+	initWindow :: GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+	initWindow g = do
+		Right w <- do
+			GlfwG.Win.hint noApi
+			uncurryDup (GlfwG.Win.create' g ())
+				sizeName Nothing Nothing
+		w <$ GlfwG.Win.setFramebufferSizeCallback
+			w (Just . const3 $ writeIORef fr True)
+		where
+		noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+		sizeName = ((800, 600), "Triangle")
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
