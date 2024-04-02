@@ -132,6 +132,7 @@ import Data.IORef.ToolsYj
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
+import Data.TypeLevel.List qualified as TList
 
 import Debug
 
@@ -583,8 +584,8 @@ type Buffers = '[
 
 type ObjDataBuffers = '[ 'Vk.DscSetLyt.Buffer '[ObjDataList] ]
 
-type CameraObj = Obj.Atom 256 CameraData 'Nothing
-type SceneObj = Obj.DynAtom 2 256 SceneData 'Nothing
+type CameraObj = Obj.Atom 256 WViewProj 'Nothing
+type SceneObj = Obj.DynAtom 2 256 WScene 'Nothing
 
 createDescriptorSetLayoutObjData :: Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DscSetLyt.D s '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]] -> IO a) -> IO a
@@ -1019,6 +1020,41 @@ framebufferInfo Vk.Extent2d {
 		Vk.Frmbffr.createInfoHeight = h,
 		Vk.Frmbffr.createInfoLayers = 1 }
 
+createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
+	(forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
+		Vk.Mm.M sm '[ '(
+			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
+		IO b) -> IO b
+createBffrAtm us prs p dv =
+	createBffr p dv (HPList.Singleton Obj.LengthAtom) us prs
+
+createBffr :: forall sd bnm os a . (
+	Obj.SizeAlignmentList os, Obj.WholeAlign os ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> HPList.PL Obj.Length os ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm os -> Vk.Mm.M sm
+			'[ '(sb, 'Vk.Mm.BufferArg bnm os)] -> IO a) -> IO a
+createBffr p dv lns us prs f = Vk.Bffr.create dv (bffrInfo lns us) nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) prs
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
+		(ainfo mt) nil
+		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
+	where ainfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+bffrInfo :: HPList.PL Obj.Length os ->
+	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing os
+bffrInfo lns us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = lns,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
 {-
 createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sdsc Buffers ->
 	Int -> (forall slyts sbsms . (
@@ -1039,7 +1075,7 @@ createCameraObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	Int -> (forall slyts sbsms slytods sbsmods . (
 		Vk.DscSet.DListFromMiddle slyts, HPList.FromList slyts,
 		Vk.DscSet.DListFromMiddle slytods,
-		Update sbsms slyts sbsmods slytods,
+		UpdateOld sbsms slyts sbsmods slytods,
 		HPList.HomoList '(sdsc, Buffers) slyts,
 		HPList.HomoList '(sodlyt, ObjDataBuffers) slytods
 		) =>
@@ -1172,7 +1208,7 @@ createDescriptorSets ::
 	Vk.DscSet.DListFromMiddle lyts,
 	Vk.DscSet.DListFromMiddle lytods,
 	HPList.FromList lyts,
-	Update cmbs lyts odbs lytods) =>
+	UpdateOld cmbs lyts odbs lytods) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	HPList.PL BindedCamera cmbs -> HPList.PL (U2 Vk.DscSetLyt.D) lyts ->
 	HPList.PL BindedObjData odbs -> HPList.PL (U2 Vk.DscSetLyt.D) lytods ->
@@ -1183,7 +1219,7 @@ createDescriptorSets ::
 createDescriptorSets dv dscp cmbs lyts odbs lytods scnb f =
 	Vk.DscSet.allocateDs dv allocInfo \dscss ->
 	Vk.DscSet.allocateDs dv allocInfoOd \dscsods -> do
-	update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
+	updateOld @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 	f dscss dscsods
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
@@ -1195,13 +1231,13 @@ createDescriptorSets dv dscp cmbs lyts odbs lytods scnb f =
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = lytods }
 
-class Update cmbs lyts odbs lytods where
-	update :: Vk.Dvc.D sd ->
+class UpdateOld cmbs lyts odbs lytods where
+	updateOld :: Vk.Dvc.D sd ->
 		HPList.PL (Vk.DscSet.D sds) lyts -> HPList.PL BindedCamera cmbs ->
 		HPList.PL (Vk.DscSet.D sdso) lytods -> HPList.PL BindedObjData odbs ->
 		Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] -> IO ()
 
-instance Update '[] '[] '[] '[] where update _ HPList.Nil HPList.Nil HPList.Nil HPList.Nil _ = pure ()
+instance UpdateOld '[] '[] '[] '[] where updateOld _ HPList.Nil HPList.Nil HPList.Nil HPList.Nil _ = pure ()
 
 instance (
 	Vk.DscSet.BindingAndArrayElemBuffer
@@ -1218,10 +1254,10 @@ instance (
 		(TIndex.I1_2 '(slyt, bs))
 		'[SceneObj],
 	Vk.DscSet.UpdateDynamicLength bods '[ObjDataList],
-	Update cmbs lyts odbs lytods ) =>
-	Update (cmb ': cmbs) ('(slyt, bs) ': lyts)
+	UpdateOld cmbs lyts odbs lytods ) =>
+	UpdateOld (cmb ': cmbs) ('(slyt, bs) ': lyts)
 		(odb ': odbs) ('(slytod, bods) ': lytods) where
-	update dv (dscs :** dscss) (BindedCamera cmb :** cmbs)
+	updateOld dv (dscs :** dscss) (BindedCamera cmb :** cmbs)
 		(dscsod :** dscsods) (BindedObjData odb :** odbs) scnb = do
 		Vk.DscSet.updateDs dv (
 			U5 (descriptorWrite @CameraObj
@@ -1232,7 +1268,7 @@ instance (
 				dscsod odb Vk.Dsc.TypeStorageBuffer) :**
 			HPList.Nil )
 			HPList.Nil
-		update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
+		updateOld @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 
 descriptorWrite :: forall obj slbts sb sm nm objs sds . (
 	Show (HPList.PL Obj.Length objs), Obj.OffsetRange obj objs ) =>
@@ -1648,6 +1684,9 @@ triangle = V.fromList $ Str.G.W <$> [
 
 -- CAMERA DATA
 
+
+type WViewProj = Str.G.W CameraData
+
 data CameraData = CameraData {
 	cameraDataView :: View, cameraDataProj :: Proj,
 	cameraDataViewProj :: ViewProj } deriving (Show, Generic)
@@ -1662,8 +1701,8 @@ instance Storable CameraData where
 
 instance Str.G.G CameraData
 
-cameraData :: Vk.Extent2d -> CameraData
-cameraData ex = CameraData (View view) (Proj $ projection ex)
+cameraData :: Vk.Extent2d -> Str.G.W CameraData
+cameraData ex = Str.G.W $ CameraData (View view) (Proj $ projection ex)
 	(ViewProj $ Glm.mat4Mul (projection ex) view)
 
 view :: Glm.Mat4
@@ -1679,6 +1718,8 @@ projection Vk.Extent2d {
 	$ Glm.perspective (Glm.rad 70) (w / h) 0.1 200
 
 -- SCENE DATA
+
+type WScene = Str.G.W SceneData
 
 data SceneData = SceneData {
 	sceneDataFogColor :: FogColor, sceneDataFogDists :: FogDists,
@@ -1698,8 +1739,8 @@ instance Storable SceneData where
 
 instance Str.G.G SceneData
 
-sceneData :: Int -> SceneData
-sceneData fn = SceneData {
+sceneData :: Int -> Str.G.W SceneData
+sceneData fn = Str.G.W SceneData {
 	sceneDataFogColor = FogColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 	sceneDataFogDists = FogDists . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 	sceneDataAmbColor = AmbColor . Glm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
