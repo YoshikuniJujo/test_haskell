@@ -209,7 +209,8 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		"validation layer: " <>
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-body :: FilePath -> Natural -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+body :: FilePath -> Natural ->
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body mdlfp mff fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
