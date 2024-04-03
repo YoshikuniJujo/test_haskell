@@ -230,12 +230,12 @@ body mdlfp mff fr w ist =
 	createVtxBffr pd d gq cp vns \vb ->
 	createVtxBffr pd d gq cp triangle \vbtri ->
 	createVpBffrs @_ @_ @mff pd d dsl \dsls vpbs vbpms ->
-	createScnBffr pd d \scb scbm ->
+	createScnBffr pd d \snb snbm ->
 	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
-	createDscPl mff d \dp -> createDscSts d dp dsls vpbs scb \dss ->
+	createDscPl mff d \dp -> createDscSts d dp dsls vpbs snb \dss ->
 	mainloop mff fr w sfc pd qfis d gq pq cp
-		sc ex scvs rp pl gp fbs drs vb vbtri vbpms scbm dss cbs sos
+		sc ex scvs rp pl gp fbs drs vb vbtri vbpms snbm dss cbs sos
 	where
 	fromNat :: forall alu a . KnownNat alu => Natural -> (forall n n' . (
 		TList.Length n, HPList.FromList n, HPList.RepM n,
