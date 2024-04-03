@@ -989,39 +989,39 @@ bffrAlgn dv ln us f =
 		=<< Vk.Mm.requirementsAlignment
 		<$> Vk.Bffr.getMemoryRequirements dv b
 
-class CreateVpBffrs alvp mff (sds :: [()]) where
+class CreateVpBffrs alu mff (sds :: [()]) where
 	createVpBffrs :: Vk.Phd.P -> Vk.Dvc.D sd ->
-		Vk.DSLt.D sdsc (DscStLytArg alvp mff) -> (forall dlas svp . (
+		Vk.DSLt.D sdsc (DscStLytArg alu mff) -> (forall dlas svp . (
 			HPList.FromList dlas, Vk.DscSet.DListFromMiddle dlas,
-			Update alvp mff svp dlas,
-			HPList.HomoList '(sdsc, DscStLytArg alvp mff) dlas ) =>
+			Update alu mff svp dlas,
+			HPList.HomoList '(sdsc, DscStLytArg alu mff) dlas ) =>
 			HPList.PL (U2 Vk.DSLt.D) dlas ->
-			HPList.PL (BindedVp alvp bnmvp) svp ->
-			HPList.PL (MemoryVp alvp bnmvp) svp -> IO a) -> IO a
+			HPList.PL (BindedVp alu bnmvp) svp ->
+			HPList.PL (MemoryVp alu bnmvp) svp -> IO a) -> IO a
 
-data BindedVp alvp bnmvp smsb where
-	BindedVp :: Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alvp] ->
-		BindedVp alvp bnmvp '(sm, sb)
+data BindedVp alu bnmvp smsb where
+	BindedVp :: Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu] ->
+		BindedVp alu bnmvp '(sm, sb)
 
-data MemoryVp alvp bnmvp smsb where
+data MemoryVp alu bnmvp smsb where
 	MemoryVp ::
 		Vk.Mm.M sm '[
-			'(sb, 'Vk.Mm.BufferArg bnmvp '[AtomViewProj alvp])] ->
-		MemoryVp alvp bnmvp '(sm, sb)
+			'(sb, 'Vk.Mm.BufferArg bnmvp '[AtomViewProj alu])] ->
+		MemoryVp alu bnmvp '(sm, sb)
 
 instance CreateVpBffrs al _mff '[] where
 	createVpBffrs _ _ _ f = f HPList.Nil HPList.Nil HPList.Nil
 
 instance (
-	KnownNat alvp, KnownNat mff,
-	CreateVpBffrs alvp mff sds ) => CreateVpBffrs alvp mff (sd ': sds) where
+	KnownNat alu, KnownNat mff,
+	CreateVpBffrs alu mff sds ) => CreateVpBffrs alu mff (sd ': sds) where
 	createVpBffrs pd dv dl f = createVpBffr pd dv \bnd mm ->
-		createVpBffrs @alvp @_ @sds pd dv dl \dls bnds mms ->
+		createVpBffrs @_ @_ @sds pd dv dl \dls bnds mms ->
 		f (U2 dl :** dls) (BindedVp bnd :** bnds) (MemoryVp mm :** mms)
 
-createVpBffr :: KnownNat alvp => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb nm '[AtomViewProj alvp] ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[AtomViewProj alvp])] ->
+createVpBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[AtomViewProj alu])] ->
 	IO a) -> IO a
 createVpBffr =
 	createBffrAtm Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
