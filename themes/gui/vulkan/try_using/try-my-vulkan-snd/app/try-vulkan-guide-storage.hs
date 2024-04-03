@@ -1074,7 +1074,7 @@ instance (
 	CreateVpBffrs alu als mff sds ) =>
 	CreateVpBffrs alu als mff (sd ': sds) where
 	createVpBffrs pd dv dl dlo f =
-		createVpBffr pd dv \bnd mm -> createOdBuffer pd dv \bndo mmo ->
+		createVpBffr pd dv \bnd mm -> createOdBffr pd dv \bndo mmo ->
 		createVpBffrs @_ @_ @_ @sds pd dv dl dlo \dls bnds mms dlos bndos mmos -> f
 			(U2 dl :** dls) (BindedVp bnd :** bnds) (MemoryVp mm :** mms)
 			(U2 dlo :** dlos) (BindedOd bndo :** bndos) (MemoryOd mmo :** mmos)
@@ -1085,6 +1085,28 @@ createVpBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	IO a) -> IO a
 createVpBffr =
 	createBffrAtm Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
+
+createOdBffr :: KnownNat als => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[ListObjData als] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[ListObjData als])] ->
+	IO a) -> IO a
+createOdBffr pd dv = createBffrLst pd dv maxObjects
+	Vk.Bffr.UsageStorageBufferBit
+	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyDeviceLocalBit)
+
+maxObjects :: Vk.Dvc.M.Size
+maxObjects = 10000
+
+createScnBffr :: (KnownNat alsn, KnownNat mff) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[AtomSceneData alsn mff] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg nm '[AtomSceneData alsn mff]) ] ->
+		IO a) -> IO a
+createScnBffr pd dv = createBffr pd dv
+	(Obj.LengthDynAtom :** HPList.Nil)
+	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
 cmdBffrInfo :: forall n scp .
 	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
@@ -1157,31 +1179,6 @@ instance Vk.Mm.Bindable '[ '(s, 'Vk.Mm.BufferArg nm '[obj])] =>
 instance {-# OVERLAPPABLE #-} (
 	Obj.SizeAlignment obj, SizeAlignmentAll s nm objs, Obj.WholeAlign objs ) =>
 	SizeAlignmentAll s nm (obj ': objs)
-
-createScnBffr :: (KnownNat alsn, KnownNat mff) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[AtomSceneData alsn mff] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[AtomSceneData alsn mff]) ] ->
-		IO a) -> IO a
-createScnBffr pd dv = createBffr pd dv
-	(Obj.LengthDynAtom :** HPList.Nil)
-	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
-
-maxObjects :: Vk.Dvc.M.Size
-maxObjects = 10000
-
-createOdBuffer ::
-	KnownNat als =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb nm '[ListObjData als] ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[ListObjData als])] ->
-	IO a) -> IO a
-createOdBuffer pd dv = createBffr pd dv
-	(HPList.Singleton $ Obj.LengthList maxObjects)
-	Vk.Bffr.UsageStorageBufferBit
-	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyDeviceLocalBit)
 
 createDscPl :: Natural -> Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
 createDscPl (fromIntegral -> mff) dv = Vk.DscPl.create dv info nil
