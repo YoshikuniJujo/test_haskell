@@ -996,18 +996,18 @@ class CreateVpBffrs alu mff (sds :: [()]) where
 			Update alu mff svp dlas,
 			HPList.HomoList '(sdsc, DscStLytArg alu mff) dlas ) =>
 			HPList.PL (U2 Vk.DSLt.D) dlas ->
-			HPList.PL (BindedVp alu bnmvp) svp ->
-			HPList.PL (MemoryVp alu bnmvp) svp -> IO a) -> IO a
+			HPList.PL (BndVp alu bnmvp) svp ->
+			HPList.PL (MemVp alu bnmvp) svp -> IO a) -> IO a
 
-data BindedVp alu bnmvp smsb where
-	BindedVp :: Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu] ->
-		BindedVp alu bnmvp '(sm, sb)
+data BndVp alu bnmvp smsb where
+	BndVp :: Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu] ->
+		BndVp alu bnmvp '(sm, sb)
 
-data MemoryVp alu bnmvp smsb where
-	MemoryVp ::
+data MemVp alu bnmvp smsb where
+	MemVp ::
 		Vk.Mm.M sm '[
 			'(sb, 'Vk.Mm.BufferArg bnmvp '[AtomViewProj alu])] ->
-		MemoryVp alu bnmvp '(sm, sb)
+		MemVp alu bnmvp '(sm, sb)
 
 instance CreateVpBffrs al _mff '[] where
 	createVpBffrs _ _ _ f = f HPList.Nil HPList.Nil HPList.Nil
@@ -1017,7 +1017,7 @@ instance (
 	CreateVpBffrs alu mff sds ) => CreateVpBffrs alu mff (sd ': sds) where
 	createVpBffrs pd dv dl f = createVpBffr pd dv \bnd mm ->
 		createVpBffrs @_ @_ @sds pd dv dl \dls bnds mms ->
-		f (U2 dl :** dls) (BindedVp bnd :** bnds) (MemoryVp mm :** mms)
+		f (U2 dl :** dls) (BndVp bnd :** bnds) (MemVp mm :** mms)
 
 createVpBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu] ->
@@ -1112,7 +1112,7 @@ createDscSts :: (
 	Update alvp mff smsbs sls ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	HPList.PL (U2 Vk.DSLt.D) sls ->
-	HPList.PL (BindedVp alvp bnmvp) smsbs ->
+	HPList.PL (BndVp alvp bnmvp) smsbs ->
 	Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alvp mff] ->
 	(forall sds . HPList.PL (Vk.DscSet.D sds) sls -> IO a) -> IO a
 createDscSts dv dp dls bvps snb f =
@@ -1126,7 +1126,7 @@ createDscSts dv dp dls bvps snb f =
 class Update alu mff smsbsvp slbtss where
 	update :: Vk.Dvc.D sd ->
 		HPList.PL (Vk.DscSet.D sds) slbtss ->
-		HPList.PL (BindedVp alu bnmvp) smsbsvp ->
+		HPList.PL (BndVp alu bnmvp) smsbsvp ->
 		Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alu mff] -> IO ()
 
 instance Update _alu _mff '[] '[] where update _ HPList.Nil HPList.Nil _ = pure ()
@@ -1140,7 +1140,7 @@ instance (
 	Update alu mff smsbsvp slbtss) =>
 	Update alu mff (smsbvp ': smsbsvp) ('(slyt, bts) ': slbtss) where
 
-	update dv (ds :** dss) (BindedVp bvp :** bvps) scnb = do
+	update dv (ds :** dss) (BndVp bvp :** bvps) scnb = do
 		Vk.DscSet.updateDs dv (
 			U5 (dscWrite @(AtomViewProj alu)
 				ds bvp Vk.Dsc.TypeUniformBuffer) :**
@@ -1205,7 +1205,7 @@ mainloop :: (
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
-	HPList.PL (MemoryVp alu bnmvp) sbsms ->
+	HPList.PL (MemVp alu bnmvp) sbsms ->
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn])] ->
 	HPList.PL (Vk.DscSet.D sds) dlas ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> IO ()
@@ -1245,7 +1245,7 @@ run :: (
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
-	HPList.PL (MemoryVp alu bnmvp) sbsms ->
+	HPList.PL (MemVp alu bnmvp) sbsms ->
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn])] ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss ->
@@ -1277,7 +1277,7 @@ draw :: forall
 	HPList.PL Vk.Frmbffr.F sfs ->
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
-	HPList.PL (MemoryVp alu bnmvp) smsbs ->
+	HPList.PL (MemVp alu bnmvp) smsbs ->
 	Vk.Mm.M smsn '[
 		'(sbsn, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn]) ] ->
 	HPList.PL (Vk.DscSet.D sds) sls ->
@@ -1287,7 +1287,7 @@ draw dv gq pq sc ex rp pl gp fbs
 	vb vbtr vpms scnm dss cbs (SyncObjs iass rfss iffs) cf fn =
 	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
-	HPList.index vpms cf \(MemoryVp vpm) ->
+	HPList.index vpms cf \(MemVp vpm) ->
 	($ HPList.homoListIndex dss cf) \ds -> do
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
 	Vk.Mm.write @bnmvp @(AtomViewProj alu) dv vpm zeroBits (viewProjData ex)

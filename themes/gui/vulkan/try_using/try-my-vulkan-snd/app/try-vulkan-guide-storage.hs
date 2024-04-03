@@ -1058,11 +1058,11 @@ class CreateVpBffrs alu als mff (sds :: [()]) where
 			HPList.HomoList '(sdsc, DscStLytArg alu mff) dlas,
 			HPList.HomoList '(sdsco, DscStLytArgOd als) dlaso ) =>
 			HPList.PL (U2 Vk.DSLt.D) dlas ->
-			HPList.PL (BindedVp alu bnmvp) svp ->
-			HPList.PL (MemoryVp alu bnmvp) svp ->
+			HPList.PL (BndVp alu bnmvp) svp ->
+			HPList.PL (MemVp alu bnmvp) svp ->
 			HPList.PL (U2 Vk.DSLt.D) dlaso ->
-			HPList.PL (BindedOd als bnmo) svpo ->
-			HPList.PL (MemoryOd als bnmo) svpo -> IO a) -> IO a
+			HPList.PL (BndOd als bnmo) svpo ->
+			HPList.PL (MemOd als bnmo) svpo -> IO a) -> IO a
 
 instance CreateVpBffrs _alu _als _mff '[] where
 	createVpBffrs _ _ _ _ f = f
@@ -1073,11 +1073,11 @@ instance (
 	KnownNat alu, KnownNat als, KnownNat mff,
 	CreateVpBffrs alu als mff sds ) =>
 	CreateVpBffrs alu als mff (sd ': sds) where
-	createVpBffrs pd dv dl dlo f =
-		createVpBffr pd dv \bnd mm -> createOdBffr pd dv \bndo mmo ->
-		createVpBffrs @_ @_ @_ @sds pd dv dl dlo \dls bnds mms dlos bndos mmos -> f
-			(U2 dl :** dls) (BindedVp bnd :** bnds) (MemoryVp mm :** mms)
-			(U2 dlo :** dlos) (BindedOd bndo :** bndos) (MemoryOd mmo :** mmos)
+	createVpBffrs pd dv l lo f =
+		createVpBffr pd dv \v vm -> createOdBffr pd dv \o om ->
+		createVpBffrs @_ @_ @_ @sds pd dv l lo \ls vs vms los os oms -> f
+			(U2 l :** ls) (BndVp v :** vs) (MemVp vm :** vms)
+			(U2 lo :** los) (BndOd o :** os) (MemOd om :** oms)
 
 createVpBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu] ->
@@ -1203,7 +1203,7 @@ createDscSts :: forall sd sp sls bnmvp smsbs slso smsbso smsn sbsn bnmsn alu als
 	HPList.FromList slso, Vk.DscSet.DListFromMiddle slso,
 	Update alu als mff smsbs sls smsbso slso ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	HPList.PL (U2 Vk.DSLt.D) sls -> HPList.PL (BindedVp alu bnmvp) smsbs ->
+	HPList.PL (U2 Vk.DSLt.D) sls -> HPList.PL (BndVp alu bnmvp) smsbs ->
 	HPList.PL (U2 Vk.DSLt.D) slso -> HPList.PL (BindedObjData als) smsbso ->
 	Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alu mff] ->
 	(forall sds sdso .
@@ -1220,36 +1220,36 @@ createDscSts dv dp dls bvps dlos bods snb f =
 		Vk.DscSet.allocateInfoDescriptorPool = dp,
 		Vk.DscSet.allocateInfoSetLayouts = l }
 
-type BindedObjData als = BindedOd als "object-data-buffer"
+type BindedObjData als = BndOd als "object-data-buffer"
 
 class Update alu als mff smsbsvp slbtss smsbsod slbtssod where
 	update :: Vk.Dvc.D sd ->
 		HPList.PL (Vk.DscSet.D sds) slbtss ->
-		HPList.PL (BindedVp alu bnmvp) smsbsvp ->
+		HPList.PL (BndVp alu bnmvp) smsbsvp ->
 		HPList.PL (Vk.DscSet.D sdsod) slbtssod ->
-		HPList.PL (BindedOd als bnmod) smsbsod ->
+		HPList.PL (BndOd als bnmod) smsbsod ->
 		Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alu mff] -> IO ()
 
-data BindedVp alvp bnmvp smsb where
-	BindedVp :: Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alvp] ->
-		BindedVp alvp bnmvp '(sm, sb)
+data BndVp alvp bnmvp smsb where
+	BndVp :: Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alvp] ->
+		BndVp alvp bnmvp '(sm, sb)
 
-data MemoryVp alvp bnmvp smsb where
-	MemoryVp ::
+data MemVp alvp bnmvp smsb where
+	MemVp ::
 		Vk.Mm.M sm '[
 			'(sb, 'Vk.Mm.BufferArg bnmvp '[AtomViewProj alvp])] ->
-		MemoryVp alvp bnmvp '(sm, sb)
+		MemVp alvp bnmvp '(sm, sb)
 
-data BindedOd als bnmod smsb where
-	BindedOd ::
+data BndOd als bnmod smsb where
+	BndOd ::
 		Vk.Bffr.Binded sm sb bnmod '[ListObjData als] ->
-		BindedOd als bnmod '(sm, sb)
+		BndOd als bnmod '(sm, sb)
 
-data MemoryOd als bnmod smsb where
-	MemoryOd ::
+data MemOd als bnmod smsb where
+	MemOd ::
 		Vk.Mm.M sm
 			'[ '(sb, 'Vk.Mm.BufferArg bnmod '[ListObjData als])] ->
-		MemoryOd als bnmod '(sm, sb)
+		MemOd als bnmod '(sm, sb)
 
 instance Update _alu _als _mff '[] '[] '[] '[] where
 	update _ HPList.Nil HPList.Nil HPList.Nil HPList.Nil _ = pure ()
@@ -1268,7 +1268,7 @@ instance (
 		(smsbod ': smsbsod) ('(slytod, btsod) ': slbtssod)
 		where
 
-	update dv (ds :** dss) (BindedVp bvp :** bvps) (dsod :** dssod) (BindedOd bod :** bods) scnb = do
+	update dv (ds :** dss) (BndVp bvp :** bvps) (dsod :** dssod) (BndOd bod :** bods) scnb = do
 		Vk.DscSet.updateDs dv (
 			U5 (dscWrite @(AtomViewProj alu)
 				ds bvp Vk.Dsc.TypeUniformBuffer) :**
@@ -1355,8 +1355,8 @@ mainloop mff rszd w sfc pd qfis dv gq pq cp
 		(\ex' -> loop ex' ffns ((fn + 1) `mod` (360 * frashRate))) >>
 	Vk.Dvc.waitIdle dv
 
-type MemoryCamera alu = MemoryVp alu "camera-buffer"
-type MemoryObjData als = MemoryOd als "object-data-buffer"
+type MemoryCamera alu = MemVp alu "camera-buffer"
+type MemoryObjData als = MemOd als "object-data-buffer"
 type SceneObj alu mff = Obj.DynAtom mff alu WScene 'Nothing
 
 frashRate :: Num n => n
@@ -1483,8 +1483,8 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 	HPList.index iass ffn \(ias :: Vk.Semaphore.S sias) ->
 	HPList.index rfss ffn \(rfs :: Vk.Semaphore.S srfs) ->
 	HPList.index iffs ffn \(id &&& HPList.Singleton -> (iff, siff)) ->
-	HPList.index cmms ffn \(MemoryVp cmm) ->
-	HPList.index odms ffn \(MemoryOd odm) -> do
+	HPList.index cmms ffn \(MemVp cmm) ->
+	HPList.index odms ffn \(MemOd odm) -> do
 	Vk.Mm.write @"camera-buffer" @(CameraObj alu) dv cmm zeroBits (cameraData ex)
 	Vk.Mm.write @"scene-buffer" @(SceneObj alu mff') dv scnm zeroBits . (!! ffn)
 		$ iterate (Nothing :) [Just $ sceneData fn]
