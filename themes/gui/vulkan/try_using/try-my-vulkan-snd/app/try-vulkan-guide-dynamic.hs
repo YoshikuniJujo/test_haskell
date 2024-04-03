@@ -112,7 +112,7 @@ import Gpu.Vulkan.Subpass qualified as Vk.Subpass
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLt
 
 import Gpu.Vulkan.Cglm qualified as Glm
 import Gpu.Vulkan.Khr qualified as Vk.Khr
@@ -564,13 +564,13 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	=<< Vk.Phd.getProperties pd
 
 createPplLyt :: forall alu mff sd a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscSetLyt.D sdsl (DscStLytArg alu mff) ->
+	Vk.DSLt.D sdsl (DscStLytArg alu mff) ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mff)] '[WMeshPushConsts] ->
 	IO a) -> IO a
 createPplLyt dv f = createDscStLyt @_ @mff dv \dsl ->
 	Vk.PplLyt.create dv (info dsl) nil $ f dsl
 	where
-	info :: Vk.DscSetLyt.D s (DscStLytArg alu mff) ->
+	info :: Vk.DSLt.D s (DscStLytArg alu mff) ->
 		Vk.PplLyt.CreateInfo 'Nothing
 			'[ '(s, DscStLytArg alu mff)]
 			('Vk.PushConstant.Layout '[ WMeshPushConsts]
@@ -583,26 +583,26 @@ createPplLyt dv f = createDscStLyt @_ @mff dv \dsl ->
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createDscStLyt :: forall alu mff sd a . Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.D s (DscStLytArg alu mff) -> IO a) -> IO a
-createDscStLyt dv = Vk.DscSetLyt.create dv info nil
+	Vk.DSLt.D s (DscStLytArg alu mff) -> IO a) -> IO a
+createDscStLyt dv = Vk.DSLt.create dv info nil
 	where
-	info = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = TMaybe.N,
-		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = vpbd :** snbd :** HPList.Nil }
-	vpbd = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
+	info = Vk.DSLt.CreateInfo {
+		Vk.DSLt.createInfoNext = TMaybe.N,
+		Vk.DSLt.createInfoFlags = zeroBits,
+		Vk.DSLt.createInfoBindings = vpbd :** snbd :** HPList.Nil }
+	vpbd = Vk.DSLt.BindingBuffer {
+		Vk.DSLt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
-	snbd = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
+		Vk.DSLt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	snbd = Vk.DSLt.BindingBuffer {
+		Vk.DSLt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBufferDynamic,
-		Vk.DscSetLyt.bindingBufferStageFlags =
+		Vk.DSLt.bindingBufferStageFlags =
 			Vk.ShaderStageVertexBit .|. Vk.ShaderStageFragmentBit }
 
 type DscStLytArg alu mff = '[BufferViewProj alu, BufferSceneData alu mff]
-type BufferViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomViewProj alu]
-type BufferSceneData alu mff = 'Vk.DscSetLyt.Buffer '[AtomSceneData alu mff]
+type BufferViewProj alu = 'Vk.DSLt.Buffer '[AtomViewProj alu]
+type BufferSceneData alu mff = 'Vk.DSLt.Buffer '[AtomSceneData alu mff]
 
 type AtomViewProj alu = Obj.Atom alu WViewProj 'Nothing
 type AtomSceneData alu mff = Obj.DynAtom mff alu WScene 'Nothing
@@ -991,11 +991,11 @@ bffrAlgn dv ln us f =
 
 class CreateVpBffrs alvp mff (sds :: [()]) where
 	createVpBffrs :: Vk.Phd.P -> Vk.Dvc.D sd ->
-		Vk.DscSetLyt.D sdsc (DscStLytArg alvp mff) -> (forall dlas svp . (
+		Vk.DSLt.D sdsc (DscStLytArg alvp mff) -> (forall dlas svp . (
 			HPList.FromList dlas, Vk.DscSet.DListFromMiddle dlas,
 			Update alvp mff svp dlas,
 			HPList.HomoList '(sdsc, DscStLytArg alvp mff) dlas ) =>
-			HPList.PL (U2 Vk.DscSetLyt.D) dlas ->
+			HPList.PL (U2 Vk.DSLt.D) dlas ->
 			HPList.PL (BindedVp alvp bnmvp) svp ->
 			HPList.PL (MemoryVp alvp bnmvp) svp -> IO a) -> IO a
 
@@ -1111,7 +1111,7 @@ createDscSts :: (
 	HPList.FromList sls, Vk.DscSet.DListFromMiddle sls,
 	Update alvp mff smsbs sls ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	HPList.PL (U2 Vk.DscSetLyt.D) sls ->
+	HPList.PL (U2 Vk.DSLt.D) sls ->
 	HPList.PL (BindedVp alvp bnmvp) smsbs ->
 	Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alvp mff] ->
 	(forall sds . HPList.PL (Vk.DscSet.D sds) sls -> IO a) -> IO a
