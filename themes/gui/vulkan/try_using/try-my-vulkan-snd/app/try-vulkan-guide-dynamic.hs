@@ -111,7 +111,7 @@ import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
-import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLt
 
 import Gpu.Vulkan.Cglm qualified as Glm
@@ -992,7 +992,7 @@ bffrAlgn dv ln us f =
 class CreateVpBffrs alu mff (sds :: [()]) where
 	createVpBffrs :: Vk.Phd.P -> Vk.Dvc.D sd ->
 		Vk.DSLt.D sdsc (DscStLytArg alu mff) -> (forall dlas svp . (
-			HPList.FromList dlas, Vk.DscSet.DListFromMiddle dlas,
+			HPList.FromList dlas, Vk.DscSt.DListFromMiddle dlas,
 			Update alu mff svp dlas,
 			HPList.HomoList '(sdsc, DscStLytArg alu mff) dlas ) =>
 			HPList.PL (U2 Vk.DSLt.D) dlas ->
@@ -1108,40 +1108,40 @@ createDscPl (fromIntegral -> mff) dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.sizeDescriptorCount = mff }
 
 createDscSts :: (
-	HPList.FromList sls, Vk.DscSet.DListFromMiddle sls,
-	Update alvp mff smsbs sls ) =>
+	HPList.FromList sls, Vk.DscSt.DListFromMiddle sls,
+	Update alu mff smsbs sls ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	HPList.PL (U2 Vk.DSLt.D) sls ->
-	HPList.PL (BndVp alvp bnmvp) smsbs ->
-	Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alvp mff] ->
-	(forall sds . HPList.PL (Vk.DscSet.D sds) sls -> IO a) -> IO a
+	HPList.PL (U2 Vk.DSLt.D) sls -> HPList.PL (BndVp alu bnmvp) smsbs ->
+	Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alu mff] ->
+	(forall sds . HPList.PL (Vk.DscSt.D sds) sls -> IO a) -> IO a
 createDscSts dv dp dls bvps snb f =
-	Vk.DscSet.allocateDs dv info \dss ->
+	Vk.DscSt.allocateDs dv info \dss ->
 	update dv dss bvps snb >> f dss
-	where info = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dp,
-		Vk.DscSet.allocateInfoSetLayouts = dls }
+	where info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = dls }
 
 class Update alu mff smsbsvp slbtss where
 	update :: Vk.Dvc.D sd ->
-		HPList.PL (Vk.DscSet.D sds) slbtss ->
+		HPList.PL (Vk.DscSt.D sds) slbtss ->
 		HPList.PL (BndVp alu bnmvp) smsbsvp ->
 		Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alu mff] -> IO ()
 
-instance Update _alu _mff '[] '[] where update _ HPList.Nil HPList.Nil _ = pure ()
+instance Update _alu _mff '[] '[] where
+	update _ HPList.Nil HPList.Nil _ = pure ()
 
 instance (
 	KnownNat alu, KnownNat mff,
-	Vk.DscSet.BindingAndArrayElemBuffer bts '[AtomViewProj alu] 0,
-	Vk.DscSet.BindingAndArrayElemBuffer bts '[AtomSceneData alu mff] 0,
-	Vk.DscSet.UpdateDynamicLength bts '[AtomViewProj alu],
-	Vk.DscSet.UpdateDynamicLength bts '[AtomSceneData alu mff],
+	Vk.DscSt.BindingAndArrayElemBuffer bts '[AtomViewProj alu] 0,
+	Vk.DscSt.BindingAndArrayElemBuffer bts '[AtomSceneData alu mff] 0,
+	Vk.DscSt.UpdateDynamicLength bts '[AtomViewProj alu],
+	Vk.DscSt.UpdateDynamicLength bts '[AtomSceneData alu mff],
 	Update alu mff smsbsvp slbtss) =>
 	Update alu mff (smsbvp ': smsbsvp) ('(slyt, bts) ': slbtss) where
 
 	update dv (ds :** dss) (BndVp bvp :** bvps) scnb = do
-		Vk.DscSet.updateDs dv (
+		Vk.DscSt.updateDs dv (
 			U5 (dscWrite @(AtomViewProj alu)
 				ds bvp Vk.Dsc.TypeUniformBuffer) :**
 			U5 (dscWrite @(AtomSceneData alu mff)
@@ -1151,13 +1151,13 @@ instance (
 
 dscWrite :: forall obj sds slbts sm sb nm objs . (
 	Obj.OffsetRange obj objs, Show (HPList.PL Obj.Length objs) ) =>
-	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs -> Vk.Dsc.Type ->
-	Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
-dscWrite ds b tp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
-	Vk.DscSet.writeDescriptorType = tp,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb nm objs -> Vk.Dsc.Type ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
+dscWrite ds b tp = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = tp,
+	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
 		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo b }
 
 cmdBffrInfo :: forall n scp .
@@ -1191,8 +1191,7 @@ mainloop :: (
 	HPList.HomoList '() mff,
 	KnownNat mffn,
 	KnownNat alu, KnownNat alvmk, KnownNat alvtr ) =>
-	Natural ->
-	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Natural -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
@@ -1207,7 +1206,7 @@ mainloop :: (
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
 	HPList.PL (MemVp alu bnmvp) sbsms ->
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn])] ->
-	HPList.PL (Vk.DscSet.D sds) dlas ->
+	HPList.PL (Vk.DscSt.D sds) dlas ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> IO ()
 mainloop (fromIntegral -> mff) fr w sfc pd qfis dv gq pq cp
 	sc ex0 vs rp pl gp fbs drs vbmk vbtr vpms snm dss cbs sos = do
@@ -1247,7 +1246,7 @@ run :: (
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
 	HPList.PL (MemVp alu bnmvp) sbsms ->
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn])] ->
-	HPList.PL (Vk.DscSet.D sds) slyts ->
+	HPList.PL (Vk.DscSt.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss ->
 	Int -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq cp
@@ -1280,7 +1279,7 @@ draw :: forall
 	HPList.PL (MemVp alu bnmvp) smsbs ->
 	Vk.Mm.M smsn '[
 		'(sbsn, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn]) ] ->
-	HPList.PL (Vk.DscSet.D sds) sls ->
+	HPList.PL (Vk.DscSt.D sds) sls ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos ->
 	Int -> Int -> IO ()
 draw dv gq pq sc ex rp pl gp fbs
@@ -1335,7 +1334,7 @@ recordCmdBffr :: forall
 	Vk.Frmbffr.F sf ->
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr -> Int -> Int ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alu mff) -> IO ()
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mff) -> IO ()
 recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtr, vntr)
 	(fromIntegral -> cf) (fromIntegral -> fn) ds =
 	Vk.CBffr.begin cb binfo $
@@ -1378,7 +1377,7 @@ recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtr, vntr)
 drawObj :: forall scb sds sdsl alu sl sg sm sb bnmv alv nmv mff .
 	(KnownNat alu, KnownNat alv) =>
 	IORef (Maybe (Vk.Bffr.Binded sm sb bnmv '[Obj.List alv WVertex nmv])) ->
-	Vk.CBffr.C scb -> Vk.DscSet.D sds '(sdsl, DscStLytArg alu mff) ->
+	Vk.CBffr.C scb -> Vk.DscSt.D sds '(sdsl, DscStLytArg alu mff) ->
 	RenderObj sl sdsl alu sg sm sb bnmv alv nmv mff -> Word32 -> IO ()
 drawObj rvbpre cb ds RenderObj {
 	renderObjPipelineLayout = pl, renderObjPipeline = gp,
