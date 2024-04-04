@@ -602,10 +602,10 @@ createDscStLyt dv = Vk.DSLt.create dv info nil
 
 type DscStLytArg alu mff = '[BufferViewProj alu, BufferSceneData alu mff]
 type BufferViewProj alu = 'Vk.DSLt.Buffer '[AtomViewProj alu]
-type BufferSceneData alu mff = 'Vk.DSLt.Buffer '[AtomSceneData alu mff]
+type BufferSceneData alu mff = 'Vk.DSLt.Buffer '[AtomScene alu mff]
 
 type AtomViewProj alu = Obj.Atom alu WViewProj 'Nothing
-type AtomSceneData alu mff = Obj.DynAtom mff alu WScene 'Nothing
+type AtomScene alu mff = Obj.DynAtom mff alu WScene 'Nothing
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mff)] '[WMeshPushConsts] ->
@@ -1028,10 +1028,10 @@ createVpBffr =
 
 createScnBffr :: (KnownNat alsn, KnownNat mff) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[AtomSceneData alsn mff] ->
+		Vk.Bffr.Binded sm sb nm '[AtomScene alsn mff] ->
 		Vk.Mm.M sm '[ '(
 			sb,
-			'Vk.Mm.BufferArg nm '[AtomSceneData alsn mff]) ] ->
+			'Vk.Mm.BufferArg nm '[AtomScene alsn mff]) ] ->
 		IO a) -> IO a
 createScnBffr pd dv = createBffr pd dv
 	(Obj.LengthDynAtom :** HPList.Nil)
@@ -1112,7 +1112,7 @@ createDscSts :: (
 	Update alu mff smsbs sls ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	HPList.PL (U2 Vk.DSLt.D) sls -> HPList.PL (BndVp alu bnmvp) smsbs ->
-	Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alu mff] ->
+	Vk.Bffr.Binded smsn sbsn bnmsn '[AtomScene alu mff] ->
 	(forall sds . HPList.PL (Vk.DscSt.D sds) sls -> IO a) -> IO a
 createDscSts dv dp dls bvps snb f =
 	Vk.DscSt.allocateDs dv info \dss ->
@@ -1126,7 +1126,7 @@ class Update alu mff smsbsvp slbtss where
 	update :: Vk.Dvc.D sd ->
 		HPList.PL (Vk.DscSt.D sds) slbtss ->
 		HPList.PL (BndVp alu bnmvp) smsbsvp ->
-		Vk.Bffr.Binded smsn sbsn bnmsn '[AtomSceneData alu mff] -> IO ()
+		Vk.Bffr.Binded smsn sbsn bnmsn '[AtomScene alu mff] -> IO ()
 
 instance Update _alu _mff '[] '[] where
 	update _ HPList.Nil HPList.Nil _ = pure ()
@@ -1134,9 +1134,9 @@ instance Update _alu _mff '[] '[] where
 instance (
 	KnownNat alu, KnownNat mff,
 	Vk.DscSt.BindingAndArrayElemBuffer bts '[AtomViewProj alu] 0,
-	Vk.DscSt.BindingAndArrayElemBuffer bts '[AtomSceneData alu mff] 0,
+	Vk.DscSt.BindingAndArrayElemBuffer bts '[AtomScene alu mff] 0,
 	Vk.DscSt.UpdateDynamicLength bts '[AtomViewProj alu],
-	Vk.DscSt.UpdateDynamicLength bts '[AtomSceneData alu mff],
+	Vk.DscSt.UpdateDynamicLength bts '[AtomScene alu mff],
 	Update alu mff smsbsvp slbtss) =>
 	Update alu mff (smsbvp ': smsbsvp) ('(slyt, bts) ': slbtss) where
 
@@ -1144,7 +1144,7 @@ instance (
 		Vk.DscSt.updateDs dv (
 			U5 (dscWrite @(AtomViewProj alu)
 				ds bvp Vk.Dsc.TypeUniformBuffer) :**
-			U5 (dscWrite @(AtomSceneData alu mff)
+			U5 (dscWrite @(AtomScene alu mff)
 				ds scnb Vk.Dsc.TypeUniformBufferDynamic) :**
 			HPList.Nil ) HPList.Nil
 		update dv dss bvps scnb
@@ -1205,7 +1205,7 @@ mainloop :: (
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
 	HPList.PL (MemVp alu bnmvp) sbsms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn])] ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomScene alu mffn])] ->
 	HPList.PL (Vk.DscSt.D sds) dlas ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> IO ()
 mainloop (fromIntegral -> mff) fr w sfc pd qfis dv gq pq cp
@@ -1229,7 +1229,7 @@ type VtxBffr smv sbv bnmv alv nmv = (
 run :: (
 	HPList.HomoList '() mff, RecreateFrmbffrs svs sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	HPList.HomoList '(sdsl, DscStLytArg alu mffn) slyts,
+	HPList.HomoList '(sdsl, DscStLytArg alu mffn) dlas,
 	KnownNat mffn, KnownNat alu, KnownNat alvmk, KnownNat alvtr ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
@@ -1245,8 +1245,8 @@ run :: (
 	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
 	HPList.PL (MemVp alu bnmvp) sbsms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn])] ->
-	HPList.PL (Vk.DscSt.D sds) slyts ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtomScene alu mffn])] ->
+	HPList.PL (Vk.DscSt.D sds) dlas ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss ->
 	Int -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq cp
@@ -1278,7 +1278,7 @@ draw :: forall
 	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
 	HPList.PL (MemVp alu bnmvp) smsbs ->
 	Vk.Mm.M smsn '[
-		'(sbsn, 'Vk.Mm.BufferArg bnmsn '[AtomSceneData alu mffn]) ] ->
+		'(sbsn, 'Vk.Mm.BufferArg bnmsn '[AtomScene alu mffn]) ] ->
 	HPList.PL (Vk.DscSt.D sds) sls ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos ->
 	Int -> Int -> IO ()
@@ -1290,7 +1290,7 @@ draw dv gq pq sc ex rp pl gp fbs
 	($ HPList.homoListIndex dss cf) \ds -> do
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
 	Vk.Mm.write @bnmvp @(AtomViewProj alu) dv vpm zeroBits (viewProjData ex)
-	Vk.Mm.write @bnmsn @(AtomSceneData alu mffn) dv scnm zeroBits . (!! cf)
+	Vk.Mm.write @bnmsn @(AtomScene alu mffn) dv scnm zeroBits . (!! cf)
 		$ iterate (Nothing :) [Just $ sceneData fn]
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
