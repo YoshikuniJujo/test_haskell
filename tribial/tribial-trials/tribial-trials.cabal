@@ -58,6 +58,7 @@ library
       LoopAndException
       Number.Floating
       OneThirdOfTheYearIsOver
+      PiRatio
       PrintableClass
       PseudoPrime
       Qualified
