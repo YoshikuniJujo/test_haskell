@@ -1338,7 +1338,7 @@ recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtr, vntr)
 	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline do
 	ovmk <- newIORef Nothing
 	drawObj ovmk cb ds RenderObj {
-		renderObjPipeline = gp, renderObjPipelineLayout = pl,
+		renderObjPipelineLayout = pl, renderObjPipeline = gp,
 		renderObjMesh = vbmk, renderObjMeshSize = vnmk,
 		renderObjTransMtx = mdl } cf
 	ovtr <- newIORef Nothing
@@ -1371,12 +1371,13 @@ recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtr, vntr)
 		Glm.mat4Identity (Glm.Vec3 $ x :. 0 :. y :. NilL)
 	scl = Glm.scale Glm.mat4Identity (Glm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 
-drawObj :: forall scb sds sdsl alu sl sg sm sb bnmv alv nmv mff .
+drawObj :: forall scb sds sdsl alu sl sg smv sbv bnmv alv nmv mff .
 	(KnownNat alu, KnownNat alv) =>
-	IORef (Maybe (Vk.Bffr.Binded sm sb bnmv '[Obj.List alv WVertex nmv])) ->
+	IORef (Maybe
+		(Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv])) ->
 	Vk.CBffr.C scb -> Vk.DscSt.D sds '(sdsl, DscStLytArg alu mff) ->
-	RenderObj sl sdsl alu sg sm sb bnmv alv nmv mff -> Word32 -> IO ()
-drawObj rvbpre cb ds RenderObj {
+	RenderObj sl sdsl alu sg smv sbv bnmv alv nmv mff -> Word32 -> IO ()
+drawObj ovb cb ds RenderObj {
 	renderObjPipelineLayout = pl, renderObjPipeline = gp,
 	renderObjMesh = vb, renderObjMeshSize = vn,
 	renderObjTransMtx = mdl } cf =
@@ -1385,26 +1386,27 @@ drawObj rvbpre cb ds RenderObj {
 		(HPList.Singleton $ U2 ds) . HPList.Singleton $
 		HPList.Nil :**
 		(Vk.Cmd.DynamicIndex cf :** HPList.Nil) :** HPList.Nil
-	readIORef rvbpre >>= \case
-		Just vbp | vb == vbp -> pure ()
+	readIORef ovb >>= \case
+		Just o | vb == o -> pure ()
 		_ -> do	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton . U5
 				$ Vk.Bffr.IndexedForList
 					@_ @_ @_ @WVertex @nmv vb
-			writeIORef rvbpre $ Just vb
+			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cbb pl
 		$ HPList.Id (GStorable.W MeshPushConsts {
 			meshPushConstsDt = Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstsRenderMtx = mdl }) :** HPList.Nil
 	Vk.Cmd.draw cbb vn 1 0 0
 
-data RenderObj sl sdsl alu sg sm sb bnmv alv nmv mff = RenderObj {
+data RenderObj sl sdsl alu sg smv sbv bnmv alv nmv mff = RenderObj {
 	renderObjPipelineLayout :: Vk.PplLyt.P sl
 		'[ '(sdsl, DscStLytArg alu mff)] '[WMeshPushConsts],
 	renderObjPipeline :: Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu mff)], '[WMeshPushConsts]),
-	renderObjMesh :: Vk.Bffr.Binded sm sb bnmv '[Obj.List alv WVertex nmv],
+	renderObjMesh ::
+		Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv],
 	renderObjMeshSize :: Word32, renderObjTransMtx :: Glm.Mat4 }
 
 catchAndRecreate :: (
@@ -1506,6 +1508,8 @@ newtype View = View Glm.Mat4 deriving (Show, Storable)
 newtype Proj = Proj Glm.Mat4 deriving (Show, Storable)
 newtype ViewProj = ViewProj Glm.Mat4 deriving (Show, Storable)
 
+instance GStorable.G ViewProjData
+
 viewProjData :: Vk.Extent2d -> WViewProj
 viewProjData ex = GStorable.W
 	$ ViewProjData (View view) (Proj prj) (ViewProj $ Glm.mat4Mul prj view)
@@ -1523,8 +1527,6 @@ projection Vk.Extent2d {
 	Vk.extent2dHeight = fromIntegral -> h } =
 	Glm.modifyMat4 1 1 negate $ Glm.perspective (Glm.rad 70) (w / h) 0.1 200
 
-instance GStorable.G ViewProjData
-
 -- SCENE DATA
 
 type WScene = GStorable.W Scene
@@ -1541,6 +1543,8 @@ newtype AmbColor = AmbColor Glm.Vec4 deriving (Show, Storable)
 newtype SunDir = SunDir Glm.Vec4 deriving (Show, Storable)
 newtype SunColor = SunColor Glm.Vec4 deriving (Show, Storable)
 
+instance GStorable.G Scene
+
 sceneData :: Int -> WScene
 sceneData (fromIntegral -> fn) = GStorable.W Scene {
 	sceneFogColor = FogColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
@@ -1549,10 +1553,8 @@ sceneData (fromIntegral -> fn) = GStorable.W Scene {
 	sceneSunDir = SunDir . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 	sceneSunColor = SunColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
 	where
-	r = sin (fn / (180 * frashRate) * pi)
-	b = cos (fn / (180 * frashRate) * pi)
-
-instance GStorable.G Scene
+	r = sin $ fn / (180 * frashRate) * pi
+	b = cos $ fn / (180 * frashRate) * pi
 
 -- OTHER TYPES
 
