@@ -606,8 +606,7 @@ createPplLyt dv f =
 
 createDscStLyt :: forall alu mff sd a . Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DSLt.D s (DscStLytArg alu mff) -> IO a) -> IO a
-createDscStLyt dv = Vk.DSLt.create dv info nil
-	where
+createDscStLyt dv = Vk.DSLt.create dv info nil where
 	info = Vk.DSLt.CreateInfo {
 		Vk.DSLt.createInfoNext = TMaybe.N,
 		Vk.DSLt.createInfoFlags = zeroBits,
@@ -633,8 +632,7 @@ type ListObjData als = Obj.List als WObjData ""
 
 createDscStLytOd :: forall als sd a . Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DSLt.D s (DscStLytArgOd als) -> IO a) -> IO a
-createDscStLytOd dv = Vk.DSLt.create dv info nil
-	where
+createDscStLytOd dv = Vk.DSLt.create dv info nil where
 	info = Vk.DSLt.CreateInfo {
 		Vk.DSLt.createInfoNext = TMaybe.N,
 		Vk.DSLt.createInfoFlags = zeroBits,

@@ -615,17 +615,16 @@ createPplLyt ::
 		'[WMeshPushConsts] -> IO a) -> IO a
 createPplLyt dv f =
 	createDscStLyt @_ @mff dv \dsl -> createDscStLytOd dv \dslo ->
-	createSingleTextureSetLayout dv \dslyttx ->
-	Vk.PplLyt.create dv (info dsl dslo dslyttx) nil $ f dsl dslo dslyttx
+	createDscStLytTx dv \dslt ->
+	Vk.PplLyt.create dv (info dsl dslo dslt) nil $ f dsl dslo dslt
 	where
 	info :: Vk.DSLt.D s (DscStLytArg alu mff) ->
 		Vk.DSLt.D so (DscStLytArgOd als) ->
-		Vk.DSLt.D st '[ 'Vk.DSLt.Image '[ '("texture", Vk.T.FormatR8g8b8a8Srgb)]] ->
+		Vk.DSLt.D st DscStLytArgTx ->
 		Vk.PplLyt.CreateInfo 'Nothing
 			'[	'(s, DscStLytArg alu mff),
 				'(so, DscStLytArgOd als),
-				'(st, '[ 'Vk.DSLt.Image '[ '("texture", Vk.T.FormatR8g8b8a8Srgb)]])
-				]
+				'(st, DscStLytArgTx) ]
 			('Vk.PushConstant.Layout '[ WMeshPushConsts]
 				'[ 'Vk.PushConstant.Range
 					'[ 'Vk.T.ShaderStageVertexBit]
@@ -638,8 +637,7 @@ createPplLyt dv f =
 
 createDscStLyt :: forall alu mff sd a . Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DSLt.D s (DscStLytArg alu mff) -> IO a) -> IO a
-createDscStLyt dv = Vk.DSLt.create dv info nil
-	where
+createDscStLyt dv = Vk.DSLt.create dv info nil where
 	info = Vk.DSLt.CreateInfo {
 		Vk.DSLt.createInfoNext = TMaybe.N,
 		Vk.DSLt.createInfoFlags = zeroBits,
@@ -656,8 +654,7 @@ createDscStLyt dv = Vk.DSLt.create dv info nil
 
 createDscStLytOd :: forall als sd a . Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DSLt.D s (DscStLytArgOd als) -> IO a) -> IO a
-createDscStLytOd dv = Vk.DSLt.create dv info nil
-	where
+createDscStLytOd dv = Vk.DSLt.create dv info nil where
 	info = Vk.DSLt.CreateInfo {
 		Vk.DSLt.createInfoNext = TMaybe.N,
 		Vk.DSLt.createInfoFlags = zeroBits,
@@ -665,6 +662,18 @@ createDscStLytOd dv = Vk.DSLt.create dv info nil
 	objd = Vk.DSLt.BindingBuffer {
 		Vk.DSLt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DSLt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+
+createDscStLytTx :: Vk.Dvc.D sd ->
+	(forall (s :: Type) . Vk.DSLt.D s DscStLytArgTx -> IO a) -> IO a
+createDscStLytTx dv = Vk.DSLt.create dv info nil where
+	info = Vk.DSLt.CreateInfo {
+		Vk.DSLt.createInfoNext = TMaybe.N,
+		Vk.DSLt.createInfoFlags = zeroBits,
+		Vk.DSLt.createInfoBindings = txbd :** HPList.Nil }
+	txbd = Vk.DSLt.BindingImage {
+		Vk.DSLt.bindingImageDescriptorType =
+			Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DSLt.bindingImageStageFlags = Vk.ShaderStageFragmentBit }
 
 type Buffers mffn alu = '[
 	'Vk.DSLt.Buffer '[CameraObj alu], 'Vk.DSLt.Buffer '[SceneObj mffn alu] ]
@@ -675,23 +684,6 @@ type CameraObj alu = Obj.Atom alu WViewProj 'Nothing
 type SceneObj mffn alu = Obj.DynAtom mffn alu WScene 'Nothing
 
 type ObjDataList als = Obj.List als WObjData ""
-
-createSingleTextureSetLayout :: Vk.Dvc.D sd ->
-	(forall (s :: Type) .
-		Vk.DSLt.D s '[
-			'Vk.DSLt.Image '[
-				'("texture", 'Vk.T.FormatR8g8b8a8Srgb) ] ] ->
-		IO a) -> IO a
-createSingleTextureSetLayout dv = Vk.DSLt.create dv layoutInfo nil where
-	layoutInfo = Vk.DSLt.CreateInfo {
-		Vk.DSLt.createInfoNext = TMaybe.N,
-		Vk.DSLt.createInfoFlags = zeroBits,
-		Vk.DSLt.createInfoBindings = textureBind :** HPList.Nil }
-	textureBind = Vk.DSLt.BindingImage {
-		Vk.DSLt.bindingImageDescriptorType =
-			Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DSLt.bindingImageStageFlags =
-			Vk.ShaderStageFragmentBit }
 
 type Foo = '[ 'Vk.DSLt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]]
 type Bar sdslt = '(sdslt, Foo)
