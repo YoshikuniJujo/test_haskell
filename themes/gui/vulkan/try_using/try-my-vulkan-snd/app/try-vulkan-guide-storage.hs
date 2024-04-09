@@ -233,10 +233,10 @@ body mdlfp mff fr w ist =
 	createVpBffrs @_ @_ @_ @mff pd d dsl dslo
 		\dsls vpbs vpbms dslos odbs odbms ->
 	createScnBffr pd d \snb snbm ->
-	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
-	createSyncObjs @mff d \sos ->
 	createDscPl mff d \dp ->
 	createDscSts d dp dsls vpbs dslos odbs snb \dss dsso ->
+	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
+	createSyncObjs @mff d \sos ->
 	mainloop mff fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs drs
 		vb vbtri vpbms snbm dss odbms dsso cbs sos
