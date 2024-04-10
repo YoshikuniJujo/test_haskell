@@ -320,6 +320,14 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 		Vk.Phd.shaderDrawParametersFeaturesNext = TMaybe.N,
 		Vk.Phd.shaderDrawParametersFeaturesShaderDrawParameters = True }
 
+createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
+	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl qfis dv = Vk.CmdPl.create dv info nil
+	where info = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
+		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
+
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
@@ -621,15 +629,6 @@ createDscStLyt dv = Vk.DSLt.create dv info nil where
 		Vk.DSLt.bindingBufferStageFlags =
 			Vk.ShaderStageVertexBit .|. Vk.ShaderStageFragmentBit }
 
-type DscStLytArg alu mff = '[BufferViewProj alu, BufferSceneData alu mff]
-type DscStLytArgOd als = '[ 'Vk.DSLt.Buffer '[ListObjData als]]
-type BufferViewProj alu = 'Vk.DSLt.Buffer '[AtmViewProj alu]
-type BufferSceneData alu mff = 'Vk.DSLt.Buffer '[AtmScene alu mff]
-
-type AtmViewProj alu = Obj.Atom alu WViewProj 'Nothing
-type AtmScene alu mff = Obj.DynAtom mff alu WScene 'Nothing
-type ListObjData als = Obj.List als WObjData ""
-
 createDscStLytOd :: forall als sd a . Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DSLt.D s (DscStLytArgOd als) -> IO a) -> IO a
 createDscStLytOd dv = Vk.DSLt.create dv info nil where
@@ -640,6 +639,15 @@ createDscStLytOd dv = Vk.DSLt.create dv info nil where
 	objd = Vk.DSLt.BindingBuffer {
 		Vk.DSLt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DSLt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+
+type DscStLytArg alu mff = '[
+	'Vk.DSLt.Buffer '[AtmViewProj alu],
+	'Vk.DSLt.Buffer '[AtmScene alu mff] ]
+type DscStLytArgOd als = '[ 'Vk.DSLt.Buffer '[ListObjData als]]
+
+type AtmViewProj alu = Obj.Atom alu WViewProj 'Nothing
+type AtmScene alu mff = Obj.DynAtom mff alu WScene 'Nothing
+type ListObjData als = Obj.List als WObjData ""
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl
@@ -853,64 +861,6 @@ frmbffrInfo ex rp att dpt = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
-
-createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
-	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
-createCmdPl qfis dv = Vk.CmdPl.create dv info nil
-	where info = Vk.CmdPl.CreateInfo {
-		Vk.CmdPl.createInfoNext = TMaybe.N,
-		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
-		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
-
-prepareImg :: forall sd nm fmt a . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> Word32 -> Word32 ->
-	(forall si sm .
-		Vk.Img.Binded sm si nm fmt ->
-		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)] -> IO a) ->
-	IO a
-prepareImg pd dv tl us pr w h a =
-	Vk.Img.create @'Nothing dv (imgInfo w h tl us) nil \i -> do
-	rqs <- Vk.Img.getMemoryRequirements dv i
-	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
-	Vk.Mm.allocateBind @'Nothing dv
-		(HPList.Singleton . U2 $ Vk.Mm.Image i) (memInfo mt) nil
-		\(HPList.Singleton (U2 (Vk.Mm.ImageBinded b))) m -> a b m
-
-reprepareImg :: Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags -> Word32 -> Word32 ->
-	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
-reprepareImg pd dv tl us pr w h i m = do
-	Vk.Img.unsafeRecreate @'Nothing dv (imgInfo w h tl us) nil i
-	rqs <- Vk.Img.getMemoryRequirementsBinded dv i
-	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
-	Vk.Mm.unsafeReallocateBind @'Nothing dv
-		(HPList.Singleton . U2 $ Vk.Mm.ImageBinded i) (memInfo mt) nil m
-
-imgInfo :: Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
-	Vk.Img.CreateInfo 'Nothing fmt
-imgInfo w h tl us = Vk.Img.CreateInfo {
-		Vk.Img.createInfoNext = TMaybe.N,
-		Vk.Img.createInfoImageType = Vk.Img.Type2d,
-		Vk.Img.createInfoExtent = Vk.Extent3d {
-			Vk.extent3dWidth = w, Vk.extent3dHeight = h,
-			Vk.extent3dDepth = 1 },
-		Vk.Img.createInfoMipLevels = 1,
-		Vk.Img.createInfoArrayLayers = 1,
-		Vk.Img.createInfoTiling = tl,
-		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined,
-		Vk.Img.createInfoUsage = us,
-		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
-		Vk.Img.createInfoFlags = zeroBits,
-		Vk.Img.createInfoQueueFamilyIndices = [] }
-
-memInfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
-memInfo mt = Vk.Mm.AllocateInfo {
-	Vk.Mm.allocateInfoNext = TMaybe.N,
-	Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 transitionImgLyt :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Img.Binded sm si nm fmt ->
@@ -1126,11 +1076,8 @@ createBffr p dv lns us prs f = Vk.Bffr.create dv (bffrInfo lns us) nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) prs
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
-		(ainfo mt) nil
+		(memInfo mt) nil
 		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
-	where ainfo mt = Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 bffrInfo :: HPList.PL Obj.Length os ->
 	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing os
@@ -1140,6 +1087,51 @@ bffrInfo lns us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoUsage = us,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+prepareImg :: forall sd nm fmt a . Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> Word32 -> Word32 ->
+	(forall si sm .
+		Vk.Img.Binded sm si nm fmt ->
+		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)] -> IO a) ->
+	IO a
+prepareImg pd dv tl us pr w h a =
+	Vk.Img.create @'Nothing dv (imgInfo w h tl us) nil \i -> do
+	rqs <- Vk.Img.getMemoryRequirements dv i
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
+	Vk.Mm.allocateBind @'Nothing dv
+		(HPList.Singleton . U2 $ Vk.Mm.Image i) (memInfo mt) nil
+		\(HPList.Singleton (U2 (Vk.Mm.ImageBinded b))) m -> a b m
+
+reprepareImg :: Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags -> Word32 -> Word32 ->
+	Vk.Img.Binded sm sb nm fmt ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
+reprepareImg pd dv tl us pr w h i m = do
+	Vk.Img.unsafeRecreate @'Nothing dv (imgInfo w h tl us) nil i
+	rqs <- Vk.Img.getMemoryRequirementsBinded dv i
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
+	Vk.Mm.unsafeReallocateBind @'Nothing dv
+		(HPList.Singleton . U2 $ Vk.Mm.ImageBinded i) (memInfo mt) nil m
+
+imgInfo :: Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
+	Vk.Img.CreateInfo 'Nothing fmt
+imgInfo w h tl us = Vk.Img.CreateInfo {
+		Vk.Img.createInfoNext = TMaybe.N,
+		Vk.Img.createInfoImageType = Vk.Img.Type2d,
+		Vk.Img.createInfoExtent = Vk.Extent3d {
+			Vk.extent3dWidth = w, Vk.extent3dHeight = h,
+			Vk.extent3dDepth = 1 },
+		Vk.Img.createInfoMipLevels = 1,
+		Vk.Img.createInfoArrayLayers = 1,
+		Vk.Img.createInfoTiling = tl,
+		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined,
+		Vk.Img.createInfoUsage = us,
+		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
+		Vk.Img.createInfoFlags = zeroBits,
+		Vk.Img.createInfoQueueFamilyIndices = [] }
 
 findMmType :: Vk.Phd.P ->
 	Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
@@ -1151,6 +1143,11 @@ findMmType pd flt prs =
 		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
 		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
 			(Vk.Phd.memoryPropertiesMemoryTypes prs1)
+
+memInfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
+memInfo mt = Vk.Mm.AllocateInfo {
+	Vk.Mm.allocateInfoNext = TMaybe.N,
+	Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 createDscPl :: Natural -> Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
 createDscPl (fromIntegral -> mff) dv = Vk.DscPl.create dv info nil
