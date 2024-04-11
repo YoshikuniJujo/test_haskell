@@ -1286,8 +1286,7 @@ mainloop :: (
 	RecreateFrmbffrs svs sfs,
 	HPList.HomoList '(sdsl, DscStLytArg alu mffn) dlas,
 	HPList.HomoList '(sdslo, DscStLytArgOd als) dlaso,
-	HPList.HomoList '() mff,
-	KnownNat mffn,
+	HPList.HomoList '() mff, KnownNat mffn,
 	KnownNat alu, KnownNat als, KnownNat alvmk, KnownNat alvtr ) =>
 	Natural -> FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
