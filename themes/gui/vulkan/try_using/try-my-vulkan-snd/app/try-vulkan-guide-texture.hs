@@ -691,7 +691,8 @@ type DscStLytArgTx = '[ 'Vk.DSLt.Image '[Tx]]
 type AtmViewProj alu = Obj.Atom alu WViewProj 'Nothing
 type AtmScene alu mff = Obj.DynAtom mff alu WScene 'Nothing
 type ListObjData als = Obj.List als WObjData ""
-type Tx = '("texture", Vk.T.FormatR8g8b8a8Srgb)
+type Tx = '(TxName, TxFormat)
+type TxName = "texture"; type TxFormat = Vk.T.FormatR8g8b8a8Srgb
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl
@@ -1310,26 +1311,24 @@ createTxImg pd d gq cp img a =
 	h = fromIntegral $ BObj.imageHeight img
 
 createTextureDescriptorSets :: (
-	Default (HPList.PL
-		(HPList.PL BObj.Length)
-		(Vk.DSLt.BindingTypeListBufferOnlyDynamics foo)),
-	Vk.DscSt.BindingAndArrayElemImage foo
-		'[ '("texture", Vk.T.FormatR8g8b8a8Srgb)] 0 ) =>
-	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.DSLt.D (slyt :: Type) foo ->
-	Vk.ImgVw.I "texture" Vk.T.FormatR8g8b8a8Srgb siv ->
-	(forall sds . Vk.DscSt.D sds '(slyt, foo) -> IO a) -> IO a
+	Default (HPList.PL (HPList.PL BObj.Length)
+		(Vk.DSLt.BindingTypeListBufferOnlyDynamics dsla)),
+	Vk.DscSt.BindingAndArrayElemImage dsla '[Tx] 0 ) =>
+	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.DSLt.D (slyt :: Type) dsla ->
+	Vk.ImgVw.I TxName TxFormat siv ->
+	(forall sds . Vk.DscSt.D sds '(slyt, dsla) -> IO a) -> IO a
 createTextureDescriptorSets d dp dslt tv f =
 	allocateTextureDescriptorSets d dp dslt \dscstx ->
-	writeTexture1 @_ @_ @_ @'Vk.T.FormatR8g8b8a8Srgb d dscstx tv \wtx ->
+	writeTexture1 @_ @_ @_ @TxFormat d dscstx tv \wtx ->
 	Vk.DscSt.updateDs d (HPList.Singleton $ U5 wtx) HPList.Nil >>
 	f dscstx
 
-allocateTextureDescriptorSets :: forall slyt foo sd sp a .
+allocateTextureDescriptorSets :: forall slyt dsla sd sp a .
 	Default (HPList.PL (HPList.PL BObj.Length)
-		(Vk.DSLt.BindingTypeListBufferOnlyDynamics foo)) =>
+		(Vk.DSLt.BindingTypeListBufferOnlyDynamics dsla)) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.DSLt.D slyt foo ->
-	(forall sds . Vk.DscSt.D sds '(slyt, foo) -> IO a) -> IO a
+	Vk.DSLt.D slyt dsla ->
+	(forall sds . Vk.DscSt.D sds '(slyt, dsla) -> IO a) -> IO a
 allocateTextureDescriptorSets dv dscpl lyt f =
 	Vk.DscSt.allocateDs dv Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
