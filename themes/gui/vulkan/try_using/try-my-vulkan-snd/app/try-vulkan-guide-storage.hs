@@ -45,8 +45,8 @@ import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List
 import Data.List.NonEmpty qualified as NE
-import Data.List.Infinite qualified as Inf
 import Data.List.Infinite (pattern (:~))
+import Data.List.Infinite qualified as Inf
 import Data.List.Length
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:*.), pattern (:**))

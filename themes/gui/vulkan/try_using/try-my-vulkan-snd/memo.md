@@ -112,7 +112,7 @@ apps
 * [x] try-vulkan-guide.hs
 * [x] try-vulkan-guide-dynamic.hs
 * [x] try-vulkan-guide-storage.hs
-* [ ] try-vulkan-guide-texture.hs
+* [x] try-vulkan-guide-texture.hs
 * [ ] try-multisampling-use-groups-single.hs
 * [ ] try-hello-world.hs
 * [ ] try-yatteiku.hs
