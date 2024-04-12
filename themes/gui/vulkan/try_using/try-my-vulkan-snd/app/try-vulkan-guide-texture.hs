@@ -45,10 +45,8 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Data.ByteString as BS
 import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Cglm as Glm
 
-import Foreign.Storable.Generic qualified as Str.G
 import Foreign.Storable.Generic qualified as GStorable
 
 import qualified Language.SpirV as SpirV
@@ -120,7 +118,6 @@ import Options.Declarative (Flag, Def, Cmd, run_, get)
 import Control.Monad.Trans
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 
 import Data.Bits.ToolsYj
 import Data.Function.ToolsYj
@@ -256,12 +253,12 @@ body mdlfp txfp mff fr w ist =
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
 	createTxImg pd d gq cp (ImageRgba8 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit) nil \tv ->
-	createDscStsTx d dp dslt tv \dsst ->
+	createDscStTx d dp dslt tv \dst ->
 	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
 	mainloop mff fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs drs
-		vb vbtri vpbms snbm dss odbms dsso dsst cbs sos
+		vb vbtri vpbms snbm dss odbms dsso dst cbs sos
 	where
 	fromNat :: forall alu als a . (KnownNat alu, KnownNat als) =>
 		Natural -> (forall n n' . (
@@ -1378,18 +1375,18 @@ createTxImg pd d gq cp img a =
 	w = fromIntegral $ BObj.imageWidth img
 	h = fromIntegral $ BObj.imageHeight img
 
-createDscStsTx :: (
+createDscStTx :: (
 	Default (HPList.PL (HPList.PL BObj.Length)
 		(Vk.DSLt.BindingTypeListBufferOnlyDynamics dsla)),
 	Vk.DscSt.BindingAndArrayElemImage dsla '[Tx] 0 ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.DSLt.D (sdsl :: Type) dsla ->
 	Vk.ImgVw.I TxName TxFormat siv ->
 	(forall sds . Vk.DscSt.D sds '(sdsl, dsla) -> IO a) -> IO a
-createDscStsTx d dp dsl tv a =
-	allocateDscStsTx d dp dsl \dss -> createTxSmplr d \sp ->
+createDscStTx d dp dsl tv a =
+	allocateDscStsTx d dp dsl \ds -> createTxSmplr d \sp ->
 	Vk.DscSt.updateDs d
-		(HPList.Singleton . U5 $ dscWriteTx dss tv sp) HPList.Nil >>
-	a dss
+		(HPList.Singleton . U5 $ dscWriteTx ds tv sp) HPList.Nil >>
+	a ds
 
 allocateDscStsTx ::
 	Default (HPList.PL (HPList.PL BObj.Length)
@@ -1487,238 +1484,194 @@ mainloop :: (
 			'[WMeshPushConsts]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	(Vk.Bffr.Binded sm sb nm '[Obj.List alvmk WVertex ""], Word32) ->
-	(Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex ""], Word32) ->
-
-	HPList.PL (MemoryCamera alu) scms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj mffn alu])] ->
+	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
+	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
+	HPList.PL (MemVp alu bnmvp) sbsms ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtmScene alu mffn])] ->
 	HPList.PL (Vk.DscSt.D sds) dlas ->
-	HPList.PL (MemoryObjData als) sods ->
-	HPList.PL (Vk.DscSt.D sds') dlaso ->
-	Vk.DscSt.D sds'' '(sdslt, DscStLytArgTx) ->
-
-	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs sos ->
-	IO ()
-mainloop (fromIntegral -> mff) rszd w sfc pd qfis dv gq pq cp sc ex0 scivs rp lyt gpl fbs drs
-	(vb, vnsln) vbtri
-	cmms scnm dss odms dssod dstx
-	cbs sos =
+	HPList.PL (MemOd als bnmod) sods -> HPList.PL (Vk.DscSt.D sdso) dlaso ->
+	Vk.DscSt.D sdst '(sdslt, DscStLytArgTx) ->
+	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> IO ()
+mainloop (fromIntegral -> mff) fr w sfc pd qfis dv gq pq cp
+	sc ex0 vs rp pl gp fbs drs vbmk vbtr vpms snm dss odms dsso dst
+	cbs sos = do
 	($ 0) . ($ Inf.cycle $ NE.fromList [0 .. mff - 1]) . ($ ex0) $ fix
-		\loop ex (ffn :~ ffns) fn -> Glfw.pollEvents >>
-	step w rszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
-		cmms scnm dss odms dssod dstx vb vbtri cbs sos vnsln ffn fn
-		(\ex' -> loop ex' ffns ((fn + 1) `mod` (3600 * frashRate))) >>
+		\go ex (cf :~ cfs) fn -> do
+		GlfwG.pollEvents
+		run fr w sfc pd qfis dv gq pq cp
+			sc ex vs rp pl gp fbs drs vbmk vbtr vpms snm
+			dss odms dsso dst cbs sos cf fn
+			(\e -> go e cfs ((fn + 1) `mod` (3600 * frashRate)))
 	Vk.Dvc.waitIdle dv
-
-type SceneObj mffn alu = AtmScene alu mffn
-type MemoryCamera alu = MemVp alu "camera-buffer"
-type MemoryObjData als = MemOd als "object-data-buffer"
 
 frashRate :: Num n => n
 frashRate = 2
 
-step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFrmbffrs svs sfs,
-	HPList.HomoList '(slyt, Buffers mffn alu) lyts,
-	HPList.HomoList '(sdslo, ObjDataBuffers als) dlaso,
-	HPList.HomoList '() mff, KnownNat mffn, KnownNat alu, KnownNat als, KnownNat alvmk, KnownNat alvtr
-	) =>
-	GlfwG.Win.W sw -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
+type VtxBffr smv sbv bnmv alv nmv = (
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv],
+	Vk.Cmd.VertexCount )
+
+run :: (
+	HPList.HomoList '() mff, RecreateFrmbffrs svs sfs,
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	HPList.HomoList '(sdsl, DscStLytArg alu mffn) dlas,
+	HPList.HomoList '(sdslo, DscStLytArgOd als) dlaso,
+	KnownNat mffn,
+	KnownNat alu, KnownNat als, KnownNat alvmk, KnownNat alvtr ) =>
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl
-		'[ '(slyt, Buffers mffn alu), '(sdslo, ObjDataBuffers als), '(sdslt, Foo)]
-		'[WMeshPushConsts] ->
-	Vk.Ppl.Grph.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
-		'(sl,	'[ '(slyt, Buffers mffn alu), '(sdslo, ObjDataBuffers als), '(sdslt, Foo)],
-			'[WMeshPushConsts]) ->
-	Vk.CmdPl.C sc -> DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	HPList.PL Vk.Frmbffr.F sfs -> HPList.PL (MemoryCamera alu) scms ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj mffn alu])] ->
-	HPList.PL (Vk.DscSt.D sds) lyts ->
-	HPList.PL (MemoryObjData als) sods ->
-	HPList.PL (Vk.DscSt.D sds') dlaso ->
-	Vk.DscSt.D sds'' '(sdslt, Foo) ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alvmk WVertex ""] ->
-	(Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex ""], Word32) ->
-	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs sos ->
-	Word32 -> Int -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
-step w@(GlfwG.Win.W win) frszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
-	cmms scnm dss odms dssod dstx vb vbtri cbs sos vnsln ffn fn loop = do
-	catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop
-		$ drawFrame dv gq pq sc ex rp lyt gpl fbs
-			cmms scnm dss odms dssod dstx vb vbtri cbs sos vnsln ffn fn
-	(Glfw.windowShouldClose win >>=) . flip bool (pure ()) $
-		(checkFlag frszd >>=) . bool (loop ex) $
-		loop =<< recreateAll
-			w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs
-
-type Buffers mffn alu = DscStLytArg alu mffn
-type ObjDataBuffers als = DscStLytArgOd als
-type Foo = DscStLytArgTx
-
-catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFrmbffrs svs sfs) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) svs -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl
-		'[ '(s, Buffers mffn alu), '(sod, ObjDataBuffers als), '(sdslt, Foo)]
+		'[	'(sdsl, DscStLytArg alu mffn),
+			'(sdslo, DscStLytArgOd als), '(sdslt, DscStLytArgTx) ]
 		'[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
-		'(sl,	'[ '(s, Buffers mffn alu), '(sod, ObjDataBuffers als), '(sdslt, Foo)],
+		'(sl,	'[	'(sdsl, DscStLytArg alu mffn),
+				'(sdslo, DscStLytArgOd als),
+				'(sdslt, DscStLytArgTx) ],
 			'[WMeshPushConsts]) ->
-	Vk.CmdPl.C scp -> DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop act =
-	catchJust
-	(\case	Vk.ErrorOutOfDateKhr -> Just (); Vk.SuboptimalKhr -> Just ()
-		_ -> Nothing)
-	act
-	\() -> loop =<< recreateAll
-		w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs
+	HPList.PL Vk.Frmbffr.F sfs ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
+	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
+	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
+	HPList.PL (MemVp alu bnmvp) sbsms ->
+	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg bnmsn '[AtmScene alu mffn])] ->
+	HPList.PL (Vk.DscSt.D sds) dlas ->
+	HPList.PL (MemOd als bnmod) sods -> HPList.PL (Vk.DscSt.D sdso) dlaso ->
+	Vk.DscSt.D sdst '(sdslt, DscStLytArgTx) ->
+	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss ->
+	Int -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
+run fr w sfc pd qfis dv gq pq cp
+	sc ex vs rp pl gp fbs drs vbmk vbtr vpms snm dss odms dsso dst cbs soss
+	cf fn go = do
+	catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs go
+		$ draw dv gq pq sc ex rp pl
+			gp fbs vbmk vbtr vpms snm dss odms dsso dst
+			cbs soss cf fn
+	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
+		(True, _) -> pure (); (_, False) -> go ex
+		(_, _) -> go =<< recreateAll
+			w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
-recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFrmbffrs svs sfs) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) svs -> Vk.RndrPss.R sr ->
+draw :: forall
+	sd fmt ssc sr sl sdsl sdslo sdslt alu als mffn sg sfs
+	smvmk sbvmk bnmvmk alvmk nmvmk smvtr sbvtr bnmvtr alvtr nmvtr
+	bnmvp smsbs smsn sbsn bnmsn sds dlas bnmod smsbso sdso dlaso sdst
+	scb mff ssoss .  (
+	HPList.HomoList '(sdsl, DscStLytArg alu mffn) dlas,
+	HPList.HomoList '(sdslo, DscStLytArgOd als) dlaso,
+	HPList.HomoList '() mff,
+	KnownNat mffn,
+	KnownNat alu, KnownNat als, KnownNat alvmk, KnownNat alvtr ) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
+	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl
-		'[ '(slyt, Buffers mffn alu), '(sdslo, ObjDataBuffers als), '(sdslt, Foo)]
-		'[WMeshPushConsts] ->
-	Vk.Ppl.Grph.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
-		'(sl,	'[ '(slyt, Buffers mffn alu), '(sdslo, ObjDataBuffers als), '(sdslt, Foo)],
-			'[WMeshPushConsts]) ->
-	Vk.CmdPl.C scp -> DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc pd qfs dv gq sc scivs rp lyt gpl cp drs@(_, _, divw) fbs =
-	waitFramebufferSize win >> Vk.Dvc.waitIdle dv >>
-	recreateSwpch w sfc pd qfs dv sc >>= \ex ->
-	ex <$ do
-	Vk.Khr.Swpch.getImages dv sc >>= \i -> recreateImgVws dv i scivs
-	recreateDptRsrcs pd dv gq cp ex drs
-	recreateGrPpl dv ex rp lyt gpl
-	recreateFrmbffrs dv ex rp scivs divw fbs
-
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize w = Glfw.getFramebufferSize w >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize w
-	where zero = uncurry (||) . ((== 0) *** (== 0))
-
-drawFrame ::
-	forall sd ssc scfmt sr slyt sl slod sdslt sg sfs scmmbs ssm ssb lyts
-	sm sb nm smtri sbtri nmtri scb ssos sods dlaso sds sds' sds'' mff mffn alu als alvmk alvtr .  (
-	HPList.HomoList '(sl, Buffers mffn alu) lyts,
-	HPList.HomoList '(slod, ObjDataBuffers als) dlaso,
-	HPList.HomoList '() mff, KnownNat mffn, KnownNat alu, KnownNat als, KnownNat alvmk, KnownNat alvtr
-	) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P slyt
-		'[ '(sl, Buffers mffn alu), '(slod, ObjDataBuffers als), '(sdslt, Foo)]
+		'[	'(sdsl, DscStLytArg alu mffn),
+			'(sdslo, DscStLytArgOd als), '(sdslt, DscStLytArgTx) ]
 		'[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
-		'(slyt,	'[ '(sl, Buffers mffn alu), '(slod, ObjDataBuffers als), '(sdslt, Foo)],
+		'(sl,	'[	'(sdsl, DscStLytArg alu mffn),
+				'(sdslo, DscStLytArgOd als),
+				'(sdslt, DscStLytArgTx) ],
 			'[WMeshPushConsts]) ->
-	HPList.PL Vk.Frmbffr.F sfs -> HPList.PL (MemoryCamera alu) scmmbs ->
-	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.BufferArg "scene-buffer" '[SceneObj mffn alu])] ->
-	HPList.PL (Vk.DscSt.D sds) lyts ->
-	HPList.PL (MemoryObjData als) sods ->
-	HPList.PL (Vk.DscSt.D sds') dlaso ->
-	Vk.DscSt.D sds'' '(sdslt, Foo) ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alvmk WVertex ""] ->
-	(Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex ""], Word32) ->
-	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos ->
-	Word32 -> Int -> Int -> IO ()
-drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod dstx vb vbtri cbs
-	(SyncObjs iass rfss iffs) vnsln ffn fn =
-	HPList.index iass ffn \(ias :: Vk.Semaphore.S sias) ->
-	HPList.index rfss ffn \(rfs :: Vk.Semaphore.S srfs) ->
-	HPList.index iffs ffn \(id &&& HPList.Singleton -> (iff, siff)) ->
-	HPList.index cmms ffn \(MemVp cmm) ->
-	HPList.index odms ffn \(MemOd odm) -> do
-	Vk.Mm.write @"camera-buffer" @(AtmViewProj alu) dv cmm zeroBits (cameraData ex)
-	Vk.Mm.write @"scene-buffer" @(SceneObj mffn alu) dv scnm zeroBits . (!! ffn)
+	HPList.PL Vk.Frmbffr.F sfs ->
+	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
+	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr ->
+	HPList.PL (MemVp alu bnmvp) smsbs ->
+	Vk.Mm.M smsn '[ '(sbsn, 'Vk.Mm.BufferArg bnmsn '[AtmScene alu mffn])] ->
+	HPList.PL (Vk.DscSt.D sds) dlas ->
+	HPList.PL (MemOd als bnmod) smsbso ->
+	HPList.PL (Vk.DscSt.D sdso) dlaso ->
+	Vk.DscSt.D sdst '(sdslt, DscStLytArgTx) ->
+	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> Int -> Int -> IO ()
+draw dv gq pq sc ex rp pl gp fbs
+	vbmk vbtr vpms snm dss odms dsso dst
+	cbs (SyncObjs iass rfss iffs) cf fn =
+	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
+	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
+	HPList.index vpms cf \(MemVp vpm) ->
+	HPList.index odms cf \(MemOd odm) ->
+	($ HPList.homoListIndex dss cf) \ds ->
+	($ HPList.homoListIndex dsso cf) \dso -> do
+	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
+	Vk.Mm.write @bnmvp @(AtmViewProj alu) dv vpm zeroBits (viewProjData ex)
+	Vk.Mm.write @bnmsn @(AtmScene alu mffn) dv snm zeroBits . (!! cf)
 		$ iterate (Nothing :) [Just $ sceneData fn]
-	Vk.Mm.write @"object-data-buffer" @(ListObjData als) dv odm zeroBits . map (GStorable.W . ObjData) $
-		model (fromIntegral fn) : [ objectMatrix x y | x <- [- 20 .. 20], y <- [- 20 .. 20] ]
-	Vk.Fnc.waitForFs dv siff True Nothing
-	iid <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dv sc maxBound (Just ias) Nothing
-	Vk.Fnc.resetFs dv siff
+	Vk.Mm.write @bnmod @(ListObjData als) dv odm zeroBits
+		. map (GStorable.W . ObjData)
+		$ model (fromIntegral fn) :
+			[ objMtx x y | x <- [- 20 .. 20], y <- [- 20 .. 20] ]
+	ii <- Vk.Khr.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.CBffr.reset cb zeroBits
-	HPList.index fbs iid \fb -> recordCommandBuffer
-		ex rp lyt gpl fb ds dsod dstx vb vbtri cb vnsln (fromIntegral ffn) fn
-	Vk.Q.submit gq (HPList.Singleton . U4 $ sminfo ias rfs) $ Just iff
-	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ presentInfo rfs iid
+	HPList.index fbs ii \fb ->
+		recordCmdBffr cb ex rp pl gp fb vbmk vbtr cf fn ds dso dst
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff
+	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo rfs ii
 	where
-	sminfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
-		Vk.SubmitInfo 'Nothing '[ssi] '[scb] '[ssr]
-	sminfo ias rfs = Vk.SubmitInfo {
+	HPList.Dummy cb = HPList.homoListIndex @'() cbs cf
+	sinfo :: Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
+		Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
+	sinfo ias rfs = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-			$ Vk.SemaphorePipelineStageFlags ias
-				Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-	presentInfo :: Vk.Semaphore.S ssr -> Word32 ->
-		Vk.Khr.PresentInfo 'Nothing '[ssr] scfmt '[ssc]
-	presentInfo rfs iid = Vk.Khr.PresentInfo {
+	pinfo :: Vk.Semaphore.S srfs -> Word32 ->
+		Vk.Khr.PresentInfo 'Nothing '[srfs] fmt '[ssc]
+	pinfo rfs ii = Vk.Khr.PresentInfo {
 		Vk.Khr.presentInfoNext = TMaybe.N,
 		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-			$ Vk.Khr.SwapchainImageIndex sc iid }
-	HPList.Dummy cb = HPList.homoListIndex @'() cbs ffn
-	ds = HPList.homoListIndex @'(sl, Buffers mffn alu) dss ffn
-	dsod = HPList.homoListIndex @'(slod, ObjDataBuffers als) dssod ffn
+		Vk.Khr.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
+	objMtx x y = trans x y `Glm.mat4Mul` scale
 	catchAndSerialize = (`catch`
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-recordCommandBuffer ::
-	forall sr slyt sg sdlyt sdlytod sdslt sf sm sb nm smtri sbtri nmtri scb sds sds' sds'' mffn alu als alvmk alvtr .
+recordCmdBffr :: forall
+	scb sr sl sdsl sdslo sdslt sds sdso sdst alu als sg sf
+	smvmk sbvmk bnmvmk alvmk nmvmk smvtr sbvtr bnmvtr alvtr nmvtr mffn .
 	(KnownNat alu, KnownNat alvmk, KnownNat alvtr) =>
-	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P slyt
-		'[ '(sdlyt, Buffers mffn alu), '(sdlytod, ObjDataBuffers als), '(sdslt, Foo)]
+	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl
+		'[	'(sdsl, DscStLytArg alu mffn),
+			'(sdslo, DscStLytArgOd als), '(sdslt, DscStLytArgTx) ]
 		'[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
-		'(slyt,	'[ '(sdlyt, Buffers mffn alu), '(sdlytod, ObjDataBuffers als), '(sdslt, Foo)],
+		'(sl,	'[	'(sdsl, DscStLytArg alu mffn),
+				'(sdslo, DscStLytArgOd als),
+				'(sdslt, DscStLytArgTx) ],
 			'[WMeshPushConsts]) ->
 	Vk.Frmbffr.F sf ->
-	Vk.DscSt.D sds '(sdlyt, Buffers mffn alu) ->
-	Vk.DscSt.D sds' '(sdlytod, ObjDataBuffers als) ->
-	Vk.DscSt.D sds'' '(sdslt, Foo) ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alvmk WVertex ""] ->
-	(Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List alvtr WVertex ""], Word32) ->
-	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
-recordCommandBuffer sce rp lyt gpl fb ds dsod dstx vb (vbt, vntr) cb vn ffn (fromIntegral -> fn) =
-	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
+	VtxBffr smvmk sbvmk bnmvmk alvmk nmvmk ->
+	VtxBffr smvtr sbvtr bnmvtr alvtr nmvtr -> Int -> Int ->
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mffn) ->
+	Vk.DscSt.D sdso '(sdslo, DscStLytArgOd als) ->
+	Vk.DscSt.D sdst '(sdslt, DscStLytArgTx) -> IO ()
+recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtr, vntr)
+	(fromIntegral -> cf) (fromIntegral -> fn) ds dso dst =
+	Vk.CBffr.begin cb binfo $
 	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline do
-	ovb <- newIORef Nothing
-	drawObject ovb cb ds dsod dstx RenderObject {
-		renderObjectPipeline = gpl,
-		renderObjectPipelineLayout = lyt,
-		renderObjectMesh = vb, renderObjectMeshSize = vn,
-		renderObjectTransformMatrix = model fn } ffn 0
-	ovbtri <- newIORef Nothing
+	ovmk <- newIORef Nothing
+	drawObj ovmk cb ds dso dst RenderObj {
+		renderObjPipelineLayout = pl, renderObjPipeline = gp,
+		renderObjMesh = vbmk, renderObjMeshSize = vnmk,
+		renderObjTransMtx = model fn } cf 0
+	ovtr <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject ovbtri cb ds dsod dstx RenderObject {
-			renderObjectPipeline = gpl,
-			renderObjectPipelineLayout = lyt,
-			renderObjectMesh = vbt, renderObjectMeshSize = vntr,
-			renderObjectTransformMatrix =
-				trans x y `Glm.mat4Mul` scale } ffn
-			(((round x + 20) * 41) + (round y + 20) + 1)
+		drawObj ovtr cb ds dso dst RenderObj {
+			renderObjPipelineLayout = pl, renderObjPipeline = gp,
+			renderObjMesh = vbtr, renderObjMeshSize = vntr,
+			renderObjTransMtx = trans x y `Glm.mat4Mul` scale } cf
+				((round x + 20) * 41 + (round y + 20) + 1)
 	where
 	binfo :: Vk.CBffr.BeginInfo 'Nothing 'Nothing
 	binfo = def { Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
@@ -1731,11 +1684,9 @@ recordCommandBuffer sce rp lyt gpl fb ds dsod dstx vb (vbt, vntr) cb vn ffn (fro
 		Vk.RndrPss.beginInfoFramebuffer = fb,
 		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
-			Vk.rect2dExtent = sce },
+			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues =
-			Vk.ClearValueColor
---				(fromJust $ rgbaDouble 0 0 blue 1) :**
-				(fromJust $ rgbaDouble 0 0 0 1) :**
+			Vk.ClearValueColor (fromJust $ rgbaDouble 0 0 0 1) :**
 			Vk.ClearValueDepthStencil
 				(Vk.ClearDepthStencilValue 1 0) :** HPList.Nil }
 
@@ -1743,67 +1694,143 @@ model :: Float -> Glm.Mat4
 model fn = Glm.rotate
 	Glm.mat4Identity (fn / 10 * Glm.rad 1) (Glm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
-objectMatrix :: Float -> Float -> Glm.Mat4
-objectMatrix x y = trans x y `Glm.mat4Mul` scale
-
 trans :: Float -> Float -> Glm.Mat4
 trans x y = Glm.translate Glm.mat4Identity (Glm.Vec3 $ x :. 0 :. y :. NilL)
 
 scale :: Glm.Mat4
 scale = Glm.scale Glm.mat4Identity (Glm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 
-drawObject :: (KnownNat alu, KnownNat alv) =>
-	IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""])) ->
-	Vk.CBffr.C scb ->
-	Vk.DscSt.D sds '(sdlyt, Buffers mffn alu) ->
-	Vk.DscSt.D sds' '(sdlytod, ObjDataBuffers als) ->
-	Vk.DscSt.D sds'' '(sdslt, Foo) ->
-	RenderObject sg sl sdlyt sdlytod sdslt sm sb nm mffn alu als alv -> Word32 -> Word32 -> IO ()
-drawObject ovb cb0 ds dsod dstx RenderObject {
-	renderObjectPipeline = gpl,
-	renderObjectPipelineLayout = lyt,
-	renderObjectMesh = vb, renderObjectMeshSize = vn,
-	renderObjectTransformMatrix = mdl } ffn i =
-	Vk.Cmd.bindPipelineGraphics cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
-	Vk.Cmd.bindDescriptorSetsGraphics cb Vk.Ppl.BindPointGraphics lyt
-		(U2 ds :** U2 dsod :** U2 dstx :** HPList.Nil) $
-		(HPList.Nil :** (Vk.Cmd.DynamicIndex ffn :** HPList.Nil) :** HPList.Nil) :**
-		(HPList.Nil :** HPList.Nil) :** (HPList.Nil :** HPList.Nil) :** HPList.Nil
+drawObj :: forall
+	scb sl sg sds sdsl alu mffn sdso sdslo als alv smv sbv bnmv nmv
+	sdst sdslt .
+	(KnownNat alu, KnownNat alv) =>
+	IORef (Maybe
+		(Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv])) ->
+	Vk.CBffr.C scb -> Vk.DscSt.D sds '(sdsl, DscStLytArg alu mffn) ->
+	Vk.DscSt.D sdso '(sdslo, DscStLytArgOd als) ->
+	Vk.DscSt.D sdst '(sdslt, DscStLytArgTx) ->
+	RenderObj sl sdsl alu mffn sdslo als sg alv smv sbv bnmv nmv sdslt ->
+	Word32 -> Word32 -> IO ()
+drawObj ovb cb ds dso dst RenderObj {
+	renderObjPipelineLayout = pl, renderObjPipeline = gp,
+	renderObjMesh = vb, renderObjMeshSize = vn,
+	renderObjTransMtx = mdl } cf i =
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
+	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
+		(U2 ds :** U2 dso :** U2 dst :** HPList.Nil) $
+		(	HPList.Nil :**
+			(Vk.Cmd.DynamicIndex cf :** HPList.Nil) :**
+			HPList.Nil ) :**
+		(HPList.Nil :** HPList.Nil) :**
+		(HPList.Nil :** HPList.Nil) :** HPList.Nil
 	readIORef ovb >>= \case
 		Just o | vb == o -> pure ()
-		_ -> do	Vk.Cmd.bindVertexBuffers cb . HPList.Singleton
-				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb
+		_ -> do	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton . U5
+				$ Vk.Bffr.IndexedForList
+					@_ @_ @_ @WVertex @nmv vb
 			writeIORef ovb $ Just vb
-	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
-		$ HPList.Id (GStorable.W MeshPushConstants {
-			meshPushConstantsData =
-				Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-			meshPushConstantsRenderMatrix = mdl }) :** HPList.Nil
-	Vk.Cmd.draw cb vn 1 0 i
+	Vk.Cmd.pushConstantsGraphics @'[ 'Vk.T.ShaderStageVertexBit] cbb pl
+		$ HPList.Id (GStorable.W MeshPushConsts {
+			meshPushConstsDt = Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+			meshPushConstsRenderMtx = mdl }) :** HPList.Nil
+	Vk.Cmd.draw cbb vn 1 0 i
 
-data RenderObject sg sl sdlyt sdlytod sdslt sm sb nm mffn alu als alv = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Grph.G sg
+data RenderObj
+	sl sdsl alu mffn sdslo als sg alv smv sbv bnmv nmv sdslt = RenderObj {
+	renderObjPipelineLayout :: Vk.PplLyt.P sl
+		'[	'(sdsl, DscStLytArg alu mffn),
+			'(sdslo, DscStLytArgOd als),
+			'(sdslt, DscStLytArgTx) ] '[WMeshPushConsts],
+	renderObjPipeline :: Vk.Ppl.Grph.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
-		'(sl,	'[ '(sdlyt, Buffers mffn alu), '(sdlytod, ObjDataBuffers als), '(sdslt, Foo)],
-			'[WMeshPushConsts]),
-	renderObjectPipelineLayout ::
-		Vk.PplLyt.P sl
-			'[ '(sdlyt, Buffers mffn alu), '(sdlytod, ObjDataBuffers als), '(sdslt, Foo)]
-			'[WMeshPushConsts],
-	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""],
-	renderObjectMeshSize :: Word32,
-	renderObjectTransformMatrix :: Glm.Mat4 }
+		'(sl,	'[	'(sdsl, DscStLytArg alu mffn),
+				'(sdslo, DscStLytArgOd als),
+				'(sdslt, DscStLytArgTx) ], '[WMeshPushConsts]),
+	renderObjMesh ::
+		Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv],
+	renderObjMeshSize :: Word32, renderObjTransMtx :: Glm.Mat4 }
+
+catchAndRecreate :: (
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFrmbffrs svs sfs ) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
+	Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl
+		'[	'(sdsl, DscStLytArg alu mffn),
+			'(sdslo, DscStLytArgOd als),
+			'(sdslt, DscStLytArgTx) ] '[WMeshPushConsts] ->
+	Vk.Ppl.Grph.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[	'(sdsl, DscStLytArg alu mffn),
+				'(sdslo, DscStLytArgOd als),
+				'(sdslt, DscStLytArgTx)], '[WMeshPushConsts]) ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvs ->
+	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
+catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs go act =
+	catchJust
+	(\case	Vk.ErrorOutOfDateKhr -> Just ()
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act \_ ->
+	go =<< recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
+
+recreateAll :: (
+	Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt,
+	RecreateFrmbffrs svs sfs ) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Khr.Swpch.S fmt ssc ->
+	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl
+		'[	'(sdsl, DscStLytArg alu mffn),
+			'(sdslo, DscStLytArgOd als),
+			'(sdslt, DscStLytArgTx) ] '[WMeshPushConsts] ->
+	Vk.Ppl.Grph.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[	'(sdsl, DscStLytArg alu mffn),
+				'(sdslo, DscStLytArgOd als),
+				'(sdslt, DscStLytArgTx)], '[WMeshPushConsts]) ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvs ->
+	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
+recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs@(_, _, dvw) fbs =
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv >>
+	recreateSwpch w sfc pd qfis dv sc >>= \ex -> ex <$ do
+	Vk.Khr.Swpch.getImages dv sc >>= \i -> recreateImgVws dv i vs
+	recreateDptRsrcs pd dv gq cp ex drs
+	recreateGrPpl dv ex rp pl gp
+	recreateFrmbffrs dv ex rp vs dvw fbs
+
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
+	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 -- VERTEX
+
+triangle :: V.Vector WVertex
+triangle = V.fromList $ GStorable.W <$> [
+	Vtx {	vtxPos = Position . Glm.Vec3 $ 1 :. 1 :. 0.5 :. NilL,
+		vtxNormal = Normal . Glm.Vec3 $ 1 :. 0 :. 0 :. NilL,
+		vtxColor = Color . Glm.Vec3 $ 0 :. 1 :. 0 :. NilL,
+		vtxUv = Uv . Glm.Vec2 $ 0 :. 0 :. NilL },
+	Vtx {	vtxPos = Position . Glm.Vec3 $ (- 1) :. 1 :. 0.5 :. NilL,
+		vtxNormal = Normal . Glm.Vec3 $ 1 :. 0 :. 0 :. NilL,
+		vtxColor = Color . Glm.Vec3 $ 0 :. 1 :. 0 :. NilL,
+		vtxUv = Uv . Glm.Vec2 $ 0 :. 0 :. NilL },
+	Vtx {	vtxPos = Position . Glm.Vec3 $ 0 :. (- 1) :. 0.5 :. NilL,
+		vtxNormal = Normal . Glm.Vec3 $ 1 :. 0 :. 0 :. NilL,
+		vtxColor = Color . Glm.Vec3 $ 0 :. 1 :. 0 :. NilL,
+		vtxUv = Uv . Glm.Vec2 $ 0 :. 0 :. NilL } ]
 
 type WVertex = GStorable.W Vertex
 
 data Vertex = Vtx {
-	vtxPos :: Position,
-	vtxNormal :: Normal,
-	vtxColor :: Color,
-	vtxUv :: Uv } deriving (Show, Generic)
+	vtxPos :: Position, vtxNormal :: Normal, vtxColor :: Color,
+	vtxUv :: Uv }
+	deriving (Show, Generic)
 
 newtype Position = Position Glm.Vec3
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
@@ -1817,51 +1844,36 @@ newtype Color = Color Glm.Vec3
 newtype Uv = Uv Glm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
-instance Str.G.G Vertex
+instance GStorable.G Vertex
 
-instance Storable Vertex where
-	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
-	peek = Str.G.gPeek; poke = Str.G.gPoke
+-- MESH PUSH CONSTANTS
 
-triangle :: V.Vector WVertex
-triangle = V.fromList $ GStorable.W <$> [
-	Vtx {
-		vtxPos = Position . Glm.Vec3 $ 1 :. 1 :. 0.5 :. NilL,
-		vtxNormal = Normal . Glm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vtxColor = Color . Glm.Vec3 $ 0 :. 1 :. 0 :. NilL,
-		vtxUv = Uv . Glm.Vec2 $ 0 :. 0 :. NilL },
-	Vtx {
-		vtxPos = Position . Glm.Vec3 $ (- 1) :. 1 :. 0.5 :. NilL,
-		vtxNormal = Normal . Glm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vtxColor = Color . Glm.Vec3 $ 0 :. 1 :. 0 :. NilL,
-		vtxUv = Uv . Glm.Vec2 $ 0 :. 0 :. NilL },
-	Vtx {
-		vtxPos = Position . Glm.Vec3 $ 0 :. (- 1) :. 0.5 :. NilL,
-		vtxNormal = Normal . Glm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vtxColor = Color . Glm.Vec3 $ 0 :. 1 :. 0 :. NilL,
-		vtxUv = Uv . Glm.Vec2 $ 0 :. 0 :. NilL } ]
+type WMeshPushConsts = GStorable.W MeshPushConsts
+
+data MeshPushConsts = MeshPushConsts {
+	meshPushConstsDt :: Glm.Vec4,
+	meshPushConstsRenderMtx :: Glm.Mat4 } deriving (Show, Generic)
+
+instance GStorable.G MeshPushConsts
 
 -- CAMERA DATA
 
-type WViewProj = GStorable.W CameraData
+type WViewProj = GStorable.W ViewProjData
 
-data CameraData = CameraData {
-	cameraDataView :: View, cameraDataProj :: Proj,
-	cameraDataViewProj :: ViewProj } deriving (Show, Generic)
+data ViewProjData = ViewProjData {
+	viewProjView :: View, viewProjProj :: Proj,
+	viewProjViewProj :: ViewProj } deriving (Show, Generic)
 
 newtype View = View Glm.Mat4 deriving (Show, Storable)
 newtype Proj = Proj Glm.Mat4 deriving (Show, Storable)
 newtype ViewProj = ViewProj Glm.Mat4 deriving (Show, Storable)
 
-instance Storable CameraData where
-	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
-	peek = Str.G.gPeek; poke = Str.G.gPoke
+instance GStorable.G ViewProjData
 
-instance Str.G.G CameraData
-
-cameraData :: Vk.Extent2d -> WViewProj
-cameraData ex = GStorable.W $ CameraData (View view) (Proj $ projection ex)
-	(ViewProj $ Glm.mat4Mul (projection ex) view)
+viewProjData :: Vk.Extent2d -> WViewProj
+viewProjData ex = GStorable.W
+	$ ViewProjData (View view) (Proj prj) (ViewProj $ Glm.mat4Mul prj view)
+	where prj = projection ex
 
 view :: Glm.Mat4
 view = Glm.lookat
@@ -1872,17 +1884,17 @@ view = Glm.lookat
 projection :: Vk.Extent2d -> Glm.Mat4
 projection Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
-	Vk.extent2dHeight = fromIntegral -> h } = Glm.modifyMat4 1 1 negate
-	$ Glm.perspective (Glm.rad 70) (w / h) 0.1 200
+	Vk.extent2dHeight = fromIntegral -> h } =
+	Glm.modifyMat4 1 1 negate $ Glm.perspective (Glm.rad 70) (w / h) 0.1 200
 
 -- SCENE DATA
 
-type WScene = GStorable.W SceneData
+type WScene = GStorable.W Scene
 
-data SceneData = SceneData {
-	sceneDataFogColor :: FogColor, sceneDataFogDists :: FogDists,
-	sceneDataAmbColor :: AmbColor,
-	sceneDataSunDir :: SunDir, sceneDataSunColor :: SunColor }
+data Scene = Scene {
+	sceneFogColor :: FogColor, sceneFogDists :: FogDists,
+	sceneAmbColor :: AmbColor,
+	sceneSunDir :: SunDir, sceneSunColor :: SunColor }
 	deriving (Show, Generic)
 
 newtype FogColor = FogColor Glm.Vec4 deriving (Show, Storable)
@@ -1891,45 +1903,28 @@ newtype AmbColor = AmbColor Glm.Vec4 deriving (Show, Storable)
 newtype SunDir = SunDir Glm.Vec4 deriving (Show, Storable)
 newtype SunColor = SunColor Glm.Vec4 deriving (Show, Storable)
 
-instance Storable SceneData where
-	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
-	peek = Str.G.gPeek; poke = Str.G.gPoke
-
-instance Str.G.G SceneData
+instance GStorable.G Scene
 
 sceneData :: Int -> WScene
-sceneData fn = GStorable.W SceneData {
-	sceneDataFogColor = FogColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneDataFogDists = FogDists . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneDataAmbColor = AmbColor . Glm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
-	sceneDataSunDir = SunDir . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	sceneDataSunColor = SunColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
+sceneData (fromIntegral -> fn) = GStorable.W Scene {
+	sceneFogColor = FogColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneFogDists = FogDists . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneAmbColor = AmbColor . Glm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
+	sceneSunDir = SunDir . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneSunColor = SunColor . Glm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
 	where
-	r = sin (fromIntegral fn / (180 * frashRate) * pi)
-	b = cos (fromIntegral fn / (180 * frashRate) * pi)
-
--- MESH PUSH CONSTANTS
-
-data MeshPushConstants = MeshPushConstants {
-	meshPushConstantsData :: Glm.Vec4,
-	meshPushConstantsRenderMatrix :: Glm.Mat4 } deriving (Show, Generic)
-
-type WMeshPushConsts = GStorable.W MeshPushConstants
-
-instance Str.G.G MeshPushConstants
+	r = sin $ fn / (180 * frashRate) * pi
+	b = cos $ fn / (180 * frashRate) * pi
 
 -- OBJECT DATA
 
 type WObjData = GStorable.W ObjData
 
-newtype ObjData = ObjData {
-	objectDataModelMatrix :: Glm.Mat4 } deriving (Show, Generic)
+newtype ObjData =
+	ObjData { objectDataModelMatrix :: Glm.Mat4 }
+	deriving (Show, Generic)
 
-instance Storable ObjData where
-	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
-	peek = Str.G.gPeek; poke = Str.G.gPoke
-
-instance Str.G.G ObjData
+instance GStorable.G ObjData
 	
 -- OTHER TYPES
 
@@ -1937,30 +1932,29 @@ instance Str.G.G ObjData
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
--- type instance Vk.Bffr.ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
+newtype PixelRgba8 = PixelRgba8 PixelRGBA8
 
-newtype MyRgba8 = MyRgba8 { _unMyRgba8 :: PixelRGBA8 }
-
-instance Storable MyRgba8 where
+instance Storable PixelRgba8 where
 	sizeOf _ = 4 * sizeOf @Pixel8 undefined
 	alignment _ = alignment @Pixel8 undefined
-	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
-		<$> peekArray 4 (castPtr p)
-	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+	peek p = PixelRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a)
+		. listToTuple4 <$> peekArray 4 (castPtr p)
+	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
 
 instance BObj.IsImage ImageRgba8 where
-	type ImagePixel ImageRgba8 = MyRgba8
-	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
+	type ImagePixel ImageRgba8 = PixelRgba8
+	type ImageFormat ImageRgba8 = TxFormat
 	imageRow = BObj.imageWidth
-	imageWidth (ImageRgba8 img) = fromIntegral $ imageWidth img
-	imageHeight (ImageRgba8 img) = fromIntegral $ imageHeight img
+	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
+	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
 	imageDepth _ = 1
-	imageBody (ImageRgba8 img) = (<$> [0 .. imageHeight img - 1]) \y ->
-		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	imageMake w h _d pss = ImageRgba8
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
-		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
+	imageBody (ImageRgba8 i) = (<$> [0 .. imageHeight i - 1]) \y ->
+		(<$> [0 .. imageWidth i - 1]) \x -> PixelRgba8 $ pixelAt i x y
+	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
+		ImageRgba8 $ generateImage
+			(\x y -> let PixelRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 -- SHADER
 
@@ -1976,23 +1970,22 @@ layout(location = 3) in vec2 vTexCoord;
 layout(location = 0) out vec3 outColor;
 layout(location = 1) out vec2 texCoord;
 
-layout (set = 0, binding = 0) uniform CameraBuffer {
-	mat4 view; mat4 proj; mat4 viewproj; } cameraData;
+layout (set = 0, binding = 0) uniform
+	ViewProj { mat4 view; mat4 proj; mat4 viewproj; } viewProj;
+
+layout(push_constant) uniform
+	Constants { vec4 data; mat4 render_matrix; } pushConsts;
 
 struct ObjectData { mat4 model; };
 
-layout (std140, set = 1, binding = 0) readonly buffer ObjectBuffer {
-	ObjectData objects[];
-} objectBuffer;
-
-layout(push_constant) uniform constants {
-	vec4 data; mat4 render_matrix; } PushConstants;
+layout (std140, set = 1, binding = 0) readonly buffer
+	ObjectBuffer { ObjectData objects[]; } objectBuffer;
 
 void
 main()
 {
 	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
-	mat4 transformMatrix = cameraData.viewproj * modelMatrix;
+	mat4 transformMatrix = viewProj.viewproj * modelMatrix;
 	gl_Position = transformMatrix * vec4(inPosition, 1.0);
 	outColor = inColor;
 	texCoord = vTexCoord;
@@ -2007,7 +2000,7 @@ main()
 layout(location = 0) in vec3 inColor;
 layout(location = 1) in vec2 texCoord;
 
-layout(location = 0) out vec4 outFragColor;
+layout(location = 0) out vec4 outColor;
 
 layout (set = 0, binding = 1) uniform SceneData {
 	vec4 fogColor; vec4 fogDists;
@@ -2020,8 +2013,8 @@ void
 main()
 {
 	vec3 color = texture(tex1, texCoord).xyz;
-//	outFragColor = vec4(texCoord.x, texCoord.y, 0.5f, 1.0f);
-	outFragColor = vec4(color, 1.0f);
+//	outColor = vec4(texCoord.x, texCoord.y, 0.5f, 1.0f);
+	outColor = vec4(color, 1.0f);
 }
 
 |]
