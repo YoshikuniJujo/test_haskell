@@ -237,14 +237,14 @@ body txfp mdlfp mnld fr w ist =
 	createCmdPl qfis d \cp ->
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
-	createColorResources @scifmt pd d ex spcnt \clrimg clrimgm clrimgvw ->
+	createClrRsrcs @scifmt pd d ex spcnt \crs@(_, _, cv, _) ->
 	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
 	createDptRsrcs @dfmt pd d gq cp ex spcnt \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d spcnt \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPipelineLayout' d \dscslyt ppllyt ->
 	createGraphicsPipeline' d ex rp ppllyt spcnt \gpl ->
-	createFramebuffers d ex rp scvs dv clrimgvw \fbs ->
+	createFramebuffers d ex rp scvs dv cv \fbs ->
 	createTextureImage pd d gq cp txfp \tximg mplvs ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tximg Vk.Img.AspectColorBit mplvs \tximgvw ->
 	createTextureSampler pd d mplvs mnld \txsmplr ->
@@ -255,7 +255,6 @@ body txfp mdlfp mnld fr w ist =
 	createDescriptorSet d dscp ub tximgvw txsmplr dscslyt \ubds ->
 	createCommandBuffer d cp \cb ->
 	createSyncObjects d \sos ->
-	getCurrentTime >>= \tm ->
 
 	K.newChans' K.gf >>= \(cke, kenvs) ->
 
@@ -265,9 +264,10 @@ body txfp mdlfp mnld fr w ist =
 	createVertexBuffer' pd d grp mng Glfw.Key'G gq cp vtcs >>= \vb ->
 	createIndexBuffer' pd d grp' mng' Glfw.Key'G gq cp idcs >>= \ib ->
 
+	getCurrentTime >>=
 	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp ppllyt gpl fbs cp
-		(clrimg, clrimgm, clrimgvw, spcnt)
-		drs idcs (grp, mng) (grp', mng') (vb, ib) ubm ubds cb sos tm cke kenvs
+		crs
+		drs idcs (grp, mng) (grp', mng') (vb, ib) ubm ubds cb sos cke kenvs
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss ->
 	IO (Vk.Phd.P, QFamIndices, Vk.Sample.CountFlags)
@@ -490,13 +490,6 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg asps mplvs f =
 	Vk.ImgVw.create dvc (mkImageViewCreateInfo timg asps mplvs) nil f
-
-recreateImageView :: Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
-	Vk.Img.AspectFlags ->
-	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO ()
-recreateImageView dvc timg asps iv mplvs =
-	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfo timg asps mplvs) nil iv
 
 mkImageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
@@ -861,45 +854,37 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
+createClrRsrcs :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
+	(forall si sm siv . ClrRsrcs fmt nm si sm siv -> IO a) -> IO a
+createClrRsrcs pd dv (Vk.Extent2d w h) spcnt f =
+	prepareImg pd dv Vk.Img.TilingOptimal
+		(	Vk.Img.UsageTransientAttachmentBit .|.
+			Vk.Img.UsageColorAttachmentBit )
+		Vk.Mm.PropertyDeviceLocalBit w h 1 spcnt \ci cm ->
+	Vk.ImgVw.create dv (imgVwInfo ci Vk.Img.AspectColorBit 1) nil \cv ->
+	f (ci, cm, cv, spcnt)
+
+recreateClrRsrcs :: forall fmt sd nm si sm siv . Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> ClrRsrcs fmt nm si sm siv ->
+	IO ()
+recreateClrRsrcs pd dv (Vk.Extent2d w h) (ci, cm, cv, spcnt) = do
+	reprepareImg pd dv Vk.Img.TilingOptimal
+		(	Vk.Img.UsageTransientAttachmentBit .|.
+			Vk.Img.UsageColorAttachmentBit )
+		Vk.Mm.PropertyDeviceLocalBit w h 1 spcnt ci cm
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo ci Vk.Img.AspectColorBit 1) nil cv
+
+type ClrRsrcs fmt nm si sm siv = (
+	Vk.Img.Binded sm si nm fmt,
+	Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)],
+	Vk.ImgVw.I nm fmt siv, Vk.Sample.CountFlags )
+
 type ColorResources fmt nm si sm siv = (
 	Vk.Img.Binded sm si nm fmt,
-	Vk.Mm.M sm
-		'[ '(si, 'Vk.Mm.ImageArg nm fmt)],
+	Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)],
 	Vk.ImgVw.I nm fmt siv,
 	Vk.Sample.CountFlags )
-
-createColorResources :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
-	(forall si sm siv .
-		Vk.Img.Binded sm si nm fmt ->
-		Vk.Mm.M sm
-			'[ '(si, 'Vk.Mm.ImageArg nm fmt)] ->
-		Vk.ImgVw.I nm fmt siv ->
-		IO a) -> IO a
-createColorResources pd dvc ext msmpls f =
-	createImage @_ @fmt pd dvc
-		(Vk.extent2dWidth ext) (Vk.extent2dHeight ext) 1 msmpls
-		Vk.Img.TilingOptimal
-		(	Vk.Img.UsageTransientAttachmentBit .|.
-			Vk.Img.UsageColorAttachmentBit )
-		Vk.Mm.PropertyDeviceLocalBit \img imgmem ->
-	createImageView @fmt dvc img Vk.Img.AspectColorBit 1 \imgvw ->
-	f img imgmem imgvw
-
-recreateColorResources :: forall fmt sd nm si sm siv . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
-	Vk.Img.Binded sm si nm fmt ->
-	Vk.Mm.M sm
-		'[ '(si, 'Vk.Mm.ImageArg nm fmt)] ->
-	Vk.ImgVw.I nm fmt siv -> IO ()
-recreateColorResources pd dvc ext msmpls img imgmem imgvw = do
-	recreateImage pd dvc
-		(Vk.extent2dWidth ext) (Vk.extent2dHeight ext) 1 msmpls
-		Vk.Img.TilingOptimal
-		(	Vk.Img.UsageTransientAttachmentBit .|.
-			Vk.Img.UsageColorAttachmentBit )
-		Vk.Mm.PropertyDeviceLocalBit img imgmem
-	recreateImageView dvc img Vk.Img.AspectColorBit imgvw 1
 
 createDptRsrcs :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
@@ -1254,18 +1239,6 @@ createImage pd dvc wdt hgt mplvs nss tlng usg prps f = Vk.Img.create @'Nothing d
 	mi <- imageMemoryInfo pd dvc prps img
 	imageAllocateBind dvc img mi f
 
-recreateImage :: Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
-	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.M
-		sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
-recreateImage pd dvc wdt hgt mplvs nss tlng usg prps img mem = do
-	Vk.Img.unsafeRecreate @'Nothing dvc
-		(imageInfo wdt hgt mplvs nss tlng usg) nil img
-	mi <- imageMemoryInfoBinded pd dvc prps img
-	imageReallocateBind dvc img mi mem
-
 imageInfo ::
 	Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
 	Vk.Img.CreateInfo 'Nothing fmt
@@ -1298,31 +1271,11 @@ imageAllocateBind dvc img mi f =
 		nil \(HPList.Singleton (U2 (Vk.Mm.ImageBinded bnd))) m -> do
 		f bnd m
 
-imageReallocateBind ::
-	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.AllocateInfo 'Nothing ->
-	Vk.Mm.M
-		sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
-imageReallocateBind dvc img mi m =
-	Vk.Mm.unsafeReallocateBind @'Nothing dvc
-		(HPList.Singleton . U2 $ Vk.Mm.ImageBinded img) mi
-		nil m
-
 imageMemoryInfo ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
 	Vk.Img.I s nm fmt -> IO (Vk.Mm.AllocateInfo 'Nothing)
 imageMemoryInfo pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirements dvc img
-	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits reqs) prps
-	pure Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
-
-imageMemoryInfoBinded ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
-	Vk.Img.Binded sm si nm fmt -> IO (Vk.Mm.AllocateInfo 'Nothing)
-imageMemoryInfoBinded pd dvc prps img = do
-	reqs <- Vk.Img.getMemoryRequirementsBinded dvc img
 	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits reqs) prps
 	pure Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
@@ -1833,11 +1786,11 @@ mainLoop :: (
 			'[ VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> UTCTime ->
+	SyncObjects '(sias, srfs, siff) ->
 	TChan K.KeyEvent ->
-	K.Envs -> IO ()
+	K.Envs -> UTCTime -> IO ()
 mainLoop g w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp clrrscs
-	(dptImg, dptImgMem, dptImgVw) idcs0 grpmng grpmng' vbib0 ubm ubds cb iasrfsifs tm0 cke kenvs = do
+	(dptImg, dptImgMem, dptImgVw) idcs0 grpmng grpmng' vbib0 ubm ubds cb iasrfsifs cke kenvs tm0 = do
 	($ idcs0) . ($ vbib0) . ($ ext0) $ fix \loop ext vbib idcs -> do
 		K.sendKeys win kenvs
 		Glfw.pollEvents
@@ -2047,7 +2000,7 @@ recreateSwapChainEtc w@(GlfwG.Win.W win) sfc pd qfis dvc gq sc scivs rp ppllyt g
 	ext <$ do
 		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 			recreateImgVws dvc imgs scivs
-		recreateColorResources pd dvc ext mss clrimg clrimgm clrimgvw
+		recreateClrRsrcs pd dvc ext (clrimg, clrimgm, clrimgvw, mss)
 		recreateDptRsrcs pd dvc gq cp ext mss (dptImg, dptImgMem, dptImgVw)
 		recreateGraphicsPipeline' dvc ext rp ppllyt mss gpl
 		recreateFramebuffers dvc ext rp scivs dptImgVw clrimgvw fbs
