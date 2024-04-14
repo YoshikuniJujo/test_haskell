@@ -221,8 +221,8 @@ body txfp mdlfp mnld fr w ist =
 	createCmdPl qfis d \cp ->
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
-	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
 	createClrRsrcs @scifmt pd d ex spcnt \crs@(_, _, cv, _) ->
+	dptFmt pd Vk.Img.TilingOptimal \(_ :: Proxy dfmt) ->
 	createDptRsrcs @dfmt pd d gq cp ex spcnt \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d spcnt \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
