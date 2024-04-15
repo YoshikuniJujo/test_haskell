@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -244,7 +244,7 @@ body txfp mdlfp mnld fr w ist =
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPipelineLayout' d \dscslyt ppllyt ->
 	createGraphicsPipeline' d ex rp ppllyt spcnt \gpl ->
-	createFramebuffers d ex rp scvs dv cv \fbs ->
+	createFrmbffrs d ex rp scvs dv cv \fbs ->
 	createTextureImage pd d gq cp txfp \tximg mplvs ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tximg Vk.Img.AspectColorBit mplvs \tximgvw ->
 	createTextureSampler pd d mplvs mnld \txsmplr ->
@@ -801,50 +801,49 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
-	Vk.ImgVw.I dptfmt dptnm siv ->
-	Vk.ImgVw.I clrfmt clrnm clrsiv ->
-	(forall sfs . RecreateFramebuffers sis sfs =>
+createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm fmt) sis -> Vk.ImgVw.I dptnm dptfmt siv ->
+	Vk.ImgVw.I clrnm clrfmt sciv ->
+	(forall sfs . RecreateFrmbffrs sis sfs =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFramebuffers _ _ _ HPList.Nil _ _ f = f HPList.Nil
-createFramebuffers dvc sce rp (iv :** ivs) divw clrvw f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv divw clrvw) nil \fb ->
-	createFramebuffers dvc sce rp ivs divw clrvw \fbs -> f (fb :** fbs)
+createFrmbffrs _ _ _ HPList.Nil _ _ f = f HPList.Nil
+createFrmbffrs dv ex rp (v :** vs) dvw cvw f =
+	Vk.Frmbffr.create dv (frmbffrInfo ex rp v dvw cvw) nil \fb ->
+	createFrmbffrs dv ex rp vs dvw cvw \fbs -> f (fb :** fbs)
 
-class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
-	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-		Vk.ImgVw.I dptfmt dptnm sdiv ->
-		Vk.ImgVw.I clrfmt clrnm clrsdiv ->
+class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
+	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
+		Vk.ImgVw.I dptnm dptfmt siv ->
+		Vk.ImgVw.I clrnm clrfmt clrsdiv ->
 		HPList.PL Vk.Frmbffr.F sfs -> IO ()
 
-instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce _rp HPList.Nil _ _ HPList.Nil = pure ()
+instance RecreateFrmbffrs '[] '[] where
+	recreateFrmbffrs _ _ _ HPList.Nil _ _ HPList.Nil = pure ()
 
-instance RecreateFramebuffers sis sfs =>
-	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce rp (sciv :** scivs) divw clrvw (fb :** fbs) =
-		Vk.Frmbffr.unsafeRecreate dvc
-			(mkFramebufferCreateInfo sce rp sciv divw clrvw) nil fb >>
-		recreateFramebuffers dvc sce rp scivs divw clrvw fbs
+instance RecreateFrmbffrs sis sfs =>
+	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
+	recreateFrmbffrs d ex rp (v :** vs) dv cv (fb :** fbs) = do
+		Vk.Frmbffr.unsafeRecreate d (frmbffrInfo ex rp v dv cv) nil fb
+		recreateFrmbffrs d ex rp vs dv cv fbs
 
-mkFramebufferCreateInfo ::
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
-	Vk.ImgVw.I dptnm dptfmt sdiv -> Vk.ImgVw.I clrnm clrfmt clrsdiv ->
-	Vk.Frmbffr.CreateInfo 'Nothing sr
-		'[ '(clrnm, clrfmt, clrsdiv), '(dptnm, dptfmt, sdiv), '(nm, fmt, si)]
---	Vk.Frmbffr.CreateInfo () sr nm fmt '[si, sdiv]
-mkFramebufferCreateInfo sce rp attch dpt clr = Vk.Frmbffr.CreateInfo {
+frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
+	Vk.ImgVw.I dptnm dptfmt sdiv ->
+	Vk.ImgVw.I clrnm clrfmt sciv ->
+	Vk.Frmbffr.CreateInfo 'Nothing sr '[
+		'(clrnm, clrfmt, sciv),
+		'(dptnm, dptfmt, sdiv), '(inm, fmt, si) ]
+frmbffrInfo ex rp att dpt clr = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 clr :** U3 dpt :** U3 attch :** HPList.Nil,
---	Vk.Frmbffr.createInfoAttachments = attch :** dpt :** HPList.Nil,
+	Vk.Frmbffr.createInfoAttachments =
+		U3 clr :** U3 dpt :** U3 att :** HPList.Nil,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
-	where
-	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
+	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
+
+type RecreateFramebuffers = RecreateFrmbffrs
 
 createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
@@ -2003,7 +2002,7 @@ recreateSwapChainEtc w@(GlfwG.Win.W win) sfc pd qfis dvc gq sc scivs rp ppllyt g
 		recreateClrRsrcs pd dvc ext (clrimg, clrimgm, clrimgvw, mss)
 		recreateDptRsrcs pd dvc gq cp ext mss (dptImg, dptImgMem, dptImgVw)
 		recreateGraphicsPipeline' dvc ext rp ppllyt mss gpl
-		recreateFramebuffers dvc ext rp scivs dptImgVw clrimgvw fbs
+		recreateFrmbffrs dvc ext rp scivs dptImgVw clrimgvw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
 waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
