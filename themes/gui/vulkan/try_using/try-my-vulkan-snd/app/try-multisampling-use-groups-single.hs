@@ -79,7 +79,6 @@ import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swpch
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
@@ -247,13 +246,13 @@ body txfp mdlfp mnld fr w ist =
 	let	mls@(mls', _, _) = calcMipLevels txi in
 	createTxImg pd d gq cp (ImageRgba8 txi) mls \tx ->
 	generateMipmaps pd d gq cp tx mls >>
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb d tx Vk.Img.AspectColorBit mls' \tximgvw ->
+	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit mls') nil \tv ->
 	createTextureSampler pd d mls' mnld \txsmplr ->
 	loadModel mdlfp >>= \(vtcs, idcs) ->
 
 	createUniformBuffer pd d \ub ubm ->
 	createDescriptorPool d \dscp ->
-	createDescriptorSet d dscp ub tximgvw txsmplr dsl \ubds ->
+	createDescriptorSet d dscp ub tv txsmplr dsl \ubds ->
 	createCommandBuffer d cp \cb ->
 	createSyncObjects d \sos ->
 
@@ -483,35 +482,6 @@ imgVwInfo i a ml = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLevelCount = ml,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
-
-createImageView :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
-	Vk.Img.AspectFlags -> Word32 ->
-	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
-createImageView dvc timg asps mplvs f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfo timg asps mplvs) nil f
-
-mkImageViewCreateInfo ::
-	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
-	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfo sci asps mplvs = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = TMaybe.N,
-	Vk.ImgVw.createInfoFlags = zeroBits,
-	Vk.ImgVw.createInfoImage = sci,
-	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponents = components,
-	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
-	where
-	components = Vk.Component.Mapping {
-		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
-		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Img.M.SubresourceRange {
-		Vk.Img.M.subresourceRangeAspectMask = asps,
-		Vk.Img.M.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.M.subresourceRangeLevelCount = mplvs,
-		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.M.subresourceRangeLayerCount = 1 }
 
 createRndrPss :: forall fmt dptfmt sd a .
 	(Vk.T.FormatToValue fmt, Vk.T.FormatToValue dptfmt) =>
