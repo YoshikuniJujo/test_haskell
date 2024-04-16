@@ -255,9 +255,12 @@ body txfp mdlfp mnld fr w ist =
 	createTxSmplr pd d mls mnld \txsp ->
 	indexing <$> readVertices (head mdlfp) >>=
 		\(vtcs :: V.Vector WVertex, idcs :: V.Vector Word32) ->
+	bffrAlgn @(VObj.List 256 WVertex _) d
+		(VObj.LengthList . fromIntegral $ olength vtcs)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit) \(_ :: Proxy alv) ->
 	Vk.Bffr.group d nil \bg -> Vk.Mm.group d nil \mg ->
 	Vk.Bffr.group d nil \bg' -> Vk.Mm.group d nil \mg' ->
-	createVertexBuffer' pd d bg mg Glfw.Key'G gq cp vtcs >>= \vb ->
+	createVertexBuffer' @alv pd d bg mg Glfw.Key'G gq cp vtcs >>= \vb ->
 	createIndexBuffer' pd d bg' mg' Glfw.Key'G gq cp idcs >>= \ib ->
 
 	createUniformBuffer pd d \ub ubm ->
@@ -1261,12 +1264,12 @@ createTxSmplr pd dv (mls, _, _) mnld a = Vk.Phd.getProperties pd >>= \pr ->
 		Vk.Smplr.createInfoBorderColor = Vk.BorderColorIntOpaqueBlack,
 		Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 
-createVertexBuffer' :: Ord k => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 WVertex ""] ->
+createVertexBuffer' :: (KnownNat alv, Ord k) => Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List alv WVertex lnm] ->
 	Vk.Mm.Group sd 'Nothing sm k
-		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List 256 WVertex ""])] ->
+		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List alv WVertex lnm])] ->
 	k -> Vk.Q.Q -> Vk.CmdPl.C sc -> V.Vector WVertex ->
-	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""])
+	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List alv WVertex lnm])
 createVertexBuffer' pd dvc grp mng k gq cp vtcs =
 	createWriteBffrLst Vk.Bffr.UsageVertexBufferBit pd dvc grp mng k gq cp vtcs
 
@@ -1304,15 +1307,14 @@ createWriteBffrLst us pd dvc grp mng k gq cp vtcs =
 					'[ VObj.List al (Element lst) lnm] ) ]) -> do
 		Vk.Mm.write
 			@nm @(VObj.List al (Element lst) lnm) dvc bm' zeroBits vtcs
-		copyBuffer dvc gq cp b' b
+		copyBuffer b' b
 	pure b
 	where
-	copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a lnm . Storable' a =>
-		Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-		Vk.Bffr.Binded sm sb nm '[ VObj.List al a lnm] ->
-		Vk.Bffr.Binded sm' sb' nm' '[ VObj.List al a lnm] -> IO ()
-	copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
-		Vk.Cmd.copyBuffer @'[ '[ VObj.List al a lnm]] cb src dst
+	copyBuffer :: forall sms sbs nms smd sbd nmd a lnm' . Storable' a =>
+		Vk.Bffr.Binded sms sbs nms '[ VObj.List al a lnm'] ->
+		Vk.Bffr.Binded smd sbd nmd '[ VObj.List al a lnm'] -> IO ()
+	copyBuffer src dst = beginSingleTimeCommands dvc gq cp \cb ->
+		Vk.Cmd.copyBuffer @'[ '[ VObj.List al a lnm']] cb src dst
 
 createUniformBuffer :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[ VObj.Atom alu WModelViewProj 'Nothing]  ->
@@ -1502,7 +1504,8 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv .
+	KnownNat alv =>
 	Vk.CBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
@@ -1511,7 +1514,7 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu 
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
 	V.Vector Word32 ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[ VObj.List alv WVertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""] ->
 	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
 	IO ()
@@ -1543,26 +1546,26 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 			Vk.ClearValueDepthStencil (Vk.ClearDepthStencilValue 1 0) :**
 			HPList.Nil }
 
-type VertexIndexBuffer sm sb sm' sb' nm nm' = (
-	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""],
+type VertexIndexBuffer alv sm sb sm' sb' nm nm' = (
+	Vk.Bffr.Binded sm sb nm '[ VObj.List alv WVertex ""],
 	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""])
 
-type GroupAndManager sd sm sb k nm t = (
-	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 t ""],
+type GroupAndManager al sd sm sb k nm t = (
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List al t ""],
 	Vk.Mm.Group sd 'Nothing sm k
-		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List 256 t ""])])
+		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List al t ""])])
 
 bindedBuffer ::
 	Vk.Mm.M sm
-		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List 256 t ""])] ->
-	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""])
+		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List al t ""])] ->
+	IO (Vk.Bffr.Binded sm sb nm '[VObj.List al t ""])
 bindedBuffer m = do
 	HPList.Singleton (U2 (Vk.Mm.BufferBinded b)) <- Vk.Mm.getBinded m
 	pure b
 
 mainLoop :: (
 	RecreateFramebuffers ss sfs,
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt, KnownNat alu ) =>
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt, KnownNat alu, KnownNat alv ) =>
 	FilePath ->
 	FramebufferResized ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
@@ -1583,9 +1586,9 @@ mainLoop :: (
 			sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)],
 		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
 	V.Vector Word32 ->
-	GroupAndManager sd sm sb Glfw.Key nm WVertex ->
-	GroupAndManager sd sm' sb' Glfw.Key nm' Word32 ->
-	VertexIndexBuffer sm sb sm' sb' nm nm' ->
+	GroupAndManager alv sd sm sb Glfw.Key nm WVertex ->
+	GroupAndManager 256 sd sm' sb' Glfw.Key nm' Word32 ->
+	VertexIndexBuffer alv sm sb sm' sb' nm nm' ->
 	Vk.Mm.M sm2 '[ '(
 		sb2,
 		'Vk.Mm.BufferArg "uniform-buffer"
@@ -1610,7 +1613,7 @@ mainLoop mdlfp g w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc ext0 scivs rp ppll
 
 runLoop :: (
 	RecreateFramebuffers sis sfs,
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt, KnownNat alu ) =>
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt, KnownNat alu, KnownNat alv ) =>
 	FilePath ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
@@ -1629,9 +1632,9 @@ runLoop :: (
 	HPList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
 	TChan K.KeyEvent ->
-	GroupAndManager sd sm sb Glfw.Key nm WVertex ->
-	GroupAndManager sd sm' sb' Glfw.Key nm' Word32 ->
-	VertexIndexBuffer sm sb sm' sb' nm nm' ->
+	GroupAndManager alv sd sm sb Glfw.Key nm WVertex ->
+	GroupAndManager 256 sd sm' sb' Glfw.Key nm' Word32 ->
+	VertexIndexBuffer alv sm sb sm' sb' nm nm' ->
 	Vk.Mm.M sm2 '[ '(
 		sb2,
 		'Vk.Mm.BufferArg "uniform-buffer"
@@ -1639,7 +1642,7 @@ runLoop :: (
 	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
 	Vk.CBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
-	(Vk.Extent2d -> VertexIndexBuffer sm sb sm' sb' nm nm' -> V.Vector Word32 -> IO ()) -> IO ()
+	(Vk.Extent2d -> VertexIndexBuffer alv sm sb sm' sb' nm nm' -> V.Vector Word32 -> IO ()) -> IO ()
 runLoop mdlfp w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
 	dptImg dptImgMem dptImgVw cp fbs idcs cke (grp, mng) (grp', mng') vbib@(vb, ib) ubm ubds cb iasrfsifs tm loop = do
 	me <- atomically do
@@ -1677,8 +1680,8 @@ indexBufferLength ib = let
 	HPList.Singleton (VObj.LengthList' sz) = Vk.Bffr.lengthBinded ib
 	in fromIntegral sz
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds alu .
-	KnownNat alu =>
+drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds alu alv .
+	(KnownNat alu, KnownNat alv) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
@@ -1687,7 +1690,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.List 256 WVertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[ VObj.List alv WVertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 Word32 ""] ->
 	Vk.Mm.M sm2 '[ '(
 		sb2,
@@ -1769,8 +1772,8 @@ catchAndRecreate :: (
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPl.C sc ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	VertexIndexBuffer sm sm' sb sb' nm nm' -> V.Vector Word32 ->
-	(Vk.Extent2d -> VertexIndexBuffer sm sm' sb sb' nm nm' -> V.Vector Word32 -> IO ()) -> IO () -> IO ()
+	VertexIndexBuffer alv sm sm' sb sb' nm nm' -> V.Vector Word32 ->
+	(Vk.Extent2d -> VertexIndexBuffer alv sm sm' sb sb' nm nm' -> V.Vector Word32 -> IO ()) -> IO () -> IO ()
 catchAndRecreate w sfc pd qfis dvc gq sc scivs rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs vbib idcs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
