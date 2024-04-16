@@ -113,10 +113,8 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
-import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
-import Tools (indexingVector)
 import Vertex
 import Vertex.Wavefront
 
@@ -139,6 +137,7 @@ import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Maybe.ToolsYj
 import Data.Ord.ToolsYj
+import Data.Sequences.ToolsYj
 import Debug
 
 main :: IO ()
@@ -247,22 +246,21 @@ body txfp mdlfp mnld fr w ist =
 	createTxImg pd d gq cp (ImageRgba8 txi) mls \tx ->
 	generateMipmaps pd d gq cp tx mls >>
 	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit mls') nil \tv ->
-	createTextureSampler pd d mls' mnld \txsmplr ->
-	loadModel mdlfp >>= \(vtcs, idcs) ->
+	createTxSmplr pd d mls mnld \txsp ->
+	indexing <$> readVertices mdlfp >>=
+		\(vtcs :: V.Vector WVertex, idcs :: V.Vector Word32) ->
+	Vk.Bffr.group d nil \grp -> Vk.Mm.group d nil \mng ->
+	Vk.Bffr.group d nil \grp' -> Vk.Mm.group d nil \mng' ->
+	createVertexBuffer' pd d grp mng Glfw.Key'G gq cp vtcs >>= \vb ->
+	createIndexBuffer' pd d grp' mng' Glfw.Key'G gq cp idcs >>= \ib ->
 
 	createUniformBuffer pd d \ub ubm ->
 	createDescriptorPool d \dscp ->
-	createDescriptorSet d dscp ub tv txsmplr dsl \ubds ->
+	createDescriptorSet d dscp ub tv txsp dsl \ubds ->
 	createCommandBuffer d cp \cb ->
 	createSyncObjects d \sos ->
 
 	K.newChans' K.gf >>= \(cke, kenvs) ->
-
-	Vk.Bffr.group d nil \grp -> Vk.Mm.group d nil \mng ->
-	Vk.Bffr.group d nil \grp' -> Vk.Mm.group d nil \mng' ->
-
-	createVertexBuffer' pd d grp mng Glfw.Key'G gq cp vtcs >>= \vb ->
-	createIndexBuffer' pd d grp' mng' Glfw.Key'G gq cp idcs >>= \ib ->
 
 	getCurrentTime >>=
 	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs cp
@@ -1239,47 +1237,29 @@ instance BObj.IsImage ImageRgba8 where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
-createTextureSampler :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	Word32 -> Float -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler pd dvc mplvs mnld f = do
-	prp <- Vk.Phd.getProperties pd
-	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
-	let	samplerInfo = Vk.Smplr.M.CreateInfo {
-			Vk.Smplr.M.createInfoNext = TMaybe.N,
-			Vk.Smplr.M.createInfoFlags = zeroBits,
-			Vk.Smplr.M.createInfoMagFilter = Vk.FilterLinear,
-			Vk.Smplr.M.createInfoMinFilter = Vk.FilterLinear,
-			Vk.Smplr.M.createInfoMipmapMode =
-				Vk.Smplr.MipmapModeLinear,
-			Vk.Smplr.M.createInfoAddressModeU =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoAddressModeV =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoAddressModeW =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoMipLodBias = 0,
-			Vk.Smplr.M.createInfoAnisotropyEnable = True,
-			Vk.Smplr.M.createInfoMaxAnisotropy =
-				Vk.Phd.limitsMaxSamplerAnisotropy
-					$ Vk.Phd.propertiesLimits prp,
-			Vk.Smplr.M.createInfoCompareEnable = False,
-			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.M.createInfoMinLod = mnld,
-			Vk.Smplr.M.createInfoMaxLod = fromIntegral mplvs,
-			Vk.Smplr.M.createInfoBorderColor =
-				Vk.BorderColorIntOpaqueBlack,
-			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
-
-loadModel :: FilePath -> IO (V.Vector WVertex, V.Vector Word32)
-loadModel fp = do
-	vtcs <- readVertices fp
-	let	(vtcs', idcs') = indexingVector vtcs
-	putStrLn "LOAD MODEL"
-	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector WVertex))
-	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector WVertex))
-	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector Word32))
-	pure (vtcs', idcs')
+createTxSmplr :: Vk.Phd.P -> Vk.Dvc.D sd -> MipLevels -> Float ->
+	(forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTxSmplr pd dv (mls, _, _) mnld a = Vk.Phd.getProperties pd >>= \pr ->
+	Vk.Smplr.create @'Nothing dv (info pr) nil a
+	where info (Vk.Phd.propertiesLimits -> lm) = Vk.Smplr.CreateInfo {
+		Vk.Smplr.createInfoNext = TMaybe.N,
+		Vk.Smplr.createInfoFlags = zeroBits,
+		Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMipmapMode = Vk.Smplr.MipmapModeLinear,
+		Vk.Smplr.createInfoAddressModeU = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeV = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeW = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoMipLodBias = 0,
+		Vk.Smplr.createInfoAnisotropyEnable = True,
+		Vk.Smplr.createInfoMaxAnisotropy =
+			Vk.Phd.limitsMaxSamplerAnisotropy lm,
+		Vk.Smplr.createInfoCompareEnable = False,
+		Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+		Vk.Smplr.createInfoMinLod = mnld,
+		Vk.Smplr.createInfoMaxLod = fromIntegral mls,
+		Vk.Smplr.createInfoBorderColor = Vk.BorderColorIntOpaqueBlack,
+		Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 
 createVertexBuffer' :: Ord k => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 WVertex ""] ->
@@ -1582,7 +1562,6 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 		(HPList.Singleton $ U2 ubds)
 		(HPList.Singleton
 			(HPList.Nil :** HPList.Nil :** HPList.Nil)) >>
---	Vk.Cmd.drawIndexed cbb (fromIntegral $ V.length idcs) 1 0 0 0
 	Vk.Cmd.drawIndexed cbb (indexBufferLength ib) 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
@@ -1701,7 +1680,9 @@ runLoop w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt g
 		b <- isEmptyTChan cke
 		if b then pure Nothing else Just <$> readTChan cke
 	(vbib', idcs'') <- maybe (pure (vbib, idcs)) (\case
-		K.First Glfw.Key'F -> loadModel "../../../../../files/models/monkey_smooth.obj" >>= \(vtcs, idcs') -> do
+		K.First Glfw.Key'F -> do
+			(vtcs :: V.Vector WVertex, idcs' :: V.Vector Word32)
+				<- indexing <$> readVertices "../../../../../files/models/monkey_smooth.obj"
 			vb' <- createVertexBuffer' pd dvc grp mng Glfw.Key'F gq cp vtcs
 			ib' <- createIndexBuffer' pd dvc grp' mng' Glfw.Key'F gq cp idcs'
 			print $ Vk.Bffr.lengthBinded ib'
