@@ -147,13 +147,18 @@ realMain ::
 	Flag "t" '["texture"] "FILEPATH" "texture filepath"
 		(Def "../../../../../files/models/viking_room.png" String) ->
 	Flag "m" '["model"] "FILEPATH" "model filepath"
-		(Def "../../../../../files/models/viking_room.obj" String) ->
+		(Def "../../../../../files/models/viking_room.obj" [String]) ->
 	Flag "l" '["minLod"] "FLOAT" "minimal mip level" (Def "0.0" Double) ->
 	Cmd "Try Vulkan Texture" ()
 realMain txfp mdlfp mnld = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
 	createIst \ist -> bool id (dbgm ist) debug
-		$ body (get txfp) (get mdlfp) (realToFrac $ get mnld) fr w ist
-	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
+		$ body (get txfp) mdlfp' (realToFrac $ get mnld) fr w ist
+	where
+	dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
+	mdlfp' = case get mdlfp of
+		[] -> error "never occur"
+		[mf0] -> [mf0, "../../../../../files/models/monkey_smooth.obj"]
+		mfs -> mfs
 
 type FramebufferResized = IORef Bool
 
@@ -225,7 +230,7 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		"validation layer: " <>
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-body :: FilePath -> FilePath -> Float ->
+body :: FilePath -> [FilePath] -> Float ->
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
 body txfp mdlfp mnld fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
@@ -247,7 +252,7 @@ body txfp mdlfp mnld fr w ist =
 	generateMipmaps pd d gq cp tx mls >>
 	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit mls') nil \tv ->
 	createTxSmplr pd d mls mnld \txsp ->
-	indexing <$> readVertices mdlfp >>=
+	indexing <$> readVertices (head mdlfp) >>=
 		\(vtcs :: V.Vector WVertex, idcs :: V.Vector Word32) ->
 	Vk.Bffr.group d nil \grp -> Vk.Mm.group d nil \mng ->
 	Vk.Bffr.group d nil \grp' -> Vk.Mm.group d nil \mng' ->
@@ -263,7 +268,7 @@ body txfp mdlfp mnld fr w ist =
 	K.newChans' K.gf >>= \(cke, kenvs) ->
 
 	getCurrentTime >>=
-	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs cp
+	mainLoop (mdlfp !! 1) fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs cp
 		crs
 		drs idcs (grp, mng) (grp', mng') (vb, ib) ubm ubds cb sos cke kenvs
 
@@ -1599,6 +1604,7 @@ bindedBuffer m = do
 mainLoop :: (
 	RecreateFramebuffers ss sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt, KnownNat alu ) =>
+	FilePath ->
 	FramebufferResized ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1630,14 +1636,14 @@ mainLoop :: (
 	SyncObjects '(sias, srfs, siff) ->
 	TChan K.KeyEvent ->
 	K.Envs -> UTCTime -> IO ()
-mainLoop g w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp clrrscs
+mainLoop mdlfp g w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp clrrscs
 	(dptImg, dptImgMem, dptImgVw) idcs0 grpmng grpmng' vbib0 ubm ubds cb iasrfsifs cke kenvs tm0 = do
 	($ idcs0) . ($ vbib0) . ($ ext0) $ fix \loop ext vbib idcs -> do
 		K.sendKeys win kenvs
 		Glfw.pollEvents
 		tm <- getCurrentTime
 --		let	vbib = vbib0
-		runLoop w sfc pd qfis dvc gq pq
+		runLoop mdlfp w sfc pd qfis dvc gq pq
 			sc g ext scivs
 			rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs idcs cke grpmng grpmng' vbib ubm ubds cb iasrfsifs
 			(realToFrac $ tm `diffUTCTime` tm0) loop
@@ -1646,6 +1652,7 @@ mainLoop g w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc ext0 scivs rp ppllyt gpl
 runLoop :: (
 	RecreateFramebuffers sis sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt, KnownNat alu ) =>
+	FilePath ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
@@ -1674,7 +1681,7 @@ runLoop :: (
 	Vk.CBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.Extent2d -> VertexIndexBuffer sm sb sm' sb' nm nm' -> V.Vector Word32 -> IO ()) -> IO ()
-runLoop w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
+runLoop mdlfp w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
 	dptImg dptImgMem dptImgVw cp fbs idcs cke (grp, mng) (grp', mng') vbib@(vb, ib) ubm ubds cb iasrfsifs tm loop = do
 	me <- atomically do
 		b <- isEmptyTChan cke
@@ -1682,7 +1689,7 @@ runLoop w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt g
 	(vbib', idcs'') <- maybe (pure (vbib, idcs)) (\case
 		K.First Glfw.Key'F -> do
 			(vtcs :: V.Vector WVertex, idcs' :: V.Vector Word32)
-				<- indexing <$> readVertices "../../../../../files/models/monkey_smooth.obj"
+				<- indexing <$> readVertices mdlfp
 			vb' <- createVertexBuffer' pd dvc grp mng Glfw.Key'F gq cp vtcs
 			ib' <- createIndexBuffer' pd dvc grp' mng' Glfw.Key'F gq cp idcs'
 			print $ Vk.Bffr.lengthBinded ib'
