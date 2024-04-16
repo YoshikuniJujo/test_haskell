@@ -14,7 +14,9 @@ showOpts ::
 	Flag "c" '["config"]
 		"FILEPATH" "Configuration File" (Def "defaultFishParams" String)
 	-> Flag "o" '["output"] "FILEPATH" "Result .png File" String
+	-> Flag "l" '["list"] "LIST" "list" (Def "default list" [String])
 	-> Cmd "Filled with fishes" ()
-showOpts cnf op = liftIO do
+showOpts cnf op lst = liftIO do
 	putStrLn $ get cnf
 	putStrLn $ get op
+	print $ get lst
