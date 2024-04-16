@@ -1279,16 +1279,16 @@ createIndexBuffer' :: Ord k => Vk.Phd.P -> Vk.Dvc.D sd ->
 createIndexBuffer' pd dvc grp mng k gq cp idcs =
 	createWriteBffrLst Vk.Bffr.UsageIndexBufferBit pd dvc grp mng k gq cp idcs
 
-createWriteBffrLst :: forall sd sb k nm lst lnm sm sc .
-	(IsSequence lst, Storable' (Element lst)) =>
+createWriteBffrLst :: forall al sd sb k nm lst lnm sm sc .
+	(KnownNat al, IsSequence lst, Storable' (Element lst)) =>
 	Ord k =>
 	Vk.Bffr.UsageFlags ->
 	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 (Element lst) lnm] ->
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List al (Element lst) lnm] ->
 	Vk.Mm.Group sd 'Nothing sm k
-		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List 256 (Element lst) lnm])] ->
+		'[ '(sb, 'Vk.Mm.BufferArg nm '[VObj.List al (Element lst) lnm])] ->
 	k -> Vk.Q.Q -> Vk.CmdPl.C sc -> lst ->
-	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List 256 (Element lst) lnm])
+	IO (Vk.Bffr.Binded sm sb nm '[ VObj.List al (Element lst) lnm])
 createWriteBffrLst us pd dvc grp mng k gq cp vtcs =
 	createBffrLst' pd dvc grp mng k (fromIntegral $ olength vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. us)
@@ -1297,22 +1297,22 @@ createWriteBffrLst us pd dvc grp mng k gq cp vtcs =
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit )
-		\(b' :: Vk.Bffr.Binded sm' sb' nm '[ VObj.List 256 t lnm])
+		\(b' :: Vk.Bffr.Binded sm' sb' nm '[ VObj.List al t lnm])
 			(bm' :: Vk.Mm.M sm' '[ '(
 				sb',
 				'Vk.Mm.BufferArg nm
-					'[ VObj.List 256 (Element lst) lnm] ) ]) -> do
+					'[ VObj.List al (Element lst) lnm] ) ]) -> do
 		Vk.Mm.write
-			@nm @(VObj.List 256 (Element lst) lnm) dvc bm' zeroBits vtcs
+			@nm @(VObj.List al (Element lst) lnm) dvc bm' zeroBits vtcs
 		copyBuffer dvc gq cp b' b
 	pure b
 	where
 	copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a lnm . Storable' a =>
 		Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 a lnm] ->
-		Vk.Bffr.Binded sm' sb' nm' '[ VObj.List 256 a lnm] -> IO ()
+		Vk.Bffr.Binded sm sb nm '[ VObj.List al a lnm] ->
+		Vk.Bffr.Binded sm' sb' nm' '[ VObj.List al a lnm] -> IO ()
 	copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
-		Vk.Cmd.copyBuffer @'[ '[ VObj.List 256 a lnm]] cb src dst
+		Vk.Cmd.copyBuffer @'[ '[ VObj.List al a lnm]] cb src dst
 
 createUniformBuffer :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[ VObj.Atom alu WModelViewProj 'Nothing]  ->
@@ -1404,13 +1404,13 @@ createBufferAtom :: forall alu sd nm a b . (KnownNat alu, Storable a) => Vk.Phd.
 			IO b) -> IO b
 createBufferAtom p dv usg props = createBffr p dv VObj.LengthAtom usg props
 
-createBufferList :: forall sd nm lnm t a . Storable t =>
+createBufferList :: forall al sd nm lnm t a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.List 256 t lnm] ->
+		Vk.Bffr.Binded sm sb nm '[ VObj.List al t lnm] ->
 		Vk.Mm.M sm '[ '(
 			sb,
-			'Vk.Mm.BufferArg nm '[ VObj.List 256 t lnm] ) ] ->
+			'Vk.Mm.BufferArg nm '[ VObj.List al t lnm] ) ] ->
 		IO a) ->
 	IO a
 createBufferList p dv ln usg props f =
