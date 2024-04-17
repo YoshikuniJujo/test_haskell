@@ -114,7 +114,7 @@ import Vertex
 import Vertex.Wavefront
 
 import Control.Concurrent.STM
-import KeyboardOld qualified as KOld
+import Keyboard qualified as K
 
 import Options.Declarative (Flag, Def, Cmd, run_, get)
 import Control.Monad.Trans
@@ -261,7 +261,7 @@ body txfp mdlfp mnld fr w ist =
 	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	createSyncObjs d \sos ->
-	KOld.newChans' KOld.gf >>= \(cke, kenvs) ->
+	K.newChans' K.gf >>= \(cke, kenvs) ->
 	getCurrentTime >>=
 	mainloop (mdlfp !! 1) fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs crs drs
@@ -1412,40 +1412,39 @@ mainloop :: (
 	VtxIdxBffr alv smv sbv bnmv lnmv ali smi sbi bnmi lnmi ->
 	ModelViewProjMemory alu smm sbm bnmm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
-	Vk.CBffr.C scb -> SyncObjs ssos -> TChan KOld.KeyEvent -> KOld.Envs ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> TChan K.KeyEvent -> K.Envs ->
 	UTCTime -> IO ()
-mainloop mdlfp fr w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq cp sc ext0 scivs rp ppllyt gpl fbs clrrscs
-	(dptImg, dptImgMem, dptImgVw) grpmng grpmng' vbib0 ubm ubds cb iasrfsifs cke kenvs tm0 = do
-	($ vbib0) . ($ ext0) $ fix \loop ext vbib -> do
-		KOld.sendKeys win kenvs
-		Glfw.pollEvents
-		tm <- getCurrentTime
-		run mdlfp w sfc pd qfis dvc gq pq
-			sc fr ext scivs
-			rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs cke grpmng grpmng' vbib ubm ubds cb iasrfsifs
-			(realToFrac $ tm `diffUTCTime` tm0) loop
-	Vk.Dvc.waitIdle dvc
+mainloop mf fr w sf pd qfis d gq pq cp sc ex0 vs rp pl gp fbs
+	crs drs gsv gsi vbib0 mm ds cb sos cke kenvs tm0 = do
+	($ vbib0) . ($ ex0) $ fix \go ex vbib ->
+		K.sendKeys w kenvs >>
+		GlfwG.pollEvents >>
+		getCurrentTime >>= \tm ->
+		run mf fr w sf pd qfis d gq pq cp sc ex vs rp pl gp fbs crs drs
+			gsv gsi vbib mm ds cb sos cke
+			(realToFrac $ tm `diffUTCTime` tm0) go
+	Vk.Dvc.waitIdle d
 
 run :: (
-	RecreateFrmbffrs sis sfs,
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt, KnownNat alu, KnownNat alv, KnownNat ali ) =>
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFrmbffrs svs sfs,
+	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FilePath ->
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I inm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm scfmt) svs ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
+	Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	ClrRsrcs scfmt crnm crsi crsm crsiv ->
-	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
-	Vk.Mm.M
-		sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
-	Vk.CmdPl.C sc ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	TChan KOld.KeyEvent ->
+	ClrRsrcs scfmt crnm crsi crsm crsiv ->
+	(	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
+		Vk.Mm.M
+			sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)],
+		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
 	Groups alv sd sm sb Glfw.Key nm WVertex lnmv ->
 	Groups ali sd sm' sb' Glfw.Key nm' Word32 lnmi ->
 	VtxIdxBffr alv sm sb nm lnmv ali sm' sb' nm' lnmi ->
@@ -1453,25 +1452,23 @@ run :: (
 		sb2,
 		'Vk.Mm.BufferArg bnmm
 			'[ VObj.Atom alu WModelViewProj 'Nothing] )] ->
-	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
-	Vk.CBffr.C scb ->
-	SyncObjs ssos ->
-	Float ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> TChan K.KeyEvent -> Float ->
 	(Vk.Extent2d -> VtxIdxBffr alv sm sb nm lnmv ali sm' sb' nm' lnmi -> IO ()) -> IO ()
-run mdlfp w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs
-	dptImg dptImgMem dptImgVw cp fbs cke (grp, mng) (grp', mng') vbib@(vb, ib) ubm ubds cb iasrfsifs tm loop = do
+run mdlfp frszd w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq cp sc ext scivs rp ppllyt gpl fbs clrrscs
+	(dptImg, dptImgMem, dptImgVw) (grp, mng) (grp', mng') vbib@(vb, ib) ubm ubds cb iasrfsifs cke tm loop = do
 	me <- atomically do
 		b <- isEmptyTChan cke
 		if b then pure Nothing else Just <$> readTChan cke
 	vbib' <- maybe (pure vbib) (\case
-		KOld.First Glfw.Key'F -> do
+		K.First Glfw.Key'F -> do
 			(vtcs :: V.Vector WVertex, idcs' :: V.Vector Word32)
 				<- indexing <$> readVertices mdlfp
 			vb' <- createVtxBffr pd dvc gq cp grp mng Glfw.Key'F vtcs
 			ib' <- createIdxBffr pd dvc gq cp grp' mng' Glfw.Key'F idcs'
 			print $ Vk.Bffr.lengthBinded ib'
 			pure (vb', ib')
-		KOld.Key k | KOld.isGf k -> do
+		K.Key k | K.isGf k -> do
 			Just vm <- Vk.Mm.lookup mng k
 			Just im <- Vk.Mm.lookup mng' k
 			vb' <- bindedBuffer vm
@@ -1482,7 +1479,7 @@ run mdlfp w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt
 		) me
 	catchAndRecreate w sfc pd qfis dvc gq sc scivs
 		rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs vbib' loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
+		$ draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext vbib')
 		(do	ext' <- recreateSwapChainEtc
@@ -1491,6 +1488,50 @@ run mdlfp w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt
 			loop ext' vbib')
 
 type AtomUbo s alu = '(s, DscStLytArg alu)
+
+draw :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sdsl sds alu alv ali lnmv lnmi ssos bnmm .
+	(KnownNat alu, KnownNat alv, KnownNat ali) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
+	Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
+	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
+		'(sl, '[AtomUbo sdsl alu], '[]) ->
+	HPList.PL Vk.Frmbffr.F sfs ->
+	Vk.Bffr.Binded sm sb nm '[ VObj.List alv WVertex lnmv] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List ali Word32 lnmi] ->
+	Vk.Mm.M sm2 '[ '(
+		sb2,
+		'Vk.Mm.BufferArg bnmm
+			'[ VObj.Atom alu WModelViewProj 'Nothing] )] ->
+	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
+	Vk.CBffr.C scb ->
+	SyncObjs ssos ->
+	Float -> IO ()
+draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
+	let	siff = HPList.Singleton iff
+	Vk.Fence.waitForFs dvc siff True Nothing
+	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+		dvc sc maxBound (Just ias) Nothing
+	Vk.Fence.resetFs dvc siff
+	Vk.CBffr.reset cb def
+	HPList.index fbs imgIdx \fb ->
+		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
+	updateUniformBuffer dvc ubm ext tm
+	let	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = TMaybe.N,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
+				$ Vk.SemaphorePipelineStageFlags ias
+					Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
+		presentInfo' = Vk.Khr.PresentInfo {
+			Vk.Khr.presentInfoNext = TMaybe.N,
+			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
+				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
+	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
+	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo'
 
 recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali lnmv lnmi .
 	(KnownNat alv, KnownNat ali) =>
@@ -1554,50 +1595,6 @@ indexBufferLength :: Vk.Bffr.Binded sm' sb' nm' '[ VObj.List ali Word32 lnmi] ->
 indexBufferLength ib = let
 	HPList.Singleton (VObj.LengthList' sz) = Vk.Bffr.lengthBinded ib
 	in fromIntegral sz
-
-drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sdsl sds alu alv ali lnmv lnmi ssos bnmm .
-	(KnownNat alu, KnownNat alv, KnownNat ali) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
-	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.List alv WVertex lnmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ VObj.List ali Word32 lnmi] ->
-	Vk.Mm.M sm2 '[ '(
-		sb2,
-		'Vk.Mm.BufferArg bnmm
-			'[ VObj.Atom alu WModelViewProj 'Nothing] )] ->
-	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
-	Vk.CBffr.C scb ->
-	SyncObjs ssos ->
-	Float -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
-	let	siff = HPList.Singleton iff
-	Vk.Fence.waitForFs dvc siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc maxBound (Just ias) Nothing
-	Vk.Fence.resetFs dvc siff
-	Vk.CBffr.reset cb def
-	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
-	updateUniformBuffer dvc ubm ext tm
-	let	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-				$ Vk.SemaphorePipelineStageFlags ias
-					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-		presentInfo' = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo'
 
 updateUniformBuffer :: forall sd sm sb alu bnmm . KnownNat alu => Vk.Dvc.D sd ->
 	Vk.Mm.M sm '[ '(

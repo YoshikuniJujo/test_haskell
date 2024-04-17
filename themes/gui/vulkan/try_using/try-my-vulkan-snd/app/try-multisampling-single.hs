@@ -1364,23 +1364,23 @@ mainloop fr w sf pd qfis d gq pq cp sc ex0 vs rp pl gp fbs
 run :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs svs sfs,
-	KnownNat alm, KnownNat alv, KnownNat ali ) =>
+	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt crnm crsi crsm crsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word32 nmi] ->
-	ModelViewProjMemory alm smm sbm bnmm ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
+	ModelViewProjMemory alu smm sbm bnmm ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
 run fr w sfc pd qfis dv gq pq cp sc ex vs rp pl gp fbs
