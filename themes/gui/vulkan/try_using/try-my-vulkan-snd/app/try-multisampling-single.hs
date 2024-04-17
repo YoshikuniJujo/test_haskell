@@ -1393,20 +1393,20 @@ run fr w sfc pd qfis dv gq pq cp sc ex vs rp pl gp fbs
 			w sfc pd qfis dv gq cp sc vs rp pl gp crs drs fbs
 
 draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
-	smm sbm bnmm alm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
-	(KnownNat alm, KnownNat alv, KnownNat ali) =>
+	smm sbm bnmm alu smv sbv bnmv alv lnmv smi sbi bnmi ali lnmi scb ssos .
+	(KnownNat alu, KnownNat alv, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word32 nmi] ->
-	ModelViewProjMemory alm smm sbm bnmm ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex lnmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word32 lnmi] ->
+	ModelViewProjMemory alu smm sbm bnmm ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
 draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
@@ -1432,13 +1432,13 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
-updateModelViewProj :: forall sd smm sbm bnmm alm . KnownNat alm =>
-	Vk.Dvc.D sd -> ModelViewProjMemory alm smm sbm bnmm ->
+updateModelViewProj :: forall alu sd smm sbm bnmm . KnownNat alu =>
+	Vk.Dvc.D sd -> ModelViewProjMemory alu smm sbm bnmm ->
 	Vk.Extent2d -> Float -> IO ()
 updateModelViewProj d mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @bnmm @(VObj.Atom alm WModelViewProj 'Nothing) d mm zeroBits
+	Vk.Mm.write @bnmm @(VObj.Atom alu WModelViewProj 'Nothing) d mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
@@ -1449,27 +1449,27 @@ updateModelViewProj d mm Vk.Extent2d {
 			projection = Glm.modifyMat4 1 1 negate
 				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
 
-recordCmdBffr :: forall
-	scb sr sl sg sf smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alm .
+recordCmdBffr :: forall scb sr sl sg sf
+	smv sbv bnmv alv lnmv smi sbi bnmi ali lnmi sds sdsl alu .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word32 nmi] ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) -> IO ()
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex lnmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word32 lnmi] ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb ib ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
 	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
-		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
+		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @lnmv vb
 	Vk.Cmd.bindIndexBuffer cbb
-		$ Vk.Bffr.IndexedForList @_ @_ @_ @Word32 @nmi ib
+		$ Vk.Bffr.IndexedForList @_ @_ @_ @Word32 @lnmi ib
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
 		(HPList.Singleton $ U2 ds)
 		(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
@@ -1505,12 +1505,12 @@ catchAndRecreate :: (
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	HPList.PL (Vk.ImgVw.I inm scfmt) svs ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	ClrRsrcs scfmt crnm crsi crsm crsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
