@@ -127,7 +127,8 @@ pattern LengthAtom :: Length ('Static_ (K.Atom algn v nm))
 pattern LengthAtom <- LengthStatic K.LengthAtom where
 	LengthAtom = LengthStatic K.LengthAtom
 
-{-# COMPLETE LengthList, LengthList' #-}
+{-# COMPLETE LengthList #-}
+{-# COMPLETE LengthList' #-}
 
 pattern LengthList :: Device.M.Size -> Length ('Static_ (K.List algn v nm))
 pattern LengthList n <- LengthStatic (K.LengthList n) where
