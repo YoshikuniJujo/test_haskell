@@ -114,7 +114,7 @@ import Vertex
 import Vertex.Wavefront
 
 import Control.Concurrent.STM
-import Keyboard qualified as K
+import KeyboardOld qualified as KOld
 
 import Options.Declarative (Flag, Def, Cmd, run_, get)
 import Control.Monad.Trans
@@ -261,7 +261,7 @@ body txfp mdlfp mnld fr w ist =
 	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	createSyncObjs d \sos ->
-	K.newChans' K.gf >>= \(cke, kenvs) ->
+	KOld.newChans' KOld.gf >>= \(cke, kenvs) ->
 	getCurrentTime >>=
 	mainloop (mdlfp !! 1) fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs crs drs
@@ -1412,12 +1412,12 @@ mainloop :: (
 	VtxIdxBffr alv smv sbv bnmv lnmv ali smi sbi bnmi lnmi ->
 	ModelViewProjMemory alu smm sbm bnmm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
-	Vk.CBffr.C scb -> SyncObjs ssos -> TChan K.KeyEvent -> K.Envs ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> TChan KOld.KeyEvent -> KOld.Envs ->
 	UTCTime -> IO ()
 mainloop mdlfp fr w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq cp sc ext0 scivs rp ppllyt gpl fbs clrrscs
 	(dptImg, dptImgMem, dptImgVw) grpmng grpmng' vbib0 ubm ubds cb iasrfsifs cke kenvs tm0 = do
 	($ vbib0) . ($ ext0) $ fix \loop ext vbib -> do
-		K.sendKeys win kenvs
+		KOld.sendKeys win kenvs
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		run mdlfp w sfc pd qfis dvc gq pq
@@ -1445,7 +1445,7 @@ run :: (
 	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
 	Vk.CmdPl.C sc ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	TChan K.KeyEvent ->
+	TChan KOld.KeyEvent ->
 	Groups alv sd sm sb Glfw.Key nm WVertex lnmv ->
 	Groups ali sd sm' sb' Glfw.Key nm' Word32 lnmi ->
 	VtxIdxBffr alv sm sb nm lnmv ali sm' sb' nm' lnmi ->
@@ -1464,14 +1464,14 @@ run mdlfp w@(GlfwG.Win.W win) sfc pd qfis dvc gq pq sc frszd ext scivs rp ppllyt
 		b <- isEmptyTChan cke
 		if b then pure Nothing else Just <$> readTChan cke
 	vbib' <- maybe (pure vbib) (\case
-		K.First Glfw.Key'F -> do
+		KOld.First Glfw.Key'F -> do
 			(vtcs :: V.Vector WVertex, idcs' :: V.Vector Word32)
 				<- indexing <$> readVertices mdlfp
 			vb' <- createVtxBffr pd dvc gq cp grp mng Glfw.Key'F vtcs
 			ib' <- createIdxBffr pd dvc gq cp grp' mng' Glfw.Key'F idcs'
 			print $ Vk.Bffr.lengthBinded ib'
 			pure (vb', ib')
-		K.Key k | K.isGf k -> do
+		KOld.Key k | KOld.isGf k -> do
 			Just vm <- Vk.Mm.lookup mng k
 			Just im <- Vk.Mm.lookup mng' k
 			vb' <- bindedBuffer vm

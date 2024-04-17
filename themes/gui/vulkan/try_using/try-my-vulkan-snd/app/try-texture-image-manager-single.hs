@@ -128,7 +128,7 @@ import Control.Monad.Trans
 
 import Gpu.Vulkan.DescriptorSetLayout.BindingFlags qualified as Vk.DscSetLyt.BFlgs
 
-import Keyboard qualified as K
+import KeyboardOld qualified as K
 
 import CreateTextureGroup
 

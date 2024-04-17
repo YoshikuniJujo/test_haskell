@@ -127,7 +127,7 @@ import Tools
 import Options.Declarative hiding (run)
 import Control.Monad.Trans
 
-import Keyboard qualified as K
+import KeyboardOld qualified as K
 
 import Data.Text.ToolsYj
 

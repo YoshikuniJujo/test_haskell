@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Keyboard (
+module KeyboardOld (
 
 	-- * KEY EVENT
 
