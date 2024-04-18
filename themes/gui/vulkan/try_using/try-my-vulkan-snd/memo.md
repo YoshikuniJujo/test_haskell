@@ -113,7 +113,7 @@ apps
 * [x] try-vulkan-guide-dynamic.hs
 * [x] try-vulkan-guide-storage.hs
 * [x] try-vulkan-guide-texture.hs
-* [ ] try-multisampling-use-groups-single.hs
+* [x] try-multisampling-use-groups-single.hs
 * [ ] try-texture-image-manager-single.hs
 * [ ] try-texture-descriptor-set-group-single.hs
 * [ ] try-hello-world.hs

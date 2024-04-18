@@ -13,128 +13,121 @@
 
 module Main (main) where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mm
-
 import GHC.Generics
 import GHC.TypeNats
 import Foreign.Ptr
-import Foreign.Storable
-import Foreign.Storable.PeekPoke
 import Foreign.Marshal.Array
+import Foreign.Storable
+import Foreign.Storable.Generic qualified as GStorable
+import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Monad.Trans
+import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
-import Gpu.Vulkan.Object.Base qualified as BObj
-import Gpu.Vulkan.Object qualified as VObj
-import Data.Foldable
-import Data.Default
-import Data.Bits
-import Data.Array hiding (indices)
+import Data.Proxy
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import qualified Data.HeteroParList as HPList
-import Data.HeteroParList (pattern (:*.), pattern (:**))
-import Data.Proxy
-import Data.Bool
-import Data.Maybe
-import Data.List
-import Data.IORef
-import Data.List.Length
-import Data.Word
-import Data.Int
-import Data.Color
-import Data.Time
-import Codec.Picture
-
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Vector.Storable as V
-import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Cglm as Glm
-import qualified Foreign.Storable.Generic as GStorable
-
-import Language.SpirV.ShaderKind
-import Language.SpirV.Shaderc.TH
-
 import Data.TypeLevel.ParMaybe (nil)
-
-import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.TypeEnum as Vk.T
-import qualified Gpu.Vulkan.Exception as Vk
-import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
-import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
-
-import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
-import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.Phd
-import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swpch
-import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
-import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
-import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
-import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MltSmplSt
-import qualified Gpu.Vulkan.Sample as Vk.Sample
-import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
-import qualified Gpu.Vulkan.ColorComponent as Vk.ClrCmp
-import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
-import qualified Gpu.Vulkan.PipelineLayout as Vk.PplLyt
-import qualified Gpu.Vulkan.Attachment as Vk.Att
-import qualified Gpu.Vulkan.Subpass as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
-import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
-import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
-import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.Queue as Vk.Q
-import qualified Gpu.Vulkan.Cmd as Vk.Cmd
-
-import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
-import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
-
-import qualified Gpu.Vulkan.Sampler as Vk.Smplr
-import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
-
-import Vertex
-import Vertex.Wavefront
-
-import Control.Concurrent.STM
-import Keyboard qualified as K
-
-import Options.Declarative (Flag, Def, Cmd, run_, get)
-import Control.Monad.Trans
-import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+import Data.Foldable
+import Data.MonoTraversable (Element, MonoFoldable, olength)
+import Data.Sequences (IsSequence)
+import Data.Sequences.ToolsYj
+import Data.Default
+import Data.Ord.ToolsYj
+import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Function.ToolsYj
 import Data.Tuple.ToolsYj
+import Data.Bool
 import Data.Bool.ToolsYj
+import Data.Maybe
+import Data.Maybe.ToolsYj
+import Data.List
+import Data.List.NonEmpty qualified as NE
+import Data.List.Length
 import Data.List.ToolsYj
-import Data.IORef.ToolsYj
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
-import Data.Maybe.ToolsYj
-import Data.Ord.ToolsYj
-import Data.Sequences.ToolsYj
-import Data.MonoTraversable (Element, MonoFoldable, olength)
-import Data.Sequences (IsSequence)
+import Data.Array hiding (indices)
+import Data.Vector.Storable qualified as V
+import Data.Word
+import Data.Int
+import Data.Text.IO qualified as Txt
+import Data.Time
+import Data.Color
+import Data.IORef
+import Data.IORef.ToolsYj
+import Codec.Picture
+import Options.Declarative (Flag, Def, Cmd, run_, get)
+
+import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc.TH
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Key qualified as GlfwG
+
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object.Base qualified as BObj
+import Gpu.Vulkan.Exception qualified as Vk
+import Gpu.Vulkan.Instance qualified as Vk.Ist
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
+import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
+import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
+import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
+import Gpu.Vulkan.Pipeline.DepthStencilState qualified as Vk.Ppl.DptStnSt
+import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
+import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+import Gpu.Vulkan.Attachment qualified as Vk.Att
+import Gpu.Vulkan.Subpass qualified as Vk.Subpass
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
+
+import Gpu.Vulkan.Cglm qualified as Glm
+import Gpu.Vulkan.Khr qualified as Vk.Khr
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
+
+import Vertex
+import Vertex.Wavefront
+import Keyboard qualified as K
 import Debug
 
 main :: IO ()
@@ -255,8 +248,8 @@ body txfp mdlfp mnld fr w ist =
 	algnIdxBffr d idcs \(_ :: Proxy ali) ->
 	Vk.Bffr.group d nil \bgv -> Vk.Mm.group d nil \mgv ->
 	Vk.Bffr.group d nil \bgi -> Vk.Mm.group d nil \mgi ->
-	crVtxBffr @alv pd d gq cp bgv mgv Glfw.Key'G vtcs >>= \vb ->
-	crIdxBffr @ali pd d gq cp bgi mgi Glfw.Key'G idcs >>= \ib ->
+	crVtxBffr @alv pd d gq cp bgv mgv GlfwG.Key'G vtcs >>= \vb ->
+	crIdxBffr @ali pd d gq cp bgi mgi GlfwG.Key'G idcs >>= \ib ->
 	createMvpBffr pd d \mb mbm ->
 	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
@@ -1407,8 +1400,8 @@ mainloop :: (
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt crnm crsi crsm crsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
-	Groups alv sd smv sbv Glfw.Key bnmv WVertex lnmv ->
-	Groups ali sd smi sbi Glfw.Key bnmi Word32 lnmi ->
+	Groups alv sd smv sbv GlfwG.Key bnmv WVertex lnmv ->
+	Groups ali sd smi sbi GlfwG.Key bnmi Word32 lnmi ->
 	VtxIdxBffr alv smv sbv bnmv lnmv ali smi sbi bnmi lnmi ->
 	ModelViewProjMemory alu smm sbm bnmm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
@@ -1451,8 +1444,8 @@ run :: (
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt crnm crsi crsm crsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
-	Groups alv sd smv sbv Glfw.Key bnmv WVertex lnmv ->
-	Groups ali sd smi sbi Glfw.Key bnmi Word32 lnmi ->
+	Groups alv sd smv sbv GlfwG.Key bnmv WVertex lnmv ->
+	Groups ali sd smi sbi GlfwG.Key bnmi Word32 lnmi ->
 	VtxIdxBffr alv smv sbv bnmv lnmv ali smi sbi bnmi lnmi ->
 	ModelViewProjMemory alu smm sbm bnmm ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
@@ -1466,11 +1459,11 @@ run mf fr w sfc pd qfis dv gq pq cp sc ex vs rp pl gp fbs
 	me <- atomically $ isEmptyTChan cke >>=
 		bool (Just <$> readTChan cke) (pure Nothing)
 	vi <- maybe (pure vbib) (\case
-		K.First Glfw.Key'F -> do
+		K.First GlfwG.Key'F -> do
 			(vts :: V.Vector WVertex, ids :: V.Vector Word32)
 				<- indexing <$> readVertices mf
-			(,)	<$> crVtxBffr pd dv gq cp bgv mgv Glfw.Key'F vts
-				<*> crIdxBffr pd dv gq cp bgi mgi Glfw.Key'F ids
+			(,)	<$> crVtxBffr pd dv gq cp bgv mgv GlfwG.Key'F vts
+				<*> crIdxBffr pd dv gq cp bgi mgi GlfwG.Key'F ids
 		K.Key k | K.isGf k -> do
 			Just vm <- Vk.Mm.lookup mgv k
 			Just im <- Vk.Mm.lookup mgi k
@@ -1611,86 +1604,47 @@ catchAndRecreate :: (
 	ClrRsrcs scfmt crnm crsi crsm crsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	VtxIdxBffr alv sm sb nm lnmv ali sm' sb' nm' lnmi -> (
+	VtxIdxBffr alv smv sbv bnmv lnmv ali smi sbi bnmi lnmi -> (
 		Vk.Extent2d ->
-		VtxIdxBffr alv sm sb nm lnmv ali sm' sb' nm' lnmi -> IO () ) ->
-	IO () -> IO ()
-catchAndRecreate w sfc pd qfis dvc gq cp sc scivs rp pl gpl crs (dptImg, dptImgMem, dptImgVw) fbs vbib loop act =
+		VtxIdxBffr alv smv sbv bnmv lnmv ali smi sbi bnmi lnmi ->
+		IO () ) -> IO () -> IO ()
+catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp crs drs fbs vbib go a =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just ()
-		_ -> Nothing)
-	act
-	\_ -> do
-		ext' <- recreateAll
-			w sfc pd qfis dvc gq cp sc scivs rp pl gpl crs (dptImg, dptImgMem, dptImgVw) fbs
-		loop ext' vbib
-
-type AtomUbo s alu = '(s, DscStLytArg alu)
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) a
+	\_ -> (`go` vbib) =<<
+		recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp crs drs fbs
 
 recreateAll :: (
-	RecreateFrmbffrs sis sfs,
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	Vk.CmdPl.C sc ->
-	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFrmbffrs svs sfs ) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc ->
+	HPList.PL (Vk.ImgVw.I nm scfmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	ClrRsrcs scfmt crnm crsi crsm crsiv ->
-	(	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
-		Vk.Mm.M
-			sdm '[ '(sdi, 'Vk.Mm.ImageArg "depth-buffer" dptfmt)],
-		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc pd qfis dvc gq cp sc scivs rp ppllyt gpl
-	(clrimg, clrimgm, clrimgvw, mss) (dptImg, dptImgMem, dptImgVw) fbs = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
+	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
+recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp
+	crs@(_, _, cvw, mss) drs@(_, _, dvw) fbs = do
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
+	ex <- recreateSwpch w sfc pd qfis dv sc
+	ex <$ do
+		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
+		recreateClrRsrcs pd dv ex crs
+		recreateDptRsrcs pd dv gq cp ex mss drs
+		recreateGrPpl dv ex rp pl mss gp
+		recreateFrmbffrs dv ex rp vs dvw cvw fbs
 
-	ext <- recreateSwpch w sfc pd qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-			recreateImgVws dvc imgs scivs
-		recreateClrRsrcs pd dvc ext (clrimg, clrimgm, clrimgvw, mss)
-		recreateDptRsrcs pd dvc gq cp ext mss (dptImg, dptImgMem, dptImgVw)
-		recreateGrPpl dvc ext rp ppllyt mss gpl
-		recreateFrmbffrs dvc ext rp scivs dptImgVw clrimgvw fbs
-
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
-
-newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
-
-newtype MyRgba8 = MyRgba8 { _unMyRgba8 :: PixelRGBA8 }
-
-instance Storable MyRgba8 where
-	sizeOf _ = 4 * sizeOf @Pixel8 undefined
-	alignment _ = alignment @Pixel8 undefined
-	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
-		<$> peekArray 4 (castPtr p)
-	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
-		pokeArray (castPtr p) [r, g, b, a]
-
-instance BObj.IsImage ImageRgba8 where
-	type ImagePixel ImageRgba8 = MyRgba8
-	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow = BObj.imageWidth
-	imageWidth (ImageRgba8 img) = fromIntegral $ imageWidth img
-	imageHeight (ImageRgba8 img) = fromIntegral $ imageHeight img
-	imageDepth _ = 1
-	imageBody (ImageRgba8 img) = (<$> [0 .. imageHeight img - 1]) \y ->
-		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	imageMake w h _d pss = ImageRgba8
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
-		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
 type WModelViewProj = GStorable.W ModelViewProj
 
@@ -1700,15 +1654,38 @@ data ModelViewProj = ModelViewProj {
 
 instance GStorable.G ModelViewProj
 
+newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
+
+newtype PixelRgba8 = PixelRgba8 PixelRGBA8
+
+instance Storable PixelRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = PixelRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a)
+		. listToTuple4 <$> peekArray 4 (castPtr p)
+	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
+
+instance BObj.IsImage ImageRgba8 where
+	type ImagePixel ImageRgba8 = PixelRgba8
+	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
+	imageRow = BObj.imageWidth
+	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
+	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
+	imageDepth _ = 1
+	imageBody (ImageRgba8 i) = (<$> [0 .. imageHeight i - 1]) \y ->
+		(<$> [0 .. imageWidth i - 1]) \x -> PixelRgba8 $ pixelAt i x y
+	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
+		ImageRgba8 $ generateImage
+			(\x y -> let PixelRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+
 [glslVertexShader|
 
 #version 450
 
-layout(binding = 0) uniform UniformBufferObject {
-	mat4 model;
-	mat4 view;
-	mat4 proj;
-} ubo;
+layout(binding = 0) uniform
+	ModelViewProj { mat4 model; mat4 view; mat4 proj; } mvp;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -1720,7 +1697,7 @@ layout(location = 1) out vec2 fragTexCoord;
 void
 main()
 {
-	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+	gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 1.0);
 	fragColor = inColor;
 	fragTexCoord = inTexCoord;
 }
@@ -1733,10 +1710,9 @@ main()
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
+layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
-
-layout(location = 0) out vec4 outColor;
 
 void
 main()
