@@ -117,7 +117,7 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
 
-import Tools
+import Tools (clampOld, readRgba8)
 
 import Options.Declarative hiding (run)
 import Control.Monad.Trans
@@ -130,10 +130,14 @@ import SetImageGroup
 
 import Data.Text.ToolsYj
 
-main :: IO ()
-main = run_ command
+import Data.Bits.ToolsYj
+import Data.Bool.ToolsYj
+import Data.IORef.ToolsYj
 
-command ::
+main :: IO ()
+main = run_ realMain
+
+realMain ::
 	Flag "h" '["key-h"]
 		"FILEPATH" "texture image file path for key 'h'" [FilePath] ->
 	Flag "j" '["key-j"]
@@ -142,20 +146,16 @@ command ::
 		"FILEPATH" "texture image file path for key 'k'" [FilePath] ->
 	Flag "l" '["key-l"]
 		"FILEPATH" "texture image file path for key 'l'" [FilePath] ->
-	Cmd "Try texture" ()
-command htximg jtximg ktximg ltximg = liftIO do
-	let	kis = foldr (uncurry M.insert) M.empty . zip K.hjkl $ head
-			<$> [get htximg, get jtximg, get ktximg, get ltximg]
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
+	Cmd "Try Texture Group" ()
+realMain htfp jtfp ktfp ltfp = liftIO $ newIORef False >>= \fr ->
+	(`withWindowOld` fr) \win -> createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g kis
-			else run win inst g kis
+			then setupDebugMessenger inst $ run win inst fr kis
+			else run win inst fr kis
+	where kis = foldr (uncurry M.insert) M.empty . zip K.hjkl $ head
+			<$> [get htfp, get jtfp, get ktfp, get ltfp]
 
 type FramebufferResized = IORef Bool
-
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = newIORef False
 
 windowName :: String
 windowName = "Triangle"
@@ -169,12 +169,12 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
 
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
+withWindowOld :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
+withWindowOld f g = initWindowOld g >>= \w ->
 	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
 
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
+initWindowOld :: FramebufferResized -> IO Glfw.Window
+initWindowOld frszd = do
 	Just w <- do
 		True <- Glfw.init
 		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
