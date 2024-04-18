@@ -34,11 +34,11 @@ flag debug
 
 library
   exposed-modules:
-      CreateTextureGroup
       Keyboard
       KeyboardOld
       Sample.GetOpt
       Sample.Image
+      SetImageGroup
       ThEnv
       Tools
       TypeLevel.Nat

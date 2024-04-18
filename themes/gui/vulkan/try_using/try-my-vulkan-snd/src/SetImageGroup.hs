@@ -7,15 +7,15 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module CreateTextureGroup (
+module SetImageGroup (
 
 	-- * GROUP
 
-	textureGroup, TextureGroup,
+	imgGroups, ImgGroups,
 
 	-- * CREATE AND UPDATE
 
-	createTexture, updateTexture, createBffr,
+	setImg, updateImg, createBffr,
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
@@ -23,117 +23,101 @@ module CreateTextureGroup (
 
 	-- * CREATE INFO
 
-	imgVwInfo
-
-	) where
+	imgVwInfo ) where
 
 import GHC.TypeNats
 import Foreign.Storable
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
-import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
 import Data.Bits
-import Data.Bool
+import Data.Bits.ToolsYj
 import Data.Maybe
 import Data.List
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
+import Data.Bool
 import Data.Word
+
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object.Base qualified as BObj
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
-import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
-import Gpu.Vulkan.Sample qualified as Vk.Sample
-import Gpu.Vulkan.Sampler qualified as Vk.Smplr
-import Gpu.Vulkan.Image qualified as Vk.Img
-import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
-import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Memory qualified as Vk.Mm
-import Gpu.Vulkan.Object qualified as VObj
-import Gpu.Vulkan.Object.Base qualified as BObj
 
-import Tools
+imgGroups :: Vk.Dvc.D sd ->
+	(forall si sm siv . ImgGroups sd sm k si nm fmt siv -> IO a) -> IO a
+imgGroups dv f =
+	Vk.Img.group dv nil \ig -> Vk.Mm.group dv nil \mg ->
+	Vk.ImgVw.group dv nil \vg -> f (ig, mg, vg)
 
-textureGroup :: Vk.Dvc.D sd ->
-	(forall si sm siv . TextureGroup sd si sm siv fmt k -> IO a) -> IO a
-textureGroup dv f =
-	Vk.Img.group dv nil \mng -> Vk.Mm.group dv nil \mmng ->
-	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
+type ImgGroups sd sm k si nm fmt siv = (
+	Vk.Img.Group sd 'Nothing si k nm fmt,
+	Vk.Mm.Group sd 'Nothing sm k '[ '(si, 'Vk.Mm.ImageArg nm fmt)],
+	Vk.ImgVw.Group sd 'Nothing siv k nm fmt )
 
-type TextureGroup sd si sm siv fmt k = (
-	Vk.Img.Group sd 'Nothing si k "texture" fmt,
-	Vk.Mm.Group sd 'Nothing sm k '[ '(si, 'Vk.Mm.ImageArg "texture" fmt)],
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt )
-
-createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
-	BObj.IsImage img,
-	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", BObj.ImageFormat img)] 0,
-	Ord k ) =>
+setImg :: forall sd sc sds sdsl bis sm k si nm i siv ss . (
+	Vk.DscSet.BindingAndArrayElemImage bis '[ '(nm, BObj.ImageFormat i)] 0,
+	BObj.IsImage i, Ord k ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.DscSet.D sds '(sdsc, bis) ->
-	TextureGroup sd si sm siv (BObj.ImageFormat img) k ->
-	Vk.Smplr.S ss -> img -> k -> IO ()
-createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
-	createTextureImage' phdv dv mng mmng gq cp k img >>= \ti ->
+	Vk.DscSet.D sds '(sdsl, bis) ->
+	ImgGroups sd sm k si nm (BObj.ImageFormat i) siv ->
+	Vk.Smplr.S ss -> i -> k -> IO ()
+setImg pd dv gq cp ds (ig, mg, vg) s img k =
+	createImg' pd dv gq cp ig mg k img >>= \i ->
+	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat i) vg k
+		(imgVwInfo i Vk.Img.AspectColorBit 1) >>= \(AlwaysRight iv) ->
+	updateDscStImg dv ds iv s
 
-	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat img) ivmng k
-		(imgVwInfo ti Vk.Img.AspectColorBit 1) >>= \(AlwaysRight tiv) ->
+updateImg :: (Vk.DscSet.BindingAndArrayElemImage bis '[ '(nm, fmt)] 0, Ord k) =>
+	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsl, bis) -> Vk.Smplr.S ss ->
+	Vk.ImgVw.Group sd 'Nothing siv k nm fmt -> k -> IO ()
+updateImg dv ds s ib k = maybe (error "no such key in the image view groups")
+	(\iv -> updateDscStImg dv ds iv s) =<< Vk.ImgVw.lookup ib k
 
-	updateDscStImg dv ubds tiv txsmplr
-
-updateTexture :: (
-	Vk.DscSet.BindingAndArrayElemImage bis '[ '("texture", fmt)] 0,
-	Ord k ) =>
-	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) -> Vk.Smplr.S ss ->
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt -> k -> IO ()
-updateTexture dv udbs txsmplr imng k = do
-	Just tximgvw <- Vk.ImgVw.lookup imng k
-	updateDscStImg dv udbs tximgvw txsmplr
-
-createTextureImage' :: forall k sim nm sd smm sc img . (
-	BObj.IsImage img, Ord k
-	) => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group sd 'Nothing sim k nm (BObj.ImageFormat img) ->
-	Vk.Mm.Group sd 'Nothing smm k
-		'[ '(sim, 'Vk.Mm.ImageArg nm (BObj.ImageFormat img))] ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> k -> img ->
-	IO (Vk.Img.Binded smm sim nm (BObj.ImageFormat img))
-createTextureImage' phdvc dvc mng mmng gq cp k img = do
-	let	wdt = fromIntegral $ BObj.imageWidth img
-		hgt = fromIntegral $ BObj.imageHeight img
-	(tximg, _txmem) <- prepareImg' @(BObj.ImageFormat img) phdvc dvc mng mmng k
-		wdt hgt Vk.Img.TilingOptimal
+createImg' :: forall sd sc sm k si nm i . (Ord k, BObj.IsImage i) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Img.Group sd 'Nothing si k nm (BObj.ImageFormat i) ->
+	Vk.Mm.Group sd 'Nothing sm k
+		'[ '(si, 'Vk.Mm.ImageArg nm (BObj.ImageFormat i))] -> k -> i ->
+	IO (Vk.Img.Binded sm si nm (BObj.ImageFormat i))
+createImg' pd dv gq cp ig mg k img = do
+	(i, _) <- prepareImg' @(BObj.ImageFormat i) pd dv ig mg k
+		w h Vk.Img.TilingOptimal
 		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 		Vk.Mm.PropertyDeviceLocalBit
-	putStrLn "before createBufferImage"
-	createBufferImage @img @_ phdvc dvc
-		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
+	i <$ createBffrImg @i pd dv (w, w, h, 1)
 		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		\(sb :: Vk.Bffr.Binded
-			sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
-		Vk.Mm.write @"texture-buffer"
-			@(VObj.Image 1 img inm) dvc sbm zeroBits img -- (MyImage img)
-		print sb
-		transitionImgLyt dvc gq cp tximg
-			Vk.Img.LayoutUndefined
-			Vk.Img.LayoutTransferDstOptimal 1
-		copyBffrToImg dvc gq cp sb tximg
-		transitionImgLyt dvc gq cp tximg
+		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+		\(b :: Vk.Bffr.Binded sm' sb bnm '[ VObj.Image 1 a nm]) bm -> do
+		Vk.Mm.write @bnm @(VObj.Image 1 i nm) dv bm zeroBits img
+		transitionImgLyt dv gq cp i
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal 1
+		copyBffrToImg dv gq cp b i
+		transitionImgLyt dv gq cp i
 			Vk.Img.LayoutTransferDstOptimal
 			Vk.Img.LayoutShaderReadOnlyOptimal 1
-	pure tximg
+	where
+	w, h :: Integral n => n
+	w = fromIntegral $ BObj.imageWidth img
+	h = fromIntegral $ BObj.imageHeight img
 
 -- UPDATE DESCRIPTOR SETS IMAGE
 
@@ -318,7 +302,7 @@ cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
 
 -- CREATE BUFFER
 
-createBufferImage :: Storable (BObj.ImagePixel t) =>
+createBffrImg :: Storable (BObj.ImagePixel t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
@@ -327,7 +311,7 @@ createBufferImage :: Storable (BObj.ImagePixel t) =>
 			sb,
 			'Vk.Mm.BufferArg nm '[ VObj.Image 1 t inm])] ->
 		IO a) -> IO a
-createBufferImage p dv (r, w, h, d) = createBffr p dv (VObj.LengthImage r w h d)
+createBffrImg p dv (r, w, h, d) = createBffr p dv (VObj.LengthImage r w h d)
 
 createBffr :: forall sd bnm o a . VObj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->

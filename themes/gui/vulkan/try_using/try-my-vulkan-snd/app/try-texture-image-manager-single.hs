@@ -126,7 +126,7 @@ import Gpu.Vulkan.DescriptorSetLayout.BindingFlags qualified as Vk.DscSetLyt.BFl
 
 import KeyboardOld qualified as K
 
-import CreateTextureGroup
+import SetImageGroup
 
 import Data.Text.ToolsYj
 
@@ -271,13 +271,13 @@ run w inst g kis =
 
 	createTextureSampler phdv dv \txsmplr ->
 
-	textureGroup dv \txgrp@(_, _, ivmng) ->
+	imgGroups dv \txgrp@(_, _, ivmng) ->
 
 	let
 	crtx k = let tximgfp = kis M.! k in
 		readRgba8 tximgfp >>= \img ->
-		createTexture phdv dv gq cp ubds txgrp txsmplr (MyImage img) k
-	udtx = updateTexture dv ubds txsmplr ivmng in
+		setImg phdv dv gq cp ubds txgrp txsmplr (MyImage img) k
+	udtx = updateImg @_ @"texture" dv ubds txsmplr ivmng in
 
 	crtx Glfw.Key'H >>
 
