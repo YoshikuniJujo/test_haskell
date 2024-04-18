@@ -11,7 +11,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -80,9 +80,7 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
@@ -104,12 +102,10 @@ import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.Memory as Vk.Mem.M
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
@@ -158,9 +154,6 @@ command htximg jtximg ktximg ltximg = liftIO do
 
 type FramebufferResized = IORef Bool
 
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
-
 newFramebufferResized :: IO FramebufferResized
 newFramebufferResized = newIORef False
 
@@ -175,9 +168,6 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
-
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 1
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
@@ -561,10 +551,10 @@ createImageViews dvc (sci : scis) f =
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
-recreateImageViews _dvc [] HeteroParList.Nil = pure ()
-recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfo sci) nil iv >>
-	recreateImageViews dvc scis ivs
+recreateImageViews _dv [] HeteroParList.Nil = pure ()
+recreateImageViews dv (i : is) (iv :** ivs) = do
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit 1) nil iv
+	recreateImageViews dv is ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
@@ -573,7 +563,7 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfo timg) nil f
+	Vk.ImgVw.create dvc (imgVwInfo timg Vk.Img.AspectColorBit 1) nil f
 
 createRenderPassNew ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
@@ -876,7 +866,7 @@ createCommandPool qfis dvc f =
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
-newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+newtype MyRgba8 = MyRgba8 PixelRGBA8
 
 instance Storable MyRgba8 where
 	sizeOf _ = 4 * sizeOf @Pixel8 undefined
@@ -1053,7 +1043,7 @@ createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 			sb,
 			'Vk.Mem.BufferArg nm '[VObj.Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
-createBufferAtom p dv usg props = createBuffer p dv VObj.LengthAtom usg props
+createBufferAtom p dv usg props = createBffr p dv VObj.LengthAtom usg props
 
 createBufferList :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
@@ -1065,13 +1055,13 @@ createBufferList :: forall sd nm t a . Storable t =>
 		IO a) ->
 	IO a
 createBufferList p dv ln usg props =
-	createBuffer p dv (VObj.LengthList ln) usg props
+	createBffr p dv (VObj.LengthList ln) usg props
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 a ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 a ""] -> IO ()
-copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
+copyBuffer dvc gq cp src dst = singleTimeCmds dvc gq cp \cb ->
 	Vk.Cmd.copyBuffer @'[ '[VObj.List 256 a ""]] cb src dst
 
 createCommandBuffer ::
@@ -1088,9 +1078,9 @@ createCommandBuffer dvc cp f = Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. 
 
 data SyncObjects (ssos :: (Type, Type, Type)) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: Vk.Semaphore.S sias,
-		renderFinishedSemaphores :: Vk.Semaphore.S srfs,
-		inFlightFences :: Vk.Fence.F sfs } ->
+		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
+		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
+		_inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
 createSyncObjects ::
