@@ -184,8 +184,9 @@ createIst f = do
 	exts <- bool id (Vk.DbgUtls.extensionName :) debug
 		. (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
-	bool	(Vk.Ist.create (info exts) nil f)
-		(Vk.Ist.create (infoDbg exts) nil f) debug
+	let	exts' = Vk.PhDvc.getProperties2ExtensionName : exts
+	bool	(Vk.Ist.create (info exts') nil f)
+		(Vk.Ist.create (infoDbg exts') nil f) debug
 	where
 	emsg = "validation layers requested, but not available!"
 	info exts = Vk.Ist.CreateInfo {
