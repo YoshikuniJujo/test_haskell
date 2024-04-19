@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2023-05-31
+resolver: nightly-2024-04-19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,13 +42,14 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: aa519a1d6c0ac1b7ce75f4997a4c8a8c5926e757
+  commit: 692a149c6986d355382e9d01744daee4584da581
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
   - themes/gui/vulkan/try-vulkan-middle
   - themes/gui/vulkan/try-vulkan-core
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
+  - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
   - themes/hetero-list/try-hetero-parameter-list
   - features/ffi/pointer/try-storable-peek-poke
