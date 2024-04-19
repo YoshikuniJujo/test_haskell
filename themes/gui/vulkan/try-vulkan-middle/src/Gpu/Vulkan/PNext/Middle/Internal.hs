@@ -23,11 +23,11 @@ module Gpu.Vulkan.PNext.Middle.Internal (
 
 	FindPNextChainAll'(..),
 
-	Nextable'(..),
+	Nextable'(..)
 
 	-- * OTHERS
 
-	ClearedChain(..)
+--	ClearedChain(..)
 
 	) where
 
