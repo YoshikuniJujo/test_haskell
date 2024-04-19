@@ -4,7 +4,7 @@ module Gpu.Vulkan.PNext.Middle (
 
 	-- * FIND P NEXT CHAIN ALL
 
-	FindPNextChainAll
+--	FindPNextChainAll
 
 	) where
 
