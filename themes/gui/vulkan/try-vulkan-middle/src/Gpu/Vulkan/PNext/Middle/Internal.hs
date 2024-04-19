@@ -17,13 +17,9 @@ module Gpu.Vulkan.PNext.Middle.Internal (
 
 	-- * FIND P NEXT CHAIN ALL
 
---	FindPNextChainAll(..),
+	FindPNextChainAll(..), Nextable(..),
 
-	Nextable(..),
-
-	FindPNextChainAll'(..),
-
-	Nextable'(..),
+	FindPNextChainAll'(..), Nextable'(..),
 
 	-- * OTHERS
 
