@@ -251,10 +251,6 @@ body kfs fr w ist =
 	createIndexBuffer pd d gq cp \ib ->
 	createUniformBuffer pd d \ub ubm ->
 
-	createCommandBuffer d cp \cb ->
-	createSyncObjs d \sos ->
-	getCurrentTime >>= \tm ->
-
 	createDescriptorPool d \dscp ->
 	createDescriptorSet' d dscp dscslyt \ubds ->
 	updateDescriptorSet d ubds ub >>
@@ -270,10 +266,11 @@ body kfs fr w ist =
 	udtx = updateImg @_ @"texture" d ubds txsmplr ivmng in
 
 	crtx Glfw.Key'H >>
-
 	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
-
-	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm oke prkcs crtx udtx
+	createCommandBuffer d cp \cb ->
+	createSyncObjs d \sos ->
+	getCurrentTime >>=
+	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp ppllyt gpl fbs vb ib ubm ubds cb sos oke prkcs crtx udtx
 	where
 	dscIdxFeatures pd = do
 		Vk.Phd.Features2 (TMaybe.J difs) _fs <- Vk.Phd.getFeatures2'
@@ -1051,11 +1048,12 @@ mainLoop ::
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects ssos -> UTCTime ->
+	SyncObjects ssos ->
 	TChan K.KeyEvent -> K.Envs ->
 	(Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) ->
+	UTCTime ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 oke prkcs crtx udtx = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs oke prkcs crtx udtx tm0 = do
 	($ ext0) $ fix \loop ext -> do
 		me <- atomically do
 			b <- isEmptyTChan oke
