@@ -65,7 +65,7 @@ import qualified Gpu.Vulkan.QueueFamily.Middle.Internal as QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
-import Gpu.Vulkan.PNext.Middle.Internal
+import Gpu.Vulkan.PNextOld.Middle.Internal
 
 #include <vulkan/vulkan.h>
 

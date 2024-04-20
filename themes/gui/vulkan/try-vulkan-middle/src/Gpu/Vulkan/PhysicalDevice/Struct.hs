@@ -25,7 +25,7 @@ import qualified Gpu.Vulkan.PhysicalDevice.Struct.Core as C
 import Gpu.Vulkan.PhysicalDevice.Struct.ThTest
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.PNext.Middle.Internal
+import Gpu.Vulkan.PNextOld.Middle.Internal
 
 import Data.TypeLevel.Maybe qualified as TMaybe
 

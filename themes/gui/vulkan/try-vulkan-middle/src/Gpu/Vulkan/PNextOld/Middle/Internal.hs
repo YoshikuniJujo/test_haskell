@@ -9,7 +9,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PNext.Middle.Internal (
+module Gpu.Vulkan.PNextOld.Middle.Internal (
 
 	-- * STRUCT COMMON
 
@@ -17,9 +17,7 @@ module Gpu.Vulkan.PNext.Middle.Internal (
 
 	-- * FIND P NEXT CHAIN ALL
 
-	Typeable(..),
-
-	FindPNextChainAll(..),
+	FindPNextChainAll(..), Nextable(..),
 
 	FindPNextChainAll'(..), Nextable'(..),
 
@@ -43,27 +41,31 @@ import Gpu.Vulkan.Core qualified as C
 import Data.TypeLevel.Maybe qualified as TMaybe
 
 data StructCommon = StructCommon {
-	structCommonSType :: StructureType, structCommonPNext :: Ptr () }
+	structCommonSType :: StructureType,
+	structCommonPNext :: Ptr () }
 	deriving Show
 
 instance Peek StructCommon where
 	peek' p = structCommonFromCore <$> peek (castPtr p)
 
-instance Poke StructCommon where
-	poke' p = poke (castPtr p) . structCommonToCore
-
 structCommonFromCore :: C.StructCommon -> StructCommon
 structCommonFromCore C.StructCommon {
-	C.structCommonSType = stp, C.structCommonPNext = pn } = StructCommon {
-	structCommonSType = StructureType stp, structCommonPNext = pn }
+	C.structCommonSType = stp,
+	C.structCommonPNext = pn } = StructCommon {
+	structCommonSType = StructureType stp,
+	structCommonPNext = pn }
+
+instance Poke StructCommon where
+	poke' p = poke (castPtr p) . structCommonToCore
 
 structCommonToCore :: StructCommon -> C.StructCommon
 structCommonToCore StructCommon {
 	structCommonSType = StructureType stp,
 	structCommonPNext = pn } = C.StructCommon {
-	C.structCommonSType = stp, C.structCommonPNext = pn }
+	C.structCommonSType = stp,
+	C.structCommonPNext = pn }
 
-class Peek n => Typeable n where structureType :: StructureType
+class Peek n => Nextable n where nextableType :: StructureType
 
 class FindPNextChainAll ns where
 	findPNextChainAll :: Ptr () -> IO (HeteroParList.PL Maybe ns)
@@ -71,19 +73,19 @@ class FindPNextChainAll ns where
 instance FindPNextChainAll '[] where
 	findPNextChainAll _ = pure HeteroParList.Nil
 
-instance (Typeable n, FindPNextChainAll ns) =>
+instance (Nextable n, FindPNextChainAll ns) =>
 	FindPNextChainAll (n ': ns) where
 	findPNextChainAll p =
 		(:**) <$> findPNextChain p <*> findPNextChainAll p
 
-findPNextChain :: forall n . Typeable n => Ptr () -> IO (Maybe n)
+findPNextChain :: forall n . Nextable n => Ptr () -> IO (Maybe n)
 findPNextChain NullPtr = pure Nothing
 findPNextChain p = do
 	sc <- peek' $ castPtr p
 	putStrLn "findPNextChain"
 	putStrLn $ "\tthis type    : " ++ show (structCommonSType sc)
-	putStrLn $ "\tnextable type: " ++ show (structureType @n)
-	if structCommonSType sc == structureType @n
+	putStrLn $ "\tnextable type: " ++ show (nextableType @n)
+	if structCommonSType sc == nextableType @n
 	then Just <$> peek' (castPtr p)
 	else findPNextChain $ structCommonPNext sc
 
@@ -92,10 +94,10 @@ class ClearedChain (ns :: [Type]) where
 
 instance ClearedChain '[] where clearedChain = ($ nullPtr)
 
-instance (Sizable n, Typeable n, ClearedChain ns) => ClearedChain (n ': ns) where
+instance (Sizable n, Nextable n, ClearedChain ns) => ClearedChain (n ': ns) where
 	clearedChain f = clearedChain @ns \p -> do
 		let	sc = StructCommon {
-				structCommonSType = structureType @n,
+				structCommonSType = nextableType @n,
 				structCommonPNext = p }
 		p' <- callocBytes (sizeOf' @n)
 		poke' p' sc
