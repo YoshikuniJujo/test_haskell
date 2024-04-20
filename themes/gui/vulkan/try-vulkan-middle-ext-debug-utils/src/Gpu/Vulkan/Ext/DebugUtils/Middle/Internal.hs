@@ -41,7 +41,7 @@ import Gpu.Vulkan.Base.Middle.Internal
 import qualified Gpu.Vulkan.Ext.DebugUtils.Core as C
 
 import Data.HeteroParList qualified as HeteroParList
-import Gpu.Vulkan.PNext.Middle.Internal
+import Gpu.Vulkan.PNextOld.Middle.Internal
 
 foreign import capi "vulkan/vulkan.h value VK_EXT_DEBUG_UTILS_EXTENSION_NAME"
 	c_extensionName :: CString
