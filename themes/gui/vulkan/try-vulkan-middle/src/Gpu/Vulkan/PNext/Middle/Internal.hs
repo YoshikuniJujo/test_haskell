@@ -15,17 +15,9 @@ module Gpu.Vulkan.PNext.Middle.Internal (
 
 	StructCommon(..), structCommonFromCore,
 
-	-- * FIND P NEXT CHAIN ALL
+	-- * SET AND READ CHAIN
 
-	Typeable(..),
-
-	FindPNextChainAll(..),
-
-	FindPNextChainAll'(..), Nextable'(..),
-
-	-- * OTHERS
-
---	ClearedChain(..)
+	Typeable(..), FindChainAll(..), ReadChain(..), Nextable(..)
 
 	) where
 
@@ -41,6 +33,8 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Core qualified as C
 
 import Data.TypeLevel.Maybe qualified as TMaybe
+
+-- STRUCT COMMON
 
 data StructCommon = StructCommon {
 	structCommonSType :: StructureType, structCommonPNext :: Ptr () }
@@ -63,18 +57,21 @@ structCommonToCore StructCommon {
 	structCommonPNext = pn } = C.StructCommon {
 	C.structCommonSType = stp, C.structCommonPNext = pn }
 
+-- TYPEABLE
+
 class Peek n => Typeable n where structureType :: StructureType
 
-class FindPNextChainAll ns where
-	findPNextChainAll :: Ptr () -> IO (HeteroParList.PL Maybe ns)
+-- FIND PNEXT CHAIN ALL
 
-instance FindPNextChainAll '[] where
-	findPNextChainAll _ = pure HeteroParList.Nil
+class FindChainAll ns where
+	findChainAll :: Ptr () -> IO (HeteroParList.PL Maybe ns)
 
-instance (Typeable n, FindPNextChainAll ns) =>
-	FindPNextChainAll (n ': ns) where
-	findPNextChainAll p =
-		(:**) <$> findPNextChain p <*> findPNextChainAll p
+instance FindChainAll '[] where
+	findChainAll _ = pure HeteroParList.Nil
+
+instance (Typeable n, FindChainAll ns) =>
+	FindChainAll (n ': ns) where
+	findChainAll p = (:**) <$> findPNextChain p <*> findChainAll p
 
 findPNextChain :: forall n . Typeable n => Ptr () -> IO (Maybe n)
 findPNextChain NullPtr = pure Nothing
@@ -87,48 +84,31 @@ findPNextChain p = do
 	then Just <$> peek' (castPtr p)
 	else findPNextChain $ structCommonPNext sc
 
-class ClearedChain (ns :: [Type]) where
+-- FIND PNEXT CHAIN ALL'
+
+class ReadChain mn where
 	clearedChain :: (Ptr () -> IO a) -> IO a
+	readChain :: Ptr () -> IO (TMaybe.M mn)
 
-instance ClearedChain '[] where clearedChain = ($ nullPtr)
+instance ReadChain 'Nothing where
+	clearedChain = ($ nullPtr)
+	readChain _ = pure TMaybe.N
 
-instance (Sizable n, Typeable n, ClearedChain ns) => ClearedChain (n ': ns) where
-	clearedChain f = clearedChain @ns \p -> do
-		let	sc = StructCommon {
-				structCommonSType = structureType @n,
-				structCommonPNext = p }
-		p' <- callocBytes (sizeOf' @n)
-		poke' p' sc
-		rslt <- f $ castPtr p'
-		free p'
-		pure rslt
-
-class FindPNextChainAll' mn where
-	clearedChain' :: (Ptr () -> IO a) -> IO a
-	findPNextChainAll' :: Ptr () -> IO (TMaybe.M mn)
-
-instance FindPNextChainAll' 'Nothing where
-	clearedChain' = ($ nullPtr)
-	findPNextChainAll' _ = pure TMaybe.N
-
-instance (Nextable' n, FindPNextChainAll' mn') =>
-	FindPNextChainAll' ('Just (n (mn'))) where
-	clearedChain' f = clearedChain' @mn' \p -> do
-		let	sc = StructCommon {
-				structCommonSType = nextableType' @n,
-				structCommonPNext = p }
-		p' <- callocBytes (nextableSize @n)
-		poke' p' sc
-		rslt <- f $ castPtr p'
-		free p'
-		pure rslt
-	findPNextChainAll' p = do
+instance (Nextable n, ReadChain mnn) =>
+	ReadChain ('Just (n (mnn))) where
+	clearedChain f = clearedChain @mnn \np -> do
+		p <- callocBytes $ nextableSize @n
+		poke' p StructCommon {
+			structCommonSType = nextableType @n,
+			structCommonPNext = np }
+		f (castPtr p) <* free p
+	readChain p = do
 		p' <- nextPtr @n p
-		mn' <- findPNextChainAll' p'
+		mn' <- readChain p'
 		TMaybe.J <$> createNextable p mn'
 	
-class Nextable' (n :: Maybe Type -> Type) where
+class Nextable (n :: Maybe Type -> Type) where
 	nextableSize :: Int
-	nextableType' :: StructureType
+	nextableType :: StructureType
 	nextPtr :: Ptr () -> IO (Ptr ())
 	createNextable :: Ptr () -> TMaybe.M mn' -> IO (n mn')
