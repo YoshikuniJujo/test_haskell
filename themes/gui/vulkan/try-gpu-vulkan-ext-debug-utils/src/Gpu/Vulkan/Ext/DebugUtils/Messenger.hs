@@ -19,7 +19,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 
-import Gpu.Vulkan.PNext.Middle qualified as MI
+import Gpu.Vulkan.PNextOld.Middle qualified as MI
 
 import qualified Gpu.Vulkan.AllocationCallbacks.Internal as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Internal as Instance
