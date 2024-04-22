@@ -273,7 +273,7 @@ body kfs fr w ist =
 	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp ppllyt gpl fbs vb ib ubm ubds cb sos oke prkcs crtx udtx
 	where
 	dscIdxFeatures pd = do
-		Vk.Phd.Features2 (TMaybe.J difs) _fs <- Vk.Phd.getFeatures2'
+		Vk.Phd.Features2 (TMaybe.J difs) _fs <- Vk.Phd.getFeatures2
 			@('Just (Vk.Phd.DescriptorIndexingFeatures 'Nothing)) pd
 		pure difs
 
