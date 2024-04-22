@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-vulkan-middle
-version:        0.1.0.48
+version:        0.1.0.49
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-middle#readme>
 homepage:       https://github.com/githubuser/try-vulkan-middle#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-middle/issues
@@ -94,6 +94,8 @@ library
       Gpu.Vulkan.Pipeline.TessellationState.Middle
       Gpu.Vulkan.Pipeline.VertexInputState.Middle
       Gpu.Vulkan.Pipeline.ViewportState.Middle
+      Gpu.Vulkan.PNext.Middle
+      Gpu.Vulkan.PNext.Middle.Internal
       Gpu.Vulkan.PNextOld.Middle
       Gpu.Vulkan.PNextOld.Middle.Internal
       Gpu.Vulkan.PushConstant.Middle
@@ -154,8 +156,6 @@ library
       Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
       Gpu.Vulkan.PipelineCache.Middle.Internal
       Gpu.Vulkan.PipelineLayout.Middle.Internal
-      Gpu.Vulkan.PNext.Middle
-      Gpu.Vulkan.PNext.Middle.Internal
       Gpu.Vulkan.PushConstant.Middle.Internal
       Gpu.Vulkan.QueryPool.Middle.Internal
       Gpu.Vulkan.QueueFamily.EnumManual

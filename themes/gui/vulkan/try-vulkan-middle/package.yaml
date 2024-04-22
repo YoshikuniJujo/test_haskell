@@ -1,5 +1,5 @@
 name:                try-vulkan-middle
-version:             0.1.0.48
+version:             0.1.0.49
 github:              "githubuser/try-vulkan-middle"
 license:             BSD3
 author:              "Author name here"
@@ -125,6 +125,8 @@ library:
   - Gpu.Vulkan.Pipeline.TessellationState.Middle
   - Gpu.Vulkan.Pipeline.VertexInputState.Middle
   - Gpu.Vulkan.Pipeline.ViewportState.Middle
+  - Gpu.Vulkan.PNext.Middle
+  - Gpu.Vulkan.PNext.Middle.Internal
   - Gpu.Vulkan.PNextOld.Middle
   - Gpu.Vulkan.PNextOld.Middle.Internal
   - Gpu.Vulkan.PushConstant.Middle
