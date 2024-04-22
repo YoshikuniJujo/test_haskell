@@ -25,7 +25,7 @@ import qualified Gpu.Vulkan.PhysicalDevice.Struct.Core as C
 import Gpu.Vulkan.PhysicalDevice.Struct.ThTest
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.PNextOld.Middle.Internal
+import Gpu.Vulkan.PNext.Middle.Internal
 
 import Data.TypeLevel.Maybe qualified as TMaybe
 
@@ -42,8 +42,8 @@ makeStructure "DescriptorIndexingFeatures"
 instance Peek DescriptorIndexingFeaturesNoNext where
 	peek' = (descriptorIndexingFeaturesFromCore <$>) . peek . castPtr
 
-instance Nextable DescriptorIndexingFeaturesNoNext where
-	nextableType = StructureTypePhysicalDeviceDescriptorIndexingFeatures
+instance Typeable DescriptorIndexingFeaturesNoNext where
+	structureType = StructureTypePhysicalDeviceDescriptorIndexingFeatures
 
 instance Sizable DescriptorIndexingFeaturesNoNext where
 	sizeOf' = sizeOf @C.DescriptorIndexingFeatures undefined
@@ -54,9 +54,9 @@ instance WithPoked (TMaybe.M mn) => WithPoked (DescriptorIndexingFeatures mn) wh
 		descriptorIndexingFeaturesToCore difs $ \cdifs -> poke pcdifs cdifs
 		f . ptrS $ castPtr pcdifs
 
-instance Nextable' DescriptorIndexingFeatures where
+instance Nextable DescriptorIndexingFeatures where
 	nextableSize = sizeOf @C.DescriptorIndexingFeatures undefined
-	nextableType' = StructureTypePhysicalDeviceDescriptorIndexingFeatures
+	nextableType = StructureTypePhysicalDeviceDescriptorIndexingFeatures
 	nextPtr p = C.descriptorIndexingFeaturesPNext <$> peek (castPtr p)
 	createNextable p n =
 		descriptorIndexingFeaturesFromNoNext n .

@@ -27,7 +27,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.HeteroParList (pattern (:**))
-import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList qualified as HPList
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Core qualified as C
@@ -63,52 +63,40 @@ class Peek n => Typeable n where structureType :: StructureType
 
 -- FIND PNEXT CHAIN ALL
 
-class FindChainAll ns where
-	findChainAll :: Ptr () -> IO (HeteroParList.PL Maybe ns)
+class FindChainAll ns where findChainAll :: Ptr () -> IO (HPList.PL Maybe ns)
 
-instance FindChainAll '[] where
-	findChainAll _ = pure HeteroParList.Nil
+instance FindChainAll '[] where findChainAll _ = pure HPList.Nil
 
-instance (Typeable n, FindChainAll ns) =>
-	FindChainAll (n ': ns) where
-	findChainAll p = (:**) <$> findPNextChain p <*> findChainAll p
+instance (Typeable n, FindChainAll ns) => FindChainAll (n ': ns) where
+	findChainAll p = (:**) <$> findChain p <*> findChainAll p
 
-findPNextChain :: forall n . Typeable n => Ptr () -> IO (Maybe n)
-findPNextChain NullPtr = pure Nothing
-findPNextChain p = do
-	sc <- peek' $ castPtr p
-	putStrLn "findPNextChain"
-	putStrLn $ "\tthis type    : " ++ show (structCommonSType sc)
-	putStrLn $ "\tnextable type: " ++ show (structureType @n)
+findChain :: forall n . Typeable n => Ptr () -> IO (Maybe n)
+findChain NullPtr = pure Nothing
+findChain p = peek' (castPtr p) >>= \sc ->
 	if structCommonSType sc == structureType @n
-	then Just <$> peek' (castPtr p)
-	else findPNextChain $ structCommonPNext sc
+		then Just <$> peek' (castPtr p)
+		else findChain $ structCommonPNext sc
 
--- FIND PNEXT CHAIN ALL'
+-- READ CHAIN
 
 class ReadChain mn where
 	clearedChain :: (Ptr () -> IO a) -> IO a
 	readChain :: Ptr () -> IO (TMaybe.M mn)
 
 instance ReadChain 'Nothing where
-	clearedChain = ($ nullPtr)
-	readChain _ = pure TMaybe.N
+	clearedChain = ($ nullPtr); readChain _ = pure TMaybe.N
 
-instance (Nextable n, ReadChain mnn) =>
-	ReadChain ('Just (n (mnn))) where
+instance (Nextable n, ReadChain mnn) => ReadChain ('Just (n (mnn))) where
 	clearedChain f = clearedChain @mnn \np -> do
 		p <- callocBytes $ nextableSize @n
 		poke' p StructCommon {
 			structCommonSType = nextableType @n,
 			structCommonPNext = np }
 		f (castPtr p) <* free p
-	readChain p = do
-		p' <- nextPtr @n p
-		mn' <- readChain p'
-		TMaybe.J <$> createNextable p mn'
+	readChain p =
+		TMaybe.J <$> (createNextable p =<< readChain =<< nextPtr @n p)
 	
 class Nextable (n :: Maybe Type -> Type) where
 	nextableSize :: Int
-	nextableType :: StructureType
-	nextPtr :: Ptr () -> IO (Ptr ())
+	nextableType :: StructureType; nextPtr :: Ptr () -> IO (Ptr ())
 	createNextable :: Ptr () -> TMaybe.M mn' -> IO (n mn')
