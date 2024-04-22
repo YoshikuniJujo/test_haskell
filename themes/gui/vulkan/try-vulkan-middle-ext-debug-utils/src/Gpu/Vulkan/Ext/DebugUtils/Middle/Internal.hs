@@ -41,7 +41,7 @@ import Gpu.Vulkan.Base.Middle.Internal
 import qualified Gpu.Vulkan.Ext.DebugUtils.Core as C
 
 import Data.HeteroParList qualified as HeteroParList
-import Gpu.Vulkan.PNextOld.Middle.Internal
+import Gpu.Vulkan.PNext.Middle.Internal
 
 foreign import capi "vulkan/vulkan.h value VK_EXT_DEBUG_UTILS_EXTENSION_NAME"
 	c_extensionName :: CString
@@ -121,7 +121,7 @@ deriving instance Show (HeteroParList.PL Maybe ns) =>
 	Show (ObjectNameInfoResult ns)
 
 objectNameInfoResultFromCore ::
-	FindPNextChainAll ns => C.ObjectNameInfo -> IO (ObjectNameInfoResult ns)
+	FindChainAll ns => C.ObjectNameInfo -> IO (ObjectNameInfoResult ns)
 objectNameInfoResultFromCore C.ObjectNameInfo {
 	C.objectNameInfoPNext = pnxt,
 	C.objectNameInfoObjectType = ot,
@@ -131,7 +131,7 @@ objectNameInfoResultFromCore C.ObjectNameInfo {
 	mon <- case con of
 		NullPtr -> pure Nothing
 		p -> Just <$> cStringToText p
-	nxts <- findPNextChainAll pnxt
+	nxts <- findChainAll pnxt
 	pure ObjectNameInfoResult {
 		objectNameInfoResultNextList = nxts,
 		objectNameInfoResultObjectType = ObjectType ot,

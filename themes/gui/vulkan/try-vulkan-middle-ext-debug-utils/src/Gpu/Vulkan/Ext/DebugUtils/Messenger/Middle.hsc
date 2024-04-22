@@ -40,7 +40,7 @@ import qualified Data.Text as T
 import Data.Text.Foreign.Misc
 
 import Gpu.Vulkan.Base.Middle.Internal
-import Gpu.Vulkan.PNextOld.Middle.Internal
+import Gpu.Vulkan.PNext.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
@@ -70,7 +70,7 @@ data CallbackData ns = CallbackData {
 
 deriving instance Show (HeteroParList.PL Maybe ns) => Show (CallbackData ns)
 
-callbackDataFromCore :: FindPNextChainAll ns =>
+callbackDataFromCore :: FindChainAll ns =>
 	C.CallbackData -> IO (CallbackData ns)
 callbackDataFromCore C.CallbackData {
 	C.callbackDataPNext = pnxt,
@@ -85,7 +85,7 @@ callbackDataFromCore C.CallbackData {
 	C.callbackDataObjectCount = fromIntegral -> objc,
 	C.callbackDataPObjects = pcobjs } = do
 --	mnxt <- peekMaybe $ castPtr pnxt
-	mnxt <- findPNextChainAll pnxt
+	mnxt <- findChainAll pnxt
 	midnm <- cStringToText cmidnm
 	msg <- cStringToText cmsg
 	cqls <- peekArray' qlc pcqls
@@ -108,7 +108,7 @@ type FnCallback cb ud =
 	MessageSeverityFlagBits -> MessageTypeFlags ->
 	CallbackData cb -> Maybe ud -> IO Bool
 
-fnCallbackToCore :: (FindPNextChainAll n, Peek ud) => FnCallback n ud -> C.FnCallback
+fnCallbackToCore :: (FindChainAll n, Peek ud) => FnCallback n ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- peekMaybe $ castPtr pud
@@ -131,14 +131,14 @@ instance Sizable (CreateInfo n cb ud) where
 	sizeOf' = sizeOf @C.CreateInfo undefined
 	alignment' = alignment @C.CreateInfo undefined
 
-instance (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud) =>
+instance (WithPoked (TMaybe.M mn), FindChainAll cb, Storable' ud) =>
 	WithPoked (CreateInfo mn cb ud) where
 	withPoked' ci f = alloca \pcci -> do
 		createInfoToCore' ci $ \cci -> poke pcci cci
 		f . ptrS $ castPtr pcci
 
 createInfoToCore' :: (
-	WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud ) =>
+	WithPoked (TMaybe.M mn), FindChainAll cb, Storable' ud ) =>
 	CreateInfo mn cb ud -> (C.CreateInfo -> IO a) -> IO ()
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
@@ -160,7 +160,7 @@ createInfoToCore' CreateInfo {
 
 newtype M = M C.M deriving Show
 
-create :: (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud) =>
+create :: (WithPoked (TMaybe.M mn), FindChainAll cb, Storable' ud) =>
 	Instance.I -> CreateInfo mn cb ud ->
 	TPMaybe.M AllocationCallbacks.A mc -> IO M
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do
