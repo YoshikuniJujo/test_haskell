@@ -17,7 +17,7 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 	-- ** Get Properties 2
 
 	getProperties2ExtensionName,
-	getFeatures2', Features2(..),
+	getFeatures2, Features2(..),
 
 	-- * OTHER PROPERTIES
 
@@ -65,7 +65,7 @@ import qualified Gpu.Vulkan.QueueFamily.Middle.Internal as QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
-import Gpu.Vulkan.PNextOld.Middle.Internal
+import Gpu.Vulkan.PNext.Middle.Internal
 
 #include <vulkan/vulkan.h>
 
@@ -154,8 +154,8 @@ getFeatures (P pdvc) = featuresFromCore <$> alloca \pfts -> do
 	C.getFeatures pdvc pfts
 	peek pfts
 
-getFeatures2' :: forall mn . FindPNextChainAll' mn => P -> IO (Features2 mn)
-getFeatures2' (P pdvc) = clearedChain' @mn \pn ->
+getFeatures2 :: forall mn . ReadChain mn => P -> IO (Features2 mn)
+getFeatures2 (P pdvc) = clearedChain @mn \pn ->
 	features2FromCore =<< alloca \pfts -> do
 		cfs <- C.getClearedFeatures
 		poke pfts $ C.Features2 {
@@ -171,11 +171,11 @@ data Features2 mn = Features2 {
 
 deriving instance Show (TMaybe.M mn) => Show (Features2 mn)
 
-features2FromCore :: FindPNextChainAll' mn => C.Features2 -> IO (Features2 mn)
+features2FromCore :: ReadChain mn => C.Features2 -> IO (Features2 mn)
 features2FromCore C.Features2 {
 	C.features2PNext = pnxt,
 	C.features2Features = ftrs } = do
-	nxts <- findPNextChainAll' pnxt
+	nxts <- readChain pnxt
 	let	ftrs' = featuresFromCore ftrs
 	pure Features2 {
 		features2Next = nxts, features2Features = ftrs' }
