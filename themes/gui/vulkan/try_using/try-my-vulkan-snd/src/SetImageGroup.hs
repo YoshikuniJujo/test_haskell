@@ -21,9 +21,11 @@ module SetImageGroup (
 
 	singleTimeCmds,
 
-	-- * CREATE INFO
+	-- * CREATE INFOS
 
-	imgVwInfo ) where
+	cmdBffrInfo, bffrInfo, imgVwInfo
+
+	) where
 
 import GHC.TypeNats
 import Foreign.Storable
