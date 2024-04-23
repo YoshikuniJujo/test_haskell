@@ -1005,7 +1005,7 @@ createDscSt :: KnownNat alm =>
 createDscSt dv dp bm tv ts dl a =
 	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
 	$ Vk.DscSet.updateDs dv (
-		U5 (dscWrite0 ds bm) :** U5 (dscWrite1 ds tv ts) :**
+		U5 (dscWriteMvp ds bm) :** U5 (dscWriteTxImg ds tv ts) :**
 		HPList.Nil ) HPList.Nil
 	where info = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
@@ -1016,21 +1016,21 @@ type TextureImageView siv = Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
 type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
-dscWrite0 :: KnownNat alm => Vk.DscSet.D sds slbts ->
+dscWriteMvp :: KnownNat alm => Vk.DscSet.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer
 			'[ '(sm, sb, bnm, AtomModelViewProj alm)]) 0
-dscWrite0 ds mb = Vk.DscSet.Write {
+dscWriteMvp ds mb = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
 		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo mb }
 
-dscWrite1 :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
+dscWriteTxImg :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
-dscWrite1 ds v s = Vk.DscSet.Write {
+dscWriteTxImg ds v s = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
 	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton

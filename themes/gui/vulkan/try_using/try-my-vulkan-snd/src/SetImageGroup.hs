@@ -126,12 +126,12 @@ updateDscStImg ::
 	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) ->
 	Vk.ImgVw.I nm fmt siv  -> Vk.Smplr.S ss -> IO ()
 updateDscStImg dv ds iv s =
-	Vk.DscSet.updateDs dv (U5 (dscWrite1 ds iv s) :** HPList.Nil) HPList.Nil
+	Vk.DscSet.updateDs dv (U5 (dscWriteImg ds iv s) :** HPList.Nil) HPList.Nil
 
-dscWrite1 :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
+dscWriteImg :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
-dscWrite1 ds v s = Vk.DscSet.Write {
+dscWriteImg ds v s = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
 	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton

@@ -249,10 +249,7 @@ body kfs fr w ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
 	createMvpBffr pd d \mb mbm ->
-
-	createDscPl d \dscp ->
-	createDescriptorSet' d dscp dsl \ubds ->
-	updateDescriptorSet d ubds mb >>
+	createDscPl d \dp -> createDscSt d dp mb dsl \ds ->
 
 	createTextureSampler pd d \txsmplr ->
 
@@ -261,8 +258,8 @@ body kfs fr w ist =
 	let
 	crtx k = let tximgfp = kfs M.! k in
 		readRgba8 tximgfp >>= \img ->
-		setImg pd d gq cp ubds txgrp txsmplr (MyImage img) k
-	udtx = updateImg @_ @"texture" d ubds txsmplr ivmng in
+		setImg pd d gq cp ds txgrp txsmplr (MyImage img) k
+	udtx = updateImg @_ @"texture" d ds txsmplr ivmng in
 
 	crtx Glfw.Key'H >>
 	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
@@ -273,7 +270,7 @@ body kfs fr w ist =
 	createCommandBuffer d cp \cb ->
 	createSyncObjs d \sos ->
 	getCurrentTime >>=
-	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs vb ib mbm ubds cb sos oke prkcs crtx udtx
+	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs vb ib mbm ds cb sos oke prkcs crtx udtx
 	where
 	dscIdxFeatures pd = do
 		Vk.Phd.Features2 (TMaybe.J difs) _fs <- Vk.Phd.getFeatures2
@@ -898,44 +895,31 @@ createDscPl dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPl.sizeDescriptorCount = 1 }
 
-createDescriptorSet' ::
-	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.DscSetLyt.D sdsc '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-	(forall sds . Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
-createDescriptorSet' dvc dscp dscslyt f =
-	Vk.DscSet.allocateDs dvc allocInfo \(HPList.Singleton dscs) -> f dscs
-	where
-	allocInfo = Vk.DscSet.AllocateInfo {
+createDscSt :: KnownNat alm =>
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	Vk.DscSetLyt.D sdsl '[BufferModelViewProj alm, TxImg] ->
+	(forall sds . Vk.DscSet.D sds
+		'(sdsl, '[BufferModelViewProj alm, TxImg]) -> IO a) -> IO a
+createDscSt dv dp bm dl a =
+	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
+	$ Vk.DscSet.updateDs dv (
+		U5 (dscWriteMvp ds bm) :** HPList.Nil ) HPList.Nil
+	where info = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dscp,
-		Vk.DscSet.allocateInfoSetLayouts =
-			HPList.Singleton $ U2 dscslyt }
+		Vk.DscSet.allocateInfoDescriptorPool = dp,
+		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
-updateDescriptorSet :: KnownNat alu =>
-	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom alu WModelViewProj 'Nothing] ->
-	IO ()
-updateDescriptorSet dvc dscs ub = do
-	Vk.DscSet.updateDs dvc (
-		U5 (descriptorWrite0 ub dscs) :** HPList.Nil )
-		HPList.Nil
-
-descriptorWrite0 :: KnownNat alu =>
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom alu WModelViewProj 'Nothing] ->
-	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom alu WModelViewProj  'Nothing)]) 0
-descriptorWrite0 ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
+dscWriteMvp :: KnownNat alm => Vk.DscSet.D sds slbts ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	Vk.DscSet.Write 'Nothing sds slbts
+		('Vk.DscSet.WriteSourcesArgBuffer
+			'[ '(sm, sb, bnm, AtomModelViewProj alm)]) 0
+dscWriteMvp ds mb = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ HPList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
+		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo mb }
 
 createBufferList :: forall sd nm t a . Storable t =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.M.Size -> Vk.Bffr.UsageFlags ->
