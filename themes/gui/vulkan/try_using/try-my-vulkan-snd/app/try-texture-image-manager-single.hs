@@ -250,16 +250,15 @@ body kfs fr w ist =
 	createFrmbffrs d ex rp scvs \fbs ->
 	createMvpBffr pd d \mb mbm ->
 	createDscPl d \dp -> createDscSt d dp mb dsl \ds ->
-
-	createTextureSampler pd d \txsmplr ->
+	createTxSmplr pd d \txsp ->
 
 	imgGroups d \txgrp@(_, _, ivmng) ->
 
 	let
 	crtx k = let tximgfp = kfs M.! k in
 		readRgba8 tximgfp >>= \img ->
-		setImg pd d gq cp ds txgrp txsmplr (MyImage img) k
-	udtx = updateImg @_ @"texture" d ds txsmplr ivmng in
+		setImg pd d gq cp ds txgrp txsp (MyImage img) k
+	udtx = updateImg @_ @"texture" d ds txsp ivmng in
 
 	crtx Glfw.Key'H >>
 	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
@@ -785,37 +784,29 @@ instance KObj.IsImage MyImage where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
-createTextureSampler ::
+createTxSmplr ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler phdv dvc f = do
-	prp <- Vk.Phd.getProperties phdv
-	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
-	let	samplerInfo = Vk.Smplr.M.CreateInfo {
-			Vk.Smplr.M.createInfoNext = TMaybe.N,
-			Vk.Smplr.M.createInfoFlags = zeroBits,
-			Vk.Smplr.M.createInfoMagFilter = Vk.FilterLinear,
-			Vk.Smplr.M.createInfoMinFilter = Vk.FilterLinear,
-			Vk.Smplr.M.createInfoMipmapMode =
-				Vk.Smplr.MipmapModeLinear,
-			Vk.Smplr.M.createInfoAddressModeU =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoAddressModeV =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoAddressModeW =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.M.createInfoMipLodBias = 0,
-			Vk.Smplr.M.createInfoAnisotropyEnable = True,
-			Vk.Smplr.M.createInfoMaxAnisotropy =
-				Vk.Phd.limitsMaxSamplerAnisotropy
-					$ Vk.Phd.propertiesLimits prp,
-			Vk.Smplr.M.createInfoCompareEnable = False,
-			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.M.createInfoMinLod = 0,
-			Vk.Smplr.M.createInfoMaxLod = 0,
-			Vk.Smplr.M.createInfoBorderColor =
-				Vk.BorderColorIntOpaqueBlack,
-			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
+createTxSmplr pd dv a = Vk.Phd.getProperties pd >>= \pr ->
+	Vk.Smplr.create @'Nothing dv (info pr) nil a
+	where info (Vk.Phd.propertiesLimits -> lm) = Vk.Smplr.CreateInfo {
+		Vk.Smplr.createInfoNext = TMaybe.N,
+		Vk.Smplr.createInfoFlags = zeroBits,
+		Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMipmapMode = Vk.Smplr.MipmapModeLinear,
+		Vk.Smplr.createInfoAddressModeU = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeV = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeW = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoMipLodBias = 0,
+		Vk.Smplr.createInfoAnisotropyEnable = True,
+		Vk.Smplr.createInfoMaxAnisotropy =
+			Vk.Phd.limitsMaxSamplerAnisotropy lm,
+		Vk.Smplr.createInfoCompareEnable = False,
+		Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+		Vk.Smplr.createInfoMinLod = 0,
+		Vk.Smplr.createInfoMaxLod = 0,
+		Vk.Smplr.createInfoBorderColor = Vk.BorderColorIntOpaqueBlack,
+		Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 
 createVertexBuffer :: Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall sm sb .
