@@ -111,9 +111,6 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
-import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
-
-import Tools (readRgba8)
 
 import Options.Declarative hiding (run)
 import Control.Monad.Trans
@@ -251,23 +248,19 @@ body kfs fr w ist =
 	createMvpBffr pd d \mb mbm ->
 	createDscPl d \dp -> createDscSt d dp mb dsl \ds ->
 	createTxSmplr pd d \txsp ->
-
-	imgGroups d \txgrp@(_, _, ivmng) ->
-
+	imgGroups d \txg@(_, _, txvg) ->
 	let
-	crtx k = let tximgfp = kfs M.! k in
-		readRgba8 tximgfp >>= \img ->
-		setImg pd d gq cp ds txgrp txsp (MyImage img) k
-	udtx = updateImg @_ @"texture" d ds txsp ivmng in
-
+	crtx k = either error convertRGBA8 <$> readImage (kfs M.! k) >>= \txi ->
+		setImg pd d gq cp ds txg txsp (ImageRgba8 txi) k
+	udtx = updateImg @_ @"texture" d ds txsp txvg in
 	crtx Glfw.Key'H >>
-	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
 
 	createVertexBuffer pd d gq cp \vb ->
 	createIndexBuffer pd d gq cp \ib ->
 
 	createCommandBuffer d cp \cb ->
 	createSyncObjs d \sos ->
+	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
 	getCurrentTime >>=
 	mainLoop fr w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs vb ib mbm ds cb sos oke prkcs crtx udtx
 	where
@@ -759,7 +752,7 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-newtype MyImage = MyImage (Image PixelRGBA8)
+newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
 newtype MyRgba8 = MyRgba8 PixelRGBA8
 
@@ -771,16 +764,16 @@ instance Storable MyRgba8 where
 	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
 
-instance KObj.IsImage MyImage where
-	type ImagePixel MyImage = MyRgba8
-	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+instance KObj.IsImage ImageRgba8 where
+	type ImagePixel ImageRgba8 = MyRgba8
+	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
 	imageRow = KObj.imageWidth
-	imageWidth (MyImage img) = fromIntegral $ imageWidth img
-	imageHeight (MyImage img) = fromIntegral $ imageHeight img
+	imageWidth (ImageRgba8 img) = fromIntegral $ imageWidth img
+	imageHeight (ImageRgba8 img) = fromIntegral $ imageHeight img
 	imageDepth _ = 1
-	imageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+	imageBody (ImageRgba8 img) = (<$> [0 .. imageHeight img - 1]) \y ->
 		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	imageMake w h _d pss = MyImage
+	imageMake w h _d pss = ImageRgba8
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
