@@ -114,7 +114,7 @@ apps
 * [x] try-vulkan-guide-storage.hs
 * [x] try-vulkan-guide-texture.hs
 * [x] try-multisampling-use-groups-single.hs
-* [ ] try-texture-image-manager-single.hs
+* [x] try-texture-image-manager-single.hs
 * [ ] try-texture-descriptor-set-group-single.hs
 * [ ] try-hello-world.hs
 * [ ] try-yatteiku.hs

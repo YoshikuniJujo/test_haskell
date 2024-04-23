@@ -489,6 +489,11 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
+type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
+type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
+type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
+type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
+
 createDscStLyt :: Vk.Dvc.D sd ->
 	(forall s . Vk.DscSetLyt.D s (DscStLytArg alm) -> IO a) -> IO a
 createDscStLyt dv = Vk.DscSetLyt.create dv info nil
@@ -583,8 +588,6 @@ grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.MltSmplSt.createInfoMinSampleShading = 1,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
-
-type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
 
 shaderStages :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo)
 	'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
@@ -925,7 +928,6 @@ createMvpBffr = createBffrAtm
 
 type ModelViewProjMemory sm sb mnm alm =
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
-type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
 
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -1013,8 +1015,6 @@ createDscSt dv dp bm tv ts dl a =
 		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
 type TextureImageView siv = Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv
-type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
-type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
 dscWriteMvp :: KnownNat alm => Vk.DscSet.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
@@ -1058,21 +1058,21 @@ data SyncObjs (ssos :: (Type, Type, Type)) where
 
 mainloop :: (
 	Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs,
-	KnownNat alm, KnownNat alv, KnownNat ali ) =>
+	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Glm.Vec2), '(1, Glm.Vec3), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
+	ModelViewProjMemory smm sbm nmm alu ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
 mainloop fr w sfc pd qfis d gq pq sc ex0 vs rp pl gp fbs
 	vb ib mm ds cb sos tm0 = do
@@ -1085,21 +1085,21 @@ mainloop fr w sfc pd qfis d gq pq sc ex0 vs rp pl gp fbs
 
 run :: (
 	Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs,
-	KnownNat alm, KnownNat alv, KnownNat ali ) =>
+	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Glm.Vec2), '(1, Glm.Vec3), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
+	ModelViewProjMemory smm sbm nmm alu ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
 run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm ds cb sos tm go = do
@@ -1110,20 +1110,20 @@ run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm ds cb sos tm go = d
 		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
-	smm sbm alm nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
-	(KnownNat alm, KnownNat alv, KnownNat ali) =>
+	smm sbm alu nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
+	(KnownNat alu, KnownNat alv, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Glm.Vec2), '(1, Glm.Vec3), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) ->
+	ModelViewProjMemory smm sbm nmm alu ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
 draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
@@ -1149,13 +1149,13 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
-updateModelViewProj :: forall sd smm sbm nmm alm . KnownNat alm =>
-	Vk.Dvc.D sd -> ModelViewProjMemory smm sbm nmm alm ->
+updateModelViewProj :: forall sd smm sbm nmm alu . KnownNat alu =>
+	Vk.Dvc.D sd -> ModelViewProjMemory smm sbm nmm alu ->
 	Vk.Extent2d -> Float -> IO ()
 updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) dv mm zeroBits
+	Vk.Mm.write @nmm @(VObj.Atom alu WModelViewProj 'Nothing) dv mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
@@ -1167,18 +1167,18 @@ updateModelViewProj dv mm Vk.Extent2d {
 				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
 
 recordCmdBffr :: forall scb sr sl sg sf
-	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alm .
+	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alu .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Glm.Vec2), '(1, Glm.Vec3), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	Vk.Frmbffr.F sf ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) -> IO ()
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb ib ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
@@ -1212,11 +1212,11 @@ catchAndRecreate :: (Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Glm.Vec2), '(1, Glm.Vec3), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go a = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
@@ -1227,15 +1227,14 @@ recreateAll :: (Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Glm.Vec2), '(1, Glm.Vec3), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
-
 	ex <- recreateSwpch w sfc pd qfis dv sc
 	ex <$ do
 		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
@@ -1345,7 +1344,6 @@ main()
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 0) out vec4 outColor;
-
 layout(binding = 1) uniform sampler2D texSampler;
 
 void

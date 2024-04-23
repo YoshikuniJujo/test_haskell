@@ -6,7 +6,7 @@ module Keyboard (
 
 	-- * KEY EVENT
 
-	KeyEvent(..), Envs, newChans', sendKeys,
+	KeyEvent(..), Envs, newChans, sendKeys,
 
 	-- * KEY SETS
 
@@ -21,56 +21,58 @@ import Data.Bool
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 import Graphics.UI.GlfwG.Key qualified as GlfwG
 
-type Envs = (M.Map GlfwG.Key (TVar GlfwG.KeyState), M.Map GlfwG.Key (TChan ()))
+newChans :: [GlfwG.Key] -> IO (TChan KeyEvent, Envs)
+newChans ks =
+	(\k -> (k ,) <$> atomically (newTVar GlfwG.KeyState'Released))
+		`mapM` ks >>= \pks ->
+	atomically newTChan >>= \oke -> keyFlows oke ks >>= \kps ->
+	pure (oke, (M.fromList pks, kps))
 
-newChans' :: [GlfwG.Key] -> IO (TChan KeyEvent, Envs)
-newChans' ks =
-	(\k -> (k ,) <$> atomically (newTVar GlfwG.KeyState'Released)) `mapM` ks >>= \prej ->
-	newChans_ ks >>= \(oke, kcs) ->
-	pure (oke, (M.fromList prej, kcs))
-
-newChans_ :: [GlfwG.Key] -> IO (TChan KeyEvent, M.Map GlfwG.Key (TChan ()))
-newChans_ ks =
-	atomically newTChan >>= \oke ->
-	keyFlows oke ks >>= \kcs ->
-	pure (oke, kcs)
-
-keyFlows :: TChan KeyEvent -> [GlfwG.Key] -> IO (M.Map GlfwG.Key (TChan ()))
+keyFlows :: TChan KeyEvent -> [GlfwG.Key] -> IO (M.Map GlfwG.Key Pressed)
 keyFlows oke = \case
 	[] -> pure M.empty
-	GlfwG.Key'H : ks -> do
-		ip <- keyFlow0 oke GlfwG.Key'H
-		ips <- keyFlows oke ks
-		pure $ M.insert GlfwG.Key'H ip ips
-	GlfwG.Key'G : ks -> do
-		ip <- keyFlow0 oke GlfwG.Key'G
-		ips <- keyFlows oke ks
-		pure $ M.insert GlfwG.Key'G ip ips
-	k : ks -> do
-		ip <- keyFlow oke k
-		ips <- keyFlows oke ks
-		pure $ M.insert k ip ips
+	k : ks -> (bool keyFlow keyFlowNoFirst $ isGh k) oke k >>= \ip ->
+		M.insert k ip <$> keyFlows oke ks
 
-keyFlow0 :: TChan KeyEvent -> GlfwG.Key -> IO (TChan ())
-keyFlow0 oke k = do
-	ip <- atomically newTChan
-	_ <- forkIO $ flow ip oke (repeat (Key k))
-	pure ip
+keyFlowNoFirst :: TChan KeyEvent -> GlfwG.Key -> IO Pressed
+keyFlowNoFirst oke k = atomically newTChan >>= \ip ->
+	ip <$ forkIO (flow ip oke . repeat $ Key k)
 
-keyFlow :: TChan KeyEvent -> GlfwG.Key -> IO (TChan ())
-keyFlow oke k = do
-	ip <- atomically newTChan
-	_ <- forkIO $ flow ip oke (First k : repeat (Key k))
-	pure ip
+keyFlow :: TChan KeyEvent -> GlfwG.Key -> IO Pressed
+keyFlow oke k = atomically newTChan >>= \ip ->
+	ip <$ forkIO (flow ip oke $ First k : repeat (Key k))
+
+data KeyEvent = First GlfwG.Key | Key GlfwG.Key deriving Show
+
+sendKeys :: GlfwG.Win.W sw -> Envs -> IO ()
+sendKeys win (pks, kps) = sendKey pks win kps `mapM_` M.keys pks
+
+type Envs = (PreKeys, M.Map GlfwG.Key Pressed)
+
+sendKey :: PreKeys ->
+	GlfwG.Win.W sw -> M.Map GlfwG.Key Pressed -> GlfwG.Key -> IO ()
+sendKey pks w kcs k = keyDown pks w k >>=
+	bool (pure ()) (atomically $ writeTChan (kcs M.! k) ())
+
+type Pressed = TChan ()
+
+keyDown :: PreKeys -> GlfwG.Win.W sw -> GlfwG.Key -> IO Bool
+keyDown pks w k = GlfwG.Win.getKey w k >>= \now -> do
+	pk <- atomically $ (readTVar $ pks M.! k) <* writeTVar (pks M.! k) now
+	pure case (pk, now) of
+		(GlfwG.KeyState'Released, GlfwG.KeyState'Pressed) -> True
+		_ -> False
+
+type PreKeys = M.Map GlfwG.Key (TVar GlfwG.KeyState)
+
+---------------------------------------------------------------------------
 
 flow :: TChan () -> TChan a -> [a] -> IO ()
 flow ip op = \case
 	[] -> error "no more"
-	x : xs -> do
-		atomically do
-			_ <- readTChan ip
-			writeTChan op x
-		flow ip op xs
+	x : xs -> atomically (readTChan ip >> writeTChan op x) >> flow ip op xs
+
+---------------------------------------------------------------------------
 
 isHjkl :: GlfwG.Key -> Bool
 isHjkl = (`elem` hjkl)
@@ -84,24 +86,8 @@ isGf = (`elem` gf)
 gf :: [GlfwG.Key]
 gf = [GlfwG.Key'G, GlfwG.Key'F]
 
-sendKeys :: GlfwG.Win.W sw -> Envs -> IO ()
-sendKeys win (prej, kcs) = sendKey prej win kcs `mapM_` ks
-	where ks = M.keys prej
+gh :: [GlfwG.Key]
+gh = [GlfwG.Key'G, GlfwG.Key'H]
 
-sendKey ::
-	M.Map GlfwG.Key (TVar GlfwG.KeyState) -> GlfwG.Win.W sw ->
-	M.Map GlfwG.Key (TChan ()) -> GlfwG.Key -> IO ()
-sendKey pre win kcs k =
-	keyDown pre win k >>= bool (pure ()) (atomically $ writeTChan (kcs M.! k) ())
-
-keyDown :: M.Map GlfwG.Key (TVar GlfwG.KeyState) -> GlfwG.Win.W sw -> GlfwG.Key -> IO Bool
-keyDown st w k = do
-	now <- GlfwG.Win.getKey w k
-	pre <- atomically
-		$ (readTVar $ st M.! k)
-			<* writeTVar (st M.! k) now
-	pure case (pre, now) of
-		(GlfwG.KeyState'Released, GlfwG.KeyState'Pressed) -> True
-		_ -> False
-
-data KeyEvent = First GlfwG.Key | Key GlfwG.Key deriving Show
+isGh :: GlfwG.Key -> Bool
+isGh = (`elem` gh)

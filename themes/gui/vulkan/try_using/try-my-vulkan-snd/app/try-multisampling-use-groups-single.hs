@@ -254,11 +254,11 @@ body txfp mdlfp mnld fr w ist =
 	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	createSyncObjs d \sos ->
-	K.newChans' K.gf >>= \(cke, kenvs) ->
+	K.newChans K.gf >>= \(oke, kenvs) ->
 	getCurrentTime >>=
 	mainloop (mdlfp !! 1) fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs crs drs
-		(bgv, mgv) (bgi, mgi) (vb, ib) mbm ds cb sos cke kenvs
+		(bgv, mgv) (bgi, mgi) (vb, ib) mbm ds cb sos oke kenvs
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss ->
 	IO (Vk.Phd.P, QFamIndices, Vk.Sample.CountFlags)
