@@ -213,13 +213,13 @@ body txfp fr w ist =
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
+	createMvpBffr pd d \mb mbm ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
 	createImg pd d gq cp (ImageRgba8 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx) nil \tv ->
 	createTxSmplr pd d \txsp ->
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
-	createMvpBffr pd d \mb mbm ->
 	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	createSyncObjs d \sos ->
