@@ -249,8 +249,8 @@ body kfs fr w ist =
 	createDscPl d \dp -> createTxSmplr pd d \txsp ->
 	Vk.DscSet.group d \dg -> Vk.ImgVw.group d nil \vg ->
 	Vk.Img.group d nil \ig -> Vk.Mm.group d nil \mg -> let
-	crds = createUpdateDescriptorSet d dp dsl mb dg
-	udds = ((\(Just (HPList.Singleton ds)) -> ds) <$>) . Vk.DscSet.lookup dg
+	crds = createDscSt d dp dsl mb dg
+	lkds = ((\(Just (HPList.Singleton ds)) -> ds) <$>) . Vk.DscSet.lookup dg
 	crtx = createTexture pd d gq cp txsp dg ig mg vg kfs in
 	crds Glfw.Key'H >>= \ds -> crtx Glfw.Key'H >>
 
@@ -262,21 +262,32 @@ body kfs fr w ist =
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
 		sc ex scvs rp pl gp fbs vb ib mbm ds cb sos
-		oke kenv crtx crds udds
+		oke kenv crtx crds lkds
 
-createUpdateDescriptorSet :: (Ord k, KnownNat alu) => Vk.Dvc.D sd ->
-	Vk.DscPl.P sp -> Vk.DscSetLyt.D sdsc '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom alu WModelViewProj 'Nothing] ->
-	Vk.DscSet.Group sds k sp '[ '(sdsc, Foo alu)] -> k ->
-	IO (Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]))
-createUpdateDescriptorSet dv dscp dscslyt ub grp k =
-	createDescriptorSet' dv grp k dscp dscslyt >>= \ubds ->
-	updateDescriptorSet dv ubds ub >>
-	pure ubds
+createDscSt :: (KnownNat alu, Ord k) =>
+	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.DscSetLyt.D sdsl (DscStLytArg alu) ->
+	Vk.Bffr.Binded sm sb bnm '[VObj.Atom alu WModelViewProj 'Nothing] ->
+	Vk.DscSet.Group sds k sp '[ '(sdsl, DscStLytArg alu)] -> k ->
+	IO (Vk.DscSet.D sds '(sdsl, DscStLytArg alu))
+createDscSt dv dp dl mb dg k = do
+	(Right (HPList.Singleton ds)) <- Vk.DscSet.allocateDs' dv dg k info
+	Vk.DscSet.updateDs dv (U5 (dscWriteMvp ds mb) :** HPList.Nil) HPList.Nil
+	pure ds
+	where info = Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
+		Vk.DscSet.allocateInfoDescriptorPool = dp,
+		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
+
+dscWriteMvp :: KnownNat alm => Vk.DscSet.D sds slbts ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	Vk.DscSet.Write 'Nothing sds slbts
+		('Vk.DscSet.WriteSourcesArgBuffer
+			'[ '(sm, sb, bnm, AtomModelViewProj alm)]) 0
+dscWriteMvp ds mb = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
+		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo mb }
 
 createTexture :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Smplr.M.S ss ->
@@ -294,6 +305,41 @@ createTexture phdv dv gq cp txsmplr grp mng mmng ivmng kis k = let
 	Vk.ImgVw.create' @_ @_ @'Vk.T.FormatR8g8b8a8Srgb
 		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
 	updateDescriptorSetTex dv ubds' tximgvw txsmplr
+
+createTextureImage' :: Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Img.Group sd 'Nothing sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
+	Vk.Mm.Group sd 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mm.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> Glfw.Key -> FilePath ->
+	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
+createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
+	putStrLn "createTextureImage' begin"
+	img <- either error convertRGBA8 <$> readImage tximg
+	print . V.length $ imageData img
+	let	wdt = fromIntegral $ imageWidth img
+		hgt = fromIntegral $ imageHeight img
+	(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng k
+		wdt hgt Vk.Img.TilingOptimal
+		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
+		Vk.Mm.PropertyDeviceLocalBit
+	putStrLn "before createBufferImage"
+	createBufferImage @MyImage @_ phdvc dvc
+		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mm.PropertyHostVisibleBit .|.
+			Vk.Mm.PropertyHostCoherentBit )
+		\(sb :: Vk.Bffr.Binded
+			sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
+		Vk.Mm.write @"texture-buffer"
+			@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
+		print sb
+		transitionImageLayout dvc gq cp tximg
+			Vk.Img.LayoutUndefined
+			Vk.Img.LayoutTransferDstOptimal
+		copyBufferToImage dvc gq cp sb tximg wdt hgt
+		transitionImageLayout dvc gq cp tximg
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutShaderReadOnlyOptimal
+	pure tximg
 
 {-# COMPLETE AlwaysRight #-}
 
@@ -802,41 +848,6 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-createTextureImage' :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group sd 'Nothing sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
-	Vk.Mm.Group sd 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mm.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> Glfw.Key -> FilePath ->
-	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
-createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
-	putStrLn "createTextureImage' begin"
-	img <- either error convertRGBA8 <$> readImage tximg
-	print . V.length $ imageData img
-	let	wdt = fromIntegral $ imageWidth img
-		hgt = fromIntegral $ imageHeight img
-	(tximg, _txmem) <- createImage' @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc mng mmng k
-		wdt hgt Vk.Img.TilingOptimal
-		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
-		Vk.Mm.PropertyDeviceLocalBit
-	putStrLn "before createBufferImage"
-	createBufferImage @MyImage @_ phdvc dvc
-		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		\(sb :: Vk.Bffr.Binded
-			sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
-		Vk.Mm.write @"texture-buffer"
-			@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
-		print sb
-		transitionImageLayout dvc gq cp tximg
-			Vk.Img.LayoutUndefined
-			Vk.Img.LayoutTransferDstOptimal
-		copyBufferToImage dvc gq cp sb tximg wdt hgt
-		transitionImageLayout dvc gq cp tximg
-			Vk.Img.LayoutTransferDstOptimal
-			Vk.Img.LayoutShaderReadOnlyOptimal
-	pure tximg
-
 newtype MyImage = MyImage (Image PixelRGBA8)
 
 newtype MyRgba8 = MyRgba8 { _unMyRgba8 :: PixelRGBA8 }
@@ -1132,35 +1143,6 @@ type Foo alu = '[
 	'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
 	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 
-createDescriptorSet' :: Ord k => Vk.Dvc.D sd ->
-	Vk.DscSet.Group sds k sp '[ '(sdsc, Foo alu)] -> k ->
-	Vk.DscPl.P sp -> Vk.DscSetLyt.D sdsc '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-	IO (Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]))
-createDescriptorSet' dvc grp k dscp dscslyt =
-	Vk.DscSet.allocateDs' dvc grp k allocInfo
-		>>= \(Right (HPList.Singleton dscs)) -> pure dscs
-	where
-	allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dscp,
-		Vk.DscSet.allocateInfoSetLayouts =
-			HPList.Singleton $ U2 dscslyt }
-
-updateDescriptorSet :: KnownNat alu =>
-	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom alu WModelViewProj 'Nothing] ->
-	IO ()
-updateDescriptorSet dvc dscs ub = do
-	Vk.DscSet.updateDs dvc (
-		U5 (descriptorWrite0 ub dscs) :** HPList.Nil )
-		HPList.Nil
-
 updateDescriptorSetTex ::
 	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
@@ -1171,17 +1153,37 @@ updateDescriptorSetTex dvc dscs tximgvw txsmp = do
 		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HPList.Nil )
 		HPList.Nil
 
-descriptorWrite0 :: KnownNat alu =>
-	Vk.Bffr.Binded sm sb nm '[VObj.Atom alu WModelViewProj 'Nothing] ->
-	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom alu WModelViewProj  'Nothing)]) 0
-descriptorWrite0 ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ HPList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+{-
+createDscSt :: KnownNat alm =>
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
+	Vk.DscSetLyt.D sdsl '[BufferModelViewProj alm, TxImg] ->
+	(forall sds . Vk.DscSet.D sds
+		'(sdsl, '[BufferModelViewProj alm, TxImg]) -> IO a) -> IO a
+createDscSt dv dp bm dl a =
+	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
+	$ Vk.DscSet.updateDs dv (
+		U5 (dscWriteMvp ds bm) :**
+--		U5 (dscWriteMvp ds bm) :** U5 (dscWriteTxImg ds tv ts) :**
+		HPList.Nil ) HPList.Nil
+	where info = Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
+		Vk.DscSet.allocateInfoDescriptorPool = dp,
+		Vk.DscSet.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
+		-}
+
+dscWriteTxImg :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
+	Vk.DscSet.Write 'Nothing sds slbts
+		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
+dscWriteTxImg ds v s = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
+	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton
+		$ U4 Vk.Dsc.ImageInfo {
+			Vk.Dsc.imageInfoImageLayout =
+				Vk.Img.LayoutShaderReadOnlyOptimal,
+			Vk.Dsc.imageInfoImageView = v,
+			Vk.Dsc.imageInfoSampler = s } }
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
