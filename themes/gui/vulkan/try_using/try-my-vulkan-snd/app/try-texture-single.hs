@@ -218,9 +218,9 @@ body txfp fr w ist =
 	createImg pd d gq cp (ImageRgba8 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx) nil \tv ->
 	createTxSmplr pd d \txsp ->
+	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
-	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	createSyncObjs d \sos ->
 	getCurrentTime >>=
