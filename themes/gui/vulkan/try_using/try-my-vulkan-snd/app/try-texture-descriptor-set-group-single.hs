@@ -100,7 +100,7 @@ import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
+import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
@@ -236,14 +236,13 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
 body :: M.Map Glfw.Key FilePath ->
-	FramebufferResized ->
-	GlfwG.Win.W sw -> Vk.Ist.I si ->
-	IO ()
-body kis g w@(GlfwG.Win.W win) ist =
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+body kfs fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \d gq pq ->
-	createSwapChainNew win sfc pd qfis d
+	createCmdPl qfis d \cp ->
+	createSwapChainNew w sfc pd qfis d
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
 	Vk.Khr.Swapchain.getImages d sc >>= \imgs ->
 	createImageViews d imgs \scivs ->
@@ -251,7 +250,6 @@ body kis g w@(GlfwG.Win.W win) ist =
 	createPipelineLayout' d \dscslyt ppllyt ->
 	createGraphicsPipeline' d ext rp ppllyt \gpl ->
 	createFramebuffers d ext rp scivs \fbs ->
-	createCommandPool qfis d \cp ->
 
 	createVertexBuffer pd d gq cp \vb ->
 	createIndexBuffer pd d gq cp \ib ->
@@ -274,13 +272,13 @@ body kis g w@(GlfwG.Win.W win) ist =
 	udds k = Vk.DscSet.lookup grp k
 		>>= \(Just (HPList.Singleton ds)) ->
 		atomically $ writeTVar vubds ds
-	crtx = createTexture pd d gq cp grp mng mmng ivmng txsmplr kis in
+	crtx = createTexture pd d gq cp grp mng mmng ivmng txsmplr kfs in
 
 	crtx Glfw.Key'H >>
 
 	K.newChans' (K.hjkl ++ K.gf) >>= \(oke, prkcs) ->
 
-	mainLoop g win sfc pd qfis d gq pq sc ext scivs rp ppllyt gpl fbs vb ib
+	mainLoop fr w sfc pd qfis d gq pq sc ext scivs rp ppllyt gpl fbs vb ib
 		ubm vubds cb sos tm oke prkcs crtx crds udds
 
 createUpdateDescriptorSet :: Ord k => Vk.Dvc.D sd ->
@@ -297,7 +295,7 @@ createUpdateDescriptorSet dv grp k dscp dscslyt ub =
 	updateDescriptorSet dv ubds ub >>
 	pure ubds
 
-createTexture :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
+createTexture :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.DscSet.Group sgrp Glfw.Key sp '[ '(sdsl, Foo)] ->
 	Vk.Img.Group sd 'Nothing si Glfw.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Group sd 'Nothing sm Glfw.Key '[
@@ -420,12 +418,12 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 		Vk.Dvc.createInfoEnabledFeatures = Just def {
 			Vk.Phd.featuresSamplerAnisotropy = True } }
 
-createSwapChainNew :: Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
+createSwapChainNew :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
 	IO a
-createSwapChainNew win sfc phdvc qfis dvc f = do
+createSwapChainNew (GlfwG.Win.W win) sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilitiesOld spp
 	let	fmt = Vk.Khr.Sfc.M.formatOldFormat
@@ -878,20 +876,18 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	where
 	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
 
-createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
-	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
-createCommandPool qfis dvc f =
-	Vk.CmdPool.create dvc poolInfo nil \cp -> f cp
-	where poolInfo = Vk.CmdPool.CreateInfo {
-		Vk.CmdPool.createInfoNext = TMaybe.N,
-		Vk.CmdPool.createInfoFlags =
-			Vk.CmdPool.CreateResetCommandBufferBit,
-		Vk.CmdPool.createInfoQueueFamilyIndex = grFam qfis }
+createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
+	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl qfis dv = Vk.CmdPl.create dv info nil
+	where info = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
+		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
 createTextureImage' :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group sd 'Nothing sim Glfw.Key nm 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mem.Group sd 'Nothing smm Glfw.Key '[ '(sim, 'Vk.Mem.ImageArg nm 'Vk.T.FormatR8g8b8a8Srgb)] ->
-	Vk.Q.Q -> Vk.CmdPool.C sc -> Glfw.Key -> FilePath ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> Glfw.Key -> FilePath ->
 	IO (Vk.Img.Binded smm sim nm 'Vk.T.FormatR8g8b8a8Srgb)
 createTextureImage' phdvc dvc mng mmng gq cp k tximg = do
 	putStrLn "createTextureImage' begin"
@@ -990,7 +986,7 @@ createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
@@ -1029,7 +1025,7 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.ImagePixel img) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
@@ -1082,7 +1078,7 @@ createTextureSampler phdv dvc f = do
 	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
 
 createVertexBuffer :: Vk.Phd.P ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> (forall sm sb .
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (fromIntegral $ length vertices)
@@ -1103,7 +1099,7 @@ createVertexBuffer phdvc dvc gq cp f =
 	f b
 
 createIndexBuffer :: Vk.Phd.P ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> (forall sm sb .
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Word16 ""] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (fromIntegral $ length indices)
@@ -1296,14 +1292,14 @@ findMemoryType phdvc flt props =
 		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 a ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 a ""] -> IO ()
 copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
 	Vk.Cmd.copyBuffer @'[ '[VObj.List 256 a ""]] cb src dst
 
 beginSingleTimeCommands :: forall sd sc a .
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CmdBffr.allocate
@@ -1329,7 +1325,7 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createCommandBuffer ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . Vk.CmdBffr.C scb -> IO a) ->
 	IO a
 createCommandBuffer dvc cp f = Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. HPList.Nil) -> cb
@@ -1398,7 +1394,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 mainLoop ::
 	(RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	FramebufferResized ->
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> Vk.Extent2d ->
@@ -1421,7 +1417,7 @@ mainLoop ::
 	TChan K.KeyEvent -> K.Envs ->
 	(Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) -> (Glfw.Key -> IO ()) ->
 	IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm vubds cb iasrfsifs tm0 oke prkcs crtx crds udds = do
+mainLoop g (GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm vubds cb iasrfsifs tm0 oke prkcs crtx crds udds = do
 	($ ext0) $ fix \loop ext -> do
 		me <- atomically do
 			b <- isEmptyTChan oke
