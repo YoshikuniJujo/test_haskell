@@ -214,11 +214,11 @@ body txfp fr w ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
 	createMvpBffr pd d \mb mbm ->
+	createDscPl d \dp -> createTxSmplr pd d \txsp ->
 	either error convertRGBA8 <$> readImage txfp >>= \txi ->
 	createImg pd d gq cp (ImageRgba8 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx) nil \tv ->
-	createTxSmplr pd d \txsp ->
-	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
+	createDscSt d dp mb tv txsp dsl \ds ->
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
