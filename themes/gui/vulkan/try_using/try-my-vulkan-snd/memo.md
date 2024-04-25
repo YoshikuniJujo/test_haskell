@@ -124,13 +124,13 @@ apps
 * [ ] try-saitan-float.hs
 * [ ] try-texel-buffer-float.hs
 * [ ] try-texel-buffer-word32.hs
-* [ ] my-glslc.hs
 * [ ] try-allocation-callbacks.hs
 * [ ] try-copy-descriptor-set.hs
+* [ ] try-no-dynamic-dsc-sets.hs
 * [ ] try-dynamic-dsc-sets.hs
 * [ ] try-image-buffer.hs
-* [ ] try-no-dynamic-dsc-sets.hs
 * [ ] try-pipeline-cache.hs
 * [ ] try-query.hs
 * [ ] try-shaderc.hs
+* [ ] my-glslc.hs
 * [ ] try-wavefront-obj.hs
