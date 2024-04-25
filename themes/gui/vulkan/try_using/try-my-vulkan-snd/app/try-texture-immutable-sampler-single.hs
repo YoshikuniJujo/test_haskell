@@ -846,7 +846,7 @@ createTextureImage ::
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
 createTextureImage phdvc dvc gq cp f = do
-	img <- readRgba8 "../../../../files/images/texture.jpg"
+	img <- readRgba8 "../../../../../files/images/texture.jpg"
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
