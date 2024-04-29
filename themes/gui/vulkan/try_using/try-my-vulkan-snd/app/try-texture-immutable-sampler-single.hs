@@ -1204,7 +1204,7 @@ recordCmdBffr cb ex rp pl gp fb vb ib ds =
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
 		(HPList.Singleton $ U2 ds)
 		(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) 1 0 0 0
+	Vk.Cmd.drawIndexed cbb indicesNum 1 0 0 0
 	where
 	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -1309,6 +1309,8 @@ vertices = Foreign.Storable.Generic.W <$> [
 	Vertex (Glm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
 		(Glm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
 		(TexCoord . Glm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
+
+indicesNum = fromIntegral $ length indices
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
