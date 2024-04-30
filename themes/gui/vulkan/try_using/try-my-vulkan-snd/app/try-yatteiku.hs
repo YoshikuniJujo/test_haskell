@@ -9,8 +9,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
 
-module Main where
-
+module Main (main) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -26,13 +25,12 @@ import Data.List
 import Data.Array
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HPList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import Data.Color
 import Codec.Picture
 
-import qualified Language.SpirV as SpirV
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
 
@@ -40,16 +38,16 @@ import Data.TypeLevel.ParMaybe (nil)
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
-import qualified Gpu.Vulkan.Instance as Vk.Instance
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
-import qualified Gpu.Vulkan.Device as Vk.Device
+import qualified Gpu.Vulkan.Instance as Vk.Ist
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
+import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device as Vk.Dvc.M
-import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 
-import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
+import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer.M
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.Queue as Vk.Q
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.Sample as Vk.Sample
@@ -80,52 +78,73 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
-import Tools
+import Data.Bits.ToolsYj
+import Data.Maybe.ToolsYj
+import Data.List.ToolsYj
+
+main :: IO ()
+main =	createIst \ist -> pickPhd ist >>= \(pd, gqfi) ->
+	createLgDvc pd gqfi \dv gq -> createCmdPl gqfi dv \cp ->
+	runDevice pd dv gq cp
+
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = Vk.Ist.create info nil f
+	where
+	info :: Vk.Ist.CreateInfo 'Nothing 'Nothing
+	info = def { Vk.Ist.createInfoEnabledLayerNames = vldLayers }
+
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
+
+pickPhd :: Vk.Ist.I si -> IO (Vk.Phd.P, Vk.QFam.Index)
+pickPhd ist = Vk.Phd.enumerate ist >>= \case
+	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
+	pds -> findMaybeM suit pds >>= \case
+		Nothing -> error "failed to find a suitable GPU!"
+		Just pdqfi -> pure pdqfi
+	where suit pd = findQFams <$> Vk.Phd.getQueueFamilyProperties pd
+
+findQFams :: [(Vk.QFam.Index, Vk.QFam.Properties)] -> Maybe Vk.QFam.Index
+findQFams ps = fst <$> find (grbit . snd) ps
+	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
+
+createLgDvc :: Vk.Phd.P -> Vk.QFam.Index ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> IO a) -> IO a
+createLgDvc pd gqfi a =
+	Vk.Dvc.create pd info nil \dv -> a dv =<< Vk.Dvc.getQueue dv gqfi 0
+	where
+	info = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
+		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
+		Vk.Dvc.createInfoEnabledExtensionNames = [],
+		Vk.Dvc.createInfoEnabledFeatures = Just def }
+	qinfo = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = gqfi,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1.0] }
+
+createCmdPl :: Vk.QFam.Index -> Vk.Dvc.D sd ->
+	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl gqfi dv = Vk.CmdPl.create dv info nil
+	where info = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = zeroBits,
+		Vk.CmdPl.createInfoQueueFamilyIndex = gqfi }
 
 screenWidth, screenHeight :: Word32
 (screenWidth, screenHeight) = (640, 480)
 
-main :: IO ()
-main = do
-	let	createInfo :: Vk.Instance.CreateInfo 'Nothing 'Nothing
-		createInfo = def {
-			Vk.Instance.createInfoEnabledLayerNames =
-				[Vk.layerKhronosValidation] }
-	Vk.Instance.create createInfo nil \inst -> do
-		(physicalDevice, graphicsQueueFamilyIndex) <-
-			selectPhysicalDeviceAndQueueFamily
-				=<< Vk.PhysicalDevice.enumerate inst
-		print physicalDevice
-		print graphicsQueueFamilyIndex
-		let	queueCreateInfo = Vk.Device.QueueCreateInfo {
-				Vk.Device.queueCreateInfoNext = TMaybe.N,
-				Vk.Device.queueCreateInfoFlags = zeroBits,
-				Vk.Device.queueCreateInfoQueueFamilyIndex =
-					graphicsQueueFamilyIndex,
-				Vk.Device.queueCreateInfoQueuePriorities =
-					[1.0] }
-			devCreateInfo :: Vk.Device.CreateInfo 'Nothing '[ 'Nothing]
-			devCreateInfo = Vk.Device.CreateInfo {
-				Vk.Device.createInfoNext = TMaybe.N,
-				Vk.Device.createInfoFlags = zeroBits,
-				Vk.Device.createInfoQueueCreateInfos =
-					HeteroParList.Singleton queueCreateInfo,
-				Vk.Device.createInfoEnabledLayerNames =
-					[Vk.layerKhronosValidation],
-				Vk.Device.createInfoEnabledExtensionNames = [],
-				Vk.Device.createInfoEnabledFeatures = Nothing }
-		Vk.Device.create physicalDevice devCreateInfo nil \dvc ->
-			runDevice physicalDevice dvc graphicsQueueFamilyIndex
-
-runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
-runDevice phdvc device graphicsQueueFamilyIndex =
+runDevice :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> IO ()
+runDevice phdvc device gq cp =
 	makeRenderPass device \rp ->
 	makePipelineNew device rp \ppl ->
 	makeImage' phdvc device \bimg' _mi' ->
 	makeBuffer phdvc device screenWidth screenHeight \b bm -> do
 		makeImageView device bimg' \iv ->
-			makeFramebuffer device rp iv \fb ->
-			makeCommandBufferEtc device graphicsQueueFamilyIndex \gq cp -> do
+			makeFramebuffer device rp iv \fb -> do
 				makeCommandBuffer device gq cp \cb -> do
 					let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
 							Vk.RenderPass.beginInfoNext = TMaybe.N,
@@ -135,7 +154,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 								Vk.rect2dOffset = Vk.Offset2d 0 0,
 								Vk.rect2dExtent = Vk.Extent2d
 									screenWidth screenHeight },
-							Vk.RenderPass.beginInfoClearValues = HeteroParList.Nil }
+							Vk.RenderPass.beginInfoClearValues = HPList.Nil }
 					Vk.Cmd.beginRenderPass @'Nothing @'[]
 						cb renderpassBeginInfo Vk.Subpass.ContentsInline $
 						Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics ppl \cbb ->
@@ -148,21 +167,19 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 		MyImage img <- Vk.Memory.read @"image-buffer" @(VObj.Image 1 MyImage "") device bm def
 		writePng "yatteiku.png" (img :: Image PixelRGBA8)
 
-makeCommandBufferEtc :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
-	(forall scp . Vk.Queue.Q -> Vk.CommandPool.C scp -> IO a) -> IO a
+makeCommandBufferEtc :: Vk.Dvc.D sd -> Vk.QFam.Index ->
+	(forall scp . Vk.CmdPl.C scp -> IO a) -> IO a
 makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
-	graphicsQueue <- Vk.Device.getQueue device graphicsQueueFamilyIndex 0
-	print graphicsQueue
-	let	cmdPoolCreateInfo :: Vk.CommandPool.CreateInfo 'Nothing
-		cmdPoolCreateInfo = Vk.CommandPool.CreateInfo {
-			Vk.CommandPool.createInfoNext = TMaybe.N,
-			Vk.CommandPool.createInfoFlags = zeroBits,
-			Vk.CommandPool.createInfoQueueFamilyIndex =
+	let	cmdPoolCreateInfo :: Vk.CmdPl.CreateInfo 'Nothing
+		cmdPoolCreateInfo = Vk.CmdPl.CreateInfo {
+			Vk.CmdPl.createInfoNext = TMaybe.N,
+			Vk.CmdPl.createInfoFlags = zeroBits,
+			Vk.CmdPl.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	Vk.CommandPool.create device cmdPoolCreateInfo nil
-			\(cmdPool :: Vk.CommandPool.C s) -> f graphicsQueue cmdPool
+	Vk.CmdPl.create device cmdPoolCreateInfo nil
+			\(cmdPool :: Vk.CmdPl.C s) -> f cmdPool
 
-makeCommandBuffer :: forall sd scp a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
+makeCommandBuffer :: forall sd scp a . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp ->
 	(forall s . Vk.CommandBuffer.C s -> IO a) -> IO a
 makeCommandBuffer device graphicsQueue cmdPool f = do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo 'Nothing scp '[ '()]
@@ -172,20 +189,20 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 					cmdPool,
 				Vk.CommandBuffer.allocateInfoLevel =
 					Vk.CommandBuffer.LevelPrimary }
-		Vk.CommandBuffer.allocate device cmdBufAllocInfo \(cmdBuf :*. HeteroParList.Nil) -> do
+		Vk.CommandBuffer.allocate device cmdBufAllocInfo \(cmdBuf :*. HPList.Nil) -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
 					(def :: Vk.CommandBuffer.BeginInfo 'Nothing 'Nothing) $ f cmdBuf
 				let	submitInfo :: Vk.SubmitInfo 'Nothing _ _ _
 					submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = TMaybe.N,
-						Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-						Vk.submitInfoCommandBuffers = cmdBuf :** HeteroParList.Nil,
-						Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-				Vk.Queue.submit graphicsQueue (U4 submitInfo :** HeteroParList.Nil) Nothing
-				Vk.Queue.waitIdle graphicsQueue
+						Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+						Vk.submitInfoCommandBuffers = cmdBuf :** HPList.Nil,
+						Vk.submitInfoSignalSemaphores = HPList.Nil }
+				Vk.Q.submit graphicsQueue (U4 submitInfo :** HPList.Nil) Nothing
+				Vk.Q.waitIdle graphicsQueue
 				pure r
 
-makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
+makeImage' :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall si sm .
 		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Unorm ->
 		Vk.Memory.M sm '[ '(si, 'Vk.Memory.ImageArg nm 'Vk.T.FormatR8g8b8a8Unorm)] -> IO a) ->
@@ -210,7 +227,7 @@ makeImage' phdvc dvc f = do
 				Vk.SharingModeExclusive,
 			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
 			Vk.Img.createInfoQueueFamilyIndices = [] }
-	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
+	memProps <- Vk.Phd.getMemoryProperties phdvc
 	print memProps
 	Vk.Img.create @'Nothing dvc imgCreateInfo nil \image -> do
 		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
@@ -221,7 +238,7 @@ makeImage' phdvc dvc f = do
 				. filter ((/= zeroBits)
 					. (.&. Vk.Memory.PropertyHostVisibleBit)
 					. Vk.Memory.M.mTypePropertyFlags . snd)
-				$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
+				$ Vk.Phd.memoryPropertiesMemoryTypes
 					memProps
 			memoryTypeIndex = case filter
 				(`Vk.Memory.M.elemTypeIndex` imgMemReqTypes)
@@ -233,11 +250,11 @@ makeImage' phdvc dvc f = do
 				Vk.Memory.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
 		Vk.Memory.allocateBind @'Nothing
-			dvc (HeteroParList.Singleton . U2 $ Vk.Memory.Image image)
-			imgMemAllocInfo nil \(HeteroParList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
+			dvc (HPList.Singleton . U2 $ Vk.Memory.Image image)
+			imgMemAllocInfo nil \(HPList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
-makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
+makeBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb "image-buffer" '[ VObj.Image 1 MyImage ""] ->
 		Vk.Memory.M sm '[ '(
@@ -253,7 +270,7 @@ makeBuffer phdvc dvc wdt hgt f =
 
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.ImagePixel img) =>
-	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 --	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
@@ -272,10 +289,10 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyImageToBuffer @1
-		cb img Vk.Img.LayoutTransferSrcOptimal bf (HeteroParList.Singleton region)
+		cb img Vk.Img.LayoutTransferSrcOptimal bf (HPList.Singleton region)
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
-	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
@@ -286,9 +303,9 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
+				Vk.QFam.Ignored,
 			Vk.Img.memoryBarrierDstQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
+				Vk.QFam.Ignored,
 			Vk.Img.memoryBarrierImage = img,
 			Vk.Img.memoryBarrierSubresourceRange = srr,
 			Vk.Img.memoryBarrierSrcAccessMask = sam,
@@ -301,7 +318,7 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.subresourceRangeBaseArrayLayer = 0,
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ U5 barrier)
+		sstg dstg zeroBits HPList.Nil HPList.Nil (HPList.Singleton $ U5 barrier)
 	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
@@ -318,20 +335,20 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 
 
 beginSingleTimeCommands :: forall sd sc a .
-	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CommandBuffer.C s -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CommandBuffer.allocate
-		dvc allocInfo \((cb :: Vk.CommandBuffer.C s) :*. HeteroParList.Nil) -> do
+		dvc allocInfo \((cb :: Vk.CommandBuffer.C s) :*. HPList.Nil) -> do
 		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = TMaybe.N,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+				Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+				Vk.submitInfoSignalSemaphores = HPList.Nil }
 		Vk.CommandBuffer.begin @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
-			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
-			Vk.Queue.waitIdle gq
+			Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) Nothing
+			Vk.Q.waitIdle gq
 	where
 	allocInfo :: Vk.CommandBuffer.AllocateInfo 'Nothing sc '[ '()]
 	allocInfo = Vk.CommandBuffer.AllocateInfo {
@@ -344,7 +361,7 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 
 createBufferImage :: Storable (KObj.ImagePixel t) =>
-	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size, Vk.Dvc.M.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
@@ -356,7 +373,7 @@ createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer p dv (VObj.LengthImage r w h d) usg props
 
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhysicalDevice.P -> Vk.Device.D sd -> VObj.Length o ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Memory.M sm
@@ -365,15 +382,15 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Memory.M.requirementsMemoryTypeBits reqs) props
-	Vk.Memory.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Memory.Buffer b)
+	Vk.Memory.allocateBind dv (HPList.Singleton . U2 $ Vk.Memory.Buffer b)
 		(allcInfo mt) nil
-		$ f . \(HeteroParList.Singleton (U2 (Vk.Memory.BufferBinded bnd))) -> bnd
+		$ f . \(HPList.Singleton (U2 (Vk.Memory.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
+		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -382,22 +399,20 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 		Vk.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
-findMemoryType :: Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
+findMemoryType :: Vk.Phd.P -> Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	IO Vk.Memory.M.TypeIndex
 findMemoryType phdvc flt props =
-	fromMaybe (error msg) . suitable <$> Vk.PhysicalDevice.getMemoryProperties phdvc
+	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
 	suitable props1 = fst <$> find ((&&)
 		<$> (`Vk.Memory.M.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Memory.M.mTypePropertyFlags . snd) tps
-		where tps = Vk.PhysicalDevice.memoryPropertiesMemoryTypes props1
+		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
--- type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Unorm
-
-newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+newtype MyRgba8 = MyRgba8 PixelRGBA8
 
 instance Storable MyRgba8 where
 	sizeOf _ = 4 * sizeOf @Pixel8 undefined
@@ -406,10 +421,6 @@ instance Storable MyRgba8 where
 		<$> peekArray 4 (castPtr p)
 	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
-
-listToTuple4 :: [a] -> (a, a, a, a)
-listToTuple4 [r, g, b, a] = (r, g, b, a)
-listToTuple4 _ = error "The length of the list is not 4"
 
 instance KObj.IsImage MyImage where
 	type ImagePixel MyImage = MyRgba8
@@ -424,7 +435,7 @@ instance KObj.IsImage MyImage where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
-makeImageView :: Vk.Device.D sd -> Vk.Img.Binded sm si nm fmt ->
+makeImageView :: Vk.Dvc.D sd -> Vk.Img.Binded sm si nm fmt ->
 	(forall s . Vk.ImgView.I nm Vk.T.FormatR8g8b8a8Unorm s -> IO a) -> IO a
 makeImageView dvc bimg f =
 	Vk.ImgView.create dvc imgViewCreateInfo nil \imgView -> do
@@ -456,7 +467,7 @@ makeImageView dvc bimg f =
 						0,
 					Vk.Img.subresourceRangeLayerCount = 1 } }
 
-makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I nm fmt si ->
+makeFramebuffer :: Vk.Dvc.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I nm fmt si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
 makeFramebuffer dvc rp iv f =
 	Vk.Framebuffer.create @'Nothing dvc frameBufCreateInfo nil f
@@ -465,43 +476,13 @@ makeFramebuffer dvc rp iv f =
 			Vk.Framebuffer.createInfoFlags =
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
-			Vk.Framebuffer.createInfoAttachments = U3 iv :** HeteroParList.Nil,
+			Vk.Framebuffer.createInfoAttachments = U3 iv :** HPList.Nil,
 			Vk.Framebuffer.createInfoWidth = screenWidth,
 			Vk.Framebuffer.createInfoHeight = screenHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }
 
-selectPhysicalDeviceAndQueueFamily ::
-	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
-selectPhysicalDeviceAndQueueFamily = \case
-	[] -> error "no suitable QueueFamilies"
-	phdvc : phdvcs -> do
-		queueProps <- Vk.PhysicalDevice.getQueueFamilyProperties phdvc
-		case pickGraphicsQueueFamilyIndex queueProps of
-			Nothing -> selectPhysicalDeviceAndQueueFamily phdvcs
-			Just idx -> pure (phdvc, idx)
-
-pickGraphicsQueueFamilyIndex ::
-	[(Vk.QueueFamily.Index, Vk.QueueFamily.Properties)] -> Maybe Vk.QueueFamily.Index
-pickGraphicsQueueFamilyIndex ps = fst <$> find
-	((/= zeroBits) . (Vk.Queue.GraphicsBit .&.)
-		. Vk.QueueFamily.propertiesQueueFlags . snd) ps
-
-printQueueProps :: Vk.QueueFamily.Properties -> IO ()
-printQueueProps qps = do
-	print qps
-	print . breakBits $ Vk.QueueFamily.propertiesQueueFlags qps
-
-breakBits :: FiniteBits b => b -> [b]
-breakBits = bb (bit 0 `rotateR` 1)
-	where
-	bb i n	| i == zeroBits = []
-		| i .&. n == zeroBits = bs
-		| otherwise = i : bs
-		where
-		bs = bb (i `shiftR` 1) n
-
 makeRenderPass ::
-	Vk.Device.D sd -> (forall s . Vk.RenderPass.R s -> IO a) -> IO a
+	Vk.Dvc.D sd -> (forall s . Vk.RenderPass.R s -> IO a) -> IO a
 makeRenderPass dvc f = do
 	let	attachmentNew :: Vk.Attachment.Description 'Vk.T.FormatR8g8b8a8Unorm
 		attachmentNew = Vk.Attachment.Description {
@@ -542,12 +523,12 @@ makeRenderPass dvc f = do
 			Vk.RenderPass.createInfoFlags =
 				Vk.RenderPass.CreateFlagsZero,
 			Vk.RenderPass.createInfoAttachments =
-				attachmentNew :** HeteroParList.Nil,
+				attachmentNew :** HPList.Nil,
 			Vk.RenderPass.createInfoSubpasses = [subpass],
 			Vk.RenderPass.createInfoDependencies = [] }
 	Vk.RenderPass.create dvc renderPassCreateInfoNew nil f
 
-makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
+makePipelineNew :: Vk.Dvc.D sd -> Vk.RenderPass.R sr ->
 	(forall s sl . Vk.Ppl.Gr.G s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a
 makePipelineNew dvc rp f = do
 	let	viewport = Vk.Viewport {
@@ -636,7 +617,7 @@ makePipelineNew dvc rp f = do
 		layoutCreateInfoNew = Vk.Ppl.Lyt.CreateInfo {
 			Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 			Vk.Ppl.Lyt.createInfoFlags = zeroBits,
-			Vk.Ppl.Lyt.createInfoSetLayouts = HeteroParList.Nil }
+			Vk.Ppl.Lyt.createInfoSetLayouts = HPList.Nil }
 		vertShaderCreateInfo = Vk.ShaderModule.CreateInfo {
 			Vk.ShaderModule.createInfoNext = TMaybe.N,
 			Vk.ShaderModule.createInfoFlags = zeroBits,
@@ -678,7 +659,7 @@ makePipelineNew dvc rp f = do
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =
 					U5 vertShaderStage :**
-					U5 fragShaderStage :** HeteroParList.Nil,
+					U5 fragShaderStage :** HPList.Nil,
 				Vk.Ppl.Gr.createInfoVertexInputState =
 					Just $ U3 vertexInputInfo,
 				Vk.Ppl.Gr.createInfoInputAssemblyState =
@@ -700,14 +681,8 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
-			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil
-				\(U3 g :** HeteroParList.Nil) -> f g
-
-shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
-shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
-	Vk.ShaderModule.createInfoNext = TMaybe.N,
-	Vk.ShaderModule.createInfoFlags = def,
-	Vk.ShaderModule.createInfoCode = code }
+			U14 pipelineCreateInfo :** HPList.Nil ) nil
+				\(U3 g :** HPList.Nil) -> f g
 
 [glslVertexShader|
 
