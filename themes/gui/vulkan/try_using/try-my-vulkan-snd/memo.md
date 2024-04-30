@@ -116,7 +116,7 @@ apps
 * [x] try-multisampling-use-groups-single.hs
 * [x] try-texture-image-manager-single.hs
 * [x] try-texture-descriptor-set-group-single.hs
-* [ ] try-texture-immutable-sampler-single.hs
+* [x] try-texture-immutable-sampler-single.hs
 * [ ] try-yatteiku.hs
 * [ ] try-hello-world.hs
 * [ ] try-saitan-simple.hs
@@ -124,13 +124,13 @@ apps
 * [ ] try-saitan-float.hs
 * [ ] try-texel-buffer-float.hs
 * [ ] try-texel-buffer-word32.hs
-* [ ] try-allocation-callbacks.hs
-* [ ] try-copy-descriptor-set.hs
+* [ ] try-image-buffer.hs
 * [ ] try-no-dynamic-dsc-sets.hs
 * [ ] try-dynamic-dsc-sets.hs
-* [ ] try-image-buffer.hs
-* [ ] try-pipeline-cache.hs
+* [ ] try-copy-descriptor-set.hs
 * [ ] try-query.hs
+* [ ] try-allocation-callbacks.hs
+* [ ] try-pipeline-cache.hs
 * [ ] try-shaderc.hs
 * [ ] my-glslc.hs
 * [ ] try-wavefront-obj.hs

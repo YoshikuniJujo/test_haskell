@@ -1224,7 +1224,7 @@ catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go a = catchJust
 recreateAll :: (Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
