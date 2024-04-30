@@ -4,6 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -49,15 +50,13 @@ import qualified Gpu.Vulkan.Queue as Vk.Q
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.Sample as Vk.Sample
-import qualified Gpu.Vulkan.Memory as Vk.Mm.M
 import qualified Gpu.Vulkan.Memory as Vk.Mm
-import qualified Gpu.Vulkan.Attachment as Vk.Attachment
+import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass as Vk.RenderPass
+import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportState
-import Gpu.Vulkan.Pipeline.VertexInputState as
-	Vk.Ppl.VertexInputState
+import Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputState
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAssSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
@@ -68,8 +67,7 @@ import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
-import qualified Gpu.Vulkan.ImageView as Vk.ImgView
-import qualified Gpu.Vulkan.Component as Vk.Component
+import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
@@ -86,8 +84,8 @@ main =	createIst \it -> pickPhd it >>= \(pd, qfi) -> createLgDvc pd qfi \dv ->
 	createRsltBffr pd dv imgWidth imgHeight
 		\(b :: RsltBffr sm sb nm img) bm -> do
 	Vk.Dvc.getQueue dv qfi 0 >>= \gq -> createCmdPl qfi dv \cp ->
-		body pd dv gq cp \bimg' ->
-		copyBufferToImage dv gq cp bimg' b imgWidth imgHeight
+		body pd dv gq cp \img ->
+		copyBufferToImage dv gq cp img b imgWidth imgHeight
 	ImageRgba8 img <- Vk.Mm.read @nm @img dv bm zeroBits
 	writePng "yatteiku.png" img
 
@@ -214,9 +212,9 @@ createCmdPl gqfi dv = Vk.CmdPl.create dv info nil
 
 body :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall sm' si . Vk.Img.Binded sm' si nm' RsltFmt -> IO a) -> IO a
-body pd dv gq cp f =
-	makeImage' pd dv \bimg' _mi' -> do
-	makeImageView dv bimg' \iv ->
+body pd dv gq cp f = prepareRsltImg pd dv \img _mimg -> do
+	Vk.ImgVw.create @_ @RsltFmt dv (imgVwInfo img) nil \iv ->
+--		createRndrPss @RsltFmt dv \rp ->
 		makeRenderPass dv \rp ->
 		makeFramebuffer dv rp iv \fb ->
 		makePipelineNew dv rp \ppl ->
@@ -226,101 +224,73 @@ body pd dv gq cp f =
 			Vk.Cmd.bindPipelineGraphics
 				cb Vk.Ppl.BindPointGraphics ppl \cbb ->
 			Vk.Cmd.draw cbb 3 1 0 0
-	transitionImageLayout dv gq cp bimg'
+	transitionImageLayout dv gq cp img
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
-	f bimg'
-	where binfo rp fb = Vk.RenderPass.BeginInfo {
-		Vk.RenderPass.beginInfoNext = TMaybe.N,
-		Vk.RenderPass.beginInfoRenderPass = rp,
-		Vk.RenderPass.beginInfoFramebuffer = fb,
-		Vk.RenderPass.beginInfoRenderArea = Vk.Rect2d {
+	f img
+	where binfo rp fb = Vk.RndrPss.BeginInfo {
+		Vk.RndrPss.beginInfoNext = TMaybe.N,
+		Vk.RndrPss.beginInfoRenderPass = rp,
+		Vk.RndrPss.beginInfoFramebuffer = fb,
+		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
 			Vk.rect2dExtent = Vk.Extent2d imgWidth imgHeight },
-		Vk.RenderPass.beginInfoClearValues = HPList.Nil }
+		Vk.RndrPss.beginInfoClearValues = HPList.Nil }
 
-makeImage' :: Vk.Phd.P -> Vk.Dvc.D sd ->
+prepareRsltImg :: Vk.T.FormatToValue fmt => Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall si sm .
-		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Unorm ->
-		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm 'Vk.T.FormatR8g8b8a8Unorm)] -> IO a) ->
-	IO a
-makeImage' phdvc dvc f = do
-	let	imgCreateInfo = Vk.Img.CreateInfo {
-			Vk.Img.createInfoNext = TMaybe.N,
-			Vk.Img.createInfoFlags = Vk.Img.CreateFlagsZero,
-			Vk.Img.createInfoImageType = Vk.Img.Type2d,
-			Vk.Img.createInfoExtent =
-				Vk.Extent3d imgWidth imgHeight 1,
-			Vk.Img.createInfoMipLevels = 1,
-			Vk.Img.createInfoArrayLayers = 1,
-			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
-			Vk.Img.createInfoInitialLayout =
-				Vk.Img.LayoutUndefined,
---				Vk.Img.LayoutTransferSrcOptimal,
-			Vk.Img.createInfoUsage =
-				Vk.Img.UsageColorAttachmentBit .|.
-				Vk.Img.UsageTransferSrcBit,
-			Vk.Img.createInfoSharingMode =
-				Vk.SharingModeExclusive,
-			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
-			Vk.Img.createInfoQueueFamilyIndices = [] }
-	memProps <- Vk.Phd.getMemoryProperties phdvc
-	print memProps
-	Vk.Img.create @'Nothing dvc imgCreateInfo nil \image -> do
-		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
-		print imgMemReq
-		let	imgMemReqTypes =
-				Vk.Mm.M.requirementsMemoryTypeBits imgMemReq
-			memPropTypes = (fst <$>)
-				. filter ((/= zeroBits)
-					. (.&. Vk.Mm.PropertyHostVisibleBit)
-					. Vk.Mm.M.mTypePropertyFlags . snd)
-				$ Vk.Phd.memoryPropertiesMemoryTypes
-					memProps
-			memoryTypeIndex = case filter
-				(`Vk.Mm.M.elemTypeIndex` imgMemReqTypes)
-				memPropTypes of
-				[] -> error "No available memory types"
-				i : _ -> i
-			imgMemAllocInfo = Vk.Mm.AllocateInfo {
-				Vk.Mm.allocateInfoNext = TMaybe.N,
-				Vk.Mm.allocateInfoMemoryTypeIndex =
-					memoryTypeIndex }
-		Vk.Mm.allocateBind @'Nothing
-			dvc (HPList.Singleton . U2 $ Vk.Mm.Image image)
-			imgMemAllocInfo nil \(HPList.Singleton (U2 (Vk.Mm.ImageBinded bimg))) imgMem -> do
-			f bimg imgMem
+		Vk.Img.Binded sm si nm fmt ->
+		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)] -> IO a) -> IO a
+prepareRsltImg pd dv = prepareImg pd dv Vk.Img.TilingLinear
+	(Vk.Img.UsageColorAttachmentBit .|. Vk.Img.UsageTransferSrcBit)
+	Vk.Mm.PropertyHostVisibleBit imgWidth imgHeight
 
-makeImageView :: Vk.Dvc.D sd -> Vk.Img.Binded sm si nm fmt ->
-	(forall s . Vk.ImgView.I nm Vk.T.FormatR8g8b8a8Unorm s -> IO a) -> IO a
-makeImageView dvc bimg f =
-	Vk.ImgView.create dvc imgViewCreateInfo nil \imgView -> do
-		putStrLn $ "imgView: " ++ show imgView
-		f imgView
-	where	imgViewCreateInfo = Vk.ImgView.CreateInfo {
-			Vk.ImgView.createInfoNext = TMaybe.N,
-			Vk.ImgView.createInfoFlags =
-				Vk.ImgView.CreateFlagsZero,
-			Vk.ImgView.createInfoImage = bimg,
-			Vk.ImgView.createInfoViewType = Vk.ImgView.Type2d,
-			Vk.ImgView.createInfoComponents =
-				Vk.Component.Mapping {
-					Vk.Component.mappingR =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingG =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingB =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingA =
-						Vk.Component.SwizzleIdentity },
-			Vk.ImgView.createInfoSubresourceRange =
-				Vk.Img.SubresourceRange {
-					Vk.Img.subresourceRangeAspectMask =
-						Vk.Img.AspectColorBit,
-					Vk.Img.subresourceRangeBaseMipLevel = 0,
-					Vk.Img.subresourceRangeLevelCount = 1,
-					Vk.Img.subresourceRangeBaseArrayLayer =
-						0,
-					Vk.Img.subresourceRangeLayerCount = 1 } }
+prepareImg :: forall sd nm fmt a . Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> Word32 -> Word32 ->
+	(forall si sm .
+		Vk.Img.Binded sm si nm fmt ->
+		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)] -> IO a) -> IO a
+prepareImg pd dv tl us pr w h a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+	rqs <- Vk.Img.getMemoryRequirements dv i
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
+	Vk.Mm.allocateBind @'Nothing dv
+		(HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt) nil
+		\(HPList.Singleton (U2 (Vk.Mm.ImageBinded b))) m -> a b m
+	where
+	iinfo = Vk.Img.CreateInfo {
+		Vk.Img.createInfoNext = TMaybe.N,
+		Vk.Img.createInfoImageType = Vk.Img.Type2d,
+		Vk.Img.createInfoExtent = Vk.Extent3d {
+			Vk.extent3dWidth = fromIntegral w,
+			Vk.extent3dHeight = fromIntegral h,
+			Vk.extent3dDepth = 1 },
+		Vk.Img.createInfoMipLevels = 1,
+		Vk.Img.createInfoArrayLayers = 1,
+		Vk.Img.createInfoTiling = tl,
+		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined,
+		Vk.Img.createInfoUsage = us,
+		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
+		Vk.Img.createInfoFlags = zeroBits,
+		Vk.Img.createInfoQueueFamilyIndices = [] }
+	minfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
+imgVwInfo i = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = i,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 } }
 
 makeCommandBuffer :: forall sd scp a . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp ->
 	(forall s . Vk.CommandBuffer.C s -> IO a) -> IO a
@@ -348,7 +318,6 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' al . KnownNat al =>
 	Storable (BObj.ImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
---	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
 	Vk.Img.Binded sm' si nm' (BObj.ImageFormat img) ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image al img inm]  ->
 	Word32 -> Word32 -> IO ()
@@ -462,7 +431,7 @@ instance BObj.IsImage ImageRgba8 where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
 
-makeFramebuffer :: Vk.Dvc.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I nm fmt si ->
+makeFramebuffer :: Vk.Dvc.D sd -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
 makeFramebuffer dvc rp iv f =
 	Vk.Framebuffer.create @'Nothing dvc frameBufCreateInfo nil f
@@ -476,35 +445,79 @@ makeFramebuffer dvc rp iv f =
 			Vk.Framebuffer.createInfoHeight = imgHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }
 
-makeRenderPass ::
-	Vk.Dvc.D sd -> (forall s . Vk.RenderPass.R s -> IO a) -> IO a
-makeRenderPass dvc f = do
-	let	attachmentNew :: Vk.Attachment.Description 'Vk.T.FormatR8g8b8a8Unorm
-		attachmentNew = Vk.Attachment.Description {
-			Vk.Attachment.descriptionFlags =
-				Vk.Attachment.DescriptionFlagsZero,
-			Vk.Attachment.descriptionSamples =
-				Vk.Sample.Count1Bit,
-			Vk.Attachment.descriptionLoadOp =
-				Vk.Attachment.LoadOpDontCare,
-			Vk.Attachment.descriptionStoreOp =
-				Vk.Attachment.StoreOpDontCare,
-			Vk.Attachment.descriptionStencilLoadOp =
-				Vk.Attachment.LoadOpDontCare,
-			Vk.Attachment.descriptionStencilStoreOp =
-				Vk.Attachment.StoreOpDontCare,
-			Vk.Attachment.descriptionInitialLayout =
-				Vk.Img.LayoutUndefined,
+createRndrPss :: forall fmt sd a . Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
+createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
+	where
+	info = Vk.RndrPss.CreateInfo {
+		Vk.RndrPss.createInfoNext = TMaybe.N,
+		Vk.RndrPss.createInfoFlags = zeroBits,
+		Vk.RndrPss.createInfoAttachments = ca :** HPList.Nil,
+		Vk.RndrPss.createInfoSubpasses = [subpass],
+		Vk.RndrPss.createInfoDependencies = [dependency] }
+	ca = Vk.Att.Description {
+		Vk.Att.descriptionFlags = zeroBits,
+		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+		Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+		Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+		Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+		Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
+		Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
+		Vk.Att.descriptionFinalLayout = Vk.Img.LayoutPresentSrcKhr }
+	subpass = Vk.Subpass.Description {
+		Vk.Subpass.descriptionFlags = zeroBits,
+		Vk.Subpass.descriptionPipelineBindPoint =
+			Vk.Ppl.BindPointGraphics,
+		Vk.Subpass.descriptionInputAttachments = [],
+		Vk.Subpass.descriptionColorAndResolveAttachments = Left [car],
+		Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+		Vk.Subpass.descriptionPreserveAttachments = [] }
+	car = Vk.Att.Reference {
+		Vk.Att.referenceAttachment = 0,
+		Vk.Att.referenceLayout = Vk.Img.LayoutColorAttachmentOptimal }
+	dependency = Vk.Subpass.Dependency {
+		Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
+		Vk.Subpass.dependencyDstSubpass = 0,
+		Vk.Subpass.dependencySrcStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencySrcAccessMask = zeroBits,
+		Vk.Subpass.dependencyDstStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencyDstAccessMask =
+			Vk.AccessColorAttachmentWriteBit .|.
+			Vk.AccessDepthStencilAttachmentWriteBit,
+		Vk.Subpass.dependencyDependencyFlags = zeroBits }
+
+makeRenderPass :: Vk.Dvc.D sd -> (forall s . Vk.RndrPss.R s -> IO a) -> IO a
+makeRenderPass dv f = Vk.RndrPss.create dv info nil f
+	where
+	info :: Vk.RndrPss.CreateInfo 'Nothing _
+	info = Vk.RndrPss.CreateInfo {
+			Vk.RndrPss.createInfoNext = TMaybe.N,
+			Vk.RndrPss.createInfoFlags = Vk.RndrPss.CreateFlagsZero,
+			Vk.RndrPss.createInfoAttachments = ca :** HPList.Nil,
+			Vk.RndrPss.createInfoSubpasses = [subpass],
+			Vk.RndrPss.createInfoDependencies = [] }
+	ca :: Vk.Att.Description 'Vk.T.FormatR8g8b8a8Unorm
+	ca = Vk.Att.Description {
+			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
+			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp =
+				Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
 --				Vk.Img.LayoutTransferSrcOptimal,
-			Vk.Attachment.descriptionFinalLayout =
-				Vk.Img.LayoutGeneral }
-		subpass0AttachmentRef = Vk.Attachment.Reference {
-			Vk.Attachment.referenceAttachment = 0,
-			Vk.Attachment.referenceLayout =
+			Vk.Att.descriptionFinalLayout = Vk.Img.LayoutGeneral }
+	subpass0AttachmentRef = Vk.Att.Reference {
+			Vk.Att.referenceAttachment = 0,
+			Vk.Att.referenceLayout =
 				Vk.Img.LayoutColorAttachmentOptimal }
-		subpass = Vk.Subpass.Description {
-			Vk.Subpass.descriptionFlags =
-				Vk.Subpass.DescriptionFlagsZero,
+	subpass = Vk.Subpass.Description {
+			Vk.Subpass.descriptionFlags = Vk.Subpass.DescriptionFlagsZero,
 			Vk.Subpass.descriptionPipelineBindPoint =
 				Vk.Ppl.BindPointGraphics,
 			Vk.Subpass.descriptionInputAttachments = [],
@@ -512,18 +525,8 @@ makeRenderPass dvc f = do
 				Left [subpass0AttachmentRef],
 			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
-		renderPassCreateInfoNew :: Vk.RenderPass.CreateInfo 'Nothing _
-		renderPassCreateInfoNew = Vk.RenderPass.CreateInfo {
-			Vk.RenderPass.createInfoNext = TMaybe.N,
-			Vk.RenderPass.createInfoFlags =
-				Vk.RenderPass.CreateFlagsZero,
-			Vk.RenderPass.createInfoAttachments =
-				attachmentNew :** HPList.Nil,
-			Vk.RenderPass.createInfoSubpasses = [subpass],
-			Vk.RenderPass.createInfoDependencies = [] }
-	Vk.RenderPass.create dvc renderPassCreateInfoNew nil f
 
-makePipelineNew :: Vk.Dvc.D sd -> Vk.RenderPass.R sr ->
+makePipelineNew :: Vk.Dvc.D sd -> Vk.RndrPss.R sr ->
 	(forall s sl . Vk.Ppl.Gr.G s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a
 makePipelineNew dvc rp f = do
 	let	viewport = Vk.Viewport {
@@ -713,7 +716,7 @@ layout(location = 0) out vec4 outColor;
 void
 main()
 {
-	outColor = vec4(0.0, 0.0, 1.0, 1.0);
+	outColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
 
 |]
