@@ -21,7 +21,9 @@ module Data.HeteroParList (
 
 	-- * Hetero Parameter List
 
-	PL(..), pattern Singleton, PL2, PL3, PL4,
+	PL(..), PL2, PL3, PL4,
+	pattern Singleton, pattern Singleton2,
+	pattern Singleton3, pattern Singleton4,
 
 	-- * From/To List
 
@@ -132,6 +134,18 @@ instance (Eq (t s), Eq (PL t ss)) =>
 pattern Singleton :: t s -> PL t '[s]
 pattern Singleton x <- (x :** Nil) where
 	Singleton x = x :** Nil
+
+pattern Singleton2 :: t s -> PL2 t '[ '[s]]
+pattern Singleton2 x <- Singleton (Singleton x) where
+	Singleton2 x = Singleton $ Singleton x
+
+pattern Singleton3 :: t s -> PL3 t '[ '[ '[s]]]
+pattern Singleton3 x <- Singleton (Singleton2 x) where
+	Singleton3 x = Singleton $ Singleton2 x
+
+pattern Singleton4 :: t s -> PL4 t '[ '[ '[ '[s]]]]
+pattern Singleton4 x <- Singleton (Singleton3 x) where
+	Singleton4 x = Singleton $ Singleton3 x
 
 type PL2 t = PL (PL t)
 type PL3 t = PL (PL2 t)
