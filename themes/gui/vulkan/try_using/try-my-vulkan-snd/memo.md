@@ -119,7 +119,7 @@ apps
 * [x] try-texture-immutable-sampler-single.hs
 * [x] try-yatteiku.hs
 * [x] try-hello-world.hs
-* [ ] try-saitan-simple.hs
+* [x] try-saitan-simple.hs
 * [ ] try-saitan.hs
 * [ ] try-saitan-float.hs
 * [ ] try-texel-buffer-float.hs
