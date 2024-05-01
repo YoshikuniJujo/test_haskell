@@ -117,7 +117,7 @@ apps
 * [x] try-texture-image-manager-single.hs
 * [x] try-texture-descriptor-set-group-single.hs
 * [x] try-texture-immutable-sampler-single.hs
-* [ ] try-yatteiku.hs
+* [x] try-yatteiku.hs
 * [ ] try-hello-world.hs
 * [ ] try-saitan-simple.hs
 * [ ] try-saitan.hs
