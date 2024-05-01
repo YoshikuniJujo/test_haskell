@@ -118,7 +118,7 @@ apps
 * [x] try-texture-descriptor-set-group-single.hs
 * [x] try-texture-immutable-sampler-single.hs
 * [x] try-yatteiku.hs
-* [ ] try-hello-world.hs
+* [x] try-hello-world.hs
 * [ ] try-saitan-simple.hs
 * [ ] try-saitan.hs
 * [ ] try-saitan-float.hs
