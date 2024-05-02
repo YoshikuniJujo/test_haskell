@@ -256,6 +256,9 @@ storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 	VObj.OffsetRange obj0 '[obj0, obj1, obj2],
 	VObj.OffsetRange obj1 '[obj0, obj1, obj2],
 	VObj.OffsetRange obj2 '[obj0, obj1, obj2],
+	VObj.OffsetRange' obj0 '[obj0, obj1, obj2] 0,
+	VObj.OffsetRange' obj1 '[obj0, obj1, obj2] 0,
+	VObj.OffsetRange' obj2 '[obj0, obj1, obj2] 0,
 	VObj.LengthOf obj0 '[obj0, obj1, obj2],
 	VObj.LengthOf obj1 '[obj0, obj1, obj2],
 	VObj.LengthOf obj2 '[obj0, obj1, obj2]
