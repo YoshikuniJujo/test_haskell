@@ -272,6 +272,7 @@ map :: forall nm obj i sd sm ibargs . OffsetSize nm obj ibargs i =>
 	IO (Ptr (VObj.TypeOf obj))
 map dv@(Device.D mdv) m flgs = readM m >>= \(_, mm) -> do
 	(ost, sz) <- offsetSize @nm @obj @_ @i dv m 0
+	print (ost, sz)
 	M.map mdv mm ost sz flgs
 
 unmap :: Device.D sd -> M sm ibargs -> IO ()

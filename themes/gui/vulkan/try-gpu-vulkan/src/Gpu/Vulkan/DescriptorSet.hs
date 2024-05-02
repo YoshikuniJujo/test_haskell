@@ -72,6 +72,8 @@ import Data.Map qualified as Map
 
 import Data.IORef.ToolsYj
 
+import Data.TypeLevel.Tuple.MapIndex qualified
+
 layoutToMiddle :: U2 Layout.D slbts -> Layout.M.D
 layoutToMiddle (U2 (Layout.D l)) = l
 
@@ -181,12 +183,13 @@ dListToMiddle :: HeteroParList.PL (D s) slbtss -> [M.D]
 dListToMiddle = HeteroParList.toList \(D _ md) -> md
 
 updateDs :: (
+	Show (HeteroParList.PL M.Write (Data.TypeLevel.Tuple.MapIndex.M0_5 writeArgs)),
 	W.WriteListToMiddle writeArgs,
 	W.WriteListUpdateDynamicLengths writeArgs,
 	CopyListToMiddle copyArgs) =>
 	Device.D sd ->
 	HeteroParList.PL (U5 W.Write) writeArgs ->
 	HeteroParList.PL (U8 Copy) copyArgs  -> IO ()
-updateDs (Device.D dvc) ws cs =
+updateDs (Device.D dvc) ws cs = print ws' >>
 	W.writeListUpdateDynamicLength ws >> M.updateDs dvc ws' cs'
 	where ws' = W.writeListToMiddle ws; cs' = copyListToMiddle cs
