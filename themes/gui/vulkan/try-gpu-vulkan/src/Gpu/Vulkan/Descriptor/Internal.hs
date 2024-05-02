@@ -44,19 +44,19 @@ import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 indexingExtensionName :: PhysicalDevice.ExtensionName
 indexingExtensionName = PhysicalDevice.ExtensionName M.indexingExtensionName
 
-data BufferInfo sm sb nm obj = forall objs .
-	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
+data BufferInfo sm sb nm obj i = forall objs .
+	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange' obj objs i) =>
 	BufferInfo (Buffer.Binded sm sb nm objs)
 
-deriving instance Show (BufferInfo sm sb nm obj)
+deriving instance Show (BufferInfo sm sb nm obj i)
 
-bufferInfoToMiddle :: forall sb sm nm obj .
-	BufferInfo sm sb nm obj -> M.BufferInfo
+bufferInfoToMiddle :: forall sb sm nm obj i .
+	BufferInfo sm sb nm obj i -> M.BufferInfo
 bufferInfoToMiddle (BufferInfo (Buffer.Binded lns b)) = M.BufferInfo {
 	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = ost,
 	M.bufferInfoRange = rng }
-	where (ost, rng) = VObj.offsetRange @obj 0 lns
+	where (ost, rng) = VObj.offsetRange' @obj @_ @i 0 lns
 
 data ImageInfo ss fmt nm si = ImageInfo {
 	imageInfoSampler :: Sampler.S ss,

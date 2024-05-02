@@ -67,7 +67,7 @@ module Gpu.Vulkan.Object (
 	-- ** Offset Range
 
 	offsetRange, offsetSize, OffsetRange,
-	offsetSize', OffsetRange',
+	offsetRange', offsetSize', OffsetRange',
 
 	-- ** Offset Of List
 
@@ -278,6 +278,10 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment v', OffsetRange v vs) =>
 		offsetRangeFromSzAlgns @v @vs (adjust algn ost + dn * sz) sas
 	offsetSizeFromSzAlgns ost (SizeAlignmentOf dn sz algn :** sas) =
 		offsetSizeFromSzAlgns @v @vs (adjust algn ost + dn * sz) sas
+
+offsetRange' :: forall obj objs i . OffsetRange' obj objs i => Device.M.Size ->
+	HeteroParList.PL Length objs -> (Device.M.Size, Device.M.Size)
+offsetRange' ost0 lns = offsetRangeFromSzAlgns' @obj @_ @i ost0 $ sizeAlignmentList lns
 
 offsetSize' :: forall obj objs i . OffsetRange' obj objs i => Device.M.Size ->
 	HeteroParList.PL Length objs -> (Device.M.Size, Device.M.Size)
