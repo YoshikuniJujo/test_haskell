@@ -78,7 +78,7 @@ main = withDevice \pd qfi dv -> print . (toString *** toString) =<<
 toString :: [Word32] -> String
 toString = map (chr . fromIntegral)
 
-type DscStLyt sdsl nmh = Vk.DSLyt.D sdsl '[Vk.DSLyt.Buffer '[Word32List nmh, Word32List nmh]]
+type DscStLyt sdsl nmh = Vk.DSLyt.D sdsl '[Vk.DSLyt.Buffer '[Word32List nmh]]
 
 type Bffr sm sb nm nmh = Vk.Bffr.Binded sm sb nm '[Word32List nmh, Word32List nmh]
 
@@ -116,7 +116,7 @@ dvcInfo qfi = Vk.Dv.CreateInfo {
 		Vk.Dv.queueCreateInfoQueueFamilyIndex = qfi,
 		Vk.Dv.queueCreateInfoQueuePriorities = [0] }
 
-dscStLytInfo :: Vk.DSLyt.CreateInfo 'Nothing '[ 'Vk.DSLyt.Buffer '[Word32List nmh, Word32List nmh]]
+dscStLytInfo :: Vk.DSLyt.CreateInfo 'Nothing '[ 'Vk.DSLyt.Buffer '[Word32List nmh]]
 dscStLytInfo = Vk.DSLyt.CreateInfo {
 	Vk.DSLyt.createInfoNext = TMaybe.N, Vk.DSLyt.createInfoFlags = zeroBits,
 	Vk.DSLyt.createInfoBindings = HL.Singleton bdg }
