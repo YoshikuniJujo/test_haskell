@@ -250,29 +250,28 @@ memoryRequirementsListToSize sz0 (malgn : malgns) (reqs : reqss) =
 
 -- READ AND WRITE
 
-read :: forall nm obj v sd sm ibargs .
-	(VObj.Store v obj, OffsetSize nm obj ibargs) =>
+read :: forall nm obj i v sd sm ibargs .
+	(VObj.Store v obj, OffsetSize nm obj ibargs i) =>
 	Device.D sd -> M sm ibargs -> M.MapFlags -> IO v
 read dv m flgs = bracket
-	(map @nm @obj dv m flgs) (const $ unmap dv m)
+	(map @nm @obj @i dv m flgs) (const $ unmap dv m)
 	\(ptr :: Ptr (VObj.TypeOf obj)) ->
 		VObj.load @_ @obj ptr =<< objectLength @nm @obj m
 
 write :: forall nm obj sd sm ibargs v .
-	(VObj.Store v obj, OffsetSize nm obj ibargs) =>
+	(VObj.Store v obj, OffsetSize nm obj ibargs 0) =>
 	Device.D sd -> M sm ibargs -> M.MapFlags -> v -> IO ()
 write dv m flgs v = bracket
-	(map @nm @obj dv m flgs) (const $ unmap dv m)
+	(map @nm @obj @0 dv m flgs) (const $ unmap dv m)
 	\(ptr :: Ptr (VObj.TypeOf obj)) -> do
---		putStrLn $ "Gpu.Vulkan.Memory.write: ptr = " ++ show ptr
 		ln <- objectLength @nm @obj m
 		VObj.store @_ @obj ptr ln v
 
-map :: forall nm obj sd sm ibargs . OffsetSize nm obj ibargs =>
+map :: forall nm obj i sd sm ibargs . OffsetSize nm obj ibargs i =>
 	Device.D sd -> M sm ibargs -> M.MapFlags ->
 	IO (Ptr (VObj.TypeOf obj))
 map dv@(Device.D mdv) m flgs = readM m >>= \(_, mm) -> do
-	(ost, sz) <- offsetSize @nm @obj dv m 0
+	(ost, sz) <- offsetSize @nm @obj @_ @i dv m 0
 	M.map mdv mm ost sz flgs
 
 unmap :: Device.D sd -> M sm ibargs -> IO ()

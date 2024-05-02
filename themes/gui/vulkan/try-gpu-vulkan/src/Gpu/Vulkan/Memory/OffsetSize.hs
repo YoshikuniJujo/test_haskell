@@ -32,27 +32,34 @@ import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import Gpu.Vulkan.Memory.Type
 import Gpu.Vulkan.Memory.ImageBuffer
 
-offsetSize :: forall nm obj ibargs sd sm . OffsetSize nm obj ibargs =>
+offsetSize :: forall nm obj ibargs i sd sm . OffsetSize nm obj ibargs i =>
 	Device.D sd -> M sm ibargs -> Device.M.Size ->
 	IO (Device.M.Size, Device.M.Size)
 offsetSize dvc m ost =
-	readM m >>= \(ibs, _mm) -> offsetSize' @nm @obj @ibargs dvc ibs ost
+	readM m >>= \(ibs, _mm) -> offsetSize' @nm @obj @ibargs @i dvc ibs ost
 
 class ObjectLength nm obj ibargs =>
-	OffsetSize (nm :: Symbol) (obj :: VObj.O) ibargs where
+	OffsetSize (nm :: Symbol) (obj :: VObj.O) ibargs (i :: Nat) where
 	offsetSize' ::
 		Device.D sd -> HeteroParList.PL (U2 ImageBuffer) ibargs ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
 
 instance (VObj.OffsetRange obj objs, VObj.LengthOf obj objs) =>
-	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': ibargs) where
+	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': ibargs) 0 where
 	offsetSize' dvc ((U2 ib@(Buffer (Buffer.B lns _))) :** _ibs) ost =
 		(<$> adjustOffsetSize dvc ib ost) \(ost', _sz) ->
 		VObj.offsetSize @obj ost' lns
 
 instance {-# OVERLAPPABLE #-}
-	OffsetSize nm obj ibargs =>
-	OffsetSize nm obj ('(sib, ib) ': ibargs) where
+	(OffsetSize nm obj ibargs (i - 1), VObj.LengthOf obj objs) =>
+	OffsetSize nm obj ('(sib, 'BufferArg nm objs) ': ibargs) i where
+	offsetSize' dvc ((U2 ib@(Buffer (Buffer.B _ _))) :** ibs) ost =
+		adjustOffsetSize dvc ib ost >>=
+		offsetSize' @nm @obj @_ @(i - 1) dvc ibs . uncurry (+)
+
+instance {-# OVERLAPPABLE #-}
+	OffsetSize nm obj ibargs i =>
+	OffsetSize nm obj ('(sib, ib) ': ibargs) i where
 	offsetSize' dvc (U2 ib :** ibs) ost =
 		adjustOffsetSize dvc ib ost >>=
-		offsetSize' @nm @obj dvc ibs . uncurry (+)
+		offsetSize' @nm @obj @_ @i dvc ibs . uncurry (+)
