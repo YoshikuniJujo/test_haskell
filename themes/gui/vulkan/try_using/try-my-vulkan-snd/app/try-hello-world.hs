@@ -191,15 +191,15 @@ findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
 		i : _ -> pure i
 
 writeDscSt :: forall bnmh nmh sds slbts sm sb os .
-	(Show (HL.PL Obj.Length os), Obj.OffsetRange (Word32List nmh) os) =>
+	(Show (HL.PL Obj.Length os), Obj.OffsetRange' (Word32List nmh) os 0) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
 	Vk.DS.Write 'Nothing sds slbts ('Vk.DS.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, Word32List nmh)]) 0
+		'[ '(sm, sb, bnmh, Word32List nmh, 0)]) 0
 writeDscSt ds bf = Vk.DS.Write {
 	Vk.DS.writeNext = TMaybe.N, Vk.DS.writeDstSet = ds,
 	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSources =
-		Vk.DS.BufferInfos . HL.Singleton . U4 $ Vk.Dsc.BufferInfo bf }
+		Vk.DS.BufferInfos . HL.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
 
 -- CALC
 

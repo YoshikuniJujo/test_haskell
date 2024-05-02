@@ -858,12 +858,12 @@ dscWriteMvp :: KnownNat alm => Vk.DscSet.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer
-			'[ '(sm, sb, bnm, AtomModelViewProj alm)]) 0
+			'[ '(sm, sb, bnm, AtomModelViewProj alm, 0)]) 0
 dscWriteMvp ds mb = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
-		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo mb }
+		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo mb }
 
 createSyncObjs :: Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
 createSyncObjs dv f =

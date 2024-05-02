@@ -68,13 +68,12 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLyt
 -- MAIN
 
 main :: IO ()
-main = withDevice \pd qfi dv -> print . toString =<< -- print . (toString *** toString) =<<
+main = withDevice \pd qfi dv -> print . (toString *** toString) =<<
 	Vk.DSLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
 	prepareMem @_ @nmh pd dv dsl \dss (m :: Mm sm sb bnmh nmh) ->
-	calc qfi dv dsl dss bffrSize >> -- (,)
-	Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
---	<$> Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
---	<*> Vk.Mm.read @bnmh @(Word32List nmh) @1 @[Word32] dv m zeroBits
+	calc qfi dv dsl dss bffrSize >> (,)
+	<$> Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
+	<*> Vk.Mm.read @bnmh @(Word32List nmh) @1 @[Word32] dv m zeroBits
 
 toString :: [Word32] -> String
 toString = map (chr . fromIntegral)
@@ -197,15 +196,15 @@ findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
 		i : _ -> pure i
 
 writeDscSt :: forall bnmh nmh sds slbts sm sb os .
-	(Show (HL.PL Obj.Length os), Obj.OffsetRange (Word32List nmh) os) =>
+	(Show (HL.PL Obj.Length os), Obj.OffsetRange' (Word32List nmh) os 1) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
 	Vk.DS.Write 'Nothing sds slbts ('Vk.DS.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, Word32List nmh)]) 0
+		'[ '(sm, sb, bnmh, Word32List nmh, 1)]) 0
 writeDscSt ds bf = Vk.DS.Write {
 	Vk.DS.writeNext = TMaybe.N, Vk.DS.writeDstSet = ds,
 	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSources =
-		Vk.DS.BufferInfos . HL.Singleton . U4 $ Vk.Dsc.BufferInfo bf }
+		Vk.DS.BufferInfos . HL.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
 
 -- CALC
 

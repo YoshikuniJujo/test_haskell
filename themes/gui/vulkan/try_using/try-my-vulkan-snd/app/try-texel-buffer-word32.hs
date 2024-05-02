@@ -353,28 +353,28 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.Length objs1),
 	Show (HeteroParList.PL VObj.Length objs2),
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange (VObj.List 256 w1 "") objs1,
-	VObj.OffsetRange (VObj.List 256 w2 "") objs2,
-	VObj.OffsetRange (VObj.List 256 w3 "") objs3 ) =>
+	VObj.OffsetRange' (VObj.List 256 w1 "") objs1 0,
+	VObj.OffsetRange' (VObj.List 256 w2 "") objs2 0,
+	VObj.OffsetRange' (VObj.List 256 w3 "") objs3 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sm1, sb1, nm1, VObj.List 256 w1 ""), '(sm2, sb2, nm2, VObj.List 256 w2 ""),
-		'(sm3, sb3, nm3, VObj.List 256 w3 "") ]) 0
+		'(sm1, sb1, nm1, VObj.List 256 w1 "", 0), '(sm2, sb2, nm2, VObj.List 256 w2 "", 0),
+		'(sm3, sb3, nm3, VObj.List 256 w3 "", 0) ]) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (bufferInfoList @w1 ba) :** U4 (bufferInfoList @w2 bb) :**
-		U4 (bufferInfoList @w3 bc) :** HeteroParList.Nil }
+		U5 (bufferInfoList @w1 ba) :** U5 (bufferInfoList @w2 bb) :**
+		U5 (bufferInfoList @w3 bc) :** HeteroParList.Nil }
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Show (HeteroParList.PL VObj.Length objs),
-	VObj.OffsetRange (VObj.List 256 t "") objs ) =>
+	VObj.OffsetRange' (VObj.List 256 t "") objs 0 ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
-	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "")
+	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "") 0
 bufferInfoList = Vk.Dsc.BufferInfo
 
 storageBufferNew4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>

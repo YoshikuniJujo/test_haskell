@@ -228,24 +228,24 @@ writeDscSt ::
 	Show (HPList.PL Obj.Length os1),
 	Show (HPList.PL Obj.Length os2),
 	Show (HPList.PL Obj.Length os3),
-	Obj.OffsetRange (Obj.List 256 W1 "") os1,
-	Obj.OffsetRange (Obj.List 256 W2 "") os2,
-	Obj.OffsetRange (Obj.List 256 W3 "") os3 ) =>
+	Obj.OffsetRange' (Obj.List 256 W1 "") os1 0,
+	Obj.OffsetRange' (Obj.List 256 W2 "") os2 0,
+	Obj.OffsetRange' (Obj.List 256 W3 "") os3 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Bffr.Binded sm1 sb1 "" os1 -> Vk.Bffr.Binded sm2 sb2 "" os2 ->
 	Vk.Bffr.Binded sm3 sb3 "" os3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sm1, sb1, "", Obj.List 256 W1 ""),
-		'(sm2, sb2, "", Obj.List 256 W2 ""),
-		'(sm3, sb3, "", Obj.List 256 W3 "") ]) 0
+		'(sm1, sb1, "", Obj.List 256 W1 "", 0),
+		'(sm2, sb2, "", Obj.List 256 W2 "", 0),
+		'(sm3, sb3, "", Obj.List 256 W3 "", 0) ]) 0
 writeDscSt ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W1 "") ba) :**
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W2 "") bb) :**
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W3 "") bc) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W1 "") ba) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W2 "") bb) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W3 "") bc) :**
 		HPList.Nil }
 
 -- CALC

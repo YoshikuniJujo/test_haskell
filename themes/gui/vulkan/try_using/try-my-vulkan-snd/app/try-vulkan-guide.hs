@@ -1009,8 +1009,8 @@ instance CreateVpBffrs al '[] where
 
 instance (
 	KnownNat alvp,
-	Obj.OffsetRange (Obj.Atom alvp WScene (Just sd))
-		(SceneBffrArg alvp SceneNames),
+	Obj.OffsetRange' (Obj.Atom alvp WScene (Just sd))
+		(SceneBffrArg alvp SceneNames) 0,
 	CreateVpBffrs alvp sds ) => CreateVpBffrs alvp (sd ': sds) where
 	createVpBffrs pd dv dl f = createVpBffr pd dv \bnd mm ->
 		createVpBffrs @alvp @sds pd dv dl \dls bnds mms ->
@@ -1141,7 +1141,7 @@ instance (
 	Vk.DscSet.UpdateDynamicLength bts '[AtomViewProj alu],
 	Vk.DscSet.UpdateDynamicLength bts
 		'[Obj.Atom alu WScene ('Just sn)],
-	Obj.OffsetRange (Obj.Atom alu WScene (Just sn)) snb,
+	Obj.OffsetRange' (Obj.Atom alu WScene (Just sn)) snb 0,
 	Show (HPList.PL Obj.Length snb), Update alu snb smsbs dss sns ) =>
 	Update alu snb (smsb ': smsbs) ('(ds, bts) ': dss) (sn ': sns) where
 	update dv (ds :** dss) (BindedVp bvp :** bvps) scnb = do
@@ -1155,17 +1155,17 @@ instance (
 
 dscWrite :: forall al tp onm sm sb bnm os dla sds . (
 	Show (HPList.PL Obj.Length os),
-	Obj.OffsetRange (Obj.Atom al tp onm) os ) =>
+	Obj.OffsetRange' (Obj.Atom al tp onm) os 0 ) =>
 	Vk.DscSet.D sds dla ->
 	Vk.Bffr.Binded sm sb bnm os ->
 	Vk.Dsc.Type ->
 	Vk.DscSet.Write 'Nothing sds dla ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, bnm, Obj.Atom al tp onm )]) 0
+		sm, sb, bnm, Obj.Atom al tp onm, 0 )]) 0
 dscWrite ds b tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
-		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo b }
+		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo b }
 
 cmdBffrInfo :: forall n scp .
 	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n

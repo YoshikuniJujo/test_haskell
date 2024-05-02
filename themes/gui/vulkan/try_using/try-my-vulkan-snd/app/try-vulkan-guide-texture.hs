@@ -1332,15 +1332,15 @@ instance (
 		update dv dss bvps dssod bods scnb
 
 dscWrite :: forall obj sds slbts sm sb nm objs . (
-	Obj.OffsetRange obj objs, Show (HPList.PL Obj.Length objs) ) =>
+	Obj.OffsetRange' obj objs 0, Show (HPList.PL Obj.Length objs) ) =>
 	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb nm objs -> Vk.Dsc.Type ->
 	Vk.DscSt.Write 'Nothing sds slbts
-		('Vk.DscSt.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj)]) 0
+		('Vk.DscSt.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj, 0)]) 0
 dscWrite ds b tp = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = tp,
 	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
-		. HPList.Singleton . U4 $ Vk.Dsc.BufferInfo b }
+		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo b }
 
 createTxImg :: forall sd sc img inm a .
 	(BObj.IsImage img, Vk.T.FormatToValue (BObj.ImageFormat img)) =>

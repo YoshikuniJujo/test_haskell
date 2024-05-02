@@ -330,37 +330,37 @@ writeDscSet :: forall sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 	Vk.Bffr.Binded sm3 sb3 nm3 '[ListW3] ->
 	Vk.DscSet.Write 'Nothing sds '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
-			'(sm1, sb1, nm1, ListW1),
-			'(sm2, sb2, nm2, ListW2),
-			'(sm3, sb3, nm3, ListW3) ] ) 0
+			'(sm1, sb1, nm1, ListW1, 0),
+			'(sm2, sb2, nm2, ListW2, 0),
+			'(sm3, sb3, nm3, ListW3, 0) ] ) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (bil @W1 ba) :** U4 (bil @W2 bb) :** U4 (bil @W3 bc) :** HeteroParList.Nil }
+		U5 (bil @W1 ba) :** U5 (bil @W2 bb) :** U5 (bil @W3 bc) :** HeteroParList.Nil }
 	where
 	bil :: forall t {sb} {sm} {nm} {objs} . (
 		Show (HeteroParList.PL VObj.Length objs),
-		VObj.OffsetRange (VObj.List 256 t "") objs ) =>
+		VObj.OffsetRange' (VObj.List 256 t "") objs 0 ) =>
 		Vk.Bffr.Binded sm sb nm objs ->
-		Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "")
+		Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "") 0
 	bil = Vk.Dsc.BufferInfo
 
 writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds . (
 	Show (HeteroParList.PL VObj.Length objs),
-	VObj.OffsetRange (VObj.Atom 256 Word32 ('Just nm)) objs ) =>
+	VObj.OffsetRange' (VObj.Atom 256 Word32 ('Just nm)) objs 0 ) =>
 	Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
 	Vk.DscSet.Write 'Nothing sds '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
-			'(sm4, sb4, nm4, VObj.Atom 256 Word32 ('Just nm)) ] ) 0
+			'(sm4, sb4, nm4, VObj.Atom 256 Word32 ('Just nm), 0) ] ) 0
 writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (Vk.Dsc.BufferInfo bx) :** HeteroParList.Nil }
+		U5 (Vk.Dsc.BufferInfo bx) :** HeteroParList.Nil }
 
 calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl DscSetLytLstW123 ->
 	Word32 -> Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
