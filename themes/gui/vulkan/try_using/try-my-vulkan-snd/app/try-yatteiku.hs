@@ -80,7 +80,7 @@ main =	createIst \it -> pickPhd it >>= \(pd, qfi) -> createLgDvc pd qfi \dv ->
 	Vk.Dvc.getQueue dv qfi 0 >>= \gq -> createCmdPl qfi dv \cp ->
 		body pd dv gq cp \img ->
 		copyImgToBffr dv gq cp img b imgWidth imgHeight
-	ImageRgba8 img <- Vk.Mm.read @nm @img dv bm zeroBits
+	ImageRgba8 img <- Vk.Mm.read @nm @img @0 dv bm zeroBits
 	writePng "yatteiku.png" img
 
 imgWidth, imgHeight :: Word32

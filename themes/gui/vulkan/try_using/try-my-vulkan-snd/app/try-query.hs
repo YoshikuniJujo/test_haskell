@@ -105,7 +105,7 @@ main = withDevice \pd qfi dv -> do
 			Vk.DSLyt.create dv dscSetLayoutInfo nil \dslyt ->
 			prepareMems pd dv dslyt \dscs m ->
 			calc qfi dv qp qpt dslyt dscs bffSize >>
-			Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
+			Vk.Mm.read @"" @Word32List @0 @[Word32] dv m zeroBits
 
 		print @[Vk.QP.M.Availability 'True (Vk.QP.PipelineStatistics 'True)] =<<
 			Vk.QP.getResults pd dv qp 0 2 zeroBits

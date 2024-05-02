@@ -77,9 +77,9 @@ main = withDvc \pd qfi d mgcx -> do
 		Vk.DscStLyt.create d dscStLytInfo nil \dsl ->
 		prepareMems pd d dsl da db dc \dss ma mb mc ->
 		calc d qfi dsl dss mgcx >>
-		(,,)	<$> Vk.Mm.read @"" @(Obj.List 256 W1 "") @[W1] d ma def
-			<*> Vk.Mm.read @"" @(Obj.List 256 W2 "") @[W2] d mb def
-			<*> Vk.Mm.read @"" @(Obj.List 256 W3 "") @[W3] d mc def
+		(,,)	<$> Vk.Mm.read @"" @(Obj.List 256 W1 "") @0 @[W1] d ma def
+			<*> Vk.Mm.read @"" @(Obj.List 256 W2 "") @0 @[W2] d mb def
+			<*> Vk.Mm.read @"" @(Obj.List 256 W3 "") @0 @[W3] d mc def
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3

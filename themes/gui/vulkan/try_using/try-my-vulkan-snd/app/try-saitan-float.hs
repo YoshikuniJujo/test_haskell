@@ -151,9 +151,9 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sm1 sm
 		(HeteroParList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1 0,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2 0,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3 0,
 	InfixIndex '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.D sl bts ->
 	Vk.DscSet.D sds slbts -> Word32 ->
@@ -179,9 +179,9 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 		(HeteroParList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1 0,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2 0,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3 0,
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 ->
@@ -197,9 +197,9 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 			Vk.Cmd.dispatch ccb dsz 1 1
 	Vk.Queue.submit queue (U4 submitInfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle queue
-	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @[w1] dvc memA def
-		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @[w2] dvc memB def
-		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @[w3] dvc memC def
+	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @0 @[w1] dvc memA def
+		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @0 @[w2] dvc memB def
+		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @0 @[w3] dvc memC def
 	where	submitInfo :: Vk.SubmitInfo 'Nothing _ _ _
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,

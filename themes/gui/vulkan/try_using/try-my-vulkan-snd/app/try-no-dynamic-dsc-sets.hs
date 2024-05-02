@@ -439,9 +439,9 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 			Vk.Cmd.dispatch ccb ln 1 1
 	Vk.Queue.submit q (U4 sinfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle q
-	(,,)	<$> Vk.Dvc.Mem.ImgBffr.read @nm1 @ListW1 @[W1] dvc ma zeroBits
-		<*> Vk.Dvc.Mem.ImgBffr.read @nm2 @ListW2 @[W2] dvc mb zeroBits
-		<*> Vk.Dvc.Mem.ImgBffr.read @nm3 @ListW3 @[W3] dvc mc zeroBits
+	(,,)	<$> Vk.Dvc.Mem.ImgBffr.read @nm1 @ListW1 @0 @[W1] dvc ma zeroBits
+		<*> Vk.Dvc.Mem.ImgBffr.read @nm2 @ListW2 @0 @[W2] dvc mb zeroBits
+		<*> Vk.Dvc.Mem.ImgBffr.read @nm3 @ListW3 @0 @[W3] dvc mc zeroBits
 	where	sinfo :: Vk.SubmitInfo 'Nothing _ _ _
 		sinfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,

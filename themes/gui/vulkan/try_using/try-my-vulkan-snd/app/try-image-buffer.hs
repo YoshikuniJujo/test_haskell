@@ -180,9 +180,9 @@ readMemories :: forall (nm1 :: Symbol) (nm2 :: Symbol) (nm3 :: Symbol)
 --	Vk.Dvc.Mem.Buffer.OffsetSize (VObj.List 256 w1 "") objss1,
 --	Vk.Dvc.Mem.Buffer.OffsetSize (VObj.List 256 w2 "") objss2,
 --	Vk.Dvc.Mem.Buffer.OffsetSize (VObj.List 256 w3 "") objss3,
-	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1 0,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2 0,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3 0,
 	Storable w1, Storable w2, Storable w3
 	) =>
 	Vk.Dvc.D sd ->
@@ -190,14 +190,14 @@ readMemories :: forall (nm1 :: Symbol) (nm2 :: Symbol) (nm3 :: Symbol)
 	Vk.Mem.M sm2 objss2 ->
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 readMemories dvc memA memB memC =
-	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @[w1] dvc memA def
-		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @[w2] dvc memB def
-		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @[w3] dvc memC def
+	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @0 @[w1] dvc memA def
+		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @0 @[w2] dvc memB def
+		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @0 @[w3] dvc memC def
 
 readMemories' :: forall nm1 nm2 nm3 sd sm1 sm2 sm3 objss1 objss2 objss3 w1 w2 w3 . (
-	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1,
-	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2,
-	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3,
+	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1 0,
+	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2 0,
+	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3 0,
 	Storable w1, Storable w2, Storable w3
 	) =>
 	Vk.Dvc.D sd ->
@@ -205,9 +205,9 @@ readMemories' :: forall nm1 nm2 nm3 sd sm1 sm2 sm3 objss1 objss2 objss3 w1 w2 w3
 	Vk.Mem.M sm2 objss2 ->
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 readMemories' dvc memA memB memC =
-	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @[w1] dvc memA def
-		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @[w2] dvc memB def
-		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @[w3] dvc memC def
+	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @0 @[w1] dvc memA def
+		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @0 @[w2] dvc memB def
+		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @0 @[w3] dvc memC def
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
@@ -360,9 +360,9 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	Vk.Mem.write @"hello" @(VObj.List 256 w1 "") dvc mib def da >>
 	Vk.Mem.write @"hello" @(VObj.List 256 w2 "") dvc mib def db >>
 	Vk.Mem.write @"hello" @(VObj.List 256 w3 "") dvc mib def dc >>
-	(print @[w1] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w1 "") dvc mib def) >>
-	(print @[w2] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w2 "") dvc mib def) >>
-	(print @[w3] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w3 "") dvc mib def) >>
+	(print @[w1] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w1 "") @0 dvc mib def) >>
+	(print @[w2] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w2 "") @0 dvc mib def) >>
+	(print @[w3] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w3 "") @0 dvc mib def) >>
 	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(dscSet :** HeteroParList.Nil) ->

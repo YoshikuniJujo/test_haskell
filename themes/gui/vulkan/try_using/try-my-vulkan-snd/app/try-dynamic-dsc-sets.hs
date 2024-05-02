@@ -84,9 +84,9 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet mgcx >>
-		(,,)	<$> Vk.Mm.read @"" @(VObj.DynList 2 256 W1 "") @[Maybe [W1]] dvc ma def
-			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W2 "") @[Maybe [W2]] dvc mb def
-			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W3 "") @[Maybe [W3]] dvc mc def
+		(,,)	<$> Vk.Mm.read @"" @(VObj.DynList 2 256 W1 "") @0 @[Maybe [W1]] dvc ma def
+			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W2 "") @0 @[Maybe [W2]] dvc mb def
+			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W3 "") @0 @[Maybe [W3]] dvc mc def
 	print . take 20 $ unW1 <$> fromJust (head r1)
 	print . take 20 $ unW2 <$> fromJust (head r2)
 	print . take 20 $ unW3 <$> fromJust (head r3)

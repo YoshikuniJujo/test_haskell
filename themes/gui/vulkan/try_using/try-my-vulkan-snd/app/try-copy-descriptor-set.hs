@@ -77,7 +77,7 @@ main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 	Vk.DSLyt.create dv dscSetLayoutInfo nil \dslyt ->
 	prepareMems pd dv dslyt \_dscs dscs' m ->
 	calc qfi dv dslyt dscs' bffSize >>
-	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
+	Vk.Mm.read @"" @Word32List @0 @[Word32] dv m zeroBits
 
 type Word32List = Obj.List 256 Word32 ""
 
