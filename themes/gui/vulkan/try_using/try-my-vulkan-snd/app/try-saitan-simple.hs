@@ -189,7 +189,7 @@ createBffr pd dv xs a =
 	Vk.Mm.allocateBind dv
 		(HPList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	Vk.Mm.write @nm @(Obj.List 256 w "") dv mm def xs >> a bnd mm
+	Vk.Mm.write @nm @(Obj.List 256 w "") @0 dv mm def xs >> a bnd mm
 
 bffrInfo :: Storable w =>
 	V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[Obj.List 256 w ""]

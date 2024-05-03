@@ -109,7 +109,7 @@ createImg' pd dv gq cp ig mg k img = do
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(b :: Vk.Bffr.Binded sm' sb bnm '[ VObj.Image 1 a nm]) bm -> do
-		Vk.Mm.write @bnm @(VObj.Image 1 i nm) dv bm zeroBits img
+		Vk.Mm.write @bnm @(VObj.Image 1 i nm) @0 dv bm zeroBits img
 		transitionImgLyt dv gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal 1
 		copyBffrToImg dv gq cp b i

@@ -965,7 +965,7 @@ createBffrMem us pd dv gq cp
 			(b' :: Vk.Bffr.Binded sm sb bnm' '[Obj.List al t lnm'])
 			bm' -> do
 			Vk.Mm.write
-				@bnm' @(Obj.List al t lnm') dv bm' zeroBits xs
+				@bnm' @(Obj.List al t lnm') @0 dv bm' zeroBits xs
 			copy b' b
 		f (b, ln')
 	where
@@ -1322,13 +1322,13 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 	HPList.index vpms cf \(MemoryVp vpm) ->
 	($ HPList.homoListIndex dss cf) \ds -> do
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
-	Vk.Mm.write @bnmvp @(AtomViewProj alu) dv vpm zeroBits (viewProjData ex)
+	Vk.Mm.write @bnmvp @(AtomViewProj alu) @0 dv vpm zeroBits (viewProjData ex)
 	case cf of
 		0 -> Vk.Mm.write @bnmsn
-			@(Obj.Atom alu WScene ('Just "scene-data-0"))
+			@(Obj.Atom alu WScene ('Just "scene-data-0")) @0
 			dv snm zeroBits (sceneData fn)
 		1 -> Vk.Mm.write @bnmsn
-			@(Obj.Atom alu WScene ('Just "scene-data-1"))
+			@(Obj.Atom alu WScene ('Just "scene-data-1")) @0
 			dv snm zeroBits (sceneData fn)
 		_ -> error "never occur"
 	ii <- Vk.Khr.acquireNextImageResult

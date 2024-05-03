@@ -698,7 +698,7 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
 			bm' -> do
 			Vk.Mm.write
-				@bnm' @(VObj.List al t lnm') dv bm' zeroBits xs
+				@bnm' @(VObj.List al t lnm') @0 dv bm' zeroBits xs
 			copyBffr dv gq cp b' b
 		f b
 
@@ -968,7 +968,7 @@ updateModelViewProj :: forall sd smm sbm nmm alm . KnownNat alm =>
 updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) dv mm zeroBits
+	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ Foreign.Storable.Generic.W ModelViewProj {
 			model = Cglm.rotate Cglm.mat4Identity (tm * Cglm.rad 90)
 				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),

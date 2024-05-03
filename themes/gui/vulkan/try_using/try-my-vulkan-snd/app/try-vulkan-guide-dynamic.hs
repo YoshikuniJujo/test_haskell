@@ -970,7 +970,7 @@ createBffrMem us pd dv gq cp
 			(b' :: Vk.Bffr.Binded sm sb bnm' '[Obj.List al t lnm'])
 			bm' -> do
 			Vk.Mm.write
-				@bnm' @(Obj.List al t lnm') dv bm' zeroBits xs
+				@bnm' @(Obj.List al t lnm') @0 dv bm' zeroBits xs
 			copy b' b
 		f (b, ln')
 	where
@@ -1287,8 +1287,8 @@ draw dv gq pq sc ex rp pl gp fbs
 	HPList.index vpms cf \(MemVp vpm) ->
 	($ HPList.homoListIndex dss cf) \ds -> do
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
-	Vk.Mm.write @bnmvp @(AtmViewProj alu) dv vpm zeroBits (viewProjData ex)
-	Vk.Mm.write @bnmsn @(AtmScene alu mffn) dv snm zeroBits . (!! cf)
+	Vk.Mm.write @bnmvp @(AtmViewProj alu) @0 dv vpm zeroBits (viewProjData ex)
+	Vk.Mm.write @bnmsn @(AtmScene alu mffn) @0 dv snm zeroBits . (!! cf)
 		$ iterate (Nothing :) [Just $ sceneData fn]
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing

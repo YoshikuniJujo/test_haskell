@@ -361,9 +361,9 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	Vk.Mem.allocateBind dvc imgbuf memInfo nil \(
 		U2 (Vk.Mem.ImageBinded _imgb) :**
 		U2 (Vk.Mem.BufferBinded bufb) :** HeteroParList.Nil) mib ->
-	Vk.Mem.write @"hello" @(VObj.List 256 w1 "") dvc mib def da >>
-	Vk.Mem.write @"hello" @(VObj.List 256 w2 "") dvc mib def db >>
-	Vk.Mem.write @"hello" @(VObj.List 256 w3 "") dvc mib def dc >>
+	Vk.Mem.write @"hello" @(VObj.List 256 w1 "") @0 dvc mib def da >>
+	Vk.Mem.write @"hello" @(VObj.List 256 w2 "") @0 dvc mib def db >>
+	Vk.Mem.write @"hello" @(VObj.List 256 w3 "") @0 dvc mib def dc >>
 	(print @[w1] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w1 "") @0 dvc mib def) >>
 	(print @[w2] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w2 "") @0 dvc mib def) >>
 	(print @[w3] . take 10 =<< Vk.Mem.read @"hello" @(VObj.List 256 w3 "") @0 dvc mib def) >>
@@ -446,7 +446,7 @@ storageBufferNew dvc phdvc xs f =
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
 		Vk.Mem.allocateBind dvc (U2 (Vk.Mem.Buffer buffer) :** HeteroParList.Nil) memoryInfo
 			nil \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
-			Vk.Mem.write @nm @(VObj.List 256 w "") dvc memory def xs
+			Vk.Mem.write @nm @(VObj.List 256 w "") @0 dvc memory def xs
 			f binded memory
 
 storage3BufferNew :: forall sd w1 w2 w3 a . (
@@ -479,9 +479,9 @@ storage3BufferNew dvc phdvc xs ys zs f =
 						\(	U2 (Vk.Mem.BufferBinded bnd1) :**
 							U2 (Vk.Mem.BufferBinded bnd2) :**
 							U2 (Vk.Mem.BufferBinded bnd3) :** HeteroParList.Nil ) mem -> do
-						Vk.Mem.write @"buffer1" @(VObj.List 256 w1 "") dvc mem def xs
-						Vk.Mem.write @"buffer2" @(VObj.List 256 w2 "") dvc mem def ys
-						Vk.Mem.write @"buffer3" @(VObj.List 256 w3 "") dvc mem def zs
+						Vk.Mem.write @"buffer1" @(VObj.List 256 w1 "") @0 dvc mem def xs
+						Vk.Mem.write @"buffer2" @(VObj.List 256 w2 "") @0 dvc mem def ys
+						Vk.Mem.write @"buffer3" @(VObj.List 256 w3 "") @0 dvc mem def zs
 						f bnd1 bnd2 bnd3 mem
 					else error "bad"
 

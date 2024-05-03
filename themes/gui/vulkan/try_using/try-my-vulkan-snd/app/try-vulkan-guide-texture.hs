@@ -1010,7 +1010,7 @@ createBffrMem us pd dv gq cp
 			(b' :: Vk.Bffr.Binded sm sb bnm' '[Obj.List al t lnm'])
 			bm' -> do
 			Vk.Mm.write
-				@bnm' @(Obj.List al t lnm') dv bm' zeroBits xs
+				@bnm' @(Obj.List al t lnm') @0 dv bm' zeroBits xs
 			copy b' b
 		f (b, ln')
 	where
@@ -1356,7 +1356,7 @@ createTxImg pd d gq cp img a =
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) img
 		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm -> do
-		Vk.Mm.write @inm @bimg d bm zeroBits img
+		Vk.Mm.write @inm @bimg @0 d bm zeroBits img
 		transitionImgLyt d gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyBffrToImg d gq cp b i
@@ -1591,10 +1591,10 @@ draw dv gq pq sc ex rp pl gp fbs
 	($ HPList.homoListIndex dss cf) \ds ->
 	($ HPList.homoListIndex dsso cf) \dso -> do
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
-	Vk.Mm.write @bnmvp @(AtmViewProj alu) dv vpm zeroBits (viewProjData ex)
-	Vk.Mm.write @bnmsn @(AtmScene alu mffn) dv snm zeroBits . (!! cf)
+	Vk.Mm.write @bnmvp @(AtmViewProj alu) @0 dv vpm zeroBits (viewProjData ex)
+	Vk.Mm.write @bnmsn @(AtmScene alu mffn) @0 dv snm zeroBits . (!! cf)
 		$ iterate (Nothing :) [Just $ sceneData fn]
-	Vk.Mm.write @bnmod @(ListObjData als) dv odm zeroBits
+	Vk.Mm.write @bnmod @(ListObjData als) @0 dv odm zeroBits
 		. map (GStorable.W . ObjData)
 		$ model (fromIntegral fn) :
 			[ objMtx x y | x <- [- 20 .. 20], y <- [- 20 .. 20] ]

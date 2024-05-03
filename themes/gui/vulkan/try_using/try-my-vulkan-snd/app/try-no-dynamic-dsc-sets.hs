@@ -246,7 +246,7 @@ storageBufferNew phdvc dvc xs f =
 		mi <- getMemoryInfo phdvc dvc bff
 		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
 			nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj dvc m zeroBits xs
+			Vk.Dvc.Mem.ImgBffr.write @nm @obj @0 dvc m zeroBits xs
 			f bnd m
 
 storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
@@ -272,9 +272,9 @@ storageBufferNew3Objs phdvc dvc x y z f =
 		mi <- getMemoryInfo phdvc dvc bff
 		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
 			nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj0 dvc m zeroBits x
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj1 dvc m zeroBits y
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 dvc m zeroBits z
+			Vk.Dvc.Mem.ImgBffr.write @nm @obj0 @0 dvc m zeroBits x
+			Vk.Dvc.Mem.ImgBffr.write @nm @obj1 @0 dvc m zeroBits y
+			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 @0 dvc m zeroBits z
 			f bnd m
 
 bufferInfo :: VObj.Store v obj => v -> Vk.Bffr.CreateInfo 'Nothing '[obj]

@@ -815,7 +815,7 @@ createTxImg pd d gq cp img (mls, _, _) a = prepareImg pd d Vk.Img.TilingOptimal
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) img
 		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm -> do
-		Vk.Mm.write @inm @bimg d bm zeroBits img
+		Vk.Mm.write @inm @bimg @0 d bm zeroBits img
 		transitionImgLyt d gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal mls
 		copyBffrToImg d gq cp b i
@@ -1114,7 +1114,7 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . olength -> ln) f =
 			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
 			bm' -> do
 			Vk.Mm.write
-				@bnm' @(VObj.List al t lnm') dv bm' zeroBits xs
+				@bnm' @(VObj.List al t lnm') @0 dv bm' zeroBits xs
 			copy b' b
 		f b
 	where
@@ -1383,7 +1383,7 @@ updateModelViewProj :: forall sd smm sbm bnmm alm . KnownNat alm =>
 updateModelViewProj d mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @bnmm @(VObj.Atom alm WModelViewProj 'Nothing) d mm zeroBits
+	Vk.Mm.write @bnmm @(VObj.Atom alm WModelViewProj 'Nothing) @0 d mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),

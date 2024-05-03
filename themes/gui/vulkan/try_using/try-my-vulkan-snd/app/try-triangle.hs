@@ -662,7 +662,7 @@ createVtxBffr pd dv gq cp f =
 			Vk.Mm.PropertyHostCoherentBit ) \
 			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
 			bm' -> do
-			Vk.Mm.write @bnm' @(VObj.List al t lnm')
+			Vk.Mm.write @bnm' @(VObj.List al t lnm') @0
 				dv bm' zeroBits vertices
 			copyBffr dv gq cp b' b
 		f b

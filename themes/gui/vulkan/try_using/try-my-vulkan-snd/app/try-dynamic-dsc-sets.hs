@@ -200,7 +200,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Mm.allocateBind dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	Vk.Mm.write @nm @(VObj.DynList 2 256 w "") dvc mm def [Just xs, Just $ V.reverse xs] >> f bnd mm
+	Vk.Mm.write @nm @(VObj.DynList 2 256 w "") @0 dvc mm def [Just xs, Just $ V.reverse xs] >> f bnd mm
 
 bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo 'Nothing '[VObj.DynList 2 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
