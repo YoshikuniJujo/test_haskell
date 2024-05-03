@@ -68,22 +68,24 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLyt
 -- MAIN
 
 main :: IO ()
-main = withDevice \pd qfi dv -> print . (toString *** toString) =<<
+main = withDevice \pd qfi dv -> print . (\(x, y, z) -> (toString x, toString y, toString z)) =<<
 	Vk.DSLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
 	prepareMem @_ @nmh pd dv dsl \dss (m :: Mm sm sb bnmh nmh) ->
-	calc qfi dv dsl dss bffrSize >> (,)
+	Vk.Mm.write @bnmh @(Word32List nmh) @2 dv m zeroBits [123, 321] >>
+	calc qfi dv dsl dss bffrSize >> (,,)
 	<$> Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
 	<*> Vk.Mm.read @bnmh @(Word32List nmh) @1 @[Word32] dv m zeroBits
+	<*> Vk.Mm.read @bnmh @(Word32List nmh) @2 @[Word32] dv m zeroBits
 
 toString :: [Word32] -> String
 toString = map (chr . fromIntegral)
 
 type DscStLyt sdsl nmh = Vk.DSLyt.D sdsl '[Vk.DSLyt.Buffer '[Word32List nmh]]
 
-type Bffr sm sb nm nmh = Vk.Bffr.Binded sm sb nm '[Word32List nmh, Word32List nmh]
+type Bffr sm sb nm nmh = Vk.Bffr.Binded sm sb nm '[Word32List nmh, Word32List nmh, Word32List nmh]
 
 type Mm sm sb bnmh nmh =
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh '[Word32List nmh, Word32List nmh])]
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh '[Word32List nmh, Word32List nmh, Word32List nmh])]
 
 bffrSize :: Integral n => n
 bffrSize = 30
@@ -165,11 +167,13 @@ createBffr pd dv f =
 		\(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
-bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh, Word32List nmh]
+bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh, Word32List nmh, Word32List nmh]
 bffrInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
-	Vk.Bffr.createInfoLengths = Obj.LengthList bffrSize :** Obj.LengthList bffrSize :** HL.Nil,
+	Vk.Bffr.createInfoLengths =
+		Obj.LengthList bffrSize :** Obj.LengthList bffrSize :**
+		Obj.LengthList bffrSize :** HL.Nil,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
