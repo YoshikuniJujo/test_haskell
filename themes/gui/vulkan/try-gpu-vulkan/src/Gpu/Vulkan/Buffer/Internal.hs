@@ -207,7 +207,7 @@ instance (
 		lns
 		where algn = fromIntegral $ VObj.alignment @a
 
-class CopyInfo (area :: [VObj.O]) (src :: [VObj.O]) (dst :: [VObj.O]) where
+class CopyInfo (area :: [VObj.O]) (is :: Nat) (id :: Nat) (src :: [VObj.O]) (dst :: [VObj.O]) where
 	copyCheckLength ::
 		HeteroParList.PL VObj.Length src ->
 		HeteroParList.PL VObj.Length dst -> Bool
@@ -219,7 +219,7 @@ type OT o = VObj.TypeOf o
 
 instance (
 	Sizable (VObj.TypeOf a),
-	CopyPrefix (a ': as) (a ': ss) (a ': ds) ) => CopyInfo (a ': as) (a ': ss) (a ': ds) where
+	CopyPrefix (a ': as) (a ': ss) (a ': ds) ) => CopyInfo (a ': as) 0 0 (a ': ss) (a ': ds) where
 	copyCheckLength = copyCheckLengthPrefix @(a ': as) @(a ': ss) @(a ': ds)
 	copySrcOffset ost _ = ((ost - 1) `div` algn + 1) * algn
 		where algn = fromIntegral $ alignment' @(OT a)
@@ -228,48 +228,71 @@ instance (
 	copySize = copySizePrefix @(a ': as) @(a ': ss) @(a ': ds) 0
 
 instance {-# OVERLAPPABLE #-}
-	(VObj.SizeAlignment d, CopyInfo (a ': as) (a ': ss) ds) =>
-	CopyInfo (a ': as) (a ': ss) (d ': ds) where
+	(VObj.SizeAlignment a, CopyInfo (a ': as) 0 (id - 1) (a ': ss) ds) =>
+	CopyInfo (a ': as) 0 id (a ': ss) (a ': ds) where
 	copyCheckLength ss (_ :** ds) =
-		copyCheckLength @(a ': as) @(a ': ss) @ds ss ds
-	copySrcOffset ost lns = copySrcOffset @(a ': as) @(a ': ss) @ds ost lns
-	copyDstOffset ost (ln :** lns) = copyDstOffset @(a ': as) @(a ': ss)
+		copyCheckLength @(a ': as) @0 @(id - 1) @(a ': ss) @ds ss ds
+	copySrcOffset ost lns = copySrcOffset @(a ': as) @0 @(id - 1) @(a ': ss) @ds ost lns
+	copyDstOffset ost (ln :** lns) = copyDstOffset @(a ': as) @0 @(id - 1) @(a ': ss)
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.size ln))
+		lns
+		where algn = fromIntegral $ VObj.alignment @a
+	copySize = copySize @(a ': as) @0 @(id - 1) @(a ': ss) @ds
+
+instance {-# OVERLAPPABLE #-}
+	(VObj.SizeAlignment d, CopyInfo (a ': as) 0 id (a ': ss) ds) =>
+	CopyInfo (a ': as) 0 id (a ': ss) (d ': ds) where
+	copyCheckLength ss (_ :** ds) =
+		copyCheckLength @(a ': as) @0 @id @(a ': ss) @ds ss ds
+	copySrcOffset ost lns = copySrcOffset @(a ': as) @0 @id @(a ': ss) @ds ost lns
+	copyDstOffset ost (ln :** lns) = copyDstOffset @(a ': as) @0 @id @(a ': ss)
 		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.size ln))
 		lns
 		where algn = fromIntegral $ VObj.alignment @d
-	copySize = copySize @(a ': as) @(a ': ss) @ds
+	copySize = copySize @(a ': as) @0 @id @(a ': ss) @ds
+
+instance {-# OVERLAPPABLE #-}
+	(VObj.SizeAlignment a, CopyInfo (a ': as) (is - 1) id ss ds) =>
+	CopyInfo (a ': as) is id (a ': ss) ds where
+	copyCheckLength (_ :** ss) ds = copyCheckLength @(a ': as) @(is - 1) @id @ss @ds ss ds
+	copySrcOffset ost (ln :** lns) = copySrcOffset @(a ': as) @(is - 1) @id @ss @ds
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.size ln))
+		lns
+		where algn = fromIntegral $ VObj.alignment @a
+	copyDstOffset ost lns = copyDstOffset @(a ': as) @(is - 1) @id @ss ost lns
+	copySize (_ :** lns) = copySize @(a ': as) @(is - 1) @id @ss @ds lns
 
 instance {-# OVERLAPPABLE #-}
 	(VObj.SizeAlignment s,
-	CopyInfo as ss ds) =>
-	CopyInfo as (s ': ss) ds where
-	copyCheckLength (_ :** ss) ds = copyCheckLength @as ss ds
-	copySrcOffset ost (ln :** lns) = copySrcOffset @as @ss @ds
+	CopyInfo as is id ss ds) =>
+	CopyInfo as is id (s ': ss) ds where
+	copyCheckLength (_ :** ss) ds = copyCheckLength @as @is @id ss ds
+	copySrcOffset ost (ln :** lns) = copySrcOffset @as @is @id @ss @ds
 		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.size ln))
 		lns
 		where algn = fromIntegral (VObj.alignment @s)
-	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
-	copySize (_ :** lns) = copySize @as @ss @ds lns
+	copyDstOffset ost lns = copyDstOffset @as @is @id @ss ost lns
+	copySize (_ :** lns) = copySize @as @is @id @ss @ds lns
 
-makeCopy :: forall (as :: [VObj.O]) ss ds . CopyInfo as ss ds =>
+makeCopy :: forall (as :: [VObj.O]) is id ss ds . CopyInfo as is id ss ds =>
 	HeteroParList.PL VObj.Length ss -> HeteroParList.PL VObj.Length ds -> C.Copy
 makeCopy src dst
-	| copyCheckLength @as src dst = C.Copy {
-		C.copySrcOffset = copySrcOffset @as @ss @ds 0 src,
-		C.copyDstOffset = copyDstOffset @as @ss @ds 0 dst,
-		C.copySize = copySize @as @ss @ds src }
+	| copyCheckLength @as @is @id src dst = C.Copy {
+		C.copySrcOffset = copySrcOffset @as @is @id @ss @ds 0 src,
+		C.copyDstOffset = copyDstOffset @as @is @id @ss @ds 0 dst,
+		C.copySize = copySize @as @is @id @ss @ds src }
 	| otherwise = error "List lengths are different"
 
-class MakeCopies (cpss :: [[VObj.O]]) (ss :: [VObj.O]) (ds :: [VObj.O]) where
+class MakeCopies (cpss :: [([VObj.O], Nat, Nat)]) (ss :: [VObj.O]) (ds :: [VObj.O]) where
 	makeCopies ::
 		HeteroParList.PL VObj.Length ss ->
 		HeteroParList.PL VObj.Length ds -> [C.Copy]
 
 instance MakeCopies '[] ss ds where makeCopies _ _ = []
 
-instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
-	MakeCopies (as ': ass) ss ds where
-	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
+instance (CopyInfo as is id ss ds, MakeCopies ass ss ds) =>
+	MakeCopies ('(as, is, id) ': ass) ss ds where
+	makeCopies src dst = makeCopy @as @is @id src dst : makeCopies @ass src dst
 
 {-
 offsetSize :: forall v vs . (
