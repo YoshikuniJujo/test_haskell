@@ -785,7 +785,7 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
 		Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
 	copy s d = singleTimeCmds dv gq cp \cb ->
-		Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb s d
+		Vk.Cmd.copyBuffer @'[ '( '[VObj.List al t lnm], 0, 0)] cb s d
 
 bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->

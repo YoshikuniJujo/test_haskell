@@ -715,7 +715,7 @@ copyBffr :: forall sd sc sm sb sm' sb' bnm bnm' al t lnm .
 	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
 copyBffr dv gq cp s d = createCmdBffr dv cp \cb -> do
 	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
-		Vk.Cmd.copyBuffer @'[ '[VObj.List al t lnm]] cb s d
+		Vk.Cmd.copyBuffer @'[ '( '[VObj.List al t lnm], 0, 0)] cb s d
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
