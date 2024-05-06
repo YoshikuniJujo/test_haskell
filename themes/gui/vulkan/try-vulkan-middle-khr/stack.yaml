@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-01-03
+resolver: nightly-2024-05-06
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -44,7 +44,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: fad90bd6a7881aa35f7149b4158679c6ffec0e26
+  commit: f9bd770dad9274a309143a89f2518008249f1781
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj

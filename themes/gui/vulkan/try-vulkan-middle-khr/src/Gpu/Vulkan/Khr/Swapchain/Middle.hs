@@ -12,7 +12,15 @@ module Gpu.Vulkan.Khr.Swapchain.Middle (
 
 	-- * GET IMAGES
 
-	getImages
+	getImages,
+
+	-- * ACQUIRE NEXT IMAGE
+
+	acquireNextImage, acquireNextImageResult,	-- VK_KHR_swapchain
+
+	-- * QUEUE PRESENT
+
+	queuePresent, PresentInfo(..)			-- VK_KHR_swapchain
 
 	) where
 

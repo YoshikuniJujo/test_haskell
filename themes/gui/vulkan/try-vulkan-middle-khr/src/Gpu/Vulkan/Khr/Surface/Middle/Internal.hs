@@ -17,7 +17,6 @@ module Gpu.Vulkan.Khr.Surface.Middle.Internal (
 import Data.Word
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 
-import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
 
 import qualified Gpu.Vulkan.Enum as Vk

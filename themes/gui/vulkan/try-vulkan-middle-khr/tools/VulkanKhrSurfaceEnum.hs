@@ -11,6 +11,12 @@ make :: IO ()
 make = createFile' "/usr/include/vulkan/vulkan_core.h"
 		"Khr.Surface.Enum" ["Data.Bits", "Data.Word"] [
 	("TransformFlagBits", "VkSurfaceTransformFlagBitsKHR",
-		["Show", "Eq", "Storable", "Bits"]) ]
+		["Show", "Eq", "Storable", "Bits"]),
+	("CompositeAlphaFlagBits", "VkCompositeAlphaFlagBitsKHR",
+		["Show", "Eq", "Storable", "Bits"]),
+	("ColorSpace", "VkColorSpaceKHR", ["Show", "Eq", "Storable"]),
+	("PresentMode", "VkPresentModeKHR", ["Show", "Eq", "Storable"]) ]
 	[nowdoc|
-type TransformFlags = TransformFlagBits|]
+
+type TransformFlags = TransformFlagBits
+type CompositeAlphaFlags = CompositeAlphaFlagBits|]

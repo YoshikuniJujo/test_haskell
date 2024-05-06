@@ -25,7 +25,15 @@ module Gpu.Vulkan.Khr.Swapchain.Middle.Internal (
 
 	-- * INTERNAL USE
 
-	sToCore
+	sToCore,
+
+	-- * ACQUIRE NEXT IMAGE
+
+	acquireNextImage, acquireNextImageResult,	-- VK_KHR_swapchain
+
+	-- * QUEUE PRESENT
+
+	queuePresent, PresentInfo(..)			-- VK_KHR_swapchain
 
 	) where
 
@@ -44,9 +52,8 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Khr.Enum
-import Gpu.Vulkan.Khr.Swapchain.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
+import Gpu.Vulkan.Khr.Swapchain.Enum
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
@@ -57,6 +64,12 @@ import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Khr.Surface.Middle.Internal as Surface.M
 import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
+
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M
+import qualified Gpu.Vulkan.Fence.Middle.Internal as Fence
+import qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore.M
+import Gpu.Vulkan.Queue.Middle.Internal as Queue
+import Control.Arrow
 
 #include <vulkan/vulkan.h>
 
@@ -187,3 +200,65 @@ extent2dTo3d :: C.Extent2d -> C.Extent3d
 extent2dTo3d C.Extent2d { C.extent2dWidth = w, C.extent2dHeight = h } =
 	C.Extent3d {
 		C.extent3dWidth = w, C.extent3dHeight = h, C.extent3dDepth = 1 }
+
+acquireNextImage :: Device.M.D ->
+	S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
+acquireNextImage = acquireNextImageResult [Success]
+
+acquireNextImageResult :: [Result] -> Device.M.D ->
+	S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
+acquireNextImageResult sccs
+	(Device.M.D dvc) sc to msmp mfnc = alloca \pii ->
+	sToCore sc >>= \sc' -> do
+		r <- C.acquireNextImage dvc sc' to smp fnc pii
+		throwUnless sccs $ Result r
+		peek pii
+	where
+	smp = maybe NullHandle (\(Semaphore.M.S s) -> s) msmp
+	fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc
+
+---------------------------------------------------------------------------
+
+queuePresent :: WithPoked (TMaybe.M mn) => Queue.Q -> PresentInfo mn -> IO ()
+queuePresent (Queue.Q q) pi_ =
+	presentInfoMiddleToCore pi_ \cpi -> do
+	withPoked cpi \ppi -> do
+		r <- C.queuePresent q ppi
+		let	(fromIntegral -> rc) = C.presentInfoSwapchainCount cpi
+		rs <- peekArray rc $ C.presentInfoPResults cpi
+		throwUnlessSuccesses $ Result <$> rs
+		throwUnlessSuccess $ Result r
+
+data PresentInfo mn = PresentInfo {
+	presentInfoNext :: TMaybe.M mn,
+	presentInfoWaitSemaphores :: [Semaphore.M.S],
+	presentInfoSwapchainImageIndices ::
+		[(S, Word32)] }
+
+deriving instance Show (TMaybe.M mn) => Show (PresentInfo mn)
+
+presentInfoMiddleToCore ::
+	WithPoked (TMaybe.M mn) => PresentInfo mn -> (C.PresentInfo -> IO a) -> IO ()
+presentInfoMiddleToCore PresentInfo {
+	presentInfoNext = mnxt,
+	presentInfoWaitSemaphores =
+		(length &&& id) . (Semaphore.M.unS <$>) -> (wsc, wss),
+	presentInfoSwapchainImageIndices =
+		(length &&& id . unzip) -> (scc, (scs, iis)) } f =
+	sToCore `mapM` scs >>= \scs' ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	allocaArray wsc \pwss ->
+	pokeArray pwss wss >>
+	allocaArray scc \pscs ->
+	pokeArray pscs scs' >>
+	allocaArray scc \piis ->
+	pokeArray piis iis >>
+	allocaArray scc \prs -> f C.PresentInfo {
+		C.presentInfoSType = (),
+		C.presentInfoPNext = pnxt',
+		C.presentInfoWaitSemaphoreCount = fromIntegral wsc,
+		C.presentInfoPWaitSemaphores = pwss,
+		C.presentInfoSwapchainCount = fromIntegral scc,
+		C.presentInfoPSwapchains = pscs,
+		C.presentInfoPImageIndices = piis,
+		C.presentInfoPResults = prs }

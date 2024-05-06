@@ -26,6 +26,8 @@ enum "CreateFlagBits" ''#{type VkSwapchainCreateFlagBitsKHR}
 		#{const VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR}),
 	("CreateMutableFormatBit",
 		#{const VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR}),
+	("CreateDeferredMemoryAllocationBitExt",
+		#{const VK_SWAPCHAIN_CREATE_DEFERRED_MEMORY_ALLOCATION_BIT_EXT}),
 	("CreateFlagBitsMaxEnum",
 		#{const VK_SWAPCHAIN_CREATE_FLAG_BITS_MAX_ENUM_KHR}) ]
 
