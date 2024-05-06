@@ -1033,7 +1033,7 @@ createTextureImage phdvc dvc gq cp img f = do
 			\(sb :: Vk.Bffr.Binded
 				sm sb "texture-buffer" '[ Obj.Image 1 img inm]) sbm -> do
 			Vk.Mem.write @"texture-buffer"
-				@(Obj.Image 1 img inm) dvc sbm zeroBits img
+				@(Obj.Image 1 img inm) @0 dvc sbm zeroBits img
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
@@ -1066,7 +1066,7 @@ recreateTextureImage phdvc dvc gq cp img tx txmem act = do
 			\(sb :: Vk.Bffr.Binded
 				sm2 sb "texture-buffer" '[ Obj.Image 1 img inm]) sbm -> do
 			Vk.Mem.write @"texture-buffer"
-				@(Obj.Image 1 img inm) dvc sbm zeroBits img
+				@(Obj.Image 1 img inm) @0 dvc sbm zeroBits img
 			print sb
 			transitionImageLayout dvc gq cp tx
 				Vk.Img.LayoutUndefined
@@ -1543,7 +1543,7 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 				sb,
 				'Vk.Mem.BufferArg
 					"vertex-buffer" '[Obj.List 256 WVertex ""] )]) -> do
-	Vk.Mem.write @"vertex-buffer" @(Obj.List 256 WVertex "") dvc bm' zeroBits vtcs
+	Vk.Mem.write @"vertex-buffer" @(Obj.List 256 WVertex "") @0 dvc bm' zeroBits vtcs
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -1563,7 +1563,7 @@ createIndexBuffer phdvc dvc gq cp idcs f =
 				sb,
 				'Vk.Mem.BufferArg "index-buffer"
 					'[Obj.List 256 Word32 ""] )]) -> do
-	Vk.Mem.write @"index-buffer" @(Obj.List 256 Word32 "") dvc bm' zeroBits idcs
+	Vk.Mem.write @"index-buffer" @(Obj.List 256 Word32 "") @0 dvc bm' zeroBits idcs
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -1710,7 +1710,7 @@ descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[Obj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, Obj.Atom 256 UniformBufferObject 'Nothing )]) 0
+		sm, sb, nm, Obj.Atom 256 UniformBufferObject 'Nothing, 0 )]) 0
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1718,13 +1718,13 @@ descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		HeteroParList.Singleton bufferInfo
 	}
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+	where bufferInfo = U5 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite0New ::
 	Vk.Bffr.Binded sm sb nm '[Obj.Atom 256 WModelObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, Obj.Atom 256 WModelObject 'Nothing )]) 0
+		sm, sb, nm, Obj.Atom 256 WModelObject 'Nothing, 0 )]) 0
 descriptorWrite0New ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1732,7 +1732,7 @@ descriptorWrite0New ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		HeteroParList.Singleton bufferInfo
 	}
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+	where bufferInfo = U5 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
@@ -1854,7 +1854,7 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[Obj.List 256 a ""]] cb src dst
+			Vk.Cmd.copyBuffer @'[ '( '[Obj.List 256 a ""], 0, 0)] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
@@ -2168,7 +2168,7 @@ drawFrame dvc gq pq tctximg sc ext rp ppllyt gpl fbs idcs vb ib cbs
 
 updateUniformBuffer :: Vk.Dvc.D sd -> MemoryUbo sm -> Vk.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc (MemoryUbo um) sce tm =
-	Vk.Mem.write @"uniform-buffer" @(Obj.Atom 256 UniformBufferObject 'Nothing) dvc um zeroBits ubo
+	Vk.Mem.write @"uniform-buffer" @(Obj.Atom 256 UniformBufferObject 'Nothing) @0 dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
 		uniformBufferObjectModel = Cglm.rotate
 			Cglm.mat4Identity
@@ -2187,7 +2187,7 @@ updateUniformBuffer dvc (MemoryUbo um) sce tm =
 
 updateUniformBufferNew :: Vk.Dvc.D sd -> MemoryUboNew sm -> Vk.Extent2d -> Float -> IO ()
 updateUniformBufferNew dvc (MemoryUboNew um) sce tm =
-	Vk.Mem.write @"uniform-buffer" @(Obj.Atom 256 WModelObject 'Nothing) dvc um zeroBits ubo
+	Vk.Mem.write @"uniform-buffer" @(Obj.Atom 256 WModelObject 'Nothing) @0 dvc um zeroBits ubo
 	where ubo = GStorable.W ModelObject {
 		modelObject = Cglm.rotate
 			Cglm.mat4Identity

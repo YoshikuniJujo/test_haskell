@@ -670,7 +670,7 @@ createVertexBuffer phdvc dvc gq cp f =
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vertices
+	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") @0 dvc bm' zeroBits vertices
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -685,7 +685,7 @@ createIndexBuffer phdvc dvc gq cp f =
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices
+	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Word16 "") @0 dvc bm' zeroBits indices
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -737,14 +737,14 @@ descriptorWrite ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing)]) 0
+		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing, 0 )]) 0
 descriptorWrite ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		HeteroParList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+	where bufferInfo = U5 $ Vk.Dsc.BufferInfo ub
 
 createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
@@ -821,7 +821,7 @@ copyBuffer dvc gq cp src dst = do
 					HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 a ""]] cb src dst
+				Vk.Cmd.copyBuffer @'[ '( '[VObj.List 256 a ""], 0, 0)] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
@@ -1000,7 +1000,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 updateUniformBuffer :: Vk.Dvc.D sd ->
 	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> (Float, Float) -> IO ()
 updateUniformBuffer dvc um sce (tm, tm') = do
-	Vk.Mem.write @"uniform-buffer" @(VObj.Atom 256 UniformBufferObject 'Nothing)
+	Vk.Mem.write @"uniform-buffer" @(VObj.Atom 256 UniformBufferObject 'Nothing) @0
 		dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
 		uniformBufferObjectModel =
