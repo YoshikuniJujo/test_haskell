@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.116
+version:        0.1.0.117
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -27,6 +27,10 @@ data-files:
 source-repository head
   type: git
   location: https://github.com/githubuser/try-gpu-vulkan
+
+flag debug
+  manual: True
+  default: False
 
 library
   exposed-modules:
@@ -193,6 +197,16 @@ library
     , try-vulkan-middle
     , typelevel-tools
   default-language: Haskell2010
+  if flag(debug)
+    other-modules:
+        Debug
+    hs-source-dirs:
+        debug
+  else
+    other-modules:
+        Debug
+    hs-source-dirs:
+        nodebug
 
 test-suite try-gpu-vulkan-test
   type: exitcode-stdio-1.0

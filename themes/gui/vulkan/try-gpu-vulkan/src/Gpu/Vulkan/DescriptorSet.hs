@@ -74,6 +74,9 @@ import Data.IORef.ToolsYj
 
 import Data.TypeLevel.Tuple.MapIndex qualified
 
+import Control.Monad
+import Debug
+
 layoutToMiddle :: U2 Layout.D slbts -> Layout.M.D
 layoutToMiddle (U2 (Layout.D l)) = l
 
@@ -190,6 +193,6 @@ updateDs :: (
 	Device.D sd ->
 	HeteroParList.PL (U5 W.Write) writeArgs ->
 	HeteroParList.PL (U8 Copy) copyArgs  -> IO ()
-updateDs (Device.D dvc) ws cs = print ws' >>
+updateDs (Device.D dvc) ws cs = when debug (print ws') >>
 	W.writeListUpdateDynamicLength ws >> M.updateDs dvc ws' cs'
 	where ws' = W.writeListToMiddle ws; cs' = copyListToMiddle cs
