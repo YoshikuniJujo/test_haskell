@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-vulkan-core-khr
-version:        0.1.0.0
+version:        0.1.0.1
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-core-khr#readme>
 homepage:       https://github.com/githubuser/try-vulkan-core-khr#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-core-khr/issues
