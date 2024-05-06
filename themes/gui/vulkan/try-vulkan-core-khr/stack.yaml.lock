@@ -5,32 +5,21 @@
 
 packages:
 - completed:
-    commit: d5bf30ff8705eba48b09f1dbc79aa71bef6a096c
+    commit: 5ef3061957e5e88bf61a28f2a7a0f8bf23459cb0
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
-      sha256: 877c9d0057c9b9c35d1ab99508f035643ea38cab5e95d8df77ba4c88688f7fc8
-      size: 5135
+      sha256: b728fe83750523d97846476d72495978131532bff2f67535b7b286e36b420dbd
+      size: 5179
     subdir: themes/gui/vulkan/try-vulkan-core
-    version: 0.1.0.1
+    version: 0.1.0.5
   original:
-    commit: d5bf30ff8705eba48b09f1dbc79aa71bef6a096c
+    commit: 5ef3061957e5e88bf61a28f2a7a0f8bf23459cb0
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
-- completed:
-    commit: 120910bb3809f608b335c37cae66ac70f75703e0
-    git: https://github.com/YoshikuniJujo/c-struct
-    name: c-struct
-    pantry-tree:
-      sha256: 1afa181b3e732314979c12e1a6a811fe91bb5200306cec3e0264077649a2a2e8
-      size: 837
-    version: 0.1.2.0
-  original:
-    commit: 120910bb3809f608b335c37cae66ac70f75703e0
-    git: https://github.com/YoshikuniJujo/c-struct
 snapshots:
 - completed:
-    sha256: 4c972e067bae16b95961dbfdd12e07f1ee6c8fffabbfa05c3d65100b03f548b7
-    size: 650253
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/23.yaml
-  original: lts-20.23
+    sha256: b66176d92f4e55079a946948d23fc80bf68fb328e23d1066ed9f73a609a3d8b8
+    size: 631258
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/5/6.yaml
+  original: nightly-2024-05-06
