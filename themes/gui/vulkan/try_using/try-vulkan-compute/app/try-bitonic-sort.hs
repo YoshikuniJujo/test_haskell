@@ -115,9 +115,9 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet ma mb das dbs pot >>
-		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
-			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @[W2] dvc mb def
-			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @[W3] dvc mc def
+		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @0 @[W1] dvc ma def
+			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @0 @[W2] dvc mb def
+			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @0 @[W3] dvc mc def
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
@@ -210,7 +210,7 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	storageBufferNew dvc phdvc da \ba ma ->
 	storageBufferNew dvc phdvc db \bb mb ->
 	storageBufferNew dvc phdvc dc \bc mc ->
-	Vk.Mm.write @"" @(VObj.List 256 W3 "") dvc mc def dc >>
+	Vk.Mm.write @"" @(VObj.List 256 W3 "") @0 dvc mc def dc >>
 	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U5 $ writeDscSet dscSet ba bb bc)
 		HeteroParList.Nil >>
@@ -289,24 +289,24 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.Length objs1),
 	Show (HeteroParList.PL VObj.Length objs2),
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange (VObj.List 256 W1 "") objs1,
-	VObj.OffsetRange (VObj.List 256 W2 "") objs2,
-	VObj.OffsetRange (VObj.List 256 W3 "") objs3
+	VObj.OffsetRange' (VObj.List 256 W1 "") objs1 0,
+	VObj.OffsetRange' (VObj.List 256 W2 "") objs2 0,
+	VObj.OffsetRange' (VObj.List 256 W3 "") objs3 0
 	) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sm1, sb1, "", VObj.List 256 W1 ""), '(sm2, sb2, "", VObj.List 256 W2 ""),
-		'(sm3, sb3, "", VObj.List 256 W3 "") ]) 0
+		'(sm1, sb1, "", VObj.List 256 W1 "", 0), '(sm2, sb2, "", VObj.List 256 W2 "", 0),
+		'(sm3, sb3, "", VObj.List 256 W3 "", 0) ]) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**
 		HeteroParList.Nil }
 
 -- CALC
@@ -358,8 +358,8 @@ writeAndRunBegin :: (
 		V.Vector W1,  V.Vector W2 ) ->
 	(forall ss' . Vk.Semaphore.S ss' -> IO b) -> IO b
 writeAndRunBegin dvc qFam ppl plyt dscSet dsz ma mb (cb, da, db) f = do
-	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
-	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
+	Vk.Mm.write @"" @(VObj.List 256 W1 "") @0 dvc ma def da
+	Vk.Mm.write @"" @(VObj.List 256 W2 "") @0 dvc mb def db
 	run dvc qFam cb ppl plyt dscSet dsz HeteroParList.Nil f
 
 forDebug :: IORef Int
@@ -379,8 +379,8 @@ writeAndRun :: (
 writeAndRun dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db) f = do
 --	print =<< readIORef forDebug
 --	modifyIORef forDebug (+ 1)
-	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
-	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
+	Vk.Mm.write @"" @(VObj.List 256 W1 "") @0 dvc ma def da
+	Vk.Mm.write @"" @(VObj.List 256 W2 "") @0 dvc mb def db
 	run dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) f
 
 writeAndRunEnd :: (
@@ -395,8 +395,8 @@ writeAndRunEnd :: (
 		V.Vector W1,  V.Vector W2 ) ->
 	(forall sf . Vk.Fence.F sf -> IO b) -> IO b
 writeAndRunEnd dvc qFam ppl plyt dscSet dsz ma mb s (cb, da, db) f = do
-	Vk.Mm.write @"" @(VObj.List 256 W1 "") dvc ma def da
-	Vk.Mm.write @"" @(VObj.List 256 W2 "") dvc mb def db
+	Vk.Mm.write @"" @(VObj.List 256 W1 "") @0 dvc ma def da
+	Vk.Mm.write @"" @(VObj.List 256 W2 "") @0 dvc mb def db
 	run' dvc qFam cb ppl plyt dscSet dsz (HeteroParList.Singleton s) f
 
 repeatBeginEnd ::

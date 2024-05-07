@@ -76,7 +76,7 @@ main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 	Vk.DSLyt.create dv dscSetLayoutInfo nil \dslyt ->
 	prepareMems pd dv dslyt \dscs m ->
 	calc qfi dv dslyt dscs bffSize >>
-	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
+	Vk.Mm.read @"" @Word32List @0 @[Word32] dv m zeroBits
 
 type Word32List = Obj.List 256 Word32 ""
 
@@ -197,17 +197,17 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 
 writeDscSet :: forall s slbts sb sm os . (
 	Show (HL.PL Obj.Length os),
-	Obj.OffsetRange (Obj.List 256 Word32 "") os
+	Obj.OffsetRange' (Obj.List 256 Word32 "") os 0
 	) =>
 	Vk.DS.D s slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.Write 'Nothing s slbts
-		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List)]) 0
+		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List, 0)]) 0
 writeDscSet ds ba = Vk.DS.Write {
 	Vk.DS.writeNext = TMaybe.N,
 	Vk.DS.writeDstSet = ds,
 	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSources =
-		Vk.DS.BufferInfos . HL.Singleton . U4 $ Vk.Dsc.BufferInfo ba }
+		Vk.DS.BufferInfos . HL.Singleton . U5 $ Vk.Dsc.BufferInfo ba }
 
 -- CALC
 

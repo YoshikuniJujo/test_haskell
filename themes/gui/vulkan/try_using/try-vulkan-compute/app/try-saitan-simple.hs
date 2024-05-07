@@ -82,9 +82,9 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet mgcx >>
-		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
-			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @[W2] dvc mb def
-			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @[W3] dvc mc def
+		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @0 @[W1] dvc ma def
+			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @0 @[W2] dvc mb def
+			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @0 @[W3] dvc mc def
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
@@ -195,7 +195,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Mm.allocateBind dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	Vk.Mm.write @nm @(VObj.List 256 w "") dvc mm def xs >> f bnd mm
+	Vk.Mm.write @nm @(VObj.List 256 w "") @0 dvc mm def xs >> f bnd mm
 
 bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
@@ -239,24 +239,24 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.Length objs1),
 	Show (HeteroParList.PL VObj.Length objs2),
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange (VObj.List 256 W1 "") objs1,
-	VObj.OffsetRange (VObj.List 256 W2 "") objs2,
-	VObj.OffsetRange (VObj.List 256 W3 "") objs3
+	VObj.OffsetRange' (VObj.List 256 W1 "") objs1 0,
+	VObj.OffsetRange' (VObj.List 256 W2 "") objs2 0,
+	VObj.OffsetRange' (VObj.List 256 W3 "") objs3 0
 	) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sm1, sb1, "", VObj.List 256 W1 ""), '(sm2, sb2, "", VObj.List 256 W2 ""),
-		'(sm3, sb3, "", VObj.List 256 W3 "") ]) 0
+		'(sm1, sb1, "", VObj.List 256 W1 "", 0), '(sm2, sb2, "", VObj.List 256 W2 "", 0),
+		'(sm3, sb3, "", VObj.List 256 W3 "", 0) ]) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**
 		HeteroParList.Nil }
 
 -- CALC

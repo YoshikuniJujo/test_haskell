@@ -139,7 +139,7 @@ mainLoop :: forall nm4 objss4 slbts sl bts sbtss sd sc sg1 sl1 sg2 sl2 sm4 sds s
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
 	sbtss ~ '[slbts],
 	slbts ~ '(sl, bts),
-	Vk.Mm.OffsetSize nm4 (VObj.List 256 Pixel "") objss4 ) =>
+	Vk.Mm.OffsetSize nm4 (VObj.List 256 Pixel "") objss4 0 ) =>
 	Devices sd sc sds slbts ->
 	PplPlyt sg1 sl1 slbts '[Word32] ->
 	PplPlyt sg2 sl2 slbts PushConstants ->
@@ -354,7 +354,7 @@ bufferNew dv phd v bgrp mgrp k =
 	memoryInfo bffr >>= \mi ->
 	Vk.Mm.allocateBind' mgrp k (U2 (Vk.Mm.Buffer bffr) :** HL.Nil) mi >>=
 		\(AlwaysRight (U2 (Vk.Mm.BufferBinded bnd) :** HL.Nil, m)) ->
-	Vk.Mm.write @nm @PixelList dv m def v >> pure (bnd, m)
+	Vk.Mm.write @nm @PixelList @0 dv m def v >> pure (bnd, m)
 	where
 	bufferInfo = Vk.Bff.CreateInfo {
 		Vk.Bff.createInfoNext = TMaybe.N,
@@ -480,7 +480,7 @@ run2 :: forall nm4 w4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
 	Storable w4,
-	Vk.Mm.OffsetSize nm4 (VObj.List 256 w4 "") objss4,
+	Vk.Mm.OffsetSize nm4 (VObj.List 256 w4 "") objss4 0,
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dv.D sd -> Vk.QF.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg2 '(sl2, sbtss, PushConstants) ->
@@ -499,7 +499,7 @@ run2 dv qf cb ppl2 plyt2 ds m w h cs = do
 			Vk.Cmd.dispatch ccb w h 1
 	Vk.Queue.submit q (U4 submitInfo2 :** HL.Nil) Nothing
 	Vk.Queue.waitIdle q
-	Vk.Mm.read @nm4 @(VObj.List 256 w4 "") @(V.Vector w4) dv m def
+	Vk.Mm.read @nm4 @(VObj.List 256 w4 "") @0 @(V.Vector w4) dv m def
 	where
 	submitInfo2 :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
 	submitInfo2 = Vk.SubmitInfo {

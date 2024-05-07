@@ -101,7 +101,7 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 	r3 <- Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt dc \dscSet mc ->
 		calc dvc qFam dscSetLyt dscSet pot >>
-		Vk.Mm.read @"" @(VObj.List 256 W3 "") @(VV.Vector W3) dvc mc def
+		Vk.Mm.read @"" @(VObj.List 256 W3 "") @0 @(VV.Vector W3) dvc mc def
 	ct1 <- getCurrentTime
 	print . take 20 $ unW3 <$> toList r3
 	print . checkSorted 0 $ unW3 <$> toList r3
@@ -188,7 +188,7 @@ prepareMems phdvc dvc dscSetLyt dc f =
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(HeteroParList.Singleton dscSet) ->
 	storageBufferNew dvc phdvc (fromIntegral $ V.length dc) \bc mc ->
-	Vk.Mm.write @"" @(VObj.List 256 W3 "") dvc mc def dc >>
+	Vk.Mm.write @"" @(VObj.List 256 W3 "") @0 dvc mc def dc >>
 	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U5 $ writeDscSet dscSet bc)
 		HeteroParList.Nil >>
@@ -265,17 +265,17 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 writeDscSet ::
 	forall slbts sb3 sm3 objs3 sds . (
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange (VObj.List 256 W3 "") objs3 ) =>
+	VObj.OffsetRange' (VObj.List 256 W3 "") objs3 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sm3, sb3, "", VObj.List 256 W3 "") ]) 0
+		'(sm3, sb3, "", VObj.List 256 W3 "", 0) ]) 0
 writeDscSet ds bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		U4 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") bc) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(VObj.List 256 W3 "") @0 bc) :**
 		HeteroParList.Nil }
 
 -- CALC
