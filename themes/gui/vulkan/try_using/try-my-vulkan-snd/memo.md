@@ -4,8 +4,8 @@ memo
 new
 ---
 
-* [ ] remove OffsetRange etc
-* [ ] rename OffsetRange' to OffsetRange etc
+* [x] remove OffsetRange etc
+* [x] rename OffsetRange' to OffsetRange etc
 
 old
 ---
