@@ -57,7 +57,8 @@ import Language.SpirV.Shaderc.TH
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Ist
-import qualified Gpu.Vulkan.Khr as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 
 import qualified Gpu.Vulkan.Device as Vk.Dvc
