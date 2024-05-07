@@ -66,7 +66,7 @@ module Gpu.Vulkan.Object (
 
 	-- ** Offset Range
 
-	offsetRange', offsetSize', OffsetRange',
+	offsetRange, offsetSize, OffsetRange,
 
 	-- ** Offset Of List
 
@@ -247,16 +247,16 @@ instance (SizeAlignment obj, WholeAlign objs) =>
 
 -- OffsetRange
 
-offsetRange' :: forall obj objs i . OffsetRange' obj objs i => Device.M.Size ->
+offsetRange :: forall obj objs i . OffsetRange obj objs i => Device.M.Size ->
 	HeteroParList.PL Length objs -> (Device.M.Size, Device.M.Size)
-offsetRange' ost0 lns = offsetRangeFromSzAlgns' @obj @_ @i ost0 $ sizeAlignmentList lns
+offsetRange ost0 lns = offsetRangeFromSzAlgns' @obj @_ @i ost0 $ sizeAlignmentList lns
 
-offsetSize' :: forall obj objs i . OffsetRange' obj objs i => Device.M.Size ->
+offsetSize :: forall obj objs i . OffsetRange obj objs i => Device.M.Size ->
 	HeteroParList.PL Length objs -> (Device.M.Size, Device.M.Size)
-offsetSize' ost0 lns = offsetSizeFromSzAlgns' @obj @_ @i ost0 $ sizeAlignmentList lns
+offsetSize ost0 lns = offsetSizeFromSzAlgns' @obj @_ @i ost0 $ sizeAlignmentList lns
 
 class (SizeAlignmentList vs, HeteroParList.TypeIndex v vs) =>
-	OffsetRange' (v :: O) (vs :: [O]) (i :: Nat) where
+	OffsetRange (v :: O) (vs :: [O]) (i :: Nat) where
 	offsetRangeFromSzAlgns' ::
 		Device.M.Size -> HeteroParList.PL SizeAlignmentOf vs ->
 		(Device.M.Size, Device.M.Size)
@@ -265,22 +265,22 @@ class (SizeAlignmentList vs, HeteroParList.TypeIndex v vs) =>
 		(Device.M.Size, Device.M.Size)
 
 instance (SizeAlignment v, SizeAlignmentList vs) =>
-	OffsetRange' v (v ': vs) 0 where
+	OffsetRange v (v ': vs) 0 where
 	offsetRangeFromSzAlgns' ost (SizeAlignmentOf _dn sz algn :** _) =
 		(adjust algn ost, sz)
 	offsetSizeFromSzAlgns' ost (SizeAlignmentOf dn sz algn :** _) =
 		(adjust algn ost, dn * sz)
 
 instance {-# OVERLAPPABLE #-}
-	(SizeAlignment v, OffsetRange' v vs (i - 1)) =>
-	OffsetRange' v (v ': vs) i where
+	(SizeAlignment v, OffsetRange v vs (i - 1)) =>
+	OffsetRange v (v ': vs) i where
 	offsetRangeFromSzAlgns' ost (SizeAlignmentOf dn sz algn :** sas) =
 		offsetRangeFromSzAlgns' @v @vs @(i - 1) (adjust algn ost + dn * sz) sas
 	offsetSizeFromSzAlgns' ost (SizeAlignmentOf dn sz algn :** sas) =
 		offsetSizeFromSzAlgns' @v @vs @(i - 1) (adjust algn ost + dn * sz) sas
 
-instance {-# OVERLAPPABLE #-} (SizeAlignment v', OffsetRange' v vs i) =>
-	OffsetRange' v (v' ': vs) i where
+instance {-# OVERLAPPABLE #-} (SizeAlignment v', OffsetRange v vs i) =>
+	OffsetRange v (v' ': vs) i where
 	offsetRangeFromSzAlgns' ost (SizeAlignmentOf dn sz algn :** sas) =
 		offsetRangeFromSzAlgns' @v @vs @i (adjust algn ost + dn * sz) sas
 	offsetSizeFromSzAlgns' ost (SizeAlignmentOf dn sz algn :** sas) =

@@ -45,7 +45,7 @@ indexingExtensionName :: PhysicalDevice.ExtensionName
 indexingExtensionName = PhysicalDevice.ExtensionName M.indexingExtensionName
 
 data BufferInfo sm sb nm obj i = forall objs .
-	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange' obj objs i) =>
+	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs i) =>
 	BufferInfo (Buffer.Binded sm sb nm objs)
 
 deriving instance Show (BufferInfo sm sb nm obj i)
@@ -56,7 +56,7 @@ bufferInfoToMiddle (BufferInfo (Buffer.Binded lns b)) = M.BufferInfo {
 	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = ost,
 	M.bufferInfoRange = rng }
-	where (ost, rng) = VObj.offsetRange' @obj @_ @i 0 lns
+	where (ost, rng) = VObj.offsetRange @obj @_ @i 0 lns
 
 data ImageInfo ss fmt nm si = ImageInfo {
 	imageInfoSampler :: Sampler.S ss,
