@@ -42,9 +42,10 @@ library
     , c-enum
     , data-default
     , text
+    , try-gpu-vulkan-core-khr-surface
+    , try-gpu-vulkan-core-khr-swapchain
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-khr
     , try-vulkan-middle
     , typelevel-tools
   default-language: Haskell2010
@@ -62,9 +63,10 @@ test-suite try-vulkan-middle-khr-test
     , c-enum
     , data-default
     , text
+    , try-gpu-vulkan-core-khr-surface
+    , try-gpu-vulkan-core-khr-swapchain
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-khr
     , try-vulkan-middle
     , try-vulkan-middle-khr
     , typelevel-tools

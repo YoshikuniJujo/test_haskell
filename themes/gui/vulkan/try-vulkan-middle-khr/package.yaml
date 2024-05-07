@@ -27,7 +27,8 @@ dependencies:
 - try-storable-peek-poke
 - try-vulkan-middle
 - try-vulkan-core
-- try-vulkan-core-khr
+- try-gpu-vulkan-core-khr-swapchain
+- try-gpu-vulkan-core-khr-surface
 - typelevel-tools
 
 ghc-options:
