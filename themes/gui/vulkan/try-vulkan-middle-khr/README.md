@@ -1,1 +1,0 @@
-# try-vulkan-middle-khr
