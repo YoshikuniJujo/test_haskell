@@ -15,13 +15,13 @@
 
 module Main (main) where
 
+import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
+import Data.TypeLevel.List
 import Data.Default
 import Data.Bits
 import Data.Bits.ToolsYj
-import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.List
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
 import Data.Word
@@ -36,7 +36,7 @@ import Gpu.Vulkan.Object.Base qualified as BObj
 import Gpu.Vulkan.Instance qualified as Vk.Inst
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.QueueFamily qualified as Vk.QFm
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
@@ -45,15 +45,15 @@ import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
-import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShaderSt
 import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cmpt
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShaderSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Lyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderMod
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPool
-import Gpu.Vulkan.DescriptorSet qualified as Vk.DS
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLyt
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
 ---------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLyt
 
 main :: IO ()
 main = withDvc \pd dv q cpl -> putStrLn . toString =<<
-	Vk.DSLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
+	Vk.DscStLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
 	prepareMem @_ @nmh pd dv dsl \dss _ (m :: Mm sm sb bnmh nmh) ->
 	calc dv q cpl dsl dss bffrSize >>
 	Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
@@ -76,7 +76,7 @@ main = withDvc \pd dv q cpl -> putStrLn . toString =<<
 toString :: [Word32] -> String
 toString = map (chr . fromIntegral)
 
-type DscStLyt sdsl nmh = Vk.DSLyt.D sdsl '[Vk.DSLyt.Buffer '[Word32List nmh]]
+type DscStLyt sdsl nmh = Vk.DscStLyt.D sdsl '[Vk.DscStLyt.Buffer '[Word32List nmh]]
 
 type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh (BffrContents nmh)
 
@@ -96,7 +96,7 @@ withDvc f = Vk.Inst.create instInfo nil \inst -> do
 	pd <- head <$> Vk.Phd.enumerate inst
 	qfi <- fst . head . filter (
 			checkBits Vk.Q.ComputeBit .
-			Vk.QFm.propertiesQueueFlags . snd )
+			Vk.QFam.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	Vk.Dvc.create pd (dvcInfo qfi) nil \dv ->
 		Vk.Dvc.getQueue dv qfi 0 >>= \q ->
@@ -106,7 +106,7 @@ instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidation] }
 	
-dvcInfo :: Vk.QFm.Index -> Vk.Dvc.CreateInfo 'Nothing '[ 'Nothing]
+dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qfi = Vk.Dvc.CreateInfo {
 	Vk.Dvc.createInfoNext = TMaybe.N, Vk.Dvc.createInfoFlags = zeroBits,
 	Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
@@ -119,29 +119,29 @@ dvcInfo qfi = Vk.Dvc.CreateInfo {
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qfi,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
-dscStLytInfo :: Vk.DSLyt.CreateInfo 'Nothing '[ 'Vk.DSLyt.Buffer '[Word32List nmh]]
-dscStLytInfo = Vk.DSLyt.CreateInfo {
-	Vk.DSLyt.createInfoNext = TMaybe.N, Vk.DSLyt.createInfoFlags = zeroBits,
-	Vk.DSLyt.createInfoBindings = HPList.Singleton bdg }
-	where bdg = Vk.DSLyt.BindingBuffer {
-		Vk.DSLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DSLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+dscStLytInfo :: Vk.DscStLyt.CreateInfo 'Nothing '[ 'Vk.DscStLyt.Buffer '[Word32List nmh]]
+dscStLytInfo = Vk.DscStLyt.CreateInfo {
+	Vk.DscStLyt.createInfoNext = TMaybe.N, Vk.DscStLyt.createInfoFlags = zeroBits,
+	Vk.DscStLyt.createInfoBindings = HPList.Singleton bdg }
+	where bdg = Vk.DscStLyt.BindingBuffer {
+		Vk.DscStLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
+		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
 
 -- PREPARE MEMORIES
 
 prepareMem :: forall bts bnmh nmh sd sl a . (
 	Default (HPList.PL (HPList.PL BObj.Length)
-		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Vk.DS.BindingAndArrayElemBuffer bts '[Word32List nmh] 0,
-	Vk.DS.UpdateDynamicLength bts '[Word32List nmh] ) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DSLyt.D sl bts -> (forall sds sm sb .
-		Vk.DS.D sds '(sl, bts) ->
+		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
+	Vk.DscSt.BindingAndArrayElemBuffer bts '[Word32List nmh] 0,
+	Vk.DscSt.UpdateDynamicLength bts '[Word32List nmh] ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sl bts -> (forall sds sm sb .
+		Vk.DscSt.D sds '(sl, bts) ->
 		Bffr sm sb bnmh nmh -> Mm sm sb bnmh nmh -> IO a) -> IO a
 prepareMem pd dv dsl f =
 	Vk.DscPool.create dv dscPlInfo nil \dp ->
-	Vk.DS.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton ds) ->
+	Vk.DscSt.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton ds) ->
 	createBffr pd dv \b m ->
-	Vk.DS.updateDs dv (HPList.Singleton . U5 $ writeDscSt @_ @nmh ds b) HPList.Nil >>
+	Vk.DscSt.updateDs dv (HPList.Singleton . U5 $ writeDscSt @_ @nmh ds b) HPList.Nil >>
 	f ds b m
 
 dscPlInfo :: Vk.DscPool.CreateInfo 'Nothing
@@ -153,12 +153,12 @@ dscPlInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 1 } }
 
-dscStInfo :: Vk.DscPool.P sp -> Vk.DSLyt.D sl bts ->
-	Vk.DS.AllocateInfo 'Nothing sp '[ '(sl, bts)]
-dscStInfo pl lyt = Vk.DS.AllocateInfo {
-	Vk.DS.allocateInfoNext = TMaybe.N,
-	Vk.DS.allocateInfoDescriptorPool = pl,
-	Vk.DS.allocateInfoSetLayouts = HPList.Singleton $ U2 lyt }
+dscStInfo :: Vk.DscPool.P sp -> Vk.DscStLyt.D sl bts ->
+	Vk.DscSt.AllocateInfo 'Nothing sp '[ '(sl, bts)]
+dscStInfo pl lyt = Vk.DscSt.AllocateInfo {
+	Vk.DscSt.allocateInfoNext = TMaybe.N,
+	Vk.DscSt.allocateInfoDescriptorPool = pl,
+	Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 lyt }
 
 createBffr :: forall sd nm nmh a . Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sb sm . Bffr sm sb nm nmh -> Mm sm sb nm nmh -> IO a) -> IO a
@@ -202,23 +202,23 @@ findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
 writeDscSt :: forall bnmh nmh sds slbts sm sb os . (
 	Show (HPList.PL Obj.Length os),
 	Obj.OffsetRange' (Word32List nmh) os 0 ) =>
-	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DS.Write 'Nothing sds slbts ('Vk.DS.WriteSourcesArgBuffer
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
+	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
 		'[ '(sm, sb, bnmh, Word32List nmh, 0)]) 0
-writeDscSt ds bf = Vk.DS.Write {
-	Vk.DS.writeNext = TMaybe.N, Vk.DS.writeDstSet = ds,
-	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DS.writeSources =
-		Vk.DS.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
+writeDscSt ds bf = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSt.writeSources =
+		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
 
 -- CALC
 
 calc :: forall slbts sl bts sd scpl sds . (
 	slbts ~ '(sl, bts),
-	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	InfixIndex '[slbts] '[slbts] ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
-	Vk.DSLyt.D sl bts -> Vk.DS.D sds slbts -> Word32 -> IO ()
+	Vk.DscStLyt.D sl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cpl dsl ds sz =
 	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
@@ -226,7 +226,7 @@ calc dv q cpl dsl ds sz =
 	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
 	run q ds cb pl cppl sz
 
-pplLytInfo :: Vk.DSLyt.D sl bts ->
+pplLytInfo :: Vk.DscStLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.Layout '[] '[])
 pplLytInfo dsl = Vk.Ppl.Lyt.CreateInfo {
@@ -234,7 +234,7 @@ pplLytInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-cmdPlInfo :: Vk.QFm.Index -> Vk.CmdPl.CreateInfo 'Nothing
+cmdPlInfo :: Vk.QFam.Index -> Vk.CmdPl.CreateInfo 'Nothing
 cmdPlInfo qfi = Vk.CmdPl.CreateInfo {
 	Vk.CmdPl.createInfoNext = TMaybe.N,
 	Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
@@ -249,7 +249,7 @@ cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 run :: forall slbts sd sc sg sl s . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	InfixIndex '[slbts] '[slbts] ) =>
-	Vk.Q.Q -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
+	Vk.Q.Q -> Vk.DscSt.D s slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run q ds cb pl cppl sz = do
