@@ -4,13 +4,15 @@ memo
 new
 ---
 
-* [ ] repair try-storable-generic
-* [ ] remove instance SizeAlignmentList Vertex from try-my-vulkan-snd
-* [ ] refactoring try-gpu-vulkan about SizeAlignmentList
+* [ ] remove OffsetRange etc
+* [ ] rename OffsetRange' to OffsetRange etc
 
 old
 ---
 
+* [ ] repair try-storable-generic
+* [ ] remove instance SizeAlignmentList Vertex from try-my-vulkan-snd
+* [ ] refactoring try-gpu-vulkan about SizeAlignmentList
 * [ ] rename Pointable to Pokable
 * [ ] Vk.CommandBuffer.C s
     + [ ] Vk.CommandBuffer.C' s vs
@@ -119,7 +121,7 @@ apps
 * [x] try-texture-immutable-sampler-single.hs
 * [x] try-yatteiku.hs
 * [x] try-hello-world.hs
-* [ ] try-object-index.hs
+* [x] try-object-index.hs
 * [x] try-saitan-simple.hs
 * [ ] try-saitan.hs
 * [ ] try-saitan-float.hs

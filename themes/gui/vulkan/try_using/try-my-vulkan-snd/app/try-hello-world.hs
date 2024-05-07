@@ -67,10 +67,10 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLyt
 -- MAIN
 
 main :: IO ()
-main = withDevice \pd qfi dv -> putStrLn . toString =<<
+main = withDvc \pd dv q cpl -> putStrLn . toString =<<
 	Vk.DSLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
-	prepareMem @_ @nmh pd dv dsl \dss (m :: Mm sm sb bnmh nmh) ->
-	calc qfi dv dsl dss bffrSize >>
+	prepareMem @_ @nmh pd dv dsl \dss _ (m :: Mm sm sb bnmh nmh) ->
+	calc dv q cpl dsl dss bffrSize >>
 	Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
 
 toString :: [Word32] -> String
@@ -78,24 +78,29 @@ toString = map (chr . fromIntegral)
 
 type DscStLyt sdsl nmh = Vk.DSLyt.D sdsl '[Vk.DSLyt.Buffer '[Word32List nmh]]
 
-type Bffr sm sb nm nmh = Vk.Bffr.Binded sm sb nm '[Word32List nmh]
+type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh (BffrContents nmh)
 
 type Mm sm sb bnmh nmh =
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh '[Word32List nmh])]
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh (BffrContents nmh))]
+
+type BffrContents nmh = '[Word32List nmh]
 
 bffrSize :: Integral n => n
 bffrSize = 30
 
 type Word32List nmh = Obj.List 256 Word32 nmh
 
-withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dvc.D s -> IO a) -> IO a
-withDevice f = Vk.Inst.create instInfo nil \inst -> do
+withDvc :: (forall sd scpl .
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl -> IO a) -> IO a
+withDvc f = Vk.Inst.create instInfo nil \inst -> do
 	pd <- head <$> Vk.Phd.enumerate inst
 	qfi <- fst . head . filter (
 			checkBits Vk.Q.ComputeBit .
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
-	Vk.Dvc.create pd (dvcInfo qfi) nil $ f pd qfi
+	Vk.Dvc.create pd (dvcInfo qfi) nil \dv ->
+		Vk.Dvc.getQueue dv qfi 0 >>= \q ->
+		Vk.CmdPl.create dv (cmdPlInfo qfi) nil \cpl -> f pd dv q cpl
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
@@ -130,13 +135,14 @@ prepareMem :: forall bts bnmh nmh sd sl a . (
 	Vk.DS.BindingAndArrayElemBuffer bts '[Word32List nmh] 0,
 	Vk.DS.UpdateDynamicLength bts '[Word32List nmh] ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DSLyt.D sl bts -> (forall sds sm sb .
-		Vk.DS.D sds '(sl, bts) -> Mm sm sb bnmh nmh -> IO a) -> IO a
+		Vk.DS.D sds '(sl, bts) ->
+		Bffr sm sb bnmh nmh -> Mm sm sb bnmh nmh -> IO a) -> IO a
 prepareMem pd dv dsl f =
 	Vk.DscPool.create dv dscPlInfo nil \dp ->
 	Vk.DS.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton ds) ->
 	createBffr pd dv \b m ->
 	Vk.DS.updateDs dv (HPList.Singleton . U5 $ writeDscSt @_ @nmh ds b) HPList.Nil >>
-	f ds m
+	f ds b m
 
 dscPlInfo :: Vk.DscPool.CreateInfo 'Nothing
 dscPlInfo = Vk.DscPool.CreateInfo {
@@ -163,7 +169,7 @@ createBffr pd dv f =
 		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
-bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh]
+bffrInfo :: Vk.Bffr.CreateInfo 'Nothing (BffrContents nmh)
 bffrInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
@@ -193,8 +199,9 @@ findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
-writeDscSt :: forall bnmh nmh sds slbts sm sb os .
-	(Show (HPList.PL Obj.Length os), Obj.OffsetRange' (Word32List nmh) os 0) =>
+writeDscSt :: forall bnmh nmh sds slbts sm sb os . (
+	Show (HPList.PL Obj.Length os),
+	Obj.OffsetRange' (Word32List nmh) os 0 ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
 	Vk.DS.Write 'Nothing sds slbts ('Vk.DS.WriteSourcesArgBuffer
 		'[ '(sm, sb, bnmh, Word32List nmh, 0)]) 0
@@ -206,19 +213,18 @@ writeDscSt ds bf = Vk.DS.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd sds . (
+calc :: forall slbts sl bts sd scpl sds . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	InfixIndex '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dvc.D sd ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DSLyt.D sl bts -> Vk.DS.D sds slbts -> Word32 -> IO ()
-calc qfi dv dsl ds sz =
+calc dv q cpl dsl ds sz =
 	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
 		(HPList.Singleton . U4 $ pplInfo pl) nil \(cppl :** HPList.Nil) ->
-	Vk.CmdPl.create dv (cmdPlInfo qfi) nil \cpl ->
 	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
-	run qfi dv ds cb pl cppl sz
+	run q ds cb pl cppl sz
 
 pplLytInfo :: Vk.DSLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
@@ -243,10 +249,10 @@ cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 run :: forall slbts sd sc sg sl s . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	InfixIndex '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dvc.D sd -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
+	Vk.Q.Q -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
-run qfi dv ds cb pl cppl sz = Vk.Dvc.getQueue dv qfi 0 >>= \q -> do
+run q ds cb pl cppl sz = do
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute
 			cb Vk.Ppl.BindPointCompute cppl \ccb ->

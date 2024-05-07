@@ -83,10 +83,12 @@ toString = map (chr . fromIntegral)
 
 type DscStLyt sdsl nmh = Vk.DSLyt.D sdsl '[Vk.DSLyt.Buffer '[Word32List nmh]]
 
-type Bffr sm sb nm nmh = Vk.Bffr.Binded sm sb nm '[Word32List nmh, Word32List nmh, Word32List nmh]
+type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh (BffrContents nmh)
 
 type Mm sm sb bnmh nmh =
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh '[Word32List nmh, Word32List nmh, Word32List nmh])]
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh (BffrContents nmh))]
+
+type BffrContents nmh = '[Word32List nmh, Word32List nmh, Word32List nmh]
 
 bffrSize :: Integral n => n
 bffrSize = 30
@@ -139,10 +141,7 @@ prepareMem :: forall bts bnmh nmh sd sl a . (
 	Vk.DS.UpdateDynamicLength bts '[Word32List nmh] ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DSLyt.D sl bts -> (forall sds sm sb .
 		Vk.DS.D sds '(sl, bts) ->
-		Vk.Bffr.Binded sm sb bnmh [
-			Word32List nmh, Word32List nmh, Word32List nmh ] ->
-		Mm sm sb bnmh nmh -> IO a
-		) -> IO a
+		Bffr sm sb bnmh nmh -> Mm sm sb bnmh nmh -> IO a) -> IO a
 prepareMem pd dv dsl f =
 	Vk.DscPool.create dv dscPlInfo nil \dp ->
 	Vk.DS.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton ds) ->
@@ -157,7 +156,7 @@ dscPlInfo = Vk.DscPool.CreateInfo {
 	Vk.DscPool.createInfoMaxSets = 1,
 	Vk.DscPool.createInfoPoolSizes = (: []) Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPool.sizeDescriptorCount = 2 } }
+		Vk.DscPool.sizeDescriptorCount = 1 } }
 
 dscStInfo :: Vk.DscPool.P sp -> Vk.DSLyt.D sl bts ->
 	Vk.DS.AllocateInfo 'Nothing sp '[ '(sl, bts)]
@@ -175,7 +174,7 @@ createBffr pd dv f =
 		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
-bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh, Word32List nmh, Word32List nmh]
+bffrInfo :: Vk.Bffr.CreateInfo 'Nothing (BffrContents nmh)
 bffrInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
@@ -209,8 +208,9 @@ findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
-writeDscSt :: forall bnmh nmh sds slbts sm sb os .
-	(Show (HPList.PL Obj.Length os), Obj.OffsetRange' (Word32List nmh) os 1) =>
+writeDscSt :: forall bnmh nmh sds slbts sm sb os . (
+	Show (HPList.PL Obj.Length os),
+	Obj.OffsetRange' (Word32List nmh) os 1 ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
 	Vk.DS.Write 'Nothing sds slbts ('Vk.DS.WriteSourcesArgBuffer
 		'[ '(sm, sb, bnmh, Word32List nmh, 1)]) 0
@@ -222,7 +222,7 @@ writeDscSt ds bf = Vk.DS.Write {
 
 -- CALC
 
-calc :: forall scpl slbts sl bts sd sds . (
+calc :: forall slbts sl bts sd scpl sds . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	InfixIndex '[slbts] '[slbts] ) =>
@@ -258,8 +258,7 @@ cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 run :: forall slbts sd sc sg sl s . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	InfixIndex '[slbts] '[slbts] ) =>
-	Vk.Q.Q ->
-	Vk.DS.D s slbts -> Vk.CBffr.C sc ->
+	Vk.Q.Q -> Vk.DS.D s slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run q ds cb pl cppl sz = do
@@ -311,8 +310,8 @@ copyBffrs :: forall
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sms sbs nms objss ->
 	Vk.Bffr.Binded smd sbd nmd objsd -> IO ()
-copyBffrs dv gq cp s d = singleTimeCmds dv gq cp \cb ->
-	Vk.Cmd.copyBuffer @cpobjss cb s d
+copyBffrs dv gq cp s d =
+	singleTimeCmds dv gq cp \cb -> Vk.Cmd.copyBuffer @cpobjss cb s d
 
 singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
@@ -320,8 +319,8 @@ singleTimeCmds :: forall sd sc a .
 singleTimeCmds dv gq cp cmd =
 	Vk.CBffr.allocate dv (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
-		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
-		Vk.Q.waitIdle gq
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
+	Vk.Q.waitIdle gq
 	where
 	sinfo cb = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
