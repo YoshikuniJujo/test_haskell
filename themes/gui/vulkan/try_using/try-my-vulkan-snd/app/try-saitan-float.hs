@@ -116,8 +116,6 @@ calc :: forall w1 w2 w3 . (
 	Storable w1, Storable w2, Storable w3,
 	VObj.LengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	VObj.LengthOf (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
---	VObj.OffsetRange (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3),
---	VObj.OffsetRange (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3),
 	VObj.OffsetRange' (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3) 0,
 	VObj.OffsetRange' (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3) 0
 	) =>
@@ -313,8 +311,6 @@ prepareMems'' :: forall w1 w2 w3 sd sl bts nm a . (
 		(HeteroParList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
---	VObj.OffsetRange (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
---	VObj.OffsetRange (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
 	VObj.OffsetRange' (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
 	VObj.OffsetRange' (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
 	VObj.LengthOf
@@ -577,9 +573,6 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.Length objs1),
 	Show (HeteroParList.PL VObj.Length objs2),
 	Show (HeteroParList.PL VObj.Length objs3),
---	VObj.OffsetRange (VObj.List 256 w1 "") objs1,
---	VObj.OffsetRange (VObj.List 256 w2 "") objs2,
---	VObj.OffsetRange (VObj.List 256 w3 "") objs3,
 	VObj.OffsetRange' (VObj.List 256 w1 "") objs1 0,
 	VObj.OffsetRange' (VObj.List 256 w2 "") objs2 0,
 	VObj.OffsetRange' (VObj.List 256 w3 "") objs3 0) =>
@@ -600,9 +593,6 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 
 writeDscSet' :: forall w1 w2 w3 slbts sb sm nm objs sds . (
 	Show (HeteroParList.PL VObj.Length objs),
---	VObj.OffsetRange (VObj.List 256 w1 "") objs,
---	VObj.OffsetRange (VObj.List 256 w2 "") objs,
---	VObj.OffsetRange (VObj.List 256 w3 "") objs,
 	VObj.OffsetRange' (VObj.List 256 w1 "") objs 0,
 	VObj.OffsetRange' (VObj.List 256 w2 "") objs 0,
 	VObj.OffsetRange' (VObj.List 256 w3 "") objs 0) =>

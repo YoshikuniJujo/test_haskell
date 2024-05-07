@@ -116,8 +116,6 @@ calc :: forall w1 w2 w3 . (
 	Storable w1, Storable w2, Storable w3,
 	VObj.LengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	VObj.LengthOf (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	VObj.OffsetRange (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3),
-	VObj.OffsetRange (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3),
 	VObj.OffsetRange' (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3) 0,
 	VObj.OffsetRange' (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3) 0
 	) =>
@@ -313,8 +311,6 @@ prepareMems'' :: forall w1 w2 w3 sd sl bts nm a . (
 		(HeteroParList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
-	VObj.OffsetRange (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
-	VObj.OffsetRange (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],
 	VObj.OffsetRange' (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
 	VObj.OffsetRange' (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
 	VObj.LengthOf
@@ -458,8 +454,6 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 
 storage1BufferNew :: forall sd nm w1 w2 w3 a . (
 	Storable w1, Storable w2, Storable w3,
-	VObj.OffsetRange (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	VObj.OffsetRange (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	VObj.OffsetRange' (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
 	VObj.OffsetRange' (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
 	VObj.LengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
