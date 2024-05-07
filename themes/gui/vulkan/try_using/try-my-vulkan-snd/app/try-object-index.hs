@@ -210,7 +210,7 @@ findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
 
 writeDscSt :: forall bnmh nmh sds slbts sm sb os . (
 	Show (HPList.PL Obj.Length os),
-	Obj.OffsetRange' (Word32List nmh) os 1 ) =>
+	Obj.OffsetRange (Word32List nmh) os 1 ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
 	Vk.DS.Write 'Nothing sds slbts ('Vk.DS.WriteSourcesArgBuffer
 		'[ '(sm, sb, bnmh, Word32List nmh, 1)]) 0

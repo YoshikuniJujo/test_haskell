@@ -201,7 +201,7 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 
 writeDscSet :: forall slbts sb sm os sds . (
 	Show (HL.PL Obj.Length os),
-	Obj.OffsetRange' (Obj.List 256 Word32 "") os 0 ) =>
+	Obj.OffsetRange (Obj.List 256 Word32 "") os 0 ) =>
 	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.Write 'Nothing sds slbts
 		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List, 0)]) 0

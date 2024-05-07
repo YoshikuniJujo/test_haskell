@@ -1333,7 +1333,7 @@ instance (
 		update dv dss bvps dssod bods scnb
 
 dscWrite :: forall obj sds slbts sm sb nm objs . (
-	Obj.OffsetRange' obj objs 0, Show (HPList.PL Obj.Length objs) ) =>
+	Obj.OffsetRange obj objs 0, Show (HPList.PL Obj.Length objs) ) =>
 	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb nm objs -> Vk.Dsc.Type ->
 	Vk.DscSt.Write 'Nothing sds slbts
 		('Vk.DscSt.WriteSourcesArgBuffer '[ '(sm, sb, nm, obj, 0)]) 0

@@ -225,9 +225,9 @@ writeDscSt ::
 	Show (HPList.PL Obj.Length os1),
 	Show (HPList.PL Obj.Length os2),
 	Show (HPList.PL Obj.Length os3),
-	Obj.OffsetRange' (Obj.List 256 W1 "") os1 0,
-	Obj.OffsetRange' (Obj.List 256 W2 "") os2 0,
-	Obj.OffsetRange' (Obj.List 256 W3 "") os3 0 ) =>
+	Obj.OffsetRange (Obj.List 256 W1 "") os1 0,
+	Obj.OffsetRange (Obj.List 256 W2 "") os2 0,
+	Obj.OffsetRange (Obj.List 256 W3 "") os3 0 ) =>
 	Vk.DscSt.D sds slbts ->
 	Vk.Bffr.Binded sm1 sb1 "" os1 -> Vk.Bffr.Binded sm2 sb2 "" os2 ->
 	Vk.Bffr.Binded sm3 sb3 "" os3 ->

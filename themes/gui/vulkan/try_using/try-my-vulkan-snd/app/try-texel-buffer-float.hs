@@ -358,9 +358,9 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.Length objs1),
 	Show (HeteroParList.PL VObj.Length objs2),
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange' (VObj.List 256 w1 "") objs1 0,
-	VObj.OffsetRange' (VObj.List 256 w2 "") objs2 0,
-	VObj.OffsetRange' (VObj.List 256 w3 "") objs3 0 ) =>
+	VObj.OffsetRange (VObj.List 256 w1 "") objs1 0,
+	VObj.OffsetRange (VObj.List 256 w2 "") objs2 0,
+	VObj.OffsetRange (VObj.List 256 w3 "") objs3 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
@@ -377,7 +377,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Show (HeteroParList.PL VObj.Length objs),
-	VObj.OffsetRange' (VObj.List 256 t "") objs 0 ) =>
+	VObj.OffsetRange (VObj.List 256 t "") objs 0 ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "") 0
 bufferInfoList = Vk.Dsc.BufferInfo

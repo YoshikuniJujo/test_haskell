@@ -254,9 +254,9 @@ storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 	VObj.Store v obj0, VObj.SizeAlignment obj0,
 	VObj.Store v obj1, VObj.SizeAlignment obj1,
 	VObj.Store v obj2, VObj.SizeAlignment obj2,
-	VObj.OffsetRange' obj0 '[obj0, obj1, obj2] 0,
-	VObj.OffsetRange' obj1 '[obj0, obj1, obj2] 0,
-	VObj.OffsetRange' obj2 '[obj0, obj1, obj2] 0,
+	VObj.OffsetRange obj0 '[obj0, obj1, obj2] 0,
+	VObj.OffsetRange obj1 '[obj0, obj1, obj2] 0,
+	VObj.OffsetRange obj2 '[obj0, obj1, obj2] 0,
 	VObj.LengthOf obj0 '[obj0, obj1, obj2],
 	VObj.LengthOf obj1 '[obj0, obj1, obj2],
 	VObj.LengthOf obj2 '[obj0, obj1, obj2]
@@ -340,14 +340,14 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	where
 	bil :: forall t {sb} {sm} {nm} {objs} . (
 		Show (HeteroParList.PL VObj.Length objs),
-		VObj.OffsetRange' (VObj.List 256 t "") objs 0 ) =>
+		VObj.OffsetRange (VObj.List 256 t "") objs 0 ) =>
 		Vk.Bffr.Binded sm sb nm objs ->
 		Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "") 0
 	bil = Vk.Dsc.BufferInfo
 
 writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds . (
 	Show (HeteroParList.PL VObj.Length objs),
-	VObj.OffsetRange' (VObj.Atom 256 Word32 ('Just nm)) objs 0 ) =>
+	VObj.OffsetRange (VObj.Atom 256 Word32 ('Just nm)) objs 0 ) =>
 	Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
 	Vk.DscSet.Write 'Nothing sds '(sl, DscSetLytLstW123) (

@@ -97,8 +97,8 @@ datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 calc :: forall w1 w2 w3 . (
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
-	VObj.OffsetRange' (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3) 0,
-	VObj.OffsetRange' (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3) 0,
+	VObj.OffsetRange (VObj.List 256 w2 "") (ListBuffer1 w1 w2 w3) 0,
+	VObj.OffsetRange (VObj.List 256 w3 "") (ListBuffer1 w1 w2 w3) 0,
 	VObj.LengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	VObj.LengthOf (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 	) =>
@@ -314,8 +314,8 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
-	VObj.OffsetRange' (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
-	VObj.OffsetRange' (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
+	VObj.OffsetRange (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
+	VObj.OffsetRange (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ] 0,
 	Vk.DscSet.BindingAndArrayElemBuffer bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
 	Vk.DscSet.UpdateDynamicLength bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	VObj.LengthOf (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
@@ -597,9 +597,9 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.Length objs1),
 	Show (HeteroParList.PL VObj.Length objs2),
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange' (VObj.List 256 w1 "") objs1 0,
-	VObj.OffsetRange' (VObj.List 256 w2 "") objs2 0,
-	VObj.OffsetRange' (VObj.List 256 w3 "") objs3 0 ) =>
+	VObj.OffsetRange (VObj.List 256 w1 "") objs1 0,
+	VObj.OffsetRange (VObj.List 256 w2 "") objs2 0,
+	VObj.OffsetRange (VObj.List 256 w3 "") objs3 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
@@ -616,9 +616,9 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 
 writeDscSet' :: forall w1 w2 w3 slbts sb sm nm objs sds . (
 	Show (HeteroParList.PL VObj.Length objs),
-	VObj.OffsetRange' (VObj.List 256 w1 "") objs 0,
-	VObj.OffsetRange' (VObj.List 256 w2 "") objs 0,
-	VObj.OffsetRange' (VObj.List 256 w3 "") objs 0 ) =>
+	VObj.OffsetRange (VObj.List 256 w1 "") objs 0,
+	VObj.OffsetRange (VObj.List 256 w2 "") objs 0,
+	VObj.OffsetRange (VObj.List 256 w3 "") objs 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
@@ -634,7 +634,7 @@ writeDscSet' ds b = Vk.DscSet.Write {
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Show (HeteroParList.PL VObj.Length objs),
-	VObj.OffsetRange' (VObj.List 256 t "") objs 0 ) =>
+	VObj.OffsetRange (VObj.List 256 t "") objs 0 ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "") 0
 bufferInfoList = Vk.Dsc.BufferInfo
