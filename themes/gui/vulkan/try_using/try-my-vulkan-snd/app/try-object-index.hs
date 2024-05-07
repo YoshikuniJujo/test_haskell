@@ -22,6 +22,7 @@ import Data.Bits.ToolsYj
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
+import Data.Tuple.ToolsYj
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
 import Data.Word
@@ -67,9 +68,7 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DSLyt
 -- MAIN
 
 main :: IO ()
-main = withDevice \pd qfi dv -> (print . (\(x, y, z) -> (toString x, toString y, toString z)) =<<) $
-	Vk.Dvc.getQueue dv qfi 0 >>= \q ->
-	Vk.CmdPl.create dv (cmdPlInfo qfi) nil \cpl ->
+main = withDvc \pd dv q cpl -> print . mapTup3 toString =<<
 	Vk.DSLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
 	prepareMem @_ @nmh pd dv dsl \dss b (m :: Mm sm sb bnmh nmh) ->
 	Vk.Mm.write @bnmh @(Word32List nmh) @2 dv m zeroBits [123, 321] >>
@@ -94,14 +93,17 @@ bffrSize = 30
 
 type Word32List nmh = Obj.List 256 Word32 nmh
 
-withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dvc.D s -> IO a) -> IO a
-withDevice f = Vk.Inst.create instInfo nil \inst -> do
+withDvc :: (forall sd scpl .
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl -> IO a) -> IO a
+withDvc f = Vk.Inst.create instInfo nil \inst -> do
 	pd <- head <$> Vk.Phd.enumerate inst
 	qfi <- fst . head . filter (
 			checkBits Vk.Q.ComputeBit .
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
-	Vk.Dvc.create pd (dvcInfo qfi) nil $ f pd qfi
+	Vk.Dvc.create pd (dvcInfo qfi) nil \dv ->
+		Vk.Dvc.getQueue dv qfi 0 >>= \q ->
+		Vk.CmdPl.create dv (cmdPlInfo qfi) nil \cpl -> f pd dv q cpl
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
