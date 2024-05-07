@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-khr
-version:             0.1.0.27
+version:             0.1.0.28
 github:              "githubuser/try-gpu-vulkan-khr"
 license:             BSD3
 author:              "Author name here"
@@ -45,7 +45,6 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-    - Gpu.Vulkan.Khr
     - Gpu.Vulkan.Khr.Surface
     - Gpu.Vulkan.Khr.Surface.Internal
     - Gpu.Vulkan.Khr.Surface.PhysicalDevice

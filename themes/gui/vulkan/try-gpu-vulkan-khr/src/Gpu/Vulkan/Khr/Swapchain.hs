@@ -25,7 +25,18 @@ module Gpu.Vulkan.Khr.Swapchain (
 
 	-- * GET IMAGES
 
-	getImages ) where
+	getImages,
+
+	-- * QUEUE PRESENT
+
+	queuePresent, PresentInfo(..), SwapchainImageIndex(..),		-- VK_KHR_swapchain
+
+	-- * ACQUIRE NEXT IMAGE
+
+	acquireNextImage, acquireNextImageResult,		-- VK_KHR_swapchain
+
+
+	) where
 
 import Prelude hiding (lookup)
 import Foreign.Storable.PeekPoke
@@ -42,7 +53,6 @@ import Gpu.Vulkan
 import Gpu.Vulkan.Khr.Surface.Enum
 import Gpu.Vulkan.Khr.Swapchain.Type
 import Gpu.Vulkan.Khr.Swapchain.Enum
-import Gpu.Vulkan.Khr.Surface.Enum
 
 import qualified Gpu.Vulkan as C
 import qualified Gpu.Vulkan.TypeEnum as T
@@ -56,6 +66,12 @@ import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
 import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
+
+import qualified Gpu.Vulkan.Semaphore.Internal as Semaphore
+import qualified Gpu.Vulkan.Fence.Internal as Fence
+import Gpu.Vulkan.Exception
+import Data.HeteroParList qualified as HeteroParList
+import qualified Gpu.Vulkan.Queue as Queue
 
 extensionName :: PhysicalDevice.ExtensionName
 extensionName = PhysicalDevice.ExtensionName M.extensionName
@@ -190,3 +206,43 @@ unsafeDestroy (Group (Device.D mdvc)
 
 lookup :: Ord k => Group sd ma fmt ssc k -> k -> IO (Maybe (S fmt ssc))
 lookup (Group _ _ _sem scs) k = atomically $ Map.lookup k <$> readTVar scs
+
+queuePresent :: WithPoked (TMaybe.M mn) =>
+	Queue.Q -> PresentInfo mn swss scfmt sscs -> IO ()
+queuePresent q = M.queuePresent q . presentInfoToMiddle
+
+data PresentInfo mn swss scfmt sscs = PresentInfo {
+	presentInfoNext :: TMaybe.M mn,
+	presentInfoWaitSemaphores :: HeteroParList.PL Semaphore.S swss,
+	presentInfoSwapchainImageIndices ::
+		HeteroParList.PL (SwapchainImageIndex scfmt) sscs }
+
+presentInfoToMiddle :: PresentInfo mn sws scfmt sscs -> M.PresentInfo mn
+presentInfoToMiddle PresentInfo {
+	presentInfoNext = mnxt,
+	presentInfoWaitSemaphores =
+		HeteroParList.toList (\(Semaphore.S s) -> s) -> wss,
+	presentInfoSwapchainImageIndices =
+		HeteroParList.toList swapchainImageIndexToMiddle -> sciis
+	} = M.PresentInfo {
+		M.presentInfoNext = mnxt,
+		M.presentInfoWaitSemaphores = wss,
+		M.presentInfoSwapchainImageIndices = sciis }
+
+data SwapchainImageIndex scfmt ssc =
+	SwapchainImageIndex (S scfmt ssc) Word32 deriving Show
+
+swapchainImageIndexToMiddle ::
+	SwapchainImageIndex scfmt ssc -> (M.S, Word32)
+swapchainImageIndexToMiddle (SwapchainImageIndex (S sc) idx) =
+	(sc, idx)
+
+acquireNextImage :: Device.D sd ->
+	S scfmt ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe (Fence.F sf) -> IO Word32
+acquireNextImage = acquireNextImageResult [Success]
+
+acquireNextImageResult :: [Result] -> Device.D sd ->
+	S scfmt ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe (Fence.F sf) -> IO Word32
+acquireNextImageResult sccs (Device.D mdvc) (S msc) to msmp (((\(Fence.F f) -> f) <$>) -> mfnc) =
+	M.acquireNextImageResult
+		sccs mdvc msc to ((\(Semaphore.S smp) -> smp) <$> msmp) mfnc
