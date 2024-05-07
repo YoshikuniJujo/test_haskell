@@ -122,7 +122,7 @@ apps
 * [x] try-yatteiku.hs
 * [x] try-hello-world.hs
 * [x] try-object-index.hs
-* [ ] try-saitan-simple.hs
+* [x] try-saitan-simple.hs
 * [ ] try-saitan.hs
 * [ ] try-saitan-float.hs
 * [ ] try-texel-buffer-float.hs
