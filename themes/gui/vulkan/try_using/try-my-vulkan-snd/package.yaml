@@ -42,7 +42,8 @@ dependencies:
 - vector
 - GLFW-b
 - try-gpu-vulkan
-- try-gpu-vulkan-khr
+- try-gpu-vulkan-khr-swapchain
+- try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-ext-debug-utils
 - ranged-list
 - try-language-spir-v
@@ -59,8 +60,8 @@ dependencies:
 - try-storable-hetero-list
 - typelevel-tools
 - try-codec-wavefront-obj
-- try-gpu-vulkan-khr-glfw
-- try-gpu-vulkan-middle-khr-glfw
+- try-gpu-vulkan-khr-surface-glfw
+- try-gpu-vulkan-middle-khr-surface-glfw
 - try-gpu-vulkan-cglm
 - try-glfw-group
 

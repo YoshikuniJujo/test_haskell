@@ -42,18 +42,21 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 283eb09144334cb11f2200323fef0953cf4f9d4b
+  commit: 36fb469c95f9e84d9491ada82e3c3cc117443eef
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
   - themes/gui/vulkan/try-gpu-vulkan
-  - themes/gui/vulkan/try-gpu-vulkan-khr
+  - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-middle
-  - themes/gui/vulkan/try-vulkan-middle-khr
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core
-  - themes/gui/vulkan/try-vulkan-core-khr
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
@@ -65,8 +68,8 @@ extra-deps:
   - features/ffi/pointer/try-storable-generic
   - themes/codec/try-codec-wavefront-obj
   - themes/gui/vulkan/try-glfw-group
-  - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-cglm
   - packages/try-tools-yj
 - git: https://github.com/tanakh/optparse-declarative
