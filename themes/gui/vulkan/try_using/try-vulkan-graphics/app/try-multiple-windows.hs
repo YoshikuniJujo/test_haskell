@@ -61,7 +61,8 @@ import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
-import qualified Gpu.Vulkan.Khr as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
@@ -1017,7 +1018,7 @@ createVertexBuffer' phdvc dvc gq cp bfgrp mmgrp k vs = do
 			Vk.Mem.PropertyHostCoherentBit )
 		\(b' :: Vk.Bffr.Binded sm sb
 			"vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-		Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vs
+		Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") @0 dvc bm' zeroBits vs
 		copyBuffer dvc gq cp b' b
 	pure b
 
@@ -1104,7 +1105,7 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 Vertex ""]] cb src dst
+			Vk.Cmd.copyBuffer @'[ '( '[VObj.List 256 Vertex ""], 0, 0)] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where

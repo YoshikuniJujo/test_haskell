@@ -66,7 +66,8 @@ import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
-import qualified Gpu.Vulkan.Khr as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
@@ -938,7 +939,7 @@ createTextureImage phdvc dvc gq cp f = do
 			\(sb :: Vk.Bffr.Binded
 				sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
 			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-				@(VObj.Image 1 MyImage inm) dvc sbm zeroBits (MyImage img)
+				@(VObj.Image 1 MyImage inm) @0 dvc sbm zeroBits (MyImage img)
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
@@ -1199,7 +1200,7 @@ createVertexBuffer phdvc dvc gq cp f =
 				'Vk.Dvc.Mem.ImageBuffer.BufferArg "vertex-buffer"
 					'[VObj.List 256 WVertex ""] ) ]) -> do
 	Vk.Dvc.Mem.ImageBuffer.write
-		@"vertex-buffer" @(VObj.List 256 WVertex "") dvc bm' zeroBits
+		@"vertex-buffer" @(VObj.List 256 WVertex "") @0 dvc bm' zeroBits
 		$ GStorable.W <$> vertices
 	copyBuffer dvc gq cp b' b
 	f b
@@ -1221,7 +1222,7 @@ createIndexBuffer phdvc dvc gq cp f =
 				'Vk.Dvc.Mem.ImageBuffer.BufferArg "index-buffer"
 					'[VObj.List 256 Word16 ""] ) ]) -> do
 	Vk.Dvc.Mem.ImageBuffer.write
-		@"index-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices
+		@"index-buffer" @(VObj.List 256 Word16 "") @0 dvc bm' zeroBits indices
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -1280,13 +1281,13 @@ descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, VObj.Atom 256 UniformBufferObject  'Nothing)]) 0
+		sm, sb, nm, VObj.Atom 256 UniformBufferObject  'Nothing, 0)]) 0
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ HeteroParList.Singleton bufferInfo }
-	where bufferInfo = U4 $ Vk.Dsc.BufferInfo ub
+	where bufferInfo = U5 $ Vk.Dsc.BufferInfo ub
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
@@ -1381,7 +1382,7 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 a ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 a ""] -> IO ()
 copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
-	Vk.Cmd.copyBuffer @'[ '[VObj.List 256 a ""]] cb src dst
+	Vk.Cmd.copyBuffer @'[ '( '[VObj.List 256 a ""], 0, 0)] cb src dst
 
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
@@ -1609,7 +1610,7 @@ updateUniformBuffer :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc um sce tm = do
 	Vk.Dvc.Mem.ImageBuffer.write @"uniform-buffer"
-		@(VObj.Atom 256 UniformBufferObject 'Nothing) dvc um zeroBits ubo
+		@(VObj.Atom 256 UniformBufferObject 'Nothing) @0 dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
 		uniformBufferObjectModel = Cglm.rotate
 			Cglm.mat4Identity
