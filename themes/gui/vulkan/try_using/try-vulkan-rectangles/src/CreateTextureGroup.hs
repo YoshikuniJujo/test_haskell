@@ -151,7 +151,7 @@ createTextureImage' phdvc dvc mng mmng gq cp k img = do
 		\(sb :: Vk.Bffr.Binded
 			sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
 		Vk.Mem.write @"texture-buffer"
-			@(VObj.Image 1 img inm) dvc sbm zeroBits img -- (MyImage img)
+			@(VObj.Image 1 img inm) @0 dvc sbm zeroBits img -- (MyImage img)
 		print sb
 		transitionImageLayout dvc gq cp tximg
 			Vk.Img.LayoutUndefined
