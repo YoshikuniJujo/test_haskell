@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.Khr.Surface.Enum (module Gpu.Vulkan.Khr.Surface.Enum) where
 
-import "try-vulkan-middle-khr" Gpu.Vulkan.Khr.Surface.Enum
+import "try-gpu-vulkan-middle-khr-surface" Gpu.Vulkan.Khr.Surface.Enum

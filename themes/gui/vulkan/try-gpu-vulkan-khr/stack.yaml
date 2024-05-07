@@ -43,13 +43,15 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 02ec17c8029d53d5f930df7e31dcc5156db769e4
+  commit: cbce2f42f3de6ca3524618c7b86e78497af72c46
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-vulkan-middle
-  - themes/gui/vulkan/try-vulkan-middle-khr
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
   - themes/gui/vulkan/try-vulkan-core
-  - themes/gui/vulkan/try-vulkan-core-khr
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
   - themes/gui/vulkan/try-language-spir-v
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list

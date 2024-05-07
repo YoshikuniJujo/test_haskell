@@ -25,8 +25,10 @@ dependencies:
 - containers
 - text
 - try-gpu-vulkan
-- try-vulkan-middle-khr
-- try-vulkan-core-khr
+- try-gpu-vulkan-middle-khr-surface
+- try-gpu-vulkan-middle-khr-swapchain
+- try-gpu-vulkan-core-khr-surface
+- try-gpu-vulkan-core-khr-swapchain
 - try-storable-peek-poke
 - try-hetero-parameter-list
 - typelevel-tools
