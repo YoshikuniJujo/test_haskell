@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Gpu.Vulkan.Khr.Surface
       Gpu.Vulkan.Khr.Surface.Enum
       Gpu.Vulkan.Khr.Surface.Internal
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
