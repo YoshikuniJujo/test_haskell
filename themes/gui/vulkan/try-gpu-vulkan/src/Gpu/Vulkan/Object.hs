@@ -66,7 +66,6 @@ module Gpu.Vulkan.Object (
 
 	-- ** Offset Range
 
-	offsetRange, offsetSize, OffsetRange,
 	offsetRange', offsetSize', OffsetRange',
 
 	-- ** Offset Of List
@@ -247,37 +246,6 @@ instance (SizeAlignment obj, WholeAlign objs) =>
 	wholeAlign = alignment @obj `lcm` wholeAlign @objs
 
 -- OffsetRange
-
-offsetRange :: forall obj objs . OffsetRange obj objs => Device.M.Size ->
-	HeteroParList.PL Length objs -> (Device.M.Size, Device.M.Size)
-offsetRange ost0 lns = offsetRangeFromSzAlgns @obj ost0 $ sizeAlignmentList lns
-
-offsetSize :: forall obj objs . OffsetRange obj objs => Device.M.Size ->
-	HeteroParList.PL Length objs -> (Device.M.Size, Device.M.Size)
-offsetSize ost0 lns = offsetSizeFromSzAlgns @obj ost0 $ sizeAlignmentList lns
-
-class (SizeAlignmentList vs, HeteroParList.TypeIndex v vs) =>
-	OffsetRange (v :: O) (vs :: [O]) where
-	offsetRangeFromSzAlgns ::
-		Device.M.Size -> HeteroParList.PL SizeAlignmentOf vs ->
-		(Device.M.Size, Device.M.Size)
-	offsetSizeFromSzAlgns ::
-		Device.M.Size -> HeteroParList.PL SizeAlignmentOf vs ->
-		(Device.M.Size, Device.M.Size)
-
-instance (SizeAlignment v, SizeAlignmentList vs) =>
-	OffsetRange v (v ': vs) where
-	offsetRangeFromSzAlgns ost (SizeAlignmentOf _dn sz algn :** _) =
-		(adjust algn ost, sz)
-	offsetSizeFromSzAlgns ost (SizeAlignmentOf dn sz algn :** _) =
-		(adjust algn ost, dn * sz)
-
-instance {-# OVERLAPPABLE #-} (SizeAlignment v', OffsetRange v vs) =>
-	OffsetRange v (v' ': vs) where
-	offsetRangeFromSzAlgns ost (SizeAlignmentOf dn sz algn :** sas) =
-		offsetRangeFromSzAlgns @v @vs (adjust algn ost + dn * sz) sas
-	offsetSizeFromSzAlgns ost (SizeAlignmentOf dn sz algn :** sas) =
-		offsetSizeFromSzAlgns @v @vs (adjust algn ost + dn * sz) sas
 
 offsetRange' :: forall obj objs i . OffsetRange' obj objs i => Device.M.Size ->
 	HeteroParList.PL Length objs -> (Device.M.Size, Device.M.Size)

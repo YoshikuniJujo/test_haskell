@@ -309,7 +309,7 @@ sizeNew = fromIntegral . VObj.size . VObj.objectLengthOf @v
 -}
 
 data MemoryBarrier mn sm sb nm obj = forall objs . (
-	VObj.OffsetRange obj objs, VObj.LengthOf obj objs ) =>
+	VObj.OffsetRange' obj objs 0, VObj.LengthOf obj objs ) =>
 	MemoryBarrier {
 		memoryBarrierNext :: TMaybe.M mn,
 		memoryBarrierSrcAccessMask :: AccessFlags,
@@ -336,7 +336,7 @@ memoryBarrierToMiddle MemoryBarrier {
 		M.memoryBarrierBuffer = b,
 		M.memoryBarrierOffset = ost,
 		M.memoryBarrierSize = sz }
-	where (ost, sz) = VObj.offsetRange @obj 0 lns
+	where (ost, sz) = VObj.offsetRange' @obj @_ @0 0 lns
 
 class MemoryBarrierListToMiddle nsmsbnmobjs where
 	memoryBarrierListToMiddle ::
@@ -367,7 +367,7 @@ instance ImageCopyListToMiddle algn objs img '[] where
 	imageCopyListToMiddle _ HeteroParList.Nil = []
 
 instance (
-	VObj.OffsetRange (VObj.Image algn img nm) objs,
+	VObj.OffsetRange' (VObj.Image algn img nm) objs 0,
 	VObj.LengthOf (VObj.Image algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>
 	ImageCopyListToMiddle algn objs img (nm ': nms) where
@@ -377,7 +377,7 @@ instance (
 
 imageCopyToMiddle :: forall algn img inm sm sb nm obj objs . (
 	obj ~ VObj.Image algn img inm,
-	VObj.OffsetRange obj objs, VObj.LengthOf obj objs ) =>
+	VObj.OffsetRange' obj objs 0, VObj.LengthOf obj objs ) =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
@@ -390,5 +390,5 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageOffset = iost,
 	M.imageCopyImageExtent = iext }
 	where
-	(ost, _) = VObj.offsetRange @(VObj.Image algn img inm) 0 lns
+	(ost, _) = VObj.offsetRange' @(VObj.Image algn img inm) @_ @0 0 lns
 	VObj.LengthImage r _w h _d = VObj.lengthOf @obj lns
