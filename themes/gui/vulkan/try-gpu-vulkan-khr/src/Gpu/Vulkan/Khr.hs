@@ -18,7 +18,7 @@ module Gpu.Vulkan.Khr (
 
 	-- * ENUM
 
-	module Gpu.Vulkan.Khr.Enum
+	module Gpu.Vulkan.Khr.Surface.Enum
 
 	) where
 
@@ -35,8 +35,9 @@ import qualified Gpu.Vulkan.Fence.Internal as Fence
 import qualified Gpu.Vulkan.Queue as Queue
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
-import qualified Gpu.Vulkan.Khr.Middle as M
-import Gpu.Vulkan.Khr.Enum
+import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as M
+-- import qualified Gpu.Vulkan.Khr.Middle as M
+import Gpu.Vulkan.Khr.Surface.Enum
 
 queuePresent :: WithPoked (TMaybe.M mn) =>
 	Queue.Q -> PresentInfo mn swss scfmt sscs -> IO ()

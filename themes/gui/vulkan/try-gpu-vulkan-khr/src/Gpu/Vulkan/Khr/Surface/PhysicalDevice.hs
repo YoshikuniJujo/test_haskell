@@ -14,7 +14,7 @@ module Gpu.Vulkan.Khr.Surface.PhysicalDevice (
 import Data.HeteroParList.Constrained qualified as HeteroParListC
 
 import Gpu.Vulkan.TypeEnum qualified as T
-import Gpu.Vulkan.Khr.Enum
+import Gpu.Vulkan.Khr.Surface.Enum
 import Gpu.Vulkan.Khr.Surface.Type
 import Gpu.Vulkan.Khr.Surface.Internal
 

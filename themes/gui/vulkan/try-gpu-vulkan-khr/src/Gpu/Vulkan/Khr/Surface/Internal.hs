@@ -29,7 +29,7 @@ import Gpu.Vulkan qualified as Enum
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Instance.Internal qualified as Instance
 import Gpu.Vulkan.AllocationCallbacks.Internal qualified as AllocationCallbacks
-import Gpu.Vulkan.Khr.Enum
+import Gpu.Vulkan.Khr.Surface.Enum
 import Gpu.Vulkan.Khr.Surface.Type
 import Gpu.Vulkan.Khr.Surface.Middle qualified as M
 

@@ -39,7 +39,7 @@ import Data.Map qualified as Map
 import Data.Word
 
 import Gpu.Vulkan
-import Gpu.Vulkan.Khr.Enum
+import Gpu.Vulkan.Khr.Surface.Enum
 import Gpu.Vulkan.Khr.Swapchain.Type
 import Gpu.Vulkan.Khr.Swapchain.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
