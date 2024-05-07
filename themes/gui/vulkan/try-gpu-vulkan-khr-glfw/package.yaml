@@ -27,9 +27,9 @@ dependencies:
 - GLFW-b
 - try-glfw-group
 - try-gpu-vulkan
-- try-gpu-vulkan-khr
-- try-vulkan-middle-khr
-- try-gpu-vulkan-middle-khr-glfw
+- try-gpu-vulkan-khr-surface
+- try-gpu-vulkan-middle-khr-surface
+- try-gpu-vulkan-middle-khr-surface-glfw
 - typelevel-tools
 
 ghc-options:

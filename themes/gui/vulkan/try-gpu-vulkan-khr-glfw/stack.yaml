@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-01-09
+resolver: nightly-2024-05-06
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,16 +43,16 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4519ad85160e98e32440b87252d8c1454577817a
+  commit: 34c4055cc2b29d9ebe3657163da55efe6e83171b
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
-  - themes/gui/vulkan/try-gpu-vulkan-khr
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface
   - themes/gui/vulkan/try-vulkan-middle
-  - themes/gui/vulkan/try-vulkan-middle-khr
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-glfw-group
   - themes/gui/vulkan/try-vulkan-core
-  - themes/gui/vulkan/try-vulkan-core-khr
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-language-spir-v
   - themes/monad/try-monads-tf-misc-yj
   - features/ffi/pointer/try-storable-peek-poke
@@ -62,9 +62,6 @@ extra-deps:
   - themes/string/try-text-misc-yj
   - themes/type_level/typelevel-tools
   - packages/try-tools-yj
-- git: https://github.com/YoshikuniJujo/size-alignment-list.git
-  commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
-- union-color-0.1.2.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
