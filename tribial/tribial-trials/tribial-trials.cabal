@@ -49,6 +49,7 @@ library
       IdealList
       InfiniteTree
       Injective
+      Instance.OverlappingError
       InstanceAll
       IORef
       LambdaCube
