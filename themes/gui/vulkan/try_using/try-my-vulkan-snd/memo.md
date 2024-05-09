@@ -124,7 +124,7 @@ apps
 * [x] try-object-index.hs
 * [x] try-saitan-simple.hs
 * [x] try-saitan.hs
-* [ ] try-saitan-float.hs
+* [x] try-saitan-float.hs
 * [ ] try-texel-buffer-float.hs
 * [ ] try-texel-buffer-word32.hs
 * [ ] try-image-buffer.hs
