@@ -123,7 +123,7 @@ apps
 * [x] try-hello-world.hs
 * [x] try-object-index.hs
 * [x] try-saitan-simple.hs
-* [ ] try-saitan.hs
+* [x] try-saitan.hs
 * [ ] try-saitan-float.hs
 * [ ] try-texel-buffer-float.hs
 * [ ] try-texel-buffer-word32.hs
