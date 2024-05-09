@@ -125,11 +125,11 @@ apps
 * [x] try-saitan-simple.hs
 * [x] try-saitan.hs
 * [x] try-saitan-float.hs
-* [ ] try-texel-buffer-float.hs
-* [ ] try-texel-buffer-word32.hs
 * [ ] try-image-buffer.hs
 * [ ] try-no-dynamic-dsc-sets.hs
 * [ ] try-dynamic-dsc-sets.hs
+* [ ] try-texel-buffer-word32.hs
+* [ ] try-texel-buffer-float.hs
 * [ ] try-copy-descriptor-set.hs
 * [ ] try-query.hs
 * [ ] try-allocation-callbacks.hs

@@ -81,10 +81,10 @@ dataSize = 1000000
 
 realMain :: forall w1 w2 w3 . (
 	Storable w1, Storable w2, Storable w3,
-	Obj.LengthOf (OList w2) [OList w1, OList w2, OList w3],
-	Obj.LengthOf (OList w3) [OList w1, OList w2, OList w3],
-	Obj.OffsetRange (OList w2) [OList w1, OList w2, OList w3] 0,
-	Obj.OffsetRange (OList w3) [OList w1, OList w2, OList w3] 0 ) =>
+	Obj.OffsetRange (OList w2) '[OList w1, OList w2, OList w3] 0,
+	Obj.OffsetRange (OList w3) '[OList w1, OList w2, OList w3] 0,
+	Obj.LengthOf (OList w2) '[OList w1, OList w2, OList w3],
+	Obj.LengthOf (OList w3) '[OList w1, OList w2, OList w3] ) =>
 	OptBffMm -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
 realMain opt da db dc = withDvc \pd d q cpl n ->
