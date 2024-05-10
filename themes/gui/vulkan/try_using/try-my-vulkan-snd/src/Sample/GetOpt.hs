@@ -49,7 +49,7 @@ data Option =
 data Opts = Opts { optsBuffMem :: OptBffMm, optsImagePath :: FilePath, optsTiling :: Tiling }
 	deriving Show
 
-data OptBffMm = Buffer1Memory1 | Buffer3Memory1 | Buffer3Memory3 deriving Show
+data OptBffMm = Bffr1Mm1 | Bffr3Mm1 | Bffr3Mm3 deriving Show
 
 data Tiling = Optimal | Linear deriving (Show, Eq, Ord)
 
@@ -60,10 +60,8 @@ tiling _ = Nonsense
 
 getBufMem :: [Option] -> OptBffMm
 getBufMem opts = case (b1, m1) of
-	(False, False) -> Buffer3Memory3
-	(False, True) -> Buffer3Memory1
-	(True, True) -> Buffer1Memory1
-	_ -> Buffer3Memory3
+	(False, False) -> Bffr3Mm3; (False, True) -> Bffr3Mm1
+	(True, True) -> Bffr1Mm1; _ -> Bffr3Mm3
 	where b1 = Buffer1 `elem` opts; m1 = Memory1 `elem` opts
 
 getImagePath :: [Option] -> Maybe FilePath

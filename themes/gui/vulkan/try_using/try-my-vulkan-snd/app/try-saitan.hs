@@ -20,7 +20,6 @@ import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
-import Data.TypeLevel.List
 import Data.Default
 import Data.Bits
 import Data.Bits.ToolsYj
@@ -87,22 +86,22 @@ realMain :: forall w1 w2 w3 . (
 	Obj.LengthOf (OList w3) '[OList w1, OList w2, OList w3] ) =>
 	OptBffMm -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
-realMain opt da db dc = withDvc \pd d q cpl n ->
+realMain opt da_ db_ dc_ = withDvc \pd d q cpl n ->
 	Vk.DscStLyt.create d dslinfo nil \dsl ->
-	let	da' = V.take n da; db' = V.take n db; dc' = V.take n dc in
+	let	da = V.take n da_; db = V.take n db_; dc = V.take n dc_ in
 	case opt of
-		Bffr3Mm3 -> createBffr3Mm3 pd d dsl da' db' dc' \dss
+		Bffr3Mm3 -> createBffr3Mm3 pd d dsl da db dc \dss
 				(ma :: Mm sm1 '[BffrArg sb1 nm1 '[OList w1]])
 				(mb :: Mm sm2 '[BffrArg sb2 nm2 '[OList w2]])
 				(mc :: Mm sm3 '[BffrArg sb3 nm3 '[OList w3]]) ->
 			calc @nm1 @nm2 @nm3 d q cpl dsl dss n ma mb mc
-		Bffr3Mm1 -> createBffr3Mm1 pd d dsl da' db' dc' \dss
+		Bffr3Mm1 -> createBffr3Mm1 pd d dsl da db dc \dss
 				(m :: Mm sm '[
 					BffrArg sb1 nm1 '[OList w1],
 					BffrArg sb2 nm2 '[OList w2],
 					BffrArg sb3 nm3 '[OList w3] ]) ->
 			calc @nm1 @nm2 @nm3 d q cpl dsl dss n m m m
-		Bffr1Mm1 -> createBffr1Mm1 pd d dsl da' db' dc' \dss
+		Bffr1Mm1 -> createBffr1Mm1 pd d dsl da db dc \dss
 				(m :: Mm sm '[ '(sb, 'Vk.Mm.BufferArg nm
 					'[OList w1, OList w2, OList w3])]) ->
 			calc @nm @nm @nm d q cpl dsl dss n m m m
@@ -161,44 +160,41 @@ dvcInfo qfi = Vk.Dvc.CreateInfo {
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
 calc :: forall
-	nm1 nm2 nm3 w1 w2 w3 slbts sl bts sd scpl
+	nm1 nm2 nm3 w1 w2 w3 sl bts sd scpl
 	sds sm1 sm2 sm3 objss1 objss2 objss3 . (
 	Storable w1, Storable w2, Storable w3,
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
-	Show (HPList.PL2 BObj.Length
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
-	slbts ~ '(sl, bts), InfixIndex '[slbts] '[slbts],
 	Vk.Mm.OffsetSize nm1 (OList w1) objss1 0,
 	Vk.Mm.OffsetSize nm2 (OList w2) objss2 0,
-	Vk.Mm.OffsetSize nm3 (OList w3) objss3 0 ) =>
+	Vk.Mm.OffsetSize nm3 (OList w3) objss3 0,
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl -> Vk.DscStLyt.D sl bts ->
-	Vk.DscSt.D sds slbts -> Word32 ->
+	Vk.DscSt.D sds '(sl, bts) -> Word32 ->
 	Mm sm1 objss1 -> Mm sm2 objss2 -> Mm sm3 objss3 -> IO ([w1], [w2], [w3])
 calc dv q cpl dsl dss n ma mb mc =
 	Vk.PplLyt.create dv plinfo nil \pl ->
 	Vk.Ppl.Cp.createCs dv Nothing
-		(U4 (cpplinfo pl) :** HPList.Nil) nil
+		(HPList.Singleton . U4 $ cpplinfo pl) nil
 		\(cppl :** HPList.Nil) ->
 	Vk.CBffr.allocate dv cbinfo \(cb :*. HPList.Nil) ->
 	run @nm1 @nm2 @nm3 dv q cb cppl pl dss n ma mb mc
 	where
 	plinfo :: Vk.PplLyt.CreateInfo
-		'Nothing '[slbts] ('Vk.PshCnst.Layout '[] '[])
+		'Nothing '[ '(sl, bts)] ('Vk.PshCnst.Layout '[] '[])
 	plinfo = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
-	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing scpl '[ '()]
-	cbinfo = Vk.CBffr.AllocateInfo {
-		Vk.CBffr.allocateInfoNext = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPool = cpl,
-		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 	cpplinfo pl = Vk.Ppl.Cp.CreateInfo {
 		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
 		Vk.Ppl.Cp.createInfoFlags = zeroBits,
 		Vk.Ppl.Cp.createInfoStage = U5 shdrStInfo,
 		Vk.Ppl.Cp.createInfoLayout = U3 pl,
 		Vk.Ppl.Cp.createInfoBasePipelineHandleOrIndex = Nothing }
+	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing scpl '[ '()]
+	cbinfo = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cpl,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 shdrStInfo :: Vk.Ppl.ShaderSt.CreateInfo
 	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]
@@ -216,21 +212,18 @@ shdrStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
 
 run :: forall
-	nm1 nm2 nm3 w1 w2 w3 slbts sl bts sd scb scppl spl
+	nm1 nm2 nm3 w1 w2 w3 sl bts sd scb scppl spl
 	sds sm1 sm2 sm3 objss1 objss2 objss3 . (
 	Storable w1, Storable w2, Storable w3,
-	slbts ~ '(sl, bts),
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
-	Show (HPList.PL2 BObj.Length
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
-	InfixIndex '[slbts] '[slbts],
 	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
 	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
 	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0 ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CBffr.C scb ->
-	Vk.Ppl.Cp.C scppl '(spl, '[slbts], '[]) ->
-	Vk.PplLyt.P spl '[slbts] '[] -> Vk.DscSt.D sds slbts -> Word32 ->
-	Mm sm1 objss1 -> Mm sm2 objss2 -> Mm sm3 objss3 -> IO ([w1], [w2], [w3])
+	Vk.Ppl.Cp.C scppl '(spl, '[ '(sl, bts)], '[]) ->
+	Vk.PplLyt.P spl '[ '(sl, bts)] '[] -> Vk.DscSt.D sds '(sl, bts) ->
+	Word32 -> Mm sm1 objss1 -> Mm sm2 objss2 -> Mm sm3 objss3 ->
+	IO ([w1], [w2], [w3])
 run dv q cb cppl pl dss n ma mb mc = do
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute
