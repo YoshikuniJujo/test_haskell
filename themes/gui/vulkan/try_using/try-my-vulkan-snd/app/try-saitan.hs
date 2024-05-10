@@ -215,10 +215,11 @@ run :: forall
 	nm1 nm2 nm3 w1 w2 w3 sl bts sd scb scppl spl
 	sds sm1 sm2 sm3 objss1 objss2 objss3 . (
 	Storable w1, Storable w2, Storable w3,
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
 	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
-	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0 ) =>
+	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0,
+--	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
+	Vk.Cmd.LayoutArgListOnlyDynamics '[ '(sl, bts)] ~ '[ '[ '[]]] ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CBffr.C scb ->
 	Vk.Ppl.Cp.C scppl '(spl, '[ '(sl, bts)], '[]) ->
 	Vk.PplLyt.P spl '[ '(sl, bts)] '[] -> Vk.DscSt.D sds '(sl, bts) ->
@@ -234,9 +235,9 @@ run dv q cb cppl pl dss n ma mb mc = do
 			Vk.Cmd.dispatch ccb n 1 1
 	Vk.Q.submit q (U4 sinfo :** HPList.Nil) Nothing
 	Vk.Q.waitIdle q
-	(,,)	<$> Vk.Mm.read @nm1 @(Obj.List 256 w1 "") @0 @[w1] dv ma def
-		<*> Vk.Mm.read @nm2 @(Obj.List 256 w2 "") @0 @[w2] dv mb def
-		<*> Vk.Mm.read @nm3 @(Obj.List 256 w3 "") @0 @[w3] dv mc def
+	(,,)	<$> Vk.Mm.read @nm1 @(OList w1) @0 @[w1] dv ma def
+		<*> Vk.Mm.read @nm2 @(OList w2) @0 @[w2] dv mb def
+		<*> Vk.Mm.read @nm3 @(OList w3) @0 @[w3] dv mc def
 	where sinfo = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
@@ -256,9 +257,9 @@ createBffr3Mm3 :: forall nm1 nm2 nm3 w1 w2 w3 sd sdl bts a . (
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sds sm1 sm2 sm3 sb1 sb2 sb3 .
 		Vk.DscSt.D sds '(sdl, bts) ->
-		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg nm1 '[OList w1])] ->
-		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
-		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] ->
+		Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[OList w1])] ->
+		Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
+		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] ->
 		IO a) -> IO a
 createBffr3Mm3 pd dv dsl da db dc a =
 	Vk.DscPl.create dv dscPlInfo nil \dsp ->
@@ -280,7 +281,7 @@ bffr3Mm3 :: (Storable w1, Storable w2, Storable w3) =>
 		Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
 		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] ->
 		IO a ) -> IO a
-bffr3Mm3 pd dv x y z f = bffrMms pd dv (x :** y :** z :** HPList.Nil) $ arg3 f
+bffr3Mm3 pd dv x y z a = bffrMms pd dv (x :** y :** z :** HPList.Nil) $ arg3 a
 
 class BffrMms f a where
 	type Vectors f :: [Type]
