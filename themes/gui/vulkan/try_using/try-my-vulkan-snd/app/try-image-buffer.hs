@@ -298,27 +298,36 @@ bffr3Mm3 :: (Storable w1, Storable w2, Storable w3) =>
 		IO a ) -> IO a
 bffr3Mm3 pd dv x y z a = bffrMms pd dv (x :** y :** z :** HPList.Nil) $ arg3 a
 
-class StorageBufferNews f a where
+class BffrMms f a where
 	type Vectors f :: [Type]
-	bffrMms ::
-		Vk.Phd.P ->
-		Vk.Dvc.D sd ->
-		HPList.PL V.Vector (Vectors f) -> f -> IO a
+	bffrMms :: Vk.Phd.P ->
+		Vk.Dvc.D sd -> HPList.PL V.Vector (Vectors f) -> f -> IO a
 
-data Arg nm w f = Arg (forall sb sm .
-	Vk.Bffr.Binded sm sb nm '[Obj.List 256 w ""] ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> f)
-
-instance StorageBufferNews (IO a) a where
+instance BffrMms (IO a) a where
 	type Vectors (IO a) = '[]
 	bffrMms _pd _dv HPList.Nil f = f
 
-instance (Storable w, StorageBufferNews f a) =>
-	StorageBufferNews (Arg nm w f) a where
+instance (Storable w, BffrMms f a) => BffrMms (Arg nm w f) a where
 	type Vectors (Arg nm w f) = w ': Vectors f
-	bffrMms phdvc dvc (vs :** vss) (Arg f) =
-		storageBufferNew dvc phdvc vs \buf mem ->
-		bffrMms @f @a phdvc dvc vss (f buf mem)
+	bffrMms pd dv (vs :** vss) (Arg f) =
+		bffrMm pd dv vs \b m -> bffrMms @f @a pd dv vss $ f b m
+
+data Arg nm w f = Arg (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[OList w] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] -> f)
+
+bffrMm :: forall sd nm w a . Storable w =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> V.Vector w -> (
+		forall sm sb . Vk.Bffr.Binded sm sb nm '[OList w]  ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] ->
+		IO a ) -> IO a
+bffrMm phdvc dvc xs f =
+	Vk.Bffr.create dvc (bufferInfo xs) nil \buffer -> do
+		memoryInfo <- getMemoryInfo phdvc dvc buffer
+		Vk.Mm.allocateBind dvc (U2 (Vk.Mm.Buffer buffer) :** HPList.Nil) memoryInfo
+			nil \(U2 (Vk.Mm.BufferBinded binded) :** HPList.Nil) memory -> do
+			Vk.Mm.write @nm @(Obj.List 256 w "") @0 dvc memory def xs
+			f binded memory
 
 createBffr3Mm1 ::
 	forall bts w1 w2 w3 sd sl a . (
@@ -426,7 +435,7 @@ imageInfo wdt hgt tlng = Vk.Img.CreateInfo {
 	Vk.Img.createInfoFlags = zeroBits,
 	Vk.Img.createInfoQueueFamilyIndices = [] }
 
-arg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
+arg3 :: (forall sm1 sm2 sm3 sb1 sb2 sb3 .
 	Vk.Bffr.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
 	Vk.Bffr.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
 	Vk.Bffr.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
@@ -435,19 +444,6 @@ arg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
 	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] -> r) ->
 	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
 arg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 b2 b3 m1 m2 m3
-
-storageBufferNew :: forall sd w a nm . Storable w =>
-	Vk.Dvc.D sd -> Vk.Phd.P -> V.Vector w -> (
-		forall sb sm .
-		Vk.Bffr.Binded sm sb nm '[Obj.List 256 w ""]  ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> IO a ) -> IO a
-storageBufferNew dvc phdvc xs f =
-	Vk.Bffr.create dvc (bufferInfo xs) nil \buffer -> do
-		memoryInfo <- getMemoryInfo phdvc dvc buffer
-		Vk.Mm.allocateBind dvc (U2 (Vk.Mm.Buffer buffer) :** HPList.Nil) memoryInfo
-			nil \(U2 (Vk.Mm.BufferBinded binded) :** HPList.Nil) memory -> do
-			Vk.Mm.write @nm @(Obj.List 256 w "") @0 dvc memory def xs
-			f binded memory
 
 storage3BufferNew :: forall sd w1 w2 w3 a . (
 	Storable w1, Storable w2, Storable w3
