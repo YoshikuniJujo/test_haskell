@@ -343,14 +343,14 @@ createBffr3Mm1 :: forall w1 w2 w3 sd sdsl bts a . (
 createBffr3Mm1 pd dv dsl da db dc a =
 	Vk.DscPl.create dv dscPlInfo nil \dsp ->
 	Vk.DscSt.allocateDs dv (dscStInfo dsp dsl) \(HPList.Singleton dss) ->
-	bffr3Mm1 dv pd da db dc \ba bb bc m ->
+	bffr3Mm1 pd dv da db dc \ba bb bc m ->
 	Vk.DscSt.updateDs dv
 		(HPList.Singleton
 			. U5 $ writeDscStBffr3 @w1 @w2 @w3 dss ba bb bc)
 		HPList.Nil >> a dss m
 
 bffr3Mm1 :: forall sd w1 w2 w3 a . (Storable w1, Storable w2, Storable w3) =>
-	Vk.Dvc.D sd -> Vk.Phd.P ->
+	Vk.Phd.P -> Vk.Dvc.D sd ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sb1 sb2 sb3 sm .
 		Vk.Bffr.Binded sm sb1 "bffr1" '[OList w1] ->
 		Vk.Bffr.Binded sm sb2 "bffr2" '[OList w2] ->
@@ -360,7 +360,7 @@ bffr3Mm1 :: forall sd w1 w2 w3 a . (Storable w1, Storable w2, Storable w3) =>
 			'(sb2, 'Vk.Mm.BufferArg "bffr2" '[OList w2]),
 			'(sb3, 'Vk.Mm.BufferArg "bffr3" '[OList w3]) ] ->
 		IO a) -> IO a
-bffr3Mm1 dv pd xs ys zs f = prepBffr3Mm1 @_ dv pd xs ys zs \b1 b2 b3 m -> do
+bffr3Mm1 pd dv xs ys zs f = prepBffr3Mm1 @_ dv pd xs ys zs \b1 b2 b3 m -> do
 	Vk.Mm.write @"bffr1" @(Obj.List 256 w1 "") @0 dv m def xs
 	Vk.Mm.write @"bffr2" @(Obj.List 256 w2 "") @0 dv m def ys
 	Vk.Mm.write @"bffr3" @(Obj.List 256 w3 "") @0 dv m def zs
@@ -388,13 +388,10 @@ prepBffr3Mm1 dv pd xs ys zs a =
 	prepMm1ForBffr3 @"bffr1" @"bffr2" @"bffr3" dv b1 b2 b3 mi1 mi2 mi3 a
 
 prepMm1ForBffr3 :: forall nm1 nm2 nm3 sb1 sb2 sb3 sd w1 w2 w3 a .
-	(Storable w1, Storable w2, Storable w3) =>
-	Vk.Dvc.D sd ->
-	Vk.Bffr.B sb1 nm1 '[OList w1] ->
-	Vk.Bffr.B sb2 nm2 '[OList w2] ->
+	(Storable w1, Storable w2, Storable w3) => Vk.Dvc.D sd ->
+	Vk.Bffr.B sb1 nm1 '[OList w1] -> Vk.Bffr.B sb2 nm2 '[OList w2] ->
 	Vk.Bffr.B sb3 nm3 '[OList w3] ->
-	Vk.Mm.AllocateInfo 'Nothing ->
-	Vk.Mm.AllocateInfo 'Nothing ->
+	Vk.Mm.AllocateInfo 'Nothing -> Vk.Mm.AllocateInfo 'Nothing ->
 	Vk.Mm.AllocateInfo 'Nothing -> (forall sm .
 		Vk.Bffr.Binded sm sb1 nm1 '[OList w1] ->
 		Vk.Bffr.Binded sm sb2 nm2 '[OList w2] ->
@@ -432,12 +429,12 @@ createBffr1Mm1 :: forall w1 w2 w3 sd sl bts nm a . (
 		Vk.DscSt.D sds '(sl, bts) ->
 		Vk.Mm.M sm '[
 			'(sb, 'Vk.Mm.BufferArg nm
-				'[OList w1, OList w2, OList w3])] ->
+				'[OList w1, OList w2, OList w3]) ] ->
 		IO a) -> IO a
 createBffr1Mm1 pd dv dsl da db dc a =
 	Vk.DscPl.create dv dscPlInfo nil \dsp ->
 	Vk.DscSt.allocateDs dv (dscStInfo dsp dsl) \(HPList.Singleton dss) ->
-	bffr1Mm1 dv pd da db dc \b m ->
+	bffr1Mm1 pd dv da db dc \b m ->
 	Vk.DscSt.updateDs dv
 		(HPList.Singleton . U5 $ writeDscStBffr1 @w1 @w2 @w3 dss b)
 		HPList.Nil >> a dss m
@@ -448,21 +445,21 @@ bffr1Mm1 :: forall sd nm w1 w2 w3 a . (
 	Obj.OffsetRange (OList w3) '[OList w1, OList w2, OList w3] 0,
 	Obj.LengthOf (OList w2) '[OList w1, OList w2, OList w3],
 	Obj.LengthOf (OList w3) '[OList w1, OList w2, OList w3] ) =>
-	Vk.Dvc.D sd -> Vk.Phd.P ->
+	Vk.Phd.P -> Vk.Dvc.D sd ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[OList w1, OList w2, OList w3] ->
 		Vk.Mm.M sm '[ '(sb,
 			'Vk.Mm.BufferArg nm '[OList w1, OList w2, OList w3])] ->
 		IO a) -> IO a
-bffr1Mm1 dv pd xs ys zs a =
-	Vk.Bffr.create dv (bffrInfoBffr1 xs ys zs) nil \buf ->
-	getMmInfo pd dv buf >>= \mi ->
-	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer buf)
+bffr1Mm1 pd dv da db dc a =
+	Vk.Bffr.create dv (bffrInfoBffr1 da db dc) nil \b ->
+	getMmInfo pd dv b >>= \mi ->
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
 		mi nil \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) m -> do
-		Vk.Mm.write @nm @(OList w1) @0 dv m def xs
-		Vk.Mm.write @nm @(OList w2) @0 dv m def ys
-		Vk.Mm.write @nm @(OList w3) @0 dv m def zs
-		a bnd m
+	Vk.Mm.write @nm @(OList w1) @0 dv m def da
+	Vk.Mm.write @nm @(OList w2) @0 dv m def db
+	Vk.Mm.write @nm @(OList w3) @0 dv m def dc
+	a bnd m
 
 -- COMMON
 
@@ -493,7 +490,7 @@ bffrInfoBffr3 xs = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
-bffrInfoBffr1 :: (Storable w1, Storable w2, Storable w3 ) =>
+bffrInfoBffr1 :: (Storable w1, Storable w2, Storable w3) =>
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	Vk.Bffr.CreateInfo 'Nothing '[OList w1, OList w2, OList w3]
 bffrInfoBffr1 xs ys zs = Vk.Bffr.CreateInfo {

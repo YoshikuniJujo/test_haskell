@@ -14,7 +14,6 @@ getOptions = do
 		([], [], Just fp, Just tlng) -> do
 			let	bm = getBufMem opts
 			print bm
-			print fp
 			pure . Just $ Opts bm fp tlng
 		(_, _, Just _, _) -> do
 			putStrLn $ usageInfo "Usage:" options
