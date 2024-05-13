@@ -13,7 +13,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -67,20 +67,15 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import Tools
 
 main :: IO ()
-main = do
-	args <- getArgs
-	case args of
-		[arg] -> do
-			(r1, r2, r3) <- crtDevice \phdvc qFam dvc mxX ->
-				let (da, db, dc) = mkData mxX in
-					Vk.DscSetLyt.create dvc dscSetLayoutInfo
-						nil \dslyt ->
-					prepDscSets arg phdvc dvc dslyt da db dc
-						$ calc dvc qFam dslyt mxX
-			print . take 20 $ unW1 <$> r1
-			print . take 20 $ unW2 <$> r2
-			print . take 20 $ unW3 <$> r3
-		_ -> error "bad args"
+main = crtDevice \pd qfi dv mxX -> do
+	arg <- (<$> getArgs) \case
+		"0" : _ -> "0"; "1" : _ -> "1"; "2" : _ -> "2"; _ -> "0"
+	(r1, r2, r3) <- let (da, db, dc) = mkData mxX in
+		Vk.DscSetLyt.create dv dscSetLayoutInfo nil \dslyt ->
+		prepDscSets arg pd dv dslyt da db dc $ calc dv qfi dslyt mxX
+	print . take 20 $ unW1 <$> r1
+	print . take 20 $ unW2 <$> r2
+	print . take 20 $ unW3 <$> r3
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
