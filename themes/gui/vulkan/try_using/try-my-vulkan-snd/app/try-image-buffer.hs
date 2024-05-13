@@ -321,13 +321,21 @@ bffrMm :: forall sd nm w a . Storable w =>
 		forall sm sb . Vk.Bffr.Binded sm sb nm '[OList w]  ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] ->
 		IO a ) -> IO a
-bffrMm phdvc dvc xs f =
-	Vk.Bffr.create dvc (bufferInfo xs) nil \buffer -> do
-		memoryInfo <- getMemoryInfo phdvc dvc buffer
-		Vk.Mm.allocateBind dvc (U2 (Vk.Mm.Buffer buffer) :** HPList.Nil) memoryInfo
-			nil \(U2 (Vk.Mm.BufferBinded binded) :** HPList.Nil) memory -> do
-			Vk.Mm.write @nm @(Obj.List 256 w "") @0 dvc memory def xs
-			f binded memory
+bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfoBffr3 xs) nil \b ->
+	getMmInfo pd dv b >>= \minfo ->
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) minfo nil
+		\(U2 (Vk.Mm.BufferBinded bnd) :** HPList.Nil) mm ->
+	Vk.Mm.write @nm @(Obj.List 256 w "") @0 dv mm def xs >> a bnd mm
+
+arg3 :: (forall sm1 sm2 sm3 sb1 sb2 sb3 .
+	Vk.Bffr.Binded sm1 sb1 nm1 '[OList w1] ->
+	Vk.Bffr.Binded sm2 sb2 nm2 '[OList w2] ->
+	Vk.Bffr.Binded sm3 sb3 nm3 '[OList w3] ->
+	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[OList w1])] ->
+	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
+	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] -> r) ->
+	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
+arg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 b2 b3 m1 m2 m3
 
 createBffr3Mm1 ::
 	forall bts w1 w2 w3 sd sl a . (
@@ -435,16 +443,6 @@ imageInfo wdt hgt tlng = Vk.Img.CreateInfo {
 	Vk.Img.createInfoFlags = zeroBits,
 	Vk.Img.createInfoQueueFamilyIndices = [] }
 
-arg3 :: (forall sm1 sm2 sm3 sb1 sb2 sb3 .
-	Vk.Bffr.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
-	Vk.Bffr.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
-	Vk.Bffr.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
-	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
-	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
-	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] -> r) ->
-	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
-arg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 b2 b3 m1 m2 m3
-
 storage3BufferNew :: forall sd w1 w2 w3 a . (
 	Storable w1, Storable w2, Storable w3
 	) =>
@@ -460,12 +458,12 @@ storage3BufferNew :: forall sd w1 w2 w3 a . (
 			'(sb3, 'Vk.Mm.BufferArg "buffer3" '[Obj.List 256 w3 ""]) ] -> IO a
 		) -> IO a
 storage3BufferNew dvc phdvc xs ys zs f =
-	Vk.Bffr.create dvc (bufferInfo xs) nil \buf1 -> do
-		memInfo1 <- getMemoryInfo phdvc dvc buf1
-		Vk.Bffr.create dvc (bufferInfo ys) nil \buf2 -> do
-			memInfo2 <- getMemoryInfo phdvc dvc buf2
-			Vk.Bffr.create dvc (bufferInfo zs) nil \buf3 -> do
-				memInfo3 <- getMemoryInfo phdvc dvc buf3
+	Vk.Bffr.create dvc (bffrInfoBffr3 xs) nil \buf1 -> do
+		memInfo1 <- getMmInfo phdvc dvc buf1
+		Vk.Bffr.create dvc (bffrInfoBffr3 ys) nil \buf2 -> do
+			memInfo2 <- getMmInfo phdvc dvc buf2
+			Vk.Bffr.create dvc (bffrInfoBffr3 zs) nil \buf3 -> do
+				memInfo3 <- getMmInfo phdvc dvc buf3
 				if (memInfo1 == memInfo2 && memInfo2 == memInfo3) then
 					Vk.Mm.allocateBind dvc (
 						U2 (Vk.Mm.Buffer buf1) :**
@@ -481,8 +479,8 @@ storage3BufferNew dvc phdvc xs ys zs f =
 						f bnd1 bnd2 bnd3 mem
 					else error "bad"
 
-bufferInfo :: Storable w => V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[Obj.List 256 w ""]
-bufferInfo xs = Vk.Bffr.CreateInfo {
+bffrInfoBffr3 :: Storable w => V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[Obj.List 256 w ""]
+bffrInfoBffr3 xs = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = def,
 	Vk.Bffr.createInfoLengths =
@@ -532,9 +530,9 @@ dscPlInfo = Vk.DscPl.CreateInfo {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPl.sizeDescriptorCount = 10 }
 
-getMemoryInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.B sb nm objs ->
+getMmInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.B sb nm objs ->
 	IO (Vk.Mm.AllocateInfo 'Nothing)
-getMemoryInfo phdvc dvc buffer = do
+getMmInfo phdvc dvc buffer = do
 	memTypeIdx <- findMemoryTypeIndex
 		<$> ((: []) <$> Vk.Bffr.getMemoryRequirements dvc buffer)
 		<*> pure memoryPropertyBits

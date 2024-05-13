@@ -308,9 +308,9 @@ bffrMm :: forall sd nm w a . Storable w =>
 		IO a ) -> IO a
 bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfoBffr3 xs) nil \b ->
 	getMmInfo pd dv b >>= \minfo ->
-	Vk.Mm.allocateBind dv (U2 (Vk.Mm.Buffer b) :** HPList.Nil) minfo nil
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) minfo nil
 		\(U2 (Vk.Mm.BufferBinded bnd) :** HPList.Nil) mm ->
-		Vk.Mm.write @nm @(Obj.List 256 w "") @0 dv mm def xs >> a bnd mm
+	Vk.Mm.write @nm @(Obj.List 256 w "") @0 dv mm def xs >> a bnd mm
 
 arg3 :: (forall sm1 sm2 sm3 sb1 sb2 sb3 .
 	Vk.Bffr.Binded sm1 sb1 nm1 '[OList w1] ->
