@@ -283,14 +283,23 @@ bffr3Mm3 :: (Storable w1, Storable w2, Storable w3) =>
 		IO a ) -> IO a
 bffr3Mm3 pd dv x y z a = bffrMms pd dv (x :** y :** z :** HPList.Nil) $ arg3 a
 
+arg3 :: (forall sm1 sm2 sm3 sb1 sb2 sb3 .
+	Vk.Bffr.Binded sm1 sb1 nm1 '[OList w1] ->
+	Vk.Bffr.Binded sm2 sb2 nm2 '[OList w2] ->
+	Vk.Bffr.Binded sm3 sb3 nm3 '[OList w3] ->
+	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[OList w1])] ->
+	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
+	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] -> r) ->
+	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
+arg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 b2 b3 m1 m2 m3
+
 class BffrMms f a where
 	type Vectors f :: [Type]
 	bffrMms :: Vk.Phd.P ->
 		Vk.Dvc.D sd -> HPList.PL V.Vector (Vectors f) -> f -> IO a
 
 instance BffrMms (IO a) a where
-	type Vectors (IO a) = '[]
-	bffrMms _pd _dv HPList.Nil f = f
+	type Vectors (IO a) = '[]; bffrMms _pd _dv HPList.Nil f = f
 
 instance (Storable w, BffrMms f a) => BffrMms (Arg nm w f) a where
 	type Vectors (Arg nm w f) = w ': Vectors f
@@ -307,20 +316,10 @@ bffrMm :: forall sd nm w a . Storable w =>
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] ->
 		IO a ) -> IO a
 bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfoBffr3 xs) nil \b ->
-	getMmInfo pd dv b >>= \minfo ->
-	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) minfo nil
-		\(U2 (Vk.Mm.BufferBinded bnd) :** HPList.Nil) mm ->
+	getMmInfo pd dv b >>= \mi ->
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) mi nil
+		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	Vk.Mm.write @nm @(Obj.List 256 w "") @0 dv mm def xs >> a bnd mm
-
-arg3 :: (forall sm1 sm2 sm3 sb1 sb2 sb3 .
-	Vk.Bffr.Binded sm1 sb1 nm1 '[OList w1] ->
-	Vk.Bffr.Binded sm2 sb2 nm2 '[OList w2] ->
-	Vk.Bffr.Binded sm3 sb3 nm3 '[OList w3] ->
-	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[OList w1])] ->
-	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
-	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] -> r) ->
-	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
-arg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 b2 b3 m1 m2 m3
 
 -- BUFFER 3 : MEMORY 1
 
