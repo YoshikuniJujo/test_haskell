@@ -89,10 +89,10 @@ withDvc :: (forall sd scpl .
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	(forall c . Integral c => c) -> IO a) -> IO a
 withDvc a = Vk.Inst.create instInfo nil \inst -> do
-	pd <- head <$> Vk.Phd.enumerate inst
+	pd <- head' <$> Vk.Phd.enumerate inst
 	mgcx :. _ <- Vk.Phd.limitsMaxComputeWorkGroupCount
 		. Vk.Phd.propertiesLimits <$> Vk.Phd.getProperties pd
-	qfi <- fst . head . filter (
+	qfi <- fst . head' . filter (
 			checkBits Vk.Q.ComputeBit .
 			Vk.QFam.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
@@ -408,6 +408,12 @@ shdrStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
+
+head' :: [a] -> a
+head' = \case [] -> error "empty list"; x : _ -> x
+
+tail' :: [a] -> [a]
+tail' = \case [] -> error "empty list"; _ : xs -> xs
 
 [glslComputeShader|
 
