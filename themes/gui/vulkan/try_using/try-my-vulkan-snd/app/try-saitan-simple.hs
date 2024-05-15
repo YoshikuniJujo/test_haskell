@@ -86,8 +86,6 @@ newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 
-type OList w = Obj.List 256 w ""
-
 withDvc :: (forall sd scpl .
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	(forall c . Integral c => c) -> IO a) -> IO a
@@ -142,17 +140,17 @@ type DscStLytArg = '[ 'Vk.DscStLyt.Buffer '[OList W1, OList W2, OList W3]]
 -- PREPARE MEMORIES
 
 createBffr3Mm3 :: (
-	Default (HPList.PL2 BObj.Length
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscSt.BindingAndArrayElemBuffer
 		bts '[OList W1, OList W2, OList W3] 0,
-	Vk.DscSt.UpdateDynamicLength bts '[OList W1, OList W2, OList W3] ) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sl bts ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 ->
-	(forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
-		Vk.DscSt.D sds '(sl, bts) ->
+	Vk.DscSt.UpdateDynamicLength bts '[OList W1, OList W2, OList W3],
+	Default (HPList.PL2 BObj.Length
+		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)) ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sdsl bts ->
+	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (
+		forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
+		Vk.DscSt.D sds '(sdsl, bts) ->
 		Mm sm1 sb1 "" W1 -> Mm sm2 sb2 "" W2 -> Mm sm3 sb3 "" W3 ->
-		IO a) -> IO a
+		IO a ) -> IO a
 createBffr3Mm3 pd dv dsl da db dc a =
 	Vk.DscPl.create dv dscPlInfo nil \dp ->
 	Vk.DscSt.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton dss) ->
@@ -163,6 +161,7 @@ createBffr3Mm3 pd dv dsl da db dc a =
 
 type Mm sm sb nm t = Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList t])]
 type Bffr sm sb nm t = Vk.Bffr.Binded sm sb nm '[OList t]
+type OList t = Obj.List 256 t ""
 
 dscPlInfo :: Vk.DscPl.CreateInfo 'Nothing
 dscPlInfo = Vk.DscPl.CreateInfo {
