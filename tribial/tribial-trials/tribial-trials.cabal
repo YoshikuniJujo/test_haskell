@@ -74,6 +74,7 @@ library
       RecursionOverModules.NonEmpty
       SequenceCombination
       Shadow
+      Shuffle
       Template
       Template.Foo
       Template.ModuleTree
