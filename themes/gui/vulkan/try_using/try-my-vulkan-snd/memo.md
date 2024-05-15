@@ -127,7 +127,7 @@ apps
 * [x] try-saitan-float.hs
 * [x] try-image-buffer.hs
 * [x] try-no-dynamic-dsc-sets.hs
-* [ ] try-dynamic-dsc-sets.hs
+* [x] try-dynamic-dsc-sets.hs
 * [ ] try-texel-buffer-word32.hs
 * [ ] try-texel-buffer-float.hs
 * [ ] try-copy-descriptor-set.hs

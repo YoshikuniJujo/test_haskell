@@ -267,7 +267,7 @@ calc :: forall slbts sl bts sd scpl sds . (
 	Vk.DscStLyt.D sl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cpl dsl dss sz =
 	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
-	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ pplInfo pl)
+	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ cmpPplInfo pl)
 		nil \(cppl :** HPList.Nil) ->
 	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
 	run q cb pl cppl dss sz
@@ -313,10 +313,10 @@ run q cb pl cppl dss sz = do
 
 -- COMPUTE PIPELINE INFO
 
-pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
+cmpPplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
 	'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
 	'(sl, sbtss, '[]) sbph
-pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+cmpPplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U5 shdrStInfo,

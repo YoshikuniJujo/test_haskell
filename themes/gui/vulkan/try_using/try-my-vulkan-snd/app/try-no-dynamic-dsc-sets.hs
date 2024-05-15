@@ -24,9 +24,9 @@ import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Tuple.ToolsYj
 import Data.List.Length
+import Data.Vector.Storable qualified as V
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
-import Data.Vector.Storable qualified as V
 import Data.Word
 import System.Environment
 
@@ -342,13 +342,13 @@ calc :: forall sl sd scpl sds .
 	Vk.DscSt.D sds '(sl, DscStLytArg) -> Word32 -> IO ()
 calc dv q cpl dsl dss sz =
 	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
-	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ pplInfo pl)
+	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ cmpPplInfo pl)
 		nil \(cppl :** HPList.Nil) ->
 	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
 	run q cb pl cppl dss sz
 
-pplLytInfo :: Vk.DscStLyt.D sl DscStLytArg ->
-	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, DscStLytArg)]
+pplLytInfo :: Vk.DscStLyt.D sl bts ->
+	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.Layout '[] '[])
 pplLytInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
@@ -383,11 +383,11 @@ run q cb pl cppl dss sz = do
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
-pplInfo :: Vk.Ppl.Lyt.P sl '[ '(sdsl, DscStLytArg)] '[] ->
+cmpPplInfo :: Vk.Ppl.Lyt.P sl '[ '(sdsl, DscStLytArg)] '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing,
 		'[Word32, Word32]) '(sl, '[ '(sdsl, DscStLytArg)], '[]) sbph
-pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+cmpPplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U5 shdrStInfo,
@@ -418,6 +418,7 @@ tail' = \case [] -> error "empty list"; _ : xs -> xs
 [glslComputeShader|
 
 #version 460
+
 layout(local_size_x = 1, local_size_y = 1) in;
 layout(binding = 0) buffer Data { uint val[]; } data[3];
 layout(binding = 1) buffer Foo { uint x; } x;
