@@ -248,32 +248,28 @@ class BffrMms f a where
 instance BffrMms (IO a) a where
 	type Vectors (IO a) = '[]; bffrMms _pd _dv HPList.Nil f = f
 
-instance (Storable w, BffrMms f a) =>
-	BffrMms (Arg nm w f) a where
+instance (Storable w, BffrMms f a) => BffrMms (Arg nm w f) a where
 	type Vectors (Arg nm w f) = w ': Vectors f
-	bffrMms pd dvc (vs :** vss) (Arg f) =
-		bffMm dvc pd vs \buf mem ->
-		bffrMms @f @a pd dvc vss (f buf mem)
+	bffrMms pd dv (vs :** vss) (Arg f) =
+		bffrMm pd dv vs \b m -> bffrMms @f @a pd dv vss $ f b m
 
-data Arg nm w f = Arg (forall sb sm .
-	Vk.Bffr.Binded sm sb nm '[Obj.List 256 w ""] ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> f)
+data Arg nm w f = Arg (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[OList w] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] -> f)
 
-bffMm :: forall sd nm w a . Storable w =>
-	Vk.Dvc.D sd -> Vk.Phd.P -> V.Vector w -> (
-		forall sb sm .
-		Vk.Bffr.Binded sm sb nm '[Obj.List 256 w ""]  ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> IO a ) -> IO a
-bffMm dvc pd xs f =
-	Vk.Bffr.create dvc (bufferInfo xs) nil \buffer -> do
-		memoryInfo <- getMemoryInfo pd dvc buffer
-		Vk.Mm.allocateBind dvc (U2 (Vk.Mm.Buffer buffer) :** HPList.Nil) memoryInfo
-			nil \(U2 (Vk.Mm.BufferBinded binded) :** HPList.Nil) memory -> do
-			Vk.Mm.write @nm @(Obj.List 256 w "") @0 dvc memory def xs
-			f binded memory
+bffrMm :: forall sd nm w a . Storable w =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> V.Vector w -> (
+		forall sm sb . Vk.Bffr.Binded sm sb nm '[OList w]  ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] ->
+		IO a ) -> IO a
+bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfo xs) nil \b ->
+	getMmInfo pd dv b >>= \mi ->
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) mi nil
+		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
+	Vk.Mm.write @nm @(Obj.List 256 w "") @0 dv mm def xs >> a bnd mm
 
-bufferInfo :: Storable w => V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[Obj.List 256 w ""]
-bufferInfo xs = Vk.Bffr.CreateInfo {
+bffrInfo :: Storable w => V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[Obj.List 256 w ""]
+bffrInfo xs = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = def,
 	Vk.Bffr.createInfoLengths =
@@ -284,9 +280,9 @@ bufferInfo xs = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
-getMemoryInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.B sb nm objs ->
+getMmInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.B sb nm objs ->
 	IO (Vk.Mm.AllocateInfo 'Nothing)
-getMemoryInfo pd dvc buffer = do
+getMmInfo pd dvc buffer = do
 	requirements <- Vk.Bffr.getMemoryRequirements dvc buffer
 	memTypeIdx <- findMemoryTypeIndex pd requirements (
 		Vk.Mm.PropertyHostVisibleBit .|.

@@ -230,7 +230,7 @@ bffrMm :: forall sd nm w a . Storable w =>
 		forall sm sb . Vk.Bffr.Binded sm sb nm '[OList w]  ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] ->
 		IO a ) -> IO a
-bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfoBffr3 xs) nil \b ->
+bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfo xs) nil \b ->
 	getMmInfo pd dv b >>= \mi ->
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) mi nil
 		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
@@ -293,9 +293,9 @@ prepBffr3Mm1 :: forall sd w1 w2 w3 a .
 			'(sb3, 'Vk.Mm.BufferArg "bffr3" '[OList w3]) ] ->
 		IO a) -> IO a
 prepBffr3Mm1 dv pd xs ys zs a =
-	Vk.Bffr.create dv (bffrInfoBffr3 xs) nil \b1 ->
-	Vk.Bffr.create dv (bffrInfoBffr3 ys) nil \b2 ->
-	Vk.Bffr.create dv (bffrInfoBffr3 zs) nil \b3 -> do
+	Vk.Bffr.create dv (bffrInfo xs) nil \b1 ->
+	Vk.Bffr.create dv (bffrInfo ys) nil \b2 ->
+	Vk.Bffr.create dv (bffrInfo zs) nil \b3 -> do
 	mi1 <- getMmInfo pd dv b1
 	mi2 <- getMmInfo pd dv b2
 	mi3 <- getMmInfo pd dv b3
@@ -393,9 +393,9 @@ dscStInfo pl lyt = Vk.DscSt.AllocateInfo {
 	Vk.DscSt.allocateInfoDescriptorPool = pl,
 	Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 lyt }
 
-bffrInfoBffr3 :: Storable w =>
+bffrInfo :: Storable w =>
 	V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[OList w]
-bffrInfoBffr3 xs = Vk.Bffr.CreateInfo {
+bffrInfo xs = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths =
