@@ -159,6 +159,7 @@ createBffr3Mm3 pd dv dsl da db dc a =
 		(HPList.Singleton . U5 $ writeDscStBffr3 dss ba bb bc) HPList.Nil >>
 	a dss ma mb mc
 
+type BffMem sm sb nm t = (Bffr sm sb nm t, Mm sm sb nm t)
 type Mm sm sb nm t = Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList t])]
 type Bffr sm sb nm t = Vk.Bffr.Binded sm sb nm '[OList t]
 type OList t = Obj.List 256 t ""
@@ -187,10 +188,6 @@ bffr3Mm3 :: Vk.Phd.P -> Vk.Dvc.D sd ->
 bffr3Mm3 pd dv da db dc a =
 	createBffr pd dv da \ba ma -> createBffr pd dv db \bb mb ->
 	createBffr pd dv dc \bc mc -> a (ba, ma) (bb, mb) (bc, mc)
-
-type BffMem sm sb nm w = (
-	Vk.Bffr.Binded sm sb nm '[OList w],
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] )
 
 createBffr :: forall sd nm w a . Storable w =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> V.Vector w ->

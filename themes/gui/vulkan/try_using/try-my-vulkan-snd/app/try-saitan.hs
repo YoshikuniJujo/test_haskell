@@ -159,91 +159,6 @@ dvcInfo qfi = Vk.Dvc.CreateInfo {
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qfi,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
-calc :: forall
-	nm1 nm2 nm3 w1 w2 w3 sl bts sd scpl
-	sds sm1 sm2 sm3 objss1 objss2 objss3 . (
-	Storable w1, Storable w2, Storable w3,
-	Vk.Mm.OffsetSize nm1 (OList w1) objss1 0,
-	Vk.Mm.OffsetSize nm2 (OList w2) objss2 0,
-	Vk.Mm.OffsetSize nm3 (OList w3) objss3 0,
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl -> Vk.DscStLyt.D sl bts ->
-	Vk.DscSt.D sds '(sl, bts) -> Word32 ->
-	Mm sm1 objss1 -> Mm sm2 objss2 -> Mm sm3 objss3 -> IO ([w1], [w2], [w3])
-calc dv q cpl dsl dss n ma mb mc =
-	Vk.PplLyt.create dv plinfo nil \pl ->
-	Vk.Ppl.Cp.createCs dv Nothing
-		(HPList.Singleton . U4 $ cpplinfo pl) nil
-		\(cppl :** HPList.Nil) ->
-	Vk.CBffr.allocate dv cbinfo \(cb :*. HPList.Nil) ->
-	run @nm1 @nm2 @nm3 dv q cb cppl pl dss n ma mb mc
-	where
-	plinfo :: Vk.PplLyt.CreateInfo
-		'Nothing '[ '(sl, bts)] ('Vk.PshCnst.Layout '[] '[])
-	plinfo = Vk.PplLyt.CreateInfo {
-		Vk.PplLyt.createInfoNext = TMaybe.N,
-		Vk.PplLyt.createInfoFlags = zeroBits,
-		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
-	cpplinfo pl = Vk.Ppl.Cp.CreateInfo {
-		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
-		Vk.Ppl.Cp.createInfoFlags = zeroBits,
-		Vk.Ppl.Cp.createInfoStage = U5 shdrStInfo,
-		Vk.Ppl.Cp.createInfoLayout = U3 pl,
-		Vk.Ppl.Cp.createInfoBasePipelineHandleOrIndex = Nothing }
-	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing scpl '[ '()]
-	cbinfo = Vk.CBffr.AllocateInfo {
-		Vk.CBffr.allocateInfoNext = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPool = cpl,
-		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
-
-shdrStInfo :: Vk.Ppl.ShaderSt.CreateInfo
-	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]
-shdrStInfo = Vk.Ppl.ShaderSt.CreateInfo {
-	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
-	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
-	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (mdinfo, nil),
-	Vk.Ppl.ShaderSt.createInfoName = "main",
-	Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
-		Just $ HPList.Id 3 :** HPList.Id 10 :** HPList.Nil }
-	where mdinfo = Vk.ShaderMod.CreateInfo {
-		Vk.ShaderMod.createInfoNext = TMaybe.N,
-		Vk.ShaderMod.createInfoFlags = zeroBits,
-		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
-
-run :: forall
-	nm1 nm2 nm3 w1 w2 w3 sl bts sd scb scppl spl
-	sds sm1 sm2 sm3 objss1 objss2 objss3 . (
-	Storable w1, Storable w2, Storable w3,
-	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
-	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
-	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0,
---	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
-	Vk.Cmd.LayoutArgListOnlyDynamics '[ '(sl, bts)] ~ '[ '[ '[]]] ) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CBffr.C scb ->
-	Vk.Ppl.Cp.C scppl '(spl, '[ '(sl, bts)], '[]) ->
-	Vk.PplLyt.P spl '[ '(sl, bts)] '[] -> Vk.DscSt.D sds '(sl, bts) ->
-	Word32 -> Mm sm1 objss1 -> Mm sm2 objss2 -> Mm sm3 objss3 ->
-	IO ([w1], [w2], [w3])
-run dv q cb cppl pl dss n ma mb mc = do
-	Vk.CBffr.begin @'Nothing @'Nothing cb def $
-		Vk.Cmd.bindPipelineCompute
-			cb Vk.Ppl.BindPointCompute cppl \ccb ->
-			Vk.Cmd.bindDescriptorSetsCompute ccb pl
-				(HPList.Singleton $ U2 dss)
-				(HPList.Singleton2 HPList.Nil) >>
-			Vk.Cmd.dispatch ccb n 1 1
-	Vk.Q.submit q (U4 sinfo :** HPList.Nil) Nothing
-	Vk.Q.waitIdle q
-	(,,)	<$> Vk.Mm.read @nm1 @(OList w1) @0 @[w1] dv ma def
-		<*> Vk.Mm.read @nm2 @(OList w2) @0 @[w2] dv mb def
-		<*> Vk.Mm.read @nm3 @(OList w3) @0 @[w3] dv mc def
-	where sinfo = Vk.SubmitInfo {
-		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Nil }
-
 -- BUFFER 3 : MEMORY 3
 
 createBffr3Mm3 :: forall nm1 nm2 nm3 w1 w2 w3 sd sdl bts a . (
@@ -560,6 +475,93 @@ writeDscStBffr1 dss b = Vk.DscSt.Write {
 	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos $
 		U5 (Vk.Dsc.BufferInfo b) :** U5 (Vk.Dsc.BufferInfo b) :**
 		U5 (Vk.Dsc.BufferInfo b) :** HPList.Nil }
+
+-- CALC
+
+calc :: forall
+	nm1 nm2 nm3 w1 w2 w3 sl bts sd scpl
+	sds sm1 sm2 sm3 objss1 objss2 objss3 . (
+	Storable w1, Storable w2, Storable w3,
+	Vk.Mm.OffsetSize nm1 (OList w1) objss1 0,
+	Vk.Mm.OffsetSize nm2 (OList w2) objss2 0,
+	Vk.Mm.OffsetSize nm3 (OList w3) objss3 0,
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl -> Vk.DscStLyt.D sl bts ->
+	Vk.DscSt.D sds '(sl, bts) -> Word32 ->
+	Mm sm1 objss1 -> Mm sm2 objss2 -> Mm sm3 objss3 -> IO ([w1], [w2], [w3])
+calc dv q cpl dsl dss n ma mb mc =
+	Vk.PplLyt.create dv plinfo nil \pl ->
+	Vk.Ppl.Cp.createCs dv Nothing
+		(HPList.Singleton . U4 $ cpplinfo pl) nil
+		\(cppl :** HPList.Nil) ->
+	Vk.CBffr.allocate dv cbinfo \(cb :*. HPList.Nil) ->
+	run @nm1 @nm2 @nm3 dv q cb cppl pl dss n ma mb mc
+	where
+	plinfo :: Vk.PplLyt.CreateInfo
+		'Nothing '[ '(sl, bts)] ('Vk.PshCnst.Layout '[] '[])
+	plinfo = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+	cpplinfo pl = Vk.Ppl.Cp.CreateInfo {
+		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
+		Vk.Ppl.Cp.createInfoFlags = zeroBits,
+		Vk.Ppl.Cp.createInfoStage = U5 shdrStInfo,
+		Vk.Ppl.Cp.createInfoLayout = U3 pl,
+		Vk.Ppl.Cp.createInfoBasePipelineHandleOrIndex = Nothing }
+	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing scpl '[ '()]
+	cbinfo = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cpl,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+
+shdrStInfo :: Vk.Ppl.ShaderSt.CreateInfo
+	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]
+shdrStInfo = Vk.Ppl.ShaderSt.CreateInfo {
+	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
+	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
+	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
+	Vk.Ppl.ShaderSt.createInfoModule = (mdinfo, nil),
+	Vk.Ppl.ShaderSt.createInfoName = "main",
+	Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
+		Just $ HPList.Id 3 :** HPList.Id 10 :** HPList.Nil }
+	where mdinfo = Vk.ShaderMod.CreateInfo {
+		Vk.ShaderMod.createInfoNext = TMaybe.N,
+		Vk.ShaderMod.createInfoFlags = zeroBits,
+		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
+
+run :: forall
+	nm1 nm2 nm3 w1 w2 w3 sl bts sd scb scppl spl
+	sds sm1 sm2 sm3 objss1 objss2 objss3 . (
+	Storable w1, Storable w2, Storable w3,
+	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
+	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
+	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0,
+--	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
+	Vk.Cmd.LayoutArgListOnlyDynamics '[ '(sl, bts)] ~ '[ '[ '[]]] ) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CBffr.C scb ->
+	Vk.Ppl.Cp.C scppl '(spl, '[ '(sl, bts)], '[]) ->
+	Vk.PplLyt.P spl '[ '(sl, bts)] '[] -> Vk.DscSt.D sds '(sl, bts) ->
+	Word32 -> Mm sm1 objss1 -> Mm sm2 objss2 -> Mm sm3 objss3 ->
+	IO ([w1], [w2], [w3])
+run dv q cb cppl pl dss n ma mb mc = do
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
+		Vk.Cmd.bindPipelineCompute
+			cb Vk.Ppl.BindPointCompute cppl \ccb ->
+			Vk.Cmd.bindDescriptorSetsCompute ccb pl
+				(HPList.Singleton $ U2 dss)
+				(HPList.Singleton2 HPList.Nil) >>
+			Vk.Cmd.dispatch ccb n 1 1
+	Vk.Q.submit q (U4 sinfo :** HPList.Nil) Nothing
+	Vk.Q.waitIdle q
+	(,,)	<$> Vk.Mm.read @nm1 @(OList w1) @0 @[w1] dv ma def
+		<*> Vk.Mm.read @nm2 @(OList w2) @0 @[w2] dv mb def
+		<*> Vk.Mm.read @nm3 @(OList w3) @0 @[w3] dv mc def
+	where sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
 -- WITH OPTIONS
 
