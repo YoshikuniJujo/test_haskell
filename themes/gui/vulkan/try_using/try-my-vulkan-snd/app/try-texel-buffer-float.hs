@@ -20,7 +20,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Data.Kind
 import Gpu.Vulkan.Object.Base qualified as KObj
-import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object qualified as Obj
 import Data.Default
 import Data.Bits
 import Data.List.Length
@@ -45,8 +45,8 @@ import qualified Gpu.Vulkan.Queue as Vk.Q
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
-import qualified Gpu.Vulkan.Memory as Vk.Mem
-import qualified Gpu.Vulkan.Memory as Vk.Mem.M
+import qualified Gpu.Vulkan.Memory as Vk.Mm
+import qualified Gpu.Vulkan.Memory as Vk.Mm.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
@@ -67,43 +67,41 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import Gpu.Vulkan.TypeEnum qualified as Vk.TEnum
 
 main :: IO ()
-main = do
-	(r1, r2, r3) <- main' datA datB datC
+main = withDvc \pd d q cpl mgcx ->
+	Vk.DscSetLyt.create d (dscSetLayoutInfo @W1 @W2 @W3) nil \dscSetLyt ->
+	let	da = V.replicate mgcx 0
+		db = V.replicate mgcx 0
+		dc = V.replicate mgcx 0
+		dd = V.fromList . take mgcx $ cycle [
+			MyPixel 123 321 111 333,
+			MyPixel 555 444 333 222,
+			MyPixel 999 888 777 666 ] in
+	prepareMems pd d dscSetLyt da db dc dd mgcx \dscSet
+		(ma :: MemoryList sm1 sb1 nm1 w1)
+		(mb :: MemoryList sm2 sb2 nm2 w2)
+		(mc :: MemoryList sm3 sb3 nm3 w3) -> do
+	calc' @nm1 @nm2 @nm3 @w1 @w2 @w3
+		@(MmBffrArg sb1 nm1 w1) @(MmBffrArg sb2 nm2 w2)
+		@(MmBffrArg sb3 nm3 w3) d q cpl dscSetLyt dscSet mgcx
+	(r1, r2, r3) <- (,,)
+		<$> Vk.Mm.read @nm1 @(Obj.List 256 w1 "") @0 @[w1] d ma def
+		<*> Vk.Mm.read @nm2 @(Obj.List 256 w2 "") @0 @[w2] d mb def
+		<*> Vk.Mm.read @nm3 @(Obj.List 256 w3 "") @0 @[w3] d mc def
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
 
-main' :: forall w1 w2 w3 . (Storable w1, Storable w2, Storable w3) =>
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> IO ([w1], [w2], [w3])
-main' da db dc = withDvc \phdvc dvc queue cmdPool mxx ->
-	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil \dscSetLyt ->
-	let	n = mxx
-		da' = V.take n da; db' = V.take n db; dc' = V.take n dc
-		dd = V.fromList . take mxx $ cycle [
-			MyPixel 123 321 111 333,
-			MyPixel 555 444 333 222,
-			MyPixel 999 888 777 666 ] in
-	prepareMems phdvc dvc dscSetLyt da' db' dc' dd mxx \dscSet
-		(ma :: MemoryList sm1 sb1 nm1 w1)
-		(mb :: MemoryList sm2 sb2 nm2 w2)
-		(mc :: MemoryList sm3 sb3 nm3 w3) ->
-	calc @nm1 @nm2 @nm3 dvc queue cmdPool dscSetLyt dscSet mxx ma mb mc
+newtype W1 = W1 { unW1 :: Float } deriving (Show, Storable, Num)
+newtype W2 = W2 { unW2 :: Float } deriving (Show, Storable, Num)
+newtype W3 = W3 { unW3 :: Float } deriving (Show, Storable, Num)
 
-newtype W1 = W1 { unW1 :: Float } deriving (Show, Storable)
-newtype W2 = W2 { unW2 :: Float } deriving (Show, Storable)
-newtype W3 = W3 { unW3 :: Float } deriving (Show, Storable)
-
-dataSize :: Num n => n
-dataSize = 1000000
-
-datA :: V.Vector W1; datA = V.replicate dataSize $ W1 3
-datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
-datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
+type MmBffrArg sb nm w = '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])]
+type OList t = Obj.List 256 t ""
 
 type MemoryList sm sb nm w =
-	Vk.Mem.M sm '[ '( sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 w ""])]
+	Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])]
 
-calc :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3 sm1 sm2 sm3
+calc' :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3
 		slbts sl bts sd sds scpl . (
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	slbts ~ '(sl, bts),
@@ -111,24 +109,21 @@ calc :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3 sm1 sm2 sm3
 		(HPList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1 0,
-	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2 0,
-	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3 0,
+	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
+	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
+	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0,
 	InfixIndex '[slbts] '[ '(sl, bts)]) =>
-	Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C scpl ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DscSetLyt.D sl bts ->
-	Vk.DscSet.D sds slbts -> Word32 ->
-	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 -> Vk.Mem.M sm3 objss3 ->
-	IO ([w1], [w2], [w3])
-calc dvc queue cmdPool dscSetLyt dscSet dsz ma mb mc =
+	Vk.DscSet.D sds slbts -> Word32 -> IO ()
+calc' dvc queue cmdPool dscSetLyt dscSet dsz =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(U4 (computePipelineInfo pplLyt) :** HPList.Nil)
 		nil \(ppl :** HPList.Nil) ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(cmdBuf :*. HPList.Nil) ->
-	run @nm1 @nm2 @nm3 dvc queue cmdBuf ppl pplLyt dscSet dsz ma mb mc
+	run @nm1 @nm2 @nm3 @w1 @w2 @w3 @objss1 @objss2 @objss3 queue cmdBuf ppl pplLyt dscSet dsz
 
 pplLayoutInfo :: Vk.DscSetLyt.D sl bts ->
 	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
@@ -169,23 +164,21 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
-	objss1 objss2 objss3 slbts sbtss sd sc sg sl sm1 sm2 sm3 sds . (
+	objss1 objss2 objss3 slbts sbtss sc sg sl sds . (
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
 	Show (HPList.PL
 		(HPList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mem.OffsetSize nm1 (VObj.List 256 w1 "") objss1 0,
-	Vk.Mem.OffsetSize nm2 (VObj.List 256 w2 "") objss2 0,
-	Vk.Mem.OffsetSize nm3 (VObj.List 256 w3 "") objss3 0,
+	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
+	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
+	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0,
 	InfixIndex '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdBuf.C sc ->
+	Vk.Q.Q -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 ->
-	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
-	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
-run dvc queue cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
+	Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> IO ()
+run queue cmdBuf ppl pplLyt dscSet dsz = do
 	Vk.CmdBuf.begin @'Nothing @'Nothing cmdBuf def $
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb pplLyt
@@ -196,9 +189,6 @@ run dvc queue cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 			Vk.Cmd.dispatch ccb dsz 1 1
 	Vk.Q.submit queue (U4 submitInfo :** HPList.Nil) Nothing
 	Vk.Q.waitIdle queue
-	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @0 @[w1] dvc memA def
-		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @0 @[w2] dvc memB def
-		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @0 @[w3] dvc memC def
 	where	submitInfo :: Vk.SubmitInfo 'Nothing _ _ _
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
@@ -245,7 +235,7 @@ dvcInfo qfi = Vk.Dvc.CreateInfo {
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
-	'Vk.DscSetLyt.Buffer '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
+	'Vk.DscSetLyt.Buffer '[Obj.List 256 w1 "",Obj.List 256 w2 "",Obj.List 256 w3 ""],
 	'Vk.DscSetLyt.BufferView '[ '("", MyPixel)] ]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = TMaybe.N,
@@ -272,26 +262,26 @@ prepareMems ::
 	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)] 0,
 
 	Vk.DscSet.BindingAndArrayElemBuffer bts
-		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0,
+		'[Obj.List 256 w1 "",Obj.List 256 w2 "",Obj.List 256 w3 ""] 0,
 
 	Vk.DscSet.UpdateDynamicLength bts
-		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] ) =>
+		'[Obj.List 256 w1 "",Obj.List 256 w2 "",Obj.List 256 w3 ""] ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector MyPixel -> Word32 -> (
 		forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
-		Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
-		Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
-		Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] ->
+		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
+		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
+		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] ->
 		IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc dd _mxx f =
 	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(dscSet :** HPList.Nil) ->
 	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc
-		(bd :: Vk.Buffer.Binded sm sb nm '[VObj.List 256 MyPixel ""]) _md ->
+		(bd :: Vk.Buffer.Binded sm sb nm '[Obj.List 256 MyPixel ""]) _md ->
 	let	bufferViewInfo' :: Vk.BufferView.CreateInfo 'Nothing MyPixel ""
-			'(sm, sb, nm, '[VObj.List 256 MyPixel ""])
+			'(sm, sb, nm, '[Obj.List 256 MyPixel ""])
 		bufferViewInfo' = Vk.BufferView.CreateInfo {
 			Vk.BufferView.createInfoNext = TMaybe.N,
 			Vk.BufferView.createInfoFlags = zeroBits,
@@ -346,18 +336,18 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 
 writeDscSet ::
 	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds . (
-	Show (HPList.PL VObj.Length objs1),
-	Show (HPList.PL VObj.Length objs2),
-	Show (HPList.PL VObj.Length objs3),
-	VObj.OffsetRange (VObj.List 256 w1 "") objs1 0,
-	VObj.OffsetRange (VObj.List 256 w2 "") objs2 0,
-	VObj.OffsetRange (VObj.List 256 w3 "") objs3 0 ) =>
+	Show (HPList.PL Obj.Length objs1),
+	Show (HPList.PL Obj.Length objs2),
+	Show (HPList.PL Obj.Length objs3),
+	Obj.OffsetRange (Obj.List 256 w1 "") objs1 0,
+	Obj.OffsetRange (Obj.List 256 w2 "") objs2 0,
+	Obj.OffsetRange (Obj.List 256 w3 "") objs3 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sm1, sb1, nm1, VObj.List 256 w1 "", 0), '(sm2, sb2, nm2, VObj.List 256 w2 "", 0),
-		'(sm3, sb3, nm3, VObj.List 256 w3 "", 0) ]) 0
+		'(sm1, sb1, nm1, Obj.List 256 w1 "", 0), '(sm2, sb2, nm2, Obj.List 256 w2 "", 0),
+		'(sm3, sb3, nm3, Obj.List 256 w3 "", 0) ]) 0
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
@@ -367,37 +357,37 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		U5 (bufferInfoList @w3 bc) :** HPList.Nil }
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
-	Show (HPList.PL VObj.Length objs),
-	VObj.OffsetRange (VObj.List 256 t "") objs 0 ) =>
+	Show (HPList.PL Obj.Length objs),
+	Obj.OffsetRange (Obj.List 256 t "") objs 0 ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
-	Vk.Dsc.BufferInfo sm sb nm (VObj.List 256 t "") 0
+	Vk.Dsc.BufferInfo sm sb nm (Obj.List 256 t "") 0
 bufferInfoList = Vk.Dsc.BufferInfo
 
 storageBufferNew4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
 	Vk.Dvc.D sd -> Vk.Phd.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
-		Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
-		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
-		Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
-		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
-		Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
-		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] ->
-		Vk.Buffer.Binded sm4 sb4 nm4 '[VObj.List 256 w4 ""] ->
-		Vk.Mem.M sm4 '[ '(sb4, 'Vk.Mem.BufferArg nm4 '[VObj.List 256 w4 ""])] ->
+		Vk.Buffer.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
+		Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
+		Vk.Buffer.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
+		Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
+		Vk.Buffer.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
+		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] ->
+		Vk.Buffer.Binded sm4 sb4 nm4 '[Obj.List 256 w4 ""] ->
+		Vk.Mm.M sm4 '[ '(sb4, 'Vk.Mm.BufferArg nm4 '[Obj.List 256 w4 ""])] ->
 		IO a ) -> IO a
 storageBufferNew4 dvc phdvc x y z w f = storageBufferNews
 	dvc phdvc (x :** y :** z :** w :** HPList.Nil) $ addArg4 f
 
 addArg4 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
-	Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
-	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
-	Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
-	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
-	Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
-	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] ->
-	Vk.Buffer.Binded sm4 sb4 nm4 '[VObj.List 256 w4 ""] ->
-	Vk.Mem.M sm4 '[ '(sb4, 'Vk.Mem.BufferArg nm4 '[VObj.List 256 w4 ""])] ->
+	Vk.Buffer.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
+	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
+	Vk.Buffer.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
+	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
+	Vk.Buffer.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
+	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] ->
+	Vk.Buffer.Binded sm4 sb4 nm4 '[Obj.List 256 w4 ""] ->
+	Vk.Mm.M sm4 '[ '(sb4, 'Vk.Mm.BufferArg nm4 '[Obj.List 256 w4 ""])] ->
 	r) -> Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 (Arg nm4 w4 r)))
 addArg4 f = Arg \b1 m1 ->
 	Arg \b2 m2 -> Arg \b3 m3 -> Arg \b4 m4 -> f b1 m1 b2 m2 b3 m3 b4 m4
@@ -406,22 +396,22 @@ storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.Phd.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 .
-		Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
-		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
-		Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
-		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
-		Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
-		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] -> IO a ) -> IO a
+		Vk.Buffer.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
+		Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
+		Vk.Buffer.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
+		Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
+		Vk.Buffer.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
+		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] -> IO a ) -> IO a
 storageBufferNew3 dvc phdvc x y z f =
 	storageBufferNews dvc phdvc (x :** y :** z :** HPList.Nil) $ addArg3 f
 
 addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
-	Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
-	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.BufferArg nm1 '[VObj.List 256 w1 ""])] ->
-	Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
-	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.BufferArg nm2 '[VObj.List 256 w2 ""])] ->
-	Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
-	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.BufferArg nm3 '[VObj.List 256 w3 ""])] -> r) ->
+	Vk.Buffer.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
+	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
+	Vk.Buffer.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
+	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
+	Vk.Buffer.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
+	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] -> r) ->
 	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
 addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
 
@@ -431,8 +421,8 @@ class StorageBufferNews f a where
 		HPList.PL V.Vector (Vectors f) -> f -> IO a
 
 data Arg nm w f = Arg (forall sb sm .
-	Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""] ->
-	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 w ""])] -> f)
+	Vk.Buffer.Binded sm sb nm '[Obj.List 256 w ""] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
 	type Vectors (IO a) = '[]
@@ -448,22 +438,22 @@ instance (Storable w, StorageBufferNews f a) =>
 storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.Phd.P -> V.Vector w -> (
 		forall sb sm .
-		Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""]  ->
-		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 w ""])] -> IO a ) -> IO a
+		Vk.Buffer.Binded sm sb nm '[Obj.List 256 w ""]  ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
-		Vk.Mem.allocateBind dvc (U2 (Vk.Mem.Buffer buffer) :** HPList.Nil) memoryInfo
-			nil \(U2 (Vk.Mem.BufferBinded binded) :** HPList.Nil) memory -> do
-			Vk.Mem.write @nm @(VObj.List 256 w "") @0 dvc memory def xs
+		Vk.Mm.allocateBind dvc (U2 (Vk.Mm.Buffer buffer) :** HPList.Nil) memoryInfo
+			nil \(U2 (Vk.Mm.BufferBinded binded) :** HPList.Nil) memory -> do
+			Vk.Mm.write @nm @(Obj.List 256 w "") @0 dvc memory def xs
 			f binded memory
 
-bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
+bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo 'Nothing '[Obj.List 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
-		VObj.LengthList (fromIntegral $ V.length xs) :** HPList.Nil,
+		Obj.LengthList (fromIntegral $ V.length xs) :** HPList.Nil,
 	Vk.Buffer.createInfoUsage =
 		Vk.Buffer.UsageStorageBufferBit .|.
 		Vk.Buffer.UsageStorageTexelBufferBit,
@@ -471,27 +461,27 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
 getMemoryInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
-	IO (Vk.Mem.AllocateInfo 'Nothing)
+	IO (Vk.Mm.AllocateInfo 'Nothing)
 getMemoryInfo phdvc dvc buffer = do
 	requirements <- Vk.Buffer.getMemoryRequirements dvc buffer
 	memTypeIdx <- findMemoryTypeIndex phdvc requirements (
-		Vk.Mem.PropertyHostVisibleBit .|.
-		Vk.Mem.PropertyHostCoherentBit )
-	pure Vk.Mem.AllocateInfo {
-		Vk.Mem.allocateInfoNext = TMaybe.N,
-		Vk.Mem.allocateInfoMemoryTypeIndex = memTypeIdx }
+		Vk.Mm.PropertyHostVisibleBit .|.
+		Vk.Mm.PropertyHostCoherentBit )
+	pure Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = memTypeIdx }
 
 findMemoryTypeIndex ::
-	Vk.Phd.P -> Vk.Mem.M.Requirements -> Vk.Mem.PropertyFlags ->
-	IO Vk.Mem.M.TypeIndex
+	Vk.Phd.P -> Vk.Mm.M.Requirements -> Vk.Mm.PropertyFlags ->
+	IO Vk.Mm.M.TypeIndex
 findMemoryTypeIndex physicalDevice requirements memoryProp = do
 	memoryProperties <- Vk.Phd.getMemoryProperties physicalDevice
-	let	reqTypes = Vk.Mem.M.requirementsMemoryTypeBits requirements
+	let	reqTypes = Vk.Mm.M.requirementsMemoryTypeBits requirements
 		memPropTypes = (fst <$>)
 			. filter (checkBits memoryProp
-				. Vk.Mem.M.mTypePropertyFlags . snd)
+				. Vk.Mm.M.mTypePropertyFlags . snd)
 			$ Vk.Phd.memoryPropertiesMemoryTypes memoryProperties
-	case filter (`Vk.Mem.M.elemTypeIndex` reqTypes) memPropTypes of
+	case filter (`Vk.Mm.M.elemTypeIndex` reqTypes) memPropTypes of
 		[] -> error "No available memory types"
 		i : _ -> pure i
 

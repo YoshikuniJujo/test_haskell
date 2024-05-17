@@ -74,9 +74,9 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
 main :: IO ()
 main = withDvc \pd d q cpl mgcx ->
-	let	da = V.replicate mgcx $ W1 0
-		db = V.replicate mgcx $ W2 0
-		dc = V.replicate mgcx $ W3 0
+	let	da = V.replicate mgcx 0
+		db = V.replicate mgcx 0
+		dc = V.replicate mgcx 0
 		dd = V.fromList . take mgcx $ cycle [
 			Pixel 123 321 111 333, Pixel 555 444 333 222,
 			Pixel 999 888 777 666 ] in
@@ -114,9 +114,9 @@ type DscStLytArg w1 w2 w3 = '[
 	'Vk.DscStLyt.Buffer '[OList w1, OList w2, OList w3],
 	'Vk.DscStLyt.BufferView '[ '("", Pixel)] ]
 
-newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
-newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
-newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
+newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable, Num)
+newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable, Num)
+newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable, Num)
 
 withDvc :: (forall sd scpl .
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
