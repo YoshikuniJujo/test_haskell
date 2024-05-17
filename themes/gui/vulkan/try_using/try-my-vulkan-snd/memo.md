@@ -128,7 +128,7 @@ apps
 * [x] try-image-buffer.hs
 * [x] try-no-dynamic-dsc-sets.hs
 * [x] try-dynamic-dsc-sets.hs
-* [ ] try-texel-buffer-word32.hs
+* [x] try-texel-buffer-word32.hs
 * [ ] try-texel-buffer-float.hs
 * [ ] try-copy-descriptor-set.hs
 * [ ] try-query.hs
