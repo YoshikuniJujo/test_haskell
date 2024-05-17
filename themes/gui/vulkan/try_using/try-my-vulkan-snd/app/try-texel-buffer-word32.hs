@@ -98,25 +98,27 @@ main = withDvc \pd d q cpl mgcx ->
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
 		Vk.DscStLyt.createInfoFlags = zeroBits,
 		Vk.DscStLyt.createInfoBindings = bdg0 :** bdg1 :** HPList.Nil }
-		where
-		bdg0 = Vk.DscStLyt.BindingBuffer {
-			Vk.DscStLyt.bindingBufferDescriptorType =
-				Vk.Dsc.TypeStorageBuffer,
-			Vk.DscStLyt.bindingBufferStageFlags =
-				Vk.ShaderStageComputeBit }
-		bdg1 = Vk.DscStLyt.BindingBufferView {
-			Vk.DscStLyt.bindingBufferViewDescriptorType =
+	bdg0 = Vk.DscStLyt.BindingBuffer {
+		Vk.DscStLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeStorageBuffer,
+		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+	bdg1 = Vk.DscStLyt.BindingBufferView {
+		Vk.DscStLyt.bindingBufferViewDescriptorType =
 			Vk.Dsc.TypeStorageTexelBuffer,
-			Vk.DscStLyt.bindingBufferViewStageFlags =
-				Vk.ShaderStageComputeBit }
-
-type DscStLytArg w1 w2 w3 = '[
-	'Vk.DscStLyt.Buffer '[OList w1, OList w2, OList w3],
-	'Vk.DscStLyt.BufferView '[ '("", Pixel)] ]
+		Vk.DscStLyt.bindingBufferViewStageFlags =
+			Vk.ShaderStageComputeBit }
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable, Num)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable, Num)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable, Num)
+
+type DscStLytArg w1 w2 w3 = '[
+	'Vk.DscStLyt.Buffer '[OList w1, OList w2, OList w3],
+	'Vk.DscStLyt.BufferView '[ '("", Pixel)] ]
+type Mm sm sb nm w = Vk.Mm.M sm (MmBffrArg sb nm w)
+type Bffr sm sb nm w = Vk.Bffr.Binded sm sb nm '[OList w]
+type MmBffrArg sb nm w = '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])]
+type OList t = Obj.List 256 t ""
 
 withDvc :: (forall sd scpl .
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
@@ -173,8 +175,8 @@ createBffr4Mm4 :: forall nm1 nm2 nm3 w1 w2 w3 sd sdsl bts a . (
 		Mm sm1 sb1 nm1 w1 -> Mm sm2 sb2 nm2 w2 -> Mm sm3 sb3 nm3 w3 ->
 		IO a ) -> IO a
 createBffr4Mm4 pd dv dsl da db dc dd a =
-	Vk.DscPl.create dv dscPlInfo nil \dp ->
-	Vk.DscSt.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton dss) ->
+	Vk.DscPl.create dv dscPlInfo nil \dpl ->
+	Vk.DscSt.allocateDs dv (dscStInfo dpl dsl) \(HPList.Singleton dss) ->
 	bffr4Mm4 pd dv da db dc dd \ba bb bc bd ma mb mc _md ->
 	Vk.BffrVw.create dv (bffrVwInfo bd) nil \bv ->
 	Vk.DscSt.updateDs dv (
@@ -188,11 +190,6 @@ bffrVwInfo bd = Vk.BffrVw.CreateInfo {
 	Vk.BffrVw.createInfoNext = TMaybe.N,
 	Vk.BffrVw.createInfoFlags = zeroBits,
 	Vk.BffrVw.createInfoBuffer = U4 bd }
-
-type Mm sm sb nm w = Vk.Mm.M sm (MmBffrArg sb nm w)
-type Bffr sm sb nm w = Vk.Bffr.Binded sm sb nm '[OList w]
-type MmBffrArg sb nm w = '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])]
-type OList t = Obj.List 256 t ""
 
 dscPlInfo :: Vk.DscPl.CreateInfo 'Nothing
 dscPlInfo = Vk.DscPl.CreateInfo {
