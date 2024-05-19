@@ -75,6 +75,7 @@ library
       SequenceCombination
       Shadow
       Shuffle
+      Shuffle2
       Template
       Template.Foo
       Template.ModuleTree
