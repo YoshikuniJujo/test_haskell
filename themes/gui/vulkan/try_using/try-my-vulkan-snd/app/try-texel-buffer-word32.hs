@@ -225,8 +225,8 @@ bffr4Mm4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
 		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] ->
 		Vk.Mm.M sm4 '[ '(sb4, 'Vk.Mm.BufferArg nm4 '[OList w4])] ->
 		IO a ) -> IO a
-bffr4Mm4 pd dvc x y z w f =
-	bffrMms pd dvc (x :** y :** z :** w :** HPList.Nil) $ arg4 f
+bffr4Mm4 pd dv x y z w f =
+	bffrMms pd dv (x :** y :** z :** w :** HPList.Nil) $ arg4 f
 
 arg4 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
 	Vk.Bffr.Binded sm1 sb1 nm1 '[OList w1] ->
@@ -265,7 +265,7 @@ bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfo xs) nil \b ->
 	mmInfo pd dv b >>= \mmi ->
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) mmi nil
 		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	Vk.Mm.write @nm @(OList w) @0 dv mm def xs >> a bnd mm
+	Vk.Mm.write @nm @(OList w) @0 dv mm zeroBits xs >> a bnd mm
 
 bffrInfo :: Storable w => V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[OList w]
 bffrInfo xs = Vk.Bffr.CreateInfo {

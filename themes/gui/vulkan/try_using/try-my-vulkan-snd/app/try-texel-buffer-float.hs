@@ -112,6 +112,7 @@ type DscStLytArg w1 w2 w3 = '[
 	'Vk.DscStLyt.Buffer '[OList w1, OList w2, OList w3],
 	'Vk.DscStLyt.BufferView '[ '("", Pixel)] ]
 type Mm sm sb nm w = Vk.Mm.M sm (MmBffrArg sb nm w)
+type Bffr sm sb nm w = Vk.Bffr.Binded sm sb nm '[OList w]
 type MmBffrArg sb nm w = '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])]
 type OList t = Obj.List 256 t ""
 
@@ -206,6 +207,99 @@ dscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
 	Vk.DscSt.allocateInfoNext = TMaybe.N,
 	Vk.DscSt.allocateInfoDescriptorPool = dpl,
 	Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
+bffr4Mm4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> (
+		forall sm1 sm2 sm3 sm4 sb1 sb2 sb3 sb4 .
+		Vk.Bffr.Binded sm1 sb1 nm1 '[OList w1] ->
+		Vk.Bffr.Binded sm2 sb2 nm2 '[OList w2] ->
+		Vk.Bffr.Binded sm3 sb3 nm3 '[OList w3] ->
+		Vk.Bffr.Binded sm4 sb4 nm4 '[OList w4] ->
+		Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[OList w1])] ->
+		Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
+		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] ->
+		Vk.Mm.M sm4 '[ '(sb4, 'Vk.Mm.BufferArg nm4 '[OList w4])] ->
+		IO a ) -> IO a
+bffr4Mm4 pd dv x y z w f =
+	bffrMms pd dv (x :** y :** z :** w :** HPList.Nil) $ arg4 f
+
+arg4 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
+	Vk.Bffr.Binded sm1 sb1 nm1 '[OList w1] ->
+	Vk.Bffr.Binded sm2 sb2 nm2 '[OList w2] ->
+	Vk.Bffr.Binded sm3 sb3 nm3 '[OList w3] ->
+	Vk.Bffr.Binded sm4 sb4 nm4 '[OList w4] ->
+	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[OList w1])] ->
+	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[OList w2])] ->
+	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[OList w3])] ->
+	Vk.Mm.M sm4 '[ '(sb4, 'Vk.Mm.BufferArg nm4 '[OList w4])] -> r) ->
+	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 (Arg nm4 w4 r)))
+arg4 f = Arg \b1 m1 ->
+	Arg \b2 m2 -> Arg \b3 m3 -> Arg \b4 m4 -> f b1 b2 b3 b4 m1 m2 m3 m4
+
+class BffrMms f a where
+	type Vectors f :: [Type]
+	bffrMms :: Vk.Phd.P ->
+		Vk.Dvc.D sd -> HPList.PL V.Vector (Vectors f) -> f -> IO a
+
+instance BffrMms (IO a) a where
+	type Vectors (IO a) = '[]; bffrMms _pd _dv HPList.Nil f = f
+
+instance (Storable w, BffrMms f a) => BffrMms (Arg nm w f) a where
+	type Vectors (Arg nm w f) = w ': Vectors f
+	bffrMms pd dv (vs :** vss) (Arg f) =
+		bffrMm pd dv vs \b m -> bffrMms @f @a pd dv vss $ f b m
+
+data Arg nm w f = Arg (forall sm sb .
+	Vk.Bffr.Binded sm sb nm '[OList w] ->
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList w])] -> f)
+
+bffrMm :: forall sd nm w a . Storable w =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> V.Vector w ->
+	(forall sm sb . Bffr sm sb nm w -> Mm sm sb nm w -> IO a) -> IO a
+bffrMm pd dv xs a = Vk.Bffr.create dv (bffrInfo xs) nil \b ->
+	mmInfo pd dv b >>= \mmi ->
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b) mmi nil
+		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
+	Vk.Mm.write @nm @(OList w) @0 dv mm zeroBits xs >> a bnd mm
+
+bffrInfo :: Storable w => V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[OList w]
+bffrInfo xs = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N,
+	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths =
+		Obj.LengthList (fromIntegral $ V.length xs) :** HPList.Nil,
+	Vk.Bffr.createInfoUsage =
+		Vk.Bffr.UsageStorageBufferBit .|.
+		Vk.Bffr.UsageStorageTexelBufferBit,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+mmInfo :: Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.B sb nm objs -> IO (Vk.Mm.AllocateInfo 'Nothing)
+mmInfo pd dv bf = do
+	rqs <- Vk.Bffr.getMemoryRequirements dv bf
+	mti <- findMmTpIdx pd rqs
+		$ Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit
+	pure Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mti }
+
+findMmTpIdx :: Vk.Phd.P ->
+	Vk.Mm.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmTpIdx physicalDevice requirements memoryProp = do
+	memoryProperties <- Vk.Phd.getMemoryProperties physicalDevice
+	let	reqTypes = Vk.Mm.requirementsMemoryTypeBits requirements
+		memPropTypes = (fst <$>)
+			. filter (checkBits memoryProp
+				. Vk.Mm.mTypePropertyFlags . snd)
+			$ Vk.Phd.memoryPropertiesMemoryTypes memoryProperties
+	case filter (`Vk.Mm.elemTypeIndex` reqTypes) memPropTypes of
+		[] -> error "No available memory types"
+		i : _ -> pure i
+
+checkBits :: Bits bs => bs -> bs -> Bool
+checkBits bs0 = (== bs0) . (.&. bs0)
 
 -- CALC
 
@@ -354,36 +448,6 @@ bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Vk.Dsc.BufferInfo sm sb nm (Obj.List 256 t "") 0
 bufferInfoList = Vk.Dsc.BufferInfo
 
-bffr4Mm4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
-	Vk.Phd.P ->
-	Vk.Dvc.D sd ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> (
-		forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
-		Vk.Bffr.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
-		Vk.Bffr.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
-		Vk.Bffr.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
-		Vk.Bffr.Binded sm4 sb4 nm4 '[Obj.List 256 w4 ""] ->
-		Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
-		Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
-		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] ->
-		Vk.Mm.M sm4 '[ '(sb4, 'Vk.Mm.BufferArg nm4 '[Obj.List 256 w4 ""])] ->
-		IO a ) -> IO a
-bffr4Mm4 pd dvc x y z w f = storageBufferNews
-	dvc pd (x :** y :** z :** w :** HPList.Nil) $ addArg4 f
-
-addArg4 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
-	Vk.Bffr.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
-	Vk.Bffr.Binded sm2 sb2 nm2 '[Obj.List 256 w2 ""] ->
-	Vk.Bffr.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
-	Vk.Bffr.Binded sm4 sb4 nm4 '[Obj.List 256 w4 ""] ->
-	Vk.Mm.M sm1 '[ '(sb1, 'Vk.Mm.BufferArg nm1 '[Obj.List 256 w1 ""])] ->
-	Vk.Mm.M sm2 '[ '(sb2, 'Vk.Mm.BufferArg nm2 '[Obj.List 256 w2 ""])] ->
-	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] ->
-	Vk.Mm.M sm4 '[ '(sb4, 'Vk.Mm.BufferArg nm4 '[Obj.List 256 w4 ""])] ->
-	r) -> Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 (Arg nm4 w4 r)))
-addArg4 f = Arg \b1 m1 ->
-	Arg \b2 m2 -> Arg \b3 m3 -> Arg \b4 m4 -> f b1 b2 b3 b4 m1 m2 m3 m4
-
 storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.Phd.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
@@ -395,7 +459,7 @@ storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
 		Vk.Bffr.Binded sm3 sb3 nm3 '[Obj.List 256 w3 ""] ->
 		Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] -> IO a ) -> IO a
 storageBufferNew3 dvc pd x y z f =
-	storageBufferNews dvc pd (x :** y :** z :** HPList.Nil) $ addArg3 f
+	bffrMms pd dvc (x :** y :** z :** HPList.Nil) $ addArg3 f
 
 addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
 	Vk.Bffr.Binded sm1 sb1 nm1 '[Obj.List 256 w1 ""] ->
@@ -406,79 +470,6 @@ addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
 	Vk.Mm.M sm3 '[ '(sb3, 'Vk.Mm.BufferArg nm3 '[Obj.List 256 w3 ""])] -> r) ->
 	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
 addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
-
-class StorageBufferNews f a where
-	type Vectors f :: [Type]
-	storageBufferNews :: Vk.Dvc.D sd -> Vk.Phd.P ->
-		HPList.PL V.Vector (Vectors f) -> f -> IO a
-
-data Arg nm w f = Arg (forall sb sm .
-	Vk.Bffr.Binded sm sb nm '[Obj.List 256 w ""] ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> f)
-
-instance StorageBufferNews (IO a) a where
-	type Vectors (IO a) = '[]
-	storageBufferNews _dvc _pd HPList.Nil f = f
-
-instance (Storable w, StorageBufferNews f a) =>
-	StorageBufferNews (Arg nm w f) a where
-	type Vectors (Arg nm w f) = w ': Vectors f
-	storageBufferNews dvc pd (vs :** vss) (Arg f) =
-		storageBufferNew dvc pd vs \buf mem ->
-		storageBufferNews @f @a dvc pd vss (f buf mem)
-
-storageBufferNew :: forall sd nm w a . Storable w =>
-	Vk.Dvc.D sd -> Vk.Phd.P -> V.Vector w -> (
-		forall sb sm .
-		Vk.Bffr.Binded sm sb nm '[Obj.List 256 w ""]  ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Obj.List 256 w ""])] -> IO a ) -> IO a
-storageBufferNew dvc pd xs f =
-	Vk.Bffr.create dvc (bufferInfo xs) nil \buffer -> do
-		memoryInfo <- getMemoryInfo pd dvc buffer
-		Vk.Mm.allocateBind dvc (U2 (Vk.Mm.Buffer buffer) :** HPList.Nil) memoryInfo
-			nil \(U2 (Vk.Mm.BufferBinded binded) :** HPList.Nil) memory -> do
-			Vk.Mm.write @nm @(Obj.List 256 w "") @0 dvc memory def xs
-			f binded memory
-
-bufferInfo :: Storable w => V.Vector w -> Vk.Bffr.CreateInfo 'Nothing '[Obj.List 256 w ""]
-bufferInfo xs = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N,
-	Vk.Bffr.createInfoFlags = def,
-	Vk.Bffr.createInfoLengths =
-		Obj.LengthList (fromIntegral $ V.length xs) :** HPList.Nil,
-	Vk.Bffr.createInfoUsage =
-		Vk.Bffr.UsageStorageBufferBit .|.
-		Vk.Bffr.UsageStorageTexelBufferBit,
-	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-	Vk.Bffr.createInfoQueueFamilyIndices = [] }
-
-getMemoryInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.B sb nm objs ->
-	IO (Vk.Mm.AllocateInfo 'Nothing)
-getMemoryInfo pd dvc buffer = do
-	requirements <- Vk.Bffr.getMemoryRequirements dvc buffer
-	memTypeIdx <- findMemoryTypeIndex pd requirements (
-		Vk.Mm.PropertyHostVisibleBit .|.
-		Vk.Mm.PropertyHostCoherentBit )
-	pure Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = memTypeIdx }
-
-findMemoryTypeIndex ::
-	Vk.Phd.P -> Vk.Mm.M.Requirements -> Vk.Mm.PropertyFlags ->
-	IO Vk.Mm.M.TypeIndex
-findMemoryTypeIndex physicalDevice requirements memoryProp = do
-	memoryProperties <- Vk.Phd.getMemoryProperties physicalDevice
-	let	reqTypes = Vk.Mm.M.requirementsMemoryTypeBits requirements
-		memPropTypes = (fst <$>)
-			. filter (checkBits memoryProp
-				. Vk.Mm.M.mTypePropertyFlags . snd)
-			$ Vk.Phd.memoryPropertiesMemoryTypes memoryProperties
-	case filter (`Vk.Mm.M.elemTypeIndex` reqTypes) memPropTypes of
-		[] -> error "No available memory types"
-		i : _ -> pure i
-
-checkBits :: Bits bs => bs -> bs -> Bool
-checkBits bs0 = (== bs0) . (.&. bs0)
 
 head' :: [a] -> a
 head' = \case [] -> error "empty list"; x : _ -> x
