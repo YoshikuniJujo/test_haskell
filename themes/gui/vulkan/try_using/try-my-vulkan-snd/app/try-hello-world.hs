@@ -216,12 +216,11 @@ writeDscSt ds bf = Vk.DscSt.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd scpl sds . (
-	slbts ~ '(sl, bts),
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
-	InfixIndex '[slbts] '[slbts] ) =>
+calc :: forall sd scpl sds slbts sdsl bts . (
+	slbts ~ '(sdsl, bts),
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
-	Vk.DscStLyt.D sl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
+	Vk.DscStLyt.D sdsl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cpl dsl dss sz =
 	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ pplInfo pl)
