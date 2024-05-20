@@ -56,7 +56,7 @@ import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSt
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
+import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
@@ -317,53 +317,46 @@ writeDscStBffr3 ds ba bb bc = Vk.DscSt.Write {
 		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(OList w3) bc) :** HPList.Nil }
 
 writeDscStBffrVw :: Vk.DscSt.D sds sdslbts -> Vk.BffrVw.B sbv bvnm fmt ->
-	Vk.DscSt.Write _ _ _ _ 0
+	Vk.DscSt.Write 'Nothing sds sdslbts
+		(Vk.DscSt.WriteSourcesArgBufferView '[ '(sbv, bvnm, fmt)]) 0
 writeDscStBffrVw dss bv = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N,
-	Vk.DscSt.writeDstSet = dss,
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = dss,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 	Vk.DscSt.writeSources =
 		Vk.DscSt.TexelBufferViews . HPList.Singleton $ U3 bv }
 
 -- CALC
 
-calc :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3
-		slbts sl bts sd sds scpl . (
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
-	slbts ~ '(sl, bts),
-	Show (HPList.PL
-		(HPList.PL BObj.Length)
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
+calc :: forall nm1 nm2 nm3 w1 w2 w3 oss1 oss2 oss3
+	sd scpl sds slbts sl bts . (
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
-	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
-	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0,
-	InfixIndex '[slbts] '[ '(sl, bts)]) =>
+	slbts ~ '(sl, bts),
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
+	Vk.Mm.OffsetSize nm1 (OList w1) oss1 0,
+	Vk.Mm.OffsetSize nm2 (OList w2) oss2 0,
+	Vk.Mm.OffsetSize nm3 (OList w3) oss3 0,
+	Show (HPList.PL2 BObj.Length
+		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)) ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
-	Vk.DscStLyt.D sl bts ->
-	Vk.DscSt.D sds slbts -> Word32 -> IO ()
-calc dvc queue cmdPool dsl dscSet dsz =
-	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dsl) nil \pplLyt ->
-	Vk.Ppl.Cmpt.createCs
-		dvc Nothing
-		(U4 (computePipelineInfo pplLyt) :** HPList.Nil)
-		nil \(ppl :** HPList.Nil) ->
-	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(cmdBuf :*. HPList.Nil) ->
-	run @nm1 @nm2 @nm3 @w1 @w2 @w3 @objss1 @objss2 @objss3 queue cmdBuf ppl pplLyt dscSet dsz
+	Vk.DscStLyt.D sl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
+calc dv q cpl dsl dss sz =
+	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
+	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ cmpPplInfo pl)
+		nil \(cppl :** HPList.Nil) ->
+	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
+	run @nm1 @nm2 @nm3 @w1 @w2 @w3 @oss1 @oss2 @oss3 q cb pl cppl dss sz
 
-pplLayoutInfo :: Vk.DscStLyt.D sl bts ->
-	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)]
-		('Vk.PushConstant.Layout '[] '[])
-pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
+pplLytInfo :: Vk.DscStLyt.D sl bts -> Vk.Ppl.Lyt.CreateInfo
+	'Nothing '[ '(sl, bts)] ('Vk.PushConstant.Layout '[] '[])
+pplLytInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayouts = U2 dsl :** HPList.Nil }
+	Vk.Ppl.Lyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-computePipelineInfo :: Vk.Ppl.Lyt.P sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo 'Nothing
-		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[Float, Float])
-		'(sl, sbtss, '[]) sbph
-computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+cmpPplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
+	'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[Float, Float])
+	'(sl, sbtss, '[]) sbph
+cmpPplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U5 shaderStageInfo,
@@ -383,29 +376,30 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
 
-commandBufferInfo :: Vk.CmdPl.C s -> Vk.CmdBuf.AllocateInfo 'Nothing s '[ '()]
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
-	Vk.CmdBuf.allocateInfoNext = TMaybe.N,
-	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
-	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
+cmdBffrInfo :: Vk.CmdPl.C s -> Vk.CBffr.AllocateInfo 'Nothing s '[ '()]
+cmdBffrInfo cmdPool = Vk.CBffr.AllocateInfo {
+	Vk.CBffr.allocateInfoNext = TMaybe.N,
+	Vk.CBffr.allocateInfoCommandPool = cmdPool,
+	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
-	objss1 objss2 objss3 slbts sbtss sc sg sl sds . (
+	oss1 oss2 oss3 slbts sbtss sc sg sl sds . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
 	Show (HPList.PL
 		(HPList.PL BObj.Length)
 		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))),
 	Storable w1, Storable w2, Storable w3,
-	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") objss1 0,
-	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") objss2 0,
-	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") objss3 0,
+	Vk.Mm.OffsetSize nm1 (Obj.List 256 w1 "") oss1 0,
+	Vk.Mm.OffsetSize nm2 (Obj.List 256 w2 "") oss2 0,
+	Vk.Mm.OffsetSize nm3 (Obj.List 256 w3 "") oss3 0,
 	InfixIndex '[slbts] sbtss ) =>
-	Vk.Q.Q -> Vk.CmdBuf.C sc ->
+	Vk.Q.Q -> Vk.CBffr.C sc ->
+	Vk.Ppl.Lyt.P sl sbtss '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
-run queue cmdBuf ppl pplLyt dscSet dsz = do
-	Vk.CmdBuf.begin @'Nothing @'Nothing cmdBuf def $
+	Vk.DscSt.D sds slbts -> Word32 -> IO ()
+run queue cmdBuf pplLyt ppl dscSet dsz = do
+	Vk.CBffr.begin @'Nothing @'Nothing cmdBuf def $
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb pplLyt
 				(U2 dscSet :** HPList.Nil)

@@ -335,11 +335,11 @@ calc :: forall nm1 nm2 nm3 w1 w2 w3 oss1 oss2 oss3
 	Storable w1, Storable w2, Storable w3,
 	slbts ~ '(sl, bts),
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
-	Show (HPList.PL2 BObj.Length
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.Mm.OffsetSize nm1 (OList w1) oss1 0,
 	Vk.Mm.OffsetSize nm2 (OList w2) oss2 0,
-	Vk.Mm.OffsetSize nm3 (OList w3) oss3 0 ) =>
+	Vk.Mm.OffsetSize nm3 (OList w3) oss3 0,
+	Show (HPList.PL2 BObj.Length
+		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)) ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DscStLyt.D sl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cpl dsl dss sz =
