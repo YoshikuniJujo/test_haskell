@@ -44,13 +44,13 @@ import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.Memory as Vk.Mm
 import qualified Gpu.Vulkan.Memory as Vk.Mm.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
-import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
+import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSt
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
@@ -81,6 +81,7 @@ toString :: [Word32] -> String
 toString = map (chr . fromIntegral)
 
 type DscStLyt sdsl nmh = Vk.DscStLyt.D sdsl '[Vk.DscStLyt.Buffer '[Word32List nmh]]
+type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh '[Word32List nmh]
 
 type Mm sm sb bnmh nmh =
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh '[Word32List nmh])]
@@ -140,44 +141,39 @@ dscStLytInfo = Vk.DscStLyt.CreateInfo {
 prepareMem :: forall bts bnmh nmh sd sl a . (
 	Default (HPList.PL2 BObj.Length
 		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Vk.DS.BindingAndArrayElemBuffer bts '[Word32List nmh] 0,
-	Vk.DS.UpdateDynamicLength bts '[Word32List nmh] ) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sl bts ->
-	(forall sds sm sb .
-		Vk.DS.D sds '(sl, bts) ->
-		Vk.DS.D sds '(sl, bts) ->
-		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg "" '[Word32List nmh])] ->
-		IO a) -> IO a
-prepareMem pd dv dslyt f =
-	Vk.DscPool.create dv dscPoolInfo nil \dp ->
-	Vk.DS.allocateDs dv (dscSetInfo dp dslyt) \(ds :** ds' :** HPList.Nil) ->
-	storageBufferNew pd dv \b m ->
-	Vk.DS.updateDs dv
-		(HPList.Singleton . U5 $ writeDscSet @nmh ds b)
-		(HPList.Singleton . U8 $ copyDscSet @nmh ds ds') >>
-	f ds ds' m
+	Vk.DscSt.BindingAndArrayElemBuffer bts '[Word32List nmh] 0,
+	Vk.DscSt.UpdateDynamicLength bts '[Word32List nmh] ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sl bts -> (forall sds sm sb .
+		Vk.DscSt.D sds '(sl, bts) -> Vk.DscSt.D sds '(sl, bts) ->
+		Mm sm sb bnmh nmh -> IO a) -> IO a
+prepareMem pd dv dsl f =
+	Vk.DscPl.create dv dscPlInfo nil \dp ->
+	Vk.DscSt.allocateDs dv (dscStInfo dp dsl) \(dss :** dss' :** HPList.Nil) ->
+	createBffr pd dv \b m ->
+	Vk.DscSt.updateDs dv
+		(HPList.Singleton . U5 $ writeDscSt @nmh dss b)
+		(HPList.Singleton . U8 $ copyDscSt @nmh dss dss') >>
+	f dss dss' m
 
-dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
-dscPoolInfo = Vk.DscPool.CreateInfo {
-	Vk.DscPool.createInfoNext = TMaybe.N,
-	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
-	Vk.DscPool.createInfoMaxSets = 2,
-	Vk.DscPool.createInfoPoolSizes = [sz] }
-	where sz = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPool.sizeDescriptorCount = 10 }
+dscPlInfo :: Vk.DscPl.CreateInfo 'Nothing
+dscPlInfo = Vk.DscPl.CreateInfo {
+	Vk.DscPl.createInfoNext = TMaybe.N,
+	Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+	Vk.DscPl.createInfoMaxSets = 2,
+	Vk.DscPl.createInfoPoolSizes = (: []) Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageBuffer,
+		Vk.DscPl.sizeDescriptorCount = 2 } }
 
-dscSetInfo :: Vk.DscPool.P sp -> Vk.DscStLyt.D sl bts ->
-	Vk.DS.AllocateInfo 'Nothing sp '[ '(sl, bts), '(sl, bts)]
-dscSetInfo pl lyt = Vk.DS.AllocateInfo {
-	Vk.DS.allocateInfoNext = TMaybe.N,
-	Vk.DS.allocateInfoDescriptorPool = pl,
-	Vk.DS.allocateInfoSetLayouts = U2 lyt :** U2 lyt :** HPList.Nil }
+dscStInfo :: Vk.DscPl.P sp -> Vk.DscStLyt.D sl bts ->
+	Vk.DscSt.AllocateInfo 'Nothing sp '[ '(sl, bts), '(sl, bts)]
+dscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
+	Vk.DscSt.allocateInfoNext = TMaybe.N,
+	Vk.DscSt.allocateInfoDescriptorPool = dpl,
+	Vk.DscSt.allocateInfoSetLayouts = U2 dsl :** U2 dsl :** HPList.Nil }
 
-storageBufferNew :: forall sd nm a nmh . Vk.Phd.P -> Vk.Dvc.D sd -> (forall sb sm .
-	Vk.Bffr.Binded sm sb nm '[Word32List nmh]  ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Word32List nmh])] -> IO a) -> IO a
-storageBufferNew pd dv f =
+createBffr :: forall sd bnm nm a . Vk.Phd.P -> Vk.Dvc.D sd ->
+	(forall sb sm . Bffr sm sb bnm nm -> Mm sm sb bnm nm -> IO a) -> IO a
+createBffr pd dv f =
 	Vk.Bffr.create dv bufferInfo nil \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
@@ -216,23 +212,23 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
-writeDscSet :: forall nmh slbts sb sm os sds . (
+writeDscSt :: forall nmh slbts sb sm os sds bnmh . (
 	Show (HPList.PL Obj.Length os),
 	Obj.OffsetRange (Obj.List 256 Word32 nmh) os 0 ) =>
-	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
-	Vk.DS.Write 'Nothing sds slbts
-		('Vk.DS.WriteSourcesArgBuffer '[ '(sm, sb, "", Word32List nmh, 0)]) 0
-writeDscSet ds ba = Vk.DS.Write {
-	Vk.DS.writeNext = TMaybe.N,
-	Vk.DS.writeDstSet = ds,
-	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DS.writeSources =
-		Vk.DS.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo ba }
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgBuffer '[ '(sm, sb, bnmh, Word32List nmh, 0)]) 0
+writeDscSt ds ba = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N,
+	Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSt.writeSources =
+		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo ba }
 
-copyDscSet :: forall nmh sds slbts sds' . Vk.DS.D sds slbts -> Vk.DS.D sds' slbts -> Vk.DS.Copy
+copyDscSt :: forall nmh sds slbts sds' . Vk.DscSt.D sds slbts -> Vk.DscSt.D sds' slbts -> Vk.DscSt.Copy
 	'Nothing sds slbts 0 sds' slbts 0 (Vk.DscStLyt.Buffer '[Word32List nmh])
-copyDscSet s d = Vk.DS.Copy {
-	Vk.DS.copyNext = TMaybe.N, Vk.DS.copySrcSet = s, Vk.DS.copyDstSet = d }
+copyDscSt s d = Vk.DscSt.Copy {
+	Vk.DscSt.copyNext = TMaybe.N, Vk.DscSt.copySrcSet = s, Vk.DscSt.copyDstSet = d }
 
 -- CALC
 
@@ -243,7 +239,7 @@ calc :: forall slbts sl bts sd sds scpl . (
 	Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DscStLyt.D sl bts ->
-	Vk.DS.D sds slbts -> Word32 -> IO ()
+	Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cp dslyt ds sz =
 	Vk.Ppl.Lyt.create dv (pplLayoutInfo dslyt) nil \plyt ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
@@ -274,7 +270,7 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
 run :: forall slbts sc sg sl sds . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	InfixIndex '[slbts] '[slbts] ) =>
-	Vk.Q.Q -> Vk.DS.D sds slbts -> Vk.CBffr.C sc ->
+	Vk.Q.Q -> Vk.DscSt.D sds slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.P sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run q ds cb lyt pl sz = do

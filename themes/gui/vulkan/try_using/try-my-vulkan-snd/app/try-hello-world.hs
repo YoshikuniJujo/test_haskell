@@ -51,7 +51,7 @@ import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Lyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderMod
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPool
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
@@ -69,7 +69,7 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 main :: IO ()
 main = withDvc \pd dv q cpl -> putStrLn . toString =<<
 	Vk.DscStLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
-	prepareMem @_ @nmh pd dv dsl \dss _ (m :: Mm sm sb bnmh nmh) ->
+	prepareMem @_ @nmh pd dv dsl \dss (m :: Mm sm sb bnmh nmh) ->
 	calc dv q cpl dsl dss bffrSize >>
 	Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
 
@@ -140,34 +140,33 @@ prepareMem :: forall bts bnmh nmh sd sl a . (
 	Vk.DscSt.BindingAndArrayElemBuffer bts '[Word32List nmh] 0,
 	Vk.DscSt.UpdateDynamicLength bts '[Word32List nmh] ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sl bts -> (forall sds sm sb .
-		Vk.DscSt.D sds '(sl, bts) ->
-		Bffr sm sb bnmh nmh -> Mm sm sb bnmh nmh -> IO a) -> IO a
+		Vk.DscSt.D sds '(sl, bts) -> Mm sm sb bnmh nmh -> IO a) -> IO a
 prepareMem pd dv dsl f =
-	Vk.DscPool.create dv dscPlInfo nil \dp ->
+	Vk.DscPl.create dv dscPlInfo nil \dp ->
 	Vk.DscSt.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton dss) ->
 	createBffr pd dv \b m ->
 	Vk.DscSt.updateDs dv
 		(HPList.Singleton . U5 $ writeDscSt @_ @nmh dss b) HPList.Nil >>
-	f dss b m
+	f dss m
 
-dscPlInfo :: Vk.DscPool.CreateInfo 'Nothing
-dscPlInfo = Vk.DscPool.CreateInfo {
-	Vk.DscPool.createInfoNext = TMaybe.N,
-	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
-	Vk.DscPool.createInfoMaxSets = 1,
-	Vk.DscPool.createInfoPoolSizes = (: []) Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPool.sizeDescriptorCount = 1 } }
+dscPlInfo :: Vk.DscPl.CreateInfo 'Nothing
+dscPlInfo = Vk.DscPl.CreateInfo {
+	Vk.DscPl.createInfoNext = TMaybe.N,
+	Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+	Vk.DscPl.createInfoMaxSets = 1,
+	Vk.DscPl.createInfoPoolSizes = (: []) Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageBuffer,
+		Vk.DscPl.sizeDescriptorCount = 1 } }
 
-dscStInfo :: Vk.DscPool.P sp -> Vk.DscStLyt.D sl bts ->
+dscStInfo :: Vk.DscPl.P sp -> Vk.DscStLyt.D sl bts ->
 	Vk.DscSt.AllocateInfo 'Nothing sp '[ '(sl, bts)]
 dscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
 	Vk.DscSt.allocateInfoNext = TMaybe.N,
 	Vk.DscSt.allocateInfoDescriptorPool = dpl,
 	Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createBffr :: forall sd nm nmh a . Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall sb sm . Bffr sm sb nm nmh -> Mm sm sb nm nmh -> IO a) -> IO a
+createBffr :: forall sd bnm nm a . Vk.Phd.P -> Vk.Dvc.D sd ->
+	(forall sb sm . Bffr sm sb bnm nm -> Mm sm sb bnm nm -> IO a) -> IO a
 createBffr pd dv f =
 	Vk.Bffr.create dv bffrInfo nil \bf -> mmInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
