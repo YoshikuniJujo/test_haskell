@@ -77,30 +77,32 @@ toString :: [Word32] -> String
 toString = map (chr . fromIntegral)
 
 type DscStLyt sdsl nmh = Vk.DscStLyt.D sdsl '[Vk.DscStLyt.Buffer '[Word32List nmh]]
-
-type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh (BffrContents nmh)
+type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh '[Word32List nmh]
 
 type Mm sm sb bnmh nmh =
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh (BffrContents nmh))]
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh '[Word32List nmh])]
 
-type BffrContents nmh = '[Word32List nmh]
+type Word32List nmh = Obj.List 256 Word32 nmh
 
 bffrSize :: Integral n => n
 bffrSize = 30
 
-type Word32List nmh = Obj.List 256 Word32 nmh
-
 withDvc :: (forall sd scpl .
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl -> IO a) -> IO a
 withDvc a = Vk.Inst.create instInfo nil \inst -> do
-	pd <- head <$> Vk.Phd.enumerate inst
-	qfi <- fst . head . filter (
+	pd <- head' <$> Vk.Phd.enumerate inst
+	qfi <- fst . head' . filter (
 			checkBits Vk.Q.ComputeBit .
 			Vk.QFam.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	Vk.Dvc.create pd (dvcInfo qfi) nil \dv ->
 		Vk.Dvc.getQueue dv qfi 0 >>= \q ->
-		Vk.CmdPl.create dv (cmdPlInfo qfi) nil \cpl -> a pd dv q cpl
+		Vk.CmdPl.create dv (cpinfo qfi) nil \cpl -> a pd dv q cpl
+	where
+	cpinfo qfi = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
+		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
@@ -172,7 +174,7 @@ createBffr pd dv f =
 		(HPList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
 		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm -> f bnd mm
 
-bffrInfo :: Vk.Bffr.CreateInfo 'Nothing (BffrContents nmh)
+bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh]
 bffrInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
@@ -236,12 +238,6 @@ pplLytInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-cmdPlInfo :: Vk.QFam.Index -> Vk.CmdPl.CreateInfo 'Nothing
-cmdPlInfo qfi = Vk.CmdPl.CreateInfo {
-	Vk.CmdPl.createInfoNext = TMaybe.N,
-	Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
-	Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
-
 cmdBffrInfo :: Vk.CmdPl.C s -> Vk.CBffr.AllocateInfo 'Nothing s '[ '()]
 cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoNext = TMaybe.N,
@@ -294,6 +290,9 @@ shdrStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
+
+head' :: [a] -> a
+head' = \case [] -> error "empty list"; x : _ -> x
 
 [glslComputeShader|
 
