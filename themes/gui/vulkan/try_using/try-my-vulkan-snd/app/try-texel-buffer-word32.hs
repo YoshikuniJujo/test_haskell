@@ -54,7 +54,7 @@ import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cmpt
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShaderSt
-import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Lyt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderMod
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
@@ -343,20 +343,20 @@ calc :: forall nm1 nm2 nm3 w1 w2 w3 oss1 oss2 oss3
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DscStLyt.D sl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cpl dsl dss sz =
-	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
+	Vk.PplLyt.create dv (pplLytInfo dsl) nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ cmpPplInfo pl)
 		nil \(cppl :** HPList.Nil) ->
 	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
 	run @nm1 @nm2 @nm3 @w1 @w2 @w3 @oss1 @oss2 @oss3 q cb pl cppl dss sz
 
-pplLytInfo :: Vk.DscStLyt.D sl bts -> Vk.Ppl.Lyt.CreateInfo
+pplLytInfo :: Vk.DscStLyt.D sl bts -> Vk.PplLyt.CreateInfo
 	'Nothing '[ '(sl, bts)] ('Vk.PushConstant.Layout '[] '[])
-pplLytInfo dsl = Vk.Ppl.Lyt.CreateInfo {
-	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+pplLytInfo dsl = Vk.PplLyt.CreateInfo {
+	Vk.PplLyt.createInfoNext = TMaybe.N,
+	Vk.PplLyt.createInfoFlags = zeroBits,
+	Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-cmpPplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
+cmpPplInfo :: Vk.PplLyt.P sl sbtss '[] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
 	'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
 	'(sl, sbtss, '[]) sbph
 cmpPplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
@@ -396,7 +396,7 @@ run :: forall nm1 nm2 nm3 w1 w2 w3 oss1 oss2 oss3
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	Show (HPList.PL2 BObj.Length
 		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)) ) =>
-	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.Ppl.Lyt.P spl '[slbts] '[] ->
+	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.PplLyt.P spl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[]) ->
 	Vk.DscSt.D sds slbts -> Word32 -> IO ()
 run q cb pl cppl dss sz = do

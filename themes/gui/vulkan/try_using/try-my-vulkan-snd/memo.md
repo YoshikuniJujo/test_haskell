@@ -129,7 +129,7 @@ apps
 * [x] try-no-dynamic-dsc-sets.hs
 * [x] try-dynamic-dsc-sets.hs
 * [x] try-texel-buffer-word32.hs
-* [ ] try-texel-buffer-float.hs
+* [x] try-texel-buffer-float.hs
 * [ ] try-copy-descriptor-set.hs
 * [ ] try-query.hs
 * [ ] try-allocation-callbacks.hs
