@@ -23,6 +23,7 @@ import Gpu.Vulkan.Object.Base qualified as BObj
 import Gpu.Vulkan.Object qualified as Obj
 import Data.Default
 import Data.Bits
+import Data.Bits.ToolsYj
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.Index qualified as TIndex
@@ -287,19 +288,42 @@ mmInfo pd dv bf = do
 
 findMmTpIdx :: Vk.Phd.P ->
 	Vk.Mm.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
-findMmTpIdx physicalDevice requirements memoryProp = do
-	memoryProperties <- Vk.Phd.getMemoryProperties physicalDevice
-	let	reqTypes = Vk.Mm.requirementsMemoryTypeBits requirements
-		memPropTypes = (fst <$>)
-			. filter (checkBits memoryProp
-				. Vk.Mm.mTypePropertyFlags . snd)
-			$ Vk.Phd.memoryPropertiesMemoryTypes memoryProperties
-	case filter (`Vk.Mm.elemTypeIndex` reqTypes) memPropTypes of
-		[] -> error "No available memory types"
-		i : _ -> pure i
+findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
+	let	rqts = Vk.Mm.requirementsMemoryTypeBits rqs
+		wtts = (fst <$>)
+			. filter (checkBits wt . Vk.Mm.mTypePropertyFlags . snd)
+			$ Vk.Phd.memoryPropertiesMemoryTypes prs in
+	case filter (`Vk.Mm.elemTypeIndex` rqts) wtts of
+		[] -> error "No available memory types"; i : _ -> pure i
 
-checkBits :: Bits bs => bs -> bs -> Bool
-checkBits bs0 = (== bs0) . (.&. bs0)
+writeDscStBffr3 :: forall w1 w2 w3
+	sds slbts sm1 sm2 sm3 sb1 sb2 sb3 nm1 nm2 nm3 os1 os2 os3 . (
+	Show (HPList.PL Obj.Length os1), Show (HPList.PL Obj.Length os2),
+	Show (HPList.PL Obj.Length os3),
+	Obj.OffsetRange (OList w1) os1 0, Obj.OffsetRange (OList w2) os2 0,
+	Obj.OffsetRange (OList w3) os3 0 ) =>
+	Vk.DscSt.D sds slbts ->
+	Vk.Bffr.Binded sm1 sb1 nm1 os1 -> Vk.Bffr.Binded sm2 sb2 nm2 os2 ->
+	Vk.Bffr.Binded sm3 sb3 nm3 os3 ->
+	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer '[
+		'(sm1, sb1, nm1, OList w1, 0), '(sm2, sb2, nm2, OList w2, 0),
+		'(sm3, sb3, nm3, OList w3, 0) ]) 0
+writeDscStBffr3 ds ba bb bc = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos $
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(OList w1) ba) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(OList w2) bb) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(OList w3) bc) :** HPList.Nil }
+
+writeDscStBffrVw :: Vk.DscSt.D sds sdslbts -> Vk.BffrVw.B sbv bvnm fmt ->
+	Vk.DscSt.Write _ _ _ _ 0
+writeDscStBffrVw dss bv = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N,
+	Vk.DscSt.writeDstSet = dss,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
+	Vk.DscSt.writeSources =
+		Vk.DscSt.TexelBufferViews . HPList.Singleton $ U3 bv }
 
 -- CALC
 
@@ -409,37 +433,6 @@ instance Storable Pixel where
 		[r, g, b, a] <- peekArray 4 $ castPtr p
 		pure $ Pixel r g b a
 	poke p (Pixel r g b a) = pokeArray (castPtr p) [r, g, b, a]
-
-writeDscStBffr3 ::
-	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds . (
-	Show (HPList.PL Obj.Length objs1),
-	Show (HPList.PL Obj.Length objs2),
-	Show (HPList.PL Obj.Length objs3),
-	Obj.OffsetRange (Obj.List 256 w1 "") objs1 0,
-	Obj.OffsetRange (Obj.List 256 w2 "") objs2 0,
-	Obj.OffsetRange (Obj.List 256 w3 "") objs3 0 ) =>
-	Vk.DscSt.D sds slbts ->
-	Vk.Bffr.Binded sm1 sb1 nm1 objs1 -> Vk.Bffr.Binded sm2 sb2 nm2 objs2 ->
-	Vk.Bffr.Binded sm3 sb3 nm3 objs3 ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer '[
-		'(sm1, sb1, nm1, Obj.List 256 w1 "", 0), '(sm2, sb2, nm2, Obj.List 256 w2 "", 0),
-		'(sm3, sb3, nm3, Obj.List 256 w3 "", 0) ]) 0
-writeDscStBffr3 ds ba bb bc = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N,
-	Vk.DscSt.writeDstSet = ds,
-	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos $
-		U5 (bufferInfoList @w1 ba) :** U5 (bufferInfoList @w2 bb) :**
-		U5 (bufferInfoList @w3 bc) :** HPList.Nil }
-
-writeDscStBffrVw :: Vk.DscSt.D sds sdslbts -> Vk.BffrVw.B sbv bvnm fmt ->
-	Vk.DscSt.Write _ _ _ _ 0
-writeDscStBffrVw dss bv = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N,
-	Vk.DscSt.writeDstSet = dss,
-	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
-	Vk.DscSt.writeSources =
-		Vk.DscSt.TexelBufferViews . HPList.Singleton $ U3 bv }
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Show (HPList.PL Obj.Length objs),
