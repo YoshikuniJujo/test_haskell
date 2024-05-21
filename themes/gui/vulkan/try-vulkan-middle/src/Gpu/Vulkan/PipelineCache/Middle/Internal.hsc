@@ -55,7 +55,6 @@ createInfoToCore CreateInfo {
 			C.createInfoFlags = flgs,
 			C.createInfoInitialDataSize = dtsz,
 			C.createInfoPInitialData = castPtr pdt } in
-	print dtsz >>
 	withPoked ci f
 
 newtype P = P C.P deriving Show
