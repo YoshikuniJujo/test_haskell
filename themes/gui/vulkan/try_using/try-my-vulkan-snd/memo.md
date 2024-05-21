@@ -133,7 +133,7 @@ apps
 * [x] try-copy-descriptor-set.hs
 * [x] try-query.hs
 * [x] try-allocation-callbacks.hs
-* [ ] try-pipeline-cache.hs
+* [x] try-pipeline-cache.hs
 * [ ] try-shaderc.hs
 * [ ] my-glslc.hs
 * [ ] try-wavefront-obj.hs
