@@ -130,7 +130,7 @@ apps
 * [x] try-dynamic-dsc-sets.hs
 * [x] try-texel-buffer-word32.hs
 * [x] try-texel-buffer-float.hs
-* [ ] try-copy-descriptor-set.hs
+* [x] try-copy-descriptor-set.hs
 * [ ] try-query.hs
 * [ ] try-allocation-callbacks.hs
 * [ ] try-pipeline-cache.hs
