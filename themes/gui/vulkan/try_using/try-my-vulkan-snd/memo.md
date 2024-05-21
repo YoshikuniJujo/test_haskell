@@ -131,7 +131,7 @@ apps
 * [x] try-texel-buffer-word32.hs
 * [x] try-texel-buffer-float.hs
 * [x] try-copy-descriptor-set.hs
-* [ ] try-query.hs
+* [x] try-query.hs
 * [ ] try-allocation-callbacks.hs
 * [ ] try-pipeline-cache.hs
 * [ ] try-shaderc.hs

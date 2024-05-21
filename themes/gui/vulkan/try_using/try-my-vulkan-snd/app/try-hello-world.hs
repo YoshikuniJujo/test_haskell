@@ -47,7 +47,7 @@ import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cmpt
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShaderSt
-import Gpu.Vulkan.PipelineLayout qualified as Vk.Ppl.Lyt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderMod
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
@@ -67,16 +67,15 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 -- MAIN
 
 main :: IO ()
-main = withDvc \pd dv q cpl -> putStrLn . toString =<<
+main = withDvc \pd dv q cpl -> putStrLn . map (chr . fromIntegral) =<<
 	Vk.DscStLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
-	prepareMem @_ @nmh pd dv dsl \dss (m :: Mm sm sb bnmh nmh) ->
+	prepareMem @_ @_ @nmh pd dv dsl \dss (m :: Mm sm sb bnmh nmh) ->
 	calc dv q cpl dsl dss bffrSize >>
 	Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
 
-toString :: [Word32] -> String
-toString = map (chr . fromIntegral)
+type DscStLyt sdsl nmh =
+	Vk.DscStLyt.D sdsl '[Vk.DscStLyt.Buffer '[Word32List nmh]]
 
-type DscStLyt sdsl nmh = Vk.DscStLyt.D sdsl '[Vk.DscStLyt.Buffer '[Word32List nmh]]
 type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh '[Word32List nmh]
 
 type Mm sm sb bnmh nmh =
@@ -107,7 +106,7 @@ withDvc a = Vk.Inst.create instInfo nil \inst -> do
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.layerKhronosValidation] }
-	
+
 dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qfi = Vk.Dvc.CreateInfo {
 	Vk.Dvc.createInfoNext = TMaybe.N, Vk.Dvc.createInfoFlags = zeroBits,
@@ -175,8 +174,7 @@ createBffr pd dv f =
 
 bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh]
 bffrInfo = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N,
-	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths = HPList.Singleton $ Obj.LengthList bffrSize,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
@@ -222,19 +220,18 @@ calc :: forall sd scpl sds slbts sdsl bts . (
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DscStLyt.D sdsl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cpl dsl dss sz =
-	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
+	Vk.PplLyt.create dv (pplLytInfo dsl) nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ pplInfo pl)
 		nil \(cppl :** HPList.Nil) ->
 	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
 	run q cb pl cppl dss sz
 
-pplLytInfo :: Vk.DscStLyt.D sl bts ->
-	Vk.Ppl.Lyt.CreateInfo
-		'Nothing '[ '(sl, bts)] ('Vk.PushConstant.Layout '[] '[])
-pplLytInfo dsl = Vk.Ppl.Lyt.CreateInfo {
-	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+pplLytInfo :: Vk.DscStLyt.D sl bts -> Vk.PplLyt.CreateInfo
+	'Nothing '[ '(sl, bts)] ('Vk.PushConstant.Layout '[] '[])
+pplLytInfo dsl = Vk.PplLyt.CreateInfo {
+	Vk.PplLyt.createInfoNext = TMaybe.N,
+	Vk.PplLyt.createInfoFlags = zeroBits,
+	Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 cmdBffrInfo :: Vk.CmdPl.C s -> Vk.CBffr.AllocateInfo 'Nothing s '[ '()]
 cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
@@ -245,7 +242,7 @@ cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 run :: forall slbts sc spl sg sds . (
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	InfixIndex '[slbts] '[slbts] ) =>
-	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.Ppl.Lyt.P spl '[slbts] '[] ->
+	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.PplLyt.P spl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[]) ->
 	Vk.DscSt.D sds slbts -> Word32 -> IO ()
 run q cb pl cppl dss sz = do
@@ -265,7 +262,7 @@ run q cb pl cppl dss sz = do
 
 -- COMPUTE PIPELINE INFO
 
-pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
+pplInfo :: Vk.PplLyt.P sl sbtss '[] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
 	'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
 	'(sl, sbtss, '[]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
