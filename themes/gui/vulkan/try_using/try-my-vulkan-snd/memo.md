@@ -132,7 +132,7 @@ apps
 * [x] try-texel-buffer-float.hs
 * [x] try-copy-descriptor-set.hs
 * [x] try-query.hs
-* [ ] try-allocation-callbacks.hs
+* [x] try-allocation-callbacks.hs
 * [ ] try-pipeline-cache.hs
 * [ ] try-shaderc.hs
 * [ ] my-glslc.hs
