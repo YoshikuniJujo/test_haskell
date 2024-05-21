@@ -134,10 +134,10 @@ dscStLytInfo = Vk.DscStLyt.CreateInfo {
 -- PREPARE MEMORIES
 
 prepareMem :: forall bts bnmh nmh sd sl a . (
-	Default (HPList.PL2 BObj.Length
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscSt.BindingAndArrayElemBuffer bts '[Word32List nmh] 0,
-	Vk.DscSt.UpdateDynamicLength bts '[Word32List nmh] ) =>
+	Vk.DscSt.UpdateDynamicLength bts '[Word32List nmh],
+	Default (HPList.PL2 BObj.Length
+		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)) ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sl bts -> (forall sds sm sb .
 		Vk.DscSt.D sds '(sl, bts) -> Mm sm sb bnmh nmh -> IO a) -> IO a
 prepareMem pd dv dsl f =
