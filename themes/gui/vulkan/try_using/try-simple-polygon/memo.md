@@ -4,7 +4,7 @@ srcs
 * [x] ThEnv -- remove
 * [x] Tools -- remove
 * [x] Vertex
-* [ ] Vertex.Wavefront
+* [x] Vertex.Wavefront
 * [ ] Graphics.SimplePolygon.DebugMessenger
 * [ ] Graphics.SimplePolygon.Instance
 * [ ] Graphics.SimplePolygon.PhysicalDevice

@@ -9,44 +9,27 @@ module Vertex.Wavefront (
 
 	-- * FUNCTIONS
 
-	verticesIndices,
+	readFile
 
 	) where
 
+import Prelude hiding (readFile)
+import Foreign.Storable.Generic (W(..))
+import Data.Vector.Storable qualified as V
 import Data.List.Length
-import Data.Word
-
-import qualified Data.Vector.Storable as V
-import qualified Data.ByteString as BS
-import qualified Foreign.Storable.Generic as GStorable
-
-import qualified Vertex as Vtx
+import Data.ByteString qualified as BS
+import Codec.WavefrontObj.ReadFaceSimple qualified as WfR
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Codec.WavefrontObj.ReadFaceSimple qualified as Wf.Read
+import Vertex qualified as Vtx
 
-verticesIndices ::
-	FilePath -> IO (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
-verticesIndices fp =
-	either error pure =<< readVerticesIndices <$> BS.readFile fp
-	where
-	readVerticesIndices :: BS.ByteString ->
-		Either String (V.Vector (GStorable.W Vtx.Vertex), V.Vector Word32)
-	readVerticesIndices bs =
-		(\vs -> (vs, makeIndices vs)) <$> readVertices bs
-	makeIndices :: V.Vector (GStorable.W Vtx.Vertex) -> V.Vector Word32
-	makeIndices vs = V.generate (V.length vs) \i -> fromIntegral i
+readFile :: FilePath -> IO (V.Vector (W Vtx.Vertex))
+readFile fp = either error pure =<< parse <$> BS.readFile fp
 
-type W = GStorable.W
-
-readVertices :: BS.ByteString -> Either String (V.Vector (GStorable.W Vtx.Vertex))
-readVertices bs =
-	V.map posTexToVertex <$> Wf.Read.posTex (Wf.Read.r bs)
-	where
-	posTexToVertex :: W (W Wf.Read.Position, W Wf.Read.TexCoord) -> W Vtx.Vertex
-	posTexToVertex (GStorable.W (
-		GStorable.W (Wf.Read.Position x y z),
-		GStorable.W (Wf.Read.TexCoord u v) )) = GStorable.W $ Vtx.Vertex
-		(Vtx.Pos . Cglm.Vec3 $ x :. y :. z :. NilL)
-		(Vtx.Color . Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
-		(Vtx.TexCoord . Cglm.Vec2 $ u :. (1 - v) :. NilL)
+parse :: BS.ByteString -> Either String (V.Vector (W Vtx.Vertex))
+parse bs = V.map p2v <$> WfR.posTex (WfR.r bs)
+	where p2v (W ( W (WfR.Position x y z), W (WfR.TexCoord u v) )) =
+		W $ Vtx.Vertex
+			(Vtx.Pos . Cglm.Vec3 $ x :. y :. z :. NilL)
+			(Vtx.Color . Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+			(Vtx.TexCoord . Cglm.Vec2 $ u :. (1 - v) :. NilL)
