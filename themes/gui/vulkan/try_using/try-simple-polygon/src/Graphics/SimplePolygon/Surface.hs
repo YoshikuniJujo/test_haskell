@@ -11,6 +11,5 @@ import Gpu.Vulkan.Khr.Surface.Glfw qualified as Vk.Khr.Sfc.Glfw
 import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Instance qualified as Ist
 
-create ::
-	Ist.I si -> Win.W -> (forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
+create :: Ist.I si -> Win.W -> (forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
 create i (Win.W w _) = Vk.Khr.Sfc.Glfw.createWindowSurface i w TPMaybe.N
