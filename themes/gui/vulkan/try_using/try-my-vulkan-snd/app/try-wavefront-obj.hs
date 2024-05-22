@@ -6,10 +6,10 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 
-import qualified Codec.WavefrontObj.ReadFaceSimple as New
+import qualified Codec.WavefrontObj.ReadFaceSimple as WfRd
 
 main :: IO ()
 main = do
 	[objfile] <- getArgs
 	obj <- BS.readFile objfile
-	print . New.posNormal $ New.r obj
+	print . WfRd.posNormal $ WfRd.r obj

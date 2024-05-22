@@ -134,6 +134,6 @@ apps
 * [x] try-query.hs
 * [x] try-allocation-callbacks.hs
 * [x] try-pipeline-cache.hs
-* [ ] try-shaderc.hs
-* [ ] my-glslc.hs
-* [ ] try-wavefront-obj.hs
+* [x] try-shaderc.hs
+* [x] my-glslc.hs
+* [x] try-wavefront-obj.hs
