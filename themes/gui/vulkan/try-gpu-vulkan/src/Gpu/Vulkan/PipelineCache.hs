@@ -17,9 +17,11 @@ module Gpu.Vulkan.PipelineCache (
 
 	-- * READ AND WRITE DATA
 
-	readData, writeData
+	readFile, writeFile, hRead, hWrite
 
 	) where
+
+import Prelude hiding (readFile, writeFile)
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -41,7 +43,7 @@ import Foreign.Storable
 import Foreign.Marshal.Alloc
 import Foreign.C.Types
 import Data.Word
-import System.IO
+import System.IO (Handle, hGetBuf, hPutBuf, withBinaryFile, IOMode(..))
 
 import Data.ByteString qualified as BS
 
@@ -55,16 +57,21 @@ create (Device.D dv) ci
 getData :: Device.D sd -> P s -> IO M.Data
 getData (Device.D dv) (P c) = M.getData dv c
 
-readData :: FilePath -> IO M.Data
-readData fp =
-	withBinaryFile fp ReadMode \h -> do
+readFile :: FilePath -> IO M.Data
+readFile fp = withBinaryFile fp ReadMode hRead
+
+hRead :: Handle -> IO M.Data
+hRead h = do
 	sz <- readDataSize h
 	allocaBytes (fromIntegral sz) \pd -> do
 		_ <- hGetBuf h pd (fromIntegral sz)
 		dataFromRaw sz pd
 
-writeData :: FilePath -> M.Data -> IO ()
-writeData fp d = dataToRaw d \sz pd -> withBinaryFile fp WriteMode \h ->
+writeFile :: FilePath -> M.Data -> IO ()
+writeFile fp d = withBinaryFile fp WriteMode (`hWrite` d)
+
+hWrite :: Handle -> M.Data -> IO ()
+hWrite h d = dataToRaw d \sz pd ->
 	writeDataSize h sz >> hPutBuf h pd (fromIntegral sz)
 
 readDataSize :: Handle -> IO Word64
