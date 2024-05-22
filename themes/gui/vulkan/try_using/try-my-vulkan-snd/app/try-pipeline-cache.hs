@@ -98,9 +98,9 @@ main = withDvc \pd dv q cpl ->
 	body pd dv q cpl pc
 	cch' <- Vk.PplCch.getData dv pc
 	print cch'
-	Vk.PplCch.writeData "pipeline.cache" cch'
+	Vk.PplCch.writeFile "pipeline.cache" cch'
 	where
-	rd fp = doesFileExist fp >>= bool (pure def) (Vk.PplCch.readData fp)
+	rd fp = doesFileExist fp >>= bool (pure def) (Vk.PplCch.readFile fp)
 
 pplCchInfo :: Vk.PplCch.Data -> Vk.PplCch.CreateInfo 'Nothing
 pplCchInfo pc0 = Vk.PplCch.CreateInfo {
