@@ -23,6 +23,10 @@ source-repository head
   type: git
   location: https://github.com/githubuser/try-simple-polygon
 
+flag debug
+  manual: True
+  default: True
+
 library
   exposed-modules:
       Graphics.SimplePolygon.DebugMessenger
@@ -30,7 +34,6 @@ library
       Graphics.SimplePolygon.PhysicalDevice
       Graphics.SimplePolygon.Surface
       Graphics.SimplePolygon.Window
-      ThEnv
       Tools
       Vertex
       Vertex.Wavefront
@@ -72,6 +75,16 @@ library
     , union-color
     , vector
   default-language: Haskell2010
+  if flag(debug)
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        debug
+  else
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        nodebug
 
 executable try-multisampling
   main-is: try-multisampling.hs

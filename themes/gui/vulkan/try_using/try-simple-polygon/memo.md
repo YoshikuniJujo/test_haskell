@@ -1,7 +1,7 @@
 srcs
 ----
 
-* [ ] ThEnv
+* [x] ThEnv -- remove
 * [ ] Tools -- remove
 * [ ] Vertex
 * [ ] Vertex.Wavefront

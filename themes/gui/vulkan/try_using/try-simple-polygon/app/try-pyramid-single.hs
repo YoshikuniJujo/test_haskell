@@ -48,7 +48,6 @@ import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
-import ThEnv
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -118,12 +117,14 @@ import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
 
+import Debug
+
 main :: IO ()
 main = Win.create windowSize windowName \(Win.W win g) ->
-	Ist.create enableValidationLayers \inst -> do
+	Ist.create debug \inst -> do
 		cev <- createControllerEvent
 		_ <- forkIO $ controller cev
-		if enableValidationLayers
+		if debug
 			then DbgMsngr.setup inst $ run win inst g cev
 			else run win inst g cev
 
@@ -166,9 +167,6 @@ windowName = "Triangle"
 
 windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
@@ -235,7 +233,7 @@ createLogicalDevice phdvc qfis f =
 				Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 --					queueCreateInfos <$> uniqueQueueFamilies,
 				Vk.Dvc.M.createInfoEnabledLayerNames =
-					bool [] validationLayers enableValidationLayers,
+					bool [] validationLayers debug,
 				Vk.Dvc.M.createInfoEnabledExtensionNames =
 					deviceExtensions,
 				Vk.Dvc.M.createInfoEnabledFeatures = Just def }

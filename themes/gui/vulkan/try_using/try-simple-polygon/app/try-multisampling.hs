@@ -57,7 +57,6 @@ import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic as GStorable
 
-import ThEnv
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -137,6 +136,8 @@ import Control.Monad.Trans
 import Control.Concurrent
 import Control.Concurrent.STM
 
+import Debug
+
 main :: IO ()
 main = run_ realMain
 
@@ -147,7 +148,7 @@ realMain ::
 realMain txfp mdfp = liftIO $
 	atomically newTChan >>= \lb ->
 	Win.create windowSize windowName \w ->
-	Ist.create enableValidationLayers \inst ->
+	Ist.create debug \inst ->
 	Sfc.create inst w \sfc ->
 	pickPhysicalDevice inst sfc >>= \pd ->
 	(MyImage <$>) <$> readRgba8 `mapM` (get txfp) >>= \tximgs@(tximg : _) ->
@@ -156,7 +157,7 @@ realMain txfp mdfp = liftIO $
 		putStrLn "Left Button Down"
 		atomically $ writeTChan tctximg ti) >>
 	loadModel `mapM` get mdfp >>= \mdls@(mdl0 : mdl1 : _) ->
-	displayTex enableValidationLayers lb LeaveFrontFaceCounterClockwise
+	displayTex debug lb LeaveFrontFaceCounterClockwise
 		w inst sfc pd tximg tctximg mdl0 mdl1
 
 type WVertex = GStorable.W Vertex
@@ -167,9 +168,6 @@ windowName = "TRY MULTISAMPLING"
 
 windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
