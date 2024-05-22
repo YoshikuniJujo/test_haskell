@@ -6,8 +6,8 @@ srcs
 * [x] Vertex
 * [x] Vertex.Wavefront
 * [x] Graphics.SimplePolygon.DebugMessenger
-* [ ] Graphics.SimplePolygon.Instance
-* [ ] Graphics.SimplePolygon.PhysicalDevice
+* [x] Graphics.SimplePolygon.Instance
+* [x] Graphics.SimplePolygon.PhysicalDevice
 * [ ] Graphics.SimplePolygon.Surface
 * [ ] Graphics.SimplePolygon.Window
 

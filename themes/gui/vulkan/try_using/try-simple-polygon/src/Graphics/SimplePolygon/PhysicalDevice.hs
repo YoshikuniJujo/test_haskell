@@ -1,20 +1,25 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.SimplePolygon.PhysicalDevice (
 
 	-- * ENUMERATE
 
-	enumerate, P(..), QueueFamilyIndices(..),
+	enumerate, P(..), QFamIndices(..),
 
 	-- * PROPERTIES
 
-	getProperties, Vk.PhDvc.Properties(..), Vk.PhDvc.Limits(..),
+	getProperties, Vk.Phd.Properties(..), Vk.Phd.Limits(..),
 
 	-- * FEATURES
 
-	getFeatures, Vk.PhDvc.Features(..)
+	getFeatures, Vk.Phd.Features(..)
 
 	) where
 
@@ -22,99 +27,82 @@ import Control.Monad
 import Data.Foldable
 import Data.Bool
 import Data.Maybe
-import Data.List qualified as L
 
-import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
-import Gpu.Vulkan.Queue qualified as Vk.Queue
-import Gpu.Vulkan.QueueFamily qualified as Vk.QueueFamily
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Surface
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice
-	qualified as Vk.Khr.Surface.PhysicalDevice
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
+	qualified as Vk.Khr.Sfc.Phd
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 
 import Data.Bits.ToolsYj
 
-import Graphics.SimplePolygon.Instance qualified as Ist
+import Graphics.SimplePolygon.Instance qualified as Vk.Ist
 
-enumerate :: Ist.I si -> Vk.Khr.Surface.S ss -> IO [P]
-enumerate ist sfc = do
-	ps <- Vk.PhDvc.enumerate ist
-	catMaybes <$> (`suitable` sfc) `mapM` ps
+import Data.HeteroParList.Constrained qualified as HPListC
 
-suitable :: Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe P)
-suitable phd sfc = (P phd <$>) <$> isDeviceSuitable phd sfc
+import Data.List.ToolsYj
 
-data P = P Vk.PhDvc.P QueueFamilyIndices deriving Show
+enumerate :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO [P]
+enumerate ist sfc = (catMaybes <$>)
+	$ ((\p -> (P p <$>) <$> suit p) `mapM`) =<< Vk.Phd.enumerate ist
+	where
+	suit pd = espt pd >>= bool (pure Nothing) do
+		qfis <- findQFams pd sfc
+		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
+			$	HPListC.null (snd $ formats ss) ||
+				null (presentModes ss)
+	espt pd = elemAll dvcExtensions
+		. (Vk.Phd.extensionPropertiesExtensionName <$>)
+		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
 
-getProperties :: P -> IO Vk.PhDvc.Properties
-getProperties (P phd _) = Vk.PhDvc.getProperties phd
+querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+	SwpchSupportDetails fmts -> IO a) -> IO a
+querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
+	f =<< SwpchSupportDetails
+		<$> Vk.Khr.Sfc.Phd.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Khr.Sfc.Phd.getFormatsFiltered pd sfc)
+		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
 
-getFeatures :: P -> IO Vk.PhDvc.Features
-getFeatures (P phd _) = Vk.PhDvc.getFeatures phd
-
-isDeviceSuitable ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
-isDeviceSuitable phdvc sfc = do
-	_deviceProperties <- Vk.PhDvc.getProperties phdvc
-	deviceFeatures <- Vk.PhDvc.getFeatures phdvc
-	is <- findQueueFamilies phdvc sfc
-	extensionSupported <- checkDeviceExtensionSupport phdvc
-	if extensionSupported && Vk.PhDvc.featuresSamplerAnisotropy deviceFeatures
-	then (<$> querySwapChainSupport phdvc sfc) \spp ->
-		bool (completeQueueFamilies is) Nothing
-			$ null (formats spp) || null (presentModes spp)
-	else pure Nothing
-
-data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Vk.QueueFamily.Index,
-	presentFamily :: Vk.QueueFamily.Index }
-	deriving Show
-
-data QueueFamilyIndicesMaybe = QueueFamilyIndicesMaybe {
-	graphicsFamilyMaybe :: Maybe Vk.QueueFamily.Index,
-	presentFamilyMaybe :: Maybe Vk.QueueFamily.Index }
-	deriving Show
-
-completeQueueFamilies :: QueueFamilyIndicesMaybe -> Maybe QueueFamilyIndices
-completeQueueFamilies = \case
-	QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = Just gf, presentFamilyMaybe = Just pf } ->
-		Just QueueFamilyIndices {
-			graphicsFamily = gf, presentFamily = pf }
-	_ -> Nothing
-
-findQueueFamilies ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO QueueFamilyIndicesMaybe
-findQueueFamilies device sfc = do
-	queueFamilies <- Vk.PhDvc.getQueueFamilyProperties device
-	pfis <- filterM
-		(\i -> Vk.Khr.Surface.PhysicalDevice.getSupport device i sfc)
-		(fst <$> queueFamilies)
-	pure QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = fst <$> find
-			(checkBits Vk.Queue.GraphicsBit
-				. Vk.QueueFamily.propertiesQueueFlags . snd)
-			queueFamilies,
-		presentFamilyMaybe = listToMaybe pfis }
-
-checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
-checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions L.\\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
-		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
-
-deviceExtensions :: [Vk.PhDvc.ExtensionName]
-deviceExtensions = [Vk.Khr.Swapchain.extensionName]
-
-querySwapChainSupport ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
-querySwapChainSupport dvc sfc = SwapChainSupportDetails
-	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getFormatsOld dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
-
-data SwapChainSupportDetails = SwapChainSupportDetails {
-	_capabilities :: Vk.Khr.Surface.Capabilities,
-	formats :: [Vk.Khr.Surface.FormatOld],
+data SwpchSupportDetails fmts = SwpchSupportDetails {
+	capabilities :: Vk.Khr.Sfc.Capabilities,
+	formats :: (
+		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
 	presentModes :: [Vk.Khr.PresentMode] }
+
+deriving instance
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+	Show (SwpchSupportDetails fmts)
+
+data SwpchSupportDetailsFmt fmt = SwpchSupportDetailsFmt {
+	capabilitiesFmt :: Vk.Khr.Sfc.Capabilities,
+	formatsFmt :: [Vk.Khr.Sfc.Format fmt],
+	presentModesFmt :: [Vk.Khr.PresentMode] } deriving Show
+
+data P = P Vk.Phd.P QFamIndices deriving Show
+
+getProperties :: P -> IO Vk.Phd.Properties
+getProperties (P phd _) = Vk.Phd.getProperties phd
+
+getFeatures :: P -> IO Vk.Phd.Features
+getFeatures (P phd _) = Vk.Phd.getFeatures phd
+
+data QFamIndices =
+	QFamIndices { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
+	deriving Show
+
+findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
+findQFams pd sfc = do
+	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
+	mp <- listToMaybe
+		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
+	pure $ QFamIndices <$> (fst <$> find (grbit . snd) prps) <*> mp
+	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
+
+dvcExtensions :: [Vk.Phd.ExtensionName]
+dvcExtensions = [Vk.Khr.Swpch.extensionName]

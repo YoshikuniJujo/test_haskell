@@ -304,7 +304,7 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormatsOld dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Bool -> Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> (forall sd .
+createLogicalDevice :: Bool -> Vk.PhDvc.P -> PhDvc.QFamIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
 createLogicalDevice vld phdvc qfis f =
 	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
@@ -319,11 +319,11 @@ createLogicalDevice vld phdvc qfis f =
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
 				Vk.PhDvc.featuresSamplerAnisotropy = True } } in
 	Vk.Dvc.create @'Nothing phdvc createInfo nil \dvc -> do
-		gq <- Vk.Dvc.getQueue dvc (PhDvc.graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (PhDvc.presentFamily qfis) 0
+		gq <- Vk.Dvc.getQueue dvc (PhDvc.grFam qfis) 0
+		pq <- Vk.Dvc.getQueue dvc (PhDvc.prFam qfis) 0
 		f dvc gq pq
 	where
-	uniqueQueueFamilies = L.nub [PhDvc.graphicsFamily qfis, PhDvc.presentFamily qfis]
+	uniqueQueueFamilies = L.nub [PhDvc.grFam qfis, PhDvc.prFam qfis]
 	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = def,
@@ -339,7 +339,7 @@ mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
 	IO a
@@ -355,7 +355,7 @@ createSwapChain win sfc phdvc qfis dvc f = do
 
 recreateSwapChain :: Vk.T.FormatToValue scfmt =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S scfmt ssc ->
+	PhDvc.QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S scfmt ssc ->
 	IO Vk.Extent2d
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
@@ -363,7 +363,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	let	crInfo = mkSwapchainCreateInfo sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing dvc crInfo nil sc
 
-mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> PhDvc.QueueFamilyIndices ->
+mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> PhDvc.QFamIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfo sfc qfis0 spp ext =
@@ -397,9 +397,9 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
-			[PhDvc.graphicsFamily qfis0, PhDvc.presentFamily qfis0])
+			[PhDvc.grFam qfis0, PhDvc.prFam qfis0])
 		(Vk.SharingModeExclusive, [])
-		(PhDvc.graphicsFamily qfis0 == PhDvc.presentFamily qfis0)
+		(PhDvc.grFam qfis0 == PhDvc.prFam qfis0)
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.FormatOld] -> Vk.Khr.Surface.M.FormatOld
 chooseSwapSurfaceFormat = \case
@@ -883,7 +883,7 @@ mkFramebufferCreateInfo sce rp attch clr dpt = Vk.Frmbffr.CreateInfo {
 	where
 	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
 
-createCommandPool :: PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+createCommandPool :: PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
 createCommandPool qfis dvc f =
 	Vk.CmdPool.create dvc poolInfo nil \cp -> f cp
@@ -891,7 +891,7 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoNext = TMaybe.N,
 		Vk.CmdPool.createInfoFlags =
 			Vk.CmdPool.CreateResetCommandBufferBit,
-		Vk.CmdPool.createInfoQueueFamilyIndex = PhDvc.graphicsFamily qfis }
+		Vk.CmdPool.createInfoQueueFamilyIndex = PhDvc.grFam qfis }
 
 type ColorResources nm fmt si sm siv = (
 	Vk.Img.Binded sm si nm fmt,
@@ -1970,7 +1970,7 @@ mainLoop :: (
 	HeteroParList.HomoList '() vss ) =>
 	TChan () -> Culling -> FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.PhDvc.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss ->
@@ -2029,7 +2029,7 @@ runLoop :: forall
 	HeteroParList.HomoList '() vss) =>
 	TVar Glfw.MouseButtonState -> TChan () ->
 	Culling -> Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
+	PhDvc.QFamIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc, AtomModel sdsc'] '[] ->
@@ -2204,7 +2204,7 @@ catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs ) => Culling ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.PhDvc.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -2231,7 +2231,7 @@ recreateSwapChainEtc :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs ) => Culling ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.PhDvc.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->

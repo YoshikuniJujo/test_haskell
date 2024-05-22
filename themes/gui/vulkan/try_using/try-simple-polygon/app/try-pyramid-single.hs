@@ -199,7 +199,7 @@ run w inst g cev =
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm cev
 
 pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, PhDvc.QueueFamilyIndices)
+	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, PhDvc.QFamIndices)
 pickPhysicalDevice ist sfc = PhDvc.enumerate ist sfc >>= \case 
 	[] -> error "failed to find a sutable GPU!"
 	PhDvc.P phd qfi : _ -> pure (phd, qfi)
@@ -219,11 +219,11 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormatsOld dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> (forall sd .
+createLogicalDevice :: Vk.PhDvc.P -> PhDvc.QFamIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
 createLogicalDevice phdvc qfis f =
 	let	uniqueQueueFamilies =
-			L.nub [PhDvc.graphicsFamily qfis, PhDvc.presentFamily qfis]
+			L.nub [PhDvc.grFam qfis, PhDvc.prFam qfis]
 		queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
 			Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 			Vk.Dvc.queueCreateInfoFlags = def,
@@ -241,8 +241,8 @@ createLogicalDevice phdvc qfis f =
 					deviceExtensions,
 				Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 		Vk.Dvc.create phdvc createInfo nil \dvc -> do
-			gq <- Vk.Dvc.getQueue dvc (PhDvc.graphicsFamily qfis) 0
-			pq <- Vk.Dvc.getQueue dvc (PhDvc.presentFamily qfis) 0
+			gq <- Vk.Dvc.getQueue dvc (PhDvc.grFam qfis) 0
+			pq <- Vk.Dvc.getQueue dvc (PhDvc.prFam qfis) 0
 			f dvc gq pq
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
@@ -251,7 +251,7 @@ mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 createSwapChainNew :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swapchain.S scfmt ss -> Vk.Extent2d -> IO a) ->
 	IO a
@@ -265,7 +265,7 @@ createSwapChainNew win sfc phdvc qfis dvc f = do
 		Vk.Khr.Swapchain.create @'Nothing @fmt dvc crInfo nil
 			\sc -> f sc ext
 
-mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> PhDvc.QueueFamilyIndices ->
+mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> PhDvc.QFamIndices ->
 	SwapChainSupportDetails -> Vk.Extent2d ->
 	Vk.Khr.Swapchain.CreateInfo 'Nothing ss fmt
 mkSwapchainCreateInfoNew sfc qfis0 spp ext =
@@ -299,13 +299,13 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
-			[PhDvc.graphicsFamily qfis0, PhDvc.presentFamily qfis0])
+			[PhDvc.grFam qfis0, PhDvc.prFam qfis0])
 		(Vk.SharingModeExclusive, [])
-		(PhDvc.graphicsFamily qfis0 == PhDvc.presentFamily qfis0)
+		(PhDvc.grFam qfis0 == PhDvc.prFam qfis0)
 
 recreateSwapChain :: Vk.T.FormatToValue scfmt =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S scfmt ssc ->
+	PhDvc.QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S scfmt ssc ->
 	IO Vk.Extent2d
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
@@ -651,7 +651,7 @@ mkFramebufferCreateInfoNew sce rp attch = Vk.Frmbffr.CreateInfo {
 	where
 	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
 
-createCommandPool :: PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+createCommandPool :: PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
 createCommandPool qfis dvc f =
 	Vk.CmdPool.create dvc poolInfo nil \cp -> f cp
@@ -659,7 +659,7 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoNext = TMaybe.N,
 		Vk.CmdPool.createInfoFlags =
 			Vk.CmdPool.CreateResetCommandBufferBit,
-		Vk.CmdPool.createInfoQueueFamilyIndex = PhDvc.graphicsFamily qfis }
+		Vk.CmdPool.createInfoQueueFamilyIndex = PhDvc.grFam qfis }
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
@@ -906,7 +906,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.PhDvc.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> Vk.Extent2d -> HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> Vk.Ppl.Graphics.G sg
@@ -934,7 +934,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm 
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
+	PhDvc.QFamIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
@@ -1032,7 +1032,7 @@ catchAndSerialize =
 
 catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.PhDvc.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
@@ -1054,7 +1054,7 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 recreateSwapChainEtc :: (
 	RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> PhDvc.QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.PhDvc.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
