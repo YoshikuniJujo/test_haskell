@@ -4,29 +4,25 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vertex where
+module Vertex (Vertex(..), Pos(..), Color(..), TexCoord(..)) where
 
 import GHC.Generics
 import Foreign.Storable
-
-import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
-
+import Foreign.Storable.Generic qualified as GStorable
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxIpSt
 import Gpu.Vulkan.Cglm qualified as Cglm
-import qualified Foreign.Storable.Generic as GStorable
 
 data Vertex = Vertex {
-	vertexPos :: Pos,
-	vertexColor :: Color,
-	vertexTexCoord :: TexCoord }
+	vertexPos :: Pos, vertexColor :: Color, vertexTexCoord :: TexCoord }
 	deriving (Show, Eq, Ord, Generic)
-
-newtype Pos = Pos Cglm.Vec3
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype TexCoord = TexCoord Cglm.Vec2
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance GStorable.G Vertex
 
+newtype Pos = Pos Cglm.Vec3
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VtxIpSt.Formattable)
+
 newtype Color = Color Cglm.Vec3
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VtxIpSt.Formattable)
+
+newtype TexCoord = TexCoord Cglm.Vec2
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VtxIpSt.Formattable)
