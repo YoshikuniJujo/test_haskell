@@ -5,7 +5,7 @@ srcs
 * [x] Tools -- remove
 * [x] Vertex
 * [x] Vertex.Wavefront
-* [ ] Graphics.SimplePolygon.DebugMessenger
+* [x] Graphics.SimplePolygon.DebugMessenger
 * [ ] Graphics.SimplePolygon.Instance
 * [ ] Graphics.SimplePolygon.PhysicalDevice
 * [ ] Graphics.SimplePolygon.Surface

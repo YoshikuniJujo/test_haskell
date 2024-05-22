@@ -12,8 +12,9 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Bits
 import Data.List qualified as L
 import Data.Text.IO qualified as Txt
+
 import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
+import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ext.DbgUtls.Msngr
 
@@ -47,5 +48,5 @@ createInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
 
 debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
+debugCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
