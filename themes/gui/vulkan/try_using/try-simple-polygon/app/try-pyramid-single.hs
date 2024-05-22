@@ -105,8 +105,6 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
-import Tools
-
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
@@ -116,6 +114,11 @@ import Graphics.SimplePolygon.Instance qualified as Ist
 import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
+
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Bool.ToolsYj
+import Data.IORef.ToolsYj
 
 import Debug
 
@@ -292,8 +295,8 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
-	imgc = clamp
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
+	imgc = clamp 0 maxImgc
+		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[PhDvc.graphicsFamily qfis0, PhDvc.presentFamily qfis0])
@@ -332,8 +335,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			Glfw.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
+			(clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
 	where
 	curExt = Vk.Khr.Surface.M.capabilitiesCurrentExtent caps
 	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps

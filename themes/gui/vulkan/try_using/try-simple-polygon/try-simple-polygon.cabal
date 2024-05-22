@@ -34,7 +34,6 @@ library
       Graphics.SimplePolygon.PhysicalDevice
       Graphics.SimplePolygon.Surface
       Graphics.SimplePolygon.Window
-      Tools
       Vertex
       Vertex.Wavefront
   other-modules:

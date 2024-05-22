@@ -122,7 +122,6 @@ import qualified Gpu.Vulkan.Sampler as Vk.Smplr.M
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
-import Tools
 import Vertex
 import Vertex.Wavefront
 
@@ -137,6 +136,12 @@ import Control.Concurrent
 import Control.Concurrent.STM
 
 import Debug
+
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Sequences.ToolsYj
+import Data.Bool.ToolsYj
+import Data.IORef.ToolsYj
 
 main :: IO ()
 main = run_ realMain
@@ -159,6 +164,7 @@ realMain txfp mdfp = liftIO $
 	loadModel `mapM` get mdfp >>= \mdls@(mdl0 : mdl1 : _) ->
 	displayTex debug lb LeaveFrontFaceCounterClockwise
 		w inst sfc pd tximg tctximg mdl0 mdl1
+	where readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
 type WVertex = GStorable.W Vertex
 type FramebufferResized = IORef Bool
@@ -387,8 +393,8 @@ mkSwapchainCreateInfo sfc qfis0 spp ext =
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
-	imgc = clamp
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
+	imgc = clamp 0 maxImgc
+		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[PhDvc.graphicsFamily qfis0, PhDvc.presentFamily qfis0])
@@ -417,8 +423,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			Glfw.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clamp w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clamp h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
+			(clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
 	where
 	curExt = Vk.Khr.Surface.M.capabilitiesCurrentExtent caps
 	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
@@ -1516,7 +1522,7 @@ createTextureSampler phdv dvc mplvs mnld f = do
 loadModel :: FilePath -> IO (V.Vector WVertex, V.Vector Word32)
 loadModel fp = do
 	(vtcs, idcs) <- verticesIndices fp
-	let	(vtcs', idcs') = indexingVector vtcs
+	let	(vtcs', idcs') = indexing vtcs
 	putStrLn "LOAD MODEL"
 	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector WVertex))
 	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector WVertex))

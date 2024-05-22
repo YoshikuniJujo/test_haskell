@@ -2,7 +2,7 @@ srcs
 ----
 
 * [x] ThEnv -- remove
-* [ ] Tools -- remove
+* [x] Tools -- remove
 * [ ] Vertex
 * [ ] Vertex.Wavefront
 * [ ] Graphics.SimplePolygon.DebugMessenger

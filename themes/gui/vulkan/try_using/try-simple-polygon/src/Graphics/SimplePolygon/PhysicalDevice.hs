@@ -34,7 +34,7 @@ import Gpu.Vulkan.Khr.Surface.PhysicalDevice
 	qualified as Vk.Khr.Surface.PhysicalDevice
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swapchain
 
-import Tools
+import Data.Bits.ToolsYj
 
 import Graphics.SimplePolygon.Instance qualified as Ist
 
