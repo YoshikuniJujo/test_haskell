@@ -132,12 +132,32 @@ import Graphics.SimplePolygon.Instance qualified as Ist
 import Graphics.SimplePolygon.Window qualified as Win
 import Graphics.SimplePolygon.Surface qualified as Sfc
 import Graphics.SimplePolygon.PhysicalDevice qualified as PhDvc
-
 import Options.Declarative hiding (run)
 import Control.Monad.Trans
-
 import Control.Concurrent
 import Control.Concurrent.STM
+
+main :: IO ()
+main = run_ realMain
+
+realMain ::
+	Flag "t" '["texture"] "FILEPATH" "texture image file path" [FilePath] ->
+	Flag "m" '["model"] "FILEPATH" "model file path" [FilePath] ->
+	Cmd "Try multisampling" ()
+realMain txfp mdfp = liftIO $
+	atomically newTChan >>= \lb ->
+	Win.create windowSize windowName \w ->
+	Ist.create enableValidationLayers \inst ->
+	Sfc.create inst w \sfc ->
+	pickPhysicalDevice inst sfc >>= \pd ->
+	(MyImage <$>) <$> readRgba8 `mapM` (get txfp) >>= \tximgs@(tximg : _) ->
+	atomically newTChan >>= \tctximg -> forkIO (for_ (tail $ cycle tximgs) \ti -> do
+		_ <- atomically $ readTChan lb
+		putStrLn "Left Button Down"
+		atomically $ writeTChan tctximg ti) >>
+	loadModel `mapM` get mdfp >>= \mdls@(mdl0 : mdl1 : _) ->
+	displayTex enableValidationLayers lb LeaveFrontFaceCounterClockwise
+		w inst sfc pd tximg tctximg mdl0 mdl1
 
 type WVertex = GStorable.W Vertex
 type FramebufferResized = IORef Bool
@@ -153,28 +173,6 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
-
-main :: IO ()
-main = run_ command
-
-command ::
-	Flag "t" '["texture"] "FILEPATH" "texture image file path" [FilePath] ->
-	Flag "m" '["model"] "FILEPATH" "model file path" [FilePath] ->
-	Cmd "Try multisampling" ()
-command txfp mdfp = liftIO $
-	atomically newTChan >>= \lb ->
-	Win.create windowSize windowName \w ->
-	Ist.create enableValidationLayers \inst ->
-	Sfc.create inst w \sfc ->
-	pickPhysicalDevice inst sfc >>= \pd ->
-	(MyImage <$>) <$> readRgba8 `mapM` (get txfp) >>= \tximgs@(tximg : _) ->
-	atomically newTChan >>= \tctximg -> forkIO (for_ (tail $ cycle tximgs) \ti -> do
-		_ <- atomically $ readTChan lb
-		putStrLn "Left Button Down"
-		atomically $ writeTChan tctximg ti) >>
-	loadModel `mapM` get mdfp >>= \mdls@(mdl0 : mdl1 : _) ->
-	displayTex enableValidationLayers lb LeaveFrontFaceCounterClockwise
-		w inst sfc pd tximg tctximg mdl0 mdl1
 
 displayTex :: BObj.IsImage img => Bool -> TChan () -> Culling ->
 	Win.W -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->

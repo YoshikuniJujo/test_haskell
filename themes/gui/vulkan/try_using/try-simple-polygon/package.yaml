@@ -31,8 +31,9 @@ dependencies:
 - GLFW-b
 - ranged-list
 - try-gpu-vulkan
-- try-gpu-vulkan-khr
-- try-gpu-vulkan-khr-glfw
+- try-gpu-vulkan-khr-swapchain
+- try-gpu-vulkan-khr-surface
+- try-gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
 - try-language-spir-v
@@ -66,15 +67,6 @@ library:
   source-dirs: src
 
 executables:
-  try-simple-polygon-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-simple-polygon
   try-pyramid-single:
     main:                try-pyramid-single.hs
     source-dirs:         app
@@ -86,15 +78,6 @@ executables:
     - try-simple-polygon
   try-multisampling:
     main:                try-multisampling.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-simple-polygon
-  try-multisampling-with-image-manager:
-    main:                try-multisampling-with-image-manager.hs
     source-dirs:         app
     ghc-options:
     - -threaded

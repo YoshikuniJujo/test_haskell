@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-05-06
+resolver: nightly-2024-05-21
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,19 +42,22 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 86a3f36510792ff503152080a02f8af526cb0a45
+  commit: 0a3390bfbbd3f682f8f886f779fc1509daa7c281
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
-  - themes/gui/vulkan/try-gpu-vulkan-khr
-  - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-gpu-vulkan-cglm
   - themes/gui/vulkan/try-vulkan-middle
-  - themes/gui/vulkan/try-vulkan-middle-khr
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core
-  - themes/gui/vulkan/try-vulkan-core-khr
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
