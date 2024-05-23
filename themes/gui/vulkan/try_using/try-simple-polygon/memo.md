@@ -8,8 +8,8 @@ srcs
 * [x] Graphics.SimplePolygon.DebugMessenger
 * [x] Graphics.SimplePolygon.Instance
 * [x] Graphics.SimplePolygon.PhysicalDevice
-* [ ] Graphics.SimplePolygon.Surface
-* [ ] Graphics.SimplePolygon.Window
+* [x] Graphics.SimplePolygon.Surface
+* [x] Graphics.SimplePolygon.Window
 
 apps
 ----
