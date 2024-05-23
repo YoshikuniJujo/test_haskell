@@ -150,22 +150,22 @@ main = run_ realMain
 
 realMain ::
 	Flag "t" '["texture"] "FILEPATH" "texture image file path" [FilePath] ->
-	Flag "m" '["model"] "FILEPATH" "model file path" [FilePath] ->
+	Flag "m" '["model"] "FILEPATH" "model filepath"
+		(Def "../../../../../files/models/viking_room.obj" String) ->
 	Cmd "Try multisampling" ()
 realMain txfp mdfp = liftIO $
 	atomically newTChan >>= \lb ->
-	Win.create windowSize windowName \w ->
-	Ist.create debug \inst ->
-	Sfc.create inst w \sfc ->
-	pickPhysicalDevice inst sfc >>= \pd ->
 	(MyImage <$>) <$> readRgba8 `mapM` (get txfp) >>= \tximgs@(tximg : _) ->
 	atomically newTChan >>= \tctximg -> forkIO (for_ (tail $ cycle tximgs) \ti -> do
 		_ <- atomically $ readTChan lb
 		putStrLn "Left Button Down"
 		atomically $ writeTChan tctximg ti) >>
-	loadModel `mapM` get mdfp >>= \mdls@(mdl0 : mdl1 : _) ->
+
+	Win.create windowSize windowName \w -> Ist.create debug \ist ->
+	Sfc.create ist w \sfc -> pickPhysicalDevice ist sfc >>= \pd ->
+	loadModel (get mdfp) >>= \mdl0 ->
 	displayTex debug lb LeaveFrontFaceCounterClockwise
-		w inst sfc pd tximg tctximg mdl0 mdl1
+		w ist sfc pd tximg tctximg mdl0
 	where readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
 type WVertex = GStorable.W Vertex
@@ -182,16 +182,16 @@ maxFramesInFlight = 2
 
 displayTex :: BObj.IsImage img => Bool -> TChan () -> Culling ->
 	Win.W sw -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
-	img -> TChan img -> Model -> Model -> IO ()
-displayTex vld lb cll (Win.W (GlfwG.Win.W w) g) inst sfc pd img tctximg mdl0 mdl1 =
-	bool id (DbgMsngr.setup inst) vld $ run vld lb cll img tctximg mdl0 mdl1 0 w g sfc pd
+	img -> TChan img -> Model -> IO ()
+displayTex vld lb cll (Win.W (GlfwG.Win.W w) g) inst sfc pd img tctximg mdl0 =
+	bool id (DbgMsngr.setup inst) vld $ run vld lb cll img tctximg mdl0 0 w g sfc pd
 
 type Model = (V.Vector WVertex, V.Vector Word32)
 
 run :: BObj.IsImage tximg => Bool -> TChan () -> Culling -> tximg -> TChan tximg ->
-	Model -> Model -> Float ->
+	Model -> Float ->
 	Glfw.Window -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
-run vld lb cll tximg tctximg mdl0 mdl1 mnld w g sfc (PhDvc.P phdv qfis) =
+run vld lb cll tximg tctximg mdl0 mnld w g sfc (PhDvc.P phdv qfis) =
 	getMaxUsableSampleCount phdv >>= \mss ->
 	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
