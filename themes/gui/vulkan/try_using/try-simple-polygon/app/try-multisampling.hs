@@ -154,18 +154,23 @@ realMain ::
 		(Def "../../../../../files/models/viking_room.obj" String) ->
 	Cmd "Try multisampling" ()
 realMain txfp mdfp = liftIO $
-	atomically newTChan >>= \lb ->
-	(MyImage <$>) <$> readRgba8 `mapM` (get txfp) >>= \tximgs@(tximg : _) ->
-	atomically newTChan >>= \tctximg -> forkIO (for_ (tail $ cycle tximgs) \ti -> do
-		_ <- atomically $ readTChan lb
-		putStrLn "Left Button Down"
-		atomically $ writeTChan tctximg ti) >>
-
+	supplyTxImg (get txfp) >>= \(lb, tximg, tctximg) ->
 	Win.create windowSize windowName \w -> Ist.create debug \ist ->
-	Sfc.create ist w \sfc -> pickPhysicalDevice ist sfc >>= \pd ->
-	loadModel (get mdfp) >>= \mdl0 ->
-	displayTex debug lb LeaveFrontFaceCounterClockwise
-		w ist sfc pd tximg tctximg mdl0
+	Sfc.create ist w \sfc -> phdvc ist sfc >>= \pd ->
+	loadModel (get mdfp) >>= \mdl ->
+	displayTex debug lb w ist sfc pd tximg tctximg mdl
+	where phdvc ist sfc = PhDvc.enumerate ist sfc >>= \case
+		[] -> error "failed to find a suitable GPU"; pd : _ -> pure pd
+
+supplyTxImg txfps =
+	atomically newTChan >>= \lb ->
+	(MyImage <$>) <$> readRgba8 `mapM` txfps >>= \tximgs@(tximg : _) ->
+	atomically newTChan >>= \tctximg -> do
+		forkIO (for_ (tail $ cycle tximgs) \ti -> do
+			_ <- atomically $ readTChan lb
+			putStrLn "Left Button Down"
+			atomically $ writeTChan tctximg ti)
+		pure (lb, tximg, tctximg)
 	where readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
 type WVertex = GStorable.W Vertex
@@ -180,18 +185,19 @@ windowSize = (width, height) where width = 800; height = 600
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
-displayTex :: BObj.IsImage img => Bool -> TChan () -> Culling ->
+displayTex :: BObj.IsImage img => Bool -> TChan () ->
 	Win.W sw -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
 	img -> TChan img -> Model -> IO ()
-displayTex vld lb cll (Win.W (GlfwG.Win.W w) g) inst sfc pd img tctximg mdl0 =
-	bool id (DbgMsngr.setup inst) vld $ run vld lb cll img tctximg mdl0 0 w g sfc pd
+displayTex vld lb (Win.W (GlfwG.Win.W w) g) inst sfc pd img tctximg mdl =
+	bool id (DbgMsngr.setup inst) vld
+		$ run vld lb LeaveFrontFaceCounterClockwise img tctximg mdl 0 w g sfc pd
 
 type Model = (V.Vector WVertex, V.Vector Word32)
 
 run :: BObj.IsImage tximg => Bool -> TChan () -> Culling -> tximg -> TChan tximg ->
 	Model -> Float ->
 	Glfw.Window -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
-run vld lb cll tximg tctximg mdl0 mnld w g sfc (PhDvc.P phdv qfis) =
+run vld lb cll tximg tctximg mdl mnld w g sfc (PhDvc.P phdv qfis) =
 	getMaxUsableSampleCount phdv >>= \mss ->
 	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
@@ -226,12 +232,12 @@ run vld lb cll tximg tctximg mdl0 mnld w g sfc (PhDvc.P phdv qfis) =
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
 
-	createModel phdv dv gq cp mdl0 \vbib ->
+	createModel phdv dv gq cp mdl \vbib ->
 
 	mainLoop lb cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		tctximg
 		(clrimg, clrimgm, clrimgvw, mss)
-		(dptImg, dptImgMem, dptImgVw) (snd mdl0) vbib cbs sos ubs ums dscss ubsNew umsNew dscssNew tm tx txmem txvw txsmplr
+		(dptImg, dptImgMem, dptImgVw) (snd mdl) vbib cbs sos ubs ums dscss ubsNew umsNew dscssNew tm tx txmem txvw txsmplr
 
 createTexture :: forall slyts ds cs img sd sc a . BObj.IsImage img =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img -> Float -> (
@@ -272,11 +278,6 @@ createModel ::
 createModel phdv dv gq cp (vtcs, idcs) f =
 	createVertexBuffer phdv dv gq cp vtcs \vb ->
 	createIndexBuffer phdv dv gq cp idcs \ib -> f (vb, ib)
-
-pickPhysicalDevice :: Vk.Ist.I si -> Vk.Khr.Surface.S ss -> IO PhDvc.P
-pickPhysicalDevice ist sfc = PhDvc.enumerate ist sfc >>= \case
-	[] -> error "failed to find a suitable GPU"
-	pd : _ -> pure pd
 
 getMaxUsableSampleCount :: Vk.PhDvc.P -> IO Vk.Sample.CountFlags
 getMaxUsableSampleCount phdvc = do
@@ -1917,7 +1918,6 @@ createSyncObjects dvc f =
 
 recordCommandBuffer :: forall scb tximg sr sf sl sg sm sb nm sm' sb' nm' sdsl sdsl' sds sdsNew .
 	Vk.CmdBffr.C scb ->
-	TChan tximg ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl, AtomModel sdsl'] '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1930,7 +1930,7 @@ recordCommandBuffer :: forall scb tximg sr sf sl sg sm sb nm sm' sb' nm' sdsl sd
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.DscSet.D sdsNew (AtomModel sdsl') ->
 	IO ()
-recordCommandBuffer cb tctximg rp fb sce ppllyt gpl idcs vb ib ubds ubdsNew =
+recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds ubdsNew =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
@@ -2149,7 +2149,7 @@ drawFrame dvc gq pq tctximg sc ext rp ppllyt gpl fbs idcs vb ib cbs
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb tctximg rp fb ext ppllyt gpl idcs vb ib dscs dscsNew
+		recordCommandBuffer cb rp fb ext ppllyt gpl idcs vb ib dscs dscsNew
 	updateUniformBuffer dvc um ext tm
 	updateUniformBufferNew dvc umNew ext tm
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
