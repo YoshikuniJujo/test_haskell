@@ -122,8 +122,10 @@ import Data.IORef.ToolsYj
 
 import Debug
 
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
 main :: IO ()
-main = Win.create windowSize windowName \(Win.W win g) ->
+main = Win.create windowSize windowName \(Win.W (GlfwG.Win.W win) g) ->
 	Ist.create debug \inst -> do
 		cev <- createControllerEvent
 		_ <- forkIO $ controller cev
@@ -176,7 +178,7 @@ validationLayers = [Vk.layerKhronosValidation]
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
 run w inst g cev =
-	Sfc.create inst (Win.W w undefined) \sfc ->
+	Sfc.create inst (Win.W (GlfwG.Win.W w) undefined) \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChainNew w sfc phdv qfis dv

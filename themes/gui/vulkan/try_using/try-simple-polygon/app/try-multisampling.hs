@@ -143,6 +143,8 @@ import Data.Sequences.ToolsYj
 import Data.Bool.ToolsYj
 import Data.IORef.ToolsYj
 
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
 main :: IO ()
 main = run_ realMain
 
@@ -179,9 +181,9 @@ maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
 displayTex :: BObj.IsImage img => Bool -> TChan () -> Culling ->
-	Win.W -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
+	Win.W sw -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
 	img -> TChan img -> Model -> Model -> IO ()
-displayTex vld lb cll (Win.W w g) inst sfc pd img tctximg mdl0 mdl1 =
+displayTex vld lb cll (Win.W (GlfwG.Win.W w) g) inst sfc pd img tctximg mdl0 mdl1 =
 	bool id (DbgMsngr.setup inst) vld $ run vld lb cll img tctximg mdl0 mdl1 0 w g sfc pd
 
 type Model = (V.Vector WVertex, V.Vector Word32)

@@ -58,6 +58,7 @@ library
     , text
     , time
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -109,6 +110,7 @@ executable try-multisampling
     , text
     , time
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -151,6 +153,7 @@ executable try-pyramid-single
     , text
     , time
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
@@ -194,6 +197,7 @@ test-suite try-simple-polygon-test
     , text
     , time
     , try-codec-wavefront-obj
+    , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils

@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.SimplePolygon.Window (
@@ -7,27 +8,31 @@ module Graphics.SimplePolygon.Window (
 
 import Data.IORef
 
-import Graphics.UI.GLFW qualified as Glfw
+import Data.Tuple.ToolsYj
+import Data.Function.ToolsYj
 
-data W = W Glfw.Window FramebufferResized
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
-create :: (Int, Int) -> String -> (W -> IO a) -> IO a
+data W sw = W (GlfwG.Win.W sw) FramebufferResized
+
+create :: (Int, Int) -> String -> (forall sw . W sw -> IO a) -> IO a
 create sz nm f = do
 	fbrszd <- newFramebufferResized
-	(\f' -> withWindow sz nm f' fbrszd) \w -> f $ W w fbrszd
+	withWindow sz nm fbrszd \w -> f $ W w fbrszd
 
-withWindow :: (Int, Int) -> String -> (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow sz nm f g = initWindow sz nm g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
+withWindow :: (Int, Int) -> String -> FramebufferResized -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
+withWindow sz nm fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow (sz, nm) fr g
 
-initWindow :: (Int, Int) -> String -> FramebufferResized -> IO Glfw.Window
-initWindow sz nm frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow sz nm Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
+initWindow :: ((Int, Int), String) -> FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWindow sizeName fr g = do
+	Right w <- do
+		GlfwG.Win.hint noApi
+		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback
+		w (Just . const3 $ writeIORef fr True)
+	where
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 
 type FramebufferResized = IORef Bool
 
