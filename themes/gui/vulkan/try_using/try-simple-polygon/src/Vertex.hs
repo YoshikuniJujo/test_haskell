@@ -4,13 +4,15 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vertex (Vertex(..), Pos(..), Color(..), TexCoord(..)) where
+module Vertex (WVertex, Vertex(..), Pos(..), Color(..), TexCoord(..)) where
 
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.Generic qualified as GStorable
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxIpSt
 import Gpu.Vulkan.Cglm qualified as Cglm
+
+type WVertex = GStorable.W Vertex
 
 data Vertex = Vertex {
 	vertexPos :: Pos, vertexColor :: Color, vertexTexCoord :: TexCoord }

@@ -158,43 +158,14 @@ realMain ::
 	Cmd "Try multisampling" ()
 realMain txfp mdfp = liftIO $
 	supplyTxImg (NE.fromList $ get txfp) >>= \(lb, tximg, tctximg) ->
-	Win.create windowSize windowName \w -> Ist.create debug \ist ->
+	Win.create windowSize windowName \(Win.W w fr) ->
+	Ist.create debug \ist ->
 	Sfc.create ist w \sfc -> phdvc ist sfc >>= \pd ->
-	loadModel (get mdfp) >>= \mdl ->
-	body debug lb w ist sfc pd tximg tctximg mdl
+	indexing <$> Wf.readFile (get mdfp) >>= \mdl ->
+	bool id (DbgMsngr.setup ist) debug
+		$ body debug lb tximg tctximg mdl 0 w fr sfc pd
 	where phdvc ist sfc = PhDvc.enumerate ist sfc >>= \case
 		[] -> error "failed to find a suitable GPU"; pd : _ -> pure pd
-
-supplyTxImg :: NE.NonEmpty FilePath -> IO (TChan a, MyImage, TChan MyImage)
-supplyTxImg txfps = atomically newTChan >>= \lb ->
-	(MyImage <$>) <$> readRgba8 `mapM` txfps >>= \tximgs@(tximg NE.:| _) ->
-	atomically newTChan >>= \tctximg -> do
-		_ <- forkIO (for_ (Inf.tail $ cycle' tximgs) \ti -> do
-			_ <- atomically $ readTChan lb
-			putStrLn "Left Button Down"
-			atomically $ writeTChan tctximg ti)
-		pure (lb, tximg, tctximg)
-	where readRgba8 fp = either error convertRGBA8 <$> readImage fp
-
-cycle' :: NE.NonEmpty a -> Inf.Infinite a
-cycle' (x NE.:| xs) = x `Inf.Inf` cycle' (xs `snoc` x)
-
-snoc :: [a] -> a -> NE.NonEmpty a
-snoc [] x = x NE.:| []
-snoc (x : xs) y = x NE.:| (xs ++ [y])
-
-loadModel :: FilePath -> IO (V.Vector WVertex, V.Vector Word32)
-loadModel fp = do
-	vtcs <- Wf.readFile fp
-	let	(vtcs', idcs') = indexing vtcs
-	putStrLn "LOAD MODEL"
-	putStrLn $ "vtcs : " ++ show (V.length (vtcs :: V.Vector WVertex))
-	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector WVertex))
-	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector Word32))
-	pure (vtcs', idcs')
-
-type WVertex = GStorable.W Vertex
-type FramebufferResized = IORef Bool
 
 windowName :: String
 windowName = "TRY MULTISAMPLING"
@@ -202,22 +173,23 @@ windowName = "TRY MULTISAMPLING"
 windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
 
-maxFramesInFlight :: Integral n => n
-maxFramesInFlight = 2
+supplyTxImg :: NE.NonEmpty FilePath -> IO (TChan a, MyImage, TChan MyImage)
+supplyTxImg txfps =
+	atomically newTChan >>= \lb ->
+	rdimg `mapM` txfps >>= \txis@(txi NE.:| _) ->
+	atomically newTChan >>= \ctxi ->
+	((lb, txi, ctxi) <$) . forkIO $ for_ (Inf.tail $ cycle' txis) \ti ->
+		atomically $ readTChan lb >> writeTChan ctxi ti
+	where rdimg fp = MyImage . either error convertRGBA8 <$> readImage fp
 
-body :: BObj.IsImage img => Bool -> TChan () ->
-	Win.W sw -> Vk.Ist.I si -> Sfc.S ss -> PhDvc.P ->
-	img -> TChan img -> Model -> IO ()
-body vld lb (Win.W w g) inst sfc pd img tctximg mdl =
-	bool id (DbgMsngr.setup inst) vld
-		$ run vld lb LeaveFrontFaceCounterClockwise img tctximg mdl 0 w g sfc pd
+type FramebufferResized = IORef Bool
 
 type Model = (V.Vector WVertex, V.Vector Word32)
 
-run :: BObj.IsImage tximg => Bool -> TChan () -> Culling -> tximg -> TChan tximg ->
+body :: BObj.IsImage tximg => Bool -> TChan () -> tximg -> TChan tximg ->
 	Model -> Float ->
 	GlfwG.Win.W sw -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
-run vld lb cll tximg tctximg mdl mnld w g sfc (PhDvc.P phdv qfis) =
+body vld lb tximg tctximg mdl mnld w g sfc (PhDvc.P phdv qfis) =
 	getMaxUsableSampleCount phdv >>= \mss ->
 	createLogicalDevice vld phdv qfis \dv gq pq ->
 	createSwpch w sfc phdv qfis dv
@@ -230,7 +202,7 @@ run vld lb cll tximg tctximg mdl mnld w g sfc (PhDvc.P phdv qfis) =
 	createColorResources @scifmt phdv dv ext mss \clrimg clrimgm clrimgvw ->
 	createRenderPass @scifmt @dptfmt dv mss \rp ->
 	createPipelineLayout' dv \dscslyt dscslytNew ppllyt ->
-	createGraphicsPipeline cll dv ext rp ppllyt mss \gpl ->
+	createGraphicsPipeline LeaveFrontFaceCounterClockwise dv ext rp ppllyt mss \gpl ->
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext mss \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs clrimgvw dptImgVw \fbs ->
@@ -255,10 +227,13 @@ run vld lb cll tximg tctximg mdl mnld w g sfc (PhDvc.P phdv qfis) =
 
 	createModel phdv dv gq cp mdl \vbib ->
 
-	mainLoop lb cll g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
+	mainLoop lb LeaveFrontFaceCounterClockwise g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp
 		tctximg
 		(clrimg, clrimgm, clrimgvw, mss)
 		(dptImg, dptImgMem, dptImgVw) (snd mdl) vbib cbs sos ums dscss umsNew dscssNew tm tx txmem txvw txsmplr
+
+maxFramesInFlight :: Integral n => n
+maxFramesInFlight = 2
 
 createTexture :: forall img sd sc a . BObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> img -> Float -> (
@@ -2310,6 +2285,13 @@ shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
 	Vk.ShaderModule.createInfoFlags = def,
 	Vk.ShaderModule.createInfoCode = code }
+
+cycle' :: NE.NonEmpty a -> Inf.Infinite a
+cycle' (x NE.:| xs) = x `Inf.Inf` cycle' (xs `snoc` x)
+
+snoc :: [a] -> a -> NE.NonEmpty a
+snoc [] x = x NE.:| []
+snoc (x : xs) y = x NE.:| (xs ++ [y])
 
 [glslVertexShader|
 

@@ -12,5 +12,8 @@ import Graphics.SimplePolygon.Instance qualified as Ist
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw
 
-create :: Ist.I si -> Win.W sw -> (forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
-create i (Win.W w _) = Vk.Khr.Sfc.Glfw.create i w TPMaybe.N
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
+create :: Ist.I si -> GlfwG.Win.W sw -> (forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
+create i w = Vk.Khr.Sfc.Glfw.create i w TPMaybe.N
