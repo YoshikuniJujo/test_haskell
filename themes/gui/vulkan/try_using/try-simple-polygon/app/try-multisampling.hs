@@ -197,7 +197,7 @@ body lb tximg tctximg mdl mnld w g sfc (PhDvc.P pd qfis) =
 	createClrRsrcs @scifmt pd d ex spcnt \crs@(_, _, cv, _) ->
 	createDptRsrcs @dfmt pd d gq cp ex spcnt \drs@(_, _, dv) ->
 	createRndrPss @scifmt @dfmt d spcnt \rp ->
-	createPipelineLayout' d \dscslyt dscslytNew ppllyt ->
+	createPipelineLayout' d \dscslyt ppllyt ->
 	createGraphicsPipeline LeaveFrontFaceCounterClockwise d ex rp ppllyt spcnt \gpl ->
 	createFramebuffers d ex rp scvs cv dv \fbs ->
 
@@ -208,12 +208,9 @@ body lb tximg tctximg mdl mnld w g sfc (PhDvc.P pd qfis) =
 		(txsmplr :: Vk.Smplr.S ssmp) ->
 
 	createDescriptorPool d \dscp ->
-	createDescriptorPool d \dscpNew ->
 	createUniformBuffers @ssmp @siv pd d dscslyt maxFramesInFlight \dscslyts ubs ums ->
-	createUniformBuffersNew @ssmp @siv pd d dscslytNew maxFramesInFlight \dscslytsNew ubsNew umsNew ->
 
 	createDescriptorSets @_ @_ @ssmp @siv d dscp ubs dscslyts txvw txsmplr \dscss ->
-	createDescriptorSetsNew @_ @_ @ssmp @siv d dscpNew ubsNew dscslytsNew txvw txsmplr \dscssNew ->
 
 	createCommandBuffers d cp \cbs ->
 	createSyncObjects d \sos ->
@@ -222,7 +219,7 @@ body lb tximg tctximg mdl mnld w g sfc (PhDvc.P pd qfis) =
 	createModel pd d gq cp mdl \vbib ->
 
 	mainLoop lb LeaveFrontFaceCounterClockwise g w sfc pd qfis d gq pq sc ex scvs rp ppllyt gpl fbs cp
-		tctximg crs drs (snd mdl) vbib cbs sos ums dscss umsNew dscssNew tm tx txmem txvw txsmplr
+		tctximg crs drs (snd mdl) vbib cbs sos ums dscss tm tx txmem txvw txsmplr
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -251,9 +248,6 @@ recreateTexture :: forall img sd sc siv si3 sm2 a . BObj.IsImage img =>
 recreateTexture phdv dv gq cp tximg tx txmem txiv act =
 	recreateTextureImage phdv dv gq cp tximg tx txmem \mplvs ->
 	recreateImageView' @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit txiv mplvs act -- mplvs
-
--- createModels ::
---	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp -> [Model] ->
 
 createModel ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp -> Model ->
@@ -591,10 +585,6 @@ type AtomUbo s = '(s, '[
 	'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing],
 	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
-type AtomModel s = '(s, '[
-	'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
-	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
-
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.D s '[
 		'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing],
@@ -626,81 +616,46 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
-createDescriptorSetLayout1 :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.D s '[
-		'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
-		'Vk.DscSetLyt.Image
-			'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] -> IO a) ->
-	IO a
-createDescriptorSetLayout1 dvc = Vk.DscSetLyt.create dvc layoutInfo nil
-	where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
-		'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
-	layoutInfo = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = TMaybe.N,
-		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings =
-			uboLayoutBinding :**
-			samplerLayoutBinding :** HeteroParList.Nil }
-	uboLayoutBinding :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing])
-	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeUniformBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
-	samplerLayoutBinding :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)])
-	samplerLayoutBinding = Vk.DscSetLyt.BindingImage {
-		Vk.DscSetLyt.bindingImageDescriptorType =
-			Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DscSetLyt.bindingImageStageFlags =
-			Vk.ShaderStageFragmentBit }
-
 createPipelineLayout' ::
-	Vk.Dvc.D sd -> (forall sdsl sdsl' sl .
+	Vk.Dvc.D sd -> (forall sdsl sl .
 		Vk.DscSetLyt.D sdsl '[
 			'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing],
 			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-		Vk.DscSetLyt.D sdsl' '[
-			'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
-			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-		Vk.Ppl.Layout.P sl '[AtomUbo sdsl, AtomModel sdsl'] '[] -> IO b) -> IO b
+		Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
 createPipelineLayout' dvc f =
 	createDescriptorSetLayout dvc \dsl ->
-	createDescriptorSetLayout1 dvc \dsl1 ->
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts =
-				U2 dsl :** U2 dsl1 :** HeteroParList.Nil } in
-	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl dsl1
+				U2 dsl :** HeteroParList.Nil } in
+	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
 
 createGraphicsPipeline :: Culling -> Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl, AtomModel sdsl'] '[] ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl, AtomModel sdsl'], '[]) -> IO a) -> IO a
+		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
 createGraphicsPipeline cll dvc sce rp ppllyt mss f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
 			nil \(U3 gpl :** HeteroParList.Nil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo cll sce rp ppllyt mss
 
 recreateGraphicsPipeline :: Culling -> Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl, AtomModel sdsl'] '[] ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl, AtomModel sdsl'], '[]) -> IO ()
+		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline cll dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.unsafeRecreateGs
 	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil (U3 gpls :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo cll sce rp ppllyt mss
 
 mkGraphicsPipelineCreateInfo :: Culling ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl, AtomModel sdsl'] '[] ->
+	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
@@ -708,7 +663,7 @@ mkGraphicsPipelineCreateInfo :: Culling ->
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
-		'Nothing '(sl, '[AtomUbo sdsl, AtomModel sdsl'], '[]) sr '(sb, vs', ts', sbtss')
+		'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', sbtss')
 mkGraphicsPipelineCreateInfo cll sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
@@ -1601,29 +1556,6 @@ createUniformBuffers ph dvc dscslyt n f =
 			(b :** bs :: HeteroParList.PL BindedUbo (smsb ': smsbs))
 			(m :** ms)
 
-createUniformBuffersNew :: forall ssmp siv sd sdsc a .
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.D sdsc '[
-		'Vk.DscSetLyt.Buffer '[Obj.Atom 256 WModelObject 'Nothing],
-		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]] ->
-	Int -> (forall slyts smsbs . (
-		Vk.DscSet.DListFromMiddle slyts,
-		HeteroParList.FromList slyts,
-		UpdateNew smsbs slyts ssmp siv,
---		UpdateTextureNew slyts (AtomModel sdsc),
-		HeteroParList.HomoList (AtomModel sdsc) slyts
-		) =>
-		HeteroParList.PL (U2 Vk.DscSetLyt.D) slyts ->
-		HeteroParList.PL BindedUboNew smsbs ->
-		HeteroParList.PL MemoryUboNew smsbs -> IO a) -> IO a
-createUniformBuffersNew _ _ _ 0 f = f HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
-createUniformBuffersNew ph dvc dscslyt n f =
-	createUniformBuffer1New ph dvc \(b :: BindedUboNew smsb) m ->
-		createUniformBuffersNew @ssmp @siv ph dvc dscslyt (n - 1) \ls (bs :: HeteroParList.PL BindedUboNew smsbs) ms -> f
-			(U2 dscslyt :** ls)
-			(b :** bs :: HeteroParList.PL BindedUboNew (smsb ': smsbs))
-			(m :** ms)
-
 type family MapFst abs where
 	MapFst '[] = '[]
 	MapFst ( '(a, b, c :: k) ': abs) = a ': MapFst abs
@@ -1639,17 +1571,6 @@ data MemoryUbo smsb where
 			'[Obj.Atom 256 UniformBufferObject 'Nothing] )] ->
 		MemoryUbo '(sm, sb)
 
-data BindedUboNew smsb where
-	BindedUboNew :: Vk.Bffr.Binded sm sb "uniform-buffer" '[Obj.Atom 256 WModelObject 'Nothing] ->
-		BindedUboNew '(sm, sb)
-
-data MemoryUboNew smsb where
-	MemoryUboNew :: Vk.Mm.M sm '[ '(
-		sb,
-		'Vk.Mm.BufferArg "uniform-buffer"
-			'[Obj.Atom 256 WModelObject 'Nothing] )] ->
-		MemoryUboNew '(sm, sb)
-
 createUniformBuffer1 :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 		BindedUbo '(sm, sb) -> MemoryUbo '(sm, sb) -> IO b) -> IO b
 createUniformBuffer1 phdvc dvc f = createBufferAtom phdvc dvc
@@ -1657,14 +1578,6 @@ createUniformBuffer1 phdvc dvc f = createBufferAtom phdvc dvc
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) \b m ->
 	f (BindedUbo b) (MemoryUbo m)
-
-createUniformBuffer1New :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-		BindedUboNew '(sm, sb) -> MemoryUboNew '(sm, sb) -> IO b) -> IO b
-createUniformBuffer1New phdvc dvc f = createBufferAtom phdvc dvc
-		Vk.Bffr.UsageUniformBufferBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit ) \b m ->
-	f (BindedUboNew b) (MemoryUboNew m)
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
@@ -1700,43 +1613,12 @@ createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp f =
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
-createDescriptorSetsNew :: (
-	Vk.DscSet.DListFromMiddle ss,
-	UpdateNew smsbs ss ssmp siv ) =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedUboNew smsbs ->
-	HeteroParList.PL (U2 Vk.DscSetLyt.D) ss ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv -> Vk.Smplr.S ssmp ->
-	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
-createDescriptorSetsNew dvc dscp ubs dscslyts tximgvw txsmp f =
-	Vk.DscSet.allocateDs dvc allocInfo \dscss -> do
-	updateNew dvc ubs dscss tximgvw txsmp
-	f dscss
-	where
-	allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dscp,
-		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
-
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[Obj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sm, sb, nm, Obj.Atom 256 UniformBufferObject 'Nothing, 0 )]) 0
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		HeteroParList.Singleton bufferInfo
-	}
-	where bufferInfo = U5 $ Vk.Dsc.BufferInfo ub
-
-descriptorWrite0New ::
-	Vk.Bffr.Binded sm sb nm '[Obj.Atom 256 WModelObject 'Nothing] ->
-	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, Obj.Atom 256 WModelObject 'Nothing, 0 )]) 0
-descriptorWrite0New ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
@@ -1812,33 +1694,6 @@ instance UpdateTexture dscss dscs =>
 			HeteroParList.Nil )
 			HeteroParList.Nil
 		updateTexture @dscss @dscs dvc dscss tximgvw txsmp
-
-class UpdateNew smsbs slbtss ssmp siv where
-	updateNew ::
-		Vk.Dvc.D sd ->
-		HeteroParList.PL BindedUboNew smsbs ->
-		HeteroParList.PL (Vk.DscSet.D sds) slbtss ->
-		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv ->
-		Vk.Smplr.S ssmp ->
-		IO ()
-
-instance UpdateNew '[] '[] ssmp siv where updateNew _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
-
-instance (
-	Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 '(ds, cs)) '[Obj.Atom 256 WModelObject 'Nothing] 0,
-	Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 '(ds, cs)) '[Obj.Atom 256 WModelObject 'Nothing],
-	UpdateNew ubs dscss ssmp siv,
-	Vk.DscSet.WriteSourcesToMiddle cs ('Vk.DscSet.WriteSourcesArgImage
-			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0
-	) =>
-	UpdateNew (ub ': ubs) ('(ds, cs) ': dscss) ssmp siv where
-	updateNew dvc (BindedUboNew ub :** ubs) (dscs :** dscss) tximgvw txsmp = do
-		Vk.DscSet.updateDs dvc (
-			U5 (descriptorWrite0New ub dscs) :**
-			U5 (descriptorWrite1 dscs tximgvw txsmp) :**
-			HeteroParList.Nil )
-			HeteroParList.Nil
-		updateNew dvc ubs dscss tximgvw txsmp
 
 findMemoryType :: Vk.Phd.P -> Vk.Mm.M.TypeBits -> Vk.Mm.PropertyFlags ->
 	IO Vk.Mm.M.TypeIndex
@@ -1922,21 +1777,20 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sdsl' sds sdsNew .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
-	Vk.Ppl.Layout.P sl '[AtomUbo sdsl, AtomModel sdsl'] '[] ->
+	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl, AtomModel sdsl'], '[]) ->
+		'(sl, '[AtomUbo sdsl], '[]) ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[Obj.List 256 Word32 ""] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.DscSet.D sdsNew (AtomModel sdsl') ->
 	IO ()
-recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds ubdsNew =
+recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
@@ -1946,9 +1800,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds ubdsNew =
 	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word32 @"" ib) >>
 
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
-		(U2 ubds :** U2 ubdsNew :** HeteroParList.Nil)
-		(	(HeteroParList.Nil :** HeteroParList.Nil :** HeteroParList.Nil) :**
-			(HeteroParList.Nil :** HeteroParList.Nil :** HeteroParList.Nil) :** HeteroParList.Nil ) >>
+		(U2 ubds :** HeteroParList.Nil)
+		(	(HeteroParList.Nil :** HeteroParList.Nil :** HeteroParList.Nil) :** HeteroParList.Nil ) >>
 
 	Vk.Cmd.drawIndexed cbb (fromIntegral $ V.length idcs) 1 0 0 0
 
@@ -1974,7 +1827,6 @@ mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs,
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
-	HeteroParList.HomoList (AtomModel sdsc') slytsNew,
 	HeteroParList.HomoList '() vss ) =>
 	TChan () -> Culling -> FramebufferResized ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
@@ -1982,10 +1834,10 @@ mainLoop :: (
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc, AtomModel sdsc'] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc, AtomModel sdsc'], '[]) ->
+		'(sl, '[AtomUbo sdsc], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	TChan tximg ->
@@ -1998,8 +1850,6 @@ mainLoop :: (
 	SyncObjects siassrfssfs ->
 	HeteroParList.PL MemoryUbo smsbs ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
-	HeteroParList.PL MemoryUboNew smsbsNew ->
-	HeteroParList.PL (Vk.DscSet.D sdsNew) slytsNew ->
 	UTCTime ->
 	Vk.Img.M.Binded sm2 si3 "texture" (BObj.ImageFormat tximg) ->
 	Vk.Mm.M.M sm2 '[ '(si3,
@@ -2007,7 +1857,7 @@ mainLoop :: (
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2 -> Vk.Smplr.M.S ss2 ->
 	IO ()
 mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp
-	tctximg crsrcs drsrcs idcs (vb, ib) cbs iasrfsifs ums dscss umsNew dscssNew tm0 tx txmem txiv txsmplr = do
+	tctximg crsrcs drsrcs idcs (vb, ib) cbs iasrfsifs ums dscss tm0 tx txmem txiv txsmplr = do
 	lbst <- atomically $ newTVar Glfw.MouseButtonState'Released
 	($ cycle' (NE.fromList [0 .. maxFramesInFlight - 1])) . ($ ext0) $ fix \loop ext (Inf.Inf cf cfs) -> do
 		Glfw.pollEvents
@@ -2015,33 +1865,31 @@ mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp
 		runLoop lbst lb cll w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs cp tctximg crsrcs drsrcs idcs vb ib cbs iasrfsifs
 			ums dscss
-			umsNew dscssNew
 			(realToFrac $ tm `diffUTCTime` tm0)
 			cf tx txmem txiv txsmplr (`loop` cfs)
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: forall
-	tximg scfmt dptfmt sfs slyts slytsNew vss ssfc sd ssc sis sr sl sg sdi sdm
-	sdiv sm sb nm sm' sb' nm' sdsc sdsc' sc clrnm clrsm clrsi clrsiv scb
+	tximg scfmt dptfmt sfs slyts vss ssfc sd ssc sis sr sl sg sdi sdm
+	sdiv sm sb nm sm' sb' nm' sdsc sc clrnm clrsm clrsi clrsiv scb
 	siassrfssfs
-	smsbs smsbsNew sds sdsNew ss2 siv2 sm2 si3 sw .
+	smsbs sds ss2 siv2 sm2 si3 sw .
 	(
 	BObj.IsImage tximg,
 	UpdateTexture slyts (AtomUbo sdsc),
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs,
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
-	HeteroParList.HomoList (AtomModel sdsc') slytsNew,
 	HeteroParList.HomoList '() vss) =>
 	TVar Glfw.MouseButtonState -> TChan () ->
 	Culling -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	PhDvc.QFamIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc, AtomModel sdsc'] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc, AtomModel sdsc'], '[]) ->
+		'(sl, '[AtomUbo sdsc], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	TChan tximg ->
@@ -2054,8 +1902,6 @@ runLoop :: forall
 	SyncObjects siassrfssfs ->
 	HeteroParList.PL MemoryUbo smsbs ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
-	HeteroParList.PL MemoryUboNew smsbsNew ->
-	HeteroParList.PL (Vk.DscSet.D sdsNew) slytsNew ->
 	Float ->
 	Int ->
 	Vk.Img.M.Binded sm2 si3 "texture" (BObj.ImageFormat tximg) ->
@@ -2066,7 +1912,6 @@ runLoop :: forall
 runLoop lbst lb cll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc frszd ext
 	scivs rp ppllyt gpl fbs cp tctximg crsrcs drsrcs idcs vb ib cbs iasrfsifs
 	ums dscss
-	umsNew dscssNew
 	tm cf tx txmem txiv txsmplr loop = do
 	mtximg <- atomically (do
 		b <- isEmptyTChan tctximg
@@ -2081,7 +1926,7 @@ runLoop lbst lb cll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc frszd ext
 --				updateTexture @slyts @(AtomUbo sdsc) dvc dscss txiv txsmplr
 				catchAndRecreate cll w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
 					$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs iasrfsifs
-						ums dscss umsNew dscssNew tm cf
+						ums dscss tm cf
 				cls <- Glfw.windowShouldClose win
 				mouseButtonDown lbst win Glfw.MouseButton'1 >>= \case
 					True -> atomically $ writeTChan lb ()
@@ -2093,7 +1938,7 @@ runLoop lbst lb cll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc frszd ext
 			catchAndRecreate cll w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
 				$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs iasrfsifs
 					ums dscss
-					umsNew dscssNew tm cf
+					tm cf
 			cls <- Glfw.windowShouldClose win
 			mouseButtonDown lbst win Glfw.MouseButton'1 >>= \case
 				True -> atomically $ writeTChan lb ()
@@ -2112,17 +1957,16 @@ mouseButtonDown st w b = do
 			Glfw.MouseButtonState'Pressed ) -> pure True
 		_ -> pure False
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sdsc' sg sm sb nm sm' sb' nm' scb ssos vss smsbs smsbsNew
-		slyts slytsNew sds sdsNew . (
+drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs
+		slyts sds . (
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
-	HeteroParList.HomoList (AtomModel sdsc') slytsNew,
 	HeteroParList.HomoList '() vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.P sl '[AtomUbo sdsc, AtomModel sdsc'] '[] ->
+	Vk.Ppl.Layout.P sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc, AtomModel sdsc'], '[]) ->
+		'(sl, '[AtomUbo sdsc], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 WVertex ""] ->
@@ -2130,28 +1974,23 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sdsc' sg sm sb nm sm' sb' nm' sc
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
 	HeteroParList.PL MemoryUbo smsbs ->
 	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
-	HeteroParList.PL MemoryUboNew smsbsNew ->
-	HeteroParList.PL (Vk.DscSet.D sdsNew) slytsNew ->
 	Float ->
 	Int -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
-	(SyncObjects iass rfss iffs) ums dscss umsNew dscssNew tm cf =
+	(SyncObjects iass rfss iffs) ums dscss tm cf =
 	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
 	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
 	HeteroParList.index ums cf \um ->
-	HeteroParList.index umsNew cf \umNew ->
-	($ HeteroParList.homoListIndex dscss cf) \dscs ->
-	($ HeteroParList.homoListIndex dscssNew cf) \dscsNew -> do
+	($ HeteroParList.homoListIndex dscss cf) \dscs -> do
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl idcs vb ib dscs dscsNew
+		recordCommandBuffer cb rp fb ext ppllyt gpl idcs vb ib dscs
 	updateUniformBuffer dvc um ext tm
-	updateUniformBufferNew dvc umNew tm
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
@@ -2189,15 +2028,6 @@ updateUniformBuffer dvc (MemoryUbo um) sce tm =
 					fromIntegral (Vk.extent2dHeight sce))
 				0.1 10 }
 
-updateUniformBufferNew :: Vk.Dvc.D sd -> MemoryUboNew sm -> Float -> IO ()
-updateUniformBufferNew dvc (MemoryUboNew um) tm =
-	Vk.Mm.write @"uniform-buffer" @(Obj.Atom 256 WModelObject 'Nothing) @0 dvc um zeroBits ubo
-	where ubo = GStorable.W ModelObject {
-		modelObject = Cglm.rotate
-			Cglm.mat4Identity
-			(tm * Cglm.rad 90)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) }
-
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
@@ -2210,11 +2040,11 @@ catchAndRecreate :: (
 	Vk.Queue.Q ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc, AtomModel sdsc'] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc, AtomModel sdsc'], '[]) ->
+		'(sl, '[AtomUbo sdsc], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
@@ -2237,11 +2067,11 @@ recreateAll :: (
 	Vk.Queue.Q ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HeteroParList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc, AtomModel sdsc'] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc, AtomModel sdsc'], '[]) ->
+		'(sl, '[AtomUbo sdsc], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	ColorResources clnm scfmt clrsi clrsm clrsiv ->
@@ -2282,11 +2112,6 @@ instance Storable UniformBufferObject where
 
 instance GStorable.G UniformBufferObject
 
-type WModelObject = GStorable.W ModelObject
-data ModelObject = ModelObject { modelObject :: Cglm.Mat4 } deriving (Show, Generic)
-
-instance GStorable.G ModelObject
-
 shaderModuleCreateInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
@@ -2310,10 +2135,6 @@ layout(binding = 0) uniform UniformBufferObject {
 	mat4 proj;
 	} ubo;
 
-layout(set = 1, binding = 0) uniform UniformBufferObject1 {
-	mat4 model2;
-	} ubo1;
-
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec2 inTexCoord;
@@ -2324,8 +2145,7 @@ layout(location = 1) out vec2 fragTexCoord;
 void
 main()
 {
-	gl_Position = ubo.proj * ubo.view * ubo1.model2 * vec4(inPosition, 1.0);
-//	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
 	fragColor = inColor;
 	fragTexCoord = inTexCoord;
 }
@@ -2343,14 +2163,11 @@ layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
 
-layout(set = 1, binding = 1) uniform sampler2D texSampler1;
-
 void
 main()
 {
 //	outColor = texture(texSampler, fragTexCoord * 2.0);
 	outColor = vec4(fragColor * texture(texSampler, fragTexCoord).rgb, 1.0);
-//	outColor = vec4(fragColor * texture(texSampler1, fragTexCoord).rgb, 1.0);
 }
 
 |]
