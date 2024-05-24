@@ -49,6 +49,7 @@ library
     , bytestring
     , containers
     , data-default
+    , ghc
     , mtl
     , optparse-declarative
     , ranged-list
@@ -101,6 +102,7 @@ executable try-multisampling
     , bytestring
     , containers
     , data-default
+    , ghc
     , mtl
     , optparse-declarative
     , ranged-list
@@ -144,6 +146,7 @@ executable try-pyramid-single
     , bytestring
     , containers
     , data-default
+    , ghc
     , mtl
     , optparse-declarative
     , ranged-list
@@ -188,6 +191,7 @@ test-suite try-simple-polygon-test
     , bytestring
     , containers
     , data-default
+    , ghc
     , mtl
     , optparse-declarative
     , ranged-list
