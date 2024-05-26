@@ -74,7 +74,7 @@ import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object qualified as Obj
 import Gpu.Vulkan.Object.Base qualified as BObj
 import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Instance qualified as Vk.Ist
@@ -656,7 +656,7 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 
 type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
-type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
+type AtomModelViewProj alm = Obj.Atom alm WModelViewProj 'Nothing
 type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -955,16 +955,16 @@ memInfo mt = Vk.Mm.AllocateInfo {
 createBffrImg :: forall sd img nm inm a . BObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	img -> (forall sm sb al . KnownNat al =>
-		Vk.Bffr.Binded sm sb nm '[VObj.Image al img inm] ->
+		Vk.Bffr.Binded sm sb nm '[Obj.Image al img inm] ->
 		Vk.Mm.M sm '[
-			'(sb, 'Vk.Mm.BufferArg nm '[VObj.Image al img inm]) ] ->
+			'(sb, 'Vk.Mm.BufferArg nm '[Obj.Image al img inm]) ] ->
 		IO a) -> IO a
 createBffrImg p dv us prs img a =
-	bffrAlgn @(VObj.Image 256 img inm) dv ln us \(_ :: Proxy al) ->
-	createBffr @_ @_ @(VObj.Image al img inm) p dv ln us prs a
+	bffrAlgn @(Obj.Image 256 img inm) dv ln us \(_ :: Proxy al) ->
+	createBffr @_ @_ @(Obj.Image al img inm) p dv ln us prs a
 	where
-	ln :: VObj.Length (VObj.Image al img inm)
-	ln = VObj.LengthImage
+	ln :: Obj.Length (Obj.Image al img inm)
+	ln = Obj.LengthImage
 		(BObj.imageRow img) (BObj.imageWidth img)
 		(BObj.imageHeight img) (BObj.imageDepth img)
 
@@ -1019,7 +1019,7 @@ transitionImgLyt dv gq cp i ol nl ml = singleTimeCmds dv gq cp \cb ->
 copyBffrToImg :: forall sd sc smb sbb nmb al img imgnm smi si nmi .
 	(KnownNat al, Storable (BObj.ImagePixel img)) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded smb sbb nmb '[ VObj.Image al img imgnm]  ->
+	Vk.Bffr.Binded smb sbb nmb '[ Obj.Image al img imgnm]  ->
 	Vk.Img.Binded smi si nmi (BObj.ImageFormat img) -> IO ()
 copyBffrToImg dv gq cp bf img = singleTimeCmds dv gq cp \cb ->
 	Vk.Cmd.copyBufferToImage @al @img @'[imgnm] cb bf img
@@ -1034,8 +1034,8 @@ copyBffrToImg dv gq cp bf img = singleTimeCmds dv gq cp \cb ->
 		Vk.Img.subresourceLayersMipLevel = 0,
 		Vk.Img.subresourceLayersBaseArrayLayer = 0,
 		Vk.Img.subresourceLayersLayerCount = 1 }
-	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
-		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
+	Obj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
+		Obj.lengthOf @(Obj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
 
 singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
@@ -1162,13 +1162,13 @@ createTxSmplr pd dv (mls, _, _) mnld a = Vk.Phd.getProperties pd >>= \pr ->
 createVtxBffr :: (IsSequence lst, Element lst ~ WVertex) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> lst ->
 	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
-		'[VObj.List al WVertex lnm] -> IO a) -> IO a
+		'[Obj.List al WVertex lnm] -> IO a) -> IO a
 createVtxBffr = createBffrMem Vk.Bffr.UsageVertexBufferBit
 
 createIdxBffr :: (IsSequence lst, Storable' (Element lst)) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> lst ->
 	(forall sm sb al . KnownNat al => (
-		Vk.Bffr.Binded sm sb nm '[VObj.List al (Element lst) lnm],
+		Vk.Bffr.Binded sm sb nm '[Obj.List al (Element lst) lnm],
 		Vk.Cmd.IndexCount ) -> IO a) -> IO a
 createIdxBffr pd dv gq cp is a = createBffrMem Vk.Bffr.UsageIndexBufferBit
 	pd dv gq cp is \ib -> a (ib, fromIntegral $ olength is)
@@ -1178,9 +1178,9 @@ createBffrMem :: forall sd sc lst nm lnm a .
 	Vk.Bffr.UsageFlags -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> lst ->
 	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
-		'[VObj.List al (Element lst) lnm] -> IO a) -> IO a
+		'[Obj.List al (Element lst) lnm] -> IO a) -> IO a
 createBffrMem us pd dv gq cp xs@(fromIntegral . olength -> ln) f =
-	bffrAlgn @(VObj.List 256 (Element lst) lnm) dv (VObj.LengthList ln)
+	bffrAlgn @(Obj.List 256 (Element lst) lnm) dv (Obj.LengthList ln)
 		(Vk.Bffr.UsageTransferDstBit .|. us) \(_ :: Proxy al) ->
 	createBffrLst pd dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
 		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
@@ -1188,21 +1188,21 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . olength -> ln) f =
 			Vk.Bffr.UsageTransferSrcBit (
 			Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) \
-			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
+			(b' :: Vk.Bffr.Binded sm sb bnm' '[Obj.List al t lnm'])
 			bm' -> do
 			Vk.Mm.write
-				@bnm' @(VObj.List al t lnm') @0 dv bm' zeroBits xs
+				@bnm' @(Obj.List al t lnm') @0 dv bm' zeroBits xs
 			copy b' b
 		f b
 	where
 	copy :: forall sm sb bnm sm' sb' bnm' al . KnownNat al =>
-		Vk.Bffr.Binded sm sb bnm '[VObj.List al (Element lst) lnm] ->
-		Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al (Element lst) lnm] -> IO ()
+		Vk.Bffr.Binded sm sb bnm '[Obj.List al (Element lst) lnm] ->
+		Vk.Bffr.Binded sm' sb' bnm' '[Obj.List al (Element lst) lnm] -> IO ()
 	copy s d = singleTimeCmds dv gq cp \cb ->
-		Vk.Cmd.copyBuffer @'[ '( '[VObj.List al (Element lst) lnm], 0, 0)] cb s d
+		Vk.Cmd.copyBuffer @'[ '( '[Obj.List al (Element lst) lnm], 0, 0)] cb s d
 
-bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
-	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
+bffrAlgn :: forall o sd a . Obj.SizeAlignment o =>
+	Vk.Dvc.D sd -> Obj.Length o -> Vk.Bffr.UsageFlags ->
 	(forall al . KnownNat al => Proxy al -> IO a) -> IO a
 bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
@@ -1253,23 +1253,23 @@ type ModelViewProjMemory sm sb mnm alm =
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
 		IO b) -> IO b
-createBffrAtm us prs p dv = createBffr p dv VObj.LengthAtom us prs
+createBffrAtm us prs p dv = createBffr p dv Obj.LengthAtom us prs
 
 createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
+		Vk.Bffr.Binded sm sb bnm '[Obj.List al t lnm] ->
 		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List al t lnm])] ->
+			'[ '(sb, 'Vk.Mm.BufferArg bnm '[Obj.List al t lnm])] ->
 		IO a) -> IO a
-createBffrLst p dv ln = createBffr p dv $ VObj.LengthList ln
+createBffrLst p dv ln = createBffr p dv $ Obj.LengthList ln
 
-createBffr :: forall sd bnm o a . VObj.SizeAlignment o =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
+createBffr :: forall sd bnm o a . Obj.SizeAlignment o =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb bnm '[o] -> Vk.Mm.M sm
 			'[ '(sb, 'Vk.Mm.BufferArg bnm '[o])] -> IO a) -> IO a
@@ -1284,7 +1284,7 @@ createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 bffrInfo ::
-	VObj.Length o -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
+	Obj.Length o -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
 bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
@@ -1343,9 +1343,9 @@ instance Update _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
 instance (
 	KnownNat al,
 	Vk.DscSet.BindingAndArrayElemBuffer
-		cs '[VObj.Atom al WModelViewProj 'Nothing] 0,
+		cs '[Obj.Atom al WModelViewProj 'Nothing] 0,
 	Vk.DscSet.UpdateDynamicLength
-		cs '[VObj.Atom al WModelViewProj 'Nothing],
+		cs '[Obj.Atom al WModelViewProj 'Nothing],
 	Vk.DscSet.BindingAndArrayElemImage cs '[ '(Tx, TxFmt)] 0,
 	Vk.DscSet.WriteSourcesToMiddle cs
 		('Vk.DscSet.WriteSourcesArgImage
@@ -1362,7 +1362,7 @@ dscWrite0 :: KnownNat alm => Vk.DscSet.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
 	Vk.DscSet.Write 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-			sm, sb, bnm, VObj.Atom alm WModelViewProj 'Nothing, 0 )]) 0
+			sm, sb, bnm, Obj.Atom alm WModelViewProj 'Nothing, 0 )]) 0
 dscWrite0 ds mb = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
@@ -1427,7 +1427,7 @@ mainloop :: (
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	IndexBuffer smi sbi bnmi ali nmi ->
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
@@ -1445,7 +1445,7 @@ mainloop fr w sfc pd qfis dv gq pq cp
 	Vk.Dvc.waitIdle dv
 
 type IndexBuffer smi sbi bnmi ali nmi = (
-	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word32 nmi],
+	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word32 nmi],
 	Vk.Cmd.IndexCount )
 
 run :: (
@@ -1464,7 +1464,7 @@ run :: (
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	IndexBuffer smi sbi bnmi ali nmi ->
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
@@ -1492,7 +1492,7 @@ draw :: forall
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	IndexBuffer smi sbi bnmi ali nmi ->
 	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) sls ->
@@ -1535,7 +1535,7 @@ updateModelViewProj :: forall sd alm sm nmm . KnownNat alm => Vk.Dvc.D sd ->
 updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) @0 dv mm zeroBits
+	Vk.Mm.write @nmm @(Obj.Atom alm WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
@@ -1556,7 +1556,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
 	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	IndexBuffer smi sbi bnmi ali nmi ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alm) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb (ib, idcs) ds =
