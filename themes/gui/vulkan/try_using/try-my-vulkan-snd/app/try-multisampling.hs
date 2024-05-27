@@ -140,7 +140,7 @@ realMain ::
 	Flag "m" '["model"] "FILEPATH" "model filepath"
 		(Def "../../../../../files/models/viking_room.obj" String) ->
 	Flag "l" '["minLod"] "FLOAT" "minimal mip level" (Def "0.0" Double) ->
-	Cmd "Try Vulkan Texture" ()
+	Cmd "Try multisampling" ()
 realMain txfp mdlfp mnld = liftIO $ newIORef False >>= \fr -> withWindow fr \w ->
 	createIst \ist -> bool id (dbgm ist) debug
 		$ body (get txfp) (get mdlfp) (realToFrac $ get mnld) fr w ist
