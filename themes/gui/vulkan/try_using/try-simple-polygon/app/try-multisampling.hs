@@ -425,22 +425,15 @@ createDptRsrcs pd dv gq cp (Vk.Extent2d w h) spcnt a =
 		Vk.Img.LayoutDepthStencilAttachmentOptimal 1 >>
 	a (di, dm, dvw)
 
-recreateDepthResources :: Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Extent2d -> Vk.Sample.CountFlags ->
-	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.M
-		sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] ->
-	Vk.ImgVw.I nm fmt sdiv -> IO ()
-recreateDepthResources phdvc dvc gq cp ext mss dptImg dptImgMem dptImgVw = do
-	print ext
-	recreateImage phdvc dvc
-		(Vk.extent2dWidth ext) (Vk.extent2dHeight ext) 1 mss
+recreateDptRsrcs :: Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
+	Vk.Sample.CountFlags -> DptRsrcs sb sm nm fmt sdvw -> IO ()
+recreateDptRsrcs pd dv gq cp (Vk.Extent2d w h) spcnt (di, dm, dvw) = do
+	reprepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
-		Vk.Mm.PropertyDeviceLocalBit dptImg dptImgMem
-	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw 1
-	transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
+		Vk.Mm.PropertyDeviceLocalBit w h 1 spcnt di dm
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo di Vk.Img.AspectDepthBit 1) nil dvw
+	transitionImgLyt dv gq cp di Vk.Img.LayoutUndefined
 		Vk.Img.LayoutDepthStencilAttachmentOptimal 1
 
 type DptRsrcs sb sm nm fmt svw = (
@@ -819,13 +812,6 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
 createImageView dvc timg asps mplvs f =
 	Vk.ImgVw.create dvc (mkImageViewCreateInfo timg asps mplvs) nil f
-
-recreateImageView :: Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
-	Vk.Img.AspectFlags ->
-	Vk.ImgVw.I nm ivfmt s -> Word32 -> IO ()
-recreateImageView dvc timg asps iv mplvs =
-	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfo timg asps mplvs) nil iv
 
 recreateImageView' :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
@@ -1573,18 +1559,6 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv binfo nil \b -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-recreateImage :: Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
-	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
-	Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.M
-		sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
-recreateImage pd dvc wdt hgt mplvs mss tlng usg prps img mem = do
-	Vk.Img.unsafeRecreate @'Nothing dvc
-		(imageInfo wdt hgt mplvs mss tlng usg) nil img
-	minfo <- imageMemoryInfoBinded pd dvc prps img
-	imageReallocateBind dvc img minfo mem
-
 recreateImage' :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
@@ -1616,16 +1590,6 @@ imageInfo wdt hgt mplvs mss tlng usg = Vk.Img.CreateInfo {
 		Vk.Img.createInfoSamples = mss,
 		Vk.Img.createInfoFlags = zeroBits,
 		Vk.Img.createInfoQueueFamilyIndices = [] }
-
-imageReallocateBind ::
-	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
-	Vk.Mm.AllocateInfo 'Nothing ->
-	Vk.Mm.M
-		sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
-imageReallocateBind dvc img minfo m =
-	Vk.Mm.unsafeReallocateBind @'Nothing dvc
-		(HPList.Singleton . U2 $ Vk.Mm.ImageBinded img) minfo
-		nil m
 
 imageReallocateBind' ::
 	Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
@@ -2243,7 +2207,7 @@ recreateAll cll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl
 		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
 		recreateClrRsrcs phdvc dvc ext (clrimg, clrimgm, clrimgvw, mss)
-		recreateDepthResources phdvc dvc gq cp ext mss dptImg dptImgMem dptImgVw
+		recreateDptRsrcs phdvc dvc gq cp ext mss (dptImg, dptImgMem, dptImgVw)
 		recreateGraphicsPipeline cll dvc ext rp ppllyt mss gpl
 		recreateFramebuffers dvc ext rp scivs clrimgvw dptImgVw fbs
 
