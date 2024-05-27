@@ -485,8 +485,8 @@ type ClrRsrcs fmt nm si sm siv = (
 
 createDptRsrcs :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
-	Vk.Sample.CountFlags -> (forall sm si sv .
-		DptRsrcs si sm nm fmt sv -> IO a) -> IO a
+	Vk.Sample.CountFlags ->
+	(forall sm si sv . DptRsrcs si sm nm fmt sv -> IO a) -> IO a
 createDptRsrcs pd dv gq cp (Vk.Extent2d w h) spcnt a =
 	prepareImg pd dv
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
