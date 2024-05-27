@@ -746,6 +746,49 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 		Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 		Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
+createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm fmt) sis -> Vk.ImgVw.I dptnm dptfmt siv ->
+	Vk.ImgVw.I clrnm clrfmt sciv ->
+	(forall sfs . RecreateFramebuffers sis sfs =>
+		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
+createFrmbffrs _ _ _ HPList.Nil _ _ f = f HPList.Nil
+createFrmbffrs dvc sce rp (iv :** ivs) dptiv clriv f =
+	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv clriv dptiv) nil \fb ->
+	createFrmbffrs dvc sce rp ivs dptiv clriv \fbs -> f (fb :** fbs)
+
+class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
+	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
+		Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
+		Vk.ImgVw.I clrnm scfmt clrsdiv ->
+		Vk.ImgVw.I dptfmt dptnm sdiv ->
+		HPList.PL Vk.Frmbffr.F sfs -> IO ()
+
+instance RecreateFramebuffers '[] '[] where
+	recreateFramebuffers _dvc _sce _rp HPList.Nil _ _ HPList.Nil = pure ()
+
+instance RecreateFramebuffers sis sfs =>
+	RecreateFramebuffers (si ': sis) (sf ': sfs) where
+	recreateFramebuffers dvc sce rp (sciv :** scivs) clriv dptiv (fb :** fbs) =
+		Vk.Frmbffr.unsafeRecreate dvc
+			(mkFramebufferCreateInfo sce rp sciv clriv dptiv) nil fb >>
+		recreateFramebuffers dvc sce rp scivs clriv dptiv fbs
+
+mkFramebufferCreateInfo ::
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
+	Vk.ImgVw.I clrnm clrfmt clrsdiv ->
+	Vk.ImgVw.I dptnm dptfmt sdiv ->
+	Vk.Frmbffr.CreateInfo 'Nothing sr
+		'[ '(clrnm, clrfmt, clrsdiv), '(dptnm, dptfmt, sdiv), '(nm, fmt, si)]
+mkFramebufferCreateInfo sce rp attch clr dpt = Vk.Frmbffr.CreateInfo {
+	Vk.Frmbffr.createInfoNext = TMaybe.N,
+	Vk.Frmbffr.createInfoFlags = zeroBits,
+	Vk.Frmbffr.createInfoRenderPass = rp,
+	Vk.Frmbffr.createInfoAttachments = U3 clr :** U3 dpt :** U3 attch :** HPList.Nil,
+	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
+	Vk.Frmbffr.createInfoLayers = 1 }
+	where
+	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
+
 class CreateMvpBffrs (mff :: [()]) where
 	createMvpBffrs :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd ->
 		Vk.DscSetLyt.D sdsl (DscStLytArg al) ->
@@ -1105,50 +1148,6 @@ dvcExtensions = [Vk.Khr.Swpch.extensionName]
 type AtomUbo s alu = '(s, '[
 	'Vk.DscSetLyt.Buffer '[Obj.Atom alu WModelViewProj 'Nothing],
 	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
-
-createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
-	Vk.ImgVw.I dptnm dptfmt siv ->
-	Vk.ImgVw.I clrnm fmt slrsiv ->
-	(forall sfs . RecreateFramebuffers sis sfs =>
-		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFrmbffrs _ _ _ HPList.Nil _ _ f = f HPList.Nil
-createFrmbffrs dvc sce rp (iv :** ivs) dptiv clriv f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv clriv dptiv) nil \fb ->
-	createFrmbffrs dvc sce rp ivs dptiv clriv \fbs -> f (fb :** fbs)
-
-class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
-	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-		Vk.ImgVw.I clrnm scfmt clrsdiv ->
-		Vk.ImgVw.I dptfmt dptnm sdiv ->
-		HPList.PL Vk.Frmbffr.F sfs -> IO ()
-
-instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce _rp HPList.Nil _ _ HPList.Nil = pure ()
-
-instance RecreateFramebuffers sis sfs =>
-	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce rp (sciv :** scivs) clriv dptiv (fb :** fbs) =
-		Vk.Frmbffr.unsafeRecreate dvc
-			(mkFramebufferCreateInfo sce rp sciv clriv dptiv) nil fb >>
-		recreateFramebuffers dvc sce rp scivs clriv dptiv fbs
-
-mkFramebufferCreateInfo ::
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
-	Vk.ImgVw.I clrnm fmt clrsdiv ->
-	Vk.ImgVw.I dptnm dptfmt sdiv ->
-	Vk.Frmbffr.CreateInfo 'Nothing sr
-		'[ '(clrnm, fmt, clrsdiv), '(dptnm, dptfmt, sdiv), '(nm, fmt, si)]
-mkFramebufferCreateInfo sce rp attch clr dpt = Vk.Frmbffr.CreateInfo {
-	Vk.Frmbffr.createInfoNext = TMaybe.N,
-	Vk.Frmbffr.createInfoFlags = zeroBits,
-	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 clr :** U3 dpt :** U3 attch :** HPList.Nil,
-	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
-	Vk.Frmbffr.createInfoLayers = 1 }
-	where
-	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
 
 createCmdPl :: PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
