@@ -189,7 +189,7 @@ type FramebufferResized = IORef Bool
 body :: BObj.IsImage tximg => TChan () -> tximg -> TChan tximg ->
 	Model -> Float ->
 	GlfwG.Win.W sw -> FramebufferResized -> Sfc.S ss -> PhDvc.P -> IO ()
-body lb txi tctximg mdl mnld w g sfc (PhDvc.P pd qfis) =
+body lb txi tctximg mdl@(vtcs, idcs) mnld w g sfc (PhDvc.P pd qfis) =
 	getMaxUsableSampleCount pd >>= \spcnt ->
 	createLgDvc pd qfis \d gq pq ->
 	createCmdPl qfis d \cp ->
@@ -202,26 +202,22 @@ body lb txi tctximg mdl mnld w g sfc (PhDvc.P pd qfis) =
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl spcnt \gp ->
 	createFrmbffrs d ex rp scvs dv cv \fbs ->
-
 	let	mls@(mls', _, _) = calcMipLevels txi in
 	createTxImg pd d gq cp txi mls \tx txmem ->
+	generateMipmaps' pd d gq cp tx mls >>
 	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit mls') nil \tv ->
 	createTxSmplr pd d mls mnld \txsp ->
-	generateMipmaps' pd d gq cp tx mls >>
-
+	createVtxBffr pd d gq cp vtcs \vb ->
+	createIdxBffr pd d gq cp idcs \ib ->
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
-
 	createMvpBffrs @mff pd d dsl \dsls mbs mbms ->
 	createDscPl d \dp -> createDscSts d dp mbs dsls tv txsp \dss ->
 
 	createCommandBuffers d cp \cbs ->
 	createSyncObjects d \sos ->
-	getCurrentTime >>= \tm ->
-
-	createModel pd d gq cp mdl \vbib ->
-
+	getCurrentTime >>=
 	mainLoop lb LeaveFrontFaceCounterClockwise g w sfc pd qfis d gq pq sc ex scvs rp pl gp fbs cp
-		tctximg crs drs (snd mdl) vbib cbs sos mbms dss tm tx txmem tv txsp
+		tctximg crs drs (snd mdl) (vb, ib) cbs sos mbms dss tx txmem tv txsp
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
@@ -230,6 +226,8 @@ body lb txi tctximg mdl mnld w g sfc (PhDvc.P pd qfis) =
 	tnum 0 f = f (Proxy @'[])
 	tnum n f = tnum (n - 1) \p -> f $ plus1 p
 		where plus1 :: Proxy n -> Proxy ('() ': n); plus1 Proxy = Proxy
+
+type Model = (V.Vector WVertex, V.Vector Word32)
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -550,22 +548,9 @@ recreateTexture :: forall img sd sc siv si3 sm2 a . BObj.IsImage img =>
 		'Vk.Mm.M.ImageArg "texture" (BObj.ImageFormat img))] ->
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv -> IO a -> IO ()
 recreateTexture phdv dv gq cp tximg tx txmem txiv act =
+	putStrLn "RECREATE TEXTURE" >>
 	recreateTextureImage phdv dv gq cp tximg tx txmem \mplvs ->
 	recreateImageView' @'Vk.T.FormatR8g8b8a8Srgb dv tx Vk.Img.AspectColorBit txiv mplvs act -- mplvs
-
-createModel ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> Model ->
-	(forall sm sb sm1 sb1 . (
-		Vk.Bffr.Binded
-			sm sb "vertex-buffer" '[Obj.List 256 WVertex ""],
-		Vk.Bffr.Binded
-			sm1 sb1 "index-buffer" '[Obj.List 256 Word32 ""] ) ->
-		IO a) -> IO a
-createModel phdv dv gq cp (vtcs, idcs) f =
-	createVertexBuffer phdv dv gq cp vtcs \vb ->
-	createIndexBuffer phdv dv gq cp idcs \ib -> f (vb, ib)
-
-type Model = (V.Vector WVertex, V.Vector Word32)
 
 getMaxUsableSampleCount :: Vk.Phd.P -> IO Vk.Sample.CountFlags
 getMaxUsableSampleCount phdvc = do
@@ -1747,10 +1732,10 @@ imageMemoryInfoBinded pd dvc prps img = do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-createVertexBuffer :: Vk.Phd.P ->
+createVtxBffr :: Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> V.Vector WVertex -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "vertex-buffer" '[Obj.List 256 WVertex ""] -> IO a) -> IO a
-createVertexBuffer phdvc dvc gq cp vtcs f =
+createVtxBffr phdvc dvc gq cp vtcs f =
 	createBufferList phdvc dvc (fromIntegral $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mm.PropertyDeviceLocalBit \b _ ->
@@ -1767,10 +1752,10 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createIndexBuffer :: Vk.Phd.P ->
+createIdxBffr :: Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> V.Vector Word32 -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "index-buffer" '[Obj.List 256 Word32 ""] -> IO a) -> IO a
-createIndexBuffer phdvc dvc gq cp idcs f =
+createIdxBffr phdvc dvc gq cp idcs f =
 	createBufferList phdvc dvc (fromIntegral $ V.length idcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
 		Vk.Mm.PropertyDeviceLocalBit \b _ ->
@@ -2124,14 +2109,14 @@ mainLoop :: (
 	SyncObjects siassrfssfs ->
 	HPList.PL (MemoryUbo alu "uniform-buffer") smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
-	UTCTime ->
 	Vk.Img.M.Binded sm2 si3 "texture" (BObj.ImageFormat tximg) ->
 	Vk.Mm.M.M sm2 '[ '(si3,
 		'Vk.Mm.M.ImageArg "texture" (BObj.ImageFormat tximg))] ->
 	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2 -> Vk.Smplr.M.S ss2 ->
+	UTCTime ->
 	IO ()
 mainLoop lb cll g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp
-	tctximg crsrcs drsrcs idcs (vb, ib) cbs iasrfsifs ums dscss tm0 tx txmem txiv txsmplr = do
+	tctximg crsrcs drsrcs idcs (vb, ib) cbs iasrfsifs ums dscss tx txmem txiv txsmplr tm0 = do
 	lbst <- atomically $ newTVar Glfw.MouseButtonState'Released
 	($ cycle' (NE.fromList [0 .. maxFramesInFlight - 1])) . ($ ext0) $ fix \loop ext (Inf.Inf cf cfs) -> do
 		Glfw.pollEvents
@@ -2356,6 +2341,7 @@ recreateAll :: (
 	IO Vk.Extent2d
 recreateAll cll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp
 	(clrimg, clrimgm, clrimgvw, mss) (dptImg, dptImgMem, dptImgVw) = do
+	putStrLn "RECREATE ALL"
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
