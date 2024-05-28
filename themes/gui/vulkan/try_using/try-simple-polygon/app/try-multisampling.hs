@@ -1462,29 +1462,17 @@ run lbst lb tctxi fr w sfc pd qfis dv gq pq cp
 			False -> Just <$> readTChan tctxi)
 	case mtximg of
 		Just tximg -> recreateTexture pd dv gq cp tximg tx txm txv
-				(updateTexture @nmt @alu @slyts @(AtomUbo sdsl alu nmt) dv dss txv txsp) >> do
-				catchAndRecreate w sfc pd qfis dv gq sc vs rp pl gp fbs cp crs drs go
-					$ drawFrame dv gq pq sc ex rp pl gp fbs vb ib cbs soss
-						mms dss tm cf
-				cls <- GlfwG.Win.shouldClose w
-				mouseButtonDown lbst w Glfw.MouseButton'1 >>= \case
-					True -> atomically $ writeTChan lb ()
-					_ -> pure ()
-				if cls then (pure ()) else checkFlag fr >>= bool (go ex)
-					(go =<< recreateAll
-						w sfc pd qfis dv gq sc vs rp pl gp fbs cp crs drs)
-		Nothing -> do
-			catchAndRecreate w sfc pd qfis dv gq sc vs rp pl gp fbs cp crs drs go
-				$ drawFrame dv gq pq sc ex rp pl gp fbs vb ib cbs soss
-					mms dss
-					tm cf
-			cls <- GlfwG.Win.shouldClose w
-			mouseButtonDown lbst w Glfw.MouseButton'1 >>= \case
-				True -> atomically $ writeTChan lb ()
-				_ -> pure ()
-			if cls then (pure ()) else checkFlag fr >>= bool (go ex)
-				(go =<< recreateAll
-					w sfc pd qfis dv gq sc vs rp pl gp fbs cp crs drs)
+				(updateTexture @nmt @alu @slyts @(AtomUbo sdsl alu nmt) dv dss txv txsp)
+		Nothing -> pure ()
+	catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp fbs crs drs go
+		$ draw dv gq pq sc ex rp pl gp fbs vb ib mms dss cbs soss tm cf
+	mouseButtonDown lbst w Glfw.MouseButton'1 >>= \case
+		True -> atomically $ writeTChan lb ()
+		_ -> pure ()
+	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
+		(True, _) -> pure (); (_, False) -> go ex
+		(_, _) -> go =<< recreateAll
+			w sfc pd qfis dv gq cp sc vs rp pl gp crs drs fbs
 
 recreateTexture :: forall img sd sc siv si3 sm2 nmt a . BObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> img ->
@@ -1761,7 +1749,7 @@ mouseButtonDown st (GlfwG.Win.W w) b = do
 			Glfw.MouseButtonState'Pressed ) -> pure True
 		_ -> pure False
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs
+draw :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs
 		slyts sds alu alv ali nmv nmi nmm nmt . (
 	KnownNat alu, KnownNat alv, KnownNat ali,
 	HPList.HomoList (AtomUbo sdsc alu nmt) slyts,
@@ -1775,13 +1763,18 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
-	HPList.LL (Vk.CBffr.C scb) vss -> SyncObjects ssos ->
+
 	HPList.PL (MemoryUbo alu nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
+
+	HPList.LL (Vk.CBffr.C scb) vss -> SyncObjects ssos ->
+
 	Float ->
 	Int -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs
-	(SyncObjs iass rfss iffs) ums dscss tm cf =
+draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib
+	ums dscss
+	cbs (SyncObjs iass rfss iffs)
+	tm cf =
 	HPList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
 	HPList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
@@ -1843,6 +1836,7 @@ catchAndRecreate :: (
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q ->
+	Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu nmt] '[] ->
@@ -1851,18 +1845,17 @@ catchAndRecreate :: (
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.CmdPl.C sc ->
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop act =
+catchAndRecreate w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl fbs crsrcs drsrcs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
 	\_ -> loop =<< recreateAll
-		w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs
+		w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl crsrcs drsrcs fbs
 
 recreateAll :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
@@ -1870,6 +1863,7 @@ recreateAll :: (
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q ->
+	Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu nmt] '[] ->
@@ -1877,13 +1871,12 @@ recreateAll :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.CmdPl.C sc ->
 	ColorResources clnm scfmt clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
+	HPList.PL Vk.Frmbffr.F sfs ->
 	IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp
-	(clrimg, clrimgm, clrimgvw, mss) (dptImg, dptImgMem, dptImgVw) = do
+recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl
+	(clrimg, clrimgm, clrimgvw, mss) (dptImg, dptImgMem, dptImgVw) fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
