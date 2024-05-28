@@ -208,8 +208,8 @@ body lb txi tctxi (vtcs, idcs) mnld fr w sfc (PhDvc.P pd qfis) =
 	createTxSmplr pd d mls mnld \txsp ->
 	createVtxBffr pd d gq cp vtcs \vb ->
 	createIdxBffr pd d gq cp idcs \ib ->
-	tnum maxFramesInFlight \(_ :: Proxy mff) ->
-	createMvpBffrs @mff pd d dsl \dsls mbs mbms ->
+	tnum @"texture" maxFramesInFlight \(_ :: Proxy mff) ->
+	createMvpBffrs @"texture" @mff pd d dsl \dsls mbs mbms ->
 	createDscPl d \dp -> createDscSts d dp mbs dsls tv txsp \dss ->
 	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
@@ -218,12 +218,12 @@ body lb txi tctxi (vtcs, idcs) mnld fr w sfc (PhDvc.P pd qfis) =
 		sc ex scvs rp pl gp fbs crs drs vb ib mbms dss cbs sos
 		(tx, txm, tv, txsp)
 	where
-	tnum :: Int -> (forall (n :: [()]) . (
+	tnum :: forall nmt a . Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
 		HPList.HomoList '() n, HPList.RepM n,
-		CreateMvpBffrs n ) => Proxy n -> a) -> a
+		CreateMvpBffrs nmt n ) => Proxy n -> a) -> a
 	tnum 0 f = f (Proxy @'[])
-	tnum n f = tnum (n - 1) \p -> f $ plus1 p
+	tnum n f = tnum @nmt (n - 1) \p -> f $ plus1 p
 		where plus1 :: Proxy n -> Proxy ('() ': n); plus1 Proxy = Proxy
 
 maxFramesInFlight :: Integral n => n
@@ -1140,25 +1140,25 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
-class CreateMvpBffrs (mff :: [()]) where
+class CreateMvpBffrs nmt (mff :: [()]) where
 	createMvpBffrs :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd ->
-		Vk.DscSetLyt.D sdsl (DscStLytArg al "texture") ->
+		Vk.DscSetLyt.D sdsl (DscStLytArg al nmt) ->
 		(forall sls smsbs . (
 			HPList.FromList sls, Vk.DscSet.DListFromMiddle sls,
-			HPList.HomoList '(sdsl, DscStLytArg al "texture") sls,
-			UpdateTexture al sls '(sdsl, DscStLytArg al "texture"),
-			Update al smsbs sls ) =>
+			HPList.HomoList '(sdsl, DscStLytArg al nmt) sls,
+			UpdateTexture nmt al sls '(sdsl, DscStLytArg al nmt),
+			Update nmt al smsbs sls ) =>
 			HPList.PL (U2 Vk.DscSetLyt.D) sls ->
 			HPList.PL (BindedModelViewProj al nm) smsbs ->
 			HPList.PL (MemoryModelViewProj al nm) smsbs -> IO a) ->
 		IO a
 
-instance CreateMvpBffrs '[] where
+instance CreateMvpBffrs nmt '[] where
 	createMvpBffrs _ _ _ f = f HPList.Nil HPList.Nil HPList.Nil
 
-instance CreateMvpBffrs mff => CreateMvpBffrs ('() ': mff) where
+instance CreateMvpBffrs nmt mff => CreateMvpBffrs nmt ('() ': mff) where
 	createMvpBffrs pd dv dl f = createMvpBffr pd dv \b m ->
-		createMvpBffrs @mff pd dv dl \dls bs ms -> f (U2 dl :** dls)
+		createMvpBffrs @nmt @mff pd dv dl \dls bs ms -> f (U2 dl :** dls)
 			(BindedModelViewProj b :** bs)
 			(MemoryModelViewProj m :** ms)
 
@@ -1253,11 +1253,11 @@ createDscPl dv = Vk.DscPl.create dv info nil
 
 createDscSts :: (
 	Vk.DscSet.DListFromMiddle sls,
-	Update al smsbs sls ) =>
+	Update nmt al smsbs sls ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	HPList.PL (BindedModelViewProj al nm) smsbs ->
 	HPList.PL (U2 Vk.DscSetLyt.D) sls ->
-	Vk.ImgVw.I Tx TxFmt siv -> Vk.Smplr.S ssmp ->
+	Vk.ImgVw.I nmt TxFmt siv -> Vk.Smplr.S ssmp ->
 	(forall sds . HPList.PL (Vk.DscSet.D sds) sls -> IO a) -> IO a
 createDscSts dv dp mbs dls tv tsp f =
 	Vk.DscSet.allocateDs dv info $ (>>) <$> update dv mbs tv tsp <*> f
@@ -1266,12 +1266,12 @@ createDscSts dv dp mbs dls tv tsp f =
 		Vk.DscSet.allocateInfoDescriptorPool = dp,
 		Vk.DscSet.allocateInfoSetLayouts = dls }
 
-class Update al smsbs slbtss where
+class Update nmt al smsbs slbtss where
 	update :: Vk.Dvc.D sd -> HPList.PL (BindedModelViewProj al nm) smsbs ->
-		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv ->
+		Vk.ImgVw.I nmt 'Vk.T.FormatR8g8b8a8Srgb siv ->
 		Vk.Smplr.S ssmp -> HPList.PL (Vk.DscSet.D sds) slbtss -> IO ()
 
-instance Update _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
+instance Update nmt _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
 
 instance (
 	KnownNat al,
@@ -1279,9 +1279,9 @@ instance (
 		cs '[Obj.Atom al WModelViewProj 'Nothing] 0,
 	Vk.DscSet.UpdateDynamicLength
 		cs '[Obj.Atom al WModelViewProj 'Nothing],
-	Vk.DscSet.BindingAndArrayElemImage cs '[ '(Tx, TxFmt)] 0,
-	Update al smsbs slbtss ) =>
-	Update al (smsb ': smsbs) ('(ds, cs) ': slbtss) where
+	Vk.DscSet.BindingAndArrayElemImage cs '[ '(nmt, TxFmt)] 0,
+	Update nmt al smsbs slbtss ) =>
+	Update nmt al (smsb ': smsbs) ('(ds, cs) ': slbtss) where
 	update dv (BindedModelViewProj mb :** mbs) tv tsp (ds :** dss) =
 		Vk.DscSet.updateDs dv (
 			U5 (dscWrite0 ds mb) :**
@@ -1312,7 +1312,6 @@ dscWrite1 ds v s = Vk.DscSet.Write {
 			Vk.Dsc.imageInfoImageView = v,
 			Vk.Dsc.imageInfoSampler = s } }
 
-type Tx = "texture"
 type TxFmt = Vk.T.FormatR8g8b8a8Srgb
 
 cmdBffrInfo :: forall n scp .
@@ -1340,10 +1339,10 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 		SyncObjs '(siass, srfss, sfss)
 
 mainloop :: (
-	UpdateTexture alu slyts '(sdsl, DscStLytArg alu "texture"), BObj.IsImage tximg,
+	UpdateTexture nmt alu slyts '(sdsl, DscStLytArg alu nmt), BObj.IsImage tximg,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs ss sfs,
-	HPList.HomoList '(sdsl, DscStLytArg alu "texture") slyts, HPList.HomoList '() mff,
+	HPList.HomoList '(sdsl, DscStLytArg alu nmt) slyts, HPList.HomoList '() mff,
 	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	TChan () -> TChan tximg ->
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
@@ -1351,11 +1350,11 @@ mainloop :: (
 	Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu "texture")] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alu "texture")], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu nmt)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1364,7 +1363,7 @@ mainloop :: (
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss ->
-	ImgBffrs "texture" sm2 si3 tximg siv2 ss2 -> UTCTime -> IO ()
+	ImgBffrs nmt sm2 si3 tximg siv2 ss2 -> UTCTime -> IO ()
 mainloop lb tctxi fr w sfc pd qfis dv gq pq cp
 	sc ex0 vs rp pl gp fbs crs drs vb ib mms dss cbs soss txbs tm0 = do
 	lbst <- atomically $ newTVar Glfw.MouseButtonState'Released
@@ -1388,13 +1387,13 @@ run :: forall
 	tximg scfmt dptfmt sfs slyts vss ssfc sd ssc sis sr sl sg sdi sdm
 	sdiv sm sb nm inm sm' sb' nm' sdsc sc clrnm clrsm clrsi clrsiv scb
 	siassrfssfs
-	smsbs sds ss2 siv2 sm2 si3 sw alu alv ali nmv nmi nmm . (
+	smsbs sds ss2 siv2 sm2 si3 sw alu alv ali nmv nmi nmm nmt . (
 	KnownNat alu, KnownNat alv, KnownNat ali,
 	BObj.IsImage tximg,
-	UpdateTexture alu slyts (AtomUbo sdsc alu "texture"),
+	UpdateTexture nmt alu slyts (AtomUbo sdsc alu nmt),
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs sis sfs,
-	HPList.HomoList (AtomUbo sdsc alu "texture") slyts,
+	HPList.HomoList (AtomUbo sdsc alu nmt) slyts,
 	HPList.HomoList '() vss) =>
 	TVar Glfw.MouseButtonState -> TChan () ->
 	TChan tximg ->
@@ -1405,10 +1404,10 @@ run :: forall
 	Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu "texture"] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu nmt] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc alu "texture"], '[]) ->
+		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1423,10 +1422,10 @@ run :: forall
 
 	Float ->
 	Int ->
-	(	Vk.Img.Binded sm2 si3 "texture" (BObj.ImageFormat tximg),
+	(	Vk.Img.Binded sm2 si3 nmt (BObj.ImageFormat tximg),
 		Vk.Mm.M sm2 '[ '(si3,
-			'Vk.Mm.ImageArg "texture" (BObj.ImageFormat tximg))],
-		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2, Vk.Smplr.S ss2 ) ->
+			'Vk.Mm.ImageArg nmt (BObj.ImageFormat tximg))],
+		Vk.ImgVw.I nmt 'Vk.T.FormatR8g8b8a8Srgb siv2, Vk.Smplr.S ss2 ) ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 run lbst lb tctximg frszd w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq cp sc ext
 	scivs rp ppllyt gpl fbs crsrcs drsrcs vb ib
@@ -1440,7 +1439,7 @@ run lbst lb tctximg frszd w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq cp sc ext
 			False -> Just <$> readTChan tctximg)
 	case mtximg of
 		Just tximg -> recreateTexture phdvc dvc gq cp tximg tx txmem txiv
-				(updateTexture @alu @slyts @(AtomUbo sdsc alu "texture") dvc dscss txiv txsmplr) >> do
+				(updateTexture @nmt @alu @slyts @(AtomUbo sdsc alu nmt) dvc dscss txiv txsmplr) >> do
 				catchAndRecreate w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
 					$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs iasrfsifs
 						ums dscss tm cf
@@ -1818,31 +1817,31 @@ type family MapFst abs where
 	MapFst '[] = '[]
 	MapFst ( '(a, b, c :: k) ': abs) = a ': MapFst abs
 
-class UpdateTexture alu slbtss dscs where
+class UpdateTexture nmt alu slbtss dscs where
 	updateTexture :: (
 		Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 dscs) '[Obj.Atom alu WModelViewProj 'Nothing] 0,
 		Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 dscs) '[Obj.Atom alu WModelViewProj 'Nothing],
 		Vk.DscSet.WriteSourcesToMiddle (TIndex.I1_2 dscs) ('Vk.DscSet.WriteSourcesArgImage
-			'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0,
+			'[ '(ssmp, nmt, 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0,
 		Vk.DscSet.WriteListUpdateDynamicLengths
 			'[ '( 'Nothing, sds, dscs, 'Vk.DscSet.WriteSourcesArgImage
-				'[ '(ssmp, "texture", 'Vk.T.FormatR8g8b8a8Srgb, siv)], 0)]
+				'[ '(ssmp, nmt, 'Vk.T.FormatR8g8b8a8Srgb, siv)], 0)]
 			) =>
 		Vk.Dvc.D sd ->
 		HPList.PL (Vk.DscSet.D sds) slbtss ->
-		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv ->
+		Vk.ImgVw.I nmt 'Vk.T.FormatR8g8b8a8Srgb siv ->
 		Vk.Smplr.S ssmp -> IO ()
 
-instance UpdateTexture alu '[] dscs where updateTexture _ HPList.Nil _ _ = pure ()
+instance UpdateTexture nmt alu '[] dscs where updateTexture _ HPList.Nil _ _ = pure ()
 
-instance UpdateTexture alu dscss dscs =>
-	UpdateTexture alu (dscs ': dscss) dscs where
+instance UpdateTexture nmt alu dscss dscs =>
+	UpdateTexture nmt alu (dscs ': dscss) dscs where
 	updateTexture dvc (dscs :** dscss) tximgvw txsmp = do
 		Vk.DscSet.updateDs dvc (
 			U5 (descriptorWrite1 dscs tximgvw txsmp) :**
 			HPList.Nil )
 			HPList.Nil
-		updateTexture @alu @dscss @dscs dvc dscss tximgvw txsmp
+		updateTexture @nmt @alu @dscss @dscs dvc dscss tximgvw txsmp
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
