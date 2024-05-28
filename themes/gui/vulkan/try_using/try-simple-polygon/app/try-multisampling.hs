@@ -1361,10 +1361,9 @@ mainloop :: (
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 ""] ->
-
-	HPList.PL (MemoryUbo alu "uniform-buffer") smsbs ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word32 nmi] ->
+	HPList.PL (MemoryModelViewProj alu "uniform-buffer") smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 
 	HPList.LL (Vk.CBffr.C scb) mff ->
@@ -1844,7 +1843,7 @@ findMemoryType phdvc flt props =
 
 type SyncObjects = SyncObjs
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali nmv nmi .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
@@ -1853,8 +1852,8 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu 
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 ""] ->
+	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
 	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
@@ -1863,14 +1862,14 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 
 	Vk.Cmd.bindVertexBuffers cbb
-		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word32 @"" ib) >>
+		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb) >>
+	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word32 @nmi ib) >>
 
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
 		(U2 ubds :** HPList.Nil)
 		(	(HPList.Nil :** HPList.Nil :** HPList.Nil) :** HPList.Nil ) >>
 
-	let Obj.LengthList ln = Obj.lengthOf @(Obj.List ali Word32 "") $ Vk.Bffr.lengthBinded ib in
+	let Obj.LengthList ln = Obj.lengthOf @(Obj.List ali Word32 nmi) $ Vk.Bffr.lengthBinded ib in
 	Vk.Cmd.drawIndexed cbb (fromIntegral ln) 1 0 0 0
 
 	where
@@ -1895,7 +1894,7 @@ runLoop :: forall
 	tximg scfmt dptfmt sfs slyts vss ssfc sd ssc sis sr sl sg sdi sdm
 	sdiv sm sb nm inm sm' sb' nm' sdsc sc clrnm clrsm clrsi clrsiv scb
 	siassrfssfs
-	smsbs sds ss2 siv2 sm2 si3 sw alu alv ali .
+	smsbs sds ss2 siv2 sm2 si3 sw alu alv ali nmv nmi .
 	(
 	KnownNat alu, KnownNat alv, KnownNat ali,
 	BObj.IsImage tximg,
@@ -1918,8 +1917,8 @@ runLoop :: forall
 	TChan tximg ->
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 ""] ->
+	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
 	HPList.LL (Vk.CBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	HPList.PL (MemoryUbo alu "uniform-buffer") smsbs ->
@@ -1980,7 +1979,7 @@ mouseButtonDown st w b = do
 		_ -> pure False
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs
-		slyts sds alu alv ali . (
+		slyts sds alu alv ali nmv nmi . (
 	KnownNat alu, KnownNat alv, KnownNat ali,
 	HPList.HomoList (AtomUbo sdsc alu) slyts,
 	HPList.HomoList '() vss) =>
@@ -1991,8 +1990,8 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsc alu], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 ""] ->
+	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
 	HPList.LL (Vk.CBffr.C scb) vss -> SyncObjects ssos ->
 	HPList.PL (MemoryUbo alu "uniform-buffer") smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
