@@ -216,7 +216,7 @@ body lb txi tctxi (vtcs, idcs) mnld fr w sfc (PhDvc.P pd qfis) =
 	getCurrentTime >>=
 	mainloop lb tctxi fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs crs drs vb ib mbms dss cbs sos
-		tx txm tv txsp
+		(tx, txm, tv, txsp)
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
@@ -1364,14 +1364,9 @@ mainloop :: (
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss ->
-	Vk.Img.Binded sm2 si3 "texture" (BObj.ImageFormat tximg) ->
-	Vk.Mm.M sm2 '[ '(si3,
-		'Vk.Mm.ImageArg "texture" (BObj.ImageFormat tximg))] ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2 -> Vk.Smplr.S ss2 ->
-	UTCTime -> IO ()
+	ImgBffrs "texture" sm2 si3 tximg siv2 ss2 -> UTCTime -> IO ()
 mainloop lb tctxi fr w sfc pd qfis dv gq pq cp
-	sc ex0 vs rp pl gp fbs crs drs vb ib mms dss cbs soss
-	tx txm txv txsp tm0 = do
+	sc ex0 vs rp pl gp fbs crs drs vb ib mms dss cbs soss txbs tm0 = do
 	lbst <- atomically $ newTVar Glfw.MouseButtonState'Released
 	($ cycle' $ NE.fromList [0 .. maxFramesInFlight - 1])
 		. ($ ex0) $ fix \go ex (cf `Inf.Inf` cfs) ->
@@ -1380,8 +1375,14 @@ mainloop lb tctxi fr w sfc pd qfis dv gq pq cp
 		run lbst lb tctxi fr w sfc pd qfis dv gq pq cp
 			sc ex vs rp pl gp fbs crs drs vb ib
 			mms dss cbs soss (realToFrac $ tm `diffUTCTime` tm0)
-			cf tx txm txv txsp (`go` cfs)
+			cf txbs (`go` cfs)
 	Vk.Dvc.waitIdle dv
+
+type ImgBffrs nm sm2 si3 tximg siv2 ss2 = (
+	Vk.Img.Binded sm2 si3 nm (BObj.ImageFormat tximg),
+	Vk.Mm.M sm2 '[ '(si3,
+		'Vk.Mm.ImageArg nm (BObj.ImageFormat tximg))],
+	Vk.ImgVw.I nm 'Vk.T.FormatR8g8b8a8Srgb siv2, Vk.Smplr.S ss2 )
 
 run :: forall
 	tximg scfmt dptfmt sfs slyts vss ssfc sd ssc sis sr sl sg sdi sdm
@@ -1422,16 +1423,16 @@ run :: forall
 
 	Float ->
 	Int ->
-	Vk.Img.Binded sm2 si3 "texture" (BObj.ImageFormat tximg) ->
-	Vk.Mm.M sm2 '[ '(si3,
-		'Vk.Mm.ImageArg "texture" (BObj.ImageFormat tximg))] ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2 -> Vk.Smplr.S ss2 ->
+	(	Vk.Img.Binded sm2 si3 "texture" (BObj.ImageFormat tximg),
+		Vk.Mm.M sm2 '[ '(si3,
+			'Vk.Mm.ImageArg "texture" (BObj.ImageFormat tximg))],
+		Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv2, Vk.Smplr.S ss2 ) ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 run lbst lb tctximg frszd w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq cp sc ext
 	scivs rp ppllyt gpl fbs crsrcs drsrcs vb ib
 	ums dscss
 	cbs iasrfsifs
-	tm cf tx txmem txiv txsmplr loop = do
+	tm cf (tx, txmem, txiv, txsmplr) loop = do
 	mtximg <- atomically (do
 		b <- isEmptyTChan tctximg
 		case b of
