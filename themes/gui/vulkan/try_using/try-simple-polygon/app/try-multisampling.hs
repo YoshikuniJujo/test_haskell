@@ -557,9 +557,9 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-createPplLyt :: forall alm sd a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscSetLyt.D sdsl (DscStLytArg alm) ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] -> IO a) -> IO a
+createPplLyt :: forall alm sd nmt a . Vk.Dvc.D sd -> (forall sl sdsl .
+	Vk.DscSetLyt.D sdsl (DscStLytArg alm nmt) ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm nmt)] '[] -> IO a) -> IO a
 createPplLyt dv f = createDscStLyt dv \dsl ->
 	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
 	where info dsl = Vk.PplLyt.CreateInfo {
@@ -568,7 +568,7 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createDscStLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.D s (DscStLytArg alm) -> IO a) -> IO a
+	Vk.DscSetLyt.D s (DscStLytArg alm nmt) -> IO a) -> IO a
 createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 	where
 	info = Vk.DscSetLyt.CreateInfo {
@@ -585,42 +585,42 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
-type DscStLytArg alm = '[BufferModelViewProj alm, TxImg]
+type DscStLytArg alm nmt = '[BufferModelViewProj alm, TxImg nmt]
 type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
 type AtomModelViewProj alm = Obj.Atom alm WModelViewProj 'Nothing
-type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
+type TxImg nmt = 'Vk.DscSetLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm nmt)] '[] ->
 	Vk.Sample.CountFlags ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) -> IO a) -> IO a
+		'(sl, '[ '(sdsl, DscStLytArg alm nmt)], '[]) -> IO a) -> IO a
 createGrPpl dv ex rp pl spcnt f = Vk.Ppl.Graphics.createGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl spcnt) nil
 	\(HPList.Singleton (U3 p)) -> f p
 
 recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm nmt)] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) -> IO ()
+		'(sl, '[ '(sdsl, DscStLytArg alm nmt)], '[]) -> IO ()
 recreateGrPpl dv ex rp pl spcnt p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl spcnt) nil
 	(HPList.Singleton $ U3 p)
 
 grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm nmt)] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
-		'Nothing '(sl, '[ '(sdsl, DscStLytArg alm)], '[])
+		'Nothing '(sl, '[ '(sdsl, DscStLytArg alm nmt)], '[])
 		sr '(sb, vs, ts, plas)
 grPplInfo ex rp pl spcnt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
@@ -1142,11 +1142,11 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 
 class CreateMvpBffrs (mff :: [()]) where
 	createMvpBffrs :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd ->
-		Vk.DscSetLyt.D sdsl (DscStLytArg al) ->
+		Vk.DscSetLyt.D sdsl (DscStLytArg al "texture") ->
 		(forall sls smsbs . (
 			HPList.FromList sls, Vk.DscSet.DListFromMiddle sls,
-			HPList.HomoList '(sdsl, DscStLytArg al) sls,
-			UpdateTexture al sls '(sdsl, DscStLytArg al),
+			HPList.HomoList '(sdsl, DscStLytArg al "texture") sls,
+			UpdateTexture al sls '(sdsl, DscStLytArg al "texture"),
 			Update al smsbs sls ) =>
 			HPList.PL (U2 Vk.DscSetLyt.D) sls ->
 			HPList.PL (BindedModelViewProj al nm) smsbs ->
@@ -1340,10 +1340,10 @@ data SyncObjs (ssos :: ([Type], [Type], [Type])) where
 		SyncObjs '(siass, srfss, sfss)
 
 mainloop :: (
-	UpdateTexture alu slyts '(sdsl, DscStLytArg alu), BObj.IsImage tximg,
+	UpdateTexture alu slyts '(sdsl, DscStLytArg alu "texture"), BObj.IsImage tximg,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs ss sfs,
-	HPList.HomoList '(sdsl, DscStLytArg alu) slyts, HPList.HomoList '() mff,
+	HPList.HomoList '(sdsl, DscStLytArg alu "texture") slyts, HPList.HomoList '() mff,
 	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	TChan () -> TChan tximg ->
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
@@ -1351,11 +1351,11 @@ mainloop :: (
 	Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu "texture")] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu "texture")], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1391,10 +1391,10 @@ run :: forall
 	smsbs sds ss2 siv2 sm2 si3 sw alu alv ali nmv nmi nmm . (
 	KnownNat alu, KnownNat alv, KnownNat ali,
 	BObj.IsImage tximg,
-	UpdateTexture alu slyts (AtomUbo sdsc alu),
+	UpdateTexture alu slyts (AtomUbo sdsc alu "texture"),
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs sis sfs,
-	HPList.HomoList (AtomUbo sdsc alu) slyts,
+	HPList.HomoList (AtomUbo sdsc alu "texture") slyts,
 	HPList.HomoList '() vss) =>
 	TVar Glfw.MouseButtonState -> TChan () ->
 	TChan tximg ->
@@ -1405,10 +1405,10 @@ run :: forall
 	Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu "texture"] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc alu], '[]) ->
+		'(sl, '[AtomUbo sdsc alu "texture"], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1440,7 +1440,7 @@ run lbst lb tctximg frszd w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq cp sc ext
 			False -> Just <$> readTChan tctximg)
 	case mtximg of
 		Just tximg -> recreateTexture phdvc dvc gq cp tximg tx txmem txiv
-				(updateTexture @alu @slyts @(AtomUbo sdsc alu) dvc dscss txiv txsmplr) >> do
+				(updateTexture @alu @slyts @(AtomUbo sdsc alu "texture") dvc dscss txiv txsmplr) >> do
 				catchAndRecreate w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs loop
 					$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs iasrfsifs
 						ums dscss tm cf
@@ -1464,12 +1464,12 @@ run lbst lb tctximg frszd w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq cp sc ext
 				(loop =<< recreateAll
 					w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp crsrcs drsrcs)
 
-recreateTexture :: forall img sd sc siv si3 sm2 a . BObj.IsImage img =>
+recreateTexture :: forall img sd sc siv si3 sm2 nmt a . BObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> img ->
-	Vk.Img.Binded sm2 si3 "texture" (BObj.ImageFormat img) ->
+	Vk.Img.Binded sm2 si3 nmt (BObj.ImageFormat img) ->
 	Vk.Mm.M sm2 '[ '(si3,
-		'Vk.Mm.ImageArg "texture" (BObj.ImageFormat img))] ->
-	Vk.ImgVw.I "texture" 'Vk.T.FormatR8g8b8a8Srgb siv -> IO a -> IO ()
+		'Vk.Mm.ImageArg nmt (BObj.ImageFormat img))] ->
+	Vk.ImgVw.I nmt 'Vk.T.FormatR8g8b8a8Srgb siv -> IO a -> IO ()
 recreateTexture phdv dv gq cp tximg tx txmem txiv act =
 	putStrLn "RECREATE TEXTURE" >>
 	recreateTextureImage phdv dv gq cp tximg tx txmem \mplvs ->
@@ -1872,18 +1872,18 @@ findMemoryType phdvc flt props =
 
 type SyncObjects = SyncObjs
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali nmv nmi .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali nmv nmi nmt .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
+	Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
+		'(sl, '[AtomUbo sdsl alu nmt], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
-	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
+	Vk.DscSet.D sds (AtomUbo sdsl alu nmt) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
@@ -1917,7 +1917,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 			Vk.ClearValueDepthStencil (Vk.ClearDepthStencilValue 1 0) :**
 			HPList.Nil }
 
-type AtomUbo s alu = '(s, DscStLytArg alu)
+type AtomUbo s alu nmt = '(s, DscStLytArg alu nmt)
 
 mouseButtonDown ::
 	TVar Glfw.MouseButtonState -> Glfw.Window -> Glfw.MouseButton -> IO Bool
@@ -1930,16 +1930,16 @@ mouseButtonDown st w b = do
 		_ -> pure False
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs
-		slyts sds alu alv ali nmv nmi nmm . (
+		slyts sds alu alv ali nmv nmi nmm nmt . (
 	KnownNat alu, KnownNat alv, KnownNat ali,
-	HPList.HomoList (AtomUbo sdsc alu) slyts,
+	HPList.HomoList (AtomUbo sdsc alu nmt) slyts,
 	HPList.HomoList '() vss) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUbo sdsc alu] '[] ->
+	Vk.PplLyt.P sl '[AtomUbo sdsc alu nmt] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc alu], '[]) ->
+		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
@@ -2013,11 +2013,11 @@ catchAndRecreate :: (
 	Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu nmt] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc alu], '[]) ->
+		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.CmdPl.C sc ->
 	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
@@ -2040,11 +2040,11 @@ recreateAll :: (
 	Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsc alu nmt] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc alu], '[]) ->
+		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.CmdPl.C sc ->
 	ColorResources clnm scfmt clrsi clrsm clrsiv ->
