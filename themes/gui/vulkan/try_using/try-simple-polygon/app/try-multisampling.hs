@@ -408,11 +408,6 @@ type ClrRsrcs fmt nm si sm siv = (
 	Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)],
 	Vk.ImgVw.I nm fmt siv, Vk.Sample.CountFlags )
 
-type ColorResources nm fmt si sm siv = (
-	Vk.Img.Binded sm si nm fmt,
-	Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)],
-	Vk.ImgVw.I nm fmt siv, Vk.Sample.CountFlags )
-
 createDptRsrcs :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Extent2d ->
 	Vk.Sample.CountFlags ->
@@ -803,7 +798,8 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 calcMipLevels :: BObj.IsImage img => img -> MipLevels
 calcMipLevels img = (mls, w, h) where
 	w, h :: Num n => n
-	w = fromIntegral $ BObj.imageWidth img; h = fromIntegral $ BObj.imageHeight img
+	w = fromIntegral $ BObj.imageWidth img
+	h = fromIntegral $ BObj.imageHeight img
 	mls = floor @Double (logBase 2 $ max w h) + 1
 
 type MipLevels = (Word32, Int32, Int32)
@@ -812,7 +808,8 @@ createTxImg :: forall sd scp img inm a . BObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> img ->
 	MipLevels -> (forall si sm .
 		Vk.Img.Binded sm si inm (BObj.ImageFormat img) ->
-		Vk.Mm.M sm '[ '(si, Vk.Mm.ImageArg inm (BObj.ImageFormat img))] ->
+		Vk.Mm.M sm
+			'[ '(si, Vk.Mm.ImageArg inm (BObj.ImageFormat img))] ->
 		IO a) -> IO a
 createTxImg pd d gq cp img (mls, _, _) a = prepareImg pd d Vk.Img.TilingOptimal
 		(	Vk.Img.UsageTransferSrcBit .|.
@@ -1845,7 +1842,7 @@ catchAndRecreate :: (
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	ColorResources clrnm scfmt clrsi clrsm clrsiv ->
+	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl fbs crsrcs drsrcs loop act =
@@ -1871,7 +1868,7 @@ recreateAll :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
-	ColorResources clnm scfmt clrsi clrsm clrsiv ->
+	ClrRsrcs scfmt clnm clrsi clrsm clrsiv ->
 	DptRsrcs sdi sdm "depth-buffer" dptfmt sdiv ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	IO Vk.Extent2d
