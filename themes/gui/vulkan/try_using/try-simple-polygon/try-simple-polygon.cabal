@@ -50,6 +50,7 @@ library
     , containers
     , data-default
     , ghc
+    , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list
@@ -103,6 +104,7 @@ executable try-multisampling
     , containers
     , data-default
     , ghc
+    , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list
@@ -147,6 +149,7 @@ executable try-pyramid-single
     , containers
     , data-default
     , ghc
+    , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list
@@ -192,6 +195,7 @@ test-suite try-simple-polygon-test
     , containers
     , data-default
     , ghc
+    , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list

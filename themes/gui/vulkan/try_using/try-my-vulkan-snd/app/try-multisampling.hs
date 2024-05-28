@@ -878,8 +878,7 @@ calcMipLevels img = (mls, w, h) where
 
 type MipLevels = (Word32, Int32, Int32)
 
-createTxImg :: forall sd scp img inm a .
-	(BObj.IsImage img, Vk.T.FormatToValue (BObj.ImageFormat img)) =>
+createTxImg :: forall sd scp img inm a . BObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> img ->
 	MipLevels -> (forall si sm .
 		Vk.Img.Binded sm si inm (BObj.ImageFormat img) -> IO a) -> IO a

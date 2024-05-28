@@ -58,6 +58,7 @@ dependencies:
 - stm
 - try-tools-yj
 - try-glfw-group
+- mono-traversable
 
 ghc-options:
 - -Wall
