@@ -883,18 +883,18 @@ createTxImg :: forall sd scp img inm a . BObj.IsImage img =>
 	MipLevels -> (forall si sm .
 		Vk.Img.Binded sm si inm (BObj.ImageFormat img) -> IO a) -> IO a
 createTxImg pd d gq cp img (mls, _, _) a = prepareImg pd d Vk.Img.TilingOptimal
-	(	Vk.Img.UsageTransferSrcBit .|.
-		Vk.Img.UsageTransferDstBit .|.
-		Vk.Img.UsageSampledBit )
-	Vk.Mm.PropertyDeviceLocalBit w h mls Vk.Sample.Count1Bit \i _m -> do
+		(	Vk.Img.UsageTransferSrcBit .|.
+			Vk.Img.UsageTransferDstBit .|.
+			Vk.Img.UsageSampledBit ) Vk.Mm.PropertyDeviceLocalBit
+		w h mls Vk.Sample.Count1Bit \i _m -> do
 	createBffrImg pd d
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) img
 		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm -> do
 		Vk.Mm.write @inm @bimg @0 d bm zeroBits img
-		transitionImgLyt d gq cp i
-			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal mls
+		transitionImgLyt d gq cp i Vk.Img.LayoutUndefined
+			Vk.Img.LayoutTransferDstOptimal mls
 		copyBffrToImg d gq cp b i
 	a i
 	where
@@ -922,10 +922,10 @@ reprepareImg :: Vk.T.FormatToValue fmt =>
 	Word32 -> Vk.Sample.CountFlags -> Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.ImageArg nm fmt)] -> IO ()
 reprepareImg pd dv tl us pr w h ml spcnt i m = do
-	Vk.Img.unsafeRecreate @'Nothing dv (imgInfo w h ml spcnt tl us) nil i
+	Vk.Img.unsafeRecreate dv (imgInfo w h ml spcnt tl us) nil i
 	rqs <- Vk.Img.getMemoryRequirementsBinded dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) pr
-	Vk.Mm.unsafeReallocateBind @'Nothing dv
+	Vk.Mm.unsafeReallocateBind dv
 		(HPList.Singleton . U2 $ Vk.Mm.ImageBinded i) (memInfo mt) nil m
 
 imgInfo :: Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags ->
@@ -1477,20 +1477,20 @@ run fr w sfc pd qfis dv gq pq cp
 
 draw :: forall
 	sd fmt ssc sr sl sdsl sg sfs smv sbv bnmv alv nmv smi sbi bnmi ali nmi
-	alm nmm smsbs sds sls scb mff ssos . (
-	KnownNat alm, KnownNat alv, KnownNat ali,
+	alu nmm smsbs sds sls scb mff ssos . (
+	KnownNat alu, KnownNat alv, KnownNat ali,
 	HPList.HomoList '() mff,
-	HPList.HomoList '(sdsl, DscStLytArg alm) sls ) =>
+	HPList.HomoList '(sdsl, DscStLytArg alu) sls ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[ '(sdsl, DscStLytArg alm)], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	IndexBuffer smi sbi bnmi ali nmi ->
-	HPList.PL (MemoryModelViewProj alm nmm) smsbs ->
+	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSet.D sds) sls ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Float -> Int -> IO ()
 draw dv gq pq sc ex rp pl gp fbs
