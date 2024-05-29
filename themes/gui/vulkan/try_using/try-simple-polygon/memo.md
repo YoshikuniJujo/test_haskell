@@ -14,5 +14,5 @@ srcs
 apps
 ----
 
-* [ ] try-multisampling.hs
+* [x] try-multisampling.hs
 * [ ] try-pyramid-single.hs
