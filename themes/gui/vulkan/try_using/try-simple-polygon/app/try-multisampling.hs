@@ -32,7 +32,6 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
-import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -102,9 +101,9 @@ import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
-import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.Pipeline.DepthStencilState qualified as Vk.Ppl.DptStnSt
@@ -561,7 +560,7 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	=<< Vk.Phd.getProperties pd
 
 createPplLyt :: forall alm sd nmt a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscSetLyt.D sdsl (DscStLytArg alm nmt) ->
+	Vk.DscStLyt.D sdsl (DscStLytArg alm nmt) ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm nmt)] '[] -> IO a) -> IO a
 createPplLyt dv f = createDscStLyt dv \dsl ->
 	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
@@ -571,27 +570,27 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createDscStLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.D s (DscStLytArg alm nmt) -> IO a) -> IO a
-createDscStLyt dv = Vk.DscSetLyt.create dv info nil
+	Vk.DscStLyt.D s (DscStLytArg alm nmt) -> IO a) -> IO a
+createDscStLyt dv = Vk.DscStLyt.create dv info nil
 	where
-	info = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = TMaybe.N,
-		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = mbd :** tbd :** HPList.Nil }
-	mbd = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
+	info = Vk.DscStLyt.CreateInfo {
+		Vk.DscStLyt.createInfoNext = TMaybe.N,
+		Vk.DscStLyt.createInfoFlags = zeroBits,
+		Vk.DscStLyt.createInfoBindings = mbd :** tbd :** HPList.Nil }
+	mbd = Vk.DscStLyt.BindingBuffer {
+		Vk.DscStLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
-	tbd = Vk.DscSetLyt.BindingImage {
-		Vk.DscSetLyt.bindingImageDescriptorType =
+		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	tbd = Vk.DscStLyt.BindingImage {
+		Vk.DscStLyt.bindingImageDescriptorType =
 			Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DscSetLyt.bindingImageStageFlags =
+		Vk.DscStLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
 type DscStLytArg alm nmt = '[BufferModelViewProj alm, TxImg nmt]
-type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
+type BufferModelViewProj alm = 'Vk.DscStLyt.Buffer '[AtomModelViewProj alm]
 type AtomModelViewProj alm = Obj.Atom alm WModelViewProj 'Nothing
-type TxImg nmt = 'Vk.DscSetLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)]
+type TxImg nmt = 'Vk.DscStLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm nmt)] '[] ->
@@ -1186,13 +1185,13 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 
 class CreateMvpBffrs nmt (mff :: [()]) where
 	createMvpBffrs :: KnownNat al => Vk.Phd.P -> Vk.Dvc.D sd ->
-		Vk.DscSetLyt.D sdsl (DscStLytArg al nmt) ->
+		Vk.DscStLyt.D sdsl (DscStLytArg al nmt) ->
 		(forall sls smsbs . (
-			HPList.FromList sls, Vk.DscSet.DListFromMiddle sls,
+			HPList.FromList sls, Vk.DscSt.DListFromMiddle sls,
 			HPList.HomoList '(sdsl, DscStLytArg al nmt) sls,
 			UpdateTx nmt al sls '(sdsl, DscStLytArg al nmt),
 			Update nmt al smsbs sls ) =>
-			HPList.PL (U2 Vk.DscSetLyt.D) sls ->
+			HPList.PL (U2 Vk.DscStLyt.D) sls ->
 			HPList.PL (BindedModelViewProj al nm) smsbs ->
 			HPList.PL (MemoryModelViewProj al nm) smsbs -> IO a) ->
 		IO a
@@ -1296,60 +1295,60 @@ createDscPl dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight }
 
 createDscSts :: (
-	Vk.DscSet.DListFromMiddle sls,
+	Vk.DscSt.DListFromMiddle sls,
 	Update nmt al smsbs sls ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	HPList.PL (BindedModelViewProj al nm) smsbs ->
-	HPList.PL (U2 Vk.DscSetLyt.D) sls ->
+	HPList.PL (U2 Vk.DscStLyt.D) sls ->
 	Vk.ImgVw.I nmt TxFmt siv -> Vk.Smplr.S ssmp ->
-	(forall sds . HPList.PL (Vk.DscSet.D sds) sls -> IO a) -> IO a
+	(forall sds . HPList.PL (Vk.DscSt.D sds) sls -> IO a) -> IO a
 createDscSts dv dp mbs dls tv tsp f =
-	Vk.DscSet.allocateDs dv info $ (>>) <$> update dv mbs tv tsp <*> f
-	where info = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = TMaybe.N,
-		Vk.DscSet.allocateInfoDescriptorPool = dp,
-		Vk.DscSet.allocateInfoSetLayouts = dls }
+	Vk.DscSt.allocateDs dv info $ (>>) <$> update dv mbs tv tsp <*> f
+	where info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = dls }
 
 class Update nmt al smsbs slbtss where
 	update :: Vk.Dvc.D sd -> HPList.PL (BindedModelViewProj al nm) smsbs ->
 		Vk.ImgVw.I nmt 'Vk.T.FormatR8g8b8a8Srgb siv ->
-		Vk.Smplr.S ssmp -> HPList.PL (Vk.DscSet.D sds) slbtss -> IO ()
+		Vk.Smplr.S ssmp -> HPList.PL (Vk.DscSt.D sds) slbtss -> IO ()
 
 instance Update nmt _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
 
 instance (
 	KnownNat al,
-	Vk.DscSet.BindingAndArrayElemBuffer
+	Vk.DscSt.BindingAndArrayElemBuffer
 		cs '[Obj.Atom al WModelViewProj 'Nothing] 0,
-	Vk.DscSet.UpdateDynamicLength
+	Vk.DscSt.UpdateDynamicLength
 		cs '[Obj.Atom al WModelViewProj 'Nothing],
-	Vk.DscSet.BindingAndArrayElemImage cs '[ '(nmt, TxFmt)] 0,
+	Vk.DscSt.BindingAndArrayElemImage cs '[ '(nmt, TxFmt)] 0,
 	Update nmt al smsbs slbtss ) =>
 	Update nmt al (smsb ': smsbs) ('(ds, cs) ': slbtss) where
 	update dv (BindedModelViewProj mb :** mbs) tv tsp (ds :** dss) =
-		Vk.DscSet.updateDs dv (
+		Vk.DscSt.updateDs dv (
 			U5 (dscWrite0 ds mb) :**
 			U5 (dscWrite1 ds tv tsp) :** HPList.Nil ) HPList.Nil >>
 		update dv mbs tv tsp dss
 
-dscWrite0 :: KnownNat alm => Vk.DscSet.D sds slbts ->
+dscWrite0 :: KnownNat alm => Vk.DscSt.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alm] ->
-	Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgBuffer '[ '(
 			sm, sb, bnm, Obj.Atom alm WModelViewProj 'Nothing, 0 )]) 0
-dscWrite0 ds mb = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
+dscWrite0 ds mb = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
 		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo mb }
 
-dscWrite1 :: Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
-	Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
-dscWrite1 ds v s = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
-	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton
+dscWrite1 :: Vk.DscSt.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
+dscWrite1 ds v s = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
+	Vk.DscSt.writeSources = Vk.DscSt.ImageInfos . HPList.Singleton
 		$ U4 Vk.Dsc.ImageInfo {
 			Vk.Dsc.imageInfoImageLayout =
 				Vk.Img.LayoutShaderReadOnlyOptimal,
@@ -1405,7 +1404,7 @@ mainloop :: (
 	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word32 nmi] ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
-	HPList.PL (Vk.DscSet.D sds) slyts ->
+	HPList.PL (Vk.DscSt.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss ->
 	ImgBffrs nmt smt sit tximg svt sspt -> UTCTime -> IO ()
 mainloop lb tctxi fr w sfc pd qfis dv gq pq cp
@@ -1427,15 +1426,15 @@ type ImgBffrs nmt smt sit txi svt sspt = (
 	Vk.ImgVw.I nmt 'Vk.T.FormatR8g8b8a8Srgb svt, Vk.Smplr.S sspt )
 
 run :: forall
-	tximg scfmt dptfmt sfs slyts mff ssfc sd ssc svs sr sl sg sdi sdm
-	sdiv smv sbv bnmv inm smi sbi bnmi sdsl sc clrnm clrsm clrsi clrsiv scb
-	ssoss
-	smsbs sds ss2 siv2 sm2 si3 sw alu alv ali nmv nmi nmm nmt . (
+	tximg sw ssfc sd sc scfmt ssc inm svs sr sl sdsl alu nmt sg sfs
+	clrnm clrsi clrsm clrsiv sdi sdm dptfmt sdiv
+	smv sbv bnmv alv nmv smi sbi bnmi ali nmi nmm smsbs
+	sds sls scb mff ssoss smt sit svt sst . (
 	BObj.IsImage tximg,
-	UpdateTx nmt alu slyts '(sdsl, DscStLytArg alu nmt),
+	UpdateTx nmt alu sls '(sdsl, DscStLytArg alu nmt),
 	HPList.HomoList '() mff, RecreateFrmbffrs svs sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	HPList.HomoList '(sdsl, DscStLytArg alu nmt) slyts,
+	HPList.HomoList '(sdsl, DscStLytArg alu nmt) sls,
 	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	TVar Glfw.MouseButtonState -> TChan () -> TChan tximg ->
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
@@ -1453,10 +1452,10 @@ run :: forall
 	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word32 nmi] ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
-	HPList.PL (Vk.DscSet.D sds) slyts ->
+	HPList.PL (Vk.DscSt.D sds) sls ->
 	HPList.LL (Vk.CBffr.C scb) mff ->
 	SyncObjects ssoss -> Float -> Int ->
-	ImgBffrs nmt sm2 si3 tximg siv2 ss2 -> (Vk.Extent2d -> IO ()) -> IO ()
+	ImgBffrs nmt smt sit tximg svt sst -> (Vk.Extent2d -> IO ()) -> IO ()
 run lbst lb tctxi fr w sfc pd qfis dv gq pq cp
 	sc ex vs rp pl gp fbs crs drs vb ib mms dss cbs soss tm cf
 	(tx, txm, txv, txsp) go = do
@@ -1478,104 +1477,97 @@ run lbst lb tctxi fr w sfc pd qfis dv gq pq cp
 		(_, _) -> go =<< recreateAll
 			w sfc pd qfis dv gq cp sc vs rp pl gp crs drs fbs
 
-class UpdateTx nmt alu slbtss dscs where
+class UpdateTx nmt alu slbtss slbts where
 	updateTx :: (
-		Vk.DscSet.BindingAndArrayElemBuffer (TIndex.I1_2 dscs) '[Obj.Atom alu WModelViewProj 'Nothing] 0,
-		Vk.DscSet.UpdateDynamicLength (TIndex.I1_2 dscs) '[Obj.Atom alu WModelViewProj 'Nothing],
-		Vk.DscSet.WriteSourcesToMiddle (TIndex.I1_2 dscs) ('Vk.DscSet.WriteSourcesArgImage
-			'[ '(ssmp, nmt, 'Vk.T.FormatR8g8b8a8Srgb, siv)]) 0,
-		Vk.DscSet.WriteListUpdateDynamicLengths
-			'[ '( 'Nothing, sds, dscs, 'Vk.DscSet.WriteSourcesArgImage
-				'[ '(ssmp, nmt, 'Vk.T.FormatR8g8b8a8Srgb, siv)], 0)]
-			) =>
-		Vk.Dvc.D sd ->
-		HPList.PL (Vk.DscSet.D sds) slbtss ->
+		'(sdsl, dsla) ~ slbts,
+		imgsrc ~ 'Vk.DscSt.WriteSourcesArgImage
+			'[ '(ssmp, nmt, 'Vk.T.FormatR8g8b8a8Srgb, siv)],
+		Vk.DscSt.BindingAndArrayElemBuffer
+			dsla '[Obj.Atom alu WModelViewProj 'Nothing] 0,
+		Vk.DscSt.UpdateDynamicLength
+			dsla '[Obj.Atom alu WModelViewProj 'Nothing],
+		Vk.DscSt.WriteSourcesToMiddle dsla imgsrc 0,
+		Vk.DscSt.WriteListUpdateDynamicLengths
+			'[ '( 'Nothing, sds, slbts, imgsrc, 0)] ) =>
+		Vk.Dvc.D sd -> HPList.PL (Vk.DscSt.D sds) slbtss ->
 		Vk.ImgVw.I nmt 'Vk.T.FormatR8g8b8a8Srgb siv ->
 		Vk.Smplr.S ssmp -> IO ()
 
-instance UpdateTx nmt alu '[] dscs where updateTx _ HPList.Nil _ _ = pure ()
+instance UpdateTx nmt alu '[] slbts where updateTx _ HPList.Nil _ _ = pure ()
 
-instance UpdateTx nmt alu dscss dscs =>
-	UpdateTx nmt alu (dscs ': dscss) dscs where
-	updateTx dvc (dscs :** dscss) tximgvw txsmp = do
-		Vk.DscSet.updateDs dvc (
-			U5 (descriptorWrite1 dscs tximgvw txsmp) :**
-			HPList.Nil )
+instance UpdateTx nmt alu slbtss slbts =>
+	UpdateTx nmt alu (slbts ': slbtss) slbts where
+	updateTx dv (dss :** dsss) tv tsp = do
+		Vk.DscSt.updateDs dv
+			(HPList.Singleton . U5 $ dscWriteTx dss tv tsp)
 			HPList.Nil
-		updateTx @nmt @alu @dscss @dscs dvc dscss tximgvw txsmp
+		updateTx @nmt @alu @slbtss @slbts dv dsss tv tsp
 
-descriptorWrite1 ::
-	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
-	Vk.DscSet.Write 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
-descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
-	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton
+dscWriteTx :: Vk.DscSt.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
+dscWriteTx dss tv tsp = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = dss,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
+	Vk.DscSt.writeSources = Vk.DscSt.ImageInfos . HPList.Singleton
 		$ U4 Vk.Dsc.ImageInfo {
 			Vk.Dsc.imageInfoImageLayout =
 				Vk.Img.LayoutShaderReadOnlyOptimal,
-			Vk.Dsc.imageInfoImageView = tiv,
-			Vk.Dsc.imageInfoSampler = tsmp } }
+			Vk.Dsc.imageInfoImageView = tv,
+			Vk.Dsc.imageInfoSampler = tsp } }
 
 draw :: forall
-	sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs
-		slyts sds alu alv ali nmv nmi nmm nmt . (
+	sfs sd ssc fmt sr sl sdsl sg
+	smv sbv bnmv smi sbi bnmi scb ssos mff smsbs
+	sls sds alu alv ali nmv nmi nmm nmt . (
 	KnownNat alu, KnownNat alv, KnownNat ali,
-	HPList.HomoList (AtomUbo sdsc alu nmt) slyts,
-	HPList.HomoList '() vss) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
+	HPList.HomoList '() mff,
+	HPList.HomoList '(sdsl, DscStLytArg alu nmt) sls ) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUbo sdsc alu nmt] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
+	Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsc alu nmt], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu nmt)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
-
-	HPList.PL (MemoryUbo alu nmm) smsbs ->
-	HPList.PL (Vk.DscSet.D sds) slyts ->
-
-	HPList.LL (Vk.CBffr.C scb) vss -> SyncObjects ssos ->
-
-	Float ->
-	Int -> IO ()
-draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib
-	ums dscss
-	cbs (SyncObjs iass rfss iffs)
-	tm cf =
-	HPList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
-	HPList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word32 nmi] ->
+	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
+	HPList.PL (Vk.DscSt.D sds) sls ->
+	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Float -> Int -> IO ()
+draw dv gq pq sc ex rp pl gp fbs
+	vb ib mms dss cbs (SyncObjs iass rfss iffs) tm cf =
+	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
-	HPList.index ums cf \um ->
-	($ HPList.homoListIndex dscss cf) \dscs -> do
-	Vk.Fence.waitForFs dvc siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc maxBound (Just ias) Nothing
-	Vk.Fence.resetFs dvc siff
+	HPList.index mms cf \mm -> ($ HPList.homoListIndex dss cf) \ds -> do
+	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
+	ii <- Vk.Khr.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.CBffr.reset cb def
-	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib dscs
-	updateUniformBuffer dvc um ext tm
-	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
-		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-				$ Vk.SemaphorePipelineStageFlags ias
-					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
-	where	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
-			HPList.Dummy (Vk.CBffr.C scb) '()
+	HPList.index fbs ii \fb -> recordCmdBffr cb rp fb ex pl gp vb ib ds
+	updateUniformBuffer dv mm ex tm
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff
+	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo rfs ii
+	where
+	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
+		HPList.Dummy (Vk.CBffr.C scb) '()
+	sinfo :: Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
+		Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
+	sinfo ias rfs = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
+	pinfo :: Vk.Semaphore.S srfs -> Word32 ->
+		Vk.Khr.PresentInfo 'Nothing '[srfs] fmt '[ssc]
+	pinfo rfs ii = Vk.Khr.PresentInfo {
+		Vk.Khr.presentInfoNext = TMaybe.N,
+		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
 type AtomUbo s alu nmt = '(s, DscStLytArg alu nmt)
 
@@ -1707,7 +1699,7 @@ type family MapFst abs where
 
 type SyncObjects = SyncObjs
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali nmv nmi nmt .
+recordCmdBffr :: forall scb sr sf sl sg sm sb nm smi sbi bnmi sdsl sds alu alv ali nmv nmi nmt .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
@@ -1717,10 +1709,10 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu 
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl alu nmt], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word32 nmi] ->
-	Vk.DscSet.D sds (AtomUbo sdsl alu nmt) ->
+	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word32 nmi] ->
+	Vk.DscSt.D sds (AtomUbo sdsl alu nmt) ->
 	IO ()
-recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
+recordCmdBffr cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
