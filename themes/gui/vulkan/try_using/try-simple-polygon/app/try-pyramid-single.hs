@@ -125,13 +125,13 @@ import Debug
 import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 
 main :: IO ()
-main = Win.create windowSize windowName \(Win.W (GlfwG.Win.W win) g) ->
-	Ist.create debug \inst -> do
-		cev <- createControllerEvent
-		_ <- forkIO $ controller cev
-		if debug
-			then DbgMsngr.setup inst $ run win inst g cev
-			else run win inst g cev
+main = Win.create windowSize windowName \(Win.W w fr) ->
+	Ist.create debug \ist ->
+	createControllerEvent >>= \cev ->
+	forkIO (controller cev) >>
+	if debug
+		then DbgMsngr.setup ist $ body w ist fr cev
+		else body w ist fr cev
 
 controller :: ControllerEvent -> IO ()
 controller ev = do
@@ -162,10 +162,7 @@ data ControllerEvent = ControllerEvent {
 	controllerEventFinished :: IORef Bool,
 	controllerEventButtonAEver :: IORef Bool,
 	controllerEventLeftX :: IORef Float,
-	controllerEventLeftY :: IORef Float
-	}
-
-type FramebufferResized = IORef Bool
+	controllerEventLeftY :: IORef Float }
 
 windowName :: String
 windowName = "Triangle"
@@ -173,32 +170,34 @@ windowName = "Triangle"
 windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
 
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
+type FramebufferResized = IORef Bool
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
-run w inst g cev =
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
+
+body :: GlfwG.Win.W sw -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
+body (GlfwG.Win.W w) inst g cev =
 	Sfc.create inst (GlfwG.Win.W w) \sfc ->
-	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
-	createLogicalDevice phdv qfis \dv gq pq ->
-	createSwapChainNew w sfc phdv qfis dv
+	pickPhysicalDevice inst sfc >>= \(pd, qfis) ->
+	createLgDvc pd qfis \d gq pq ->
+	createSwapChainNew w sfc pd qfis d
 		\(sc :: Vk.Khr.Swapchain.S scifmt ss) ext ->
-	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
-	createImageViewsNew dv imgs \scivs ->
-	createRenderPassNew @scifmt dv \rp ->
-	createPipelineLayout' dv \dscslyt ppllyt ->
-	createGraphicsPipeline' dv ext rp ppllyt \gpl ->
-	createFramebuffers dv ext rp scivs \fbs ->
-	createCommandPool qfis dv \cp ->
-	createVertexBuffer phdv dv gq cp \vb ->
-	createIndexBuffer phdv dv gq cp \ib ->
-	createUniformBuffer phdv dv \ub ubm ->
-	createDescriptorPool dv \dscp ->
-	createDescriptorSet dv dscp ub dscslyt \ubds ->
-	createCommandBuffer dv cp \cb ->
-	createSyncObjects dv \sos ->
+	Vk.Khr.Swapchain.getImages d sc >>= \imgs ->
+	createImageViewsNew d imgs \scivs ->
+	createRenderPassNew @scifmt d \rp ->
+	createPipelineLayout' d \dscslyt ppllyt ->
+	createGraphicsPipeline' d ext rp ppllyt \gpl ->
+	createFramebuffers d ext rp scivs \fbs ->
+	createCommandPool qfis d \cp ->
+	createVertexBuffer pd d gq cp \vb ->
+	createIndexBuffer pd d gq cp \ib ->
+	createUniformBuffer pd d \ub ubm ->
+	createDescriptorPool d \dscp ->
+	createDescriptorSet d dscp ub dscslyt \ubds ->
+	createCommandBuffer d cp \cb ->
+	createSyncObjects d \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm cev
+	mainLoop g w sfc pd qfis d gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm cev
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, PhDvc.QFamIndices)
@@ -221,9 +220,9 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormatsOld dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhDvc.P -> PhDvc.QFamIndices -> (forall sd .
+createLgDvc :: Vk.PhDvc.P -> PhDvc.QFamIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createLogicalDevice phdvc qfis f =
+createLgDvc phdvc qfis f =
 	let	uniqueQueueFamilies =
 			L.nub [PhDvc.grFam qfis, PhDvc.prFam qfis]
 		queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
@@ -238,7 +237,7 @@ createLogicalDevice phdvc qfis f =
 				Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 --					queueCreateInfos <$> uniqueQueueFamilies,
 				Vk.Dvc.M.createInfoEnabledLayerNames =
-					bool [] validationLayers debug,
+					bool [] vldLayers debug,
 				Vk.Dvc.M.createInfoEnabledExtensionNames =
 					deviceExtensions,
 				Vk.Dvc.M.createInfoEnabledFeatures = Just def }
