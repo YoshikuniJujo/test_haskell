@@ -121,17 +121,17 @@ import Data.Bool.ToolsYj
 import Data.IORef.ToolsYj
 
 import Debug
-
 import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 
 main :: IO ()
-main = Win.create windowSize windowName \(Win.W w fr) ->
+main = createControllerEvent >>= \ce -> forkIO (controller ce) >>
+	Win.create windowSize windowName \(Win.W w fr) ->
 	Ist.create debug \ist ->
-	createControllerEvent >>= \cev ->
-	forkIO (controller cev) >>
-	if debug
-		then DbgMsngr.setup ist $ body w ist fr cev
-		else body w ist fr cev
+	bool id (DbgMsngr.setup ist) debug (body w ist fr ce)
+
+createControllerEvent :: IO ControllerEvent
+createControllerEvent = ControllerEvent
+	<$> newIORef False <*> newIORef False <*> newIORef 0 <*> newIORef 0
 
 controller :: ControllerEvent -> IO ()
 controller ev = do
@@ -144,19 +144,6 @@ controller ev = do
 		when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
 			$ writeIORef (controllerEventButtonAEver ev) True
 		controller ev
-
-createControllerEvent :: IO ControllerEvent
-createControllerEvent = do
-	fn <- newIORef False
-	ae <- newIORef False
-	lx <- newIORef 0
-	ly <- newIORef 0
-	pure ControllerEvent {
-		controllerEventFinished = fn,
-		controllerEventButtonAEver = ae,
-		controllerEventLeftX = lx,
-		controllerEventLeftY = ly
-		}
 
 data ControllerEvent = ControllerEvent {
 	controllerEventFinished :: IORef Bool,
