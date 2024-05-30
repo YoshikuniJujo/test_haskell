@@ -16,7 +16,7 @@ import Control.Monad.ST
 import Data.Maybe
 import Data.List.NonEmpty qualified as NE
 import Data.Color
-import Data.CairoImage.Internal
+import Data.CairoImage.Internal hiding (imageSize)
 import Data.CairoContext
 import Data.JuicyCairo
 import Codec.Picture
@@ -32,12 +32,14 @@ import Options.Declarative
 import Dhall hiding (unit)
 import DefaultFishParams
 
+import Data.Int
+
 --------------------------------------------------
 -- FILL BY FISH
 --------------------------------------------------
 
-result :: FishParams -> Picture
-result fp = filled fish (color1 clrs) (color2 clrs) (color3 clrs) 7
+result :: FishParams -> (Maybe Int32, Picture)
+result fp = (imageSize fp, filled fish (color1 clrs) (color2 clrs) (color3 clrs) 7)
 	where
 	fish = flipX $ shape 1 fishShape `overlap`
 		pattern (patternColor1 pt) (patternColor2 pt) fishPattern'
@@ -132,7 +134,8 @@ line (x1, y1) (x2, y2) = Line x1 y1 (xd / d, yd / d) d where
 data FishParams = FishParams {
 	oneSide :: NonEmpty (Double, Double),
 	fishPattern :: Pattern,
-	colors :: Colors }
+	colors :: Colors,
+	imageSize :: Maybe Int32 }
 	deriving (Show, Generic)
 
 instance FromDhall FishParams
@@ -295,14 +298,16 @@ main' ::
 	-> Flag "o" '["output"] "FILEPATH" "Result .png File" String
 	-> Cmd "Filled with fishes" ()
 main' cf op = liftIO
-	$ drawPicture (get op) . result
+	$ uncurry (drawPicture $ get op) . result
 	=<< (fromMaybe (input auto defaultFishParams) $ inputFile auto <$> get cf)
 
-drawPicture :: FilePath -> Picture -> IO ()
-drawPicture fp (Picture _ _ act) = either error (writeArgb32 fp) $ runST do
-	sfc <- cairoImageSurfaceCreate CairoFormatArgb32 900 900
+drawPicture :: FilePath -> Maybe Int32 -> Picture -> IO ()
+drawPicture fp msz (Picture _ _ act) = either error (writeArgb32 fp) $ runST do
+	let	sz = fromMaybe 900 msz
+		sz' = fromIntegral sz
+	sfc <- cairoImageSurfaceCreate CairoFormatArgb32 sz sz
 	cr <- cairoCreate sfc
-	cairoSetMatrix cr =<< cairoMatrixNew 800 0 0 (- 800) 50 850
+	cairoSetMatrix cr =<< cairoMatrixNew (sz' * 8 / 9) 0 0 (- sz' * 8 / 9) (sz' / 18) (sz' * 17 / 18)
 	act cr White
 	(<$> cairoImageSurfaceGetCairoImage sfc) \case
 		CairoImageArgb32 i -> Right i; _ -> Left "image format error"

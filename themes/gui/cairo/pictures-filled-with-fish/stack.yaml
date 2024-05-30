@@ -17,7 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2023-01-01.yaml
-resolver: nightly-2024-02-19
+
+resolver: nightly-2024-05-28
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +43,7 @@ packages:
 extra-deps:
 - JuicyCairo-0.1.0.0
 - git: https://github.com/YoshikuniJujo/dhall-haskell
-  commit: e9b4715fad553fcfa0f31d63d8149757abbf1087
+  commit: d1cd577b8039585909bff443c092d1e3ed15c0a9
   subdirs:
     - dhall
 - git: https://github.com/tanakh/optparse-declarative
