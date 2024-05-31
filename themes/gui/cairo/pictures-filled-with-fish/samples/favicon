@@ -29,7 +29,7 @@ let pattern = {
 {
 oneSide = oneSide,
 fishPattern = pattern,
-colors = { color1 = Color.Brown, color2 = Color.Red, color3 = Color.White },
+colors = { color1 = Color.Green, color2 = Color.Yellow, color3 = Color.White },
 -- imageSize = None Integer
-imageSize = Some +512
+imageSize = Some +48
 }
