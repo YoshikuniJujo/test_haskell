@@ -1,4 +1,6 @@
-module Parse where
+module Parse (
+        Parse, none, succeed, spot, token, tokens, eof, foo, (>*>), alt, build,
+        list1, recL1 ) where
 
 import Prelude
 
