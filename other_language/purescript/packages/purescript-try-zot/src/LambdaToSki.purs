@@ -1,0 +1,110 @@
+module LambdaToSki where
+
+import Prelude
+
+import Data.Semigroup
+import Data.Generic.Rep
+import Data.Enum
+import Data.Show
+import Data.Show.Generic
+import Data.Tuple
+import Data.Maybe
+import Data.List
+import Data.Boolean
+import Data.String
+import Partial.Unsafe
+
+import Parse
+
+data Lambda
+        = Var String | Apply Lambda Lambda | Fun String Lambda | S | K | I
+        | Error String
+
+instance Show Lambda where
+        show S = "s"
+        show K = "k"
+        show I = "i"
+        show (Apply f a) = "`" <> show f <> show a
+        show (Fun p e) = "(fun " <> p <> " " <> show e <> ")"
+        show (Var v) = "(var" <> v <> ")"
+        show (Error msg) = "(error " <> msg <> ")"
+
+onlySKI :: Lambda -> Boolean
+onlySKI S = true
+onlySKI K = true
+onlySKI I = true
+onlySKI (Apply f a) = onlySKI f && onlySKI a
+onlySKI _ = false
+
+makeFun :: List String -> Lambda -> Lambda
+makeFun (p : Nil) ex = Fun p ex
+makeFun (p : ps) ex = Fun p $ makeFun ps ex
+makeFun _ _ = Error "makeFun: error: need 1 parameter at least"
+
+lambdaToSki :: Lambda -> Lambda
+lambdaToSki (Fun x e) = out x e
+lambdaToSki (Apply f a) = Apply (lambdaToSki f) (lambdaToSki a)
+lambdaToSki _ = Error "lambdaToSki: error"
+
+out :: String -> Lambda -> Lambda
+out _ e | onlySKI e = Apply K e
+out x0 v@(Var x1)
+        | x1 == x0 = I
+        | otherwise = Apply K v
+out x0 (Apply f a) = Apply (Apply S $ out x0 f) $ out x0 a
+out x0 (Fun x1 e)
+        | x0 == x1 = Apply K $ out x0 e
+        | otherwise = out x0 $ out x1 e
+out _ _ = Error "NEVER OCCUR"
+
+{-
+parseParams :: Parse Token (List String)
+parseParams = list1 (spot isVar `build` unsafePartial varName)
+-}
+
+data Token = Lambda | RightArrow | OpenParen | CloseParen | VarT String
+
+isVar :: Token -> Boolean
+isVar (VarT _) = true
+isVar _ = false
+
+varName :: Partial => Token -> String
+varName (VarT nm) = nm
+
+derive instance Generic Token _
+derive instance Eq Token
+
+instance Show Token where show = genericShow
+
+lexer :: String -> Maybe (List Token)
+lexer = lexerCP <<< map fromEnum <<< fromFoldable <<< toCodePointArray
+
+lexerCP :: List Int -> Maybe (List Token)
+lexerCP Nil = Just Nil
+lexerCP (0x20 : rest) = lexerCP rest                                    -- ' '
+lexerCP (0x0a : rest) = lexerCP rest                                    -- '\n'
+lexerCP (0x5c : rest) = (Lambda : _) <$> lexerCP rest                   -- '\\'
+lexerCP (0x2d : 0x3e : rest) = (RightArrow : _) <$> lexerCP rest        -- '-' '>'
+lexerCP (0x28 : rest) = (OpenParen : _) <$> lexerCP rest                -- '('
+lexerCP (0x29 : rest) = (CloseParen : _) <$> lexerCP rest               -- ')'
+lexerCP ca@(c : _) | 0x61 <= c && c <= 0x7a = let                       -- isLower
+        { init : ret, rest : rest } = span isAlphaNum ca in
+        (VarT (codePointListToString ret) : _) <$> lexerCP rest
+lexerCP ca = Nothing
+
+isAlphaNum :: Int -> Boolean
+isAlphaNum c = 
+        0x41 <= c && c <= 0x5a ||
+        0x61 <= c && c <= 0x7a ||
+        0x30 <= c && c <= 0x39
+
+codePointListToString :: List Int -> String
+codePointListToString = fromCodePointArray <<< toUnfoldable <<< mapMaybe toEnum
+
+{-
+mapMaybe :: forall a b . (a -> Maybe b) -> List a -> List b
+mapMaybe _f Nil = Nil
+mapMaybe f (x : xs) = case f x of
+        Nothing -> mapMaybe f xs
+        Just y -> y : mapMaybe f xs
+        -}
