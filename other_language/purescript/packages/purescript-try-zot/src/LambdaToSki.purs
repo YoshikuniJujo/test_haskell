@@ -2,6 +2,7 @@ module LambdaToSki where
 
 import Prelude
 
+import Control.Alt
 import Data.Semigroup
 import Data.Generic.Rep
 import Data.Enum
@@ -14,7 +15,7 @@ import Data.Boolean
 import Data.String
 import Partial.Unsafe
 
-import Parse
+import Parser
 
 data Lambda
         = Var String | Apply Lambda Lambda | Fun String Lambda | S | K | I
@@ -24,9 +25,9 @@ instance Show Lambda where
         show S = "s"
         show K = "k"
         show I = "i"
-        show (Apply f a) = "`" <> show f <> show a
+        show (Apply f a) = "`" <> show f <> " " <> show a
         show (Fun p e) = "(fun " <> p <> " " <> show e <> ")"
-        show (Var v) = "(var" <> v <> ")"
+        show (Var v) = "(var " <> v <> ")"
         show (Error msg) = "(error " <> msg <> ")"
 
 onlySKI :: Lambda -> Boolean
@@ -57,12 +58,47 @@ out x0 (Fun x1 e)
         | otherwise = out x0 $ out x1 e
 out _ _ = Error "NEVER OCCUR"
 
-{-
-parseParams :: Parse Token (List String)
-parseParams = list1 (spot isVar `build` unsafePartial varName)
--}
+readLambda' :: Partial => String -> Lambda
+readLambda' s = case readLambda s of Just (Tuple r Nil) -> r
+
+readLambda :: String -> Maybe (Tuple Lambda (List Token))
+readLambda s = runParser (parseLambda unit) =<< lexer s
+
+parseLambda :: Unit -> Parser Token Lambda
+parseLambda _ = parseApply unit `alt` parseFun
+
+parseApply :: Unit -> Parser Token Lambda
+parseApply _ = recL1 Apply $ parseAtom unit
+
+parseFun :: Parser Token Lambda
+parseFun = do
+        _ <- sat (_ == Lambda)
+        ps <- parseParams
+        _ <- sat (_ == RightArrow)
+        e <- parseLambda unit
+        pure $ makeFun ps e
+
+parseAtom :: Unit -> Parser Token Lambda
+parseAtom _ =
+        (Var <<< unsafePartial varName <$> sat isVar)
+        `alt`
+        parseParens
+
+parseParens :: Parser Token Lambda
+parseParens = do
+        _ <- sat (_ == OpenParen)
+        r <- parseLambda unit
+        _ <- sat (_ == CloseParen)
+        pure r
+
+parseParams :: Parser Token (List String)
+parseParams = some $ unsafePartial varName <$> sat isVar
 
 data Token = Lambda | RightArrow | OpenParen | CloseParen | VarT String
+
+derive instance Generic Token _
+derive instance Eq Token
+instance Show Token where show = genericShow
 
 isVar :: Token -> Boolean
 isVar (VarT _) = true
@@ -70,11 +106,6 @@ isVar _ = false
 
 varName :: Partial => Token -> String
 varName (VarT nm) = nm
-
-derive instance Generic Token _
-derive instance Eq Token
-
-instance Show Token where show = genericShow
 
 lexer :: String -> Maybe (List Token)
 lexer = lexerCP <<< map fromEnum <<< fromFoldable <<< toCodePointArray
@@ -90,7 +121,7 @@ lexerCP (0x29 : rest) = (CloseParen : _) <$> lexerCP rest               -- ')'
 lexerCP ca@(c : _) | 0x61 <= c && c <= 0x7a = let                       -- isLower
         { init : ret, rest : rest } = span isAlphaNum ca in
         (VarT (codePointListToString ret) : _) <$> lexerCP rest
-lexerCP ca = Nothing
+lexerCP _ = Nothing
 
 isAlphaNum :: Int -> Boolean
 isAlphaNum c = 
@@ -108,3 +139,6 @@ mapMaybe f (x : xs) = case f x of
         Nothing -> mapMaybe f xs
         Just y -> y : mapMaybe f xs
         -}
+
+idLambda :: String
+idLambda = "\\c -> \\x -> \\print -> print c"

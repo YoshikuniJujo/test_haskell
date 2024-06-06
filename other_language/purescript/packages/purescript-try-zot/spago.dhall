@@ -22,6 +22,10 @@ to generate this file without the comments in this block.
   , "strings"
   , "tuples"
   , "partial"
+  , "unicode"
+  , "control"
+  , "foldable-traversable"
+  , "integers"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
