@@ -25,7 +25,7 @@ instance Show Lambda where
         show S = "s"
         show K = "k"
         show I = "i"
-        show (Apply f a) = "`" <> show f <> " " <> show a
+        show (Apply f a) = "`" <> show f <> show a
         show (Fun p e) = "(fun " <> p <> " " <> show e <> ")"
         show (Var v) = "(var " <> v <> ")"
         show (Error msg) = "(error " <> msg <> ")"
@@ -132,13 +132,11 @@ isAlphaNum c =
 codePointListToString :: List Int -> String
 codePointListToString = fromCodePointArray <<< toUnfoldable <<< mapMaybe toEnum
 
-{-
-mapMaybe :: forall a b . (a -> Maybe b) -> List a -> List b
-mapMaybe _f Nil = Nil
-mapMaybe f (x : xs) = case f x of
-        Nothing -> mapMaybe f xs
-        Just y -> y : mapMaybe f xs
-        -}
-
 idLambda :: String
 idLambda = "\\c -> \\x -> \\print -> print c"
+
+revLambda :: String
+revLambda =
+        "( \\x -> x x ( \\x -> x ) ) ( \\self -> \\remainder -> \\c ->" <>
+        "c ( \\x -> x ) ( \\x -> x ) ( \\x -> x ) ( \\x -> \\y -> x )" <>
+        "( self self ) ( self self ) ( \\print -> remainder ( print c ) ) )"
