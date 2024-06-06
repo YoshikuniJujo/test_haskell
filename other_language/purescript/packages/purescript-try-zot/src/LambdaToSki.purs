@@ -140,3 +140,12 @@ revLambda =
         "( \\x -> x x ( \\x -> x ) ) ( \\self -> \\remainder -> \\c ->" <>
         "c ( \\x -> x ) ( \\x -> x ) ( \\x -> x ) ( \\x -> \\y -> x )" <>
         "( self self ) ( self self ) ( \\print -> remainder ( print c ) ) )"
+
+reverseLambda :: String
+reverseLambda =
+        "\\c -> ( \\x -> c ( \\x -> x ) ( \\x -> x ) ( \\x -> x ) ( \\x -> \\y -> x ) x x ( \\x -> x ) )" <>
+        "( \\ignore ->" <>
+        "( \\y -> y ( \\p -> p c ) y ) ( \\r s c -> c ( \\x -> x ) ( \\x -> x ) ( \\x -> x )" <>
+        "( \\x -> \\y -> x )" <>
+        "( \\ignore -> s ( \\p -> r ( p c ) ) s )" <>
+        "( \\ignore -> s ( \\p -> r ( p c ) ) s ) r ) )"
