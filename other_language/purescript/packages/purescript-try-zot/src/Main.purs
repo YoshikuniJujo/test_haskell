@@ -20,4 +20,4 @@ main = do
 interpretLambda :: String -> String -> Effect Unit
 interpretLambda lmbd arg = maybe (pure unit) (interpret log)
         <<< ((_ <> arg) <$> _) <<< skiToZot
-        <<< show <<< lambdaToSki $ unsafePartial readLambda' lmbd
+        <<< show <<< lambdaToSkiCore $ unsafePartial readLambda' lmbd

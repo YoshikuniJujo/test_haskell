@@ -42,10 +42,13 @@ makeFun (p : Nil) ex = Fun p ex
 makeFun (p : ps) ex = Fun p $ makeFun ps ex
 makeFun _ _ = Error "makeFun: error: need 1 parameter at least"
 
-lambdaToSki :: Lambda -> Lambda
-lambdaToSki (Fun x e) = out x e
-lambdaToSki (Apply f a) = Apply (lambdaToSki f) (lambdaToSki a)
-lambdaToSki _ = Error "lambdaToSki: error"
+lambdaToSki :: String -> String
+lambdaToSki = show <<< lambdaToSkiCore <<< unsafePartial readLambda'
+
+lambdaToSkiCore :: Lambda -> Lambda
+lambdaToSkiCore (Fun x e) = out x e
+lambdaToSkiCore (Apply f a) = Apply (lambdaToSkiCore f) (lambdaToSkiCore a)
+lambdaToSkiCore _ = Error "lambdaToSkiCore: error"
 
 out :: String -> Lambda -> Lambda
 out _ e | onlySKI e = Apply K e
