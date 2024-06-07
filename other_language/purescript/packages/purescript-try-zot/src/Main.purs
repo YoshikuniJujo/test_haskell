@@ -18,6 +18,6 @@ main = do
   log "🍝"
 
 interpretLambda :: String -> String -> Effect Unit
-interpretLambda lmbd arg = maybe (pure unit) interpret
+interpretLambda lmbd arg = maybe (pure unit) (interpret log)
         <<< ((_ <> arg) <$> _) <<< skiToZot
         <<< show <<< lambdaToSki $ unsafePartial readLambda' lmbd

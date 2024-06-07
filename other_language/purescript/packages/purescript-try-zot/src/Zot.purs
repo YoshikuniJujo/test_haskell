@@ -78,8 +78,8 @@ zero _ = cont (Fun (\f -> f $$ s >$$ k))
 one :: Fun
 one = mkFun $ \c -> cont $ mkFun $ \l -> cont $ Fun $ \r -> c $$< l $$ r
 
-pr :: Fun
-pr = Fun $ \x -> (((interrogate x >$$ Zero >$$ One) >>= (log <<< show)) *> pure pr)
+pr :: (String -> Effect Unit) -> Fun
+pr op = Fun $ \x -> (((interrogate x >$$ Zero >$$ One) >>= (op <<< show)) *> pure (pr op))
 
 interrogate :: Fun -> Effect Fun
 interrogate f = f $$ i >$$ i >$$ i >$$ k
@@ -99,8 +99,8 @@ mapMaybe f (x : xs) = case f x of
         Nothing -> mapMaybe f xs
         Just y -> y : mapMaybe f xs
 
-interpret :: String -> Effect Unit
-interpret src = (readZot (removeComment src) >$$< output >$$ pr) *> log ""
+interpret :: (String -> Effect Unit) -> String -> Effect Unit
+interpret op src = (readZot (removeComment src) >$$< output >$$ pr op) *> pure unit
         where
         removeComment = joinWith "" <<< map (takeWhile (_ /= codePointFromChar '#')) <<< split (Pattern "\n")
 
