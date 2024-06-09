@@ -83,8 +83,8 @@ import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
+import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss
+import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss.M
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
@@ -100,7 +100,7 @@ import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -179,24 +179,23 @@ body w ist g cev =
 	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \d gq pq ->
 	createCmdPl qfis d \cp ->
-	createSwpch w sfc pd qfis d
-		\(sc :: Vk.Khr.Swpch.S scifmt ss) ext ->
-	Vk.Khr.Swpch.getImages d sc >>= \imgs ->
-	createImageViewsNew d imgs \scivs ->
+	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
+	Vk.Khr.Swpch.getImages d sc >>= \scis ->
+	createImageViewsNew d scis \scvs ->
 	createRenderPassNew @scifmt d \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPipelineLayout' d \dscslyt ppllyt ->
-	createGraphicsPipeline' d ext rp ppllyt \gpl ->
-	createFramebuffers d ext rp scivs \fbs ->
+	createGraphicsPipeline' d ex rp ppllyt \gpl ->
+	createFramebuffers d ex rp scvs \fbs ->
 	createVtxBffr pd d gq cp vtcs \vb ->
 	createIdxBffr pd d gq cp idcs \ib ->
 	createUniformBuffer pd d \ub ubm ->
-	createDescriptorPool d \dscp ->
+	createDscPl d \dscp ->
 	createDescriptorSet d dscp ub dscslyt \ubds ->
 	Vk.CBffr.allocate
 		@_ @('[ '()]) d (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
 	createSyncObjects d \sos ->
-	mainLoop g w sfc pd qfis d gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos cev
+	mainLoop g w sfc pd qfis d gq pq sc ex scvs rp ppllyt gpl fbs vb ib ubm ubds cb sos cev
 
 pickPhd :: Vk.Ist.I si ->
 	Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, PhDvc.QFamIndices)
@@ -396,7 +395,7 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 
 createRenderPassNew ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
-	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
+	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
 createRenderPassNew dvc f = do
 	let	colorAttachment :: Vk.Att.Description scifmt
 		colorAttachment = Vk.Att.Description {
@@ -438,13 +437,13 @@ createRenderPassNew dvc f = do
 				Vk.AccessColorAttachmentWriteBit .|.
 				Vk.AccessDepthStencilAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags = zeroBits }
-		renderPassInfo = Vk.RndrPass.M.CreateInfo {
-			Vk.RndrPass.M.createInfoNext = TMaybe.N,
-			Vk.RndrPass.M.createInfoFlags = zeroBits,
-			Vk.RndrPass.M.createInfoAttachments = colorAttachment :** HPList.Nil,
-			Vk.RndrPass.M.createInfoSubpasses = [subpass],
-			Vk.RndrPass.M.createInfoDependencies = [dependency] }
-	Vk.RndrPass.create @'Nothing @'[scifmt] dvc renderPassInfo nil \rp -> f rp
+		renderPassInfo = Vk.RndrPss.M.CreateInfo {
+			Vk.RndrPss.M.createInfoNext = TMaybe.N,
+			Vk.RndrPss.M.createInfoFlags = zeroBits,
+			Vk.RndrPss.M.createInfoAttachments = colorAttachment :** HPList.Nil,
+			Vk.RndrPss.M.createInfoSubpasses = [subpass],
+			Vk.RndrPss.M.createInfoDependencies = [dependency] }
+	Vk.RndrPss.create @'Nothing @'[scifmt] dvc renderPassInfo nil \rp -> f rp
 
 type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing]])
 
@@ -487,7 +486,7 @@ createPipelineLayout' dvc f =
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
@@ -498,7 +497,7 @@ createGraphicsPipeline' dvc sce rp ppllyt f =
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
@@ -508,7 +507,7 @@ recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.unsafeRecreat
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 mkGraphicsPipelineCreateInfo' ::
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
@@ -628,7 +627,7 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPass.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
+	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HPList.Nil f = f HPList.Nil
@@ -638,7 +637,7 @@ createFramebuffers dvc sce rp (iv :** ivs) f =
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.Extent2d ->
-		Vk.RndrPass.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
+		Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
 		HPList.PL Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
@@ -652,7 +651,7 @@ instance RecreateFramebuffers sis sfs =>
 		recreateFramebuffers dvc sce rp scivs fbs
 
 mkFramebufferCreateInfoNew ::
-	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I nm fmt si ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)]
 mkFramebufferCreateInfoNew sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
@@ -799,22 +798,20 @@ type UniformBufferMemory sm sb = Vk.Mm.M sm '[ '(
 	'Vk.Mm.BufferArg "uniform-buffer" '[Obj.Atom 256 UniformBufferObject 'Nothing]
 	)]
 
-createDescriptorPool ::
-	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
-createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
+createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDscPl dv = Vk.DscPl.create dv info nil
 	where
-	poolInfo = Vk.DscPool.CreateInfo {
-		Vk.DscPool.createInfoNext = TMaybe.N,
-		Vk.DscPool.createInfoFlags =
-			Vk.DscPool.CreateFreeDescriptorSetBit,
-		Vk.DscPool.createInfoMaxSets = 1,
-		Vk.DscPool.createInfoPoolSizes = [poolSize] }
-	poolSize = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPool.sizeDescriptorCount = 1 }
+	info = Vk.DscPl.CreateInfo {
+		Vk.DscPl.createInfoNext = TMaybe.N,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+		Vk.DscPl.createInfoMaxSets = 1,
+		Vk.DscPl.createInfoPoolSizes = [sz] }
+	sz = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPl.sizeDescriptorCount = 1 }
 
 createDescriptorSet ::
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[Obj.Atom 256 UniformBufferObject 'Nothing] ->
+	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.Bffr.Binded sm sb nm '[Obj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSetLyt.D sdsc '[ 'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing]] ->
 	(forall sds .
 		Vk.DscSet.D sds '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[Obj.Atom 256 UniformBufferObject 'Nothing]]) -> IO a) -> IO a
@@ -918,7 +915,7 @@ createSyncObjects dvc f =
 recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alv ali .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb ->
-	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
+	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -941,16 +938,16 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 			HPList.Nil )) >>
 	Vk.Cmd.drawIndexed cbb (fromIntegral $ length idcs) 1 0 0 0
 	where
-	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf
+	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
-	rpInfo = Vk.RndrPass.BeginInfo {
-		Vk.RndrPass.beginInfoNext = TMaybe.N,
-		Vk.RndrPass.beginInfoRenderPass = rp,
-		Vk.RndrPass.beginInfoFramebuffer = fb,
-		Vk.RndrPass.beginInfoRenderArea = Vk.Rect2d {
+	rpInfo = Vk.RndrPss.BeginInfo {
+		Vk.RndrPss.beginInfoNext = TMaybe.N,
+		Vk.RndrPss.beginInfoRenderPass = rp,
+		Vk.RndrPss.beginInfoFramebuffer = fb,
+		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
 			Vk.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues = HPList.Singleton
+		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (KnownNat alv, KnownNat ali, RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
@@ -959,7 +956,7 @@ mainLoop :: (KnownNat alv, KnownNat ali, RecreateFramebuffers ss sfs, Vk.T.Forma
 	Vk.Phd.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d -> HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
@@ -988,7 +985,7 @@ runLoop :: (KnownNat alv, KnownNat ali, RecreateFramebuffers sis sfs, Vk.T.Forma
 	PhDvc.QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
@@ -1014,7 +1011,7 @@ runLoop w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc frszd ext scivs rp pplly
 drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds alv ali .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
-	Vk.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
@@ -1087,7 +1084,7 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
@@ -1109,7 +1106,7 @@ recreateSwapChainEtc :: (
 	Vk.Phd.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
+	Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
