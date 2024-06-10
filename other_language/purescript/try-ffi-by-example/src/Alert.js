@@ -1,9 +1,9 @@
-var alert = function (s) {
+var j_alert = function (s) {
 	return function() {
 		window.alert(s);
 	}
 };
 
 export {
-	alert
+	j_alert
 };
