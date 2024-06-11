@@ -4,11 +4,12 @@ import Prelude
 import Effect
 import Alert
 import Body
+import Window
 
 import EventTarget
 
 main :: Effect Unit
 main = do
         alert "foobar"
-        addEventListener body optionsZero
+        addEventListener win optionsZero
                 $ CallbackFunction \(ev :: EventLoad) -> alert "body loaded"

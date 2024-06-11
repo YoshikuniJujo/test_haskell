@@ -11,6 +11,7 @@ import Data.Unit
 import Effect
 
 import Body
+import Window
 
 addEventListener :: forall evtg ev . Eventable evtg ev =>
         evtg -> Options -> Callback ev -> Effect Unit
@@ -59,3 +60,8 @@ instance IsEventTarget Body where eventTarget = eventTargetBody
 foreign import eventTargetBody :: Body -> EventTarget
 
 instance Eventable Body EventLoad
+instance Eventable Window EventLoad
+
+foreign import eventTargetWindow :: Window -> EventTarget
+
+instance IsEventTarget Window where eventTarget = eventTargetWindow
