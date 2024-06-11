@@ -4,9 +4,10 @@ module EventTarget (
         class Eventable,
         class IsEvent, eventType, class IsEventTarget, EventTarget, eventTarget,
         Options, optionsZero,
-        Callback(..), HandleEvent
+        Callback(..)
         ) where
 
+import Control.Monad
 import Data.Unit
 import Effect
 
@@ -22,14 +23,20 @@ addEventListenerRaw :: forall ev .
         EventTarget -> String -> Options -> Callback ev -> Effect Unit
 addEventListenerRaw evtg evtp opts (CallbackFunction fn) =
         js_addEventListenerFn evtg evtp opts fn
-addEventListenerRaw evtg evtp opts (HasHandleEvent hhe) =
+addEventListenerRaw evtg evtp opts (Foo hhe) =
         js_addEventListenerHhe evtg evtp opts hhe
+
+{-
+addEventListenerRawFn :: EventTarget ->
+        String -> Options -> (Event -> Effect Unit) -> Effect Unit
+addEventListenerRawFn
+-}
 
 class (IsEventTarget evtg, IsEvent ev) <= Eventable evtg ev -- where
 
 data Callback ev
         = CallbackFunction (ev -> Effect Unit)
-        | HasHandleEvent (HandleEvent ev)
+        | Foo (forall r . { handleEvent :: ev -> Effect Unit | r })
 
 type Options = {
         capture :: Boolean,
@@ -39,18 +46,18 @@ type Options = {
 
 optionsZero = { capture : false, once : false, passive : false} -- , signal : false }
 
+data Event
+
 data EventTarget
 
 class IsEventTarget evtg where eventTarget :: evtg -> EventTarget
 class IsEvent ev where eventType :: String
 
-data HandleEvent ev
-
 foreign import js_addEventListenerFn :: forall ev .
         EventTarget -> String -> Options -> (ev -> Effect Unit) -> Effect Unit
 
-foreign import js_addEventListenerHhe :: forall ev .
-        EventTarget -> String -> Options -> HandleEvent ev -> Effect Unit
+foreign import js_addEventListenerHhe :: forall ev r .
+        EventTarget -> String -> Options -> { handleEvent :: ev -> Effect Unit | r } -> Effect Unit
 
 data EventLoad
 
