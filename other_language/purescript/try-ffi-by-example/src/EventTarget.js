@@ -18,6 +18,9 @@ var js_addEventListener = function (evtg) {
 var js_addEventListenerFn = js_addEventListener
 var js_addEventListenerHhe = js_addEventListener
 
+var js_addEventListenerFnNoSignal = js_addEventListener
+var js_addEventListenerHheNoSignal = js_addEventListener
+
 var eventTargetBody = function (b) { return b }
 var eventTargetWindow = function (w) { return w }
 
@@ -28,6 +31,8 @@ var js_currentTarget = function (e) { return e.currentTarget }
 export {
 	js_addEventListenerFn,
 	js_addEventListenerHhe,
+	js_addEventListenerFnNoSignal,
+	js_addEventListenerHheNoSignal,
 	eventTargetBody, eventTargetWindow,
 	js_fromEvent,
 	js_currentTarget
