@@ -1,0 +1,38 @@
+EventTarget
+	|
+	+- Node
+	|	|
+	|	+- Element
+	|	|	|
+	|	|	+- HTMLElement
+	|	|		|
+	|	|		+- HTMLParagraphElement
+	|	|		|
+	|	|		+- HTMLButtonElement
+	|	|		|
+	|	|		+- HTMLAreaElement
+	|	|		|
+	|	|		+- HTMLCanvasElement
+	|	|		|
+	|	|		+- HTMLDivElement
+	|	|
+	|	|
+	|	+- Document (HtmlDocument)
+	|	|	|
+	|	|	+- XmlDocument
+	|	|
+	|	+- DocumentFragment
+	|	|
+	|	+- Attr
+	|	|
+	|	+- CharacterData
+	|		|
+	|		+- Text
+	|		|
+	|		+- Comment
+	|		|
+	|		+- CDATASection
+	|		|
+	|		+- ProcessingInstruction
+	|
+	+- Window

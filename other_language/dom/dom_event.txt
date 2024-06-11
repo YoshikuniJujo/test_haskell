@@ -1,0 +1,17 @@
+Event
+	|
+	+- UIEvent
+	|	|
+	|	+- MouseEvent
+	|	|	|
+	|	|	+- WheelEvent
+	|	|	|
+	|	|	+- DragEvent
+	|	|	|
+	|	|	+- PointerEvent
+	|	|
+	|	+- KeyboardEvent
+	|	|
+	|	+- InputEvent
+	|
+	+- GamepadEven
