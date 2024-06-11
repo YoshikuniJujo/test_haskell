@@ -23,9 +23,12 @@ var eventTargetWindow = function (w) { return w }
 
 var js_fromEvent = function (e) { return e }
 
+var js_currentTarget = function (e) { return e.currentTarget }
+
 export {
 	js_addEventListenerFn,
 	js_addEventListenerHhe,
 	eventTargetBody, eventTargetWindow,
-	js_fromEvent
+	js_fromEvent,
+	js_currentTarget
 };

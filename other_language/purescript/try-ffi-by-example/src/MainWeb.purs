@@ -12,4 +12,4 @@ main :: Effect Unit
 main = do
         alert "foobar"
         addEventListener win optionsZero
-                $ CallbackFunction \(ev :: EventLoad) -> alert "body loaded"
+                $ CallbackFunction \(ev :: EventLoad Window) -> alert $ currentTarget ev
