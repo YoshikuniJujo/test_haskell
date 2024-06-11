@@ -21,8 +21,11 @@ var js_addEventListenerHhe = js_addEventListener
 var eventTargetBody = function (b) { return b }
 var eventTargetWindow = function (w) { return w }
 
+var js_fromEvent = function (e) { return e }
+
 export {
 	js_addEventListenerFn,
 	js_addEventListenerHhe,
-	eventTargetBody, eventTargetWindow
+	eventTargetBody, eventTargetWindow,
+	js_fromEvent
 };
