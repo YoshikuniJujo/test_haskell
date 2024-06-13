@@ -22,7 +22,8 @@ foreign import javascript "(() => { console.log(window); window.addEventListener
 
 main :: IO ()
 main = do
-	putFooBar <- syncCallback1 ThrowWouldBlock . const $ putStrLn "FooBar"
+--	putFooBar <- syncCallback1 ThrowWouldBlock . const $ putStrLn "FooBar"
+	putFooBar <- asyncCallback1 . const $ putStrLn "FooBar"
 	winAddEventListenerLoad' putFooBar
 --	releaseCallback putFooBar
 	foo
