@@ -38,4 +38,4 @@ main = do
 	addButtonClickListener b $ const do
 		modifyIORef cnt (+ 1)
 		c <- readIORef cnt
-		setButtonLabel b $ "You push me " <> show c <> " timne(s)!"
+		setButtonLabel b $ "You push me " <> show c <> " time(s)!"
