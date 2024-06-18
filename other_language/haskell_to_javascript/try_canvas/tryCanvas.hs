@@ -41,6 +41,19 @@ main = do
 	arc ctx 440 65 5 0 (pi * 2) True
 	stroke ctx
 
+	beginPath ctx
+	moveTo ctx 25 125
+	lineTo ctx 105 125
+	lineTo ctx 25 205
+	fill ctx
+
+	beginPath ctx
+	moveTo ctx 125 225
+	lineTo ctx 125 145
+	lineTo ctx 45 225
+	closePath ctx
+	stroke ctx
+
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
 	e <- js_getElementById $ toJSString i
@@ -89,13 +102,17 @@ foreign import javascript "((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); }
 foreign import javascript "((ctx, l, t, w, h) => { ctx.clearRect(l, t, w, h); })"
 	js_clearRect :: JSVal -> Int -> Int -> Int -> Int -> IO ()
 
-beginPath, fill, stroke :: Context2D -> IO ()
+beginPath, closePath, fill, stroke :: Context2D -> IO ()
 beginPath (Context2D c) = js_beginPath c
+closePath (Context2D c) = js_closePath c
 fill (Context2D c) = js_fill c
 stroke (Context2D c) = js_stroke c
 
 foreign import javascript "((ctx) => { ctx.beginPath(); })"
 	js_beginPath :: JSVal -> IO ()
+
+foreign import javascript "((ctx) => { ctx.closePath(); })"
+	js_closePath :: JSVal -> IO ()
 
 foreign import javascript "((ctx) => { ctx.fill(); })"
 	js_fill :: JSVal -> IO ()
