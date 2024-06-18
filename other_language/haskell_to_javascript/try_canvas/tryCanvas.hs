@@ -25,7 +25,11 @@ main = do
 		$ Rectangle { left = 145, top = 45, width = 60, height = 60 }
 	strokeRect ctx
 		$ Rectangle { left = 150, top = 50, width = 50, height = 50 }
-	putStrLn "tryCanvas"
+	beginPath ctx
+	moveTo ctx 275 50
+	lineTo ctx 300 75
+	lineTo ctx 300 25
+	fill ctx
 
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
@@ -74,6 +78,26 @@ foreign import javascript "((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); }
 
 foreign import javascript "((ctx, l, t, w, h) => { ctx.clearRect(l, t, w, h); })"
 	js_clearRect :: JSVal -> Int -> Int -> Int -> Int -> IO ()
+
+beginPath, fill :: Context2D -> IO ()
+beginPath (Context2D c) = js_beginPath c
+fill (Context2D c) = js_fill c
+
+foreign import javascript "((ctx) => { ctx.beginPath(); })"
+	js_beginPath :: JSVal -> IO ()
+
+foreign import javascript "((ctx) => { ctx.fill(); })"
+	js_fill :: JSVal -> IO ()
+
+moveTo, lineTo :: Context2D -> Int -> Int -> IO ()
+moveTo (Context2D c) = js_moveTo c
+lineTo (Context2D c) = js_lineTo c
+
+foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
+	js_moveTo :: JSVal -> Int -> Int -> IO ()
+
+foreign import javascript "((ctx, x, y) => { ctx.lineTo(x, y); })"
+	js_lineTo :: JSVal -> Int -> Int -> IO ()
 
 foreign import javascript "((e, t) => { e.textContent = t; })"
 	js_setTextContent :: JSVal -> JSVal -> IO ()
