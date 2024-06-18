@@ -31,6 +31,16 @@ main = do
 	lineTo ctx 300 25
 	fill ctx
 
+	beginPath ctx
+	arc ctx 425 75 50 0 (pi * 2) True
+	moveTo ctx 460 75
+	arc ctx 425 75 35 0 pi False
+	moveTo ctx 415 65
+	arc ctx 410 65 5 0 (pi * 2) True
+	moveTo ctx 445 65
+	arc ctx 440 65 5 0 (pi * 2) True
+	stroke ctx
+
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
 	e <- js_getElementById $ toJSString i
@@ -79,15 +89,19 @@ foreign import javascript "((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); }
 foreign import javascript "((ctx, l, t, w, h) => { ctx.clearRect(l, t, w, h); })"
 	js_clearRect :: JSVal -> Int -> Int -> Int -> Int -> IO ()
 
-beginPath, fill :: Context2D -> IO ()
+beginPath, fill, stroke :: Context2D -> IO ()
 beginPath (Context2D c) = js_beginPath c
 fill (Context2D c) = js_fill c
+stroke (Context2D c) = js_stroke c
 
 foreign import javascript "((ctx) => { ctx.beginPath(); })"
 	js_beginPath :: JSVal -> IO ()
 
 foreign import javascript "((ctx) => { ctx.fill(); })"
 	js_fill :: JSVal -> IO ()
+
+foreign import javascript "((ctx) => { ctx.stroke(); })"
+	js_stroke :: JSVal -> IO ()
 
 moveTo, lineTo :: Context2D -> Int -> Int -> IO ()
 moveTo (Context2D c) = js_moveTo c
@@ -98,6 +112,14 @@ foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
 
 foreign import javascript "((ctx, x, y) => { ctx.lineTo(x, y); })"
 	js_lineTo :: JSVal -> Int -> Int -> IO ()
+
+arc :: Context2D -> Int -> Int -> Int -> Double -> Double -> Bool -> IO ()
+arc (Context2D ctx) = js_arc ctx
+
+foreign import javascript
+	"((ctx, x, y, r, sa, ea, cc) => { ctx.arc(x, y, r, sa, ea, cc); })"
+	js_arc ::
+		JSVal -> Int -> Int -> Int -> Double -> Double -> Bool -> IO ()
 
 foreign import javascript "((e, t) => { e.textContent = t; })"
 	js_setTextContent :: JSVal -> JSVal -> IO ()
