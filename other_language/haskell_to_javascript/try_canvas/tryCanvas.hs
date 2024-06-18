@@ -87,20 +87,20 @@ strokeRect = rectFromJs js_strokeRect
 clearRect = rectFromJs js_clearRect
 
 rectFromJs ::
-	(JSVal -> Int -> Int -> Int -> Int -> IO ()) ->
+	(JSVal -> Double -> Double -> Double -> Double -> IO ()) ->
 	Context2D -> Rectangle -> IO ()
 rectFromJs a (Context2D ctx)
 	Rectangle { left = l, top = t, width = w, height = h } =
 	a ctx l t w h
 
 foreign import javascript "((ctx, l, t, w, h) => { ctx.fillRect(l, t, w, h); })"
-	js_fillRect :: JSVal -> Int -> Int -> Int -> Int -> IO ()
+	js_fillRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
 foreign import javascript "((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); })"
-	js_strokeRect :: JSVal -> Int -> Int -> Int -> Int -> IO ()
+	js_strokeRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
 foreign import javascript "((ctx, l, t, w, h) => { ctx.clearRect(l, t, w, h); })"
-	js_clearRect :: JSVal -> Int -> Int -> Int -> Int -> IO ()
+	js_clearRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
 beginPath, closePath, fill, stroke :: Context2D -> IO ()
 beginPath (Context2D c) = js_beginPath c
@@ -154,5 +154,5 @@ colorToString (Rgba r g b a) =
 	show a ++ ")"
 
 data Rectangle =
-	Rectangle { left :: Int, top :: Int, width :: Int, height :: Int }
+	Rectangle { left :: Double, top :: Double, width :: Double, height :: Double }
 	deriving Show
