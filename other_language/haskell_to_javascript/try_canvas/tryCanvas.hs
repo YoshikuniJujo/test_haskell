@@ -63,6 +63,16 @@ main = do
 				0 (pi + pi * j / 2) (i `mod` 2 /= 0)
 			if (i > 1) then fill ctx else stroke ctx
 
+	beginPath ctx
+	moveTo ctx 225 175
+	quadraticCurveTo ctx 175 175 175 212.5
+	quadraticCurveTo ctx 175 250 200 250
+	quadraticCurveTo ctx 200 270 180 275
+	quadraticCurveTo ctx 210 270 215 250
+	quadraticCurveTo ctx 275 250 275 212.5
+	quadraticCurveTo ctx 275 175 225 175
+	stroke ctx
+
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
 	e <- js_getElementById $ toJSString i
@@ -153,6 +163,14 @@ arcTo (Context2D ctx) = js_arcTo ctx
 foreign import javascript
 	"((ctx, x1, y1, x2, y2, r) => { ctx.arcTo(x1, y1, x2, y2, r); })"
 	js_arcTo :: JSVal -> Double -> Double -> Double -> Double -> Double -> IO ()
+
+quadraticCurveTo :: Context2D -> Double -> Double -> Double -> Double -> IO ()
+quadraticCurveTo (Context2D ctx) = js_quadraticCurveTo ctx
+
+foreign import javascript
+	"((ctx, cp1x, cp1y, x, y) => { ctx.quadraticCurveTo(cp1x, cp1y, x, y); })"
+	js_quadraticCurveTo ::
+		JSVal -> Double -> Double -> Double -> Double -> IO ()
 
 foreign import javascript "((e, t) => { e.textContent = t; })"
 	js_setTextContent :: JSVal -> JSVal -> IO ()
