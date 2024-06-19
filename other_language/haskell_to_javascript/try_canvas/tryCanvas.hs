@@ -1,8 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Data.Foldable
 import GHC.JS.Prim
 import Data.Word
 
@@ -53,6 +55,13 @@ main = do
 	lineTo ctx 45 225
 	closePath ctx
 	stroke ctx
+
+	for_ [0 :: Int .. 3] \i@(fromIntegral -> i') ->
+		for_ [0 :: Double .. 2] \j -> do
+			beginPath ctx
+			arc ctx (25 + j * 50) (275 + i' * 50) 20
+				0 (pi + pi * j / 2) (i `mod` 2 /= 0)
+			if (i > 1) then fill ctx else stroke ctx
 
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
@@ -120,23 +129,30 @@ foreign import javascript "((ctx) => { ctx.fill(); })"
 foreign import javascript "((ctx) => { ctx.stroke(); })"
 	js_stroke :: JSVal -> IO ()
 
-moveTo, lineTo :: Context2D -> Int -> Int -> IO ()
+moveTo, lineTo :: Context2D -> Double -> Double -> IO ()
 moveTo (Context2D c) = js_moveTo c
 lineTo (Context2D c) = js_lineTo c
 
 foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
-	js_moveTo :: JSVal -> Int -> Int -> IO ()
+	js_moveTo :: JSVal -> Double -> Double -> IO ()
 
 foreign import javascript "((ctx, x, y) => { ctx.lineTo(x, y); })"
-	js_lineTo :: JSVal -> Int -> Int -> IO ()
+	js_lineTo :: JSVal -> Double -> Double -> IO ()
 
-arc :: Context2D -> Int -> Int -> Int -> Double -> Double -> Bool -> IO ()
+arc :: Context2D -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
 arc (Context2D ctx) = js_arc ctx
 
 foreign import javascript
 	"((ctx, x, y, r, sa, ea, cc) => { ctx.arc(x, y, r, sa, ea, cc); })"
 	js_arc ::
-		JSVal -> Int -> Int -> Int -> Double -> Double -> Bool -> IO ()
+		JSVal -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
+
+arcTo :: Context2D -> Double -> Double -> Double -> Double -> Double -> IO ()
+arcTo (Context2D ctx) = js_arcTo ctx
+
+foreign import javascript
+	"((ctx, x1, y1, x2, y2, r) => { ctx.arcTo(x1, y1, x2, y2, r); })"
+	js_arcTo :: JSVal -> Double -> Double -> Double -> Double -> Double -> IO ()
 
 foreign import javascript "((e, t) => { e.textContent = t; })"
 	js_setTextContent :: JSVal -> JSVal -> IO ()
