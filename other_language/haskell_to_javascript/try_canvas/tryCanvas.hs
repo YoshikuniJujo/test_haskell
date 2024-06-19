@@ -73,6 +73,16 @@ main = do
 	quadraticCurveTo ctx 275 175 225 175
 	stroke ctx
 
+	beginPath ctx
+	moveTo ctx 375 190
+	bezierCurveTo ctx 375 187 370 175 350 175
+	bezierCurveTo ctx 320 175 320 212.5 320 212.5
+	bezierCurveTo ctx 320 230 340 252 375 270
+	bezierCurveTo ctx 410 252 430 230 430 212.5
+	bezierCurveTo ctx 430 212.5 430 175 400 175
+	bezierCurveTo ctx 385 175 375 187 375 190
+	fill ctx
+
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
 	e <- js_getElementById $ toJSString i
@@ -171,6 +181,15 @@ foreign import javascript
 	"((ctx, cp1x, cp1y, x, y) => { ctx.quadraticCurveTo(cp1x, cp1y, x, y); })"
 	js_quadraticCurveTo ::
 		JSVal -> Double -> Double -> Double -> Double -> IO ()
+
+bezierCurveTo :: Context2D ->
+	Double -> Double -> Double -> Double -> Double -> Double -> IO ()
+bezierCurveTo (Context2D ctx) = js_bezierCurveTo ctx
+
+foreign import javascript
+	"((ctx, cp1x, cp1y, cp2x, cp2y, x, y) => { ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y); })"
+	js_bezierCurveTo ::
+		JSVal -> Double -> Double -> Double -> Double -> Double -> Double -> IO ()
 
 foreign import javascript "((e, t) => { e.textContent = t; })"
 	js_setTextContent :: JSVal -> JSVal -> IO ()
