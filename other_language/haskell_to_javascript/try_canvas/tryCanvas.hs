@@ -92,14 +92,20 @@ main = do
 	triangle ctx
 
 	rectangle <- newPath2D
-	rect rectangle 10 10 50 50
+	let	rct = addablePath2DToPath2D rectangle
+	rect rct 10 10 50 50
 	circle <- newPath2D
-	arc circle 100 35 25 0 (2 * pi) False
+	let	ccl = addablePath2DToPath2D circle
+	arc ccl 100 35 25 0 (2 * pi) False
 
 	restore ctx
 	translate ctx 0 480
-	stroke ctx $ Just rectangle
-	fill ctx $ Just circle
+	stroke ctx $ Just rct
+	fill ctx $ Just ccl
+
+	addPath rectangle circle
+	translate ctx 150 0
+	stroke ctx $ Just rct
 
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
@@ -122,16 +128,27 @@ getContext2D (Canvas c) = Context2D <$> js_getContext2d c
 foreign import javascript "((c) => { return c.getContext('2d'); })"
 	js_getContext2d :: JSVal -> IO JSVal
 
+data AddablePath2D = AddablePath2D JSVal
+
 data Path2D = Path2D { unPath2D :: JSVal }
 
 context2DToPath2D :: Context2D -> Path2D
 context2DToPath2D (Context2D ctx) = Path2D ctx
 
-newPath2D :: IO Path2D
-newPath2D = Path2D <$> js_newPath2D
+addablePath2DToPath2D :: AddablePath2D -> Path2D
+addablePath2DToPath2D (AddablePath2D pth) = Path2D pth
+
+newPath2D :: IO AddablePath2D
+newPath2D = AddablePath2D <$> js_newPath2D
 
 foreign import javascript "(() => { return new Path2D(); })"
 	js_newPath2D :: IO JSVal
+
+addPath :: AddablePath2D -> AddablePath2D -> IO ()
+addPath (AddablePath2D ps) (AddablePath2D pd) = js_addPath ps pd
+
+foreign import javascript "((ps, pd) => { ps.addPath(pd); })"
+	js_addPath :: JSVal -> JSVal -> IO ()
 
 setFillStyle :: Context2D -> Color -> IO ()
 setFillStyle (Context2D ctx) = js_setFillStyle ctx . colorToJSVal
