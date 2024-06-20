@@ -32,7 +32,7 @@ main = do
 	moveTo pth0 275 50
 	lineTo pth0 300 75
 	lineTo pth0 300 25
-	fill ctx
+	fill ctx Nothing
 
 	beginPath ctx
 	arc pth0 425 75 50 0 (pi * 2) True
@@ -42,27 +42,27 @@ main = do
 	arc pth0 410 65 5 0 (pi * 2) True
 	moveTo pth0 445 65
 	arc pth0 440 65 5 0 (pi * 2) True
-	stroke ctx
+	stroke ctx Nothing
 
 	beginPath ctx
 	moveTo pth0 25 125
 	lineTo pth0 105 125
 	lineTo pth0 25 205
-	fill ctx
+	fill ctx Nothing
 
 	beginPath ctx
 	moveTo pth0 125 225
 	lineTo pth0 125 145
 	lineTo pth0 45 225
 	closePath ctx
-	stroke ctx
+	stroke ctx Nothing
 
 	for_ [0 :: Int .. 3] \i@(fromIntegral -> i') ->
 		for_ [0 :: Double .. 2] \j -> do
 			beginPath ctx
 			arc pth0 (25 + j * 50) (275 + i' * 50) 20
 				0 (pi + pi * j / 2) (i `mod` 2 /= 0)
-			if (i > 1) then fill ctx else stroke ctx
+			if (i > 1) then fill ctx Nothing else stroke ctx Nothing
 
 	beginPath ctx
 	moveTo pth0 225 175
@@ -72,7 +72,7 @@ main = do
 	quadraticCurveTo pth0 210 270 215 250
 	quadraticCurveTo pth0 275 250 275 212.5
 	quadraticCurveTo pth0 275 175 225 175
-	stroke ctx
+	stroke ctx Nothing
 
 	beginPath ctx
 	moveTo pth0 375 190
@@ -82,13 +82,24 @@ main = do
 	bezierCurveTo pth0 410 252 430 230 430 212.5
 	bezierCurveTo pth0 430 212.5 430 175 400 175
 	bezierCurveTo pth0 385 175 375 187 375 190
-	fill ctx
+	fill ctx Nothing
 
+	save ctx
 	translate ctx 175 300
 	draw ctx
 
 	translate ctx 200 25
 	triangle ctx
+
+	rectangle <- newPath2D
+	rect rectangle 10 10 50 50
+	circle <- newPath2D
+	arc circle 100 35 25 0 (2 * pi) False
+
+	restore ctx
+	translate ctx 0 480
+	stroke ctx $ Just rectangle
+	fill ctx $ Just circle
 
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
@@ -103,18 +114,24 @@ foreign import javascript "((id) => { return document.getElementById(id); })"
 foreign import javascript "((e) => { return e.getContext; })"
 	js_isCanvas :: JSVal -> Bool
 
+data Context2D = Context2D JSVal
+
 getContext2D :: Canvas -> IO Context2D
 getContext2D (Canvas c) = Context2D <$> js_getContext2d c
 
-data Context2D = Context2D JSVal
+foreign import javascript "((c) => { return c.getContext('2d'); })"
+	js_getContext2d :: JSVal -> IO JSVal
 
-data Path2D = Path2D JSVal
+data Path2D = Path2D { unPath2D :: JSVal }
 
 context2DToPath2D :: Context2D -> Path2D
 context2DToPath2D (Context2D ctx) = Path2D ctx
 
-foreign import javascript "((c) => { return c.getContext('2d'); })"
-	js_getContext2d :: JSVal -> IO (JSVal)
+newPath2D :: IO Path2D
+newPath2D = Path2D <$> js_newPath2D
+
+foreign import javascript "(() => { return new Path2D(); })"
+	js_newPath2D :: IO JSVal
 
 setFillStyle :: Context2D -> Color -> IO ()
 setFillStyle (Context2D ctx) = js_setFillStyle ctx . colorToJSVal
@@ -143,11 +160,13 @@ foreign import javascript "((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); }
 foreign import javascript "((ctx, l, t, w, h) => { ctx.clearRect(l, t, w, h); })"
 	js_clearRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
-beginPath, closePath, fill, stroke :: Context2D -> IO ()
+beginPath, closePath :: Context2D -> IO ()
 beginPath (Context2D c) = js_beginPath c
 closePath (Context2D c) = js_closePath c
-fill (Context2D c) = js_fill c
-stroke (Context2D c) = js_stroke c
+
+fill, stroke :: Context2D -> Maybe Path2D -> IO ()
+fill (Context2D c) = maybe (js_fill c) (js_fillWithPath2D c . unPath2D)
+stroke (Context2D c) = maybe (js_stroke c) (js_strokeWithPath2D c . unPath2D)
 
 foreign import javascript "((ctx) => { ctx.beginPath(); })"
 	js_beginPath :: JSVal -> IO ()
@@ -157,6 +176,12 @@ foreign import javascript "((ctx) => { ctx.closePath(); })"
 
 foreign import javascript "((ctx) => { ctx.fill(); })"
 	js_fill :: JSVal -> IO ()
+
+foreign import javascript "((ctx, pth) => { ctx.stroke(pth); })"
+	js_strokeWithPath2D :: JSVal -> JSVal -> IO ()
+
+foreign import javascript "((ctx, pth) => { ctx.fill(pth); })"
+	js_fillWithPath2D :: JSVal -> JSVal -> IO ()
 
 foreign import javascript "((ctx) => { ctx.stroke(); })"
 	js_stroke :: JSVal -> IO ()
@@ -170,6 +195,12 @@ foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
 
 foreign import javascript "((ctx, x, y) => { ctx.lineTo(x, y); })"
 	js_lineTo :: JSVal -> Double -> Double -> IO ()
+
+rect :: Path2D -> Double -> Double -> Double -> Double -> IO ()
+rect (Path2D pth) = js_rect pth
+
+foreign import javascript "((ctx, x, y, w, h) => { ctx.rect(x, y, w, h); })"
+	js_rect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
 arc :: Path2D -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
 arc (Path2D ctx) = js_arc ctx
@@ -202,6 +233,18 @@ foreign import javascript
 	"((ctx, cp1x, cp1y, cp2x, cp2y, x, y) => { ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y); })"
 	js_bezierCurveTo ::
 		JSVal -> Double -> Double -> Double -> Double -> Double -> Double -> IO ()
+
+save :: Context2D -> IO ()
+save (Context2D ctx) = js_save ctx
+
+foreign import javascript "((ctx) => { ctx.save(); })"
+	js_save :: JSVal -> IO ()
+
+restore :: Context2D -> IO ()
+restore (Context2D ctx) = js_restore ctx
+
+foreign import javascript "((ctx) => { ctx.restore(); })"
+	js_restore :: JSVal -> IO ()
 
 translate :: Context2D -> Double -> Double -> IO ()
 translate (Context2D ctx) = js_translate ctx
@@ -237,6 +280,8 @@ data Rectangle =
 draw :: Context2D -> IO ()
 draw ctx = do
 
+	let	pth0 = context2DToPath2D ctx
+
 	roundedRect ctx 12 12 150 150 15
 	roundedRect ctx 19 19 150 150 9
 	roundedRect ctx 53 53 49 33 10
@@ -245,9 +290,9 @@ draw ctx = do
 	roundedRect ctx 135 119 25 49 10
 
 	beginPath ctx
-	arc ctx 37 37 13 (pi / 7) (- pi / 7) False
-	lineTo ctx 31 37
-	fill ctx
+	arc pth0 37 37 13 (pi / 7) (- pi / 7) False
+	lineTo pth0 31 37
+	fill ctx Nothing
 
 	for_ [0 .. 7] \i -> fillRect ctx Rectangle {
 		left = 51 + i * 16, top = 35, width = 4, height = 4 }
@@ -259,62 +304,64 @@ draw ctx = do
 		left = 51 + i * 16, top = 99, width = 4, height = 4 }
 
 	beginPath ctx
-	moveTo ctx 83 116
-	lineTo ctx 83 102
-	bezierCurveTo ctx 83 94 89 88 97 88
-	bezierCurveTo ctx 105 88 111 94 111 102
-	lineTo ctx 111 116
-	lineTo ctx 106.333 111.333
-	lineTo ctx 101.666 116
-	lineTo ctx 97 111.333
-	lineTo ctx 92.333 116
-	lineTo ctx 87.666 111.333
-	lineTo ctx 83 116
-	fill ctx
+	moveTo pth0 83 116
+	lineTo pth0 83 102
+	bezierCurveTo pth0 83 94 89 88 97 88
+	bezierCurveTo pth0 105 88 111 94 111 102
+	lineTo pth0 111 116
+	lineTo pth0 106.333 111.333
+	lineTo pth0 101.666 116
+	lineTo pth0 97 111.333
+	lineTo pth0 92.333 116
+	lineTo pth0 87.666 111.333
+	lineTo pth0 83 116
+	fill ctx Nothing
 
 	setFillStyle ctx White
 	beginPath ctx
-	moveTo ctx 91 96
-	bezierCurveTo ctx 88 96 87 99 87 101
-	bezierCurveTo ctx 87 103 88 106 91 106
-	bezierCurveTo ctx 94 106 95 103 95 101
-	bezierCurveTo ctx 95 99 94 96 91 96
-	moveTo ctx 103 96
-	bezierCurveTo ctx 100 96 99 99 99 101
-	bezierCurveTo ctx 99 103 100 106 103 106
-	bezierCurveTo ctx 106 106 107 103 107 101
-	bezierCurveTo ctx 107 99 106 96 103 96
-	fill ctx
+	moveTo pth0 91 96
+	bezierCurveTo pth0 88 96 87 99 87 101
+	bezierCurveTo pth0 87 103 88 106 91 106
+	bezierCurveTo pth0 94 106 95 103 95 101
+	bezierCurveTo pth0 95 99 94 96 91 96
+	moveTo pth0 103 96
+	bezierCurveTo pth0 100 96 99 99 99 101
+	bezierCurveTo pth0 99 103 100 106 103 106
+	bezierCurveTo pth0 106 106 107 103 107 101
+	bezierCurveTo pth0 107 99 106 96 103 96
+	fill ctx Nothing
 
 	setFillStyle ctx Black
 	beginPath ctx
-	arc ctx 101 102 2 0 (pi * 2) True
-	fill ctx
+	arc pth0 101 102 2 0 (pi * 2) True
+	fill ctx Nothing
 	beginPath ctx
-	arc ctx 89 102 2 0 (pi * 2) True
-	fill ctx
+	arc pth0 89 102 2 0 (pi * 2) True
+	fill ctx Nothing
 
 roundedRect ::
 	Context2D -> Double -> Double -> Double -> Double -> Double -> IO ()
 roundedRect ctx x y w h rd = do
+	let	pth0 = context2DToPath2D ctx
 	beginPath ctx
-	moveTo ctx x (y + rd)
-	arcTo ctx x (y + h) (x + rd) (y + h) rd
-	arcTo ctx (x + w) (y + h) (x + w) (y + h - rd) rd
-	arcTo ctx (x + w) y (x + w - rd) y rd
-	arcTo ctx x y x (y + rd) rd
-	stroke ctx
+	moveTo pth0 x (y + rd)
+	arcTo pth0 x (y + h) (x + rd) (y + h) rd
+	arcTo pth0 (x + w) (y + h) (x + w) (y + h - rd) rd
+	arcTo pth0 (x + w) y (x + w - rd) y rd
+	arcTo pth0 x y x (y + rd) rd
+	stroke ctx Nothing
 
 triangle :: Context2D -> IO ()
 triangle ctx = do
+	let	pth0 = context2DToPath2D ctx
 	beginPath ctx
 
-	moveTo ctx 0 0
-	lineTo ctx 150 0
-	lineTo ctx 75 129.9
+	moveTo pth0 0 0
+	lineTo pth0 150 0
+	lineTo pth0 75 129.9
 
-	moveTo ctx 75 20
-	lineTo ctx 50 60
-	lineTo ctx 100 60
+	moveTo pth0 75 20
+	lineTo pth0 50 60
+	lineTo pth0 100 60
 
-	fill ctx
+	fill ctx Nothing
