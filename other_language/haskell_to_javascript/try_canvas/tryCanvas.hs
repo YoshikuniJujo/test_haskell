@@ -14,6 +14,7 @@ main = do
 	js_setTextContent foo (toJSString "bar")
 	Just canvas <- getCanvasById "canvas"
 	ctx <- getContext2D canvas
+	let	pth0 = context2DToPath2D ctx
 	setFillStyle ctx $ Rgb 200 0 0
 	fillRect ctx
 		$ Rectangle { left = 10, top = 10, width = 50, height = 50 }
@@ -28,59 +29,59 @@ main = do
 	strokeRect ctx
 		$ Rectangle { left = 150, top = 50, width = 50, height = 50 }
 	beginPath ctx
-	moveTo ctx 275 50
-	lineTo ctx 300 75
-	lineTo ctx 300 25
+	moveTo pth0 275 50
+	lineTo pth0 300 75
+	lineTo pth0 300 25
 	fill ctx
 
 	beginPath ctx
-	arc ctx 425 75 50 0 (pi * 2) True
-	moveTo ctx 460 75
-	arc ctx 425 75 35 0 pi False
-	moveTo ctx 415 65
-	arc ctx 410 65 5 0 (pi * 2) True
-	moveTo ctx 445 65
-	arc ctx 440 65 5 0 (pi * 2) True
+	arc pth0 425 75 50 0 (pi * 2) True
+	moveTo pth0 460 75
+	arc pth0 425 75 35 0 pi False
+	moveTo pth0 415 65
+	arc pth0 410 65 5 0 (pi * 2) True
+	moveTo pth0 445 65
+	arc pth0 440 65 5 0 (pi * 2) True
 	stroke ctx
 
 	beginPath ctx
-	moveTo ctx 25 125
-	lineTo ctx 105 125
-	lineTo ctx 25 205
+	moveTo pth0 25 125
+	lineTo pth0 105 125
+	lineTo pth0 25 205
 	fill ctx
 
 	beginPath ctx
-	moveTo ctx 125 225
-	lineTo ctx 125 145
-	lineTo ctx 45 225
+	moveTo pth0 125 225
+	lineTo pth0 125 145
+	lineTo pth0 45 225
 	closePath ctx
 	stroke ctx
 
 	for_ [0 :: Int .. 3] \i@(fromIntegral -> i') ->
 		for_ [0 :: Double .. 2] \j -> do
 			beginPath ctx
-			arc ctx (25 + j * 50) (275 + i' * 50) 20
+			arc pth0 (25 + j * 50) (275 + i' * 50) 20
 				0 (pi + pi * j / 2) (i `mod` 2 /= 0)
 			if (i > 1) then fill ctx else stroke ctx
 
 	beginPath ctx
-	moveTo ctx 225 175
-	quadraticCurveTo ctx 175 175 175 212.5
-	quadraticCurveTo ctx 175 250 200 250
-	quadraticCurveTo ctx 200 270 180 275
-	quadraticCurveTo ctx 210 270 215 250
-	quadraticCurveTo ctx 275 250 275 212.5
-	quadraticCurveTo ctx 275 175 225 175
+	moveTo pth0 225 175
+	quadraticCurveTo pth0 175 175 175 212.5
+	quadraticCurveTo pth0 175 250 200 250
+	quadraticCurveTo pth0 200 270 180 275
+	quadraticCurveTo pth0 210 270 215 250
+	quadraticCurveTo pth0 275 250 275 212.5
+	quadraticCurveTo pth0 275 175 225 175
 	stroke ctx
 
 	beginPath ctx
-	moveTo ctx 375 190
-	bezierCurveTo ctx 375 187 370 175 350 175
-	bezierCurveTo ctx 320 175 320 212.5 320 212.5
-	bezierCurveTo ctx 320 230 340 252 375 270
-	bezierCurveTo ctx 410 252 430 230 430 212.5
-	bezierCurveTo ctx 430 212.5 430 175 400 175
-	bezierCurveTo ctx 385 175 375 187 375 190
+	moveTo pth0 375 190
+	bezierCurveTo pth0 375 187 370 175 350 175
+	bezierCurveTo pth0 320 175 320 212.5 320 212.5
+	bezierCurveTo pth0 320 230 340 252 375 270
+	bezierCurveTo pth0 410 252 430 230 430 212.5
+	bezierCurveTo pth0 430 212.5 430 175 400 175
+	bezierCurveTo pth0 385 175 375 187 375 190
 	fill ctx
 
 	translate ctx 175 300
@@ -106,6 +107,11 @@ getContext2D :: Canvas -> IO Context2D
 getContext2D (Canvas c) = Context2D <$> js_getContext2d c
 
 data Context2D = Context2D JSVal
+
+data Path2D = Path2D JSVal
+
+context2DToPath2D :: Context2D -> Path2D
+context2DToPath2D (Context2D ctx) = Path2D ctx
 
 foreign import javascript "((c) => { return c.getContext('2d'); })"
 	js_getContext2d :: JSVal -> IO (JSVal)
@@ -155,9 +161,9 @@ foreign import javascript "((ctx) => { ctx.fill(); })"
 foreign import javascript "((ctx) => { ctx.stroke(); })"
 	js_stroke :: JSVal -> IO ()
 
-moveTo, lineTo :: Context2D -> Double -> Double -> IO ()
-moveTo (Context2D c) = js_moveTo c
-lineTo (Context2D c) = js_lineTo c
+moveTo, lineTo :: Path2D -> Double -> Double -> IO ()
+moveTo (Path2D c) = js_moveTo c
+lineTo (Path2D c) = js_lineTo c
 
 foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
 	js_moveTo :: JSVal -> Double -> Double -> IO ()
@@ -165,32 +171,32 @@ foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
 foreign import javascript "((ctx, x, y) => { ctx.lineTo(x, y); })"
 	js_lineTo :: JSVal -> Double -> Double -> IO ()
 
-arc :: Context2D -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
-arc (Context2D ctx) = js_arc ctx
+arc :: Path2D -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
+arc (Path2D ctx) = js_arc ctx
 
 foreign import javascript
 	"((ctx, x, y, r, sa, ea, cc) => { ctx.arc(x, y, r, sa, ea, cc); })"
 	js_arc ::
 		JSVal -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
 
-arcTo :: Context2D -> Double -> Double -> Double -> Double -> Double -> IO ()
-arcTo (Context2D ctx) = js_arcTo ctx
+arcTo :: Path2D -> Double -> Double -> Double -> Double -> Double -> IO ()
+arcTo (Path2D ctx) = js_arcTo ctx
 
 foreign import javascript
 	"((ctx, x1, y1, x2, y2, r) => { ctx.arcTo(x1, y1, x2, y2, r); })"
 	js_arcTo :: JSVal -> Double -> Double -> Double -> Double -> Double -> IO ()
 
-quadraticCurveTo :: Context2D -> Double -> Double -> Double -> Double -> IO ()
-quadraticCurveTo (Context2D ctx) = js_quadraticCurveTo ctx
+quadraticCurveTo :: Path2D -> Double -> Double -> Double -> Double -> IO ()
+quadraticCurveTo (Path2D ctx) = js_quadraticCurveTo ctx
 
 foreign import javascript
 	"((ctx, cp1x, cp1y, x, y) => { ctx.quadraticCurveTo(cp1x, cp1y, x, y); })"
 	js_quadraticCurveTo ::
 		JSVal -> Double -> Double -> Double -> Double -> IO ()
 
-bezierCurveTo :: Context2D ->
+bezierCurveTo :: Path2D ->
 	Double -> Double -> Double -> Double -> Double -> Double -> IO ()
-bezierCurveTo (Context2D ctx) = js_bezierCurveTo ctx
+bezierCurveTo (Path2D ctx) = js_bezierCurveTo ctx
 
 foreign import javascript
 	"((ctx, cp1x, cp1y, cp2x, cp2y, x, y) => { ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y); })"
