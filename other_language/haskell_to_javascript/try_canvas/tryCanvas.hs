@@ -83,8 +83,11 @@ main = do
 	bezierCurveTo ctx 385 175 375 187 375 190
 	fill ctx
 
-	translate ctx 200 300
+	translate ctx 175 300
 	draw ctx
+
+	translate ctx 200 25
+	triangle ctx
 
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
@@ -295,3 +298,17 @@ roundedRect ctx x y w h rd = do
 	arcTo ctx (x + w) y (x + w - rd) y rd
 	arcTo ctx x y x (y + rd) rd
 	stroke ctx
+
+triangle :: Context2D -> IO ()
+triangle ctx = do
+	beginPath ctx
+
+	moveTo ctx 0 0
+	lineTo ctx 150 0
+	lineTo ctx 75 129.9
+
+	moveTo ctx 75 20
+	lineTo ctx 50 60
+	lineTo ctx 100 60
+
+	fill ctx
