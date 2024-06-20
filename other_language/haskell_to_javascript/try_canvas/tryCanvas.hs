@@ -83,6 +83,9 @@ main = do
 	bezierCurveTo ctx 385 175 375 187 375 190
 	fill ctx
 
+	translate ctx 200 300
+	draw ctx
+
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
 	e <- js_getElementById $ toJSString i
@@ -191,10 +194,20 @@ foreign import javascript
 	js_bezierCurveTo ::
 		JSVal -> Double -> Double -> Double -> Double -> Double -> Double -> IO ()
 
+translate :: Context2D -> Double -> Double -> IO ()
+translate (Context2D ctx) = js_translate ctx
+
+foreign import javascript "((ctx, x, y) => { ctx.translate(x, y); })"
+	js_translate :: JSVal -> Double -> Double -> IO ()
+
 foreign import javascript "((e, t) => { e.textContent = t; })"
 	js_setTextContent :: JSVal -> JSVal -> IO ()
 
-data Color = Rgb Word8 Word8 Word8 | Rgba Word8 Word8 Word8 Double deriving Show
+data Color
+	= Rgb Word8 Word8 Word8
+	| Rgba Word8 Word8 Word8 Double
+	| Black | White
+	deriving Show
 
 colorToJSVal :: Color -> JSVal
 colorToJSVal = toJSString . colorToString
@@ -205,7 +218,80 @@ colorToString (Rgb r g b) =
 colorToString (Rgba r g b a) =
 	"rgba(" ++ show r ++ ", " ++ show g ++ ", " ++ show b ++ ", " ++
 	show a ++ ")"
+colorToString Black = "black"
+colorToString White = "white"
 
 data Rectangle =
 	Rectangle { left :: Double, top :: Double, width :: Double, height :: Double }
 	deriving Show
+
+draw :: Context2D -> IO ()
+draw ctx = do
+
+	roundedRect ctx 12 12 150 150 15
+	roundedRect ctx 19 19 150 150 9
+	roundedRect ctx 53 53 49 33 10
+	roundedRect ctx 53 119 49 16 6
+	roundedRect ctx 135 53 49 33 10
+	roundedRect ctx 135 119 25 49 10
+
+	beginPath ctx
+	arc ctx 37 37 13 (pi / 7) (- pi / 7) False
+	lineTo ctx 31 37
+	fill ctx
+
+	for_ [0 .. 7] \i -> fillRect ctx Rectangle {
+		left = 51 + i * 16, top = 35, width = 4, height = 4 }
+
+	for_ [0 .. 5] \i -> fillRect ctx Rectangle {
+		left = 115, top = 51 + i * 16, width = 4, height = 4 }
+
+	for_ [0 .. 7] \i -> fillRect ctx Rectangle {
+		left = 51 + i * 16, top = 99, width = 4, height = 4 }
+
+	beginPath ctx
+	moveTo ctx 83 116
+	lineTo ctx 83 102
+	bezierCurveTo ctx 83 94 89 88 97 88
+	bezierCurveTo ctx 105 88 111 94 111 102
+	lineTo ctx 111 116
+	lineTo ctx 106.333 111.333
+	lineTo ctx 101.666 116
+	lineTo ctx 97 111.333
+	lineTo ctx 92.333 116
+	lineTo ctx 87.666 111.333
+	lineTo ctx 83 116
+	fill ctx
+
+	setFillStyle ctx White
+	beginPath ctx
+	moveTo ctx 91 96
+	bezierCurveTo ctx 88 96 87 99 87 101
+	bezierCurveTo ctx 87 103 88 106 91 106
+	bezierCurveTo ctx 94 106 95 103 95 101
+	bezierCurveTo ctx 95 99 94 96 91 96
+	moveTo ctx 103 96
+	bezierCurveTo ctx 100 96 99 99 99 101
+	bezierCurveTo ctx 99 103 100 106 103 106
+	bezierCurveTo ctx 106 106 107 103 107 101
+	bezierCurveTo ctx 107 99 106 96 103 96
+	fill ctx
+
+	setFillStyle ctx Black
+	beginPath ctx
+	arc ctx 101 102 2 0 (pi * 2) True
+	fill ctx
+	beginPath ctx
+	arc ctx 89 102 2 0 (pi * 2) True
+	fill ctx
+
+roundedRect ::
+	Context2D -> Double -> Double -> Double -> Double -> Double -> IO ()
+roundedRect ctx x y w h rd = do
+	beginPath ctx
+	moveTo ctx x (y + rd)
+	arcTo ctx x (y + h) (x + rd) (y + h) rd
+	arcTo ctx (x + w) (y + h) (x + w) (y + h - rd) rd
+	arcTo ctx (x + w) y (x + w - rd) y rd
+	arcTo ctx x y x (y + rd) rd
+	stroke ctx
