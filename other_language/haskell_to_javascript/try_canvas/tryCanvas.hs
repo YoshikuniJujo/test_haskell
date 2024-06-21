@@ -6,6 +6,7 @@ module Main where
 
 import Data.Foldable
 import GHC.JS.Prim
+import GHC.JS.Foreign.Callback
 import Data.Word
 
 main :: IO ()
@@ -13,6 +14,16 @@ main = do
 	foo <- js_getElementById (toJSString "foo")
 	js_setTextContent foo (toJSString "bar")
 	Just canvas <- getCanvasById "canvas"
+
+	foobarOnClick $ unCanvas canvas
+--	onClick0 canvas do
+--		putStrLn "foobarbaz"
+--		js_setTextContent foo (toJSString "foobarbaz")
+
+	onClick canvas \e -> do
+		js_setTextContent foo . toJSString
+			$ show (offsetX e, offsetY e)
+
 	ctx <- getContext2D canvas
 	let	pth0 = context2DToPath2D ctx
 	setFillStyle ctx $ Rgb 200 0 0
@@ -118,7 +129,7 @@ getCanvasById i = do
 	e <- js_getElementById $ toJSString i
 	pure if js_isCanvas e then Just $ Canvas e else Nothing
 
-data Canvas = Canvas JSVal
+data Canvas = Canvas { unCanvas :: JSVal }
 
 foreign import javascript "((id) => { return document.getElementById(id); })"
 	js_getElementById :: JSVal -> IO (JSVal)
@@ -399,3 +410,39 @@ triangle ctx = do
 	lineTo pth0 100 60
 
 	fill ctx Nothing
+
+foreign import javascript
+	"((et) => { et.addEventListener('click', (e) => { console.log(e.clientX); console.log(e.clientY); console.log(e.offsetX); console.log(e.offsetY); }); })"
+	foobarOnClick :: JSVal -> IO ()
+
+onClick0 :: Canvas -> IO () -> IO ()
+onClick0 (Canvas c) f = do
+	f' <- asyncCallback f
+	js_onClick0 c f'
+
+onClick :: Canvas -> (ClickEvent -> IO ()) -> IO ()
+onClick (Canvas c) f = do
+	f' <- syncCallback1 ThrowWouldBlock $ f . ClickEvent
+	js_onClick c f'
+
+foreign import javascript
+	"((et, f) => { et.addEventListener('click', (e) => { f(); }); })"
+	js_onClick0 :: JSVal -> Callback (IO ()) -> IO ()
+
+foreign import javascript
+	"((et, f) => { et.addEventListener('click', (e) => { console.log(e.clientX); f(e) }); })"
+	js_onClick :: JSVal -> Callback (JSVal -> IO ()) -> IO ()
+
+data ClickEvent = ClickEvent JSVal
+
+offsetX :: ClickEvent -> Double
+offsetX (ClickEvent e) = js_offsetX e
+
+foreign import javascript "((e) => { return e.offsetX; })"
+	js_offsetX :: JSVal -> Double
+
+offsetY :: ClickEvent -> Double
+offsetY (ClickEvent e) = js_offsetY e
+
+foreign import javascript "((e) => { return e.offsetY; })"
+	js_offsetY :: JSVal -> Double
