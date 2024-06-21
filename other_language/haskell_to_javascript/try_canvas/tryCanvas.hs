@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -91,10 +91,10 @@ main = do
 	translate ctx 200 25
 	triangle ctx
 
-	rectangle <- newPath2D
+	rectangle <- newPath2D Path2DFromScratch
 	let	rct = addablePath2DToPath2D rectangle
 	rect rct 10 10 50 50
-	circle <- newPath2D
+	circle <- newPath2D Path2DFromScratch
 	let	ccl = addablePath2DToPath2D circle
 	arc ccl 100 35 25 0 (2 * pi) False
 
@@ -106,6 +106,12 @@ main = do
 	addPath rectangle circle
 	translate ctx 150 0
 	stroke ctx $ Just rct
+
+	svgp <- newPath2D $ Path2DFromSvgPath "M10 10 h 80 v 80 h -80 Z"
+	translate ctx 150 0
+	stroke ctx . Just $ addablePath2DToPath2D svgp
+
+-- END OF MAIN
 
 getCanvasById :: String -> IO (Maybe Canvas)
 getCanvasById i = do
@@ -138,11 +144,22 @@ context2DToPath2D (Context2D ctx) = Path2D ctx
 addablePath2DToPath2D :: AddablePath2D -> Path2D
 addablePath2DToPath2D (AddablePath2D pth) = Path2D pth
 
-newPath2D :: IO AddablePath2D
-newPath2D = AddablePath2D <$> js_newPath2D
+newPath2D :: Path2DFrom -> IO AddablePath2D
+newPath2D = \case
+	Path2DFromScratch -> AddablePath2D <$> js_newPath2D
+	Path2DFromPath2D (Path2D pth) -> AddablePath2D <$> js_newPath2DFrom pth
+	Path2DFromSvgPath sp -> AddablePath2D <$> js_newPath2DFrom (toJSString sp)
+
+data Path2DFrom
+	= Path2DFromScratch
+	| Path2DFromPath2D Path2D
+	| Path2DFromSvgPath String
 
 foreign import javascript "(() => { return new Path2D(); })"
 	js_newPath2D :: IO JSVal
+
+foreign import javascript "((sp) => { return new Path2D(sp); })"
+	js_newPath2DFrom :: JSVal -> IO JSVal
 
 addPath :: AddablePath2D -> AddablePath2D -> IO ()
 addPath (AddablePath2D ps) (AddablePath2D pd) = js_addPath ps pd
