@@ -15,10 +15,10 @@ main = do
 	js_setTextContent foo (toJSString "bar")
 	Just canvas <- getCanvasById "canvas"
 
-	foobarOnClick $ unCanvas canvas
---	onClick0 canvas do
---		putStrLn "foobarbaz"
---		js_setTextContent foo (toJSString "foobarbaz")
+	onTouchstart canvas \e -> do
+		preventDefault e
+		js_setTextContent foo . toJSString
+			$ show (offsetX e, offsetY e)
 
 	onClick canvas \e -> do
 		js_setTextContent foo . toJSString
@@ -411,27 +411,22 @@ triangle ctx = do
 
 	fill ctx Nothing
 
-foreign import javascript
-	"((et) => { et.addEventListener('click', (e) => { console.log(e.clientX); console.log(e.clientY); console.log(e.offsetX); console.log(e.offsetY); }); })"
-	foobarOnClick :: JSVal -> IO ()
-
-onClick0 :: Canvas -> IO () -> IO ()
-onClick0 (Canvas c) f = do
-	f' <- asyncCallback f
-	js_onClick0 c f'
+newtype EventType = EventType String deriving Show
 
 onClick :: Canvas -> (ClickEvent -> IO ()) -> IO ()
-onClick (Canvas c) f = do
+onClick c = addEventListener c (EventType "click")
+
+onTouchstart :: Canvas -> (ClickEvent -> IO ()) -> IO ()
+onTouchstart c = addEventListener c (EventType "touchstart")
+
+addEventListener :: Canvas -> EventType -> (ClickEvent -> IO ()) -> IO ()
+addEventListener (Canvas c) (EventType etp) f = do
 	f' <- syncCallback1 ThrowWouldBlock $ f . ClickEvent
-	js_onClick c f'
+	js_addEventListener c (toJSString etp) f'
 
 foreign import javascript
-	"((et, f) => { et.addEventListener('click', (e) => { f(); }); })"
-	js_onClick0 :: JSVal -> Callback (IO ()) -> IO ()
-
-foreign import javascript
-	"((et, f) => { et.addEventListener('click', (e) => { console.log(e.clientX); f(e) }); })"
-	js_onClick :: JSVal -> Callback (JSVal -> IO ()) -> IO ()
+	"((etg, etp, f) => { etg.addEventListener(etp, (e) => { f(e) }); })"
+	js_addEventListener :: JSVal -> JSVal -> Callback (JSVal -> IO ()) -> IO ()
 
 data ClickEvent = ClickEvent JSVal
 
@@ -446,3 +441,9 @@ offsetY (ClickEvent e) = js_offsetY e
 
 foreign import javascript "((e) => { return e.offsetY; })"
 	js_offsetY :: JSVal -> Double
+
+preventDefault :: ClickEvent -> IO ()
+preventDefault (ClickEvent ev) = js_preventDefault ev
+
+foreign import javascript "((ev) => { ev.preventDefault(); })"
+	js_preventDefault :: JSVal -> IO ()
