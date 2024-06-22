@@ -18,7 +18,8 @@ main = do
 	onTouchstart canvas \e -> do
 		preventDefault e
 		js_setTextContent foo . toJSString
-			$ show (offsetX e, offsetY e)
+			$ "TOUCHE START"
+--			$ show (offsetX e, offsetY e)
 
 	onClick canvas \e -> do
 		js_setTextContent foo . toJSString
@@ -416,19 +417,27 @@ newtype EventType = EventType String deriving Show
 onClick :: Canvas -> (ClickEvent -> IO ()) -> IO ()
 onClick c = addEventListener c (EventType "click")
 
-onTouchstart :: Canvas -> (ClickEvent -> IO ()) -> IO ()
+onTouchstart :: Canvas -> (TouchEvent -> IO ()) -> IO ()
 onTouchstart c = addEventListener c (EventType "touchstart")
 
-addEventListener :: Canvas -> EventType -> (ClickEvent -> IO ()) -> IO ()
+addEventListener :: IsEvent e => Canvas -> EventType -> (e -> IO ()) -> IO ()
 addEventListener (Canvas c) (EventType etp) f = do
-	f' <- syncCallback1 ThrowWouldBlock $ f . ClickEvent
+	f' <- syncCallback1 ThrowWouldBlock $ f . fromJSVal
 	js_addEventListener c (toJSString etp) f'
 
 foreign import javascript
 	"((etg, etp, f) => { etg.addEventListener(etp, (e) => { f(e) }); })"
 	js_addEventListener :: JSVal -> JSVal -> Callback (JSVal -> IO ()) -> IO ()
 
+class IsEvent e where
+	fromJSVal :: JSVal -> e
+	toJSVal :: e -> JSVal
+
 data ClickEvent = ClickEvent JSVal
+
+instance IsEvent ClickEvent where
+	fromJSVal = ClickEvent
+	toJSVal (ClickEvent e) = e
 
 offsetX :: ClickEvent -> Double
 offsetX (ClickEvent e) = js_offsetX e
@@ -442,8 +451,14 @@ offsetY (ClickEvent e) = js_offsetY e
 foreign import javascript "((e) => { return e.offsetY; })"
 	js_offsetY :: JSVal -> Double
 
-preventDefault :: ClickEvent -> IO ()
-preventDefault (ClickEvent ev) = js_preventDefault ev
+preventDefault :: IsEvent e => e -> IO ()
+preventDefault = js_preventDefault . toJSVal
 
 foreign import javascript "((ev) => { ev.preventDefault(); })"
 	js_preventDefault :: JSVal -> IO ()
+
+data TouchEvent = TouchEvent JSVal
+
+instance IsEvent TouchEvent where
+	fromJSVal = TouchEvent
+	toJSVal (TouchEvent e) = e
