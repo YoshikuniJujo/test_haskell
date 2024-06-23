@@ -15,6 +15,7 @@ main = do
 	js_setTextContent foo (toJSString "bar")
 	Just canvas <- getCanvasById "canvas"
 
+{-
 	onTouchstart canvas \e -> do
 		preventDefault e
 		js_setTextContent foo . toJSString
@@ -24,6 +25,12 @@ main = do
 	onClick canvas \e -> do
 		js_setTextContent foo . toJSString
 			$ show (offsetX e, offsetY e)
+			-}
+
+	onPointerdown canvas \e -> do
+		let	e' = pointerEventToClickEvent e
+		js_setTextContent foo . toJSString
+			$ show (offsetX e', offsetY e')
 
 	ctx <- getContext2D canvas
 	let	pth0 = context2DToPath2D ctx
@@ -420,6 +427,9 @@ onClick c = addEventListener c (EventType "click")
 onTouchstart :: Canvas -> (TouchEvent -> IO ()) -> IO ()
 onTouchstart c = addEventListener c (EventType "touchstart")
 
+onPointerdown :: Canvas -> (PointerEvent -> IO ()) -> IO ()
+onPointerdown c = addEventListener c (EventType "pointerdown")
+
 addEventListener :: IsEvent e => Canvas -> EventType -> (e -> IO ()) -> IO ()
 addEventListener (Canvas c) (EventType etp) f = do
 	f' <- syncCallback1 ThrowWouldBlock $ f . fromJSVal
@@ -462,3 +472,15 @@ data TouchEvent = TouchEvent JSVal
 instance IsEvent TouchEvent where
 	fromJSVal = TouchEvent
 	toJSVal (TouchEvent e) = e
+
+data PointerEvent = PointerEvent JSVal
+
+instance IsEvent PointerEvent where
+	fromJSVal = PointerEvent
+	toJSVal (PointerEvent e) = e
+
+-- pointerEventToMouseEvent :: PointerEvent -> MouseEvent
+-- pointerEventToMouseEvent (PointerEvent e) = MouseEvent e
+
+pointerEventToClickEvent :: PointerEvent -> ClickEvent
+pointerEventToClickEvent (PointerEvent e) = ClickEvent e
