@@ -12,20 +12,12 @@ import Data.Word
 main :: IO ()
 main = do
 	foo <- js_getElementById (toJSString "foo")
+	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
+	setInterval (do
+		nows <- show <$> newDate
+		js_setTextContent clocktime (toJSString nows)) 1000
 	Just canvas <- getCanvasById "canvas"
-
-{-
-	onTouchstart canvas \e -> do
-		preventDefault e
-		js_setTextContent foo . toJSString
-			$ "TOUCHE START"
---			$ show (offsetX e, offsetY e)
-
-	onClick canvas \e -> do
-		js_setTextContent foo . toJSString
-			$ show (offsetX e, offsetY e)
-			-}
 
 	onPointerdown canvas \e -> do
 		let	e' = pointerEventToClickEvent e
@@ -484,3 +476,25 @@ instance IsEvent PointerEvent where
 
 pointerEventToClickEvent :: PointerEvent -> ClickEvent
 pointerEventToClickEvent (PointerEvent e) = ClickEvent e
+
+data Date = Date JSVal
+
+newDate :: IO Date
+newDate = Date <$> js_newDate
+
+foreign import javascript "(() => { let d = new Date(); return d; })"
+	js_newDate :: IO JSVal
+
+instance Show Date where
+	show (Date d) = fromJSString $ js_toString d
+
+foreign import javascript "((o) => { return o.toString(); })"
+	js_toString :: JSVal -> JSVal
+
+setInterval :: IO () -> Double -> IO ()
+setInterval f d = do
+	f' <- syncCallback ThrowWouldBlock f
+	js_setInterval f' d
+
+foreign import javascript "((f, d) => { setInterval(f, d); })"
+	js_setInterval :: Callback (IO ()) -> Double -> IO ()
