@@ -7,6 +7,8 @@ module Main where
 import Data.Foldable
 import GHC.JS.Prim
 import GHC.JS.Foreign.Callback
+import GHC.JS.Value qualified as JS.Value
+import GHC.JS.Value.String qualified as JS.Str
 import Data.Word
 
 main :: IO ()
