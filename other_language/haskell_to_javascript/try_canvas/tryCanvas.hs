@@ -11,9 +11,17 @@ import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.String qualified as JS.Str
 import Data.Word
 
+import GHC.JS.Value.Object
+
 main :: IO ()
 main = do
 	foo <- js_getElementById (toJSString "foo")
+	print . fromJSString $ js_getTagName foo
+	print . fromJSString $ js_toString foo
+	print . fromJSString $ js_toString js_window
+	print . fromJSString $ js_getWindowName js_window
+	print . fromJSString . js_toString
+		. js_getNavigatorUserAgent $ js_getWindowNavigator js_window
 	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
 	setInterval (do
@@ -500,3 +508,18 @@ setInterval f d = do
 
 foreign import javascript "((f, d) => { setInterval(f, d); })"
 	js_setInterval :: Callback (IO ()) -> Double -> IO ()
+
+foreign import javascript "((e) => { return e.tagName; })"
+	js_getTagName :: JSVal -> JSVal
+
+foreign import javascript "(() => { return window; })"
+	js_window :: JSVal
+
+foreign import javascript "((w) => { return w.name; })"
+	js_getWindowName :: JSVal -> JSVal
+
+foreign import javascript "((w) => { return w.navigator; })"
+	js_getWindowNavigator :: JSVal -> JSVal
+
+foreign import javascript "((n) => { return n.userAgent; })"
+	js_getNavigatorUserAgent :: JSVal -> JSVal
