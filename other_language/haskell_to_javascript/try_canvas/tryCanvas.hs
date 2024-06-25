@@ -12,16 +12,23 @@ import GHC.JS.Value.String qualified as JS.Str
 import Data.Word
 
 import GHC.JS.Value.Object
+import GHC.JS.Value.EventTarget qualified as JS.EventTarget
+import GHC.JS.Value.Window qualified as JS.Window
 
 main :: IO ()
 main = do
 	foo <- js_getElementById (toJSString "foo")
 	print . fromJSString $ js_getTagName foo
 	print . fromJSString $ js_toString foo
-	print . fromJSString $ js_toString js_window
-	print . fromJSString $ js_getWindowName js_window
+	print . fromJSString $ js_toString JS.Window.js_w
+	print . fromJSString $ js_getWindowName JS.Window.js_w
 	print . fromJSString . js_toString
-		. js_getNavigatorUserAgent $ js_getWindowNavigator js_window
+		. js_getNavigatorUserAgent $ js_getWindowNavigator JS.Window.js_w
+	JS.EventTarget.addEventListenerSimple
+		(JS.EventTarget.toE JS.Window.w) "resize" \_ -> do
+			wdt <- JS.Window.getInnerWidth JS.Window.w
+			hgt <- JS.Window.getInnerHeight JS.Window.w
+			js_setTextContent foo . toJSString $ show (wdt, hgt)
 	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
 	setInterval (do
@@ -512,8 +519,10 @@ foreign import javascript "((f, d) => { setInterval(f, d); })"
 foreign import javascript "((e) => { return e.tagName; })"
 	js_getTagName :: JSVal -> JSVal
 
+{-
 foreign import javascript "(() => { return window; })"
 	js_window :: JSVal
+	-}
 
 foreign import javascript "((w) => { return w.name; })"
 	js_getWindowName :: JSVal -> JSVal

@@ -12,10 +12,10 @@ instance JS.Value.IsJSVal O where toJSVal (O o) = JS.Value.toJSVal o
 
 instance JS.Value.V O
 
-toValue :: JS.Value.V o => o -> JS.Value.Some
-toValue = JS.Value.toV . O
+toV :: JS.Value.V o => o -> JS.Value.Some
+toV = JS.Value.toV . O
 
-fromValue :: JS.Value.V o => JS.Value.Some -> Maybe o
-fromValue v = do
+fromV :: JS.Value.V o => JS.Value.Some -> Maybe o
+fromV v = do
 	O o <- JS.Value.fromV v
 	cast o
