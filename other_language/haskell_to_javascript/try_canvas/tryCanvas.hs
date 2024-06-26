@@ -15,6 +15,9 @@ import GHC.JS.Value.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Window qualified as JS.Window
 
+import GHC.JS.Value.Node qualified as JS.Node
+import GHC.JS.Value.Document qualified as JS.Document
+
 main :: IO ()
 main = do
 	foo <- js_getElementById (toJSString "foo")
@@ -28,7 +31,10 @@ main = do
 		(JS.EventTarget.toE JS.Window.w) "resize" \_ -> do
 			wdt <- JS.Window.getInnerWidth JS.Window.w
 			hgt <- JS.Window.getInnerHeight JS.Window.w
-			js_setTextContent foo . toJSString $ show (wdt, hgt)
+			js_setTextContent foo . toJSString
+				$ "Window Size: " ++ show (wdt, hgt)
+	print $ JS.Document.getDocumentURI JS.Document.d
+	print . JS.Node.getNodeName $ JS.Node.toN JS.Document.d
 	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
 	setInterval (do

@@ -2,9 +2,9 @@
 
 module GHC.JS.Value.Object where
 
-import Data.Typeable
-
 import GHC.JS.Value qualified as JS.Value
+import Data.Typeable
+import Data.Maybe
 
 data O = forall o . JS.Value.V o => O { unO :: o }
 
@@ -19,3 +19,5 @@ fromV :: JS.Value.V o => JS.Value.Some -> Maybe o
 fromV v = do
 	O o <- JS.Value.fromV v
 	cast o
+
+class JS.Value.V o => IsO o where toO :: o -> O; toO = fromJust . JS.Value.cast

@@ -4,8 +4,8 @@ module GHC.JS.Value.Window where
 
 import GHC.JS.Prim
 import GHC.JS.Value qualified as JS.Value
+import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
-import Data.Maybe
 
 newtype W = W JSVal
 
@@ -15,8 +15,8 @@ instance JS.Value.V W where
 	toV = JS.EventTarget.toV
 	fromV = JS.EventTarget.fromV
 
-instance JS.EventTarget.IsE W where
-	toE = fromJust . JS.Value.fromV . JS.Value.toV
+instance JS.Object.IsO W
+instance JS.EventTarget.IsE W
 
 w :: W
 w = W js_w
@@ -24,8 +24,8 @@ w = W js_w
 foreign import javascript "(() => { return window; })" js_w :: JSVal
 
 getInnerHeight, getInnerWidth :: W -> IO Double
-getInnerHeight (W w) = js_getInnerHeight w
-getInnerWidth (W w) = js_getInnerWidth w
+getInnerHeight (W wn) = js_getInnerHeight wn
+getInnerWidth (W wn) = js_getInnerWidth wn
 
 foreign import javascript "((w) => { return w.innerHeight; })"
 	js_getInnerHeight :: JSVal -> IO Double
