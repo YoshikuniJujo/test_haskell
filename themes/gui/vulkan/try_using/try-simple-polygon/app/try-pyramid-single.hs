@@ -842,70 +842,70 @@ mainloop :: (
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word16 ""] ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word16 nmi] ->
 	ModelViewProjMemory sm2 sb2 mnm alu ->
-	Vk.DscSt.D sds '(sdsl, DscStLytArg alu) ->
-	Vk.CBffr.C scb ->
-	SyncObjs ssos ->
-	ControllerEvent -> IO ()
-mainloop g w sfc phdvc qfis dv gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs cev = do
-	($ ext0) $ fix \loop ext -> do
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu) -> Vk.CBffr.C scb ->
+	SyncObjs ssos -> ControllerEvent -> IO ()
+mainloop fr w sfc pd qfis dv gq pq
+	sc ex0 vs rp pl gp fbs vb ib mm dss cb sos cev = do
+	($ ex0) $ fix \go ex -> do
 		Glfw.pollEvents
 		lx <- readIORef $ controllerEventLeftX cev
 		ly <- readIORef $ controllerEventLeftY cev
-		run w sfc phdvc qfis dv gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(lx / 100, ly / 100) cev loop
+		run fr w sfc pd qfis dv gq pq
+			sc ex vs rp pl gp fbs vb ib mm dss cb sos
+			(lx / 100, ly / 100) cev go
 	Vk.Dvc.waitIdle dv
 
-type AtomUbo s alu = '(s, DscStLytArg alu)
-
 run :: (
-	RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt,
+	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue scfmt,
 	KnownNat alu, KnownNat alv, KnownNat ali ) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	PhDvc.QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> FramebufferResized -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
+	Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word16 ""] ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word16 nmi] ->
 	ModelViewProjMemory sm2 sb2 mnm alu ->
-	Vk.DscSt.D sds (AtomUbo sdsl alu) ->
-	Vk.CBffr.C scb ->
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu) -> Vk.CBffr.C scb ->
 	SyncObjs ssos -> (Float, Float) -> ControllerEvent ->
 	(Vk.Extent2d -> IO ()) -> IO ()
-run w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm cev loop = do
-	catchAndRecreate w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
-	cls <- Glfw.windowShouldClose win
+run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm dss cb sos tm cev go = do
+	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
+		$ draw dv gq pq sc ex rp pl gp fbs vb ib mm dss cb sos tm
+	cls <- GlfwG.Win.shouldClose w
 	ab <- readIORef $ controllerEventButtonAEver cev
-	if (cls || ab)
-	then writeIORef (controllerEventFinished cev) True
-	else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
-			w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
+	(cls || ab ,) <$> checkFlag fr >>= \case
+		(True, _) -> writeIORef (controllerEventFinished cev) True
+		(_, False) -> go ex
+		(_, _) -> go =<< recreateAll
+			w sfc pd qfis dv sc vs rp pl gp fbs
 
-drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sdsl scfmt sds alv ali alu mnm ssos .
+draw :: forall
+	sd fmt ssc sr sl sdsl sg sfs smv sbv bnmv alv nmv smi sbi bnmi ali nmi
+	alu nmm sm2 sb2 scb sds ssos .
 	(KnownNat alu, KnownNat alv, KnownNat ali) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
+	Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word16 ""] ->
-	ModelViewProjMemory sm2 sb2 mnm alu ->
-	Vk.DscSt.D sds (AtomUbo sdsl alu) ->
+	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word16 nmi] ->
+	ModelViewProjMemory sm2 sb2 nmm alu ->
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> (Float, Float) -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
+draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
 	let	siff = HPList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -930,7 +930,9 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs
 	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alv ali alu .
+type AtomUbo s alu = '(s, DscStLytArg alu)
+
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alv ali alu nmv nmi .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
@@ -938,8 +940,8 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alv 
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)] '(sl, '[AtomUbo sdsl alu], '[]) ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word16 ""] ->
+	Vk.Bffr.Binded sm sb nm '[Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded sm' sb' nm' '[Obj.List ali Word16 nmi] ->
 	Vk.DscSt.D sds (AtomUbo sdsl alu) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
@@ -947,8 +949,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb
-		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @"" ib) >>
+		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb) >>
+	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
 		(HPList.Singleton $ U2 ubds)
 		(HPList.Singleton (
@@ -1017,10 +1019,10 @@ catchAndRecreate w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapChainEtc
+	\_ -> loop =<< recreateAll
 		w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 
-recreateSwapChainEtc :: (
+recreateAll :: (
 	RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> PhDvc.QFamIndices -> Vk.Dvc.D sd ->
@@ -1032,7 +1034,7 @@ recreateSwapChainEtc :: (
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateSwapChainEtc w@(GlfwG.Win.W win) sfc phdvc qfis d sc scivs rp ppllyt gpl fbs = do
+recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis d sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle d
 
