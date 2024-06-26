@@ -1328,8 +1328,8 @@ instance (
 dscWrite0 :: KnownNat alu => Vk.DscSt.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alu] ->
 	Vk.DscSt.Write 'Nothing sds slbts
-		('Vk.DscSt.WriteSourcesArgBuffer '[ '(
-			sm, sb, bnm, Obj.Atom alu WModelViewProj 'Nothing, 0 )]) 0
+		('Vk.DscSt.WriteSourcesArgBuffer
+			'[ '(sm, sb, bnm, AtomModelViewProj alu, 0)]) 0
 dscWrite0 ds mb = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
