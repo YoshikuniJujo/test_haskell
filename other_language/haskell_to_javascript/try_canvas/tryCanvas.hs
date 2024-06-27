@@ -17,6 +17,7 @@ import GHC.JS.Value.Window qualified as JS.Window
 
 import GHC.JS.Value.Node qualified as JS.Node
 import GHC.JS.Value.Document qualified as JS.Document
+import GHC.JS.Value.Element qualified as JS.Element
 
 main :: IO ()
 main = do
