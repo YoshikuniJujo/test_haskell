@@ -26,4 +26,13 @@ foreign import javascript "((d) => { return d.documentURI; })"
 
 instance JS.Object.IsO D
 instance JS.EventTarget.IsE D
-instance JS.Node.IsN D
+
+instance JS.Node.IsN D where
+	downCheck nd = JS.Node.getNodeType nd == JS.Node.DocumentNode
+	downMake = D
+
+instance Show D where
+	show (D dc) = "(" ++ fromJSString (js_toString dc) ++ ")"
+
+foreign import javascript "((v) => { return v.toString(); })"
+	js_toString :: JSVal -> JSVal

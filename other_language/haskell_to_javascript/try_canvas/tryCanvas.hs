@@ -35,6 +35,9 @@ main = do
 				$ "Window Size: " ++ show (wdt, hgt)
 	print $ JS.Document.getDocumentURI JS.Document.d
 	print . JS.Node.getNodeName $ JS.Node.toN JS.Document.d
+	print . JS.Node.getNodeType $ JS.Node.toN JS.Document.d
+	print @(Maybe JS.Document.D)
+		$ JS.Node.fromN =<< parentOfChild (JS.Node.toN JS.Document.d)
 	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
 	setInterval (do
@@ -538,3 +541,6 @@ foreign import javascript "((w) => { return w.navigator; })"
 
 foreign import javascript "((n) => { return n.userAgent; })"
 	js_getNavigatorUserAgent :: JSVal -> JSVal
+
+parentOfChild :: JS.Node.N -> Maybe JS.Node.N
+parentOfChild nd = JS.Node.parentNode =<< JS.Node.firstChild nd
