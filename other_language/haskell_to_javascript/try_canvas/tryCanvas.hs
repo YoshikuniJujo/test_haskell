@@ -39,6 +39,7 @@ main = do
 	print . JS.Node.getNodeType $ JS.Node.toN JS.Document.d
 	print @(Maybe JS.Document.D)
 		$ JS.Node.fromN =<< parentOfChild (JS.Node.toN JS.Document.d)
+	print $ JS.Element.getTagName <$> JS.Document.getElementById JS.Document.d "foo"
 	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
 	setInterval (do

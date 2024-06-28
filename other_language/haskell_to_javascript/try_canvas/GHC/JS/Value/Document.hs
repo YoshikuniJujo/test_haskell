@@ -7,6 +7,7 @@ import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Node qualified as JS.Node
+import GHC.JS.Value.Element qualified as JS.Element
 
 newtype D = D JSVal
 
@@ -36,3 +37,13 @@ instance Show D where
 
 foreign import javascript "((v) => { return v.toString(); })"
 	js_toString :: JSVal -> JSVal
+
+getElementById :: D -> String -> Maybe JS.Element.E
+getElementById (D dc) i
+	| isNull e = Nothing
+	| isUndefined e = error "Document.getElementById return undefined"
+	| otherwise = Just . JS.Element.toE $ JS.Element.OtherE e
+	where e = js_getElementById dc (toJSString i)
+
+foreign import javascript "((d, id) => { return d.getElementById(id); })"
+	js_getElementById :: JSVal -> JSVal -> JSVal

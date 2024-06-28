@@ -55,9 +55,11 @@ instance Show NodeType where
 foreign import javascript "((n) => { return n.nodeType; })"
 	js_getNodeType :: JSVal -> Word
 
+pattern ElementNode :: NodeType
+pattern ElementNode <- NodeType 1 where ElementNode = NodeType 1
+
 pattern DocumentNode :: NodeType
-pattern DocumentNode <- NodeType 9 where
-	DocumentNode = NodeType 9
+pattern DocumentNode <- NodeType 9 where DocumentNode = NodeType 9
 
 newtype OtherN = OtherN JSVal
 
@@ -66,9 +68,7 @@ instance JS.Value.V OtherN where toV = toV; fromV = fromV
 
 instance JS.Object.IsO OtherN
 instance JS.EventTarget.IsE OtherN
-instance IsN OtherN where
-	downCheck = const True
-	downMake = OtherN
+instance IsN OtherN where downCheck = const True; downMake = OtherN
 
 firstChild :: N -> Maybe N
 firstChild nd
