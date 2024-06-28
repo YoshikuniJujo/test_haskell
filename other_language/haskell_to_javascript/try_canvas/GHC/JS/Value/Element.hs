@@ -1,10 +1,13 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Element where
 
+import GHC.JS.Prim
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Node qualified as JS.Node
 import Data.Typeable
+import Data.Maybe
 
 data E = forall em . JS.Value.V em => E em
 
@@ -16,3 +19,9 @@ toV = JS.Value.toV . E
 
 fromV :: JS.Value.V em => JS.Value.Some -> Maybe em
 fromV v = JS.Value.fromV v >>= \(E em) -> cast em
+
+toE :: IsE e => e -> E
+toE = fromJust . JS.Value.cast
+
+class JS.Node.IsN e => IsE e where
+	downCheck :: E -> Bool; downMake :: JSVal -> e
