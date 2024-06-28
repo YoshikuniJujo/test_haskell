@@ -49,6 +49,8 @@ newtype NodeType = NodeType Word deriving Eq
 
 instance Show NodeType where
 	show = \case
+		ElementNode -> "ElementNOde"
+		TextNode -> "TextNode"
 		DocumentNode -> "DocumentNode"
 		NodeType nt -> "(NodeType " ++ show nt ++ ")"
 
@@ -57,6 +59,9 @@ foreign import javascript "((n) => { return n.nodeType; })"
 
 pattern ElementNode :: NodeType
 pattern ElementNode <- NodeType 1 where ElementNode = NodeType 1
+
+pattern TextNode :: NodeType
+pattern TextNode <- NodeType 3 where TextNode = NodeType 3
 
 pattern DocumentNode :: NodeType
 pattern DocumentNode <- NodeType 9 where DocumentNode = NodeType 9
@@ -70,15 +75,16 @@ instance JS.Object.IsO OtherN
 instance JS.EventTarget.IsE OtherN
 instance IsN OtherN where downCheck = const True; downMake = OtherN
 
-firstChild :: N -> Maybe N
-firstChild nd
-	| isNull c = Nothing
-	| isUndefined c = error "Node.firstChild return undefined"
-	| otherwise = Just . toN $ OtherN c
-	where c = js_firstChild $ JS.Value.toJSVal nd
+firstChild :: N -> IO (Maybe N)
+firstChild nd = do
+	c <- js_firstChild $ JS.Value.toJSVal nd
+	case c of
+		_	| isNull c -> pure Nothing
+			| isUndefined c -> error "Node.firstChild return undefined"
+			| otherwise -> pure . Just . toN $ OtherN c
 
 foreign import javascript "((n) => { return n.firstChild; })"
-	js_firstChild :: JSVal -> JSVal
+	js_firstChild :: JSVal -> IO JSVal
 
 parentNode :: N -> Maybe N
 parentNode nd

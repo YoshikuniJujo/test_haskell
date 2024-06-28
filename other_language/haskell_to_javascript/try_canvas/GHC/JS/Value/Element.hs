@@ -22,6 +22,13 @@ toV = JS.Value.toV . E
 fromV :: JS.Value.V em => JS.Value.Some -> Maybe em
 fromV v = JS.Value.fromV v >>= \(E em) -> cast em
 
+instance JS.Object.IsO E
+instance JS.EventTarget.IsE E
+
+instance JS.Node.IsN E where
+	downCheck nd = JS.Node.getNodeType nd == JS.Node.ElementNode
+	downMake = E . OtherE
+
 toE :: IsE e => e -> E
 toE = fromJust . JS.Value.cast
 

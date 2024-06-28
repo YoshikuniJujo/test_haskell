@@ -37,11 +37,14 @@ main = do
 	print $ JS.Document.getDocumentURI JS.Document.d
 	print . JS.Node.getNodeName $ JS.Node.toN JS.Document.d
 	print . JS.Node.getNodeType $ JS.Node.toN JS.Document.d
-	print @(Maybe JS.Document.D)
-		$ JS.Node.fromN =<< parentOfChild (JS.Node.toN JS.Document.d)
-	print $ JS.Element.getTagName <$> JS.Document.getElementById JS.Document.d "foo"
+	print @(Maybe JS.Document.D) . (JS.Node.fromN =<<)
+		=<< parentOfChild (JS.Node.toN JS.Document.d)
+	let	Just foo' = JS.Document.getElementById JS.Document.d "foo"
+	print $ JS.Element.getTagName foo'
+	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
 	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
+	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
 	setInterval (do
 		nows <- show <$> newDate
 		js_setTextContent clocktime (toJSString nows)) 1000
@@ -544,5 +547,5 @@ foreign import javascript "((w) => { return w.navigator; })"
 foreign import javascript "((n) => { return n.userAgent; })"
 	js_getNavigatorUserAgent :: JSVal -> JSVal
 
-parentOfChild :: JS.Node.N -> Maybe JS.Node.N
-parentOfChild nd = JS.Node.parentNode =<< JS.Node.firstChild nd
+parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
+parentOfChild nd = (JS.Node.parentNode =<<) <$> JS.Node.firstChild nd
