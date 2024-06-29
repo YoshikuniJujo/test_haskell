@@ -783,12 +783,13 @@ createDscSts :: KnownNat alu =>
 	Vk.Bffr.Binded sm sb nm '[AtomModelViewProj alu] ->
 	Vk.DscStLyt.D sdsc '[ 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]] ->
 	(forall sds .
-		Vk.DscSt.D sds '(sdsc, '[ 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]]) -> IO a) -> IO a
+		Vk.DscSt.D sds '(sdsc,
+			'[ 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]]) ->
+		IO a) -> IO a
 createDscSts dv dp mb dsl f =
-	Vk.DscSt.allocateDs dv info \(HPList.Singleton dscs) -> do
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) ->
 	Vk.DscSt.updateDs dv
-		(HPList.Singleton . U5 $ dscWrite dscs mb) HPList.Nil
-	f dscs
+		(HPList.Singleton . U5 $ dscWrite ds mb) HPList.Nil >> f ds
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
