@@ -115,8 +115,8 @@ import Data.Bool.ToolsYj
 import Data.IORef.ToolsYj
 
 import Debug
+import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 
@@ -845,13 +845,13 @@ mainloop :: (
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[Obj.List ali Word16 nmi] ->
-	ModelViewProjMemory sm2 sb2 mnm alu ->
+	ModelViewProjMemory smm sbm mnm alu ->
 	Vk.DscSt.D sds '(sdsl, DscStLytArg alu) -> Vk.CBffr.C scb ->
 	SyncObjs ssos -> ControllerEvent -> IO ()
 mainloop fr w sfc pd qfis dv gq pq
 	sc ex0 vs rp pl gp fbs vb ib mm dss cb sos cev = do
 	($ ex0) $ fix \go ex -> do
-		Glfw.pollEvents
+		GlfwG.pollEvents
 		lx <- readIORef $ controllerEventLeftX cev
 		ly <- readIORef $ controllerEventLeftY cev
 		run fr w sfc pd qfis dv gq pq
@@ -1035,8 +1035,8 @@ recreateAll :: (
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis d sc scivs rp ppllyt gpl fbs = do
-	waitFramebufferSize win
+recreateAll w sfc phdvc qfis d sc scivs rp ppllyt gpl fbs = do
+	waitFramebufferSize w
 	Vk.Dvc.waitIdle d
 
 	ext <- recreateSwpch w sfc phdvc qfis d sc
@@ -1045,10 +1045,10 @@ recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis d sc scivs rp ppllyt gpl fbs = do
 		recreateGrPpl d ext rp ppllyt gpl
 		recreateFrmbffrs d ext rp scivs fbs
 
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 type WVertex = GStorable.W Vertex
