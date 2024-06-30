@@ -44,7 +44,6 @@ import Data.Word
 import Data.Color
 
 import qualified Data.List.NonEmpty as NE
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
@@ -117,6 +116,8 @@ import Data.IORef.ToolsYj
 import Debug
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Joystick qualified as GlfwG
+import Graphics.UI.GlfwG.Gamepad qualified as GlfwG
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 
@@ -140,14 +141,14 @@ controller ev = do
 	threadDelay 10000
 	fn <- readIORef $ controllerEventFinished ev
 	if fn then pure False else do
-		Just (Glfw.GamepadState gb ga) <-
-			Glfw.getGamepadState Glfw.Joystick'1
+		Just (GlfwG.GamepadState gb ga) <-
+			GlfwG.getGamepadState GlfwG.Joystick'1
 		modifyIORef (controllerEventLeftX ev)
-			(+ ga Glfw.GamepadAxis'LeftX)
+			(+ ga GlfwG.GamepadAxis'LeftX)
 		modifyIORef (controllerEventLeftY ev)
-			(+ ga Glfw.GamepadAxis'LeftY)
-		when (gb Glfw.GamepadButton'A ==
-				Glfw.GamepadButtonState'Pressed)
+			(+ ga GlfwG.GamepadAxis'LeftY)
+		when (gb GlfwG.GamepadButton'A ==
+				GlfwG.GamepadButtonState'Pressed)
 			$ writeIORef (controllerEventButtonAEver ev) True
 		pure True
 

@@ -42,8 +42,7 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      GLFW-b
-    , JuicyPixels
+      JuicyPixels
     , array
     , base >=4.7 && <5
     , bytestring
@@ -96,8 +95,7 @@ executable try-multisampling
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      GLFW-b
-    , JuicyPixels
+      JuicyPixels
     , array
     , base >=4.7 && <5
     , bytestring
@@ -141,8 +139,7 @@ executable try-pyramid-single
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      GLFW-b
-    , JuicyPixels
+      JuicyPixels
     , array
     , base >=4.7 && <5
     , bytestring
@@ -187,8 +184,7 @@ test-suite try-simple-polygon-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      GLFW-b
-    , JuicyPixels
+      JuicyPixels
     , array
     , base >=4.7 && <5
     , bytestring

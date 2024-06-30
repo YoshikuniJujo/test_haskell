@@ -34,7 +34,6 @@ dependencies:
 - text
 - time
 - JuicyPixels
-- GLFW-b
 - ranged-list
 - try-gpu-vulkan
 - try-gpu-vulkan-khr-swapchain

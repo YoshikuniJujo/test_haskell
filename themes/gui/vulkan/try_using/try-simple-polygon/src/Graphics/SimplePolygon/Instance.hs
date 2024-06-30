@@ -13,9 +13,8 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Bits
 import Data.Bool
-import Data.Text.ToolsYj
 
-import Graphics.UI.GLFW qualified as Glfw
+import Graphics.UI.GlfwG qualified as GlfwG
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
@@ -27,7 +26,7 @@ create vld = createGen vld \nxt -> \f -> do
 		(error "validation layers requested, but not available!")
 		(pure ()) =<< DbgMsngr.checkLayer
 	gexs <- (Vk.Ist.ExtensionName <$>)
-		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
+		<$> GlfwG.getRequiredInstanceExtensions
 	let	exs = bool id (DbgMsngr.extensionName :) vld gexs
 	Vk.Ist.create Vk.Ist.CreateInfo {
 		Vk.Ist.createInfoNext = nxt,
