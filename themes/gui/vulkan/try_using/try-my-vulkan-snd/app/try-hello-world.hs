@@ -67,10 +67,10 @@ import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 -- MAIN
 
 main :: IO ()
-main = withDvc \pd dv q cpl -> putStrLn . map (chr . fromIntegral) =<<
+main = withDvc \pd dv q cp -> putStrLn . map (chr . fromIntegral) =<<
 	Vk.DscStLyt.create dv dscStLytInfo nil \(dsl :: DscStLyt sdsl nmh) ->
 	prepareMem @_ @_ @nmh pd dv dsl \dss (m :: Mm sm sb bnmh nmh) ->
-	calc dv q cpl dsl dss bffrSize >>
+	calc dv q cp dsl dss bffrSize >>
 	Vk.Mm.read @bnmh @(Word32List nmh) @0 @[Word32] dv m zeroBits
 
 type DscStLyt sdsl nmh =
