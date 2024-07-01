@@ -1609,8 +1609,8 @@ recordCmdBffr cb ex rp pl gp fb vb ib ds =
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
 		(HPList.Singleton $ U2 ds)
 		(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
-	let Obj.LengthList (fromIntegral -> ln) = Obj.lengthOf
-		@(Obj.List ali Word32 nmi) $ Vk.Bffr.lengthBinded ib
+	let	Obj.LengthList (fromIntegral -> ln) = Obj.lengthOf
+			@(Obj.List ali Word32 nmi) $ Vk.Bffr.lengthBinded ib
 	Vk.Cmd.drawIndexed cbb ln 1 0 0 0
 	where
 	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
