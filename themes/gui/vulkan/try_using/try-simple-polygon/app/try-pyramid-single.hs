@@ -134,7 +134,7 @@ main = createControllerEvent >>= \ce -> forkIO (doWhile_ $ controller ce) >>
 
 createControllerEvent :: IO ControllerEvent
 createControllerEvent = ControllerEvent
-	<$> newIORef False <*> newIORef False <*> newIORef 0 <*> newIORef 0
+	<$> newIORef False <*> newIORef False <*> newIORef (0, 0)
 
 controller :: ControllerEvent -> IO Bool
 controller ev = do
@@ -143,10 +143,9 @@ controller ev = do
 	if fn then pure False else do
 		Just (GlfwG.GamepadState gb ga) <-
 			GlfwG.getGamepadState GlfwG.Joystick'1
-		modifyIORef (controllerEventLeftX ev)
-			(+ ga GlfwG.GamepadAxis'LeftX)
-		modifyIORef (controllerEventLeftY ev)
-			(+ ga GlfwG.GamepadAxis'LeftY)
+		modifyIORef (controllerEventLeft ev)
+			$ (+ ga GlfwG.GamepadAxis'LeftX) ***
+				(+ ga GlfwG.GamepadAxis'LeftY)
 		when (gb GlfwG.GamepadButton'A ==
 				GlfwG.GamepadButtonState'Pressed)
 			$ writeIORef (controllerEventButtonAEver ev) True
@@ -155,8 +154,7 @@ controller ev = do
 data ControllerEvent = ControllerEvent {
 	controllerEventFinished :: IORef Bool,
 	controllerEventButtonAEver :: IORef Bool,
-	controllerEventLeftX :: IORef Float,
-	controllerEventLeftY :: IORef Float }
+	controllerEventLeft :: IORef (Float, Float) }
 
 windowName :: String
 windowName = "Triangle"
@@ -853,8 +851,7 @@ mainloop fr w sfc pd qfis dv gq pq
 	sc ex0 vs rp pl gp fbs vb ib mm dss cb sos cev = do
 	($ ex0) $ fix \go ex -> do
 		GlfwG.pollEvents
-		lx <- readIORef $ controllerEventLeftX cev
-		ly <- readIORef $ controllerEventLeftY cev
+		(lx, ly) <- readIORef $ controllerEventLeft cev
 		run fr w sfc pd qfis dv gq pq
 			sc ex vs rp pl gp fbs vb ib mm dss cb sos
 			(lx / 100, ly / 100) cev go
