@@ -60,3 +60,8 @@ getTagName = fromJSString . js_getTagName . JS.Value.toJSVal
 
 foreign import javascript "((e) => { return e.tagName; })"
 	js_getTagName :: JSVal -> JSVal
+
+eClass :: JS.Object.Class
+eClass = JS.Object.Class js_Element
+
+foreign import javascript "(() => { return Element; })" js_Element :: JSVal

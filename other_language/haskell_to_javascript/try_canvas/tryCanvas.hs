@@ -11,13 +11,14 @@ import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.String qualified as JS.Str
 import Data.Word
 
-import GHC.JS.Value.Object
+import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Window qualified as JS.Window
 
 import GHC.JS.Value.Node qualified as JS.Node
 import GHC.JS.Value.Document qualified as JS.Document
 import GHC.JS.Value.Element qualified as JS.Element
+import GHC.JS.Value.HtmlElement qualified as JS.HtmlElement
 
 main :: IO ()
 main = do
@@ -45,6 +46,8 @@ main = do
 	clocktime <- js_getElementById (toJSString "clocktime")
 	js_setTextContent foo (toJSString "bar")
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
+	print $ JS.Object.toO foo' `JS.Object.isInstanceOf` JS.Element.eClass
+	print $ JS.Object.toO JS.Window.w `JS.Object.isInstanceOf` JS.Element.eClass
 	setInterval (do
 		nows <- show <$> newDate
 		js_setTextContent clocktime (toJSString nows)) 1000

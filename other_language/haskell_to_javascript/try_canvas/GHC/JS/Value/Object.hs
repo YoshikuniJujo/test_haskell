@@ -2,6 +2,7 @@
 
 module GHC.JS.Value.Object where
 
+import GHC.JS.Prim
 import GHC.JS.Value qualified as JS.Value
 import Data.Typeable
 import Data.Maybe
@@ -21,3 +22,11 @@ fromV v = do
 	cast o
 
 class JS.Value.V o => IsO o where toO :: o -> O; toO = fromJust . JS.Value.cast
+
+newtype Class = Class JSVal
+
+isInstanceOf :: O -> Class -> Bool
+o `isInstanceOf` Class c = JS.Value.toJSVal o `js_instanceof` c
+
+foreign import javascript "((o, c) => { return (o instanceof c); })"
+	js_instanceof :: JSVal -> JSVal -> Bool
