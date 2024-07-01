@@ -273,7 +273,7 @@ packages:
     hackage: union-color-0.1.2.0
 snapshots:
 - completed:
-    sha256: b66176d92f4e55079a946948d23fc80bf68fb328e23d1066ed9f73a609a3d8b8
-    size: 631258
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/5/6.yaml
-  original: nightly-2024-05-06
+    sha256: 6c47bf5889b97d9b297f6faf3d7942b705f78adcdd066cd6d09d4926ed459895
+    size: 650206
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/7/1.yaml
+  original: nightly-2024-07-01

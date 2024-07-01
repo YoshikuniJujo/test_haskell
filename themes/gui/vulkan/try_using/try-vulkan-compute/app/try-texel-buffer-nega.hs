@@ -82,6 +82,8 @@ import Data.Text.IO qualified as Txt
 
 import Data.Map qualified as M
 
+import System.IO
+
 main :: IO ()
 main = do
 	io@(inp, outp) <- (,) <$> atomically newTChan <*> atomically newTChan
@@ -91,6 +93,7 @@ main = do
 		atomically $ writeTChan outp False
 
 	fix \rec -> do
+		putStr "> " >> hFlush stdout
 		atomically . writeTChan inp =<< getLine
 		b <- atomically $ readTChan outp
 		if b then rec else pure ()
@@ -173,6 +176,7 @@ mainLoop dvs@(_, dv, qf, cb, ds) pplplyt pplplyt2@(ppl2, plyt2) io@(inp, outp)
 				atomically $ writeTChan outp True
 				mainLoop @nm4 @objss4 dvs pplplyt pplplyt2 io grps szwhs outf szwhm c
 			(_, Nothing) -> do
+				putStrLn "No such commands"
 				atomically $ writeTChan outp True
 				rec
 
