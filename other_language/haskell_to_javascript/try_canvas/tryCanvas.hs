@@ -20,6 +20,7 @@ import GHC.JS.Value.Document qualified as JS.Document
 import GHC.JS.Value.Element qualified as JS.Element
 import GHC.JS.Value.HtmlElement qualified as JS.HtmlElement
 import GHC.JS.Value.HtmlElement.Paragraph qualified as JS.HtmlParagraphElement
+import GHC.JS.Value.HtmlElement.Canvas qualified as JS.HtmlCanvasElement
 
 import Data.Maybe
 
@@ -55,6 +56,7 @@ main = do
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo'
 	let	Just canvas' = JS.Document.getElementById JS.Document.d "canvas"
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
+	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')
 	setInterval (do
 		nows <- show <$> newDate
 		js_setTextContent clocktime (toJSString nows)) 1000
