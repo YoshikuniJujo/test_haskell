@@ -48,6 +48,7 @@ main = do
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
 	print $ JS.Object.toO foo' `JS.Object.isInstanceOf` JS.Element.eClass
 	print $ JS.Object.toO JS.Window.w `JS.Object.isInstanceOf` JS.Element.eClass
+	print =<< maybe (pure Nothing) ((Just <$>) . JS.HtmlElement.getOffsetWidth) (JS.Element.fromE foo')
 	setInterval (do
 		nows <- show <$> newDate
 		js_setTextContent clocktime (toJSString nows)) 1000

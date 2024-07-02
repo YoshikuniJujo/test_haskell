@@ -20,6 +20,9 @@ instance JS.Value.IsJSVal N where toJSVal (N n) = JS.Value.toJSVal n
 instance JS.Value.V N where
 	toV = JS.EventTarget.toV; fromV = JS.EventTarget.fromV
 
+instance JS.Object.IsO N
+instance JS.EventTarget.IsE N
+
 toV :: JS.Value.V n => n -> JS.Value.Some
 toV = JS.Value.toV . N
 
