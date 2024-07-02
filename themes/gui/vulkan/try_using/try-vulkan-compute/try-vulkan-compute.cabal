@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -63,6 +63,7 @@ library
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , typelevel-tools
     , vector
   default-language: Haskell2010
@@ -96,6 +97,7 @@ executable try-bitonic-sort
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -130,6 +132,7 @@ executable try-bitonic-sort-cpu
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -164,6 +167,7 @@ executable try-bitonic-sort-new
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -198,6 +202,7 @@ executable try-data-list-sort
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -232,6 +237,7 @@ executable try-hello
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -266,6 +272,7 @@ executable try-hello-world
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -300,6 +307,7 @@ executable try-mandelbrot
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -334,6 +342,7 @@ executable try-mandelbrot-cpu
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -368,6 +377,7 @@ executable try-mandelbrot-hs
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -402,6 +412,7 @@ executable try-push-constant
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -436,6 +447,7 @@ executable try-quick-sort
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -470,6 +482,7 @@ executable try-saitan-simple
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -504,6 +517,7 @@ executable try-texel-buffer-nega
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector
@@ -539,6 +553,7 @@ test-suite try-vulkan-compute-test
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
+    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools
     , vector

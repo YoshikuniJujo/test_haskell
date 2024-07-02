@@ -43,6 +43,7 @@ dependencies:
 - ranged-list
 - typelevel-tools
 - temporary
+- try-tools-yj
 
 ghc-options:
 - -Wall

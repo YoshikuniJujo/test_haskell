@@ -86,8 +86,8 @@ type Word32List nmh = Obj.List 256 Word32 nmh
 bffrSize :: Integral n => n
 bffrSize = 30
 
-withDvc :: (forall sd scpl .
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl -> IO a) -> IO a
+withDvc :: (forall sd scp .
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> IO a) -> IO a
 withDvc a = Vk.Inst.create instInfo nil \inst -> do
 	pd <- head' <$> Vk.Phd.enumerate inst
 	qfi <- fst . head' . filter (
@@ -96,7 +96,7 @@ withDvc a = Vk.Inst.create instInfo nil \inst -> do
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	Vk.Dvc.create pd (dvcInfo qfi) nil \dv ->
 		Vk.Dvc.getQueue dv qfi 0 >>= \q ->
-		Vk.CmdPl.create dv (cpinfo qfi) nil \cpl -> a pd dv q cpl
+		Vk.CmdPl.create dv (cpinfo qfi) nil $ a pd dv q
 	where
 	cpinfo qfi = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
