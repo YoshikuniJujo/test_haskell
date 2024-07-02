@@ -19,6 +19,9 @@ import GHC.JS.Value.Node qualified as JS.Node
 import GHC.JS.Value.Document qualified as JS.Document
 import GHC.JS.Value.Element qualified as JS.Element
 import GHC.JS.Value.HtmlElement qualified as JS.HtmlElement
+import GHC.JS.Value.HtmlElement.Paragraph qualified as JS.HtmlParagraphElement
+
+import Data.Maybe
 
 main :: IO ()
 main = do
@@ -49,6 +52,9 @@ main = do
 	print $ JS.Object.toO foo' `JS.Object.isInstanceOf` JS.Element.eClass
 	print $ JS.Object.toO JS.Window.w `JS.Object.isInstanceOf` JS.Element.eClass
 	print =<< maybe (pure Nothing) ((Just <$>) . JS.HtmlElement.getOffsetWidth) (JS.Element.fromE foo')
+	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo'
+	let	Just canvas' = JS.Document.getElementById JS.Document.d "canvas"
+	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
 	setInterval (do
 		nows <- show <$> newDate
 		js_setTextContent clocktime (toJSString nows)) 1000
