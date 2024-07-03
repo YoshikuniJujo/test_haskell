@@ -25,6 +25,10 @@ import GHC.JS.Value.HtmlElement.Canvas qualified as JS.HtmlCanvasElement
 import GHC.JS.Value.CharacterData qualified as JS.CharacterData
 import GHC.JS.Value.CharacterData.Text qualified as JS.Text
 
+import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
+import GHC.JS.Value.CanvasContext.Rendering2d
+	qualified as JS.CanvasRenderingContext2d
+
 import Data.Maybe
 
 main :: IO ()
@@ -60,8 +64,11 @@ main = do
 	print =<< maybe (pure Nothing) ((Just <$>) . JS.HtmlElement.getOffsetWidth) (JS.Element.fromE foo')
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo'
 	let	Just canvas' = JS.Document.getElementById JS.Document.d "canvas"
+		Just cvs = JS.Element.fromE canvas'
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
 	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')
+	print =<< JS.HtmlCanvasElement.getHeight cvs
+	putStrLn "try canvas"
 	setInterval (do
 		nows <- show <$> newDate
 		js_setTextContent clocktime (toJSString nows)) 1000
@@ -72,8 +79,10 @@ main = do
 		js_setTextContent foo . toJSString
 			$ show (offsetX e', offsetY e')
 
-	ctx <- getContext2D canvas
-	let	pth0 = context2DToPath2D ctx
+--	ctx <- getContext2D canvas
+	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
+	let	ctx = Context2D $ JS.Value.toJSVal ctx_
+		pth0 = context2DToPath2D ctx
 	setFillStyle ctx $ Rgb 200 0 0
 	fillRect ctx
 		$ Rectangle { left = 10, top = 10, width = 50, height = 50 }

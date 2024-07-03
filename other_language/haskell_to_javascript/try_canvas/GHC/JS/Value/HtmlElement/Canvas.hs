@@ -1,3 +1,5 @@
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.HtmlElement.Canvas where
@@ -9,6 +11,7 @@ import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Node qualified as JS.Node
 import GHC.JS.Value.Element qualified as JS.Element
 import GHC.JS.Value.HtmlElement qualified as JS.HtmlElement
+import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 
 newtype C = C JSVal
 
@@ -43,3 +46,21 @@ getHeight (C c) = js_getHeight c
 
 foreign import javascript "((c) => { return c.height; })"
 	js_getHeight :: JSVal -> IO Word
+
+newtype ContextType = ContextType String
+
+pattern ContextType2d :: ContextType
+pattern ContextType2d <- ContextType "2d" where ContextType2d = ContextType "2d"
+
+getContext :: C -> ContextType -> IO (Maybe JS.CanvasContext.C)
+getContext (C cvs) (ContextType (toJSString -> ctp)) = do
+	cxt <- js_getContext cvs ctp
+	pure case () of
+		_	| isNull cxt -> Nothing
+			| isUndefined cxt -> error
+				"HTMLCanvasElement.getContext return undefined"
+			| otherwise -> Just . JS.CanvasContext.toC
+				$ JS.CanvasContext.OtherC cxt
+
+foreign import javascript "((c, ctp) => { return c.getContext(ctp); })"
+	js_getContext :: JSVal -> JSVal -> IO JSVal
