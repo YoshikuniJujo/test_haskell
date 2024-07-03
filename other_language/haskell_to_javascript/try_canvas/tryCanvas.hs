@@ -42,12 +42,6 @@ import Data.Maybe
 main :: IO ()
 main = do
 	foo <- js_getElementById (toJSString "foo")
-	print . fromJSString $ js_getTagName foo
-	print . fromJSString $ js_toString foo
-	print . fromJSString $ js_toString JS.Window.js_w
-	print . fromJSString $ js_getWindowName JS.Window.js_w
-	print . fromJSString . js_toString
-		. js_getNavigatorUserAgent $ js_getWindowNavigator JS.Window.js_w
 	JS.EventTarget.addEventListenerSimple
 		(JS.EventTarget.toE JS.Window.w) "resize" \_ -> do
 			wdt <- JS.Window.getInnerWidth JS.Window.w
