@@ -82,7 +82,7 @@ main = do
 	Just canvas <- getCanvasById "canvas"
 
 	onPointerdown cvs \e -> do
-		js_setTextContent foo . toJSString $ show (
+		js_setTextContent foo . toJSString $ "pointer down: " ++ show (
 			JS.MouseEvent.offsetX e,
 			JS.MouseEvent.offsetY e )
 
