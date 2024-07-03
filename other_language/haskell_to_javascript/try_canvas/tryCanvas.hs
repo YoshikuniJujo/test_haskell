@@ -32,6 +32,8 @@ import GHC.JS.Value.CanvasContext.Rendering2d.Path qualified as JS.Path2d
 import GHC.JS.Value.CanvasContext.Rendering2d.Pathable
 	qualified as JS.Pathable2d
 
+import GHC.JS.Value.Event qualified as JS.Event
+
 import Data.Maybe
 
 main :: IO ()

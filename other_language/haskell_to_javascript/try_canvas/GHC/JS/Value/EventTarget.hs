@@ -8,6 +8,7 @@ import GHC.JS.Prim
 import GHC.JS.Foreign.Callback
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
+import GHC.JS.Value.Event qualified as JS.Event
 import Data.Maybe
 
 data E = forall et . JS.Value.V et => E et
@@ -26,9 +27,9 @@ fromV v = do
 class JS.Object.IsO et => IsE et where
 	toE :: et -> E; toE = fromJust . JS.Value.cast
 
-addEventListenerSimple :: E -> String -> (JSVal -> IO ()) -> IO ()
+addEventListenerSimple :: E -> String -> (JS.Event.E -> IO ()) -> IO ()
 addEventListenerSimple etg etp lsn = do
-	lsn' <- syncCallback1 ThrowWouldBlock lsn
+	lsn' <- syncCallback1 ThrowWouldBlock (lsn . JS.Event.E . JS.Event.OtherE)
 	js_addEventListenerSimple (JS.Value.toJSVal etg) (toJSString etp) lsn'
 
 foreign import javascript
