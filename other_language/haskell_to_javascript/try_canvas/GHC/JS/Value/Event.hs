@@ -20,6 +20,8 @@ toV = JS.Value.toV . E
 fromV :: JS.Value.V ev => JS.Value.Some -> Maybe ev
 fromV v = JS.Value.fromV v >>= \(E ev) -> cast ev
 
+instance JS.Object.IsO E
+
 class JS.Object.IsO ev => IsE ev where
 	downCheck :: E -> Bool; downMake :: JSVal -> ev
 

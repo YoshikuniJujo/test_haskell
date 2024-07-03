@@ -33,6 +33,9 @@ import GHC.JS.Value.CanvasContext.Rendering2d.Pathable
 	qualified as JS.Pathable2d
 
 import GHC.JS.Value.Event qualified as JS.Event
+import GHC.JS.Value.Event.UI qualified as JS.UIEvent
+import GHC.JS.Value.Event.Mouse qualified as JS.MouseEvent
+import GHC.JS.Value.Event.Pointer qualified as JS.PointerEvent
 
 import Data.Maybe
 
@@ -78,10 +81,10 @@ main = do
 		js_setTextContent clocktime (toJSString nows)) 1000
 	Just canvas <- getCanvasById "canvas"
 
-	onPointerdown canvas \e -> do
-		let	e' = pointerEventToClickEvent e
-		js_setTextContent foo . toJSString
-			$ show (offsetX e', offsetY e')
+	onPointerdown cvs \e -> do
+		js_setTextContent foo . toJSString $ show (
+			JS.MouseEvent.offsetX e,
+			JS.MouseEvent.offsetY e )
 
 	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
 	let	ctx = Context2D $ JS.Value.toJSVal ctx_
@@ -482,8 +485,9 @@ onClick c = addEventListener c (EventType "click")
 onTouchstart :: Canvas -> (TouchEvent -> IO ()) -> IO ()
 onTouchstart c = addEventListener c (EventType "touchstart")
 
-onPointerdown :: Canvas -> (PointerEvent -> IO ()) -> IO ()
-onPointerdown c = addEventListener c (EventType "pointerdown")
+onPointerdown :: JS.HtmlCanvasElement.C -> (JS.MouseEvent.M -> IO ()) -> IO ()
+onPointerdown c a = JS.EventTarget.addEventListenerSimple
+	(JS.EventTarget.toE c) "pointerdown" (a . fromJust . JS.Event.fromE)
 
 addEventListener :: IsEvent e => Canvas -> EventType -> (e -> IO ()) -> IO ()
 addEventListener (Canvas c) (EventType etp) f = do
