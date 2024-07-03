@@ -28,6 +28,9 @@ import GHC.JS.Value.CharacterData.Text qualified as JS.Text
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 import GHC.JS.Value.CanvasContext.Rendering2d
 	qualified as JS.CanvasRenderingContext2d
+import GHC.JS.Value.CanvasContext.Rendering2d.Path qualified as JS.Path2d
+import GHC.JS.Value.CanvasContext.Rendering2d.Pathable
+	qualified as JS.Pathable2d
 
 import Data.Maybe
 
@@ -159,21 +162,38 @@ main = do
 	translate ctx 200 25
 	triangle ctx
 
+{-
 	rectangle <- newPath2D Path2DFromScratch
 	let	rct = addablePath2DToPath2D rectangle
 	rect rct 10 10 50 50
+	-}
+
+	rectangle <- JS.Path2d.newFromScratch
+	JS.Pathable2d.rect (JS.Pathable2d.toP rectangle) 10 10 50 50
+
+{-
 	circle <- newPath2D Path2DFromScratch
 	let	ccl = addablePath2DToPath2D circle
 	arc ccl 100 35 25 0 (2 * pi) False
+	-}
+
+	circle <- JS.Path2d.newFromScratch
+	JS.Pathable2d.arc
+		(JS.Pathable2d.toP circle) 100 35 25 0 (2 * pi) False
 
 	restore ctx
 	translate ctx 0 480
-	stroke ctx $ Just rct
-	fill ctx $ Just ccl
+	JS.CanvasRenderingContext2d.stroke ctx' $ Just rectangle
+--	stroke ctx $ Just rct
+--	fill ctx $ Just ccl
+	JS.CanvasRenderingContext2d.stroke ctx' (Just rectangle)
+	JS.CanvasRenderingContext2d.fill ctx' (Just circle) Nothing
 
-	addPath rectangle circle
+--	addPath rectangle circle
+	JS.Path2d.addPathNoTransform rectangle circle
 	translate ctx 150 0
-	stroke ctx $ Just rct
+	JS.CanvasRenderingContext2d.stroke ctx' $ Just rectangle
+--	stroke ctx $ Just rct
 
 	svgp <- newPath2D $ Path2DFromSvgPath "M10 10 h 80 v 80 h -80 Z"
 	translate ctx 150 0
