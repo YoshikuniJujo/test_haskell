@@ -37,12 +37,10 @@ fillRect (R ctx) = js_fillRect ctx
 foreign import javascript "((ctx, l, t, w, h) => { ctx.fillRect(l, t, w, h); })"
 	js_fillRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
-fill :: R -> Maybe Path.P -> Maybe FillRule -> IO ()
-fill (R cxt) mp mfr = case (mp, mfr) of
-	(Nothing, Nothing) -> js_fill cxt
-	(Just (Path.P p), Nothing) -> js_fill_path cxt p
-	(Nothing, Just (FillRule fr)) -> js_fill_fillrule cxt fr
-	(Just (Path.P p), Just (FillRule fr)) -> js_fill_path_fillrule cxt p fr
+fill :: R -> Maybe Path.P -> FillRule -> IO ()
+fill (R cxt) mp (FillRule fr) = case mp of
+	Nothing -> js_fill_fillrule cxt fr
+	Just (Path.P p) -> js_fill_path_fillrule cxt p fr
 
 foreign import javascript "((ctx) => { ctx.fill(); })" js_fill :: JSVal -> IO ()
 
@@ -61,8 +59,8 @@ nonzero, evenodd :: FillRule
 nonzero = FillRule js_nonzero
 evenodd = FillRule js_evenodd
 
-foreign import javascript "(() => { return nonzero; })" js_nonzero :: JSVal
-foreign import javascript "(() => { return evenodd; })" js_evenodd :: JSVal
+foreign import javascript "(() => { return 'nonzero'; })" js_nonzero :: JSVal
+foreign import javascript "(() => { return 'evenodd'; })" js_evenodd :: JSVal
 
 stroke :: R -> Maybe Path.P -> IO ()
 stroke (R ctx) = \case

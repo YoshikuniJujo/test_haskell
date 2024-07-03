@@ -71,7 +71,6 @@ main = do
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
 	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')
 	print =<< JS.HtmlCanvasElement.getHeight cvs
-	putStrLn "try canvas"
 	setInterval (do
 		nows <- show <$> newDate
 		js_setTextContent clocktime (toJSString nows)) 1000
@@ -82,7 +81,6 @@ main = do
 		js_setTextContent foo . toJSString
 			$ show (offsetX e', offsetY e')
 
---	ctx <- getContext2D canvas
 	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
 	let	ctx = Context2D $ JS.Value.toJSVal ctx_
 		pth0 = context2DToPath2D ctx
@@ -90,8 +88,8 @@ main = do
 	setFillStyle ctx $ Rgb 200 0 0
 	JS.CanvasRenderingContext2d.fillRect ctx' 10 10 50 50
 	setFillStyle ctx $ Rgba 0 0 200 0.5
-	fillRect ctx
-		$ Rectangle { left = 20, top = 20, width = 50, height = 50 }
+	JS.CanvasRenderingContext2d.fillRect ctx' 20 20 50 50
+
 	setFillStyle ctx $ Rgb 0 0 0
 	fillRect ctx
 		$ Rectangle { left = 125, top = 25, width = 100, height = 100 }
@@ -162,38 +160,24 @@ main = do
 	translate ctx 200 25
 	triangle ctx
 
-{-
-	rectangle <- newPath2D Path2DFromScratch
-	let	rct = addablePath2DToPath2D rectangle
-	rect rct 10 10 50 50
-	-}
 
-	rectangle <- JS.Path2d.newFromScratch
+	rectangle <- JS.Path2d.new JS.Path2d.FromScratch
 	JS.Pathable2d.rect (JS.Pathable2d.toP rectangle) 10 10 50 50
 
-{-
-	circle <- newPath2D Path2DFromScratch
-	let	ccl = addablePath2DToPath2D circle
-	arc ccl 100 35 25 0 (2 * pi) False
-	-}
-
-	circle <- JS.Path2d.newFromScratch
+	circle <- JS.Path2d.new JS.Path2d.FromScratch
 	JS.Pathable2d.arc
 		(JS.Pathable2d.toP circle) 100 35 25 0 (2 * pi) False
 
 	restore ctx
-	translate ctx 0 480
-	JS.CanvasRenderingContext2d.stroke ctx' $ Just rectangle
---	stroke ctx $ Just rct
---	fill ctx $ Just ccl
-	JS.CanvasRenderingContext2d.stroke ctx' (Just rectangle)
-	JS.CanvasRenderingContext2d.fill ctx' (Just circle) Nothing
 
---	addPath rectangle circle
+	translate ctx 0 480
+	JS.CanvasRenderingContext2d.stroke ctx' (Just rectangle)
+	JS.CanvasRenderingContext2d.fill ctx' (Just circle)
+		JS.CanvasRenderingContext2d.nonzero
+
 	JS.Path2d.addPathNoTransform rectangle circle
 	translate ctx 150 0
 	JS.CanvasRenderingContext2d.stroke ctx' $ Just rectangle
---	stroke ctx $ Just rct
 
 	svgp <- newPath2D $ Path2DFromSvgPath "M10 10 h 80 v 80 h -80 Z"
 	translate ctx 150 0
