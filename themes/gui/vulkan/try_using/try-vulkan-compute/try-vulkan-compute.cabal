@@ -58,7 +58,6 @@ library
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -92,7 +91,6 @@ executable try-bitonic-sort
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -127,7 +125,6 @@ executable try-bitonic-sort-cpu
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -162,7 +159,6 @@ executable try-bitonic-sort-new
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -197,7 +193,6 @@ executable try-data-list-sort
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -232,7 +227,6 @@ executable try-hello
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -267,7 +261,6 @@ executable try-hello-world
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -302,7 +295,6 @@ executable try-mandelbrot
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -337,7 +329,6 @@ executable try-mandelbrot-cpu
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -372,7 +363,6 @@ executable try-mandelbrot-hs
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -407,7 +397,6 @@ executable try-push-constant
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -442,7 +431,6 @@ executable try-quick-sort
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -477,7 +465,6 @@ executable try-saitan-simple
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -512,7 +499,6 @@ executable try-texel-buffer-nega
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -548,7 +534,6 @@ test-suite try-vulkan-compute-test
     , time
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc

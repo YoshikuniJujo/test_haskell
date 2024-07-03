@@ -265,7 +265,7 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 writeDscSet ::
 	forall slbts sb3 sm3 objs3 sds . (
 	Show (HeteroParList.PL VObj.Length objs3),
-	VObj.OffsetRange' (VObj.List 256 W3 "") objs3 0 ) =>
+	VObj.OffsetRange (VObj.List 256 W3 "") objs3 0 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[

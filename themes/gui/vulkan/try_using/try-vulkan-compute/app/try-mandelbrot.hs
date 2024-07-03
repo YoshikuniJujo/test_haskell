@@ -235,7 +235,7 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 
 writeDscSet :: forall s slbts sb sm os . (
 	Show (HL.PL Obj.Length os),
-	Obj.OffsetRange' (Obj.List 256 Word32 "") os 0
+	Obj.OffsetRange (Obj.List 256 Word32 "") os 0
 	) =>
 	Vk.DS.D s slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.Write 'Nothing s slbts

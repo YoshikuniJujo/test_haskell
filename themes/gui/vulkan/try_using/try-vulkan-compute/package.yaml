@@ -34,7 +34,6 @@ dependencies:
 - filepath
 - JuicyPixels
 - try-gpu-vulkan
-- try-gpu-vulkan-khr
 - try-gpu-vulkan-ext-debug-utils
 - try-shaderc
 - try-language-spir-v

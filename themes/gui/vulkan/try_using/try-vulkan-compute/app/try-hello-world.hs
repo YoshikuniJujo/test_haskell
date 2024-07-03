@@ -15,8 +15,6 @@
 
 module Main (main) where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
-
 import Gpu.Vulkan.Object qualified as Obj
 import Gpu.Vulkan.Object.Base qualified as BObj
 import Data.Default
@@ -40,7 +38,6 @@ import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.Memory as Vk.Mm
-import qualified Gpu.Vulkan.Memory as Vk.Mm.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
@@ -81,6 +78,8 @@ main = withDvc \pd dv q cp -> putStrLn . map (chr . fromIntegral) =<<
 
 type DscStLyt sdsl nmh =
 	Vk.DscStLyt.D sdsl '[Vk.DscStLyt.Buffer '[Word32List nmh]]
+
+type Bffr sm sb bnmh nmh = Vk.Bffr.Binded sm sb bnmh '[Word32List nmh]
 
 type Mm sm sb bnmh nmh =
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnmh '[Word32List nmh])]
@@ -168,54 +167,47 @@ dscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
 	Vk.DscSt.allocateInfoDescriptorPool = dpl,
 	Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createBffr :: forall sd nm a nmh . Vk.Phd.P -> Vk.Dvc.D sd -> (forall sb sm .
-	Vk.Bffr.Binded sm sb nm '[Word32List nmh]  ->
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[Word32List nmh])] -> IO a) -> IO a
+createBffr :: forall sd bnm nm a . Vk.Phd.P -> Vk.Dvc.D sd ->
+	(forall sb sm . Bffr sm sb bnm nm -> Mm sm sb bnm nm -> IO a) -> IO a
 createBffr pd dv f =
-	Vk.Bffr.create dv bufferInfo nil \bf ->
-	getMemoryInfo pd dv bf >>= \mmi ->
+	Vk.Bffr.create dv bffrInfo nil \bf -> mmInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
 		(HPList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil
-		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	f bnd mm
+		\(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm -> f bnd mm
 
-bufferInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh]
-bufferInfo = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N,
-	Vk.Bffr.createInfoFlags = zeroBits,
+bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List nmh]
+bffrInfo = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths = HPList.Singleton $ Obj.LengthList bffrSize,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
-getMemoryInfo :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.B sb nm objs ->
-	IO (Vk.Mem.AllocateInfo 'Nothing)
-getMemoryInfo pd dv bff = do
-	rqs <- Vk.Bffr.getMemoryRequirements dv bff
-	mti <- findMemoryTypeIndex pd rqs
+mmInfo :: Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.B sb nm objs -> IO (Vk.Mm.AllocateInfo 'Nothing)
+mmInfo pd dv bf = do
+	rqs <- Vk.Bffr.getMemoryRequirements dv bf
+	mti <- findMmTpIdx pd rqs
 		$ Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit
-	pure Vk.Mem.AllocateInfo {
-		Vk.Mem.allocateInfoNext = TMaybe.N,
-		Vk.Mem.allocateInfoMemoryTypeIndex = mti }
+	pure Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mti }
 
-findMemoryTypeIndex :: Vk.Phd.P ->
-	Vk.Mm.M.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.M.TypeIndex
-findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
-	let	rqts = Vk.Mm.M.requirementsMemoryTypeBits rqs
-		prpts = (fst <$>)
-			. filter (checkBits prp0
-				. Vk.Mm.mTypePropertyFlags . snd)
-			$ Vk.Phd.memoryPropertiesMemoryTypes prps in
-	case filter (`Vk.Mm.M.elemTypeIndex` rqts) prpts of
-		[] -> error "No available memory types"
-		i : _ -> pure i
+findMmTpIdx :: Vk.Phd.P ->
+	Vk.Mm.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
+	let	rqts = Vk.Mm.requirementsMemoryTypeBits rqs
+		wtts = (fst <$>)
+			. filter (checkBits wt . Vk.Mm.mTypePropertyFlags . snd)
+			$ Vk.Phd.memoryPropertiesMemoryTypes prs in
+	case filter (`Vk.Mm.elemTypeIndex` rqts) wtts of
+		[] -> error "No available memory types"; i : _ -> pure i
 
-writeDscSt :: forall bnmh nmh s slbts sb sm os . (
+writeDscSt :: forall bnmh nmh sds slbts sm sb os . (
 	Show (HPList.PL Obj.Length os),
-	Obj.OffsetRange' (Obj.List 256 Word32 nmh) os 0
-	) =>
-	Vk.DscSt.D s slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DscSt.Write 'Nothing s slbts
+	Obj.OffsetRange (Word32List nmh) os 0 ) =>
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
+	Vk.DscSt.Write 'Nothing sds slbts
 		('Vk.DscSt.WriteSourcesArgBuffer '[ '(sm, sb, bnmh, Word32List nmh, 0)]) 0
 writeDscSt ds ba = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N,
