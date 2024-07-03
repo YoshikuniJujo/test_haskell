@@ -83,9 +83,9 @@ main = do
 	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
 	let	ctx = Context2D $ JS.Value.toJSVal ctx_
 		pth0 = context2DToPath2D ctx
+		Just ctx' = JS.CanvasContext.fromC ctx_
 	setFillStyle ctx $ Rgb 200 0 0
-	fillRect ctx
-		$ Rectangle { left = 10, top = 10, width = 50, height = 50 }
+	JS.CanvasRenderingContext2d.fillRect ctx' 10 10 50 50
 	setFillStyle ctx $ Rgba 0 0 200 0.5
 	fillRect ctx
 		$ Rectangle { left = 20, top = 20, width = 50, height = 50 }
