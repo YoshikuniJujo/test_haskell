@@ -22,6 +22,9 @@ import GHC.JS.Value.HtmlElement qualified as JS.HtmlElement
 import GHC.JS.Value.HtmlElement.Paragraph qualified as JS.HtmlParagraphElement
 import GHC.JS.Value.HtmlElement.Canvas qualified as JS.HtmlCanvasElement
 
+import GHC.JS.Value.CharacterData qualified as JS.CharacterData
+import GHC.JS.Value.CharacterData.Text qualified as JS.Text
+
 import Data.Maybe
 
 main :: IO ()
@@ -48,7 +51,9 @@ main = do
 	print $ JS.Element.getTagName foo'
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
 	clocktime <- js_getElementById (toJSString "clocktime")
-	js_setTextContent foo (toJSString "bar")
+	js_setTextContent foo (toJSString "bar\n")
+	baz <- JS.Text.new "Hello, world!"
+	JS.Node.toN foo' `JS.Node.appendChild` JS.Node.toN baz
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
 	print $ JS.Object.toO foo' `JS.Object.isInstanceOf` JS.Element.eClass
 	print $ JS.Object.toO JS.Window.w `JS.Object.isInstanceOf` JS.Element.eClass

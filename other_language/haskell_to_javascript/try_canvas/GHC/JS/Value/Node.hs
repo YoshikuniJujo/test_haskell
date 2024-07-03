@@ -96,5 +96,11 @@ parentNode nd
 	| otherwise = Just . toN $ OtherN p
 	where p = js_parentNode $ JS.Value.toJSVal nd
 
-foreign import javascript "((n) => {return n.parentNode; })"
+foreign import javascript "((n) => { return n.parentNode; })"
 	js_parentNode :: JSVal -> JSVal
+
+appendChild :: N -> N -> IO ()
+appendChild n c = js_appendChild (JS.Value.toJSVal n) (JS.Value.toJSVal c)
+
+foreign import javascript "((n, c) => { n.appendChild(c); })"
+	js_appendChild :: JSVal -> JSVal -> IO ()
