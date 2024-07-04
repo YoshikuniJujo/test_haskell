@@ -19,8 +19,7 @@ main = do
 	[pnm, pvsn, emsfp] <- getArgs
 	tdir <- head . lines <$> readFile "packageTopDir.conf"
 	mds <- lines <$> readFile emsfp
-	putStr . showInstalledPackageInfo
-		$ packageInfo tdir pnm pvsn mds
+	putStr . showInstalledPackageInfo $ packageInfo tdir pnm pvsn mds
 
 mkPkgVersion :: String -> [Int]
 mkPkgVersion vstr = read <$> sepBy '.' vstr
@@ -34,9 +33,6 @@ sepBy s = \case
 
 mkPkgId :: String -> [Int] -> String
 mkPkgId nm vsn = nm ++ "-" ++ L.intercalate "." (show <$> vsn)
-
-moduleStrs :: [String]
-moduleStrs = ["Hello"]
 
 mkModules :: [String] -> [ModuleName]
 mkModules mstrs = fromString <$> mstrs
