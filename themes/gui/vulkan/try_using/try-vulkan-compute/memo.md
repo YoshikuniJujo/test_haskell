@@ -5,7 +5,7 @@ app
 ---
 
 * [x] try-hello
-* [ ] try-hello-world
+* [x] try-hello-world
 * [ ] try-saitan-simple
 * [ ] try-push-constant
 * [ ] try-texel-buffer-nega
