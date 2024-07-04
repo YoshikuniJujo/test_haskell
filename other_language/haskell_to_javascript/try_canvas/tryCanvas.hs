@@ -23,7 +23,6 @@ import GHC.JS.Value.HtmlElement qualified as JS.HtmlElement
 import GHC.JS.Value.HtmlElement.Paragraph qualified as JS.HtmlParagraphElement
 import GHC.JS.Value.HtmlElement.Canvas qualified as JS.HtmlCanvasElement
 
-import GHC.JS.Value.CharacterData qualified as JS.CharacterData
 import GHC.JS.Value.CharacterData.Text qualified as JS.Text
 
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
@@ -34,7 +33,6 @@ import GHC.JS.Value.CanvasContext.Rendering2d.Pathable
 	qualified as JS.Pathable2d
 
 import GHC.JS.Value.Event qualified as JS.Event
-import GHC.JS.Value.Event.UI qualified as JS.UIEvent
 import GHC.JS.Value.Event.Mouse qualified as JS.MouseEvent
 import GHC.JS.Value.Event.Pointer qualified as JS.PointerEvent
 
@@ -59,7 +57,7 @@ main = do
 		=<< parentOfChild (JS.Node.toN JS.Document.d)
 	print $ JS.Element.getTagName foo
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
-	clocktime <- js_getElementById (toJSString "clocktime")
+	Just clocktime' <- JS.Document.getElementById JS.Document.d "clocktime"
 	baz <- JS.Text.new "Hello, world!"
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
@@ -74,8 +72,11 @@ main = do
 	print =<< JS.HtmlCanvasElement.getHeight cvs
 	setInterval (do
 		nows <- show <$> newDate
-		js_setTextContent clocktime (toJSString nows)) 1000
-	Just canvas <- getCanvasById "canvas"
+		while_ (JS.Node.hasChildNodes $ JS.Node.toN clocktime') do
+			Just fc <- JS.Node.firstChild (JS.Node.toN clocktime')
+			() <$ JS.Node.removeChild (JS.Node.toN clocktime') fc
+		tmt <- JS.Text.new $ "NOW: " ++ nows
+		JS.Node.toN clocktime' `JS.Node.appendChild` JS.Node.toN tmt) 1000
 
 	onPointerdown cvs \e -> do
 		szt <- JS.Text.new $ "ptr down: " ++ show (
@@ -190,26 +191,7 @@ main = do
 
 -- END OF MAIN
 
-getCanvasById :: String -> IO (Maybe Canvas)
-getCanvasById i = do
-	e <- js_getElementById $ toJSString i
-	pure if js_isCanvas e then Just $ Canvas e else Nothing
-
-data Canvas = Canvas { unCanvas :: JSVal }
-
-foreign import javascript "((id) => { return document.getElementById(id); })"
-	js_getElementById :: JSVal -> IO (JSVal)
-
-foreign import javascript "((e) => { return e.getContext; })"
-	js_isCanvas :: JSVal -> Bool
-
 data Context2D = Context2D JSVal
-
-getContext2D :: Canvas -> IO Context2D
-getContext2D (Canvas c) = Context2D <$> js_getContext2d c
-
-foreign import javascript "((c) => { return c.getContext('2d'); })"
-	js_getContext2d :: JSVal -> IO JSVal
 
 data AddablePath2D = AddablePath2D JSVal
 
@@ -307,12 +289,6 @@ foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
 foreign import javascript "((ctx, x, y) => { ctx.lineTo(x, y); })"
 	js_lineTo :: JSVal -> Double -> Double -> IO ()
 
-rect :: Path2D -> Double -> Double -> Double -> Double -> IO ()
-rect (Path2D pth) = js_rect pth
-
-foreign import javascript "((ctx, x, y, w, h) => { ctx.rect(x, y, w, h); })"
-	js_rect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
-
 arc :: Path2D -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
 arc (Path2D ctx) = js_arc ctx
 
@@ -362,9 +338,6 @@ translate (Context2D ctx) = js_translate ctx
 
 foreign import javascript "((ctx, x, y) => { ctx.translate(x, y); })"
 	js_translate :: JSVal -> Double -> Double -> IO ()
-
-foreign import javascript "((e, t) => { e.textContent = t; })"
-	js_setTextContent :: JSVal -> JSVal -> IO ()
 
 data Color
 	= Rgb Word8 Word8 Word8
@@ -479,24 +452,9 @@ triangle ctx = do
 
 newtype EventType = EventType String deriving Show
 
-onClick :: Canvas -> (ClickEvent -> IO ()) -> IO ()
-onClick c = addEventListener c (EventType "click")
-
-onTouchstart :: Canvas -> (TouchEvent -> IO ()) -> IO ()
-onTouchstart c = addEventListener c (EventType "touchstart")
-
 onPointerdown :: JS.HtmlCanvasElement.C -> (JS.MouseEvent.M -> IO ()) -> IO ()
 onPointerdown c a = JS.EventTarget.addEventListenerSimple
 	(JS.EventTarget.toE c) "pointerdown" (a . fromJust . JS.Event.fromE)
-
-addEventListener :: IsEvent e => Canvas -> EventType -> (e -> IO ()) -> IO ()
-addEventListener (Canvas c) (EventType etp) f = do
-	f' <- syncCallback1 ThrowWouldBlock $ f . fromJSVal
-	js_addEventListener c (toJSString etp) f'
-
-foreign import javascript
-	"((etg, etp, f) => { etg.addEventListener(etp, (e) => { f(e) }); })"
-	js_addEventListener :: JSVal -> JSVal -> Callback (JSVal -> IO ()) -> IO ()
 
 class IsEvent e where
 	fromJSVal :: JSVal -> e
