@@ -104,3 +104,16 @@ appendChild n c = js_appendChild (JS.Value.toJSVal n) (JS.Value.toJSVal c)
 
 foreign import javascript "((n, c) => { n.appendChild(c); })"
 	js_appendChild :: JSVal -> JSVal -> IO ()
+
+hasChildNodes :: N -> IO Bool
+hasChildNodes = js_hasChildNodes . JS.Value.toJSVal
+
+foreign import javascript "((n) => { return n.hasChildNodes(); })"
+	js_hasChildNodes :: JSVal -> IO Bool
+
+removeChild :: N -> N -> IO N
+removeChild p c =
+	N . OtherN <$> js_removeChild (JS.Value.toJSVal p) (JS.Value.toJSVal c)
+
+foreign import javascript "((n, c) => { n.removeChild(c); })"
+	js_removeChild :: JSVal -> JSVal -> IO JSVal

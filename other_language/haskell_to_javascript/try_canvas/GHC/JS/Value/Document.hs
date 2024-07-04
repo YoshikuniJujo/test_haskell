@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Document where
@@ -38,12 +39,15 @@ instance Show D where
 foreign import javascript "((v) => { return v.toString(); })"
 	js_toString :: JSVal -> JSVal
 
-getElementById :: D -> String -> Maybe JS.Element.E
-getElementById (D dc) i
-	| isNull e = Nothing
-	| isUndefined e = error "Document.getElementById return undefined"
-	| otherwise = Just . JS.Element.toE $ JS.Element.OtherE e
-	where e = js_getElementById dc (toJSString i)
+getElementById :: D -> String -> IO (Maybe JS.Element.E)
+getElementById (D dc) i = do
+	e <- js_getElementById dc (toJSString i)
+	case e of
+		_	| isNull e -> pure Nothing
+			| isUndefined e -> error
+				"Document.getElementById return undefined"
+			| otherwise -> pure
+				. Just . JS.Element.toE $ JS.Element.OtherE e
 
 foreign import javascript "((d, id) => { return d.getElementById(id); })"
-	js_getElementById :: JSVal -> JSVal -> JSVal
+	js_getElementById :: JSVal -> JSVal -> IO JSVal

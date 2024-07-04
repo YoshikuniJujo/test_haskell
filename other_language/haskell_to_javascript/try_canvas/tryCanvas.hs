@@ -4,6 +4,7 @@
 
 module Main where
 
+import Control.Monad
 import Data.Foldable
 import GHC.JS.Prim
 import GHC.JS.Foreign.Callback
@@ -41,32 +42,33 @@ import Data.Maybe
 
 main :: IO ()
 main = do
-	foo <- js_getElementById (toJSString "foo")
+	Just foo <- JS.Document.getElementById JS.Document.d "foo"
 	JS.EventTarget.addEventListenerSimple
 		(JS.EventTarget.toE JS.Window.w) "resize" \_ -> do
 			wdt <- JS.Window.getInnerWidth JS.Window.w
 			hgt <- JS.Window.getInnerHeight JS.Window.w
-			js_setTextContent foo . toJSString
-				$ "Window Size: " ++ show (wdt, hgt)
+			szt <- JS.Text.new $ " Win Size: " ++ show (wdt, hgt)
+			while_ (JS.Node.hasChildNodes $ JS.Node.toN foo) do
+				Just fc <- JS.Node.firstChild (JS.Node.toN foo)
+				() <$ JS.Node.removeChild (JS.Node.toN foo) fc
+			JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN szt
 	print $ JS.Document.getDocumentURI JS.Document.d
 	print . JS.Node.getNodeName $ JS.Node.toN JS.Document.d
 	print . JS.Node.getNodeType $ JS.Node.toN JS.Document.d
 	print @(Maybe JS.Document.D) . (JS.Node.fromN =<<)
 		=<< parentOfChild (JS.Node.toN JS.Document.d)
-	let	Just foo' = JS.Document.getElementById JS.Document.d "foo"
-	print $ JS.Element.getTagName foo'
-	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
+	print $ JS.Element.getTagName foo
+	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
 	clocktime <- js_getElementById (toJSString "clocktime")
-	js_setTextContent foo (toJSString "bar\n")
 	baz <- JS.Text.new "Hello, world!"
-	JS.Node.toN foo' `JS.Node.appendChild` JS.Node.toN baz
-	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo')
-	print $ JS.Object.toO foo' `JS.Object.isInstanceOf` JS.Element.eClass
+	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
+	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
+	print $ JS.Object.toO foo `JS.Object.isInstanceOf` JS.Element.eClass
 	print $ JS.Object.toO JS.Window.w `JS.Object.isInstanceOf` JS.Element.eClass
-	print =<< maybe (pure Nothing) ((Just <$>) . JS.HtmlElement.getOffsetWidth) (JS.Element.fromE foo')
-	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo'
-	let	Just canvas' = JS.Document.getElementById JS.Document.d "canvas"
-		Just cvs = JS.Element.fromE canvas'
+	print =<< maybe (pure Nothing) ((Just <$>) . JS.HtmlElement.getOffsetWidth) (JS.Element.fromE foo)
+	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo
+	Just canvas' <- JS.Document.getElementById JS.Document.d "canvas"
+	let	Just cvs = JS.Element.fromE canvas'
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
 	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')
 	print =<< JS.HtmlCanvasElement.getHeight cvs
@@ -76,9 +78,13 @@ main = do
 	Just canvas <- getCanvasById "canvas"
 
 	onPointerdown cvs \e -> do
-		js_setTextContent foo . toJSString $ "pointer down: " ++ show (
+		szt <- JS.Text.new $ "ptr down: " ++ show (
 			JS.MouseEvent.offsetX e,
 			JS.MouseEvent.offsetY e )
+		while_ (JS.Node.hasChildNodes $ JS.Node.toN foo) do
+			Just fc <- JS.Node.firstChild (JS.Node.toN foo)
+			() <$ JS.Node.removeChild (JS.Node.toN foo) fc
+		JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN szt
 
 	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
 	let	ctx = Context2D $ JS.Value.toJSVal ctx_
@@ -579,3 +585,8 @@ foreign import javascript "((n) => { return n.userAgent; })"
 
 parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
 parentOfChild nd = (JS.Node.parentNode =<<) <$> JS.Node.firstChild nd
+
+while_ :: IO Bool -> IO a -> IO ()
+while_ p act = do
+	b <- p
+	when b $ act >> while_ p act
