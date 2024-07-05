@@ -38,6 +38,8 @@ import GHC.JS.Value.Event.Pointer qualified as JS.PointerEvent
 
 import Data.Maybe
 
+import Hello
+
 main :: IO ()
 main = do
 	Just foo <- JS.Document.getElementById JS.Document.d "foo"
@@ -58,7 +60,7 @@ main = do
 	print $ JS.Element.getTagName foo
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
 	Just clocktime' <- JS.Document.getElementById JS.Document.d "clocktime"
-	baz <- JS.Text.new "Hello, world!"
+	baz <- JS.Text.new hello
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
 	print $ JS.Object.toO foo `JS.Object.isInstanceOf` JS.Element.eClass
