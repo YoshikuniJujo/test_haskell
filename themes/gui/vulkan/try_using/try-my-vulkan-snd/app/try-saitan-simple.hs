@@ -127,11 +127,12 @@ dscStLytInfo :: Vk.DscStLyt.CreateInfo 'Nothing DscStLytArg
 dscStLytInfo = Vk.DscStLyt.CreateInfo {
 	Vk.DscStLyt.createInfoNext = TMaybe.N,
 	Vk.DscStLyt.createInfoFlags = zeroBits,
-	Vk.DscStLyt.createInfoBindings = HPList.Singleton bdg }
-	where bdg = Vk.DscStLyt.BindingBuffer {
-		Vk.DscStLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeStorageBuffer,
-		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+	Vk.DscStLyt.createInfoBindings =
+		HPList.Singleton Vk.DscStLyt.BindingBuffer {
+			Vk.DscStLyt.bindingBufferDescriptorType =
+				Vk.Dsc.TypeStorageBuffer,
+			Vk.DscStLyt.bindingBufferStageFlags =
+				Vk.ShaderStageComputeBit } }
 
 type DscStLytArg = '[ 'Vk.DscStLyt.Buffer '[OList W1, OList W2, OList W3]]
 
@@ -153,11 +154,11 @@ createBffr3Mm3 pd dv dsl da db dc a =
 	Vk.DscPl.create dv dscPlInfo nil \dp ->
 	Vk.DscSt.allocateDs dv (dscStInfo dp dsl) \(HPList.Singleton dss) ->
 	bffr3Mm3 pd dv da db dc \(ba, ma) (bb, mb) (bc, mc) ->
-	Vk.DscSt.updateDs dv
-		(HPList.Singleton . U5 $ writeDscStBffr3 dss ba bb bc) HPList.Nil >>
+	Vk.DscSt.updateDs dv (HPList.Singleton
+		. U5 $ writeDscStBffr3 dss ba bb bc) HPList.Nil >>
 	a dss ma mb mc
 
-type BffMem sm sb nm t = (Bffr sm sb nm t, Mm sm sb nm t)
+type BffrMm sm sb nm t = (Bffr sm sb nm t, Mm sm sb nm t)
 type Mm sm sb nm t = Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[OList t])]
 type Bffr sm sb nm t = Vk.Bffr.Binded sm sb nm '[OList t]
 type OList t = Obj.List 256 t ""
@@ -181,8 +182,8 @@ dscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
 bffr3Mm3 :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (
 		forall sm1 sm2 sm3 sb1 sb2 sb3 .
-		BffMem sm1 sb1 nm1 W1 -> BffMem sm2 sb2 nm2 W2 ->
-		BffMem sm3 sb3 nm3 W3 -> IO a ) -> IO a
+		BffrMm sm1 sb1 nm1 W1 -> BffrMm sm2 sb2 nm2 W2 ->
+		BffrMm sm3 sb3 nm3 W3 -> IO a ) -> IO a
 bffr3Mm3 pd dv da db dc a =
 	bffrMm pd dv da \ba ma -> bffrMm pd dv db \bb mb ->
 	bffrMm pd dv dc \bc mc -> a (ba, ma) (bb, mb) (bc, mc)
