@@ -60,7 +60,7 @@ main = do
 	print $ JS.Element.getTagName foo
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
 	Just clocktime' <- JS.Document.getElementById JS.Document.d "clocktime"
-	baz <- JS.Text.new hello
+	baz <- JS.Text.new $ hello ++ " YJ"
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
 	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
 	print $ JS.Object.toO foo `JS.Object.isInstanceOf` JS.Element.eClass
