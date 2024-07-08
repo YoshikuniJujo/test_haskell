@@ -3,6 +3,7 @@
 module GHC.JS.Value.Window where
 
 import GHC.JS.Prim
+import GHC.JS.Foreign.Callback
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
@@ -32,3 +33,11 @@ foreign import javascript "((w) => { return w.innerHeight; })"
 
 foreign import javascript "((w) => { return w.innerWidth; })"
 	js_getInnerWidth :: JSVal -> IO Double
+
+setInterval :: W -> IO () -> Word -> IO ()
+setInterval (W wn) f d = do
+	f' <- syncCallback ThrowWouldBlock f
+	js_setInterval wn f' d
+
+foreign import javascript "((w, f, d) => { w.setInterval(f, d); })"
+	js_setInterval :: JSVal -> Callback (IO ()) -> Word -> IO ()

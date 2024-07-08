@@ -42,6 +42,9 @@ import Hello
 
 main :: IO ()
 main = do
+	print . fromJSString $ js_toString js_this
+	print $ js_same js_this JS.Window.js_w
+	print $ js_same js_this JS.Document.js_d
 	Just foo <- JS.Document.getElementById JS.Document.d "foo"
 	JS.EventTarget.addEventListenerSimple
 		(JS.EventTarget.toE JS.Window.w) "resize" \_ -> do
@@ -58,27 +61,32 @@ main = do
 	print @(Maybe JS.Document.D) . (JS.Node.fromN =<<)
 		=<< parentOfChild (JS.Node.toN JS.Document.d)
 	print $ JS.Element.getTagName foo
-	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
-	Just clocktime' <- JS.Document.getElementById JS.Document.d "clocktime"
+	print . (JS.Node.getNodeType <$>)
+		=<< JS.Node.firstChild (JS.Node.toN foo)
+	Just clocktime <- JS.Document.getElementById JS.Document.d "clocktime"
 	baz <- JS.Text.new $ hello ++ " YJ"
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
-	print . (JS.Node.getNodeType <$>) =<< JS.Node.firstChild (JS.Node.toN foo)
+	print . (JS.Node.getNodeType <$>)
+		=<< JS.Node.firstChild (JS.Node.toN foo)
 	print $ JS.Object.toO foo `JS.Object.isInstanceOf` JS.Element.eClass
-	print $ JS.Object.toO JS.Window.w `JS.Object.isInstanceOf` JS.Element.eClass
-	print =<< maybe (pure Nothing) ((Just <$>) . JS.HtmlElement.getOffsetWidth) (JS.Element.fromE foo)
+	print $ JS.Object.toO JS.Window.w
+		`JS.Object.isInstanceOf` JS.Element.eClass
+	print =<< maybe (pure Nothing)
+		((Just <$>) . JS.HtmlElement.getOffsetWidth)
+		(JS.Element.fromE foo)
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo
 	Just canvas' <- JS.Document.getElementById JS.Document.d "canvas"
 	let	Just cvs = JS.Element.fromE canvas'
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
 	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')
 	print =<< JS.HtmlCanvasElement.getHeight cvs
-	setInterval (do
+	JS.Window.setInterval JS.Window.w (do
 		nows <- show <$> newDate
-		while_ (JS.Node.hasChildNodes $ JS.Node.toN clocktime') do
-			Just fc <- JS.Node.firstChild (JS.Node.toN clocktime')
-			() <$ JS.Node.removeChild (JS.Node.toN clocktime') fc
+		while_ (JS.Node.hasChildNodes $ JS.Node.toN clocktime) do
+			Just fc <- JS.Node.firstChild (JS.Node.toN clocktime)
+			() <$ JS.Node.removeChild (JS.Node.toN clocktime) fc
 		tmt <- JS.Text.new $ "NOW: " ++ nows
-		JS.Node.toN clocktime' `JS.Node.appendChild` JS.Node.toN tmt) 1000
+		JS.Node.toN clocktime `JS.Node.appendChild` JS.Node.toN tmt) 1000
 
 	onPointerdown cvs \e -> do
 		szt <- JS.Text.new $ "ptr down: " ++ show (
@@ -518,21 +526,8 @@ instance Show Date where
 foreign import javascript "((o) => { return o.toString(); })"
 	js_toString :: JSVal -> JSVal
 
-setInterval :: IO () -> Double -> IO ()
-setInterval f d = do
-	f' <- syncCallback ThrowWouldBlock f
-	js_setInterval f' d
-
-foreign import javascript "((f, d) => { setInterval(f, d); })"
-	js_setInterval :: Callback (IO ()) -> Double -> IO ()
-
 foreign import javascript "((e) => { return e.tagName; })"
 	js_getTagName :: JSVal -> JSVal
-
-{-
-foreign import javascript "(() => { return window; })"
-	js_window :: JSVal
-	-}
 
 foreign import javascript "((w) => { return w.name; })"
 	js_getWindowName :: JSVal -> JSVal
@@ -550,3 +545,8 @@ while_ :: IO Bool -> IO a -> IO ()
 while_ p act = do
 	b <- p
 	when b $ act >> while_ p act
+
+foreign import javascript "(() => { return this; })" js_this :: JSVal
+
+foreign import javascript "((a, b) => { return (a === b); })"
+	js_same :: JSVal -> JSVal -> Bool
