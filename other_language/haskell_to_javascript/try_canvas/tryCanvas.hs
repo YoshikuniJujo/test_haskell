@@ -109,12 +109,9 @@ main = do
 	JS.CanvasRenderingContext2d.fillRect ctx' 20 20 50 50
 
 	JS.CanvasRenderingContext2d.setFillStyleRgb ctx' $ Color.Rgb 0 0 0
-	fillRect ctx
-		$ Rectangle { left = 125, top = 25, width = 100, height = 100 }
-	clearRect ctx
-		$ Rectangle { left = 145, top = 45, width = 60, height = 60 }
-	strokeRect ctx
-		$ Rectangle { left = 150, top = 50, width = 50, height = 50 }
+	JS.CanvasRenderingContext2d.fillRect ctx' 125 25 100 100
+	JS.CanvasRenderingContext2d.clearRect ctx' 145 45 60 60
+	JS.CanvasRenderingContext2d.strokeRect ctx' 150 50 50 50
 	beginPath ctx
 	moveTo pth0 275 50
 	lineTo pth0 300 75
@@ -237,27 +234,6 @@ addPath (AddablePath2D ps) (AddablePath2D pd) = js_addPath ps pd
 
 foreign import javascript "((ps, pd) => { ps.addPath(pd); })"
 	js_addPath :: JSVal -> JSVal -> IO ()
-
-fillRect, strokeRect, clearRect :: Context2D -> Rectangle -> IO ()
-fillRect = rectFromJs js_fillRect
-strokeRect = rectFromJs js_strokeRect
-clearRect = rectFromJs js_clearRect
-
-rectFromJs ::
-	(JSVal -> Double -> Double -> Double -> Double -> IO ()) ->
-	Context2D -> Rectangle -> IO ()
-rectFromJs a (Context2D ctx)
-	Rectangle { left = l, top = t, width = w, height = h } =
-	a ctx l t w h
-
-foreign import javascript "((ctx, l, t, w, h) => { ctx.fillRect(l, t, w, h); })"
-	js_fillRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
-
-foreign import javascript "((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); })"
-	js_strokeRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
-
-foreign import javascript "((ctx, l, t, w, h) => { ctx.clearRect(l, t, w, h); })"
-	js_clearRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
 beginPath, closePath :: Context2D -> IO ()
 beginPath (Context2D c) = js_beginPath c
@@ -384,14 +360,14 @@ draw ctx' ctx = do
 	lineTo pth0 31 37
 	fill ctx Nothing
 
-	for_ [0 .. 7] \i -> fillRect ctx Rectangle {
-		left = 51 + i * 16, top = 35, width = 4, height = 4 }
+	for_ [0 .. 7] \i ->
+		JS.CanvasRenderingContext2d.fillRect ctx' (51 + i * 16) 35 4 4
 
-	for_ [0 .. 5] \i -> fillRect ctx Rectangle {
-		left = 115, top = 51 + i * 16, width = 4, height = 4 }
+	for_ [0 .. 5] \i ->
+		JS.CanvasRenderingContext2d.fillRect ctx' 115 (51 + i * 16) 4 4
 
-	for_ [0 .. 7] \i -> fillRect ctx Rectangle {
-		left = 51 + i * 16, top = 99, width = 4, height = 4 }
+	for_ [0 .. 7] \i ->
+		JS.CanvasRenderingContext2d.fillRect ctx' (51 + i * 16) 99 4 4
 
 	beginPath ctx
 	moveTo pth0 83 116

@@ -32,11 +32,23 @@ rClass = JS.Object.Class js_CanvasRenderingContext2D
 foreign import javascript "(() => { return CanvasRenderingContext2D; })"
 	js_CanvasRenderingContext2D :: JSVal
 
-fillRect :: R -> Double -> Double -> Double -> Double -> IO ()
+fillRect, clearRect, strokeRect ::
+	R -> Double -> Double -> Double -> Double -> IO ()
+
 fillRect (R ctx) = js_fillRect ctx
+clearRect (R ctx) = js_clearRect ctx
+strokeRect (R ctx) = js_strokeRect ctx
 
 foreign import javascript "((ctx, l, t, w, h) => { ctx.fillRect(l, t, w, h); })"
 	js_fillRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
+
+foreign import javascript
+	"((ctx, l, t, w, h) => { ctx.clearRect(l, t, w, h); })"
+	js_clearRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
+
+foreign import javascript
+	"((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); })"
+	js_strokeRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
 
 fill :: R -> Maybe Path.P -> FillRule -> IO ()
 fill (R cxt) mp (FillRule fr) = case mp of
