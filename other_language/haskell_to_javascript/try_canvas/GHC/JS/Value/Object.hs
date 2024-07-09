@@ -30,3 +30,9 @@ o `isInstanceOf` Class c = JS.Value.toJSVal o `js_instanceof` c
 
 foreign import javascript "((o, c) => { return (o instanceof c); })"
 	js_instanceof :: JSVal -> JSVal -> Bool
+
+toString :: O -> String
+toString obj = fromJSString . js_toString $ JS.Value.toJSVal obj
+
+foreign import javascript "((o) => { return o.toString(); })"
+	js_toString :: JSVal -> JSVal

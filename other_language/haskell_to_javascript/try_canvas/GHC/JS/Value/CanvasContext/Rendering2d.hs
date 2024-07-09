@@ -71,3 +71,8 @@ foreign import javascript "((ctx) => { ctx.stroke(); })"
 
 foreign import javascript "((ctx, p) => { ctx.stroke(p); })"
 	js_stroke_path :: JSVal -> JSVal -> IO ()
+
+-- setFillStyleColor
+
+foreign import javascript "((ctx, fs) => { ctx.fillStyle = fs; })"
+	js_setFillStyle :: JSVal -> JSVal -> IO ()

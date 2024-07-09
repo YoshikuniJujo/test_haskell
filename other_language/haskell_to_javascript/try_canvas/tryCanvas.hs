@@ -38,6 +38,8 @@ import GHC.JS.Value.Event.Pointer qualified as JS.PointerEvent
 
 import Data.Maybe
 
+import GHC.JS.Value.Date qualified as JS.Date
+
 import Hello
 
 main :: IO ()
@@ -81,9 +83,9 @@ main = do
 	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')
 	print =<< JS.HtmlCanvasElement.getHeight cvs
 	JS.Window.setInterval JS.Window.w (do
-		nows <- show <$> newDate
+		nows <- JS.Object.toString . JS.Object.toO <$> JS.Date.new
 		while_ (JS.Node.hasChildNodes $ JS.Node.toN clocktime) do
-			Just fc <- JS.Node.firstChild (JS.Node.toN clocktime)
+			Just fc <- JS.Node.firstChild $ JS.Node.toN clocktime
 			() <$ JS.Node.removeChild (JS.Node.toN clocktime) fc
 		tmt <- JS.Text.new $ "NOW: " ++ nows
 		JS.Node.toN clocktime `JS.Node.appendChild` JS.Node.toN tmt) 1000
@@ -506,22 +508,8 @@ instance IsEvent PointerEvent where
 	fromJSVal = PointerEvent
 	toJSVal (PointerEvent e) = e
 
--- pointerEventToMouseEvent :: PointerEvent -> MouseEvent
--- pointerEventToMouseEvent (PointerEvent e) = MouseEvent e
-
 pointerEventToClickEvent :: PointerEvent -> ClickEvent
 pointerEventToClickEvent (PointerEvent e) = ClickEvent e
-
-data Date = Date JSVal
-
-newDate :: IO Date
-newDate = Date <$> js_newDate
-
-foreign import javascript "(() => { let d = new Date(); return d; })"
-	js_newDate :: IO JSVal
-
-instance Show Date where
-	show (Date d) = fromJSString $ js_toString d
 
 foreign import javascript "((o) => { return o.toString(); })"
 	js_toString :: JSVal -> JSVal
