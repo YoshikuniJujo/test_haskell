@@ -1,7 +1,11 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Color where
+module Data.Color (
+	Rgb(..), rgbToString,
+	Rgba(..), rgbaToString,
+	ColorName(..), colorNameToString,
+	pattern Black, pattern White ) where
 
 import Data.Word
 import Text.Printf
