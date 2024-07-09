@@ -42,10 +42,10 @@ import Hello
 
 main :: IO ()
 main = do
+	let	document = JS.Window.document JS.Window.w
 	print . fromJSString $ js_toString js_this
 	print $ js_same js_this JS.Window.js_w
-	print $ js_same js_this JS.Document.js_d
-	Just foo <- JS.Document.getElementById JS.Document.d "foo"
+	Just foo <- JS.Document.getElementById document "foo"
 	JS.EventTarget.addEventListenerSimple
 		(JS.EventTarget.toE JS.Window.w) "resize" \_ -> do
 			wdt <- JS.Window.getInnerWidth JS.Window.w
@@ -55,15 +55,15 @@ main = do
 				Just fc <- JS.Node.firstChild (JS.Node.toN foo)
 				() <$ JS.Node.removeChild (JS.Node.toN foo) fc
 			JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN szt
-	print $ JS.Document.getDocumentURI JS.Document.d
-	print . JS.Node.getNodeName $ JS.Node.toN JS.Document.d
-	print . JS.Node.getNodeType $ JS.Node.toN JS.Document.d
+	print $ JS.Document.getDocumentURI document
+	print . JS.Node.getNodeName $ JS.Node.toN document
+	print . JS.Node.getNodeType $ JS.Node.toN document
 	print @(Maybe JS.Document.D) . (JS.Node.fromN =<<)
-		=<< parentOfChild (JS.Node.toN JS.Document.d)
+		=<< parentOfChild (JS.Node.toN document)
 	print $ JS.Element.getTagName foo
 	print . (JS.Node.getNodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
-	Just clocktime <- JS.Document.getElementById JS.Document.d "clocktime"
+	Just clocktime <- JS.Document.getElementById document "clocktime"
 	baz <- JS.Text.new $ hello ++ " YJ"
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
 	print . (JS.Node.getNodeType <$>)
@@ -75,7 +75,7 @@ main = do
 		((Just <$>) . JS.HtmlElement.getOffsetWidth)
 		(JS.Element.fromE foo)
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo
-	Just canvas' <- JS.Document.getElementById JS.Document.d "canvas"
+	Just canvas' <- JS.Document.getElementById document "canvas"
 	let	Just cvs = JS.Element.fromE canvas'
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
 	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')

@@ -15,11 +15,6 @@ newtype D = D JSVal
 instance JS.Value.IsJSVal D where toJSVal (D v) = v
 instance JS.Value.V D where toV = JS.Node.toV; fromV = JS.Node.fromV
 
-d :: D
-d = D js_d
-
-foreign import javascript "(() => { return document; })" js_d :: JSVal
-
 getDocumentURI :: D -> String
 getDocumentURI (D dc) = fromJSString $ js_getDocumentURI dc
 

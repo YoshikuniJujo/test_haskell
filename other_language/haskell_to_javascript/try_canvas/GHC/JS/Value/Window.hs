@@ -7,6 +7,7 @@ import GHC.JS.Foreign.Callback
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
+import GHC.JS.Value.Document qualified as JS.Document
 
 newtype W = W JSVal
 
@@ -41,3 +42,9 @@ setInterval (W wn) f d = do
 
 foreign import javascript "((w, f, d) => { w.setInterval(f, d); })"
 	js_setInterval :: JSVal -> Callback (IO ()) -> Word -> IO ()
+
+document :: W -> JS.Document.D
+document (W wn) = JS.Document.D $ js_document wn
+
+foreign import javascript "((w) => { return w.document; })"
+	js_document :: JSVal -> JSVal
