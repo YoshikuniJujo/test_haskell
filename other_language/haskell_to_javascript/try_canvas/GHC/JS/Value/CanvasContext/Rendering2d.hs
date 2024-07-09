@@ -97,3 +97,9 @@ setFillStyleColorName (R ctx) =
 
 foreign import javascript "((ctx, fs) => { ctx.fillStyle = fs; })"
 	js_setFillStyle :: JSVal -> JSVal -> IO ()
+
+beginPath :: R -> IO ()
+beginPath (R ctx) = js_beginPath ctx
+
+foreign import javascript "((ctx) => { ctx.beginPath(); })"
+	js_beginPath :: JSVal -> IO ()

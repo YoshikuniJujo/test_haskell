@@ -112,44 +112,49 @@ main = do
 	JS.CanvasRenderingContext2d.fillRect ctx' 125 25 100 100
 	JS.CanvasRenderingContext2d.clearRect ctx' 145 45 60 60
 	JS.CanvasRenderingContext2d.strokeRect ctx' 150 50 50 50
-	beginPath ctx
-	moveTo pth0 275 50
-	lineTo pth0 300 75
-	lineTo pth0 300 25
-	fill ctx Nothing
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 275 50
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 300 75
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 300 25
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
-	beginPath ctx
+	JS.CanvasRenderingContext2d.beginPath ctx'
 	arc pth0 425 75 50 0 (pi * 2) True
-	moveTo pth0 460 75
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 460 75
 	arc pth0 425 75 35 0 pi False
-	moveTo pth0 415 65
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 415 65
 	arc pth0 410 65 5 0 (pi * 2) True
-	moveTo pth0 445 65
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 445 65
 	arc pth0 440 65 5 0 (pi * 2) True
 	stroke ctx Nothing
 
-	beginPath ctx
-	moveTo pth0 25 125
-	lineTo pth0 105 125
-	lineTo pth0 25 205
-	fill ctx Nothing
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 25 125
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 105 125
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 25 205
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
-	beginPath ctx
-	moveTo pth0 125 225
-	lineTo pth0 125 145
-	lineTo pth0 45 225
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 125 225
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 125 145
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 45 225
 	closePath ctx
 	stroke ctx Nothing
 
 	for_ [0 :: Int .. 3] \i@(fromIntegral -> i') ->
 		for_ [0 :: Double .. 2] \j -> do
-			beginPath ctx
+			JS.CanvasRenderingContext2d.beginPath ctx'
 			arc pth0 (25 + j * 50) (275 + i' * 50) 20
 				0 (pi + pi * j / 2) (i `mod` 2 /= 0)
-			if (i > 1) then fill ctx Nothing else stroke ctx Nothing
+			if (i > 1)
+			then JS.CanvasRenderingContext2d.fill
+				ctx' Nothing JS.CanvasRenderingContext2d.nonzero
+			else stroke ctx Nothing
 
-	beginPath ctx
-	moveTo pth0 225 175
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 225 175
 	quadraticCurveTo pth0 175 175 175 212.5
 	quadraticCurveTo pth0 175 250 200 250
 	quadraticCurveTo pth0 200 270 180 275
@@ -158,22 +163,23 @@ main = do
 	quadraticCurveTo pth0 275 175 225 175
 	stroke ctx Nothing
 
-	beginPath ctx
-	moveTo pth0 375 190
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 375 190
 	bezierCurveTo pth0 375 187 370 175 350 175
 	bezierCurveTo pth0 320 175 320 212.5 320 212.5
 	bezierCurveTo pth0 320 230 340 252 375 270
 	bezierCurveTo pth0 410 252 430 230 430 212.5
 	bezierCurveTo pth0 430 212.5 430 175 400 175
 	bezierCurveTo pth0 385 175 375 187 375 190
-	fill ctx Nothing
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 	save ctx
 	translate ctx 175 300
 	draw ctx' ctx
 
 	translate ctx 200 25
-	triangle ctx
+	triangle ctx'
 
 
 	rectangle <- JS.Path2d.new JS.Path2d.FromScratch
@@ -235,22 +241,14 @@ addPath (AddablePath2D ps) (AddablePath2D pd) = js_addPath ps pd
 foreign import javascript "((ps, pd) => { ps.addPath(pd); })"
 	js_addPath :: JSVal -> JSVal -> IO ()
 
-beginPath, closePath :: Context2D -> IO ()
-beginPath (Context2D c) = js_beginPath c
+closePath :: Context2D -> IO ()
 closePath (Context2D c) = js_closePath c
 
-fill, stroke :: Context2D -> Maybe Path2D -> IO ()
-fill (Context2D c) = maybe (js_fill c) (js_fillWithPath2D c . unPath2D)
+stroke :: Context2D -> Maybe Path2D -> IO ()
 stroke (Context2D c) = maybe (js_stroke c) (js_strokeWithPath2D c . unPath2D)
-
-foreign import javascript "((ctx) => { ctx.beginPath(); })"
-	js_beginPath :: JSVal -> IO ()
 
 foreign import javascript "((ctx) => { ctx.closePath(); })"
 	js_closePath :: JSVal -> IO ()
-
-foreign import javascript "((ctx) => { ctx.fill(); })"
-	js_fill :: JSVal -> IO ()
 
 foreign import javascript "((ctx, pth) => { ctx.stroke(pth); })"
 	js_strokeWithPath2D :: JSVal -> JSVal -> IO ()
@@ -260,16 +258,6 @@ foreign import javascript "((ctx, pth) => { ctx.fill(pth); })"
 
 foreign import javascript "((ctx) => { ctx.stroke(); })"
 	js_stroke :: JSVal -> IO ()
-
-moveTo, lineTo :: Path2D -> Double -> Double -> IO ()
-moveTo (Path2D c) = js_moveTo c
-lineTo (Path2D c) = js_lineTo c
-
-foreign import javascript "((ctx, x, y) => { ctx.moveTo(x, y); })"
-	js_moveTo :: JSVal -> Double -> Double -> IO ()
-
-foreign import javascript "((ctx, x, y) => { ctx.lineTo(x, y); })"
-	js_lineTo :: JSVal -> Double -> Double -> IO ()
 
 arc :: Path2D -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
 arc (Path2D ctx) = js_arc ctx
@@ -348,17 +336,18 @@ draw ctx' ctx = do
 
 	let	pth0 = context2DToPath2D ctx
 
-	roundedRect ctx 12 12 150 150 15
-	roundedRect ctx 19 19 150 150 9
-	roundedRect ctx 53 53 49 33 10
-	roundedRect ctx 53 119 49 16 6
-	roundedRect ctx 135 53 49 33 10
-	roundedRect ctx 135 119 25 49 10
+	roundedRect ctx' ctx 12 12 150 150 15
+	roundedRect ctx' ctx 19 19 150 150 9
+	roundedRect ctx' ctx 53 53 49 33 10
+	roundedRect ctx' ctx 53 119 49 16 6
+	roundedRect ctx' ctx 135 53 49 33 10
+	roundedRect ctx' ctx 135 119 25 49 10
 
-	beginPath ctx
+	JS.CanvasRenderingContext2d.beginPath ctx'
 	arc pth0 37 37 13 (pi / 7) (- pi / 7) False
-	lineTo pth0 31 37
-	fill ctx Nothing
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 31 37
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 	for_ [0 .. 7] \i ->
 		JS.CanvasRenderingContext2d.fillRect ctx' (51 + i * 16) 35 4 4
@@ -369,68 +358,72 @@ draw ctx' ctx = do
 	for_ [0 .. 7] \i ->
 		JS.CanvasRenderingContext2d.fillRect ctx' (51 + i * 16) 99 4 4
 
-	beginPath ctx
-	moveTo pth0 83 116
-	lineTo pth0 83 102
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 83 116
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 83 102
 	bezierCurveTo pth0 83 94 89 88 97 88
 	bezierCurveTo pth0 105 88 111 94 111 102
-	lineTo pth0 111 116
-	lineTo pth0 106.333 111.333
-	lineTo pth0 101.666 116
-	lineTo pth0 97 111.333
-	lineTo pth0 92.333 116
-	lineTo pth0 87.666 111.333
-	lineTo pth0 83 116
-	fill ctx Nothing
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 111 116
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 106.333 111.333
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 101.666 116
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 97 111.333
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 92.333 116
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 87.666 111.333
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 83 116
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.White
-	beginPath ctx
-	moveTo pth0 91 96
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 91 96
 	bezierCurveTo pth0 88 96 87 99 87 101
 	bezierCurveTo pth0 87 103 88 106 91 106
 	bezierCurveTo pth0 94 106 95 103 95 101
 	bezierCurveTo pth0 95 99 94 96 91 96
-	moveTo pth0 103 96
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 103 96
 	bezierCurveTo pth0 100 96 99 99 99 101
 	bezierCurveTo pth0 99 103 100 106 103 106
 	bezierCurveTo pth0 106 106 107 103 107 101
 	bezierCurveTo pth0 107 99 106 96 103 96
-	fill ctx Nothing
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.Black
-	beginPath ctx
+	JS.CanvasRenderingContext2d.beginPath ctx'
 	arc pth0 101 102 2 0 (pi * 2) True
-	fill ctx Nothing
-	beginPath ctx
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
+	JS.CanvasRenderingContext2d.beginPath ctx'
 	arc pth0 89 102 2 0 (pi * 2) True
-	fill ctx Nothing
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 roundedRect ::
-	Context2D -> Double -> Double -> Double -> Double -> Double -> IO ()
-roundedRect ctx x y w h rd = do
+	JS.CanvasRenderingContext2d.R -> Context2D -> Double -> Double -> Double -> Double -> Double -> IO ()
+roundedRect ctx' ctx x y w h rd = do
 	let	pth0 = context2DToPath2D ctx
-	beginPath ctx
-	moveTo pth0 x (y + rd)
+	JS.CanvasRenderingContext2d.beginPath ctx'
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x (y + rd)
 	arcTo pth0 x (y + h) (x + rd) (y + h) rd
 	arcTo pth0 (x + w) (y + h) (x + w) (y + h - rd) rd
 	arcTo pth0 (x + w) y (x + w - rd) y rd
 	arcTo pth0 x y x (y + rd) rd
 	stroke ctx Nothing
 
-triangle :: Context2D -> IO ()
-triangle ctx = do
-	let	pth0 = context2DToPath2D ctx
-	beginPath ctx
+triangle :: JS.CanvasRenderingContext2d.R -> IO ()
+triangle ctx' = do
+	JS.CanvasRenderingContext2d.beginPath ctx'
 
-	moveTo pth0 0 0
-	lineTo pth0 150 0
-	lineTo pth0 75 129.9
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 0 0
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 150 0
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 75 129.9
 
-	moveTo pth0 75 20
-	lineTo pth0 50 60
-	lineTo pth0 100 60
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 75 20
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 50 60
+	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 100 60
 
-	fill ctx Nothing
+	JS.CanvasRenderingContext2d.fill
+		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 newtype EventType = EventType String deriving Show
 

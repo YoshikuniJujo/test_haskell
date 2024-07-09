@@ -25,3 +25,13 @@ foreign import javascript
 	"((p, x, y, r, sa, ea, cc) => { p.arc(x, y, r, sa, ea, cc); })"
 	js_arc :: JSVal ->
 		Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
+
+moveTo, lineTo :: P -> Double -> Double -> IO ()
+moveTo (P p) = js_moveTo p
+lineTo (P p) = js_lineTo p
+
+foreign import javascript "((p, x, y) => { p.moveTo(x, y); })"
+	js_moveTo :: JSVal -> Double -> Double -> IO ()
+
+foreign import javascript "((p, x, y) => { p.lineTo(x, y); })"
+	js_lineTo :: JSVal -> Double -> Double -> IO ()
