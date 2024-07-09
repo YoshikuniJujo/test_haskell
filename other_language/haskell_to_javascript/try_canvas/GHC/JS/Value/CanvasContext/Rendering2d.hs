@@ -9,6 +9,7 @@ import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 import GHC.JS.Value.CanvasContext.Rendering2d.Path qualified as Path
 import GHC.JS.Value.CanvasContext.Rendering2d.Pathable qualified as Pathable
+import Data.Color
 
 newtype R = R JSVal
 
@@ -72,7 +73,15 @@ foreign import javascript "((ctx) => { ctx.stroke(); })"
 foreign import javascript "((ctx, p) => { ctx.stroke(p); })"
 	js_stroke_path :: JSVal -> JSVal -> IO ()
 
--- setFillStyleColor
+setFillStyleRgb :: R -> Rgb -> IO ()
+setFillStyleRgb (R ctx) = js_setFillStyle ctx . toJSString . rgbToString
+
+setFillStyleRgba :: R -> Rgba -> IO ()
+setFillStyleRgba (R ctx) = js_setFillStyle ctx . toJSString . rgbaToString
+
+setFillStyleColorName :: R -> ColorName -> IO ()
+setFillStyleColorName (R ctx) =
+	js_setFillStyle ctx . toJSString . colorNameToString
 
 foreign import javascript "((ctx, fs) => { ctx.fillStyle = fs; })"
 	js_setFillStyle :: JSVal -> JSVal -> IO ()

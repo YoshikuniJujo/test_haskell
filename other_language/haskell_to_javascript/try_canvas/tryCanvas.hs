@@ -7,7 +7,6 @@ module Main where
 import Control.Monad
 import Data.Foldable
 import GHC.JS.Prim
-import GHC.JS.Foreign.Callback
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.String qualified as JS.Str
 import Data.Word
@@ -39,6 +38,7 @@ import GHC.JS.Value.Event.Pointer qualified as JS.PointerEvent
 import Data.Maybe
 
 import GHC.JS.Value.Date qualified as JS.Date
+import Data.Color qualified as Color
 
 import Hello
 
@@ -103,12 +103,12 @@ main = do
 	let	ctx = Context2D $ JS.Value.toJSVal ctx_
 		pth0 = context2DToPath2D ctx
 		Just ctx' = JS.CanvasContext.fromC ctx_
-	setFillStyle ctx $ Rgb 200 0 0
+	JS.CanvasRenderingContext2d.setFillStyleRgb ctx' $ Color.Rgb 200 0 0
 	JS.CanvasRenderingContext2d.fillRect ctx' 10 10 50 50
-	setFillStyle ctx $ Rgba 0 0 200 0.5
+	JS.CanvasRenderingContext2d.setFillStyleRgba ctx' $ Color.Rgba 0 0 200 0x80
 	JS.CanvasRenderingContext2d.fillRect ctx' 20 20 50 50
 
-	setFillStyle ctx $ Rgb 0 0 0
+	JS.CanvasRenderingContext2d.setFillStyleRgb ctx' $ Color.Rgb 0 0 0
 	fillRect ctx
 		$ Rectangle { left = 125, top = 25, width = 100, height = 100 }
 	clearRect ctx
@@ -173,7 +173,7 @@ main = do
 
 	save ctx
 	translate ctx 175 300
-	draw ctx
+	draw ctx' ctx
 
 	translate ctx 200 25
 	triangle ctx
@@ -237,12 +237,6 @@ addPath (AddablePath2D ps) (AddablePath2D pd) = js_addPath ps pd
 
 foreign import javascript "((ps, pd) => { ps.addPath(pd); })"
 	js_addPath :: JSVal -> JSVal -> IO ()
-
-setFillStyle :: Context2D -> Color -> IO ()
-setFillStyle (Context2D ctx) = js_setFillStyle ctx . colorToJSVal
-
-foreign import javascript "((ctx, clr) => { ctx.fillStyle = clr; })"
-	js_setFillStyle :: JSVal -> JSVal -> IO ()
 
 fillRect, strokeRect, clearRect :: Context2D -> Rectangle -> IO ()
 fillRect = rectFromJs js_fillRect
@@ -373,8 +367,8 @@ data Rectangle =
 	Rectangle { left :: Double, top :: Double, width :: Double, height :: Double }
 	deriving Show
 
-draw :: Context2D -> IO ()
-draw ctx = do
+draw :: JS.CanvasRenderingContext2d.R -> Context2D -> IO ()
+draw ctx' ctx = do
 
 	let	pth0 = context2DToPath2D ctx
 
@@ -413,7 +407,7 @@ draw ctx = do
 	lineTo pth0 83 116
 	fill ctx Nothing
 
-	setFillStyle ctx White
+	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.White
 	beginPath ctx
 	moveTo pth0 91 96
 	bezierCurveTo pth0 88 96 87 99 87 101
@@ -427,7 +421,7 @@ draw ctx = do
 	bezierCurveTo pth0 107 99 106 96 103 96
 	fill ctx Nothing
 
-	setFillStyle ctx Black
+	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.Black
 	beginPath ctx
 	arc pth0 101 102 2 0 (pi * 2) True
 	fill ctx Nothing
