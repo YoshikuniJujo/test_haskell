@@ -103,3 +103,18 @@ beginPath (R ctx) = js_beginPath ctx
 
 foreign import javascript "((ctx) => { ctx.beginPath(); })"
 	js_beginPath :: JSVal -> IO ()
+
+save, restore :: R -> IO ()
+save (R ctx) = js_save ctx
+restore (R ctx) = js_restore ctx
+
+foreign import javascript "((ctx) => { ctx.save(); })" js_save :: JSVal -> IO ()
+
+foreign import javascript "((ctx) => { ctx.restore(); })"
+	js_restore :: JSVal -> IO ()
+
+translate :: R -> Double -> Double -> IO ()
+translate (R ctx) = js_translate ctx
+
+foreign import javascript "((ctx, x, y) => { ctx.translate(x, y); })"
+	js_translate :: JSVal -> Double -> Double -> IO ()

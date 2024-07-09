@@ -6,10 +6,7 @@ module Main where
 
 import Control.Monad
 import Data.Foldable
-import GHC.JS.Prim
-import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.String qualified as JS.Str
-import Data.Word
 
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
@@ -45,8 +42,6 @@ import Hello
 main :: IO ()
 main = do
 	let	document = JS.Window.document JS.Window.w
-	print . fromJSString $ js_toString js_this
-	print $ js_same js_this JS.Window.js_w
 	Just foo <- JS.Document.getElementById document "foo"
 	JS.EventTarget.addEventListenerSimple
 		(JS.EventTarget.toE JS.Window.w) "resize" \_ -> do
@@ -100,9 +95,7 @@ main = do
 		JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN szt
 
 	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
-	let	ctx = Context2D $ JS.Value.toJSVal ctx_
-		pth0 = context2DToPath2D ctx
-		Just ctx' = JS.CanvasContext.fromC ctx_
+	let	Just ctx' = JS.CanvasContext.fromC ctx_
 	JS.CanvasRenderingContext2d.setFillStyleRgb ctx' $ Color.Rgb 200 0 0
 	JS.CanvasRenderingContext2d.fillRect ctx' 10 10 50 50
 	JS.CanvasRenderingContext2d.setFillStyleRgba ctx' $ Color.Rgba 0 0 200 0x80
@@ -120,14 +113,14 @@ main = do
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 	JS.CanvasRenderingContext2d.beginPath ctx'
-	arc pth0 425 75 50 0 (pi * 2) True
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 425 75 50 0 (pi * 2) True
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 460 75
-	arc pth0 425 75 35 0 pi False
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 425 75 35 0 pi False
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 415 65
-	arc pth0 410 65 5 0 (pi * 2) True
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 410 65 5 0 (pi * 2) True
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 445 65
-	arc pth0 440 65 5 0 (pi * 2) True
-	stroke ctx Nothing
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 440 65 5 0 (pi * 2) True
+	JS.CanvasRenderingContext2d.stroke ctx' Nothing
 
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 25 125
@@ -140,47 +133,46 @@ main = do
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 125 225
 	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 125 145
 	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 45 225
-	closePath ctx
-	stroke ctx Nothing
+	JS.Pathable2d.closePath (JS.Pathable2d.toP ctx')
+	JS.CanvasRenderingContext2d.stroke ctx' Nothing
 
 	for_ [0 :: Int .. 3] \i@(fromIntegral -> i') ->
 		for_ [0 :: Double .. 2] \j -> do
 			JS.CanvasRenderingContext2d.beginPath ctx'
-			arc pth0 (25 + j * 50) (275 + i' * 50) 20
+			JS.Pathable2d.arc (JS.Pathable2d.toP ctx') (25 + j * 50) (275 + i' * 50) 20
 				0 (pi + pi * j / 2) (i `mod` 2 /= 0)
 			if (i > 1)
 			then JS.CanvasRenderingContext2d.fill
 				ctx' Nothing JS.CanvasRenderingContext2d.nonzero
-			else stroke ctx Nothing
+			else JS.CanvasRenderingContext2d.stroke ctx' Nothing
 
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 225 175
-	quadraticCurveTo pth0 175 175 175 212.5
-	quadraticCurveTo pth0 175 250 200 250
-	quadraticCurveTo pth0 200 270 180 275
-	quadraticCurveTo pth0 210 270 215 250
-	quadraticCurveTo pth0 275 250 275 212.5
-	quadraticCurveTo pth0 275 175 225 175
-	stroke ctx Nothing
+	JS.Pathable2d.quadraticCurveTo (JS.Pathable2d.toP ctx') 175 175 175 212.5
+	JS.Pathable2d.quadraticCurveTo (JS.Pathable2d.toP ctx') 175 250 200 250
+	JS.Pathable2d.quadraticCurveTo (JS.Pathable2d.toP ctx') 200 270 180 275
+	JS.Pathable2d.quadraticCurveTo (JS.Pathable2d.toP ctx') 210 270 215 250
+	JS.Pathable2d.quadraticCurveTo (JS.Pathable2d.toP ctx') 275 250 275 212.5
+	JS.Pathable2d.quadraticCurveTo (JS.Pathable2d.toP ctx') 275 175 225 175
+	JS.CanvasRenderingContext2d.stroke ctx' Nothing
 
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 375 190
-	bezierCurveTo pth0 375 187 370 175 350 175
-	bezierCurveTo pth0 320 175 320 212.5 320 212.5
-	bezierCurveTo pth0 320 230 340 252 375 270
-	bezierCurveTo pth0 410 252 430 230 430 212.5
-	bezierCurveTo pth0 430 212.5 430 175 400 175
-	bezierCurveTo pth0 385 175 375 187 375 190
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 375 187 370 175 350 175
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 320 175 320 212.5 320 212.5
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 320 230 340 252 375 270
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 410 252 430 230 430 212.5
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 430 212.5 430 175 400 175
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 385 175 375 187 375 190
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
-	save ctx
-	translate ctx 175 300
-	draw ctx' ctx
+	JS.CanvasRenderingContext2d.save ctx'
+	JS.CanvasRenderingContext2d.translate ctx' 175 300
+	draw ctx'
 
-	translate ctx 200 25
+	JS.CanvasRenderingContext2d.translate ctx' 200 25
 	triangle ctx'
-
 
 	rectangle <- JS.Path2d.new JS.Path2d.FromScratch
 	JS.Pathable2d.rect (JS.Pathable2d.toP rectangle) 10 10 50 50
@@ -189,162 +181,35 @@ main = do
 	JS.Pathable2d.arc
 		(JS.Pathable2d.toP circle) 100 35 25 0 (2 * pi) False
 
-	restore ctx
+	JS.CanvasRenderingContext2d.restore ctx'
 
-	translate ctx 0 480
+	JS.CanvasRenderingContext2d.translate ctx' 0 480
 	JS.CanvasRenderingContext2d.stroke ctx' (Just rectangle)
 	JS.CanvasRenderingContext2d.fill ctx' (Just circle)
 		JS.CanvasRenderingContext2d.nonzero
 
 	JS.Path2d.addPathNoTransform rectangle circle
-	translate ctx 150 0
+	JS.CanvasRenderingContext2d.translate ctx' 150 0
 	JS.CanvasRenderingContext2d.stroke ctx' $ Just rectangle
 
-	svgp <- newPath2D $ Path2DFromSvgPath "M10 10 h 80 v 80 h -80 Z"
-	translate ctx 150 0
-	stroke ctx . Just $ addablePath2DToPath2D svgp
+	svgp <- JS.Path2d.new $ JS.Path2d.FromSvgPath "M10 10 h 80 v 80 h -80 Z"
+	JS.CanvasRenderingContext2d.translate ctx' 150 0
+	JS.CanvasRenderingContext2d.stroke ctx' $ Just svgp
 
 -- END OF MAIN
 
-data Context2D = Context2D JSVal
+draw :: JS.CanvasRenderingContext2d.R -> IO ()
+draw ctx' = do
 
-data AddablePath2D = AddablePath2D JSVal
-
-data Path2D = Path2D { unPath2D :: JSVal }
-
-context2DToPath2D :: Context2D -> Path2D
-context2DToPath2D (Context2D ctx) = Path2D ctx
-
-addablePath2DToPath2D :: AddablePath2D -> Path2D
-addablePath2DToPath2D (AddablePath2D pth) = Path2D pth
-
-newPath2D :: Path2DFrom -> IO AddablePath2D
-newPath2D = \case
-	Path2DFromScratch -> AddablePath2D <$> js_newPath2D
-	Path2DFromPath2D (Path2D pth) -> AddablePath2D <$> js_newPath2DFrom pth
-	Path2DFromSvgPath sp -> AddablePath2D <$> js_newPath2DFrom (toJSString sp)
-
-data Path2DFrom
-	= Path2DFromScratch
-	| Path2DFromPath2D Path2D
-	| Path2DFromSvgPath String
-
-foreign import javascript "(() => { return new Path2D(); })"
-	js_newPath2D :: IO JSVal
-
-foreign import javascript "((sp) => { return new Path2D(sp); })"
-	js_newPath2DFrom :: JSVal -> IO JSVal
-
-addPath :: AddablePath2D -> AddablePath2D -> IO ()
-addPath (AddablePath2D ps) (AddablePath2D pd) = js_addPath ps pd
-
-foreign import javascript "((ps, pd) => { ps.addPath(pd); })"
-	js_addPath :: JSVal -> JSVal -> IO ()
-
-closePath :: Context2D -> IO ()
-closePath (Context2D c) = js_closePath c
-
-stroke :: Context2D -> Maybe Path2D -> IO ()
-stroke (Context2D c) = maybe (js_stroke c) (js_strokeWithPath2D c . unPath2D)
-
-foreign import javascript "((ctx) => { ctx.closePath(); })"
-	js_closePath :: JSVal -> IO ()
-
-foreign import javascript "((ctx, pth) => { ctx.stroke(pth); })"
-	js_strokeWithPath2D :: JSVal -> JSVal -> IO ()
-
-foreign import javascript "((ctx, pth) => { ctx.fill(pth); })"
-	js_fillWithPath2D :: JSVal -> JSVal -> IO ()
-
-foreign import javascript "((ctx) => { ctx.stroke(); })"
-	js_stroke :: JSVal -> IO ()
-
-arc :: Path2D -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
-arc (Path2D ctx) = js_arc ctx
-
-foreign import javascript
-	"((ctx, x, y, r, sa, ea, cc) => { ctx.arc(x, y, r, sa, ea, cc); })"
-	js_arc ::
-		JSVal -> Double -> Double -> Double -> Double -> Double -> Bool -> IO ()
-
-arcTo :: Path2D -> Double -> Double -> Double -> Double -> Double -> IO ()
-arcTo (Path2D ctx) = js_arcTo ctx
-
-foreign import javascript
-	"((ctx, x1, y1, x2, y2, r) => { ctx.arcTo(x1, y1, x2, y2, r); })"
-	js_arcTo :: JSVal -> Double -> Double -> Double -> Double -> Double -> IO ()
-
-quadraticCurveTo :: Path2D -> Double -> Double -> Double -> Double -> IO ()
-quadraticCurveTo (Path2D ctx) = js_quadraticCurveTo ctx
-
-foreign import javascript
-	"((ctx, cp1x, cp1y, x, y) => { ctx.quadraticCurveTo(cp1x, cp1y, x, y); })"
-	js_quadraticCurveTo ::
-		JSVal -> Double -> Double -> Double -> Double -> IO ()
-
-bezierCurveTo :: Path2D ->
-	Double -> Double -> Double -> Double -> Double -> Double -> IO ()
-bezierCurveTo (Path2D ctx) = js_bezierCurveTo ctx
-
-foreign import javascript
-	"((ctx, cp1x, cp1y, cp2x, cp2y, x, y) => { ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y); })"
-	js_bezierCurveTo ::
-		JSVal -> Double -> Double -> Double -> Double -> Double -> Double -> IO ()
-
-save :: Context2D -> IO ()
-save (Context2D ctx) = js_save ctx
-
-foreign import javascript "((ctx) => { ctx.save(); })"
-	js_save :: JSVal -> IO ()
-
-restore :: Context2D -> IO ()
-restore (Context2D ctx) = js_restore ctx
-
-foreign import javascript "((ctx) => { ctx.restore(); })"
-	js_restore :: JSVal -> IO ()
-
-translate :: Context2D -> Double -> Double -> IO ()
-translate (Context2D ctx) = js_translate ctx
-
-foreign import javascript "((ctx, x, y) => { ctx.translate(x, y); })"
-	js_translate :: JSVal -> Double -> Double -> IO ()
-
-data Color
-	= Rgb Word8 Word8 Word8
-	| Rgba Word8 Word8 Word8 Double
-	| Black | White
-	deriving Show
-
-colorToJSVal :: Color -> JSVal
-colorToJSVal = toJSString . colorToString
-
-colorToString :: Color -> String
-colorToString (Rgb r g b) =
-	"rgb(" ++ show r ++ ", " ++ show g ++ ", "  ++ show b ++ ")"
-colorToString (Rgba r g b a) =
-	"rgba(" ++ show r ++ ", " ++ show g ++ ", " ++ show b ++ ", " ++
-	show a ++ ")"
-colorToString Black = "black"
-colorToString White = "white"
-
-data Rectangle =
-	Rectangle { left :: Double, top :: Double, width :: Double, height :: Double }
-	deriving Show
-
-draw :: JS.CanvasRenderingContext2d.R -> Context2D -> IO ()
-draw ctx' ctx = do
-
-	let	pth0 = context2DToPath2D ctx
-
-	roundedRect ctx' ctx 12 12 150 150 15
-	roundedRect ctx' ctx 19 19 150 150 9
-	roundedRect ctx' ctx 53 53 49 33 10
-	roundedRect ctx' ctx 53 119 49 16 6
-	roundedRect ctx' ctx 135 53 49 33 10
-	roundedRect ctx' ctx 135 119 25 49 10
+	roundedRect ctx' 12 12 150 150 15
+	roundedRect ctx' 19 19 150 150 9
+	roundedRect ctx' 53 53 49 33 10
+	roundedRect ctx' 53 119 49 16 6
+	roundedRect ctx' 135 53 49 33 10
+	roundedRect ctx' 135 119 25 49 10
 
 	JS.CanvasRenderingContext2d.beginPath ctx'
-	arc pth0 37 37 13 (pi / 7) (- pi / 7) False
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 37 37 13 (pi / 7) (- pi / 7) False
 	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 31 37
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
@@ -361,8 +226,8 @@ draw ctx' ctx = do
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 83 116
 	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 83 102
-	bezierCurveTo pth0 83 94 89 88 97 88
-	bezierCurveTo pth0 105 88 111 94 111 102
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 83 94 89 88 97 88
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 105 88 111 94 111 102
 	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 111 116
 	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 106.333 111.333
 	JS.Pathable2d.lineTo (JS.Pathable2d.toP ctx') 101.666 116
@@ -376,39 +241,38 @@ draw ctx' ctx = do
 	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.White
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 91 96
-	bezierCurveTo pth0 88 96 87 99 87 101
-	bezierCurveTo pth0 87 103 88 106 91 106
-	bezierCurveTo pth0 94 106 95 103 95 101
-	bezierCurveTo pth0 95 99 94 96 91 96
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 88 96 87 99 87 101
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 87 103 88 106 91 106
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 94 106 95 103 95 101
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 95 99 94 96 91 96
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 103 96
-	bezierCurveTo pth0 100 96 99 99 99 101
-	bezierCurveTo pth0 99 103 100 106 103 106
-	bezierCurveTo pth0 106 106 107 103 107 101
-	bezierCurveTo pth0 107 99 106 96 103 96
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 100 96 99 99 99 101
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 99 103 100 106 103 106
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 106 106 107 103 107 101
+	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 107 99 106 96 103 96
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.Black
 	JS.CanvasRenderingContext2d.beginPath ctx'
-	arc pth0 101 102 2 0 (pi * 2) True
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 101 102 2 0 (pi * 2) True
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 	JS.CanvasRenderingContext2d.beginPath ctx'
-	arc pth0 89 102 2 0 (pi * 2) True
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 89 102 2 0 (pi * 2) True
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
 roundedRect ::
-	JS.CanvasRenderingContext2d.R -> Context2D -> Double -> Double -> Double -> Double -> Double -> IO ()
-roundedRect ctx' ctx x y w h rd = do
-	let	pth0 = context2DToPath2D ctx
+	JS.CanvasRenderingContext2d.R -> Double -> Double -> Double -> Double -> Double -> IO ()
+roundedRect ctx' x y w h rd = do
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x (y + rd)
-	arcTo pth0 x (y + h) (x + rd) (y + h) rd
-	arcTo pth0 (x + w) (y + h) (x + w) (y + h - rd) rd
-	arcTo pth0 (x + w) y (x + w - rd) y rd
-	arcTo pth0 x y x (y + rd) rd
-	stroke ctx Nothing
+	JS.Pathable2d.arcTo (JS.Pathable2d.toP ctx') x (y + h) (x + rd) (y + h) rd
+	JS.Pathable2d.arcTo (JS.Pathable2d.toP ctx') (x + w) (y + h) (x + w) (y + h - rd) rd
+	JS.Pathable2d.arcTo (JS.Pathable2d.toP ctx') (x + w) y (x + w - rd) y rd
+	JS.Pathable2d.arcTo (JS.Pathable2d.toP ctx') x y x (y + rd) rd
+	JS.CanvasRenderingContext2d.stroke ctx' Nothing
 
 triangle :: JS.CanvasRenderingContext2d.R -> IO ()
 triangle ctx' = do
@@ -425,79 +289,14 @@ triangle ctx' = do
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
-newtype EventType = EventType String deriving Show
-
 onPointerdown :: JS.HtmlCanvasElement.C -> (JS.MouseEvent.M -> IO ()) -> IO ()
 onPointerdown c a = JS.EventTarget.addEventListenerSimple
 	(JS.EventTarget.toE c) "pointerdown" (a . fromJust . JS.Event.fromE)
-
-class IsEvent e where
-	fromJSVal :: JSVal -> e
-	toJSVal :: e -> JSVal
-
-data ClickEvent = ClickEvent JSVal
-
-instance IsEvent ClickEvent where
-	fromJSVal = ClickEvent
-	toJSVal (ClickEvent e) = e
-
-offsetX :: ClickEvent -> Double
-offsetX (ClickEvent e) = js_offsetX e
-
-foreign import javascript "((e) => { return e.offsetX; })"
-	js_offsetX :: JSVal -> Double
-
-offsetY :: ClickEvent -> Double
-offsetY (ClickEvent e) = js_offsetY e
-
-foreign import javascript "((e) => { return e.offsetY; })"
-	js_offsetY :: JSVal -> Double
-
-preventDefault :: IsEvent e => e -> IO ()
-preventDefault = js_preventDefault . toJSVal
-
-foreign import javascript "((ev) => { ev.preventDefault(); })"
-	js_preventDefault :: JSVal -> IO ()
-
-data TouchEvent = TouchEvent JSVal
-
-instance IsEvent TouchEvent where
-	fromJSVal = TouchEvent
-	toJSVal (TouchEvent e) = e
-
-data PointerEvent = PointerEvent JSVal
-
-instance IsEvent PointerEvent where
-	fromJSVal = PointerEvent
-	toJSVal (PointerEvent e) = e
-
-pointerEventToClickEvent :: PointerEvent -> ClickEvent
-pointerEventToClickEvent (PointerEvent e) = ClickEvent e
-
-foreign import javascript "((o) => { return o.toString(); })"
-	js_toString :: JSVal -> JSVal
-
-foreign import javascript "((e) => { return e.tagName; })"
-	js_getTagName :: JSVal -> JSVal
-
-foreign import javascript "((w) => { return w.name; })"
-	js_getWindowName :: JSVal -> JSVal
-
-foreign import javascript "((w) => { return w.navigator; })"
-	js_getWindowNavigator :: JSVal -> JSVal
-
-foreign import javascript "((n) => { return n.userAgent; })"
-	js_getNavigatorUserAgent :: JSVal -> JSVal
-
-parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
-parentOfChild nd = (JS.Node.parentNode =<<) <$> JS.Node.firstChild nd
 
 while_ :: IO Bool -> IO a -> IO ()
 while_ p act = do
 	b <- p
 	when b $ act >> while_ p act
 
-foreign import javascript "(() => { return this; })" js_this :: JSVal
-
-foreign import javascript "((a, b) => { return (a === b); })"
-	js_same :: JSVal -> JSVal -> Bool
+parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
+parentOfChild nd = (JS.Node.parentNode =<<) <$> JS.Node.firstChild nd
