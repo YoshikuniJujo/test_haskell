@@ -9,7 +9,7 @@ import GHC.JS.Value.Object qualified as JS.Object
 newtype D = D JSVal
 
 instance JS.Value.IsJSVal D where toJSVal (D v) = v
-instance JS.Value.V D where toV = JS.Object.toV; fromV = JS.Object.fromV
+instance JS.Value.V D where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 instance JS.Object.IsO D
 

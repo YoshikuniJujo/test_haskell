@@ -11,7 +11,7 @@ import GHC.JS.Value.CanvasContext.Rendering2d.Pathable qualified as JS.Pathable
 newtype P = P JSVal
 
 instance JS.Value.IsJSVal P where toJSVal (P p) = p
-instance JS.Value.V P where toV = JS.Object.toV; fromV = JS.Object.fromV
+instance JS.Value.V P where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 instance JS.Object.IsO P
 instance JS.Pathable.IsP P

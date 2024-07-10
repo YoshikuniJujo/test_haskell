@@ -1,35 +1,37 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.Object where
+module GHC.JS.Value.Object (
+	O, toValue, fromValue, IsO, toO,
+	isInstanceOf, Class(..), toString ) where
 
-import GHC.JS.Prim
+import GHC.JS.Prim (JSVal, fromJSString)
 import GHC.JS.Value qualified as JS.Value
-import Data.Typeable
-import Data.Maybe
+import Data.Typeable (cast)
+import Data.Maybe (fromJust)
 
-data O = forall o . JS.Value.V o => O { unO :: o }
+data O = forall o . JS.Value.V o => O o
 
 instance JS.Value.IsJSVal O where toJSVal (O o) = JS.Value.toJSVal o
-
 instance JS.Value.V O
 
-toV :: JS.Value.V o => o -> JS.Value.Some
-toV = JS.Value.toV . O
+toValue :: JS.Value.V o => o -> JS.Value.Some
+toValue = JS.Value.toV . O
 
-fromV :: JS.Value.V o => JS.Value.Some -> Maybe o
-fromV v = do
-	O o <- JS.Value.fromV v
-	cast o
+fromValue :: JS.Value.V o => JS.Value.Some -> Maybe o
+fromValue v = JS.Value.fromV v >>= \(O o) -> cast o
 
-class JS.Value.V o => IsO o where toO :: o -> O; toO = fromJust . JS.Value.cast
+toO :: IsO o => o -> O
+toO = fromJust . JS.Value.cast
 
-newtype Class = Class JSVal
+class JS.Value.V o => IsO o
 
 isInstanceOf :: O -> Class -> Bool
 o `isInstanceOf` Class c = JS.Value.toJSVal o `js_instanceof` c
 
 foreign import javascript "((o, c) => { return (o instanceof c); })"
 	js_instanceof :: JSVal -> JSVal -> Bool
+
+newtype Class = Class JSVal
 
 toString :: O -> String
 toString obj = fromJSString . js_toString $ JS.Value.toJSVal obj
