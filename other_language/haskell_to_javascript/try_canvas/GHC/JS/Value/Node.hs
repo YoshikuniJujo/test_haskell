@@ -18,7 +18,7 @@ data N = forall n . JS.Value.V n => N n
 instance JS.Value.IsJSVal N where toJSVal (N n) = JS.Value.toJSVal n
 
 instance JS.Value.V N where
-	toV = JS.EventTarget.toV; fromV = JS.EventTarget.fromV
+	toV = JS.EventTarget.toValue; fromV = JS.EventTarget.fromValue
 
 instance JS.Object.IsO N
 instance JS.EventTarget.IsE N
