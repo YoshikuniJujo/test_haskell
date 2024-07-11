@@ -4,63 +4,52 @@
 
 module LLOne (go, Rules, Rule, Symbol(..), TokenIs, BuildTree) where
 
-import Control.Arrow
-import Control.Monad.MaybeState
+import Control.Arrow (first)
+import Control.Monad.MaybeState (MaybeState, runMaybeState, getHead, checkHead)
 
-go :: Rules nt tkn tr -> (tkn -> tr) -> nt -> (String -> [tkn]) -> String -> Maybe tr
+go :: Rules nt tk tr ->
+	(tk -> tr) -> nt -> (String -> [tk]) -> String -> Maybe tr
 go rls ttt nt0 lxr src = case parse rls [Nonterminal nt0] $ lxr src of
 	(_, False) -> Nothing
-	(rts, True) -> case (mkTree ttt) `runMaybeState` rts of
+	(rts, True) -> case tree ttt `runMaybeState` rts of
 		Just (r, []) -> Just r; _ -> Nothing
 
+parse :: Rules nt tk tr -> [Symbol nt tk] -> [tk] -> ([RuleToken tk tr], Bool)
+parse rls (Nonterminal nt : ss) ta@(tkn : _) = case getRule rls nt tkn of
+	Just (nss, mkt) ->
+		(Rule (toHoles nss) mkt :) `first` parse rls (nss ++ ss) ta
+	_ -> ([], False)
+parse rls (Terminal p : st) (t : ts) | p t = (Token t :) `first` parse rls st ts
+parse _ [] [] = ([], True); parse _ _ _ = ([], False)
+
+getRule :: Rules nt tk tr -> nt -> tk -> Maybe (Rule nt tk tr)
+getRule [] _ _ = Nothing
+getRule ((p, r) : prs) nt tk | p nt tk = Just r | otherwise = getRule prs nt tk
+
+toHoles :: [Symbol nt tk] -> [HoleToken tk]
+toHoles = map \case Nonterminal _ -> Hole; Terminal tk -> HTT tk
+
+type Rules nt tk tr = [(nt -> tk -> Bool, Rule nt tk tr)]
+type Rule nt tk tr = ([Symbol nt tk] , BuildTree tr)
+type BuildTree tr = [tr] -> tr
 data Symbol nt t = Nonterminal nt | Terminal (TokenIs t)
 type TokenIs t = t -> Bool
-data RuleOrToken rn tkn = Rule rn [HoleOrToken tkn] | Token tkn
 
-ruleOrTokenToToken :: RuleOrToken rn tkn -> tkn
-ruleOrTokenToToken (Token tkn) = tkn
-ruleOrTokenToToken _ = error "bad"
-
-type BuildTree tr = [tr] -> tr
-
-type Rules nt tkn tr = [(nt -> tkn -> Bool, Rule nt tkn tr)]
-type Rule nt tkn tr = ([Symbol nt tkn] , BuildTree tr)
-
-data HoleOrToken tkn = Hole | HTToken (TokenIs tkn)
-
-ruleToHoleOrTokens :: [Symbol nt tkn] -> [HoleOrToken tkn]
-ruleToHoleOrTokens = (r2ht <$>)
-	where r2ht = \case Nonterminal _ -> Hole; Terminal tkn -> HTToken tkn
-
-getRule :: Rules nt tkn tr -> nt -> tkn -> Maybe (Rule nt tkn tr)
-getRule [] _ _ = Nothing
-getRule ((p, r) : prs) nt tkn
-	| p nt tkn = Just r
-	| otherwise = getRule prs nt tkn
-
-parse :: Rules nt tkn tr -> [Symbol nt tkn] -> [tkn] -> ([RuleOrToken (BuildTree tr) tkn], Bool)
-parse rls (Nonterminal nt : ss) ta@(t : _) = case getRule rls nt t of
-	Just (rl, rlnm) -> (Rule rlnm (ruleToHoleOrTokens rl) :) `first` parse rls (rl ++ ss) ta
-	_ -> ([], False)
-parse rls (Terminal t0 : st) (t : ts) | t0 t = (Token t :) `first` parse rls st ts
-parse _ [] [] = ([], True)
-parse _ _ _ = ([], False)
-
-mkTree :: (tkn -> tr) -> MaybeState [RuleOrToken (BuildTree tr) tkn] tr
-mkTree ttt = getHead >>= \case
-	Rule mkt hts -> mkt <$> holeOrTokensToTrees ttt hts (mkTree ttt)
+tree :: (tk -> tr) -> MaybeState [RuleToken tk tr] tr
+tree ttt = getHead >>= \case
+	Rule hts mkt -> mkt <$> htsToTree ttt (tree ttt) hts
 	_ -> fail ""
 
-holeOrTokensToTrees ::
-	(tkn -> tr) ->
-	[HoleOrToken tkn] ->
-	MaybeState [RuleOrToken (BuildTree tr) tkn] tr ->
-	MaybeState [RuleOrToken (BuildTree tr) tkn] [tr]
-holeOrTokensToTrees _ [] _ = fail ""
-holeOrTokensToTrees _ [Hole] mkt = (: []) <$> mkt
-holeOrTokensToTrees ttt [HTToken t] _ =
-	((: []) . ttt . ruleOrTokenToToken <$>) . checkHead $ \case Token tkn -> t tkn; _ -> False
-holeOrTokensToTrees ttt (Hole : hts) mkt = (:) <$> mkt <*> holeOrTokensToTrees ttt hts mkt
-holeOrTokensToTrees ttt (HTToken t : hts) mkt = (:)
-	<$> (ttt . ruleOrTokenToToken <$> checkHead \case Token tkn -> t tkn; _ -> False)
-	<*> holeOrTokensToTrees ttt hts mkt
+htsToTree :: (tk -> tr) -> MaybeState [RuleToken tk tr] tr ->
+	[HoleToken tk] -> MaybeState [RuleToken tk tr] [tr]
+htsToTree _ _ [] = pure []
+htsToTree ttt mkt (Hole : hts) = (:) <$> mkt <*> htsToTree ttt mkt hts
+htsToTree ttt mkt (HTT p : hts) = (:)
+	<$> (ttt . rtToToken <$> checkHead \case Token tk -> p tk; _ -> False)
+	<*> htsToTree ttt mkt hts
+
+rtToToken :: RuleToken tk tr -> tk
+rtToToken (Token tk) = tk; rtToToken _ = error "bad"
+
+data RuleToken tk tr = Rule [HoleToken tk] (BuildTree tr) | Token tk
+data HoleToken tk = Hole | HTT (TokenIs tk)
