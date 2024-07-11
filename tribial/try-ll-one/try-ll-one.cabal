@@ -27,6 +27,7 @@ library
   exposed-modules:
       Control.Monad.MaybeState
       Lib
+      LLOne
   other-modules:
       Paths_try_ll_one
   autogen-modules:

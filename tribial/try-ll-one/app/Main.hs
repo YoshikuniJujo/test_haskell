@@ -8,4 +8,4 @@ import Lib
 main :: IO ()
 main = do
 	src : _ <- getArgs
-	print $ go src
+	print $ goW src
