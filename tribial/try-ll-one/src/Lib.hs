@@ -7,9 +7,12 @@ import Control.Arrow
 import Data.Bool
 import Data.Char
 
-data Element = S | F | T Token deriving Show
+data Element = S | F | T (Token -> Bool)
 
-data Token = One | Plus | LParen | RParen deriving (Show, Eq)
+data Token = Num Int | Plus | LParen | RParen deriving (Show, Eq)
+
+isNum :: Token -> Bool
+isNum = \case Num _ -> True; _ -> False
 
 data Tree = Pls Tree Tree | N Int deriving Show
 
@@ -23,21 +26,22 @@ go src = case parse [S] $ lexer src of
 lexer :: String -> [Token]
 lexer = \case
 	[] -> []
-	'1' : s -> One : lexer s
+--	'1' : s -> One : lexer s
 	'+' : s -> Plus : lexer s
 	'(' : s -> LParen : lexer s
 	')' : s -> RParen : lexer s
-	c : s | isSpace c -> lexer s
+	c : s	| isDigit c -> Num (read [c]) : lexer s
+		| isSpace c -> lexer s
 	_ -> error "no such token"
 
 data RuleOrToken = Rule Int | Token Token deriving (Show, Eq)
 
 parse :: [Element] -> [Token] -> ([RuleOrToken], Bool)
 parse (S : st) ta@(LParen : _) =
-	(Rule 2 :) `first` parse (T LParen : S : T Plus : F : T RParen : st) ta
-parse (S : st) ta@(One : _) = (Rule 1 :) `first` parse (F : st) ta
-parse (F : st) ta@(One : _) = (Rule 3 :) `first` parse (T One : st) ta
-parse (T t0 : st) (t : ts) | t == t0 = (Token t :) `first` parse st ts
+	(Rule 2 :) `first` parse (T (== LParen) : S : T (== Plus) : F : T (== RParen) : st) ta
+parse (S : st) ta@(Num _ : _) = (Rule 1 :) `first` parse (F : st) ta
+parse (F : st) ta@(Num _ : _) = (Rule 3 :) `first` parse (T isNum : st) ta
+parse (T t0 : st) (t : ts) | t0 t = (Token t :) `first` parse st ts
 parse [] [] = ([], True)
 parse _ _ = ([], False)
 
@@ -75,6 +79,20 @@ getHead = get >>= \case [] -> fail ""; x : xs -> x <$ put xs
 matchHead :: Eq a => a -> MaybeState [a] ()
 matchHead x0 = getHead >>= bool (fail "") (pure ()) . (== x0)
 
+checkHead :: (a -> Bool) -> MaybeState [a] a
+checkHead p = getHead >>= \h ->
+	bool (fail "") (pure h) (p h)
+
+checkHead' :: (a -> Maybe b) -> MaybeState [a] b
+checkHead' p =
+	getHead >>= \h -> case p h of Nothing -> fail ""; Just r -> pure r
+
+isTokenNum :: RuleOrToken -> Bool
+isTokenNum = \case Token (Num _) -> True; _ -> False
+
+isTokenNum' :: RuleOrToken -> Maybe Int
+isTokenNum' = \case Token (Num n) -> Just n; _ -> Nothing
+
 mkTree :: MaybeState [RuleOrToken] Tree
 mkTree = do
 	rt <- getHead
@@ -88,6 +106,6 @@ mkTree = do
 			matchHead (Token RParen)
 			pure $ Pls t1 t2
 		Rule 3 -> do
-			matchHead (Token One)
-			pure $ N 1
+			n <- checkHead' isTokenNum'
+			pure $ N n
 		_ -> fail ""
