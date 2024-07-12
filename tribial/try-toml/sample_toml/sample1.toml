@@ -1,0 +1,4 @@
+title = "TOMLの例"
+
+[owner]
+name = "Tom Preston-Werner"
