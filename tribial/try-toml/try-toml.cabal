@@ -36,6 +36,7 @@ library
   build-depends:
       base >=4.7 && <5
     , parsec
+    , time
   default-language: Haskell2010
 
 executable try-toml-exe
@@ -50,6 +51,7 @@ executable try-toml-exe
   build-depends:
       base >=4.7 && <5
     , parsec
+    , time
     , try-toml
   default-language: Haskell2010
 
@@ -66,5 +68,6 @@ test-suite try-toml-test
   build-depends:
       base >=4.7 && <5
     , parsec
+    , time
     , try-toml
   default-language: Haskell2010

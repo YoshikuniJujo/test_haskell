@@ -2,3 +2,7 @@ title = "TOMLの例"
 
 [owner]
 name = "Tom Preston-Werner"
+dob = 1979-05-27T07:32:00-08:00
+
+[database]
+server = "192.168.1.1"

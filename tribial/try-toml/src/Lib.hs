@@ -7,6 +7,7 @@ module Lib where
 import Control.Monad
 import Data.Maybe
 import Data.Char
+import Data.Time qualified as T
 import Text.Parsec hiding (string, digit, newline)
 import Numeric
 
@@ -76,11 +77,13 @@ dotSep = void $ ws >> char '\x2E' >> ws
 keyvalSep = void $ ws >> char '\x3D' >> ws
 
 val :: Parsec String () Value
-val =	String <$> string -- <|>
+val =	String <$> string <|>
 	{-
 	Boolean <$> bool <|>
 	array <|>
+	...
 	-}
+	DateTime <$> dateTime
 
 -- String
 
@@ -206,13 +209,83 @@ mllQuotes = (\q mq -> maybe [q] ((q :) . (: "")) mq)
 
 -- Date and Time (as defined in RFC 3339)
 
+dateTime :: Parsec String () DateTime
+dateTime =
+	OffsetDateTime <$> try offsetDateTime <|>
+	LocalDateTime <$> try localDateTime <|>
+	LocalDate <$> try localDate <|>
+	LocalTime <$> localTime
+
+dateFullyear :: Parsec String () T.Year
+dateFullyear = read <$> count 4 digit
+
+dateMonth :: Parsec String () T.MonthOfYear
+dateMonth = read <$> count 2 digit
+
+dateMday :: Parsec String () T.DayOfMonth
+dateMday = read <$> count 2 digit
+
+timeDelim :: Parsec String () ()
+timeDelim = void $ char 'T' <|> char '\x20'
+
+timeHour :: Parsec String () Int
+timeHour = read <$> count 2 digit
+
+timeMinute :: Parsec String () Int
+timeMinute = read <$> count 2 digit
+
+timeSecond :: Parsec String () String
+timeSecond = count 2 digit
+
+timeSecfrac :: Parsec String () String
+timeSecfrac = (:) <$> char '.' <*> many1 digit
+
+timeNumoffset :: Parsec String () T.TimeZone
+timeNumoffset = hourMinutesToTimeZone
+	<$> (char '+' <|> char '-') <*> timeHour <* char ':' <*> timeMinute
+
+hourMinutesToTimeZone :: Char -> Int -> Int -> T.TimeZone
+hourMinutesToTimeZone '+' h m = T.minutesToTimeZone (60 * h + m)
+hourMinutesToTimeZone '-' h m = T.minutesToTimeZone (- (60 * h + m))
+hourMinutesToTimeZone _ _ _ = error "+ / -"
+
+timeOffset :: Parsec String () T.TimeZone
+timeOffset = T.utc <$ char 'Z' <|> timeNumoffset
+
+partialTime :: Parsec String () T.TimeOfDay
+partialTime = T.TimeOfDay
+	<$> timeHour <* char ':'
+	<*> timeMinute <* char ':'
+	<*> ((\i mf -> read $ maybe id (flip (<>)) mf i)
+		<$> timeSecond <*> optionMaybe timeSecfrac)
+
+fullDate :: Parsec String () T.Day
+fullDate = T.fromGregorian
+	<$> dateFullyear <* char '-' <*> dateMonth <* char '-' <*> dateMday
+
+fullTime :: Parsec String () (T.TimeOfDay, T.TimeZone)
+fullTime = (,) <$> partialTime <*> timeOffset
+
 -- Offset Date-Time
+
+offsetDateTime :: Parsec String () T.ZonedTime
+offsetDateTime = (\d (td, tz) -> T.ZonedTime (T.LocalTime d td) tz)
+	<$> fullDate <* timeDelim <*> fullTime
 
 -- Local Date-Time
 
+localDateTime :: Parsec String () T.LocalTime
+localDateTime = T.LocalTime <$> fullDate <* timeDelim <*> partialTime
+
 -- Local Date
 
+localDate :: Parsec String () T.Day
+localDate = fullDate
+
 -- Local Time
+
+localTime :: Parsec String () T.TimeOfDay
+localTime = partialTime
 
 -- Array
 
@@ -250,6 +323,14 @@ hexdig = digit <|> (oneOf $ ['A' .. 'F'] <> ['a' .. 'f'])
 
 -- TYPES
 
-data Value = String String deriving Show
+data Value
+	= String String
+	| DateTime DateTime
+	deriving Show
+
+data DateTime
+	= OffsetDateTime T.ZonedTime | LocalDateTime T.LocalTime
+	| LocalDate T.Day | LocalTime T.TimeOfDay
+	deriving Show
 
 data Table = StandardTable [String] | ArrayTable [String] deriving Show
