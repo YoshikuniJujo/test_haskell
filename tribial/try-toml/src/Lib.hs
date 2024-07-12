@@ -1,14 +1,28 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
 
 import Control.Monad
+import Data.Maybe
 import Data.Char
-import Text.Parsec hiding (digit, newline)
+import Text.Parsec hiding (string, digit, newline)
 import Numeric
 
+parseToml :: String -> Either ParseError [Either ([String], Value) Table]
+parseToml = parse toml ""
+
 -- Overall Structure
+
+toml :: Parsec String () [Either ([String], Value) Table]
+toml = maybe id (:) <$> expression <*> (catMaybes <$> many (newline >> expression)) <* notFollowedBy (newline >> expression)
+
+expression :: Parsec String () (Maybe (Either ([String], Value) Table))
+expression =
+	try (Nothing <$ (ws >> notFollowedBy keyval >> notFollowedBy table >> optional comment)) <|>
+	try (Just . Left <$> (ws >> keyval <* ws <* optional comment)) <|>
+	(Just . Right <$> (ws >> table <* ws <* optional comment))
 
 -- Whitespace
 
@@ -41,8 +55,11 @@ comment = commentStartSymbol >> many nonEol
 
 -- Key-Value pairs
 
+keyval :: Parsec String () ([String], Value)
+keyval = (,) <$> key <* keyvalSep <*> val
+
 key :: Parsec String () [String]
-key = (: []) <$> simpleKey <|> dottedKey
+key = (: []) <$> try (simpleKey <* notFollowedBy dotSep) <|> dottedKey
 
 simpleKey :: Parsec String () String
 simpleKey = quotedKey <|> unquotedKey
@@ -52,21 +69,31 @@ unquotedKey = many1 $ alpha <|> digit <|> char '\x2D' <|> char '\x5F'
 quotedKey = basicString <|> literalString
 
 dottedKey :: Parsec String () [String]
-dottedKey = simpleKey >> many1 (dotSep >> simpleKey)
+dottedKey = (:) <$> simpleKey <*> many1 (dotSep >> simpleKey)
 
 dotSep, keyvalSep :: Parsec String () ()
 dotSep = void $ ws >> char '\x2E' >> ws
 keyvalSep = void $ ws >> char '\x3D' >> ws
 
+val :: Parsec String () Value
+val =	String <$> string -- <|>
+	{-
+	Boolean <$> bool <|>
+	array <|>
+	-}
+
 -- String
+
+string :: Parsec String () String
+string = try mlBasicString <|> basicString <|> try mlLiteralString <|> literalString
 
 -- Basic String
 
 basicString :: Parsec String () String
 basicString = quotationMark >> many basicChar <* quotationMark
 
-quotationMark :: Parsec String () ()
-quotationMark = void $ char '\x22'
+quotationMark :: Parsec String () Char
+quotationMark = char '\x22'
 
 basicChar :: Parsec String () Char
 basicChar = basicUnescaped <|> escaped
@@ -92,13 +119,48 @@ escapeSeqChar =
 
 -- Multiline Basic String
 
+mlBasicString :: Parsec String () String
+mlBasicString = do
+	mlBasicStringDelim
+	optional newline
+	mlbBasicBody <* mlBasicStringDelim
+
+mlBasicStringDelim :: Parsec String () ()
+mlBasicStringDelim = void $ count 3 quotationMark
+
+mlbBasicBody :: Parsec String () String
+mlbBasicBody = (\cs css mq -> concat cs ++ concat css ++ fromMaybe [] mq)
+	<$> many mlbContent
+	<*> many (try ((++) <$> mlbQuotes <*> (concat <$> many1 mlbContent)))
+	<*> optionMaybe (try mlbQuotes)
+
+mlbContent :: Parsec String () String
+mlbContent = (: []) <$> mlbChar <|> newline <|> [] <$ mlbEscapedNl
+
+mlbChar :: Parsec String () Char
+mlbChar = mlbUnescaped <|> try escaped
+
+mlbQuotes :: Parsec String () String
+mlbQuotes = (\q mq -> maybe [q] ((q :) . (: [])) mq)
+	<$> quotationMark
+	<*> (optionMaybe quotationMark <* notFollowedBy quotationMark)
+
+mlbUnescaped :: Parsec String () Char
+mlbUnescaped =
+	wschar <|> char '\x21' <|> oneOf ['\x23' .. '\x5B'] <|>
+	oneOf ['\x5D' .. '\x7E'] <|> nonAscii
+
+mlbEscapedNl :: Parsec String () ()
+mlbEscapedNl =
+	void $ escape >> ws >> newline >> many ((: []) <$> wschar <|> newline)
+
 -- Literal String
 
 literalString :: Parsec String () String
-literalString = apostroph >> many literalChar <* apostroph
+literalString = apostrophe >> many literalChar <* apostrophe
 
-apostroph :: Parsec String () ()
-apostroph = void $ char '\x27'
+apostrophe :: Parsec String () Char
+apostrophe = char '\x27'
 
 literalChar :: Parsec String () Char
 literalChar =
@@ -106,6 +168,35 @@ literalChar =
 	nonAscii
 
 -- Multiline Literal String
+
+mlLiteralString :: Parsec String () String
+mlLiteralString = do
+	mlLiteralStringDelim
+	optional newline
+	bd <- mlLiteralBody
+	mlLiteralStringDelim
+	pure bd
+
+mlLiteralStringDelim :: Parsec String () ()
+mlLiteralStringDelim = void $ count 3 apostrophe
+
+mlLiteralBody :: Parsec String () String
+mlLiteralBody = (\cs css mq -> concat cs ++ concat css ++ fromMaybe "" mq)
+	<$> many mllContent
+	<*> many (try ((++) <$> mllQuotes <*> (concat <$> many1 mllContent)))
+	<*> optionMaybe (try mllQuotes)
+
+mllContent :: Parsec String () String
+mllContent = (: "") <$> mllChar <|> newline
+
+mllChar :: Parsec String () Char
+mllChar = char '\09' <|>
+	oneOf (['\x20' .. '\x26'] <> ['\x28' .. '\x7E']) <|> nonAscii
+
+mllQuotes :: Parsec String () String
+mllQuotes = (\q mq -> maybe [q] ((q :) . (: "")) mq)
+	<$> apostrophe
+	<*> (optionMaybe apostrophe <* notFollowedBy apostrophe)
 
 -- Integer
 
@@ -127,11 +218,28 @@ literalChar =
 
 -- Table
 
+table :: Parsec String () Table
+table = try stdTable <|> arrayTable
+
 -- Standard Table
+
+stdTable :: Parsec String () Table
+stdTable = StandardTable <$> (stdTableOpen >> key <* stdTableClose)
+
+stdTableOpen, stdTableClose :: Parsec String () ()
+stdTableOpen = char '\x5B' >> notFollowedBy (char '\x5B') >> ws
+stdTableClose = void $ ws >> char '\x5D' >> notFollowedBy (char '\x5D')
 
 -- Inline Table
 
 -- Array Table
+
+arrayTable :: Parsec String () Table
+arrayTable = ArrayTable <$> (arrayTableOpen >> key <* arrayTableClose)
+
+arrayTableOpen, arrayTableClose :: Parsec String () ()
+arrayTableOpen = char '\x5B' >> char '\x5B' >> ws
+arrayTableClose = void $ ws >> char '\x5D' >> char '\x5D'
 
 -- Build-in ABNF terms, reproduced here for clarity
 
@@ -142,4 +250,6 @@ hexdig = digit <|> (oneOf $ ['A' .. 'F'] <> ['a' .. 'f'])
 
 -- TYPES
 
-data Value = String String
+data Value = String String deriving Show
+
+data Table = StandardTable [String] | ArrayTable [String] deriving Show
