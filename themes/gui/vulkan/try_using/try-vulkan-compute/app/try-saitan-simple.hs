@@ -233,27 +233,25 @@ findMmTpIdx pd rqs wt = Vk.Phd.getMemoryProperties pd >>= \prs ->
 	case filter (`Vk.Mm.elemTypeIndex` rqts) wtts of
 		[] -> error "No available memory types"; i : _ -> pure i
 
-writeDscStBffr3 ::
-	forall slbts sb1 sb2 sb3 sm1 sm2 sm3 os1 os2 objs3 sds . (
+writeDscStBffr3 :: forall
+	sds slbts sm1 sm2 sm3 sb1 sb2 sb3 nm1 nm2 nm3 os1 os2 os3 . (
 	Show (HPList.PL Obj.Length os1), Show (HPList.PL Obj.Length os2),
-	Show (HPList.PL Obj.Length objs3),
+	Show (HPList.PL Obj.Length os3),
 	Obj.OffsetRange (OList W1) os1 0, Obj.OffsetRange (OList W2) os2 0,
-	Obj.OffsetRange (Obj.List 256 W3 "") objs3 0
-	) =>
+	Obj.OffsetRange (OList W3) os3 0 ) =>
 	Vk.DscSt.D sds slbts ->
-	Vk.Bffr.Binded sm1 sb1 "" os1 -> Vk.Bffr.Binded sm2 sb2 "" os2 ->
-	Vk.Bffr.Binded sm3 sb3 "" objs3 ->
+	Vk.Bffr.Binded sm1 sb1 nm1 os1 -> Vk.Bffr.Binded sm2 sb2 nm2 os2 ->
+	Vk.Bffr.Binded sm3 sb3 nm3 os3 ->
 	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer '[
-		'(sm1, sb1, "", Obj.List 256 W1 "", 0), '(sm2, sb2, "", Obj.List 256 W2 "", 0),
-		'(sm3, sb3, "", Obj.List 256 W3 "", 0) ]) 0
+		'(sm1, sb1, nm1, OList W1, 0), '(sm2, sb2, nm2, OList W2, 0),
+		'(sm3, sb3, nm3, OList W3, 0) ]) 0
 writeDscStBffr3 ds ba bb bc = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N,
-	Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos $
-		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W1 "") ba) :**
-		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W2 "") bb) :**
-		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(Obj.List 256 W3 "") bc) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(OList W1) ba) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(OList W2) bb) :**
+		U5 (Vk.Dsc.BufferInfo @_ @_ @_ @(OList W3) bc) :**
 		HPList.Nil }
 
 -- CALC
