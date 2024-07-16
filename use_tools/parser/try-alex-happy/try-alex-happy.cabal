@@ -1,0 +1,83 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-alex-happy
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-alex-happy#readme>
+homepage:       https://github.com/YoshikuniJujo/try-alex-happy#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-alex-happy/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      2024 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-alex-happy
+
+library
+  exposed-modules:
+      Ex1.Lexer
+      Ex1.Parser
+      Lib
+  other-modules:
+      Paths_try_alex_happy
+  autogen-modules:
+      Paths_try_alex_happy
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      array
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+executable try-alex-happy-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_alex_happy
+  autogen-modules:
+      Paths_try_alex_happy
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , try-alex-happy
+  default-language: Haskell2010
+
+executable wordcount
+  main-is: wordcount.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , try-alex-happy
+  default-language: Haskell2010
+
+test-suite try-alex-happy-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_alex_happy
+  autogen-modules:
+      Paths_try_alex_happy
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , try-alex-happy
+  default-language: Haskell2010
