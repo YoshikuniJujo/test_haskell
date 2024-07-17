@@ -29,6 +29,8 @@ library
       Ex1.Parser
       Ex2.Lexer
       Ex2.Parser
+      Ex3_1.Lexer
+      Ex3_1.Parser
       Lib
   other-modules:
       Paths_try_alex_happy
