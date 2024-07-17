@@ -27,6 +27,8 @@ library
   exposed-modules:
       Ex1.Lexer
       Ex1.Parser
+      Ex2.Lexer
+      Ex2.Parser
       Lib
   other-modules:
       Paths_try_alex_happy
@@ -38,6 +40,7 @@ library
   build-depends:
       array
     , base >=4.7 && <5
+    , containers
   default-language: Haskell2010
 
 executable try-alex-happy-exe
@@ -52,6 +55,7 @@ executable try-alex-happy-exe
   build-depends:
       array
     , base >=4.7 && <5
+    , containers
     , try-alex-happy
   default-language: Haskell2010
 
@@ -63,6 +67,7 @@ executable wordcount
   build-depends:
       array
     , base >=4.7 && <5
+    , containers
     , try-alex-happy
   default-language: Haskell2010
 
@@ -79,5 +84,6 @@ test-suite try-alex-happy-test
   build-depends:
       array
     , base >=4.7 && <5
+    , containers
     , try-alex-happy
   default-language: Haskell2010
