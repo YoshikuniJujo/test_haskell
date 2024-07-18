@@ -13,11 +13,16 @@ import Data.Maybe
 
 %wrapper "monadUserState"
 
+$small = [a-z]
+$large = [A-Z]
+$digit = [0-9]
+
 token :-
 
 <0>			$white+		{ spaces0 }
 
-<0>			[a-z]+		{ varid }
+<0>			$small [$small $large $digit]*
+					{ varid }
 
 <0, maybeLayout> 	$white* "{"	{ (`andBegin` 0) \_ _ ->
 						LBrace <$ pushIndent 0 }
@@ -35,7 +40,7 @@ token :-
 data Token
 	= LBrace | RBrace | VLBrace | VRBrace | Semi
 	| Let | In | Where | Do | Of
-	| OtherToken String AlexPosn
+	| Varid String AlexPosn
 	| Eof
 	deriving (Show, Eq)
 
@@ -43,7 +48,7 @@ varid :: AlexInput -> Int -> Alex Token
 varid (p, _, _, cs) ln =
 	t <$ when (t `elem` [Let, Where, Do, Of]) (alexSetStartCode maybeLayout)
 	where
-	t = fromMaybe <$> (`OtherToken` p) <*> (`lookup` keywords) $ take ln cs
+	t = fromMaybe <$> (`Varid` p) <*> (`lookup` keywords) $ take ln cs
 
 keywords :: [(String, Token)]
 keywords = [("let", Let), ("in", In), ("where", Where), ("do", Do), ("of", Of)]

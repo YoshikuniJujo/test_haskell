@@ -21,22 +21,21 @@ RBRACE		{ RBrace }
 VLBRACE		{ VLBrace }
 VRBRACE		{ VRBrace }
 SEMI		{ Semi }
-OTHER_T		{ OtherToken $$ _ }
+VARID		{ Varid $$ _ }
 
 %%
 
 do	:	DO LBRACE others RBRACE		{ $3 }
-	|	DO VLBRACE others close 	{ $3 }
+	|	DO VLBRACE others vrbrace 	{ $3 }
 
-others	:	other SEMI others		{ $1 ++ $3 }
-	|	other				{ $1 }
-	|	{- empty -}			{ [] }
-
-other	:	OTHER_T				{ [$1] }
-	|	{- empty -}			{ [] }
-
-close	:	VRBRACE				{ () }
+vrbrace	:	VRBRACE				{ () }
 	|	error				{% void popIndent }
+
+others	:	other SEMI others		{ maybe id (:) $1 $3 }
+	|	other				{ maybe id (:) $1 [] }
+
+other	:	VARID				{ Just $1 }
+	|	{- empty -}			{ Nothing }
 
 {
 
