@@ -29,6 +29,7 @@ do	:	DO LBRACE others RBRACE		{ $3 }
 	|	DO VLBRACE others close 	{ $3 }
 
 others	:	other SEMI others		{ $1 ++ $3 }
+	|	other				{ $1 }
 	|	{- empty -}			{ [] }
 
 other	:	OTHER_T				{ [$1] }

@@ -19,7 +19,8 @@ token :-
 
 			[a-z]+		{ mkToken }
 
-<0, maybeLayout> 	$white* "{"	{ (\p t -> LBrace <$ pushIndent 0) `andBegin` 0
+<0, maybeLayout> 	$white* "{"	{ (`andBegin` 0) \_ _ ->
+						LBrace <$ pushIndent 0 }
 
 <0>			"}"		{ \_ _ -> RBrace <$ void popIndent }
 <0>			";"		{ \_ _ -> pure LSemi }
@@ -71,25 +72,10 @@ calcColumn _ _ _ = error "bad space"
 alexEOF :: Alex Token
 alexEOF = pure Eof
 
-data AlexUserState = AlexUserState {
-	offsetAngleN :: Maybe Int,
---	offsetBraceN :: Maybe Int,
-	indents :: [Int] }
-	deriving Show
+data AlexUserState = AlexUserState { indents :: [Int] } deriving Show
 
 alexInitUserState :: AlexUserState
-alexInitUserState = AlexUserState {
-	offsetAngleN = Nothing,
---	offsetBraceN = Nothing,
-	indents = [] }
-
-getOffsetAngleN :: Alex (Maybe Int)
-getOffsetAngleN = offsetAngleN <$> alexGetUserState
-
-setOffsetAngleN :: Int -> Alex ()
-setOffsetAngleN n = do
-	ust <- alexGetUserState
-	alexSetUserState ust { offsetAngleN = Just n }
+alexInitUserState = AlexUserState { indents = [] }
 
 processOffsetBraceN :: AlexInput -> Int -> Alex Token
 processOffsetBraceN inp n = do
