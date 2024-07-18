@@ -16,8 +16,14 @@ import Data.Maybe
 $small = [a-z]
 $large = [A-Z]
 $digit = [0-9]
+$pragma = ~$white # \#
 
 token :-
+
+<0>			"{-#"		{ (\_ _ -> pure PragmaBegin) `andBegin` pragma }
+<pragma>		"#-}"		{ (\_ _ -> pure PragmaEnd) `andBegin` 0 }
+<pragma>		$pragma+	{ pragmaContent }
+<pragma>		$white+		{ skip }
 
 <0>			$white+		{ spaces0 }
 
@@ -38,11 +44,15 @@ token :-
 {
 
 data Token
-	= LBrace | RBrace | VLBrace | VRBrace | Semi
+	= PragmaBegin | PragmaEnd | PragmaContent String
+	| LBrace | RBrace | VLBrace | VRBrace | Semi
 	| Let | In | Where | Do | Of
 	| Varid String AlexPosn
 	| Eof
 	deriving (Show, Eq)
+
+pragmaContent :: AlexInput -> Int -> Alex Token
+pragmaContent (_, _, _, cs) ln = pure . PragmaContent $ take ln cs
 
 varid :: AlexInput -> Int -> Alex Token
 varid (p, _, _, cs) ln =
