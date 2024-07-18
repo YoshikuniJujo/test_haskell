@@ -19,15 +19,17 @@ token :-
 
 			[a-z]+		{ mkToken }
 
-<0, maybeLayout> 	"{"		{ \p t -> LBrace <$
-						(pushIndent 0 >> begin 0 p t) }
+<0, maybeLayout> 	$white* "{"	{ (\p t -> LBrace <$ pushIndent 0) `andBegin` 0
+
+<0>			"}"		{ \_ _ -> RBrace <$ void popIndent }
+<0>			";"		{ \_ _ -> pure LSemi }
 
 <maybeLayout>		$white+		{ \p l -> spacesLayout p l }
 
 {
 
 data Token
-	= LBrace | RBrace | LSemi
+	= LBrace | RBrace | VLBrace | VRBrace | LSemi
 	| Let | In | Where | Do | Of
 	| OtherToken String AlexPosn
 	| Eof
@@ -50,21 +52,21 @@ keywordTable = [
 	]
 
 spaces0 :: AlexInput -> Int -> Alex Token
-spaces0 inp@(AlexPn _ _ c, _, _, str) len =
---	setOffsetAngleN $ calcColumn c (take len str)
-	processOffsetAngleN inp len $ calcColumn c (take len str)
+spaces0 inp@(AlexPn _ _ c, _, _, str) len = let
+	(nl, c') = calcColumn False c (take len str) in
+	bool (skip inp len) (processOffsetAngleN inp len c') nl
 
 spacesLayout :: AlexInput -> Int -> Alex Token
 spacesLayout inp@(AlexPn _ _ c, _, _, str) len =
 --	setOffsetBraceN $ calcColumn c (take len str)
-	processOffsetBraceN inp $ calcColumn c (take len str)
+	processOffsetBraceN inp . snd $ calcColumn False c (take len str)
 
-calcColumn :: Int -> String -> Int
-calcColumn c "" = c
-calcColumn c (' ' : ss) = calcColumn (c + 1) ss
-calcColumn c ('\t' : ss) = calcColumn (((c - 1) `div` 8 + 1) * 8 + 1) ss
-calcColumn _ ('\n' : ss) = calcColumn 1 ss
-calcColumn _ _ = error "bad space"
+calcColumn :: Bool -> Int -> String -> (Bool, Int)
+calcColumn nl c "" = (nl, c)
+calcColumn nl c (' ' : ss) = calcColumn nl (c + 1) ss
+calcColumn nl c ('\t' : ss) = calcColumn nl (((c - 1) `div` 8 + 1) * 8 + 1) ss
+calcColumn _ _ ('\n' : ss) = calcColumn True 1 ss
+calcColumn _ _ _ = error "bad space"
 
 alexEOF :: Alex Token
 alexEOF = pure Eof
@@ -93,13 +95,13 @@ processOffsetBraceN :: AlexInput -> Int -> Alex Token
 processOffsetBraceN inp n = do
 	mm <- peekIndent
 	case mm of
-		Nothing -> LBrace <$ do
+		Nothing -> VLBrace <$ do
 			pushIndent n
 			alexSetStartCode 0
-		Just m	| n > m -> LBrace <$ do
+		Just m	| n > m -> VLBrace <$ do
 				pushIndent n
 				alexSetStartCode 0
-			| otherwise -> LBrace <$ do
+			| otherwise -> VLBrace <$ do
 				alexSetInput inp
 				alexSetStartCode 0
 
@@ -108,10 +110,9 @@ processOffsetAngleN inp len n = do
 	mm <- peekIndent
 	case mm of
 		Just m	| m == n -> pure LSemi
-			| n < m -> RBrace <$ do
+			| n < m -> VRBrace <$ do
 				alexSetInput inp
-				popIndent
-				pure ()
+				void $ popIndent
 		_ -> skip inp len
 
 {-
@@ -134,7 +135,7 @@ popIndent = do
 	ust@AlexUserState { indents = is } <- alexGetUserState
 	case is of
 		[] -> pure Nothing
-		n : is -> Just n <$ alexSetUserState ust { indents = is }
+		n : is' -> Just n <$ alexSetUserState ust { indents = is' }
 
 peekIndent :: Alex (Maybe Int)
 peekIndent = do

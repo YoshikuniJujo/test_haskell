@@ -18,18 +18,23 @@ import Ex4.Lexer
 DO		{ Do }
 LBRACE		{ LBrace }
 RBRACE		{ RBrace }
+VLBRACE		{ VLBrace }
+VRBRACE		{ VRBrace }
 SEMI		{ LSemi }
 OTHER_T		{ OtherToken $$ _ }
 
 %%
 
-do	:	DO LBRACE others close 		{ $3 }
+do	:	DO LBRACE others RBRACE		{ $3 }
+	|	DO VLBRACE others close 	{ $3 }
 
-others	:	OTHER_T SEMI others		{ $1 : $3 }
-	|	OTHER_T				{ [$1] }
+others	:	other SEMI others		{ $1 ++ $3 }
 	|	{- empty -}			{ [] }
 
-close	:	RBRACE				{ () }
+other	:	OTHER_T				{ [$1] }
+	|	{- empty -}			{ [] }
+
+close	:	VRBRACE				{ () }
 	|	error				{% void popIndent }
 
 {
