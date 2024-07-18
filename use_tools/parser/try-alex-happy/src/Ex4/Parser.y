@@ -20,7 +20,7 @@ LBRACE		{ LBrace }
 RBRACE		{ RBrace }
 VLBRACE		{ VLBrace }
 VRBRACE		{ VRBrace }
-SEMI		{ LSemi }
+SEMI		{ Semi }
 OTHER_T		{ OtherToken $$ _ }
 
 %%

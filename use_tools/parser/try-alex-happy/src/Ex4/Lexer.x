@@ -1,6 +1,6 @@
 {
 
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Ex4.Lexer where
@@ -15,52 +15,59 @@ import Data.Maybe
 
 token :-
 
-<0>			$white+		{ \p l -> spaces0 p l }
+<0>			$white+		{ spaces0 }
 
-			[a-z]+		{ mkToken }
+<0>			[a-z]+		{ varid }
 
 <0, maybeLayout> 	$white* "{"	{ (`andBegin` 0) \_ _ ->
 						LBrace <$ pushIndent 0 }
 
-<0>			"}"		{ \_ _ -> RBrace <$ void popIndent }
-<0>			";"		{ \_ _ -> pure LSemi }
+<maybeLayout>		$white+		{ spacesLayout }
+<emptyLayout>		$white+		{ \inp _ -> VRBrace <$ do
+						alexSetInput inp
+						alexSetStartCode 0 }
 
-<maybeLayout>		$white+		{ \p l -> spacesLayout p l }
+<0>			"}"		{ \_ _ -> RBrace <$ popIndent_ }
+<0>			";"		{ \_ _ -> pure Semi }
 
 {
 
 data Token
-	= LBrace | RBrace | VLBrace | VRBrace | LSemi
+	= LBrace | RBrace | VLBrace | VRBrace | Semi
 	| Let | In | Where | Do | Of
 	| OtherToken String AlexPosn
 	| Eof
 	deriving (Show, Eq)
 
-isLayoutBeginer :: Token -> Bool
-isLayoutBeginer = (`elem` [Let, Where, Do, Of])
+varid :: AlexInput -> Int -> Alex Token
+varid (p, _, _, cs) ln =
+	t <$ when (t `elem` [Let, Where, Do, Of]) (alexSetStartCode maybeLayout)
+	where
+	t = fromMaybe <$> (`OtherToken` p) <*> (`lookup` keywords) $ take ln cs
 
-mkToken :: AlexInput -> Int -> Alex Token
-mkToken (pos, _, _, str) len = do
-	let	t = getKeyword keywordTable pos (take len str)
-	t <$ when (isLayoutBeginer t) (alexSetStartCode maybeLayout)
-
-getKeyword :: [(String, Token)] -> AlexPosn -> String -> Token
-getKeyword tbl psn idnt = fromMaybe (OtherToken idnt psn) $ lookup idnt tbl
-
-keywordTable :: [(String, Token)]
-keywordTable = [
-	("let", Let), ("in", In), ("where", Where), ("do", Do), ("of", Of)
-	]
+keywords :: [(String, Token)]
+keywords = [("let", Let), ("in", In), ("where", Where), ("do", Do), ("of", Of)]
 
 spaces0 :: AlexInput -> Int -> Alex Token
-spaces0 inp@(AlexPn _ _ c, _, _, str) len = let
-	(nl, c') = calcColumn False c (take len str) in
-	bool (skip inp len) (processOffsetAngleN inp len c') nl
+spaces0 inp@(AlexPn _ _ cl, _, _, cs) ln =
+	bool (skip inp ln) (offsetAngleN inp ln cl') nl
+	where (nl, cl') = calcColumn False cl (take ln cs)
+
+offsetAngleN :: AlexInput -> Int -> Int -> Alex Token
+offsetAngleN inp ln n = peekIndent >>= \case
+	Just m	| m == n -> pure Semi
+		| n < m -> VRBrace <$ (alexSetInput inp >> popIndent_)
+	_ -> skip inp ln
 
 spacesLayout :: AlexInput -> Int -> Alex Token
-spacesLayout inp@(AlexPn _ _ c, _, _, str) len =
---	setOffsetBraceN $ calcColumn c (take len str)
-	processOffsetBraceN inp . snd $ calcColumn False c (take len str)
+spacesLayout inp@(AlexPn _ _ cl, _, _, cs) ln =
+	offsetBraceN inp . snd $ calcColumn False cl (take ln cs)
+
+offsetBraceN :: AlexInput -> Int -> Alex Token
+offsetBraceN inp n = peekIndent >>= \case
+	Just m	| n <= m ->
+		VLBrace <$ (alexSetInput inp >> alexSetStartCode emptyLayout)
+	_ -> VLBrace <$ (pushIndent n >> alexSetStartCode 0)
 
 calcColumn :: Bool -> Int -> String -> (Bool, Int)
 calcColumn nl c "" = (nl, c)
@@ -77,65 +84,25 @@ data AlexUserState = AlexUserState { indents :: [Int] } deriving Show
 alexInitUserState :: AlexUserState
 alexInitUserState = AlexUserState { indents = [] }
 
-processOffsetBraceN :: AlexInput -> Int -> Alex Token
-processOffsetBraceN inp n = do
-	mm <- peekIndent
-	case mm of
-		Nothing -> VLBrace <$ do
-			pushIndent n
-			alexSetStartCode 0
-		Just m	| n > m -> VLBrace <$ do
-				pushIndent n
-				alexSetStartCode 0
-			| otherwise -> VLBrace <$ do
-				alexSetInput inp
-				alexSetStartCode 0
-
-processOffsetAngleN :: AlexInput -> Int -> Int -> Alex Token
-processOffsetAngleN inp len n = do
-	mm <- peekIndent
-	case mm of
-		Just m	| m == n -> pure LSemi
-			| n < m -> VRBrace <$ do
-				alexSetInput inp
-				void $ popIndent
-		_ -> skip inp len
-
-{-
-getOffsetBraceN :: Alex (Maybe Int)
-getOffsetBraceN = offsetBraceN <$> alexGetUserState
-
-setOffsetBraceN :: Int -> Alex ()
-setOffsetBraceN n = do
-	ust <- alexGetUserState
-	alexSetUserState ust { offsetBraceN = Just n }
--}
-
-pushIndent :: Int -> Alex ()
-pushIndent n = do
-	ust@AlexUserState { indents = is } <- alexGetUserState
-	alexSetUserState ust { indents = n : is }
+peekIndent :: Alex (Maybe Int)
+peekIndent = listToMaybe . indents <$> alexGetUserState
 
 popIndent :: Alex (Maybe Int)
-popIndent = do
-	ust@AlexUserState { indents = is } <- alexGetUserState
-	case is of
-		[] -> pure Nothing
-		n : is' -> Just n <$ alexSetUserState ust { indents = is' }
+popIndent = indents <$> alexGetUserState >>= \case
+	[] -> pure Nothing
+	n : is' -> Just n <$ alexSetUserState AlexUserState { indents = is' }
 
-peekIndent :: Alex (Maybe Int)
-peekIndent = do
-	AlexUserState { indents = is } <- alexGetUserState
-	pure case is of
-		[] -> Nothing
-		n : _ -> Just n
+popIndent_ :: Alex ()
+popIndent_ = void popIndent
+
+pushIndent :: Int -> Alex ()
+pushIndent n = indents <$> alexGetUserState >>= \is ->
+	alexSetUserState AlexUserState { indents = n : is }
 
 tryLex :: String -> Either String [Token]
 tryLex = (`runAlex` lexAll)
 
 lexAll :: Alex [Token]
-lexAll = do
-	t <- alexMonadScan
-	bool ((t :) <$> lexAll) (pure []) (t == Eof)
+lexAll = alexMonadScan >>= \t -> bool ((t :) <$> lexAll) (pure []) (t == Eof)
 
 }
