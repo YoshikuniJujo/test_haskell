@@ -28,14 +28,23 @@ VARID		{ Varid $$ }
 CONID		{ Conid $$ }
 '('		{ LParen }
 ')'		{ RParen }
+'['		{ LBracket }
+']'		{ RBracket }
 ','		{ Comma }
 '='		{ Equal }
 '::'		{ ColonColon }
 
 INTEGER		{ IntegerLiteral $$ }
 STRING		{ StringLiteral $$ }
+PRAGMA		{ PragmaContent $$ }
 
 %%
+
+pragmasModule
+	:	pragmas module			{ ($1, $2) }
+
+pragmas	:	PRAGMA pragmas			{ $1 : $2 }
+	|					{ [] }
 
 module	:	MODULE modid '(' exports ')' WHERE body
        						{ ($2, $4, $7) }
@@ -88,7 +97,14 @@ lexp	:	fexp				{ $1 }
 
 fexp	:	aexp				{ $1 }
 
-aexp	:	literal				{ $1 }
+aexp	:	literal				{ Literal $1 }
+	|	empty				{ ExpList $1 }
+	|	'[' exps ']'			{ ExpList $2 }
+
+exps	:	exps ',' exp			{ $1 ++ [$3] }
+	|	exp				{ [$1] }
+
+empty	:	'[' ']'				{ [] }
 
 pat	:	lpat				{ $1 }
 
@@ -122,5 +138,7 @@ parseError t = alexError $ "parseError: " ++ show t
 parse = (`runAlex` parser)
 
 data Literal = Integer Integer | String String deriving Show
+
+data Exp = Literal Literal | ExpList [Exp] deriving Show
 
 }

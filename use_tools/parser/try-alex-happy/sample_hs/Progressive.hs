@@ -1,6 +1,8 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Progressive (foo) where
 
 import Hason
 
-foo :: Integer
-foo = 123
+foo :: Hason
+foo = []
