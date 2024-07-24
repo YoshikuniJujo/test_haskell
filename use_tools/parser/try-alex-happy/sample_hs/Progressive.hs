@@ -6,3 +6,6 @@ import Hason
 
 foo :: Hason
 foo = []
+
+bar :: Int
+bar = negate 3

@@ -76,8 +76,8 @@ topdecls:					{ [] }
 
 topdecl	:	decl				{ $1 }
 
-decl	:	gendecl				{ Left $1 }
-     	|	pat rhs				{ Right ($1, $2) }
+decl	:	gendecl				{ uncurry TypeDecl $1 }
+     	|	pat rhs				{ Equation $1 $2 }
 
 gendecl	:	vars '::' type			{ ($1, $3) }
 
@@ -95,11 +95,17 @@ infixexp:	lexp				{ $1 }
 
 lexp	:	fexp				{ $1 }
 
-fexp	:	aexp				{ $1 }
+fexp	:	fexp aexp			{ $1 :$ $2 }
+     	|	aexp				{ $1 }
 
-aexp	:	literal				{ Literal $1 }
+aexp	:	var				{ Var $1 }
+	|	con				{ Con $1 }
+	|	literal				{ Literal $1 }
+	|	'(' exps ')'			{ ExpTuple $2 }
 	|	empty				{ ExpList $1 }
 	|	'[' exps ']'			{ ExpList $2 }
+
+con	:	CONID				{ $1 }
 
 exps	:	exps ',' exp			{ $1 ++ [$3] }
 	|	exp				{ [$1] }
@@ -137,8 +143,19 @@ parseError t = alexError $ "parseError: " ++ show t
 
 parse = (`runAlex` parser)
 
+data Decl
+	= TypeDecl [String] String
+	| Equation String Exp
+	deriving Show
+
 data Literal = Integer Integer | String String deriving Show
 
-data Exp = Literal Literal | ExpList [Exp] deriving Show
+data Exp
+	= Var String | Con String
+	| Literal Literal
+	| ExpTuple [Exp]
+	| ExpList [Exp]
+	| Exp :$ Exp
+	deriving Show
 
 }
