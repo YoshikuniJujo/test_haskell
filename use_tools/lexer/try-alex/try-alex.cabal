@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Hello
+      Relex
   other-modules:
       Paths_try_alex
   autogen-modules:
