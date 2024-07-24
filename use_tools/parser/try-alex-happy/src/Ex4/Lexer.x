@@ -69,6 +69,7 @@ data Token
 	| LBrace | RBrace | VLBrace | VRBrace | Semi
 	| LParen | RParen | Comma | LBracket | RBracket
 	| Let | In | Where | Do | Of
+	| Module
 	| ColonColon | Equal
 	| Eof
 	deriving (Show, Eq)
@@ -86,7 +87,10 @@ conid :: AlexInput -> Int -> Alex Token
 conid (p, _, _, cs) ln = pure . Conid $ take ln cs
 
 keywords :: [(String, Token)]
-keywords = [("let", Let), ("in", In), ("where", Where), ("do", Do), ("of", Of)]
+keywords = [
+	("let", Let), ("in", In), ("where", Where), ("do", Do), ("of", Of),
+	("module", Module)
+	]
 
 spaces0 :: AlexInput -> Int -> Alex Token
 spaces0 inp@(AlexPn _ _ cl, _, _, cs) ln =
