@@ -62,4 +62,4 @@ class Monad m => RelexMonad m where
 	readRelexWords :: String -> m String
 	clearRelexWords :: m ()
 	setRelexInput :: RelexInput m -> m ()
-	setRelexStartCode :: Int -> m ()
+	setRelexStartCode :: StartCode -> m ()
