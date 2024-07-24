@@ -21,7 +21,7 @@ RBRACE		{ RBrace }
 VLBRACE		{ VLBrace }
 VRBRACE		{ VRBrace }
 SEMI		{ Semi }
-VARID		{ Varid $$ _ }
+VARID		{ Varid $$ }
 
 %%
 

@@ -36,6 +36,7 @@ library
       Ex4.Lexer
       Ex4.Parser
       Lib
+      Relex
   other-modules:
       Paths_try_alex_happy
   autogen-modules:
