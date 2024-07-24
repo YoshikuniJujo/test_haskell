@@ -32,6 +32,7 @@ relex :: forall m t . RelexMonad m =>
 relex cnv scd skp i ln = do
 	ps <- getRelexPosn
 	s <- cnv <$> readRelexWords (take ln $ toRelexSource @m i)
+	clearRelexWords
 	setRelexInput $ setPosnAndModifySource @m ps ((s ++) . drop ln) i
 	setRelexStartCode scd
 	skp
@@ -59,5 +60,6 @@ class Monad m => RelexMonad m where
 	getRelexPosn :: m (RelexPosn m)
 	pushRelexWord :: String -> m ()
 	readRelexWords :: String -> m String
+	clearRelexWords :: m ()
 	setRelexInput :: RelexInput m -> m ()
 	setRelexStartCode :: Int -> m ()

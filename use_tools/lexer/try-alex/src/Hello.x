@@ -53,6 +53,7 @@ instance RelexMonad Alex where
 	getRelexPosn = alexGetRelexPosn
 	pushRelexWord = alexPushRelexWord
 	readRelexWords = alexReadRelexWords
+	clearRelexWords = alexClearRelexWords
 	setRelexInput = alexSetInput
 	setRelexStartCode = alexSetStartCode
 
@@ -81,8 +82,10 @@ alexPushRelexWord w = alexModifyUserState \us@AlexUserState { relexWords = ws } 
 alexReadRelexWords :: String -> Alex String
 alexReadRelexWords w = do
 	ws <- relexWords <$> alexGetUserState
-	alexModifyUserState \un -> un { relexWords = [] }
 	pure . concat . reverse $ w : ws
+
+alexClearRelexWords :: Alex ()
+alexClearRelexWords = alexModifyUserState \un -> un { relexWords = [] }
 
 alexModifyUserState :: (AlexUserState -> AlexUserState) -> Alex ()
 alexModifyUserState f = alexSetUserState . f =<< alexGetUserState
