@@ -15,6 +15,7 @@ import Ex4.Lexer
 
 %token
 
+IMPORT		{ Import }
 MODULE		{ Module }
 DO		{ Do }
 WHERE		{ Where }
@@ -29,6 +30,7 @@ CONID		{ Conid $$ }
 ')'		{ RParen }
 ','		{ Comma }
 '='		{ Equal }
+'::'		{ ColonColon }
 
 INTEGER		{ IntegerLiteral $$ }
 STRING		{ StringLiteral $$ }
@@ -46,15 +48,35 @@ exports	:					{ [] }
 
 export	:	VARID				{ $1 }
 
-body	:	'{' topdecls '}'		{ $2 }
-	|	VLBRACE topdecls vrbrace	{ $2 }
+body	:	'{' impdeclsSemi topdecls '}'	{ (Just $2, $3) }
+	|	VLBRACE impdecls ';' topdecls vrbrace
+						{ (Just $2, $4) }
+	|	'{' topdecls '}'		{ (Nothing, $2) }
+	|	VLBRACE topdecls vrbrace	{ (Nothing, $2) }
+
+impdecls:	impdeclsSemi impdecl		{ $1 ++ [$2] }
+
+impdeclsSemi
+	:	impdecls ';'			{ $1 }
+	|					{ [] }
+
+impdecl	:	IMPORT modid			{ $2 }
 
 topdecls:					{ [] }
 	|	topdecl ';' topdecls		{ $1 : $3 }
 
 topdecl	:	decl				{ $1 }
 
-decl	:	pat rhs				{ ($1, $2) }
+decl	:	gendecl				{ Left $1 }
+     	|	pat rhs				{ Right ($1, $2) }
+
+gendecl	:	vars '::' type			{ ($1, $3) }
+
+vars	:	var				{ [$1] }
+
+var	:	VARID				{ $1 }
+
+type	:	CONID				{ $1 }
 
 rhs	:	'=' exp				{ $2 }
 

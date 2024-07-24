@@ -35,6 +35,7 @@ library
       Ex3_2.Parser
       Ex4.Lexer
       Ex4.Parser
+      Hason
       Lib
       Relex
   other-modules:
