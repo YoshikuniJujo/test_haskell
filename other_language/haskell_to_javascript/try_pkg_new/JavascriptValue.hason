@@ -1,0 +1,15 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module JavascriptValue (pkg) where
+
+import Hason
+
+pkg :: Hason
+pkg = [	(KStr "name", Str "yj-javascript-value"),
+	(KStr "version", Str "0.1.0.0"),
+	(KStr "exposed-modules", Seq [
+		Str "GHC.JS.Value", Str "GHC.JS.Value.Object",
+		Str "GHC.JS.Value.String" ]),
+	(KStr "depends", Seq [
+		Dct [	(KStr "name", Str "base"),
+			(KStr "version", Str "4.20.0.0") ] ]) ]

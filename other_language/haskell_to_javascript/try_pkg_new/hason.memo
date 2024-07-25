@@ -1,1 +1,0 @@
-./mkPackageConf hason 0.1.0.0 hason-modules.conf hason-depends.conf > hason.conf
