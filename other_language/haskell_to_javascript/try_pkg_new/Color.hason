@@ -1,0 +1,13 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Color(pkg) where
+
+import Hason
+
+pkg :: Hason
+pkg = [	(KStr "name", Str "yj-color"),
+	(KStr "version", Str "0.1.0.0"),
+	(KStr "exposed-modules", Seq [Str "Data.Color"]),
+	(KStr "depends", Seq [
+		Dct [	(KStr "name", Str "base"),
+			(KStr "version", Str "4.20.0.0") ] ]) ]

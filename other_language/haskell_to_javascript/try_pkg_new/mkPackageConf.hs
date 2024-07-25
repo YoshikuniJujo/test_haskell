@@ -22,7 +22,8 @@ main = do
 	[pkgfp] <- getArgs
 	Right hsn <- eval <$> readFile pkgfp
 	let	Just md = hasonToMetaData hsn
-	tdir <- mkPkgDir . head . lines <$> readFile "ghc-version.conf"
+	hm <- getEnv "HOME"
+	tdir <- mkPkgDir . head . lines <$> readFile (hm </> ".local/ghc/etc/ghc-version.conf")
 	putStr . showInstalledPackageInfo
 		$ packageInfo tdir
 			(mdPkgName md) (mdPkgVersion md) (mdExposedModules md)
