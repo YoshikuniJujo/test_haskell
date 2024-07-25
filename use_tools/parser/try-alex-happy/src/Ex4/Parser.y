@@ -1,6 +1,6 @@
 {
 
-module Ex4.Parser where
+module Ex4.Parser (parse) where
 
 import Control.Monad
 import Ex4.Lexer
@@ -41,13 +41,13 @@ PRAGMA		{ PragmaContent $$ }
 %%
 
 pragmasModule
-	:	pragmas module			{ ($1, $2) }
+	:	pragmas module			{ (words <\$> ($1), $2) }
 
 pragmas	:	PRAGMA pragmas			{ $1 : $2 }
 	|					{ [] }
 
 module	:	MODULE modid '(' exports ')' WHERE body
-       						{ ($2, $4, $7) }
+						{ uncurry (Mdl $2 $4) $7 }
 
 modid	:	CONID				{ $1 }
 
@@ -57,11 +57,11 @@ exports	:					{ [] }
 
 export	:	VARID				{ $1 }
 
-body	:	'{' impdeclsSemi topdecls '}'	{ (Just $2, $3) }
+body	:	'{' impdeclsSemi topdecls '}'	{ ($2, $3) }
 	|	VLBRACE impdecls ';' topdecls vrbrace
-						{ (Just $2, $4) }
-	|	'{' topdecls '}'		{ (Nothing, $2) }
-	|	VLBRACE topdecls vrbrace	{ (Nothing, $2) }
+						{ ($2, $4) }
+	|	'{' topdecls '}'		{ ([], $2) }
+	|	VLBRACE topdecls vrbrace	{ ([], $2) }
 
 impdecls:	impdeclsSemi impdecl		{ $1 ++ [$2] }
 
@@ -142,6 +142,13 @@ parseError :: Token -> Alex a
 parseError t = alexError $ "parseError: " ++ show t
 
 parse = (`runAlex` parser)
+
+data Mdl = Mdl {
+	moduleName :: String,
+	moduleExport :: [String],
+	moduleImport :: [String],
+	moduleDecls :: [Decl] }
+	deriving Show
 
 data Decl
 	= TypeDecl [String] String
