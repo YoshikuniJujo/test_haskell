@@ -1,0 +1,3 @@
+happy Hason/Parser.y
+alex Hason/Lexer.x
+emar qcls libHShason-0.1.0.0-inplace.a Hason.o Hason/Eval.o Hason/Lexer.o Hason/Parser.o Hason/Relex.o
