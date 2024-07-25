@@ -14,13 +14,62 @@ import Data.List qualified as L
 import System.Environment
 import System.FilePath
 
+import Hason
+import Hason.Eval
+
 main :: IO ()
 main = do
-	[pnm, pvsn, emsfp, dpdsfp] <- getArgs
+	[pkgfp] <- getArgs
+	Right hsn <- eval <$> readFile pkgfp
+	let	Just md = hasonToMetaData hsn
 	tdir <- mkPkgDir . head . lines <$> readFile "ghc-version.conf"
-	mds <- lines <$> readFile emsfp
-	dpds <- mkDepends <$> readFile dpdsfp
-	putStr . showInstalledPackageInfo $ packageInfo tdir pnm pvsn mds dpds
+	putStr . showInstalledPackageInfo
+		$ packageInfo tdir
+			(mdPkgName md) (mdPkgVersion md) (mdExposedModules md)
+			(mkDepends' $ mdDepends md)
+
+data MetaData = MetaData {
+	mdPkgName :: Name,
+	mdPkgVersion :: Vsn,
+	mdExposedModules :: [Module],
+	mdDepends :: [(Name, Vsn)] }
+	deriving Show
+
+type Name = String
+type Vsn = String
+type Module = String
+
+hasonToMetaData :: Hason -> Maybe MetaData
+hasonToMetaData h = do
+	nm <- toName =<< lookup (KStr "name") h
+	vsn <- toVersion =<< lookup (KStr "version") h
+	ems <- toModules =<< lookup (KStr "exposed-modules") h
+	dps <- toNameVsns =<< lookup (KStr "depends") h
+	pure $ MetaData nm vsn ems dps
+
+toName :: HasonValue -> Maybe Name
+toName = \case Str nm -> Just nm; _ -> Nothing
+
+toVersion :: HasonValue -> Maybe Vsn
+toVersion = \case Str vsn -> Just vsn; _ -> Nothing
+
+toModules :: HasonValue -> Maybe [Module]
+toModules = \case
+	Seq ms -> (\case Str mn -> Just mn; _ -> Nothing) `mapM` ms
+	_ -> Nothing
+
+toNameVsns :: HasonValue -> Maybe [(Name, Vsn)]
+toNameVsns = \case
+	Seq ds -> mapM toNameVsn ds
+	_ -> Nothing
+
+toNameVsn :: HasonValue -> Maybe (Name, Vsn)
+toNameVsn = \case
+	Dct p -> do
+		Str n <- lookup (KStr "name") p
+		Str v <- lookup (KStr "version") p
+		pure (n, v)
+	_ -> Nothing
 
 mkPkgVersion :: String -> [Int]
 mkPkgVersion vstr = read <$> sepBy '.' vstr
@@ -44,6 +93,12 @@ mkPkgDir vsn =
 
 mkDepends :: String -> [UnitId]
 mkDepends = ((mkDepend . words) <$>) . lines
+
+mkDepends' :: [(String, String)] -> [UnitId]
+mkDepends' = map mkDepend'
+
+mkDepend' :: (String, String) -> UnitId
+mkDepend' (nm, vsn) = mkUnitId $ nm ++ "-" ++ vsn ++ "-inplace"
 
 mkDepend :: [String] -> UnitId
 mkDepend (nm : vsn : _) = mkUnitId $ nm ++ "-" ++ vsn ++ "-inplace"
