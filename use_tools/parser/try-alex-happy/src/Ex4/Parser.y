@@ -1,6 +1,6 @@
 {
 
-module Ex4.Parser (parse) where
+module Ex4.Parser (parse, Mdl(..), Decl(..), Exp(..), Literal(..)) where
 
 import Control.Monad
 import Ex4.Lexer
