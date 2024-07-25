@@ -5,12 +5,16 @@ module Main (main) where
 
 import Control.Monad
 import Data.Maybe
+import System.Environment
 
 import Hason
 import Ex4.Parser
 
 main :: IO ()
-main = print . (evaluate =<<) . parse =<< readFile "sample_hs/Sample.hs"
+main = print . eval =<< readFile . head =<< getArgs
+
+eval :: String -> Either String Hason
+eval = (evaluate =<<) . parse
 
 evaluate :: ([[String]], Mdl) -> Either String Hason
 evaluate rslt = do

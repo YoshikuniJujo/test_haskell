@@ -1,0 +1,10 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Package(pkg) where
+
+import Hason
+
+pkg :: Hason
+pkg = [	(KStr "name", Str "hello"),
+	(KStr "version", Str "0.1.0.0"),
+	(KStr "exposed-modules", Seq [Str "Hello"]) ]
