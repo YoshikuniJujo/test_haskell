@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- array
 
 ghc-options:
 - -Wall
@@ -35,6 +36,10 @@ ghc-options:
 
 library:
   source-dirs: src
+
+  exposed-modules:
+    - Hason
+    - Hason.Eval
 
 executables:
   try-hason-exe:
