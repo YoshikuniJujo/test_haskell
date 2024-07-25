@@ -4,9 +4,9 @@ module Hason (Hason, HasonKey(..), HasonValue(..)) where
 
 type Hason = [(HasonKey, HasonValue)]
 
-data HasonKey = KInt Integer | KStr String deriving Show
+data HasonKey = KInt Integer | KStr String deriving (Show, Eq)
 
 data HasonValue
 	= Int Integer | Str String
 	| Seq [HasonValue] | Dct Hason
-	deriving Show
+	deriving (Show, Eq)
