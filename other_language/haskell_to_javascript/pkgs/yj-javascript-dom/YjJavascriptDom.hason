@@ -1,0 +1,29 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module YjJavascriptDom(pkg) where
+
+import Hason
+
+pkg :: Hason
+pkg = [	(KStr "name", Str "yj-javascript-dom"),
+	(KStr "version", Str "0.1.0.0"),
+	(KStr "exposed-modules", Seq [
+		Str "GHC.JS.Value.EventTarget",
+		Str "GHC.JS.Value.Window",
+		Str "GHC.JS.Value.Node",
+		Str "GHC.JS.Value.Document",
+		Str "GHC.JS.Value.Element",
+		Str "GHC.JS.Value.HtmlElement",
+		Str "GHC.JS.Value.HtmlElement.Paragraph",
+		Str "GHC.JS.Value.Event",
+		Str "GHC.JS.Value.Event.UI",
+		Str "GHC.JS.Value.Event.Mouse",
+		Str "GHC.JS.Value.Event.Pointer",
+		Str "GHC.JS.Value.CharacterData",
+		Str "GHC.JS.Value.CharacterData.Text",
+		Str "GHC.JS.Value.Date" ]),
+	(KStr "depends", Seq [
+		Dct [	(KStr "name", Str "base"),
+			(KStr "version", Str "4.20.0.0") ],
+		Dct [	(KStr "name", Str "yj-javascript-value"),
+			(KStr "version", Str "0.1.0.0") ] ]) ]
