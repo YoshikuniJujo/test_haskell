@@ -14,7 +14,7 @@ import Data.Maybe
 data E = forall em . JS.Value.V em => E em
 
 instance JS.Value.IsJSVal E where toJSVal (E em) = JS.Value.toJSVal em
-instance JS.Value.V E where toV = JS.Node.toV; fromV = JS.Node.fromV
+instance JS.Value.V E where toV = JS.Node.toValue; fromV = JS.Node.fromValue
 
 toV :: JS.Value.V em => em -> JS.Value.Some
 toV = JS.Value.toV . E
@@ -26,7 +26,7 @@ instance JS.Object.IsO E
 instance JS.EventTarget.IsE E
 
 instance JS.Node.IsN E where
-	downCheck nd = JS.Node.getNodeType nd == JS.Node.ElementNode
+	downCheck nd = JS.Node.nodeType nd == JS.Node.ElementNode
 	downMake = E . OtherE
 
 toE :: IsE e => e -> E
@@ -50,7 +50,7 @@ instance JS.Object.IsO OtherE
 instance JS.EventTarget.IsE OtherE
 
 instance JS.Node.IsN OtherE where
-	downCheck nd = JS.Node.getNodeType nd == JS.Node.ElementNode
+	downCheck nd = JS.Node.nodeType nd == JS.Node.ElementNode
 	downMake = OtherE
 
 instance IsE OtherE where downCheck = const True; downMake = OtherE

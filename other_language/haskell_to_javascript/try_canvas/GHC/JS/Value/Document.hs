@@ -13,7 +13,7 @@ import GHC.JS.Value.Element qualified as JS.Element
 newtype D = D JSVal
 
 instance JS.Value.IsJSVal D where toJSVal (D v) = v
-instance JS.Value.V D where toV = JS.Node.toV; fromV = JS.Node.fromV
+instance JS.Value.V D where toV = JS.Node.toValue; fromV = JS.Node.fromValue
 
 getDocumentURI :: D -> String
 getDocumentURI (D dc) = fromJSString $ js_getDocumentURI dc
@@ -25,7 +25,7 @@ instance JS.Object.IsO D
 instance JS.EventTarget.IsE D
 
 instance JS.Node.IsN D where
-	downCheck nd = JS.Node.getNodeType nd == JS.Node.DocumentNode
+	downCheck nd = JS.Node.nodeType nd == JS.Node.DocumentNode
 	downMake = D
 
 instance Show D where

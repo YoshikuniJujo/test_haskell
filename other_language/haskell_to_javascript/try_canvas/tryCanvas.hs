@@ -53,17 +53,17 @@ main = do
 				() <$ JS.Node.removeChild (JS.Node.toN foo) fc
 			JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN szt
 	print $ JS.Document.getDocumentURI document
-	print . JS.Node.getNodeName $ JS.Node.toN document
-	print . JS.Node.getNodeType $ JS.Node.toN document
+	print . JS.Node.nodeName $ JS.Node.toN document
+	print . JS.Node.nodeType $ JS.Node.toN document
 	print @(Maybe JS.Document.D) . (JS.Node.fromN =<<)
 		=<< parentOfChild (JS.Node.toN document)
 	print $ JS.Element.getTagName foo
-	print . (JS.Node.getNodeType <$>)
+	print . (JS.Node.nodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
 	Just clocktime <- JS.Document.getElementById document "clocktime"
 	baz <- JS.Text.new $ hello ++ " Yoshikuni Jujo"
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
-	print . (JS.Node.getNodeType <$>)
+	print . (JS.Node.nodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
 	print $ JS.Object.toO foo `JS.Object.isInstanceOf` JS.Element.eClass
 	print $ JS.Object.toO JS.Window.w
@@ -299,4 +299,5 @@ while_ p act = do
 	when b $ act >> while_ p act
 
 parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
-parentOfChild nd = (JS.Node.parentNode =<<) <$> JS.Node.firstChild nd
+parentOfChild nd =
+	maybe (pure Nothing) JS.Node.parentNode =<< JS.Node.firstChild nd
