@@ -1,14 +1,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.Event.Mouse where
+module GHC.JS.Value.Event.Mouse (
+	M, toValue, fromValue, toM, IsM, offsetX, offsetY
+	) where
 
-import GHC.JS.Prim
+import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Event qualified as JS.Event
 import GHC.JS.Value.Event.UI qualified as JS.UIEvent
-import Data.Typeable
-import Data.Maybe
+import Data.Typeable (cast)
+import Data.Maybe (fromJust)
 
 data M = forall ms . JS.Value.V ms => M ms
 
@@ -50,6 +52,12 @@ instance JS.Object.IsO OtherM
 instance JS.Event.IsE OtherM where
 	downCheck ev = JS.Object.toO ev `JS.Object.isInstanceOf` mClass
 	downMake = OtherM
+
+---------------------------------------------------------------------------
+--- INSTANCE PROPERTY
+---------------------------------------------------------------------------
+
+-- MouseEvent.offsetX and MouseEvent.offsetY
 
 offsetX, offsetY :: M -> Double
 offsetX = js_offsetX . JS.Value.toJSVal

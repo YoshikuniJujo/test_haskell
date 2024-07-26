@@ -27,7 +27,7 @@ toE :: IsE et => et -> E; toE = fromJust . JS.Value.cast
 class JS.Object.IsO et => IsE et
 
 addEventListenerSimple :: E -> String -> (JS.Event.E -> IO ()) -> IO ()
-addEventListenerSimple etg etp ((. JS.Event.E . JS.Event.OtherE) -> lsn) =
+addEventListenerSimple etg etp ((. JS.Event.otherE) -> lsn) =
 	js_addEventListenerSimple (JS.Value.toJSVal etg) (toJSString etp)
 		=<< syncCallback1 ThrowWouldBlock lsn
 

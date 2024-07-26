@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.CharacterData.Text where
+module GHC.JS.Value.CharacterData.Text (T, new) where
 
-import GHC.JS.Prim
+import GHC.JS.Prim (JSVal, toJSString)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
@@ -13,7 +13,7 @@ newtype T = T JSVal
 
 instance JS.Value.IsJSVal T where toJSVal (T v) = v
 instance JS.Value.V T where
-	toV = JS.CharacterData.toV; fromV = JS.CharacterData.fromV
+	toV = JS.CharacterData.toValue; fromV = JS.CharacterData.fromValue
 
 instance JS.Object.IsO T
 instance JS.EventTarget.IsE T

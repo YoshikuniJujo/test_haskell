@@ -1,26 +1,27 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.CharacterData where
+module GHC.JS.Value.CharacterData (
+	C, toValue, fromValue, toC, fromC, IsC(..) ) where
 
-import GHC.JS.Prim
+import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Node qualified as JS.Node
-import Data.Typeable
-import Data.Maybe
+import Data.Typeable (cast)
+import Data.Maybe (fromJust)
 
 data C = forall cd . JS.Value.V cd => C cd
 
 instance JS.Value.IsJSVal C where toJSVal (C cd) = JS.Value.toJSVal cd
 instance JS.Value.V C where toV = JS.Node.toValue; fromV = JS.Node.fromValue
 
-toV :: JS.Value.V cd => cd -> JS.Value.Some
-toV = JS.Value.toV . C
+toValue :: JS.Value.V cd => cd -> JS.Value.Some
+toValue = JS.Value.toV . C
 
-fromV :: JS.Value.V cd => JS.Value.Some -> Maybe cd
-fromV v = JS.Value.fromV v >>= \(C cd) -> cast cd
+fromValue :: JS.Value.V cd => JS.Value.Some -> Maybe cd
+fromValue v = JS.Value.fromV v >>= \(C cd) -> cast cd
 
 instance JS.Object.IsO C
 instance JS.EventTarget.IsE C
@@ -44,7 +45,7 @@ class JS.Node.IsN c => IsC c where
 newtype OtherC = OtherC JSVal
 
 instance JS.Value.IsJSVal OtherC where toJSVal (OtherC v) = v
-instance JS.Value.V OtherC where toV = toV; fromV = fromV
+instance JS.Value.V OtherC where toV = toValue; fromV = fromValue
 
 instance JS.Object.IsO OtherC
 instance JS.EventTarget.IsE OtherC

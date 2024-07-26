@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.Event.Pointer where
+module GHC.JS.Value.Event.Pointer (P) where
 
-import GHC.JS.Prim
+import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Event qualified as JS.Event

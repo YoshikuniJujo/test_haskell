@@ -19,13 +19,13 @@ yj-dom
 * [x] GHC.JS.Value.Element
 * [x] GHC.JS.Value.HtmlElement
 * [x] GHC.JS.Value.HtmlElement.Paragraph
-* [ ] GHC.JS.Value.Event
-* [ ] GHC.JS.Value.Event.UI
-* [ ] GHC.JS.Value.Event.Mouse
-* [ ] GHC.JS.Value.Event.Pointer
-* [ ] GHC.JS.Value.CharacterData
-* [ ] GHC.JS.Value.CharacterData.Text
-* [ ] GHC.JS.Value.Date
+* [x] GHC.JS.Value.Event
+* [x] GHC.JS.Value.Event.UI
+* [x] GHC.JS.Value.Event.Mouse
+* [x] GHC.JS.Value.Event.Pointer
+* [x] GHC.JS.Value.CharacterData
+* [x] GHC.JS.Value.CharacterData.Text
+* [x] GHC.JS.Value.Date
 
 ### Canvas base
 
