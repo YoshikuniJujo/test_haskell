@@ -61,7 +61,7 @@ main = do
 	print . (JS.Node.nodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
 	Just clocktime <- JS.Document.getElementById document "clocktime"
-	baz <- JS.Text.new $ hello ++ " Yoshikuni Jujo"
+	baz <- JS.Text.new $ hello ++ " YJ"
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
 	print . (JS.Node.nodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
