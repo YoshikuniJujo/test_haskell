@@ -57,7 +57,7 @@ main = do
 	print . JS.Node.nodeType $ JS.Node.toN document
 	print @(Maybe JS.Document.D) . (JS.Node.fromN =<<)
 		=<< parentOfChild (JS.Node.toN document)
-	print $ JS.Element.getTagName foo
+	print $ JS.Element.tagName foo
 	print . (JS.Node.nodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
 	Just clocktime <- JS.Document.getElementById document "clocktime"

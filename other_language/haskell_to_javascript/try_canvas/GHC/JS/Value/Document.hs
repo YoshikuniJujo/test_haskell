@@ -49,8 +49,7 @@ getElementById (D dc) (toJSString -> i) = js_getElementById dc i >>= \case
 	e	| isNull e -> pure Nothing
 		| isUndefined e ->
 			error "Document.getElementById() return undefined"
-		| otherwise ->
-			pure . Just . JS.Element.toE $ JS.Element.OtherE e
+		| otherwise -> pure . Just $ JS.Element.otherE e
 
 foreign import javascript "((d, id) => { return d.getElementById(id); })"
 	js_getElementById :: JSVal -> JSVal -> IO JSVal

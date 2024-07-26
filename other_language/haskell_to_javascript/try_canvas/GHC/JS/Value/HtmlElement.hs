@@ -15,7 +15,7 @@ import Data.Maybe
 data H = forall he . JS.Value.V he => H he
 
 instance JS.Value.IsJSVal H where toJSVal (H he) = JS.Value.toJSVal he
-instance JS.Value.V H where toV = JS.Element.toV; fromV = JS.Element.fromV
+instance JS.Value.V H where toV = JS.Element.toValue; fromV = JS.Element.fromValue
 
 toV :: JS.Value.V he => he -> JS.Value.Some
 toV = JS.Value.toV . H
