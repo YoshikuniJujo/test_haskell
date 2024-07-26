@@ -15,7 +15,7 @@ yj-dom
 * [x] GHC.JS.Value.EventTarget
 * [x] GHC.JS.Value.Window
 * [x] GHC.JS.Value.Node
-* [ ] GHC.JS.Value.Document
+* [x] GHC.JS.Value.Document
 * [ ] GHC.JS.Value.Element
 * [ ] GHC.JS.Value.HtmlElement
 * [ ] GHC.JS.Value.HtmlElement.Paragraph

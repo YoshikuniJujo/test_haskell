@@ -52,7 +52,7 @@ main = do
 				Just fc <- JS.Node.firstChild (JS.Node.toN foo)
 				() <$ JS.Node.removeChild (JS.Node.toN foo) fc
 			JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN szt
-	print $ JS.Document.getDocumentURI document
+	print $ JS.Document.documentUri document
 	print . JS.Node.nodeName $ JS.Node.toN document
 	print . JS.Node.nodeType $ JS.Node.toN document
 	print @(Maybe JS.Document.D) . (JS.Node.fromN =<<)
