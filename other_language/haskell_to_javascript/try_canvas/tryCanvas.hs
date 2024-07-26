@@ -69,8 +69,7 @@ main = do
 	print $ JS.Object.toO JS.Window.w
 		`JS.Object.isInstanceOf` JS.Element.eClass
 	print =<< maybe (pure Nothing)
-		((Just <$>) . JS.HtmlElement.getOffsetWidth)
-		(JS.Element.fromE foo)
+		((Just <$>) . JS.HtmlElement.offsetWidth) (JS.Element.fromE foo)
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo
 	Just canvas' <- JS.Document.getElementById document "canvas"
 	let	Just cvs = JS.Element.fromE canvas'

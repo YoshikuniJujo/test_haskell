@@ -1,10 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.HtmlElement.Paragraph where
+module GHC.JS.Value.HtmlElement.Paragraph (P) where
 
-import GHC.JS.Prim
+import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
-
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Node qualified as JS.Node
@@ -16,7 +15,7 @@ newtype P = P JSVal
 instance JS.Value.IsJSVal P where toJSVal (P v) = v
 
 instance JS.Value.V P where
-	toV = JS.HtmlElement.toV; fromV = JS.HtmlElement.fromV
+	toV = JS.HtmlElement.toValue; fromV = JS.HtmlElement.fromValue
 
 instance JS.Object.IsO P
 instance JS.EventTarget.IsE P

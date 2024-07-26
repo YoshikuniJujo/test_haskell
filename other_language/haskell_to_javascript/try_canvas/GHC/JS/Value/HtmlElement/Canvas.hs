@@ -18,7 +18,7 @@ newtype C = C JSVal
 instance JS.Value.IsJSVal C where toJSVal (C v) = v
 
 instance JS.Value.V C where
-	toV = JS.HtmlElement.toV; fromV = JS.HtmlElement.fromV
+	toV = JS.HtmlElement.toValue; fromV = JS.HtmlElement.fromValue
 
 instance JS.Object.IsO C
 instance JS.EventTarget.IsE C
