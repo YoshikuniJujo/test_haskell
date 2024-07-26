@@ -2,7 +2,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.Document where
+module GHC.JS.Value.Document (D(..), documentUri, getElementById) where
 
 import GHC.JS.Prim (JSVal, isNull, isUndefined, toJSString, fromJSString)
 import GHC.JS.Value qualified as JS.Value
