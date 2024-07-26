@@ -29,8 +29,8 @@ yj-dom
 
 ### Canvas base
 
-* [ ] GHC.JS.Value.HtmlElement.Canvas
-* [ ] GHC.JS.Value.CanvasContext
+* [x] GHC.JS.Value.HtmlElement.Canvas
+* [x] GHC.JS.Value.CanvasContext
 
 ### Rendering 2D
 

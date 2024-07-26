@@ -16,7 +16,7 @@ newtype R = R JSVal
 instance JS.Value.IsJSVal R where toJSVal (R v) = v
 
 instance JS.Value.V R where
-	toV = JS.CanvasContext.toV; fromV = JS.CanvasContext.fromV
+	toV = JS.CanvasContext.toValue; fromV = JS.CanvasContext.fromValue
 
 instance JS.Object.IsO R
 
