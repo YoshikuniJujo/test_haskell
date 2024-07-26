@@ -4,7 +4,17 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.Node where
+module GHC.JS.Value.Node (
+
+	N, toValue, fromValue, toN, fromN, IsN(..),
+
+	firstChild, nodeName, nodeType,
+	NodeType, pattern ElementNode, pattern TextNode, pattern DocumentNode,
+	parentNode,
+
+	appendChild, hasChildNodes, removeChild
+
+	) where
 
 import GHC.JS.Prim (JSVal, isUndefined, isNull, fromJSString)
 import GHC.JS.Value qualified as JS.Value
