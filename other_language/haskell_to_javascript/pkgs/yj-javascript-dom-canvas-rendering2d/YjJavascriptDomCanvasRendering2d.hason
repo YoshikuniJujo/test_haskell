@@ -1,0 +1,22 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module YjJavascriptDomCanvas(pkg) where
+
+import Hason
+
+pkg :: Hason
+pkg = [	(KStr "name", Str "yj-javascript-dom-canvas-rendering2d"),
+	(KStr "version", Str "0.1.0.0"),
+	(KStr "exposed-modules", Seq [
+		Str "GHC.JS.Value.CanvasContext.Rendering2d",
+		Str "GHC.JS.Value.CanvasContext.Rendering2d.Pathable",
+		Str "GHC.JS.Value.CanvasContext.Rendering2d.Path" ]),
+	(KStr "depends", Seq [
+		Dct [	(KStr "name", Str "base"),
+			(KStr "version", Str "4.20.0.0") ],
+		Dct [	(KStr "name", Str "yj-javascript-value"),
+			(KStr "version", Str "0.1.0.0") ],
+		Dct [	(KStr "name", Str "yj-javascript-dom"),
+			(KStr "version", Str "0.1.0.0") ],
+		Dct [	(KStr "name", Str "yj-javascript-dom-canvas"),
+			(KStr "version", Str "0.1.0.0") ] ]) ]
