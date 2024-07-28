@@ -95,12 +95,12 @@ main = do
 
 	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
 	let	Just ctx' = JS.CanvasContext.fromC ctx_
-	JS.CanvasRenderingContext2d.setFillStyleRgb ctx' $ Color.Rgb 200 0 0
+	JS.CanvasRenderingContext2d.setFillStyle ctx' $ Color.Rgb 200 0 0
 	JS.CanvasRenderingContext2d.fillRect ctx' 10 10 50 50
-	JS.CanvasRenderingContext2d.setFillStyleRgba ctx' $ Color.Rgba 0 0 200 0x80
+	JS.CanvasRenderingContext2d.setFillStyle ctx' $ Color.Rgba 0 0 200 0x80
 	JS.CanvasRenderingContext2d.fillRect ctx' 20 20 50 50
 
-	JS.CanvasRenderingContext2d.setFillStyleRgb ctx' $ Color.Rgb 0 0 0
+	JS.CanvasRenderingContext2d.setFillStyle ctx' $ Color.Rgb 0 0 0
 	JS.CanvasRenderingContext2d.fillRect ctx' 125 25 100 100
 	JS.CanvasRenderingContext2d.clearRect ctx' 145 45 60 60
 	JS.CanvasRenderingContext2d.strokeRect ctx' 150 50 50 50
@@ -237,7 +237,7 @@ draw ctx' = do
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
-	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.White
+	JS.CanvasRenderingContext2d.setFillStyle ctx' Color.White
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') 91 96
 	JS.Pathable2d.bezierCurveTo (JS.Pathable2d.toP ctx') 88 96 87 99 87 101
@@ -252,7 +252,7 @@ draw ctx' = do
 	JS.CanvasRenderingContext2d.fill
 		ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 
-	JS.CanvasRenderingContext2d.setFillStyleColorName ctx' Color.Black
+	JS.CanvasRenderingContext2d.setFillStyle ctx' Color.Black
 	JS.CanvasRenderingContext2d.beginPath ctx'
 	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') 101 102 2 0 (pi * 2) True
 	JS.CanvasRenderingContext2d.fill

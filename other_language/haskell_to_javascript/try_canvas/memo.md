@@ -34,6 +34,6 @@ yj-dom
 
 ### Rendering 2D
 
-* [ ] GHC.JS.Value.CanvasContext.Rendering2d
-* [ ] GHC.JS.Value.CanvasContext.Rendering2d.Pathable
-* [ ] GHC.JS.Value.CanvasContext.Rendering2d.Path
+* [x] GHC.JS.Value.CanvasContext.Rendering2d
+* [x] GHC.JS.Value.CanvasContext.Rendering2d.Pathable
+* [x] GHC.JS.Value.CanvasContext.Rendering2d.Path

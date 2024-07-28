@@ -1,20 +1,23 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.CanvasContext.Rendering2d.Path where
+module GHC.JS.Value.CanvasContext.Rendering2d.Path (
+	P(..), From(..), new, addPathNoTransform ) where
 
-import GHC.JS.Prim
+import GHC.JS.Prim (JSVal, toJSString)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.CanvasContext.Rendering2d.Pathable qualified as JS.Pathable
 
-newtype P = P JSVal
+newtype P = P { unP :: JSVal }
 
-instance JS.Value.IsJSVal P where toJSVal (P p) = p
+instance JS.Value.IsJSVal P where toJSVal = unP
 instance JS.Value.V P where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 instance JS.Object.IsO P
 instance JS.Pathable.IsP P
+
+-- new Path2D()
 
 new :: From -> IO P
 new = (P <$>) . \case
@@ -32,6 +35,8 @@ foreign import javascript "((p) => { return new Path2D(p); })"
 
 foreign import javascript "((d) => { return new Path2D(d); })"
 	js_newPath2D_svgPath :: JSVal -> IO JSVal
+
+-- Path2D.addPath()
 
 addPathNoTransform :: P -> P -> IO ()
 addPathNoTransform (P pd) (P ps) = js_addPath pd ps
