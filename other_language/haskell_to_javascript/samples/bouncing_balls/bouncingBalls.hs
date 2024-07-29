@@ -4,6 +4,7 @@
 
 module Main where
 
+import Control.Concurrent.STM
 import Control.Monad
 import Data.Foldable
 
@@ -37,6 +38,8 @@ import Data.Color qualified as Color
 
 main :: IO ()
 main = do
+	ball <- atomically $ newTVar (100, 100)
+	time <- atomically $ newTVar 0
 	let	document = JS.Window.document JS.Window.w
 	Just foo <- JS.Document.getElementById document "foo"
 	JS.EventTarget.addEventListenerSimple
@@ -69,9 +72,29 @@ main = do
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE foo
 	Just canvas' <- JS.Document.getElementById document "canvas"
 	let	cvs = fromMaybe (error "not canvas") $ JS.Element.fromE canvas'
+	w <- JS.HtmlCanvasElement.getWidth cvs
+	h <- JS.HtmlCanvasElement.getHeight cvs
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
-	print =<< maybe (pure 0) JS.HtmlCanvasElement.getHeight (JS.Element.fromE canvas')
-	print =<< JS.HtmlCanvasElement.getHeight cvs
+	print w; print h
+	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
+	let	ctx' = fromMaybe (error "not RenderingContext2d")
+			$ JS.CanvasContext.fromC ctx_
+
+	JS.Window.setInterval JS.Window.w (do
+		JS.CanvasRenderingContext2d.beginPath ctx'
+		JS.CanvasRenderingContext2d.clearRect ctx' 0 0 w h
+		(x, y) <- atomically $ readTVar ball
+		JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x y
+		JS.CanvasRenderingContext2d.setFillStyle ctx' $ Color.Rgb 200 0 0
+		t <- JS.Date.getTime <$> JS.Date.new
+		JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x (h - sampleHeight t) 10 0 (pi * 2) False
+		JS.CanvasRenderingContext2d.fill ctx' Nothing JS.CanvasRenderingContext2d.nonzero
+		JS.CanvasRenderingContext2d.fillText ctx' (show t) (x + 20) y
+		) 30
+
+	JS.Window.setInterval JS.Window.w (do
+		atomically $ modifyTVar ball (\(x, y) -> (x, y + 1))) 1000
+
 	JS.Window.setInterval JS.Window.w (do
 		nows <- JS.Object.toString . JS.Object.toO <$> JS.Date.new
 		while_ (JS.Node.hasChildNodes $ JS.Node.toN clocktime) do
@@ -89,9 +112,6 @@ main = do
 			() <$ JS.Node.removeChild (JS.Node.toN foo) fc
 		JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN szt
 
-	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
-	let	ctx' = fromMaybe (error "not RenderingContext2d")
-			$ JS.CanvasContext.fromC ctx_
 	JS.CanvasRenderingContext2d.fillText ctx' "HELLO" 100 100
 	JS.CanvasRenderingContext2d.setFillStyle ctx' $ Color.Rgb 200 0 0
 	JS.CanvasRenderingContext2d.fillRect ctx' 10 10 50 50
@@ -179,6 +199,7 @@ main = do
 		(JS.Pathable2d.toP circle) 100 35 25 0 (2 * pi) False
 
 	JS.CanvasRenderingContext2d.restore ctx'
+	JS.CanvasRenderingContext2d.save ctx'
 
 	JS.CanvasRenderingContext2d.translate ctx' 0 480
 	JS.CanvasRenderingContext2d.stroke ctx' (Just rectangle)
@@ -192,6 +213,9 @@ main = do
 	svgp <- JS.Path2d.new $ JS.Path2d.FromSvgPath "M10 10 h 80 v 80 h -80 Z"
 	JS.CanvasRenderingContext2d.translate ctx' 150 0
 	JS.CanvasRenderingContext2d.stroke ctx' $ Just svgp
+
+	JS.Pathable2d.closePath (JS.Pathable2d.toP ctx')
+	JS.CanvasRenderingContext2d.restore ctx'
 
 -- END OF MAIN
 
@@ -298,3 +322,6 @@ while_ p act = do
 parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
 parentOfChild nd =
 	maybe (pure Nothing) JS.Node.parentNode =<< JS.Node.firstChild nd
+
+sampleHeight :: Double -> Double
+sampleHeight x = - 9 * 10 ** (- 5) * (fromIntegral (round x `mod` 5000) - 2500) ^ 2 + 570
