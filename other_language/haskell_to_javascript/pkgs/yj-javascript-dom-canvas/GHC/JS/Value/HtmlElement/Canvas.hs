@@ -6,7 +6,7 @@ module GHC.JS.Value.HtmlElement.Canvas (
 
 	C,
 
-	getHeight,
+	getHeight, getWidth,
 
 	getContext, ContextType,
 	pattern ContextType2d
@@ -54,13 +54,16 @@ foreign import javascript "(() => { return HTMLCanvasElement; })"
 --- INSTANCE PROPERTY                                                   ---
 ---------------------------------------------------------------------------
 
--- HTMLCanvasElement.height
+-- HTMLCanvasElement.width and HTMLCanvasElement.height
 
-getHeight :: C -> IO Word
-getHeight = js_getHeight . unC
+getWidth, getHeight :: C -> IO Double
+getWidth = js_getWidth . unC; getHeight = js_getHeight . unC
+
+foreign import javascript "((c) => { return c.width; })"
+	js_getWidth :: JSVal -> IO Double
 
 foreign import javascript "((c) => { return c.height; })"
-	js_getHeight :: JSVal -> IO Word
+	js_getHeight :: JSVal -> IO Double
 
 ---------------------------------------------------------------------------
 --- METHOD                                                              ---
