@@ -1,9 +1,0 @@
-name = "yj-sample"
-version = "0.1.0.0"
-
-depends = [
-	{ name = "base", version = "4.20.0.0" } ]
-
-modules = [
-	"Sample.Foo",
-	"Sample.Bar" ]

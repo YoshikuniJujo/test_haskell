@@ -37,8 +37,6 @@ import Data.Maybe
 import GHC.JS.Value.Date qualified as JS.Date
 import Data.Color qualified as Color
 
-import Hello
-
 main :: IO ()
 main = do
 	let	document = JS.Window.document JS.Window.w
@@ -61,7 +59,7 @@ main = do
 	print . (JS.Node.nodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
 	Just clocktime <- JS.Document.getElementById document "clocktime"
-	baz <- JS.Text.new $ hello ++ " YoshioJ"
+	baz <- JS.Text.new $ "Hello, world!" ++ " YoshioJ"
 	JS.Node.toN foo `JS.Node.appendChild` JS.Node.toN baz
 	print . (JS.Node.nodeType <$>)
 		=<< JS.Node.firstChild (JS.Node.toN foo)
