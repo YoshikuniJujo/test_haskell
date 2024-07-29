@@ -7,7 +7,7 @@ module GHC.JS.Value.CanvasContext.Rendering2d (
 
 	setFillStyle,
 
-	clearRect, fillRect, strokeRect,
+	clearRect, fillRect, strokeRect, fillText,
 	beginPath, fill, nonzero, evenodd, stroke, translate, save, restore
 
 	) where
@@ -83,6 +83,14 @@ foreign import javascript "((ctx, l, t, w, h) => { ctx.fillRect(l, t, w, h); })"
 foreign import javascript
 	"((ctx, l, t, w, h) => { ctx.strokeRect(l, t, w, h); })"
 	js_strokeRect :: JSVal -> Double -> Double -> Double -> Double -> IO ()
+
+-- CanvasRenderingContext2D.fillText()
+
+fillText :: R -> String -> Double -> Double -> IO ()
+fillText (R cxt) = js_fillText cxt . toJSString
+
+foreign import javascript "((ctx, , str, x, y) => { ctx.fillText(str, x, y); })"
+	js_fillText :: JSVal -> JSVal -> Double -> Double -> IO ()
 
 -- CanvasRenderingContext2D.beginPath()
 
