@@ -38,7 +38,7 @@ import Data.Color qualified as Color
 
 main :: IO ()
 main = do
-	ball <- atomically $ newTVar (100, 100)
+	ball <- atomically $ newTVar [(100, 300), (200, 100)]
 	time <- atomically $ newTVar 0
 	let	document = JS.Window.document JS.Window.w
 	Just foo <- JS.Document.getElementById document "foo"
@@ -83,17 +83,30 @@ main = do
 	JS.Window.setInterval JS.Window.w (do
 		JS.CanvasRenderingContext2d.beginPath ctx'
 		JS.CanvasRenderingContext2d.clearRect ctx' 0 0 w h
-		(x, y) <- atomically $ readTVar ball
-		JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x y
 		JS.CanvasRenderingContext2d.setFillStyle ctx' $ Color.Rgb 200 0 0
 		t <- JS.Date.getTime <$> JS.Date.new
-		JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x (h - sampleHeight t) 10 0 (pi * 2) False
+
+		(uncurry (drawBall h ctx' t) `mapM_`) =<< atomically (readTVar ball)
+
+		balls <- atomically $ readTVar ball
+		JS.CanvasRenderingContext2d.fillText ctx' (show balls) 10 100
+
+--		[(x, y), (x1, y1)] <- atomically $ readTVar ball
+--		drawBall h ctx' t x y
+--		drawBall h ctx' t x1 y1
+		{-
+--		JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x (h - sampleHeight t) 10 0 (pi * 2) False
+		JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x y
+		JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x (h - height (h - y) t) 10 0 (pi * 2) False
+		JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x1 y1
+		JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x1 (h - height (h - y1) t) 10 0 (pi * 2) False
+		-}
 		JS.CanvasRenderingContext2d.fill ctx' Nothing JS.CanvasRenderingContext2d.nonzero
-		JS.CanvasRenderingContext2d.fillText ctx' (show t) (x + 20) y
+--		JS.CanvasRenderingContext2d.fillText ctx' (show t) (x + 20) y
 		) 30
 
-	JS.Window.setInterval JS.Window.w (do
-		atomically $ modifyTVar ball (\(x, y) -> (x, y + 1))) 1000
+--	JS.Window.setInterval JS.Window.w (do
+--		atomically $ modifyTVar ball (\(x, y) -> (x, y + 1))) 1000
 
 	JS.Window.setInterval JS.Window.w (do
 		nows <- JS.Object.toString . JS.Object.toO <$> JS.Date.new
@@ -104,9 +117,11 @@ main = do
 		JS.Node.toN clocktime `JS.Node.appendChild` JS.Node.toN tmt) 1000
 
 	onPointerdown cvs \e -> do
-		szt <- JS.Text.new $ "ptr down: " ++ show (
-			JS.MouseEvent.offsetX e,
-			JS.MouseEvent.offsetY e )
+		let	x = JS.MouseEvent.offsetX e
+			y = JS.MouseEvent.offsetY e
+		szt <- JS.Text.new $ "ptr down: " ++ show (x, y)
+--		atomically $ modifyTVar ball ((JS.MouseEvent.offsetX e, JS.MouseEvent.offsetY e) :)
+		atomically $ modifyTVar ball ((x, y) :)
 		while_ (JS.Node.hasChildNodes $ JS.Node.toN foo) do
 			Just fc <- JS.Node.firstChild (JS.Node.toN foo)
 			() <$ JS.Node.removeChild (JS.Node.toN foo) fc
@@ -323,5 +338,19 @@ parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
 parentOfChild nd =
 	maybe (pure Nothing) JS.Node.parentNode =<< JS.Node.firstChild nd
 
+timeToHeight :: Double
+timeToHeight = - 9 * 10 ** (- 5)
+
+heightToTime :: Double -> Double
+heightToTime h = sqrt $ - h / timeToHeight
+
 sampleHeight :: Double -> Double
-sampleHeight x = - 9 * 10 ** (- 5) * (fromIntegral (round x `mod` 5000) - 2500) ^ 2 + 570
+sampleHeight x = timeToHeight * (fromIntegral (round x `mod` 5000) - 2500) ^ 2 + 570
+
+height :: Double -> Double -> Double
+height h x = timeToHeight * (fromIntegral (round x `mod` round (2 * t)) - t) ^ 2 + h + 10
+	where t = heightToTime h
+
+drawBall h ctx' t x1 y1 = do
+	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x1 y1
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x1 (h - height (h - y1) t) 10 0 (pi * 2) False
