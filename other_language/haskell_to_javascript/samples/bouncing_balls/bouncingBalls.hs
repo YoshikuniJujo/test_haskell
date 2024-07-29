@@ -36,6 +36,8 @@ import Data.Maybe
 import GHC.JS.Value.Date qualified as JS.Date
 import Data.Color qualified as Color
 
+import CalcBall
+
 main :: IO ()
 main = do
 	ball <- atomically $ newTVar []
@@ -103,6 +105,11 @@ main = do
 		-}
 		JS.CanvasRenderingContext2d.fill ctx' Nothing JS.CanvasRenderingContext2d.nonzero
 --		JS.CanvasRenderingContext2d.fillText ctx' (show t) (x + 20) y
+		) 30
+
+	JS.Window.setInterval JS.Window.w (do
+		t <- JS.Date.getTime <$> JS.Date.new
+		atomically $ modifyTVar ball (filter . uncurry $ checkBall h t)
 		) 30
 
 --	JS.Window.setInterval JS.Window.w (do
@@ -339,11 +346,13 @@ parentOfChild :: JS.Node.N -> IO (Maybe JS.Node.N)
 parentOfChild nd =
 	maybe (pure Nothing) JS.Node.parentNode =<< JS.Node.firstChild nd
 
+{-
 timeToHeight :: Double
 timeToHeight = - 9 * 10 ** (- 5)
 
 heightToTime :: Double -> Double
 heightToTime h = sqrt $ - h / timeToHeight
+-}
 
 sampleHeight :: Double -> Double
 sampleHeight x = timeToHeight * (fromIntegral (round x `mod` 5000) - 2500) ^ 2 + 570
@@ -354,4 +363,9 @@ height h x = timeToHeight * (fromIntegral (round (x - t) `mod` round (2 * t)) - 
 
 drawBall h ctx' t t0 (x1, y1) = do
 	JS.Pathable2d.moveTo (JS.Pathable2d.toP ctx') x1 y1
-	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x1 (h - height (h - y1 - 10) (t - t0)) 10 0 (pi * 2) False
+	JS.Pathable2d.arc (JS.Pathable2d.toP ctx') x (h - fromMaybe 0 y) 10 0 (pi * 2) False
+	where
+	(x, y) = ballPos t t0 (x1, h - y1)
+
+checkBall :: Double -> Double -> Double -> (Double, Double) -> Bool
+checkBall h t t0 (x, y) = isJust . snd $ ballPos t t0 (x, h - y)
