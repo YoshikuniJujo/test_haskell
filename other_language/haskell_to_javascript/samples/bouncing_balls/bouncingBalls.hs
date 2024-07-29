@@ -117,8 +117,8 @@ main = do
 		JS.Node.toN clocktime `JS.Node.appendChild` JS.Node.toN tmt) 1000
 
 	onPointerdown cvs \e -> do
-		let	x = JS.MouseEvent.offsetX e
-			y = JS.MouseEvent.offsetY e
+		x <- JS.MouseEvent.offsetX e
+		y <- JS.MouseEvent.offsetY e
 		szt <- JS.Text.new $ "ptr down: " ++ show (x, y)
 --		atomically $ modifyTVar ball ((JS.MouseEvent.offsetX e, JS.MouseEvent.offsetY e) :)
 		atomically $ modifyTVar ball ((x, y) :)

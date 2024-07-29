@@ -59,12 +59,12 @@ instance JS.Event.IsE OtherM where
 
 -- MouseEvent.offsetX and MouseEvent.offsetY
 
-offsetX, offsetY :: M -> Double
+offsetX, offsetY :: M -> IO Double
 offsetX = js_offsetX . JS.Value.toJSVal
 offsetY = js_offsetY . JS.Value.toJSVal
 
 foreign import javascript "((e) => { return e.offsetX; })"
-	js_offsetX :: JSVal -> Double
+	js_offsetX :: JSVal -> IO Double
 
 foreign import javascript "((e) => { return e.offsetY; })"
-	js_offsetY :: JSVal -> Double
+	js_offsetY :: JSVal -> IO Double
