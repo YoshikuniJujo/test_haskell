@@ -89,7 +89,7 @@ foreign import javascript
 fillText :: R -> String -> Double -> Double -> IO ()
 fillText (R cxt) = js_fillText cxt . toJSString
 
-foreign import javascript "((ctx, , str, x, y) => { ctx.fillText(str, x, y); })"
+foreign import javascript "((ctx, str, x, y) => { ctx.fillText(str, x, y); })"
 	js_fillText :: JSVal -> JSVal -> Double -> Double -> IO ()
 
 -- CanvasRenderingContext2D.beginPath()
