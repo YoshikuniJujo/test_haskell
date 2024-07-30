@@ -98,8 +98,7 @@ withDvc a = Vk.Inst.create instInfo nil \inst -> do
 	Vk.Dvc.create pd (dvcInfo qfi) nil \dv ->
 		Vk.Dvc.getQueue dv qfi 0 >>= \q ->
 		Vk.CmdPl.create dv (cpinfo qfi) nil $ a pd dv q
-	where
-	cpinfo qfi = Vk.CmdPl.CreateInfo {
+	where cpinfo qfi = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
