@@ -76,6 +76,7 @@ main = do
 	let	cvs = fromMaybe (error "not canvas") $ JS.Element.fromE canvas'
 	w <- JS.HtmlCanvasElement.getWidth cvs
 	h <- JS.HtmlCanvasElement.getHeight cvs
+	let	h' = h - 10
 	print . isJust @JS.HtmlParagraphElement.P $ JS.Element.fromE canvas'
 	print w; print h
 	Just ctx_ <- JS.HtmlCanvasElement.getContext cvs JS.HtmlCanvasElement.ContextType2d
@@ -88,7 +89,7 @@ main = do
 		JS.CanvasRenderingContext2d.setFillStyle ctx' $ Color.Rgb 200 0 0
 		t <- JS.Date.getTime <$> JS.Date.new
 
-		(uncurry (drawBall h ctx' t) `mapM_`) =<< atomically (readTVar ball)
+		(uncurry (drawBall h' ctx' t) `mapM_`) =<< atomically (readTVar ball)
 
 		balls <- atomically $ readTVar ball
 		JS.CanvasRenderingContext2d.fillText ctx' (show balls) 10 100
@@ -109,7 +110,7 @@ main = do
 
 	JS.Window.setInterval JS.Window.w (do
 		t <- JS.Date.getTime <$> JS.Date.new
-		atomically $ modifyTVar ball (filter . uncurry $ checkBall h t)
+		atomically $ modifyTVar ball (filter . uncurry $ checkBall h' t)
 		) 30
 
 --	JS.Window.setInterval JS.Window.w (do
