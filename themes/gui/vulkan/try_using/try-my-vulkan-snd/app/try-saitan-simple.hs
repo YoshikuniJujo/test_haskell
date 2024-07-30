@@ -299,8 +299,7 @@ cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoCommandPool = cpl,
 	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-run :: forall
-	sc sg spl sds slbts sdsl bts . (
+run :: forall sc sg spl sds slbts sdsl bts . (
 	slbts ~ '(sdsl, bts),
 	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	Show (HPList.PL2 BObj.Length
