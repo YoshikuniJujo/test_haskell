@@ -253,8 +253,6 @@ writeDscStBffr3 ds ba bb bc = Vk.DscSt.Write {
 calc :: forall
 	sd scpl sds slbts sl bts . (
 	slbts ~ '(sl, bts),
-	Show (HPList.PL2 BObj.Length
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DscStLyt.D sl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
