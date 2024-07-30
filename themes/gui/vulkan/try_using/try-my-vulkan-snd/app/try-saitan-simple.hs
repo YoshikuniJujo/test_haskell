@@ -250,8 +250,7 @@ writeDscStBffr3 ds ba bb bc = Vk.DscSt.Write {
 
 -- CALC
 
-calc :: forall
-	sd scpl sds slbts sl bts . (
+calc :: forall sd scpl sds slbts sl bts . (
 	slbts ~ '(sl, bts),
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]] ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
