@@ -83,9 +83,9 @@ main = do
 		JS.Node.toN clocktime `JS.Node.appendChild` JS.Node.toN tmt) 1000
 
 	onPointerdown cvs \e -> do
-		szt <- JS.Text.new $ "ptr down: " ++ show (
-			JS.MouseEvent.offsetX e,
-			JS.MouseEvent.offsetY e )
+		x <- JS.MouseEvent.offsetX e
+		y <- JS.MouseEvent.offsetY e
+		szt <- JS.Text.new $ "ptr down: " ++ show (x, y)
 		while_ (JS.Node.hasChildNodes $ JS.Node.toN foo) do
 			Just fc <- JS.Node.firstChild (JS.Node.toN foo)
 			() <$ JS.Node.removeChild (JS.Node.toN foo) fc
