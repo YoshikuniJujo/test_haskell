@@ -6,7 +6,7 @@ app
 
 * [x] try-hello
 * [x] try-hello-world
-* [ ] try-saitan-simple
+* [x] try-saitan-simple
 * [ ] try-push-constant
 * [ ] try-texel-buffer-nega
 * [ ] try-data-list-sort
