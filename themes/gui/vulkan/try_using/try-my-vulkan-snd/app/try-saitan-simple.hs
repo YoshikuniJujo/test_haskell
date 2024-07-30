@@ -299,11 +299,8 @@ cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoCommandPool = cpl,
 	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-run :: forall sc sg spl sds slbts sdsl bts . (
-	slbts ~ '(sdsl, bts),
-	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
-	Show (HPList.PL2 BObj.Length
-		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)) ) =>
+run :: forall sc sg spl sds slbts . (
+	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]] ) =>
 	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.Ppl.Lyt.P spl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[]) ->
 	Vk.DscSt.D sds slbts -> Word32 -> IO ()
