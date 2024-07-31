@@ -45,9 +45,9 @@ main = atomically (newTVar []) >>= \balls -> do
 		JS.CanvasRenderingContext2d.fill
 			ctx Nothing JS.CanvasRenderingContext2d.nonzero
 
-	flip (JS.Window.setInterval JS.Window.w) 2000 do
-		t <- JS.Date.getTime <$> JS.Date.new
-		atomically $ modifyTVar balls (filter . uncurry $ isAlive h' t)
+	flip (JS.Window.setInterval JS.Window.w) 2000
+		$ atomically . modifyTVar balls . filter
+			. uncurry . isAlive h' . JS.Date.getTime =<< JS.Date.new
 
 	onPointerdown cvs \e -> atomically . modifyTVar balls . (:) =<< (,)
 		<$> (JS.Date.getTime <$> JS.Date.new)
