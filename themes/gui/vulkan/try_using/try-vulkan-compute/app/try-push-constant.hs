@@ -15,49 +15,47 @@
 
 module Main (main) where
 
-import Gpu.Vulkan.Object qualified as Obj
-import Gpu.Vulkan.Object.Base qualified as BObj
-import Data.Default
-import Data.Bits
-import Data.Bits.ToolsYj
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
+import Data.Default
+import Data.Bits
+import Data.Bits.ToolsYj
 import Data.Maybe
 import Data.List qualified as L
-import qualified Data.HeteroParList as HPList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList qualified as HPList
 import Data.Word
 import Data.Char
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
 
-import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.Instance as Vk.Inst
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
-import qualified Gpu.Vulkan.Queue as Vk.Q
-import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
-import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
-import qualified Gpu.Vulkan.Memory as Vk.Mm
-import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
-import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
-import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
-import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSt
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
-import qualified Gpu.Vulkan.Cmd as Vk.Cmd
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as Obj
+import Gpu.Vulkan.Object.Base qualified as BObj
+import Gpu.Vulkan.Instance qualified as Vk.Inst
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 
-import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscStLyt
-
-import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
-
-import qualified Gpu.Vulkan.TypeEnum as Vk.T
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cmpt
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShaderSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderMod
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
 ---------------------------------------------------------------------------
 
@@ -223,46 +221,44 @@ calc :: forall sd scpl sds slbts sdsl bts . (
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->
 	Vk.DscStLyt.D sdsl bts -> Vk.DscSt.D sds slbts -> Word32 -> IO ()
 calc dv q cpl dsl dss sz =
-	Vk.Ppl.Lyt.create dv (pplLayoutInfo dsl) nil \plyt ->
-	Vk.Ppl.Cmpt.createCs dv Nothing
-		(HPList.Singleton . U4 $ pplInfo plyt) nil \(pl :** HPList.Nil) ->
-	Vk.CBffr.allocate dv (commandBufferInfo cpl) \(cb :*. HPList.Nil) ->
-	run' q dss cb plyt pl sz
+	Vk.PplLyt.create dv (pplLytInfo dsl) nil \pl ->
+	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ pplInfo pl)
+		nil \(cppl :** HPList.Nil) ->
+	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
+	run q cb pl cppl dss sz
 
-pplLayoutInfo :: Vk.DscStLyt.D sl bts ->
-	Vk.Ppl.Lyt.CreateInfo 'Nothing '[ '(sl, bts)] ('Vk.PushConstant.Layout
-		'[Word32]
-		'[ 'Vk.PushConstant.Range
-			'[ 'Vk.T.ShaderStageComputeBit] '[Word32]])
-pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
-	Vk.Ppl.Lyt.createInfoNext = TMaybe.N,
-	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+pplLytInfo ::
+	Vk.DscStLyt.D sl bts -> Vk.PplLyt.CreateInfo 'Nothing '[ '(sl, bts)]
+	('Vk.PshCnst.Layout '[Word32]
+		'[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32]])
+pplLytInfo dsl = Vk.PplLyt.CreateInfo {
+	Vk.PplLyt.createInfoNext = TMaybe.N,
+	Vk.PplLyt.createInfoFlags = zeroBits,
+	Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-commandBufferInfo :: Vk.CmdPl.C s -> Vk.CBffr.AllocateInfo 'Nothing s '[ '()]
-commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
+cmdBffrInfo :: Vk.CmdPl.C s -> Vk.CBffr.AllocateInfo 'Nothing s '[ '()]
+cmdBffrInfo cpl = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoNext = TMaybe.N,
-	Vk.CBffr.allocateInfoCommandPool = cmdPool,
+	Vk.CBffr.allocateInfoCommandPool = cpl,
 	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-run' :: forall slbts sc sg sl s . (
-	Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]] ) =>
-	Vk.Q.Q -> Vk.DscSt.D s slbts -> Vk.CBffr.C sc ->
-	Vk.Ppl.Lyt.P sl '[slbts] '[Word32] ->
-	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[Word32]) -> Word32 -> IO ()
-run' q ds cb lyt pl sz = do
+run :: forall slbts sc spl sg sds .
+	(Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]]) =>
+	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.PplLyt.P spl '[slbts] '[Word32] ->
+	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[Word32]) ->
+	Vk.DscSt.D sds slbts -> Word32 -> IO ()
+run q cb pl cppl dss sz = do
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
-			ccb lyt (HPList.Singleton (HPList.Id (4 :: Word32))) >>
+		Vk.Cmd.bindPipelineCompute
+			cb Vk.Ppl.BindPointCompute cppl \ccb ->
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			ccb pl (HPList.Singleton (HPList.Id (4 :: Word32))) >>
 		Vk.Cmd.bindDescriptorSetsCompute
-			ccb lyt (HPList.Singleton $ U2 ds) def >>
+			ccb pl (HPList.Singleton $ U2 dss) def >>
 		Vk.Cmd.dispatch ccb sz 1 1
 	Vk.Q.submit q (HPList.Singleton $ U4 sinfo) Nothing
 	Vk.Q.waitIdle q
-	where
-	sinfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
-	sinfo = Vk.SubmitInfo {
+	where sinfo = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
@@ -270,25 +266,26 @@ run' q ds cb lyt pl sz = do
 
 -- COMPUTE PIPELINE INFO
 
-pplInfo :: Vk.Ppl.Lyt.P sl sbtss '[Word32] ->
-	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
-		'(sl, sbtss, '[Word32]) sbph
+pplInfo :: Vk.PplLyt.P sl sbtss '[Word32] -> Vk.Ppl.Cmpt.CreateInfo 'Nothing
+	'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
+	'(sl, sbtss, '[Word32]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStage = U5 shaderStInfo,
+	Vk.Ppl.Cmpt.createInfoStage = U5 shdrStInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
-shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfo 'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
-shaderStInfo = Vk.Ppl.ShaderSt.CreateInfo {
+shdrStInfo :: Vk.Ppl.ShaderSt.CreateInfo
+	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
+shdrStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = (shdrMdInfo, nil),
+	Vk.Ppl.ShaderSt.createInfoModule = (mdinfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
-	where shdrMdInfo = Vk.ShaderMod.CreateInfo {
+	where mdinfo = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
@@ -311,8 +308,8 @@ uint hello[] = uint[](
 void
 main()
 {
-	int index = int(gl_GlobalInvocationID.x);
-	val[index] = hello[index] + foo.n;
+	int i = int(gl_GlobalInvocationID.x);
+	val[i] = hello[i] + foo.n;
 }
 
 |]

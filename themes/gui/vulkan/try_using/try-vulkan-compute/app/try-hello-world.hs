@@ -49,10 +49,10 @@ import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cmpt
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShaderSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
-import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
+import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderMod
-import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
@@ -227,7 +227,7 @@ calc dv q cpl dsl dss sz =
 	run q cb pl cppl dss sz
 
 pplLytInfo :: Vk.DscStLyt.D sl bts -> Vk.PplLyt.CreateInfo
-	'Nothing '[ '(sl, bts)] ('Vk.PushConstant.Layout '[] '[])
+	'Nothing '[ '(sl, bts)] ('Vk.PshCnst.Layout '[] '[])
 pplLytInfo dsl = Vk.PplLyt.CreateInfo {
 	Vk.PplLyt.createInfoNext = TMaybe.N,
 	Vk.PplLyt.createInfoFlags = zeroBits,
