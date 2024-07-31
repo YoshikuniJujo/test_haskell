@@ -68,10 +68,10 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
-import qualified Gpu.Vulkan.Buffer as Vk.Bff
+import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscStLyt
 
-import qualified Gpu.Vulkan.BufferView as Vk.BffVw
+import qualified Gpu.Vulkan.BufferView as Vk.BffrVw
 import qualified Gpu.Vulkan.PushConstant as Vk.PC
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -108,6 +108,11 @@ realMain ifp outfp ic = withDvc \pd dv q cb ->
 	mkPixels ic dvs pp grps initialName ifp >>= \szm@(sz, _) ->
 	atomically (newTVar $ M.singleton initialName sz) >>= \szs ->
 	mainloop outfp ic dvs pp pp2 grps szs szm nega
+
+type InputContinue = (TChan String, TChan Bool)
+
+initialName :: String
+initialName = "initial"
 
 withDvc :: (forall sd scb .
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.Q.Q -> Vk.CmdBuf.C scb -> IO a) -> IO a
@@ -261,55 +266,186 @@ crDscSt dv dsl a = Vk.DscPl.create dv pinfo nil \pl ->
 		Vk.DS.allocateInfoDescriptorPool = pl,
 		Vk.DS.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-withGroups :: Vk.Dv.D sd -> (forall smgrp sbgrp nm sbp sbpf .
-	Groups k smgrp sd sbgrp nm sbp sbpf -> IO a) -> IO a
-withGroups dv f =
-	Vk.Bff.group dv nil \bgrp -> Vk.Mm.group dv nil \mgrp ->
-	Vk.BffVw.group dv nil \pgrp -> Vk.BffVw.group dv nil \pfgrp ->
-	f (bgrp, mgrp, pgrp, pfgrp)
+withGroups :: Vk.Dv.D sd ->
+	(forall sm sb bnm sbp sbpf . Groups sd k sm sb bnm sbp sbpf -> IO a) ->
+	IO a
+withGroups dv a =
+	Vk.Bffr.group dv nil \bgrp -> Vk.Mm.group dv nil \mgrp ->
+	Vk.BffrVw.group dv nil \pgrp -> Vk.BffrVw.group dv nil \pfgrp ->
+	a (mgrp, bgrp, pgrp, pfgrp)
 
-type Groups k smgrp sd sbgrp nm sbp sbpf = (
-	Vk.Bff.Group sd 'Nothing sbgrp k nm '[PixelList, PixelFloatList],
-	Vk.Mm.Group sd 'Nothing smgrp k '[
-		'(sbgrp, Vk.Mm.BufferArg nm '[PixelList, PixelFloatList]) ],
-	Vk.BffVw.Group 'Nothing sbp k "" Pixel,
-	Vk.BffVw.Group 'Nothing sbpf k "" PixelFloat )
+type Groups sd k sm sb bnm sbp sbpf = (
+	Vk.Mm.Group sd 'Nothing sm k '[
+		'(sb, Vk.Mm.BufferArg bnm '[PixelList, PixelFloatList]) ],
+	Vk.Bffr.Group sd 'Nothing sb k bnm '[PixelList, PixelFloatList],
+	Vk.BffrVw.Group 'Nothing sbp k "" Pixel,
+	Vk.BffrVw.Group 'Nothing sbpf k "" PixelFloat )
 
 mkPixels :: (
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ ['[], '[]],
+	Ord k,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
-	Ord k) =>
-	InputContinue -> Devices' sd sc sds '(sl, bts) ->
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ ['[], '[]] ) =>
+	InputContinue -> Devices sd sc sds '(sl, bts) ->
 	PlytPpl sg sll '(sl, bts) '[Word32] ->
-	Groups k sm sd sb nm sbp sbpf -> k -> FilePath ->
-	IO (Size, Memory sm sb nm)
-mkPixels ic dvs pp grps nm fp =
-	readPixels ic fp >>= \pxs -> openPixels dvs pp grps nm pxs
+	Groups sd k sm sb bnm sbp sbpf -> k -> FilePath ->
+	IO (Size, Memory sm sb bnm)
+mkPixels ic dvs pp grps nm fp = openPixels dvs pp grps nm =<< readPixels ic fp
 
-initialName :: String
-initialName = "initial"
+type Devices sd sc sds sdlbts =
+	(Vk.Phd.P, Vk.Dv.D sd, Vk.Q.Q, Vk.CmdBuf.C sc, Vk.DS.D sds sdlbts)
 
-type InputContinue = (TChan String, TChan Bool)
 type Size = ((Int, Int), (Word32, Word32))
 
+type Memory sm sb nm =
+	Vk.Mm.M sm '[ '( sb, 'Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])]
+
+type PixelList = VObj.List 256 Pixel ""
+type PixelFloatList = VObj.List 256 PixelFloat ""
+
 openPixels :: (
-	'(sl, bts) ~ slbts,
+	Ord k,
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
-	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
-	Ord k ) => Devices' sd sc sds slbts ->
-		PlytPpl sg sl1 slbts '[Word32] ->
-	Groups k sm sd sb nm sbp sbpf -> k -> Pixels ->
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0 ) =>
+	Devices sd sc sds '(sl, bts) -> PlytPpl sg sl1 '(sl, bts) '[Word32] ->
+	Groups sd k sm sb nm sbp sbpf -> k -> Pixels ->
 	IO (Size, Memory sm sb nm)
-openPixels (phd, dv, q, cb, ds) (plyt, ppl) grps k pxs =
-	pure pxs >>= \(sz@(fromIntegral -> w, fromIntegral -> h), v) ->
-	buffer phd dv ds grps k v >>= \(m :: Memory sm sb nm) ->
-	run1' q cb ppl plyt ds w h >>
-	pure ((sz, (w, h)), m)
+openPixels (pd, dv, q, cb, ds) (pl, cpl) grps k
+	(sz@(fromIntegral -> w, fromIntegral -> h), v) =
+	crBffrMmUpdate pd dv ds grps k v >>= \m ->
+	((sz, (w, h)), m) <$ run1 q cb cpl pl ds w h
 
-type Devices' sd sc sds sdlbts =
-	(Vk.Phd.P, Vk.Dv.D sd, Vk.Q.Q, Vk.CmdBuf.C sc, Vk.DS.D sds sdlbts)
+type Pixels = ((Int, Int), V.Vector Pixel)
+
+crBffrMmUpdate :: (
+	Ord k,
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0 ) =>
+	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DS.D sds '(sl, bts) ->
+	Groups sd k sm sb nm sbp sbpf -> k -> V.Vector Pixel ->
+	IO (Memory sm sb nm)
+crBffrMmUpdate pd dv ds (mgrp, bgrp, pgrp, pfgrp) k v =
+	crBffrMm pd dv mgrp bgrp k v >>= \(bd, m) ->
+	Vk.BffrVw.create' dv pgrp k (bvinfo bd) >>= \(Right bv) ->
+	Vk.BffrVw.create' dv pfgrp k (bvinfo bd) >>= \(Right bv2) ->
+	m <$ update dv ds bv bv2
+	where bvinfo bd = Vk.BffrVw.CreateInfo {
+		Vk.BffrVw.createInfoNext = TMaybe.N,
+		Vk.BffrVw.createInfoFlags = zeroBits,
+		Vk.BffrVw.createInfoBuffer = U4 bd }
+
+crBffrMm :: forall sd sm sb bnm k . Ord k =>
+	Vk.Phd.P -> Vk.Dv.D sd ->
+	Vk.Mm.Group sd 'Nothing sm k '[
+		'(sb, Vk.Mm.BufferArg bnm '[PixelList, PixelFloatList])] ->
+	Vk.Bffr.Group sd 'Nothing sb k bnm '[PixelList, PixelFloatList] ->
+	k -> V.Vector Pixel -> IO (
+		Vk.Bffr.Binded sm sb bnm '[PixelList, PixelFloatList],
+		Memory sm sb bnm )
+crBffrMm pd dv mgrp bgrp k v =
+	Vk.Bffr.create' bgrp k binfo >>= \(Right bf) -> minfo bf >>= \mi ->
+	Vk.Mm.allocateBind'
+		mgrp k (HPList.Singleton (U2 (Vk.Mm.Buffer bf))) mi >>=
+		\(	AlwaysRight
+				(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd)),
+			m) ) ->
+	(bd, m) <$ Vk.Mm.write @bnm @PixelList @0 dv m zeroBits v
+	where
+	binfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = TMaybe.N,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths =
+			VObj.LengthList (fromIntegral $ V.length v) :**
+			VObj.LengthList (fromIntegral $ V.length v) :**
+			HPList.Nil,
+		Vk.Bffr.createInfoUsage =
+			Vk.Bffr.UsageStorageBufferBit .|.
+			Vk.Bffr.UsageStorageTexelBufferBit,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	minfo b = do
+		rq <- Vk.Bffr.getMemoryRequirements dv b
+		mt <- findMmTpIdx pd rq (
+			Vk.Mm.PropertyHostVisibleBit .|.
+			Vk.Mm.PropertyHostCoherentBit )
+		pure Vk.Mm.AllocateInfo {
+			Vk.Mm.allocateInfoNext = TMaybe.N,
+			Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+findMmTpIdx :: Vk.Phd.P ->
+	Vk.Mm.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmTpIdx phd rq prp0 = Vk.Phd.getMemoryProperties phd >>= \prps -> do
+	let	rqts = Vk.Mm.requirementsMemoryTypeBits rq
+		mtps = (fst <$>)
+			. filter (check prp0 . Vk.Mm.mTypePropertyFlags . snd)
+			$ Vk.Phd.memoryPropertiesMemoryTypes prps
+	case filter (`Vk.Mm.elemTypeIndex` rqts) mtps of
+		[] -> error "No available memory types"; i : _ -> pure i
+	where check = (.) <$> (==) <*> (.&.)
+
+update :: forall sd sds sl bts sb sb2 . (
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
+	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0 ) =>
+	Vk.Dv.D sd -> Vk.DS.D sds '(sl, bts) ->
+	Vk.BffrVw.B sb "" Pixel -> Vk.BffrVw.B sb2 "" PixelFloat -> IO ()
+update dv ds bv bv2 =
+	Vk.DS.updateDs dv (U5 write :** U5 write2 :** HPList.Nil) HPList.Nil
+	where
+	write :: Vk.DS.Write 'Nothing sds '(sl, bts)
+		(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", Pixel)]) 0
+	write = Vk.DS.Write {
+		Vk.DS.writeNext = TMaybe.N,
+		Vk.DS.writeDstSet = ds,
+		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
+		Vk.DS.writeSources =
+			Vk.DS.TexelBufferViews . HPList.Singleton $ U3 bv }
+	write2 :: Vk.DS.Write 'Nothing sds '(sl, bts)
+		(Vk.DS.WriteSourcesArgBufferView '[ '(sb2, "", PixelFloat)]) 0
+	write2 = Vk.DS.Write {
+		Vk.DS.writeNext = TMaybe.N,
+		Vk.DS.writeDstSet = ds,
+		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
+		Vk.DS.writeSources =
+			Vk.DS.TexelBufferViews . HPList.Singleton $ U3 bv2 }
+
+run1 :: forall slbts sc sg sl sds . (
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]]
+	) =>
+	Vk.Q.Q -> Vk.CmdBuf.C sc ->
+	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[Word32]) ->
+	Vk.PplLyt.P sl '[slbts] '[Word32] ->
+	Vk.DS.D sds slbts -> Word32 -> Word32 -> IO ()
+run1 q cb ppl plyt ds w h = do
+	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute ccb plyt
+				(U2 ds :** HPList.Nil)
+				(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
+			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
+				ccb plyt (HPList.Singleton (HPList.Id (w :: Word32)))
+			Vk.Cmd.dispatch ccb w h 1
+	Vk.Q.submit q (U4 submitInfo :** HPList.Nil) Nothing
+	Vk.Q.waitIdle q
+	where
+	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
+	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = TMaybe.N,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+			Vk.submitInfoCommandBuffers = cb :** HPList.Nil,
+			Vk.submitInfoSignalSemaphores = HPList.Nil }
+
+readPixels :: InputContinue -> FilePath -> IO Pixels
+readPixels io@(inp, outp) fp = readPngRgba fp >>= \case
+	Right img -> pure
+		$ ((P.imageWidth &&& P.imageHeight) &&&
+			V.unsafeCast . P.imageData) img
+	Left e -> do
+		putStrLn $ "readPixels: error " ++ show e
+		putStr "Please input PNG (RGBA8) file path" >> hFlush stdout
+		fp' <- atomically $ readTChan inp
+		atomically $ writeTChan outp True
+		readPixels io fp'
 
 mainloop :: forall nm4 objss4 slbts sl bts sd sc sg1 sl1 sg2 sl2 sm4 sds sb sbp sbpf . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
@@ -319,14 +455,14 @@ mainloop :: forall nm4 objss4 slbts sl bts sd sc sg1 sl1 sg2 sl2 sm4 sds sb sbp 
 	Vk.Mm.OffsetSize nm4 (VObj.List 256 Pixel "") objss4 0 ) =>
 	FilePath ->
 	InputContinue ->
-	Devices' sd sc sds slbts ->
+	Devices sd sc sds slbts ->
 	PlytPpl sg1 sl1 slbts '[Word32] ->
 	PlytPpl sg2 sl2 slbts PushConstants ->
-	Groups String sm4 sd sb nm4 sbp sbpf ->
+	Groups sd String sm4 sb nm4 sbp sbpf ->
 	TVar (M.Map String Size) ->
 	(Size, Vk.Mm.M sm4 objss4) -> Constants -> IO ()
 mainloop outf io@(inp, outp) dvs@(pd, dv, q, cb, ds) pplplyt pplplyt2@(plyt2, ppl2)
-	grps@(_, mgrp, pgrp, pfgrp) szwhs szwhm@((sz, (w, h)), m) cs = do
+	grps@(mgrp, _, pgrp, pfgrp) szwhs szwhm@((sz, (w, h)), m) cs = do
 	rslt <- (sz ,) <$> run2' @nm4 @_ @objss4 dv q cb ppl2 plyt2 ds m w h cs
 	writePixels outf rslt
 	fix \rec -> do
@@ -335,16 +471,15 @@ mainloop outf io@(inp, outp) dvs@(pd, dv, q, cb, ds) pplplyt pplplyt2@(plyt2, pp
 			(["quit"], _) -> pure ()
 			(["open", nm, fp], _) ->
 				atomically (writeTChan outp True) >>
-				readPixels io fp >>= \pxs ->
-				openPixels (pd, dv, q, cb, ds) pplplyt grps nm pxs >>=
+				mkPixels io (pd, dv, q, cb, ds) pplplyt grps nm fp >>=
 					\(szwhm'@(sz', _) :: (Size, Memory sm sb nm)) ->
 				atomically (modifyTVar szwhs $ M.insert nm sz') >>
 				mainloop @nm outf io dvs pplplyt pplplyt2 grps szwhs szwhm' cs
 			(["select", nm], _) -> do
 				atomically $ writeTChan outp True
 				Just m' <- Vk.Mm.lookup mgrp nm
-				Just bp <- Vk.BffVw.lookup pgrp nm
-				Just bpf <- Vk.BffVw.lookup pfgrp nm
+				Just bp <- Vk.BffrVw.lookup pgrp nm
+				Just bpf <- Vk.BffrVw.lookup pfgrp nm
 				Just szwh <- M.lookup nm <$> atomically (readTVar szwhs)
 				update dv ds bp bpf
 				mainloop @nm4 outf io dvs pplplyt pplplyt2 grps szwhs (szwh, m') cs
@@ -378,134 +513,10 @@ green = zero :* zero :* one :* zero :* zero :* zero :* one :* zero :* HPList.Nil
 blue :: Constants
 blue = zero :* zero :* zero :* zero :* one :* zero :* one :* zero :* HPList.Nil
 
-type Memory sm sb nm = Vk.Mm.M sm
-	'[ '( sb, 'Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])]
-type PixelList = VObj.List 256 Pixel ""
-
-type PixelFloatList = VObj.List 256 PixelFloat ""
-
-buffer :: forall bts sd sl nm sds smgrp sbgrp sbp sbpf k . (
-	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
-	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0, Ord k ) =>
-	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DS.D sds '(sl, bts) ->
-	Groups k smgrp sd sbgrp nm sbp sbpf -> k -> V.Vector Pixel ->
-	IO (Memory smgrp sbgrp nm)
-buffer phd dv ds (bgrp, mgrp, pgrp, pfgrp) k v =
-	bufferNew dv phd v bgrp mgrp k >>= \(bd, m) ->
-	Vk.BffVw.create' dv pgrp k (bvInfo bd) >>= \(Right bv) ->
-	Vk.BffVw.create' dv pfgrp k (bvInfo bd) >>= \(Right bv2) ->
-	update dv ds bv bv2 >> pure m
-	where
-	bvInfo bd = Vk.BffVw.CreateInfo {
-		Vk.BffVw.createInfoNext = TMaybe.N,
-		Vk.BffVw.createInfoFlags = zeroBits,
-		Vk.BffVw.createInfoBuffer = U4 bd }
-
-update :: forall sd sds sl bts sb sb2 . (
-	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
-	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0 ) =>
-	Vk.Dv.D sd -> Vk.DS.D sds '(sl, bts) ->
-	Vk.BffVw.B sb "" Pixel -> Vk.BffVw.B sb2 "" PixelFloat -> IO ()
-update dv ds bv bv2 =
-	Vk.DS.updateDs dv (U5 write :** U5 write2 :** HPList.Nil) HPList.Nil
-	where
-	write :: Vk.DS.Write 'Nothing sds '(sl, bts)
-		(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", Pixel)]) 0
-	write = Vk.DS.Write {
-		Vk.DS.writeNext = TMaybe.N,
-		Vk.DS.writeDstSet = ds,
-		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
-		Vk.DS.writeSources =
-			Vk.DS.TexelBufferViews . HPList.Singleton $ U3 bv }
-	write2 :: Vk.DS.Write 'Nothing sds '(sl, bts)
-		(Vk.DS.WriteSourcesArgBufferView '[ '(sb2, "", PixelFloat)]) 0
-	write2 = Vk.DS.Write {
-		Vk.DS.writeNext = TMaybe.N,
-		Vk.DS.writeDstSet = ds,
-		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
-		Vk.DS.writeSources =
-			Vk.DS.TexelBufferViews . HPList.Singleton $ U3 bv2 }
-
 {-# COMPLETE AlwaysRight #-}
 
 pattern AlwaysRight :: b -> Either a b
 pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
-
-bufferNew :: forall sd sbgrp nm smgrp k . Ord k =>
-	Vk.Dv.D sd -> Vk.Phd.P -> V.Vector Pixel ->
-	Vk.Bff.Group sd 'Nothing sbgrp k nm '[PixelList, PixelFloatList] ->
-	Vk.Mm.Group sd 'Nothing smgrp k '[
-		'(sbgrp, Vk.Mm.BufferArg nm '[PixelList, PixelFloatList])] ->
-	k -> IO (
-		Vk.Bff.Binded smgrp sbgrp nm '[PixelList, PixelFloatList],
-		Memory smgrp sbgrp nm )
-bufferNew dv phd v bgrp mgrp k =
-	Vk.Bff.create' bgrp k bufferInfo >>= \(Right bffr) ->
-	memoryInfo bffr >>= \mi ->
-	Vk.Mm.allocateBind' mgrp k (U2 (Vk.Mm.Buffer bffr) :** HPList.Nil) mi >>=
-		\(AlwaysRight (U2 (Vk.Mm.BufferBinded bnd) :** HPList.Nil, m)) ->
-	Vk.Mm.write @nm @PixelList @0 dv m def v >> pure (bnd, m)
-	where
-	bufferInfo = Vk.Bff.CreateInfo {
-		Vk.Bff.createInfoNext = TMaybe.N,
-		Vk.Bff.createInfoFlags = def,
-		Vk.Bff.createInfoLengths =
-			VObj.LengthList (fromIntegral $ V.length v) :**
-			VObj.LengthList (fromIntegral $ V.length v) :**
-			HPList.Nil,
-		Vk.Bff.createInfoUsage =
-			Vk.Bff.UsageStorageBufferBit .|.
-			Vk.Bff.UsageStorageTexelBufferBit,
-		Vk.Bff.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Bff.createInfoQueueFamilyIndices = [] }
-	memoryInfo :: Vk.Bff.B sb nm objs -> IO (Vk.Mm.AllocateInfo 'Nothing)
-	memoryInfo b = do
-		rq <- Vk.Bff.getMemoryRequirements dv b
-		mt <- findMemoryTypeIndex phd rq (
-			Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		pure Vk.Mm.AllocateInfo {
-			Vk.Mm.allocateInfoNext = TMaybe.N,
-			Vk.Mm.allocateInfoMemoryTypeIndex = mt }
-
-findMemoryTypeIndex ::
-	Vk.Phd.P -> Vk.Mm.Requirements -> Vk.Mm.PropertyFlags ->
-	IO Vk.Mm.TypeIndex
-findMemoryTypeIndex phd rq prp0 = Vk.Phd.getMemoryProperties phd >>= \prps -> do
-	let	rqts = Vk.Mm.requirementsMemoryTypeBits rq
-		mtps = (fst <$>)
-			. filter (check prp0 . Vk.Mm.mTypePropertyFlags . snd)
-			$ Vk.Phd.memoryPropertiesMemoryTypes prps
-	case filter (`Vk.Mm.elemTypeIndex` rqts) mtps of
-		[] -> error "No available memory types"; i : _ -> pure i
-	where check = (.) <$> (==) <*> (.&.)
-
-run1' :: forall slbts sbtss sc sg sl sds . (
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
-	sbtss ~ '[slbts],
-	InfixIndex '[slbts] sbtss ) =>
-	Vk.Q.Q -> Vk.CmdBuf.C sc ->
-	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[Word32]) ->
-	Vk.PplLyt.P sl sbtss '[Word32] ->
-	Vk.DS.D sds slbts -> Word32 -> Word32 -> IO ()
-run1' q cb ppl plyt ds w h = do
-	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-			Vk.Cmd.bindDescriptorSetsCompute ccb plyt
-				(U2 ds :** HPList.Nil)
-				(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
-			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
-				ccb plyt (HPList.Singleton (HPList.Id (w :: Word32)))
-			Vk.Cmd.dispatch ccb w h 1
-	Vk.Q.submit q (U4 submitInfo :** HPList.Nil) Nothing
-	Vk.Q.waitIdle q
-	where
-	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
-	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-			Vk.submitInfoCommandBuffers = cb :** HPList.Nil,
-			Vk.submitInfoSignalSemaphores = HPList.Nil }
 
 run2' :: forall nm4 w4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
@@ -541,20 +552,6 @@ run2' dv q cb ppl2 plyt2 ds m w h cs = do
 zero, one, mone :: CFloat
 zero = 0; one = 1; mone = - 1
 
-type Pixels = ((Int, Int), V.Vector Pixel)
-
-readPixels :: InputContinue -> FilePath -> IO Pixels
-readPixels io@(inp, outp) fp = readPngRgba fp >>= \case
-	Right img -> pure
-		$ ((P.imageWidth &&& P.imageHeight) &&&
-			V.unsafeCast . P.imageData) img
-	Left e -> do
-		putStrLn $ "readPixels: error " ++ show e
-		putStr "Please input PNG (RGBA8) file path" >> hFlush stdout
-		fp' <- atomically $ readTChan inp
-		atomically $ writeTChan outp True
-		readPixels io fp'
-
 readPngRgba ::
 	FilePath -> IO (Either (Either IOError String) (P.Image P.PixelRGBA8))
 readPngRgba fp = tryReadFile fp >>= \case
@@ -573,7 +570,7 @@ writePixels fp ((w, h), pxs) =
 
 data Pixel = Pixel Word8 Word8 Word8 Word8 deriving Show
 
-type instance Vk.BffVw.FormatOf Pixel = 'Vk.T.FormatR8g8b8a8Uint
+type instance Vk.BffrVw.FormatOf Pixel = 'Vk.T.FormatR8g8b8a8Uint
 
 instance Storable Pixel where
 	sizeOf _ = 4 * sizeOf @Word8 undefined
@@ -584,7 +581,7 @@ instance Storable Pixel where
 
 data PixelFloat = PixelFloat CFloat CFloat CFloat CFloat deriving Show
 
-type instance Vk.BffVw.FormatOf PixelFloat = 'Vk.T.FormatR32g32b32a32Sfloat
+type instance Vk.BffrVw.FormatOf PixelFloat = 'Vk.T.FormatR32g32b32a32Sfloat
 
 instance Storable PixelFloat where
 	sizeOf _ = 4 * sizeOf @CFloat undefined
