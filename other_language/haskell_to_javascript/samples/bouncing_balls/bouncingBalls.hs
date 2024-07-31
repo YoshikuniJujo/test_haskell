@@ -39,9 +39,9 @@ main = atomically (newTVar []) >>= \balls -> do
 	flip (JS.Window.setInterval JS.Window.w) 30 do
 		t <- JS.Date.getTime <$> JS.Date.new
 		JS.CanvasRenderingContext2d.beginPath ctx
-		JS.CanvasRenderingContext2d.clearRect ctx 0 0 w h
 		(uncurry (drawBall h' ctx t) `mapM_`)
 			=<< atomically (readTVar balls)
+		JS.CanvasRenderingContext2d.clearRect ctx 0 0 w h
 		JS.CanvasRenderingContext2d.fill
 			ctx Nothing JS.CanvasRenderingContext2d.nonzero
 
