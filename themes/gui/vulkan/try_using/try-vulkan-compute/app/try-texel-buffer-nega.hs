@@ -314,7 +314,7 @@ openPixels :: (
 openPixels (pd, dv, q, cb, ds) (pl, cpl) grps k
 	(sz@(fromIntegral -> w, fromIntegral -> h), v) =
 	crBffrMmUpdate pd dv ds grps k v >>= \m ->
-	((sz, (w, h)), m) <$ run1 q cb cpl pl ds w h
+	((sz, (w, h)), m) <$ run1 q cb pl cpl ds w h
 
 type Pixels = ((Int, Int), V.Vector Pixel)
 
@@ -375,14 +375,13 @@ crBffrMm pd dv mgrp bgrp k v =
 
 findMmTpIdx :: Vk.Phd.P ->
 	Vk.Mm.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
-findMmTpIdx phd rq prp0 = Vk.Phd.getMemoryProperties phd >>= \prps -> do
+findMmTpIdx pd rq wt = Vk.Phd.getMemoryProperties pd >>= \prs -> do
 	let	rqts = Vk.Mm.requirementsMemoryTypeBits rq
-		mtps = (fst <$>)
-			. filter (check prp0 . Vk.Mm.mTypePropertyFlags . snd)
-			$ Vk.Phd.memoryPropertiesMemoryTypes prps
-	case filter (`Vk.Mm.elemTypeIndex` rqts) mtps of
+		wtts = (fst <$>)
+			. filter (checkBits wt . Vk.Mm.mTypePropertyFlags . snd)
+			$ Vk.Phd.memoryPropertiesMemoryTypes prs
+	case filter (`Vk.Mm.elemTypeIndex` rqts) wtts of
 		[] -> error "No available memory types"; i : _ -> pure i
-	where check = (.) <$> (==) <*> (.&.)
 
 update :: forall sd sds sl bts sb sb2 . (
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
@@ -390,62 +389,67 @@ update :: forall sd sds sl bts sb sb2 . (
 	Vk.Dv.D sd -> Vk.DS.D sds '(sl, bts) ->
 	Vk.BffrVw.B sb "" Pixel -> Vk.BffrVw.B sb2 "" PixelFloat -> IO ()
 update dv ds bv bv2 =
-	Vk.DS.updateDs dv (U5 write :** U5 write2 :** HPList.Nil) HPList.Nil
-	where
-	write :: Vk.DS.Write 'Nothing sds '(sl, bts)
+	Vk.DS.updateDs dv (U5 wr :** U5 wr2 :** HPList.Nil) HPList.Nil where
+	wr :: Vk.DS.Write 'Nothing sds '(sl, bts)
 		(Vk.DS.WriteSourcesArgBufferView '[ '(sb, "", Pixel)]) 0
-	write = Vk.DS.Write {
-		Vk.DS.writeNext = TMaybe.N,
-		Vk.DS.writeDstSet = ds,
+	wr = Vk.DS.Write {
+		Vk.DS.writeNext = TMaybe.N, Vk.DS.writeDstSet = ds,
 		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DS.writeSources =
 			Vk.DS.TexelBufferViews . HPList.Singleton $ U3 bv }
-	write2 :: Vk.DS.Write 'Nothing sds '(sl, bts)
+	wr2 :: Vk.DS.Write 'Nothing sds '(sl, bts)
 		(Vk.DS.WriteSourcesArgBufferView '[ '(sb2, "", PixelFloat)]) 0
-	write2 = Vk.DS.Write {
-		Vk.DS.writeNext = TMaybe.N,
-		Vk.DS.writeDstSet = ds,
+	wr2 = Vk.DS.Write {
+		Vk.DS.writeNext = TMaybe.N, Vk.DS.writeDstSet = ds,
 		Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DS.writeSources =
 			Vk.DS.TexelBufferViews . HPList.Singleton $ U3 bv2 }
 
 run1 :: forall slbts sc sg sl sds . (
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]]
-	) =>
-	Vk.Q.Q -> Vk.CmdBuf.C sc ->
-	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[Word32]) ->
-	Vk.PplLyt.P sl '[slbts] '[Word32] ->
-	Vk.DS.D sds slbts -> Word32 -> Word32 -> IO ()
-run1 q cb ppl plyt ds w h = do
-	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-			Vk.Cmd.bindDescriptorSetsCompute ccb plyt
-				(U2 ds :** HPList.Nil)
-				(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
-			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
-				ccb plyt (HPList.Singleton (HPList.Id (w :: Word32)))
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~
+		'[ '[], '[]] ) =>
+	Vk.Q.Q -> Vk.CmdBuf.C sc -> Vk.PplLyt.P sl '[slbts] '[Word32] ->
+	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[Word32]) -> Vk.DS.D sds slbts ->
+	Word32 -> Word32 -> IO ()
+run1 q cb pl cpl ds w h = do
+	Vk.CmdBuf.begin @'Nothing @'Nothing cb def
+		$ Vk.Cmd.bindPipelineCompute
+			cb Vk.Ppl.BindPointCompute cpl \ccb ->
+			Vk.Cmd.bindDescriptorSetsCompute ccb pl
+				(HPList.Singleton $ U2 ds)
+				(HPList.Singleton $
+					HPList.Nil :** HPList.Nil :**
+					HPList.Nil) >>
+			Vk.Cmd.pushConstantsCompute
+				@'[ 'Vk.T.ShaderStageComputeBit]
+				ccb pl (HPList.Singleton (HPList.Id w)) >>
 			Vk.Cmd.dispatch ccb w h 1
-	Vk.Q.submit q (U4 submitInfo :** HPList.Nil) Nothing
+	Vk.Q.submit q (HPList.Singleton $ U4 sinfo) Nothing
 	Vk.Q.waitIdle q
-	where
-	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
-	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-			Vk.submitInfoCommandBuffers = cb :** HPList.Nil,
-			Vk.submitInfoSignalSemaphores = HPList.Nil }
+	where sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
 readPixels :: InputContinue -> FilePath -> IO Pixels
-readPixels io@(inp, outp) fp = readPngRgba fp >>= \case
-	Right img -> pure
-		$ ((P.imageWidth &&& P.imageHeight) &&&
-			V.unsafeCast . P.imageData) img
+readPixels ic@(inp, cnt) fp = readPngRgba fp >>= \case
+	Right img -> pure . ($ img) $
+		(P.imageWidth &&& P.imageHeight) &&& V.unsafeCast . P.imageData
 	Left e -> do
 		putStrLn $ "readPixels: error " ++ show e
 		putStr "Please input PNG (RGBA8) file path" >> hFlush stdout
-		fp' <- atomically $ readTChan inp
-		atomically $ writeTChan outp True
-		readPixels io fp'
+		readPixels ic
+			=<< atomically (readTChan inp <* writeTChan cnt True)
+
+readPngRgba ::
+	FilePath -> IO (Either (Either IOError String) (P.Image P.PixelRGBA8))
+readPngRgba fp = try (BS.readFile fp) >>= \case
+	Left e -> pure . Left $ Left e
+	Right bs -> pure case P.decodePng bs of
+		Left em -> Left $ Right em
+		Right (P.ImageRGBA8 img) -> Right img
+		Right _ -> Left $ Right "readPngRgba: The format is not RGBA8"
 
 mainloop :: forall nm4 objss4 slbts sl bts sd sc sg1 sl1 sg2 sl2 sm4 sds sb sbp sbpf . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
@@ -490,6 +494,10 @@ mainloop outf io@(inp, outp) dvs@(pd, dv, q, cb, ds) pplplyt pplplyt2@(plyt2, pp
 				putStrLn "No such commands"
 				atomically $ writeTChan outp True
 				rec
+
+writePixels :: FilePath -> Pixels -> IO ()
+writePixels fp ((w, h), pxs) =
+	P.writePng @P.PixelRGBA8 fp . P.Image w h $ V.unsafeCast pxs
 
 nameConstant :: String -> Maybe Constants
 nameConstant = \case
@@ -551,22 +559,6 @@ run2' dv q cb ppl2 plyt2 ds m w h cs = do
 
 zero, one, mone :: CFloat
 zero = 0; one = 1; mone = - 1
-
-readPngRgba ::
-	FilePath -> IO (Either (Either IOError String) (P.Image P.PixelRGBA8))
-readPngRgba fp = tryReadFile fp >>= \case
-	Left e -> pure . Left $ Left e
-	Right bs -> pure case P.decodePng bs of
-		Left em -> Left $ Right em
-		Right (P.ImageRGBA8 img) -> Right img
-		Right _ -> Left $ Right "readPngRgba: The format is not RGBA8"
-
-tryReadFile :: FilePath -> IO (Either IOError BS.ByteString)
-tryReadFile = try . BS.readFile
-
-writePixels :: FilePath -> Pixels -> IO ()
-writePixels fp ((w, h), pxs) =
-	P.writePng @P.PixelRGBA8 fp . P.Image w h $ V.unsafeCast pxs
 
 data Pixel = Pixel Word8 Word8 Word8 Word8 deriving Show
 
