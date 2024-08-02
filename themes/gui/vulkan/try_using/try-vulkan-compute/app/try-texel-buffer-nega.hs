@@ -198,9 +198,9 @@ crDscStLyt dv = Vk.DscStLyt.create dv dslinfo TPMaybe.N where
 			Vk.ShaderStageComputeBit }
 
 crPpls :: forall sd sl bts a .
-	Vk.Dv.D sd -> Vk.DscStLyt.D sl bts -> (forall s1 sl1 s2 sl2 .
-		PlytPpl s1 sl1 '(sl, bts) '[Word32] ->
-		PlytPpl s2 sl2 '(sl, bts) PushConstants -> IO a) -> IO a
+	Vk.Dv.D sd -> Vk.DscStLyt.D sl bts -> (forall sp1 spl1 sp2 spl2 .
+		PlytPpl sp1 spl1 '(sl, bts) '[Word32] ->
+		PlytPpl sp2 spl2 '(sl, bts) PushConstants -> IO a) -> IO a
 crPpls dv dsl a =
 	Vk.PplLyt.create dv plinfo nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
@@ -287,7 +287,7 @@ mkPixels :: (
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ ['[], '[]] ) =>
 	InputContinue -> Devices sd sc sds '(sl, bts) ->
-	PlytPpl sg sll '(sl, bts) '[Word32] ->
+	PlytPpl sp spl '(sl, bts) '[Word32] ->
 	Groups sd k sm sb bnm sbp sbpf -> k -> FilePath ->
 	IO (Size, Memory sm sb bnm)
 mkPixels ic dvs pp grps nm fp = openPixels dvs pp grps nm =<< readPixels ic fp
@@ -308,7 +308,7 @@ openPixels :: (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0 ) =>
-	Devices sd sc sds '(sl, bts) -> PlytPpl sg sl1 '(sl, bts) '[Word32] ->
+	Devices sd sc sds '(sl, bts) -> PlytPpl sp spl '(sl, bts) '[Word32] ->
 	Groups sd k sm sb nm sbp sbpf -> k -> Pixels ->
 	IO (Size, Memory sm sb nm)
 openPixels (pd, dv, q, cb, ds) (pl, cpl) grps k
@@ -451,17 +451,14 @@ readPngRgba fp = try (BS.readFile fp) >>= \case
 		Right (P.ImageRGBA8 img) -> Right img
 		Right _ -> Left $ Right "readPngRgba: The format is not RGBA8"
 
-mainloop :: forall nm4 objss4 slbts sl bts sd sc sg1 sl1 sg2 sl2 sm4 sds sb sbp sbpf . (
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
+mainloop :: forall sd sc sds sl bts nm4 objss4 sp1 spl1 sp2 spl2 sm4 sb sbp sbpf . (
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
-	slbts ~ '(sl, bts),
 	Vk.Mm.OffsetSize nm4 (VObj.List 256 Pixel "") objss4 0 ) =>
-	FilePath ->
-	InputContinue ->
-	Devices sd sc sds slbts ->
-	PlytPpl sg1 sl1 slbts '[Word32] ->
-	PlytPpl sg2 sl2 slbts PushConstants ->
+	FilePath -> InputContinue -> Devices sd sc sds '(sl, bts) ->
+	PlytPpl sp1 spl1 '(sl, bts) '[Word32] ->
+	PlytPpl sp2 spl2 '(sl, bts) PushConstants ->
 	Groups sd String sm4 sb nm4 sbp sbpf ->
 	TVar (M.Map String Size) ->
 	(Size, Vk.Mm.M sm4 objss4) -> Constants -> IO ()
@@ -478,7 +475,7 @@ mainloop outf io@(inp, outp) dvs@(pd, dv, q, cb, ds) pplplyt pplplyt2@(plyt2, pp
 				mkPixels io (pd, dv, q, cb, ds) pplplyt grps nm fp >>=
 					\(szwhm'@(sz', _) :: (Size, Memory sm sb nm)) ->
 				atomically (modifyTVar szwhs $ M.insert nm sz') >>
-				mainloop @nm outf io dvs pplplyt pplplyt2 grps szwhs szwhm' cs
+				mainloop outf io dvs pplplyt pplplyt2 grps szwhs szwhm' cs
 			(["select", nm], _) -> do
 				atomically $ writeTChan outp True
 				Just m' <- Vk.Mm.lookup mgrp nm
@@ -486,10 +483,10 @@ mainloop outf io@(inp, outp) dvs@(pd, dv, q, cb, ds) pplplyt pplplyt2@(plyt2, pp
 				Just bpf <- Vk.BffrVw.lookup pfgrp nm
 				Just szwh <- M.lookup nm <$> atomically (readTVar szwhs)
 				update dv ds bp bpf
-				mainloop @nm4 outf io dvs pplplyt pplplyt2 grps szwhs (szwh, m') cs
+				mainloop outf io dvs pplplyt pplplyt2 grps szwhs (szwh, m') cs
 			(_, Just c) -> do
 				atomically $ writeTChan outp True
-				mainloop @nm4 @objss4 outf io dvs pplplyt pplplyt2 grps szwhs szwhm c
+				mainloop outf io dvs pplplyt pplplyt2 grps szwhs szwhm c
 			(_, Nothing) -> do
 				putStrLn "No such commands"
 				atomically $ writeTChan outp True
