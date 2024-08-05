@@ -9,13 +9,12 @@ app
 * [x] try-saitan-simple
 * [x] try-push-constant
 * [x] try-texel-buffer-nega
-* [ ] try-data-list-sort
 * [ ] try-quick-sort
 * [ ] try-bitonic-sort-cpu
 * [ ] try-bitonic-sort-new
 * [ ] try-bitonic-sort
+* [ ] try-mandelbrot-hs
 * [ ] try-mandelbrot-cpu
-* [ ] try-mandelbrot
 * [ ] try-mandelbrot
 
 csrc

@@ -11,9 +11,10 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main (main, maximumExponentOf2) where
+module Main (main) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -88,23 +89,31 @@ import Data.Foldable
 -- MAIN
 
 main :: IO ()
-main = withDevice \phdvc qFam dvc mgcx -> do
-	let	eot :: Integral n => n
-		eot = maximumExponentOf2 mgcx
-		pot :: Integral n => n
-		pot = 2 ^ (eot :: Int)
-	rs <- getRandomRs (1, 10 ^ (7 :: Int)) (2 ^ (24 :: Int))
-	let	dc = V.fromList $ W3 <$> rs
-	print (eot :: Int)
-	print (pot :: Int)
+main = getRandomRs (1, 10 ^ (7 :: Int)) (2 ^ (24 :: Int)) >>= \rs -> do
+	let	!dc = V.fromList $ W3 <$> rs
+
 	ct0 <- getCurrentTime
-	r3 <- Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
-		prepareMems phdvc dvc dscSetLyt dc \dscSet mc ->
-		calc dvc qFam dscSetLyt dscSet pot >>
-		Vk.Mm.read @"" @(VObj.List 256 W3 "") @0 @(VV.Vector W3) dvc mc def
+
+	r' <- withDevice \phdvc qFam dvc mgcx -> do
+		let	eot :: Integral n => n
+			eot = maximumExponentOf2 mgcx
+			pot :: Integral n => n
+			pot = 2 ^ (eot :: Int)
+		print (eot :: Int)
+		print (pot :: Int)
+
+		r3 <- Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
+			prepareMems phdvc dvc dscSetLyt dc \dscSet mc ->
+			calc dvc qFam dscSetLyt dscSet pot >>
+			Vk.Mm.read @"" @(VObj.List 256 W3 "") @0 @(VV.Vector W3) dvc mc def
+
+		let	r = unW3 <$> toList r3
+		pure r
+
 	ct1 <- getCurrentTime
-	print . take 20 $ unW3 <$> toList r3
-	print . checkSorted 0 $ unW3 <$> toList r3
+
+	print $ take 20 r'
+	print $ checkSorted 0 r'
 	print $ diffUTCTime ct1 ct0
 
 getRandomRs :: Random a => (a, a) -> Int -> IO [a]

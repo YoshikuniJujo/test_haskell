@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -18,11 +19,17 @@ getRandomRs r n = take n . randomRs r <$> getStdGen
 main :: IO ()
 main = do
 	rs <- getRandomRs @Word32 (1, 10 ^ (7 :: Int)) $ 2 ^ (24 :: Int)
+	let	!rs' = listArray (0, 2 ^ (24 :: Int) - 1) rs
+
 	ct0 <- getCurrentTime
-	ns <- bitonicSortCpu 24 $ listArray (0, 2 ^ (24 :: Int) - 1) rs
+
+	ns <- bitonicSortCpu 24 rs'
+
 	ct1 <- getCurrentTime
-	print . take 10 $ toList ns
+
+	print . take 20 $ toList ns
 	print . checkSorted 0 $ toList ns
+
 	print $ diffUTCTime ct1 ct0
 
 checkSorted :: Ord a => Int -> [a] -> (Int, Bool)
