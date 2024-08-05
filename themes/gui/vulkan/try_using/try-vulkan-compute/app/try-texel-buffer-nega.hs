@@ -35,7 +35,6 @@ import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.ParMaybe (nil)
-import Data.TypeLevel.List
 import Data.Maybe
 import Data.List qualified as L
 import Data.HeteroParList qualified as HPList
@@ -105,7 +104,7 @@ realMain ifp outfp ic = withDvc \pd dv q cb ->
 	crDscStLyt dv \dsl -> crPpls dv dsl \pp pp2 ->
 	crDscSt dv dsl \ds -> let dvs = (pd, dv, q, cb, ds) in
 	withGroups dv \grps ->
-	mkPixels ic dvs pp grps initialName ifp >>= \szm@(sz, _) ->
+	mkPxls ic dvs pp grps initialName ifp >>= \szm@(sz, _) ->
 	atomically (newTVar $ M.singleton initialName sz) >>= \szs ->
 	mainloop outfp ic dvs pp pp2 grps szs szm nega
 
@@ -281,7 +280,7 @@ type Groups sd k sm sb bnm sbp sbpf = (
 	Vk.BffrVw.Group 'Nothing sbp k "" Pixel,
 	Vk.BffrVw.Group 'Nothing sbpf k "" PixelFloat )
 
-mkPixels :: (
+mkPxls :: (
 	Ord k,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
@@ -290,7 +289,7 @@ mkPixels :: (
 	PlytPpl sp spl '(sl, bts) '[Word32] ->
 	Groups sd k sm sb bnm sbp sbpf -> k -> FilePath ->
 	IO (Size, Memory sm sb bnm)
-mkPixels ic dvs pp grps nm fp = openPixels dvs pp grps nm =<< readPixels ic fp
+mkPxls ic dvs pp grps nm fp = openPxls dvs pp grps nm =<< readPixels ic fp
 
 type Devices sd sc sds sdlbts =
 	(Vk.Phd.P, Vk.Dv.D sd, Vk.Q.Q, Vk.CmdBuf.C sc, Vk.DS.D sds sdlbts)
@@ -303,7 +302,7 @@ type Memory sm sb nm =
 type PixelList = VObj.List 256 Pixel ""
 type PixelFloatList = VObj.List 256 PixelFloat ""
 
-openPixels :: (
+openPxls :: (
 	Ord k,
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
@@ -311,10 +310,10 @@ openPixels :: (
 	Devices sd sc sds '(sl, bts) -> PlytPpl sp spl '(sl, bts) '[Word32] ->
 	Groups sd k sm sb nm sbp sbpf -> k -> Pixels ->
 	IO (Size, Memory sm sb nm)
-openPixels (pd, dv, q, cb, ds) (pl, cpl) grps k
+openPxls (pd, dv, q, cb, ds) (pl, cpl) grps k
 	(sz@(fromIntegral -> w, fromIntegral -> h), v) =
 	crBffrMmUpdate pd dv ds grps k v >>= \m ->
-	((sz, (w, h)), m) <$ run1 q cb pl cpl ds w h
+	((sz, (w, h)), m) <$ loadPxls q cb pl cpl ds w h
 
 type Pixels = ((Int, Int), V.Vector Pixel)
 
@@ -405,13 +404,13 @@ update dv ds bv bv2 =
 		Vk.DS.writeSources =
 			Vk.DS.TexelBufferViews . HPList.Singleton $ U3 bv2 }
 
-run1 :: forall slbts sc sg sl sds . (
+loadPxls :: forall slbts sc sg sl sds . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~
 		'[ '[], '[]] ) =>
 	Vk.Q.Q -> Vk.CmdBuf.C sc -> Vk.PplLyt.P sl '[slbts] '[Word32] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[Word32]) -> Vk.DS.D sds slbts ->
 	Word32 -> Word32 -> IO ()
-run1 q cb pl cpl ds w h = do
+loadPxls q cb pl cpl ds w h = do
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def
 		$ Vk.Cmd.bindPipelineCompute
 			cb Vk.Ppl.BindPointCompute cpl \ccb ->
@@ -451,46 +450,72 @@ readPngRgba fp = try (BS.readFile fp) >>= \case
 		Right (P.ImageRGBA8 img) -> Right img
 		Right _ -> Left $ Right "readPngRgba: The format is not RGBA8"
 
-mainloop :: forall sd sc sds sl bts sm4 sb nm4 sbp sbpf objss4 sp1 spl1 sp2 spl2 . (
+mainloop :: forall sd sc sds sp1 spl1 sp2 spl2 sl bts sm sb bnm sbp sbpf oss . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
-	Vk.Mm.OffsetSize nm4 (VObj.List 256 Pixel "") objss4 0 ) =>
+	Vk.Mm.OffsetSize bnm (VObj.List 256 Pixel "") oss 0 ) =>
 	FilePath -> InputContinue -> Devices sd sc sds '(sl, bts) ->
 	PlytPpl sp1 spl1 '(sl, bts) '[Word32] ->
 	PlytPpl sp2 spl2 '(sl, bts) PushConstants ->
-	Groups sd String sm4 sb nm4 sbp sbpf ->
-	TVar (M.Map String Size) ->
-	(Size, Vk.Mm.M sm4 objss4) -> Constants -> IO ()
-mainloop outf io@(inp, outp) dvs@(pd, dv, q, cb, ds) pplplyt pplplyt2@(plyt2, ppl2)
-	grps@(mgrp, _, pgrp, pfgrp) szwhs szwhm@((sz, (w, h)), m) cs = do
-	rslt <- (sz ,) <$> run2 @nm4 @_ @objss4 dv q cb ppl2 plyt2 ds m w h cs
+	Groups sd String sm sb bnm sbp sbpf -> TVar (M.Map String Size) ->
+	(Size, Vk.Mm.M sm oss) -> Constants -> IO ()
+mainloop outf ic@(inp, cnt) dvs@(_, dv, q, cb, ds) pp pp2@(pl2, p2)
+	gs@(mgrp, _, pgrp, pfgrp) szs szm@((sz, (w, h)), m) cs = do
+	rslt <- (sz ,) <$> convertPxls @oss @bnm dv q cb pl2 p2 ds m w h cs
 	writePixels outf rslt
-	fix \rec -> do
+	fix \go -> do
 		cmd <- atomically $ readTChan inp
 		case (words cmd, nameConstant cmd) of
 			(["quit"], _) -> pure ()
-			(["open", nm, fp], _) ->
-				atomically (writeTChan outp True) >>
-				mkPixels io (pd, dv, q, cb, ds) pplplyt grps nm fp >>=
-					\(szwhm'@(sz', _) :: (Size, Memory sm sb nm)) ->
-				atomically (modifyTVar szwhs $ M.insert nm sz') >>
-				mainloop outf io dvs pplplyt pplplyt2 grps szwhs szwhm' cs
-			(["select", nm], _) -> do
-				atomically $ writeTChan outp True
-				Just m' <- Vk.Mm.lookup mgrp nm
+			(["open", nm, fp], _) -> next >>
+				mkPxls ic dvs pp gs nm fp >>= \szm'@(sz', _) ->
+				putSize nm sz' >>
+				mainloop outf ic dvs pp pp2 gs szs szm' cs
+			(["select", nm], _) -> next >> do
 				Just bp <- Vk.BffrVw.lookup pgrp nm
 				Just bpf <- Vk.BffrVw.lookup pfgrp nm
-				Just szwh <- M.lookup nm <$> atomically (readTVar szwhs)
+				Just sz' <- lookupSize nm
+				Just m' <- Vk.Mm.lookup mgrp nm
 				update dv ds bp bpf
-				mainloop outf io dvs pplplyt pplplyt2 grps szwhs (szwh, m') cs
-			(_, Just c) -> do
-				atomically $ writeTChan outp True
-				mainloop outf io dvs pplplyt pplplyt2 grps szwhs szwhm c
-			(_, Nothing) -> do
-				putStrLn "No such commands"
-				atomically $ writeTChan outp True
-				rec
+				mainloop outf ic dvs pp pp2 gs szs (sz', m') cs
+			(_, Just c) ->
+				next >> mainloop outf ic dvs pp pp2 gs szs szm c
+			(_, Nothing) ->
+				putStrLn "No such commands" >> next >> go
+	where
+	next = atomically $ writeTChan cnt True
+	putSize n = atomically . modifyTVar szs . M.insert n
+	lookupSize nm = M.lookup nm <$> atomically (readTVar szs)
+
+convertPxls :: forall {sd} {sc} {sp} {spl} {sds} {sl} {bts} {sm} oss bnm pxl . (
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
+	Storable pxl,
+	Vk.Mm.OffsetSize bnm (VObj.List 256 pxl "") oss 0 ) =>
+	Vk.Dv.D sd -> Vk.Q.Q -> Vk.CmdBuf.C sc ->
+	Vk.PplLyt.P spl '[ '(sl, bts)] PushConstants ->
+	Vk.Ppl.Cmpt.C sp '(spl, '[ '(sl,bts)], PushConstants) ->
+	Vk.DS.D sds '(sl,bts) ->
+	Vk.Mm.M sm oss -> Word32 -> Word32 -> Constants -> IO (V.Vector pxl)
+convertPxls dv q cb plyt2 ppl2 ds m w h cs = do
+	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl2 \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute ccb plyt2
+				(U2 ds :** HPList.Nil)
+				(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
+			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
+				ccb plyt2 ((w :: Word32) :* cs)
+			Vk.Cmd.dispatch ccb w h 1
+	Vk.Q.submit q (U4 submitInfo2 :** HPList.Nil) Nothing
+	Vk.Q.waitIdle q
+	Vk.Mm.read @bnm @(VObj.List 256 pxl "") @0 @(V.Vector pxl) dv m def
+	where
+	submitInfo2 :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
+	submitInfo2 = Vk.SubmitInfo {
+			Vk.submitInfoNext = TMaybe.N,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+			Vk.submitInfoCommandBuffers = cb :** HPList.Nil,
+			Vk.submitInfoSignalSemaphores = HPList.Nil }
 
 writePixels :: FilePath -> Pixels -> IO ()
 writePixels fp ((w, h), pxs) =
@@ -522,37 +547,6 @@ blue = zero :* zero :* zero :* zero :* one :* zero :* one :* zero :* HPList.Nil
 
 pattern AlwaysRight :: b -> Either a b
 pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
-
-run2 :: forall nm4 w4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
-	sbtss ~ '[slbts],
-	Storable w4,
-	Vk.Mm.OffsetSize nm4 (VObj.List 256 w4 "") objss4 0,
-	InfixIndex '[slbts] sbtss ) =>
-	Vk.Dv.D sd -> Vk.Q.Q -> Vk.CmdBuf.C sc ->
-	Vk.Ppl.Cmpt.C sg2 '(sl2, sbtss, PushConstants) ->
-	Vk.PplLyt.P sl2 sbtss PushConstants ->
-	Vk.DS.D sds slbts ->
-	Vk.Mm.M sm4 objss4 -> Word32 -> Word32 -> Constants -> IO (V.Vector w4)
-run2 dv q cb ppl2 plyt2 ds m w h cs = do
-	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl2 \ccb -> do
-			Vk.Cmd.bindDescriptorSetsCompute ccb plyt2
-				(U2 ds :** HPList.Nil)
-				(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
-			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
-				ccb plyt2 ((w :: Word32) :* cs)
-			Vk.Cmd.dispatch ccb w h 1
-	Vk.Q.submit q (U4 submitInfo2 :** HPList.Nil) Nothing
-	Vk.Q.waitIdle q
-	Vk.Mm.read @nm4 @(VObj.List 256 w4 "") @0 @(V.Vector w4) dv m def
-	where
-	submitInfo2 :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
-	submitInfo2 = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-			Vk.submitInfoCommandBuffers = cb :** HPList.Nil,
-			Vk.submitInfoSignalSemaphores = HPList.Nil }
 
 zero, one, mone :: CFloat
 zero = 0; one = 1; mone = - 1
