@@ -451,7 +451,7 @@ readPngRgba fp = try (BS.readFile fp) >>= \case
 		Right (P.ImageRGBA8 img) -> Right img
 		Right _ -> Left $ Right "readPngRgba: The format is not RGBA8"
 
-mainloop :: forall sd sc sds sl bts nm4 objss4 sp1 spl1 sp2 spl2 sm4 sb sbp sbpf . (
+mainloop :: forall sd sc sds sl bts sm4 sb nm4 sbp sbpf objss4 sp1 spl1 sp2 spl2 . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", Pixel)] 0,
 	Vk.DS.BindingAndArrayElemBufferView bts '[ '("", PixelFloat)] 0,
@@ -464,7 +464,7 @@ mainloop :: forall sd sc sds sl bts nm4 objss4 sp1 spl1 sp2 spl2 sm4 sb sbp sbpf
 	(Size, Vk.Mm.M sm4 objss4) -> Constants -> IO ()
 mainloop outf io@(inp, outp) dvs@(pd, dv, q, cb, ds) pplplyt pplplyt2@(plyt2, ppl2)
 	grps@(mgrp, _, pgrp, pfgrp) szwhs szwhm@((sz, (w, h)), m) cs = do
-	rslt <- (sz ,) <$> run2' @nm4 @_ @objss4 dv q cb ppl2 plyt2 ds m w h cs
+	rslt <- (sz ,) <$> run2 @nm4 @_ @objss4 dv q cb ppl2 plyt2 ds m w h cs
 	writePixels outf rslt
 	fix \rec -> do
 		cmd <- atomically $ readTChan inp
@@ -523,7 +523,7 @@ blue = zero :* zero :* zero :* zero :* one :* zero :* one :* zero :* HPList.Nil
 pattern AlwaysRight :: b -> Either a b
 pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
 
-run2' :: forall nm4 w4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
+run2 :: forall nm4 w4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
 	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts) ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
 	Storable w4,
@@ -534,7 +534,7 @@ run2' :: forall nm4 w4 objss4 slbts sbtss sd sc sg2 sl2 sm4 sds . (
 	Vk.PplLyt.P sl2 sbtss PushConstants ->
 	Vk.DS.D sds slbts ->
 	Vk.Mm.M sm4 objss4 -> Word32 -> Word32 -> Constants -> IO (V.Vector w4)
-run2' dv q cb ppl2 plyt2 ds m w h cs = do
+run2 dv q cb ppl2 plyt2 ds m w h cs = do
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl2 \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb plyt2
