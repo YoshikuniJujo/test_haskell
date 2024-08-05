@@ -8,7 +8,7 @@ app
 * [x] try-hello-world
 * [x] try-saitan-simple
 * [x] try-push-constant
-* [ ] try-texel-buffer-nega
+* [x] try-texel-buffer-nega
 * [ ] try-data-list-sort
 * [ ] try-quick-sort
 * [ ] try-bitonic-sort-cpu

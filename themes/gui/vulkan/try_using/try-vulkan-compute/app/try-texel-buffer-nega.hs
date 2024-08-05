@@ -203,11 +203,11 @@ crPpls :: forall sd sl bts a .
 crPpls dv dsl a =
 	Vk.PplLyt.create dv plinfo nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
-		(HPList.Singleton . U4 $ pinfo glslComputeShaderMain pl) nil
+		(HPList.Singleton . U4 $ pinfo pxlLoader pl) nil
 		\(HPList.Singleton p) ->
 	Vk.PplLyt.create dv plinfo nil \pl2 ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
-		(HPList.Singleton . U4 $ pinfo glslComputeShaderMain2 pl2) nil
+		(HPList.Singleton . U4 $ pinfo pxlConverter pl2) nil
 		\(HPList.Singleton p2) -> a (pl, p) (pl2, p2)
 	where
 	plinfo :: Vk.PplLyt.CreateInfo 'Nothing '[ '(sl, bts)]
@@ -372,6 +372,11 @@ crBffrMm pd dv mgrp bgrp k v =
 			Vk.Mm.allocateInfoNext = TMaybe.N,
 			Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
+{-# COMPLETE AlwaysRight #-}
+
+pattern AlwaysRight :: b -> Either a b
+pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
+
 findMmTpIdx :: Vk.Phd.P ->
 	Vk.Mm.Requirements -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
 findMmTpIdx pd rq wt = Vk.Phd.getMemoryProperties pd >>= \prs -> do
@@ -463,10 +468,10 @@ mainloop :: forall sd sc sds sp1 spl1 sp2 spl2 sl bts sm sb bnm sbp sbpf oss . (
 mainloop outf ic@(inp, cnt) dvs@(_, dv, q, cb, ds) pp pp2@(pl2, p2)
 	gs@(mgrp, _, pgrp, pfgrp) szs szm@((sz, (w, h)), m) cs = do
 	rslt <- (sz ,) <$> convertPxls @oss @bnm dv q cb pl2 p2 ds m w h cs
-	writePixels outf rslt
+	writePxls outf rslt
 	fix \go -> do
 		cmd <- atomically $ readTChan inp
-		case (words cmd, nameConstant cmd) of
+		case (words cmd, nameConstants cmd) of
 			(["quit"], _) -> pure ()
 			(["open", nm, fp], _) -> next >>
 				mkPxls ic dvs pp gs nm fp >>= \szm'@(sz', _) ->
@@ -489,46 +494,46 @@ mainloop outf ic@(inp, cnt) dvs@(_, dv, q, cb, ds) pp pp2@(pl2, p2)
 	lookupSize nm = M.lookup nm <$> atomically (readTVar szs)
 
 convertPxls :: forall {sd} {sc} {sp} {spl} {sds} {sl} {bts} {sm} oss bnm pxl . (
-	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
-	Storable pxl,
-	Vk.Mm.OffsetSize bnm (VObj.List 256 pxl "") oss 0 ) =>
+	Storable pxl, Vk.Mm.OffsetSize bnm (VObj.List 256 pxl "") oss 0,
+	Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]] ) =>
 	Vk.Dv.D sd -> Vk.Q.Q -> Vk.CmdBuf.C sc ->
 	Vk.PplLyt.P spl '[ '(sl, bts)] PushConstants ->
 	Vk.Ppl.Cmpt.C sp '(spl, '[ '(sl,bts)], PushConstants) ->
-	Vk.DS.D sds '(sl,bts) ->
-	Vk.Mm.M sm oss -> Word32 -> Word32 -> Constants -> IO (V.Vector pxl)
-convertPxls dv q cb plyt2 ppl2 ds m w h cs = do
+	Vk.DS.D sds '(sl,bts) -> Vk.Mm.M sm oss ->
+	Word32 -> Word32 -> Constants -> IO (V.Vector pxl)
+convertPxls dv q cb pl p ds m w h cs = do
 	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl2 \ccb -> do
-			Vk.Cmd.bindDescriptorSetsCompute ccb plyt2
-				(U2 ds :** HPList.Nil)
-				(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
-			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit ]
-				ccb plyt2 ((w :: Word32) :* cs)
+		Vk.Cmd.bindPipelineCompute
+			cb Vk.Ppl.BindPointCompute p \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute ccb pl
+				(HPList.Singleton $ U2 ds)
+				(HPList.Singleton $
+					HPList.Nil :** HPList.Nil :**
+					HPList.Nil)
+			Vk.Cmd.pushConstantsCompute
+				@'[ 'Vk.T.ShaderStageComputeBit]
+				ccb pl (w :* cs)
 			Vk.Cmd.dispatch ccb w h 1
-	Vk.Q.submit q (U4 submitInfo2 :** HPList.Nil) Nothing
-	Vk.Q.waitIdle q
-	Vk.Mm.read @bnm @(VObj.List 256 pxl "") @0 @(V.Vector pxl) dv m def
-	where
-	submitInfo2 :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
-	submitInfo2 = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-			Vk.submitInfoCommandBuffers = cb :** HPList.Nil,
-			Vk.submitInfoSignalSemaphores = HPList.Nil }
+	Vk.Q.submit q (HPList.Singleton $ U4 sinfo) Nothing >> Vk.Q.waitIdle q
+	Vk.Mm.read @bnm @(VObj.List 256 pxl "") @0 @(V.Vector pxl) dv m zeroBits
+	where sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
-writePixels :: FilePath -> Pixels -> IO ()
-writePixels fp ((w, h), pxs) =
-	P.writePng @P.PixelRGBA8 fp . P.Image w h $ V.unsafeCast pxs
+writePxls :: FilePath -> Pixels -> IO ()
+writePxls fp ((w, h), pxls) =
+	P.writePng @P.PixelRGBA8 fp . P.Image w h $ V.unsafeCast pxls
 
-nameConstant :: String -> Maybe Constants
-nameConstant = \case
+nameConstants :: String -> Maybe Constants
+nameConstants = \case
 	"posi" -> Just posi; "nega" -> Just nega;
 	"red" -> Just red; "green" -> Just green; "blue" -> Just blue
 	_ -> Nothing
 
-type Constants =
-	HPList.L '[CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat]
+type Constants = HPList.L
+	'[CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat, CFloat]
 
 nega, posi :: Constants
 nega = mone :* one :* mone :* one :* mone :* one :* one :* zero :* HPList.Nil
@@ -542,11 +547,6 @@ green = zero :* zero :* one :* zero :* zero :* zero :* one :* zero :* HPList.Nil
 
 blue :: Constants
 blue = zero :* zero :* zero :* zero :* one :* zero :* one :* zero :* HPList.Nil
-
-{-# COMPLETE AlwaysRight #-}
-
-pattern AlwaysRight :: b -> Either a b
-pattern AlwaysRight x <- Right x where AlwaysRight x = Right x
 
 zero, one, mone :: CFloat
 zero = 0; one = 1; mone = - 1
@@ -570,75 +570,69 @@ instance Storable PixelFloat where
 	sizeOf _ = 4 * sizeOf @CFloat undefined
 	alignment _ = alignment @CFloat undefined
 	peek p = peekArray 4 (castPtr p) >>= \case
-		[r, g, b, a] -> pure (PixelFloat r g b a); _ -> error "never occur"
+		[r, g, b, a] -> pure (PixelFloat r g b a)
+		_ -> error "never occur"
 	poke p (PixelFloat r g b a) = pokeArray (castPtr p) [r, g, b, a]
 
 head' :: [a] -> a
 head' = fst . fromJust . L.uncons
 
-glslComputeShaderMain :: SpirV.S 'GlslComputeShader
-glslComputeShaderMain = [glslComputeShader|
+pxlLoader :: SpirV.S 'GlslComputeShader
+pxlLoader = [glslComputeShader|
 
 #version 460
+
 layout(local_size_x = 1, local_size_y = 1) in;
 
-layout(binding = 0, rgba8ui) uniform uimageBuffer storageTexelBuffer;
-layout(binding = 1, rgba32f) uniform imageBuffer storageTexelBuffer2;
-layout(push_constant) uniform PushConstant { uint width; } pushConstant;
+layout(binding = 0, rgba8ui) uniform uimageBuffer pixelBuffer;
+layout(binding = 1, rgba32f) uniform imageBuffer pixelFloatBuffer;
+layout(push_constant) uniform PushConstant { uint wdt; } pc;
 
 void
 main()
 {
-	int index = int(gl_GlobalInvocationID.x +
-		gl_GlobalInvocationID.y * pushConstant.width);
+	int i = int(gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * pc.wdt);
 
-	uvec4 px = imageLoad(storageTexelBuffer, index);
-	vec4 px2;
-	px2.r = float(px.r) / 255;
-	px2.g = float(px.g) / 255;
-	px2.b = float(px.b) / 255;
-	px2.a = float(px.a) / 255;
-	imageStore(storageTexelBuffer2, index, px2);
+	uvec4 px = imageLoad(pixelBuffer, i);
+	vec4 pxf;
+
+	pxf.r = float(px.r) / 255; pxf.g = float(px.g) / 255;
+	pxf.b = float(px.b) / 255; pxf.a = float(px.a) / 255;
+
+	imageStore(pixelFloatBuffer, i, pxf);
 }
 
 |]
 
-glslComputeShaderMain2 :: SpirV.S 'GlslComputeShader
-glslComputeShaderMain2 = [glslComputeShader|
+pxlConverter :: SpirV.S 'GlslComputeShader
+pxlConverter = [glslComputeShader|
 
 #version 460
+
 layout(local_size_x = 1, local_size_y = 1) in;
 
-layout(binding = 0, rgba8ui) uniform uimageBuffer storageTexelBuffer;
-layout(binding = 1, rgba32f) uniform imageBuffer storageTexelBuffer2;
+layout(binding = 0, rgba8ui) uniform uimageBuffer pixelBuffer;
+layout(binding = 1, rgba32f) uniform imageBuffer pixelFloatBuffer;
 layout(push_constant) uniform PushConstant {
-	uint width;
-	float kr; float cr;
-	float kg; float cg;
-	float kb; float cb;
-	float ka; float ca;
-	} pushConstant;
+	uint wdt;
+	float kr; float cr; float kg; float cg;
+	float kb; float cb; float ka; float ca; } pc;
 
 void
 main()
 {
-	int index = int(gl_GlobalInvocationID.x +
-		gl_GlobalInvocationID.y * pushConstant.width);
+	int i = int(gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * pc.wdt);
 
-	vec4 px2 = imageLoad(storageTexelBuffer2, index);
-//	px2.r = 0; px2.g = px2.g; px2.b = 0;
-//	px2.r = 1 - px2.r; px2.g = 1 - px2.g; px2.b = 1 - px2.b;
-	px2.r = pushConstant.kr * px2.r + pushConstant.cr;
-	px2.g = pushConstant.kg * px2.g + pushConstant.cg;
-	px2.b = pushConstant.kb * px2.b + pushConstant.cb;
-	px2.a = pushConstant.ka * px2.a + pushConstant.ca;
+	vec4 pxf = imageLoad(pixelFloatBuffer, i);
+	pxf.r = pc.kr * pxf.r + pc.cr; pxf.g = pc.kg * pxf.g + pc.cg;
+	pxf.b = pc.kb * pxf.b + pc.cb; pxf.a = pc.ka * pxf.a + pc.ca;
 
 	uvec4 px;
-	px.r = uint(px2.r * 255);
-	px.g = uint(px2.g * 255);
-	px.b = uint(px2.b * 255);
-	px.a = uint(px2.a * 255);
-	imageStore(storageTexelBuffer, index, px);
+	px.r = uint(pxf.r * 255); px.g = uint(pxf.g * 255);
+	px.b = uint(pxf.b * 255); px.a = uint(pxf.a * 255);
+
+	imageStore(pixelBuffer, i, px);
+
 }
 
 |]
