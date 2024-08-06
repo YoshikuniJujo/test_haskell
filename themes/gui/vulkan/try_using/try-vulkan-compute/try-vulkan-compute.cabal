@@ -28,6 +28,7 @@ library
       BitonicSortPairs
       Tribial
       TryBitonicSortCpu
+      TryBitonicSortGpu
       TryBitonicSortPairs
       TryMandelbrot
       TryQuickSort

@@ -5,7 +5,6 @@
 module Main (main) where
 
 import TryQuickSort
-import Data.Foldable
 import Data.Word
 import Data.Time
 import System.Random
@@ -22,12 +21,12 @@ main = do
 
 	ct0 <- getCurrentTime
 
-	ns <- quicksort 10 rs
+	ns <- quicksort 100 rs
 
 	ct1 <- getCurrentTime
 
-	print . take 20 $ toList ns
-	print . checkSorted 0 $ toList ns
+	print $ take 20 ns
+	print $ checkSorted 0 ns
 	print $ diffUTCTime ct1 ct0
 
 checkSorted :: Ord a => Int -> [a] -> (Int, Bool)

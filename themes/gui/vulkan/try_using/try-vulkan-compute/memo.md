@@ -24,6 +24,7 @@ src
 * [ ] BitonicSortPairs
 * [ ] TryBitonicSortPairs
 * [ ] TryBitonicSortCpu
+* [ ] TryBitonicSortGpu
 * [ ] TryMandelbrot
 
 csrc

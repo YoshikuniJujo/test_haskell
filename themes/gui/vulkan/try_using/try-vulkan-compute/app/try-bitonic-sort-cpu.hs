@@ -6,7 +6,6 @@
 module Main (main) where
 
 import Control.Exception
-import Data.Foldable
 import Data.Word
 import Data.Time
 import System.Random
@@ -24,12 +23,12 @@ main = do
 
 	ct0 <- getCurrentTime
 
-	ns <- bitonicSortCpu' 25 rs
+	ns <- bitonicSortCpu 25 rs
 
 	ct1 <- getCurrentTime
 
-	print . take 20 $ toList ns
-	print . checkSorted 0 $ toList ns
+	print $ take 20 ns
+	print $ checkSorted 0 ns
 
 	print $ diffUTCTime ct1 ct0
 
