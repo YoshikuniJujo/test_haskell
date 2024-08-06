@@ -9,23 +9,24 @@ app
 * [x] try-saitan-simple
 * [x] try-push-constant
 * [x] try-texel-buffer-nega
-* [ ] try-quick-sort
-* [ ] try-bitonic-sort-cpu
-* [ ] try-bitonic-sort-new
+* [x] try-quick-bitonic-sort
 * [ ] try-bitonic-sort
 * [ ] try-mandelbrot-hs
 * [ ] try-mandelbrot-cpu
 * [ ] try-mandelbrot
+* [ ] try-bitonic-sort-new
+* [ ] try-bitonic-sort-new-test
 
 src
 ---
 
-* [ ] TryQuickSort
+* [ ] TryQuicksort
+* [ ] TryBitonicsortCpu
+* [ ] TryBitonicsortGpu
 * [ ] BitonicSortPairs
 * [ ] TryBitonicSortPairs
-* [ ] TryBitonicSortCpu
-* [ ] TryBitonicSortGpu
 * [ ] TryMandelbrot
+* [ ] Tribial
 
 csrc
 ----

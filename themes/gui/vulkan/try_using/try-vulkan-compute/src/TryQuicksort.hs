@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryQuickSort (quicksort) where
+module TryQuicksort (quicksort) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -13,10 +13,10 @@ import Data.Word
 
 foreign import ccall "quicksort" c_quicksort :: CInt -> CInt -> Ptr Word32 -> IO ()
 
-quicksort :: CInt -> [Word32] -> IO [Word32]
+quicksort :: Int -> [Word32] -> IO [Word32]
 quicksort m ns = allocaArray (l + 2) \a -> do
 	pokeArray a (minBound : ns ++ [maxBound])
-	c_quicksort m (fromIntegral l) a
+	c_quicksort (fromIntegral m) (fromIntegral l) a
 	tail' <$> peekArray (l + 1) a
 	where l = L.length ns
 

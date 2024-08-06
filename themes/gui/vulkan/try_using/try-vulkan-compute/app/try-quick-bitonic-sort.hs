@@ -1,49 +1,50 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
-import Data.Foldable
-import Data.Word
-import Data.Time
-import System.Random
+import Control.DeepSeq (force)
+import Control.Exception (evaluate)
+import Data.Foldable (for_)
+import Data.Word (Word32)
+import Data.Time (getCurrentTime, diffUTCTime)
+import System.Random (Random, randomRs, getStdGen)
+import System.Environment (getArgs)
 
-import Control.DeepSeq
-import Control.Exception
+import TryQuicksort (quicksort)
+import TryBitonicsortCpu (bitonicsortCpu)
+import TryBitonicsortGpu (bitonicsortGpu)
 
-import TryQuickSort
-import TryBitonicSortCpu
-import TryBitonicSortGpu
+listSize :: Int
+listSize = 25
 
-import System.Environment
-
-getRandomRs :: Random a => (a, a) -> Int -> IO [a]
-getRandomRs r n = take n . randomRs r <$> getStdGen
+quickToInsert :: Int
+quickToInsert = 100
 
 main :: IO ()
 main = do
 	pln : _ <- getArgs
-	!rs <- evaluate . force =<< getRandomRs @Word32 (1, 10 ^ (8 :: Int)) (2 ^ (25 :: Int))
+	rs <- evaluate . force
+		=<< getRandomRs @Word32 (1, 10 ^ (8 :: Int)) (2 ^ listSize)
 	for_ pln \case
-		'q' -> time $ quicksort 100 rs
-		'c' -> time $ bitonicSortCpu 25 rs
-		'g' -> time $ bitonicSortGpu 25 rs
+		'q' -> time $ quicksort quickToInsert rs
+		'c' -> time $ bitonicsortCpu listSize rs
+		'g' -> time $ bitonicsortGpu listSize rs
 		_ -> pure ()
+
+getRandomRs :: Random a => (a, a) -> Int -> IO [a]
+getRandomRs r n = take n . randomRs r <$> getStdGen
 
 time :: IO [Word32] -> IO ()
 time a = do
-	ct0 <- getCurrentTime
-	!ns <- a
-	ct1 <- getCurrentTime
+	(b, ns, e) <- (,,) <$> getCurrentTime <*> a <*> getCurrentTime
 	print $ take 20 ns
 	print $ checkSorted 0 ns
-	print $ diffUTCTime ct1 ct0
+	print $ e `diffUTCTime` b
 
 checkSorted :: Ord a => Int -> [a] -> (Int, Bool)
 checkSorted i [] = (i - 1, True)
 checkSorted i [_] = (i, True)
 checkSorted i (x : xs@(y : _))
-	| x <= y = checkSorted (i + 1) xs
-	| otherwise = (i, False)
+	| x <= y = checkSorted (i + 1) xs | otherwise = (i, False)

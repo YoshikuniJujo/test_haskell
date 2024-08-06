@@ -13,7 +13,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryBitonicSortGpu (bitonicSortGpu) where
+module TryBitonicsortGpu (bitonicsortGpu) where
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 
@@ -78,8 +78,8 @@ import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 -- MAIN
 
-bitonicSortGpu :: Int -> [Word32] -> IO [Word32]
-bitonicSortGpu ls rs = do
+bitonicsortGpu :: Int -> [Word32] -> IO [Word32]
+bitonicsortGpu ls rs = do
 	let	ls' :: Integral n => n
 		ls' = fromIntegral ls
 

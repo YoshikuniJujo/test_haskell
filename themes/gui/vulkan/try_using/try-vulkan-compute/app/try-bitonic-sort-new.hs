@@ -6,7 +6,7 @@ module Main (main) where
 import Control.DeepSeq
 import Data.Time
 import System.Random
-import TryBitonicSortGpu
+import TryBitonicsortGpu
 
 listSize :: Integral n => n
 listSize = 25
@@ -16,7 +16,7 @@ main = getRandomRs (1, 10 ^ (8 :: Int)) (2 ^ (listSize :: Int)) >>= \(force -> !
 
 	ct0 <- getCurrentTime
 
-	r' <- bitonicSortGpu listSize rs
+	r' <- bitonicsortGpu listSize rs
 
 	ct1 <- getCurrentTime
 
