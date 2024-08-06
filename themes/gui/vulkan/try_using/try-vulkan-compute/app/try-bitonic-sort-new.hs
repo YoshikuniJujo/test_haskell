@@ -9,9 +9,8 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, BangPatterns, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -33,7 +32,6 @@ import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Int
 
-import qualified Data.Vector.Storable as V
 import qualified Data.Vector as VV
 
 import Language.SpirV.Shaderc.TH
@@ -77,6 +75,8 @@ import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 import Data.Foldable
 
+import Control.DeepSeq
+
 ---------------------------------------------------------------------------
 
 -- MAIN
@@ -88,9 +88,11 @@ import Data.Foldable
 
 -- MAIN
 
+listSize :: Integral n => n
+listSize = 25
+
 main :: IO ()
-main = getRandomRs (1, 10 ^ (7 :: Int)) (2 ^ (24 :: Int)) >>= \rs -> do
-	let	!dc = V.fromList $ W3 <$> rs
+main = getRandomRs (1, 10 ^ (8 :: Int)) (2 ^ (listSize :: Int)) >>= \(force -> !rs) -> do
 
 	ct0 <- getCurrentTime
 
@@ -103,7 +105,7 @@ main = getRandomRs (1, 10 ^ (7 :: Int)) (2 ^ (24 :: Int)) >>= \rs -> do
 		print (pot :: Int)
 
 		r3 <- Vk.DscSetLyt.create dvc dscSetLayoutInfo nil \dscSetLyt ->
-			prepareMems phdvc dvc dscSetLyt dc \dscSet mc ->
+			prepareMems' phdvc dvc dscSetLyt (W3 <$> rs) \dscSet mc ->
 			calc dvc qFam dscSetLyt dscSet pot >>
 			Vk.Mm.read @"" @(VObj.List 256 W3 "") @0 @(VV.Vector W3) dvc mc def
 
@@ -181,7 +183,7 @@ binding = Vk.DscSetLyt.BindingBuffer {
 
 -- PREPARE MEMORIES
 
-prepareMems :: (
+prepareMems' :: (
 	Default (HeteroParList.PL
 		(HeteroParList.PL KObj.Length)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
@@ -189,14 +191,14 @@ prepareMems :: (
 	Vk.DscSet.UpdateDynamicLength bts '[VObj.List 256 W3 ""]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.D sl bts ->
-	V.Vector W3 -> (forall sds sm3 sb3 .
+	[W3] -> (forall sds sm3 sb3 .
 		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.BufferArg "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
-prepareMems phdvc dvc dscSetLyt dc f =
+prepareMems' phdvc dvc dscSetLyt dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
 	Vk.DscSet.allocateDs dvc (dscSetInfo dscPool dscSetLyt)
 		\(HeteroParList.Singleton dscSet) ->
-	storageBufferNew dvc phdvc (fromIntegral $ V.length dc) \bc mc ->
+	storageBufferNew dvc phdvc (fromIntegral $ L.length dc) \bc mc ->
 	Vk.Mm.write @"" @(VObj.List 256 W3 "") @0 dvc mc def dc >>
 	Vk.DscSet.updateDs dvc
 		(HeteroParList.Singleton . U5 $ writeDscSet dscSet bc)
@@ -304,7 +306,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.CmdBuf.allocateList dvc (commandBufferInfoList cmdPool) \cbs ->
 		putStrLn "BEGIN CALC" >>
 --		let (ps, qs) = pqs in
-		let (ps, qs) = unzip $ makePqs' 24 0 0 in
+		let (ps, qs) = unzip $ makePqs' listSize 0 0 in
 		runAll dvc qFam ppl plyt dscSet dsz (L.zip3 cbs ps qs) \fnc ->
 		Vk.Fence.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
 
@@ -403,8 +405,8 @@ commandBufferInfoList cmdPool = Vk.CmdBuf.AllocateInfoList {
 	Vk.CmdBuf.allocateInfoCommandPoolList = cmdPool,
 	Vk.CmdBuf.allocateInfoLevelList = Vk.CmdBuf.LevelPrimary,
 --	Vk.CmdBuf.allocateInfoCommandBufferCountList = 10000 }
---	Vk.CmdBuf.allocateInfoCommandBufferCountList = 1000 }
-	Vk.CmdBuf.allocateInfoCommandBufferCountList = 300 }
+	Vk.CmdBuf.allocateInfoCommandBufferCountList = 1000 }
+--	Vk.CmdBuf.allocateInfoCommandBufferCountList = 300 }
 --	Vk.CmdBuf.allocateInfoCommandBufferCountList = 270 }
 
 run :: forall slbts sbtss sd sc sg sl sds swss a . (
@@ -426,7 +428,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
 --			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
-			Vk.Cmd.dispatch ccb (dsz `div` 64) (2 ^ (8 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 64) (2 ^ (9 :: Int)) 1
 	Vk.Semaphore.create dvc Vk.Semaphore.CreateInfo {
 		Vk.Semaphore.createInfoNext = TMaybe.N,
 		Vk.Semaphore.createInfoFlags = zeroBits } nil \s ->
@@ -464,7 +466,7 @@ run' dvc qFam cb ppl pplLyt dscSet dsz ws n q f = do
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.Cmd.LayoutArgListOnlyDynamics sbtss)) >>
 --			Vk.Cmd.dispatch ccb dsz (2 ^ (7 :: Int)) 1
-			Vk.Cmd.dispatch ccb (dsz `div` 64) (2 ^ (8 :: Int)) 1
+			Vk.Cmd.dispatch ccb (dsz `div` 64) (2 ^ (9 :: Int)) 1
 	Vk.Fence.create dvc Vk.Fence.CreateInfo {
 		Vk.Fence.createInfoNext = TMaybe.N,
 		Vk.Fence.createInfoFlags = zeroBits } nil \fnc ->

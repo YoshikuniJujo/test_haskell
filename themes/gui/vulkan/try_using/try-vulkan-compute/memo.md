@@ -17,6 +17,15 @@ app
 * [ ] try-mandelbrot-cpu
 * [ ] try-mandelbrot
 
+src
+---
+
+* [ ] TryQuickSort
+* [ ] BitonicSortPairs
+* [ ] TryBitonicSortPairs
+* [ ] TryBitonicSortCpu
+* [ ] TryMandelbrot
+
 csrc
 ----
 

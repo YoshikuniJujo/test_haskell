@@ -1,7 +1,8 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryBitonicSortCpu where
+module TryBitonicSortCpu (bitonicSortCpu') where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -10,10 +11,13 @@ import Data.Foldable
 import Data.Array
 import Data.Word
 
+import Data.List qualified as L
+
 foreign import ccall "bitonic_sort" c_bitonic_sort :: CInt -> Ptr Word32 -> IO ()
 
-bitonicSortCpu :: CInt -> Array Int Word32 -> IO (Array Int Word32)
-bitonicSortCpu n ns = allocaArray (length ns) \a -> do
+bitonicSortCpu' :: CInt -> [Word32] -> IO (Array Int Word32)
+bitonicSortCpu' n ns = allocaArray l \a -> do
 	pokeArray a $ toList ns
 	c_bitonic_sort n a
-	listArray (0, length ns - 1) <$> peekArray (length ns) a
+	listArray (0, l - 1) <$> peekArray l a
+	where l = L.length ns
