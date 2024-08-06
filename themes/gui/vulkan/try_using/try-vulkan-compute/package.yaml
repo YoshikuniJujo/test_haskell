@@ -111,8 +111,26 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-compute
+  try-bitonic-sort-new-test:
+    main:                try-bitonic-sort-new-test.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-compute
   try-bitonic-sort-cpu:
     main:                try-bitonic-sort-cpu.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-compute
+  try-quick-bitonic-sort:
+    main:                try-quick-bitonic-sort.hs
     source-dirs:         app
     ghc-options:
     - -threaded
