@@ -20,19 +20,20 @@ app
 src
 ---
 
-* [ ] TryQuicksort
+* [x] TryQuicksort
 * [ ] TryBitonicsortCpu
 * [ ] TryBitonicsortGpu
 * [ ] BitonicSortPairs
 * [ ] TryBitonicSortPairs
 * [ ] TryMandelbrot
+* [ ] Tools
 * [ ] Tribial
 
 csrc
 ----
 
 * [x] hello.c
-* [ ] quicksort.c
+* [x] quicksort.c
 * [ ] bitonic_sort.c
 * [ ] bitonicSortPairs.c
 * [ ] mandelbrot.c
