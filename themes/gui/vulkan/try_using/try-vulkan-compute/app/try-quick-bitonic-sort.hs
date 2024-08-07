@@ -1,5 +1,4 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -16,7 +15,7 @@ import TryQuicksort (quicksort)
 import TryBitonicsortCpu (bitonicsortCpu)
 import TryBitonicsortGpu (bitonicsortGpu)
 
-listSize :: Int
+listSize :: Integral n => n
 listSize = 25
 
 quickToInsert :: Int
@@ -26,7 +25,7 @@ main :: IO ()
 main = do
 	pln : _ <- getArgs
 	rs <- evaluate . force
-		=<< getRandomRs @Word32 (1, 10 ^ (8 :: Int)) (2 ^ listSize)
+		=<< getRandomRs (1, 10 ^ (8 :: Int)) (2 ^ (listSize :: Int))
 	for_ pln \case
 		'q' -> time $ quicksort quickToInsert rs
 		'c' -> time $ bitonicsortCpu listSize rs
