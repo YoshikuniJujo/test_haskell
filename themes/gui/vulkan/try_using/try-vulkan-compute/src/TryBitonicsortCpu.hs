@@ -4,19 +4,15 @@
 
 module TryBitonicsortCpu (bitonicsortCpu) where
 
-import Foreign.Ptr
-import Foreign.Marshal.Array
-import Foreign.C.Types
-import Data.Foldable
-import Data.Word
-
+import Foreign.Ptr (Ptr)
+import Foreign.Marshal.Array (allocaArray, peekArray, pokeArray)
+import Foreign.C.Types (CInt(..))
 import Data.List qualified as L
+import Data.Word (Word32)
 
-foreign import ccall "bitonic_sort" c_bitonic_sort :: CInt -> Ptr Word32 -> IO ()
+foreign import ccall "bitonicsort" c_bitonicsort :: CInt -> Ptr Word32 -> IO ()
 
 bitonicsortCpu :: Int -> [Word32] -> IO [Word32]
-bitonicsortCpu n ns = allocaArray l \a -> do
-	pokeArray a $ toList ns
-	c_bitonic_sort (fromIntegral n) a
-	peekArray l a
+bitonicsortCpu n ns = allocaArray l \a ->
+	pokeArray a ns >> c_bitonicsort (fromIntegral n) a >> peekArray l a
 	where l = L.length ns

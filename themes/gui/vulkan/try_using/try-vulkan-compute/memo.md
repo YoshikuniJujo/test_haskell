@@ -21,7 +21,7 @@ src
 ---
 
 * [x] TryQuicksort
-* [ ] TryBitonicsortCpu
+* [x] TryBitonicsortCpu
 * [ ] TryBitonicsortGpu
 * [ ] BitonicSortPairs
 * [ ] TryBitonicSortPairs
@@ -34,6 +34,6 @@ csrc
 
 * [x] hello.c
 * [x] quicksort.c
-* [ ] bitonic_sort.c
+* [x] bitonicsort.c
 * [ ] bitonicSortPairs.c
 * [ ] mandelbrot.c

@@ -62,7 +62,7 @@ library:
   - csrc/hello.c
   - csrc/bitonicSortPairs.c
   - csrc/quicksort.c
-  - csrc/bitonic_sort.c
+  - csrc/bitonicsort.c
   - csrc/mandelbrot.c
 
 executables:
