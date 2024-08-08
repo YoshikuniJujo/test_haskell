@@ -18,17 +18,17 @@ import Data.Array.ST
 -- DIJKSTRA'S ALGORITHM
 
 dijkstra :: (Ix n, Ord d, Num d) => (n, n) -> [((n, n), d)] -> n -> n -> Maybe d
-dijkstra r g s = solve [] [(s, 0)] (loadGraph r g)
+dijkstra r g s = solve r [] [(s, 0)] (loadGraph r g)
 
 solve :: (Ix n, Ord d, Num d) =>
-	[n] -> [(n, d)] -> Array2d n (Maybe d) -> n -> Maybe d
-solve fx q g t = case dequeue q of
+	(n, n) -> [n] -> [(n, d)] -> Array2d n (Maybe d) -> n -> Maybe d
+solve r fx q g t = case dequeue q of
 	Nothing -> Nothing
 	Just ((x, d), q')
-		| x `elem` fx -> solve fx q' g t
+		| x `elem` fx -> solve r fx q' g t
 		| x == t -> Just d
-		| otherwise -> solve
-			(x : fx) (foldr (update g x d) q' (indices $ g ! x)) g t
+		| otherwise ->
+			solve r (x : fx) (foldr (update g x d) q' (range r)) g t
 
 update :: (Ix n, Num d) =>
 	Array2d n (Maybe d) -> n -> d -> n -> [(n, d)] -> [(n, d)]
