@@ -32,7 +32,7 @@ solve r fx q g t = case dequeue q of
 
 update :: (Ix n, Num d) =>
 	Array2d n (Maybe d) -> n -> d -> n -> [(n, d)] -> [(n, d)]
-update g x w y = maybe id (enqueue . (y ,) . (w +)) $ g ! x ! y
+update g x d y = maybe id (enqueue . (y ,) . (d +)) $ g ! x ! y
 
 type Array2d n e = Array n (Array n e)
 
