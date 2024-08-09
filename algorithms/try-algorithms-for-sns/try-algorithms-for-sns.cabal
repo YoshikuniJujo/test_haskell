@@ -29,6 +29,7 @@ library
       Algorithms.Dijkstra.Heap
       Algorithms.Dijkstra.Orig
       Algorithms.Dijkstra.Samples
+      Algorithms.Heap.Skew
       Lib
   other-modules:
       Paths_try_algorithms_for_sns
