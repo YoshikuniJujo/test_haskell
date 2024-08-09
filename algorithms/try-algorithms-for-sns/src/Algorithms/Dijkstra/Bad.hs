@@ -21,7 +21,7 @@ dijkstra :: (Ix n, Ord d, Num d) => (n, n) -> [((n, n), d)] -> n -> n -> Maybe d
 dijkstra r g s = solve r [] [(s, 0)] (loadGraph r g)
 
 solve :: (Ix n, Ord d, Num d) =>
-	(n, n) -> [n] -> [(n, d)] -> Array2d n (Maybe d) -> n -> Maybe d
+	(n, n) -> [n] -> [(n, d)] -> Graph n d -> n -> Maybe d
 solve r fx q g t = case dequeue q of
 	Nothing -> Nothing
 	Just ((x, d), q')
@@ -30,11 +30,10 @@ solve r fx q g t = case dequeue q of
 		| otherwise ->
 			solve r (x : fx) (foldr (update g x d) q' (range r)) g t
 
-update :: (Ix n, Num d) =>
-	Array2d n (Maybe d) -> n -> d -> n -> [(n, d)] -> [(n, d)]
+update :: (Ix n, Num d) => Graph n d -> n -> d -> n -> [(n, d)] -> [(n, d)]
 update g x d y = maybe id (enqueue . (y ,) . (d +)) $ g ! x ! y
 
-type Array2d n e = Array n (Array n e)
+type Graph n d = Array n (Array n (Maybe d))
 
 enqueue :: (n, d) -> [(n, d)] -> [(n, d)]
 enqueue = (:)

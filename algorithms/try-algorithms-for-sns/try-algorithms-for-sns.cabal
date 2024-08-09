@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Algorithms.Dijkstra.Bad
+      Algorithms.Dijkstra.Heap
       Algorithms.Dijkstra.Orig
       Algorithms.Dijkstra.Samples
       Lib

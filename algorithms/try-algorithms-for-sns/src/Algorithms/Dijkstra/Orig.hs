@@ -53,12 +53,11 @@ dequeue fx q = range <$> getBounds q >>= \ns ->
 
 -- LOAD GRAPH
 
-loadGraph :: forall n w . (Ix n, Num w) =>
-	(n, n) -> [((n, n), w)] -> Array n (Array n (Maybe w))
+loadGraph :: forall n d . (Ix n, Num d) => (n, n) -> [((n, n), d)] -> Graph n d
 loadGraph rng edgs = runST $ loadGraph' rng edgs
 
-loadGraph' :: forall s n w . (Num w, Ix n) =>
-	(n, n) -> [((n, n), w)] -> ST s (Array n (Array n (Maybe w)))
+loadGraph' :: forall s n d . (Num d, Ix n) =>
+	(n, n) -> [((n, n), d)] -> ST s (Graph n d)
 loadGraph' rng edgs = (freeze `mapM`) =<< do
 	a <- newSquareArray @(STArray s) rng Nothing
 	a <$ do	for_ (range rng) \i -> writeArray (a ! i) i $ Just 0
