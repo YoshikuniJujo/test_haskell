@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Algorithms.Dijkstra
+      Algorithms.Dijkstra.Bad
+      Algorithms.Dijkstra.Orig
+      Algorithms.Dijkstra.Samples
       Lib
   other-modules:
       Paths_try_algorithms_for_sns
