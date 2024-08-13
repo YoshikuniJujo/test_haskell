@@ -12,9 +12,8 @@ bitonicsort(int n, uint32_t ns[])
 	for (int i = 0; i < (1 << (n - 1)); i++) {
 		int r = p - q;
 		int u = i >> r << r; int l = i ^ u;
-		int x = u << 1 | l; int y = x | 1 << r;
-		int f, t;
-		if ((i >> p & 1)) { f = y; t = x; } else { f = x; t = y; }
+		int x = u << 1 | l;
+		int f = x | i >> q & 1 << r; int t = x | ~i >> q & 1 << r;
 		swap(ns, f, t);
 	}
 }
