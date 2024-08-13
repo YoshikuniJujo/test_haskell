@@ -22,7 +22,7 @@ src
 
 * [x] TryQuicksort
 * [x] TryBitonicsortCpu
-* [ ] TryBitonicsortGpu
+* [x] TryBitonicsortGpu
 * [ ] BitonicSortPairs
 * [ ] TryBitonicSortPairs
 * [ ] TryMandelbrot

@@ -15,56 +15,50 @@
 
 module TryBitonicsortGpu (bitonicsortGpu) where
 
-import qualified Gpu.Vulkan.Memory as Vk.Mem
-
 import Foreign.Storable
-import Gpu.Vulkan.Object qualified as VObj
-import Gpu.Vulkan.Object.Base qualified as KObj
 import Data.Default
 import Data.Bits
 import Data.Bits.ToolsYj
-import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
-import Data.HeteroParList qualified as HPList
+import Data.List qualified as L
+import Data.List.Length
 import Data.HeteroParList (pattern (:*))
+import Data.HeteroParList qualified as HPList
 import Data.Word
 import Data.Int
 
 import Language.SpirV.Shaderc.TH
 import Language.SpirV.ShaderKind
 
-import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.Instance as Vk.Inst
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
-import qualified Gpu.Vulkan.Queue as Vk.Q
-import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
-import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
-import qualified Gpu.Vulkan.Memory as Vk.Mm
-import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
-import qualified Gpu.Vulkan.ShaderModule as Vk.ShdrMd
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.PipelineLayout as Vk.PplLyt
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
-import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSt
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified Gpu.Vulkan.Cmd as Vk.Cmd
-
-import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscStLyt
-
-import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
-
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object.Base qualified as BObj
+import Gpu.Vulkan.Instance qualified as Vk.Inst
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 
-import Data.List qualified as L
-
-import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cmpt
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShdrMd
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
 import Tools
 
@@ -139,7 +133,7 @@ dscStLytInfo = Vk.DscStLyt.CreateInfo {
 prepareMm :: forall sd sl bts a . (
 	Vk.DscSt.BindingAndArrayElemBuffer bts '[VObj.List 256 Word32 ""] 0,
 	Vk.DscSt.UpdateDynamicLength bts '[VObj.List 256 Word32 ""],
-	Default (HPList.PL2 KObj.Length
+	Default (HPList.PL2 BObj.Length
 		(Vk.DscStLyt.BindingTypeListBufferOnlyDynamics bts)) ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscStLyt.D sl bts ->
 	[Word32] -> (forall sds sm sb .
@@ -197,15 +191,15 @@ bffrNew dv pd ln a = Vk.Bffr.create dv binfo nil \bf -> mminfo bf >>= \mmi ->
 		Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	mminfo :: Vk.Bffr.B sb nm objs -> IO (Vk.Mem.AllocateInfo 'Nothing)
+	mminfo :: Vk.Bffr.B sb nm objs -> IO (Vk.Mm.AllocateInfo 'Nothing)
 	mminfo bf = do
 		rqs <- Vk.Bffr.getMemoryRequirements dv bf
 		mti <- mmTpIdx rqs $
 			Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit
-		pure Vk.Mem.AllocateInfo {
-			Vk.Mem.allocateInfoNext = TMaybe.N,
-			Vk.Mem.allocateInfoMemoryTypeIndex = mti }
+		pure Vk.Mm.AllocateInfo {
+			Vk.Mm.allocateInfoNext = TMaybe.N,
+			Vk.Mm.allocateInfoMemoryTypeIndex = mti }
 	mmTpIdx rqs pr0 = do
 		prs <- Vk.Phd.getMemoryProperties pd
 		let	rqts = Vk.Mm.requirementsMemoryTypeBits rqs
