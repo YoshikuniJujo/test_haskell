@@ -402,8 +402,7 @@ main()
 	int r = pq.p - pq.q;
 	int u = i >> r << r; int l = i ^ u;
 	int x = u << 1 | l;
-	int f = x | i >> pq.q & 1 << r;
-	int t = x | ~i >> pq.q & 1 << r;
+	int f = x | i >> pq.q & 1 << r; int t = x | ~i >> pq.q & 1 << r;
 
 	if (data[0].v[f] > data[0].v[t])
 		data[0].v[f] = atomicExchange(data[0].v[t], data[0].v[f]);
