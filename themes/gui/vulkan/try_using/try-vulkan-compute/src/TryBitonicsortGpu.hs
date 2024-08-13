@@ -343,7 +343,7 @@ dispatch sz cb pl ppl ds szx mgcx' p q =
 		ccb pl (p :* q :* HPList.Nil) >>
 	Vk.Cmd.bindDescriptorSetsCompute ccb
 		pl (HPList.Singleton $ U2 ds) (HPList.Singleton2 HPList.Nil) >>
-	Vk.Cmd.dispatch ccb (mgcx' `div` 64) (2 ^ (sz - szx - 1)) 1
+	Vk.Cmd.dispatch ccb (mgcx' `div` 1024) ((2 ^ (sz - szx - 1)) `div` 1) 1
 
 submitInfo :: Vk.CmdBffr.C sc ->
 	HPList.PL Vk.Semaphore.S ss -> HPList.PL Vk.Semaphore.S sws ->
@@ -387,7 +387,7 @@ shaderStageInfo szx = Vk.Ppl.ShdrSt.CreateInfo {
 
 #version 460
 
-layout(local_size_x = 64) in;
+layout(local_size_x = 1024, local_size_y = 1) in;
 
 layout(constant_id = 0) const uint szx = 0;
 layout(binding = 0) buffer Data { uint v[]; } data[1];
