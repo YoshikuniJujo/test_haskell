@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TryMandelbrot where
@@ -24,10 +25,10 @@ escapeTime (re :+ im) lm = case c_escape_time_hs re im lm of
 	t -> Just t
 
 foreign import ccall "pixel_to_point_hs" c_pixel_to_point_hs ::
-	CInt -> CInt -> CInt -> CInt -> CFloat -> CFloat -> CFloat -> CFloat ->
+	Word32 -> Word32 -> Word32 -> Word32 -> CFloat -> CFloat -> CFloat -> CFloat ->
 	Ptr CFloat -> Ptr CFloat -> IO ()
 
-pixelToPoint :: (CInt, CInt) -> (CInt, CInt) ->
+pixelToPoint :: (Word32, Word32) -> (Word32, Word32) ->
 	Complex CFloat -> Complex CFloat -> Complex CFloat
 pixelToPoint (w, h) (x, y) (lft :+ upr) (rgt :+ lwr) = unsafePerformIO
 	$ alloca \pre -> alloca \pim -> do
@@ -35,9 +36,10 @@ pixelToPoint (w, h) (x, y) (lft :+ upr) (rgt :+ lwr) = unsafePerformIO
 		(:+) <$> peek pre <*> peek pim
 
 foreign import ccall "render_hs" c_render_hs ::
-	Ptr Word32 -> CInt -> CInt -> CFloat -> CFloat -> CFloat -> CFloat -> IO ()
+	Ptr Word32 -> Word32 -> Word32 -> CFloat -> CFloat -> CFloat -> CFloat -> IO ()
 
-render :: (CInt, CInt) -> Complex CFloat -> Complex CFloat -> IO (V.Vector Word32)
-render (w, h) (lft :+ upr) (rgt :+ lwr) = allocaArray (fromIntegral $ w * h) \ppxl -> do
-	c_render_hs ppxl w h lft upr rgt lwr
-	V.fromList <$> peekArray (fromIntegral $ w * h) ppxl
+render :: (Word32, Word32) -> Complex Float -> Complex Float -> IO (V.Vector Word32)
+render (w, h) ((realToFrac -> lft) :+ (realToFrac -> upr)) ((realToFrac -> rgt) :+ (realToFrac -> lwr)) =
+	allocaArray (fromIntegral $ w * h) \ppxl -> do
+		c_render_hs ppxl w h lft upr rgt lwr
+		V.fromList <$> peekArray (fromIntegral $ w * h) ppxl

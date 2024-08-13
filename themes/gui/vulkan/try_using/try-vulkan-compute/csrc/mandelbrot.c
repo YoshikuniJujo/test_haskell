@@ -30,7 +30,7 @@ escape_time_hs(float re, float im, int lm)
 
 float complex
 pixel_to_point(
-	int w, int h, int x, int y,
+	uint32_t w, uint32_t h, uint32_t x, uint32_t y,
 	float complex upper_left, float complex lower_right )
 {
 
@@ -50,7 +50,7 @@ get_complex(float complex c, float *re, float *im)
 
 void
 pixel_to_point_hs(
-	int w, int h, int x, int y,
+	uint32_t w, uint32_t h, uint32_t x, uint32_t y,
 	float lft, float upr, float rgt, float lwr, float *re, float *im )
 {
 	float complex upper_left = make_complex(lft, upr);
@@ -61,10 +61,10 @@ pixel_to_point_hs(
 
 void
 render(uint32_t pixels[],
-	int w, int h, float complex upper_left, float complex lower_right)
+	uint32_t w, uint32_t h, float complex upper_left, float complex lower_right)
 {
-	for (int row = 0; row < h; row++)
-		for (int column = 0; column < w; column++) {
+	for (uint32_t row = 0; row < h; row++)
+		for (uint32_t column = 0; column < w; column++) {
 			float complex point = pixel_to_point(
 				w, h, column, row, upper_left, lower_right );
 			int t = escape_time(point, 255);
@@ -75,7 +75,7 @@ render(uint32_t pixels[],
 
 void
 render_hs(uint32_t pixels[],
-	int w, int h, float lft, float upr, float rgt, float lwr)
+	uint32_t w, uint32_t h, float lft, float upr, float rgt, float lwr)
 {
 	float complex upper_left = lft + upr * I;
 	float complex lower_right = rgt + lwr * I;
