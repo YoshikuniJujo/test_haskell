@@ -25,12 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      BitonicSortPairs
       Tools
-      Tribial
       TryBitonicsortCpu
       TryBitonicsortGpu
-      TryBitonicSortPairs
       TryMandelbrot
       TryQuicksort
   other-modules:
@@ -40,7 +37,6 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   c-sources:
       csrc/hello.c
-      csrc/bitonicSortPairs.c
       csrc/quicksort.c
       csrc/bitonicsort.c
       csrc/mandelbrot.c
@@ -67,41 +63,6 @@ library
     , try-shaderc
     , try-storable-generic
     , try-tools-yj
-    , typelevel-tools
-    , vector
-  default-language: Haskell2010
-
-executable try-bitonic-sort
-  main-is: try-bitonic-sort.hs
-  other-modules:
-      Paths_try_vulkan_compute
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      JuicyPixels
-    , array
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , data-default
-    , deepseq
-    , filepath
-    , parallel
-    , random
-    , ranged-list
-    , stm
-    , temporary
-    , text
-    , time
-    , try-gpu-vulkan
-    , try-gpu-vulkan-ext-debug-utils
-    , try-hetero-parameter-list
-    , try-language-spir-v
-    , try-shaderc
-    , try-storable-generic
-    , try-tools-yj
-    , try-vulkan-compute
     , typelevel-tools
     , vector
   default-language: Haskell2010

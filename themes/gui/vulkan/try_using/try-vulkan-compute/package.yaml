@@ -60,7 +60,6 @@ library:
   source-dirs: src
   c-sources:
   - csrc/hello.c
-  - csrc/bitonicSortPairs.c
   - csrc/quicksort.c
   - csrc/bitonicsort.c
   - csrc/mandelbrot.c
@@ -86,15 +85,6 @@ executables:
     - try-vulkan-compute
   try-saitan-simple:
     main:                try-saitan-simple.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-vulkan-compute
-  try-bitonic-sort:
-    main:                try-bitonic-sort.hs
     source-dirs:         app
     ghc-options:
     - -threaded

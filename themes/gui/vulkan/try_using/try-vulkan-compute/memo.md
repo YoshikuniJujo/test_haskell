@@ -10,12 +10,9 @@ app
 * [x] try-push-constant
 * [x] try-texel-buffer-nega
 * [x] try-quick-bitonic-sort
-* [ ] try-bitonic-sort
 * [ ] try-mandelbrot-hs
 * [ ] try-mandelbrot-cpu
 * [ ] try-mandelbrot
-* [ ] try-bitonic-sort-new
-* [ ] try-bitonic-sort-new-test
 
 src
 ---
@@ -23,11 +20,8 @@ src
 * [x] TryQuicksort
 * [x] TryBitonicsortCpu
 * [x] TryBitonicsortGpu
-* [ ] BitonicSortPairs
-* [ ] TryBitonicSortPairs
 * [ ] TryMandelbrot
 * [ ] Tools
-* [ ] Tribial
 
 csrc
 ----
@@ -35,5 +29,10 @@ csrc
 * [x] hello.c
 * [x] quicksort.c
 * [x] bitonicsort.c
-* [ ] bitonicSortPairs.c
 * [ ] mandelbrot.c
+
+temporary
+---------
+
+* [ ] try-bitonic-sort-new
+* [ ] try-bitonic-sort-new-test
