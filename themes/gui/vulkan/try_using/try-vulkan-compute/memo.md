@@ -10,7 +10,7 @@ app
 * [x] try-push-constant
 * [x] try-texel-buffer-nega
 * [x] try-quick-bitonic-sort
-* [ ] try-mandelbrot-hs
+* [x] try-mandelbrot-hs
 * [ ] try-mandelbrot-cpu
 * [ ] try-mandelbrot
 

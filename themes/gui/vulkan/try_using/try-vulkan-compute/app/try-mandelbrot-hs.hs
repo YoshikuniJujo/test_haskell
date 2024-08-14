@@ -6,34 +6,29 @@
 
 module Main (main) where
 
+import Control.Arrow
 import Control.Parallel.Strategies
 import Data.Vector.Storable qualified as V
-import Data.Complex
 import Data.Word
+import Data.Complex
 import Mandelbrot.Draw
 
 main :: IO ()
-main = draw "autogen/mandelbrot_hs.png" (\a b c -> pure $ render a b c)
+main = draw "autogen/mandelbrot_hs.png" \sz lt rb ->
+	pure . V.fromList $ render sz lt rb
 
-render :: (Word32, Word32) -> Complex Float -> Complex Float -> V.Vector Word8
-render wh@(w, h) lt rb =
---	V.generate (fromIntegral w * fromIntegral h) \(fromIntegral -> i) -> let
-	V.fromList $ (\f -> parMap rseq f [0 .. w * h - 1]) \i -> let
-		pxl = (i `mod` w, i `div` w)
-		pnt = pixelToPoint wh pxl lt rb in
-		case escapeTime 0 0 255 pnt of
-			Nothing -> 0
-			Just cnt -> 255 - fromIntegral cnt
-
-pixelToPoint :: (Word32, Word32) -> (Word32, Word32) ->
-	Complex Float -> Complex Float -> Complex Float
-pixelToPoint (w, h) (x, y) (lft :+ upr) (rgt :+ lwr) =
-	(lft + fromIntegral x * wdt / fromIntegral w) :+
-	(upr - fromIntegral y * hgt / fromIntegral h)
-	where wdt = rgt - lft; hgt = upr - lwr
+render :: Size -> Complex Float -> Complex Float -> [Word8]
+render wh@(w, h) lt rb = (\f -> parMap rseq f [0 .. w * h - 1])
+	$ maybe 0 ((255 -) . fromIntegral) . escapeTime 0 0 255
+		. pxToPnt wh lt rb . ((`mod` w) &&& (`div` w))
 
 escapeTime :: Complex Float -> Word32 -> Word32 -> Complex Float -> Maybe Word32
 escapeTime z i lm c
 	| i > lm  = Nothing
 	| magnitude z > 2 = Just i
 	| otherwise = escapeTime (z * z + c) (i + 1) lm c
+
+pxToPnt :: Size -> Complex Float -> Complex Float -> Pos -> Complex Float
+pxToPnt (fromIntegral -> pxw, fromIntegral -> pxh)
+	(l :+ t) (r :+ b) (fromIntegral -> x, fromIntegral -> y) =
+	(l + x * (r - l) / pxw) :+ (t - y * (t - b) / pxh)

@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Mandelbrot.Draw (draw) where
+module Mandelbrot.Draw (draw, Size, Pos) where
 
 import Data.List qualified as L
 import Data.Vector.Storable qualified as V
@@ -29,6 +29,7 @@ draw fp rndr = do
 		_ -> error "bad command line arguments"
 
 type Size = (Word32, Word32)
+type Pos = (Word32, Word32)
 
 parsePair :: Read a => String -> Char -> Maybe (a, a)
 parsePair s c = case L.findIndex (== c) s of
