@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -51,8 +51,9 @@ library
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -92,8 +93,9 @@ executable try-cairo-image-as-texture
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -134,8 +136,9 @@ executable try-cube-single
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -176,8 +179,9 @@ executable try-depth-buffering-single
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -218,8 +222,9 @@ executable try-gamepad-button
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -260,8 +265,9 @@ executable try-move-cube-single
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -302,8 +308,9 @@ executable try-multi-rectangles
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -344,8 +351,9 @@ executable try-multiple-windows
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -386,8 +394,9 @@ executable try-pyramid-single
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -428,8 +437,9 @@ executable try-rectangle-single
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -470,8 +480,9 @@ executable try-triangle-single
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
@@ -513,8 +524,9 @@ test-suite try-vulkan-graphics-test
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc

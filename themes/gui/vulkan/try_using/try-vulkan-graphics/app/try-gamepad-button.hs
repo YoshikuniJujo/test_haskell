@@ -6,16 +6,25 @@ module Main where
 
 import Control.Concurrent
 import Data.Bool
-
 import Graphics.UI.GLFW qualified as GLFW
 
 main :: IO ()
 main = GLFW.init >> doWhile_ do
-	threadDelay 100000
+	threadDelay 50000
 	Just (GLFW.GamepadState gb ga) <- GLFW.getGamepadState GLFW.Joystick'1
-	print $ ga GLFW.GamepadAxis'LeftX
-	print $ ga GLFW.GamepadAxis'LeftY
+	let	(x, y) = (ga GLFW.GamepadAxis'LeftX, ga GLFW.GamepadAxis'LeftY)
+	print x; print y; putStrLn $ bar x; putStrLn $ bar y
+	putStr $ dot y x
 	pure $ gb GLFW.GamepadButton'A /= GLFW.GamepadButtonState'Pressed
 
+bar :: Float -> String
+bar n = replicate (40 + round (n * 40)) '*'
+
+dot :: Float -> Float -> String
+dot y x =
+	replicate (15 + round (y * 15)) '\n' ++
+	replicate (30 + round (x * 30)) ' ' ++ "*\n" ++
+	replicate (14 - round (y * 15)) '\n'
+
 doWhile_ :: Monad m => m Bool -> m ()
-doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
+doWhile_ a = bool (pure ()) (doWhile_ a) =<< a
