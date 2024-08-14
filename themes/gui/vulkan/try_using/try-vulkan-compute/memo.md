@@ -12,7 +12,7 @@ app
 * [x] try-quick-bitonic-sort
 * [x] try-mandelbrot-hs
 * [x] try-mandelbrot-cpu
-* [ ] try-mandelbrot
+* [x] try-mandelbrot
 
 src
 ---
