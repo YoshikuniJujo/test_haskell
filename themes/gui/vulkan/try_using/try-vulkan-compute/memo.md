@@ -20,6 +20,7 @@ src
 * [x] TryQuicksort
 * [x] TryBitonicsortCpu
 * [x] TryBitonicsortGpu
+* [ ] Mandelbrot.Draw
 * [ ] TryMandelbrot
 * [ ] Tools
 

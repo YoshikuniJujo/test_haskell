@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Mandelbrot.Draw
       Tools
       TryBitonicsortCpu
       TryBitonicsortGpu

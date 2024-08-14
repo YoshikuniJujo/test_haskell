@@ -6,20 +6,14 @@
 
 module Main (main) where
 
-import Data.List qualified as L
+import Control.Parallel.Strategies
 import Data.Vector.Storable qualified as V
 import Data.Complex
 import Data.Word
-import Text.Read
-import Codec.Picture
-import System.Environment
-
-import Control.Parallel.Strategies
-
-import Tools
+import Mandelbrot.Draw
 
 main :: IO ()
-main = runRender "autogen/mandelbrot_hs.png" render
+main = draw "autogen/mandelbrot_hs.png" (\a b c -> pure $ render a b c)
 
 render :: (Word32, Word32) -> Complex Float -> Complex Float -> V.Vector Word8
 render wh@(w, h) lt rb =
@@ -43,23 +37,3 @@ escapeTime z i lm c
 	| i > lm  = Nothing
 	| magnitude z > 2 = Just i
 	| otherwise = escapeTime (z * z + c) (i + 1) lm c
-
-runRender :: FilePath ->
-	(Size -> Complex Float -> Complex Float -> V.Vector Word8) -> IO ()
-runRender fp rndr = do
-	[sz_, lt_, rb_] <- getArgs
-	let	msz = parsePair sz_ 'x'
-		mlt = parsePair lt_ ','
-		mrb = parsePair rb_ ','
-	case (msz, mlt, mrb) of
-		(Just sz@(fromIntegral -> w, fromIntegral -> h), Just (lft, upr), Just (rgt, lwr)) ->
-			writePng @Pixel8 fp
-				. Image w h $ rndr sz (lft :+ upr) (rgt :+ lwr)
-		_ -> error "bad command line arguments"
-
-type Size = (Word32, Word32)
-
-parsePair :: Read a => String -> Char -> Maybe (a, a)
-parsePair s c = case L.findIndex (== c) s of
-	Nothing -> Nothing
-	Just i -> (,) <$> (readMaybe $ take i s) <*> (readMaybe . tail' $ drop i s)

@@ -56,19 +56,17 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DSLyt
 
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
-import Codec.Picture
 import Data.Vector.Storable qualified as V
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 import Foreign.Storable.Generic qualified as GStr
-import System.Environment
-
-import Data.List qualified as L
-import Text.Read
 
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Data.Complex
+
+import Mandelbrot.Draw
+import Tools
 
 ---------------------------------------------------------------------------
 
@@ -86,41 +84,22 @@ type PictureSize = GStr.W (Word32, Word32)
 bffSize :: Integral n => n -> n -> n
 bffSize w h = w * h
 
-writeResult :: Word32 -> Word32 -> [Word32] -> IO ()
-writeResult w h = writePng @Pixel8 "autogen/mandelbrot.png"
-	. Image (fromIntegral w) (fromIntegral h)
-	. V.fromList . map fromIntegral
-
 main :: IO ()
-main = do
-	as <- getArgs
-	case readArgs as of
-		Just ((w, h), ul, lr) -> withDevice \pd qfi dv -> writeResult w h =<<
+main = draw "autogen/mandelbrot.png" render
+
+render :: (Word32, Word32) -> Complex Float -> Complex Float -> IO (V.Vector Word8)
+render (w, h) ul lr = withDevice \pd qfi dv ->
 			Vk.DSLyt.create dv dscSetLayoutInfo nil \dslyt ->
 			prepareMems (fromIntegral w) (fromIntegral h) pd dv dslyt \dscs m ->
 			calc w h ul lr qfi dv dslyt dscs (bffSize w h) >>
-			Vk.Mm.read @"" @Word32List @0 @[Word32] dv m zeroBits
-		Nothing -> error "bad command line arguments"
-
-readArgs :: [String] -> Maybe ((Word32, Word32), Complex Float, Complex Float)
-readArgs = \case
-	[sz, ul, lr] -> (,,)
-		<$> readPair sz 'x'
-		<*> (uncurry (:+) <$> readPair ul ',')
-		<*> (uncurry (:+) <$> readPair lr ',')
-	_ -> Nothing
-
-readPair :: Read a => String -> Char -> Maybe (a, a)
-readPair s c = case L.findIndex (== c) s of
-	Nothing -> Nothing
-	Just i -> (,) <$> readMaybe (take i s) <*> readMaybe (tail $ drop i s)
+			(fromIntegral `V.map`) <$> Vk.Mm.read @"" @Word32List @0 @(V.Vector Word32) dv m zeroBits
 
 type Word32List = Obj.List 256 Word32 ""
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
 withDevice f = Vk.Inst.create instInfo nil \inst -> do
-	pd <- head <$> Vk.Phd.enumerate inst
-	qfi <- fst . head . filter (
+	pd <- head' <$> Vk.Phd.enumerate inst
+	qfi <- fst . head' . filter (
 			checkBits Vk.Queue.ComputeBit .
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
