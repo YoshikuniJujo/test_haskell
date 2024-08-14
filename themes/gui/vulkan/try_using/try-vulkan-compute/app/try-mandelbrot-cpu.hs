@@ -6,12 +6,10 @@
 
 module Main (main) where
 
-import Data.Vector qualified as V
-import Data.Vector.Storable qualified as VS
-
-import TryMandelbrot
+import Data.Vector.Storable qualified as V
 import Mandelbrot.Draw
+import TryMandelbrot
 
 main :: IO ()
 main = draw "autogen/mandelbrot-cpu.png" \sz lt rb ->
-	VS.fromList . V.toList . (fromIntegral <$>) <$> render sz lt rb
+	V.fromList . (fromIntegral <$>) <$> render sz lt rb

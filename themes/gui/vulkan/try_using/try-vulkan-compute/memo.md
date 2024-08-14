@@ -11,7 +11,7 @@ app
 * [x] try-texel-buffer-nega
 * [x] try-quick-bitonic-sort
 * [x] try-mandelbrot-hs
-* [ ] try-mandelbrot-cpu
+* [x] try-mandelbrot-cpu
 * [ ] try-mandelbrot
 
 src
@@ -21,8 +21,8 @@ src
 * [x] TryBitonicsortCpu
 * [x] TryBitonicsortGpu
 * [x] Mandelbrot.Draw
-* [ ] TryMandelbrot
-* [ ] Tools
+* [x] TryMandelbrot
+* [x] Tools
 
 csrc
 ----
@@ -30,7 +30,7 @@ csrc
 * [x] hello.c
 * [x] quicksort.c
 * [x] bitonicsort.c
-* [ ] mandelbrot.c
+* [x] mandelbrot.c
 
 temporary
 ---------
