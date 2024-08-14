@@ -35,5 +35,6 @@ csrc
 temporary
 ---------
 
-* [ ] try-bitonic-sort-new
-* [ ] try-bitonic-sort-new-test
+* [x] ForCheck
+* [x] try-bitonic-sort-new
+* [x] try-bitonic-sort-new-test
