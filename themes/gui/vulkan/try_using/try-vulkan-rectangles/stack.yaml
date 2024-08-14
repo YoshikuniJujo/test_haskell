@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-05-06
+resolver: nightly-2024-08-13
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -38,19 +38,22 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: e702625e59e7ab8b8814c6764bee502d17ddaa74
+  commit: f501b1548446188bdbb87a0c8082b684d45ea05d
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
-  - themes/gui/vulkan/try-gpu-vulkan-khr
-  - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-gpu-vulkan-cglm
   - themes/gui/vulkan/try-vulkan-middle
-  - themes/gui/vulkan/try-vulkan-middle-khr
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core
-  - themes/gui/vulkan/try-vulkan-core-khr
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
@@ -71,10 +74,13 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 - git: https://github.com/YoshikuniJujo/simple-gdk3
-  commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+  commit: a40d1864356a72f006baf96a7ba99a06b3a912ac
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
-- simple-pango-0.1.0.1
+- git: https://github.com/YoshikuniJujo/simple-pango
+  commit: 9ad6a8038e19371d2e54fedd8d3b5e6c5420733f
+- git: https://github.com/YoshikuniJujo/glib-stopgap
+  commit: 429e8b95651bafaa67131a917d94581c89d1c90c
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

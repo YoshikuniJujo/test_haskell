@@ -62,8 +62,9 @@ library
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
@@ -108,8 +109,9 @@ executable try-multi-rectangles
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
@@ -155,8 +157,9 @@ executable try-multi-rectangles2
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
@@ -202,8 +205,9 @@ executable try-use-cairo
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
@@ -250,8 +254,9 @@ test-suite try-vulkan-rectangles-test
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr
-    , try-gpu-vulkan-khr-glfw
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3

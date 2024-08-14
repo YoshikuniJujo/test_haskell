@@ -32,8 +32,9 @@ dependencies:
 - JuicyPixels
 - union-color
 - try-gpu-vulkan
-- try-gpu-vulkan-khr
-- try-gpu-vulkan-khr-glfw
+- try-gpu-vulkan-khr-swapchain
+- try-gpu-vulkan-khr-surface
+- try-gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
 - try-shaderc
