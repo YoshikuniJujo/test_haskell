@@ -460,7 +460,7 @@ createPplLyt dv f = Vk.PplLyt.create @_ @_ @_ @'[] dv info nil f
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[] '[] -> (forall sg . Vk.Ppl.Gr.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) -> IO a) -> IO a
 createGrPpl dvc sce rp ppllyt f =
@@ -471,7 +471,7 @@ createGrPpl dvc sce rp ppllyt f =
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Gr.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) -> IO ()
 recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Gr.unsafeRecreateGs
@@ -483,7 +483,7 @@ mkGraphicsPipelineCreateInfo ::
 	Vk.Ppl.Gr.CreateInfo 'Nothing '[
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
-		'(	'Nothing, '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
+		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[], '[]) sr '(sb, vs', ts', slbtss')
 mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Gr.CreateInfo {
@@ -647,7 +647,7 @@ createCommandPool qfis dvc f =
 
 createVertexBuffer :: Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
+		Vk.Bffr.Binded sm sb nm '[VObj.List 256 WVertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (fromIntegral $ length vertices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -656,7 +656,7 @@ createVertexBuffer phdvc dvc gq cp f =
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[VObj.List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 Vertex "") @0 dvc bm' zeroBits vertices
+	Vk.Mem.write @"vertex-buffer" @(VObj.List 256 WVertex "") @0 dvc bm' zeroBits vertices
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -712,8 +712,8 @@ findMemoryType phdvc flt props =
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] -> IO ()
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 WVertex ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 WVertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocate
 --		@() dvc allocInfo \(HPList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
@@ -725,7 +725,7 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HPList.Nil }
 		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '( '[VObj.List 256 Vertex ""], 0, 0)] cb src dst
+			Vk.Cmd.copyBuffer @'[ '( '[VObj.List 256 WVertex ""], 0, 0)] cb src dst
 		Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) Nothing
 		Vk.Q.waitIdle gq
 	where
@@ -773,16 +773,16 @@ recordCommandBuffer :: forall scb sr sf sg sm sb nm sl .
 	Vk.CmdBffr.C scb  ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Gr.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO ()
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 WVertex ""] -> IO ()
 recordCommandBuffer cb rp fb sce gpl vb =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Sbp.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb
-		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb) >>
+		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) >>
 	Vk.Cmd.draw cbb 3 1 0 0
 	where
 	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
@@ -804,11 +804,11 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm fmt) ss ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Gr.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 WVertex ""] ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> IO ()
 mainLoop g (GlfwG.Win.W w) sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasrfsifs = do
@@ -823,10 +823,10 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Vk.Khr.Swpch.S fmt ssc -> FramebufferResized -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Gr.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 WVertex ""] ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) ->
 	(Vk.Extent2d -> IO ()) -> IO ()
@@ -841,10 +841,10 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cb 
 drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff sl .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Gr.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 WVertex ""] ->
 	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> IO ()
 drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 	let	siff = HPList.Singleton iff
@@ -883,7 +883,7 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	HPList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Gr.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
@@ -904,7 +904,7 @@ recreateSwapChainEtc :: (
 	Vk.Khr.Swpch.S fmt ssc -> HPList.PL (Vk.ImgVw.I nm fmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
 	Vk.Ppl.Gr.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
@@ -930,16 +930,10 @@ type WVertex = Foreign.Storable.Generic.W Vertex
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
-instance Storable Vertex where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
-
 instance Foreign.Storable.Generic.G Vertex where
 
-vertices :: [Vertex]
-vertices = [
+vertices :: [WVertex]
+vertices = Foreign.Storable.Generic.W <$> [
 	Vertex (Cglm.Vec2 $ 0.0 :. (- 0.5) :. NilL)
 --		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
 		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
