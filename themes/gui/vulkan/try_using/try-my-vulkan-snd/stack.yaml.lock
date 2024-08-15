@@ -381,7 +381,7 @@ packages:
     git: https://github.com/tanakh/optparse-declarative
 snapshots:
 - completed:
-    sha256: 6c47bf5889b97d9b297f6faf3d7942b705f78adcdd066cd6d09d4926ed459895
-    size: 650206
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/7/1.yaml
-  original: nightly-2024-07-01
+    sha256: 3e2ebb6e538654269973faf683d0068b123a6ee9462a48ac2c3f3281a7bf3f8b
+    size: 658094
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/8/13.yaml
+  original: nightly-2024-08-13
