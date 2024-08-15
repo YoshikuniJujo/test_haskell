@@ -190,10 +190,8 @@ body fr w ist =
 	createRndrPss @scifmt dv \rp ->
 	createPplLyt dv \pl -> createGrPpl dv ex rp pl \gp ->
 	createFrmbffrs dv ex rp scvs \fbs ->
-	createCmdPl qfis dv \cp ->
-	createVtxBffr pd dv gq cp \vb ->
-	createCmdBffr dv cp \cb ->
-	createSyncObjs dv \sos ->
+	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
+	createVtxBffr pd dv gq cp \vb -> createSyncObjs dv \sos ->
 	mainloop fr w sfc pd qfis dv gq pq sc ex scvs rp pl gp fbs vb cb sos
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
