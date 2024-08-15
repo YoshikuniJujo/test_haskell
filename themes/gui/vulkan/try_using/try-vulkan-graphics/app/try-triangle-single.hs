@@ -114,7 +114,7 @@ import Data.Function.ToolsYj
 import Data.Tuple.ToolsYj
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 
-import Data.Ord.ToolsYj qualified as Yj
+import Data.Ord.ToolsYj
 
 main :: IO ()
 main = atomically (newTVar False) >>= \fr -> withWindow fr \w ->
@@ -339,8 +339,8 @@ swapExtent win cps
 	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
 		\(fromIntegral -> w, fromIntegral -> h) ->
 		Vk.Extent2d
-			(Yj.clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
-			(Yj.clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
+			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
 	where
 	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
@@ -368,7 +368,7 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoClipped = True,
 	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
 	where
-	imgc = Yj.clamp 0 imgcx (Vk.Khr.Sfc.capabilitiesMinImageCount cps + 1)
+	imgc = clamp 0 imgcx (Vk.Khr.Sfc.capabilitiesMinImageCount cps + 1)
 	imgcx = fromMaybe maxBound
 		. onlyIf (> 0) $ Vk.Khr.Sfc.capabilitiesMaxImageCount cps
 	(ism, qfis) = bool
