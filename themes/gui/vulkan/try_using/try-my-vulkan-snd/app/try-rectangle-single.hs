@@ -78,7 +78,7 @@ import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
-import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Gr
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
@@ -471,7 +471,7 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createDscStLyt :: Vk.Dvc.D sd ->
-	(forall s . Vk.DscSetLyt.D s '[BufferModelViewProj alm] -> IO a) -> IO a
+	(forall s . Vk.DscSetLyt.D s '[BufferModelViewProj alu] -> IO a) -> IO a
 createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 	where info = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
@@ -484,53 +484,53 @@ createDscStLyt dv = Vk.DscSetLyt.create dv info nil
 					Vk.ShaderStageVertexBit } }
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
-	(forall sg . Vk.Ppl.Graphics.G sg
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
+	(forall sg . Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[]) -> IO a) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) -> IO a) ->
 	IO a
-createGrPpl dv ex rp pl f = Vk.Ppl.Graphics.createGs dv Nothing
+createGrPpl dv ex rp pl f = Vk.Ppl.Gr.createGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	\(HPList.Singleton (U3 p)) -> f p
 
 recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[]) -> IO ()
-recreateGrPpl dv ex rp pl p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) -> IO ()
+recreateGrPpl dv ex rp pl p = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	(HPList.Singleton $ U3 p)
 
 grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj al])] '[] ->
-	Vk.Ppl.Graphics.CreateInfo 'Nothing
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
+	Vk.Ppl.Gr.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
-		'Nothing '(sl, '[ '(sdsl, '[BufferModelViewProj al])], '[])
+		'Nothing '(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[])
 		sr '(sb, vs, ts, plas)
-grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
-	Vk.Ppl.Graphics.createInfoFlags = zeroBits,
-	Vk.Ppl.Graphics.createInfoStages = shaderStages,
-	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ U3 def,
-	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just ia,
-	Vk.Ppl.Graphics.createInfoViewportState = Just $ vwpSt ex,
-	Vk.Ppl.Graphics.createInfoRasterizationState = Just rst,
-	Vk.Ppl.Graphics.createInfoMultisampleState = Just ms,
-	Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
-	Vk.Ppl.Graphics.createInfoColorBlendState = Just clrBlnd,
-	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
-	Vk.Ppl.Graphics.createInfoLayout = U3 pl,
-	Vk.Ppl.Graphics.createInfoRenderPass = rp,
-	Vk.Ppl.Graphics.createInfoSubpass = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+grPplInfo ex rp pl = Vk.Ppl.Gr.CreateInfo {
+	Vk.Ppl.Gr.createInfoNext = TMaybe.N,
+	Vk.Ppl.Gr.createInfoFlags = zeroBits,
+	Vk.Ppl.Gr.createInfoStages = shaderStages,
+	Vk.Ppl.Gr.createInfoVertexInputState = Just $ U3 def,
+	Vk.Ppl.Gr.createInfoInputAssemblyState = Just ia,
+	Vk.Ppl.Gr.createInfoViewportState = Just $ vwpSt ex,
+	Vk.Ppl.Gr.createInfoRasterizationState = Just rst,
+	Vk.Ppl.Gr.createInfoMultisampleState = Just ms,
+	Vk.Ppl.Gr.createInfoDepthStencilState = Nothing,
+	Vk.Ppl.Gr.createInfoColorBlendState = Just clrBlnd,
+	Vk.Ppl.Gr.createInfoDynamicState = Nothing,
+	Vk.Ppl.Gr.createInfoLayout = U3 pl,
+	Vk.Ppl.Gr.createInfoRenderPass = rp,
+	Vk.Ppl.Gr.createInfoSubpass = 0,
+	Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1,
+	Vk.Ppl.Gr.createInfoTessellationState = Nothing }
 	where
 	ia = Vk.Ppl.InpAsmbSt.CreateInfo {
 		Vk.Ppl.InpAsmbSt.createInfoNext = TMaybe.N,
@@ -877,7 +877,7 @@ mainloop :: (
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
@@ -904,7 +904,7 @@ run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsc, '[BufferModelViewProj alm])] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsc, '[BufferModelViewProj alm])], '[]) ->
@@ -929,7 +929,7 @@ draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
@@ -985,7 +985,7 @@ recordCmdBffr :: forall scb sr sl sg sf
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
@@ -1028,7 +1028,7 @@ catchAndRecreate :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
@@ -1044,7 +1044,7 @@ recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	HPList.PL (Vk.ImgVw.I nm fmt) svs ->
 	Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
