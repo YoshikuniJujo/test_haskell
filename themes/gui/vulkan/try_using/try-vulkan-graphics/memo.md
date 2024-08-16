@@ -1,7 +1,7 @@
 ### app
 
 * [x] try-gamepad-button.hs
-* [ ] try-triangle-single.hs
+* [x] try-triangle-single.hs
 * [ ] try-rectangle-single.hs
 * [ ] try-depth-buffering-single.hs
 * [ ] try-cube-single.hs
