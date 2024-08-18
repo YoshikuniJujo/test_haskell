@@ -980,18 +980,18 @@ updateModelViewProj dv mm Vk.Extent2d {
 				Cglm.perspective (Cglm.rad 45) (w / h) 0.1 10 }
 
 recordCmdBffr :: forall scb sr sl sg sf
-	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alm .
+	smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alu .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
 	Vk.Frmbffr.F sf ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) -> IO ()
+	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alu]) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb ib mds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
@@ -1024,13 +1024,12 @@ catchAndSerialize =
 catchAndRecreate :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
-	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
-	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
@@ -1040,13 +1039,12 @@ catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm fmt) svs ->
-	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
+	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
