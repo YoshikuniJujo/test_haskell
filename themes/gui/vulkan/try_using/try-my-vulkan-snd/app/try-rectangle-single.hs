@@ -896,22 +896,21 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
 	Vk.Dvc.waitIdle dv
 
 run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
-	KnownNat alm, KnownNat alv, KnownNat ali) =>
+	KnownNat alu, KnownNat alv, KnownNat ali) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
-	Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsc, '[BufferModelViewProj alm])] '[] ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsc, '[BufferModelViewProj alm])], '[]) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
-	Vk.DscSet.D sds '(sdsc, '[BufferModelViewProj alm]) ->
+	ModelViewProjMemory smm sbm nmm alu ->
+	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alu]) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
 run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds cb sos tm go = do
@@ -923,20 +922,20 @@ run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds cb sos tm go = 
 		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
-	smm sbm alm nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
-	(KnownNat alm, KnownNat alv, KnownNat ali) =>
+	smm sbm alu nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
+	(KnownNat alu, KnownNat alv, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alm])] '[] ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-		'(sl, '[ '(sdsl, '[BufferModelViewProj alm])], '[]) ->
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
-	ModelViewProjMemory smm sbm nmm alm ->
-	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alm]) ->
+	ModelViewProjMemory smm sbm nmm alu ->
+	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alu]) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
 draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb (SyncObjs ias rfs iff) tm = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
@@ -962,13 +961,14 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb (SyncObjs ias rfs iff) tm = do
 		Vk.Khr.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
 
-updateModelViewProj :: forall sd smm sbm nmm alm . KnownNat alm =>
+updateModelViewProj :: forall sd smm sbm nmm alu . KnownNat alu =>
 	Vk.Dvc.D sd ->
-	ModelViewProjMemory smm sbm nmm alm -> Vk.Extent2d -> Float -> IO ()
+	ModelViewProjMemory smm sbm nmm alu -> Vk.Extent2d -> Float -> IO ()
 updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @nmm @(VObj.Atom alm WModelViewProj 'Nothing) @0 dv mm zeroBits
+	Vk.Mm.write
+		@nmm @(VObj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ Foreign.Storable.Generic.W ModelViewProj {
 			model = Cglm.rotate Cglm.mat4Identity (tm * Cglm.rad 90)
 				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
