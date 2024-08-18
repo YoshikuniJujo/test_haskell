@@ -904,21 +904,105 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
 			mm mds cb sos (realToFrac $ tm `diffUTCTime` tm0) go
 	Vk.Dvc.waitIdle dv
 
-type AtomUbo s alu = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing]])
+run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
+	KnownNat alu, KnownNat alv, KnownNat ali) =>
+	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
+	Vk.Ppl.Gr.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec3), '(1, Cglm.Vec4)]
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
+	HPList.PL Vk.Frmbffr.F sfs ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	ModelViewProjMemory smm sbm nmm alu ->
+	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alu]) ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
+	IO ()
+run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds cb sos tm go = do
+	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
+		$ draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb sos tm
+	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
+		(True, _) -> pure ()
+		(_, False) -> go ex
+		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali nmv nmi .
+draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
+	smm sbm alu nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
+	(KnownNat alu, KnownNat alv, KnownNat ali) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
+	Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
+	Vk.Ppl.Gr.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec3), '(1, Cglm.Vec4)]
+		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
+	HPList.PL Vk.Frmbffr.F sfs ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	ModelViewProjMemory smm sbm nmm alu ->
+	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alu]) ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
+draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb (SyncObjs ias rfs iff) tm = do
+	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
+	ii <- Vk.Khr.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+	Vk.CBffr.reset cb def
+	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ib mds
+	updateModelViewProj dv mm ex tm
+	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
+	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ pinfo ii
+	where
+	siff = HPList.Singleton iff
+	sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
+	pinfo ii = Vk.Khr.PresentInfo {
+		Vk.Khr.presentInfoNext = TMaybe.N,
+		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
+
+updateModelViewProj :: forall sd smm sbm nmm alu . KnownNat alu =>
+	Vk.Dvc.D sd ->
+	ModelViewProjMemory smm sbm nmm alu -> Vk.Extent2d -> Float -> IO ()
+updateModelViewProj dv mm Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } tm =
+	Vk.Mm.write
+		@nmm @(VObj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
+		$ Foreign.Storable.Generic.W ModelViewProj {
+			model = Cglm.rotate Cglm.mat4Identity (tm * Cglm.rad 90)
+				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			view = Cglm.lookat
+				(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+				(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			projection = Cglm.modifyMat4 1 1 negate $
+				Cglm.perspective (Cglm.rad 45) (w / h) 0.1 10 }
+
+recordCmdBffr :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds alu alv ali nmv nmi .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb ->
-	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
+	Vk.Extent2d ->
+	Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec3), '(1, Cglm.Vec4)] '(sl, '[AtomUbo sdsl alu], '[]) ->
+	Vk.Frmbffr.F sf ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex nmv] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
 	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
 	IO ()
-recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
+recordCmdBffr cb sce rp ppllyt gpl fb vb ib ubds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
@@ -944,105 +1028,14 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
-type UniformBufferMemory bnm alu sm sb = Vk.Mm.M sm '[ '(
-	sb,
-	'Vk.Mm.BufferArg bnm '[VObj.Atom alu WModelViewProj 'Nothing]
-	)]
-
-run :: (RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt, KnownNat alu, KnownNat alv, KnownNat ali) =>
-	FramebufferResized ->
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc ->
-	Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I inm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
-	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec3), '(1, Cglm.Vec4)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
-	UniformBufferMemory nmm alu sm2 sb2 ->
-	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
-	Vk.CBffr.C scb ->
-	SyncObjs soss -> Float ->
-	(Vk.Extent2d -> IO ()) -> IO ()
-run frszd (GlfwG.Win.W win) sfc phdvc qfis dvc gq pq sc ext scivs rp pl gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp pl gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp pl gpl fbs vb ib ubm ubds cb iasrfsifs tm
-	cls <- Glfw.windowShouldClose win
-	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateAll
-			win sfc phdvc qfis dvc sc scivs rp pl gpl fbs)
-
-drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sdsl scfmt sds alu alv ali soss nmv nmi nmm .
-	(KnownNat alu, KnownNat alv, KnownNat ali) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
-	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
-	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec3), '(1, Cglm.Vec4)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
-	UniformBufferMemory nmm alu sm2 sb2 ->
-	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
-	Vk.CBffr.C scb -> SyncObjs soss -> Float -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
-	let	siff = HPList.Singleton iff
-	Vk.Fence.waitForFs dvc siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc maxBound (Just ias) Nothing
-	Vk.Fence.resetFs dvc siff
-	Vk.CBffr.reset cb def
-	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
-	updateUniformBuffer dvc ubm ext tm
-	let	-- submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
-		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-				$ Vk.SemaphorePipelineStageFlags ias
-					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
-
-updateUniformBuffer :: forall sd alu sm2 sb2 nmm . KnownNat alu => Vk.Dvc.D sd ->
-	UniformBufferMemory nmm alu sm2 sb2 -> Vk.Extent2d -> Float -> IO ()
-updateUniformBuffer dvc um sce tm = do
-	Vk.Mm.write @nmm @(VObj.Atom alu WModelViewProj 'Nothing) @0
-		dvc um zeroBits ubo
-	where ubo = Foreign.Storable.Generic.W UniformBufferObject {
-		uniformBufferObjectModel = Cglm.rotate
-			Cglm.mat4Identity
-			(tm * Cglm.rad 90)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-		uniformBufferObjectView = Cglm.lookat
-			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-		uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
-			$ Cglm.perspective
-				(Cglm.rad 45)
-				(fromIntegral (Vk.extent2dWidth sce) /
-					fromIntegral (Vk.extent2dHeight sce))
-				0.1 10 }
+type AtomUbo s alu = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing]])
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -1053,18 +1046,18 @@ catchAndRecreate :: (RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt) =>
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
+catchAndRecreate w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
 	\_ -> loop =<< recreateAll
-		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
+		w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 
 recreateAll :: (
 	RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt ) =>
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
@@ -1074,7 +1067,7 @@ recreateAll :: (
 		'[ '(0, Cglm.Vec3), '(1, Cglm.Vec4)]
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
+recreateAll (GlfwG.Win.W win) sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
@@ -1113,15 +1106,15 @@ indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
 -- type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
-type WModelViewProj = Foreign.Storable.Generic.W UniformBufferObject
+type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
 
-data UniformBufferObject = UniformBufferObject {
-	uniformBufferObjectModel :: Cglm.Mat4,
-	uniformBufferObjectView :: Cglm.Mat4,
-	uniformBufferObjectProj :: Cglm.Mat4 }
+data ModelViewProj = ModelViewProj {
+	model :: Cglm.Mat4,
+	view :: Cglm.Mat4,
+	projection :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
-instance Foreign.Storable.Generic.G UniformBufferObject
+instance Foreign.Storable.Generic.G ModelViewProj
 
 [glslVertexShader|
 
