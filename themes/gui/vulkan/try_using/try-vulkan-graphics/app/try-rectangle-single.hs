@@ -101,13 +101,12 @@ import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
 
 import Gpu.Vulkan.Cglm qualified as Cglm
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr
-import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
-import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Debug
 
@@ -938,13 +937,13 @@ draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
 draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb (SyncObjs ias rfs iff) tm = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
-	ii <- Vk.Khr.acquireNextImageResult
+	ii <- Vk.Khr.Swpch.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ib mds
 	updateModelViewProj dv mm ex tm
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
-	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ pinfo ii
+	catchAndSerialize . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
 	where
 	siff = HPList.Singleton iff
 	sinfo = Vk.SubmitInfo {
@@ -954,11 +953,11 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb (SyncObjs ias rfs iff) tm = do
 				ias Vk.Ppl.StageColorAttachmentOutputBit,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-	pinfo ii = Vk.Khr.PresentInfo {
-		Vk.Khr.presentInfoNext = TMaybe.N,
-		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.presentInfoSwapchainImageIndices =
-			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
+	pinfo ii = Vk.Khr.Swpch.PresentInfo {
+		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 
 updateModelViewProj :: forall sd smm sbm nmm alu . KnownNat alu =>
 	Vk.Dvc.D sd ->
