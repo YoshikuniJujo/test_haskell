@@ -14,15 +14,16 @@
 module Main (main) where
 
 import GHC.Generics
-import GHC.Types
+import GHC.TypeLits (Symbol)
 import GHC.TypeNats
 import Foreign.Storable
 import Foreign.Storable.Generic qualified
 import Foreign.Storable.PeekPoke
-import Control.Arrow hiding (loop)
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
+import Data.Kind
 import Data.Proxy
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -33,20 +34,20 @@ import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Function.ToolsYj
 import Data.Tuple.ToolsYj
-import Data.Bool
-import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List
-import Data.List.ToolsYj
 import Data.List.Length
 import Data.List.NonEmpty qualified as NE
+import Data.List.ToolsYj
+import Data.Bool
+import Data.Bool.ToolsYj
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
-import Data.Text.IO qualified as Txt
 import Data.Word
+import Data.Text.IO qualified as Txt
 import Data.Time
 import Data.Color
 import Data.IORef
@@ -100,7 +101,7 @@ import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
 import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
 
 import Gpu.Vulkan.Cglm qualified as Cglm
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr
+-- import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -271,8 +272,8 @@ createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 createSwpch w sfc pd qfis dv f = querySwpchSupport pd sfc \ss -> do
 	ex <- swapExtent w $ capabilities ss
 	let	cps = capabilities ss
-		pm = findDefault Vk.Khr.PresentModeFifo
-			(== Vk.Khr.PresentModeMailbox) $ presentModes ss
+		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
+			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModes ss
 	chooseSwpSfcFmt (formats ss)
 		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
 		Vk.Khr.Swpch.create @_ @fmt dv
@@ -283,7 +284,7 @@ data SwpchSupportDetails fmts = SwpchSupportDetails {
 	formats :: (
 		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
 		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
-	presentModes :: [Vk.Khr.PresentMode] }
+	presentModes :: [Vk.Khr.Sfc.PresentMode] }
 
 deriving instance
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
@@ -303,7 +304,7 @@ chooseSwpSfcFmt :: (
 	HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) ->
 	(forall fmt . Vk.T.FormatToValue fmt => Vk.Khr.Sfc.Format fmt -> a) -> a
 chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`find` fmts)
-	$ (== Vk.Khr.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
+	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
@@ -316,15 +317,15 @@ recreateSwpch win sfc phdvc qfis0 dvc sc = do
 		Vk.Khr.Sfc.Format cs = fromMaybe
 			(error "no available swap surface formats")
 			. listToMaybe $ formatsFmt ss
-		pm = findDefault Vk.Khr.PresentModeFifo
-			(== Vk.Khr.PresentModeMailbox) $ presentModesFmt ss
+		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
+			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModesFmt ss
 	ex <$ Vk.Khr.Swpch.unsafeRecreate dvc
 		(swpchInfo @fmt sfc qfis0 cps cs pm ex) nil sc
 
 data SwpchSupportDetailsFmt fmt = SwpchSupportDetailsFmt {
 	capabilitiesFmt :: Vk.Khr.Sfc.Capabilities,
 	formatsFmt :: [Vk.Khr.Sfc.Format fmt],
-	presentModesFmt :: [Vk.Khr.PresentMode] } deriving Show
+	presentModesFmt :: [Vk.Khr.Sfc.PresentMode] } deriving Show
 
 querySwpchSupportFmt :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFmt fmt)
@@ -348,7 +349,7 @@ swapExtent win cps
 
 swpchInfo :: forall fmt ss .
 	Vk.Khr.Sfc.S ss -> QFamIndices -> Vk.Khr.Sfc.Capabilities ->
-	Vk.Khr.ColorSpace -> Vk.Khr.PresentMode -> Vk.Extent2d ->
+	Vk.Khr.Sfc.ColorSpace -> Vk.Khr.Sfc.PresentMode -> Vk.Extent2d ->
 	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
 swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
@@ -363,7 +364,7 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
 	Vk.Khr.Swpch.createInfoPreTransform =
 		Vk.Khr.Sfc.capabilitiesCurrentTransform cps,
-	Vk.Khr.Swpch.createInfoCompositeAlpha = Vk.Khr.CompositeAlphaOpaqueBit,
+	Vk.Khr.Swpch.createInfoCompositeAlpha = Vk.Khr.Sfc.CompositeAlphaOpaqueBit,
 	Vk.Khr.Swpch.createInfoPresentMode = pm,
 	Vk.Khr.Swpch.createInfoClipped = True,
 	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
