@@ -541,9 +541,9 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-createPplLyt :: forall alm sd a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscSetLyt.D sdsl (DscStLytArg alm) ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alm)] '[] -> IO a) -> IO a
+createPplLyt :: forall alu sd a . Vk.Dvc.D sd -> (forall sl sdsl .
+	Vk.DscSetLyt.D sdsl (DscStLytArg alu) ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] -> IO a) -> IO a
 createPplLyt dv f = createDscStLyt dv \dsl ->
 	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
 	where info dsl = Vk.PplLyt.CreateInfo {
