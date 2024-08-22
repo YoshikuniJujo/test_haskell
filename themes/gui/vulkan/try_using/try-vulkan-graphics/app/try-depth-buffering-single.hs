@@ -55,8 +55,7 @@ import Codec.Picture
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Cglm as Cglm
+import qualified Gpu.Vulkan.Cglm as Glm
 import qualified Foreign.Storable.Generic as GStorable
 
 import Language.SpirV.ShaderKind
@@ -102,7 +101,6 @@ import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Queue as Vk.Q
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
@@ -1232,279 +1230,239 @@ run fr w sfc pd qfis dv gq pq cp sc ex vs rp pl gp fbs
 	drs vb ib mm ds cb sos tm go = do
 	catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs go
 		$ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb sos tm
-	cls <- GlfwG.Win.shouldClose w
-	if cls then (pure ()) else checkFlag fr >>= bool (go ex)
-		(go =<< recreateAll
-			w sfc pd qfis dv gq sc vs rp pl gp drs cp fbs)
+	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
+		(True, _) -> pure (); (_, False) -> go ex
+		(_, _) -> go =<< recreateAll
+			w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
-draw :: forall sfs sd ssc scfmt sr sl sg sm sb bnmv sm' sb' bnmi sm2 sb2 scb sdsl sds alu alv ali ssos nmv nmi bnmm .
+draw :: forall sd fmt ssc sr sl sg sfs sds sdsl alu
+	smv sbv bnmv alv nmv smi sbi bnmi ali nmi smm sbm bnmm scb ssos .
 	(KnownNat alu, KnownNat alv, KnownNat ali) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
-	Vk.Ppl.Graphics.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb bnmv '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' bnmi '[VObj.List ali Word16 nmi] ->
-	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
-		sb2,
-		'Vk.Dvc.Mem.ImageBuffer.BufferArg bnmm
-			'[VObj.Atom alu WModelViewProj 'Nothing] )] ->
-	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
-	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
-draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
-	let	siff = HPList.Singleton iff
-	Vk.Fence.waitForFs dvc siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc maxBound (Just ias) Nothing
-	Vk.Fence.resetFs dvc siff
-	Vk.CBffr.reset cb def
-	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
-	updateUniformBuffer dvc ubm ext tm
-	let	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-				$ Vk.SemaphorePipelineStageFlags ias
-					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-		presentInfo' = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo'
-
-recordCommandBuffer :: forall scb sr sf sl sg sm sb bnmv sm' sb' bnmi sdsl sds alu alv ali nmv nmi .
-	(KnownNat alv, KnownNat ali) =>
-	Vk.CBffr.C scb  ->
-	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
-	Vk.Bffr.Binded sm sb bnmv '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' bnmi '[VObj.List ali Word16 nmi] ->
+	HPList.PL Vk.Frmbffr.F sfs ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	ModelViewProjMemory smm sbm bnmm alu ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
-	IO ()
-recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
-	Vk.CBffr.begin @'Nothing @'Nothing cb def $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
-	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
-	Vk.Cmd.bindVertexBuffers cbb
-		(HPList.Singleton . U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
-	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
-		(HPList.Singleton $ U2 ubds)
-		(HPList.Singleton (
-			HPList.Nil :** HPList.Nil :**
-			HPList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) 1 0 0 0
+	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
+draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
+	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
+	ii <- Vk.Khr.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+	Vk.CBffr.reset cb def
+	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ib ds
+	updateModelViewProj dv mm ex tm
+	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
+	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo ii
 	where
-	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
+	siff = HPList.Singleton iff
+	sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
+	pinfo ii = Vk.Khr.PresentInfo {
+		Vk.Khr.presentInfoNext = TMaybe.N,
+		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
+
+updateModelViewProj :: forall sd smm sbm bnmm alu . KnownNat alu =>
+	Vk.Dvc.D sd -> ModelViewProjMemory smm sbm bnmm alu ->
+	Vk.Extent2d -> Float -> IO ()
+updateModelViewProj dv mm Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } tm =
+	Vk.Mm.write @bnmm @(VObj.Atom alu WModelViewProj 'Nothing) @0
+		dv mm zeroBits $ GStorable.W ModelViewProj {
+			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
+				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			view = Glm.lookat
+				(Glm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+				(Glm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			projection = Glm.modifyMat4 1 1 negate
+				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
+
+recordCmdBffr :: forall
+	scb sr sf sl sg smv sbv bnmv smi sbi bnmi sdsl sds alu alv ali nmv nmi .
+	(KnownNat alv, KnownNat ali) =>
+	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
+	Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
+	Vk.Frmbffr.F sf ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) -> IO ()
+recordCmdBffr cb ex rp pl gp fb vb ib ds =
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
+	Vk.Cmd.beginRenderPass cb info Vk.Subpass.ContentsInline $
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
+	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
+		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
+	Vk.Cmd.bindIndexBuffer cbb
+		$ Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib
+	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
+		(HPList.Singleton $ U2 ds)
+		(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil)
+	Vk.Cmd.drawIndexed cbb indicesNum 1 0 0 0
+	where
+	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf '[
 		'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32,
 		'Vk.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPss.BeginInfo {
+	info = Vk.RndrPss.BeginInfo {
 		Vk.RndrPss.beginInfoNext = TMaybe.N,
 		Vk.RndrPss.beginInfoRenderPass = rp,
 		Vk.RndrPss.beginInfoFramebuffer = fb,
 		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
-			Vk.rect2dExtent = sce },
+			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues =
 			Vk.ClearValueColor (fromJust $ rgbaDouble 0 0 0 1) :**
 			Vk.ClearValueDepthStencil (Vk.ClearDepthStencilValue 1 0) :**
 			HPList.Nil }
-
-type AtomUbo s alu = '(s, '[
-	'Vk.DscSetLyt.Buffer '[VObj.Atom alu WModelViewProj 'Nothing],
-	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
-
-updateUniformBuffer :: forall sd sm sb alu bnmm . KnownNat alu => Vk.Dvc.D sd ->
-	Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
-		sb,
-		'Vk.Dvc.Mem.ImageBuffer.BufferArg bnmm
-			'[VObj.Atom alu WModelViewProj 'Nothing] )] ->
-	Vk.Extent2d -> Float -> IO ()
-updateUniformBuffer dvc um sce tm = do
-	Vk.Dvc.Mem.ImageBuffer.write @bnmm
-		@(VObj.Atom alu WModelViewProj 'Nothing) @0 dvc um zeroBits ubo
-	where ubo = GStorable.W UniformBufferObject {
-		uniformBufferObjectModel = Cglm.rotate
-			Cglm.mat4Identity
-			(tm * Cglm.rad 90)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-		uniformBufferObjectView = Cglm.lookat
-			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-		uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
-			$ Cglm.perspective
-				(Cglm.rad 45)
-				(fromIntegral (Vk.extent2dWidth sce) /
-					fromIntegral (Vk.extent2dHeight sce))
-				0.1 10 }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (
-	RecreateFrmbffrs svs sfs,
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	Vk.CmdPl.C sc ->
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFrmbffrs svs sfs ) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
+	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	(
-		Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
-		Vk.Dvc.Mem.ImageBuffer.M
-			sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)],
-		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl (dptImg, dptImgMem, dptImgVw) fbs loop act =
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
+	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
+catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs go a =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just ()
-		_ -> Nothing)
-	act
-	\_ -> loop =<< recreateAll
-		w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl (dptImg, dptImgMem, dptImgVw) cp fbs
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) a
+	\_ -> go =<< recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs
 
 recreateAll :: (
-	RecreateFrmbffrs svs sfs,
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt ) =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFrmbffrs svs sfs ) =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc ->
+	HPList.PL (Vk.ImgVw.I nm scfmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
-		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	(
-		Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
-		Vk.Dvc.Mem.ImageBuffer.M
-			sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)],
-		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
-	Vk.CmdPl.C sc ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl (dptImg, dptImgMem, dptImgVw) cp fbs = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
+		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
+	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
+recreateAll w sfc pd qfis dv gq cp sc vs rp pl gp drs@(_, _, dvw) fbs = do
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
+	ex <- recreateSwpch w sfc pd qfis dv sc
+	ex <$ do
+		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
+		recreateDptRsrcs pd dv gq cp ex drs
+		recreateGrPpl dv ex rp pl gp
+		recreateFrmbffrs dv ex rp vs dvw fbs
 
-	ext <- recreateSwpch w sfc phdvc qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-			recreateImgVws dvc imgs scivs
-		recreateDptRsrcs phdvc dvc gq cp ext (dptImg, dptImgMem, dptImgVw)
-		recreateGrPpl dvc ext rp ppllyt gpl
-		recreateFrmbffrs dvc ext rp scivs dptImgVw fbs
-
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
-
-type WVertex = GStorable.W Vertex
 
 vertices :: [WVertex]
 vertices = GStorable.W <$> [
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. 0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL),
+	Vertex (Pos . Glm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
+		(Color . Glm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Glm.Vec3 $ 0.5 :. (- 0.5) :. 0 :. NilL)
+		(Color . Glm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 0.0 :. 0.0 :. NilL),
+	Vertex (Pos . Glm.Vec3 $ 0.5 :. 0.5 :. 0 :. NilL)
+		(Color . Glm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Glm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
+		(Color . Glm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 1.0 :. 1.0 :. NilL),
 
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 0.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 1.0 :. NilL),
-	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
+	Vertex (Pos . Glm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
+		(Color . Glm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 1.0 :. 0.0 :. NilL),
+	Vertex (Pos . Glm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
+		(Color . Glm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 0.0 :. 0.0 :. NilL),
+	Vertex (Pos . Glm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
+		(Color . Glm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 0.0 :. 1.0 :. NilL),
+	Vertex (Pos . Glm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
+		(Color . Glm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+		(TexCoord . Glm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
+
+indicesNum :: Word32
+indicesNum = fromIntegral $ length indices
 
 indices :: [Word16]
 indices = [
 	0, 1, 2, 2, 3, 0,
 	4, 5, 6, 6, 7, 4 ]
 
-type WModelViewProj = GStorable.W UniformBufferObject
+type WModelViewProj = GStorable.W ModelViewProj
 
-data UniformBufferObject = UniformBufferObject {
-	uniformBufferObjectModel :: Cglm.Mat4,
-	uniformBufferObjectView :: Cglm.Mat4,
-	uniformBufferObjectProj :: Cglm.Mat4 }
+data ModelViewProj = ModelViewProj {
+	model :: Glm.Mat4, view :: Glm.Mat4, projection :: Glm.Mat4 }
 	deriving (Show, Generic)
 
-instance Storable UniformBufferObject where
-	sizeOf = GStorable.gSizeOf
-	alignment = GStorable.gAlignment
-	peek = GStorable.gPeek
-	poke = GStorable.gPoke
-
-instance GStorable.G UniformBufferObject
+instance GStorable.G ModelViewProj
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
-newtype MyRgba8 = MyRgba8 { _unMyRgba8 :: PixelRGBA8 }
+newtype PixelRgba8 = PixelRgba8 PixelRGBA8
 
-instance Storable MyRgba8 where
+instance Storable PixelRgba8 where
 	sizeOf _ = 4 * sizeOf @Pixel8 undefined
 	alignment _ = alignment @Pixel8 undefined
-	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
-		<$> peekArray 4 (castPtr p)
-	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+	peek p = PixelRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a)
+		. listToTuple4 <$> peekArray 4 (castPtr p)
+	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
 
 instance BObj.IsImage ImageRgba8 where
-	type ImagePixel ImageRgba8 = MyRgba8
+	type ImagePixel ImageRgba8 = PixelRgba8
 	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
 	imageRow = BObj.imageWidth
-	imageWidth (ImageRgba8 img) = fromIntegral $ imageWidth img
-	imageHeight (ImageRgba8 img) = fromIntegral $ imageHeight img
+	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
+	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
 	imageDepth _ = 1
-	imageBody (ImageRgba8 img) = (<$> [0 .. imageHeight img - 1]) \y ->
-		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
-	imageMake w h _d pss = ImageRgba8
-		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
-		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
+	imageBody (ImageRgba8 i) = (<$> [0 .. imageHeight i - 1]) \y ->
+		(<$> [0 .. imageWidth i - 1]) \x -> PixelRgba8 $ pixelAt i x y
+	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
+		ImageRgba8 $ generateImage
+			(\x y -> let PixelRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+
+type WVertex = GStorable.W Vertex
 
 [glslVertexShader|
 
 #version 450
 
-layout(binding = 0) uniform UniformBufferObject {
-	mat4 model;
-	mat4 view;
-	mat4 proj;
-} ubo;
+layout(binding = 0) uniform
+	ModelViewProj { mat4 model; mat4 view; mat4 proj; } mvp;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -1516,7 +1474,7 @@ layout(location = 1) out vec2 fragTexCoord;
 void
 main()
 {
-	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+	gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 1.0);
 	fragColor = inColor;
 	fragTexCoord = inTexCoord;
 }
@@ -1529,10 +1487,9 @@ main()
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
+layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
-
-layout(location = 0) out vec4 outColor;
 
 void
 main()
