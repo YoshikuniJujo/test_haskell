@@ -803,20 +803,16 @@ createImg :: forall sd scp img inm a . BObj.IsImage img =>
 createImg pd dv gq cp img a = prepareImg pd dv Vk.Img.TilingOptimal
 	(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 	Vk.Mm.PropertyDeviceLocalBit w h \i _m -> do
-	createBufferImage pd dv
-		(fromIntegral w, fromIntegral w, fromIntegral h, 1)
+	createBffrImg pd dv
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		\(sb :: Vk.Bffr.Binded
-			sm sb "texture-buffer" '[ VObj.Image 1 img inm]) sbm -> do
-		Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-			@(VObj.Image 1 img inm) @0 dv sbm zeroBits img
-		print sb
+			Vk.Mm.PropertyHostCoherentBit ) img
+		\(b :: Vk.Bffr.Binded sm sb bnmi '[bimg]) bm -> do
+		Vk.Mm.write @bnmi @bimg @0 dv bm zeroBits img
+		print b
 		transitionImgLyt dv gq cp i
-			Vk.Img.LayoutUndefined
-			Vk.Img.LayoutTransferDstOptimal
-		copyBufferToImage dv gq cp sb i w h
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyBffrToImg dv gq cp b i
 	transitionImgLyt dv gq cp i
 		Vk.Img.LayoutTransferDstOptimal
 		Vk.Img.LayoutShaderReadOnlyOptimal
@@ -875,6 +871,22 @@ memInfo mt = Vk.Mm.AllocateInfo {
 	Vk.Mm.allocateInfoNext = TMaybe.N,
 	Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
+createBffrImg :: forall sd img nm inm a . BObj.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	img -> (forall sm sb al . KnownNat al =>
+		Vk.Bffr.Binded sm sb nm '[VObj.Image al img inm] ->
+		Vk.Mm.M sm '[
+			'(sb, 'Vk.Mm.BufferArg nm '[VObj.Image al img inm]) ] ->
+		IO a) -> IO a
+createBffrImg p dv us prs img a =
+	bffrAlgn @(VObj.Image 256 img inm) dv ln us \(_ :: Proxy al) ->
+	createBffr @_ @_ @(VObj.Image al img inm) p dv ln us prs a
+	where
+	ln :: VObj.Length (VObj.Image al img inm)
+	ln = VObj.LengthImage
+		(BObj.imageRow img) (BObj.imageWidth img)
+		(BObj.imageHeight img) (BObj.imageDepth img)
+
 transitionImgLyt :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Img.Binded sm si nm fmt ->
 	Vk.Img.Layout -> Vk.Img.Layout -> IO ()
@@ -922,6 +934,30 @@ transitionImgLyt dv gq cp i ol nl = singleTimeCmds dv gq cp \cb ->
 			Vk.Ppl.StageTopOfPipeBit,
 			Vk.Ppl.StageEarlyFragmentTestsBit )
 		_ -> error "unsupported layout transition!"
+
+copyBffrToImg :: forall sd sc smb sbb nmb al img imgnm smi si nmi .
+	(KnownNat al, Storable (BObj.ImagePixel img)) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Bffr.Binded smb sbb nmb '[ VObj.Image al img imgnm]  ->
+	Vk.Img.Binded smi si nmi (BObj.ImageFormat img) -> IO ()
+copyBffrToImg dvc gq cp bf img =
+	beginSingleTimeCommands dvc gq cp \cb ->
+	Vk.Cmd.copyBufferToImage @al
+		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
+	where
+	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
+		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
+	region :: Vk.Bffr.ImageCopy img imgnm
+	region = Vk.Bffr.ImageCopy {
+			Vk.Bffr.imageCopyImageSubresource = isr,
+			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
+	isr = Vk.Img.M.SubresourceLayers {
+			Vk.Img.M.subresourceLayersAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.M.subresourceLayersMipLevel = 0,
+			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
+			Vk.Img.M.subresourceLayersLayerCount = 1 }
 
 findMmType :: Vk.Phd.P ->
 	Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
@@ -984,89 +1020,6 @@ instance BObj.IsImage MyImage where
 	imageMake w h _d pss = MyImage
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) (fromIntegral w) (fromIntegral h)
 		where pss' = listArray (0, fromIntegral h - 1) (listArray (0, fromIntegral w - 1) <$> pss)
-
-transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
-	IO ()
-transitionImageLayout dvc gq cp img olyt nlyt =
-	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
-		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = TMaybe.N,
-			Vk.Img.memoryBarrierOldLayout = olyt,
-			Vk.Img.memoryBarrierNewLayout = nlyt,
-			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-				Vk.QFam.Ignored,
-			Vk.Img.memoryBarrierDstQueueFamilyIndex =
-				Vk.QFam.Ignored,
-			Vk.Img.memoryBarrierImage = img,
-			Vk.Img.memoryBarrierSubresourceRange = srr,
-			Vk.Img.memoryBarrierSrcAccessMask = sam,
-			Vk.Img.memoryBarrierDstAccessMask = dam }
-		srr = Vk.Img.SubresourceRange {
-			Vk.Img.subresourceRangeAspectMask = asps,
-			Vk.Img.subresourceRangeBaseMipLevel = 0,
-			Vk.Img.subresourceRangeLevelCount = 1,
-			Vk.Img.subresourceRangeBaseArrayLayer = 0,
-			Vk.Img.subresourceRangeLayerCount = 1 }
-	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HPList.Nil HPList.Nil (HPList.Singleton $ U5 barrier)
-	where
-	asps = case (nlyt, hasStencilComponentType @fmt) of
-		(Vk.Img.LayoutDepthStencilAttachmentOptimal, hsst) ->
-			Vk.Img.AspectDepthBit .|.
-			bool zeroBits Vk.Img.AspectStencilBit hsst
-		_ -> Vk.Img.AspectColorBit
-	(sam, dam, sstg, dstg) = case (olyt, nlyt) of
-		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
-			zeroBits, Vk.AccessTransferWriteBit,
-			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
-		(Vk.Img.LayoutTransferDstOptimal,
-			Vk.Img.LayoutShaderReadOnlyOptimal) -> (
-			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
-			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
-		(Vk.Img.LayoutUndefined,
-			Vk.Img.LayoutDepthStencilAttachmentOptimal) -> (
-			zeroBits,
-			Vk.AccessDepthStencilAttachmentReadBit .|.
-				Vk.AccessDepthStencilAttachmentWriteBit,
-			Vk.Ppl.StageTopOfPipeBit,
-			Vk.Ppl.StageEarlyFragmentTestsBit )
-		_ -> error "unsupported layout transition!"
-
-hasStencilComponentType ::
-	forall (fmt :: Vk.T.Format) . Vk.T.FormatToValue fmt => Bool
-hasStencilComponentType = hasStencilComponent (Vk.T.formatToValue @fmt)
-
-hasStencilComponent :: Vk.Format -> Bool
-hasStencilComponent = \case
-	Vk.FormatD32SfloatS8Uint -> True
-	Vk.FormatD24UnormS8Uint -> True
-	_ -> False
-
-copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
-	Storable (BObj.ImagePixel img) =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
---	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
-	Vk.Img.Binded sm' si nm' (BObj.ImageFormat img) ->
-	Word32 -> Word32 -> IO ()
-copyBufferToImage dvc gq cp bf img wdt hgt =
-	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	region :: Vk.Bffr.ImageCopy img inm
-		region = Vk.Bffr.ImageCopy {
-			Vk.Bffr.imageCopyImageSubresource = isr,
-			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
-			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d wdt hgt 1 }
-		isr = Vk.Img.M.SubresourceLayers {
-			Vk.Img.M.subresourceLayersAspectMask =
-				Vk.Img.AspectColorBit,
-			Vk.Img.M.subresourceLayersMipLevel = 0,
-			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
-			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyBufferToImage @1
-		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
 
 createTextureSampler ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
@@ -1246,22 +1199,6 @@ createBufferList :: forall sd nm t a . Storable t =>
 createBufferList p dv ln usg props =
 	createBuffer p dv (VObj.LengthList ln) usg props
 
-createBffrImg :: forall sd img nm inm a . BObj.IsImage img =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	img -> (forall sm sb al . KnownNat al =>
-		Vk.Bffr.Binded sm sb nm '[VObj.Image al img inm] ->
-		Vk.Mm.M sm '[
-			'(sb, 'Vk.Mm.BufferArg nm '[VObj.Image al img inm]) ] ->
-		IO a) -> IO a
-createBffrImg p dv us prs img a =
-	bffrAlgn @(VObj.Image 256 img inm) dv ln us \(_ :: Proxy al) ->
-	createBffr @_ @_ @(VObj.Image al img inm) p dv ln us prs a
-	where
-	ln :: VObj.Length (VObj.Image al img inm)
-	ln = VObj.LengthImage
-		(BObj.imageRow img) (BObj.imageWidth img)
-		(BObj.imageHeight img) (BObj.imageDepth img)
-
 bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
 	(forall al . KnownNat al => Proxy al -> IO a) -> IO a
@@ -1293,18 +1230,6 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
-createBufferImage :: Storable (BObj.ImagePixel t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
-		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
-			sb,
-			'Vk.Dvc.Mem.ImageBuffer.BufferArg nm '[ VObj.Image 1 t inm])] ->
-		IO a) -> IO a
-createBufferImage p dv (r, w, h, d) usg props =
-	createBuffer p dv (VObj.LengthImage r w h d) usg props
-
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
@@ -1312,15 +1237,15 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.BufferArg nm '[o])] ->
 		IO a) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
+createBuffer p dv ln usg props f = Vk.Bffr.create dv binfo nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mm.M.requirementsMemoryTypeBits reqs) props
 	Vk.Dvc.Mem.ImageBuffer.allocateBind dv (HPList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b)
 		(allcInfo mt) nil
 		$ f . \(HPList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
-	bffrInfo = Vk.Bffr.CreateInfo {
+	binfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
+	binfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
 		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
