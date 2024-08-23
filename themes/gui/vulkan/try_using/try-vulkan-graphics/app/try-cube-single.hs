@@ -136,8 +136,9 @@ controller ev = do
 	fn <- readIORef $ controllerEventFinished ev
 	if fn then pure () else do
 		Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
-		modifyIORef (controllerEventLeftX ev) (+ ga Glfw.GamepadAxis'LeftX)
-		modifyIORef (controllerEventLeftY ev) (+ ga Glfw.GamepadAxis'LeftY)
+		modifyIORef (controllerEventRotate ev) $ rotateAdd
+			(ga Glfw.GamepadAxis'LeftX) (ga Glfw.GamepadAxis'LeftY)
+			(ga Glfw.GamepadAxis'RightX)
 		when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
 			$ writeIORef (controllerEventButtonAEver ev) True
 		controller ev
@@ -146,21 +147,17 @@ createControllerEvent :: IO ControllerEvent
 createControllerEvent = do
 	fn <- newIORef False
 	ae <- newIORef False
-	lx <- newIORef 0
-	ly <- newIORef 0
+	rt <- newIORef initialRotate
 	pure ControllerEvent {
 		controllerEventFinished = fn,
 		controllerEventButtonAEver = ae,
-		controllerEventLeftX = lx,
-		controllerEventLeftY = ly
+		controllerEventRotate = rt
 		}
 
 data ControllerEvent = ControllerEvent {
 	controllerEventFinished :: IORef Bool,
 	controllerEventButtonAEver :: IORef Bool,
-	controllerEventLeftX :: IORef Float,
-	controllerEventLeftY :: IORef Float
-	}
+	controllerEventRotate :: IORef Rotate }
 
 type FramebufferResized = TVar Bool
 
@@ -1060,13 +1057,10 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 cev = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
---		tm <- getCurrentTime
-		lx <- readIORef $ controllerEventLeftX cev
-		ly <- readIORef $ controllerEventLeftY cev
+		rt <- readIORef $ controllerEventRotate cev
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
-			(lx / 100, ly / 100) cev loop
---			(realToFrac $ tm `diffUTCTime` tm0) cev loop
+			rt cev loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
@@ -1084,7 +1078,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
-	SyncObjects '(sias, srfs, siff) -> (Float, Float) -> ControllerEvent ->
+	SyncObjects '(sias, srfs, siff) -> Rotate -> ControllerEvent ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm cev loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
@@ -1109,7 +1103,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias sr
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> (Float, Float) -> IO ()
+	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Rotate -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
@@ -1137,22 +1131,14 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 
 updateUniformBuffer :: Vk.Dvc.D sd ->
-	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> (Float, Float) -> IO ()
-updateUniformBuffer dvc um sce (tm, tm') = do
+	UniformBufferMemory sm2 sb2 -> Vk.Extent2d -> Rotate -> IO ()
+updateUniformBuffer dvc um sce tm = do
 	Vk.Mem.write @"uniform-buffer" @(VObj.Atom 256 UniformBufferObject 'Nothing) @0
 		dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
-		uniformBufferObjectModel =
-			Cglm.rotate
-				Cglm.mat4Identity
-				(tm * Cglm.rad 90)
-				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) `Cglm.mat4Mul`
-			Cglm.rotate
-				Cglm.mat4Identity
-				(tm' * Cglm.rad 90)
-				(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL),
+		uniformBufferObjectModel = rotateToMatrix tm,
 		uniformBufferObjectView = Cglm.lookat
-			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+			(Cglm.Vec3 $ (- 4) :. 0 :. 0 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 		uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
@@ -1321,6 +1307,29 @@ shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoFlags = def,
 	Vk.ShaderModule.createInfoCode = code }
 
+data Rotate = Rotate Cglm.Mat4 deriving Show
+
+initialRotate :: Rotate
+initialRotate = Rotate Cglm.mat4Identity
+
+rotateAdd :: Float -> Float -> Float -> Rotate -> Rotate
+rotateAdd dx dy dz (Rotate m) = Rotate $ inputToRotateMatrix dx dy dz m
+
+rotateToMatrix :: Rotate -> Cglm.Mat4
+rotateToMatrix (Rotate m) = m
+
+inputToRotateMatrix :: Float -> Float -> Float -> Cglm.Mat4 -> Cglm.Mat4
+inputToRotateMatrix dx dy dz m0 =
+	Cglm.rotate
+		Cglm.mat4Identity
+		(sqrt (dx ^ 2 + dy ^ 2) / 100 * Cglm.rad 90)
+		(Cglm.Vec3 $ 0 :. (- dy) :. dx :. NilL)
+	`Cglm.mat4Mul`
+	Cglm.rotate
+		Cglm.mat4Identity (dz / 100)
+		(Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL)
+	`Cglm.mat4Mul` m0
+
 [glslVertexShader|
 
 #version 450
@@ -1339,7 +1348,9 @@ layout(location = 0) out vec3 fragColor;
 void
 main()
 {
-	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+//	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+	gl_Position = ubo.proj * ubo.view * (ubo.model * vec4(inPosition, 1.0));
+//	gl_Position = ubo.proj * ubo.view * (vec4(inPosition, 1.0) * ubo.model);
 	fragColor = inColor;
 }
 
