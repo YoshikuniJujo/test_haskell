@@ -64,8 +64,8 @@ import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
 import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
@@ -120,15 +120,47 @@ import Gpu.Vulkan.TypeEnum qualified as Vk.T
 
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
 
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
+
+import Data.Tuple.ToolsYj
+import Data.Function.ToolsYj
+
+import Debug
+
 main :: IO ()
-main = do
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
-		cev <- createControllerEvent
-		_ <- forkIO $ controller cev
-		if enableValidationLayers
-			then setupDebugMessenger inst $ run win inst g cev
-			else run win inst g cev
+main = atomically (newTVar False) >>= \fr -> withWindow fr \w ->
+	createIst \ist -> createControllerEvent >>= \cev ->
+		forkIO (controller cev) >>
+		bool id (dbgm ist) debug (body fr w ist cev)
+	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
+
+type FramebufferResized = TVar Bool
+
+withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
+
+initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWindow fr g = do
+	Right w <- do
+		GlfwG.Win.hint noApi
+		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
+	w <$ GlfwG.Win.setFramebufferSizeCallback
+		w (Just . const3 . atomically $ writeTVar fr True)
+	where
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	sizeName = ((800, 600), "Triangle")
+
+createControllerEvent :: IO ControllerEvent
+createControllerEvent = do
+	fn <- newIORef False
+	ae <- newIORef False
+	rt <- newIORef initialRotate
+	pure ControllerEvent {
+		controllerEventFinished = fn,
+		controllerEventButtonAEver = ae,
+		controllerEventRotate = rt }
 
 controller :: ControllerEvent -> IO ()
 controller ev = do
@@ -143,62 +175,21 @@ controller ev = do
 			$ writeIORef (controllerEventButtonAEver ev) True
 		controller ev
 
-createControllerEvent :: IO ControllerEvent
-createControllerEvent = do
-	fn <- newIORef False
-	ae <- newIORef False
-	rt <- newIORef initialRotate
-	pure ControllerEvent {
-		controllerEventFinished = fn,
-		controllerEventButtonAEver = ae,
-		controllerEventRotate = rt
-		}
-
 data ControllerEvent = ControllerEvent {
 	controllerEventFinished :: IORef Bool,
 	controllerEventButtonAEver :: IORef Bool,
 	controllerEventRotate :: IORef Rotate }
 
-type FramebufferResized = TVar Bool
-
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = atomically $ newTVar False
-
-windowName :: String
-windowName = "Triangle"
-
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
-
-withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
-withWindow f g = initWindow g >>= \w ->
-	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> atomically $ writeTVar frszd True)
-
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when enableValidationLayers $ bool
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
-		=<< null . (validationLayers L.\\)
+		=<< null . (vldLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
+	extensions <- bool id (Vk.DbgUtls.extensionName :)
+			debug . (Vk.Ist.ExtensionName <$>)
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
@@ -211,42 +202,40 @@ createInstance f = do
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
-			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
+			('Just (Vk.DbgUtls.Msngr.CreateInfo
 				'Nothing '[] ())) 'Nothing
 		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
+			Vk.Ist.M.createInfoNext = TMaybe.J dbgMsngrInfo,
 			Vk.Ist.M.createInfoFlags = def,
 			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
+				bool [] vldLayers debug,
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil \i -> f i
 
-setupDebugMessenger :: Vk.Ist.I si -> IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil f
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
+dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
+	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msngr.createInfoFlags = zeroBits,
+	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msngr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
+	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
+	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
+		"validation layer: " <>
+		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
-
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> ControllerEvent -> IO ()
-run w inst g cev =
+body :: FramebufferResized -> GlfwG.Win.W sw -> Vk.Ist.I si -> ControllerEvent -> IO ()
+body g (GlfwG.Win.W w) inst cev =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -370,7 +359,7 @@ createLogicalDevice phdvc qfis f =
 				Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 --					queueCreateInfos <$> uniqueQueueFamilies,
 				Vk.Dvc.M.createInfoEnabledLayerNames =
-					bool [] validationLayers enableValidationLayers,
+					bool [] vldLayers debug,
 				Vk.Dvc.M.createInfoEnabledExtensionNames =
 					deviceExtensions,
 				Vk.Dvc.M.createInfoEnabledFeatures = Just def }
