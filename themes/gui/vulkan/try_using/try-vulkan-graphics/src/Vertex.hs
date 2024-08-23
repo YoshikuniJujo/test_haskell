@@ -14,6 +14,8 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import Gpu.Vulkan.Cglm qualified as Cglm
 import qualified Foreign.Storable.Generic as GStorable
 
+type WVertex = GStorable.W Vertex
+
 data Vertex = Vertex {
 	vertexPos :: Pos,
 	vertexColor :: Color,
