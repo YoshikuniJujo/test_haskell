@@ -713,19 +713,19 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
-createMvpBffr :: KnownNat alm => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj alm] ->
-	ModelViewProjMemory sm sb mnm alm -> IO b) -> IO b
+createMvpBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sm sb mnm '[AtomModelViewProj alu] ->
+	ModelViewProjMemory sm sb mnm alu -> IO b) -> IO b
 createMvpBffr = createBffrAtm
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
-type ModelViewProjMemory sm sb mnm alm =
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alm])]
+type ModelViewProjMemory sm sb mnm alu =
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alu])]
 
-type BufferModelViewProj alm = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alm]
+type BufferModelViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alu]
 
-type AtomModelViewProj alm = VObj.Atom alm WModelViewProj 'Nothing
+type AtomModelViewProj alu = VObj.Atom alu WModelViewProj 'Nothing
 
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
