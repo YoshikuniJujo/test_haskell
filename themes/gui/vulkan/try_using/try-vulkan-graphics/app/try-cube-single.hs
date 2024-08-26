@@ -9,118 +9,107 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving, DeriveGeneric, GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
-import Control.Concurrent
-
 import GHC.Generics
-import GHC.TypeNats
 import GHC.TypeLits (Symbol)
+import GHC.TypeNats
 import Foreign.Storable
+import Foreign.Storable.Generic qualified
 import Foreign.Storable.PeekPoke
-import Control.Arrow hiding (loop)
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
+import Control.Concurrent
 import Control.Concurrent.STM
+import Control.Concurrent.STM.ToolsYj
 import Control.Exception
 import Data.Kind
 import Data.Proxy
-import Gpu.Vulkan.Object qualified as VObj
-import Data.Default
-import Data.Ord.ToolsYj
-import Data.Bits
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
-
-import Data.HeteroParList qualified as HPList
+import Data.Default
+import Data.Ord.ToolsYj
+import Data.Bits
+import Data.Bits.ToolsYj
+import Data.Function.ToolsYj
+import Data.Tuple.ToolsYj
+import Data.Maybe
+import Data.Maybe.ToolsYj
+import Data.List qualified as L
+import Data.List.Length
+import Data.List.NonEmpty qualified as NE
+import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
-import Data.Maybe
-import Data.Maybe.ToolsYj
-import Data.List qualified as L
-import Data.List.ToolsYj
-import Data.IORef
-import Data.List.Length
 import Data.Word
+import Data.Text.IO qualified as Txt
 import Data.Color
-
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Gpu.Vulkan.Cglm as Cglm
-import qualified Foreign.Storable.Generic
+import Data.IORef
 
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
-
-import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.Exception as Vk
-import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
-import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
-
-import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
-import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.Phd
-import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swpch
-import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
-import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderModule
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
-import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
-import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
-import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MltSmplSt
-import qualified Gpu.Vulkan.Sample as Vk.Sample
-import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
-import qualified Gpu.Vulkan.ColorComponent as Vk.ClrCmp
-import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
-import qualified Gpu.Vulkan.PipelineLayout as Vk.PplLyt
-import qualified Gpu.Vulkan.Attachment as Vk.Att
-import qualified Gpu.Vulkan.Subpass as Vk.Subpass
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
-import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
-import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
-import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
-import qualified Gpu.Vulkan.Buffer as Vk.Bffr
-import qualified Gpu.Vulkan.Queue as Vk.Q
-import qualified Gpu.Vulkan.Memory as Vk.Mm
-import qualified Gpu.Vulkan.Cmd as Vk.Cmd
-
-import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
-import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
-
-import Tools hiding (onlyIf, checkFlag)
-
-import Gpu.Vulkan.TypeEnum qualified as Vk.T
-
-import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
-
+import Graphics.UI.GLFW qualified as Glfw
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
 
-import Control.Concurrent.STM.ToolsYj
-import Data.Tuple.ToolsYj
-import Data.Function.ToolsYj
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Exception qualified as Vk
+import Gpu.Vulkan.Instance qualified as Vk.Ist
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Fence qualified as Vk.Fence
 
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Gr
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VtxInpSt
+import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
+import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
+import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
+import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
+import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
+import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+import Gpu.Vulkan.Attachment qualified as Vk.Att
+import Gpu.Vulkan.Subpass qualified as Vk.Subpass
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPool
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
+
+import Gpu.Vulkan.Cglm qualified as Cglm
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Debug
 
@@ -1076,41 +1065,33 @@ catchAndRecreate :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
-	catchJust
+catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just ()
-		_ -> Nothing)
-	act
-	\_ -> loop =<< recreateAll
-		w sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
+	\_ -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-recreateAll :: (
-	RecreateFrmbffrs sis sfs, Vk.T.FormatToValue scfmt ) =>
+recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
-	Vk.Dvc.D sd -> Vk.Khr.Swpch.S scfmt ssc ->
-	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
+	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Cglm.Vec3)]
 		'(sl, '[ '(sdsl, '[BufferModelViewProj alu])], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
+recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
+	ex <- recreateSwpch w sfc pd qfis dv sc
+	ex <$ do
+		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
+		recreateGrPpl dv ex rp pl gp
+		recreateFrmbffrs dv ex rp vs fbs
 
-	ext <- recreateSwpch w sfc phdvc qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-			recreateImgVws dvc imgs scivs
-		recreateGrPpl dvc ext rp ppllyt gpl
-		recreateFrmbffrs dvc ext rp scivs fbs
-
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 type WVertex = Foreign.Storable.Generic.W Vertex
@@ -1118,9 +1099,10 @@ type WVertex = Foreign.Storable.Generic.W Vertex
 data Vertex = Vertex { vertexPos :: Pos, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
-newtype Pos = Pos Cglm.Vec3 deriving (Show, Storable, Vk.Ppl.VtxInpSt.Formattable)
+newtype Pos = Pos Cglm.Vec3
+	deriving (Show, Storable, Vk.Ppl.VtxInpSt.Formattable)
 
-instance Foreign.Storable.Generic.G Vertex where
+instance Foreign.Storable.Generic.G Vertex
 
 vertices :: [WVertex]
 vertices = Foreign.Storable.Generic.W <$> [
@@ -1185,17 +1167,9 @@ indicesNum = fromIntegral $ length indices
 
 indices :: [Word16]
 indices = [
-	0, 1, 2, 2, 3, 0,
---	4, 5, 6, 6, 7, 4,
-	4, 7, 6, 6, 5, 4,
---	8, 9, 10, 10, 11, 8
-	8, 11, 10, 10, 9, 8,
-	12, 13, 14, 14, 15, 12,
-	16, 17, 18, 18, 19, 16,
-
---	20, 21, 22, 22, 23, 20,
-	20, 23, 22, 22, 21, 20
-	]
+	0, 1, 2, 2, 3, 0, 4, 7, 6, 6, 5, 4,
+	8, 11, 10, 10, 9, 8, 12, 13, 14, 14, 15, 12,
+	16, 17, 18, 18, 19, 16, 20, 23, 22, 22, 21, 20 ]
 
 type WModelViewProj = Foreign.Storable.Generic.W ModelViewProj
 
@@ -1205,16 +1179,13 @@ data ModelViewProj = ModelViewProj {
 
 instance Foreign.Storable.Generic.G ModelViewProj
 
-data Rotate = Rotate Cglm.Mat4 deriving Show
+data Rotate = Rotate { rotateToMatrix :: Cglm.Mat4 } deriving Show
 
 initialRotate :: Rotate
 initialRotate = Rotate Cglm.mat4Identity
 
 rotateAdd :: Float -> Float -> Float -> Rotate -> Rotate
 rotateAdd dx dy dz (Rotate m) = Rotate $ inputToRotateMatrix dx dy dz m
-
-rotateToMatrix :: Rotate -> Cglm.Mat4
-rotateToMatrix (Rotate m) = m
 
 inputToRotateMatrix :: Float -> Float -> Float -> Cglm.Mat4 -> Cglm.Mat4
 inputToRotateMatrix dx dy dz m0 =
@@ -1224,7 +1195,7 @@ inputToRotateMatrix dx dy dz m0 =
 		(Cglm.Vec3 $ 0 :. (- dy) :. dx :. NilL)
 	`Cglm.mat4Mul`
 	Cglm.rotate
-		Cglm.mat4Identity (dz / 100)
+		Cglm.mat4Identity (dz / 100 * Cglm.rad 90)
 		(Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL)
 	`Cglm.mat4Mul` m0
 
@@ -1232,11 +1203,8 @@ inputToRotateMatrix dx dy dz m0 =
 
 #version 450
 
-layout(binding = 0) uniform UniformBufferObject {
-	mat4 model;
-	mat4 view;
-	mat4 proj;
-} ubo;
+layout(binding = 0) uniform
+	ModelViewProj { mat4 model; mat4 view; mat4 proj; } mvp;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -1246,9 +1214,7 @@ layout(location = 0) out vec3 fragColor;
 void
 main()
 {
-//	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-	gl_Position = ubo.proj * ubo.view * (ubo.model * vec4(inPosition, 1.0));
-//	gl_Position = ubo.proj * ubo.view * (vec4(inPosition, 1.0) * ubo.model);
+	gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 1.0);
 	fragColor = inColor;
 }
 
