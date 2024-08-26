@@ -42,12 +42,12 @@ import Data.List qualified as L
 import Data.List.Length
 import Data.List.NonEmpty qualified as NE
 import Data.List.ToolsYj
-import Data.Bool
-import Data.Bool.ToolsYj
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
+import Data.Bool
+import Data.Bool.ToolsYj
 import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Time
