@@ -801,17 +801,6 @@ copyBffr dv gq cp s d = createCmdBffr dv cp \cb -> do
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
-createCmdBffr :: forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-createCmdBffr dv cp f =
-	Vk.CBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
-	where
-	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
-	info = Vk.CBffr.AllocateInfo {
-		Vk.CBffr.allocateInfoNext = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPool = cp,
-		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
-
 createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
 createDscPl dv = Vk.DscPool.create dv info nil
 	where info = Vk.DscPool.CreateInfo {
@@ -849,12 +838,16 @@ dscWrite mb ds = Vk.DscSet.Write {
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos
 		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo mb }
 
-data SyncObjs (ssos :: (Type, Type, Type)) where
-	SyncObjs :: {
-		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
-		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
-		_inFlightFences :: Vk.Fence.F sfs } ->
-		SyncObjs '(sias, srfs, sfs)
+createCmdBffr :: forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
+	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
+createCmdBffr dv cp f =
+	Vk.CBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
+	where
+	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
+	info = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cp,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 createSyncObjs :: Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
 createSyncObjs dv f =
@@ -865,14 +858,20 @@ createSyncObjs dv f =
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
+data SyncObjs (ssos :: (Type, Type, Type)) where
+	SyncObjs :: {
+		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
+		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
+		_inFlightFences :: Vk.Fence.F sfs } ->
+		SyncObjs '(sias, srfs, sfs)
+
 mainloop :: (
 	Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs,
 	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
-	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
-	Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, '[BufferModelViewProj alu])] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -893,8 +892,9 @@ mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs
 			mm mds cb sos (realToFrac $ tm `diffUTCTime` tm0) go
 	Vk.Dvc.waitIdle dv
 
-run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
-	KnownNat alu, KnownNat alv, KnownNat ali) =>
+run :: (
+	RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
+	KnownNat alu, KnownNat alv, KnownNat ali ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
@@ -911,16 +911,17 @@ run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt,
 	Vk.DscSet.D sds '(sdsl, '[BufferModelViewProj alu]) ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
-run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb ib mm mds cb sos tm go = do
+run fr w sfc pd qfis dv gq pq
+	sc ex vs rp pl gp fbs vb ib mm mds cb sos tm go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
 		$ draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb sos tm
 	(,) <$> GlfwG.Win.shouldClose w <*> atomically (checkFlag fr) >>= \case
 		(True, _) -> pure ()
 		(_, False) -> go ex
-		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
+		_ -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
-	smm sbm alu nmm smv sbv bnmv alv nmv smi sbi bnmi ali nmi scb ssos .
+	smv sbv bnmv alv nmv smi sbi bnmi ali nmi smm sbm nmm alu scb ssos .
 	(KnownNat alu, KnownNat alv, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -956,8 +957,12 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm mds cb (SyncObjs ias rfs iff) tm = do
 	pinfo ii = Vk.Khr.Swpch.PresentInfo {
 		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
 		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
-			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
+			$ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 updateModelViewProj :: forall sd smm sbm nmm alu . KnownNat alu =>
 	Vk.Dvc.D sd ->
@@ -1014,10 +1019,6 @@ recordCmdBffr cb ex rp pl gp fb vb ib mds =
 			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
-
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
