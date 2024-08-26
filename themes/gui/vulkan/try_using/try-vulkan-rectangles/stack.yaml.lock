@@ -449,7 +449,7 @@ packages:
     git: https://github.com/YoshikuniJujo/glib-stopgap
 snapshots:
 - completed:
-    sha256: 3e2ebb6e538654269973faf683d0068b123a6ee9462a48ac2c3f3281a7bf3f8b
-    size: 658094
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/8/13.yaml
-  original: nightly-2024-08-13
+    sha256: 77e07d47807e1909c9d36a36815e690d2c30a87e38689961478fec853eb82a42
+    size: 653568
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/8/26.yaml
+  original: nightly-2024-08-26

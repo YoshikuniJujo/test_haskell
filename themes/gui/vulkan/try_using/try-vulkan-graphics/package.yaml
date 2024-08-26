@@ -112,26 +112,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-graphics
-  try-pyramid-single:
-    main:                try-pyramid-single.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-vulkan-graphics
   try-gamepad-button:
     main:                try-gamepad-button.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-vulkan-graphics
-  try-multi-rectangles:
-    main:                try-multi-rectangles.hs
     source-dirs:         app
     ghc-options:
     - -threaded
@@ -159,15 +141,6 @@ executables:
     - try-vulkan-graphics
   try-cairo-image-as-texture:
     main:                try-cairo-image-as-texture.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-vulkan-graphics
-  try-move-cube-single:
-    main:                try-move-cube-single.hs
     source-dirs:         app
     ghc-options:
     - -threaded

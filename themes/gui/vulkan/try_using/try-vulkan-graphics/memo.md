@@ -5,12 +5,9 @@
 * [x] try-rectangle-single.hs
 * [x] try-depth-buffering-single.hs
 * [x] try-cube-single.hs
-* [ ] try-move-cube-single.hs
-* [ ] try-pyramid-single.hs
 * [ ] try-cairo-image-as-texture.hs
-* [ ] try-multi-rectangles.hs
 * [ ] try-multiple-windows.hs
 
 ### src
 
-* [ ] Vertex
+* [x] Vertex
