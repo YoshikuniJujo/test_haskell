@@ -106,7 +106,7 @@ import Gpu.Vulkan.Subpass qualified as Vk.Subpass
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSet
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscSetLyt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
 import Gpu.Vulkan.Cglm qualified as Glm
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
@@ -224,8 +224,7 @@ body txfp fr w ist =
 	createMvpBffr pd d \mb mbm ->
 	createDscPl d \dp -> createDscSt d dp mb tv txsp dsl \ds ->
 	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
-	createSyncObjs d \sos ->
-	getCurrentTime >>=
+	createSyncObjs d \sos -> getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs drs vb ib mbm ds cb sos
 
@@ -542,7 +541,7 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	=<< Vk.Phd.getProperties pd
 
 createPplLyt :: forall alu sd a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscSetLyt.D sdsl (DscStLytArg alu) ->
+	Vk.DscStLyt.D sdsl (DscStLytArg alu) ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] -> IO a) -> IO a
 createPplLyt dv f = createDscStLyt dv \dsl ->
 	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
@@ -552,27 +551,27 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createDscStLyt :: Vk.Dvc.D sd ->
-	(forall s . Vk.DscSetLyt.D s (DscStLytArg alu) -> IO a) -> IO a
-createDscStLyt dv = Vk.DscSetLyt.create dv info nil
+	(forall s . Vk.DscStLyt.D s (DscStLytArg alu) -> IO a) -> IO a
+createDscStLyt dv = Vk.DscStLyt.create dv info nil
 	where
-	info = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = TMaybe.N,
-		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = mbd :** tbd :** HPList.Nil }
-	mbd = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
+	info = Vk.DscStLyt.CreateInfo {
+		Vk.DscStLyt.createInfoNext = TMaybe.N,
+		Vk.DscStLyt.createInfoFlags = zeroBits,
+		Vk.DscStLyt.createInfoBindings = mbd :** tbd :** HPList.Nil }
+	mbd = Vk.DscStLyt.BindingBuffer {
+		Vk.DscStLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
-	tbd = Vk.DscSetLyt.BindingImage {
-		Vk.DscSetLyt.bindingImageDescriptorType =
+		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	tbd = Vk.DscStLyt.BindingImage {
+		Vk.DscStLyt.bindingImageDescriptorType =
 			Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DscSetLyt.bindingImageStageFlags =
+		Vk.DscStLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
 type DscStLytArg alu = '[BufferModelViewProj alu, TxImg]
-type BufferModelViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alu]
+type BufferModelViewProj alu = 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]
 type AtomModelViewProj alu = VObj.Atom alu WModelViewProj 'Nothing
-type TxImg = 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
+type TxImg = 'Vk.DscStLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
@@ -1105,7 +1104,7 @@ createDscSt :: KnownNat alu =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alu] ->
 	TextureImageView siv -> Vk.Smplr.S ss ->
-	Vk.DscSetLyt.D sdsl (DscStLytArg alu) ->
+	Vk.DscStLyt.D sdsl (DscStLytArg alu) ->
 	(forall sds . Vk.DscSet.D sds '(sdsl, DscStLytArg alu) -> IO a) -> IO a
 createDscSt dv dp bm tv ts dl a =
 	Vk.DscSet.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
