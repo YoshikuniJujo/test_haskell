@@ -5,7 +5,6 @@
 * [x] try-rectangle-single.hs
 * [x] try-depth-buffering-single.hs
 * [x] try-cube-single.hs
-* [ ] try-cairo-image-as-texture.hs
 * [ ] try-multiple-windows.hs
 
 ### src

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.36.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -18,10 +18,16 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+    debug/Debug.hs
+    nodebug/Debug.hs
 
 source-repository head
   type: git
   location: https://github.com/githubuser/try-vulkan-rectangles
+
+flag debug
+  manual: True
+  default: True
 
 library
   exposed-modules:
@@ -33,6 +39,7 @@ library
       ThEnv
       Tools
       UseCairo
+      Vertex
   other-modules:
       Paths_try_vulkan_rectangles
   hs-source-dirs:
@@ -72,6 +79,66 @@ library
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
+    , type-set
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+  if flag(debug)
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        debug
+  else
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        nodebug
+
+executable try-cairo-image-as-texture
+  main-is: try-cairo-image-as-texture.hs
+  other-modules:
+      Paths_try_vulkan_rectangles
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
+    , containers
+    , data-default
+    , moffy
+    , mtl
+    , optparse-declarative
+    , primitive
+    , ranged-list
+    , simple-cairo
+    , simple-pango
+    , stm
+    , template-haskell
+    , text
+    , time
+    , try-cairo-image-samples
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-tools-yj
+    , try-vulkan-rectangles
     , type-set
     , typelevel-tools
     , union-color
@@ -119,6 +186,7 @@ executable try-multi-rectangles
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools
@@ -167,6 +235,7 @@ executable try-multi-rectangles2
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools
@@ -215,6 +284,7 @@ executable try-use-cairo
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools
@@ -264,6 +334,7 @@ test-suite try-vulkan-rectangles-test
     , try-storable-generic
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools
