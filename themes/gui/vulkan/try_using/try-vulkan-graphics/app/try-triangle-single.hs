@@ -184,12 +184,13 @@ body fr w ist =
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) ->
 	createLgDvc pd qfis \dv gq pq ->
-	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
-	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
-	createRndrPss @scifmt dv \rp ->
-	createPplLyt dv \pl -> createGrPpl dv ex rp pl \gp ->
-	createFrmbffrs dv ex rp scvs \fbs ->
 	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
+	createPplLyt dv \pl ->
+	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
+	createRndrPss @scifmt dv \rp ->
+	createGrPpl dv ex rp pl \gp ->
+	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
+	createFrmbffrs dv ex rp scvs \fbs ->
 	createVtxBffr pd dv gq cp \vb -> createSyncObjs dv \sos ->
 	mainloop fr w sfc pd qfis dv gq pq sc ex scvs rp pl gp fbs vb cb sos
 
