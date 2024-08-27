@@ -43,12 +43,22 @@ import Data.Color
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text.IO as Txt
 
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Tuple.ToolsYj
+import Data.List.ToolsYj
+import Data.Bool.ToolsYj
+import Control.Concurrent.STM.ToolsYj
+
 import qualified Gpu.Vulkan.Khr.Surface.Glfw.Window as Vk.Khr.Surface.Glfw.Win
 import qualified Gpu.Vulkan.Cglm as Cglm
 import qualified Foreign.Storable.Generic
 
 import Graphics.UI.GlfwG as Glfw
 import Graphics.UI.GlfwG.Window as Glfw.Win
+
+import Graphics.UI.GlfwG as GlfwG
+import Graphics.UI.GlfwG.Window as GlfwG.Win
 
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
@@ -59,11 +69,10 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Instance.Internal as Vk.Ist
-import qualified Gpu.Vulkan.Instance as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.DbgUtls.Msngr
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 
@@ -112,41 +121,93 @@ import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
 
 import Debug
 
-import Data.Ord.ToolsYj
-import Data.Bits.ToolsYj
-import Data.Bool.ToolsYj
-import Control.Concurrent.STM.ToolsYj
-
-clampOld x mn mx = clamp mn mx x
-
 main :: IO ()
-main = glfwInit $
-	createInstance \inst ->
-	bool (setupDebugMessenger inst) id debug $
-	Vk.Dvc.group nil \dgrp ->
+main = Glfw.init error $ createIst \ist -> bool id (dbgm ist) debug $
+	withDvc ist \pd qfis (_ :: Proxy scfmt) dv gq pq (_ :: Proxy n) ->
+	body @scfmt @n ist pd qfis dv gq pq
+	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
-	fromDummy inst dgrp >>= \(phdv, qfis, scfmt, dv, gq, pq, n) ->
+type FramebufferResized = TVar Bool
 
-	print n >>
-	getNum n \(_ :: Proxy n) ->
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
+		. (Vk.layerPropertiesLayerName <$>)
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	bool	(Vk.Ist.create (info exts) nil f)
+		(Vk.Ist.create (infoDbg exts) nil f) debug
+	where
+	emsg = "validation layers requested, but not available!"
+	info exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.N,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = [],
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	infoDbg exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	ainfo = Vk.ApplicationInfo {
+		Vk.applicationInfoNext = TMaybe.N,
+		Vk.applicationInfoApplicationName = "Hello Triangle",
+		Vk.applicationInfoApplicationVersion =
+			Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoEngineName = "No Engine",
+		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
-	Vk.T.formatToType scfmt \(_ :: Proxy scfmt) ->
+withDvc :: Vk.Ist.I si -> (forall (fmt :: Vk.T.Format) sd (n :: [()]) .
+	(Vk.T.FormatToValue fmt, Mappable n) =>
+	Vk.PhDvc.P -> QueueFamilyIndices -> Proxy fmt ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Proxy n -> IO a) -> IO a
+withDvc inst a = Vk.Dvc.group nil \dgrp -> do
+	(pd, q, f, d, g, p, n) <- withDummySurface inst \dwin dsfc -> do
+		(phdv, qfis) <- pickPhysicalDevice' inst dsfc
+		spp <- querySwapchainSupport phdv dsfc
+		ext <- chooseSwapExtent dwin $ capabilities spp
+		let	fmt = Vk.Khr.Surface.M.formatOldFormat
+				. chooseSwapSurfaceFormat $ formats spp
+		(dv, gq, pq) <- createLogicalDevice' phdv dgrp () qfis
+		Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+			n <- getSwapchainImageNum @fmt dv dsfc spp ext qfis
+			pure (phdv, qfis, fmt, dv, gq, pq, n)
+	Vk.T.formatToType f \pf -> tnm n \pn -> a pd q pf d g p pn
+	where
+	tnm :: [a] -> (forall (n :: [()]) . ( Mappable n ) => Proxy n -> b) -> b
+	tnm [] f = f (Proxy :: Proxy '[])
+	tnm (_ : xs) f = tnm xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
-	run @scfmt @n inst phdv qfis dv gq pq
+withDummySurface :: Vk.Ist.I si ->
+	(forall sw ss . Glfw.Win.W sw -> Vk.Khr.Surface.S ss -> IO a) -> IO a
+withDummySurface ist f =
+	Glfw.Win.group \wgrp -> initWindow False wgrp () >>= \dw ->
+	createSurface dw ist \ds -> f dw ds
 
-fromDummy :: Vk.Ist.I si -> Vk.Dvc.Group 'Nothing sd () -> IO (
-	Vk.PhDvc.P, QueueFamilyIndices, Vk.Format,
-	Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q, [()] )
-fromDummy inst dgrp = withDummySurface inst \dwin dsfc -> do
-	(phdv, qfis) <- pickPhysicalDevice' inst dsfc
-	spp <- querySwapchainSupport phdv dsfc
-	ext <- chooseSwapExtent dwin $ capabilities spp
-	let	fmt = Vk.Khr.Surface.M.formatOldFormat
-			. chooseSwapSurfaceFormat $ formats spp
-	(dv, gq, pq) <- createLogicalDevice' phdv dgrp () qfis
-	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-		n <- getSwapchainImageNum @fmt dv dsfc spp ext qfis
-		pure (phdv, qfis, fmt, dv, gq, pq, n)
+initWindow :: Ord k => Bool -> Glfw.Win.Group sw k -> k -> IO (Glfw.Win.W sw)
+initWindow v wgrp k = do
+	Right w <- do
+		Glfw.Win.hint noApi
+		bool nov id v $ uncurryDup
+			(Glfw.Win.create' wgrp k) sizeName Nothing Nothing
+	pure w
+	where
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	nov a = do
+		Glfw.Win.hint $ Glfw.Win.WindowHint'Visible False
+		a <* Glfw.Win.hint (Glfw.Win.WindowHint'Visible True)
+	sizeName = ((800, 600), "Triangle")
+
+createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
+	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
+createSurface win ist f =
+	Vk.Khr.Surface.group ist nil \sgrp ->
+	f . fromRight =<< Vk.Khr.Surface.Glfw.Win.create' sgrp () win
 
 getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
 	Vk.T.FormatToValue fmt =>
@@ -155,10 +216,8 @@ getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
 	QueueFamilyIndices -> IO [()]
 getSwapchainImageNum dv sfc spp ext qfis =
 	withSwapchain @fmt dv sfc spp ext qfis \sc _ ->
-		sameNum () <$> Vk.Khr.Swapchain.getImages dv sc
-
-sameNum :: b -> [a] -> [b]
-sameNum x = \case [] -> []; _ : ys -> x : sameNum x ys
+		smn () <$> Vk.Khr.Swapchain.getImages dv sc
+	where smn x = \case [] -> []; _ : ys -> x : smn x ys
 
 withSwapchain :: forall scfmt ssfc sd a .
 	Vk.T.FormatToValue scfmt =>
@@ -170,130 +229,38 @@ withSwapchain dvc sfc spp ext qfis f =
 	let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext in
 	Vk.Khr.Swapchain.create @_ @scfmt dvc crInfo nil \sc -> f sc ext
 
-getNum :: [a] -> (forall (n :: [()]) . (
-	Mappable n ) =>
-	Proxy n -> b) -> b
-getNum [] f = f (Proxy :: Proxy '[])
-getNum (_ : xs) f = getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
-type FramebufferResized = TVar Bool
+dbgMsngrInfo :: Vk.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
+	Vk.DbgUtls.Msngr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msngr.createInfoFlags = zeroBits,
+	Vk.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msngr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msngr.createInfoFnUserCallback = dbgCallback,
+	Vk.DbgUtls.Msngr.createInfoUserData = Nothing }
+	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
+		"validation layer: " <>
+		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
-newFramebufferResized :: IO FramebufferResized
-newFramebufferResized = atomically $ newTVar False
-
-windowName :: String
-windowName = "Triangle"
-
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
-
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
-
-glfwInit :: IO a -> IO a
-glfwInit = Glfw.init error
-
-withDummySurface :: Vk.Ist.I si ->
-	(forall sw ss . Glfw.Win.W sw -> Vk.Khr.Surface.S ss -> IO a) -> IO a
-withDummySurface ist f = withDummyWindow \dwin -> createSurface dwin ist \sfc ->
-	f dwin sfc
-
-withDummyWindow :: (forall sw . Glfw.Win.W sw -> IO a) -> IO a
-withDummyWindow f = Glfw.Win.group \wgrp -> do
-	f =<< withDummyWindow' wgrp ()
-
-withDummyWindow' :: Ord k => Glfw.Win.Group sw k -> k -> IO (Glfw.Win.W sw)
-withDummyWindow' wgrp k = do
-	Right w <- do
-		Glfw.Win.hint $ Glfw.Win.WindowHint'ClientAPI Glfw.Win.ClientAPI'NoAPI
-		Glfw.Win.hint $ Glfw.Win.WindowHint'Visible False
-		uncurry (Glfw.Win.create' wgrp k)
-			windowSize windowName Nothing Nothing
-			<* Glfw.Win.hint (Glfw.Win.WindowHint'Visible True)
-	pure w
-
-withWindow' :: Ord k => Glfw.Win.Group sw k -> k -> FramebufferResized -> IO (Glfw.Win.W sw)
-withWindow' wgrp k frszd = do
-	Right w <- do
-		Glfw.Win.hint $ Glfw.Win.WindowHint'ClientAPI Glfw.Win.ClientAPI'NoAPI
-		uncurry (Glfw.Win.create' wgrp k)
-			windowSize windowName Nothing Nothing
-	Glfw.Win.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> atomically $ writeTVar frszd True)
-	pure w
-
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when debug $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers L.\\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			debug . (Vk.Ist.ExtensionName <$>)
-		<$> Glfw.getRequiredInstanceExtensions
-	print extensions
-	let	appInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoNext = TMaybe.N,
-			Vk.applicationInfoApplicationName = "Hello Triangle",
-			Vk.applicationInfoApplicationVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoEngineName = "No Engine",
-			Vk.applicationInfoEngineVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo :: Vk.Ist.M.CreateInfo
-			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
-				'Nothing '[] ())) 'Nothing
-		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-			Vk.Ist.M.createInfoFlags = def,
-			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] validationLayers debug,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil \i -> f i
-
-setupDebugMessenger ::
-	Vk.Ist.I si ->
-	IO a -> IO a
-setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil f
-
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
-
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
-debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
-
-run :: forall (scfmt :: Vk.T.Format) (n :: [()]) si sd . (
+body :: forall (scfmt :: Vk.T.Format) (n :: [()]) si sd . (
 	Vk.T.FormatToValue scfmt, 
 	Mappable n ) =>
 	Vk.Ist.I si -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO ()
-run inst phdv qfis dv gq pq =
-	createCommandPool qfis dv \cp ->
-	createCommandBuffer dv cp \cb ->
-	createPipelineLayout dv \ppllyt ->
-
-	Vk.Bffr.group dv nil \bfgrp ->
-	Vk.Mem.group dv nil \mmgrp ->
+body inst pd qfis dv gq pq =
+	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
+	createPplLyt dv \pl ->
+	Vk.Bffr.group dv nil \bfgrp -> Vk.Mem.group dv nil \mmgrp ->
 	(for [(0, vertices), (1, vertices2)] \(i, v) -> createVertexBuffer' @Int
-		phdv dv gq cp bfgrp mmgrp i v) >>= \vbs ->
+		pd dv gq cp bfgrp mmgrp i v) >>= \vbs ->
 
 	winGroups @_ @_ @_ @scfmt inst dv \(wgs :: WinGroups
 		sw si sd ssfc sr sg sl sias srfs siff scifmt ssc siv nm sf k) ->
@@ -302,9 +269,9 @@ run inst phdv qfis dv gq pq =
 	let	crw = do
 			wn <- atomically $ readTVar wnum <* modifyTVar wnum (+ 1)
 			createWindowResourcesWinGroups @_ @n
-				inst phdv dv qfis ppllyt wgs wn in
+				inst pd dv qfis pl wgs wn in
 
-	mainLoop @n @siv @sf phdv qfis dv gq pq cb ppllyt (cycle vbs) crw
+	mainLoop @n @siv @sf pd qfis dv gq pq cb pl (cycle vbs) crw
 
 winGroups :: Vk.Ist.I si -> Vk.Dvc.D sd -> (
 	forall sw ssfc sr sg sias srfs siff ssc siv sf .
@@ -386,8 +353,9 @@ createWindowResources
 	inst phdv dv qfis ppllyt wgrp sfcgrp rpgrp gpsgrp iasgrp rfsgrp iffgrp
 	scgrp ivgrp fbgrp k =
 
-	newFramebufferResized >>= \g ->
-	withWindow' wgrp k g >>= \w ->
+	atomically (newTVar False) >>= \g ->
+	initWindow True wgrp k >>= \w ->
+	setFramebufferResizeEvent w g >>
 	createSurface' w inst sfcgrp k >>= \sfc ->
 	prepareSwapchain @scifmt w sfc phdv >>= \(spp, ext) ->
 	createRenderPass' @scifmt rpgrp k >>= \rp ->
@@ -402,20 +370,9 @@ createWindowResources
 	atomically (newTVar ext) >>= \vext ->
 	pure $ WinParams w g sfc vext rp gpl sos sc scivs fbs
 
-createSurface :: Glfw.Win.W sw -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f =
-	Vk.Khr.Surface.group ist nil \sgrp ->
-	f . fromRight =<< Vk.Khr.Surface.Glfw.Win.create' sgrp () win
-
-fromRight :: Either String r -> r
-fromRight = \case Right r -> r; Left emsg -> error $ "fromRight: not Right: " ++ emsg
-
-createSurface' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
-	Glfw.Win.W sw -> Vk.Ist.I si -> Vk.Khr.Surface.Group si ma ss k -> k ->
-	IO (Vk.Khr.Surface.S ss)
-createSurface' win ist sgrp k =
-	fromRight <$> Vk.Khr.Surface.Glfw.Win.create' sgrp k win
+setFramebufferResizeEvent :: Glfw.Win.W sw -> FramebufferResized -> IO ()
+setFramebufferResizeEvent w fr = Glfw.Win.setFramebufferSizeCallback w
+	. Just $ \_ _ _ -> atomically $ writeTVar fr True
 
 pickPhysicalDevice' :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ssfc -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -447,6 +404,15 @@ isDeviceSuitable phdvc sfc = do
 		bool (completeQueueFamilies indices) Nothing
 			$ null (formats spp) || null (presentModes spp)
 	else pure Nothing
+
+fromRight :: Either String r -> r
+fromRight = \case Right r -> r; Left emsg -> error $ "fromRight: not Right: " ++ emsg
+
+createSurface' :: (Ord k, AllocationCallbacks.ToMiddle ma) =>
+	Glfw.Win.W sw -> Vk.Ist.I si -> Vk.Khr.Surface.Group si ma ss k -> k ->
+	IO (Vk.Khr.Surface.S ss)
+createSurface' win ist sgrp k =
+	fromRight <$> Vk.Khr.Surface.Glfw.Win.create' sgrp k win
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Vk.QueueFamily.Index,
@@ -521,7 +487,7 @@ createLogicalDevice' phd dgrp k qfis =
 		Vk.Dvc.M.createInfoFlags = def,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.M.createInfoEnabledLayerNames =
-			bool [] validationLayers debug,
+			bool [] vldLayers debug,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 
@@ -776,9 +742,9 @@ createRenderPass' rpgrp k =
 			Vk.AccessDepthStencilAttachmentWriteBit,
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
-createPipelineLayout ::
+createPplLyt ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.P sl '[] '[] -> IO b) -> IO b
-createPipelineLayout dvc f = do
+createPplLyt dvc f = do
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = TMaybe.N,
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
@@ -995,9 +961,9 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	where
 	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
 
-createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
+createCmdPl :: QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
-createCommandPool qfis dvc f =
+createCmdPl qfis dvc f =
 	Vk.CmdPool.create dvc poolInfo nil \cp -> f cp
 	where poolInfo = Vk.CmdPool.CreateInfo {
 		Vk.CmdPool.createInfoNext = TMaybe.N,
@@ -1122,11 +1088,11 @@ copyBuffer dvc gq cp src dst = do
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
-createCommandBuffer ::
+createCmdBffr ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb . Vk.CmdBffr.C scb -> IO a) ->
 	IO a
-createCommandBuffer dvc cp f =
+createCmdBffr dvc cp f =
 	Vk.CmdBffr.allocate dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
@@ -1402,6 +1368,9 @@ shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
 	Vk.ShaderModule.createInfoFlags = def,
 	Vk.ShaderModule.createInfoCode = code }
+
+clampOld :: Ord a => a -> Min a -> Max a -> a
+clampOld x mn mx = clamp mn mx x
 
 [glslVertexShader|
 
