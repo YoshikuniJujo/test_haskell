@@ -188,7 +188,7 @@ packages:
     subdir: packages/try-tools-yj
 snapshots:
 - completed:
-    sha256: b66176d92f4e55079a946948d23fc80bf68fb328e23d1066ed9f73a609a3d8b8
-    size: 631258
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/5/6.yaml
-  original: nightly-2024-05-06
+    sha256: 77e07d47807e1909c9d36a36815e690d2c30a87e38689961478fec853eb82a42
+    size: 653568
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/8/26.yaml
+  original: nightly-2024-08-26
