@@ -52,7 +52,6 @@ library
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -66,7 +65,6 @@ library
     , try-storable-generic
     , try-storable-peek-poke
     , try-tools-yj
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -104,7 +102,6 @@ executable try-cube-single
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -119,7 +116,6 @@ executable try-cube-single
     , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -147,7 +143,6 @@ executable try-depth-buffering-single
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -162,7 +157,6 @@ executable try-depth-buffering-single
     , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -190,7 +184,6 @@ executable try-gamepad-button
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -205,7 +198,6 @@ executable try-gamepad-button
     , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -233,7 +225,6 @@ executable try-multiple-windows
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -248,7 +239,6 @@ executable try-multiple-windows
     , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -276,7 +266,6 @@ executable try-rectangle-single
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -291,7 +280,6 @@ executable try-rectangle-single
     , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -319,7 +307,6 @@ executable try-triangle-single
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -334,7 +321,6 @@ executable try-triangle-single
     , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector
@@ -363,7 +349,6 @@ test-suite try-vulkan-graphics-test
     , temporary
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -378,7 +363,6 @@ test-suite try-vulkan-graphics-test
     , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , try-vulkan-rectangles
     , typelevel-tools
     , union-color
     , vector

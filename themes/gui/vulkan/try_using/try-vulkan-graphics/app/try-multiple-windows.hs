@@ -50,7 +50,6 @@ import qualified Foreign.Storable.Generic
 import Graphics.UI.GlfwG as Glfw
 import Graphics.UI.GlfwG.Window as Glfw.Win
 
-import ThEnv
 import qualified Language.SpirV as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
@@ -109,14 +108,21 @@ import qualified Gpu.Vulkan.Memory as Vk.Mem.M
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
-import Tools
-
 import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
+
+import Debug
+
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Bool.ToolsYj
+import Control.Concurrent.STM.ToolsYj
+
+clampOld x mn mx = clamp mn mx x
 
 main :: IO ()
 main = glfwInit $
 	createInstance \inst ->
-	bool (setupDebugMessenger inst) id enableValidationLayers $
+	bool (setupDebugMessenger inst) id debug $
 	Vk.Dvc.group nil \dgrp ->
 
 	fromDummy inst dgrp >>= \(phdv, qfis, scfmt, dv, gq, pq, n) ->
@@ -181,9 +187,6 @@ windowName = "Triangle"
 windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
 
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
 validationLayers :: [Vk.LayerName]
 validationLayers = [Vk.layerKhronosValidation]
 
@@ -221,14 +224,14 @@ withWindow' wgrp k frszd = do
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
+	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
+			debug . (Vk.Ist.ExtensionName <$>)
 		<$> Glfw.getRequiredInstanceExtensions
 	print extensions
 	let	appInfo = Vk.ApplicationInfo {
@@ -248,7 +251,7 @@ createInstance f = do
 			Vk.Ist.M.createInfoFlags = def,
 			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
+				bool [] validationLayers debug,
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	Vk.Ist.create createInfo nil \i -> f i
 
@@ -518,7 +521,7 @@ createLogicalDevice' phd dgrp k qfis =
 		Vk.Dvc.M.createInfoFlags = def,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.M.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 
@@ -1249,7 +1252,7 @@ winParamsToWindow (WinParams w _ _ _ _ _ _ _ _ _) = w
 checkFlagWinParams ::
 	WinParams sw sl nm ssfc sr sg sias srfs siff fmt ssc sscivs sfs ->
 	IO Bool
-checkFlagWinParams (WinParams _ frszd _ _ _ _ _ _ _ _) = checkFlag frszd
+checkFlagWinParams (WinParams _ frszd _ _ _ _ _ _ _ _) = atomically $ checkFlag frszd
 
 runLoop :: forall n si sf sd scb sl sm sb nm ssfc sr sw sg sias srfs siff fmt ssc . (
 	Vk.T.FormatToValue fmt, Mappable n ) =>

@@ -40,7 +40,6 @@ dependencies:
 - JuicyPixels
 - GLFW-b
 - optparse-declarative
-- try-vulkan-rectangles
 - try-gpu-vulkan
 - try-gpu-vulkan-khr-swapchain
 - try-gpu-vulkan-khr-surface
@@ -57,7 +56,6 @@ dependencies:
 - ranged-list
 - typelevel-tools
 - temporary
-- try-cairo-image-samples
 - try-tools-yj
 
 ghc-options:
