@@ -793,67 +793,6 @@ run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb cb sos go = do
 		(_, False) -> go ex
 		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-draw :: forall sd fmt ssc sr sl sg sfs smv sbv bnmv alv nmv scb ssos .
-	KnownNat alv =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
-	Vk.CBffr.C scb -> SyncObjs ssos -> IO ()
-draw dv gq pq sc ex rp gp fbs vb cb (SyncObjs ias rfs iff) = do
-	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
-	ii <- Vk.Khr.Swpch.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
-	Vk.CBffr.reset cb def
-	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
-	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
-	catchAndSerialize . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
-	where
-	siff = HPList.Singleton iff
-	sinfo = Vk.SubmitInfo {
-		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks =
-			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
-				ias Vk.Ppl.StageColorAttachmentOutputBit,
-		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-	pinfo ii = Vk.Khr.Swpch.PresentInfo {
-		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
-		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
-			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
-
-recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv alv nmv . KnownNat alv =>
-	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
-	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] -> IO ()
-recordCmdBffr cb ex rp gp fb vb = Vk.CBffr.begin @'Nothing @'Nothing cb def $
-	Vk.Cmd.beginRenderPass cb info Vk.Sbp.ContentsInline $
-	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
-	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
-		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
-	Vk.Cmd.draw cbb verticesNum 1 0 0
-	where
-	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf
-		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
-	info = Vk.RndrPss.BeginInfo {
-		Vk.RndrPss.beginInfoNext = TMaybe.N,
-		Vk.RndrPss.beginInfoRenderPass = rp,
-		Vk.RndrPss.beginInfoFramebuffer = fb,
-		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
-			Vk.rect2dOffset = Vk.Offset2d 0 0,
-			Vk.rect2dExtent = ex },
-		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
-			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
-
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
-
 catchAndRecreate :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
@@ -889,6 +828,67 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 	when (zero sz) $ fix \go -> (`when` go) . zero =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
+
+draw :: forall sd fmt ssc sr sl sg sfs smv sbv bnmv alv nmv scb ssos .
+	KnownNat alv =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Gr.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
+	HPList.PL Vk.Frmbffr.F sfs ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> IO ()
+draw dv gq pq sc ex rp gp fbs vb cb (SyncObjs ias rfs iff) = do
+	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
+	ii <- Vk.Khr.Swpch.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+	Vk.CBffr.reset cb def
+	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
+	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
+	catchAndSerialize . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
+	where
+	siff = HPList.Singleton iff
+	sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
+	pinfo ii = Vk.Khr.Swpch.PresentInfo {
+		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
+			$ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
+
+recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv alv nmv . KnownNat alv =>
+	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Gr.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
+	Vk.Frmbffr.F sf ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] -> IO ()
+recordCmdBffr cb ex rp gp fb vb = Vk.CBffr.begin @'Nothing @'Nothing cb def $
+	Vk.Cmd.beginRenderPass cb info Vk.Sbp.ContentsInline $
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
+	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
+		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
+	Vk.Cmd.draw cbb verticesNum 1 0 0
+	where
+	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf
+		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
+	info = Vk.RndrPss.BeginInfo {
+		Vk.RndrPss.beginInfoNext = TMaybe.N,
+		Vk.RndrPss.beginInfoRenderPass = rp,
+		Vk.RndrPss.beginInfoFramebuffer = fb,
+		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
+			Vk.rect2dOffset = Vk.Offset2d 0 0,
+			Vk.rect2dExtent = ex },
+		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
+			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 type WVertex = Foreign.Storable.Generic.W Vertex
 
