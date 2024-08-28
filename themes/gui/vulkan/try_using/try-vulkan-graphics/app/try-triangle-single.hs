@@ -189,7 +189,8 @@ body fr w ist =
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	createRndrPss @scifmt dv \rp ->
 	createGrPpl dv ex rp pl \gp ->
-	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
+	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
+	createImgVws dv scis \scvs ->
 	createFrmbffrs dv ex rp scvs \fbs ->
 	createVtxBffr pd dv gq cp \vb -> createSyncObjs dv \sos ->
 	mainloop fr w sfc pd qfis dv gq pq sc ex scvs rp pl gp fbs vb cb sos
