@@ -128,13 +128,11 @@ import Data.Bool.ToolsYj
 
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 
-import Data.CairoContext
 import Data.CairoImage.Internal
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.CairoSurfaceT
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Control.Monad.ST
 import Control.Monad.Primitive
 import Data.Array hiding (indices)
 import Foreign.Marshal.Array
@@ -231,7 +229,8 @@ body fr w ist =
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs dv \fbs ->
-	createCairoImage >>= \img -> createImg pd d gq cp img \tx ->
+	twoRectangles >>= \txi ->
+	createImg pd d gq cp (CairoArgb32 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit) nil \tv ->
 	createTextureSampler pd d \txsmplr ->
 	createVertexBuffer pd d gq cp \vb ->
@@ -792,87 +791,23 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-createCairoImage :: IO CairoArgb32
-createCairoImage = do
-	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
-	cr <- cairoCreate sfc0
-	twoRectanglesIO' sfc0 cr
-
-twoRectanglesIO' ::  CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> IO CairoArgb32
-twoRectanglesIO' sfc cr = CairoArgb32 <$> twoRectanglesPrim' sfc cr
-
-twoRectanglesPrim' :: PrimMonad m =>
-	CairoSurfaceImageT s (PrimState m) -> CairoT r (PrimState m) -> m Argb32
-twoRectanglesPrim' sfc0 cr = do
+twoRectangles :: PrimMonad m => m Argb32
+twoRectangles = do
+	sfc <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
+	cr <- cairoCreate sfc
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
 	cairoRectangle cr 0 0 256 256
 	cairoFill cr
-
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.3
 	cairoRectangle cr 50 50 110 110
 	cairoFill cr
-
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.3
 	cairoRectangle cr 100 130 100 70
 	cairoFill cr
-
-	cairoSurfaceFlush sfc0
-
-	cairoImageSurfaceGetCairoImage sfc0 >>= \case
+	cairoSurfaceFlush sfc
+	cairoImageSurfaceGetCairoImage sfc >>= \case
 		CairoImageArgb32 i -> pure i
 		_ -> error "never occur"
-
-newtype CairoArgb32 = CairoArgb32 Argb32
-
-newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
-
-pixelArgb32ToPixelRgba :: PixelArgb32 -> PixelRgba d
-pixelArgb32ToPixelRgba = PixelRgba . pixelArgb32ToRgba
-
-pixelRgbaToPixelArgb32 :: RealFrac d => PixelRgba d -> PixelArgb32
-pixelRgbaToPixelArgb32 (PixelRgba p) = rgbaToPixelArgb32 p
-
-pixelArgb32ToRgba :: PixelArgb32 -> Rgba d
-pixelArgb32ToRgba (PixelArgb32Premultiplied a r g b) =
-	fromJustWithErrorMsg (
-			"pixelArgb32ToRgba: (a, r, g, b) = (" ++
-			show a ++ ", " ++ show r ++ ", " ++
-			show g ++ ", " ++ show b ++ ")" )
-		$ rgbaPremultipliedWord8 r g b a
-
-rgbaToPixelArgb32 :: RealFrac d => Rgba d -> PixelArgb32
-rgbaToPixelArgb32 (RgbaPremultipliedWord8 a r g b) =
-	fromJust $ pixelArgb32Premultiplied a r g b
-
-fromJustWithErrorMsg :: String -> Maybe a -> a
-fromJustWithErrorMsg msg = \case
-	Nothing -> error msg
-	Just x -> x
-
-instance BObj.IsImage CairoArgb32 where
-	type ImagePixel CairoArgb32 = PixelRgba Double
-	type ImageFormat CairoArgb32 = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow (CairoArgb32 img) = fromIntegral . fst $ imageSize img
-	imageWidth (CairoArgb32 img) = fromIntegral . fst $ imageSize img
-	imageHeight (CairoArgb32 img) = fromIntegral . snd $ imageSize img
-	imageDepth _ = 1
-	imageBody (CairoArgb32 img) =
-		(<$> [0 .. w - 1]) \y -> (<$> [0 .. h - 1]) \x ->
-			pixelArgb32ToPixelRgba . fromJust $ pixelAt img x y
-		where (w, h) = imageSize img
-	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
-		CairoArgb32 $ generateImage w h \x y ->
-			pixelRgbaToPixelArgb32 $ (pss' ! y) ! x
-		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
-
-instance RealFrac d => Storable (PixelRgba d) where
-	sizeOf _ = 4
-	alignment _ = alignment @Word32 undefined
-	peek p = do
-		[r, g, b, a] <- peekArray 4 $ castPtr p
-		pure . PixelRgba $ RgbaWord8 r g b a
-	poke p (PixelRgba (RgbaWord8 r g b a)) =
-		pokeArray (castPtr p) [r, g, b, a]
 
 createImg :: forall sd scp img inm a . BObj.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> img ->
@@ -1684,6 +1619,58 @@ instance Storable UniformBufferObject where
 	poke = GStorable.gPoke
 
 instance GStorable.G UniformBufferObject
+
+newtype CairoArgb32 = CairoArgb32 Argb32
+
+newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
+
+pixelArgb32ToPixelRgba :: PixelArgb32 -> PixelRgba d
+pixelArgb32ToPixelRgba = PixelRgba . pixelArgb32ToRgba
+
+pixelRgbaToPixelArgb32 :: RealFrac d => PixelRgba d -> PixelArgb32
+pixelRgbaToPixelArgb32 (PixelRgba p) = rgbaToPixelArgb32 p
+
+pixelArgb32ToRgba :: PixelArgb32 -> Rgba d
+pixelArgb32ToRgba (PixelArgb32Premultiplied a r g b) =
+	fromJustWithErrorMsg (
+			"pixelArgb32ToRgba: (a, r, g, b) = (" ++
+			show a ++ ", " ++ show r ++ ", " ++
+			show g ++ ", " ++ show b ++ ")" )
+		$ rgbaPremultipliedWord8 r g b a
+
+rgbaToPixelArgb32 :: RealFrac d => Rgba d -> PixelArgb32
+rgbaToPixelArgb32 (RgbaPremultipliedWord8 a r g b) =
+	fromJust $ pixelArgb32Premultiplied a r g b
+
+fromJustWithErrorMsg :: String -> Maybe a -> a
+fromJustWithErrorMsg msg = \case
+	Nothing -> error msg
+	Just x -> x
+
+instance BObj.IsImage CairoArgb32 where
+	type ImagePixel CairoArgb32 = PixelRgba Double
+	type ImageFormat CairoArgb32 = 'Vk.T.FormatR8g8b8a8Srgb
+	imageRow (CairoArgb32 img) = fromIntegral . fst $ imageSize img
+	imageWidth (CairoArgb32 img) = fromIntegral . fst $ imageSize img
+	imageHeight (CairoArgb32 img) = fromIntegral . snd $ imageSize img
+	imageDepth _ = 1
+	imageBody (CairoArgb32 img) =
+		(<$> [0 .. w - 1]) \y -> (<$> [0 .. h - 1]) \x ->
+			pixelArgb32ToPixelRgba . fromJust $ pixelAt img x y
+		where (w, h) = imageSize img
+	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
+		CairoArgb32 $ generateImage w h \x y ->
+			pixelRgbaToPixelArgb32 $ (pss' ! y) ! x
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+
+instance RealFrac d => Storable (PixelRgba d) where
+	sizeOf _ = 4
+	alignment _ = alignment @Word32 undefined
+	peek p = do
+		[r, g, b, a] <- peekArray 4 $ castPtr p
+		pure . PixelRgba $ RgbaWord8 r g b a
+	poke p (PixelRgba (RgbaWord8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
 
 [glslVertexShader|
 
