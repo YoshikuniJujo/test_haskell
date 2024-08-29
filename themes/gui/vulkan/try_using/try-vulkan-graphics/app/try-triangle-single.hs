@@ -443,7 +443,7 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[fmt] dv info nil
 
 createPplLyt ::
 	Vk.Dvc.D sd -> (forall sl . Vk.PplLyt.P sl '[] '[] -> IO a) -> IO a
-createPplLyt dv f = Vk.PplLyt.create @_ @_ @_ @'[] dv info nil f
+createPplLyt dv = Vk.PplLyt.create @_ @_ @_ @'[] dv info nil
 	where info = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
