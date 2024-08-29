@@ -36,8 +36,6 @@ import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Function.ToolsYj
 import Data.Tuple.ToolsYj
-import Data.Bool
-import Data.Bool.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
@@ -48,6 +46,9 @@ import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
+import Data.Bool
+import Data.Bool.ToolsYj
+import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Color
 
@@ -636,13 +637,13 @@ createVtxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
 		'[VObj.List al WVertex lnm] -> IO a) -> IO a
 createVtxBffr pd dv gq cp f =
-	bffrLstAlgn @WVertex dv verticesNum
+	bffrLstAlgn @WVertex dv ln
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		\(_ :: Proxy al) ->
-	createBffrLst pd dv verticesNum
+	createBffrLst pd dv ln
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
-		createBffrLst pd dv verticesNum
+		createBffrLst pd dv ln
 			Vk.Bffr.UsageTransferSrcBit (
 			Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) \
@@ -652,6 +653,7 @@ createVtxBffr pd dv gq cp f =
 				dv bm' zeroBits vertices
 			copyBffr dv gq cp b' b
 		f b
+	where ln = fromIntegral $ length vertices
 
 bffrLstAlgn :: forall t sd a (lnm :: Symbol) . Storable t =>
 	Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags -> (forall al .
@@ -865,7 +867,7 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv alv nmv . KnownNat alv =>
+recordCmdBffr :: forall scb sr sg sl sf smv sbv bnmv alv nmv . KnownNat alv =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
@@ -876,7 +878,7 @@ recordCmdBffr cb ex rp gp fb vb = Vk.CBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb -> do
 	Vk.Cmd.bindVertexBuffers cbb . HPList.Singleton
 		. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb
-	Vk.Cmd.draw cbb verticesNum 1 0 0
+	Vk.Cmd.draw cbb (bffrLn vb) 1 0 0
 	where
 	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -890,15 +892,16 @@ recordCmdBffr cb ex rp gp fb vb = Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
+bffrLn :: Vk.Bffr.Binded sm' sb' nm' '[ VObj.List ali t lnmi] -> Word32
+bffrLn b = fromIntegral sz
+	where HPList.Singleton (VObj.LengthList' sz) = Vk.Bffr.lengthBinded b
+
 type WVertex = Foreign.Storable.Generic.W Vertex
 
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
 instance Foreign.Storable.Generic.G Vertex
-
-verticesNum :: Integral n => n
-verticesNum = fromIntegral $ length vertices
 
 vertices :: [WVertex]
 vertices = Foreign.Storable.Generic.W <$> [
@@ -915,7 +918,6 @@ vertices = Foreign.Storable.Generic.W <$> [
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
-
 layout(location = 0) out vec3 fragColor;
 
 void
@@ -932,7 +934,6 @@ main()
 #version 450
 
 layout(location = 0) in vec3 fragColor;
-
 layout(location = 0) out vec4 outColor;
 
 void

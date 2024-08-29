@@ -5,7 +5,7 @@
 * [x] try-rectangle-single.hs
 * [x] try-depth-buffering-single.hs
 * [x] try-cube-single.hs
-* [ ] try-multiple-windows.hs
+* [x] try-multiple-windows.hs
 
 ### src
 
