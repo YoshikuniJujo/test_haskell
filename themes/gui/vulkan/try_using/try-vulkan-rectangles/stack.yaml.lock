@@ -358,19 +358,6 @@ packages:
 - completed:
     commit: 18b072518745406b7c28861c3569edf9ee77e299
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-cairo-image-samples
-    pantry-tree:
-      sha256: ca16d48b431d0335d48bd849dae8ac381b80d2860e49af7739c08ec4a59d86fc
-      size: 639
-    subdir: themes/gui/cairo/try-cairo-image-samples
-    version: 0.1.0.10
-  original:
-    commit: 18b072518745406b7c28861c3569edf9ee77e299
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/cairo/try-cairo-image-samples
-- completed:
-    commit: 18b072518745406b7c28861c3569edf9ee77e299
-    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-tools-yj
     pantry-tree:
       sha256: c0768fe302fdae01b370fa8cf2d2014ab1a514e252d857fd10582c7af5634138

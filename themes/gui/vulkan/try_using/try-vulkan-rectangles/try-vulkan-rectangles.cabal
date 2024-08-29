@@ -31,11 +31,13 @@ flag debug
 
 library
   exposed-modules:
+      Convert
       CreateTextureGroup
       Gpu.Vulkan.CairoImage
       PangoLayoutExtent
       Rectangles
       Rectangles2
+      SampleImages
       ThEnv
       Tools
       UseCairo
@@ -64,7 +66,6 @@ library
     , template-haskell
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -122,7 +123,6 @@ executable try-cairo-image-as-texture
     , template-haskell
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -171,7 +171,6 @@ executable try-multi-rectangles
     , template-haskell
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -220,7 +219,6 @@ executable try-multi-rectangles2
     , template-haskell
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -269,7 +267,6 @@ executable try-use-cairo
     , template-haskell
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
@@ -319,7 +316,6 @@ test-suite try-vulkan-rectangles-test
     , template-haskell
     , text
     , time
-    , try-cairo-image-samples
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm

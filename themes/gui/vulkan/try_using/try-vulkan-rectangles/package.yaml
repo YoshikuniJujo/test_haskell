@@ -61,7 +61,6 @@ dependencies:
 - cairo-image
 - simple-pango
 - try-moffy-with-gtk3
-- try-cairo-image-samples
 - moffy
 - type-set
 - try-tools-yj
