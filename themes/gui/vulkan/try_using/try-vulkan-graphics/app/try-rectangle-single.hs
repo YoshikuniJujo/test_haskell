@@ -111,17 +111,17 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 import Debug
 
 main :: IO ()
-main = atomically (newTVar False) >>= \fr -> withWindow fr \w ->
+main = atomically (newTVar False) >>= \fr -> withWin fr \w ->
 	createIst \ist -> bool id (dbgm ist) debug $ body fr w ist
 	where dbgm i = Vk.DbgUtls.Msngr.create i dbgMsngrInfo nil
 
 type FramebufferResized = TVar Bool
 
-withWindow :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-withWindow fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
+withWin :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+withWin fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWin fr g
 
-initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
-initWindow fr g = do
+initWin :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWin fr g = do
 	Right w <- do
 		GlfwG.Win.hint noApi
 		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
