@@ -140,10 +140,10 @@ main = atomically (newTVar False) >>= \fr -> withWin fr \w ->
 type FramebufferResized = TVar Bool
 
 withWin :: FramebufferResized -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-withWin fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWindow fr g
+withWin fr a = GlfwG.init error $ GlfwG.Win.group \g -> a =<< initWin fr g
 
-initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
-initWindow fr g = do
+initWin :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
+initWin fr g = do
 	Right w <- do
 		GlfwG.Win.hint noApi
 		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
