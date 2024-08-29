@@ -286,10 +286,10 @@ createWinRsrcs
 			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModesFmt ss
 		in
 	createSwpch scg k sfc qfis (capabilitiesFmt ss) cs pm ex >>= \sc ->
-	createRenderPass' @scfmt rpg k >>= \rp ->
+	createRndrPss @scfmt rpg k >>= \rp ->
 	createGraphicsPipeline' gpg k ex rp pl >>= \gpl ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
-	createImageViews''' @scin ivg k scis >>= \scivs ->
+	createImgVws @scin ivg k scis >>= \scivs ->
 	createFramebuffers @scin @k @sd @sf @sr @nm @_ @siv
 		fbg k ex rp scivs >>= \fbs ->
 	createSyncObjs iasg rfsg iffg k >>= \sos ->
@@ -472,28 +472,14 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
-createImageViews''' :: forall n ivfmt sd si siv k sm nm ifmt . (
-	Ord k, Vk.T.FormatToValue ivfmt, Mappable n ) =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt -> k ->
-	[Vk.Img.Binded sm si nm ifmt] ->
-	IO (HPList.PL (Vk.ImgVw.I nm ivfmt) (Replicate n siv))
-createImageViews''' ivgrp k imgs = do
-	ivs <- createImageViews' ivgrp k imgs
-	pure $ homoListFromList @_ @n ivs
-
-createImageViews' :: forall ivfmt sd si siv k sm nm ifmt .
-	(Ord k, Vk.T.FormatToValue ivfmt) =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt -> k ->
-	[Vk.Img.Binded sm si nm ifmt] -> IO [Vk.ImgVw.I nm ivfmt siv]
-createImageViews' ivgrp k imgs =
-	mapM (\(i, img) -> createImageView' ivgrp (k, i) img) $ zip [0 ..] imgs
-
-createImageView' :: forall ivfmt sd si siv k sm nm ifmt . Ord k =>
-	Vk.T.FormatToValue ivfmt =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt -> (k, Int) ->
-	Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm ivfmt siv)
-createImageView' ivgrp k timg =
-	fromRight <$> Vk.ImgVw.create' ivgrp k (imgVwInfo timg)
+createImgVws :: forall scin sd k sm si ifmt nm vfmt sv .
+	(Mappable scin, Ord k, Vk.T.FormatToValue vfmt) =>
+	Vk.ImgVw.Group sd 'Nothing sv (k, Int) nm vfmt ->
+	k -> [Vk.Img.Binded sm si nm ifmt] ->
+	IO (HPList.PL (Vk.ImgVw.I nm vfmt) (Replicate scin sv))
+createImgVws vg k is = homoListFromList @_ @scin <$>
+	for (zip [0 ..] is) \(c, i) ->
+		fromRight <$> Vk.ImgVw.create' vg (k, c) (imgVwInfo i)
 
 recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss inm fmt] ->
@@ -520,22 +506,18 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
 
-createRenderPass' ::
-	forall (scifmt :: Vk.T.Format) sd ma sr k . (
-	Ord k, AllocationCallbacks.ToMiddle ma, Vk.T.FormatToValue scifmt ) =>
-	Vk.RndrPss.Group sd ma sr k -> k ->  IO (Vk.RndrPss.R sr)
-createRenderPass' rpgrp k =
-	fromRight <$> Vk.RndrPss.create' @_ @_ @'[scifmt] rpgrp k renderPassInfo
+createRndrPss :: forall fmt sd ma sr k .
+	(Vk.T.FormatToValue fmt, AllocationCallbacks.ToMiddle ma, Ord k) =>
+	Vk.RndrPss.Group sd ma sr k -> k -> IO (Vk.RndrPss.R sr)
+createRndrPss rpg k = fromRight <$> Vk.RndrPss.create' @_ @_ @'[fmt] rpg k info
 	where
-	renderPassInfo = Vk.RndrPss.CreateInfo {
+	info = Vk.RndrPss.CreateInfo {
 		Vk.RndrPss.createInfoNext = TMaybe.N,
 		Vk.RndrPss.createInfoFlags = zeroBits,
-		Vk.RndrPss.createInfoAttachments =
-			colorAttachment :** HPList.Nil,
+		Vk.RndrPss.createInfoAttachments = ca :** HPList.Nil,
 		Vk.RndrPss.createInfoSubpasses = [subpass],
 		Vk.RndrPss.createInfoDependencies = [dependency] }
-	colorAttachment :: Vk.Att.Description scifmt
-	colorAttachment = Vk.Att.Description {
+	ca = Vk.Att.Description {
 		Vk.Att.descriptionFlags = zeroBits,
 		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
 		Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
@@ -549,11 +531,10 @@ createRenderPass' rpgrp k =
 		Vk.Sbp.descriptionPipelineBindPoint =
 			Vk.Ppl.BindPointGraphics,
 		Vk.Sbp.descriptionInputAttachments = [],
-		Vk.Sbp.descriptionColorAndResolveAttachments =
-			Left [colorAttachmentRef],
+		Vk.Sbp.descriptionColorAndResolveAttachments = Left [car],
 		Vk.Sbp.descriptionDepthStencilAttachment = Nothing,
 		Vk.Sbp.descriptionPreserveAttachments = [] }
-	colorAttachmentRef = Vk.Att.Reference {
+	car = Vk.Att.Reference {
 		Vk.Att.referenceAttachment = 0,
 		Vk.Att.referenceLayout = Vk.Img.LayoutColorAttachmentOptimal }
 	dependency = Vk.Sbp.Dependency {
