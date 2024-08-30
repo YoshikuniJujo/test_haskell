@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2024-01-03
+resolver: nightly-2024-08-26
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -45,7 +45,9 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - git: https://github.com/YoshikuniJujo/simple-gdk3
-  commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+  commit: a40d1864356a72f006baf96a7ba99a06b3a912ac
+- git: https://github.com/YoshikuniJujo/glib-stopgap
+  commit: 429e8b95651bafaa67131a917d94581c89d1c90c
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

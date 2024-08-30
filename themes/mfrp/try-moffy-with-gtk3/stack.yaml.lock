@@ -27,19 +27,30 @@ packages:
     commit: e5e069590dbea7038540b66d9545df33b185e9bf
     git: https://github.com/YoshikuniJujo/x-keysym
 - completed:
-    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+    commit: a40d1864356a72f006baf96a7ba99a06b3a912ac
     git: https://github.com/YoshikuniJujo/simple-gdk3
     name: simple-gdk3
     pantry-tree:
-      sha256: edebfef20cccfee49ca1baefaa9edd0d963dbe872f7efb129c4858b2589a8ee9
+      sha256: 027925563cd48661eee6e2d83a37cedb34f497293b87781fdbb0b885d1f06f33
       size: 4020
     version: 0.1.0.0
   original:
-    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
+    commit: a40d1864356a72f006baf96a7ba99a06b3a912ac
     git: https://github.com/YoshikuniJujo/simple-gdk3
+- completed:
+    commit: 429e8b95651bafaa67131a917d94581c89d1c90c
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    name: glib-stopgap
+    pantry-tree:
+      sha256: 55b143d73191a9aa456c67f46726aac1ca572e5312d0f5c60f669ca81b1eba7d
+      size: 1273
+    version: 0.1.0.0
+  original:
+    commit: 429e8b95651bafaa67131a917d94581c89d1c90c
+    git: https://github.com/YoshikuniJujo/glib-stopgap
 snapshots:
 - completed:
-    sha256: 5362057cb009c3df7b588bcb37ade11ffeecf2feb056dae9b418116680117383
-    size: 529494
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/1/3.yaml
-  original: nightly-2024-01-03
+    sha256: 77e07d47807e1909c9d36a36815e690d2c30a87e38689961478fec853eb82a42
+    size: 653568
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/8/26.yaml
+  original: nightly-2024-08-26
