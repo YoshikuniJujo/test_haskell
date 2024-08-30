@@ -7,6 +7,7 @@
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroParList (
@@ -54,7 +55,13 @@ module Data.HeteroParList (
 
 	-- ** Homo List
 
+	-- *** Homo List
+
 	HomoList(..),
+
+	-- *** Homo List With Num
+
+	HomoListN(..), Num, tnum,
 
 	-- * Index
 
@@ -67,10 +74,11 @@ module Data.HeteroParList (
 
 	) where
 
-import Prelude hiding (map, mapM, replicate)
+import Prelude hiding (map, mapM, replicate, Num)
 
 import GHC.TypeLits
 import Data.Kind
+import Data.Proxy
 import Data.Default
 import Data.List (genericIndex)
 
@@ -273,6 +281,55 @@ instance HomoList s ss => HomoList s (s ': ss) where
 	homoListFromList =
 		\case x : xs -> x :** homoListFromList xs; _ -> error "bad"
 	homoListToList (x :** xs) = x : homoListToList xs
+
+-- Homo List With Num
+
+class HomoListN (n :: Num k) where
+	type Replicate n s :: [Type]
+	homoListNFromList :: [t s] -> PL t (Replicate n s)
+	mapHomoListNM :: Monad m => (t a -> m (u b)) ->
+		PL t (Replicate n a) -> m (PL u (Replicate n b))
+	mapHomoListNMWithI :: Monad m => Int -> (Int -> t a -> m (u b)) ->
+		PL t (Replicate n a) -> m (PL u (Replicate n b))
+	zipWithHomoListNM :: Monad m => (t a -> u b -> m (v c)) ->
+		PL t (Replicate n a) -> PL u (Replicate n b) ->
+		m (PL v (Replicate n c))
+	zipWithHomoListNM_ :: Monad m => (t a -> u b -> m c) ->
+		PL t (Replicate n a) -> PL u (Replicate n b) ->
+		m ()
+
+instance HomoListN '[] where
+	type Replicate '[] s = '[]
+	homoListNFromList = \case [] -> Nil; _ -> error "bad"
+	mapHomoListNM _ Nil = pure Nil
+	mapHomoListNMWithI _ _ Nil = pure Nil
+	zipWithHomoListNM _ Nil Nil = pure Nil
+	zipWithHomoListNM_ _ Nil Nil = pure ()
+
+instance HomoListN ds => HomoListN (d ': ds) where
+	type Replicate (d ': ds) s = s ': Replicate ds s
+	homoListNFromList = \case
+		(x : xs) -> x :** (homoListNFromList @_ @ds xs); _ -> error "bad"
+	mapHomoListNM :: forall t a u b m . Monad m =>
+		(t a -> m (u b)) -> PL t (Replicate (d ': ds) a) ->
+		m (PL u (Replicate (d ': ds) b))
+	mapHomoListNM f (x :** xs) = (:**) <$> f x <*> mapHomoListNM @_ @ds f xs
+	mapHomoListNMWithI :: forall t a u b m . Monad m =>
+		Int -> (Int -> t a -> m (u b)) ->
+		PL t (Replicate (d ': ds) a) ->
+		m (PL u (Replicate (d ': ds) b))
+	mapHomoListNMWithI i f (x :** xs) =
+		(:**) <$> f i x <*> mapHomoListNMWithI @_ @ds (i + 1) f xs
+	zipWithHomoListNM a (x :** xs) (y :** ys) =
+		(:**) <$> a x y <*> zipWithHomoListNM @_ @ds a xs ys
+	zipWithHomoListNM_ a (x :** xs) (y :** ys) =
+		a x y >> zipWithHomoListNM_ @_ @ds a xs ys
+
+type Num a = [a]
+
+tnum :: [a] -> (forall (n :: Num ()) . HomoListN n => Proxy n -> b) -> b
+tnum [] f = f (Proxy :: Proxy '[])
+tnum (_ : xs) f = tnum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
 -- Index
 
