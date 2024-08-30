@@ -14,7 +14,13 @@
 
 module Main (main) where
 
-import UseCairo
+import UseCairo (
+	rectangles2, Event(..), Command(..), ViewProjection(..),
+
+	Rectangle(..), RectPos(..), RectSize(..), RectColor(..),
+	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
+
+	readTVarOr )
 
 import Control.Monad
 import Control.Monad.Fix
@@ -41,6 +47,8 @@ import Control.Moffy.Event.CalcTextExtents qualified as CTE
 import Trial.Followbox.ViewType
 import Data.OneOfThem
 
+import Graphics.UI.GlfwG.Key as GlfwG.Ky
+
 main :: IO ()
 main = run_ action
 
@@ -49,7 +57,7 @@ action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 action f = liftIO do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar M.empty
-	forkIO $ untilEnd (get f) (
+	_ <- forkIO $ untilEnd (get f) (
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	rectangles2 inp outp vext
@@ -64,15 +72,15 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 	atomically . inp . CalcTextLayoutExtent
 		$ CTE.CalcTextExtentsReq (WindowId 0) "serif" 30 "Hello, world!"
 
-	forkIO $ forever do
+	_ <- forkIO $ forever do
 		threadDelay 5000
 		atomically $ inp GetEvent
 
-	forkIO $ forever do
+	_ <- forkIO $ forever do
 		threadDelay 2000000
 		atomically do
 			e0 <- ext 0
-			e1 <- ext 1
+--			e1 <- ext 1
 			inp $ Draw2 (M.fromList [
 				(0, ((bool (uniformBufferObject e0) def f), instances' 1024 1024 e0))
 				] )
@@ -102,6 +110,10 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 			Just (EventKeyDown w ky) -> do
 				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
 				loop rs
+			Just (EventKeyUp w Key'Q) -> do
+				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
+				atomically . inp $ DestroyWindow w
+				loop rs
 			Just (EventKeyUp w ky) -> do
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
 				loop rs
@@ -111,7 +123,7 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 				loop instances2
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition k x y) ->
+			Just (EventCursorPosition _k _x _y) ->
 --				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
 				loop rs
 			Just (EventOpenWindow k) -> do
