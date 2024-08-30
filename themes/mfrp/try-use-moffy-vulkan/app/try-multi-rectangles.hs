@@ -73,6 +73,9 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
 				loop rs
+			Just ev -> do
+				putStrLn $ "unknown event occur: " ++ show ev
+				loop rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {

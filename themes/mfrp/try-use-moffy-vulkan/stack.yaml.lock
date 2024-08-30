@@ -413,6 +413,17 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
+    commit: 429e8b95651bafaa67131a917d94581c89d1c90c
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    name: glib-stopgap
+    pantry-tree:
+      sha256: 55b143d73191a9aa456c67f46726aac1ca572e5312d0f5c60f669ca81b1eba7d
+      size: 1273
+    version: 0.1.0.0
+  original:
+    commit: 429e8b95651bafaa67131a917d94581c89d1c90c
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+- completed:
     hackage: simple-pango-0.1.0.1@sha256:6dec5ff59e637364e2051e90eaf7ec4d7aea9d2023c3b0af0627950fa755162d,3504
     pantry-tree:
       sha256: 184ed5e202ba8faeef8e2fb7e5354f794c7087942f8d5a8ace4b24fa4416db9d
@@ -421,7 +432,7 @@ packages:
     hackage: simple-pango-0.1.0.1
 snapshots:
 - completed:
-    sha256: b66176d92f4e55079a946948d23fc80bf68fb328e23d1066ed9f73a609a3d8b8
-    size: 631258
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/5/6.yaml
-  original: nightly-2024-05-06
+    sha256: 77e07d47807e1909c9d36a36815e690d2c30a87e38689961478fec853eb82a42
+    size: 653568
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/8/26.yaml
+  original: nightly-2024-08-26
