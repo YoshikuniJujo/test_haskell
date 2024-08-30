@@ -1171,12 +1171,11 @@ cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
 	Vk.CBffr.allocateInfoCommandPool = cp,
 	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-createSyncObjs ::
-	Vk.Dvc.D sd -> (forall sias srfs siff . SyncObjs '(sias, srfs, siff) -> IO a ) -> IO a
-createSyncObjs dvc f =
-	Vk.Semaphore.create @'Nothing dvc def nil \ias ->
-	Vk.Semaphore.create @'Nothing dvc def nil \rfs ->
-	Vk.Fence.create @'Nothing dvc finfo nil \iff ->
+createSyncObjs :: Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
+createSyncObjs dv f =
+	Vk.Semaphore.create @'Nothing dv def nil \ias ->
+	Vk.Semaphore.create @'Nothing dv def nil \rfs ->
+	Vk.Fence.create @'Nothing dv finfo nil \iff ->
 	f $ SyncObjs ias rfs iff
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
@@ -1207,7 +1206,7 @@ mainloop :: (
 	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
 	ModelViewProjMemory smm sbm bnmm alu ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
-	Vk.CBffr.C scb -> SyncObjs '(sias, srfs, siff) -> UTCTime -> IO ()
+	Vk.CBffr.C scb -> SyncObjs ssos -> UTCTime -> IO ()
 mainloop fr w sf pd qfis d gq pq cp sc ex0 vs rp pl gp fbs
 	drs vb ib mm ds cb sos tm0 = do
 	($ ex0) $ fix \go ex ->
@@ -1231,31 +1230,22 @@ run :: (
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	(
-		Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
-		Vk.Dvc.Mem.ImageBuffer.M
-			sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)],
-		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 nmi] ->
-	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
-		sb2,
-		'Vk.Dvc.Mem.ImageBuffer.BufferArg bnmm
-			'[VObj.Atom alu WModelViewProj 'Nothing] )] ->
+	DptRsrcs sdi sdm "depth-buffer" dptfmt sdvw ->
+	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smi sbi bnmi '[VObj.List ali Word16 nmi] ->
+	ModelViewProjMemory smm sbm bnmm alu ->
 	Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
-	Vk.CBffr.C scb -> SyncObjs '(sias, srfs, siff) -> Float -> (Vk.Extent2d -> IO ()) ->
+	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> (Vk.Extent2d -> IO ()) ->
 	IO ()
-run frszd w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq pq cp sc ext scivs rp ppllyt gpl fbs (dptImg, dptImgMem, dptImgVw) vb ib ubm ubds cb iasrfsifs tm loop = do
-	catchAndRecreate w sfc phdvc qfis dvc gq sc scivs
-		rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
-	cls <- Glfw.windowShouldClose win
-	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateAll
-			w sfc phdvc qfis dvc gq sc scivs
-			rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs)
+run fr w sfc pd qfis dv gq pq cp sc ex vs rp pl gp fbs
+	drs vb ib mm ds cb sos tm go = do
+	catchAndRecreate w sfc pd qfis dv gq cp sc vs rp pl gp drs fbs go
+		$ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb sos tm
+	cls <- GlfwG.Win.shouldClose w
+	if cls then (pure ()) else checkFlag fr >>= bool (go ex)
+		(go =<< recreateAll w sfc pd qfis dv gq sc vs rp pl gp drs cp fbs)
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds alu alv nmv ali nmi bnmm .
+draw :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sdsl sds alu alv nmv ali nmi bnmm ssos .
 	(KnownNat alu, KnownNat alv, KnownNat ali) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S scfmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1271,8 +1261,8 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 		'Vk.Dvc.Mem.ImageBuffer.BufferArg bnmm
 			'[VObj.Atom alu WModelViewProj 'Nothing] )] ->
 	Vk.DscSet.D sds (AtomUbo sdsl alu) ->
-	Vk.CBffr.C scb -> SyncObjs '(sias, srfs, siff) -> Float -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
+	Vk.CBffr.C scb -> SyncObjs ssos -> Float -> IO ()
+draw dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs iff) tm = do
 	let	siff = HPList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True Nothing
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1282,8 +1272,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjs ias rfs
 	HPList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
 	updateUniformBuffer dvc ubm ext tm
-	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
-		submitInfo = Vk.SubmitInfo {
+	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
@@ -1336,6 +1325,7 @@ catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.CmdPl.C sc ->
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu] '[] ->
@@ -1343,21 +1333,21 @@ catchAndRecreate :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
-	Vk.Dvc.Mem.ImageBuffer.M
-		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
-	Vk.CmdPl.C sc ->
+	(
+		Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
+		Vk.Dvc.Mem.ImageBuffer.M
+			sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)],
+		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs loop act =
+catchAndRecreate w sfc phdvc qfis dvc gq cp sc scivs rp ppllyt gpl (dptImg, dptImgMem, dptImgVw) fbs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
 	\_ -> loop =<< recreateAll
-		w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs
+		w sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl (dptImg, dptImgMem, dptImgVw) cp fbs
 
 recreateAll :: (
 	RecreateFrmbffrs sis sfs,
@@ -1370,14 +1360,15 @@ recreateAll :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl alu], '[]) ->
-	Vk.Img.Binded sdm sdi "depth-buffer" dptfmt ->
-	Vk.Dvc.Mem.ImageBuffer.M
-		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)] ->
-	Vk.ImgVw.I "depth-buffer" dptfmt sdiv ->
+	(
+		Vk.Img.Binded sdm sdi "depth-buffer" dptfmt,
+		Vk.Dvc.Mem.ImageBuffer.M
+			sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.ImageArg "depth-buffer" dptfmt)],
+		Vk.ImgVw.I "depth-buffer" dptfmt sdiv ) ->
 	Vk.CmdPl.C sc ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	IO Vk.Extent2d
-recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs = do
+recreateAll w@(GlfwG.Win.W win) sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl (dptImg, dptImgMem, dptImgVw) cp fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
