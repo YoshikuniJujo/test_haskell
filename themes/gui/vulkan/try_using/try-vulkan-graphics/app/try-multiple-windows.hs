@@ -164,7 +164,7 @@ createIst f = do
 		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
 withDvc :: Vk.Ist.I si -> (forall (scfmt :: Vk.T.Format) sd (n :: [()]) .
-	(Vk.T.FormatToValue scfmt, Mappable n) =>
+	(Vk.T.FormatToValue scfmt, HPList.HomoListN n) =>
 	Proxy scfmt -> Proxy n -> Vk.Phd.P -> QFamIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
 withDvc ist a =
@@ -181,14 +181,9 @@ withDvc ist a =
 			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModes ss in
 	Vk.Khr.Swpch.group dv nil \scg ->
 	createSwpch @fmt scg () dsfc qfis (capabilities ss) cs pm ex >>= \sc ->
-	Vk.Khr.Swpch.getImages dv sc >>= \n -> tnm n \pn ->
+	Vk.Khr.Swpch.getImages dv sc >>= \n -> HPList.tnum n \pn ->
 	Vk.Khr.Sfc.unsafeDestroy dsfcg () >> GlfwG.Win.unsafeDestroy dwg () >>
 	a (Proxy :: Proxy fmt) pn pd qfis dv gq pq
-	where
-	tnm :: [a] -> (forall (n :: [()]) . ( Mappable n ) => Proxy n -> b) -> b
-	tnm [] f = f (Proxy :: Proxy '[])
-	tnm (_ : xs) f =
-		tnm xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
 vldLayers :: [Vk.LayerName]
 vldLayers = [Vk.layerKhronosValidation]
@@ -212,7 +207,7 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
 
 body :: forall scfmt (scin :: [()]) si sd .
-	(Vk.T.FormatToValue scfmt, Mappable scin) =>
+	(Vk.T.FormatToValue scfmt, HPList.HomoListN scin) =>
 	Vk.Ist.I si -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO ()
 body ist pd qfis dv gq pq = atomically (newTVar @Int 0) >>= \wn ->
@@ -258,12 +253,12 @@ data WinGrs sw si sd ssfc sr sg sl sias srfs siff scfmt ssc siv nm sf k = WinGrs
 
 createWinRsrcs :: forall
 	scfmt scin si siv sd sl sw nm ssfc sr sg sias srfs siff ssc sf k .
-	(Vk.T.FormatToValue scfmt, Mappable scin, Ord k) =>
+	(Vk.T.FormatToValue scfmt, HPList.HomoListN scin, Ord k) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> QFamIndices -> Vk.PplLyt.P sl '[] '[] ->
 	WinGrs sw si sd ssfc sr sg sl sias srfs siff scfmt ssc siv nm sf k ->
 	k -> IO (WinParams
 		sw sl nm ssfc sr sg sias srfs siff scfmt ssc
-		(Replicate scin siv) (Replicate scin sf))
+		(HPList.Replicate scin siv) (HPList.Replicate scin sf))
 createWinRsrcs
 	pd dv qfis pl (WinGrs wg sfcg rpg gpg iasg rfsg iffg scg ivg fbg) k =
 	atomically (newTVar False) >>= \fr ->
@@ -475,11 +470,11 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
 createImgVws :: forall scin sd k sm si ifmt nm vfmt sv .
-	(Mappable scin, Ord k, Vk.T.FormatToValue vfmt) =>
+	(HPList.HomoListN scin, Ord k, Vk.T.FormatToValue vfmt) =>
 	Vk.ImgVw.Group sd 'Nothing sv (k, Int) nm vfmt ->
 	k -> [Vk.Img.Binded sm si nm ifmt] ->
-	IO (HPList.PL (Vk.ImgVw.I nm vfmt) (Replicate scin sv))
-createImgVws vg k is = homoListFromList @_ @scin <$>
+	IO (HPList.PL (Vk.ImgVw.I nm vfmt) (HPList.Replicate scin sv))
+createImgVws vg k is = HPList.homoListNFromList @_ @scin <$>
 	for (zip [0 ..] is) \(c, i) ->
 		fromRight <$> Vk.ImgVw.create' vg (k, c) (imgVwInfo i)
 
@@ -709,18 +704,18 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 		Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 		Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createFrmbffrs :: forall scin sv k sd sf sr inm fmt . (Mappable scin, Ord k) =>
+createFrmbffrs :: forall scin sv k sd sf sr inm fmt . (HPList.HomoListN scin, Ord k) =>
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I inm fmt) (Replicate scin sv) ->
-	IO (HPList.PL Vk.Frmbffr.F (Replicate scin sf))
-createFrmbffrs fbg k ex rp = mapHomoListMWithI @_ @scin @_ @_ @sv 0 \i v ->
+	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I inm fmt) (HPList.Replicate scin sv) ->
+	IO (HPList.PL Vk.Frmbffr.F (HPList.Replicate scin sf))
+createFrmbffrs fbg k ex rp = HPList.mapHomoListNMWithI @_ @scin @_ @_ @sv 0 \i v ->
 	fromRight <$> Vk.Frmbffr.create' fbg (k, i) (frmbffrInfo ex rp v)
 
-recreateFrmbffrs :: forall scin sv sf sd sr inm fmt . Mappable scin =>
+recreateFrmbffrs :: forall scin sv sf sd sr inm fmt . HPList.HomoListN scin =>
 	Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	HPList.PL (Vk.ImgVw.I inm fmt) (Replicate scin sv) ->
-	HPList.PL Vk.Frmbffr.F (Replicate scin sf) -> IO ()
-recreateFrmbffrs dv ex rp = zipWithHomoListM_ @_ @scin @_ @_ @sv @_ @sf \v fb ->
+	HPList.PL (Vk.ImgVw.I inm fmt) (HPList.Replicate scin sv) ->
+	HPList.PL Vk.Frmbffr.F (HPList.Replicate scin sf) -> IO ()
+recreateFrmbffrs dv ex rp = HPList.zipWithHomoListNM_ @_ @scin @_ @_ @sv @_ @sf \v fb ->
 	Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v) nil fb
 
 frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
@@ -733,34 +728,6 @@ frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
-
-class Mappable (n :: [k]) where
-	type Replicate n s :: [Type]
-	homoListFromList :: [t s] -> HPList.PL t (Replicate n s)
-	mapHomoListMWithI :: Monad m => Int -> (Int -> t a -> m (u b)) ->
-		HPList.PL t (Replicate n a) -> m (HPList.PL u (Replicate n b))
-	zipWithHomoListM_ :: Monad m => (t a -> u b -> m c) ->
-		HPList.PL t (Replicate n a) -> HPList.PL u (Replicate n b) ->
-		m ()
-
-instance Mappable '[] where
-	type Replicate '[] s = '[]
-	homoListFromList = \case [] -> HPList.Nil; _ -> error "bad"
-	mapHomoListMWithI _ _ HPList.Nil = pure HPList.Nil
-	zipWithHomoListM_ _ HPList.Nil HPList.Nil = pure ()
-
-instance Mappable ds => Mappable (d ': ds) where
-	type Replicate (d ': ds) s = s ': Replicate ds s
-	homoListFromList = \case
-		(x : xs) -> x :** (homoListFromList @_ @ds xs); _ -> error "bad"
-	mapHomoListMWithI :: forall t a u b m . Monad m =>
-		Int -> (Int -> t a -> m (u b)) ->
-		HPList.PL t (Replicate (d ': ds) a) ->
-		m (HPList.PL u (Replicate (d ': ds) b))
-	mapHomoListMWithI i f (x :** xs) =
-		(:**) <$> f i x <*> mapHomoListMWithI @_ @ds (i + 1) f xs
-	zipWithHomoListM_ a (x :** xs) (y :** ys) =
-		a x y >> zipWithHomoListM_ @_ @ds a xs ys
 
 createCmdPl :: QFamIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
@@ -922,12 +889,12 @@ createSyncObjs iasg rfsg iffg k = SyncObjs
 mainloop :: forall
 	scin sv sf sd scb sl sm sb bnmv alv nmv
 	sw nmi ssfc sr sg sias srfs siff fmt ssc .
-	(Mappable scin, KnownNat alv, Vk.T.FormatToValue fmt) =>
+	(HPList.HomoListN scin, KnownNat alv, Vk.T.FormatToValue fmt) =>
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CBffr.C scb -> Vk.PplLyt.P sl '[] '[] ->
 	[Vk.Bffr.Binded sm sb bnmv '[VObj.List alv WVertex nmv]] ->
 	IO (WinParams sw sl nmi ssfc sr sg sias srfs siff fmt ssc
-		(Replicate scin sv) (Replicate scin sf)) -> IO ()
+		(HPList.Replicate scin sv) (HPList.Replicate scin sf)) -> IO ()
 mainloop pd qfis dv gq pq cb pl vbs crw = do
 	wpss0 <- replicateM 3 crw
 	($ wpss0) $ fix \go wpss ->
@@ -938,12 +905,12 @@ mainloop pd qfis dv gq pq cb pl vbs crw = do
 run :: forall
 	scin sv sf sd scb sl sm sb bnmv alv nmv
 	sw nmi ssfc sr sg sias srfs siff fmt ssc .
-	(Mappable scin, KnownNat alv, Vk.T.FormatToValue fmt) =>
+	(HPList.HomoListN scin, KnownNat alv, Vk.T.FormatToValue fmt) =>
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CBffr.C scb -> Vk.PplLyt.P sl '[] '[] ->
 	[Vk.Bffr.Binded sm sb bnmv '[VObj.List alv WVertex nmv]] ->
 	[WinParams sw sl nmi ssfc sr sg sias srfs siff fmt ssc
-		(Replicate scin sv) (Replicate scin sf)] -> IO () -> IO ()
+		(HPList.Replicate scin sv) (HPList.Replicate scin sf)] -> IO () -> IO ()
 run pd qfis dv gq pq cb pl vbs wpss go = do
 	for_ (zip vbs wpss) \(v, w) ->
 		drawCatch @scin @sv @sf pd qfis dv gq pq cb pl v w go
@@ -956,22 +923,22 @@ run pd qfis dv gq pq cb pl vbs wpss go = do
 drawCatch :: forall
 	scin sv sf sd scb sl sm sb bnmv alv nmv
 	sw nmi ssfc sr sg sias srfs siff fmt ssc .
-	(Mappable scin, KnownNat alv, Vk.T.FormatToValue fmt) =>
+	(HPList.HomoListN scin, KnownNat alv, Vk.T.FormatToValue fmt) =>
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CBffr.C scb -> Vk.PplLyt.P sl '[] '[]  ->
 	Vk.Bffr.Binded sm sb bnmv '[VObj.List alv WVertex nmv] ->
 	WinParams sw sl nmi ssfc sr sg sias srfs siff fmt ssc
-		(Replicate scin sv) (Replicate scin sf) -> IO () -> IO ()
+		(HPList.Replicate scin sv) (HPList.Replicate scin sf) -> IO () -> IO ()
 drawCatch pd qfis dv gq pq cb pl vb wps go = do
 	catchRecreate @scin @sv @sf pd qfis dv pl (winParamsToRecreates wps) go
 		. draw dv gq pq cb vb $ winParamsToDraws wps
 	Vk.Dvc.waitIdle dv
 
 catchRecreate :: forall scin sv sf sd sl sw nm ssfc sr sg fmt ssc .
-	(Mappable scin, Vk.T.FormatToValue fmt) =>
+	(HPList.HomoListN scin, Vk.T.FormatToValue fmt) =>
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.PplLyt.P sl '[] '[] ->
 	Recreates sw sl nm ssfc sr sg fmt ssc
-		(Replicate scin sv) (Replicate scin sf) -> IO () -> IO () ->
+		(HPList.Replicate scin sv) (HPList.Replicate scin sf) -> IO () -> IO () ->
 	IO ()
 catchRecreate pd qfis dv pl rcs go act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just (Left "VK_ERROR_OUT_OF_DATE_KHR")
@@ -980,10 +947,10 @@ catchRecreate pd qfis dv pl rcs go act = catchJust
 	\mm -> either putStrLn pure mm >> recreateAll @scin @sv @sf pd qfis dv pl rcs >> go
 
 recreateAll :: forall scin sv sf sd sl sw nm ssfc sr sg fmt ssc .
-	(Mappable scin, Vk.T.FormatToValue fmt) =>
+	(HPList.HomoListN scin, Vk.T.FormatToValue fmt) =>
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.PplLyt.P sl '[] '[] ->
 	Recreates sw sl nm ssfc sr sg fmt ssc
-		(Replicate scin sv) (Replicate scin sf) -> IO ()
+		(HPList.Replicate scin sv) (HPList.Replicate scin sf) -> IO ()
 recreateAll pd qfis dv pl (w, sfc, vex, rp, gp, sc, vs, fbs) = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
 	ex <- recreateSwpch w sfc pd qfis dv sc
