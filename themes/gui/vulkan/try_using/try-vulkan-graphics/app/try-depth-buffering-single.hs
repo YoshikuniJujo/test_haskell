@@ -1,4 +1,4 @@
-{-# LANGUAGE PackageImports, ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
@@ -24,9 +24,9 @@ import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Trans
-import Control.Exception
 import Control.Concurrent.STM
 import Control.Concurrent.STM.ToolsYj
+import Control.Exception
 import Data.Kind
 import Data.Proxy
 import Data.TypeLevel.Tuple.Uncurry
@@ -1261,8 +1261,12 @@ draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 	pinfo ii = Vk.Khr.Swpch.PresentInfo {
 		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
 		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
-			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
+			$ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 updateModelViewProj :: forall sd smm sbm bnmm alu . KnownNat alu =>
 	Vk.Dvc.D sd -> ModelViewProjMemory smm sbm bnmm alu ->
@@ -1282,7 +1286,7 @@ updateModelViewProj dv mm Vk.Extent2d {
 				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
 
 recordCmdBffr :: forall
-	scb sr sf sl sg smv sbv bnmv smi sbi bnmi sdsl sds alu alv ali nmv nmi .
+	scb sr sf sl sg smv sbv bnmv alv nmv smi sbi bnmi ali nmi sds sdsl alu .
 	(KnownNat alv, KnownNat ali) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
@@ -1322,16 +1326,11 @@ recordCmdBffr cb ex rp pl gp fb vb ib ds =
 			Vk.ClearValueDepthStencil (Vk.ClearDepthStencilValue 1 0) :**
 			HPList.Nil }
 
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
-
 catchAndRecreate :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFrmbffrs svs sfs ) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIndices ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Khr.Swpch.S scfmt ssc ->
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) svs ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1422,14 +1421,6 @@ newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
 newtype PixelRgba8 = PixelRgba8 PixelRGBA8
 
-instance Storable PixelRgba8 where
-	sizeOf _ = 4 * sizeOf @Pixel8 undefined
-	alignment _ = alignment @Pixel8 undefined
-	peek p = PixelRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a)
-		. listToTuple4 <$> peekArray 4 (castPtr p)
-	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
-		pokeArray (castPtr p) [r, g, b, a]
-
 instance BObj.IsImage ImageRgba8 where
 	type ImagePixel ImageRgba8 = PixelRgba8
 	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
@@ -1443,6 +1434,14 @@ instance BObj.IsImage ImageRgba8 where
 		ImageRgba8 $ generateImage
 			(\x y -> let PixelRgba8 p = (pss' ! y) ! x in p) w h
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+
+instance Storable PixelRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = PixelRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a)
+		. listToTuple4 <$> peekArray 4 (castPtr p)
+	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
 
 [glslVertexShader|
 

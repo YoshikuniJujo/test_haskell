@@ -1,7 +1,7 @@
 app
 ---
 
-* [ ] try-cairo-image-as-texture.hs
+* [x] try-cairo-image-as-texture.hs
 * [ ] try-use-cairo.hs
 * [ ] try-multi-rectangles.hs
 * [ ] try-multi-rectangles2.hs
