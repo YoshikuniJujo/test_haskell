@@ -1561,10 +1561,12 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			_ -> pure ()
 		atomically (readTChan inp) >>= \case
 			Draw ds view -> do
+--				putStrLn "DRAW BEGIN"
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
 			Draw2 ds (view@(View vs)) -> do
+				putStrLn "DRAW2 BEGIN"
 				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` vs
 				drcr >> crcr view
 				Vk.Dvc.waitIdle dvc

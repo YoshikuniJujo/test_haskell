@@ -56,24 +56,32 @@ main = run_ action
 action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
 action f = liftIO do
+	a <- newAngle
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar M.empty
-	_ <- forkIO $ untilEnd (get f) (
+	_ <- forkIO $ untilEnd (get f) a (
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
-	_ <- forkIO controller
+	_ <- forkIO $ controller a
 	rectangles2 inp outp vext
 
-controller :: IO ()
-controller = fix \go -> (>> go) $ (threadDelay 1000000 >>) do
+newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
+
+newAngle :: IO (TVar Angle)
+newAngle = atomically $ newTVar 0
+
+controller :: TVar Angle -> IO ()
+controller a = fix \go -> (>> go) $ (threadDelay 100000 >>) do
 	Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
 	print $ ga Glfw.GamepadAxis'LeftX
 	print $ ga Glfw.GamepadAxis'LeftY
+	atomically $ modifyTVar a (+ realToFrac (pi * ga Glfw.GamepadAxis'LeftX / 100))
+	print =<< atomically (readTVar a)
 
-untilEnd :: Bool -> (
+untilEnd :: Bool -> TVar Angle -> (
 	(Command Int -> STM (), (STM Bool, STM (Event Int))),
 	Int -> STM Vk.Extent2d ) -> IO ()
-untilEnd f ((inp, (oute, outp)), ext) = do
+untilEnd f ta ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	atomically $ inp OpenWindow
 
@@ -85,12 +93,13 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		atomically $ inp GetEvent
 
 	_ <- forkIO $ forever do
-		threadDelay 2000000
+		threadDelay 4000000
+		a <- atomically $ readTVar ta
 		atomically do
 			e0 <- ext 0
 --			e1 <- ext 1
 			inp $ Draw2 (M.fromList [
-				(0, ((bool (uniformBufferObject e0) def f), instances' 1024 1024 e0))
+				(0, ((bool (uniformBufferObject a e0) def f), instances' 1024 1024 e0))
 				] )
 				(View [	expand . Singleton $ Line' blue 4 (10, 10) (100, 100),
 					expand . Singleton $ Text' blue "sans" 25 (50, 50) "HELLO WORLD"
@@ -98,6 +107,7 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 
 	($ instances) $ fix \loop rs -> do
 		threadDelay 2000
+		a <- atomically $ readTVar ta
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 --		print =<< atomically (ext 0)
@@ -105,9 +115,9 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 			e0 <- ext 0
 			e1 <- ext 1
 			inp $ Draw (M.fromList [
-				(0, ((bool (uniformBufferObject e0) def f), instances' 1024 1024 e0)),
+				(0, ((bool (uniformBufferObject a e0) def f), instances' 1024 1024 e0)),
 --				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
-				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
+				(1, ((bool (uniformBufferObject a e1) def f), (instances2 tm)))
 				] )
 				(View [	expand . Singleton $ Line' blue 4 (10, 10) (100, 100)
 					])
@@ -148,10 +158,11 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 				putStrLn "EVENT NEED REDRAW"
 				loop rs
 
-uniformBufferObject :: Vk.Extent2d -> ViewProjection
-uniformBufferObject sce = ViewProjection {
+uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
+uniformBufferObject (Angle a) sce = ViewProjection {
 	viewProjectionView = Cglm.lookat
-		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+--		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+		(Cglm.Vec3 $ lax :. lay :. 2 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 	viewProjectionProj = Cglm.modifyMat4 1 1 negate
@@ -159,6 +170,8 @@ uniformBufferObject sce = ViewProjection {
 			(Cglm.rad 45)
 			(fromIntegral (Vk.extent2dWidth sce) /
 				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
+	where
+	lax = realToFrac $ cos a; lay = realToFrac $ sin a
 
 instances :: Float -> [Rectangle]
 instances tm = let

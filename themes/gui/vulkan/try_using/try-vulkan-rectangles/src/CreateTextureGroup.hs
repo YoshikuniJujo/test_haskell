@@ -83,18 +83,22 @@ createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
 	TextureGroup sd si sm siv (KObj.ImageFormat img) k ->
 	Vk.Smplr.S ss -> img -> k -> IO ()
 createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
+	putStrLn "CREATE TEXTURE BEGIN" >>
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
 	Vk.ImgVw.create' @_ @_ @(KObj.ImageFormat img)
 		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
 
-	updateDescriptorSetTex dv ubds tximgvw txsmplr
+	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
+	putStrLn "CREATE TEXTURE END"
 
 destroyTexture :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
 destroyTexture (mng, mmng, ivmng) k = do
+	putStrLn "DESTROY TEXTURE BEGIN"
 	Vk.Img.unsafeDestroy mng k
 	Vk.Mem.unsafeFree mmng k
 	Vk.ImgVw.unsafeDestroy ivmng k
+	putStrLn "DESTROY TEXTURE END"
 	pure ()
 
 updateTexture :: (
