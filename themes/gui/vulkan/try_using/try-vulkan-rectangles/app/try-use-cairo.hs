@@ -38,6 +38,7 @@ import Options.Declarative
 import Control.Monad.Trans
 
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
+import Graphics.UI.GLFW qualified as Glfw
 
 import Data.Map qualified as M
 
@@ -60,7 +61,14 @@ action f = liftIO do
 	_ <- forkIO $ untilEnd (get f) (
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
+	_ <- forkIO controller
 	rectangles2 inp outp vext
+
+controller :: IO ()
+controller = fix \go -> (>> go) $ (threadDelay 1000000 >>) do
+	Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
+	print $ ga Glfw.GamepadAxis'LeftX
+	print $ ga Glfw.GamepadAxis'LeftY
 
 untilEnd :: Bool -> (
 	(Command Int -> STM (), (STM Bool, STM (Event Int))),
