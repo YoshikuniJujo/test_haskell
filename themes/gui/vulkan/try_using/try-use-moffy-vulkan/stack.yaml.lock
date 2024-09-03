@@ -20,19 +20,6 @@ packages:
 - completed:
     commit: 986bf4db5728febe5e8b0ab954a5fca18d6a08c0
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-vulkan-rectangles
-    pantry-tree:
-      sha256: daecc58285e7ce3f95966e1373ebc70fc7d253dc68d486e3e5ef769c7f69ced5
-      size: 1602
-    subdir: themes/gui/vulkan/try_using/try-vulkan-rectangles
-    version: 0.1.0.35
-  original:
-    commit: 986bf4db5728febe5e8b0ab954a5fca18d6a08c0
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try_using/try-vulkan-rectangles
-- completed:
-    commit: 986bf4db5728febe5e8b0ab954a5fca18d6a08c0
-    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-glfw-group
     pantry-tree:
       sha256: 8cc0fab62a8b946aca291e078179a1f17eb1ace12f419e80afceb59ca3f629c2

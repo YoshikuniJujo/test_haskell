@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -25,36 +25,64 @@ source-repository head
 
 library
   exposed-modules:
+      Convert
+      CreateTextureGroup
+      Gpu.Vulkan.CairoImage
       KeyToXKey
       KeyToXKey.TH
+      PangoLayoutExtent
+      Rectangles
+      Rectangles2
+      SampleImages
+      ThEnv
       ThreeWindows
+      Tools
       Trial.Rectangles
+      UseCairo
   other-modules:
       Paths_try_use_moffy_vulkan
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
     , containers
     , data-default
     , extra-data-yj
     , moffy
     , mtl
     , optparse-declarative
+    , primitive
     , random
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
+    , text
     , time
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
     , try-moffy-with-gtk3
-    , try-vulkan-rectangles
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
     , type-flip
     , type-set
+    , typelevel-tools
+    , union-color
+    , vector
     , x-keysym
   default-language: Haskell2010
 
@@ -67,27 +95,45 @@ executable try-boxes
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
     , containers
     , data-default
     , extra-data-yj
     , moffy
     , mtl
     , optparse-declarative
+    , primitive
     , random
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
+    , text
     , time
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
     , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
     , try-use-moffy-vulkan
-    , try-vulkan-rectangles
     , type-flip
     , type-set
+    , typelevel-tools
+    , union-color
+    , vector
     , x-keysym
   default-language: Haskell2010
 
@@ -100,27 +146,45 @@ executable try-followbox
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
     , containers
     , data-default
     , extra-data-yj
     , moffy
     , mtl
     , optparse-declarative
+    , primitive
     , random
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
+    , text
     , time
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
     , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
     , try-use-moffy-vulkan
-    , try-vulkan-rectangles
     , type-flip
     , type-set
+    , typelevel-tools
+    , union-color
+    , vector
     , x-keysym
   default-language: Haskell2010
 
@@ -133,27 +197,45 @@ executable try-hello-windows
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
     , containers
     , data-default
     , extra-data-yj
     , moffy
     , mtl
     , optparse-declarative
+    , primitive
     , random
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
+    , text
     , time
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
     , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
     , try-use-moffy-vulkan
-    , try-vulkan-rectangles
     , type-flip
     , type-set
+    , typelevel-tools
+    , union-color
+    , vector
     , x-keysym
   default-language: Haskell2010
 
@@ -166,27 +248,45 @@ executable try-multi-rectangles
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
     , containers
     , data-default
     , extra-data-yj
     , moffy
     , mtl
     , optparse-declarative
+    , primitive
     , random
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
+    , text
     , time
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
     , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
     , try-use-moffy-vulkan
-    , try-vulkan-rectangles
     , type-flip
     , type-set
+    , typelevel-tools
+    , union-color
+    , vector
     , x-keysym
   default-language: Haskell2010
 
@@ -198,27 +298,45 @@ executable try-use-moffy-vulkan-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
     , containers
     , data-default
     , extra-data-yj
     , moffy
     , mtl
     , optparse-declarative
+    , primitive
     , random
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
+    , text
     , time
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
     , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
     , try-use-moffy-vulkan
-    , try-vulkan-rectangles
     , type-flip
     , type-set
+    , typelevel-tools
+    , union-color
+    , vector
     , x-keysym
   default-language: Haskell2010
 
@@ -231,26 +349,44 @@ test-suite try-use-moffy-vulkan-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
     , containers
     , data-default
     , extra-data-yj
     , moffy
     , mtl
     , optparse-declarative
+    , primitive
     , random
     , ranged-list
     , simple-cairo
+    , simple-pango
     , stm
     , template-haskell
+    , text
     , time
     , try-glfw-group
     , try-gpu-vulkan
     , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
     , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
     , try-use-moffy-vulkan
-    , try-vulkan-rectangles
     , type-flip
     , type-set
+    , typelevel-tools
+    , union-color
+    , vector
     , x-keysym
   default-language: Haskell2010

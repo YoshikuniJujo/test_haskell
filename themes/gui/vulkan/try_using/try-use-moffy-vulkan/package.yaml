@@ -25,6 +25,8 @@ dependencies:
 - stm
 - mtl
 - containers
+- vector
+- JuicyPixels
 - optparse-declarative
 - data-default
 - time
@@ -34,13 +36,29 @@ dependencies:
 - try-moffy-with-gtk3
 - try-gpu-vulkan
 - try-gpu-vulkan-cglm
-- try-vulkan-rectangles
 - try-glfw-group
 - x-keysym
 - extra-data-yj
 - simple-cairo
 - moffy
 - type-set
+- try-storable-generic
+- try-gpu-vulkan-ext-debug-utils
+- GLFW-b
+- try-gpu-vulkan-khr-swapchain
+- try-gpu-vulkan-khr-surface
+- try-gpu-vulkan-khr-surface-glfw
+- try-language-spir-v
+- try-shaderc
+- try-hetero-parameter-list
+- text
+- union-color
+- typelevel-tools
+- try-storable-peek-poke
+- simple-pango
+- cairo-image
+- array
+- primitive
 
 ghc-options:
 - -Wall

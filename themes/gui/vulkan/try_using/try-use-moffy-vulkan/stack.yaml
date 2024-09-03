@@ -45,7 +45,6 @@ extra-deps:
   commit: 986bf4db5728febe5e8b0ab954a5fca18d6a08c0
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
-  - themes/gui/vulkan/try_using/try-vulkan-rectangles
   - themes/gui/vulkan/try-glfw-group
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
