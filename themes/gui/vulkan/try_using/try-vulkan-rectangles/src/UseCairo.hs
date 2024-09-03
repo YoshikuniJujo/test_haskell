@@ -50,6 +50,7 @@ import Foreign.Storable.Generic qualified as StrG
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
@@ -165,11 +166,11 @@ rectangles2 inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
 			enableValidationLayers do
-		(phd', qfis', fmt', dv', gq', pq', n') <-
+		(phd', qfis', fmt', dv', gq', gq2', pq', n') <-
 			withWindow False \dw ->
 			createSurface dw ist \dsfc -> do
 			(phd, qfis) <- pickPhysicalDevice ist dsfc
-			(dv, gq, pq) <-
+			(dv, gq, gq2, pq) <-
 				createLogicalDevice phd dvcgrp () qfis
 			spp <- querySwapChainSupport phd dsfc
 			ext <- chooseSwapExtent dw $ capabilities spp
@@ -182,11 +183,11 @@ rectangles2 inp outp vext = GlfwG.init error $ do
 				pure (	phd, qfis,
 					Vk.Khr.Sfc.formatOldFormat
 						. chooseSwapSurfaceFormat
-						$ formats spp, dv, gq, pq, n )
+						$ formats spp, dv, gq, gq2, pq, n )
 		getNum n' \(_ :: Proxy n) ->
 			Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
 				run' @n @fmt @_ @_ @k inp outp vext
-					ist phd' qfis' dv' gq' pq'
+					ist phd' qfis' dv' gq' gq2' pq'
 	atomically $ writeTChan outp EventEnd
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
@@ -382,9 +383,10 @@ run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
 	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k ) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
-run' inp outp vext_ ist phd qfis dv gq pq =
+	Vk.Queue.Q -> Vk.Queue.Q -> Vk.Queue.Q -> IO ()
+run' inp outp vext_ ist phd qfis dv gq gq2 pq =
 	createCommandPool qfis dv \cp ->
+	createCommandPool qfis dv \cp2 ->
 	createCommandBuffer dv cp \cb ->
 	let	dvs = (phd, qfis, dv, gq, pq, cp, cb) in
 	createPipelineLayout dv \dslyt pllyt ->
@@ -438,7 +440,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 			pure tximg
 		wwbi tximg v =
 			drawViewIO crsfc cr v >>= \trs ->
-			writeWithBufferImage phd dv gq cp tximg trs
+			writeWithBufferImage phd dv gq2 cp2 tximg trs
 		drcr = destroyTexture txgrp (zero' :: k) in
 
 	crcr (View []) >>= \tximg -> wwbi tximg (View []) >>
@@ -658,13 +660,14 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 
 createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
 	Vk.PhDvc.P -> Vk.Dvc.Group ma sd k -> k ->
-	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q)
+	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q, Vk.Queue.Q)
 createLogicalDevice phdvc dvcgrp k qfis =
 	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
 	Vk.Dvc.create' phdvc dvcgrp k (createInfo qs) >>= \(fromRight -> dvc) -> do
 		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
+		gq' <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 1
 		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		pure (dvc, gq, pq)
+		pure (dvc, gq, gq', pq)
 	where
 	createInfo qs = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
@@ -680,7 +683,7 @@ createLogicalDevice phdvc dvcgrp k qfis =
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = def,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1, 1] }
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
 	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
@@ -1578,6 +1581,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			Draw2 ds (view@(View vs)) -> do
 				putStrLn "DRAW2 BEGIN"
 				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` vs
+--				forkIO $ wwbi tximg view >> Vk.Dvc.waitIdle dvc
 				wwbi tximg view
 --				drcr >> crcr view >>= \tximg -> wwbi tximg view
 				Vk.Dvc.waitIdle dvc
