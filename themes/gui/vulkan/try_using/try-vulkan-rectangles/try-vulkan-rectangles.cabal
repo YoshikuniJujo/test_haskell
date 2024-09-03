@@ -38,6 +38,7 @@ library
       Rectangles
       Rectangles2
       SampleImages
+      Texture
       ThEnv
       Tools
       UseCairo

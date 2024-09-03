@@ -152,7 +152,7 @@ import PangoLayoutExtent
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
-import CreateTextureGroup
+import Texture
 import Gpu.Vulkan.CairoImage
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
@@ -227,6 +227,7 @@ data Command k
 	| DestroyWindow k
 	| GetEvent
 	| CalcTextLayoutExtent CTE.CalcTextExtents
+	| EndWorld
 	deriving Show
 
 data Event k
@@ -1594,6 +1595,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 					. EventTextLayoutExtentResult
 					$ CTE.OccCalcTextExtents wid fn fs tx ex'
 				loop
+			EndWorld -> pure ()
 	where
 	mkte ie le = CTE.TextExtents (r2r ie) (r2r le)
 	r2r r = rct
@@ -2050,9 +2052,9 @@ main()
 	gl_Position =
 //		ubo.proj * ubo.view * rectModel *
 		ubo.proj * ubo.view *
-		rectModel *
+		rectModel * (
 		vec4(inPosition * rectSize, 0.0, 1.0) +
-		vec4(rectPosition, 0.0, 1.0);
+		vec4(rectPosition, 0.0, 1.0) );
 //	fragColor = inColor;
 	fragColor = rectColor;
 	fragTexCoord = inTexCoord;
