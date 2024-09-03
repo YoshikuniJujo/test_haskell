@@ -2,6 +2,7 @@ app
 ---
 
 * [x] try-cairo-image-as-texture.hs
+* [ ] try-use-texture-group
 * [ ] try-use-cairo.hs
 * [ ] try-multi-rectangles.hs
 * [ ] try-multi-rectangles2.hs
@@ -9,6 +10,7 @@ app
 src
 ---
 
+* [ ] UseTextureGroup
 * [ ] SampleImages
 * [ ] Vertex
 * [ ] ThEnv

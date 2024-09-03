@@ -41,6 +41,7 @@ library
       ThEnv
       Tools
       UseCairo
+      UseTextureGroup
       Vertex
   other-modules:
       Paths_try_vulkan_rectangles
@@ -243,6 +244,54 @@ executable try-multi-rectangles2
 
 executable try-use-cairo
   main-is: try-use-cairo.hs
+  other-modules:
+      Paths_try_vulkan_rectangles
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
+    , containers
+    , data-default
+    , moffy
+    , mtl
+    , optparse-declarative
+    , primitive
+    , ranged-list
+    , simple-cairo
+    , simple-pango
+    , stm
+    , template-haskell
+    , text
+    , time
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-moffy-with-gtk3
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-tools-yj
+    , try-vulkan-rectangles
+    , type-set
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+executable try-use-texture-group
+  main-is: try-use-texture-group.hs
   other-modules:
       Paths_try_vulkan_rectangles
   hs-source-dirs:
