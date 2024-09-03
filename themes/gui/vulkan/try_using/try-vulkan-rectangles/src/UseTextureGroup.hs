@@ -230,6 +230,7 @@ data Command k
 	| DestroyWindow k
 	| GetEvent
 	| CalcTextLayoutExtent CTE.CalcTextExtents
+	| EndWorld
 
 data Event k
 	= EventEnd
@@ -1604,6 +1605,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 					. EventTextLayoutExtentResult
 					$ CTE.OccCalcTextExtents wid fn fs tx ex'
 				loop
+			EndWorld -> pure ()
 	where
 	mkte ie le = CTE.TextExtents (r2r ie) (r2r le)
 	r2r r = rct
@@ -2058,11 +2060,9 @@ void
 main()
 {
 	gl_Position =
-//		ubo.proj * ubo.view * rectModel *
-		ubo.proj * ubo.view *
-		rectModel *
+		ubo.proj * ubo.view * rectModel * (
 		vec4(inPosition * rectSize, 0.0, 1.0) +
-		vec4(rectPosition, 0.0, 1.0);
+		vec4(rectPosition, 0.0, 1.0) );
 //	fragColor = inColor;
 	fragColor = rectColor;
 	fragTexCoord = inTexCoord;

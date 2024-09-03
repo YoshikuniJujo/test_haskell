@@ -64,7 +64,7 @@ action f = liftIO do
 	_ <- forkIO $ untilEnd (get f) a (
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
-	_ <- forkIO $ controller a
+	_ <- forkIO $ controller a inp
 	rectangles2 inp outp vext
 
 newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
@@ -72,11 +72,13 @@ newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
 newAngle :: IO (TVar Angle)
 newAngle = atomically $ newTVar 0
 
-controller :: TVar Angle -> IO ()
-controller a = fix \go -> (>> go) $ (threadDelay 100000 >>) do
+controller :: TVar Angle -> TChan (Command Int) -> IO ()
+controller a inp = fix \go -> (>> go) $ (threadDelay 100000 >>) do
 	cs <- Glfw.getGamepadState Glfw.Joystick'1
 	case cs of
-		Just (Glfw.GamepadState _gb ga) -> do
+		Just (Glfw.GamepadState gb ga) -> do
+			when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
+				. atomically $ writeTChan inp EndWorld
 			print $ ga Glfw.GamepadAxis'LeftX
 			print $ ga Glfw.GamepadAxis'LeftY
 			atomically $ modifyTVar a (+ realToFrac (pi * ga Glfw.GamepadAxis'LeftX / 100))
@@ -105,6 +107,7 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 			"texture" -> Just <$> readImage "../../../../../files/images/texture.jpg"
 			"viking room" -> Just <$> readImage "../../../../../files/models/viking_room.png"
 			"flower" -> Just <$> readImage "../../../../../files/images/flower.jpg"
+			"dice" -> Just <$> readImage "../../../../../files/images/saikoro.png"
 			_ -> pure Nothing
 		let	pct = either error convertRGBA8 <$> img
 			{-
@@ -212,6 +215,8 @@ keyToChar = (`lookup` keyCharTable)
 
 keyCharTable :: [(Key, Char)]
 keyCharTable = [
+	(Key'C, 'c'),
+	(Key'D, 'd'),
 	(Key'E, 'e'),
 	(Key'F, 'f'),
 	(Key'G, 'g'),
@@ -234,7 +239,7 @@ uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
 uniformBufferObject (Angle a) sce = ViewProjection {
 	viewProjectionView = Cglm.lookat
 --		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-		(Cglm.Vec3 $ lax :. lay :. 2 :. NilL)
+		(Cglm.Vec3 $ lax :. lay :. 3 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 	viewProjectionProj = Cglm.modifyMat4 1 1 negate
