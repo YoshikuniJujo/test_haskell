@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-08-26
+resolver: nightly-2024-09-02
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,22 +42,25 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4c98abf01433df3c144e6705275d1a980bbe49cb
+  commit: 986bf4db5728febe5e8b0ab954a5fca18d6a08c0
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try_using/try-vulkan-rectangles
   - themes/gui/vulkan/try-glfw-group
   - themes/gui/vulkan/try-gpu-vulkan
-  - themes/gui/vulkan/try-gpu-vulkan-khr
-  - themes/gui/vulkan/try-gpu-vulkan-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-gpu-vulkan-cglm
   - themes/gui/vulkan/try-vulkan-middle
-  - themes/gui/vulkan/try-vulkan-middle-khr
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-glfw
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core
-  - themes/gui/vulkan/try-vulkan-core-khr
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
+  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
