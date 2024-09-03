@@ -17,6 +17,8 @@ module Texture (
 
 	createTexture, destroyTexture, updateTexture, createBuffer,
 
+	writeWithBufferImage,
+
 	-- * BEGIN SINGLE TIME COMMANDS
 
 	beginSingleTimeCommands,
@@ -38,7 +40,7 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
 import Data.Bits
 import Data.Maybe
-import Data.List
+import Data.List qualified as L
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.Word
@@ -84,31 +86,32 @@ textureGroup dv f =
 	Vk.Img.group dv nil \mng -> Vk.Mem.group dv nil \mmng ->
 	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
 
-createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
+createTexture :: forall bis img k sd sds sdsc sm si siv ss . (
 	BObj.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '("texture", BObj.ImageFormat img)] 0,
 	Ord k ) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.DscSet.D sds '(sdsc, bis) ->
 	TextureGroup sd si sm siv (BObj.ImageFormat img) k ->
-	Vk.Smplr.S ss -> img -> k -> IO ()
-createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
+	Vk.Smplr.S ss -> img -> k ->
+	IO (Vk.Img.Binded sm si "texture" (BObj.ImageFormat img))
+createTexture phdv dv ubds (mng, mmng, ivmng) txsmplr img k =
 	putStrLn "CREATE TEXTURE BEGIN" >>
-	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
-
+	createTextureImage' phdv dv mng mmng k img >>= \tximg ->
 	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat img)
 		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
-
 	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
-	putStrLn "CREATE TEXTURE END"
+
+	putStrLn "CREATE TEXTURE END" >>
+	pure tximg
 
 destroyTexture :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
 destroyTexture (mng, mmng, ivmng) k = do
 	putStrLn "DESTROY TEXTURE BEGIN"
-	Vk.Img.unsafeDestroy mng k
-	Vk.Mem.unsafeFree mmng k
-	Vk.ImgVw.unsafeDestroy ivmng k
+	_ <- Vk.Img.unsafeDestroy mng k
+	_ <- Vk.Mem.unsafeFree mmng k
+	_ <- Vk.ImgVw.unsafeDestroy ivmng k
 	putStrLn "DESTROY TEXTURE END"
 	pure ()
 
@@ -142,29 +145,33 @@ mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 }
 
-createTextureImage' :: forall k sim nm sd smm sc img . (
+createTextureImage' :: forall k sim nm sd smm img . (
 	BObj.IsImage img, Ord k
 	) => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group sd 'Nothing sim k nm (BObj.ImageFormat img) ->
 	Vk.Mem.Group sd 'Nothing smm k
 		'[ '(sim, 'Vk.Mem.ImageArg nm (BObj.ImageFormat img))] ->
-	Vk.Queue.Q -> Vk.CmdPool.C sc -> k -> img ->
-	IO (Vk.Img.Binded smm sim nm (BObj.ImageFormat img))
-createTextureImage' phdvc dvc mng mmng gq cp k img = do
+	k -> img -> IO (Vk.Img.Binded smm sim nm (BObj.ImageFormat img))
+createTextureImage' phdvc dvc mng mmng k img = do
 	let	wdt = fromIntegral $ BObj.imageWidth img
 		hgt = fromIntegral $ BObj.imageHeight img
 	(tximg, _txmem) <- createImage' @(BObj.ImageFormat img) phdvc dvc mng mmng k
 		wdt hgt Vk.Img.TilingOptimal
 		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit
-	putStrLn "before createBufferImage"
+	pure tximg
+
+writeWithBufferImage :: forall img sd sc  sm si nm . BObj.IsImage img =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Img.Binded sm si nm (BObj.ImageFormat img) -> img -> IO ()
+writeWithBufferImage phdvc dvc gq cp tximg img =
 	createBufferImage @img @_ phdvc dvc
 		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 		\(sb :: Vk.Bffr.Binded
-			sm sb "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
+			sm' sb' "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
 		Vk.Mem.write @"texture-buffer"
 			@(VObj.Image 1 img inm) @0 dvc sbm zeroBits img -- (MyImage img)
 		print sb
@@ -175,7 +182,9 @@ createTextureImage' phdvc dvc mng mmng gq cp k img = do
 		transitionImageLayout dvc gq cp tximg
 			Vk.Img.LayoutTransferDstOptimal
 			Vk.Img.LayoutShaderReadOnlyOptimal
-	pure tximg
+	where
+	wdt = fromIntegral $ BObj.imageWidth img
+	hgt = fromIntegral $ BObj.imageHeight img
 
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (BObj.ImagePixel img) =>
@@ -287,7 +296,7 @@ findMemoryType phdvc flt props =
 	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
-	suitable props1 = fst <$> find ((&&)
+	suitable props1 = fst <$> L.find ((&&)
 		<$> (`Vk.Mem.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1

@@ -433,12 +433,17 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 	let	crcr v =
 			drawViewIO crsfc cr v >>= \trs ->
-			createTexture phd dv gq cp ubds txgrp txsmplr trs (zero' :: k)
+			createTexture phd dv ubds txgrp txsmplr trs (zero' :: k) >>= \tximg ->
+--			writeWithBufferImage phd dv gq cp tximg trs >>
+			pure tximg
+		wwbi tximg v =
+			drawViewIO crsfc cr v >>= \trs ->
+			writeWithBufferImage phd dv gq cp tximg trs
 		drcr = destroyTexture txgrp (zero' :: k) in
 
-	crcr (View []) >>
+	crcr (View []) >>= \tximg -> wwbi tximg (View []) >>
 
-	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr drcr cr -- crsfc cr
+	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr drcr wwbi tximg cr -- crsfc cr
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
@@ -1529,7 +1534,7 @@ instance Succable Int where
 
 mainLoop ::
 	forall n siv sf scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
-		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k s r .
+		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k s r smbi sibi nmbi .
 	(Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl ->
 
@@ -1545,8 +1550,12 @@ mainLoop ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar [IO ()] ->
-	(View ->IO ()) -> IO () -> CairoT r RealWorld -> IO ()
-mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr drcr cr = do
+	(View -> IO (Vk.Img.Binded smbi sibi nmbi Vk.T.FormatR8g8b8a8Srgb)) ->
+	IO () ->
+	(Vk.Img.Binded smbi sibi nmbi Vk.T.FormatR8g8b8a8Srgb -> View -> IO ()) ->
+	Vk.Img.Binded smbi sibi nmbi Vk.T.FormatR8g8b8a8Srgb ->
+	CairoT r RealWorld -> IO ()
+mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr drcr wwbi tximg cr = do
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
@@ -1569,7 +1578,8 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			Draw2 ds (view@(View vs)) -> do
 				putStrLn "DRAW2 BEGIN"
 				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` vs
-				drcr >> crcr view
+				wwbi tximg view
+--				drcr >> crcr view >>= \tximg -> wwbi tximg view
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
