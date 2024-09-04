@@ -21,7 +21,7 @@ module UseCairo (
 
 	-- * COMMAND
 
-	Command(..), Succable(..),
+	Command(..),
 
 	-- ** VIEW PROJECTION
 
@@ -29,12 +29,7 @@ module UseCairo (
 
 	-- ** RECTANGLE
 
-	Rectangle(..), Rectangle'(..),
-	RectPos(..), RectSize(..), RectColor(..),
-	RectModel(..),
-	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
-
-	rectangle'ToRectangle,
+	Rectangle'(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..),
 
 	-- * EVENT
 
@@ -72,7 +67,6 @@ import Data.List.Length
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Map qualified as M
-import Data.OneOfThem
 import Data.Bool
 import Data.Word
 import Data.Text.IO qualified as Txt
@@ -228,8 +222,8 @@ instance NumToValue n => NumToValue ('() ': n) where
 	numToValue = 1 + numToValue @n
 
 data Command k
-	= Draw (M.Map k (ViewProjection, [Rectangle])) View
-	| Draw2 (M.Map k (ViewProjection, [Rectangle])) View
+	= Draw (M.Map k (ViewProjection, [Rectangle']))
+	| Draw2 View
 	| OpenWindow
 	| DestroyWindow k
 	| GetEvent
@@ -485,9 +479,6 @@ run' inp outp vext_ ist phd qfis dv gq gq2 pq =
 	tv <- atomically newTChan
 
 	wbw <- atomically newTChan
-	
-	forkIO $ forever do
-		wwbi tximg =<< atomically (readTChan tv)
 
 	mainLoop @n @siv @sf smp sm inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr drcr wwbi tximg tv ib ibm wwww cr
 		wwww1 wwww2 wbw
@@ -1636,32 +1627,17 @@ mainLoop smp sm inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps u
 				atomically $ writeTChan outp EventNeedRedraw)
 			_ -> pure ()
 		atomically (readTChan inp) >>= \case
-			Draw ds view -> do
+			Draw ds -> do
 				b <- checkTChan wbw
 				when b wwww2
 --				putStrLn "DRAW BEGIN"
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf smp sm dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp ib ibm loop
-			Draw2 ds (view@(View vs)) -> do
-				putStrLn "DRAW2 BEGIN"
-				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` vs
-
---				drawViewIO crsfc cr view >>= \trs ->
---					writeBufferImage smp dvc gq cp tximg ib ibm trs
-
---				forkIO $ wwbi tximg view >> Vk.Dvc.waitIdle dvc
---				wwbi tximg view
-
---				atomically $ writeTChan tv view
-
---				wwww view
+				runLoop' @n @siv @sf smp sm dvs pll ws vbs rgrps
+					(rectsToDummy $ second (rectangle'ToRectangle <$>) <$> ds) ubs outp ib ibm loop
+			Draw2 view -> do
 				forkIO $ wwww1 view >> atomically (writeTChan wbw ())
-
---				drcr >> crcr view >>= \tximg -> wwbi tximg view
-				Vk.Dvc.waitIdle dvc
-				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf smp sm dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp ib ibm loop
+				loop
 			OpenWindow ->
 				crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
 			DestroyWindow k -> do
