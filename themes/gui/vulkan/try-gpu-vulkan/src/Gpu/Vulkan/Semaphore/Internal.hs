@@ -18,7 +18,7 @@ module Gpu.Vulkan.Semaphore.Internal (
 
 	-- * SIGNAL
 
-	signal, M.SignalInfo(..)
+	signal, SignalInfo(..)
 
 	) where
 
@@ -31,6 +31,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Map qualified as Map
+import Data.Word
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
@@ -99,16 +100,19 @@ unsafeDestroy (Group (Device.D mdvc)
 lookup :: Ord k => Group sd ma ss k -> k -> IO (Maybe (S ss))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
 
+signal :: WithPoked (TMaybe.M mn) => Device.D sd -> SignalInfo mn ss -> IO ()
+signal (Device.D dvc) = M.signal dvc . signalInfoToMiddle
 
-{-
-create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac) =>
-	Device.D sd -> M.CreateInfo mn ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
-	(forall ss . S ss -> IO a) -> IO a
-create (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle -> macc) f = bracket
-	(M.create dvc ci macc) (\s -> M.destroy dvc s macc) (f . S)
-	-}
+data SignalInfo mn ss = SignalInfo {
+	signalInfoNext :: TMaybe.M mn,
+	signalInfoSemaphore :: S ss,
+	signalInfoValue :: Word64 }
 
-signal :: WithPoked (TMaybe.M mn) => Device.D sd -> M.SignalInfo mn -> IO ()
-signal (Device.D dvc) si = M.signal dvc si
+signalInfoToMiddle :: SignalInfo mn ss -> M.SignalInfo mn
+signalInfoToMiddle SignalInfo {
+	signalInfoNext = mnxt,
+	signalInfoSemaphore = S s,
+	signalInfoValue = v } = M.SignalInfo {
+	M.signalInfoNext = mnxt,
+	M.signalInfoSemaphore = s,
+	M.signalInfoValue = v }
