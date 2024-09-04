@@ -18,6 +18,10 @@ module Texture (
 	createTexture, destroyTexture, updateTexture, createBuffer,
 
 	writeWithBufferImage,
+	createBufferImageForCopy,
+	writeBufferImage,
+	writeBufferImage1,
+	writeBufferImage2,
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
@@ -33,6 +37,7 @@ module Texture (
 
 	) where
 
+import GHC.TypeLits
 import Foreign.Storable
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -74,6 +79,14 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Data.List.ToolsYj
 import Data.Array
+
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TSem
+
+import Gpu.Vulkan.Semaphore qualified as Vk.Smp
+import Gpu.Vulkan.Fence qualified as Vk.Fnc
+
+import Data.Time
 
 type TextureGroup sd si sm siv fmt k = (
 	Vk.Img.Group sd 'Nothing si k "texture" fmt,
@@ -161,39 +174,92 @@ createTextureImage' phdvc dvc mng mmng k img = do
 		Vk.Mem.PropertyDeviceLocalBit
 	pure tximg
 
-writeWithBufferImage :: forall img sd sc  sm si nm . BObj.IsImage img =>
+
+writeWithBufferImage :: forall ssm img sd sc  sm si nm . BObj.IsImage img =>
+	Vk.Smp.S ssm -> TSem ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Img.Binded sm si nm (BObj.ImageFormat img) -> img -> IO ()
-writeWithBufferImage phdvc dvc gq cp tximg img =
+writeWithBufferImage smp sm phdvc dvc gq cp tximg img =
+	createBufferImageForCopy phdvc dvc gq cp img \sb sbm ->
+	writeBufferImage smp dvc gq cp tximg sb sbm img
+	where
+	wdt = fromIntegral $ BObj.imageWidth img
+	hgt = fromIntegral $ BObj.imageHeight img
+
+createBufferImageForCopy :: forall img ssm sd sc sm si nm inm' . BObj.IsImage img =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	img ->
+	(forall sm' sb' .
+		Vk.Bffr.Binded sm' sb' "texture-buffer" '[VObj.Image 1 img inm'] ->
+		Vk.Mem.M sm' '[ '(sb', Vk.Mem.BufferArg "texture-buffer" '[VObj.Image 1 img inm'])] -> IO ()) ->
+	IO ()
+createBufferImageForCopy phdvc dvc gq cp img f =
 	createBufferImage @img @_ phdvc dvc
 		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 		\(sb :: Vk.Bffr.Binded
-			sm' sb' "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> do
-		Vk.Mem.write @"texture-buffer"
-			@(VObj.Image 1 img inm) @0 dvc sbm zeroBits img -- (MyImage img)
-		print sb
-		transitionImageLayout dvc gq cp tximg
-			Vk.Img.LayoutUndefined
-			Vk.Img.LayoutTransferDstOptimal
-		copyBufferToImage dvc gq cp sb tximg wdt hgt
-		transitionImageLayout dvc gq cp tximg
-			Vk.Img.LayoutTransferDstOptimal
-			Vk.Img.LayoutShaderReadOnlyOptimal
+			sm' sb' "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> f sb sbm
 	where
 	wdt = fromIntegral $ BObj.imageWidth img
 	hgt = fromIntegral $ BObj.imageHeight img
 
-copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
-	Storable (BObj.ImagePixel img) =>
+
+writeBufferImage :: forall ssm img sd sc sm si nm (inm :: Symbol) sm' sb' nm' inm' . BObj.IsImage img =>
+	Vk.Smp.S ssm ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Img.Binded sm si nm (BObj.ImageFormat img) ->
+	Vk.Bffr.Binded sm' sb' "texture-buffer" '[VObj.Image 1 img inm'] ->
+	Vk.Mem.M sm' '[ '(sb', Vk.Mem.BufferArg "texture-buffer" '[VObj.Image 1 img inm'])] ->
+	img -> IO ()
+writeBufferImage smp dvc gq cp tximg sb sbm img = do
+	writeBufferImage1 dvc sbm img
+	writeBufferImage2 smp dvc gq cp tximg sb wdt hgt
+	where
+	wdt = fromIntegral $ BObj.imageWidth img
+	hgt = fromIntegral $ BObj.imageHeight img
+
+writeBufferImage1 :: forall img sd sm' sb' inm' . BObj.IsImage img =>
+	Vk.Dvc.D sd ->
+	Vk.Mem.M sm' '[ '(sb', Vk.Mem.BufferArg "texture-buffer" '[VObj.Image 1 img inm'])] ->
+	img -> IO ()
+writeBufferImage1 dvc sbm img = do
+		t0 <- getCurrentTime
+		Vk.Mem.write @"texture-buffer"
+			@(VObj.Image 1 img inm') @0 dvc sbm zeroBits img
+		t1 <- getCurrentTime
+		putStrLn $ "MEMORY WRITE: " ++ show (t1 `diffUTCTime` t0)
+
+writeBufferImage2 :: forall ssm img sd sc sm si nm sm' sb' inm' . BObj.IsImage img =>
+	Vk.Smp.S ssm ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Img.Binded sm si nm (BObj.ImageFormat img) ->
+	Vk.Bffr.Binded sm' sb' "texture-buffer" '[VObj.Image 1 img inm'] ->
+	Word32 -> Word32 -> IO ()
+writeBufferImage2 smp dvc gq cp tximg sb wdt hgt = do
+		transitionImageLayout smp dvc gq cp tximg
+			Vk.Img.LayoutUndefined
+			Vk.Img.LayoutTransferDstOptimal
+
+		t2 <- getCurrentTime
+		copyBufferToImage smp dvc gq cp sb tximg wdt hgt
+		t3 <- getCurrentTime
+		putStrLn $ "COPY BUFFER TO IMAGE: " ++ show (t3 `diffUTCTime` t2)
+
+		transitionImageLayout smp dvc gq cp tximg
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutShaderReadOnlyOptimal
+
+
+copyBufferToImage :: forall ssm sd sc sm sb nm img inm si sm' nm' .
+	Storable (BObj.ImagePixel img) => Vk.Smp.S ssm ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
 	Vk.Img.Binded sm' si nm' (BObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
-copyBufferToImage dvc gq cp bf img wdt hgt =
-	beginSingleTimeCommands dvc gq cp \cb -> do
+copyBufferToImage sm dvc gq cp bf img wdt hgt =
+	beginSingleTimeCommands sm dvc gq cp \cb fnc -> do
 	let	region :: Vk.Bffr.ImageCopy img inm
 		region = Vk.Bffr.ImageCopy {
 			Vk.Bffr.imageCopyImageSubresource = isr,
@@ -301,12 +367,13 @@ findMemoryType phdvc flt props =
 		<*> checkBits props . Vk.Mem.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
-transitionImageLayout :: forall sd sc si sm nm fmt .
+transitionImageLayout :: forall ssm sd sc si sm nm fmt .
+	Vk.Smp.S ssm ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
-transitionImageLayout dvc gq cp img olyt nlyt =
-	beginSingleTimeCommands dvc gq cp \cb -> do
+transitionImageLayout smp dvc gq cp img olyt nlyt =
+	beginSingleTimeCommands smp dvc gq cp \cb fnc -> do
 	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
 		barrier = Vk.Img.MemoryBarrier {
 			Vk.Img.memoryBarrierNext = TMaybe.N,
@@ -329,6 +396,7 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
 		sstg dstg zeroBits HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ U5 barrier)
+--	Vk.Fnc.waitForFs dvc (HeteroParList.Singleton fnc) True Nothing
 	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
@@ -365,21 +433,23 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 			Vk.Dsc.imageInfoSampler = tsmp }
 	}
 
-beginSingleTimeCommands :: forall sd sc a .
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
-beginSingleTimeCommands dvc gq cp cmd = do
+beginSingleTimeCommands :: forall ssm sd sc a .
+	Vk.Smp.S ssm -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	(forall s sf . Vk.CmdBffr.C s -> Vk.Fnc.F sf -> IO a) -> IO a
+beginSingleTimeCommands smp dvc gq cp cmd =
+	Vk.Fnc.create @'Nothing dvc def nil \f ->
 	Vk.CmdBffr.allocate
 		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
-		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
-			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = TMaybe.N,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
-			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
-			Vk.Queue.waitIdle gq
+	let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
+		submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = TMaybe.N,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
+			Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
+			Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
+	Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo (cmd cb f) <* do
+		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) (Just f)
+		Vk.Queue.waitIdle gq
+		<* Vk.Fnc.waitForFs dvc (HeteroParList.Singleton f) True Nothing
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfo {

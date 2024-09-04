@@ -96,7 +96,7 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 		atomically $ inp GetEvent
 
 	_ <- forkIO $ forever do
-		threadDelay 4000000
+		threadDelay 1000000
 		t <- getZonedTime
 		a <- atomically $ readTVar ta
 		atomically do
