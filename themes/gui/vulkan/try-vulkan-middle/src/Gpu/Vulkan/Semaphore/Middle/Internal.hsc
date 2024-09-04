@@ -12,7 +12,11 @@ module Gpu.Vulkan.Semaphore.Middle.Internal (
 
 	-- * CREATE AND DESTROY
 
-	create, destroy, S(..), CreateInfo(..), CreateFlags
+	create, destroy, S(..), CreateInfo(..), CreateFlags,
+
+	-- * SIGNAL
+
+	signal, SignalInfo(..)
 
 	) where
 
@@ -72,3 +76,24 @@ create (Device.D dvc) ci mac = S <$> alloca \ps -> do
 destroy :: Device.D -> S -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (S s) mac =
 	AllocationCallbacks.mToCore mac $ C.destroy dvc s
+
+data SignalInfo mn = SignalInfo {
+	signalInfoNext :: TMaybe.M mn, signalInfoSemaphore :: S,
+	signalInfoValue :: Word64 }
+
+signalInfoToCore :: WithPoked (TMaybe.M mn) =>
+	SignalInfo mn -> (Ptr C.SignalInfo -> IO r) -> IO ()
+signalInfoToCore SignalInfo {
+	signalInfoNext = mnxt,
+	signalInfoSemaphore = S s,
+	signalInfoValue = v } f =
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	let	si = C.SignalInfo {
+			C.signalInfoSType = (),
+			C.signalInfoPNext = pnxt',
+			C.signalInfoSemaphore = s,
+			C.signalInfoValue = fromIntegral v } in withPoked si f
+
+signal :: WithPoked (TMaybe.M mn) => Device.D -> SignalInfo mn -> IO ()
+signal (Device.D dvc) si = signalInfoToCore si \psi ->
+	throwUnlessSuccess . Result =<< C.signal dvc psi
