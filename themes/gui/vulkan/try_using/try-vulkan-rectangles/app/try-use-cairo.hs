@@ -164,7 +164,7 @@ uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
 uniformBufferObject (Angle a) sce = ViewProjection {
 	viewProjectionView = Cglm.lookat
 --		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-		(Cglm.Vec3 $ lax :. lay :. 1 :. NilL)
+		(Cglm.Vec3 $ lax :. lay :. 1.7 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. (- 1) :. NilL),
 	viewProjectionProj = id -- Cglm.modifyMat4 1 1 negate
@@ -238,24 +238,24 @@ calcModel2 w0 h0 Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = l
 
 instancesMore :: [Rectangle']
 instancesMore = [
-	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.5) :. (- 1.5) :. NilL)
-		(RectSize . Cglm.Vec2 $ 3 :. 3 :. NilL)
+	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.8) :. (- 1.8) :. NilL)
+		(RectSize . Cglm.Vec2 $ 3.6 :. 3.6 :. NilL)
 		(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
 		m1,
 	Rectangle' (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.8 :. 0.8 :. NilL)
 		(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
 		m1,
 	Rectangle' (RectPos . Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.7 :. 0.9 :. NilL)
 		(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
 		m2,
-	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.0) :. 0.5 :. NilL)
-		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.0) :. 0.7 :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.9 :. 0.5 :. NilL)
 		(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
 		m2 ]
 	where
 	m1 = RectModel $ Cglm.scale Cglm.mat4Identity (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
-	tr1 = Cglm.translate Cglm.mat4Identity (Cglm.Vec3 $ 0 :. (- 0.1) :. 0.5 :. NilL)
+	tr1 = Cglm.translate Cglm.mat4Identity (Cglm.Vec3 $ 0 :. (- 0.3) :. 0.5 :. NilL)
 	m2 = RectModel $
 		Cglm.scale tr1 (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
