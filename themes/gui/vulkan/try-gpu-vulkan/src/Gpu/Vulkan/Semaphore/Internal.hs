@@ -14,7 +14,11 @@ module Gpu.Vulkan.Semaphore.Internal (
 
 	-- ** Group
 
-	group, Group, create', unsafeDestroy, lookup
+	group, Group, create', unsafeDestroy, lookup,
+
+	-- * SIGNAL
+
+	signal, M.SignalInfo(..)
 
 	) where
 
@@ -94,3 +98,17 @@ unsafeDestroy (Group (Device.D mdvc)
 
 lookup :: Ord k => Group sd ma ss k -> k -> IO (Maybe (S ss))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
+
+
+{-
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mac) =>
+	Device.D sd -> M.CreateInfo mn ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mac ->
+	(forall ss . S ss -> IO a) -> IO a
+create (Device.D dvc) ci
+	(AllocationCallbacks.toMiddle -> macc) f = bracket
+	(M.create dvc ci macc) (\s -> M.destroy dvc s macc) (f . S)
+	-}
+
+signal :: WithPoked (TMaybe.M mn) => Device.D sd -> M.SignalInfo mn -> IO ()
+signal (Device.D dvc) si = M.signal dvc si
