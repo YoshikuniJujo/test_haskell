@@ -95,5 +95,6 @@ signalInfoToCore SignalInfo {
 			C.signalInfoValue = fromIntegral v } in withPoked si f
 
 signal :: WithPoked (TMaybe.M mn) => Device.D -> SignalInfo mn -> IO ()
-signal (Device.D dvc) si = signalInfoToCore si \psi ->
+signal (Device.D dvc) si = signalInfoToCore si \psi -> do
+	putStrLn "before C.signal"
 	throwUnlessSuccess . Result =<< C.signal dvc psi
