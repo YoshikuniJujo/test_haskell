@@ -17,8 +17,11 @@ module Main (main) where
 import UseCairo (
 	rectangles2, Event(..), Command(..), ViewProjection(..),
 
-	Rectangle(..), RectPos(..), RectSize(..), RectColor(..),
+	Rectangle(..), Rectangle'(..), RectPos(..), RectSize(..), RectColor(..),
+	RectModel(..),
 	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
+
+	rectangle'ToRectangle,
 
 	readTVarOr )
 
@@ -35,9 +38,6 @@ import Data.Text qualified as T
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Options.Declarative
-import Control.Monad.Trans
-
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 import Graphics.UI.GLFW qualified as Glfw
 
@@ -52,15 +52,11 @@ import Data.OneOfThem
 import Graphics.UI.GlfwG.Key as GlfwG.Ky
 
 main :: IO ()
-main = run_ action
-
-action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
-	Cmd "Draw Rectangles" ()
-action f = liftIO do
+main = do
 	a <- newAngle
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar M.empty
-	_ <- forkIO $ untilEnd (get f) a (
+	_ <- forkIO $ untilEnd False a (
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	_ <- forkIO $ controller a inp
@@ -76,10 +72,7 @@ controller a inp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
 	Just (Glfw.GamepadState gb ga) <- Glfw.getGamepadState Glfw.Joystick'1
 	when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
 		. atomically $ writeTChan inp EndWorld
-	print $ ga Glfw.GamepadAxis'LeftX
-	print $ ga Glfw.GamepadAxis'LeftY
 	atomically $ modifyTVar a (subtract $ realToFrac (pi * ga Glfw.GamepadAxis'LeftX / 100))
-	print =<< atomically (readTVar a)
 
 untilEnd :: Bool -> TVar Angle -> (
 	(Command Int -> STM (), (STM Bool, STM (Event Int))),
@@ -109,7 +102,11 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 					expand . Singleton $ Text' blue "sans" 200 (50, 600) (T.pack $ formatTime defaultTimeLocale "%T" t)
 					])
 
+	dbg <- atomically $ newTVar 0
+
 	($ instances) $ fix \loop rs -> do
+--		d <- atomically $ readTVar dbg
+--		when (d > 2) $ putStrLn "loop: before threadDelay"
 		threadDelay 2000
 		a <- atomically $ readTVar ta
 		now <- getCurrentTime
@@ -160,6 +157,7 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 				loop rs
 			Just EventNeedRedraw -> do
 				putStrLn "EVENT NEED REDRAW"
+				atomically $ modifyTVar dbg (+ 1)
 				loop rs
 
 uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
@@ -229,28 +227,7 @@ calcModel tm = let
 	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
 
 instances' :: Float -> Float -> Vk.Extent2d -> [Rectangle]
-instances' w h ex = let
-	(m0, m1, m2, m3) = calcModel2 w h ex in
-	[
---		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. (- 1.5) :. NilL)
---			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectSize . Cglm.Vec2 $ 3 :. 3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3
-		]
+instances' w h ex = rectangle'ToRectangle <$> instancesMore
 
 calcModel2 :: Float -> Float -> Vk.Extent2d -> (RectModel0, RectModel1, RectModel2, RectModel3)
 calcModel2 w0 h0 Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = let
@@ -258,3 +235,27 @@ calcModel2 w0 h0 Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = l
 --		(Cglm.Vec3 $ (w0 / fromIntegral w) :. (h0 / fromIntegral h) :. 1 :. NilL) in
 		(Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL) in
 	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
+
+instancesMore :: [Rectangle']
+instancesMore = [
+	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.5) :. (- 1.5) :. NilL)
+		(RectSize . Cglm.Vec2 $ 3 :. 3 :. NilL)
+		(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
+		m1,
+	Rectangle' (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
+		(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
+		m1,
+	Rectangle' (RectPos . Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
+		(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
+		m2,
+	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.0) :. 0.5 :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+		(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
+		m2 ]
+	where
+	m1 = RectModel $ Cglm.scale Cglm.mat4Identity (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+	tr1 = Cglm.translate Cglm.mat4Identity (Cglm.Vec3 $ 0 :. (- 0.1) :. 0.5 :. NilL)
+	m2 = RectModel $
+		Cglm.scale tr1 (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)

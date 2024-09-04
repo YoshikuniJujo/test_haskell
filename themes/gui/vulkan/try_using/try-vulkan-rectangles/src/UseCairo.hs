@@ -29,9 +29,12 @@ module UseCairo (
 
 	-- ** RECTANGLE
 
-	Rectangle(..),
+	Rectangle(..), Rectangle'(..),
 	RectPos(..), RectSize(..), RectColor(..),
+	RectModel(..),
 	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
+
+	rectangle'ToRectangle,
 
 	-- * EVENT
 
@@ -1884,7 +1887,6 @@ drawFrame smp sm dvc gq pq
 		dvc sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	atomically $ waitTSem sm
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext pllyt gpl vb rb ib ubds
 	updateUniformBuffer' dvc ubm ubo
@@ -1913,7 +1915,6 @@ drawFrame smp sm dvc gq pq
 	Vk.Fence.waitForFs dvc siff True Nothing
 --	putStrLn "AFTER WAIT FOR FENCES"
 --	Vk.Queue.waitIdle pq
-	atomically $ signalTSem sm
 
 updateUniformBuffer' :: Vk.Dvc.D sd ->
 	UniformBufferMemory sm2 sb2 -> ViewProjection -> IO ()
@@ -1953,6 +1954,7 @@ recreateSwapchainEtc :: forall
 recreateSwapchainEtc
 	phdvc qfis dvc pllyt
 	(Recreates win sfc vex rp gpl sc scivs fbs) = do
+	putStrLn "recreateSwapchainEtc begin"
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
@@ -1962,6 +1964,7 @@ recreateSwapchainEtc
 		recreateImageViews dvc imgs scivs
 	recreateGraphicsPipeline dvc ext rp pllyt gpl
 	recreateFramebuffers' @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
+	putStrLn "recreateSwapchainEtc end"
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
@@ -2020,12 +2023,34 @@ newtype TexCoord = TexCoord Cglm.Vec2
 data Rectangle = Rectangle {
 	rectanglePos :: RectPos,
 	rectangleSize :: RectSize,
-	rectagnleColor :: RectColor,
+	rectangleColor :: RectColor,
 	rectangleModel0 :: RectModel0,
 	rectangleModel1 :: RectModel1,
 	rectangleModel2 :: RectModel2,
 	rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
+
+data Rectangle' = Rectangle' {
+	rectanglePos' :: RectPos,
+	rectangleSize' :: RectSize,
+	rectangleColor' :: RectColor,
+	rectangleModel' :: RectModel }
+	deriving (Show, Generic)
+
+rectangle'ToRectangle :: Rectangle' -> Rectangle
+rectangle'ToRectangle Rectangle' {
+	rectanglePos' = p,
+	rectangleSize' = s,
+	rectangleColor' = c,
+	rectangleModel' = RectModel m } = Rectangle {
+	rectanglePos = p,
+	rectangleSize = s,
+	rectangleColor = c,
+	rectangleModel0 = RectModel0 m0,
+	rectangleModel1 = RectModel1 m1,
+	rectangleModel2 = RectModel2 m2,
+	rectangleModel3 = RectModel3 m3 }
+	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
 
 instance StrG.G Rectangle where
 
@@ -2050,6 +2075,8 @@ newtype RectSize = RectSize Cglm.Vec2
 
 newtype RectColor = RectColor Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel = RectModel Cglm.Mat4 deriving (Show, Eq, Ord, Storable)
 
 newtype RectModel0 = RectModel0 Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
