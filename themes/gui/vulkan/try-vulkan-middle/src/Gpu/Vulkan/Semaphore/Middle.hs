@@ -6,10 +6,6 @@ module Gpu.Vulkan.Semaphore.Middle (
 
 	create, destroy, S, CreateInfo(..), CreateFlags,
 
-	-- * SIGNAL
-
-	signal, SignalInfo(..)
-
 	) where
 
 import Gpu.Vulkan.Semaphore.Middle.Internal

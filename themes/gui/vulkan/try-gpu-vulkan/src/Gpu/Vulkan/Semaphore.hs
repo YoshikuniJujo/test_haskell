@@ -10,10 +10,6 @@ module Gpu.Vulkan.Semaphore (
 
 	group, Group, create', unsafeDestroy, lookup,
 
-	-- * SIGNAL
-
-	signal, SignalInfo(..)
-
 	) where
 
 import Prelude hiding (lookup)

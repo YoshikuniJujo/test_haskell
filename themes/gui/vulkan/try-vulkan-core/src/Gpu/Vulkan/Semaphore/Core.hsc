@@ -10,9 +10,6 @@ module Gpu.Vulkan.Semaphore.Core (
 	create, destroy, S, PtrS, CreateInfo, pattern CreateInfo,
 	createInfoSType, createInfoPNext, createInfoFlags,
 
-	signal, SignalInfo, pattern SignalInfo,
-	signalInfoSType, signalInfoPNext, signalInfoSemaphore, signalInfoValue
-
 	) where
 
 import Foreign.Ptr
@@ -52,24 +49,3 @@ foreign import ccall "vkCreateSemaphore" create ::
 
 foreign import ccall "vkDestroySemaphore" destroy ::
 	Device.D -> S -> Ptr AllocationCallbacks.A -> IO ()
-
-sgType :: #{type VkStructureType}
-sgType = #{const VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO}
-
-struct "SignalInfo" #{size VkSemaphoreSignalInfo}
-		#{alignment VkSemaphoreSignalInfo} [
-	("sType", ''(), [| const $ pure () |],
-		[| \p _ -> #{poke VkSemaphoreSignalInfo, sType} p sgType |]),
-	("pNext", ''PtrVoid,
-		[| #{peek VkSemaphoreSignalInfo, pNext} |],
-		[| #{poke VkSemaphoreSignalInfo, pNext} |]),
-	("semaphore", ''S,
-		[| #{peek VkSemaphoreSignalInfo, semaphore} |],
-		[| #{poke VkSemaphoreSignalInfo, semaphore} |]),
-	("value", ''#{type uint64_t},
-		[| #{peek VkSemaphoreSignalInfo, value} |],
-		[| #{poke VkSemaphoreSignalInfo, value} |]) ]
-	[''Show, ''Storable]
-
-foreign import ccall "vkSignalSemaphore" signal ::
-	Device.D -> Ptr SignalInfo -> IO #{type VkResult}

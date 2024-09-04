@@ -16,10 +16,6 @@ module Gpu.Vulkan.Semaphore.Internal (
 
 	group, Group, create', unsafeDestroy, lookup,
 
-	-- * SIGNAL
-
-	signal, SignalInfo(..)
-
 	) where
 
 import Prelude hiding (lookup)
@@ -99,20 +95,3 @@ unsafeDestroy (Group (Device.D mdvc)
 
 lookup :: Ord k => Group sd ma ss k -> k -> IO (Maybe (S ss))
 lookup (Group _ _ _sem ss) k = atomically $ Map.lookup k <$> readTVar ss
-
-signal :: WithPoked (TMaybe.M mn) => Device.D sd -> SignalInfo mn ss -> IO ()
-signal (Device.D dvc) = M.signal dvc . signalInfoToMiddle
-
-data SignalInfo mn ss = SignalInfo {
-	signalInfoNext :: TMaybe.M mn,
-	signalInfoSemaphore :: S ss,
-	signalInfoValue :: Word64 }
-
-signalInfoToMiddle :: SignalInfo mn ss -> M.SignalInfo mn
-signalInfoToMiddle SignalInfo {
-	signalInfoNext = mnxt,
-	signalInfoSemaphore = S s,
-	signalInfoValue = v } = M.SignalInfo {
-	M.signalInfoNext = mnxt,
-	M.signalInfoSemaphore = s,
-	M.signalInfoValue = v }
