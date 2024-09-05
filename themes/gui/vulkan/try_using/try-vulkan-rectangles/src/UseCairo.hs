@@ -434,38 +434,16 @@ run' inp outp vext_ ist phd qfis dv gq gq2 pq =
 
 	createTextureSampler phd dv \txsmplr ->
 
-	textureGroup dv \txgrp ->
-
 	cairoImageSurfaceCreate CairoFormatArgb32 1024 1024 >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
 
 	atomically (newTSem 1) >>= \sm ->
 
 	Vk.Semaphore.create @'Nothing dv def nil \smp ->
-	{-
-	Vk.Semaphore.signal dv Vk.Semaphore.SignalInfo {
-		Vk.Semaphore.signalInfoNext = TMaybe.N,
-		Vk.Semaphore.signalInfoSemaphore = smp,
-		Vk.Semaphore.signalInfoValue = 1 } >>
-		-}
 
-	let	crcr v =
-			drawViewIO crsfc cr v >>= \trs ->
-			createTexture phd dv ubds txgrp txsmplr trs (zero' :: k) >>= \tximg ->
---			writeWithBufferImage phd dv gq cp tximg trs >>
-			pure tximg
-		wwbi tximg v =
-			drawViewIO crsfc cr v >>= \trs ->
-			writeWithBufferImage smp sm phd dv gq2 cp2 tximg trs
-		wwbi' tximg v =
-			drawViewIO crsfc cr v >>= \trs ->
-			writeWithBufferImage smp sm phd dv gq cp2 tximg trs
-		drcr = destroyTexture txgrp (zero' :: k)
-		in
-
-	crcr (View []) >>= \tximg -> wwbi' tximg (View []) >>
-	drawViewIO crsfc cr (View []) >>= \trs -> createBufferImageForCopy phd dv gq cp trs \ib ibm -> do
---	createBufferImageForCopy phd dv gq cp 1024 1024 \ib ibm -> do
+	drawViewIO crsfc cr (View []) >>= \trs ->
+	createTexture phd dv ubds txsmplr trs \tximg ->
+	drawViewIO crsfc cr (View []) >>= \trs -> createBufferImageForCopy phd dv trs \ib ibm -> do
 
 	let
 		wwww v = do
@@ -473,20 +451,22 @@ run' inp outp vext_ ist phd qfis dv gq gq2 pq =
 			trs <- drawViewIO crsfc cr v
 			t1 <- getCurrentTime
 			writeBufferImage1 dv ibm trs
-			writeBufferImage2 smp dv gq cp tximg ib 1024 1024
+			writeBufferImage2 dv gq cp tximg ib 1024 1024
 			t2 <- getCurrentTime
 			print $ t1 `diffUTCTime` t0
 			print $ t2 `diffUTCTime` t1
 		wwww1 v = do
 			trs <- drawViewIO crsfc cr v
 			writeBufferImage1 dv ibm trs
-		wwww2 = writeBufferImage2 smp dv gq cp tximg ib 1024 1024
+		wwww2 = writeBufferImage2 dv gq cp tximg ib 1024 1024
+
+	wwww $ View []
 
 	tv <- atomically newTChan
 
 	wbw <- atomically newTChan
 
-	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr drcr wwbi tximg tv ib ibm wwww cr
+	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges tximg tv ib ibm wwww cr
 		wwww1 wwww2 wbw
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
@@ -1617,9 +1597,6 @@ mainLoop ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar [IO ()] ->
-	(View -> IO (Vk.Img.Binded smbi sibi nmbi Vk.T.FormatR8g8b8a8Srgb)) ->
-	IO () ->
-	(Vk.Img.Binded smbi sibi nmbi Vk.T.FormatR8g8b8a8Srgb -> View -> IO ()) ->
 	Vk.Img.Binded smbi sibi nmbi Vk.T.FormatR8g8b8a8Srgb ->
 	TChan View ->
 	Vk.Bffr.Binded smb sbb "texture-buffer" '[VObj.Image 1 CairoArgb32 inmb] ->
@@ -1628,7 +1605,7 @@ mainLoop ::
 	CairoT r RealWorld ->
 	(View -> IO ()) -> IO () -> TChan () ->
 	IO ()
-mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr drcr wwbi tximg tv ib ibm wwww cr
+mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges tximg tv ib ibm wwww cr
 	wwww1 wwww2 wbw = do
 	wm <- atomically newTChan
 	let	crwos' = do
