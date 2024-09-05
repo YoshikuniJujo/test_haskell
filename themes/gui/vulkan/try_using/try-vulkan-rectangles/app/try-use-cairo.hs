@@ -51,7 +51,7 @@ main = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar M.empty
 	_ <- forkIO $ untilEnd a (
-		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
+		((writeTChan inp, \k -> unGetTChan inp (DestroyWindow k)), (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	_ <- forkIO $ controller a inp
 	rectangles2 inp outp vext
@@ -72,9 +72,9 @@ controller a inp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
 			atomically $ modifyTVar a (subtract $ realToFrac (pi * ga Glfw.GamepadAxis'LeftX / 100))
 
 untilEnd :: TVar Angle -> (
-	(Command Int -> STM (), (STM Bool, STM (Event Int))),
+	((Command Int -> STM (), Int -> STM()), (STM Bool, STM (Event Int))),
 	Int -> STM Vk.Extent2d ) -> IO ()
-untilEnd ta ((inp, (oute, outp)), ext) = do
+untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 	atomically $ inp OpenWindow
 
 	atomically . inp . CalcTextLayoutExtent
@@ -109,7 +109,7 @@ untilEnd ta ((inp, (oute, outp)), ext) = do
 				loop
 			Just (EventKeyUp w Key'Q) -> do
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
-				atomically . inp $ DestroyWindow w
+				atomically $ dw w
 				loop
 			Just (EventKeyUp w ky) -> do
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)

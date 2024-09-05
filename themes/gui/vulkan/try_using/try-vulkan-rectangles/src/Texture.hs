@@ -225,11 +225,11 @@ writeBufferImage1 :: forall img sd sm' sb' inm' . BObj.IsImage img =>
 	Vk.Mem.M sm' '[ '(sb', Vk.Mem.BufferArg "texture-buffer" '[VObj.Image 1 img inm'])] ->
 	img -> IO ()
 writeBufferImage1 dvc sbm img = do
-		t0 <- getCurrentTime
-		Vk.Mem.write @"texture-buffer"
-			@(VObj.Image 1 img inm') @0 dvc sbm zeroBits img
-		t1 <- getCurrentTime
-		putStrLn $ "MEMORY WRITE: " ++ show (t1 `diffUTCTime` t0)
+	t0 <- getCurrentTime
+	Vk.Mem.write @"texture-buffer"
+		@(VObj.Image 1 img inm') @0 dvc sbm zeroBits img
+	t1 <- getCurrentTime
+	putStrLn $ "MEMORY WRITE: " ++ show (t1 `diffUTCTime` t0)
 
 writeBufferImage2 :: forall ssm img sd sc sm si nm sm' sb' inm' . BObj.IsImage img =>
 	Vk.Smp.S ssm ->

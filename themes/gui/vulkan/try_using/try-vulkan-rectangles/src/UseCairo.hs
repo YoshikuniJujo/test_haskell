@@ -1630,6 +1630,7 @@ mainLoop ::
 	IO ()
 mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr drcr wwbi tximg tv ib ibm wwww cr
 	wwww1 wwww2 wbw = do
+	wm <- atomically newTChan
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
@@ -1653,11 +1654,20 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps
 					(rectsToDummy $ second (rectangle'ToRectangle <$>) <$> ds) ubs outp ib ibm loop
 			Draw2 view -> do
-				forkIO $ wwww1 view >> atomically (writeTChan wbw ())
+				forkIO do
+					b <- atomically $ isEmptyTChan wm
+					when b do
+						atomically $ writeTChan wm ()
+						wwww1 view
+						atomically $ readTChan wm
+						atomically (writeTChan wbw ())
 				loop
 			OpenWindow ->
 				crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
 			DestroyWindow k -> do
+				atomically do
+					b <- isEmptyTChan wm
+					check b
 				putStrLn $ "DESTROY WINDOW: " ++ show k
 				atomically (modifyTVar vws (M.delete k)) >> drwos k
 				ws <- atomically $ readTVar vws
