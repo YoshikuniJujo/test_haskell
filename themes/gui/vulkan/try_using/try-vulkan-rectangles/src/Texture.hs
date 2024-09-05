@@ -11,11 +11,15 @@ module Texture (
 
 	-- * CREATE AND UPDATE
 
-	createTexture, createBufferImageForCopy, createBuffer,
+	createBindImage, createBufferImageForCopy, createBuffer,
 
 	-- * WRITE
 
-	writeBufferImage1, writeBufferImage2
+	writeBufferImage1, writeBufferImage2,
+
+	-- * CREATE INFOS
+
+	imgVwInfo,
 
 	) where
 
@@ -48,50 +52,39 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mem
-import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Object.Base qualified as BObj
 
-import Tools
+import Data.Bits.ToolsYj
 
-createTexture :: forall bis img sd sds sdsc ss a . (
+createBindImage :: forall nmt bis img sd sds sdsc ss a . (
 	BObj.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", BObj.ImageFormat img)] 0 ) =>
+		'[ '(nmt, BObj.ImageFormat img)] 0 ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.DscSet.D sds '(sdsc, bis) ->
 	Vk.Smplr.S ss -> img ->
-	(forall sm si . Vk.Img.Binded sm si "texture" (BObj.ImageFormat img) -> IO a) -> IO a
-createTexture phdv dv ubds txsmplr img f =
-	putStrLn "CREATE TEXTURE BEGIN" >>
+	(forall sm si . Vk.Img.Binded sm si nmt (BObj.ImageFormat img) -> IO a) -> IO a
+createBindImage phdv dv ubds txsmplr img f =
 	createTextureImage phdv dv img \tximg ->
 	Vk.ImgVw.create @_ @(BObj.ImageFormat img)
-		dv (mkImageViewCreateInfo tximg) nil \tximgvw ->
-	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
+		dv (imgVwInfo tximg) nil \tximgvw ->
+	updateDescriptorSetTex dv ubds tximgvw txsmplr >> f tximg
 
-	putStrLn "CREATE TEXTURE END" >>
-	f tximg
-
-mkImageViewCreateInfo ::
-	Vk.Img.Binded sm si nm ifmt ->
-	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfo {
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
+imgVwInfo i = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
 	Vk.ImgVw.createInfoFlags = zeroBits,
-	Vk.ImgVw.createInfoImage = sci,
+	Vk.ImgVw.createInfoImage = i,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponents = components,
-	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
-	where
-	components = Vk.Component.Mapping {
-		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
-		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Img.SubresourceRange {
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
+		Vk.Img.subresourceRangeLayerCount = 1 } }
 
 createTextureImage :: forall nm sd img a . (
 	BObj.IsImage img
@@ -300,9 +293,9 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 
 updateDescriptorSetTex ::
 	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", fmt)] 0 =>
+		'[ '(nmt, fmt)] 0 =>
 	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) ->
-	Vk.ImgVw.I "texture" fmt siv  -> Vk.Smplr.S ss -> IO ()
+	Vk.ImgVw.I nmt fmt siv  -> Vk.Smplr.S ss -> IO ()
 updateDescriptorSetTex dvc dscs tximgvw txsmp = do
 	Vk.DscSet.updateDs dvc (
 		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HeteroParList.Nil )
