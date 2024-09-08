@@ -133,11 +133,8 @@ import ThEnv
 
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type as GlfwG.Win
 import Graphics.UI.GlfwG.Key as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
-
-import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
@@ -178,27 +175,23 @@ rectangles2 inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
 			enableValidationLayers do
-		(phd', qfis', fmt', dv', gq', pq', n') <-
+		(phd', qfis', fmt', dv', gq', pq') <-
 			withWindow False \dw ->
 			createSurface dw ist \dsfc -> do
 			(phd, qfis) <- pickPhd ist dsfc
 			(dv, gq, pq) <-
 				createLogicalDevice phd dvcgrp () qfis
 			spp <- querySwapChainSupport phd dsfc
-			ext <- chooseSwapExtent dw $ capabilities spp
 			let	fmt = Vk.Khr.Sfc.formatOldFormat
 					. chooseSwapSurfaceFormat
 					$ formats spp
 			Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-				n <- getSwapchainImageNum
-					@fmt dv dsfc spp ext qfis
 				pure (	phd, qfis,
 					Vk.Khr.Sfc.formatOldFormat
 						. chooseSwapSurfaceFormat
-						$ formats spp, dv, gq, pq, n )
-		getNum n' \(_ :: Proxy n) ->
-			Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
-				run' @n @fmt @_ @_ @k inp outp vext
+						$ formats spp, dv, gq, pq )
+		Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
+			run' @fmt @_ @_ @k inp outp vext
 					ist phd' qfis' dv' gq' pq'
 	atomically $ writeTChan outp EventEnd
 	where setupDebugMessenger ist f =
@@ -221,11 +214,6 @@ getSwapchainImageNum dv sfc spp ext qfis =
 
 sameNum :: b -> [a] -> [b]
 sameNum x = \case [] -> []; _ : ys -> x : sameNum x ys
-
-getNum :: [a] -> (forall (n :: [()]) . (Mappable n, NumToValue n) => Proxy n -> b) -> b
-getNum [] f = f (Proxy :: Proxy '[])
-getNum (_ : xs) f =
-	getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
 class NumToValue (n :: [()]) where numToValue :: Int
 instance NumToValue '[] where numToValue = 0
@@ -391,8 +379,8 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
-	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k ) =>
+run' :: forall (scfmt :: Vk.T.Format) si sd k . (
+	Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k ) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> IO ()
@@ -419,20 +407,13 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	Vk.Semaphore.group dv nil \rfsgrp ->
 	Vk.Fence.group dv nil \iffgrp ->
 	Vk.Khr.Swpch.group dv nil \scgrp ->
-	Vk.ImgVw.group dv nil
-		\(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt) ->
-	Vk.Frmbffr.group dv nil
-		\(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf (k, Int)) ->
 	Vk.Bffr.group dv nil \rbgrp -> Vk.Mem.group dv nil \rmgrp ->
 	let	rgrps = (rbgrp, rmgrp) in
 
 	atomically (newTVar []) >>= \ges ->
 
-	let	crwos = winObjs @n @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
-			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp ges
-		drwos = destroyWinObjs @n wgrp sfcgrp rpgrp gpgrp
-			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp
-		in
+	let	crwos = winObjs @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
+			rgrps iasgrp rfsgrp iffgrp scgrp ges in
 
 	crwos zero' \wos ->
 
@@ -467,13 +448,13 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 	wbw <- atomically newTChan
 
-	mainLoop @n @siv @nmt inp outp dvs pllyt drwos vbs rgrps ubs vws ges cr
+	mainLoop @nmt inp outp dvs pllyt vbs rgrps ubs vws ges cr
 		wwww1 wwww2 wbw
 
-winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
-	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr
+winObjs :: forall (scfmt :: Vk.T.Format) k
+	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm sr
 	smrct sbrct nmrct nmt a . (
-	Mappable n, Vk.T.FormatToValue scfmt, Ord k ) =>
+	Vk.T.FormatToValue scfmt, Ord k ) =>
 	TChan (Event k) -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
@@ -496,14 +477,12 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Semaphore.Group sd 'Nothing srfs k ->
 	Vk.Fence.Group sd 'Nothing siff k ->
 	Vk.Khr.Swpch.Group sd 'Nothing scfmt ssc k ->
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
 	TVar [IO ()] -> k ->
-	(forall sfs . RecreateFrmbffrs (Replicate n siv) sfs => WinObjs
+	(forall svs sfs . RecreateFrmbffrs svs sfs => WinObjs
 		sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
---		(Replicate n siv) sr (Replicate n sf) -> IO a) -> IO a
-		(Replicate n siv) sr sfs -> IO a) -> IO a
+		svs sr sfs -> IO a) -> IO a
 winObjs outp phd dv gq cp qfis pllyt vext_
-	wgrp sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp ges k f =
+	wgrp sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ges k f =
 	initWindow True wgrp k >>= \w ->
 	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
 			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
@@ -545,56 +524,12 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	createSyncObjects iasgrp rfsgrp iffgrp k >>= \sos ->
 
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
-	createImageViews' @n ivgrp k scis >>= \scivs ->
+	createImgVws dv scis \scivs ->
 	createFrmbffrs' dv ext rp scivs \fbs ->
 
 	let	wos = WinObjs
 			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
 	f wos
-
-destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
-	si sd sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
-	smrct sbrct nmrct nmt . (NumToValue n,  Ord k) =>
-	Group sw k ->
-	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
-	Vk.RndrPss.Group sd 'Nothing sr k ->
-	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
-		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
-			'(Rectangle, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3),
-			'(9, TexCoord) ],
-		'(sl, '[AtomUbo sdsl nmt], '[]) )] ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 Rectangle ""],
-		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])]
-		) ->
-	Vk.Semaphore.Group sd 'Nothing sias k ->
-	Vk.Semaphore.Group sd 'Nothing srfs k ->
-	Vk.Fence.Group sd 'Nothing siff k ->
-	Vk.Khr.Swpch.Group sd 'Nothing scfmt ssc k ->
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
-	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> IO ()
-destroyWinObjs
-	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k = do
-	Just (GlfwG.Win.W w) <- GlfwG.Win.lookup wgrp k
-	Glfw.setWindowShouldClose w True
-	either error pure =<< unsafeDestroy wgrp k
-
-	either error pure =<< Vk.Khr.Swpch.unsafeDestroy scgrp k
-	either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcgrp k
-
-	either error pure =<< Vk.RndrPss.unsafeDestroy rpgrp k
-	either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpgrp k
-	either error pure =<< Vk.Bffr.unsafeDestroy rbgrp k
-	either error pure =<< Vk.Mem.unsafeFree rmgrp k
-	either error pure =<< Vk.Semaphore.unsafeDestroy iasgrp k
-	either error pure =<< Vk.Semaphore.unsafeDestroy rfsgrp k
-	either error pure =<< Vk.Fence.unsafeDestroy iffgrp k
-	for_ [0 .. numToValue @n - 1] \i -> do
-		either error pure =<< Vk.ImgVw.unsafeDestroy ivgrp (k, i)
-		either error pure =<< Vk.Frmbffr.unsafeDestroy fbgrp (k, i)
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -872,55 +807,23 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
 
-createImageViews' :: forall n ivfmt sd si siv k sm nm ifmt . (
-	Mappable n, Ord k, Vk.T.FormatToValue ivfmt ) =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
-	k -> [Vk.Img.Binded sm si nm ifmt] ->
-	IO (HPList.PL (Vk.ImgVw.I nm ivfmt) (Replicate n siv))
-createImageViews' ivgrp k imgs = do
-	ivs <- createImageViewList ivgrp k imgs
-	pure $ homoListFromList @_ @n ivs
+createImgVws :: Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss inm fmt] ->
+	(forall si . HPList.PL (Vk.ImgVw.I inm fmt) si -> IO a) -> IO a
+createImgVws _dv [] f = f HPList.Nil
+createImgVws dv (i : is) f =
+	Vk.ImgVw.create dv (imgVwInfo i Vk.Img.AspectColorBit) nil \v ->
+	createImgVws dv is \vs -> f $ v :** vs
 
-createImageViewList :: forall ivfmt sd si siv k sm nm ifmt . (
-	Ord k, Vk.T.FormatToValue ivfmt ) =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
-	k -> [Vk.Img.Binded sm si nm ifmt] -> IO [Vk.ImgVw.I nm ivfmt siv]
-createImageViewList ivgrp k =
-	mapM (\(i, img) -> createImageView' ivgrp (k, i) img) . zip [0 ..]
-
-createImageView' :: forall ivfmt sd si siv k sm nm ifmt .
-	Ord k =>
-	Vk.T.FormatToValue ivfmt =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
-	(k, Int) -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm ivfmt siv)
-createImageView' ivgrp k timg = fromRight <$>
-	Vk.ImgVw.create' ivgrp k (imgVwInfo timg)
-
-createImageViews :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd ->
-	[Vk.Img.Binded sm si nm ifmt] ->
-	(forall sivs . HPList.PL (Vk.ImgVw.I nm ivfmt) sivs -> IO a) -> IO a
-createImageViews _ [] f = f HPList.Nil
-createImageViews dv (i : is) f =
-	createImageView dv i \v ->
-	createImageViews dv is \vs -> f $ v :** vs
-
-createImageView :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd ->
-	Vk.Img.Binded sm si nm ifmt ->
-	(forall siv . Vk.ImgVw.I nm ivfmt siv -> IO a) -> IO a
-createImageView dv timg = Vk.ImgVw.create dv (imgVwInfo timg) nil
-
-recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
-recreateImageViews _dvc [] HPList.Nil = pure ()
-recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.unsafeRecreate dvc (imgVwInfo sci) nil iv >>
-	recreateImageViews dvc scis ivs
-recreateImageViews _ _ _ =
-	error "number of Vk.Img.I and Vk.ImageView.I should be same"
+recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
+	[Vk.Img.Binded ss ss inm fmt] ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs -> IO ()
+recreateImgVws _dv [] HPList.Nil = pure ()
+recreateImgVws dv (i : is) (v :** vs) =
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit) nil v >>
+	recreateImgVws dv is vs
+recreateImgVws _ _ _ =
+	error "number of Vk.Image.I and Vk.ImageView.I should be same"
 
 createRenderPass ::
 	forall (scfmt :: Vk.T.Format) sd ma sr k . (
@@ -1239,37 +1142,6 @@ frmbffrInfo' ex rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
-
-class Mappable (ts :: [knd]) where
-	type Replicate ts s :: [Type]
-	homoListFromList :: [t s] -> HPList.PL t (Replicate ts s)
-	mapHomoListMWithI :: Monad m => Int -> (Int -> t a -> m (t' b)) ->
-		HPList.PL t (Replicate ts a) ->
-		m (HPList.PL t' (Replicate ts b))
-	zipWithHomoListM_ :: Monad m => (t a -> t' b -> m c) ->
-		HPList.PL t (Replicate ts a) ->
-		HPList.PL t' (Replicate ts b) -> m ()
-
-instance Mappable '[] where
-	type Replicate '[] s = '[]
-	homoListFromList [] = HPList.Nil
-	homoListFromList _ = error "bad"
-	mapHomoListMWithI _ _ HPList.Nil = pure HPList.Nil
-	zipWithHomoListM_ _ HPList.Nil HPList.Nil = pure ()
-
-instance Mappable ts => Mappable (t ': ts) where
-	type Replicate (t ': ts) s = s ': Replicate ts s
-	homoListFromList (x : xs) = x :** (homoListFromList @_ @ts xs)
-	homoListFromList _ = error "bad"
-	mapHomoListMWithI :: forall t' a t'' b m .
-		Monad m => Int -> (Int -> t' a -> m (t'' b)) ->
-		HPList.PL t' (Replicate (t ': ts) a) ->
-		m (HPList.PL t'' (Replicate (t ': ts) b))
-	mapHomoListMWithI i f (x :** xs) = (:**) <$> f i x
-		<*> mapHomoListMWithI @_ @ts @_ @_ @a @_ @b (i + 1) f xs
-	zipWithHomoListM_ f (x :** xs) (y :** ys) =
-		f x y >> zipWithHomoListM_ @_ @ts f xs ys
-
 
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
@@ -1622,26 +1494,24 @@ checkTChan t = atomically do
 	pure ne
 
 mainLoop ::
-	forall n siv nmt scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
-		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k r sfs . (
+	forall nmt scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
+		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k r svs sfs . (
 	Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k,
-	RecreateFrmbffrs (Replicate n siv) sfs
+	RecreateFrmbffrs svs sfs
 	) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl nmt ->
-
-	(k -> IO ()) ->
 
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm k ->
 	UniformBuffers sds sdsl nmt sm2 sb2 ->
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
 --		(Replicate n siv) sr (Replicate n sf))) ->
-		(Replicate n siv) sr sfs)) ->
+		svs sr sfs)) ->
 	TVar [IO ()] ->
 	CairoT r RealWorld ->
 	(View -> IO ()) -> IO () -> TChan () ->
 	IO ()
-mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll drwos vbs rgrps ubs vws ges cr
+mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 	wwww1 wwww2 wbw = do
 	wm <- atomically newTChan
 	fix \loop -> do
@@ -1658,7 +1528,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll drwos vbs rgrps ubs vws ges cr
 --				putStrLn "DRAW BEGIN"
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
-				runLoop' @n @siv dvs pll ws vbs rgrps
+				runLoop' @_ @_ dvs pll ws vbs rgrps
 --				runLoop' @n @siv @sf dvs pll ws vbs rgrps
 					(rectsToDummy $ second (rectangle'ToRectangle <$>) <$> ds) ubs outp loop
 			Draw2 view -> do
@@ -1676,7 +1546,6 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll drwos vbs rgrps ubs vws ges cr
 					b <- isEmptyTChan wm
 					check b
 				putStrLn $ "DESTROY WINDOW: " ++ show k
-				atomically (modifyTVar vws (M.delete k)) >> drwos k
 				ws <- atomically $ readTVar vws
 				GlfwG.pollEvents
 				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
@@ -1798,16 +1667,16 @@ winObjsToWin ::
 	W sw
 winObjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
-runLoop' :: forall n (siv :: Type) sfs -- (sf :: Type)
+runLoop' :: forall sfs svs -- (sf :: Type)
 	sd sc scb sl
 	sw ssfc sg sias srfs siff scfmt ssc sr
 	smrct sbrct nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k nmt . (
 	Vk.T.FormatToValue scfmt, Ord k,
-	RecreateFrmbffrs (Replicate n siv) sfs
+	RecreateFrmbffrs svs sfs
 	) =>
 	Devices sd sc scb -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	(M.Map k (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nmrct
-		(Replicate n siv) sr sfs)) ->
+		svs sr sfs)) ->
 --		(Replicate n siv) sr (Replicate n sf))) ->
 	(	Vk.Bffr.Binded sm' sb' nmrct '[VObj.List 256 Vertex ""],
 		Vk.Bffr.Binded sm2 sb2 nm2 '[VObj.List 256 Word16 ""] ) ->
@@ -1827,11 +1696,11 @@ runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 		destroyRectangleBuffer rgrps k'
 		rb <- createRectangleBuffer dvs rgrps k' rects'
 		let	rb' = (rb, fromIntegral $ length rects')
-		catchAndDraw @n @siv @_ phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
+		catchAndDraw @_ @_ @_ phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
 	if cls then (pure ()) else do
 		for_ ws \wos ->
-			recreateSwapchainEtcIfNeed @n @siv @_ phdvc qfis dvc pll wos outp
+			recreateSwapchainEtcIfNeed @_ @_ @_ phdvc qfis dvc pll wos outp
 		loop
 
 lookupRects :: Ord k =>
@@ -1840,10 +1709,10 @@ lookupRects :: Ord k =>
 lookupRects rs = fromMaybe (viewProjectionIdentity, dummy) . (`M.lookup` rs)
 
 catchAndDraw ::
-	forall n siv sfs
+	forall svs sfs
 		sd sl sdsl sm sb smr sbr nm sm' sb' sm2 sb2 nm' sw ssfc sg sias srfs siff win ssc sr sds scb nmt . (
 	Vk.T.FormatToValue win,
-	RecreateFrmbffrs (Replicate n siv) sfs
+	RecreateFrmbffrs svs sfs
 	) =>
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
@@ -1854,24 +1723,24 @@ catchAndDraw ::
 	Vk.CmdBffr.C scb ->
 	ViewProjection ->
 	WinObjs sw ssfc sg sl sdsl nmt sias srfs siff win ssc nm
-		(Replicate n siv) sr sfs ->
+		svs sr sfs ->
 --		(Replicate n siv) sr (Replicate n sf) ->
 	IO ()
 catchAndDraw phdvc qfis dvc gq pq pllyt vb rb ib ubm ubds cb ubo wos = do
-	catchAndRecreate @n @_ @siv @_ phdvc qfis dvc pllyt (winObjsToRecreates wos)
+	catchAndRecreate @_ @_ @_ @_ phdvc qfis dvc pllyt (winObjsToRecreates wos)
 		$ drawFrame dvc gq pq pllyt (winObjsToDraws wos) vb rb ib ubm ubds cb ubo
 	Vk.Dvc.waitIdle dvc
 
 recreateSwapchainEtcIfNeed ::
-	forall n siv sfs
+	forall svs sfs
 		sd sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sr k nmt . (
 	Vk.T.FormatToValue scfmt,
-	RecreateFrmbffrs (Replicate n siv) sfs
+	RecreateFrmbffrs svs sfs
 	) =>
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
-		(Replicate n siv) sr sfs ->
+		svs sr sfs ->
 --		(Replicate n siv) sr (Replicate n sf) ->
 		TChan (Event k) -> IO ()
 recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
@@ -1879,7 +1748,7 @@ recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _
 	checkResizedState fbrszd >>= bool (pure ()) (do
 		putStrLn "recreateSwapchainEtcIfNeed: needed"
 		atomically $ writeTChan outp EventNeedRedraw
-		recreateSwapchainEtc @n @siv @_ phdvc qfis dvc pllyt $ winObjsToRecreates wos)
+		recreateSwapchainEtc @_ @_ @_ phdvc qfis dvc pllyt $ winObjsToRecreates wos)
 	
 
 drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds nmt .
@@ -1945,14 +1814,14 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate ::
-	forall n scfmt siv sfs sw ssfc sd nm sr ssc sl sdsl sg nmt . (
+	forall scfmt sfs svs sw ssfc sd nm sr ssc sl sdsl sg nmt . (
 	Vk.T.FormatToValue scfmt,
-	RecreateFrmbffrs (Replicate n siv) sfs
+	RecreateFrmbffrs svs sfs
 	) =>
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	Recreates sw sl nm ssfc sr sg sdsl nmt scfmt
-		ssc (Replicate n siv) sfs ->
+		ssc svs sfs ->
 --		ssc (Replicate n siv) (Replicate n sf) ->
 	IO () -> IO ()
 catchAndRecreate phdvc qfis dvc pllyt rcs act = catchJust
@@ -1962,17 +1831,16 @@ catchAndRecreate phdvc qfis dvc pllyt rcs act = catchJust
 	act
 	\_ -> do
 		putStrLn "catchAndRecreate: catched"
-		recreateSwapchainEtc @n @siv @_ phdvc qfis dvc pllyt rcs
+		recreateSwapchainEtc @_ phdvc qfis dvc pllyt rcs
 
 recreateSwapchainEtc :: forall
-	n siv sfs scfmt sw ssfc sd ssc nm sr sl sdsl sg nmt .
+	svs sfs scfmt sw ssfc sd ssc nm sr sl sdsl sg nmt .
 	(
-	RecreateFrmbffrs (Replicate n siv) sfs,
+	RecreateFrmbffrs svs sfs,
 	Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
---	Recreates sw sl nm ssfc sr sg sdsl nmt scfmt ssc (Replicate n siv) (Replicate n sf) ->
-	Recreates sw sl nm ssfc sr sg sdsl nmt scfmt ssc (Replicate n siv) sfs ->
+	Recreates sw sl nm ssfc sr sg sdsl nmt scfmt ssc svs sfs ->
 	IO ()
 recreateSwapchainEtc
 	phdvc qfis dvc pllyt
@@ -1984,7 +1852,7 @@ recreateSwapchainEtc
 	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
 	atomically $ writeTVar vex ext
 	Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-		recreateImageViews dvc imgs scivs
+		recreateImgVws dvc imgs scivs
 	recreateGraphicsPipeline dvc ext rp pllyt gpl
 	recreateFrmbffrs dvc ext rp scivs fbs
 	putStrLn "recreateSwapchainEtc end"

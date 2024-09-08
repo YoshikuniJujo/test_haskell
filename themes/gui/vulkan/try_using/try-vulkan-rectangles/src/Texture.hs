@@ -64,7 +64,7 @@ createBindImg :: forall sd sds sdsl bis ss nmt fmt a . (
 	Vk.Smplr.S ss -> (Word32, Word32) ->
 	(forall sm si . Vk.Img.Binded sm si nmt fmt -> IO a) -> IO a
 createBindImg pd dv ds spl sz f = createImg pd dv sz \i ->
-	Vk.ImgVw.create @_ @fmt dv (imgVwInfo i) nil \v ->
+	Vk.ImgVw.create @_ @fmt dv (imgVwInfo i Vk.Img.AspectColorBit) nil \v ->
 	updateDscSt dv ds v spl >> f i
 
 createImg :: forall sd nm fmt a . Vk.T.FormatToValue fmt =>
@@ -100,15 +100,16 @@ createImg pd dv (w, h) f =
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
-imgVwInfo i = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = TMaybe.N, Vk.ImgVw.createInfoFlags = zeroBits,
+imgVwInfo i a = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
 	Vk.ImgVw.createInfoImage = i,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
 	Vk.ImgVw.createInfoComponents = def,
 	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeAspectMask = a,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
