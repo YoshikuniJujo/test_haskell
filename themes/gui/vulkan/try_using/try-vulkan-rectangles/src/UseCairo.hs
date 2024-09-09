@@ -152,8 +152,6 @@ import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 
 import Trial.Followbox.ViewType as FV
 
-import Data.Time
-
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 
@@ -404,24 +402,12 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	cairoCreate crsfc >>= \cr ->
 
 	createBindImg phd dv ubds txsmplr textureSize \(tximg :: Vk.Img.Binded sm si' nmt ifmt) ->
-	drawViewIO crsfc cr (View []) >>= \trs -> createBufferImageForCopy phd dv trs \ibf ibfm -> do
+	createBffrImg phd dv textureWidth textureHeight \ibf ibfm -> do
 
-	let
-		wwww v = do
-			t0 <- getCurrentTime
-			trs' <- drawViewIO crsfc cr v
-			t1 <- getCurrentTime
-			writeBufferImage1 dv ibfm trs'
-			writeBufferImage2 dv gq cp tximg ibf textureWidth textureHeight
-			t2 <- getCurrentTime
-			print $ t1 `diffUTCTime` t0
-			print $ t2 `diffUTCTime` t1
-		wwww1 v = do
-			trs' <- drawViewIO crsfc cr v
-			writeBufferImage1 dv ibfm trs'
+	let	wwww1 v = writeBffr dv ibfm =<< drawViewIO crsfc cr v
 		wwww2 = writeBufferImage2 dv gq cp tximg ibf textureWidth textureHeight
 
-	wwww $ View []
+	wwww1 (View []) >> wwww2
 
 	wbw <- atomically newTChan
 
@@ -499,7 +485,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
 	createImgVws dv scis \scivs ->
-	createFrmbffrs' dv ext rp scivs \fbs ->
+	createFrmbffrs dv ext rp scivs \fbs ->
 
 	let	wos = WinObjs
 			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
@@ -964,22 +950,13 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	HPList.PL (Vk.ImgVw.I inm fmt) sis -> Vk.ImgVw.I dptnm dptfmt siv ->
-	(forall sfs . RecreateFrmbffrs sis sfs =>
-		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFrmbffrs _ _ _ HPList.Nil _ f = f HPList.Nil
-createFrmbffrs dv ex rp (v :** vs) dvw f =
-	Vk.Frmbffr.create dv (frmbffrInfo ex rp v dvw) nil \fb ->
-	createFrmbffrs dv ex rp vs dvw \fbs -> f (fb :** fbs)
-
-createFrmbffrs' :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	HPList.PL (Vk.ImgVw.I inm fmt) sis ->
 	(forall sfs . RecreateFrmbffrs sis sfs =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFrmbffrs' _ _ _ HPList.Nil f = f HPList.Nil
-createFrmbffrs' dv ex rp (v :** vs) f =
-	Vk.Frmbffr.create dv (frmbffrInfo' ex rp v) nil \fb ->
-	createFrmbffrs' dv ex rp vs \fbs -> f (fb :** fbs)
+createFrmbffrs _ _ _ HPList.Nil f = f HPList.Nil
+createFrmbffrs dv ex rp (v :** vs) f =
+	Vk.Frmbffr.create dv (frmbffrInfo ex rp v) nil \fb ->
+	createFrmbffrs dv ex rp vs \fbs -> f (fb :** fbs)
 
 class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
 	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -992,25 +969,12 @@ instance RecreateFrmbffrs '[] '[] where
 instance RecreateFrmbffrs sis sfs =>
 	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
 	recreateFrmbffrs dv ex rp (v :** vs) (fb :** fbs) =
-		Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo' ex rp v) nil fb >>
+		Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v) nil fb >>
 		recreateFrmbffrs dv ex rp vs fbs
 
 frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
-	Vk.ImgVw.I dptnm dptfmt sdiv ->
-	Vk.Frmbffr.CreateInfo 'Nothing sr
-		'[ '(inm, fmt, si), '(dptnm, dptfmt, sdiv)]
-frmbffrInfo ex rp att dpt = Vk.Frmbffr.CreateInfo {
-	Vk.Frmbffr.createInfoNext = TMaybe.N,
-	Vk.Frmbffr.createInfoFlags = zeroBits,
-	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 att :** U3 dpt :** HPList.Nil,
-	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
-	Vk.Frmbffr.createInfoLayers = 1 }
-	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
-
-frmbffrInfo' :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
 	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(inm, fmt, si)]
-frmbffrInfo' ex rp att = Vk.Frmbffr.CreateInfo {
+frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
@@ -1182,7 +1146,7 @@ createBufferAtom :: forall sd nm a b . Storable a => Vk.Phd.P -> Vk.Dvc.D sd ->
 			sb,
 			'Vk.Mem.BufferArg nm '[VObj.Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
-createBufferAtom p dv usg props = createBuffer p dv VObj.LengthAtom usg props
+createBufferAtom p dv = createBffr p dv VObj.LengthAtom
 
 createBufferList :: forall sd nm t a . Storable t =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
@@ -1192,8 +1156,7 @@ createBufferList :: forall sd nm t a . Storable t =>
 			sb,
 			'Vk.Mem.BufferArg nm '[VObj.List 256 t ""] ) ] ->
 		IO a) -> IO a
-createBufferList p dv ln usg props =
-	createBuffer p dv (VObj.LengthList ln) usg props
+createBufferList p dv ln = createBffr p dv (VObj.LengthList ln)
 
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->

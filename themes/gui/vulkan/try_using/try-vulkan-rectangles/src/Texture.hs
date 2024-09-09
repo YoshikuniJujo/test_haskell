@@ -9,20 +9,21 @@
 
 module Texture (
 
-	-- * CREATE AND UPDATE
+	-- * CREATE AND BIND
 
-	createBindImg, createBufferImageForCopy, createBuffer,
+	createBindImg, imgVwInfo, createBffrImg, createBffr,
 
-	-- * WRITE
+	-- * WRITE BUFFER
 
-	writeBufferImage1, writeBufferImage2,
+	writeBffr,
 
-	-- * CREATE INFOS
+	-- * COPY FROM BUFFER TO IMAGE
 
-	imgVwInfo,
+	writeBufferImage2,
 
 	) where
 
+import GHC.TypeNats
 import Foreign.Storable
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -36,7 +37,7 @@ import Data.HeteroParList (pattern (:*.))
 import Data.Word
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
@@ -52,15 +53,17 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mm
-import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object qualified as Obj
 import Gpu.Vulkan.Object.Base qualified as BObj
 
 import Data.Bits.ToolsYj
 
+-- CREATE AND BIND IMAGE
+
 createBindImg :: forall sd sds sdsl bis ss nmt fmt a . (
 	Vk.T.FormatToValue fmt,
 	Vk.DscSt.BindingAndArrayElemImage bis '[ '(nmt, fmt)] 0 ) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSt.D sds '(sdsl, bis) ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSt.D sds '(sdsl, bis) ->
 	Vk.Smplr.S ss -> (Word32, Word32) ->
 	(forall sm si . Vk.Img.Binded sm si nmt fmt -> IO a) -> IO a
 createBindImg pd dv ds spl sz f = createImg pd dv sz \i ->
@@ -68,7 +71,7 @@ createBindImg pd dv ds spl sz f = createImg pd dv sz \i ->
 	updateDscSt dv ds v spl >> f i
 
 createImg :: forall sd nm fmt a . Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Word32, Word32) ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> (Word32, Word32) ->
 	(forall sm si . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
 createImg pd dv (w, h) f =
 	Vk.Img.create dv iinfo nil \i ->
@@ -134,36 +137,65 @@ updateDscSt dv ds v spl =
 				Vk.Dsc.imageInfoImageView = v,
 				Vk.Dsc.imageInfoSampler = spl } }
 
-createBufferImageForCopy :: forall img sd inm' . BObj.IsImage img =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	img ->
-	(forall sm' sb' .
-		Vk.Bffr.Binded sm' sb' "texture-buffer" '[VObj.Image 1 img inm'] ->
-		Vk.Mm.M sm' '[ '(sb', Vk.Mm.BufferArg "texture-buffer" '[VObj.Image 1 img inm'])] -> IO ()) ->
-	IO ()
-createBufferImageForCopy phdvc dvc img f =
-	createBufferImage @img @_ phdvc dvc (wdt, wdt, hgt, 1)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		\(sb :: Vk.Bffr.Binded
-			sm' sb' "texture-buffer" '[ VObj.Image 1 a inm]) sbm -> f sb sbm
+-- CREATE IMAGE BUFFER
+
+createBffrImg :: forall sd bnm i nm . BObj.IsImage i =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Obj.Image 1 i nm] ->
+		Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Obj.Image 1 i nm])] ->
+		IO ()) -> IO ()
+createBffrImg pd dv w h = createBffr pd dv (Obj.LengthImage w w h 1)
+	Vk.Bffr.UsageTransferSrcBit
+	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+
+createBffr :: forall sd nm o a . Obj.SizeAlignment o =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Obj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[o] ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> IO a) -> IO a
+createBffr p dv ln us prs f = Vk.Bffr.create dv binfo nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) prs
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
+		(ainfo mt) nil
+		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
 	where
-	wdt = BObj.imageWidth img
-	hgt = BObj.imageHeight img
+	binfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = TMaybe.N,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+		Vk.Bffr.createInfoUsage = us,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	ainfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-writeBufferImage1 :: forall img sd sm' sb' inm' . BObj.IsImage img =>
+findMmType ::
+	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmType pd flt prs =
+	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
+	where
+	msg = "failed to find suitable memory type!"
+	suit prs1 = fst <$> L.find ((&&)
+		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
+		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
+			(Vk.Phd.memoryPropertiesMemoryTypes prs1)
+
+-- WRITE BUFFER
+
+writeBffr :: forall sd sm sb bnm al i nm . (KnownNat al, BObj.IsImage i) =>
 	Vk.Dvc.D sd ->
-	Vk.Mm.M sm' '[ '(sb', Vk.Mm.BufferArg "texture-buffer" '[VObj.Image 1 img inm'])] ->
-	img -> IO ()
-writeBufferImage1 dvc sbm img = do
-	Vk.Mm.write @"texture-buffer"
-		@(VObj.Image 1 img inm') @0 dvc sbm zeroBits img
+	Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Obj.Image al i nm])] -> i ->
+	IO ()
+writeBffr dv m = Vk.Mm.write @bnm @(Obj.Image al i nm) @0 dv m zeroBits
 
-writeBufferImage2 :: forall img sd sc sm si nm sm' sb' inm' . BObj.IsImage img =>
+-- COPY FROM BUFFER TO IMAGE
+
+writeBufferImage2 :: forall img sd sc sm si nm sm' sb' nmi bnmi . BObj.IsImage img =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Img.Binded sm si nm (BObj.ImageFormat img) ->
-	Vk.Bffr.Binded sm' sb' "texture-buffer" '[VObj.Image 1 img inm'] ->
+	Vk.Bffr.Binded sm' sb' bnmi '[Obj.Image 1 img nmi] ->
 	Word32 -> Word32 -> IO ()
 writeBufferImage2 dvc gq cp tximg sb wdt hgt = do
 		transitionImageLayout dvc gq cp tximg
@@ -180,7 +212,7 @@ writeBufferImage2 dvc gq cp tximg sb wdt hgt = do
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (BObj.ImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 img inm]  ->
+	Vk.Bffr.Binded sm sb nm '[Obj.Image 1 img inm]  ->
 	Vk.Img.Binded sm' si nm' (BObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp bf img wdt hgt =
@@ -198,58 +230,6 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyBufferToImage @1
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
-
-createBufferImage :: Storable (BObj.ImagePixel t) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[ VObj.Image 1 t inm])] ->
-		IO a) -> IO a
-createBufferImage p dv (r, w, h, d) usg props f =
-	putStrLn "createBufferImage begin" >>
-	createBuffer p dv (VObj.LengthImage r w h d) usg props f
-		<* putStrLn "createBufferImage end"
-
-createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[o] ->
-		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg nm '[o])] ->
-		IO a) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
-	reqs <- Vk.Bffr.getMemoryRequirements dv b
-	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) props
-	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
-		(allcInfo mt) nil
-		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) -> bnd
-	where
-	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
-	bffrInfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = TMaybe.N,
-		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
-		Vk.Bffr.createInfoUsage = usg,
-		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
-	allcInfo mt = Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
-
-findMmType :: Vk.PhDvc.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags ->
-	IO Vk.Mm.TypeIndex
-findMmType phdvc flt props =
-	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
-	where
-	msg = "failed to find suitable memory type!"
-	suitable props1 = fst <$> L.find ((&&)
-		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
-		<*> checkBits props . Vk.Mm.mTypePropertyFlags . snd) tps
-		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
