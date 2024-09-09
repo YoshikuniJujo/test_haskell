@@ -15,11 +15,11 @@
 module Main (main) where
 
 import UseCairo (
-	rectangles2, Event(..), Command(..), ViewProjection(..),
+	useCairo, Event(..), Command(..), ViewProjection(..),
 
-	Rectangle'(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..),
+	Rectangle'(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
 
-	readTVarOr )
+	)
 
 import Control.Monad
 import Control.Monad.Fix
@@ -54,7 +54,14 @@ main = do
 		((writeTChan inp, \k -> unGetTChan inp (DestroyWindow k)), (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	_ <- forkIO $ controller a inp
-	rectangles2 inp outp vext
+	useCairo inp outp vext
+
+readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
+readTVarOr d mp k = do
+	mv <- (M.lookup k) <$> readTVar mp
+	case mv of
+		Nothing -> pure d
+		Just v -> readTVar v
 
 newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
 

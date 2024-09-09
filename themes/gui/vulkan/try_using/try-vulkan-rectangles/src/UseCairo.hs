@@ -18,7 +18,7 @@ module UseCairo (
 
 	-- * RECTANGLES
 
-	rectangles2,
+	useCairo,
 
 	-- * COMMAND
 
@@ -35,10 +35,6 @@ module UseCairo (
 	-- * EVENT
 
 	Event(..),
-
-	-- * OTHERS
-
-	readTVarOr
 
 	) where
 
@@ -165,9 +161,9 @@ textureWidth, textureHeight :: Integral n => n
 textureSize@(textureWidth, textureHeight) =
 	(1024 :: forall n . Num n => n, 1024 :: forall n . Num n => n)
 
-rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
+useCairo :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
-rectangles2 inp outp vext = GlfwG.init error $ do
+useCairo inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
 			enableValidationLayers do
@@ -183,13 +179,6 @@ rectangles2 inp outp vext = GlfwG.init error $ do
 	atomically $ writeTChan outp EventEnd
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
-
-readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
-readTVarOr d mp k = do
-	mv <- (M.lookup k) <$> readTVar mp
-	case mv of
-		Nothing -> pure d
-		Just v -> readTVar v
 
 class NumToValue (n :: [()]) where numToValue :: Int
 instance NumToValue '[] where numToValue = 0
