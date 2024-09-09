@@ -19,9 +19,7 @@ module Texture (
 
 	-- * COPY FROM BUFFER TO IMAGE
 
-	flashImg,
-
-	) where
+	flashImg ) where
 
 import GHC.TypeNats
 import Foreign.Storable
@@ -43,7 +41,7 @@ import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.QueueFamily qualified as Vk.QFamily
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
@@ -192,74 +190,43 @@ writeBffr dv m = Vk.Mm.write @bnm @(Obj.Image al i nm) @0 dv m zeroBits
 
 -- COPY FROM BUFFER TO IMAGE
 
-flashImg :: forall img sd sc sm si nm sm' sb' nmi bnmi . BObj.IsImage img =>
+flashImg :: forall sd sc sim si inm i sbm sb bnmi al nmi .
+	(BObj.IsImage i, KnownNat al) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.Binded sm si nm (BObj.ImageFormat img) ->
-	Vk.Bffr.Binded sm' sb' bnmi '[Obj.Image 1 img nmi] ->
-	Word32 -> Word32 -> IO ()
-flashImg dvc gq cp tximg sb wdt hgt = do
-		transitionImageLayout dvc gq cp tximg
-			Vk.Img.LayoutUndefined
-			Vk.Img.LayoutTransferDstOptimal
-
-		copyBufferToImage dvc gq cp sb tximg wdt hgt
-
-		transitionImageLayout dvc gq cp tximg
+	Vk.Img.Binded sim si inm (BObj.ImageFormat i) ->
+	Vk.Bffr.Binded sbm sb bnmi '[Obj.Image al i nmi] -> (Word32, Word32) ->
+	IO ()
+flashImg dv gq cp i b sz = do
+		transitionImgLyt dv gq cp i
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyBffrToImg dv gq cp b i sz
+		transitionImgLyt dv gq cp i
 			Vk.Img.LayoutTransferDstOptimal
 			Vk.Img.LayoutShaderReadOnlyOptimal
 
-
-copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
-	Storable (BObj.ImagePixel img) =>
+transitionImgLyt :: forall sd sc sm si nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[Obj.Image 1 img inm]  ->
-	Vk.Img.Binded sm' si nm' (BObj.ImageFormat img) ->
-	Word32 -> Word32 -> IO ()
-copyBufferToImage dvc gq cp bf img wdt hgt =
-	singleTimeCmd dvc gq cp \cb -> do
-	let	region :: Vk.Bffr.ImageCopy img inm
-		region = Vk.Bffr.ImageCopy {
-			Vk.Bffr.imageCopyImageSubresource = isr,
-			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
-			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d wdt hgt 1 }
-		isr = Vk.Img.SubresourceLayers {
-			Vk.Img.subresourceLayersAspectMask =
-				Vk.Img.AspectColorBit,
-			Vk.Img.subresourceLayersMipLevel = 0,
-			Vk.Img.subresourceLayersBaseArrayLayer = 0,
-			Vk.Img.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyBufferToImage @1
-		cb bf img Vk.Img.LayoutTransferDstOptimal (HPList.Singleton region)
-
-transitionImageLayout :: forall sd sc si sm nm fmt .
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
-	IO ()
-transitionImageLayout dvc gq cp img olyt nlyt =
-	singleTimeCmd dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
-		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = TMaybe.N,
-			Vk.Img.memoryBarrierOldLayout = olyt,
-			Vk.Img.memoryBarrierNewLayout = nlyt,
-			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-				Vk.QFamily.Ignored,
-			Vk.Img.memoryBarrierDstQueueFamilyIndex =
-				Vk.QFamily.Ignored,
-			Vk.Img.memoryBarrierImage = img,
-			Vk.Img.memoryBarrierSubresourceRange = srr,
-			Vk.Img.memoryBarrierSrcAccessMask = sam,
-			Vk.Img.memoryBarrierDstAccessMask = dam }
-		srr = Vk.Img.SubresourceRange {
-			Vk.Img.subresourceRangeAspectMask =
-				Vk.Img.AspectColorBit,
-			Vk.Img.subresourceRangeBaseMipLevel = 0,
-			Vk.Img.subresourceRangeLevelCount = 1,
-			Vk.Img.subresourceRangeBaseArrayLayer = 0,
-			Vk.Img.subresourceRangeLayerCount = 1 }
-	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HPList.Nil HPList.Nil (HPList.Singleton $ U5 barrier)
-	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
+	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImgLyt dv gq cp i ol nl = singleTimeCmd dv gq cp \cb ->
+	Vk.Cmd.pipelineBarrier cb sstg dstg zeroBits HPList.Nil HPList.Nil brrr
+	where
+	brrr = HPList.Singleton $ U5 Vk.Img.MemoryBarrier {
+		Vk.Img.memoryBarrierNext = TMaybe.N,
+		Vk.Img.memoryBarrierOldLayout = ol,
+		Vk.Img.memoryBarrierNewLayout = nl,
+		Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrierImage = i,
+		Vk.Img.memoryBarrierSubresourceRange = srr,
+		Vk.Img.memoryBarrierSrcAccessMask = sam,
+		Vk.Img.memoryBarrierDstAccessMask = dam }
+	srr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
+	(sam, dam, sstg, dstg) = case (ol, nl) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
@@ -268,6 +235,26 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
 		_ -> error "unsupported layout transition!"
+
+copyBffrToImg :: forall sd sc sbm sb bnm al i nmi sim si nmi' .
+	(Storable (BObj.ImagePixel i), KnownNat al) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Bffr.Binded sbm sb bnm '[Obj.Image al i nmi]  ->
+	Vk.Img.Binded sim si nmi' (BObj.ImageFormat i) -> (Word32, Word32) ->
+	IO ()
+copyBffrToImg dv gq cp b i (w, h) = singleTimeCmd dv gq cp \cb ->
+	Vk.Cmd.copyBufferToImage @al cb b i Vk.Img.LayoutTransferDstOptimal rgns
+	where
+	rgns :: HPList.PL (Vk.Bffr.ImageCopy i) '[nmi]
+	rgns = HPList.Singleton Vk.Bffr.ImageCopy {
+		Vk.Bffr.imageCopyImageSubresource = srl,
+		Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
+		Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
+	srl = Vk.Img.SubresourceLayers {
+		Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceLayersMipLevel = 0,
+		Vk.Img.subresourceLayersBaseArrayLayer = 0,
+		Vk.Img.subresourceLayersLayerCount = 1 }
 
 singleTimeCmd :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->

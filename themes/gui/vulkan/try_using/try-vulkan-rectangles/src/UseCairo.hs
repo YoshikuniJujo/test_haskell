@@ -405,7 +405,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	createBffrImg phd dv textureWidth textureHeight \ibf ibfm -> do
 
 	let	wwww1 v = writeBffr dv ibfm =<< drawViewIO crsfc cr v
-		wwww2 = flashImg dv gq cp tximg ibf textureWidth textureHeight
+		wwww2 = flashImg dv gq cp tximg ibf textureSize
 
 	wwww1 (View []) >> wwww2
 
