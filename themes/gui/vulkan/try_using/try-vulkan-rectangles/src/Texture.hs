@@ -26,35 +26,35 @@ import Foreign.Storable
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
-import Data.Default
 import Data.Bits
+import Data.Bits.ToolsYj
+import Data.Default
 import Data.Maybe
 import Data.List qualified as L
-import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:*.))
+import Data.HeteroParList qualified as HPList
 import Data.Word
+
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object qualified as Obj
+import Gpu.Vulkan.Object.Base qualified as BObj
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Memory qualified as Vk.Mm
+import Gpu.Vulkan.Buffer qualified as Vk.Bffr
+import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
-import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
-import Gpu.Vulkan.Sample qualified as Vk.Sample
-import Gpu.Vulkan.Sampler qualified as Vk.Smplr
-import Gpu.Vulkan.Image qualified as Vk.Img
-import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
-import Gpu.Vulkan.Buffer qualified as Vk.Bffr
-import Gpu.Vulkan.Memory qualified as Vk.Mm
-import Gpu.Vulkan.Object qualified as Obj
-import Gpu.Vulkan.Object.Base qualified as BObj
-
-import Data.Bits.ToolsYj
 
 -- CREATE AND BIND IMAGE
 

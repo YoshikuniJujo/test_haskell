@@ -10,8 +10,8 @@ app
 src
 ---
 
+* [x] Texture
 * [ ] UseCairo
-* [ ] Texture
 * [ ] UseTextureGroup
 * [ ] CreateTextureGroup
 * [ ] SampleImages
