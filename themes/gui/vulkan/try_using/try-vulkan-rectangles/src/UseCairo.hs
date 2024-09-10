@@ -159,7 +159,7 @@ textureSize@(textureWidth, textureHeight) =
 useCairo :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 useCairo inp outp vext = GlfwG.init error $ do
-	_ <- forkIO $ controller' outp
+	_ <- forkIO $ controller outp
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
 			debug do
@@ -201,6 +201,19 @@ data Event k
 	| EventGamepadAxisLeftX Float
 	| EventGamepadButtonAPressed
 	deriving Show
+
+controller :: TChan (Event k) -> IO ()
+controller outp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
+	r <- Glfw.getGamepadState Glfw.Joystick'1
+	case r of
+		Nothing -> pure ()
+		Just (Glfw.GamepadState gb ga) -> do
+			when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
+				. atomically $ writeTChan outp EventGamepadButtonAPressed
+			when (abs leftx > 0.1)
+				. atomically . writeTChan outp $ EventGamepadAxisLeftX leftx
+			where
+			leftx = ga Glfw.GamepadAxis'LeftX
 
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
@@ -467,19 +480,6 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	let	wos = WinObjs
 			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
 	f wos
-
-controller' :: TChan (Event k) -> IO ()
-controller' outp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
-	r <- Glfw.getGamepadState Glfw.Joystick'1
-	case r of
-		Nothing -> pure ()
-		Just (Glfw.GamepadState gb ga) -> do
-			when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
-				. atomically $ writeTChan outp EventGamepadButtonAPressed
-			when (abs leftx > 0.1)
-				. atomically . writeTChan outp $ EventGamepadAxisLeftX leftx
-			where
-			leftx = ga Glfw.GamepadAxis'LeftX
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
