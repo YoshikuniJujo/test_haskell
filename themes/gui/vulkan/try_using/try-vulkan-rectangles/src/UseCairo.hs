@@ -20,23 +20,14 @@ module UseCairo (
 
 	useCairo,
 
-	-- * COMMAND
+	-- * COMMAND AND EVENT
 
-	Command(..),
+	Command(..), Event(..),
 
-	-- ** VIEW PROJECTION
+	-- ** VIEW PROJECTION AND RECTANGLE
 
-	ViewProjection(..),
-
-	-- ** RECTANGLE
-
-	Rectangle'(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..),
-
-	-- * EVENT
-
-	Event(..),
-
-	) where
+	ViewProjection(..), RectModel(..),
+	Rectangle(..), RectPos(..), RectSize(..), RectColor(..) ) where
 
 import GHC.Generics
 import Foreign.Storable
@@ -123,8 +114,8 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
 import Tools
-import ThEnv
 
+import Graphics.UI.GLFW as Glfw
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
 import Graphics.UI.GlfwG.Key as GlfwG.Ky
@@ -156,17 +147,22 @@ import Data.List.ToolsYj
 
 import Data.Ord.ToolsYj
 
+import Debug
+
 textureSize :: Integral n => (n, n)
 textureWidth, textureHeight :: Integral n => n
 textureSize@(textureWidth, textureHeight) =
 	(1024 :: forall n . Num n => n, 1024 :: forall n . Num n => n)
 
+-- USE CAIRO LOOP
+
 useCairo :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 useCairo inp outp vext = GlfwG.init error $ do
+	_ <- forkIO $ controller' outp
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-			enableValidationLayers do
+			debug do
 		(phd', qfis', dv', gq', pq') <-
 			withWindow False \dw ->
 			createSurface dw ist \dsfc -> do
@@ -180,14 +176,8 @@ useCairo inp outp vext = GlfwG.init error $ do
 	where setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
 
-class NumToValue (n :: [()]) where numToValue :: Int
-instance NumToValue '[] where numToValue = 0
-
-instance NumToValue n => NumToValue ('() ': n) where
-	numToValue = 1 + numToValue @n
-
 data Command k
-	= Draw (M.Map k (ViewProjection, [Rectangle']))
+	= Draw (M.Map k (ViewProjection, [Rectangle]))
 	| Draw2 View
 	| OpenWindow
 	| DestroyWindow k
@@ -200,6 +190,7 @@ data Event k
 	= EventEnd
 	| EventKeyDown k GlfwG.Ky.Key
 	| EventKeyUp k GlfwG.Ky.Key
+	| EventKeyRepeating k GlfwG.Ky.Key
 	| EventMouseButtonDown k GlfwG.Ms.MouseButton
 	| EventMouseButtonUp k GlfwG.Ms.MouseButton
 	| EventCursorPosition k Double Double
@@ -207,17 +198,9 @@ data Event k
 	| EventDeleteWindow k
 	| EventTextLayoutExtentResult (Occurred CTE.CalcTextExtents)
 	| EventNeedRedraw
+	| EventGamepadAxisLeftX Float
+	| EventGamepadButtonAPressed
 	deriving Show
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
-type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
-
-getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
-getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
-	<$> GlfwG.Ms.getButton w `mapM` bs
-	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
@@ -245,6 +228,13 @@ glfwEvents k w outp vscls vmb1p = do
 	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
+
+type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
+
+getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
+getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
+	<$> GlfwG.Ms.getButton w `mapM` bs
+	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 mouseButtonAll :: [GlfwG.Ms.MouseButton]
 mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
@@ -294,14 +284,14 @@ fromRight (Right x) = x
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
+	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
+			debug . (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
 	print exts
 	Vk.Ist.create (crinfo exts) nil f
@@ -313,7 +303,7 @@ createInstance f = do
 		Vk.Ist.createInfoFlags = zeroBits,
 		Vk.Ist.createInfoApplicationInfo = Just appinfo,
 		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Ist.createInfoEnabledExtensionNames = es }
 	appinfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
@@ -414,15 +404,15 @@ winObjs :: forall k
 	Vk.RndrPss.Group sd 'Nothing sr k ->
 	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
 		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
-			'(Rectangle, 'Vk.VtxInp.RateInstance) ],
+			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3),
 			'(9, TexCoord) ],
 		'(sl, '[AtomUbo sdsl nmt], '[]) )] ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 Rectangle ""],
-		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])]
+	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 RectangleRaw ""],
+		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])]
 		) ->
 	Vk.Semaphore.Group sd 'Nothing sias k ->
 	Vk.Semaphore.Group sd 'Nothing srfs k ->
@@ -444,16 +434,14 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	atomically (modifyTVar ges (glfwEvents k w outp vb vmbs :)) >>
 	atomically (newTVar NoResized) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
-		(Just \w' ky sc act mods -> do
-			putStrLn $
-				show w' ++ " " ++ show ky ++ " " ++
-				show sc ++ " " ++ show act ++ " " ++ show mods
+		(Just \_w ky _sc act _mds -> do
 			case act of
 				GlfwG.Ky.KeyState'Pressed ->
 					atomically $ writeTChan outp $ EventKeyDown k ky
 				GlfwG.Ky.KeyState'Released ->
 					atomically $ writeTChan outp $ EventKeyUp k ky
-				_ -> pure ()
+				GlfwG.Ky.KeyState'Repeating ->
+					atomically $ writeTChan outp $ EventKeyRepeating k ky
 			) >>
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
@@ -479,6 +467,19 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	let	wos = WinObjs
 			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
 	f wos
+
+controller' :: TChan (Event k) -> IO ()
+controller' outp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
+	r <- Glfw.getGamepadState Glfw.Joystick'1
+	case r of
+		Nothing -> pure ()
+		Just (Glfw.GamepadState gb ga) -> do
+			when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
+				. atomically $ writeTChan outp EventGamepadButtonAPressed
+			when (abs leftx > 0.1)
+				. atomically . writeTChan outp $ EventGamepadAxisLeftX leftx
+			where
+			leftx = ga Glfw.GamepadAxis'LeftX
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -551,7 +552,7 @@ createLogicalDevice phdvc dvcgrp k qfis =
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
 		Vk.Dvc.createInfoEnabledFeatures = Just def {
 			Vk.Phd.featuresSamplerAnisotropy = True } }
@@ -781,7 +782,7 @@ createPipelineLayout dvc f =
 
 createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 	Vk.Ppl.Graphics.Group sd mac sg k '[ '(
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -789,7 +790,7 @@ createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 			'(sl, '[AtomUbo sdsl nmt], '[]) )] -> k ->
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] -> IO (
 		Vk.Ppl.Graphics.G sg
-			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
 			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -803,7 +804,7 @@ createGraphicsPipeline gpgrp k sce rp pllyt =
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -819,7 +820,7 @@ mkGraphicsPipelineCreateInfo' ::
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 		'(	'Nothing,
-			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
+			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -1015,8 +1016,8 @@ createIndexBuffer phdvc dvc gq cp f =
 	f b
 
 createRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sd sm sb nm k -> k -> [Rectangle] ->
-	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
+	Devices sd sc scb -> RectGroups sd sm sb nm k -> k -> [RectangleRaw] ->
+	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 RectangleRaw ""])
 createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -1026,14 +1027,14 @@ createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
-		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") @0 dvc bm' zeroBits rs
+		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 RectangleRaw "") @0 dvc bm' zeroBits rs
 		copyBuffer dvc gq cp b' b
 	pure b
 
 createRectangleBuffer' :: Ord k =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPool.C sc ->
-	RectGroups sd sm sb nm k -> k -> [Rectangle] ->
-	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Rectangle ""])
+	RectGroups sd sm sb nm k -> k -> [RectangleRaw] ->
+	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 RectangleRaw ""])
 createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -1043,7 +1044,7 @@ createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
-		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 Rectangle "") @0 dvc bm' zeroBits rs
+		Vk.Mem.write @"rectangle-buffer" @(VObj.List 256 RectangleRaw "") @0 dvc bm' zeroBits rs
 		copyBuffer dvc gq cp b' b
 	pure b
 
@@ -1057,9 +1058,9 @@ destroyRectangleBuffer (bgrp, mgrp) k = do
 		_ -> pure ()
 
 type RectGroups sd sm sb nm k = (
-	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 Rectangle ""],
+	Vk.Bffr.Group sd 'Nothing sb k nm '[VObj.List 256 RectangleRaw ""],
 	Vk.Mem.Group sd 'Nothing sm k
-		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 Rectangle ""])] )
+		'[ '(sb, 'Vk.Mem.BufferArg nm '[VObj.List 256 RectangleRaw ""])] )
 
 createUniformBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[VObj.Atom 256 ViewProjection 'Nothing]  ->
@@ -1271,14 +1272,14 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl 
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
 			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl nmt], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
+	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 RectangleRaw ""], Vk.Cmd.InstanceCount) ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	Vk.DscSet.D sds (AtomUbo sdsl nmt) ->
 	IO ()
@@ -1288,7 +1289,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb (
 		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb) :**
-		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @Rectangle @"" rb) :**
+		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @RectangleRaw @"" rb) :**
 		HPList.Nil
 		) >>
 	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @"" ib) >>
@@ -1358,7 +1359,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 				ws <- atomically $ readTVar vws
 				runLoop' @_ @_ dvs pll ws vbs rgrps
 --				runLoop' @n @siv @sf dvs pll ws vbs rgrps
-					(rectsToDummy $ second (rectangle'ToRectangle <$>) <$> ds) ubs outp loop
+					(rectsToDummy $ second (rectangle'ToRectangleRaw <$>) <$> ds) ubs outp loop
 			Draw2 view -> do
 				_ <- forkIO do
 					b <- atomically $ isEmptyTChan wm
@@ -1405,7 +1406,7 @@ type PipelineLayout sl sdsl nmt = Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[]
 type UniformBuffers sds sdsl nmt sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl nmt), UniformBufferMemory sm2 sb2)
 
-rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])
+rectsToDummy :: M.Map k (b, [RectangleRaw]) -> M.Map k (b, [RectangleRaw])
 rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
 
 type Devices sd scp scb = (
@@ -1435,7 +1436,7 @@ type Swapchains scfmt ssc nm ss sr sfs = (
 	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
 
 type Pipeline sg sl sdsl nmt = Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -1452,7 +1453,7 @@ data Recreates sw sl nm ssfc sr sg sdsl nmt fmt ssc sis sfs = Recreates
 	(Vk.RndrPss.R sr)
 	(Vk.Ppl.Graphics.G sg
 		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
-			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
+			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
@@ -1473,7 +1474,7 @@ data Draws sl sr sg sdsl nmt sias srfs siff fmt ssc sfs = Draws
 	(TVar Vk.Extent2d) (Vk.RndrPss.R sr)
 	(Vk.Ppl.Graphics.G sg
 		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
-			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
+			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
@@ -1508,10 +1509,10 @@ runLoop' :: forall sfs svs -- (sf :: Type)
 --		(Replicate n siv) sr (Replicate n sf))) ->
 	(	Vk.Bffr.Binded sm' sb' nmrct '[VObj.List 256 Vertex ""],
 		Vk.Bffr.Binded sm2 sb2 nm2 '[VObj.List 256 Word16 ""] ) ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 Rectangle ""],
+	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 RectangleRaw ""],
 		Vk.Mem.Group sd 'Nothing smrct k '[
-			'(sbrct, 'Vk.Mem.BufferArg nmrct '[VObj.List 256 Rectangle ""])] ) ->
-	M.Map k (ViewProjection, [Rectangle]) ->
+			'(sbrct, 'Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])] ) ->
+	M.Map k (ViewProjection, [RectangleRaw]) ->
 	(Vk.DscSet.D sds (AtomUbo sdsl nmt), UniformBufferMemory sm sb) ->
 	TChan (Event k) ->
 	IO () -> IO ()
@@ -1532,8 +1533,8 @@ runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 		loop
 
 lookupRects :: Ord k =>
-	M.Map k (ViewProjection, [Rectangle]) -> k ->
-	(ViewProjection, [Rectangle])
+	M.Map k (ViewProjection, [RectangleRaw]) -> k ->
+	(ViewProjection, [RectangleRaw])
 lookupRects rs = fromMaybe (viewProjectionIdentity, dummy) . (`M.lookup` rs)
 
 catchAndDraw ::
@@ -1545,7 +1546,7 @@ catchAndDraw ::
 	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount)  ->
+	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 RectangleRaw ""], Vk.Cmd.InstanceCount)  ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 -> Vk.DscSet.D sds (AtomUbo sdsl nmt) ->
 	Vk.CmdBffr.C scb ->
@@ -1584,7 +1585,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	Draws sl sr sg sdsl nmt sias srfs siff scfmt ssc sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
+	(Vk.Bffr.Binded smr sbr nm '[VObj.List 256 RectangleRaw ""], Vk.Cmd.InstanceCount) ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl nmt) ->
@@ -1739,7 +1740,7 @@ instance StrG.G Vertex where
 newtype TexCoord = TexCoord Cglm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-data Rectangle = Rectangle {
+data RectangleRaw = RectangleRaw {
 	rectanglePos :: RectPos,
 	rectangleSize :: RectSize,
 	rectangleColor :: RectColor,
@@ -1749,19 +1750,19 @@ data Rectangle = Rectangle {
 	rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
 
-data Rectangle' = Rectangle' {
+data Rectangle = Rectangle {
 	rectanglePos' :: RectPos,
 	rectangleSize' :: RectSize,
 	rectangleColor' :: RectColor,
 	rectangleModel' :: RectModel }
 	deriving (Show, Generic)
 
-rectangle'ToRectangle :: Rectangle' -> Rectangle
-rectangle'ToRectangle Rectangle' {
+rectangle'ToRectangleRaw :: Rectangle -> RectangleRaw
+rectangle'ToRectangleRaw Rectangle {
 	rectanglePos' = p,
 	rectangleSize' = s,
 	rectangleColor' = c,
-	rectangleModel' = RectModel m } = Rectangle {
+	rectangleModel' = RectModel m } = RectangleRaw {
 	rectanglePos = p,
 	rectangleSize = s,
 	rectangleColor = c,
@@ -1771,16 +1772,16 @@ rectangle'ToRectangle Rectangle' {
 	rectangleModel3 = RectModel3 m3 }
 	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
 
-instance StrG.G Rectangle where
+instance StrG.G RectangleRaw where
 
-instance Storable Rectangle where
+instance Storable RectangleRaw where
 	sizeOf = StrG.gSizeOf
 	alignment = StrG.gAlignment
 	peek = StrG.gPeek
 	poke = StrG.gPoke
 
-instance Default Rectangle where
-	def = Rectangle
+instance Default RectangleRaw where
+	def = RectangleRaw
 		(RectPos . Cglm.Vec2 $ 0 :. 0 :. NilL)
 		(RectSize . Cglm.Vec2 $ 1 :. 1 :. NilL)
 		(RectColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL)
@@ -1837,9 +1838,9 @@ vertices = [
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
-dummy :: [Rectangle]
+dummy :: [RectangleRaw]
 dummy = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-	[Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+	[RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
 			(RectModel0 m0) (RectModel1 m1)

@@ -17,7 +17,7 @@ module Main (main) where
 import UseCairo (
 	useCairo, Event(..), Command(..), ViewProjection(..),
 
-	Rectangle'(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
+	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
 
 	)
 
@@ -32,8 +32,6 @@ import Data.Text qualified as T
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Cglm qualified as Cglm
-
-import Graphics.UI.GLFW qualified as Glfw
 
 import Data.Map qualified as M
 
@@ -53,7 +51,7 @@ main = do
 	_ <- forkIO $ untilEnd a (
 		((writeTChan inp, \k -> unGetTChan inp (DestroyWindow k)), (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
-	_ <- forkIO $ controller a inp
+--	_ <- forkIO $ controller a inp
 	useCairo inp outp vext
 
 readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
@@ -62,21 +60,6 @@ readTVarOr d mp k = do
 	case mv of
 		Nothing -> pure d
 		Just v -> readTVar v
-
-newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
-
-newAngle :: IO (TVar Angle)
-newAngle = atomically $ newTVar (pi / 2)
-
-controller :: TVar Angle -> TChan (Command Int) -> IO ()
-controller a inp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
-	r <- Glfw.getGamepadState Glfw.Joystick'1
-	case r of
-		Nothing -> pure ()
-		Just (Glfw.GamepadState gb ga) -> do
-			when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
-				. atomically $ writeTChan inp EndWorld
-			atomically $ modifyTVar a (subtract $ realToFrac (pi * ga Glfw.GamepadAxis'LeftX / 100))
 
 untilEnd :: TVar Angle -> (
 	((Command Int -> STM (), Int -> STM()), (STM Bool, STM (Event Int))),
@@ -111,15 +94,30 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 		case o of
 			Nothing -> loop
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just (EventKeyDown _w Key'Left) -> do
+				atomically $ modifyTVar ta (+ pi * 1 / 100)
+				loop
+			Just (EventKeyRepeating _w Key'Left) -> do
+				atomically $ modifyTVar ta (+ pi * 1 / 100)
+				loop
+			Just (EventKeyDown _w Key'Right) -> do
+				atomically $ modifyTVar ta (subtract $ pi * 1 / 100)
+				loop
+			Just (EventKeyRepeating _w Key'Right) -> do
+				atomically $ modifyTVar ta (subtract $ pi * 1 / 100)
+				loop
 			Just (EventKeyDown w ky) -> do
-				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
+				putStrLn ("KEY DOWN      : " ++ show w ++ " " ++ show ky)
 				loop
 			Just (EventKeyUp w Key'Q) -> do
-				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
+				putStrLn ("KEY UP       : " ++ show w ++ " " ++ show Key'Q)
 				atomically $ dw w
 				loop
 			Just (EventKeyUp w ky) -> do
-				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
+				putStrLn ("KEY UP       : " ++ show w ++ " " ++ show ky)
+				loop
+			Just (EventKeyRepeating w ky) -> do
+				putStrLn ("KEY REPEATING: " ++ show w ++ " " ++ show ky)
 				loop
 			Just (EventMouseButtonDown _ _) -> loop
 			Just (EventMouseButtonUp _ _) -> loop
@@ -139,6 +137,13 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 			Just EventNeedRedraw -> do
 				putStrLn "EVENT NEED REDRAW"
 				loop
+			Just (EventGamepadAxisLeftX lx) -> do
+				atomically $ modifyTVar ta (subtract $ realToFrac (pi * lx / 100))
+				loop
+			Just EventGamepadButtonAPressed -> do
+				putStrLn $ "EventGamepadButtonAPressed"
+				atomically $ inp EndWorld
+				loop
 
 uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
 uniformBufferObject (Angle a) sce = ViewProjection {
@@ -154,21 +159,21 @@ uniformBufferObject (Angle a) sce = ViewProjection {
 	where
 	lax = realToFrac $ cos a; lay = realToFrac $ sin a
 
-instancesMore :: [Rectangle']
+instancesMore :: [Rectangle]
 instancesMore = [
-	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.8) :. (- 1.8) :. NilL)
+	Rectangle (RectPos . Cglm.Vec2 $ (- 1.8) :. (- 1.8) :. NilL)
 		(RectSize . Cglm.Vec2 $ 3.6 :. 3.6 :. NilL)
 		(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
 		m1,
-	Rectangle' (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+	Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 		(RectSize . Cglm.Vec2 $ 0.8 :. 0.8 :. NilL)
 		(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
 		m1,
-	Rectangle' (RectPos . Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
+	Rectangle (RectPos . Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
 		(RectSize . Cglm.Vec2 $ 0.7 :. 0.9 :. NilL)
 		(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
 		m2,
-	Rectangle' (RectPos . Cglm.Vec2 $ (- 1.0) :. 0.7 :. NilL)
+	Rectangle (RectPos . Cglm.Vec2 $ (- 1.0) :. 0.7 :. NilL)
 		(RectSize . Cglm.Vec2 $ 0.9 :. 0.5 :. NilL)
 		(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
 		m2 ]
@@ -177,3 +182,8 @@ instancesMore = [
 	tr1 = Cglm.translate Cglm.mat4Identity (Cglm.Vec3 $ 0 :. (- 0.3) :. 0.5 :. NilL)
 	m2 = RectModel $
 		Cglm.scale tr1 (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+
+newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
+
+newAngle :: IO (TVar Angle)
+newAngle = atomically $ newTVar (pi / 2)
