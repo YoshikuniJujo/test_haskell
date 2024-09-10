@@ -33,8 +33,6 @@ import Data.Text qualified as T
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Data.Map qualified as M
-
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
@@ -79,8 +77,7 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 		a <- atomically $ readTVar ta
 		o <- atomically do
 			e0 <- ext ()
-			inp . Draw $ M.fromList
-				[((), (uniformBufferObject a e0, instancesMore))]
+			inp $ Draw (uniformBufferObject a e0, instancesMore)
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop

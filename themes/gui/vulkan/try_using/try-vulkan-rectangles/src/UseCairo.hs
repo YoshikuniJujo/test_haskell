@@ -54,6 +54,7 @@ import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Map qualified as M
 import Data.Bool
+import Data.Bool.ToolsYj
 import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Color
@@ -65,7 +66,6 @@ import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Object qualified as VObj
-import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocationCallbacks
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
@@ -109,11 +109,11 @@ import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
-import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Tools
+import Tools hiding (onlyIf)
 
 import Graphics.UI.GLFW as Glfw
 import Graphics.UI.GlfwG as GlfwG
@@ -156,28 +156,17 @@ textureSize@(textureWidth, textureHeight) =
 
 -- USE CAIRO LOOP
 
-useCairo ::
-	TChan Command -> TChan Event -> TVar Vk.Extent2d -> IO ()
-useCairo inp outp vext = GlfwG.init error $ do
-	_ <- forkIO $ controller outp
-	createInstance \ist ->
-		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-			debug do
-		(phd', qfis', dv', gq', pq') <-
-			withWindow False \dw ->
-			createSurface dw ist \dsfc -> do
-			(phd, qfis) <- pickPhd ist dsfc
-			(dv, gq, pq) <-
-				createLogicalDevice phd dvcgrp () qfis
-			pure (phd, qfis, dv, gq, pq)
-		run' @_ @_ inp outp vext
-					ist phd' qfis' dv' gq' pq'
-	atomically $ writeTChan outp EventEnd
-	where setupDebugMessenger ist f =
-		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
+useCairo :: TChan Command -> TChan Event -> TVar Vk.Extent2d -> IO ()
+useCairo ip op vex = GlfwG.init error $ forkIO (controller op) >>
+	createIst \ist -> bool id (dbgm ist) debug $
+	createWin \w -> createSurface w ist \sfc ->
+	pickPhd ist sfc >>= \(pd, qfis) -> createLgDvc pd qfis \dv gq pq ->
+	run ip op vex w sfc pd qfis dv gq pq >>
+	atomically (writeTChan op EventEnd)
+	where dbgm i = Vk.Ex.DUtls.Msgr.create i dbgMsngrInfo nil
 
 data Command
-	= Draw (M.Map () (ViewProjection, [Rectangle]))
+	= Draw (ViewProjection, [Rectangle])
 	| Draw2 View
 	| OpenWindow
 	| DestroyWindow
@@ -215,8 +204,12 @@ controller outp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
 			where
 			leftx = ga Glfw.GamepadAxis'LeftX
 
-mAny :: (a -> Bool) -> M.Map k a -> Bool
-mAny p = M.foldr (\x b -> p x || b) False
+createWin :: (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+createWin f = do
+	GlfwG.Win.hint
+		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible True
+	GlfwG.Win.create 800 600 "USE CAIRO" Nothing Nothing f
 
 glfwEvents :: () -> GlfwG.Win.W sw -> TChan Event -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
 glfwEvents k w outp vscls vmb1p = do
@@ -241,6 +234,7 @@ glfwEvents k w outp vscls vmb1p = do
 	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
+	where mAny p = M.foldr (\x b -> p x || b) False
 
 type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
@@ -278,44 +272,35 @@ sendMouseButton k w ev pst st pbss bss outp b =
 					=<< GlfwG.Ms.getCursorPos w
 		_ -> pure ()
 
-withWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-withWindow v f = initWindow v f
-
-initWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-initWindow v f = do
-	GlfwG.Win.hint
-		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
-	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible v
-	GlfwG.Win.create 800 600 "USE CAIRO" Nothing Nothing f
-
 fromRight :: Either String a -> a
 fromRight (Left emsg) = error emsg
 fromRight (Right x) = x
 
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when debug $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers L.\\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			debug . (Vk.Ist.ExtensionName <$>)
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
+		. (Vk.layerPropertiesLayerName <$>)
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
-	print exts
-	Vk.Ist.create (crinfo exts) nil f
+	bool	(Vk.Ist.create (info exts) nil f)
+		(Vk.Ist.create (infoDbg exts) nil f) debug
 	where
-	crinfo :: [Vk.Ist.ExtensionName] -> Vk.Ist.CreateInfo
-		('Just (Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ())) 'Nothing
-	crinfo es = Vk.Ist.CreateInfo {
-		Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
+	emsg = "validation layers requested, but not available!"
+	info exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.N,
 		Vk.Ist.createInfoFlags = zeroBits,
-		Vk.Ist.createInfoApplicationInfo = Just appinfo,
-		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers debug,
-		Vk.Ist.createInfoEnabledExtensionNames = es }
-	appinfo = Vk.ApplicationInfo {
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = [],
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	infoDbg exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	ainfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
 		Vk.applicationInfoApplicationName = "Hello Triangle",
 		Vk.applicationInfoApplicationVersion =
@@ -324,31 +309,31 @@ createInstance f = do
 		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
 
-debugMessengerCreateInfo :: Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
+dbgMsngrInfo :: Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	Vk.Ex.DUtls.Msgr.createInfoNext = TMaybe.N,
 	Vk.Ex.DUtls.Msgr.createInfoFlags = zeroBits,
 	Vk.Ex.DUtls.Msgr.createInfoMessageSeverity =
-		Vk.Ext.DUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DUtls.MessageSeverityErrorBit,
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
 	Vk.Ex.DUtls.Msgr.createInfoMessageType =
-		Vk.Ext.DUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DUtls.MessageTypePerformanceBit,
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
 	Vk.Ex.DUtls.Msgr.createInfoFnUserCallback = debugCallback,
 	Vk.Ex.DUtls.Msgr.createInfoUserData = Nothing }
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run' :: forall si sd .
-	TChan Command -> TChan Event -> TVar Vk.Extent2d ->
-	Vk.Ist.I si -> Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
+run :: forall sw ssfc sd .
+	TChan Command -> TChan Event -> TVar Vk.Extent2d -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> IO ()
-run' inp outp vext_ ist phd qfis dv gq pq =
+run inp outp vext_ w sfc phd qfis dv gq pq =
 	createCommandPool qfis dv \cp ->
 	createCommandBuffer dv cp \cb ->
 	let	dvs = (phd, qfis, dv, gq, pq, cp, cb) in
@@ -368,7 +353,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 	atomically (newTVar []) >>= \ges ->
 
-	let	crwos = winObjs outp ist phd dv gq cp qfis pllyt vext_ rgrps ges in
+	let	crwos = winObjs outp w sfc phd dv gq cp qfis pllyt vext_ rgrps ges in
 
 	crwos \wos ->
 
@@ -394,9 +379,9 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	mainLoop @nmt inp outp dvs pllyt vbs rgrps ubs vws ges cr
 		wwww1 wwww2 wbw
 
-winObjs :: forall si sd sc sl sdsl nm smrct sbrct nmrct nmt a .
+winObjs :: forall sw ssfc sd sc sl sdsl nm smrct sbrct nmrct nmt a .
 	TChan Event ->
-	Vk.Ist.I si ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
@@ -405,12 +390,11 @@ winObjs :: forall si sd sc sl sdsl nm smrct sbrct nmrct nmt a .
 		Vk.Mem.Group sd 'Nothing smrct () '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])]
 		) ->
 	TVar [IO ()] ->
-	(forall sw ssfc sr sg scfmt ssc svs sfs sias srfs siff .
+	(forall sr sg scfmt ssc svs sfs sias srfs siff .
 		(Vk.T.FormatToValue scfmt, RecreateFrmbffrs svs sfs) => WinObjs
 		sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
 		svs sr sfs -> IO a) -> IO a
-winObjs outp ist phd dv gq cp qfis pllyt vext_ rgrps ges f =
-	initWindow True \w ->
+winObjs outp w sfc phd dv gq cp qfis pllyt vext_ rgrps ges f =
 	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
 			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
 				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
@@ -431,11 +415,10 @@ winObjs outp ist phd dv gq cp qfis pllyt vext_ rgrps ges f =
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
 
-	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	createSwpch w sfc phd qfis dv \(sc :: Vk.Khr.Swpch.S scfmt ss) ext ->
 	createRenderPass @_ @scfmt dv \rp ->
 
-	createRectangleBuffer' phd dv gq cp rgrps () dummy >>
+	createRectangleBuffer' phd dv gq cp rgrps () dummyRaw >>
 
 	atomically (writeTVar vext_ ext) >>
 
@@ -506,36 +489,32 @@ findQFams pd sfc = do
 dvcExtensions :: [Vk.Phd.ExtensionName]
 dvcExtensions = [Vk.Khr.Swpch.extensionName]
 
-createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
-	Vk.Phd.P -> Vk.Dvc.Group ma sd k -> k ->
-	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Q.Q, Vk.Q.Q)
-createLogicalDevice phdvc dvcgrp k qfis =
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
-	Vk.Dvc.create' phdvc dvcgrp k (createInfo qs) >>= \(fromRight -> dvc) -> do
-		gq <- Vk.Dvc.getQueue dvc (grFam qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (prFam qfis) 0
-		pure (dvc, gq, pq)
+createLgDvc :: Vk.Phd.P -> QFamIndices ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
+createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
+	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
+		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
+		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
 	where
-	createInfo qs = Vk.Dvc.CreateInfo {
+	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HPList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HPList.PL t ss -> b) -> b
+	hetero _k [] f = f HPList.Nil
+	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
+	uniqueQFams = L.nub [grFam qfis, prFam qfis]
+	qinfo qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	info qs = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
-		Vk.Dvc.createInfoFlags = def,
+		Vk.Dvc.createInfoFlags = zeroBits,
 		Vk.Dvc.createInfoQueueCreateInfos = qs,
-		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers debug,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
 		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
 		Vk.Dvc.createInfoEnabledFeatures = Just def {
 			Vk.Phd.featuresSamplerAnisotropy = True } }
-	uniqueQueueFamilies = L.nub [grFam qfis, prFam qfis] -- ++ [grFam qfis]
-	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = def,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
-
-mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . HPList.ToListWithCM' WithPoked TMaybe.M ss => HPList.PL t ss -> b) -> b
-mkHeteroParList _k [] f = f HPList.Nil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
@@ -1311,14 +1290,14 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 				atomically $ writeTChan outp EventNeedRedraw)
 			_ -> pure ()
 		atomically (readTChan inp) >>= \case
-			Draw ds -> do
+			Draw d -> do
+				let	d' = rectsToDummyRaw $ second
+						(rectangle'ToRectangleRaw <$>) d
 				b <- checkTChan wbw
 				when b wwww2
---				putStrLn "DRAW BEGIN"
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
-				runLoop' @_ @_ dvs pll ws vbs rgrps
-					(rectsToDummy $ second (rectangle'ToRectangleRaw <$>) <$> ds) ubs outp loop
+				runLoop' dvs pll ws vbs rgrps d' ubs outp loop
 			Draw2 view -> do
 				_ <- forkIO do
 					b <- atomically $ isEmptyTChan wm
@@ -1359,13 +1338,13 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 	rct	(fromIntegral -> l) (fromIntegral -> t)
 		(fromIntegral -> w) (fromIntegral -> h) = CTE.Rectangle l t w h
 
+rectsToDummyRaw :: (b, [RectangleRaw]) -> (b, [RectangleRaw])
+rectsToDummyRaw = \(tm, rects) -> (tm, bool rects dummyRaw $ null rects)
+
 type PipelineLayout sl sdsl nmt = Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[]
 
 type UniformBuffers sds sdsl nmt sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl nmt), UniformBufferMemory sm2 sb2)
-
-rectsToDummy :: M.Map () (b, [RectangleRaw]) -> M.Map () (b, [RectangleRaw])
-rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
 
 type Devices sd scp scb = (
 	Vk.Phd.P, QueueFamilyIndices, Vk.Dvc.D sd,
@@ -1469,7 +1448,7 @@ runLoop' :: forall sfs svs -- (sf :: Type)
 	(	Vk.Bffr.Group sd 'Nothing sbrct () nmrct '[VObj.List 256 RectangleRaw ""],
 		Vk.Mem.Group sd 'Nothing smrct () '[
 			'(sbrct, 'Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])] ) ->
-	M.Map () (ViewProjection, [RectangleRaw]) ->
+	(ViewProjection, [RectangleRaw]) ->
 	(Vk.DscSet.D sds (AtomUbo sdsl nmt), UniformBufferMemory sm sb) ->
 	TChan Event ->
 	IO () -> IO ()
@@ -1478,7 +1457,7 @@ runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 		(vb, ib) = vbs
 		(ubds, ubm) = ubs
 	for_ (M.toList ws) \(_k', wos) -> do
-		let	(tm, rects') = lookupRects rectss ()
+		let	(tm, rects') = rectss
 		destroyRectangleBuffer rgrps ()
 		rb <- createRectangleBuffer dvs rgrps () rects'
 		let	rb' = (rb, fromIntegral $ length rects')
@@ -1489,10 +1468,13 @@ runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 			recreateSwapchainEtcIfNeed @_ @_ @_ phdvc qfis dvc pll wos outp
 		loop
 
-lookupRects :: Ord k =>
-	M.Map k (ViewProjection, [RectangleRaw]) -> k ->
-	(ViewProjection, [RectangleRaw])
-lookupRects rs = fromMaybe (viewProjectionIdentity, dummy) . (`M.lookup` rs)
+dummyRaw :: [RectangleRaw]
+dummyRaw = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
+	[RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
+			(RectModel0 m0) (RectModel1 m1)
+			(RectModel2 m2) (RectModel3 m3)]
 
 catchAndDraw ::
 	forall svs sfs
@@ -1784,23 +1766,10 @@ vertices = [
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
-dummy :: [RectangleRaw]
-dummy = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-	[RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
-			(RectModel0 m0) (RectModel1 m1)
-			(RectModel2 m2) (RectModel3 m3)]
-
 data ViewProjection = ViewProjection {
 	viewProjectionView :: Cglm.Mat4,
 	viewProjectionProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
-
-viewProjectionIdentity :: ViewProjection
-viewProjectionIdentity = ViewProjection {
-	viewProjectionView = Cglm.mat4Identity,
-	viewProjectionProj = Cglm.mat4Identity }
 
 instance Storable ViewProjection where
 	sizeOf = StrG.gSizeOf
