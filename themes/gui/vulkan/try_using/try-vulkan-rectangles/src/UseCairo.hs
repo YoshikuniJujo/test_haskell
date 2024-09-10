@@ -364,7 +364,6 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	createDescriptorSet dv dp ub dslyt \ubds ->
 	let	ubs = (ubds, ubm) in
 
-	Vk.Ppl.Graphics.group dv nil \gpgrp ->
 	Vk.Semaphore.group dv nil \iasgrp ->
 	Vk.Semaphore.group dv nil \rfsgrp ->
 	Vk.Fence.group dv nil \iffgrp ->
@@ -373,7 +372,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 	atomically (newTVar []) >>= \ges ->
 
-	let	crwos = winObjs outp ist phd dv gq cp qfis pllyt vext_ gpgrp
+	let	crwos = winObjs outp ist phd dv gq cp qfis pllyt vext_
 			rgrps iasgrp rfsgrp iffgrp ges in
 
 	crwos zero' \wos ->
@@ -401,7 +400,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 		wwww1 wwww2 wbw
 
 winObjs :: forall k
-	si sd sc sg sl sdsl sias srfs siff nm
+	si sd sc sl sdsl sias srfs siff nm
 	smrct sbrct nmrct nmt a . Ord k =>
 	TChan (Event k) ->
 	Vk.Ist.I si ->
@@ -409,15 +408,6 @@ winObjs :: forall k
 	Vk.Q.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	TVar (M.Map k (TVar Vk.Extent2d)) ->
-	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
-		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
-			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3),
-			'(9, TexCoord) ],
-		'(sl, '[AtomUbo sdsl nmt], '[]) )] ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 RectangleRaw ""],
 		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])]
 		) ->
@@ -425,12 +415,12 @@ winObjs :: forall k
 	Vk.Semaphore.Group sd 'Nothing srfs k ->
 	Vk.Fence.Group sd 'Nothing siff k ->
 	TVar [IO ()] -> k ->
-	(forall sw ssfc sr scfmt ssc svs sfs .
+	(forall sw ssfc sr sg scfmt ssc svs sfs .
 		(Vk.T.FormatToValue scfmt, RecreateFrmbffrs svs sfs) => WinObjs
 		sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
 		svs sr sfs -> IO a) -> IO a
 winObjs outp ist phd dv gq cp qfis pllyt vext_
-	gpgrp rgrps iasgrp rfsgrp iffgrp ges k f =
+	rgrps iasgrp rfsgrp iffgrp ges k f =
 	initWindow True \w ->
 	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
 			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
@@ -463,7 +453,7 @@ winObjs outp ist phd dv gq cp qfis pllyt vext_
 		newTVar ext >>= \v ->
 		v <$ modifyTVar vext_ (M.insert k v) ) >>= \vext ->
 
-	createGraphicsPipeline gpgrp k ext rp pllyt >>= \gpl ->
+	createGraphicsPipeline dv ext rp pllyt \gpl ->
 	createSyncObjects iasgrp rfsgrp iffgrp k >>= \sos ->
 
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
@@ -772,25 +762,19 @@ createPipelineLayout dvc f =
 				HPList.Singleton $ U2 dsl } in
 	Vk.Ppl.Layout.create @'Nothing @_ @_ @'[] dvc pipelineLayoutInfo nil $ f dsl
 
-createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
-	Vk.Ppl.Graphics.Group sd mac sg k '[ '(
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
-			'(9, TexCoord) ],
-			'(sl, '[AtomUbo sdsl nmt], '[]) )] -> k ->
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] -> IO (
+createGraphicsPipeline ::
+	Vk.Dvc.D sd ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] -> (forall sg .
 		Vk.Ppl.Graphics.G sg
 			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
 			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
 				'(9, TexCoord) ]
-			'(sl, '[AtomUbo sdsl nmt], '[]))
-createGraphicsPipeline gpgrp k sce rp pllyt =
-	Vk.Ppl.Graphics.createGs' gpgrp k Nothing (U14 pplInfo :** HPList.Nil)
-			>>= \(fromRight -> (U3 gpl :** HPList.Nil)) -> pure gpl
+			'(sl, '[AtomUbo sdsl nmt], '[]) -> IO a) -> IO a
+createGraphicsPipeline dv sce rp pllyt f =
+	Vk.Ppl.Graphics.createGs dv Nothing (U14 pplInfo :** HPList.Nil) nil
+			\(U3 gpl :** HPList.Nil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
