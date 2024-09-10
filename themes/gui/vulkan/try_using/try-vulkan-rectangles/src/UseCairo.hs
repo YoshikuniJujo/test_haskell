@@ -157,7 +157,7 @@ textureSize@(textureWidth, textureHeight) =
 -- USE CAIRO LOOP
 
 useCairo :: forall k . (Ord k, Show k, Succable k) =>
-	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
+	TChan (Command k) -> TChan (Event ()) -> TVar (M.Map () (TVar Vk.Extent2d)) -> IO ()
 useCairo inp outp vext = GlfwG.init error $ do
 	_ <- forkIO $ controller outp
 	createInstance \ist ->
@@ -177,7 +177,7 @@ useCairo inp outp vext = GlfwG.init error $ do
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
 
 data Command k
-	= Draw (M.Map k (ViewProjection, [Rectangle]))
+	= Draw (M.Map () (ViewProjection, [Rectangle]))
 	| Draw2 View
 	| OpenWindow
 	| DestroyWindow k
@@ -202,7 +202,7 @@ data Event k
 	| EventGamepadButtonAPressed
 	deriving Show
 
-controller :: TChan (Event k) -> IO ()
+controller :: TChan (Event ()) -> IO ()
 controller outp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
 	r <- Glfw.getGamepadState Glfw.Joystick'1
 	case r of
@@ -218,7 +218,7 @@ controller outp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
 
-glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents :: () -> GlfwG.Win.W sw -> TChan (Event ()) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
 glfwEvents k w outp vscls vmb1p = do
 --	threadDelay 10000
 	GlfwG.pollEvents
@@ -346,7 +346,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 
 run' :: forall si sd k . (
 	Ord k, Show k, Succable k ) =>
-	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
+	TChan (Command k) -> TChan (Event ()) -> TVar (M.Map () (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> IO ()
 run' inp outp vext_ ist phd qfis dv gq pq =
@@ -364,18 +364,14 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	createDescriptorSet dv dp ub dslyt \ubds ->
 	let	ubs = (ubds, ubm) in
 
-	Vk.Semaphore.group dv nil \iasgrp ->
-	Vk.Semaphore.group dv nil \rfsgrp ->
-	Vk.Fence.group dv nil \iffgrp ->
 	Vk.Bffr.group dv nil \rbgrp -> Vk.Mem.group dv nil \rmgrp ->
 	let	rgrps = (rbgrp, rmgrp) in
 
 	atomically (newTVar []) >>= \ges ->
 
-	let	crwos = winObjs outp ist phd dv gq cp qfis pllyt vext_
-			rgrps iasgrp rfsgrp iffgrp ges in
+	let	crwos = winObjs outp ist phd dv gq cp qfis pllyt vext_ rgrps ges in
 
-	crwos zero' \wos ->
+	crwos \wos ->
 
 	atomically (newTVar M.empty) >>= \vws ->
 
@@ -399,46 +395,39 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	mainLoop @nmt inp outp dvs pllyt vbs rgrps ubs vws ges cr
 		wwww1 wwww2 wbw
 
-winObjs :: forall k
-	si sd sc sl sdsl sias srfs siff nm
-	smrct sbrct nmrct nmt a . Ord k =>
-	TChan (Event k) ->
+winObjs :: forall si sd sc sl sdsl nm smrct sbrct nmrct nmt a .
+	TChan (Event ()) ->
 	Vk.Ist.I si ->
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
-	TVar (M.Map k (TVar Vk.Extent2d)) ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 RectangleRaw ""],
-		Vk.Mem.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])]
+	TVar (M.Map () (TVar Vk.Extent2d)) ->
+	(	Vk.Bffr.Group sd 'Nothing sbrct () nmrct '[VObj.List 256 RectangleRaw ""],
+		Vk.Mem.Group sd 'Nothing smrct () '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])]
 		) ->
-	Vk.Semaphore.Group sd 'Nothing sias k ->
-	Vk.Semaphore.Group sd 'Nothing srfs k ->
-	Vk.Fence.Group sd 'Nothing siff k ->
-	TVar [IO ()] -> k ->
-	(forall sw ssfc sr sg scfmt ssc svs sfs .
+	TVar [IO ()] ->
+	(forall sw ssfc sr sg scfmt ssc svs sfs sias srfs siff .
 		(Vk.T.FormatToValue scfmt, RecreateFrmbffrs svs sfs) => WinObjs
 		sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
 		svs sr sfs -> IO a) -> IO a
-winObjs outp ist phd dv gq cp qfis pllyt vext_
-	rgrps iasgrp rfsgrp iffgrp ges k f =
+winObjs outp ist phd dv gq cp qfis pllyt vext_ rgrps ges f =
 	initWindow True \w ->
 	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
 			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
 				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
---	forkIO (glfwEvents k w outp False initMouseButtonStates) >>
 	atomically (newTVar False) >>= \vb ->
 	atomically (newTVar initMouseButtonStates) >>= \vmbs ->
-	atomically (modifyTVar ges (glfwEvents k w outp vb vmbs :)) >>
+	atomically (modifyTVar ges (glfwEvents () w outp vb vmbs :)) >>
 	atomically (newTVar NoResized) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
 		(Just \_w ky _sc act _mds -> do
 			case act of
 				GlfwG.Ky.KeyState'Pressed ->
-					atomically $ writeTChan outp $ EventKeyDown k ky
+					atomically $ writeTChan outp $ EventKeyDown () ky
 				GlfwG.Ky.KeyState'Released ->
-					atomically $ writeTChan outp $ EventKeyUp k ky
+					atomically $ writeTChan outp $ EventKeyUp () ky
 				GlfwG.Ky.KeyState'Repeating ->
-					atomically $ writeTChan outp $ EventKeyRepeating k ky
+					atomically $ writeTChan outp $ EventKeyRepeating () ky
 			) >>
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
@@ -447,14 +436,14 @@ winObjs outp ist phd dv gq cp qfis pllyt vext_
 	createSwpch w sfc phd qfis dv \(sc :: Vk.Khr.Swpch.S scfmt ss) ext ->
 	createRenderPass @_ @scfmt dv \rp ->
 
-	createRectangleBuffer' phd dv gq cp rgrps k dummy >>
+	createRectangleBuffer' phd dv gq cp rgrps () dummy >>
 
 	atomically (
 		newTVar ext >>= \v ->
-		v <$ modifyTVar vext_ (M.insert k v) ) >>= \vext ->
+		v <$ modifyTVar vext_ (M.insert () v) ) >>= \vext ->
 
 	createGraphicsPipeline dv ext rp pllyt \gpl ->
-	createSyncObjects iasgrp rfsgrp iffgrp k >>= \sos ->
+	createSyncObjects dv \sos ->
 
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
 	createImgVws dv scis \scivs ->
@@ -991,8 +980,8 @@ createIndexBuffer phdvc dvc gq cp f =
 		copyBuffer dvc gq cp b' b
 	f b
 
-createRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sd sm sb nm k -> k -> [RectangleRaw] ->
+createRectangleBuffer ::
+	Devices sd sc scb -> RectGroups sd sm sb nm () -> () -> [RectangleRaw] ->
 	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 RectangleRaw ""])
 createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
@@ -1232,14 +1221,13 @@ data SyncObjects (ssos :: (Type, Type, Type)) where
 		_inFlightFences :: Vk.Fence.F sfs } ->
 		SyncObjects '(sias, srfs, sfs)
 
-createSyncObjects :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
-	Vk.Semaphore.Group sd ma sias k -> Vk.Semaphore.Group sd ma srfs k ->
-	Vk.Fence.Group sd ma siff k -> k -> IO (SyncObjects '(sias, srfs, siff))
-createSyncObjects iasgrp rfsgrp iffgrp k =
-	Vk.Semaphore.create' @_ @'Nothing iasgrp k def >>= \(fromRight -> ias) ->
-	Vk.Semaphore.create' @_ @'Nothing rfsgrp k def >>= \(fromRight -> rfs) ->
-	Vk.Fence.create' @_ @'Nothing iffgrp k fncInfo >>= \(fromRight -> iff) ->
-	pure $ SyncObjects ias rfs iff
+createSyncObjects :: Vk.Dvc.D sd ->
+	(forall sias srfs siff . SyncObjects '(sias, srfs, siff) -> IO a) -> IO a
+createSyncObjects dv f =
+	Vk.Semaphore.create @'Nothing dv def nil \ias ->
+	Vk.Semaphore.create @'Nothing dv def nil \rfs ->
+	Vk.Fence.create @'Nothing dv fncInfo nil \iff ->
+	f $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
@@ -1291,6 +1279,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 class Succable n where zero' :: n
 instance Succable Bool where zero' = False
 instance Succable Int where zero' = 0
+instance Succable () where zero' = ()
 
 checkTChan :: TChan () -> IO Bool
 checkTChan t = atomically do
@@ -1304,10 +1293,10 @@ mainLoop ::
 	Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k,
 	RecreateFrmbffrs svs sfs
 	) =>
-	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl nmt ->
+	TChan (Command k) -> TChan (Event ()) -> Devices sd sc scb -> PipelineLayout sl sdsl nmt ->
 
 	VertexBuffers sm sb nm sm' sb' nm' ->
-	RectGroups sd srm srb nm k ->
+	RectGroups sd srm srb nm () ->
 	UniformBuffers sds sdsl nmt sm2 sb2 ->
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm svs sr sfs)) ->
 	TVar [IO ()] ->
@@ -1379,7 +1368,7 @@ type PipelineLayout sl sdsl nmt = Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[]
 type UniformBuffers sds sdsl nmt sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl nmt), UniformBufferMemory sm2 sb2)
 
-rectsToDummy :: M.Map k (b, [RectangleRaw]) -> M.Map k (b, [RectangleRaw])
+rectsToDummy :: M.Map () (b, [RectangleRaw]) -> M.Map () (b, [RectangleRaw])
 rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
 
 type Devices sd scp scb = (
@@ -1473,7 +1462,7 @@ runLoop' :: forall sfs svs -- (sf :: Type)
 	sd sc scb sl
 	sw ssfc sg sias srfs siff scfmt ssc sr
 	smrct sbrct nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k nmt . (
-	Vk.T.FormatToValue scfmt, Ord k,
+	Vk.T.FormatToValue scfmt,
 	RecreateFrmbffrs svs sfs
 	) =>
 	Devices sd sc scb -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
@@ -1481,21 +1470,21 @@ runLoop' :: forall sfs svs -- (sf :: Type)
 		svs sr sfs)) ->
 	(	Vk.Bffr.Binded sm' sb' nmrct '[VObj.List 256 Vertex ""],
 		Vk.Bffr.Binded sm2 sb2 nm2 '[VObj.List 256 Word16 ""] ) ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 RectangleRaw ""],
-		Vk.Mem.Group sd 'Nothing smrct k '[
+	(	Vk.Bffr.Group sd 'Nothing sbrct () nmrct '[VObj.List 256 RectangleRaw ""],
+		Vk.Mem.Group sd 'Nothing smrct () '[
 			'(sbrct, 'Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])] ) ->
-	M.Map k (ViewProjection, [RectangleRaw]) ->
+	M.Map () (ViewProjection, [RectangleRaw]) ->
 	(Vk.DscSet.D sds (AtomUbo sdsl nmt), UniformBufferMemory sm sb) ->
-	TChan (Event k) ->
+	TChan (Event ()) ->
 	IO () -> IO ()
 runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 	let	(phdvc, qfis, dvc, gq, pq, _cp, cb) = dvs
 		(vb, ib) = vbs
 		(ubds, ubm) = ubs
-	for_ (M.toList ws) \(k', wos) -> do
-		let	(tm, rects') = lookupRects rectss k'
-		destroyRectangleBuffer rgrps k'
-		rb <- createRectangleBuffer dvs rgrps k' rects'
+	for_ (M.toList ws) \(_k', wos) -> do
+		let	(tm, rects') = lookupRects rectss ()
+		destroyRectangleBuffer rgrps ()
+		rb <- createRectangleBuffer dvs rgrps () rects'
 		let	rb' = (rb, fromIntegral $ length rects')
 		catchAndDraw @_ @_ @_ phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)

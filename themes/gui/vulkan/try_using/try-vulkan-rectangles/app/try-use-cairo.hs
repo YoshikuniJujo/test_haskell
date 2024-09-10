@@ -62,8 +62,8 @@ readTVarOr d mp k = do
 		Just v -> readTVar v
 
 untilEnd :: TVar Angle -> (
-	((Command Int -> STM (), Int -> STM()), (STM Bool, STM (Event Int))),
-	Int -> STM Vk.Extent2d ) -> IO ()
+	((Command () -> STM (), () -> STM()), (STM Bool, STM (Event ()))),
+	() -> STM Vk.Extent2d ) -> IO ()
 untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 	atomically $ inp OpenWindow
 
@@ -87,9 +87,9 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 		threadDelay 2000
 		a <- atomically $ readTVar ta
 		o <- atomically do
-			e0 <- ext 0
+			e0 <- ext ()
 			inp . Draw $ M.fromList
-				[(0, (uniformBufferObject a e0, instancesMore))]
+				[((), (uniformBufferObject a e0, instancesMore))]
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop
