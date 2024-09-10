@@ -49,7 +49,7 @@ main = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar M.empty
 	_ <- forkIO $ untilEnd a (
-		((writeTChan inp, \k -> unGetTChan inp (DestroyWindow k)), (isEmptyTChan outp, readTChan outp)),
+		((writeTChan inp, unGetTChan inp DestroyWindow), (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 --	_ <- forkIO $ controller a inp
 	useCairo inp outp vext
@@ -62,7 +62,7 @@ readTVarOr d mp k = do
 		Just v -> readTVar v
 
 untilEnd :: TVar Angle -> (
-	((Command () -> STM (), () -> STM()), (STM Bool, STM (Event ()))),
+	((Command -> STM (), STM()), (STM Bool, STM Event)),
 	() -> STM Vk.Extent2d ) -> IO ()
 untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 	atomically $ inp OpenWindow
@@ -111,7 +111,7 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 				loop
 			Just (EventKeyUp w Key'Q) -> do
 				putStrLn ("KEY UP       : " ++ show w ++ " " ++ show Key'Q)
-				atomically $ dw w
+				atomically dw
 				loop
 			Just (EventKeyUp w ky) -> do
 				putStrLn ("KEY UP       : " ++ show w ++ " " ++ show ky)
@@ -121,15 +121,13 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 				loop
 			Just (EventMouseButtonDown _ _) -> loop
 			Just (EventMouseButtonUp _ _) -> loop
-			Just (EventCursorPosition _k _x _y) ->
---				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
-				loop
+			Just (EventCursorPosition _k _x _y) -> loop
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
 				loop
 			Just (EventDeleteWindow k) -> do
 				putStrLn $ "delete window: " ++ show k
-				atomically . inp $ DestroyWindow k
+				atomically $ inp DestroyWindow
 				loop
 			Just (EventTextLayoutExtentResult ex) -> do
 				print ex
