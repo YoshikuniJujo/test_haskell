@@ -157,7 +157,7 @@ textureSize@(textureWidth, textureHeight) =
 -- USE CAIRO LOOP
 
 useCairo ::
-	TChan Command -> TChan Event -> TVar (M.Map () (TVar Vk.Extent2d)) -> IO ()
+	TChan Command -> TChan Event -> TVar Vk.Extent2d -> IO ()
 useCairo inp outp vext = GlfwG.init error $ do
 	_ <- forkIO $ controller outp
 	createInstance \ist ->
@@ -234,8 +234,8 @@ glfwEvents k w outp vscls vmb1p = do
 	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
-	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
-	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonDown w mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonUp w mb1p mb1 outp `mapM_` mouseButtonAll
 	cls' <- GlfwG.Win.shouldClose w
 	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
 	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
@@ -253,12 +253,12 @@ mouseButtonAll :: [GlfwG.Ms.MouseButton]
 mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 sendMouseButtonDown, sendMouseButtonUp ::
-	k -> GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
+	GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
 	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown k w = sendMouseButton () w EventMouseButtonDown
+sendMouseButtonDown w = sendMouseButton () w EventMouseButtonDown
 	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
 
-sendMouseButtonUp k w = sendMouseButton () w EventMouseButtonUp
+sendMouseButtonUp w = sendMouseButton () w EventMouseButtonUp
 	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
 
 sendMouseButton ::
@@ -345,7 +345,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
 run' :: forall si sd .
-	TChan Command -> TChan Event -> TVar (M.Map () (TVar Vk.Extent2d)) ->
+	TChan Command -> TChan Event -> TVar Vk.Extent2d ->
 	Vk.Ist.I si -> Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> IO ()
 run' inp outp vext_ ist phd qfis dv gq pq =
@@ -400,7 +400,7 @@ winObjs :: forall si sd sc sl sdsl nm smrct sbrct nmrct nmt a .
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
-	TVar (M.Map () (TVar Vk.Extent2d)) ->
+	TVar Vk.Extent2d ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct () nmrct '[VObj.List 256 RectangleRaw ""],
 		Vk.Mem.Group sd 'Nothing smrct () '[ '(sbrct, Vk.Mem.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])]
 		) ->
@@ -437,9 +437,7 @@ winObjs outp ist phd dv gq cp qfis pllyt vext_ rgrps ges f =
 
 	createRectangleBuffer' phd dv gq cp rgrps () dummy >>
 
-	atomically (
-		newTVar ext >>= \v ->
-		v <$ modifyTVar vext_ (M.insert () v) ) >>= \vext ->
+	atomically (writeTVar vext_ ext) >>
 
 	createGraphicsPipeline dv ext rp pllyt \gpl ->
 	createSyncObjects dv \sos ->
@@ -449,7 +447,7 @@ winObjs outp ist phd dv gq cp qfis pllyt vext_ rgrps ges f =
 	createFrmbffrs dv ext rp scivs \fbs ->
 
 	let	wos = WinObjs
-			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
+			(w, fbrszd) sfc vext_ gpl sos (sc, scivs, rp, fbs) in
 	f wos
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
@@ -1520,7 +1518,7 @@ catchAndDraw phdvc qfis dvc gq pq pllyt vb rb ib ubm ubds cb ubo wos = do
 
 recreateSwapchainEtcIfNeed ::
 	forall svs sfs
-		sd sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sr k nmt . (
+		sd sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sr nmt . (
 	Vk.T.FormatToValue scfmt,
 	RecreateFrmbffrs svs sfs
 	) =>
@@ -1530,7 +1528,6 @@ recreateSwapchainEtcIfNeed ::
 		svs sr sfs ->
 		TChan Event -> IO ()
 recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
---	checkFlag fbrszd >>= bool (pure ()) (do
 	checkResizedState fbrszd >>= bool (pure ()) (do
 		putStrLn "recreateSwapchainEtcIfNeed: needed"
 		atomically $ writeTChan outp EventNeedRedraw

@@ -47,19 +47,10 @@ main :: IO ()
 main = do
 	a <- newAngle
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	vext <- atomically $ newTVar M.empty
+	vext <- atomically $ newTVar (Vk.Extent2d 0 0)
 	_ <- forkIO $ untilEnd a (
-		((writeTChan inp, unGetTChan inp DestroyWindow), (isEmptyTChan outp, readTChan outp)),
-		readTVarOr (Vk.Extent2d 0 0) vext )
---	_ <- forkIO $ controller a inp
+		((writeTChan inp, unGetTChan inp DestroyWindow), (isEmptyTChan outp, readTChan outp)), const $ readTVar vext)
 	useCairo inp outp vext
-
-readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
-readTVarOr d mp k = do
-	mv <- (M.lookup k) <$> readTVar mp
-	case mv of
-		Nothing -> pure d
-		Just v -> readTVar v
 
 untilEnd :: TVar Angle -> (
 	((Command -> STM (), STM()), (STM Bool, STM Event)),
