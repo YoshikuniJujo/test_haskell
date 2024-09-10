@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,7 +8,7 @@ module Graphics.UI.GlfwG.Window (
 
 	-- * CREATE AND DESTROY
 
-	W, Group, group, create', unsafeDestroy, lookup,
+	W, create, Group, group, create', unsafeDestroy, lookup,
 
 	shouldClose,
 
@@ -42,6 +42,11 @@ import Graphics.UI.GLFW qualified as B
 import Graphics.UI.GlfwG.Window.Type
 
 data Group s k = Group TSem (TVar (M.Map k (W s)))
+
+create :: Int -> Int -> String -> Maybe B.Monitor -> Maybe B.Window ->
+	(forall s . W s -> IO a) -> IO a
+create wd hg ttl mm mws f = group \g -> f . fromRight =<< create' g () wd hg ttl mm mws
+	where fromRight = \case Left _ -> error "never occur"; Right w -> w
 
 group :: (forall s . Group s k -> IO a) -> IO a
 group f = do
