@@ -279,17 +279,14 @@ sendMouseButton k w ev pst st pbss bss outp b =
 		_ -> pure ()
 
 withWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-withWindow v f = GlfwG.Win.group \wgrp -> initWindow v wgrp () >>= f
+withWindow v f = initWindow v f
 
-initWindow :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
-initWindow v wgrp k = do
+initWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+initWindow v f = do
 	GlfwG.Win.hint
 		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible v
-	(fromRight -> w) <- uncurry
-		(GlfwG.Win.create' wgrp k) wSize wName Nothing Nothing
-	pure w
-	where wName = "Triangle"; wSize = (800, 600)
+	GlfwG.Win.create 800 600 "USE CAIRO" Nothing Nothing f
 
 fromRight :: Either String a -> a
 fromRight (Left emsg) = error emsg
@@ -367,9 +364,6 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	createDescriptorSet dv dp ub dslyt \ubds ->
 	let	ubs = (ubds, ubm) in
 
-	GlfwG.Win.group \wgrp ->
-	Vk.Khr.Sfc.group ist nil \sfcgrp ->
-	Vk.RndrPss.group dv nil \rpgrp ->
 	Vk.Ppl.Graphics.group dv nil \gpgrp ->
 	Vk.Semaphore.group dv nil \iasgrp ->
 	Vk.Semaphore.group dv nil \rfsgrp ->
@@ -379,7 +373,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 	atomically (newTVar []) >>= \ges ->
 
-	let	crwos = winObjs outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
+	let	crwos = winObjs outp ist phd dv gq cp qfis pllyt vext_ gpgrp
 			rgrps iasgrp rfsgrp iffgrp ges in
 
 	crwos zero' \wos ->
@@ -407,14 +401,14 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 		wwww1 wwww2 wbw
 
 winObjs :: forall k
-	si sd sc sw ssfc sg sl sdsl sias srfs siff nm sr
+	si sd sc sg sl sdsl sias srfs siff nm
 	smrct sbrct nmrct nmt a . Ord k =>
-	TChan (Event k) -> Vk.Phd.P -> Vk.Dvc.D sd ->
+	TChan (Event k) ->
+	Vk.Ist.I si ->
+	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
-	TVar (M.Map k (TVar Vk.Extent2d)) -> Group sw k ->
-	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
-	Vk.RndrPss.Group sd 'Nothing sr k ->
+	TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
 		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
 			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ],
@@ -431,13 +425,13 @@ winObjs :: forall k
 	Vk.Semaphore.Group sd 'Nothing srfs k ->
 	Vk.Fence.Group sd 'Nothing siff k ->
 	TVar [IO ()] -> k ->
-	(forall scfmt ssc svs sfs .
+	(forall sw ssfc sr scfmt ssc svs sfs .
 		(Vk.T.FormatToValue scfmt, RecreateFrmbffrs svs sfs) => WinObjs
 		sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
 		svs sr sfs -> IO a) -> IO a
-winObjs outp phd dv gq cp qfis pllyt vext_
-	wgrp sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp ges k f =
-	initWindow True wgrp k >>= \w ->
+winObjs outp ist phd dv gq cp qfis pllyt vext_
+	gpgrp rgrps iasgrp rfsgrp iffgrp ges k f =
+	initWindow True \w ->
 	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
 			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
 				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
@@ -459,15 +453,14 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
 
-	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(fromRight -> sfc) ->
+	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	createSwpch w sfc phd qfis dv \(sc :: Vk.Khr.Swpch.S scfmt ss) ext ->
-	createRenderPass @scfmt rpgrp k >>= \rp ->
+	createRenderPass @_ @scfmt dv \rp ->
 
 	createRectangleBuffer' phd dv gq cp rgrps k dummy >>
 
 	atomically (
-		newTVar (Vk.Extent2d 0 0) >>= \v ->
-		writeTVar v ext >>
+		newTVar ext >>= \v ->
 		v <$ modifyTVar vext_ (M.insert k v) ) >>= \vext ->
 
 	createGraphicsPipeline gpgrp k ext rp pllyt >>= \gpl ->
@@ -678,12 +671,11 @@ recreateImgVws _ _ _ =
 	error "number of Vk.Image.I and Vk.ImageView.I should be same"
 
 createRenderPass ::
-	forall (scfmt :: Vk.T.Format) sd ma sr k . (
-	Vk.T.FormatToValue scfmt, Ord k,
-	Vk.AllocationCallbacks.ToMiddle ma ) =>
-	Vk.RndrPss.Group sd ma sr k -> k -> IO (Vk.RndrPss.R sr)
-createRenderPass rpgrp k =
-	fromRight <$> Vk.RndrPss.create' @_ @_ @'[scfmt] rpgrp k renderPassInfo
+	forall sd (scfmt :: Vk.T.Format) a . (
+	Vk.T.FormatToValue scfmt ) =>
+	Vk.Dvc.D sd  ->
+	(forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
+createRenderPass dv = Vk.RndrPss.create dv renderPassInfo nil
 	where
 	colorAttachment :: Vk.Att.Description scfmt
 	colorAttachment = Vk.Att.Description {
@@ -1333,9 +1325,7 @@ mainLoop ::
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm k ->
 	UniformBuffers sds sdsl nmt sm2 sb2 ->
-	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
---		(Replicate n siv) sr (Replicate n sf))) ->
-		svs sr sfs)) ->
+	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm svs sr sfs)) ->
 	TVar [IO ()] ->
 	CairoT r RealWorld ->
 	(View -> IO ()) -> IO () -> TChan () ->
@@ -1358,7 +1348,6 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @_ @_ dvs pll ws vbs rgrps
---				runLoop' @n @siv @sf dvs pll ws vbs rgrps
 					(rectsToDummy $ second (rectangle'ToRectangleRaw <$>) <$> ds) ubs outp loop
 			Draw2 view -> do
 				_ <- forkIO do
@@ -1506,7 +1495,6 @@ runLoop' :: forall sfs svs -- (sf :: Type)
 	Devices sd sc scb -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	(M.Map k (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nmrct
 		svs sr sfs)) ->
---		(Replicate n siv) sr (Replicate n sf))) ->
 	(	Vk.Bffr.Binded sm' sb' nmrct '[VObj.List 256 Vertex ""],
 		Vk.Bffr.Binded sm2 sb2 nm2 '[VObj.List 256 Word16 ""] ) ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[VObj.List 256 RectangleRaw ""],
@@ -1553,7 +1541,6 @@ catchAndDraw ::
 	ViewProjection ->
 	WinObjs sw ssfc sg sl sdsl nmt sias srfs siff win ssc nm
 		svs sr sfs ->
---		(Replicate n siv) sr (Replicate n sf) ->
 	IO ()
 catchAndDraw phdvc qfis dvc gq pq pllyt vb rb ib ubm ubds cb ubo wos = do
 	catchAndRecreate @_ @_ @_ @_ phdvc qfis dvc pllyt (winObjsToRecreates wos)
@@ -1570,7 +1557,6 @@ recreateSwapchainEtcIfNeed ::
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm
 		svs sr sfs ->
---		(Replicate n siv) sr (Replicate n sf) ->
 		TChan (Event k) -> IO ()
 recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
 --	checkFlag fbrszd >>= bool (pure ()) (do
@@ -1606,18 +1592,14 @@ drawFrame dvc gq pq
 	HPList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext pllyt gpl vb rb ib ubds
 	updateUniformBuffer' dvc ubm ubo
---	let	submitInfo :: Vk.SubmitInfo 'Nothing '[ssm, sias] '[scb] '[ssm, srfs]
 	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
---				(Vk.SemaphorePipelineStageFlags smp
---					Vk.Ppl.StageColorAttachmentOutputBit) :**
 				HPList.Singleton
 					(Vk.SemaphorePipelineStageFlags ias
 						Vk.Ppl.StageColorAttachmentOutputBit),
 			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
---			Vk.submitInfoSignalSemaphores = smp :** HPList.Singleton rfs }
 			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
 		presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = TMaybe.N,
@@ -1625,11 +1607,8 @@ drawFrame dvc gq pq
 			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
 	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
---	putStrLn "BEFORE QUEUE PRESENT"
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
---	putStrLn "AFTER QUEUE PRESENT"
 	Vk.Fence.waitForFs dvc siff True Nothing
---	putStrLn "AFTER WAIT FOR FENCES"
 --	Vk.Q.waitIdle pq
 
 updateUniformBuffer' :: Vk.Dvc.D sd ->
@@ -1651,7 +1630,6 @@ catchAndRecreate ::
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl nmt] '[] ->
 	Recreates sw sl nm ssfc sr sg sdsl nmt scfmt
 		ssc svs sfs ->
---		ssc (Replicate n siv) (Replicate n sf) ->
 	IO () -> IO ()
 catchAndRecreate phdvc qfis dvc pllyt rcs act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
