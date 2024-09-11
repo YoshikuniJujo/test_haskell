@@ -50,7 +50,7 @@ packages:
     git: https://github.com/YoshikuniJujo/glib-stopgap
 snapshots:
 - completed:
-    sha256: 77e07d47807e1909c9d36a36815e690d2c30a87e38689961478fec853eb82a42
-    size: 653568
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/8/26.yaml
-  original: nightly-2024-08-26
+    sha256: 0a464f0181fedb87637e451034d80ecf842ae8302c1f2cd5b599ea2c40062c0f
+    size: 660737
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/9/10.yaml
+  original: nightly-2024-09-10
