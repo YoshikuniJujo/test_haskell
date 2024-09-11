@@ -152,7 +152,7 @@ textureSize@(textureWidth, textureHeight) =
 useCairo :: TChan Command -> TChan Event -> TVar Vk.Extent2d -> IO ()
 useCairo ip op vex = GlfwG.init error $ forkIO (controller op) >>
 	createIst \ist -> bool id (dbgm ist) debug $
-	createWin \w -> createSurface w ist \sfc ->
+	createWin \w -> Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	pickPhd ist sfc >>= \(pd, qfis) -> createLgDvc pd qfis \dv gq pq ->
 	run ip op vex w sfc pd qfis dv gq pq >>
 	atomically (writeTChan op EventEnd)
@@ -171,46 +171,18 @@ data Event
 	deriving Show
 
 controller :: TChan Event -> IO ()
-controller outp = fix \go -> (>> go) $ (threadDelay 10000 >>) do
-	r <- Glfw.getGamepadState Glfw.Joystick'1
-	case r of
+controller op = fix \go -> (>> go) . (threadDelay 10000 >>)
+	$ Glfw.getGamepadState Glfw.Joystick'1 >>= \case
 		Nothing -> pure ()
 		Just (Glfw.GamepadState gb ga) -> do
-			when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
-				. atomically $ writeTChan outp EventGamepadButtonAPressed
-			when (abs leftx > 0.1)
-				. atomically . writeTChan outp $ EventGamepadAxisLeftX leftx
+			when (btna == Glfw.GamepadButtonState'Pressed)
+				. atomically
+				$ writeTChan op EventGamepadButtonAPressed
+			when (abs leftx > 0.1) . atomically
+				. writeTChan op $ EventGamepadAxisLeftX leftx
 			where
+			btna = gb Glfw.GamepadButton'A
 			leftx = ga Glfw.GamepadAxis'LeftX
-
-createWin :: (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-createWin f = do
-	GlfwG.Win.hint
-		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
-	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible True
-	GlfwG.Win.create 800 600 "USE CAIRO" Nothing Nothing f
-
-glfwEvents :: GlfwG.Win.W sw -> TChan Event -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
-glfwEvents w outp vscls vmb1p = do
---	threadDelay 10000
-	GlfwG.pollEvents
-	cls <- GlfwG.Win.shouldClose w
-	scls <- atomically $ readTVar vscls
-	atomically $ writeTVar vscls cls
-	when (not scls && cls) . atomically $ writeTChan outp EventDeleteWindow
-	mb1 <- getMouseButtons w
-	atomically $ writeTVar vmb1p mb1
-
-type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
-
-getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
-getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
-	<$> GlfwG.Ms.getButton w `mapM` bs
-	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-fromRight :: Either String a -> a
-fromRight (Left emsg) = error emsg
-fromRight (Right x) = x
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
@@ -260,10 +232,61 @@ dbgMsngrInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 		Vk.DbgUtls.MessageTypeGeneralBit .|.
 		Vk.DbgUtls.MessageTypeValidationBit .|.
 		Vk.DbgUtls.MessageTypePerformanceBit,
-	Vk.Ex.DUtls.Msgr.createInfoFnUserCallback = debugCallback,
+	Vk.Ex.DUtls.Msgr.createInfoFnUserCallback = dbgCallback,
 	Vk.Ex.DUtls.Msgr.createInfoUserData = Nothing }
-	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
+	where dbgCallback _svr _tp d _ud = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
+
+createWin :: (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+createWin f = do
+	GlfwG.Win.hint
+		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible True
+	GlfwG.Win.create 800 600 "USE CAIRO" Nothing Nothing f
+
+pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
+pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
+	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
+	pds -> findMaybeM suit pds >>= \case
+		Nothing -> error "failed to find a suitable GPU!"
+		Just pdqfi -> pure pdqfi
+	where
+	suit pd = ((&&) <$> espt pd <*> sa pd) >>= bool (pure Nothing) do
+		qfis <- findQFams pd sfc
+		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
+			$	HPListC.null (snd $ formatsNew ss) ||
+				null (presentModesNew ss)
+	espt pd = elemAll dvcExtensions
+		. (Vk.Phd.extensionPropertiesExtensionName <$>)
+		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
+	sa pd = Vk.Phd.featuresSamplerAnisotropy <$> Vk.Phd.getFeatures pd
+
+createLgDvc :: Vk.Phd.P -> QFamIndices ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
+createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
+	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
+		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
+		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
+	where
+	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HPList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HPList.PL t ss -> b) -> b
+	hetero _k [] f = f HPList.Nil
+	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
+	uniqueQFams = L.nub [grFam qfis, prFam qfis]
+	qinfo qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	info qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def {
+			Vk.Phd.featuresSamplerAnisotropy = True } }
 
 run :: forall sw ssfc sd .
 	TChan Command -> TChan Event -> TVar Vk.Extent2d -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
@@ -369,28 +392,23 @@ winObjs outp w sfc phd dv gq cp qfis pllyt vext_ rgrps ges f =
 			(w, fbrszd) sfc vext_ gpl sos (sc, scivs, rp, fbs) in
 	f wos
 
-createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
-createSurface win ist f =
-	Vk.Khr.Sfc.group ist nil \sfcgrp ->
-	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp () win >>= f . fromRight
+glfwEvents :: GlfwG.Win.W sw -> TChan Event -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents w outp vscls vmb1p = do
+--	threadDelay 10000
+	GlfwG.pollEvents
+	cls <- GlfwG.Win.shouldClose w
+	scls <- atomically $ readTVar vscls
+	atomically $ writeTVar vscls cls
+	when (not scls && cls) . atomically $ writeTChan outp EventDeleteWindow
+	mb1 <- getMouseButtons w
+	atomically $ writeTVar vmb1p mb1
 
-pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
-pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
-	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
-	pds -> findMaybeM suit pds >>= \case
-		Nothing -> error "failed to find a suitable GPU!"
-		Just pdqfi -> pure pdqfi
-	where
-	suit pd = ((&&) <$> espt pd <*> sa pd) >>= bool (pure Nothing) do
-		qfis <- findQFams pd sfc
-		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
-			$	HPListC.null (snd $ formatsNew ss) ||
-				null (presentModesNew ss)
-	espt pd = elemAll dvcExtensions
-		. (Vk.Phd.extensionPropertiesExtensionName <$>)
-		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
-	sa pd = Vk.Phd.featuresSamplerAnisotropy <$> Vk.Phd.getFeatures pd
+type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
+
+getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
+getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
+	<$> GlfwG.Ms.getButton w `mapM` bs
+	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
@@ -424,33 +442,6 @@ findQFams pd sfc = do
 
 dvcExtensions :: [Vk.Phd.ExtensionName]
 dvcExtensions = [Vk.Khr.Swpch.extensionName]
-
-createLgDvc :: Vk.Phd.P -> QFamIndices ->
-	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
-createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
-	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
-		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
-		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
-	where
-	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
-		HPList.ToListWithCM' WithPoked TMaybe.M ss =>
-		HPList.PL t ss -> b) -> b
-	hetero _k [] f = f HPList.Nil
-	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
-	uniqueQFams = L.nub [grFam qfis, prFam qfis]
-	qinfo qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = zeroBits,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
-	info qs = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = TMaybe.N,
-		Vk.Dvc.createInfoFlags = zeroBits,
-		Vk.Dvc.createInfoQueueCreateInfos = qs,
-		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
-		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
-		Vk.Dvc.createInfoEnabledFeatures = Just def {
-			Vk.Phd.featuresSamplerAnisotropy = True } }
 
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
