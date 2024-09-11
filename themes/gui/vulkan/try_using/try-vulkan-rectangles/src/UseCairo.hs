@@ -124,13 +124,6 @@ import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Data.CairoImage.Internal
-import Data.CairoContext
-import Control.Monad.ST
-
-import PangoLayoutExtent
-
-import Control.Moffy
-import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
 import Texture
 import Gpu.Vulkan.CairoImage
@@ -166,29 +159,15 @@ useCairo ip op vex = GlfwG.init error $ forkIO (controller op) >>
 	where dbgm i = Vk.Ex.DUtls.Msgr.create i dbgMsngrInfo nil
 
 data Command
-	= DrawRect (ViewProjection, [Rectangle])
-	| Draw2 FV.View
-	| OpenWindow
-	| DestroyWindow
-	| GetEvent
-	| CalcTextLayoutExtent CTE.CalcTextExtents
-	| EndWorld
+	= DrawRect (ViewProjection, [Rectangle]) | SetViewAsTexture FV.View
+	| GetEvent | EndWorld
 	deriving Show
 
 data Event
-	= EventEnd
-	| EventKeyDown () GlfwG.Ky.Key
-	| EventKeyUp () GlfwG.Ky.Key
-	| EventKeyRepeating () GlfwG.Ky.Key
-	| EventMouseButtonDown () GlfwG.Ms.MouseButton
-	| EventMouseButtonUp () GlfwG.Ms.MouseButton
-	| EventCursorPosition () Double Double
-	| EventOpenWindow ()
-	| EventDeleteWindow ()
-	| EventTextLayoutExtentResult (Occurred CTE.CalcTextExtents)
-	| EventNeedRedraw
-	| EventGamepadAxisLeftX Float
-	| EventGamepadButtonAPressed
+	= EventNeedRedraw | EventDeleteWindow | EventEnd
+	| EventKeyDown GlfwG.Ky.Key | EventKeyUp GlfwG.Ky.Key
+	| EventKeyRepeating GlfwG.Ky.Key
+	| EventGamepadAxisLeftX Float | EventGamepadButtonAPressed
 	deriving Show
 
 controller :: TChan Event -> IO ()
@@ -211,30 +190,16 @@ createWin f = do
 	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible True
 	GlfwG.Win.create 800 600 "USE CAIRO" Nothing Nothing f
 
-glfwEvents :: () -> GlfwG.Win.W sw -> TChan Event -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
-glfwEvents k w outp vscls vmb1p = do
+glfwEvents :: GlfwG.Win.W sw -> TChan Event -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents w outp vscls vmb1p = do
 --	threadDelay 10000
 	GlfwG.pollEvents
 	cls <- GlfwG.Win.shouldClose w
 	scls <- atomically $ readTVar vscls
 	atomically $ writeTVar vscls cls
---	when cls . putStrLn $ "glfwEvents: scls = " ++ show scls
-	when (not scls && cls) . atomically . writeTChan outp $ EventDeleteWindow k
+	when (not scls && cls) . atomically $ writeTChan outp EventDeleteWindow
 	mb1 <- getMouseButtons w
-	mb1p <- atomically $ readTVar vmb1p
 	atomically $ writeTVar vmb1p mb1
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-	sendMouseButtonDown w mb1p mb1 outp `mapM_` mouseButtonAll
-	sendMouseButtonUp w mb1p mb1 outp `mapM_` mouseButtonAll
-	cls' <- GlfwG.Win.shouldClose w
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-	where mAny p = M.foldr (\x b -> p x || b) False
 
 type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
@@ -242,35 +207,6 @@ getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
 getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
 	<$> GlfwG.Ms.getButton w `mapM` bs
 	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-mouseButtonAll :: [GlfwG.Ms.MouseButton]
-mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-sendMouseButtonDown, sendMouseButtonUp ::
-	GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown w = sendMouseButton () w EventMouseButtonDown
-	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
-
-sendMouseButtonUp w = sendMouseButton () w EventMouseButtonUp
-	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
-
-sendMouseButton ::
-	k -> GlfwG.Win.W sw ->
-	(k -> GlfwG.Ms.MouseButton -> Event) ->
-	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan Event ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButton k w ev pst st pbss bss outp b =
-	case (pbss M.! b == pst, bss M.! b == st) of
-		(True, True) -> do
---			print $ ev k b
-			atomically . writeTChan outp $ ev k b
-			cl <- GlfwG.Win.shouldClose w
-			when (not cl) $
-				atomically . writeTChan outp . uncurry (EventCursorPosition ())
-					=<< GlfwG.Ms.getCursorPos w
-		_ -> pure ()
 
 fromRight :: Either String a -> a
 fromRight (Left emsg) = error emsg
@@ -376,7 +312,7 @@ run inp outp vext_ w sfc phd qfis dv gq pq =
 
 	wbw <- atomically newTChan
 
-	mainLoop @nmt inp outp dvs pllyt vbs rgrps ubs vws ges cr
+	mainLoop @nmt inp outp dvs pllyt vbs rgrps ubs vws ges
 		wwww1 wwww2 wbw
 
 winObjs :: forall sw ssfc sd sc sl sdsl nm smrct sbrct nmrct nmt a .
@@ -400,17 +336,17 @@ winObjs outp w sfc phd dv gq cp qfis pllyt vext_ rgrps ges f =
 				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
 	atomically (newTVar False) >>= \vb ->
 	atomically (newTVar initMouseButtonStates) >>= \vmbs ->
-	atomically (modifyTVar ges (glfwEvents () w outp vb vmbs :)) >>
+	atomically (modifyTVar ges (glfwEvents w outp vb vmbs :)) >>
 	atomically (newTVar NoResized) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
 		(Just \_w ky _sc act _mds -> do
 			case act of
 				GlfwG.Ky.KeyState'Pressed ->
-					atomically $ writeTChan outp $ EventKeyDown () ky
+					atomically $ writeTChan outp $ EventKeyDown ky
 				GlfwG.Ky.KeyState'Released ->
-					atomically $ writeTChan outp $ EventKeyUp () ky
+					atomically $ writeTChan outp $ EventKeyUp ky
 				GlfwG.Ky.KeyState'Repeating ->
-					atomically $ writeTChan outp $ EventKeyRepeating () ky
+					atomically $ writeTChan outp $ EventKeyRepeating ky
 			) >>
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
@@ -1252,11 +1188,6 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
-class Succable n where zero' :: n
-instance Succable Bool where zero' = False
-instance Succable Int where zero' = 0
-instance Succable () where zero' = ()
-
 checkTChan :: TChan () -> IO Bool
 checkTChan t = atomically do
 	ne <- not <$> isEmptyTChan t
@@ -1265,7 +1196,7 @@ checkTChan t = atomically do
 
 mainLoop ::
 	forall nmt scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
-		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 r svs sfs . (
+		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 svs sfs . (
 	Vk.T.FormatToValue scfmt,
 	RecreateFrmbffrs svs sfs
 	) =>
@@ -1276,10 +1207,9 @@ mainLoop ::
 	UniformBuffers sds sdsl nmt sm2 sb2 ->
 	TVar (M.Map () (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm svs sr sfs)) ->
 	TVar [IO ()] ->
-	CairoT r RealWorld ->
 	(FV.View -> IO ()) -> IO () -> TChan () ->
 	IO ()
-mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
+mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges
 	wwww1 wwww2 wbw = do
 	wm <- atomically newTChan
 	fix \loop -> do
@@ -1298,7 +1228,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' dvs pll ws vbs rgrps d' ubs outp loop
-			Draw2 view -> do
+			SetViewAsTexture view -> do
 				_ <- forkIO do
 					b <- atomically $ isEmptyTChan wm
 					when b do
@@ -1307,36 +1237,19 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 						atomically $ readTChan wm
 						atomically (writeTChan wbw ())
 				loop
-			OpenWindow -> atomically (writeTChan outp $ EventOpenWindow zero') >> loop
-			DestroyWindow -> do
-				atomically do
-					b <- isEmptyTChan wm
-					check b
-				ws <- atomically $ readTVar vws
-				GlfwG.pollEvents
-				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
-				if cls then pure () else loop
 			GetEvent -> do
 				atomically (readTVar ges) >>= sequence_
 				loop
+				{-
 			CalcTextLayoutExtent
 				(CTE.CalcTextExtentsReq wid fn fs tx) -> do
 				ex <- getPangoLayoutExtent
 					cr fn (realToFrac fs) tx
 				let	PixelExtents ie le = ex
 					ex' =  mkte ie le
-				atomically . writeTChan outp
-					. EventTextLayoutExtentResult
-					$ CTE.OccCalcTextExtents wid fn fs tx ex'
 				loop
+				-}
 			EndWorld -> pure ()
-	where
-	mkte ie le = CTE.TextExtents (r2r ie) (r2r le)
-	r2r r = rct
-		(pangoRectanglePixelX r) (pangoRectanglePixelY r)
-		(pangoRectanglePixelWidth r) (pangoRectanglePixelHeight r)
-	rct	(fromIntegral -> l) (fromIntegral -> t)
-		(fromIntegral -> w) (fromIntegral -> h) = CTE.Rectangle l t w h
 
 rectsToDummyRaw :: (b, [RectangleRaw]) -> (b, [RectangleRaw])
 rectsToDummyRaw = \(tm, rects) -> (tm, bool rects dummyRaw $ null rects)

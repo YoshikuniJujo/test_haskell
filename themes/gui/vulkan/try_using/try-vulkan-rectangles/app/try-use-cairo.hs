@@ -33,9 +33,6 @@ import Data.Text qualified as T
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Control.Moffy.Event.Window
-import Control.Moffy.Event.CalcTextExtents qualified as CTE
-
 import Trial.Followbox.ViewType
 import Data.OneOfThem
 
@@ -47,17 +44,13 @@ main = do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar (Vk.Extent2d 0 0)
 	_ <- forkIO $ untilEnd a (
-		((writeTChan inp, unGetTChan inp DestroyWindow), (isEmptyTChan outp, readTChan outp)), const $ readTVar vext)
+		((writeTChan inp, unGetTChan inp EndWorld), (isEmptyTChan outp, readTChan outp)), const $ readTVar vext)
 	useCairo inp outp vext
 
 untilEnd :: TVar Angle -> (
 	((Command -> STM (), STM()), (STM Bool, STM Event)),
 	() -> STM Vk.Extent2d ) -> IO ()
 untilEnd ta (((inp, dw), (oute, outp)), ext) = do
-	atomically $ inp OpenWindow
-
-	atomically . inp . CalcTextLayoutExtent
-		$ CTE.CalcTextExtentsReq (WindowId 0) "serif" 30 "Hello, world!"
 
 	_ <- forkIO $ forever do
 		threadDelay 5000
@@ -67,7 +60,7 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 		threadDelay 1000000
 		t <- getZonedTime
 		atomically do
-			inp $ Draw2
+			inp $ SetViewAsTexture
 				(View [	expand . Singleton $ Line' (Color 127 127 127) 4 (10, 10) (100, 100),
 					expand . Singleton $ Text' blue "sans" 200 (50, 600) (T.pack $ formatTime defaultTimeLocale "%T" t)
 					])
@@ -82,43 +75,34 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 		case o of
 			Nothing -> loop
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
-			Just (EventKeyDown _w Key'Left) -> do
+			Just (EventKeyDown Key'Left) -> do
 				atomically $ modifyTVar ta (+ pi * 1 / 100)
 				loop
-			Just (EventKeyRepeating _w Key'Left) -> do
+			Just (EventKeyRepeating Key'Left) -> do
 				atomically $ modifyTVar ta (+ pi * 1 / 100)
 				loop
-			Just (EventKeyDown _w Key'Right) -> do
+			Just (EventKeyDown Key'Right) -> do
 				atomically $ modifyTVar ta (subtract $ pi * 1 / 100)
 				loop
-			Just (EventKeyRepeating _w Key'Right) -> do
+			Just (EventKeyRepeating Key'Right) -> do
 				atomically $ modifyTVar ta (subtract $ pi * 1 / 100)
 				loop
-			Just (EventKeyDown w ky) -> do
-				putStrLn ("KEY DOWN      : " ++ show w ++ " " ++ show ky)
+			Just (EventKeyDown ky) -> do
+				putStrLn ("KEY DOWN      : " ++ show ky)
 				loop
-			Just (EventKeyUp w Key'Q) -> do
-				putStrLn ("KEY UP       : " ++ show w ++ " " ++ show Key'Q)
+			Just (EventKeyUp Key'Q) -> do
+				putStrLn ("KEY UP       : " ++ show Key'Q)
 				atomically dw
 				loop
-			Just (EventKeyUp w ky) -> do
-				putStrLn ("KEY UP       : " ++ show w ++ " " ++ show ky)
+			Just (EventKeyUp ky) -> do
+				putStrLn ("KEY UP       : " ++ show ky)
 				loop
-			Just (EventKeyRepeating w ky) -> do
-				putStrLn ("KEY REPEATING: " ++ show w ++ " " ++ show ky)
+			Just (EventKeyRepeating ky) -> do
+				putStrLn ("KEY REPEATING: " ++ show ky)
 				loop
-			Just (EventMouseButtonDown _ _) -> loop
-			Just (EventMouseButtonUp _ _) -> loop
-			Just (EventCursorPosition _k _x _y) -> loop
-			Just (EventOpenWindow k) -> do
-				putStrLn $ "open window: " ++ show k
-				loop
-			Just (EventDeleteWindow k) -> do
-				putStrLn $ "delete window: " ++ show k
-				atomically $ inp DestroyWindow
-				loop
-			Just (EventTextLayoutExtentResult ex) -> do
-				print ex
+			Just EventDeleteWindow -> do
+				putStrLn $ "delete window"
+				atomically $ inp EndWorld
 				loop
 			Just EventNeedRedraw -> do
 				putStrLn "EVENT NEED REDRAW"
