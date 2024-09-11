@@ -422,12 +422,49 @@ createDscSt dv dp vpb dsl f =
 		Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
 			. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo vpb }
 
+createVtxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	[WVertex] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
+		'[VObj.List al WVertex lnm] -> IO a) -> IO a
+createVtxBffr = createBffrMem Vk.Bffr.UsageVertexBufferBit
+
+createIdxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	[Word16] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
+		'[VObj.List al Word16 lnm] -> IO a) -> IO a
+createIdxBffr = createBffrMem Vk.Bffr.UsageIndexBufferBit
+
+createBffrMem :: forall sd sc nm t lnm a . Storable' t =>
+	Vk.Bffr.UsageFlags -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.CmdPl.C sc -> [t] ->
+	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
+		'[VObj.List al t lnm] -> IO a) -> IO a
+createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
+	bffrAlgn @(VObj.List 256 t lnm) dv (VObj.LengthList ln)
+		(Vk.Bffr.UsageTransferDstBit .|. us) \(_ :: Proxy al) ->
+	createBffrLst pd dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
+		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
+		createBffrLst pd dv ln
+			Vk.Bffr.UsageTransferSrcBit (
+			Vk.Mm.PropertyHostVisibleBit .|.
+			Vk.Mm.PropertyHostCoherentBit ) \
+			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
+			bm' -> do
+			Vk.Mm.write
+				@bnm' @(VObj.List al t lnm') @0 dv bm' zeroBits xs
+			copy b' b
+		f b
+	where
+	copy :: forall sm sb bnm sm' sb' bnm' al . KnownNat al =>
+		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
+		Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
+	copy s d = singleTimeCmds dv gq cp \cb ->
+		Vk.Cmd.copyBuffer @'[ '( '[VObj.List al t lnm], 0, 0)] cb s d
+
 winObjs :: forall sw ssfc sd sc sl sdsl nm smrct sbrct nmrct nmt a alu .
 	TChan Event ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc ->
-	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl alu nmt] '[] ->
+	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
 	TVar Vk.Extent2d ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct () nmrct '[VObj.List 256 RectangleRaw ""],
 		Vk.Mm.Group sd 'Nothing smrct () '[ '(sbrct, Vk.Mm.BufferArg nmrct '[VObj.List 256 RectangleRaw ""])]
@@ -469,9 +506,14 @@ winObjs outp w sfc phd dv gq cp qfis pllyt vext_ rgrps f =
 			(w, fbrszd) sfc vext_ gpl sos (sc, scivs, rp, fbs) in
 	f wos
 
-type AtomUbo s alu nm = '(s, '[
-	'Vk.DscStLyt.Buffer '[VObj.Atom alu ViewProj 'Nothing],
-	'Vk.DscStLyt.Image '[ '(nm, 'Vk.T.FormatR8g8b8a8Srgb)] ])
+data WinObjs
+	sw ssfc sg sl sdsl alu nmt sias srfs siff scfmt ssc nm sivs sr sfs =
+	WinObjs	(WinEnvs sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
+		(Pipeline sg sl sdsl alu nmt) (SyncObjects '(sias, srfs, siff))
+		(Swapchains scfmt ssc nm sivs sr sfs)
+
+type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
+type FramebufferResized = TVar FramebufferResizedState
 
 glfwEvents :: GlfwG.Win.W sw -> TChan Event -> IO ()
 glfwEvents w outp = do
@@ -673,19 +715,25 @@ createRenderPass dv = Vk.RndrPss.create dv renderPassInfo nil
 		Vk.RndrPss.createInfoDependencies = [dependency] }
 
 createGraphicsPipeline ::
-	Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl alu nmt] '[] -> (forall sg .
-		Vk.Ppl.Graphics.G sg
-			'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
-			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
-				'(9, TexCoord) ]
-			'(sl, '[AtomUbo sdsl alu nmt], '[]) -> IO a) -> IO a
+	Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.Ppl.Layout.P sl '[AtomUbo sdsl alu nmt] '[] ->
+	(forall sg . Pipeline sg sl sdsl alu nmt -> IO a) -> IO a
 createGraphicsPipeline dv sce rp pllyt f =
 	Vk.Ppl.Graphics.createGs dv Nothing (U14 pplInfo :** HPList.Nil) nil
 			\(U3 gpl :** HPList.Nil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
+
+type Pipeline sg sl sdsl alu nmt = Vk.Ppl.Graphics.G sg
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+			'(2, RectPos), '(3, RectSize), '(4, RectColor),
+			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
+			'(9, TexCoord) ]
+		'(sl, '[AtomUbo sdsl alu nmt], '[])
+
+type AtomUbo s alu nm = '(s, '[
+	'Vk.DscStLyt.Buffer '[VObj.Atom alu ViewProj 'Nothing],
+	'Vk.DscStLyt.Image '[ '(nm, 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl alu nmt] '[] ->
@@ -858,43 +906,6 @@ frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
-
-createVtxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	[WVertex] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
-		'[VObj.List al WVertex lnm] -> IO a) -> IO a
-createVtxBffr = createBffrMem Vk.Bffr.UsageVertexBufferBit
-
-createIdxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	[Word16] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
-		'[VObj.List al Word16 lnm] -> IO a) -> IO a
-createIdxBffr = createBffrMem Vk.Bffr.UsageIndexBufferBit
-
-createBffrMem :: forall sd sc nm t lnm a . Storable' t =>
-	Vk.Bffr.UsageFlags -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	Vk.CmdPl.C sc -> [t] ->
-	(forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
-		'[VObj.List al t lnm] -> IO a) -> IO a
-createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
-	bffrAlgn @(VObj.List 256 t lnm) dv (VObj.LengthList ln)
-		(Vk.Bffr.UsageTransferDstBit .|. us) \(_ :: Proxy al) ->
-	createBffrLst pd dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
-		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
-		createBffrLst pd dv ln
-			Vk.Bffr.UsageTransferSrcBit (
-			Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit ) \
-			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
-			bm' -> do
-			Vk.Mm.write
-				@bnm' @(VObj.List al t lnm') @0 dv bm' zeroBits xs
-			copy b' b
-		f b
-	where
-	copy :: forall sm sb bnm sm' sb' bnm' al . KnownNat al =>
-		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
-		Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
-	copy s d = singleTimeCmds dv gq cp \cb ->
-		Vk.Cmd.copyBuffer @'[ '( '[VObj.List al t lnm], 0, 0)] cb s d
 
 bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
@@ -1199,14 +1210,6 @@ type Devices sd scp scb = (
 	Vk.Phd.P, QueueFamilyIndices, Vk.Dvc.D sd,
 	Vk.Q.Q, Vk.Q.Q, Vk.CmdPl.C scp, Vk.CBffr.C scb )
 
-data WinObjs sw ssfc sg sl sdsl alu nmt sias srfs siff scfmt ssc nm ss sr sfs = WinObjs
-	(WinEnvs sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
-	(Pipeline sg sl sdsl alu nmt) (SyncObjects '(sias, srfs, siff))
-	(Swapchains scfmt ssc nm ss sr sfs)
-
-type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
-type FramebufferResized = TVar FramebufferResizedState
-
 data FramebufferResizedState = NoResized | HalfResized | Resized deriving Show
 
 checkResizedState :: FramebufferResized -> IO Bool
@@ -1216,18 +1219,10 @@ checkResizedState fbrszd = atomically $
 		HalfResized -> writeTVar fbrszd NoResized >> pure True
 		NoResized -> pure False
 
-type Swapchains scfmt ssc nm ss sr sfs = (
+type Swapchains scfmt ssc nm sivs sr sfs = (
 	Vk.Khr.Swpch.S scfmt ssc,
-	HPList.PL (Vk.ImgVw.I nm scfmt) ss,
+	HPList.PL (Vk.ImgVw.I nm scfmt) sivs,
 	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
-
-type Pipeline sg sl sdsl alu nmt = Vk.Ppl.Graphics.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
-			'(9, TexCoord) ]
-		'(sl, '[AtomUbo sdsl alu nmt], '[])
 
 type VertexBuffers sm sb nm alv sm' sb' nm' ali = (
 	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex ""],
