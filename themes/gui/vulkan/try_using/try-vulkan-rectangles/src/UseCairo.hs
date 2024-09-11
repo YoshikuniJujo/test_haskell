@@ -1250,6 +1250,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges
 				loop
 				-}
 			EndWorld -> pure ()
+	atomically $ check =<< isEmptyTChan wm
 
 rectsToDummyRaw :: (b, [RectangleRaw]) -> (b, [RectangleRaw])
 rectsToDummyRaw = \(tm, rects) -> (tm, bool rects dummyRaw $ null rects)
