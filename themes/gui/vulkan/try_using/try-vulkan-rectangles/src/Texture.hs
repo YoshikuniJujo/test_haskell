@@ -11,7 +11,7 @@ module Texture (
 
 	-- * CREATE AND BIND
 
-	createBindImg, imgVwInfo, createBffrImg, createBffr,
+	createBindImg, imgVwInfo, createBffrImg, createBffr, bffrInfo,
 
 	-- * WRITE BUFFER
 
@@ -19,7 +19,7 @@ module Texture (
 
 	-- * COPY FROM BUFFER TO IMAGE
 
-	flashImg ) where
+	flashImg, singleTimeCmds ) where
 
 import GHC.TypeNats
 import Foreign.Storable
@@ -151,23 +151,24 @@ createBffr :: forall sd nm o a . Obj.SizeAlignment o =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> IO a) -> IO a
-createBffr p dv ln us prs f = Vk.Bffr.create dv binfo nil \b -> do
+createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) prs
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
 		(ainfo mt) nil
 		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
 	where
-	binfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = TMaybe.N,
-		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
-		Vk.Bffr.createInfoUsage = us,
-		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Bffr.createInfoQueueFamilyIndices = [] }
 	ainfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+bffrInfo ln us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N,
+	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 findMmType ::
 	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
@@ -207,7 +208,7 @@ flashImg dv gq cp i b sz = do
 transitionImgLyt :: forall sd sc sm si nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImgLyt dv gq cp i ol nl = singleTimeCmd dv gq cp \cb ->
+transitionImgLyt dv gq cp i ol nl = singleTimeCmds dv gq cp \cb ->
 	Vk.Cmd.pipelineBarrier cb sstg dstg zeroBits HPList.Nil HPList.Nil brrr
 	where
 	brrr = HPList.Singleton $ U5 Vk.Img.MemoryBarrier {
@@ -242,7 +243,7 @@ copyBffrToImg :: forall sd sc sbm sb bnm al i nmi sim si nmi' .
 	Vk.Bffr.Binded sbm sb bnm '[Obj.Image al i nmi]  ->
 	Vk.Img.Binded sim si nmi' (BObj.ImageFormat i) -> (Word32, Word32) ->
 	IO ()
-copyBffrToImg dv gq cp b i (w, h) = singleTimeCmd dv gq cp \cb ->
+copyBffrToImg dv gq cp b i (w, h) = singleTimeCmds dv gq cp \cb ->
 	Vk.Cmd.copyBufferToImage @al cb b i Vk.Img.LayoutTransferDstOptimal rgns
 	where
 	rgns :: HPList.PL (Vk.Bffr.ImageCopy i) '[nmi]
@@ -256,10 +257,10 @@ copyBffrToImg dv gq cp b i (w, h) = singleTimeCmd dv gq cp \cb ->
 		Vk.Img.subresourceLayersBaseArrayLayer = 0,
 		Vk.Img.subresourceLayersLayerCount = 1 }
 
-singleTimeCmd :: forall sd sc a .
+singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
-singleTimeCmd dv gq cp cmd =
+singleTimeCmds dv gq cp cmd =
 	Vk.CmdBffr.allocate dv ainfo \(cb :*. HPList.Nil) ->
 	Vk.CmdBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
