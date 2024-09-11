@@ -77,7 +77,7 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 		a <- atomically $ readTVar ta
 		o <- atomically do
 			e0 <- ext ()
-			inp $ Draw (uniformBufferObject a e0, instancesMore)
+			inp $ DrawRect (uniformBufferObject a e0, instancesMore)
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
 			Nothing -> loop

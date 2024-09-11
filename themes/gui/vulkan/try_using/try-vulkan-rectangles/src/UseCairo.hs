@@ -137,7 +137,7 @@ import Gpu.Vulkan.CairoImage
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 
-import Trial.Followbox.ViewType as FV
+import Trial.Followbox.ViewType qualified as FV
 
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
@@ -166,8 +166,8 @@ useCairo ip op vex = GlfwG.init error $ forkIO (controller op) >>
 	where dbgm i = Vk.Ex.DUtls.Msgr.create i dbgMsngrInfo nil
 
 data Command
-	= Draw (ViewProjection, [Rectangle])
-	| Draw2 View
+	= DrawRect (ViewProjection, [Rectangle])
+	| Draw2 FV.View
 	| OpenWindow
 	| DestroyWindow
 	| GetEvent
@@ -372,7 +372,7 @@ run inp outp vext_ w sfc phd qfis dv gq pq =
 	let	wwww1 v = writeBffr dv ibfm =<< drawViewIO crsfc cr v
 		wwww2 = flashImg dv gq cp tximg ibf textureSize
 
-	wwww1 (View []) >> wwww2
+	wwww1 (FV.View []) >> wwww2
 
 	wbw <- atomically newTChan
 
@@ -1277,7 +1277,7 @@ mainLoop ::
 	TVar (M.Map () (WinObjs sw ssfc sg sl sdsl nmt sias srfs siff scfmt ssc nm svs sr sfs)) ->
 	TVar [IO ()] ->
 	CairoT r RealWorld ->
-	(View -> IO ()) -> IO () -> TChan () ->
+	(FV.View -> IO ()) -> IO () -> TChan () ->
 	IO ()
 mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 	wwww1 wwww2 wbw = do
@@ -1290,7 +1290,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs vws ges cr
 				atomically $ writeTChan outp EventNeedRedraw)
 			_ -> pure ()
 		atomically (readTChan inp) >>= \case
-			Draw d -> do
+			DrawRect d -> do
 				let	d' = rectsToDummyRaw $ second
 						(rectangle'ToRectangleRaw <$>) d
 				b <- checkTChan wbw

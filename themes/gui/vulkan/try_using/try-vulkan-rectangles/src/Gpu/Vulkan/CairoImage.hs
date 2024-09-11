@@ -28,7 +28,7 @@ import Gpu.Vulkan.Object.Base qualified as BObj
 
 import Convert
 import SampleImages
-import Trial.Followbox.ViewType as VT
+import Trial.Followbox.ViewType qualified as VT
 
 import Data.OneOfThem
 
@@ -49,7 +49,7 @@ twoRectanglesIO = CairoArgb32 <$> twoRectanglesPrim
 twoRectanglesIO' ::  CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> IO CairoArgb32
 twoRectanglesIO' sfc cr = CairoArgb32 <$> twoRectanglesPrim' sfc cr
 
-drawViewIO :: CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> View -> IO CairoArgb32
+drawViewIO :: CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> VT.View -> IO CairoArgb32
 drawViewIO sfc cr v = CairoArgb32 <$> drawView sfc cr v
 
 newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
@@ -105,9 +105,9 @@ instance BObj.IsImage CairoArgb32 where
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 drawView ::
-	CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> View ->
+	CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> VT.View ->
 	IO Argb32
-drawView sfc0 cr (View vs) = do
+drawView sfc0 cr (VT.View vs) = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
 	cairoRectangle cr 0 0 1024 1024
 	cairoFill cr
@@ -127,8 +127,8 @@ drawView sfc0 cr (View vs) = do
 		CairoImageArgb32 i -> pure i
 		_ -> error "never occur"
 
-drawLine :: PrimMonad m => CairoT r (PrimState m) -> Line -> m ()
-drawLine cr (Line' (Color r g b) (realToFrac -> lw)
+drawLine :: PrimMonad m => CairoT r (PrimState m) -> VT.Line -> m ()
+drawLine cr (VT.Line' (VT.Color r g b) (realToFrac -> lw)
 	(realToFrac -> x1, realToFrac -> y1)
 	(realToFrac -> x2, realToFrac -> y2)) = do
 	cairoSetSourceRgb cr $ RgbWord8 r g b
@@ -137,8 +137,8 @@ drawLine cr (Line' (Color r g b) (realToFrac -> lw)
 	cairoLineTo cr x2 y2
 	cairoStroke cr
 
-drawText :: CairoT r RealWorld -> VText -> IO ()
-drawText cr (Text' (Color r g b) fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
+drawText :: CairoT r RealWorld -> VT.VText -> IO ()
+drawText cr (VT.Text' (VT.Color r g b) fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
 	cairoSetSourceRgb cr $ RgbWord8 r g b
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
@@ -152,7 +152,7 @@ drawText cr (Text' (Color r g b) fnm (realToFrac -> fsz) (realToFrac -> x, realT
 	pangoCairoShowLayout cr fpl
 
 drawImage :: PrimMonad m => CairoT r (PrimState m) -> VT.Image -> m ()
-drawImage cr (Image' (x, y) (Png w h img)) = do
+drawImage cr (VT.Image' (x, y) (VT.Png w h img)) = do
 
 	sfc <- cairoSurfaceCreateFromPngByteString img
 	w0 <- cairoImageSurfaceGetWidth sfc
