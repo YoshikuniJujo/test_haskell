@@ -15,7 +15,7 @@
 module Main (main) where
 
 import UseCairo (
-	useCairo, Event(..), Command(..), ViewProjection(..),
+	useCairo, Event(..), Command(..), ViewProj(..),
 
 	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
 
@@ -115,8 +115,8 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 				atomically $ inp EndWorld
 				loop
 
-uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
-uniformBufferObject (Angle a) sce = ViewProjection {
+uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProj
+uniformBufferObject (Angle a) sce = ViewProj {
 	viewProjectionView = Cglm.lookat
 		(Cglm.Vec3 $ lax :. lay :. 1.7 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
