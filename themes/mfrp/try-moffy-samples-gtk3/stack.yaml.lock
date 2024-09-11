@@ -3,10 +3,21 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: 429e8b95651bafaa67131a917d94581c89d1c90c
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    name: glib-stopgap
+    pantry-tree:
+      sha256: 55b143d73191a9aa456c67f46726aac1ca572e5312d0f5c60f669ca81b1eba7d
+      size: 1273
+    version: 0.1.0.0
+  original:
+    commit: 429e8b95651bafaa67131a917d94581c89d1c90c
+    git: https://github.com/YoshikuniJujo/glib-stopgap
 snapshots:
 - completed:
-    sha256: e5e4120f8ad44cbb340a6f506029ea99f4bceeda0a02395687346b09e7e03352
-    size: 712151
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/12/19.yaml
-  original: nightly-2023-12-19
+    sha256: 0a464f0181fedb87637e451034d80ecf842ae8302c1f2cd5b599ea2c40062c0f
+    size: 660737
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/9/10.yaml
+  original: nightly-2024-09-10
