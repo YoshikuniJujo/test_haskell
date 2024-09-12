@@ -11,18 +11,19 @@ module Texture (
 
 	-- * CREATE AND BIND
 
-	createBindImg, imgVwInfo, createBffrImg, createBffr, bffrInfo,
+	createBindImg, imgVwInfo, createBffrImg, createBffr, createBffr', bffrInfo,
 
 	-- * WRITE BUFFER
 
 	writeBffr,
 
-	-- * COPY FROM BUFFER TO IMAGE
+	-- * COPY BETWEEN BUFFER AND IMAGE
 
-	flashImg, singleTimeCmds ) where
+	flashImg, copyBffrLst ) where
 
 import GHC.TypeNats
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
@@ -162,25 +163,32 @@ createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-createBffr' :: forall sd sm sb k nm o a . Obj.SizeAlignment o =>
+createBffr' :: forall sd sm sb k nm o . (Ord k, Obj.SizeAlignment o) =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
 	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> k ->
 	Obj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[o] ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> IO a) -> IO a
-createBffr' p dv bg mg k ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> IO (
+		(Vk.Bffr.Binded sm sb nm '[o],
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])]))
+createBffr' p dv bg mg k ln us prs = Vk.Bffr.create' bg k (bffrInfo ln us) >>= \(Right b) -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits reqs) prs
-	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
-		(ainfo mt) nil
-		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
+	Vk.Mm.allocateBind' mg k (HPList.Singleton . U2 $ Vk.Mm.Buffer b) (ainfo mt)
+		>>= uncurry (curry pure . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd) . \(Right c) -> c
 	where
 	ainfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
+{-# COMPLETE AlwaysRight #-}
+
+pattern AlwaysRight :: r -> Either l r
+pattern AlwaysRight x <- Right x where
+	AlwaysRight x = Right x
+
+bffrInfo ::
+	Obj.Length s -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo Nothing '[s]
 bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
@@ -255,6 +263,14 @@ transitionImgLyt dv gq cp i ol nl = singleTimeCmds dv gq cp \cb ->
 			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
 		_ -> error "unsupported layout transition!"
+
+copyBffrLst :: forall sd sc sm sb bnm al t lnm sm' sb' bnm' .
+	(KnownNat al, Storable' t) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Bffr.Binded sm sb bnm '[Obj.List al t lnm] ->
+	Vk.Bffr.Binded sm' sb' bnm' '[Obj.List al t lnm] -> IO ()
+copyBffrLst dv gq cp s d = singleTimeCmds dv gq cp \cb ->
+	Vk.Cmd.copyBuffer @'[ '( '[Obj.List al t lnm], 0, 0)] cb s d
 
 copyBffrToImg :: forall sd sc sbm sb bnm al i nmi sim si nmi' .
 	(Storable (BObj.ImagePixel i), KnownNat al) =>

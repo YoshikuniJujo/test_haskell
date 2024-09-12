@@ -10,7 +10,7 @@ app
 src
 ---
 
-* [x] Texture
+* [ ] Texture
 * [ ] UseCairo
 * [ ] UseTextureGroup
 * [ ] CreateTextureGroup
