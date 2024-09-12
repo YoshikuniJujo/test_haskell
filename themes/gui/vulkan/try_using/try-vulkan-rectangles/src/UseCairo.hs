@@ -450,14 +450,15 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 			bm' -> do
 			Vk.Mm.write
 				@bnm' @(VObj.List al t lnm') @0 dv bm' zeroBits xs
-			copy b' b
+			copyBffrLst dv gq cp b' b
 		f b
-	where
-	copy :: forall sm sb bnm sm' sb' bnm' al . KnownNat al =>
-		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
-		Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
-	copy s d = singleTimeCmds dv gq cp \cb ->
-		Vk.Cmd.copyBuffer @'[ '( '[VObj.List al t lnm], 0, 0)] cb s d
+
+copyBffrLst :: forall sd sc sm sb bnm al t lnm sm' sb' bnm' . (KnownNat al, Storable' t) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
+	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
+copyBffrLst dv gq cp s d = singleTimeCmds dv gq cp \cb ->
+	Vk.Cmd.copyBuffer @'[ '( '[VObj.List al t lnm], 0, 0)] cb s d
 
 winObjs :: forall sw ssfc sd sc sl sdsl nm smrct sbrct nmrct nmt a alu .
 	TChan Event ->
@@ -914,15 +915,6 @@ bffrAlgn dv ln us f = Vk.Bffr.create dv (bffrInfo ln us) nil \b ->
 	(\(SomeNat p) -> f p) . someNatVal . fromIntegral =<<
 	Vk.Mm.requirementsAlignment <$> Vk.Bffr.getMemoryRequirements dv b
 
-createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
-	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
-		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List al t lnm])] ->
-		IO a) -> IO a
-createBffrLst p dv ln = createBffr p dv $ VObj.LengthList ln
-
 createRectangleBuffer ::
 	Devices sd sc scb -> RectGroups sd sm sb nm () -> () -> [RectangleRaw] ->
 	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 256 RectangleRaw ""])
@@ -930,13 +922,13 @@ createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
-	createBufferList phdvc dvc (fromIntegral $ length rs)
+	createBffrLst phdvc dvc (fromIntegral $ length rs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit )
 			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
 		Vk.Mm.write @"rectangle-buffer" @(VObj.List 256 RectangleRaw "") @0 dvc bm' zeroBits rs
-		copyBuffer dvc gq cp b' b
+		copyBffrLst dvc gq cp b' b
 	pure b
 
 createRectangleBuffer' :: Ord k =>
@@ -947,13 +939,13 @@ createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
-	createBufferList phdvc dvc (fromIntegral $ length rs)
+	createBffrLst phdvc dvc (fromIntegral $ length rs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit )
 			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[VObj.List 256 t ""]) bm' -> do
 		Vk.Mm.write @"rectangle-buffer" @(VObj.List 256 RectangleRaw "") @0 dvc bm' zeroBits rs
-		copyBuffer dvc gq cp b' b
+		copyBffrLst dvc gq cp b' b
 	pure b
 
 destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm k -> k -> IO ()
@@ -984,15 +976,14 @@ createBffrAtm :: forall sd nm al t a . (KnownNat al, Storable t) =>
 		IO a) -> IO a
 createBffrAtm p dv = createBffr p dv VObj.LengthAtom
 
-createBufferList :: forall sd nm t a . Storable t =>
+createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[VObj.List 256 t ""] ) ] ->
+		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
+		Vk.Mm.M sm
+			'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List al t lnm])] ->
 		IO a) -> IO a
-createBufferList p dv ln = createBffr p dv (VObj.LengthList ln)
+createBffrLst p dv ln = createBffr p dv $ VObj.LengthList ln
 
 createBufferList' :: forall sd nm t sm sb k . (Ord k, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -1053,35 +1044,6 @@ findMemoryType phdvc flt props =
 		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mm.mTypePropertyFlags . snd) tps
 		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
-
-copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List 256 a ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 a ""] -> IO ()
-copyBuffer dvc gq cp src dst = do
-	Vk.CBffr.allocate
-		dvc allocInfo \(cb :*. HPList.Nil) -> do
-		let	submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = TMaybe.N,
-				Vk.submitInfoWaitSemaphoreDstStageMasks =
-					HPList.Nil,
-				Vk.submitInfoCommandBuffers =
-					HPList.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HPList.Nil }
-		Vk.CBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '( '[VObj.List 256 a ""], 0, 0)] cb src dst
-		Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) Nothing
-		Vk.Q.waitIdle gq
-	where
-	allocInfo :: Vk.CBffr.AllocateInfo 'Nothing sc '[ '()]
-	allocInfo = Vk.CBffr.AllocateInfo {
-		Vk.CBffr.allocateInfoNext = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPool = cp,
-		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
-	beginInfo = Vk.CBffr.BeginInfo {
-		Vk.CBffr.beginInfoNext = TMaybe.N,
-		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
-		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 
 data SyncObjects (ssos :: (Type, Type, Type)) where
 	SyncObjects :: {
