@@ -490,8 +490,8 @@ winObjs op w sfc vex pd qfis dv gq cp pl rgs f =
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
 	createImgVws dv scis \scvs ->
 	createRndrPss @scfmt dv \rp ->
-
 	createFrmbffrs dv ex rp scvs \fbs ->
+
 	createGraphicsPipeline dv ex rp pl \gp ->
 	createSyncObjects dv \sos ->
 	atomically (writeTVar vex ex) >>
@@ -684,6 +684,40 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[scifmt] dv info nil
 			Vk.AccessDepthStencilAttachmentWriteBit,
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
+createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I inm fmt) sis ->
+	(forall sfs . RecreateFrmbffrs sis sfs =>
+		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
+createFrmbffrs _ _ _ HPList.Nil f = f HPList.Nil
+createFrmbffrs dv ex rp (v :** vs) f =
+	Vk.Frmbffr.create dv (frmbffrInfo ex rp v) nil \fb ->
+	createFrmbffrs dv ex rp vs \fbs -> f (fb :** fbs)
+
+class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
+	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
+		HPList.PL Vk.Frmbffr.F sfs -> IO ()
+
+instance RecreateFrmbffrs '[] '[] where
+	recreateFrmbffrs _ _ _ HPList.Nil HPList.Nil = pure ()
+
+instance RecreateFrmbffrs sis sfs =>
+	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
+	recreateFrmbffrs dv ex rp (v :** vs) (fb :** fbs) =
+		Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v) nil fb >>
+		recreateFrmbffrs dv ex rp vs fbs
+
+frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
+	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(inm, fmt, si)]
+frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
+	Vk.Frmbffr.createInfoNext = TMaybe.N,
+	Vk.Frmbffr.createInfoFlags = zeroBits,
+	Vk.Frmbffr.createInfoRenderPass = rp,
+	Vk.Frmbffr.createInfoAttachments = U3 att :** HPList.Nil,
+	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
+	Vk.Frmbffr.createInfoLayers = 1 }
+	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
+
 glfwEvents :: GlfwG.Win.W sw -> TChan Event -> IO ()
 glfwEvents w outp = do
 	GlfwG.pollEvents
@@ -848,40 +882,6 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
-
-createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	HPList.PL (Vk.ImgVw.I inm fmt) sis ->
-	(forall sfs . RecreateFrmbffrs sis sfs =>
-		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFrmbffrs _ _ _ HPList.Nil f = f HPList.Nil
-createFrmbffrs dv ex rp (v :** vs) f =
-	Vk.Frmbffr.create dv (frmbffrInfo ex rp v) nil \fb ->
-	createFrmbffrs dv ex rp vs \fbs -> f (fb :** fbs)
-
-class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
-	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
-		HPList.PL Vk.Frmbffr.F sfs -> IO ()
-
-instance RecreateFrmbffrs '[] '[] where
-	recreateFrmbffrs _ _ _ HPList.Nil HPList.Nil = pure ()
-
-instance RecreateFrmbffrs sis sfs =>
-	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
-	recreateFrmbffrs dv ex rp (v :** vs) (fb :** fbs) =
-		Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v) nil fb >>
-		recreateFrmbffrs dv ex rp vs fbs
-
-frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
-	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(inm, fmt, si)]
-frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
-	Vk.Frmbffr.createInfoNext = TMaybe.N,
-	Vk.Frmbffr.createInfoFlags = zeroBits,
-	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 att :** HPList.Nil,
-	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
-	Vk.Frmbffr.createInfoLayers = 1 }
-	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
 
 bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->
