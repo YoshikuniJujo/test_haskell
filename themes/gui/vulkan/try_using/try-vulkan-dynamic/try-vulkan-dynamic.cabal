@@ -1,0 +1,197 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-vulkan-dynamic
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-dynamic#readme>
+homepage:       https://github.com/githubuser/try-vulkan-dynamic#readme
+bug-reports:    https://github.com/githubuser/try-vulkan-dynamic/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2024 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+    debug/Debug.hs
+    nodebug/Debug.hs
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-vulkan-dynamic
+
+flag debug
+  manual: True
+  default: True
+
+library
+  other-modules:
+      Paths_try_vulkan_dynamic
+  autogen-modules:
+      Paths_try_vulkan_dynamic
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , directory
+    , extra-data-yj
+    , filepath
+    , ghc-prim
+    , mono-traversable
+    , mtl
+    , optparse-declarative
+    , ranged-list
+    , stm
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , transformers
+    , try-codec-wavefront-obj
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-gpu-vulkan-middle-khr-surface-glfw
+    , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-tools-yj
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+  if flag(debug)
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        debug
+  else
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        nodebug
+
+executable try-vulkan-guide-dynamic
+  main-is: try-vulkan-guide-dynamic.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , directory
+    , extra-data-yj
+    , filepath
+    , ghc-prim
+    , mono-traversable
+    , mtl
+    , optparse-declarative
+    , ranged-list
+    , stm
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , transformers
+    , try-codec-wavefront-obj
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-gpu-vulkan-middle-khr-surface-glfw
+    , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-tools-yj
+    , try-vulkan-dynamic
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+test-suite try-vulkan-dynamic-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_vulkan_dynamic
+  autogen-modules:
+      Paths_try_vulkan_dynamic
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , directory
+    , extra-data-yj
+    , filepath
+    , ghc-prim
+    , mono-traversable
+    , mtl
+    , optparse-declarative
+    , ranged-list
+    , stm
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , transformers
+    , try-codec-wavefront-obj
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-gpu-vulkan-middle-khr-surface-glfw
+    , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-tools-yj
+    , try-vulkan-dynamic
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
