@@ -64,7 +64,7 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 import Gpu.Vulkan.DescriptorSet.Copy
 
-import Gpu.Vulkan.Object.Base qualified as KObj
+import Gpu.Vulkan.Object.Dynamic qualified as DObj
 
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TSem
@@ -117,7 +117,7 @@ instance (
 
 type DefaultDynamicLengths slbts = Default
 	(HeteroParList.PL
-		(HeteroParList.PL KObj.Length)
+		(HeteroParList.PL DObj.Length)
 		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts)))
 
 allocateDs :: (WithPoked (TMaybe.M mn), DListFromMiddle slbtss) =>

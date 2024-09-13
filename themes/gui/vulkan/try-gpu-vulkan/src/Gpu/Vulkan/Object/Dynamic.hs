@@ -10,11 +10,11 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Object.Base (
+module Gpu.Vulkan.Object.Dynamic (
 
 	-- * OBJECT
 
-	O(..), IsImage(..), ObjectType(..),
+	O(..), IsImage(..),
 
 	-- ** Synonyms
 
@@ -55,13 +55,13 @@ import Gpu.Vulkan.TypeEnum qualified as T
 
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 
+import Gpu.Vulkan.Object.Base qualified as B
+
 -- OBJECT
 
-data O = O Alignment (Maybe Symbol) ObjectType Type
+data O = O Alignment (Maybe Symbol) B.ObjectType Type
 
 type Alignment = Nat
-
-data ObjectType = AtomT | ListT | ImageT deriving Show
 
 class (S.Storable (ImagePixel img), T.FormatToValue (ImageFormat img)) =>
 	IsImage img where
@@ -77,9 +77,9 @@ class (S.Storable (ImagePixel img), T.FormatToValue (ImageFormat img)) =>
 
 -- Synonyms
 
-type Atom algn t mnm = 'O algn mnm AtomT t
-type List algn t nm = 'O algn ('Just nm) ListT t
-type Image algn t nm = 'O algn ('Just nm) ImageT t
+type Atom algn t mnm = 'O algn mnm B.AtomT t
+type List algn t nm = 'O algn ('Just nm) B.ListT t
+type Image algn t nm = 'O algn ('Just nm) B.ImageT t
 
 -- Type of Object
 
@@ -91,13 +91,13 @@ type family TypeOf obj where
 
 data Length (obj :: O) where
 	LengthAtom :: Length (Atom algn t nm)
-	LengthList :: Device.M.Size -> Length ('O algn mnm ListT t)
+	LengthList :: Device.M.Size -> Length ('O algn mnm B.ListT t)
 	LengthImage :: {
 		lengthImageRow :: Device.M.Size,
 		lengthImageWidth :: Device.M.Size,
 		lengthImageHeight :: Device.M.Size,
 		lengthImageDepth :: Device.M.Size } ->
-		Length ('O algn mnm ImageT t)
+		Length ('O algn mnm B.ImageT t)
 
 deriving instance Eq (Length obj)
 deriving instance Show (Length obj)

@@ -104,6 +104,7 @@ import Gpu.Vulkan.QueryPool qualified as QueryPool
 import Gpu.Vulkan.QueryPool.Type qualified as QueryPool
 import Gpu.Vulkan.Query qualified as Query
 import Gpu.Vulkan.Object.Base qualified as KObj
+import Gpu.Vulkan.Object.Dynamic qualified as DObj
 
 beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
 	CommandBuffer.C scb -> RenderPass.BeginInfo mn sr sf cts ->
@@ -155,7 +156,7 @@ bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	TMapIndex.M1_2 dss ~ dsls',
 	LayoutArgListOnlyDynamics dsls' ~ dyns,
 	InfixIndex dsls' dsls, GetDynamicLength dss,
-	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
+	HeteroParList.ZipListWithC3 DObj.SizeAlignment dyns ) =>
 	CommandBuffer.GBinded sgbnd vibs '(sl, dsls, pcs) ->
 	Pipeline.BindPoint -> PipelineLayout.P sl dsls pcs ->
 	HeteroParList.PL (U2 DescriptorSet.D) dss ->
@@ -175,7 +176,7 @@ bindDescriptorSetsCompute :: forall scbnd sl dsls pcs dss dsls' dyns . (
 	TMapIndex.M1_2 dss ~ dsls',
 	LayoutArgListOnlyDynamics dsls' ~ dyns,
 	InfixIndex dsls' dsls, GetDynamicLength dss,
-	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
+	HeteroParList.ZipListWithC3 DObj.SizeAlignment dyns ) =>
 	CommandBuffer.CBinded scbnd '(sl, dsls, pcs) ->
 	PipelineLayout.P sl dsls pcs ->
 	HeteroParList.PL (U2 DescriptorSet.D) dss ->
@@ -190,25 +191,25 @@ bindDescriptorSetsCompute
 			dss)
 		dosts
 
-newtype DynamicIndex (obj :: KObj.O) = DynamicIndex Word32 deriving Show
+newtype DynamicIndex (obj :: DObj.O) = DynamicIndex Word32 deriving Show
 newtype DynamicOffset (obj :: KObj.O) = DynamicOffset Word32 deriving Show
 
-getOffset' :: forall obj . KObj.SizeAlignment obj =>
-	KObj.Length obj -> DynamicIndex obj -> Word32
+getOffset' :: forall obj . DObj.SizeAlignment obj =>
+	DObj.Length obj -> DynamicIndex obj -> Word32
 getOffset' ln (DynamicIndex i) = fromIntegral sz * i
 	where
-	sz = ((KObj.size ln - 1) `div` algn + 1) * algn
-	algn = KObj.alignment @obj
+	sz = ((DObj.size ln - 1) `div` algn + 1) * algn
+	algn = DObj.alignment @obj
 
-getOffsetListNew :: HeteroParList.ZipListWithC3 KObj.SizeAlignment osss =>
-		HeteroParList.PL3 KObj.Length osss ->
+getOffsetListNew :: HeteroParList.ZipListWithC3 DObj.SizeAlignment osss =>
+		HeteroParList.PL3 DObj.Length osss ->
 		HeteroParList.PL3 DynamicIndex osss -> [[[Word32]]]
-getOffsetListNew = HeteroParList.zipListWithC3 @KObj.SizeAlignment getOffset'
+getOffsetListNew = HeteroParList.zipListWithC3 @DObj.SizeAlignment getOffset'
 
 class GetDynamicLength sspslbtss where
 	getDynamicLength ::
 		HeteroParList.PL (U2 DescriptorSet.D) sspslbtss ->
-		IO (HeteroParList.PL3 KObj.Length
+		IO (HeteroParList.PL3 DObj.Length
 			(LayoutArgListOnlyDynamics (TMapIndex.M1_2 sspslbtss)))
 
 type family LayoutArgListOnlyDynamics las where
@@ -226,7 +227,7 @@ instance GetDynamicLength spslbtss =>
 		(:**) <$> getDscSetLengthsNew ds <*> getDynamicLength dss
 
 getDscSetLengthsNew :: DescriptorSet.D s slbts ->
-	IO (HeteroParList.PL2 KObj.Length
+	IO (HeteroParList.PL2 DObj.Length
 		(Layout.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts)))
 getDscSetLengthsNew (DescriptorSet.D lns _) = readIORef lns
 

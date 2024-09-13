@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-gpu-vulkan
-version:        0.1.0.123
+version:        0.1.0.125
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
@@ -140,6 +140,7 @@ library
       Gpu.Vulkan.Memory.ImageBuffer
       Gpu.Vulkan.Memory.OffsetSize
       Gpu.Vulkan.Memory.Type
+      Gpu.Vulkan.Object.Dynamic
       Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Struct
       Gpu.Vulkan.Pipeline.Enum
