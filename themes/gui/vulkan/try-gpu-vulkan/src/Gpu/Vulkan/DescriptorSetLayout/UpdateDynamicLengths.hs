@@ -76,8 +76,8 @@ instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
-		('Layout.Buffer ('VObj.Dynamic n o ': os') ': bts)
-		('VObj.Dynamic n o ': os) where
+		('Layout.Buffer ('VObj.Dynamic n algn o ': os') ': bts)
+		('VObj.Dynamic n algn o ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
 		(ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
 
@@ -94,7 +94,7 @@ instance {-# OVERLAPPABLE #-}
 	UpdateDynamicLength
 		('Layout.Buffer os' ': bts) (oo ': os) =>
 	UpdateDynamicLength
-		('Layout.Buffer ('VObj.Dynamic n o ': os') ': bts) (oo ': os) where
+		('Layout.Buffer ('VObj.Dynamic n algn o ': os') ': bts) (oo ': os) where
 	updateDynamicLength ((ln :** lns') :** lnss) lns = let
 		ls' :** lss = updateDynamicLength
 			@('Layout.Buffer os' ': bts) @(oo ': os) (lns' :** lnss) lns in
@@ -145,6 +145,6 @@ instance UpdateDynamicLengthPrefix os os' =>
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix
-		('VObj.Dynamic n o : os) ('VObj.Dynamic n o : os') where
+		('VObj.Dynamic n algn o : os) ('VObj.Dynamic n algn o : os') where
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns) =
 		ln :** updateDynamicLengthPrefix @os @os' lns' lns
