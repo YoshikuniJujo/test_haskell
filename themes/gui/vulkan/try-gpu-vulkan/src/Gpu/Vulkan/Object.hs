@@ -362,8 +362,8 @@ instance K.SizeAlignment kobj => SizeAlignment (Static_ kobj) where
 	size (LengthStatic kln) = K.size kln
 	alignment = K.alignment @kobj
 
-instance (KnownNat n, K.SizeAlignmentDyn algn kobj) =>
+instance (KnownNat n, K.SizeAlignment kobj) =>
 	SizeAlignment ('Dynamic n algn kobj) where
 	dynNum = fromIntegral $ natVal (Proxy :: Proxy n)
-	size (LengthDynamic kln) = K.sizeDyn @algn kln
-	alignment = K.alignmentDyn @algn @kobj
+	size (LengthDynamic kln) = K.size kln
+	alignment = K.alignment @kobj
