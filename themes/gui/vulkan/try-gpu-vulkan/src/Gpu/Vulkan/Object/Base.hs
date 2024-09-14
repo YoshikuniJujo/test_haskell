@@ -59,6 +59,8 @@ import Gpu.Vulkan.Device.Middle qualified as Device.M
 
 data O = O (Maybe Symbol) ObjectType Type
 
+type Alignment = Nat
+
 data ObjectType = AtomT | ListT | ImageT deriving Show
 
 class (S.Storable (ImagePixel img), T.FormatToValue (ImageFormat img)) =>
@@ -116,19 +118,19 @@ class SizeAlignment obj => Store v (obj :: O) where
 	load :: Ptr (TypeOf obj) -> Length obj -> IO v
 	length :: v -> Length obj
 
-instance S.Storable t => Store t ((Atom t _nm)) where
+instance (S.Storable t, KnownNat algn) => Store t ((Atom t _nm)) where
 	store p (LengthAtom) x = S.poke p x
 	load p (LengthAtom) = S.peek p
 	length _ = LengthAtom
 
-instance (Seq.IsSequence v, S.Storable t, Element v ~ t) =>
+instance (KnownNat algn, Seq.IsSequence v, S.Storable t, Element v ~ t) =>
 	Store v ((List t _nm)) where
 	store p ((LengthList (fromIntegral -> n))) xs =
 		pokeArray p . take n $ otoList xs
 	load p (LengthList (fromIntegral -> n)) = Seq.fromList <$> peekArray n p
 	length = LengthList . fromIntegral . olength
 
-instance IsImage img =>
+instance (KnownNat algn, IsImage img) =>
 	Store img ((Image img nm)) where
 	store p0 (LengthImage (fromIntegral -> r) (fromIntegral -> w) _ _) img =
 		for_ (zip (iterate (`plusPtr` s) p0) $ imageBody img)

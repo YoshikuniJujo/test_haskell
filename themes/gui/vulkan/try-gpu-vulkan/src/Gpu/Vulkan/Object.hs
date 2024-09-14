@@ -313,7 +313,7 @@ class SizeAlignmentList objs =>
 		Device.M.Size -> HeteroParList.PL SizeAlignmentOf objs ->
 		(Device.M.Size, Device.M.Size)
 
-instance (Storable v, SizeAlignmentList objs) =>
+instance (Storable v, KnownNat oalgn, SizeAlignmentList objs) =>
 	OffsetOfList v nm (List oalgn v nm ': objs) where
 	offsetRangeListFromSzAlgns ost (SizeAlignmentOf _ sz algn :** _) =
 		(adjust algn ost, sz)
