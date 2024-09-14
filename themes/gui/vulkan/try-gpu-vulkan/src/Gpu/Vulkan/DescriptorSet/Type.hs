@@ -10,6 +10,7 @@ import Data.TypeLevel.Tuple.Index qualified as TIndex
 import Data.IORef
 import Data.HeteroParList qualified as HeteroParList
 
+import Gpu.Vulkan.Object.Base qualified as KObj
 import Gpu.Vulkan.Object.Dynamic qualified as DObj
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Lyt
