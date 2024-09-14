@@ -11,11 +11,10 @@ import Data.IORef
 import Data.HeteroParList qualified as HeteroParList
 
 import Gpu.Vulkan.Object.Base qualified as KObj
-import Gpu.Vulkan.Object.Dynamic qualified as DObj
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as Lyt
 
 data D s (slbts :: (Type, [Lyt.BindingType])) = D
-	(IORef (HeteroParList.PL2 DObj.Length
+	(IORef (HeteroParList.PL2 KObj.Length
 		(Lyt.BindingTypeListBufferOnlyDynamics (TIndex.I1_2 slbts))))
 	M.D

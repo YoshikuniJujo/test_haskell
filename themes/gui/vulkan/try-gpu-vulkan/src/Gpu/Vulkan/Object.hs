@@ -92,34 +92,33 @@ import Data.Word
 
 import Foreign.Storable (Storable)
 import Gpu.Vulkan.Object.Base qualified as K
-import Gpu.Vulkan.Object.Dynamic qualified as D
 import Gpu.Vulkan.Device.Middle.Internal qualified as Device.M
 
 -- OBJECT
 
-data O = Static_ K.O | Dynamic Nat Nat K.O
+data O = Static_ K.O | Dynamic Nat K.O
 
 type Static algn mnm ot v = 'Static_ ('K.O algn mnm ot v)
-type Dynamic n algn mnm ot v = 'Dynamic n algn ('K.O algn mnm ot v)
+type Dynamic n algn mnm ot v = 'Dynamic n ('K.O algn mnm ot v)
 
 type Atom algn v mnm = Static_ (K.Atom algn v mnm)
 type List algn v nm = Static_ (K.List algn v nm)
 type Image algn v nm = Static_ (K.Image algn v nm)
 
-type DynAtom n algn v nm = 'Dynamic n algn (K.Atom algn v nm)
-type DynList n algn v nm = 'Dynamic n algn (K.List algn v nm)
-type DynImage n algn v nm = 'Dynamic n algn (K.Image algn v nm)
+type DynAtom n algn v nm = 'Dynamic n (K.Atom algn v nm)
+type DynList n algn v nm = 'Dynamic n (K.List algn v nm)
+type DynImage n algn v nm = 'Dynamic n (K.Image algn v nm)
 
 type family TypeOf obj where
 	TypeOf (Static_ kobj) = K.TypeOf kobj
-	TypeOf ('Dynamic n algn kobj) = K.TypeOf kobj
+	TypeOf ('Dynamic n kobj) = K.TypeOf kobj
 
 -- OBJECT LENGTH
 
 data Length obj where
 	LengthStatic :: K.Length kobj -> Length ('Static_ kobj)
 	LengthDynamic ::
-		K.Length kobj -> Length ('Dynamic n algn kobj)
+		K.Length kobj -> Length ('Dynamic n kobj)
 
 deriving instance Eq (Length obj)
 deriving instance Show (Length obj)
@@ -146,16 +145,16 @@ pattern LengthImage ::
 pattern LengthImage kr kw kh kd <- (LengthStatic (K.LengthImage kr kw kh kd))
 	where LengthImage kr kw kh kd = LengthStatic (K.LengthImage kr kw kh kd)
 
-pattern LengthDynAtom :: Length ('Dynamic n algn (K.Atom algn v nm))
+pattern LengthDynAtom :: Length ('Dynamic n (K.Atom algn v nm))
 pattern LengthDynAtom <- LengthDynamic K.LengthAtom where
 	LengthDynAtom = LengthDynamic K.LengthAtom
 
-pattern LengthDynList :: Device.M.Size -> Length ('Dynamic n algn (K.List algn v nm))
+pattern LengthDynList :: Device.M.Size -> Length ('Dynamic n (K.List algn v nm))
 pattern LengthDynList n <- LengthDynamic (K.LengthList n) where
 	LengthDynList n = LengthDynamic (K.LengthList n)
 
 pattern LengthDynImage ::
-	Device.M.Size -> Device.M.Size -> Device.M.Size -> Device.M.Size -> Length ('Dynamic n algn (K.Image algn v nm))
+	Device.M.Size -> Device.M.Size -> Device.M.Size -> Device.M.Size -> Length ('Dynamic n (K.Image algn v nm))
 pattern LengthDynImage kr kw kh kd <- (LengthDynamic (K.LengthImage kr kw kh kd))
 	where LengthDynImage kr kw kh kd = LengthDynamic (K.LengthImage kr kw kh kd)
 
@@ -170,19 +169,11 @@ instance {-# OVERLAPPABLE #-} LengthOf obj objs =>
 
 -- ONLY DYNAMIC LENGTH
 
-type family BaseToDyn algn (b :: K.O) :: D.O where
-	BaseToDyn algn ('K.O _algn nm ot t) = 'D.O algn nm ot t
-
-lengthBaseToDyn :: forall algn o . K.Length o -> D.Length (BaseToDyn algn o)
-lengthBaseToDyn K.LengthAtom = D.LengthAtom
-lengthBaseToDyn (K.LengthList ln) = D.LengthList ln
-lengthBaseToDyn (K.LengthImage r w h d) = D.LengthImage r w h d
-
 class OnlyDynamicLengths (objs :: [O]) where
-	type OnlyDynamics objs :: [D.O]
+	type OnlyDynamics objs :: [K.O]
 	onlyDynamicLength ::
 		HeteroParList.PL Length objs ->
-		HeteroParList.PL D.Length (OnlyDynamics objs)
+		HeteroParList.PL K.Length (OnlyDynamics objs)
 
 instance OnlyDynamicLengths '[] where
 	type OnlyDynamics '[] = '[]
@@ -192,10 +183,10 @@ instance OnlyDynamicLengths objs => OnlyDynamicLengths ('Static_ _o ': objs) whe
 	type OnlyDynamics ('Static_ _o ': objs) = OnlyDynamics objs
 	onlyDynamicLength (LengthStatic _ :** lns) = onlyDynamicLength lns
 
-instance OnlyDynamicLengths objs => OnlyDynamicLengths ('Dynamic _n algn o ': objs) where
-	type OnlyDynamics ('Dynamic _n algn o ': objs) = BaseToDyn algn o ': OnlyDynamics objs
+instance OnlyDynamicLengths objs => OnlyDynamicLengths ('Dynamic _n o ': objs) where
+	type OnlyDynamics ('Dynamic _n o ': objs) = o ': OnlyDynamics objs
 	onlyDynamicLength (LengthDynamic ln :** lns) =
-		lengthBaseToDyn @algn ln :** onlyDynamicLength lns
+		ln :** onlyDynamicLength lns
 
 -- STORE
 
@@ -209,7 +200,7 @@ instance K.Store v bobj => Store v (Static_ bobj) where
 	load p (LengthStatic kln) = K.load p kln
 	length = LengthStatic . K.length
 
-instance (KnownNat n, K.Store v bobj) => Store [Maybe v] ('Dynamic n algn bobj) where
+instance (KnownNat n, K.Store v bobj) => Store [Maybe v] ('Dynamic n bobj) where
 	store p0 (LengthDynamic kln) =
 		go p0 (natVal (Proxy :: Proxy n))
 		where
@@ -357,7 +348,7 @@ instance K.SizeAlignment kobj => SizeAlignment (Static_ kobj) where
 	alignment = K.alignment @kobj
 
 instance (KnownNat n, K.SizeAlignment kobj) =>
-	SizeAlignment ('Dynamic n algn kobj) where
+	SizeAlignment ('Dynamic n kobj) where
 	dynNum = fromIntegral $ natVal (Proxy :: Proxy n)
 	size (LengthDynamic kln) = K.size kln
 	alignment = K.alignment @kobj

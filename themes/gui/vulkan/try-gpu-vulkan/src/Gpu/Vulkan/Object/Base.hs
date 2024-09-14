@@ -14,7 +14,7 @@ module Gpu.Vulkan.Object.Base (
 
 	-- * OBJECT
 
-	O(..), IsImage(..), ObjectType(..),
+	O(..), IsImage(..),
 
 	-- ** Synonyms
 

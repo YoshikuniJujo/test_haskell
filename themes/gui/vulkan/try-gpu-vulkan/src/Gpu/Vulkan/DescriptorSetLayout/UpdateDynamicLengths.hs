@@ -15,7 +15,7 @@ module Gpu.Vulkan.DescriptorSetLayout.UpdateDynamicLengths (
 	UpdateDynamicLength(..) ) where
 
 import Gpu.Vulkan.Object qualified as VObj
-import Gpu.Vulkan.Object.Dynamic qualified as DObj
+import Gpu.Vulkan.Object.Base qualified as KObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
@@ -24,12 +24,12 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 class VObj.OnlyDynamicLengths objs => UpdateDynamicLength bts objs where
 	updateDynamicLength ::
 		HeteroParList.PL
-			(HeteroParList.PL DObj.Length)
+			(HeteroParList.PL KObj.Length)
 			(Layout.BindingTypeListBufferOnlyDynamics bts) ->
-		HeteroParList.PL DObj.Length
+		HeteroParList.PL KObj.Length
 			(VObj.OnlyDynamics objs) ->
 		HeteroParList.PL
-			(HeteroParList.PL DObj.Length)
+			(HeteroParList.PL KObj.Length)
 			(Layout.BindingTypeListBufferOnlyDynamics bts)
 
 instance UpdateDynamicLength _bts '[] where updateDynamicLength x _ = x
@@ -58,14 +58,14 @@ instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 		('Layout.Buffer (VObj.Dynamic n algn 'Nothing ot t ': os') ': bts)
 		(VObj.Dynamic n algn ('Just _nm) ot t ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
-		(DObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
+		(KObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
 		('Layout.Buffer (VObj.Dynamic n algn ('Just _nm) ot t ': os') ': bts)
 		(VObj.Dynamic n algn 'Nothing ot t ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
-		(DObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
+		(KObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
@@ -76,8 +76,8 @@ instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 
 instance (UpdateDynamicLengthPrefix os os', VObj.OnlyDynamicLengths os) =>
 	UpdateDynamicLength
-		('Layout.Buffer ('VObj.Dynamic n algn o ': os') ': bts)
-		('VObj.Dynamic n algn o ': os) where
+		('Layout.Buffer ('VObj.Dynamic n o ': os') ': bts)
+		('VObj.Dynamic n o ': os) where
 	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
 		(ln :** updateDynamicLengthPrefix @os @os' lns' lns) :** lnss
 
@@ -94,7 +94,7 @@ instance {-# OVERLAPPABLE #-}
 	UpdateDynamicLength
 		('Layout.Buffer os' ': bts) (oo ': os) =>
 	UpdateDynamicLength
-		('Layout.Buffer ('VObj.Dynamic n algn o ': os') ': bts) (oo ': os) where
+		('Layout.Buffer ('VObj.Dynamic n o ': os') ': bts) (oo ': os) where
 	updateDynamicLength ((ln :** lns') :** lnss) lns = let
 		ls' :** lss = updateDynamicLength
 			@('Layout.Buffer os' ': bts) @(oo ': os) (lns' :** lnss) lns in
@@ -102,9 +102,9 @@ instance {-# OVERLAPPABLE #-}
 
 class UpdateDynamicLengthPrefix (objs :: [VObj.O]) (objs' :: [VObj.O]) where
 	updateDynamicLengthPrefix ::
-		HeteroParList.PL DObj.Length (VObj.OnlyDynamics objs') ->
-		HeteroParList.PL DObj.Length (VObj.OnlyDynamics objs) ->
-		HeteroParList.PL DObj.Length (VObj.OnlyDynamics objs')
+		HeteroParList.PL KObj.Length (VObj.OnlyDynamics objs') ->
+		HeteroParList.PL KObj.Length (VObj.OnlyDynamics objs) ->
+		HeteroParList.PL KObj.Length (VObj.OnlyDynamics objs')
 
 instance UpdateDynamicLengthPrefix '[] objs where
 	updateDynamicLengthPrefix lns _ = lns
@@ -128,14 +128,14 @@ instance UpdateDynamicLengthPrefix os os' =>
 		(VObj.Dynamic n algn 'Nothing ot t ': os)
 		(VObj.Dynamic n algn ('Just _nm) ot t ': os') where
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns)  =
-		DObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
+		KObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix
 		(VObj.Dynamic n algn ('Just _nm) ot t ': os)
 		(VObj.Dynamic n algn 'Nothing ot t ': os') where
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns)  =
-		DObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
+		KObj.renameLength ln :** updateDynamicLengthPrefix @os @os' lns' lns
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix
@@ -145,6 +145,6 @@ instance UpdateDynamicLengthPrefix os os' =>
 
 instance UpdateDynamicLengthPrefix os os' =>
 	UpdateDynamicLengthPrefix
-		('VObj.Dynamic n algn o : os) ('VObj.Dynamic n algn o : os') where
+		('VObj.Dynamic n o : os) ('VObj.Dynamic n o : os') where
 	updateDynamicLengthPrefix (_ln :** lns') (ln :** lns) =
 		ln :** updateDynamicLengthPrefix @os @os' lns' lns
