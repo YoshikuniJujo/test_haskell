@@ -64,6 +64,7 @@ library
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Object
       Gpu.Vulkan.Object.Base
+      Gpu.Vulkan.Object.NoAlignment
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.Pipeline
       Gpu.Vulkan.Pipeline.ColorBlendAttachment

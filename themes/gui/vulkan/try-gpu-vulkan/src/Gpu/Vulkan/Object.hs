@@ -21,7 +21,8 @@ module Gpu.Vulkan.Object (
 
 	-- *** static
 
-	Atom, List, Image,
+	Atom, AtomNew, List, Image,
+	AtomNoName, ListNoName, ImageNoName,
 
 	-- *** dynamic
 
@@ -102,8 +103,13 @@ type Static algn mnm ot v = 'Static_ ('K.O algn mnm ot v)
 type Dynamic n algn mnm ot v = 'Dynamic n ('K.O algn mnm ot v)
 
 type Atom algn v mnm = Static_ (K.Atom algn v mnm)
+type AtomNew algn v nm = Static_ (K.AtomNew algn v nm)
 type List algn v nm = Static_ (K.List algn v nm)
 type Image algn v nm = Static_ (K.Image algn v nm)
+
+type AtomNoName algn v = Static_ (K.AtomNoName algn v)
+type ListNoName algn v = Static_ (K.ListNoName algn v)
+type ImageNoName algn v = Static_ (K.ImageNoName algn v)
 
 type DynAtom n algn v nm = 'Dynamic n (K.Atom algn v nm)
 type DynList n algn v nm = 'Dynamic n (K.List algn v nm)
