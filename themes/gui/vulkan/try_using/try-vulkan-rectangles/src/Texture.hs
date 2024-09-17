@@ -21,7 +21,6 @@ module Texture (
 
 	flashImg, copyBffrLst ) where
 
-import GHC.TypeNats
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -38,8 +37,9 @@ import Data.Word
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Object qualified as Obj
-import Gpu.Vulkan.Object.Base qualified as BObj
+import Gpu.Vulkan.Object qualified as Vk.Obj
+import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
+import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
@@ -138,17 +138,17 @@ updateDscSt dv ds v spl =
 
 -- CREATE IMAGE BUFFER
 
-createBffrImg :: forall sd bnm i nm . BObj.IsImage i =>
+createBffrImg :: forall sd bnm i nm . Vk.ObjB.IsImage i =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Obj.Image 1 i nm] ->
-		Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Obj.Image 1 i nm])] ->
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image i nm] ->
+		Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image i nm])] ->
 		IO ()) -> IO ()
-createBffrImg pd dv w h = createBffr pd dv (Obj.LengthImage w w h 1)
+createBffrImg pd dv w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1)
 	Vk.Bffr.UsageTransferSrcBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
-createBffr :: forall sd nm o a . Obj.SizeAlignment o =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Obj.Length o ->
+createBffr :: forall sd nm o a . Vk.Obj.SizeAlignment o =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> IO a) -> IO a
@@ -163,11 +163,11 @@ createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-createBffr' :: forall sd sm sb k nm o . (Ord k, Obj.SizeAlignment o) =>
+createBffr' :: forall sd sm sb k nm o . (Ord k, Vk.Obj.SizeAlignment o) =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
 	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> k ->
-	Obj.Length o ->
+	Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> IO (
 		(Vk.Bffr.Binded sm sb nm '[o],
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])]))
@@ -188,7 +188,7 @@ pattern AlwaysRight x <- Right x where
 	AlwaysRight x = Right x
 
 bffrInfo ::
-	Obj.Length s -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo Nothing '[s]
+	Vk.Obj.Length s -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo Nothing '[s]
 bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
@@ -210,19 +210,19 @@ findMmType pd flt prs =
 
 -- WRITE BUFFER
 
-writeBffr :: forall sd sm sb bnm al i nm . (KnownNat al, BObj.IsImage i) =>
+writeBffr :: forall sd sm sb bnm al i nm . Vk.ObjB.IsImage i =>
 	Vk.Dvc.D sd ->
-	Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Obj.Image al i nm])] -> i ->
+	Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image i nm])] -> i ->
 	IO ()
-writeBffr dv m = Vk.Mm.write @bnm @(Obj.Image al i nm) @0 dv m zeroBits
+writeBffr dv m = Vk.Mm.write @bnm @(Vk.ObjNA.Image i nm) @0 dv m zeroBits
 
 -- COPY FROM BUFFER TO IMAGE
 
 flashImg :: forall sd sc sim si inm i sbm sb bnmi al nmi .
-	(BObj.IsImage i, KnownNat al) =>
+	Vk.ObjB.IsImage i =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.Binded sim si inm (BObj.ImageFormat i) ->
-	Vk.Bffr.Binded sbm sb bnmi '[Obj.Image al i nmi] -> (Word32, Word32) ->
+	Vk.Img.Binded sim si inm (Vk.ObjB.ImageFormat i) ->
+	Vk.Bffr.Binded sbm sb bnmi '[Vk.ObjNA.Image i nmi] -> (Word32, Word32) ->
 	IO ()
 flashImg dv gq cp i b sz = do
 		transitionImgLyt dv gq cp i
@@ -265,21 +265,21 @@ transitionImgLyt dv gq cp i ol nl = singleTimeCmds dv gq cp \cb ->
 		_ -> error "unsupported layout transition!"
 
 copyBffrLst :: forall sd sc sm sb bnm al t lnm sm' sb' bnm' .
-	(KnownNat al, Storable' t) =>
+	Storable' t =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb bnm '[Obj.List al t lnm] ->
-	Vk.Bffr.Binded sm' sb' bnm' '[Obj.List al t lnm] -> IO ()
+	Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t lnm] ->
+	Vk.Bffr.Binded sm' sb' bnm' '[Vk.ObjNA.List t lnm] -> IO ()
 copyBffrLst dv gq cp s d = singleTimeCmds dv gq cp \cb ->
-	Vk.Cmd.copyBuffer @'[ '( '[Obj.List al t lnm], 0, 0)] cb s d
+	Vk.Cmd.copyBuffer @'[ '( '[Vk.ObjNA.List t lnm], 0, 0)] cb s d
 
 copyBffrToImg :: forall sd sc sbm sb bnm al i nmi sim si nmi' .
-	(Storable (BObj.ImagePixel i), KnownNat al) =>
+	(Storable (Vk.ObjB.ImagePixel i)) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sbm sb bnm '[Obj.Image al i nmi]  ->
-	Vk.Img.Binded sim si nmi' (BObj.ImageFormat i) -> (Word32, Word32) ->
+	Vk.Bffr.Binded sbm sb bnm '[Vk.ObjNA.Image i nmi]  ->
+	Vk.Img.Binded sim si nmi' (Vk.ObjB.ImageFormat i) -> (Word32, Word32) ->
 	IO ()
 copyBffrToImg dv gq cp b i (w, h) = singleTimeCmds dv gq cp \cb ->
-	Vk.Cmd.copyBufferToImage @al cb b i Vk.Img.LayoutTransferDstOptimal rgns
+	Vk.Cmd.copyBufferToImage @1 cb b i Vk.Img.LayoutTransferDstOptimal rgns
 	where
 	rgns :: HPList.PL (Vk.Bffr.ImageCopy i) '[nmi]
 	rgns = HPList.Singleton Vk.Bffr.ImageCopy {
