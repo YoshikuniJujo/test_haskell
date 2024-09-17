@@ -23,11 +23,13 @@ module Gpu.Vulkan.Object (
 
 	Atom, AtomNew, List, Image,
 	AtomNoName, ListNoName, ImageNoName,
+	AtomMaybeName, ListMaybeName, ImageMaybeName,
 
 	-- *** dynamic
 
 	DynAtom, DynAtomNew, DynList, DynImage,
 	DynAtomNoName, DynListNoName, DynImageNoName,
+	DynAtomMaybeName, DynListMaybeName, DynImageMaybeName,
 
 	-- ** Type Of Object
 
@@ -103,14 +105,18 @@ data O = Static_ K.O | Dynamic Nat K.O
 type Static algn mnm ot v = 'Static_ ('K.O algn mnm ot v)
 type Dynamic n algn mnm ot v = 'Dynamic n ('K.O algn mnm ot v)
 
-type Atom algn v mnm = Static_ (K.Atom algn v mnm)
-type AtomNew algn v nm = Static_ (K.AtomNew algn v nm)
-type List algn v nm = Static_ (K.List algn v nm)
-type Image algn v nm = Static_ (K.Image algn v nm)
+type Atom algn v mnm = AtomMaybeName algn v mnm
+type AtomNew algn v nm = AtomMaybeName algn v ('Just nm)
+type List algn v nm = ListMaybeName algn v ('Just nm)
+type Image algn v nm = ImageMaybeName algn v ('Just nm)
 
-type AtomNoName algn v = Static_ (K.AtomNoName algn v)
-type ListNoName algn v = Static_ (K.ListNoName algn v)
-type ImageNoName algn v = Static_ (K.ImageNoName algn v)
+type AtomNoName algn v = AtomMaybeName algn v 'Nothing
+type ListNoName algn v = ListMaybeName algn v 'Nothing
+type ImageNoName algn v = ImageMaybeName algn v 'Nothing
+
+type AtomMaybeName algn v mnm = Static_ (K.AtomMaybeName algn v mnm)
+type ListMaybeName algn v mnm = Static_ (K.ListMaybeName algn v mnm)
+type ImageMaybeName algn v mnm = Static_ (K.ImageMaybeName algn v mnm)
 
 type DynAtom n algn v nm = 'Dynamic n (K.Atom algn v nm)
 type DynAtomNew n algn v nm = 'Dynamic n (K.AtomNew algn v nm)
@@ -120,6 +126,10 @@ type DynImage n algn v nm = 'Dynamic n (K.Image algn v nm)
 type DynAtomNoName n algn v = 'Dynamic n (K.AtomNoName algn v)
 type DynListNoName n algn v = 'Dynamic n (K.ListNoName algn v)
 type DynImageNoName n algn v = 'Dynamic n (K.ImageNoName algn v)
+
+type DynAtomMaybeName n algn v mnm = 'Dynamic n (K.AtomMaybeName algn v mnm)
+type DynListMaybeName n algn v mnm = 'Dynamic n (K.ListMaybeName algn v mnm)
+type DynImageMaybeName n algn v mnm = 'Dynamic n (K.ImageMaybeName algn v mnm)
 
 type family TypeOf obj where
 	TypeOf (Static_ kobj) = K.TypeOf kobj

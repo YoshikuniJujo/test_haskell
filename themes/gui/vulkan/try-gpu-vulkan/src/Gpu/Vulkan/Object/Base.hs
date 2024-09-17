@@ -20,6 +20,7 @@ module Gpu.Vulkan.Object.Base (
 
 	Atom, AtomNew, List, Image,
 	AtomNoName, ListNoName, ImageNoName,
+	AtomMaybeName, ListMaybeName, ImageMaybeName,
 
 	-- ** Type Of Object
 
@@ -78,14 +79,18 @@ class (S.Storable (ImagePixel img), T.FormatToValue (ImageFormat img)) =>
 
 -- Synonyms
 
-type Atom algn t mnm = 'O algn mnm AtomT t
-type AtomNew algn t nm = 'O algn ('Just nm) AtomT t
-type List algn t nm = 'O algn ('Just nm) ListT t
-type Image algn t nm = 'O algn ('Just nm) ImageT t
+type Atom algn t mnm = AtomMaybeName algn t mnm
+type AtomNew algn t nm = AtomMaybeName algn t ('Just nm)
+type List algn t nm = ListMaybeName algn t ('Just nm)
+type Image algn t nm = ImageMaybeName algn t ('Just nm)
 
-type AtomNoName al t = 'O al 'Nothing AtomT t
-type ListNoName al t = 'O al 'Nothing ListT t
-type ImageNoName al t = 'O al 'Nothing ImageT t
+type AtomNoName al t = AtomMaybeName al t 'Nothing
+type ListNoName al t = ListMaybeName al t 'Nothing
+type ImageNoName al t = ImageMaybeName al t 'Nothing
+
+type AtomMaybeName al t mnm = 'O al mnm AtomT t
+type ListMaybeName al t mnm = 'O al mnm ListT t
+type ImageMaybeName al t mnm = 'O al mnm ImageT t
 
 -- Type of Object
 
