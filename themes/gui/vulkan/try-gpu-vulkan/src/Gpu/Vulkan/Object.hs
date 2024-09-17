@@ -26,7 +26,8 @@ module Gpu.Vulkan.Object (
 
 	-- *** dynamic
 
-	DynAtom, DynList, DynImage,
+	DynAtom, DynAtomNew, DynList, DynImage,
+	DynAtomNoName, DynListNoName, DynImageNoName,
 
 	-- ** Type Of Object
 
@@ -112,8 +113,13 @@ type ListNoName algn v = Static_ (K.ListNoName algn v)
 type ImageNoName algn v = Static_ (K.ImageNoName algn v)
 
 type DynAtom n algn v nm = 'Dynamic n (K.Atom algn v nm)
+type DynAtomNew n algn v nm = 'Dynamic n (K.AtomNew algn v nm)
 type DynList n algn v nm = 'Dynamic n (K.List algn v nm)
 type DynImage n algn v nm = 'Dynamic n (K.Image algn v nm)
+
+type DynAtomNoName n algn v = 'Dynamic n (K.AtomNoName algn v)
+type DynListNoName n algn v = 'Dynamic n (K.ListNoName algn v)
+type DynImageNoName n algn v = 'Dynamic n (K.ImageNoName algn v)
 
 type family TypeOf obj where
 	TypeOf (Static_ kobj) = K.TypeOf kobj
