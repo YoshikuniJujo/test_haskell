@@ -71,7 +71,8 @@ import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Object qualified as Obj
+import Gpu.Vulkan.Object qualified as Vk.Obj
+import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
@@ -592,8 +593,8 @@ type DscStLytArg alu = '[BufferViewProj alu, BufferSceneData alu]
 type BufferViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomViewProj alu]
 type BufferSceneData alu = 'Vk.DscSetLyt.Buffer '[AtomSceneData alu]
 
-type AtomViewProj alu = Obj.Atom alu WViewProj 'Nothing
-type AtomSceneData alu = Obj.Atom alu WScene 'Nothing
+type AtomViewProj alu = Vk.Obj.AtomNew alu WViewProj ""
+type AtomSceneData alu = Vk.Obj.AtomNoName alu WScene
 
 createGrPpl :: ShaderX -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
@@ -941,8 +942,8 @@ readVtcs fp = either error pure
 
 createVtxBffr :: (IsSequence lst, Element lst ~ WVertex) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> lst ->
-	(forall sm sb al . KnownNat al => (
-		Vk.Bffr.Binded sm sb bnm '[Obj.List al WVertex lnm],
+	(forall sm sb . (
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List WVertex lnm],
 		Word32 ) -> IO a) -> IO a
 createVtxBffr = createBffrMem Vk.Bffr.UsageVertexBufferBit
 
@@ -950,40 +951,29 @@ createBffrMem :: forall sd sc lst nm lnm a .
 	(IsSequence lst, Storable' (Element lst)) =>
 	Vk.Bffr.UsageFlags -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> lst ->
-	(forall sm sb al . KnownNat al => (
-		Vk.Bffr.Binded sm sb nm '[Obj.List al (Element lst) lnm],
+	(forall sm sb . (
+		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.List (Element lst) lnm],
 		Word32 ) -> IO a) -> IO a
 createBffrMem us pd dv gq cp
 	xs@((fromIntegral &&& fromIntegral) . olength -> (ln, ln')) f =
-	bffrAlgn @(Obj.List 256 (Element lst) lnm) dv (Obj.LengthList ln)
-		(Vk.Bffr.UsageTransferDstBit .|. us) \(_ :: Proxy al) ->
 	createBffrLst pd dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
 		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
 		createBffrLst pd dv ln
 			Vk.Bffr.UsageTransferSrcBit (
 			Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) \
-			(b' :: Vk.Bffr.Binded sm sb bnm' '[Obj.List al t lnm'])
+			(b' :: Vk.Bffr.Binded sm sb bnm' '[Vk.ObjNA.List t lnm'])
 			bm' -> do
 			Vk.Mm.write
-				@bnm' @(Obj.List al t lnm') @0 dv bm' zeroBits xs
+				@bnm' @(Vk.ObjNA.List t lnm') @0 dv bm' zeroBits xs
 			copy b' b
 		f (b, ln')
 	where
-	copy :: forall sm sb bnm sm' sb' bnm' al . KnownNat al =>
-		Vk.Bffr.Binded sm sb bnm '[Obj.List al (Element lst) lnm] ->
-		Vk.Bffr.Binded sm' sb' bnm' '[Obj.List al (Element lst) lnm] -> IO ()
+	copy :: forall sm sb bnm sm' sb' bnm' .
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List (Element lst) lnm] ->
+		Vk.Bffr.Binded sm' sb' bnm' '[Vk.ObjNA.List (Element lst) lnm] -> IO ()
 	copy s d = singleTimeCmds dv gq cp \cb ->
-		Vk.Cmd.copyBuffer @'[ '( '[Obj.List al (Element lst) lnm], 0, 0)] cb s d
-
-bffrAlgn :: forall o sd a . Obj.SizeAlignment o =>
-	Vk.Dvc.D sd -> Obj.Length o -> Vk.Bffr.UsageFlags ->
-	(forall al . KnownNat al => Proxy al -> IO a) -> IO a
-bffrAlgn dv ln us f =
-	Vk.Bffr.create dv (bffrInfo (HPList.Singleton ln) us) nil \b ->
-	(\(SomeNat p) -> f p) . someNatVal . fromIntegral
-		=<< Vk.Mm.requirementsAlignment
-		<$> Vk.Bffr.getMemoryRequirements dv b
+		Vk.Cmd.copyBuffer @'[ '( '[Vk.ObjNA.List (Element lst) lnm], 0, 0)] cb s d
 
 class CreateVpBffrs alvp (sds :: [Symbol]) where
 	createVpBffrs :: Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -1010,7 +1000,7 @@ instance CreateVpBffrs al '[] where
 
 instance (
 	KnownNat alvp,
-	Obj.OffsetRange (Obj.Atom alvp WScene (Just sd))
+	Vk.Obj.OffsetRange (Vk.Obj.AtomNew alvp WScene sd)
 		(SceneBffrArg alvp SceneNames) 0,
 	CreateVpBffrs alvp sds ) => CreateVpBffrs alvp (sd ': sds) where
 	createVpBffrs pd dv dl f = createVpBffr pd dv \bnd mm ->
@@ -1032,7 +1022,7 @@ createScnBffr :: KnownNat alsn => Vk.Phd.P -> Vk.Dvc.D sd ->
 			'Vk.Mm.BufferArg nm (SceneBffrArg alsn SceneNames)) ] ->
 		IO a) -> IO a
 createScnBffr pd dv = createBffr pd dv
-	(Obj.LengthAtom :** Obj.LengthAtom :** HPList.Nil)
+	(Vk.Obj.LengthAtom :** Vk.Obj.LengthAtom :** HPList.Nil)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
 type SceneNames = '["scene-data-0", "scene-data-1"]
@@ -1040,30 +1030,30 @@ type SceneNames = '["scene-data-0", "scene-data-1"]
 type family SceneBffrArg al snns where
 	SceneBffrArg _al '[] = '[]
 	SceneBffrArg al (snn ': snns) =
-		Obj.Atom al WScene ('Just snn) ': SceneBffrArg al snns
+		Vk.Obj.AtomNew al WScene snn ': SceneBffrArg al snns
 
-createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
+createBffrAtm :: forall al sd nm mnm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[Vk.Obj.AtomMaybeName al a mnm] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.AtomMaybeName al a mnm] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv =
-	createBffr p dv (HPList.Singleton Obj.LengthAtom) us prs
+	createBffr p dv (HPList.Singleton Vk.Obj.LengthAtom) us prs
 
-createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
+createBffrLst :: forall sd bnm lnm t a . Storable t =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Obj.List al t lnm] ->
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t lnm] ->
 		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg bnm '[Obj.List al t lnm])] ->
+			'[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.ObjNA.List t lnm])] ->
 		IO a) -> IO a
-createBffrLst p dv ln = createBffr p dv . HPList.Singleton $ Obj.LengthList ln
+createBffrLst p dv ln = createBffr p dv . HPList.Singleton $ Vk.Obj.LengthList ln
 
 createBffr :: forall sd bnm os a . (
-	Obj.SizeAlignmentList os, Obj.WholeAlign os ) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> HPList.PL Obj.Length os ->
+	Vk.Obj.SizeAlignmentList os, Vk.Obj.WholeAlign os ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> HPList.PL Vk.Obj.Length os ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb bnm os -> Vk.Mm.M sm
 			'[ '(sb, 'Vk.Mm.BufferArg bnm os)] -> IO a) -> IO a
@@ -1077,7 +1067,7 @@ createBffr p dv lns us prs f = Vk.Bffr.create dv (bffrInfo lns us) nil \b -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-bffrInfo :: HPList.PL Obj.Length os ->
+bffrInfo :: HPList.PL Vk.Obj.Length os ->
 	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing os
 bffrInfo lns us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
@@ -1138,16 +1128,15 @@ instance (
 	KnownNat alu,
 	Vk.DscSet.BindingAndArrayElemBuffer bts '[AtomViewProj alu] 0,
 	Vk.DscSet.BindingAndArrayElemBuffer bts
-		'[Obj.Atom alu WScene ('Just sn)] 0,
+		'[Vk.Obj.AtomNew alu WScene sn] 0,
 	Vk.DscSet.UpdateDynamicLength bts '[AtomViewProj alu],
-	Vk.DscSet.UpdateDynamicLength bts
-		'[Obj.Atom alu WScene ('Just sn)],
-	Obj.OffsetRange (Obj.Atom alu WScene (Just sn)) snb 0,
-	Show (HPList.PL Obj.Length snb), Update alu snb smsbs dss sns ) =>
+	Vk.DscSet.UpdateDynamicLength bts '[Vk.Obj.AtomNew alu WScene sn],
+	Vk.Obj.OffsetRange (Vk.Obj.AtomNew alu WScene sn) snb 0,
+	Show (HPList.PL Vk.Obj.Length snb), Update alu snb smsbs dss sns ) =>
 	Update alu snb (smsb ': smsbs) ('(ds, bts) ': dss) (sn ': sns) where
 	update dv (ds :** dss) (BindedVp bvp :** bvps) scnb = do
 		Vk.DscSet.updateDs dv (
-			U5 (dscWrite @alu @WViewProj @Nothing
+			U5 (dscWrite @alu @WViewProj @('Just "") -- @Nothing
 				ds bvp Vk.Dsc.TypeUniformBuffer) :**
 			U5 (dscWrite @alu @WScene @('Just sn)
 				ds scnb Vk.Dsc.TypeUniformBuffer) :**
@@ -1155,13 +1144,13 @@ instance (
 		update @alu @snb @_ @_ @sns dv dss bvps scnb
 
 dscWrite :: forall al tp onm sm sb bnm os dla sds . (
-	Show (HPList.PL Obj.Length os),
-	Obj.OffsetRange (Obj.Atom al tp onm) os 0 ) =>
+	Show (HPList.PL Vk.Obj.Length os),
+	Vk.Obj.OffsetRange (Vk.Obj.AtomMaybeName al tp onm) os 0 ) =>
 	Vk.DscSet.D sds dla ->
 	Vk.Bffr.Binded sm sb bnm os ->
 	Vk.Dsc.Type ->
 	Vk.DscSet.Write 'Nothing sds dla ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sm, sb, bnm, Obj.Atom al tp onm, 0 )]) 0
+		sm, sb, bnm, Vk.Obj.AtomMaybeName al tp onm, 0 )]) 0
 dscWrite ds b tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N, Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = tp,
@@ -1197,7 +1186,7 @@ mainloop :: (
 	RecreateFrmbffrs svs sfs,
 	HPList.HomoList '(sdsl, DscStLytArg alu) dlas,
 	HPList.HomoList '() mff,
-	KnownNat alu, KnownNat alvmk, KnownNat alvtr ) =>
+	KnownNat alu ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
@@ -1248,13 +1237,13 @@ frashRate :: Num n => n
 frashRate = 2
 
 type VtxBffr smv sbv bnmv alv nmv =
-	(Vk.Bffr.Binded smv sbv bnmv '[Obj.List alv WVertex nmv], Word32)
+	(Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv], Word32)
 
 run :: (
 	HPList.HomoList '() mff, RecreateFrmbffrs svs sfs,
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	HPList.HomoList '(sdsl, DscStLytArg alu) slyts,
-	KnownNat alu, KnownNat alvmk, KnownNat alvtr ) =>
+	KnownNat alu ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
@@ -1294,7 +1283,7 @@ draw :: forall
 	sd fmt ssc sr sl sdsl sg0 sg1 sfs
 	smvmk sbvmk bnmvmk alvmk nmvmk smvtr sbvtr bnmvtr alvtr nmvtr
 	alu bnmvp smsn sbsn bnmsn smsbs sds sls scb mff ssos . (
-	KnownNat alu, KnownNat alvmk, KnownNat alvtr,
+	KnownNat alu,
 	HPList.HomoList '() mff,
 	HPList.HomoList '(sdsl, DscStLytArg alu) sls ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
@@ -1326,10 +1315,10 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 	Vk.Mm.write @bnmvp @(AtomViewProj alu) @0 dv vpm zeroBits (viewProjData ex)
 	case cf of
 		0 -> Vk.Mm.write @bnmsn
-			@(Obj.Atom alu WScene ('Just "scene-data-0")) @0
+			@(Vk.Obj.AtomNew alu WScene "scene-data-0") @0
 			dv snm zeroBits (sceneData fn)
 		1 -> Vk.Mm.write @bnmsn
-			@(Obj.Atom alu WScene ('Just "scene-data-1")) @0
+			@(Vk.Obj.AtomNew alu WScene "scene-data-1") @0
 			dv snm zeroBits (sceneData fn)
 		_ -> error "never occur"
 	ii <- Vk.Khr.acquireNextImageResult
@@ -1365,7 +1354,6 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 recordCmdBffr :: forall
 	scb sr sl sdsl sds alu sg sf
 	smvmk sbvmk bnmvmk alvmk nmvmk smvtr sbvtr bnmvtr alvtr nmvtr .
-	(KnownNat alvmk, KnownNat alvtr) =>
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[WMeshPushConsts] ->
 	Vk.Ppl.Grph.G sg
@@ -1415,8 +1403,8 @@ recordCmdBffr cb ex rp pl gp fb (vbmk, vnmk) (vbtr, vntr)
 		Glm.mat4Identity (Glm.Vec3 $ x :. 0 :. y :. NilL)
 	scl = Glm.scale Glm.mat4Identity (Glm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 
-drawObj :: forall scb sds sdsl alu sl sg sm sb bnmv alv nmv . KnownNat alv =>
-	IORef (Maybe (Vk.Bffr.Binded sm sb bnmv '[Obj.List alv WVertex nmv])) ->
+drawObj :: forall scb sds sdsl alu sl sg sm sb bnmv alv nmv .
+	IORef (Maybe (Vk.Bffr.Binded sm sb bnmv '[Vk.ObjNA.List WVertex nmv])) ->
 	Vk.CBffr.C scb -> Vk.DscSet.D sds '(sdsl, DscStLytArg alu) ->
 	RenderObj sl sdsl alu sg sm sb bnmv alv nmv -> IO ()
 drawObj rvbpre cb ds RenderObj {
@@ -1446,7 +1434,7 @@ data RenderObj sl sdsl alu sg sm sb bnmv alv nmv = RenderObj {
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[WMeshPushConsts]),
-	renderObjMesh :: Vk.Bffr.Binded sm sb bnmv '[Obj.List alv WVertex nmv],
+	renderObjMesh :: Vk.Bffr.Binded sm sb bnmv '[Vk.ObjNA.List WVertex nmv],
 	renderObjMeshSize :: Word32, renderObjTransformMtx :: Glm.Mat4 }
 
 catchAndRecreate :: (
