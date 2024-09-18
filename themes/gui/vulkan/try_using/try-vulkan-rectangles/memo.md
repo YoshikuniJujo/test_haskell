@@ -28,7 +28,7 @@ src
         - [x] findQFams
         - [x] QFamIndices
         - [x] createLgDvc
-    + [ ] RUN
+    + [x] RUN
         - [ ] run
         - [x] createCmdPl
         - [x] createCmdBffr
@@ -40,15 +40,15 @@ src
         - [x] createViewProjBffr
         - [x] ViewProjMemory
         - [x] createDscPl
-        - [ ] createDscSt
-        - [ ] creteVtxBffr
-        - [ ] createIdxBffr
-        - [ ] createBffrMem
-        - [ ] UniformBfferMemory
+        - [x] createDscSt
+        - [x] creteVtxBffr
+        - [x] createIdxBffr
+        - [x] createBffrMem
+    + [ ] WINDOW OBJECTS
+    + [ ] CREATE BUFFER
         - [ ] createBffrAtm
         - [ ] createBffrLst
         - [ ] createBufferList'
-    + [ ] WINDOW OBJECTS
     + [ ] MAIN LOOP
     + [ ] RECTANGLES, VERTICES AND INDICES
     + [ ] SHADERS

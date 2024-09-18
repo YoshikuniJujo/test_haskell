@@ -64,7 +64,8 @@ import Language.SpirV.Shaderc.TH
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Exception qualified as Vk
-import Gpu.Vulkan.Object qualified as VObj
+import Gpu.Vulkan.Object qualified as Vk.Obj
+import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
@@ -147,6 +148,7 @@ import Debug
 -- * WINDOW, INSTANCE AND PHYSICAL AND LOGICAL DEVICES
 -- * RUN
 -- * WINDOW OBJECTS
+-- * CREATE BUFFER
 -- * MAIN LOOP
 -- * RECTANGLES, VERTICES AND INDICES
 -- * SHADERS
@@ -403,7 +405,7 @@ type DscStLytArg alu nmt = '[
 	'Vk.DscStLyt.Buffer '[AtomViewProj alu],
 	'Vk.DscStLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)] ]
 
-type AtomViewProj alu = VObj.Atom alu ViewProj 'Nothing
+type AtomViewProj alu = Vk.Obj.Atom alu ViewProj 'Nothing
 
 createViewProjBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Bffr.Binded sm sb nmvp '[AtomViewProj alu]  ->
@@ -455,64 +457,34 @@ createDscSt dv dp vpb dsl f =
 			. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo vpb }
 
 createVtxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	[WVertex] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb bnm
-		'[VObj.List al WVertex lnm] -> IO a) -> IO a
+	[WVertex] -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List WVertex nmv] ->
+		IO a) -> IO a
 createVtxBffr = createBffrMem Vk.Bffr.UsageVertexBufferBit
 
 createIdxBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	[Word16] -> (forall sm sb al . KnownNat al => Vk.Bffr.Binded sm sb nm
-		'[VObj.List al Word16 lnm] -> IO a) -> IO a
+	[Word16] -> (forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.List Word16 lnm] ->
+		IO a) -> IO a
 createIdxBffr = createBffrMem Vk.Bffr.UsageIndexBufferBit
 
-createBffrMem :: forall sd sc nm t lnm a . Storable' t =>
+createBffrMem :: forall sd sc t bnm lnm a . Storable' t =>
 	Vk.Bffr.UsageFlags -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	Vk.CmdPl.C sc -> [t] ->
-	(forall sm sb . Vk.Bffr.Binded sm sb nm
-		'[VObj.List 1 t lnm] -> IO a) -> IO a
+	Vk.CmdPl.C sc -> [t] -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.List 1 t lnm] -> IO a) -> IO a
 createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 	createBffrLst pd dv ln (Vk.Bffr.UsageTransferDstBit .|. us)
 		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
 		createBffrLst pd dv ln
-			Vk.Bffr.UsageTransferSrcBit (
-			Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit ) \
-			(b' :: Vk.Bffr.Binded sm sb bnm' '[VObj.List al t lnm'])
-			bm' -> do
-			Vk.Mm.write
-				@bnm' @(VObj.List al t lnm') @0 dv bm' zeroBits xs
+			Vk.Bffr.UsageTransferSrcBit
+			(	Vk.Mm.PropertyHostVisibleBit .|.
+				Vk.Mm.PropertyHostCoherentBit )
+			\(b' :: Vk.Bffr.Binded sm sb bnm'
+				'[Vk.Obj.List al t lnm']) bm' -> do
+			Vk.Mm.write @bnm' @(Vk.Obj.List al t lnm') @0
+				dv bm' zeroBits xs
 			copyBffrLst dv gq cp b' b
 		f b
-
-createBffrAtm :: forall sd nm al t a . (KnownNat al, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.Atom al t 'Nothing] ->
-		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[VObj.Atom al t 'Nothing] )] ->
-		IO a) -> IO a
-createBffrAtm p dv = createBffr p dv VObj.LengthAtom
-
-createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
-	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
-		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List al t lnm])] ->
-		IO a) -> IO a
-createBffrLst p dv ln = createBffr p dv $ VObj.LengthList ln
-
-createBufferList' :: forall sd bnm t sm sb k nm . (Ord k, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group sd 'Nothing sb k bnm '[VObj.List 1 t nm]  ->
-	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List 1 t nm])] ->
-	k ->
-	Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
-	Vk.Mm.PropertyFlags -> IO (
-		Vk.Bffr.Binded sm sb bnm '[VObj.List 1 t nm],
-		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg bnm '[VObj.List 1 t nm] ) ] )
-createBufferList' p dv bgrp mgrp k ln usg props =
-	createBffr' p dv bgrp mgrp k (VObj.LengthList ln) usg props
 
 -- WINDOW OBJECTS
 
@@ -943,7 +915,7 @@ data SyncObjects (ssos :: (Type, Type, Type)) where
 createRectangleBuffer :: Ord k =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	RectGroups sd sm sb nm nmr k -> k -> [RectangleRaw] ->
-	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 1 RectangleRaw nmr])
+	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 RectangleRaw nmr])
 createRectangleBuffer phdvc dvc gq cp (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -952,8 +924,8 @@ createRectangleBuffer phdvc dvc gq cp (bgrp, mgrp) k rs =
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit )
-			\(b' :: Vk.Bffr.Binded sm sb bnmr '[VObj.List 1 t nmr]) bm' -> do
-		Vk.Mm.write @bnmr @(VObj.List 1 RectangleRaw nmr) @0 dvc bm' zeroBits rs
+			\(b' :: Vk.Bffr.Binded sm sb bnmr '[Vk.Obj.List 1 t nmr]) bm' -> do
+		Vk.Mm.write @bnmr @(Vk.Obj.List 1 RectangleRaw nmr) @0 dvc bm' zeroBits rs
 		copyBffrLst dvc gq cp b' b
 	pure b
 
@@ -967,9 +939,42 @@ destroyRectangleBuffer (bgrp, mgrp) k = do
 		_ -> pure ()
 
 type RectGroups sd sm sb bnm nmr k = (
-	Vk.Bffr.Group sd 'Nothing sb k bnm '[VObj.List 1 RectangleRaw nmr],
+	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.List 1 RectangleRaw nmr],
 	Vk.Mm.Group sd 'Nothing sm k
-		'[ '(sb, 'Vk.Mm.BufferArg bnm '[VObj.List 1 RectangleRaw nmr])] )
+		'[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 RectangleRaw nmr])] )
+
+-- CREATE BUFFER
+
+createBffrAtm :: forall sd nm al t a . (KnownNat al, Storable t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	(forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[Vk.Obj.Atom al t 'Nothing] ->
+		Vk.Mm.M sm '[ '(
+			sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.Atom al t 'Nothing] )] ->
+		IO a) -> IO a
+createBffrAtm p dv = createBffr p dv Vk.Obj.LengthAtom
+
+createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.List al t lnm] ->
+		Vk.Mm.M sm
+			'[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List al t lnm])] ->
+		IO a) -> IO a
+createBffrLst p dv ln = createBffr p dv $ Vk.Obj.LengthList ln
+
+createBufferList' :: forall sd bnm t sm sb k nm . (Ord k, Storable t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.List 1 t nm]  ->
+	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 t nm])] ->
+	k ->
+	Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Mm.PropertyFlags -> IO (
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.List 1 t nm],
+		Vk.Mm.M sm '[ '(
+			sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 t nm] ) ] )
+createBufferList' p dv bgrp mgrp k ln usg props =
+	createBffr' p dv bgrp mgrp k (Vk.Obj.LengthList ln) usg props
 
 -- MAIN LOOP
 
@@ -1046,8 +1051,8 @@ type Swapchains scfmt ssc nmiv sivs sr sfs = (
 	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
 
 type VertexBuffers sm sb nm alv sm' sb' nm' ali = (
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex ""],
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] )
+	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List alv WVertex ""],
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List ali Word16 ""] )
 
 data Recreates sw sl nm ssfc sr sg sdsl alu nmt fmt ssc sis sfs = Recreates
 	(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc)
@@ -1117,11 +1122,11 @@ runLoop' :: forall sfs svs -- (sf :: Type)
 		scfmt ssc nmrct svs sr sfs
 		sg sl sdsl alu nmt sias srfs siff
 		->
-	(	Vk.Bffr.Binded sm' sb' nmrct '[VObj.List alv WVertex ""],
-		Vk.Bffr.Binded sm2 sb2 nm2 '[VObj.List ali Word16 ""] ) ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct () nmrct '[VObj.List 1 RectangleRaw ""],
+	(	Vk.Bffr.Binded sm' sb' nmrct '[Vk.Obj.List alv WVertex ""],
+		Vk.Bffr.Binded sm2 sb2 nm2 '[Vk.Obj.List ali Word16 ""] ) ->
+	(	Vk.Bffr.Group sd 'Nothing sbrct () nmrct '[Vk.Obj.List 1 RectangleRaw ""],
 		Vk.Mm.Group sd 'Nothing smrct () '[
-			'(sbrct, 'Vk.Mm.BufferArg nmrct '[VObj.List 1 RectangleRaw ""])] ) ->
+			'(sbrct, 'Vk.Mm.BufferArg nmrct '[Vk.Obj.List 1 RectangleRaw ""])] ) ->
 	(ViewProj, [RectangleRaw]) ->
 	(Vk.DscSt.D sds (AtomUbo sdsl alu nmt), ViewProjMemory sm sb "uniform-buffer" alu) ->
 	TChan Event ->
@@ -1143,7 +1148,7 @@ runLoop' dvs pll wos vbs rgrps rectss ubs outp loop = do
 
 createRectangleBufferDvcs ::
 	Devices sd sc scb -> RectGroups sd sm sb nm nmr () -> () -> [RectangleRaw] ->
-	IO (Vk.Bffr.Binded sm sb nm '[VObj.List 1 RectangleRaw nmr])
+	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 RectangleRaw nmr])
 createRectangleBufferDvcs (phdvc, _qfis, dvc, gq, _pq, cp, _cb) =
 	createRectangleBuffer phdvc dvc gq cp
 
@@ -1164,9 +1169,9 @@ catchAndDraw ::
 	) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[] ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex ""] ->
-	(Vk.Bffr.Binded smr sbr nm '[VObj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount)  ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
+	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List alv WVertex ""] ->
+	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount)  ->
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List ali Word16 ""] ->
 	ViewProjMemory sm2 sb2 "uniform-buffer" alu -> Vk.DscSt.D sds (AtomUbo sdsl alu nmt) ->
 	Vk.CBffr.C scb ->
 	ViewProj ->
@@ -1205,9 +1210,9 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[] ->
 	Draws sl sr sg sdsl alu nmt sias srfs siff scfmt ssc sfs ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex ""] ->
-	(Vk.Bffr.Binded smr sbr nm '[VObj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount) ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
+	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List alv WVertex ""] ->
+	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount) ->
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List ali Word16 ""] ->
 	ViewProjMemory sm2 sb2 "uniform-buffer" alu ->
 	Vk.DscSt.D sds (AtomUbo sdsl alu nmt) ->
 	Vk.CBffr.C scb ->
@@ -1249,7 +1254,7 @@ drawFrame dvc gq pq
 updateUniformBuffer' :: forall sd sm2 sb2 alu . KnownNat alu => Vk.Dvc.D sd ->
 	ViewProjMemory sm2 sb2 "uniform-buffer" alu -> ViewProj -> IO ()
 updateUniformBuffer' dvc um obj = do
-	Vk.Mm.write @"uniform-buffer" @(VObj.Atom alu ViewProj 'Nothing) @0
+	Vk.Mm.write @"uniform-buffer" @(Vk.Obj.Atom alu ViewProj 'Nothing) @0
 		dvc um zeroBits obj
 
 recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl sds nmt alu ali alv .
@@ -1264,9 +1269,9 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl 
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
 			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl alu nmt], '[]) ->
-	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex ""] ->
-	(Vk.Bffr.Binded smr sbr nm '[VObj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount) ->
-	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
+	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List alv WVertex ""] ->
+	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount) ->
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List ali Word16 ""] ->
 	Vk.DscSt.D sds (AtomUbo sdsl alu nmt) ->
 	IO ()
 recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
@@ -1299,7 +1304,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 type AtomUbo s alu nm = '(s, '[
-	'Vk.DscStLyt.Buffer '[VObj.Atom alu ViewProj 'Nothing],
+	'Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu ViewProj 'Nothing],
 	'Vk.DscStLyt.Image '[ '(nm, 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 checkTChan :: TChan () -> IO Bool
