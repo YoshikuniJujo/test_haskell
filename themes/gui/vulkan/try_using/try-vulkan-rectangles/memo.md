@@ -29,6 +29,25 @@ src
         - [x] QFamIndices
         - [x] createLgDvc
     + [ ] RUN
+        - [ ] run
+        - [x] createCmdPl
+        - [x] createCmdBffr
+        - [x] unfrmBffrOstAlgn
+        - [x] createPplLyt
+        - [x] createDscStLyt
+        - [x] DscStLytArg
+        - [x] AtomViewProj
+        - [x] createViewProjBffr
+        - [x] ViewProjMemory
+        - [x] createDscPl
+        - [ ] createDscSt
+        - [ ] creteVtxBffr
+        - [ ] createIdxBffr
+        - [ ] createBffrMem
+        - [ ] UniformBfferMemory
+        - [ ] createBffrAtm
+        - [ ] createBffrLst
+        - [ ] createBufferList'
     + [ ] WINDOW OBJECTS
     + [ ] MAIN LOOP
     + [ ] RECTANGLES, VERTICES AND INDICES

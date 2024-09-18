@@ -258,7 +258,7 @@ createWin f = do
 	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible True
 	GlfwG.Win.create 800 600 "USE CAIRO" Nothing Nothing f
 
-pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
+pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIdcs)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
 	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
 	pds -> findMaybeM suit pds >>= \case
@@ -278,18 +278,17 @@ pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
 dvcExtensions :: [Vk.Phd.ExtensionName]
 dvcExtensions = [Vk.Khr.Swpch.extensionName]
 
-findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIndices)
+findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIdcs)
 findQFams pd sfc = do
 	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
 	mp <- listToMaybe
 		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
-	pure $ QFamIndices <$> (fst <$> L.find (grbit . snd) prps) <*> mp
+	pure $ QFamIdcs <$> (fst <$> L.find (grbit . snd) prps) <*> mp
 	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
-data QFamIndices =
-	QFamIndices { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
+data QFamIdcs = QFamIdcs { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
 
-createLgDvc :: Vk.Phd.P -> QFamIndices ->
+createLgDvc :: Vk.Phd.P -> QFamIdcs ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
 createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
@@ -321,7 +320,7 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 run :: forall sw ssfc sd .
 	TChan Command -> TChan Event -> TVar Vk.Extent2d ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO ()
+	QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO ()
 run ip op vex w sfc pd qfis dv gq pq =
 	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
@@ -346,8 +345,8 @@ run ip op vex w sfc pd qfis dv gq pq =
 	mainLoop @nmt ip op (pd, qfis, dv, gq, pq, cp, cb)
 		pl (vb, ib) (rbg, rmg) (ds, vpm) wos viewToBffr bffrToImg
 
-createCmdPl :: QFamIndices ->
-	Vk.Dvc.D sd -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl ::
+	QFamIdcs -> Vk.Dvc.D sd -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
 createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 	where info = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
@@ -357,7 +356,8 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 createCmdBffr :: forall sd scp a .
 	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-createCmdBffr dv cp f = Vk.CBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
+createCmdBffr dv cp f =
+	Vk.CBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
 	where
 	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
 	info = Vk.CBffr.AllocateInfo {
@@ -389,16 +389,15 @@ createDscStLyt dv = Vk.DscStLyt.create dv info nil
 	info = Vk.DscStLyt.CreateInfo {
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
 		Vk.DscStLyt.createInfoFlags = zeroBits,
-		Vk.DscStLyt.createInfoBindings = mbd :** tbd :** HPList.Nil }
-	mbd = Vk.DscStLyt.BindingBuffer {
+		Vk.DscStLyt.createInfoBindings = vpbd :** tbd :** HPList.Nil }
+	vpbd = Vk.DscStLyt.BindingBuffer {
 		Vk.DscStLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
 	tbd = Vk.DscStLyt.BindingImage {
 		Vk.DscStLyt.bindingImageDescriptorType =
 			Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DscStLyt.bindingImageStageFlags =
-			Vk.ShaderStageFragmentBit }
+		Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageFragmentBit }
 
 type DscStLytArg alu nmt = '[
 	'Vk.DscStLyt.Buffer '[AtomViewProj alu],
@@ -407,11 +406,14 @@ type DscStLytArg alu nmt = '[
 type AtomViewProj alu = VObj.Atom alu ViewProj 'Nothing
 
 createViewProjBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb nmvp '[VObj.Atom alu ViewProj 'Nothing]  ->
-	UniformBufferMemory sm sb nmvp alu -> IO a) -> IO a
+	Vk.Bffr.Binded sm sb nmvp '[AtomViewProj alu]  ->
+	ViewProjMemory sm sb nmvp alu -> IO a) -> IO a
 createViewProjBffr pd dv = createBffrAtm pd dv
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+
+type ViewProjMemory sm sb nmvp alu =
+	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nmvp '[AtomViewProj alu])]
 
 createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
 createDscPl dv = Vk.DscPl.create dv info nil
@@ -481,11 +483,6 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 			copyBffrLst dv gq cp b' b
 		f b
 
-type UniformBufferMemory sm sb nmvp alu = Vk.Mm.M sm '[ '(
-	sb,
-	'Vk.Mm.BufferArg nmvp '[VObj.Atom alu ViewProj 'Nothing]
-	)]
-
 createBffrAtm :: forall sd nm al t a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
@@ -522,7 +519,7 @@ createBufferList' p dv bgrp mgrp k ln usg props =
 winObjs :: forall sw ssfc sd sc sl sdsl alu nmt nm smr sbr bnmr nmr a .
 	TChan Event ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> TVar Vk.Extent2d ->
-	Vk.Phd.P -> QFamIndices ->
+	Vk.Phd.P -> QFamIdcs ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
 	RectGroups sd smr sbr bnmr nmr () ->
@@ -568,7 +565,7 @@ checkResizedState fbrszd = atomically $ readTVar fbrszd >>= \case
 	NoResized -> pure False
 
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
+	QFamIdcs -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
 createSwpch w sfc pd qfis dv f = querySwpchSupport pd sfc \ss -> do
@@ -607,7 +604,7 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
+	QFamIdcs -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
 recreateSwpch win sfc phdvc qfis0 dvc sc = do
 	ss <- querySwpchSupportFmt @fmt phdvc sfc
 	ex <- swapExtent win $ capabilitiesFmt ss
@@ -646,7 +643,7 @@ swapExtent win cps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
 
 swpchInfo :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> QFamIndices -> Vk.Khr.Sfc.Capabilities ->
+	Vk.Khr.Sfc.S ss -> QFamIdcs -> Vk.Khr.Sfc.Capabilities ->
 	Vk.Khr.Sfc.ColorSpace -> Vk.Khr.Sfc.PresentMode -> Vk.Extent2d ->
 	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
 swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
@@ -1037,10 +1034,10 @@ rectsToDummyRaw = \(tm, rects) -> (tm, bool rects dummyRaw $ null rects)
 type PipelineLayout sl sdsl alu nmt = Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[]
 
 type UniformBuffers sds sdsl alu nmt sm2 sb2 nmvp =
-	(Vk.DscSt.D sds (AtomUbo sdsl alu nmt), UniformBufferMemory sm2 sb2 nmvp alu)
+	(Vk.DscSt.D sds (AtomUbo sdsl alu nmt), ViewProjMemory sm2 sb2 nmvp alu)
 
 type Devices sd scp scb = (
-	Vk.Phd.P, QFamIndices, Vk.Dvc.D sd,
+	Vk.Phd.P, QFamIdcs, Vk.Dvc.D sd,
 	Vk.Q.Q, Vk.Q.Q, Vk.CmdPl.C scp, Vk.CBffr.C scb )
 
 type Swapchains scfmt ssc nmiv sivs sr sfs = (
@@ -1126,7 +1123,7 @@ runLoop' :: forall sfs svs -- (sf :: Type)
 		Vk.Mm.Group sd 'Nothing smrct () '[
 			'(sbrct, 'Vk.Mm.BufferArg nmrct '[VObj.List 1 RectangleRaw ""])] ) ->
 	(ViewProj, [RectangleRaw]) ->
-	(Vk.DscSt.D sds (AtomUbo sdsl alu nmt), UniformBufferMemory sm sb "uniform-buffer" alu) ->
+	(Vk.DscSt.D sds (AtomUbo sdsl alu nmt), ViewProjMemory sm sb "uniform-buffer" alu) ->
 	TChan Event ->
 	IO () -> IO ()
 runLoop' dvs pll wos vbs rgrps rectss ubs outp loop = do
@@ -1165,12 +1162,12 @@ catchAndDraw ::
 	RecreateFrmbffrs svs sfs,
 	KnownNat alu, KnownNat alv, KnownNat ali
 	) =>
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex ""] ->
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount)  ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
-	UniformBufferMemory sm2 sb2 "uniform-buffer" alu -> Vk.DscSt.D sds (AtomUbo sdsl alu nmt) ->
+	ViewProjMemory sm2 sb2 "uniform-buffer" alu -> Vk.DscSt.D sds (AtomUbo sdsl alu nmt) ->
 	Vk.CBffr.C scb ->
 	ViewProj ->
 	WinObjs sw ssfc
@@ -1189,7 +1186,7 @@ recreateSwapchainEtcIfNeed ::
 	Vk.T.FormatToValue scfmt,
 	RecreateFrmbffrs svs sfs
 	) =>
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[] ->
 	WinObjs sw ssfc
 		scfmt ssc nm svs sr sfs
@@ -1211,7 +1208,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	Vk.Bffr.Binded sm sb nm '[VObj.List alv WVertex ""] ->
 	(Vk.Bffr.Binded smr sbr nm '[VObj.List 1 RectangleRaw ""], Vk.Cmd.InstanceCount) ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List ali Word16 ""] ->
-	UniformBufferMemory sm2 sb2 "uniform-buffer" alu ->
+	ViewProjMemory sm2 sb2 "uniform-buffer" alu ->
 	Vk.DscSt.D sds (AtomUbo sdsl alu nmt) ->
 	Vk.CBffr.C scb ->
 	ViewProj -> IO ()
@@ -1250,7 +1247,7 @@ drawFrame dvc gq pq
 --	Vk.Q.waitIdle pq
 
 updateUniformBuffer' :: forall sd sm2 sb2 alu . KnownNat alu => Vk.Dvc.D sd ->
-	UniformBufferMemory sm2 sb2 "uniform-buffer" alu -> ViewProj -> IO ()
+	ViewProjMemory sm2 sb2 "uniform-buffer" alu -> ViewProj -> IO ()
 updateUniformBuffer' dvc um obj = do
 	Vk.Mm.write @"uniform-buffer" @(VObj.Atom alu ViewProj 'Nothing) @0
 		dvc um zeroBits obj
@@ -1320,7 +1317,7 @@ catchAndRecreate ::
 	Vk.T.FormatToValue scfmt,
 	RecreateFrmbffrs svs sfs
 	) =>
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[] ->
 	Recreates sw sl nm ssfc sr sg sdsl alu nmt scfmt
 		ssc svs sfs ->
@@ -1339,7 +1336,7 @@ recreateSwapchainEtc :: forall
 	(
 	RecreateFrmbffrs svs sfs,
 	Vk.T.FormatToValue scfmt) =>
-	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[] ->
 	Recreates sw sl nm ssfc sr sg sdsl alu nmt scfmt ssc svs sfs ->
 	IO ()
