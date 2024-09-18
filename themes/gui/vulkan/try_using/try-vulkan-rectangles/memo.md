@@ -16,6 +16,25 @@ src
     + [x] WRITE BUFFER
     + [x] COPY FROM BUFFER TO IMAGE
 * [ ] UseCairo
+    + [x] USE CAIRO LOOP
+    + [x] CONTROLLER
+    + [x] WINDOW, INSTANCE AND PHYSICAL AND LOGICAL DEVICES
+        - [x] createIst
+        - [x] vldLayers
+        - [x] dbgMsngrInfo
+        - [x] createWin
+        - [x] pickPhd
+        - [x] dvcExtensions
+        - [x] findQFams
+        - [x] QFamIndices
+        - [x] createLgDvc
+    + [ ] RUN
+    + [ ] WINDOW OBJECTS
+    + [ ] MAIN LOOP
+    + [ ] RECTANGLES, VERTICES AND INDICES
+    + [ ] SHADERS
+    + [ ] export list
+    + [ ] import list
 * [ ] UseTextureGroup
 * [ ] CreateTextureGroup
 * [ ] SampleImages
