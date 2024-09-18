@@ -318,7 +318,7 @@ run ip op vex w sfc pd qfis dv gq pq =
 	createTextureSampler pd dv \txsmplr ->
 	createBindImg pd dv ds txsmplr textureSize
 		\(tximg :: Vk.Img.Binded sm si nmt ifmt) ->
-	createBffrImg pd dv textureWidth textureHeight \ibf ibfm ->
+	createBffrImg pd dv textureSize \ibf ibfm ->
 	cairoImageSurfaceCreate
 		CairoFormatArgb32 textureWidth textureHeight >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->

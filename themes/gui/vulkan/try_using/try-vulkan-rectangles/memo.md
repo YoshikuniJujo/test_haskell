@@ -10,7 +10,11 @@ app
 src
 ---
 
-* [ ] Texture
+* [x] Texture
+    + [x] CREATE AND BIND IMAGE
+    + [x] CREATE IMAGE BUFFER
+    + [x] WRITE BUFFER
+    + [x] COPY FROM BUFFER TO IMAGE
 * [ ] UseCairo
 * [ ] UseTextureGroup
 * [ ] CreateTextureGroup
