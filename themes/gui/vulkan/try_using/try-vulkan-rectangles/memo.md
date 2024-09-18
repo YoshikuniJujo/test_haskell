@@ -29,7 +29,7 @@ src
         - [x] QFamIndices
         - [x] createLgDvc
     + [x] RUN
-        - [ ] run
+        - [x] run
         - [x] createCmdPl
         - [x] createCmdBffr
         - [x] unfrmBffrOstAlgn
@@ -44,7 +44,39 @@ src
         - [x] creteVtxBffr
         - [x] createIdxBffr
         - [x] createBffrMem
-    + [ ] WINDOW OBJECTS
+        - [x] createTxSmplr
+    + [x] WINDOW OBJECTS
+        - [x] winObjs
+        - [x] WinObjs
+        - [x] winEnvs
+        - [x] FramebufferResized
+        - [x] FramebufferResizedState
+        - [x] checkResizedState
+        - [x] Swapchains
+        - [x] createSwpch
+        - [x] querySwpchSupport
+        - [x] SwpchSupportDetails
+        - [x] chooseSwpSfcFmt
+        - [x] recreateSwpch
+        - [x] querySwpchSupportFmt
+        - [x] SwpchSupportDetailsFmt
+        - [x] swapExtent
+        - [x] swpchInfo
+        - [x] createImgVws
+        - [x] recreateImgVws
+        - [x] createRndrPss
+        - [x] createFrmbffrs
+        - [x] RecreateFrmbffrs
+            * [x] class
+            * [x] instance '[] '[]
+            * [x] instance (si ': sis) (sf ': sfs)
+        - [x] frmbffrInfo
+        - [x] createSyncObjs
+        - [x] SyncObjs
+        - [x] createRectangleBuffer
+        - [x] destroyRectangleBuffer
+        - [x] RectGroups
+    + [ ] CREATE GRAPHICS PIPELINE
     + [ ] CREATE BUFFER
         - [ ] createBffrAtm
         - [ ] createBffrLst

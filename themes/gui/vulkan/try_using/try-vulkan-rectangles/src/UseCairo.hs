@@ -148,6 +148,7 @@ import Debug
 -- * WINDOW, INSTANCE AND PHYSICAL AND LOGICAL DEVICES
 -- * RUN
 -- * WINDOW OBJECTS
+-- * CREATE GRAPHICS PIPELINE
 -- * CREATE BUFFER
 -- * MAIN LOOP
 -- * RECTANGLES, VERTICES AND INDICES
@@ -333,16 +334,15 @@ run ip op vex w sfc pd qfis dv gq pq =
 	createIdxBffr pd dv gq cp indices \ib ->
 	Vk.Bffr.group dv nil \rbg -> Vk.Mm.group dv nil \rmg ->
 	winObjs op w sfc vex pd qfis dv gq cp pl (rbg, rmg) \wos ->
-
-	createTextureSampler pd dv \txsmplr ->
+	createTxSmplr pd dv \txsmplr ->
 	createBindImg pd dv ds txsmplr textureSize
-		\(tximg :: Vk.Img.Binded sm si nmt ifmt) ->
+		\(txi :: Vk.Img.Binded sm si nmt ifmt) ->
 	createBffrImg pd dv textureSize \ibf ibfm ->
 	cairoImageSurfaceCreate
 		CairoFormatArgb32 textureWidth textureHeight >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
 	let	viewToBffr = (writeBffr dv ibfm =<<) . drawViewIO crsfc cr
-		bffrToImg = flashImg dv gq cp tximg ibf textureSize in
+		bffrToImg = flashImg dv gq cp txi ibf textureSize in
 	viewToBffr (FV.View []) >> bffrToImg >>
 	mainLoop @nmt ip op (pd, qfis, dv, gq, pq, cp, cb)
 		pl (vb, ib) (rbg, rmg) (ds, vpm) wos viewToBffr bffrToImg
@@ -486,14 +486,36 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 			copyBffrLst dv gq cp b' b
 		f b
 
+createTxSmplr ::
+	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTxSmplr pd dv f = do
+	lmts <- Vk.Phd.propertiesLimits <$> Vk.Phd.getProperties pd
+	Vk.Smplr.create dv (info lmts) nil f
+	where info lmts = Vk.Smplr.CreateInfo {
+		Vk.Smplr.createInfoNext = TMaybe.N,
+		Vk.Smplr.createInfoFlags = zeroBits,
+		Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+		Vk.Smplr.createInfoMipmapMode = Vk.Smplr.MipmapModeLinear,
+		Vk.Smplr.createInfoAddressModeU = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeV = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoAddressModeW = Vk.Smplr.AddressModeRepeat,
+		Vk.Smplr.createInfoMipLodBias = 0,
+		Vk.Smplr.createInfoAnisotropyEnable = True,
+		Vk.Smplr.createInfoMaxAnisotropy =
+			Vk.Phd.limitsMaxSamplerAnisotropy lmts,
+		Vk.Smplr.createInfoCompareEnable = False,
+		Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+		Vk.Smplr.createInfoMinLod = 0, Vk.Smplr.createInfoMaxLod = 0,
+		Vk.Smplr.createInfoBorderColor = Vk.BorderColorIntOpaqueBlack,
+		Vk.Smplr.createInfoUnnormalizedCoordinates = False }
+
 -- WINDOW OBJECTS
 
 winObjs :: forall sw ssfc sd sc sl sdsl alu nmt nm smr sbr bnmr nmr a .
-	TChan Event ->
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> TVar Vk.Extent2d ->
-	Vk.Phd.P -> QFamIdcs ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
+	TChan Event -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	TVar Vk.Extent2d -> Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.CmdPl.C sc -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
 	RectGroups sd smr sbr bnmr nmr () ->
 	(forall scfmt ssc svs sr sfs sg sias srfs siff .
 		(Vk.T.FormatToValue scfmt, RecreateFrmbffrs svs sfs) =>
@@ -509,22 +531,19 @@ winObjs op w sfc vex pd qfis dv gq cp pl rgs f =
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fr Resized) >>
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scfmt ss) ex ->
-	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
-	createImgVws dv scis \scvs ->
-	createRndrPss @scfmt dv \rp ->
-	createFrmbffrs dv ex rp scvs \fbs ->
+	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
+	createRndrPss @scfmt dv \rp -> createFrmbffrs dv ex rp scvs \fbs ->
 	createGrPpl dv ex rp pl \gp ->
-
-	createSyncObjects dv \sos ->
+	createSyncObjs dv \sos ->
 	atomically (writeTVar vex ex) >>
-	createRectangleBuffer pd dv gq cp rgs () dummyRaw >>
+	createRectBffr pd dv gq cp rgs () dummyRect >>
 	f (WinObjs (w, fr) sfc vex (sc, scvs, rp, fbs) gp sos)
 
 data WinObjs
-	sw ssfc scfmt ssc nmiv sivs sr sfs sg sl sdsl alu nmt sias srfs siff =
+	sw ssfc scfmt ssc nmv svs sr sfs sg sl sdsl alu nmt sias srfs siff =
 	WinObjs	(WinEnvs sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
-		(Swapchains scfmt ssc nmiv sivs sr sfs)
-		(Pipeline sg sl sdsl alu nmt) (SyncObjects '(sias, srfs, siff))
+		(Swapchains scfmt ssc nmv svs sr sfs)
+		(Pipeline sg sl sdsl alu nmt) (SyncObjs '(sias, srfs, siff))
 
 type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
 type FramebufferResized = TVar FramebufferResizedState
@@ -536,16 +555,20 @@ checkResizedState fbrszd = atomically $ readTVar fbrszd >>= \case
 	HalfResized -> writeTVar fbrszd NoResized >> pure True
 	NoResized -> pure False
 
+type Swapchains scfmt ssc nmv svs sr sfs = (
+	Vk.Khr.Swpch.S scfmt ssc, HPList.PL (Vk.ImgVw.I nmv scfmt) svs,
+	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
+
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIdcs -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwpch w sfc pd qfis dv f = querySwpchSupport pd sfc \ss -> do
-	ex <- swapExtent w $ capabilities ss
-	let	cps = capabilities ss
+createSwpch w sfc pd qfis dv f = querySwpchSupport pd sfc \scs -> do
+	ex <- swapExtent w $ capabilities scs
+	let	cps = capabilities scs
 		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
-			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModes ss
-	chooseSwpSfcFmt (formats ss)
+			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModes scs
+	chooseSwpSfcFmt (formats scs)
 		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
 		Vk.Khr.Swpch.create @_ @fmt dv
 			(swpchInfo sfc qfis cps sc pm ex) nil (`f` ex)
@@ -577,24 +600,24 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIdcs -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
-recreateSwpch win sfc phdvc qfis0 dvc sc = do
-	ss <- querySwpchSupportFmt @fmt phdvc sfc
-	ex <- swapExtent win $ capabilitiesFmt ss
-	let	cps = capabilitiesFmt ss
+recreateSwpch w sfc pd qfis0 dv sc = do
+	scs <- querySwpchSupportFmt @fmt pd sfc
+	ex <- swapExtent w $ capabilitiesFmt scs
+	let	cps = capabilitiesFmt scs
 		Vk.Khr.Sfc.Format cs = fromMaybe
 			(error "no available swap surface formats")
-			. listToMaybe $ formatsFmt ss
+			. listToMaybe $ formatsFmt scs
 		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
-			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModesFmt ss
-	ex <$ Vk.Khr.Swpch.unsafeRecreate dvc
+			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModesFmt scs
+	ex <$ Vk.Khr.Swpch.unsafeRecreate dv
 		(swpchInfo @fmt sfc qfis0 cps cs pm ex) nil sc
 
 querySwpchSupportFmt :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFmt fmt)
-querySwpchSupportFmt dvc sfc = SwpchSupportDetailsFmt
-	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
-	<*> Vk.Khr.Sfc.Phd.getFormatsFiltered dvc sfc
-	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
+querySwpchSupportFmt dv sfc = SwpchSupportDetailsFmt
+	<$> Vk.Khr.Sfc.Phd.getCapabilities dv sfc
+	<*> Vk.Khr.Sfc.Phd.getFormatsFiltered dv sfc
+	<*> Vk.Khr.Sfc.Phd.getPresentModes dv sfc
 
 data SwpchSupportDetailsFmt fmt = SwpchSupportDetailsFmt {
 	capabilitiesFmt :: Vk.Khr.Sfc.Capabilities,
@@ -631,7 +654,8 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
 	Vk.Khr.Swpch.createInfoPreTransform =
 		Vk.Khr.Sfc.capabilitiesCurrentTransform cps,
-	Vk.Khr.Swpch.createInfoCompositeAlpha = Vk.Khr.Sfc.CompositeAlphaOpaqueBit,
+	Vk.Khr.Swpch.createInfoCompositeAlpha =
+		Vk.Khr.Sfc.CompositeAlphaOpaqueBit,
 	Vk.Khr.Swpch.createInfoPresentMode = pm,
 	Vk.Khr.Swpch.createInfoClipped = True,
 	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
@@ -645,16 +669,16 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 
 createImgVws :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss inm fmt] ->
-	(forall si . HPList.PL (Vk.ImgVw.I inm fmt) si -> IO a) -> IO a
-createImgVws _dv [] f = f HPList.Nil
+	(forall svs . HPList.PL (Vk.ImgVw.I inm fmt) svs -> IO a) -> IO a
+createImgVws _ [] f = f HPList.Nil
 createImgVws dv (i : is) f =
 	Vk.ImgVw.create dv (imgVwInfo i Vk.Img.AspectColorBit) nil \v ->
-	createImgVws dv is \vs -> f $ v :** vs
+	createImgVws dv is $ f . (v :**)
 
 recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss inm fmt] ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs -> IO ()
-recreateImgVws _dv [] HPList.Nil = pure ()
+recreateImgVws _ [] HPList.Nil = pure ()
 recreateImgVws dv (i : is) (v :** vs) =
 	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit) nil v >>
 	recreateImgVws dv is vs
@@ -668,7 +692,7 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[scifmt] dv info nil
 	info = Vk.RndrPss.CreateInfo {
 		Vk.RndrPss.createInfoNext = TMaybe.N,
 		Vk.RndrPss.createInfoFlags = zeroBits,
-		Vk.RndrPss.createInfoAttachments = ca :** HPList.Nil,
+		Vk.RndrPss.createInfoAttachments = HPList.Singleton ca,
 		Vk.RndrPss.createInfoSubpasses = [sbpss],
 		Vk.RndrPss.createInfoDependencies = [dpnd] }
 	ca = Vk.Att.Description {
@@ -707,17 +731,17 @@ createRndrPss dv = Vk.RndrPss.create @'Nothing @'[scifmt] dv info nil
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
 createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	HPList.PL (Vk.ImgVw.I inm fmt) sis ->
-	(forall sfs . RecreateFrmbffrs sis sfs =>
+	HPList.PL (Vk.ImgVw.I inm fmt) sis -> (forall sfs .
+		RecreateFrmbffrs sis sfs =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFrmbffrs _ _ _ HPList.Nil f = f HPList.Nil
 createFrmbffrs dv ex rp (v :** vs) f =
 	Vk.Frmbffr.create dv (frmbffrInfo ex rp v) nil \fb ->
-	createFrmbffrs dv ex rp vs \fbs -> f (fb :** fbs)
+	createFrmbffrs dv ex rp vs $ f . (fb :**)
 
-class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
+class RecreateFrmbffrs (svs :: [Type]) (sfs :: [Type]) where
 	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
+		HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 		HPList.PL Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFrmbffrs '[] '[] where
@@ -735,10 +759,58 @@ frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 att :** HPList.Nil,
+	Vk.Frmbffr.createInfoAttachments = HPList.Singleton $ U3 att,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
+
+createSyncObjs :: Vk.Dvc.D sd ->
+	(forall sias srfs siff . SyncObjs '(sias, srfs, siff) -> IO a) -> IO a
+createSyncObjs dv f =
+	Vk.Semaphore.create @'Nothing dv def nil \ias ->
+	Vk.Semaphore.create @'Nothing dv def nil \rfs ->
+	Vk.Fence.create @'Nothing dv finfo nil \iff -> f $ SyncObjs ias rfs iff
+	where
+	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+
+data SyncObjs (ssos :: (Type, Type, Type)) where
+	SyncObjs :: {
+		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
+		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
+		_inFlightFences :: Vk.Fence.F sfs } ->
+		SyncObjs '(sias, srfs, sfs)
+
+createRectBffr :: Ord k =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	RectGroups sd sm sb bnm nmr k -> k -> [RectangleRaw] ->
+	IO (Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List RectangleRaw nmr])
+createRectBffr pd dv gq cp (bg, mg) k rs =
+	createBffrLst' pd dv bg mg k ln
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
+	createBffrLst pd dv ln Vk.Bffr.UsageTransferSrcBit
+		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+		\(b' :: Vk.Bffr.Binded sm sb bnmr '[Vk.ObjNA.List t nmr]) bm' ->
+		Vk.Mm.write @bnmr @(Vk.ObjNA.List RectangleRaw nmr) @0
+			dv bm' zeroBits rs >>
+		copyBffrLst dv gq cp b' b
+	pure b
+	where ln = fromIntegral $ length rs
+
+destroyRectBffr :: Ord k => RectGroups sd sm sb nm nmr k -> k -> IO ()
+destroyRectBffr (bg, mg) k = do
+	r1 <- Vk.Mm.unsafeFree mg k
+	r2 <- Vk.Bffr.unsafeDestroy bg k
+	case (r1, r2) of
+		(Left msg, _) -> error msg; (_, Left msg) -> error msg
+		_ -> pure ()
+
+type RectGroups sd sm sb bnm nmr k = (
+	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.ObjNA.List RectangleRaw nmr],
+	Vk.Mm.Group sd 'Nothing sm k '[ '(
+		sb, 'Vk.Mm.BufferArg bnm '[Vk.ObjNA.List RectangleRaw nmr] )] )
+
+-- CREATE GRAPHICS PIPELINE
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
@@ -895,54 +967,6 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 		Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 		Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createSyncObjects :: Vk.Dvc.D sd ->
-	(forall sias srfs siff . SyncObjects '(sias, srfs, siff) -> IO a) -> IO a
-createSyncObjects dv f =
-	Vk.Semaphore.create @'Nothing dv def nil \ias ->
-	Vk.Semaphore.create @'Nothing dv def nil \rfs ->
-	Vk.Fence.create @'Nothing dv fncInfo nil \iff ->
-	f $ SyncObjects ias rfs iff
-	where
-	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
-
-data SyncObjects (ssos :: (Type, Type, Type)) where
-	SyncObjects :: {
-		_imageAvailableSemaphores :: Vk.Semaphore.S sias,
-		_renderFinishedSemaphores :: Vk.Semaphore.S srfs,
-		_inFlightFences :: Vk.Fence.F sfs } ->
-		SyncObjects '(sias, srfs, sfs)
-
-createRectangleBuffer :: Ord k =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	RectGroups sd sm sb nm nmr k -> k -> [RectangleRaw] ->
-	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 RectangleRaw nmr])
-createRectangleBuffer phdvc dvc gq cp (bgrp, mgrp) k rs =
-	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
-	createBffrLst phdvc dvc (fromIntegral $ length rs)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-			\(b' :: Vk.Bffr.Binded sm sb bnmr '[Vk.Obj.List 1 t nmr]) bm' -> do
-		Vk.Mm.write @bnmr @(Vk.Obj.List 1 RectangleRaw nmr) @0 dvc bm' zeroBits rs
-		copyBffrLst dvc gq cp b' b
-	pure b
-
-destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm nmr k -> k -> IO ()
-destroyRectangleBuffer (bgrp, mgrp) k = do
-	r1 <- Vk.Mm.unsafeFree mgrp k
-	r2 <- Vk.Bffr.unsafeDestroy bgrp k
-	case (r1, r2) of
-		(Left msg, _) -> error msg
-		(_, Left msg) -> error msg
-		_ -> pure ()
-
-type RectGroups sd sm sb bnm nmr k = (
-	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.List 1 RectangleRaw nmr],
-	Vk.Mm.Group sd 'Nothing sm k
-		'[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 RectangleRaw nmr])] )
-
 -- CREATE BUFFER
 
 createBffrAtm :: forall sd nm al t a . (KnownNat al, Storable t) =>
@@ -963,7 +987,7 @@ createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
 		IO a) -> IO a
 createBffrLst p dv ln = createBffr p dv $ Vk.Obj.LengthList ln
 
-createBufferList' :: forall sd bnm t sm sb k nm . (Ord k, Storable t) =>
+createBffrLst' :: forall sd bnm t sm sb k nm . (Ord k, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.List 1 t nm]  ->
 	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 t nm])] ->
@@ -973,7 +997,7 @@ createBufferList' :: forall sd bnm t sm sb k nm . (Ord k, Storable t) =>
 		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.List 1 t nm],
 		Vk.Mm.M sm '[ '(
 			sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 t nm] ) ] )
-createBufferList' p dv bgrp mgrp k ln usg props =
+createBffrLst' p dv bgrp mgrp k ln usg props =
 	createBffr' p dv bgrp mgrp k (Vk.Obj.LengthList ln) usg props
 
 -- MAIN LOOP
@@ -1034,7 +1058,7 @@ glfwEvents w outp = do
 	when cls . atomically $ writeTChan outp EventDeleteWindow
 
 rectsToDummyRaw :: (b, [RectangleRaw]) -> (b, [RectangleRaw])
-rectsToDummyRaw = \(tm, rects) -> (tm, bool rects dummyRaw $ null rects)
+rectsToDummyRaw = \(tm, rects) -> (tm, bool rects dummyRect $ null rects)
 
 type PipelineLayout sl sdsl alu nmt = Vk.PplLyt.P sl '[AtomUbo sdsl alu nmt] '[]
 
@@ -1044,11 +1068,6 @@ type UniformBuffers sds sdsl alu nmt sm2 sb2 nmvp =
 type Devices sd scp scb = (
 	Vk.Phd.P, QFamIdcs, Vk.Dvc.D sd,
 	Vk.Q.Q, Vk.Q.Q, Vk.CmdPl.C scp, Vk.CBffr.C scb )
-
-type Swapchains scfmt ssc nmiv sivs sr sfs = (
-	Vk.Khr.Swpch.S scfmt ssc,
-	HPList.PL (Vk.ImgVw.I nmiv scfmt) sivs,
-	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
 
 type VertexBuffers sm sb nm alv sm' sb' nm' ali = (
 	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List alv WVertex ""],
@@ -1091,7 +1110,7 @@ data Draws sl sr sg sdsl alu nmt sias srfs siff fmt ssc sfs = Draws
 			'(7, RectModel2), '(8, RectModel3),
 			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl alu nmt], '[]))
-	(SyncObjects '(sias, srfs, siff))
+	(SyncObjs '(sias, srfs, siff))
 	(Vk.Khr.Swpch.S fmt ssc)
 	(HPList.PL Vk.Frmbffr.F sfs)
 
@@ -1137,8 +1156,8 @@ runLoop' dvs pll wos vbs rgrps rectss ubs outp loop = do
 		(ubds, ubm) = ubs
 	do
 		let	(tm, rects') = rectss
-		destroyRectangleBuffer rgrps ()
-		rb <- createRectangleBufferDvcs dvs rgrps () rects'
+		destroyRectBffr rgrps ()
+		rb <- createRectBffrDvcs dvs rgrps () rects'
 		let	rb' = (rb, fromIntegral $ length rects')
 		catchAndDraw @_ @_ @_ phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
 	cls <- GlfwG.Win.shouldClose $ winObjsToWin wos
@@ -1146,19 +1165,11 @@ runLoop' dvs pll wos vbs rgrps rectss ubs outp loop = do
 		recreateSwapchainEtcIfNeed @_ @_ @_ phdvc qfis dvc pll wos outp
 		loop
 
-createRectangleBufferDvcs ::
+createRectBffrDvcs ::
 	Devices sd sc scb -> RectGroups sd sm sb nm nmr () -> () -> [RectangleRaw] ->
 	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 RectangleRaw nmr])
-createRectangleBufferDvcs (phdvc, _qfis, dvc, gq, _pq, cp, _cb) =
-	createRectangleBuffer phdvc dvc gq cp
-
-dummyRaw :: [RectangleRaw]
-dummyRaw = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-	[RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
-			(RectModel0 m0) (RectModel1 m1)
-			(RectModel2 m2) (RectModel3 m3)]
+createRectBffrDvcs (phdvc, _qfis, dvc, gq, _pq, cp, _cb) =
+	createRectBffr phdvc dvc gq cp
 
 catchAndDraw ::
 	forall svs sfs
@@ -1219,7 +1230,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	ViewProj -> IO ()
 drawFrame dvc gq pq
 	pllyt
-	(Draws vext rp gpl (SyncObjects ias rfs iff) sc fbs)
+	(Draws vext rp gpl (SyncObjs ias rfs iff) sc fbs)
 	vb rb ib ubm ubds cb
 	ubo = do
 	let	siff = HPList.Singleton iff
@@ -1366,38 +1377,6 @@ waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-createTextureSampler ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler phdv dvc f = do
-	prp <- Vk.Phd.getProperties phdv
-	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
-	let	samplerInfo = Vk.Smplr.CreateInfo {
-			Vk.Smplr.createInfoNext = TMaybe.N,
-			Vk.Smplr.createInfoFlags = zeroBits,
-			Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
-			Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
-			Vk.Smplr.createInfoMipmapMode =
-				Vk.Smplr.MipmapModeLinear,
-			Vk.Smplr.createInfoAddressModeU =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoAddressModeV =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoAddressModeW =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoMipLodBias = 0,
-			Vk.Smplr.createInfoAnisotropyEnable = True,
-			Vk.Smplr.createInfoMaxAnisotropy =
-				Vk.Phd.limitsMaxSamplerAnisotropy
-					$ Vk.Phd.propertiesLimits prp,
-			Vk.Smplr.createInfoCompareEnable = False,
-			Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.createInfoMinLod = 0,
-			Vk.Smplr.createInfoMaxLod = 0,
-			Vk.Smplr.createInfoBorderColor =
-				Vk.BorderColorIntOpaqueBlack,
-			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
-
 -- RECTANGLES, VERTICES AND INDICES
 
 type WVertex = StrG.W Vertex
@@ -1427,6 +1406,14 @@ data RectangleRaw = RectangleRaw {
 	rectangleModel2 :: RectModel2,
 	rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
+
+dummyRect :: [RectangleRaw]
+dummyRect = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
+	[RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
+			(RectModel0 m0) (RectModel1 m1)
+			(RectModel2 m2) (RectModel3 m3)]
 
 data Rectangle = Rectangle {
 	rectanglePos' :: RectPos,
