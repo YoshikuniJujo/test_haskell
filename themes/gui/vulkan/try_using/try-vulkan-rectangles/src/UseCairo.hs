@@ -969,36 +969,40 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 
 -- CREATE BUFFER
 
-createBffrAtm :: forall sd nm al t a . (KnownNat al, Storable t) =>
+createBffrAtm :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Vk.Obj.Atom al t 'Nothing] ->
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.AtomMaybeName al t mnm] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.Atom al t 'Nothing] )] ->
+			sb,
+			'Vk.Mm.BufferArg
+				bnm '[Vk.Obj.AtomMaybeName al t mnm] )] ->
 		IO a) -> IO a
 createBffrAtm p dv = createBffr p dv Vk.Obj.LengthAtom
 
-createBffrLst :: forall al sd bnm lnm t a . (KnownNat al, Storable t) =>
+createBffrLst :: forall al sd bnm mnm t a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.List al t lnm] ->
-		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List al t lnm])] ->
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.ListMaybeName al t mnm] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg
+				bnm '[Vk.Obj.ListMaybeName al t mnm])] ->
 		IO a) -> IO a
 createBffrLst p dv ln = createBffr p dv $ Vk.Obj.LengthList ln
 
-createBffrLst' :: forall sd bnm t sm sb k nm . (Ord k, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.List 1 t nm]  ->
-	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 t nm])] ->
-	k ->
-	Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
-	Vk.Mm.PropertyFlags -> IO (
-		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.List 1 t nm],
+createBffrLst' :: forall sd sm sb k bnm al t mnm .
+	(Ord k, Storable t, KnownNat al) => Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.ListMaybeName al t mnm]  ->
+	Vk.Mm.Group sd 'Nothing sm k '[ '(
+		sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.ListMaybeName al t mnm] )] ->
+	k -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	IO (	Vk.Bffr.Binded sm sb bnm '[Vk.Obj.ListMaybeName al t mnm],
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 t nm] ) ] )
-createBffrLst' p dv bgrp mgrp k ln usg props =
-	createBffr' p dv bgrp mgrp k (Vk.Obj.LengthList ln) usg props
+			sb,
+			'Vk.Mm.BufferArg
+				bnm '[Vk.Obj.ListMaybeName al t mnm] ) ] )
+createBffrLst' p dv bg mg k ln = createBffr' p dv bg mg k $ Vk.Obj.LengthList ln
 
 -- MAIN LOOP
 

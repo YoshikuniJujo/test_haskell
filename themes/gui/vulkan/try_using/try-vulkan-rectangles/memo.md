@@ -86,11 +86,35 @@ src
         - [x] GlslFragmentShaderArgs
         - [x] vwpSt
         - [x] clrBlnd
-    + [ ] CREATE BUFFER
-        - [ ] createBffrAtm
-        - [ ] createBffrLst
-        - [ ] createBffrLst'
+    + [x] CREATE BUFFER
+        - [x] createBffrAtm
+        - [x] createBffrLst
+        - [x] createBffrLst'
     + [ ] MAIN LOOP
+        - [ ] mainLoop
+        - [ ] glfwEvents
+        - [ ] rectsToDummyRaw
+        - [ ] PipelineLayout
+        - [ ] UniformBuffers
+        - [ ] Devices
+        - [ ] VertexBuffers
+        - [ ] Recreates
+        - [ ] winObjsToRecreates
+        - [ ] Draws
+        - [ ] winObjsToDraws
+        - [ ] runLoop'
+        - [ ] createRectBffrDvcs
+        - [ ] catchAndDraw
+        - [ ] recreateSwapchainEtcIfNeed
+        - [ ] drawFrame
+        - [ ] updateUniformBuffer'
+        - [ ] recordCommandBuffer
+        - [ ] AtomUbo
+        - [ ] checkTChan
+        - [ ] catchAndSerialize
+        - [ ] catchAndRecreate
+        - [ ] recreateSwapchainEtc
+        - [ ] waitFramebufferSize
     + [ ] RECTANGLES, VERTICES AND INDICES
     + [ ] SHADERS
     + [ ] export list
