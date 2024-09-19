@@ -816,14 +816,14 @@ createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
 	(forall sg . Pipeline sg sl sdsl alu nmt -> IO a) -> IO a
 createGrPpl dv ex rp pl f = Vk.Ppl.Gr.createGs dv Nothing
-	(U14 (grPplInfo ex rp pl) :** HPList.Nil) nil
+	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	\(HPList.Singleton (U3 gp)) -> f gp
 
 recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmt)] '[] ->
 	Pipeline sg sl sdsl alu nmt -> IO ()
 recreateGrPpl dv ex rp pl gp = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
-	(U14 (grPplInfo ex rp pl) :** HPList.Nil) nil
+	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	(HPList.Singleton $ U3 gp)
 
 type Pipeline sg sl sdsl alu nmt = Vk.Ppl.Gr.G sg
@@ -850,19 +850,19 @@ grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'Nothing '(sl, '[ '(sdsl, DscStLytArg alu nmt)], '[])
 		sr '(sb, vs, ts, plas)
-grPplInfo sce rp pllyt = Vk.Ppl.Gr.CreateInfo {
+grPplInfo ex rp pl = Vk.Ppl.Gr.CreateInfo {
 	Vk.Ppl.Gr.createInfoNext = TMaybe.N,
 	Vk.Ppl.Gr.createInfoFlags = zeroBits,
 	Vk.Ppl.Gr.createInfoStages = shaderStages,
 	Vk.Ppl.Gr.createInfoVertexInputState = Just $ U3 def,
 	Vk.Ppl.Gr.createInfoInputAssemblyState = Just ia,
-	Vk.Ppl.Gr.createInfoViewportState = Just $ vwpSt sce,
+	Vk.Ppl.Gr.createInfoViewportState = Just $ vwpSt ex,
 	Vk.Ppl.Gr.createInfoRasterizationState = Just rst,
 	Vk.Ppl.Gr.createInfoMultisampleState = Just ms,
 	Vk.Ppl.Gr.createInfoDepthStencilState = Nothing,
 	Vk.Ppl.Gr.createInfoColorBlendState = Just clrBlnd,
 	Vk.Ppl.Gr.createInfoDynamicState = Nothing,
-	Vk.Ppl.Gr.createInfoLayout = U3 pllyt,
+	Vk.Ppl.Gr.createInfoLayout = U3 pl,
 	Vk.Ppl.Gr.createInfoRenderPass = rp,
 	Vk.Ppl.Gr.createInfoSubpass = 0,
 	Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
@@ -918,10 +918,10 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 			(minfo glslFragmentShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
-	minfo code = Vk.ShaderModule.CreateInfo {
+	minfo cd = Vk.ShaderModule.CreateInfo {
 		Vk.ShaderModule.createInfoNext = TMaybe.N,
 		Vk.ShaderModule.createInfoFlags = def,
-		Vk.ShaderModule.createInfoCode = code }
+		Vk.ShaderModule.createInfoCode = cd }
 
 type GlslVertexShaderArgs = '(
 	'Nothing, 'Nothing,

@@ -76,11 +76,20 @@ src
         - [x] createRectangleBuffer
         - [x] destroyRectangleBuffer
         - [x] RectGroups
-    + [ ] CREATE GRAPHICS PIPELINE
+    + [x] CREATE GRAPHICS PIPELINE
+        - [x] createGrPpl
+        - [x] recreateGrPpl
+        - [x] Pipeline
+        - [x] grPplInfo
+        - [x] shaderStages
+        - [x] GlslVertexShaderArgs
+        - [x] GlslFragmentShaderArgs
+        - [x] vwpSt
+        - [x] clrBlnd
     + [ ] CREATE BUFFER
         - [ ] createBffrAtm
         - [ ] createBffrLst
-        - [ ] createBufferList'
+        - [ ] createBffrLst'
     + [ ] MAIN LOOP
     + [ ] RECTANGLES, VERTICES AND INDICES
     + [ ] SHADERS
