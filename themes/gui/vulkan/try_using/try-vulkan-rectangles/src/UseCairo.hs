@@ -30,6 +30,7 @@ module UseCairo (
 	Rectangle(..), RectPos(..), RectSize(..), RectColor(..) ) where
 
 import GHC.Generics
+import GHC.TypeLits (Symbol)
 import GHC.TypeNats
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -320,14 +321,14 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 
 -- RUN
 
-run :: forall sw ssfc sd .
+run :: forall sw ssfc sd (nmt :: Symbol) .
 	TChan Command -> TChan Event -> TVar Vk.Extent2d ->
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO ()
 run ip op vex w sfc pd qfis dv gq pq =
 	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
-	createPplLyt @_ @alu dv \dsl pl ->
+	createPplLyt @_ @alu @nmt dv \dsl pl ->
 	createViewProjBffr pd dv \vp vpm ->
 	createDscPl dv \dp -> createDscSt dv dp vp dsl \ds ->
 	createVtxBffr pd dv gq cp vertices \vb ->
@@ -335,8 +336,7 @@ run ip op vex w sfc pd qfis dv gq pq =
 	Vk.Bffr.group dv nil \rbg -> Vk.Mm.group dv nil \rmg ->
 	winObjs op w sfc vex pd qfis dv gq cp pl (rbg, rmg) \wos ->
 	createTxSmplr pd dv \txsmplr ->
-	createBindImg pd dv ds txsmplr textureSize
-		\(txi :: Vk.Img.Binded sm si nmt ifmt) ->
+	createBindImg @_ @_ @_ @_ @_ @nmt pd dv ds txsmplr textureSize \txi ->
 	createBffrImg pd dv textureSize \ibf ibfm ->
 	cairoImageSurfaceCreate
 		CairoFormatArgb32 textureWidth textureHeight >>= \crsfc ->
@@ -344,7 +344,7 @@ run ip op vex w sfc pd qfis dv gq pq =
 	let	viewToBffr = (writeBffr dv ibfm =<<) . drawViewIO crsfc cr
 		bffrToImg = flashImg dv gq cp txi ibf textureSize in
 	viewToBffr (FV.View []) >> bffrToImg >>
-	mainLoop @nmt ip op (pd, qfis, dv, gq, pq, cp, cb)
+	mainloop ip op (pd, qfis, dv, gq, pq, cp, cb)
 		pl (vb, ib) (rbg, rmg) (ds, vpm) wos viewToBffr bffrToImg
 
 createCmdPl ::
@@ -1006,7 +1006,7 @@ createBffrLst' p dv bg mg k ln = createBffr' p dv bg mg k $ Vk.Obj.LengthList ln
 
 -- MAIN LOOP
 
-mainLoop ::
+mainloop ::
 	forall nmt scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
 		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 svs sfs alu ali alv . (
 	Vk.T.FormatToValue scfmt,
@@ -1024,7 +1024,7 @@ mainLoop ::
 		->
 	(FV.View -> IO ()) -> IO () ->
 	IO ()
-mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs wos@(WinObjs (_, fbrszd) _ _ _ _ _)
+mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll vbs rgrps ubs wos@(WinObjs (_, fbrszd) _ _ _ _ _)
 	wwww1 wwww2 = do
 	wbw <- atomically newTChan
 	wm <- atomically newTChan
