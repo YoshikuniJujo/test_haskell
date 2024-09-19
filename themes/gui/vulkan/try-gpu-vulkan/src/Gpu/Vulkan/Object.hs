@@ -145,25 +145,27 @@ data Length obj where
 deriving instance Eq (Length obj)
 deriving instance Show (Length obj)
 
-pattern LengthAtom :: Length ('Static_ (K.Atom algn v nm))
+pattern LengthAtom :: Length ('Static_ (K.AtomMaybeName algn v mnm))
 pattern LengthAtom <- LengthStatic K.LengthAtom where
 	LengthAtom = LengthStatic K.LengthAtom
 
 {-# COMPLETE LengthList #-}
 {-# COMPLETE LengthList' #-}
 
-pattern LengthList :: Device.M.Size -> Length ('Static_ (K.List algn v nm))
+pattern LengthList :: Device.M.Size ->
+	Length ('Static_ (K.ListMaybeName algn v mnm))
 pattern LengthList n <- LengthStatic (K.LengthList n) where
 	LengthList n = LengthStatic (K.LengthList n)
 
-pattern LengthList' :: Word64 -> Length ('Static_ (K.List algn v nm))
+pattern LengthList' :: Word64 -> Length ('Static_ (K.ListMaybeName algn v nm))
 pattern LengthList' n <- LengthStatic (K.LengthList (Device.M.Size n)) where
 	LengthList' n = LengthStatic (K.LengthList (Device.M.Size n))
 
 {-# COMPLETE LengthImage #-}
 
 pattern LengthImage ::
-	Device.M.Size -> Device.M.Size -> Device.M.Size -> Device.M.Size -> Length ('Static_ (K.Image algn v nm))
+	Device.M.Size -> Device.M.Size -> Device.M.Size -> Device.M.Size ->
+	Length ('Static_ (K.ImageMaybeName algn v mnm))
 pattern LengthImage kr kw kh kd <- (LengthStatic (K.LengthImage kr kw kh kd))
 	where LengthImage kr kw kh kd = LengthStatic (K.LengthImage kr kw kh kd)
 
