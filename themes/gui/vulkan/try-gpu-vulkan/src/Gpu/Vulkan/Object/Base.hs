@@ -165,28 +165,28 @@ class SizeAlignment obj where
 	alignment :: Device.M.Size
 
 instance (KnownNat algn, S.Storable t) =>
-	SizeAlignment ((Atom algn t _nm)) where
+	SizeAlignment ((AtomMaybeName algn t _nm)) where
 	size (LengthAtom) =
 		applyAlign algn . fromIntegral $ S.sizeOf @t undefined
-		where algn = alignment @((Atom algn t _nm))
+		where algn = alignment @((AtomMaybeName algn t _nm))
 	alignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		fromIntegral (S.alignment @t undefined)
 
-instance (KnownNat algn, S.Storable t) => SizeAlignment (List algn t _nm) where
+instance (KnownNat algn, S.Storable t) => SizeAlignment (ListMaybeName algn t _nm) where
 	size (LengthList n) = applyAlign algn' $ n * applyAlign algn sz
 		where
 		sz = fromIntegral $ S.sizeOf @t undefined
 		algn = fromIntegral $ S.alignment @t undefined
-		algn' = alignment @((List algn t _nm))
+		algn' = alignment @((ListMaybeName algn t _nm))
 	alignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		fromIntegral (S.alignment @t undefined)
 
 instance (KnownNat algn, S.Storable (ImagePixel img)) =>
-	SizeAlignment ((Image algn img nm)) where
+	SizeAlignment ((ImageMaybeName algn img nm)) where
 	size (LengthImage r _w h d) = r * h * d * applyAlign algn sz
 		where
 		sz = fromIntegral $ S.sizeOf @(ImagePixel img) undefined
-		algn = alignment @((Image algn img nm))
+		algn = alignment @((ImageMaybeName algn img nm))
 	alignment =fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		fromIntegral (S.alignment @(ImagePixel img) undefined)
 
