@@ -104,9 +104,6 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 				putStrLn $ "delete window"
 				atomically $ inp EndWorld
 				loop
-			Just EventNeedRedraw -> do
-				putStrLn "EVENT NEED REDRAW"
-				loop
 			Just (EventGamepadAxisLeftX lx) -> do
 				atomically $ modifyTVar ta (subtract $ realToFrac (pi * lx / 100))
 				loop

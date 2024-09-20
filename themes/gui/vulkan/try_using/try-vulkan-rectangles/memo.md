@@ -28,8 +28,8 @@ src
         - [x] findQFams
         - [x] QFamIndices
         - [x] createLgDvc
-    + [x] RUN
-        - [x] run
+    + [x] BODY
+        - [x] body
         - [x] createCmdPl
         - [x] createCmdBffr
         - [x] unfrmBffrOstAlgn
@@ -92,7 +92,7 @@ src
         - [x] createBffrLst'
     + [ ] MAIN LOOP
         - [ ] mainLoop
-        - [ ] glfwEvents
+        - [ ] deleteEvent
         - [ ] rectsToDummyRaw
         - [ ] PipelineLayout
         - [ ] UniformBuffers
