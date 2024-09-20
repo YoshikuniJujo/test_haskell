@@ -47,6 +47,7 @@ src
         - [x] createTxSmplr
     + [x] WINDOW OBJECTS
         - [x] winObjs
+        - [x] RectGroups
         - [x] WinObjs
         - [x] winEnvs
         - [x] FramebufferResized
@@ -75,7 +76,6 @@ src
         - [x] SyncObjs
         - [x] createRectangleBuffer
         - [x] destroyRectangleBuffer
-        - [x] RectGroups
     + [x] CREATE GRAPHICS PIPELINE
         - [x] createGrPpl
         - [x] recreateGrPpl
