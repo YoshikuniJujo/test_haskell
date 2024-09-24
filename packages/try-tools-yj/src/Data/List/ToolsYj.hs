@@ -1,9 +1,20 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.ToolsYj (elemAll, elemNotAll, findDefault, listToTuple4) where
+module Data.List.ToolsYj (
+	list, list',
+	elemAll, elemNotAll, findDefault, listToTuple4
+	) where
 
 import Data.Maybe
 import Data.List ((\\), find)
+import Data.List.NonEmpty (NonEmpty(..))
+
+list :: b -> (a -> [a] -> b) -> [a] -> b
+list n c = \case [] -> n; x : xs -> c x xs
+
+list' :: b -> (NonEmpty a -> b) -> [a] -> b
+list' n c = \case [] -> n; x : xs -> c $ x :| xs
 
 elemAll :: Eq a => [a] -> [a] -> Bool
 elemAll es = null . (es \\)
