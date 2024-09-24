@@ -133,7 +133,9 @@ src
         - [x] WViewProj
         - [x] ViewProj
         - [x] instance StrG.G ViewProj
-    + [ ] SHADERS
+    + [x] SHADERS
+        - [x] glslVertexShader
+        - [x] glslFragmentShader
     + [ ] export list
     + [ ] import list
 * [ ] UseTextureGroup

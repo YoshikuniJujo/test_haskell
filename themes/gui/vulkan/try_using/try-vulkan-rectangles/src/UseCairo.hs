@@ -1358,10 +1358,7 @@ instance StrG.G ViewProj
 
 #version 450
 
-layout(binding = 0) uniform ViewProjection {
-	mat4 view;
-	mat4 proj;
-} ubo;
+layout(binding = 0) uniform ViewProj { mat4 view; mat4 proj; } vp;
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -1369,7 +1366,6 @@ layout(location = 2) in vec2 rectPosition;
 layout(location = 3) in vec2 rectSize;
 layout(location = 4) in vec4 rectColor;
 layout(location = 5) in mat4 rectModel;
-
 layout(location = 9) in vec2 inTexCoord;
 
 layout(location = 0) out vec4 fragColor;
@@ -1378,13 +1374,9 @@ layout(location = 1) out vec2 fragTexCoord;
 void
 main()
 {
-	gl_Position =
-//		ubo.proj * ubo.view * rectModel *
-		ubo.proj * ubo.view *
-		rectModel * (
+	gl_Position = vp.proj * vp.view * rectModel * (
 		vec4(inPosition * rectSize, 0.0, 1.0) +
 		vec4(rectPosition, 0.0, 1.0) );
-//	fragColor = inColor;
 	fragColor = rectColor;
 	fragTexCoord = inTexCoord;
 }
@@ -1405,7 +1397,6 @@ layout(binding = 1) uniform sampler2D texSampler;
 void
 main()
 {
-//	outColor = fragColor;
 	outColor = vec4(texture(texSampler, fragTexCoord).rgb, 1.0);
 	if (outColor.w < 1) { discard; }
 }
