@@ -90,26 +90,23 @@ src
         - [x] createBffrAtm
         - [x] createBffrLst
         - [x] createBffrLst'
-    + [x] MAIN LOOP
+    + [x] MAIN LOOP AND RUN
         - [x] mainLoop
         - [x] Devices
         - [x] PipelineLayout
         - [x] VertexBuffers
         - [x] winObjsToWin
-    + [ ] RUN
-        - [ ] run
-        - [ ] createRectBffrDvcs
-        - [ ] catchAndDraw
-        - [ ] Recreates
-        - [ ] winObjsToRecreates
+        - [x] run
+    + [ ] DRAW AND RECREATE
+        - [ ] draw
         - [ ] Draws
         - [ ] winObjsToDraws
-        - [ ] recreateSwapchainEtcIfNeed
-        - [ ] drawFrame
         - [ ] updateUniformBuffer'
         - [ ] recordCommandBuffer
         - [ ] catchAndSerialize
         - [ ] catchAndRecreate
+        - [ ] Recreates
+        - [ ] winObjsToRecreates
         - [ ] recreateSwapchainEtc
         - [ ] waitFramebufferSize
     + [ ] RECTANGLES, VERTICES AND INDICES
