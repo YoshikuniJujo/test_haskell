@@ -40,38 +40,36 @@ import Graphics.UI.GlfwG.Key as GlfwG.Ky
 
 main :: IO ()
 main = do
-	a <- newAngle
-	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	vext <- atomically $ newTVar (Vk.Extent2d 0 0)
-	_ <- forkIO $ untilEnd a (
-		((writeTChan inp, unGetTChan inp EndWorld), (isEmptyTChan outp, readTChan outp)), const $ readTVar vext)
-	useCairo inp outp vext
+	(ip, op, vex) <- atomically
+		$ (,,) <$> newTChan <*> newTChan <*> newTVar (Vk.Extent2d 0 0)
+	_ <- forkIO $ mainloop
+		(writeTChan ip, unGetTChan ip EndWorld)
+		(isEmptyTChan op, readTChan op) (readTVar vex)
+	useCairo ip op vex
 
-untilEnd :: TVar Angle -> (
-	((Command -> STM (), STM()), (STM Bool, STM Event)),
-	() -> STM Vk.Extent2d ) -> IO ()
-untilEnd ta (((inp, dw), (oute, outp)), ext) = do
-
+mainloop ::
+	(Command -> STM (), STM()) -> (STM Bool, STM Event) ->
+	STM Vk.Extent2d -> IO ()
+mainloop (ip, ew) (ne, op) ex = do
+	ta <- atomically $ newTVar (pi / 2)
 	_ <- forkIO $ forever do
 		threadDelay 5000
-		atomically $ inp GetEvent
-
+		atomically $ ip GetEvent
 	_ <- forkIO $ forever do
 		threadDelay 1000000
 		t <- getZonedTime
 		atomically do
-			inp $ SetViewAsTexture
+			ip $ SetViewAsTexture
 				(View [	expand . Singleton $ Line' (Color 127 127 127) 4 (10, 10) (100, 100),
 					expand . Singleton $ Text' blue "sans" 200 (50, 600) (T.pack $ formatTime defaultTimeLocale "%T" t)
 					])
-
 	fix \loop -> do
 		threadDelay 2000
 		a <- atomically $ readTVar ta
 		o <- atomically do
-			e0 <- ext ()
-			inp $ DrawRect (uniformBufferObject a e0) instancesMore
-			bool (Just <$> outp) (pure Nothing) =<< oute
+			e0 <- ex
+			ip $ DrawRect (uniformBufferObject a e0) instancesMore
+			bool (Just <$> op) (pure Nothing) =<< ne
 		case o of
 			Nothing -> loop
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
@@ -92,7 +90,7 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 				loop
 			Just (EventKeyUp Key'Q) -> do
 				putStrLn ("KEY UP       : " ++ show Key'Q)
-				atomically dw
+				atomically ew
 				loop
 			Just (EventKeyUp ky) -> do
 				putStrLn ("KEY UP       : " ++ show ky)
@@ -102,14 +100,14 @@ untilEnd ta (((inp, dw), (oute, outp)), ext) = do
 				loop
 			Just EventDeleteWindow -> do
 				putStrLn $ "delete window"
-				atomically $ inp EndWorld
+				atomically $ ip EndWorld
 				loop
 			Just (EventGamepadAxisLeftX lx) -> do
 				atomically $ modifyTVar ta (subtract $ realToFrac (pi * lx / 100))
 				loop
 			Just EventGamepadButtonAPressed -> do
 				putStrLn $ "EventGamepadButtonAPressed"
-				atomically $ inp EndWorld
+				atomically $ ip EndWorld
 				loop
 
 uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProj
@@ -125,6 +123,8 @@ uniformBufferObject (Angle a) sce = ViewProj {
 				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 	where
 	lax = realToFrac $ cos a; lay = realToFrac $ sin a
+
+newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
 
 instancesMore :: [Rectangle]
 instancesMore = [
@@ -149,8 +149,3 @@ instancesMore = [
 	tr1 = Cglm.translate Cglm.mat4Identity (Cglm.Vec3 $ 0 :. (- 0.3) :. 0.5 :. NilL)
 	m2 = RectModel $
 		Cglm.scale tr1 (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
-
-newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
-
-newAngle :: IO (TVar Angle)
-newAngle = atomically $ newTVar (pi / 2)
