@@ -110,7 +110,29 @@ src
         - [x] recordCmdBffr
         - [x] bffrLstLn
         - [x] updateViewProjBffr
-    + [ ] RECTANGLES, VERTICES AND INDICES
+    + [x] DATA TYPES
+        - [x] Rectangle
+        - [x] rectToRectRaw
+        - [x] WRect
+        - [x] RectangleRaw
+        - [x] dummyRect
+        - [x] instance StrG.G RectangleRaw
+        - [x] RectPos
+        - [x] RedtSize
+        - [x] RectColor
+        - [x] RectModel
+        - [x] RectModel0
+        - [x] RectModel1
+        - [x] RectModel2
+        - [x] RectModel3
+        - [x] WVertex
+        - [x] Vertex
+        - [x] instance StrG.G Vertex
+        - [x] vertices
+        - [x] indices
+        - [x] WViewProj
+        - [x] ViewProj
+        - [x] instance StrG.G ViewProj
     + [ ] SHADERS
     + [ ] export list
     + [ ] import list

@@ -154,7 +154,7 @@ import Debug
 -- * MAIN LOOP AND RUN
 -- * RECREATE
 -- * DRAW
--- * RECTANGLES, VERTICES AND INDICES
+-- * DATA TYPES
 -- * SHADERS
 --
 ----------------------------------------------------------------------
@@ -407,7 +407,7 @@ type DscStLytArg alu nmvp nmt = '[
 	'Vk.DscStLyt.Buffer '[AtomViewProj alu nmvp],
 	'Vk.DscStLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)] ]
 
-type AtomViewProj alu nmvp = Vk.Obj.AtomNew alu ViewProj nmvp
+type AtomViewProj alu nmvp = Vk.Obj.AtomNew alu WViewProj nmvp
 
 createViewProjBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu nmvp]  ->
@@ -1025,7 +1025,7 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl wos vbs ds vpm rgs vtb bti = do
 				(writeTVar bz False >> writeTChan rd ())
 		DrawRect vp (list dummyRect (:) . (rectToRectRaw <$>) -> rs) ->
 			((`when` (bti >> Vk.Dvc.waitIdle dv)) =<< ready rd) >>
-			run dvs pl wos vbs ds vpm rgs vp rs go
+			run dvs pl wos vbs ds vpm rgs (StrG.W vp) rs go
 		GetEvent -> dev (objsToWin wos) >> go
 		EndWorld -> pure ()
 	atomically $ check . not =<< readTVar bz
@@ -1064,7 +1064,7 @@ run :: forall sd scp scb sl sdsl alu nmvp nmt
 	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
 	Vk.DscSt.D sds '(sdsl, DscStLytArg alu nmvp nmt) ->
 	ViewProjMemory smvp sbvp bnmvp alu nmvp ->
-	RectGroups sd smr sbr bnmr nmr () -> ViewProj -> [WRect] ->
+	RectGroups sd smr sbr bnmr nmr () -> WViewProj -> [WRect] ->
 	IO () -> IO ()
 run (pd, qfis, dv, gq, pq, cp, cb) pl
 	wos@(WinObjs (_, fr) _ _ _ _ _) (vb, ib) ds mvp rgs vp rs go = do
@@ -1148,7 +1148,7 @@ draw :: forall
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
 	ViewProjMemory smvp sbvp bnmvp alu nmvp ->
 	Vk.DscSt.D sds '(sdsl, DscStLytArg alu nmvp nmt) -> Vk.CBffr.C scb ->
-	ViewProj -> IO ()
+	WViewProj -> IO ()
 draw dv gq pq pl (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
 	vb rb ib mvp ds cb vp = atomically (readTVar vex) >>= \ex -> do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
@@ -1246,53 +1246,48 @@ bffrLstLn b = fromIntegral sz
 	where HPList.Singleton (Vk.Obj.LengthList' sz) = Vk.Bffr.lengthBinded b
 
 updateViewProjBffr :: forall sd sm sb al bnm nm . KnownNat al =>
-	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm al nm -> ViewProj -> IO ()
+	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm al nm -> WViewProj -> IO ()
 updateViewProjBffr dvc um obj =
-	Vk.Mm.write @bnm @(Vk.Obj.AtomNew al ViewProj nm) @0 dvc um zeroBits obj
+	Vk.Mm.write @bnm @(Vk.Obj.AtomNew al WViewProj nm) @0 dvc um zeroBits obj
 
--- RECTANGLES, VERTICES AND INDICES
-
-type WRect = StrG.W RectangleRaw
-
-data RectangleRaw = RectangleRaw {
-	rectanglePos :: RectPos,
-	rectangleSize :: RectSize,
-	rectangleColor :: RectColor,
-	rectangleModel0 :: RectModel0,
-	rectangleModel1 :: RectModel1,
-	rectangleModel2 :: RectModel2,
-	rectangleModel3 :: RectModel3 }
-	deriving (Show, Generic)
-
-dummyRect :: [WRect]
-dummyRect = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-	[StrG.W $ RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
-			(RectModel0 m0) (RectModel1 m1)
-			(RectModel2 m2) (RectModel3 m3)]
+-- DATA TYPES
 
 data Rectangle = Rectangle {
-	rectanglePos' :: RectPos,
-	rectangleSize' :: RectSize,
-	rectangleColor' :: RectColor,
-	rectangleModel' :: RectModel }
+	rectanglePos' :: RectPos, rectangleSize' :: RectSize,
+	rectangleColor' :: RectColor, rectangleModel' :: RectModel }
 	deriving (Show, Generic)
 
 rectToRectRaw :: Rectangle -> WRect
 rectToRectRaw Rectangle {
-	rectanglePos' = p,
-	rectangleSize' = s,
-	rectangleColor' = c,
-	rectangleModel' = RectModel m } = StrG.W RectangleRaw {
-	rectanglePos = p,
-	rectangleSize = s,
-	rectangleColor = c,
-	rectangleModel0 = RectModel0 m0,
-	rectangleModel1 = RectModel1 m1,
-	rectangleModel2 = RectModel2 m2,
-	rectangleModel3 = RectModel3 m3 }
+	rectanglePos' = p, rectangleSize' = s,
+	rectangleColor' = c, rectangleModel' = RectModel m } =
+	StrG.W RectangleRaw {
+		rectanglePos = p, rectangleSize = s,
+		rectangleColor = c,
+		rectangleModel0 = RectModel0 m0,
+		rectangleModel1 = RectModel1 m1,
+		rectangleModel2 = RectModel2 m2,
+		rectangleModel3 = RectModel3 m3 }
 	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
+
+type WRect = StrG.W RectangleRaw
+
+data RectangleRaw = RectangleRaw {
+	rectanglePos :: RectPos, rectangleSize :: RectSize,
+	rectangleColor :: RectColor,
+	rectangleModel0 :: RectModel0, rectangleModel1 :: RectModel1,
+	rectangleModel2 :: RectModel2, rectangleModel3 :: RectModel3 }
+	deriving (Show, Generic)
+
+dummyRect :: [WRect]
+dummyRect =
+	let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
+	[StrG.W $ RectangleRaw
+		(RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+		(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
+		(RectModel0 m0) (RectModel1 m1)
+		(RectModel2 m2) (RectModel3 m3)]
 
 instance StrG.G RectangleRaw where
 
@@ -1326,13 +1321,7 @@ data Vertex = Vertex {
 	vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
 
-instance Storable Vertex where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
-
-instance StrG.G Vertex where
+instance StrG.G Vertex
 
 newtype TexCoord = TexCoord Cglm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
@@ -1358,20 +1347,10 @@ indices = [0, 1, 2, 2, 3, 0]
 type WViewProj = StrG.W ViewProj
 
 data ViewProj = ViewProj {
-	viewProjectionView :: Cglm.Mat4,
-	viewProjectionProj :: Cglm.Mat4 }
+	viewProjectionView :: Cglm.Mat4, viewProjectionProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
-instance Storable ViewProj where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
-
 instance StrG.G ViewProj
-
-instance Default ViewProj where
-	def = ViewProj Cglm.mat4Identity Cglm.mat4Identity
 
 -- SHADERS
 
