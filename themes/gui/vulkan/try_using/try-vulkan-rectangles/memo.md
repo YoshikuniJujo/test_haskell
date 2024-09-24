@@ -97,18 +97,19 @@ src
         - [x] VertexBuffers
         - [x] winObjsToWin
         - [x] run
-    + [ ] DRAW AND RECREATE
-        - [ ] draw
-        - [ ] Draws
-        - [ ] winObjsToDraws
-        - [ ] updateUniformBuffer'
-        - [ ] recordCommandBuffer
-        - [ ] catchAndSerialize
-        - [ ] catchAndRecreate
-        - [ ] Recreates
-        - [ ] winObjsToRecreates
-        - [ ] recreateSwapchainEtc
-        - [ ] waitFramebufferSize
+    + [x] RECREATE
+        - [x] catchAndRecreate
+        - [x] Recreates
+        - [x] winObjsToRecreates
+        - [x] recreateAll
+        - [x] waitFramebufferSize
+    + [ ] DRAW
+        - [x] draw
+        - [x] Draws
+        - [x] winObjsToDraws
+        - [ ] recordCmdBffr
+        - [ ] bffrLstLn
+        - [ ] updateViewProjBffr
     + [ ] RECTANGLES, VERTICES AND INDICES
     + [ ] SHADERS
     + [ ] export list
