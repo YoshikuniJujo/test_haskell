@@ -1193,53 +1193,50 @@ objsToDraws ::
 	WinObjs sw ssfc scfmt ssc nm sscivs sr sfs
 		sg sl sdsl alu nmvp nmt sias srfs siff ->
 	Draws scfmt ssc sr sfs sg sl sdsl alu nmvp nmt sias srfs siff
-objsToDraws (WinObjs _ _sfc vex (sc, _scivs, rp, fbs) gpl sos) =
-	Draws vex sc rp fbs gpl sos
+objsToDraws (WinObjs _ _sfc vex (sc, _scivs, rp, fbs) gp sos) =
+	Draws vex sc rp fbs gp sos
 
 recordCmdBffr :: forall
-	scb sr sf sl sg sm sb smr sbr bnmv nmv sm' sb' nm' sdsl sds nmt alu ali alv nmr bnmr nmi nmvp .
-	(KnownNat ali, KnownNat alv) =>
-	Vk.CBffr.C scb ->
-	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
+	scb sr sf sl sdsl alu nmvp nmt sg
+	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi sds .
+	Vk.CBffr.C scb -> Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmvp nmt)] '[] ->
 	Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(RectangleRaw, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
-			'(9, TexCoord) ]
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
 		'(sl, '[ '(sdsl, DscStLytArg alu nmvp nmt)], '[]) ->
-	Vk.Bffr.Binded sm sb bnmv '[Vk.Obj.List alv WVertex nmv] ->
-	Vk.Bffr.Binded smr sbr bnmr '[Vk.Obj.List 1 RectangleRaw nmr] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List ali Word16 nmi] ->
-	Vk.DscSt.D sds '(sdsl, DscStLytArg alu nmvp nmt) ->
-	IO ()
-recordCmdBffr cb rp fb sce pllyt gpl vb rb ib ubds =
+	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
+	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List RectangleRaw nmr] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu nmvp nmt) -> IO ()
+recordCmdBffr cb rp fb ex pl gp vb rb ib ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
-	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
+	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline $
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb (
 		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb) :**
 		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @RectangleRaw @nmr rb) :**
-		HPList.Nil
-		) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
-	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pllyt
-		(HPList.Singleton $ U2 ubds)
-		(HPList.Singleton (
-			HPList.Nil :** HPList.Nil :**
-			HPList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) (bffrLstLn rb) 0 0 0
+		HPList.Nil ) >>
+	Vk.Cmd.bindIndexBuffer
+		cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
+	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
+		(HPList.Singleton $ U2 ds)
+		(HPList.Singleton $ HPList.Nil :** HPList.Nil :** HPList.Nil) >>
+	Vk.Cmd.drawIndexed cbb (bffrLstLn ib) (bffrLstLn rb) 0 0 0
 	where
-	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
+	rpinfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
-	rpInfo = Vk.RndrPss.BeginInfo {
+	rpinfo = Vk.RndrPss.BeginInfo {
 		Vk.RndrPss.beginInfoNext = TMaybe.N,
 		Vk.RndrPss.beginInfoRenderPass = rp,
 		Vk.RndrPss.beginInfoFramebuffer = fb,
 		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
-			Vk.rect2dExtent = sce },
+			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
@@ -1248,11 +1245,10 @@ bffrLstLn :: Num n =>
 bffrLstLn b = fromIntegral sz
 	where HPList.Singleton (Vk.Obj.LengthList' sz) = Vk.Bffr.lengthBinded b
 
-updateViewProjBffr :: forall sd sm2 sb2 alu bnmvp nmvp . KnownNat alu => Vk.Dvc.D sd ->
-	ViewProjMemory sm2 sb2 bnmvp alu nmvp -> ViewProj -> IO ()
-updateViewProjBffr dvc um obj = do
-	Vk.Mm.write @bnmvp @(Vk.Obj.AtomNew alu ViewProj nmvp) @0
-		dvc um zeroBits obj
+updateViewProjBffr :: forall sd sm sb al bnm nm . KnownNat al =>
+	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm al nm -> ViewProj -> IO ()
+updateViewProjBffr dvc um obj =
+	Vk.Mm.write @bnm @(Vk.Obj.AtomNew al ViewProj nm) @0 dvc um zeroBits obj
 
 -- RECTANGLES, VERTICES AND INDICES
 

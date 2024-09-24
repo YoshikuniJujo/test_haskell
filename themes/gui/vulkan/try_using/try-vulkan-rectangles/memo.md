@@ -103,13 +103,13 @@ src
         - [x] winObjsToRecreates
         - [x] recreateAll
         - [x] waitFramebufferSize
-    + [ ] DRAW
+    + [x] DRAW
         - [x] draw
         - [x] Draws
         - [x] winObjsToDraws
-        - [ ] recordCmdBffr
-        - [ ] bffrLstLn
-        - [ ] updateViewProjBffr
+        - [x] recordCmdBffr
+        - [x] bffrLstLn
+        - [x] updateViewProjBffr
     + [ ] RECTANGLES, VERTICES AND INDICES
     + [ ] SHADERS
     + [ ] export list
