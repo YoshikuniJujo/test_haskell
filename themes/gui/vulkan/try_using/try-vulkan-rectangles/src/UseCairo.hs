@@ -542,10 +542,10 @@ winObjs op w sfc vex pd qfis dv gq cp pl rgs f =
 	f (WinObjs (w, fr) sfc vex (sc, scvs, rp, fbs) gp sos)
 
 type RectGroups sd smr sbr bnmr nmr k = (
-	Vk.Bffr.Group sd 'Nothing sbr k bnmr '[Vk.ObjNA.List RectangleRaw nmr],
+	Vk.Bffr.Group sd 'Nothing sbr k bnmr '[Vk.ObjNA.List WRect nmr],
 	Vk.Mm.Group sd 'Nothing smr k '[ '(
 		sbr,
-		'Vk.Mm.BufferArg bnmr '[Vk.ObjNA.List RectangleRaw nmr] )] )
+		'Vk.Mm.BufferArg bnmr '[Vk.ObjNA.List WRect nmr] )] )
 
 data WinObjs
 	sw ssfc scfmt ssc nmscv svs sr sfs sg sl sdsl alu nmvp nmt sias srfs siff =
@@ -783,8 +783,8 @@ data SyncObjs (ssos :: (Type, Type, Type)) where
 
 createRectBffr :: Ord k =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	RectGroups sd smr sbr bnmr nmr k -> k -> [RectangleRaw] ->
-	IO (Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List RectangleRaw nmr])
+	RectGroups sd smr sbr bnmr nmr k -> k -> [WRect] ->
+	IO (Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr])
 createRectBffr pd dv gq cp (bg, mg) k rs =
 	createBffrLst' pd dv bg mg k ln
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -792,7 +792,7 @@ createRectBffr pd dv gq cp (bg, mg) k rs =
 	createBffrLst pd dv ln Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(b' :: Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t nm]) bm' ->
-		Vk.Mm.write @bnm @(Vk.ObjNA.List RectangleRaw nm) @0
+		Vk.Mm.write @bnm @(Vk.ObjNA.List WRect nm) @0
 			dv bm' zeroBits rs >>
 		copyBffrLst dv gq cp b' b
 	pure b
@@ -824,7 +824,7 @@ recreateGrPpl dv ex rp pl gp = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
 
 type Pipeline sg sl sdsl alu nmvp nmt = Vk.Ppl.Gr.G sg
 	'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-		'(RectangleRaw, 'Vk.VtxInp.RateInstance) ]
+		'(WRect, 'Vk.VtxInp.RateInstance) ]
 	'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 		'(2, RectPos), '(3, RectSize), '(4, RectColor),
 		'(5, RectModel0), '(6, RectModel1),
@@ -837,7 +837,7 @@ grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing,
 			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-				'(RectangleRaw, 'Vk.VtxInp.RateInstance) ],
+				'(WRect, 'Vk.VtxInp.RateInstance) ],
 			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1),
@@ -1064,7 +1064,7 @@ run :: forall sd scp scb sl sdsl alu nmvp nmt
 	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
 	Vk.DscSt.D sds '(sdsl, DscStLytArg alu nmvp nmt) ->
 	ViewProjMemory smvp sbvp bnmvp alu nmvp ->
-	RectGroups sd smr sbr bnmr nmr () -> ViewProj -> [RectangleRaw] ->
+	RectGroups sd smr sbr bnmr nmr () -> ViewProj -> [WRect] ->
 	IO () -> IO ()
 run (pd, qfis, dv, gq, pq, cp, cb) pl
 	wos@(WinObjs (_, fr) _ _ _ _ _) (vb, ib) ds mvp rgs vp rs go = do
@@ -1098,7 +1098,7 @@ data Recreates sw ssfc scfmt ssc nmscv sis sr sfs
 	(HPList.PL Vk.Frmbffr.F sfs)
 	(Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ]
+			'(WRect, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1),
@@ -1144,7 +1144,7 @@ draw :: forall
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmvp nmt)] '[] ->
 	Draws scfmt ssc sr sfs sg sl sdsl alu nmvp nmt sias srfs siff ->
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
-	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List RectangleRaw nmr] ->
+	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
 	ViewProjMemory smvp sbvp bnmvp alu nmvp ->
 	Vk.DscSt.D sds '(sdsl, DscStLytArg alu nmvp nmt) -> Vk.CBffr.C scb ->
@@ -1181,7 +1181,7 @@ data Draws scfmt ssc sr sfs sg sl sdsl alu nmvp nmt sias srfs siff = Draws
 	(Vk.Khr.Swpch.S scfmt ssc) (Vk.RndrPss.R sr) (HPList.PL Vk.Frmbffr.F sfs)
 	(Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ]
+			'(WRect, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
@@ -1203,14 +1203,14 @@ recordCmdBffr :: forall
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu nmvp nmt)] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(RectangleRaw, 'Vk.VtxInp.RateInstance) ]
+			'(WRect, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
 		'(sl, '[ '(sdsl, DscStLytArg alu nmvp nmt)], '[]) ->
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
-	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List RectangleRaw nmr] ->
+	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
 	Vk.DscSt.D sds '(sdsl, DscStLytArg alu nmvp nmt) -> IO ()
 recordCmdBffr cb rp fb ex pl gp vb rb ib ds =
@@ -1219,7 +1219,7 @@ recordCmdBffr cb rp fb ex pl gp vb rb ib ds =
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb (
 		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb) :**
-		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @RectangleRaw @nmr rb) :**
+		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @WRect @nmr rb) :**
 		HPList.Nil ) >>
 	Vk.Cmd.bindIndexBuffer
 		cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
@@ -1252,23 +1252,7 @@ updateViewProjBffr dvc um obj =
 
 -- RECTANGLES, VERTICES AND INDICES
 
-type WVertex = StrG.W Vertex
-
-data Vertex = Vertex {
-	vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3,
-	vertexTexCoord :: TexCoord }
-	deriving (Show, Generic)
-
-instance Storable Vertex where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
-
-instance StrG.G Vertex where
-
-newtype TexCoord = TexCoord Cglm.Vec2
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+type WRect = StrG.W RectangleRaw
 
 data RectangleRaw = RectangleRaw {
 	rectanglePos :: RectPos,
@@ -1280,9 +1264,9 @@ data RectangleRaw = RectangleRaw {
 	rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
 
-dummyRect :: [RectangleRaw]
+dummyRect :: [WRect]
 dummyRect = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-	[RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+	[StrG.W $ RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
 			(RectModel0 m0) (RectModel1 m1)
@@ -1295,12 +1279,12 @@ data Rectangle = Rectangle {
 	rectangleModel' :: RectModel }
 	deriving (Show, Generic)
 
-rectToRectRaw :: Rectangle -> RectangleRaw
+rectToRectRaw :: Rectangle -> WRect
 rectToRectRaw Rectangle {
 	rectanglePos' = p,
 	rectangleSize' = s,
 	rectangleColor' = c,
-	rectangleModel' = RectModel m } = RectangleRaw {
+	rectangleModel' = RectModel m } = StrG.W RectangleRaw {
 	rectanglePos = p,
 	rectangleSize = s,
 	rectangleColor = c,
@@ -1311,19 +1295,6 @@ rectToRectRaw Rectangle {
 	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
 
 instance StrG.G RectangleRaw where
-
-instance Storable RectangleRaw where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
-
-instance Default RectangleRaw where
-	def = RectangleRaw
-		(RectPos . Cglm.Vec2 $ 0 :. 0 :. NilL)
-		(RectSize . Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(RectColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL)
-		def def def def
 
 newtype RectPos = RectPos Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
@@ -1348,15 +1319,23 @@ newtype RectModel2 = RectModel2 Cglm.Vec4
 newtype RectModel3 = RectModel3 Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-defaultRectModel :: (RectModel0, RectModel1, RectModel2, RectModel3)
-defaultRectModel =
-	let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-		(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
+type WVertex = StrG.W Vertex
 
-instance Default RectModel0 where def = let (d, _, _, _) = defaultRectModel in d
-instance Default RectModel1 where def = let (_, d, _, _) = defaultRectModel in d
-instance Default RectModel2 where def = let (_, _, d, _) = defaultRectModel in d
-instance Default RectModel3 where def = let (_, _, _, d) = defaultRectModel in d
+data Vertex = Vertex {
+	vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3,
+	vertexTexCoord :: TexCoord }
+	deriving (Show, Generic)
+
+instance Storable Vertex where
+	sizeOf = StrG.gSizeOf
+	alignment = StrG.gAlignment
+	peek = StrG.gPeek
+	poke = StrG.gPoke
+
+instance StrG.G Vertex where
+
+newtype TexCoord = TexCoord Cglm.Vec2
+	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 vertices :: [WVertex]
 vertices = StrG.W <$> [
@@ -1375,6 +1354,8 @@ vertices = StrG.W <$> [
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
+
+type WViewProj = StrG.W ViewProj
 
 data ViewProj = ViewProj {
 	viewProjectionView :: Cglm.Mat4,
