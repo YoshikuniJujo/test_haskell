@@ -26,41 +26,59 @@ module UseCairo (
 
 	-- ** VIEW PROJECTION AND RECTANGLE
 
-	ViewProj(..), RectModel(..),
-	Rectangle(..), RectPos(..), RectSize(..), RectColor(..) ) where
+	ViewProj(..),
+	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
+
+	) where
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
 import GHC.TypeNats
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
 import Foreign.Storable.Generic qualified as StrG
+import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM
+import Control.Concurrent.STM.ToolsYj
 import Control.Exception
 import Data.Kind
 import Data.Proxy
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
-import Data.Default
+import Data.Ord.ToolsYj
 import Data.Bits
+import Data.Bits.ToolsYj
 import Data.Maybe
+import Data.Maybe.ToolsYj
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.List.Length
+import Data.List.ToolsYj
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
+import Data.HeteroParList.Constrained (pattern (:^*))
+import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
+import Data.Default
 import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Color
+import Data.CairoImage.Internal
+
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
+
+import Graphics.UI.GLFW as Glfw
+import Graphics.UI.GlfwG as GlfwG
+import Graphics.UI.GlfwG.Window as GlfwG.Win
+import Graphics.UI.GlfwG.Key as GlfwG.Ky
+import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Surfaces.ImageSurfaces
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -69,43 +87,44 @@ import Gpu.Vulkan.Object qualified as Vk.Obj
 import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device qualified as Vk.Dvc
-import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
-import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
-import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
+
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Gr
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
-import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
-import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
-import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
-import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
+import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
 import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
+import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
+import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
 import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
-import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
-import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
-import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+import Gpu.Vulkan.Attachment qualified as Vk.Att
+import Gpu.Vulkan.Subpass qualified as Vk.Subpass
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -113,34 +132,11 @@ import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
-
-import Tools hiding (onlyIf)
-
-import Graphics.UI.GLFW as Glfw
-import Graphics.UI.GlfwG as GlfwG
-import Graphics.UI.GlfwG.Window as GlfwG.Win
-import Graphics.UI.GlfwG.Key as GlfwG.Ky
-
-import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Surfaces.ImageSurfaces
-import Data.CairoImage.Internal
-
-import Texture
 import Gpu.Vulkan.CairoImage
 
-import Gpu.Vulkan.Sampler qualified as Vk.Smplr
-
-import Trial.Followbox.ViewType qualified as FV
-
-import Data.HeteroParList.Constrained (pattern (:^*))
-import Data.HeteroParList.Constrained qualified as HPListC
-
-import Data.Maybe.ToolsYj
-import Data.List.ToolsYj
-
-import Data.Ord.ToolsYj
-
 import Debug
+import Texture
+import Trial.Followbox.ViewType qualified as FV
 
 ----------------------------------------------------------------------
 --
@@ -1072,7 +1068,8 @@ run (pd, qfis, dv, gq, pq, cp, cb) pl
 	catchAndRecreate pd qfis dv pl (objsToRecreates wos)
 		$ draw dv gq pq pl (objsToDraws wos) vb rb ib mvp ds cb vp
 	Vk.Dvc.waitIdle dv
-	(,) <$> GlfwG.Win.shouldClose (objsToWin wos) <*> checkFlag fr >>= \case
+	(,)	<$> GlfwG.Win.shouldClose (objsToWin wos)
+		<*> atomically (checkFlag fr) >>= \case
 		(True, _) -> pure (); (_, False) -> go
 		(_, _) -> recreateAll pd qfis dv pl (objsToRecreates wos) >> go
 
@@ -1152,13 +1149,13 @@ draw :: forall
 draw dv gq pq pl (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
 	vb rb ib mvp ds cb vp = atomically (readTVar vex) >>= \ex -> do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
-	ii <- Vk.Khr.acquireNextImageResult
+	ii <- Vk.Khr.Swpch.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb rp fb ex pl gp vb rb ib ds
 	updateViewProjBffr dv mvp vp
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
-	catchSeq . Vk.Khr.queuePresent @'Nothing pq $ pinfo ii
+	catchSeq . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
 	where
 	siff = HPList.Singleton iff
 	sinfo = Vk.SubmitInfo {
@@ -1170,11 +1167,11 @@ draw dv gq pq pl (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
 	catchSeq = (`catch`
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
-	pinfo ii = Vk.Khr.PresentInfo {
-		Vk.Khr.presentInfoNext = TMaybe.N,
-		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.presentInfoSwapchainImageIndices =
-			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
+	pinfo ii = Vk.Khr.Swpch.PresentInfo {
+		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 
 data Draws scfmt ssc sr sfs sg sl sdsl alu nmvp nmt sias srfs siff = Draws
 	(TVar Vk.Extent2d)

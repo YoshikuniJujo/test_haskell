@@ -15,7 +15,7 @@ src
     + [x] CREATE IMAGE BUFFER
     + [x] WRITE BUFFER
     + [x] COPY FROM BUFFER TO IMAGE
-* [ ] UseCairo
+* [x] UseCairo
     + [x] USE CAIRO LOOP
     + [x] CONTROLLER
     + [x] WINDOW, INSTANCE AND PHYSICAL AND LOGICAL DEVICES
@@ -136,8 +136,8 @@ src
     + [x] SHADERS
         - [x] glslVertexShader
         - [x] glslFragmentShader
-    + [ ] export list
-    + [ ] import list
+    + [x] export list
+    + [x] import list
 * [ ] UseTextureGroup
 * [ ] CreateTextureGroup
 * [ ] SampleImages
