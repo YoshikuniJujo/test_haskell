@@ -90,27 +90,24 @@ src
         - [x] createBffrAtm
         - [x] createBffrLst
         - [x] createBffrLst'
-    + [ ] MAIN LOOP
-        - [ ] mainLoop
-        - [ ] deleteEvent
-        - [ ] rectsToDummyRaw
-        - [ ] PipelineLayout
-        - [ ] UniformBuffers
-        - [ ] Devices
-        - [ ] VertexBuffers
+    + [x] MAIN LOOP
+        - [x] mainLoop
+        - [x] Devices
+        - [x] PipelineLayout
+        - [x] VertexBuffers
+        - [x] winObjsToWin
+    + [ ] RUN
+        - [ ] run
+        - [ ] createRectBffrDvcs
+        - [ ] catchAndDraw
         - [ ] Recreates
         - [ ] winObjsToRecreates
         - [ ] Draws
         - [ ] winObjsToDraws
-        - [ ] runLoop'
-        - [ ] createRectBffrDvcs
-        - [ ] catchAndDraw
         - [ ] recreateSwapchainEtcIfNeed
         - [ ] drawFrame
         - [ ] updateUniformBuffer'
         - [ ] recordCommandBuffer
-        - [ ] AtomUbo
-        - [ ] checkTChan
         - [ ] catchAndSerialize
         - [ ] catchAndRecreate
         - [ ] recreateSwapchainEtc
