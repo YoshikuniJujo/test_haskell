@@ -409,7 +409,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	Vk.Bffr.group dv nil \rbgrp -> Vk.Mem.group dv nil \rmgrp ->
 	let	rgrps = (rbgrp, rmgrp) in
 
-	atomically (newTVar []) >>= \ges ->
+	atomically (newTVar M.empty) >>= \ges ->
 
 	let	crwos = winObjs @n @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
 			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges
@@ -462,7 +462,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Khr.Swapchain.Group sd 'Nothing scfmt ssc k ->
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
-	TVar [IO ()] -> k ->
+	TVar (M.Map k (IO ())) -> k ->
 	IO (WinObjs
 		sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))
@@ -475,7 +475,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 --	forkIO (glfwEvents k w outp False initMouseButtonStates) >>
 	atomically (newTVar False) >>= \vb ->
 	atomically (newTVar initMouseButtonStates) >>= \vmbs ->
-	atomically (modifyTVar ges (glfwEvents k w outp vb vmbs :)) >>
+	atomically (modifyTVar ges (M.insert k (glfwEvents k w outp vb vmbs))) >>
 	atomically (newTVar NoResized) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
 		(Just \w ky sc act mods -> do
@@ -541,23 +541,26 @@ destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> IO ()
 destroyWinObjs
 	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k = do
-	Just (GlfwG.Win.W w) <- GlfwG.Win.lookup wgrp k
-	Glfw.setWindowShouldClose w True
-	either error pure =<< unsafeDestroy wgrp k
+	mw <- GlfwG.Win.lookup wgrp k
+	case mw of
+		Nothing -> pure ()
+		Just (GlfwG.Win.W w) -> do
+			Glfw.setWindowShouldClose w True
+			either error pure =<< unsafeDestroy wgrp k
 
-	either error pure =<< Vk.Khr.Swapchain.unsafeDestroy scgrp k
-	either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcgrp k
+			either error pure =<< Vk.Khr.Swapchain.unsafeDestroy scgrp k
+			either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcgrp k
 
-	either error pure =<< Vk.RndrPass.unsafeDestroy rpgrp k
-	either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpgrp k
-	either error pure =<< Vk.Bffr.unsafeDestroy rbgrp k
-	either error pure =<< Vk.Mem.unsafeFree rmgrp k
-	either error pure =<< Vk.Semaphore.unsafeDestroy iasgrp k
-	either error pure =<< Vk.Semaphore.unsafeDestroy rfsgrp k
-	either error pure =<< Vk.Fence.unsafeDestroy iffgrp k
-	for_ [0 .. numToValue @n - 1] \i -> do
-		either error pure =<< Vk.ImgVw.unsafeDestroy ivgrp (k, i)
-		either error pure =<< Vk.Frmbffr.unsafeDestroy fbgrp (k, i)
+			either error pure =<< Vk.RndrPass.unsafeDestroy rpgrp k
+			either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpgrp k
+			either error pure =<< Vk.Bffr.unsafeDestroy rbgrp k
+			either error pure =<< Vk.Mem.unsafeFree rmgrp k
+			either error pure =<< Vk.Semaphore.unsafeDestroy iasgrp k
+			either error pure =<< Vk.Semaphore.unsafeDestroy rfsgrp k
+			either error pure =<< Vk.Fence.unsafeDestroy iffgrp k
+			for_ [0 .. numToValue @n - 1] \i -> do
+				either error pure =<< Vk.ImgVw.unsafeDestroy ivgrp (k, i)
+				either error pure =<< Vk.Frmbffr.unsafeDestroy fbgrp (k, i)
 
 createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
@@ -1538,7 +1541,7 @@ mainLoop ::
 	TVar k ->
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
-	TVar [IO ()] ->
+	TVar (M.Map k (IO ())) ->
 	(Codec.Picture.Image PixelRGBA8 -> IO ()) -> IO () -> IO ()
 mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr' drcr = do
 	let	crwos' = do
@@ -1571,6 +1574,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			DestroyWindow k -> do
 				putStrLn $ "DESTROY WINDOW: " ++ show k
 				atomically (modifyTVar vws (M.delete k)) >> drwos k
+				atomically (modifyTVar ges (M.delete k))
 				ws <- atomically $ readTVar vws
 				GlfwG.pollEvents
 				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
