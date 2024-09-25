@@ -141,10 +141,6 @@ import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
 
-import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Surfaces.ImageSurfaces
-import Data.CairoImage.Internal
-import Data.CairoContext
 import Control.Monad.ST
 
 import PangoLayoutExtent
@@ -153,7 +149,6 @@ import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
 import CreateTextureGroup
-import CairoImage
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 
@@ -223,13 +218,11 @@ instance NumToValue n => NumToValue ('() ': n) where
 	numToValue = 1 + numToValue @n
 
 data Command k
-	= Draw (M.Map k (ViewProjection, [Rectangle])) View
-	| Draw2 (M.Map k (ViewProjection, [Rectangle])) View
-	| DrawPicture (M.Map k (ViewProjection, [Rectangle])) (Codec.Picture.Image PixelRGBA8)
+	= Draw (M.Map k (ViewProjection, [Rectangle]))
+	| DrawPicture (Codec.Picture.Image PixelRGBA8)
 	| OpenWindow
 	| DestroyWindow k
 	| GetEvent
-	| CalcTextLayoutExtent CTE.CalcTextExtents
 	| EndWorld
 
 data Event k
@@ -241,7 +234,6 @@ data Event k
 	| EventCursorPosition k Double Double
 	| EventOpenWindow k
 	| EventDeleteWindow k
-	| EventTextLayoutExtentResult (Occurred CTE.CalcTextExtents)
 	| EventNeedRedraw
 	deriving Show
 
@@ -258,7 +250,7 @@ getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
 
-glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents :: Show k => k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
 glfwEvents k w outp vscls vmb1p = do
 --	threadDelay 10000
 	GlfwG.pollEvents
@@ -266,7 +258,9 @@ glfwEvents k w outp vscls vmb1p = do
 	scls <- atomically $ readTVar vscls
 	atomically $ writeTVar vscls cls
 --	when cls . putStrLn $ "glfwEvents: scls = " ++ show scls
-	when (not scls && cls) . atomically . writeTChan outp $ EventDeleteWindow k
+	when (not scls && cls) do
+		putStrLn $ "send EventDeleteWindow " ++ show k
+		atomically . writeTChan outp $ EventDeleteWindow k
 	mb1 <- getMouseButtons w
 	mb1p <- atomically $ readTVar vmb1p
 	atomically $ writeTVar vmb1p mb1
@@ -430,24 +424,20 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 
 	textureGroup dv \txgrp ->
 
-	cairoImageSurfaceCreate CairoFormatArgb32 1024 1024 >>= \crsfc ->
-	cairoCreate crsfc >>= \cr ->
-
-	let	crcr v =
-			drawViewIO crsfc cr v >>= \trs ->
-			createTexture phd dv gq cp ubds txgrp txsmplr trs (zero' :: k)
-		crcr' pct =
+	let	crcr' pct =
 			createTexture phd dv gq cp ubds txgrp txsmplr (ImageRgba8 pct) (zero' :: k)
 		drcr = destroyTexture txgrp (zero' :: k) in
 
-	crcr (View []) >>
+	either error convertRGBA8 <$> readImage "../../../../../files/images/texture.jpg" >>= \pct ->
 
-	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr crcr' drcr cr -- crsfc cr
+	crcr' pct >>
+
+	mainLoop @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges crcr' drcr
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
 	smrct sbrct nmrct . (
-	Mappable n, Vk.T.FormatToValue scfmt, Ord k ) =>
+	Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k ) =>
 	TChan (Event k) -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
@@ -1549,8 +1539,8 @@ mainLoop ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar [IO ()] ->
-	(View ->IO ()) -> (Codec.Picture.Image PixelRGBA8 -> IO ()) -> IO () -> CairoT r RealWorld -> IO ()
-mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr crcr' drcr cr = do
+	(Codec.Picture.Image PixelRGBA8 -> IO ()) -> IO () -> IO ()
+mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr' drcr = do
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
@@ -1564,25 +1554,18 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 				putStrLn "recreateSwapchainEtcIfNeed: needed"
 				atomically $ writeTChan outp EventNeedRedraw)
 			_ -> pure ()
+--		putStrLn "before readTChan"
 		atomically (readTChan inp) >>= \case
-			Draw ds view -> do
+			Draw ds -> do
 --				putStrLn "DRAW BEGIN"
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
-			Draw2 ds (view@(View vs)) -> do
-				putStrLn "DRAW2 BEGIN"
-				((print @Line >-- print @FV.VText >-- SingletonFun (print @FV.Image)) `apply`) `mapM_` vs
-				drcr >> crcr view
-				Vk.Dvc.waitIdle dvc
-				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
-			DrawPicture ds pct -> do
+			DrawPicture pct -> do
 				putStrLn "DRAW PICTURE BEGIN"
 				drcr >> crcr' pct
 				Vk.Dvc.waitIdle dvc
-				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
+				loop
 			OpenWindow ->
 				crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
 			DestroyWindow k -> do
@@ -1591,19 +1574,10 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 				ws <- atomically $ readTVar vws
 				GlfwG.pollEvents
 				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+				putStrLn "DestroyWindow: before if"
 				if cls then pure () else loop
 			GetEvent -> do
 				atomically (readTVar ges) >>= sequence_
-				loop
-			CalcTextLayoutExtent
-				(CTE.CalcTextExtentsReq wid fn fs tx) -> do
-				ex <- getPangoLayoutExtent
-					cr fn (realToFrac fs) tx
-				let	PixelExtents ie le = ex
-					ex' =  mkte ie le
-				atomically . writeTChan outp
-					. EventTextLayoutExtentResult
-					$ CTE.OccCalcTextExtents wid fn fs tx ex'
 				loop
 			EndWorld -> pure ()
 	where

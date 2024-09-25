@@ -94,9 +94,6 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime
 	atomically $ inp OpenWindow
 
-	atomically . inp . CalcTextLayoutExtent
-		$ CTE.CalcTextExtentsReq (WindowId 0) "serif" 30 "Hello, world!"
-
 	_ <- forkIO $ forever do
 		threadDelay 5000
 		atomically $ inp GetEvent
@@ -125,9 +122,7 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 		a <- atomically $ readTVar ta
 		atomically do
 			e0 <- ext 0
-			inp $ DrawPicture (M.fromList [
-				(0, ((bool (uniformBufferObject a e0) def f), instances' 1024 1024 e0))
-				] ) pct
+			inp $ DrawPicture pct
 
 	tinput <- atomically $ newTVar False
 	vtxt <-  atomically $ newTVar []
@@ -146,8 +141,6 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 --				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
 				(1, ((bool (uniformBufferObject a e1) def f), (instances2 tm)))
 				] )
-				(View [	expand . Singleton $ Line' blue 4 (10, 10) (100, 100)
-					])
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		ti <- atomically $ readTVar tinput
 		if ti	then processText o loop rs tinput tbgn vtxt
@@ -171,6 +164,7 @@ processOutput o loop rs inp tbgn tinput =
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just (EventKeyDown _w Key'O) -> atomically (inp OpenWindow) >> loop rs
 			Just (EventKeyDown w ky) -> do
 				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
 				loop rs
@@ -199,12 +193,15 @@ processOutput o loop rs inp tbgn tinput =
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
 				loop rs
+			Just (EventKeyDown w Key'D) -> do
+				putStrLn $ "delete window: " ++ show w
+				atomically . inp $ DestroyWindow w
+				loop rs
 			Just (EventDeleteWindow k) -> do
 				putStrLn $ "delete window: " ++ show k
 				atomically . inp $ DestroyWindow k
-				loop rs
-			Just (EventTextLayoutExtentResult ex) -> do
-				print ex
+				putStrLn $ "EventDeleteWindow " ++ show k ++
+					": before next loop"
 				loop rs
 			Just EventNeedRedraw -> do
 				putStrLn "EVENT NEED REDRAW"
