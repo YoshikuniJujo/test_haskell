@@ -156,26 +156,24 @@ rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 rectangles2 inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
-		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-			debug do
+		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist) debug do
 		(phd', qfis', fmt', dv', gq', pq', n') <-
 			withWindow False \dw ->
-			createSurface dw ist \dsfc -> do
-			(phd, qfis) <- pickPhd ist dsfc
-			(dv, gq, pq) <-
-				createLogicalDevice phd dvcgrp () qfis
-			spp <- querySwapChainSupport phd dsfc
-			ext <- chooseSwapExtent dw $ capabilities spp
-			let	fmt = Vk.Khr.Sfc.formatOldFormat
-					. chooseSwapSurfaceFormat
-					$ formats spp
-			Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+			createSurface dw ist \dsfc ->
+			pickPhd ist dsfc >>= \(phd, qfis) ->
+			querySwapChainSupport phd dsfc >>= \spp ->
+			querySwpchSupport phd dsfc \spp' ->
+			chooseSwpSfcFmt (formatsNew spp') \(_ :: Vk.Khr.Sfc.Format fmt) -> do
+			(dv, gq, pq) <- createLogicalDevice phd dvcgrp () qfis
+			ext <- chooseSwapExtent dw $ capabilitiesNew spp'
+			do
+--			Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 				n <- getSwapchainImageNum
 					@fmt dv dsfc spp ext qfis
 				pure (	phd, qfis,
 					Vk.Khr.Sfc.formatOldFormat
 						. chooseSwapSurfaceFormat
-						$ formats spp, dv, gq, pq, n )
+						$ formatsOld spp, dv, gq, pq, n )
 		getNum n' \(_ :: Proxy n) ->
 			Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
 				run' @n @fmt @_ @_ @k inp outp vext
@@ -612,9 +610,9 @@ data SwpchSupportDetails fmts = SwpchSupportDetails {
 	presentModesNew :: [Vk.Khr.Sfc.PresentMode] }
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	capabilities :: Vk.Khr.Sfc.Capabilities,
-	formats :: [Vk.Khr.Sfc.FormatOld],
-	presentModes :: [Vk.Khr.PresentMode] }
+	capabilitiesOld :: Vk.Khr.Sfc.Capabilities,
+	formatsOld :: [Vk.Khr.Sfc.FormatOld],
+	presentModesOld :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
 	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapChainSupportDetails
@@ -660,10 +658,10 @@ prepareSwapchain :: forall (scfmt :: Vk.T.Format) sw ssfc .
 	IO (SwapChainSupportDetails, Vk.Extent2d)
 prepareSwapchain win sfc phdvc = do
 	spp <- querySwapChainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilities spp
+	ext <- chooseSwapExtent win $ capabilitiesOld spp
 	let	fmt0 = Vk.T.formatToValue @scfmt
 		fmt = Vk.Khr.Sfc.formatOldFormat
-			. chooseSwapSurfaceFormat $ formats spp
+			. chooseSwapSurfaceFormat $ formatsOld spp
 	when (fmt0 /= fmt) $ error
 		"Rectangles: prepareSwapchain format not match"
 	pure (spp, ext)
@@ -714,9 +712,9 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		Vk.Khr.Swapchain.createInfoClipped = True,
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
-	presentMode = chooseSwapPresentMode $ presentModes spp
-	caps = capabilities spp
+	fmt = chooseSwapSurfaceFormat $ formatsOld spp
+	presentMode = chooseSwapPresentMode $ presentModesOld spp
+	caps = capabilitiesOld spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
 	imgc = clampOld
@@ -733,9 +731,17 @@ recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 	IO Vk.Extent2d
 recreateSwapchain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilities spp
+	ext <- chooseSwapExtent win $ capabilitiesOld spp
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swapchain.unsafeRecreate @'Nothing dvc crInfo nil sc
+
+chooseSwpSfcFmt :: (
+	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+	HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) ->
+	(forall fmt . Vk.T.FormatToValue fmt => Vk.Khr.Sfc.Format fmt -> a) -> a
+chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
+	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
+chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.FormatOld] -> Vk.Khr.Sfc.FormatOld
 chooseSwapSurfaceFormat = \case
