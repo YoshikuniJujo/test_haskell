@@ -6,9 +6,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.CairoImage (
-	CairoArgb32, twoRectangles', twoRectanglesIO, twoRectanglesIO',
-	drawViewIO ) where
+module CairoImage (drawViewIO) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -40,15 +38,6 @@ import Graphics.Cairo.Surfaces.PngSupport
 
 newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
 
-twoRectangles' :: CairoArgb32
-twoRectangles' = CairoArgb32 twoRectangles
-
-twoRectanglesIO :: IO CairoArgb32
-twoRectanglesIO = CairoArgb32 <$> twoRectanglesPrim
-
-twoRectanglesIO' ::  CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> IO CairoArgb32
-twoRectanglesIO' sfc cr = CairoArgb32 <$> twoRectanglesPrim' sfc cr
-
 drawViewIO :: CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> VT.View -> IO CairoArgb32
 drawViewIO sfc cr v = CairoArgb32 <$> drawView sfc cr v
 
@@ -68,25 +57,6 @@ instance RealFrac d => Storable (PixelRgba d) where
 		pure . PixelRgba $ RgbaWord8 r g b a
 	poke p (PixelRgba (RgbaWord8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
-
-{-
-instance BObj.IsImage CairoArgb32 where
-	type ImagePixel CairoArgb32 = PixelRgba Double
-	type ImageFormat CairoArgb32 = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow (CairoArgb32 img) = 16
-	imageWidth (CairoArgb32 img) = 16
-	imageHeight (CairoArgb32 img) = 16
-	imageDepth _ = 1
-	imageBody (CairoArgb32 img) =
-		(<$> [0 .. w - 1]) \y -> (<$> [0 .. h - 1]) \x -> PixelRgba $ RgbaWord8 0xff 0x00 0x00 0xff
-		where (w, h) = (16, 16)
-		{-
-	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
-		CairoArgb32 $ generateImage w h \x y ->
-			pixelRgbaToPixelArgb32 $ (pss' ! y) ! x
-		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
-		-}
-		-}
 
 instance BObj.IsImage CairoArgb32 where
 	type ImagePixel CairoArgb32 = PixelRgba Double

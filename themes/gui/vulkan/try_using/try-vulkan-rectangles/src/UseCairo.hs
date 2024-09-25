@@ -132,7 +132,7 @@ import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
-import Gpu.Vulkan.CairoImage
+import CairoImage
 
 import Debug
 import Texture
@@ -179,7 +179,7 @@ data Command
 data Event
 	= EventDeleteWindow | EventEnd
 	| EventKeyDown GlfwG.Ky.Key | EventKeyUp GlfwG.Ky.Key
-	| EventKeyRepeating GlfwG.Ky.Key
+	| EventKeyRepeat GlfwG.Ky.Key
 	| EventGamepadAxisLeftX Float | EventGamepadButtonAPressed
 	deriving Show
 
@@ -525,7 +525,7 @@ winObjs op w sfc vex pd qfis dv gq cp pl rgs f =
 		atomically $ writeTChan op $ ($ ky) case act of
 			GlfwG.Ky.KeyState'Pressed -> EventKeyDown
 			GlfwG.Ky.KeyState'Released -> EventKeyUp
-			GlfwG.Ky.KeyState'Repeating -> EventKeyRepeating) >>
+			GlfwG.Ky.KeyState'Repeating -> EventKeyRepeat) >>
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fr True) >>
 	createSwpch w sfc pd qfis dv \(sc :: Vk.Khr.Swpch.S scfmt ss) ex ->

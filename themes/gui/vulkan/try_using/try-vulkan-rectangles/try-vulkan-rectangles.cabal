@@ -31,9 +31,9 @@ flag debug
 
 library
   exposed-modules:
+      CairoImage
       Convert
       CreateTextureGroup
-      Gpu.Vulkan.CairoImage
       PangoLayoutExtent
       Rectangles
       Rectangles2

@@ -3,11 +3,13 @@ app
 
 * [x] try-cairo-image-as-texture.hs
 * [ ] try-use-cairo.hs
-    + [ ] main
+    + [x] main
     + [ ] mainloop
+    + [ ] LR
+    + [ ] lr
     + [ ] uniformBufferObject
     + [ ] Angle
-    + [ ] instanceMore
+    + [ ] rectangles
     + [ ] import list
 * [ ] try-use-texture-group
 * [ ] try-multi-rectangles.hs
@@ -144,6 +146,7 @@ src
         - [x] glslFragmentShader
     + [x] export list
     + [x] import list
+* [ ] Gpu.Vulkan.CairoImage
 * [ ] UseTextureGroup
 * [ ] CreateTextureGroup
 * [ ] SampleImages
@@ -151,7 +154,6 @@ src
 * [ ] ThEnv
 * [ ] Tools
 * [ ] Convert
-* [ ] Gpu.Vulkan.CairoImage
 * [ ] PangoLayoutExtent
 * [ ] Rectangles
 * [ ] Rectangles2

@@ -36,79 +36,57 @@ import Gpu.Vulkan.Cglm qualified as Cglm
 import Trial.Followbox.ViewType
 import Data.OneOfThem
 
-import Graphics.UI.GlfwG.Key as GlfwG.Ky
+import Graphics.UI.GlfwG.Key
 
 main :: IO ()
 main = do
 	(ip, op, vex) <- atomically
 		$ (,,) <$> newTChan <*> newTChan <*> newTVar (Vk.Extent2d 0 0)
 	_ <- forkIO $ mainloop
-		(writeTChan ip, unGetTChan ip EndWorld)
-		(isEmptyTChan op, readTChan op) (readTVar vex)
+		(writeTChan ip) (isEmptyTChan op, readTChan op) (readTVar vex)
 	useCairo ip op vex
 
 mainloop ::
-	(Command -> STM (), STM()) -> (STM Bool, STM Event) ->
-	STM Vk.Extent2d -> IO ()
-mainloop (ip, ew) (ne, op) ex = do
-	ta <- atomically $ newTVar (pi / 2)
-	_ <- forkIO $ forever do
-		threadDelay 5000
-		atomically $ ip GetEvent
+	(Command -> STM ()) -> (STM Bool, STM Event) -> STM Vk.Extent2d -> IO ()
+mainloop ip (ne, op) ex = do
+	_ <- forkIO . forever $ threadDelay 5000 >> atomically (ip GetEvent)
 	_ <- forkIO $ forever do
 		threadDelay 1000000
 		t <- getZonedTime
-		atomically do
-			ip $ SetViewAsTexture
-				(View [	expand . Singleton $ Line' (Color 127 127 127) 4 (10, 10) (100, 100),
-					expand . Singleton $ Text' blue "sans" 200 (50, 600) (T.pack $ formatTime defaultTimeLocale "%T" t)
+		atomically . ip $ SetViewAsTexture
+			(View [	expand . Singleton $ Line' (Color 127 127 127) 4 (10, 10) (100, 100),
+				expand . Singleton $ Text' blue "sans" 200 (50, 600) (T.pack $ formatTime defaultTimeLocale "%T" t)
 					])
-	fix \loop -> do
+	va <- atomically $ newTVar (pi / 2)
+	fix \go -> do
 		threadDelay 2000
-		a <- atomically $ readTVar ta
+		a <- atomically $ readTVar va
 		o <- atomically do
 			e0 <- ex
-			ip $ DrawRect (uniformBufferObject a e0) instancesMore
+			ip $ DrawRect (uniformBufferObject a e0) rectangles
 			bool (Just <$> op) (pure Nothing) =<< ne
 		case o of
-			Nothing -> loop
+			Nothing -> go
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
-			Just (EventKeyDown Key'Left) -> do
-				atomically $ modifyTVar ta (+ pi * 1 / 100)
-				loop
-			Just (EventKeyRepeating Key'Left) -> do
-				atomically $ modifyTVar ta (+ pi * 1 / 100)
-				loop
-			Just (EventKeyDown Key'Right) -> do
-				atomically $ modifyTVar ta (subtract $ pi * 1 / 100)
-				loop
-			Just (EventKeyRepeating Key'Right) -> do
-				atomically $ modifyTVar ta (subtract $ pi * 1 / 100)
-				loop
-			Just (EventKeyDown ky) -> do
-				putStrLn ("KEY DOWN      : " ++ show ky)
-				loop
-			Just (EventKeyUp Key'Q) -> do
-				putStrLn ("KEY UP       : " ++ show Key'Q)
-				atomically ew
-				loop
-			Just (EventKeyUp ky) -> do
-				putStrLn ("KEY UP       : " ++ show ky)
-				loop
-			Just (EventKeyRepeating ky) -> do
-				putStrLn ("KEY REPEATING: " ++ show ky)
-				loop
-			Just EventDeleteWindow -> do
-				putStrLn $ "delete window"
-				atomically $ ip EndWorld
-				loop
-			Just (EventGamepadAxisLeftX lx) -> do
-				atomically $ modifyTVar ta (subtract $ realToFrac (pi * lx / 100))
-				loop
-			Just EventGamepadButtonAPressed -> do
-				putStrLn $ "EventGamepadButtonAPressed"
-				atomically $ ip EndWorld
-				loop
+			Just (EventKeyDown Key'Left) -> rtt L 1 va >> go
+			Just (EventKeyRepeat Key'Left) -> rtt L 1 va >> go
+			Just (EventKeyDown Key'Right) -> rtt R 1 va >> go
+			Just (EventKeyRepeat Key'Right) -> rtt R 1 va >> go
+			Just (EventKeyUp Key'Q) -> ew >> go
+			Just EventDeleteWindow -> ew >> go
+			Just (EventGamepadAxisLeftX lx) -> rtt R lx va >> go
+			Just EventGamepadButtonAPressed -> ew >> go
+			Just ev -> putStrLn (show ev ++ " occur") >> go
+	where
+	rtt :: LR -> Float -> TVar Angle -> IO ()
+	rtt d a va = atomically
+		$ modifyTVar va (lr (+) subtract d $ pi * realToFrac a / 100)
+	ew = atomically $ ip EndWorld
+
+data LR = L | R deriving Show
+
+lr :: a -> a -> LR -> a
+lr l r = \case L -> l; R -> r
 
 uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProj
 uniformBufferObject (Angle a) sce = ViewProj {
@@ -126,8 +104,8 @@ uniformBufferObject (Angle a) sce = ViewProj {
 
 newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
 
-instancesMore :: [Rectangle]
-instancesMore = [
+rectangles :: [Rectangle]
+rectangles = [
 	Rectangle (RectPos . Cglm.Vec2 $ (- 1.8) :. (- 1.8) :. NilL)
 		(RectSize . Cglm.Vec2 $ 3.6 :. 3.6 :. NilL)
 		(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)

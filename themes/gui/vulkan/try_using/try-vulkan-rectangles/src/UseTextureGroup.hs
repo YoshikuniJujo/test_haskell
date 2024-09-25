@@ -153,7 +153,7 @@ import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
 
 import CreateTextureGroup
-import Gpu.Vulkan.CairoImage
+import CairoImage
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 
