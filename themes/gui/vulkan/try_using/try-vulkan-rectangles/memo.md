@@ -2,15 +2,15 @@ app
 ---
 
 * [x] try-cairo-image-as-texture.hs
-* [ ] try-use-cairo.hs
+* [x] try-use-cairo.hs
     + [x] main
     + [x] mainloop
     + [x] LR
     + [x] lr
-    + [ ] viewProj
-    + [ ] Angle
-    + [ ] rectangles
-    + [ ] import list
+    + [x] viewProj
+    + [x] Angle
+    + [x] rectangles
+    + [x] import list
 * [ ] try-use-texture-group
 * [ ] try-multi-rectangles.hs
 * [ ] try-multi-rectangles2.hs

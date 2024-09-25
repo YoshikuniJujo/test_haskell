@@ -14,29 +14,24 @@
 
 module Main (main) where
 
-import UseCairo (
-	useCairo, Event(..), Command(..), ViewProj(..),
-
-	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
-
-	)
-
 import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.List.Length
+import Data.OneOfThem
 import Data.Bool
 import Data.Time
 import Data.Text qualified as T
 
+import Graphics.UI.GlfwG.Key
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Cglm qualified as Cglm
 
 import Trial.Followbox.ViewType
-import Data.OneOfThem
-
-import Graphics.UI.GlfwG.Key
+import UseCairo (
+	useCairo, Event(..), Command(..), ViewProj(..),
+	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..))
 
 main :: IO ()
 main = do
@@ -90,41 +85,37 @@ lr :: a -> a -> LR -> a
 lr l r = \case L -> l; R -> r
 
 viewProj :: Angle -> Vk.Extent2d -> ViewProj
-viewProj (Angle a) sce = ViewProj {
+viewProj (Angle a) Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } = ViewProj {
 	viewProjectionView = Cglm.lookat
 		(Cglm.Vec3 $ lax :. lay :. 1.7 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. (- 1) :. NilL),
 	viewProjectionProj = id -- Cglm.modifyMat4 1 1 negate
-		$ Cglm.perspective
-			(Cglm.rad 90)
-			(fromIntegral (Vk.extent2dWidth sce) /
-				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
-	where
-	lax = realToFrac $ cos a; lay = realToFrac $ sin a
+		$ Cglm.perspective (Cglm.rad 90) (w / h) 0.1 10 }
+	where lax = realToFrac $ cos a; lay = realToFrac $ sin a
 
-newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
+newtype Angle = Angle Double
+	deriving (Show, Eq, Ord, Num, Real, Fractional, Floating)
 
 rectangles :: [Rectangle]
 rectangles = [
 	Rectangle (RectPos . Cglm.Vec2 $ (- 1.8) :. (- 1.8) :. NilL)
 		(RectSize . Cglm.Vec2 $ 3.6 :. 3.6 :. NilL)
-		(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-		m1,
+		(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL) m1,
 	Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 		(RectSize . Cglm.Vec2 $ 0.8 :. 0.8 :. NilL)
-		(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-		m1,
+		(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL) m1,
 	Rectangle (RectPos . Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
 		(RectSize . Cglm.Vec2 $ 0.7 :. 0.9 :. NilL)
-		(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-		m2,
+		(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL) m2,
 	Rectangle (RectPos . Cglm.Vec2 $ (- 1.0) :. 0.7 :. NilL)
 		(RectSize . Cglm.Vec2 $ 0.9 :. 0.5 :. NilL)
-		(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-		m2 ]
+		(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL) m2 ]
 	where
-	m1 = RectModel $ Cglm.scale Cglm.mat4Identity (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
-	tr1 = Cglm.translate Cglm.mat4Identity (Cglm.Vec3 $ 0 :. (- 0.3) :. 0.5 :. NilL)
-	m2 = RectModel $
-		Cglm.scale tr1 (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+	m1 = RectModel
+		$ Cglm.scale Cglm.mat4Identity (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+	m2 = RectModel $ Cglm.scale tr1 (Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+	tr1 = Cglm.translate
+		Cglm.mat4Identity (Cglm.Vec3 $ 0 :. (- 0.3) :. 0.5 :. NilL)
