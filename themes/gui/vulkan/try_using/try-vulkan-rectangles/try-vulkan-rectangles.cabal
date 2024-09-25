@@ -32,12 +32,11 @@ flag debug
 library
   exposed-modules:
       CairoImage
-      Convert
+      ConvertPixel
       CreateTextureGroup
       PangoLayoutExtent
       Rectangles
       Rectangles2
-      SampleImages
       Texture
       ThEnv
       Tools

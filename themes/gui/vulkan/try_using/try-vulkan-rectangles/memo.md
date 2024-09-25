@@ -146,14 +146,25 @@ src
         - [x] glslFragmentShader
     + [x] export list
     + [x] import list
-* [ ] Gpu.Vulkan.CairoImage
+* [x] CairoImage
+    + [x] drawViewIO
+    + [x] CairoArgb32
+    + [x] PixelRgba
+    + [x] pixelArgb32ToPixelRgba
+    + [x] pixelRgbaToPixelArgb32
+    + [x] instance Storable (PixelRgba d)
+    + [x] instance BObj.IsImage CairoArgb32
+    + [x] drawView
+    + [x] drawLine
+    + [x] drawText
+    + [x] drawImage
+    + [x] import list
+* [x] ConvertPixel
 * [ ] UseTextureGroup
 * [ ] CreateTextureGroup
-* [ ] SampleImages
 * [ ] Vertex
 * [ ] ThEnv
 * [ ] Tools
-* [ ] Convert
 * [ ] PangoLayoutExtent
 * [ ] Rectangles
 * [ ] Rectangles2

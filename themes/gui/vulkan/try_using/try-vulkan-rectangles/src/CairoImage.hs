@@ -14,33 +14,32 @@ import Foreign.Storable
 import Control.Monad.Primitive
 import Data.Maybe
 import Data.Array
+import Data.OneOfThem
 import Data.Word
 import Data.Color
+import Data.CairoContext
 import Data.CairoImage
+
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Object.Base qualified as BObj
-
-import Convert
-import SampleImages
-import Trial.Followbox.ViewType qualified as VT
-
-import Data.OneOfThem
-
-import Graphics.Pango.Basic.Fonts.PangoFontDescription
-import Graphics.Pango.Basic.LayoutObjects.PangoLayout
-import Graphics.Pango.Rendering.Cairo
-
 import Graphics.Cairo.Surfaces.PngSupport
+import Graphics.Pango.Rendering.Cairo
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
 
-newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
 
-drawViewIO :: CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> VT.View -> IO CairoArgb32
+import Trial.Followbox.ViewType qualified as VT
+import ConvertPixel
+
+drawViewIO :: CairoSurfaceImageT s RealWorld ->
+	CairoT r RealWorld -> VT.View -> IO CairoArgb32
 drawViewIO sfc cr v = CairoArgb32 <$> drawView sfc cr v
 
+newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
 newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
 
 pixelArgb32ToPixelRgba :: PixelArgb32 -> PixelRgba d
@@ -58,17 +57,17 @@ instance RealFrac d => Storable (PixelRgba d) where
 	poke p (PixelRgba (RgbaWord8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
 
-instance BObj.IsImage CairoArgb32 where
+instance Vk.ObjB.IsImage CairoArgb32 where
 	type ImagePixel CairoArgb32 = PixelRgba Double
 	type ImageFormat CairoArgb32 = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow (CairoArgb32 img) = fromIntegral . fst $ imageSize img
-	imageWidth (CairoArgb32 img) = fromIntegral . fst $ imageSize img
-	imageHeight (CairoArgb32 img) = fromIntegral . snd $ imageSize img
+	imageRow (CairoArgb32 i) = fromIntegral . fst $ imageSize i
+	imageWidth (CairoArgb32 i) = fromIntegral . fst $ imageSize i
+	imageHeight (CairoArgb32 i) = fromIntegral . snd $ imageSize i
 	imageDepth _ = 1
-	imageBody (CairoArgb32 img) =
-		(<$> [0 .. w - 1]) \y -> (<$> [0 .. h - 1]) \x ->
-			pixelArgb32ToPixelRgba . fromJust $ pixelAt img x y
-		where (w, h) = imageSize img
+	imageBody (CairoArgb32 i) =
+		(<$> [0 .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
+			pixelArgb32ToPixelRgba . fromJust $ pixelAt i x y
+		where (w, h) = imageSize i
 	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
 		CairoArgb32 $ generateImage w h \x y ->
 			pixelRgbaToPixelArgb32 $ (pss' ! y) ! x
@@ -77,23 +76,12 @@ instance BObj.IsImage CairoArgb32 where
 drawView ::
 	CairoSurfaceImageT s RealWorld -> CairoT r RealWorld -> VT.View ->
 	IO Argb32
-drawView sfc0 cr (VT.View vs) = do
+drawView sfc cr (VT.View vs) = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
-	cairoRectangle cr 0 0 1024 1024
-	cairoFill cr
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.3
-	cairoRectangle cr 50 50 110 110
-	cairoFill cr
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.3
-	cairoRectangle cr 100 130 100 70
-	cairoFill cr
-
+	cairoPaint cr
 	((drawLine cr >-- drawText cr >-- SingletonFun (drawImage cr)) `apply`)
 		`mapM_` vs
-
-	cairoImageSurfaceGetCairoImage sfc0 >>= \case
+	cairoImageSurfaceGetCairoImage sfc >>= \case
 		CairoImageArgb32 i -> pure i
 		_ -> error "never occur"
 
@@ -103,12 +91,12 @@ drawLine cr (VT.Line' (VT.Color r g b) (realToFrac -> lw)
 	(realToFrac -> x2, realToFrac -> y2)) = do
 	cairoSetSourceRgb cr $ RgbWord8 r g b
 	cairoSetLineWidth cr lw
-	cairoMoveTo cr x1 y1
-	cairoLineTo cr x2 y2
+	cairoMoveTo cr x1 y1 >> cairoLineTo cr x2 y2
 	cairoStroke cr
 
 drawText :: CairoT r RealWorld -> VT.VText -> IO ()
-drawText cr (VT.Text' (VT.Color r g b) fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
+drawText cr (VT.Text' (VT.Color r g b) fnm
+	(realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
 	cairoSetSourceRgb cr $ RgbWord8 r g b
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
@@ -123,16 +111,13 @@ drawText cr (VT.Text' (VT.Color r g b) fnm (realToFrac -> fsz) (realToFrac -> x,
 
 drawImage :: PrimMonad m => CairoT r (PrimState m) -> VT.Image -> m ()
 drawImage cr (VT.Image' (x, y) (VT.Png w h img)) = do
-
 	sfc <- cairoSurfaceCreateFromPngByteString img
 	w0 <- cairoImageSurfaceGetWidth sfc
 	h0 <- cairoImageSurfaceGetHeight sfc
-
 	cairoTranslate cr (realToFrac x) (realToFrac y)
 	cairoScale cr
 		(realToFrac w / fromIntegral w0)
 		(realToFrac h / fromIntegral h0)
 	cairoSetSourceSurface cr sfc 0 0
 	cairoPaint cr
-
 	cairoIdentityMatrix cr
