@@ -4,10 +4,10 @@ app
 * [x] try-cairo-image-as-texture.hs
 * [ ] try-use-cairo.hs
     + [x] main
-    + [ ] mainloop
-    + [ ] LR
-    + [ ] lr
-    + [ ] uniformBufferObject
+    + [x] mainloop
+    + [x] LR
+    + [x] lr
+    + [ ] viewProj
     + [ ] Angle
     + [ ] rectangles
     + [ ] import list

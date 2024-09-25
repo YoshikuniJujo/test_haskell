@@ -53,43 +53,44 @@ mainloop ip (ne, op) ex = do
 	_ <- forkIO $ forever do
 		threadDelay 1000000
 		t <- getZonedTime
-		atomically . ip $ SetViewAsTexture
-			(View [	expand . Singleton $ Line' (Color 127 127 127) 4 (10, 10) (100, 100),
-				expand . Singleton $ Text' blue "sans" 200 (50, 600) (T.pack $ formatTime defaultTimeLocale "%T" t)
-					])
+		atomically . ip . SetViewAsTexture $ View [ln, shwt t]
 	va <- atomically $ newTVar (pi / 2)
 	fix \go -> do
 		threadDelay 2000
 		a <- atomically $ readTVar va
-		o <- atomically do
-			e0 <- ex
-			ip $ DrawRect (uniformBufferObject a e0) rectangles
+		o <- atomically $ ex >>= \e -> do
+			ip $ DrawRect (viewProj a e) rectangles
 			bool (Just <$> op) (pure Nothing) =<< ne
 		case o of
 			Nothing -> go
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just (EventKeyUp Key'Q) -> ew >> go
+			Just EventDeleteWindow -> ew >> go
+			Just EventGamepadButtonAPressed -> ew >> go
 			Just (EventKeyDown Key'Left) -> rtt L 1 va >> go
 			Just (EventKeyRepeat Key'Left) -> rtt L 1 va >> go
 			Just (EventKeyDown Key'Right) -> rtt R 1 va >> go
 			Just (EventKeyRepeat Key'Right) -> rtt R 1 va >> go
-			Just (EventKeyUp Key'Q) -> ew >> go
-			Just EventDeleteWindow -> ew >> go
 			Just (EventGamepadAxisLeftX lx) -> rtt R lx va >> go
-			Just EventGamepadButtonAPressed -> ew >> go
 			Just ev -> putStrLn (show ev ++ " occur") >> go
 	where
+	ln = expand . Singleton
+		$ Line' (Color 127 170 127) 32 (100, 100) (400, 400)
+	shwt t = expand . Singleton
+		$ Text' blue "sans" 200
+			(50, 600) (T.pack $ formatTime defaultTimeLocale "%T" t)
+	ew = atomically $ ip EndWorld
 	rtt :: LR -> Float -> TVar Angle -> IO ()
 	rtt d a va = atomically
 		$ modifyTVar va (lr (+) subtract d $ pi * realToFrac a / 100)
-	ew = atomically $ ip EndWorld
 
 data LR = L | R deriving Show
 
 lr :: a -> a -> LR -> a
 lr l r = \case L -> l; R -> r
 
-uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProj
-uniformBufferObject (Angle a) sce = ViewProj {
+viewProj :: Angle -> Vk.Extent2d -> ViewProj
+viewProj (Angle a) sce = ViewProj {
 	viewProjectionView = Cglm.lookat
 		(Cglm.Vec3 $ lax :. lay :. 1.7 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
