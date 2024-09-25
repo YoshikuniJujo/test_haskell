@@ -1528,7 +1528,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 --		GlfwG.pollEvents
 		M.lookup zero' <$> atomically (readTVar vws) >>= \case
 			Just (WinObjs (_, fbrszd) _ _ _ _ _) -> checkResizedState fbrszd >>= bool (pure ()) (do
-				putStrLn "recreateSwapchainEtcIfNeed: needed"
+				putStrLn "recreateAllIfNeed: needed"
 				atomically $ writeTChan outp EventNeedRedraw)
 			_ -> pure ()
 --		putStrLn "before readTChan"
@@ -1683,7 +1683,7 @@ runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
 	if cls then (pure ()) else do
 		for_ ws \wos ->
-			recreateSwapchainEtcIfNeed @n @siv @sf phdvc qfis dvc pll wos outp
+			recreateAllIfNeed @n @siv @sf phdvc qfis dvc pll wos outp
 		loop
 
 lookupRects :: Ord k =>
@@ -1711,7 +1711,7 @@ catchAndDraw phdvc qfis dvc gq pq pllyt vb rb ib ubm ubds cb ubo wos = do
 		$ drawFrame dvc gq pq pllyt (winObjsToDraws wos) vb rb ib ubm ubds cb ubo
 	Vk.Dvc.waitIdle dvc
 
-recreateSwapchainEtcIfNeed ::
+recreateAllIfNeed ::
 	forall n siv sf
 		sd sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sr k .
 	(Vk.T.FormatToValue scfmt, Mappable n) =>
@@ -1719,12 +1719,12 @@ recreateSwapchainEtcIfNeed ::
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf) -> TChan (Event k) -> IO ()
-recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
+recreateAllIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
 --	checkFlag fbrszd >>= bool (pure ()) (do
 	checkResizedState fbrszd >>= bool (pure ()) (do
-		putStrLn "recreateSwapchainEtcIfNeed: needed"
+		putStrLn "recreateAllIfNeed: needed"
 		atomically $ writeTChan outp EventNeedRedraw
-		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
+		recreateAll @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
 	
 
 drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds .
@@ -1794,9 +1794,9 @@ catchAndRecreate phdvc qfis dvc pllyt rcs act = catchJust
 	act
 	\_ -> do
 		putStrLn "catchAndRecreate: catched"
-		recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt rcs
+		recreateAll @n @siv @sf phdvc qfis dvc pllyt rcs
 
-recreateSwapchainEtc :: forall
+recreateAll :: forall
 	n siv sf scfmt sw ssfc sd ssc nm sr sl sdsl sg .
 	(
 	Vk.T.FormatToValue scfmt, Mappable n ) =>
@@ -1804,7 +1804,7 @@ recreateSwapchainEtc :: forall
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Recreates sw sl nm ssfc sr sg sdsl scfmt ssc (Replicate n siv) (Replicate n sf) ->
 	IO ()
-recreateSwapchainEtc
+recreateAll
 	phdvc qfis dvc pllyt
 	(Recreates win sfc vex rp gpl sc scivs fbs) = do
 	waitFramebufferSize win
