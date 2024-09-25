@@ -67,7 +67,6 @@ import Data.List.Length
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Map qualified as M
-import Data.OneOfThem
 import Data.Bool
 import Data.Word
 import Data.Text.IO qualified as Txt
@@ -131,7 +130,6 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
 import Tools
-import ThEnv
 
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
@@ -141,27 +139,20 @@ import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
 
-import Control.Monad.ST
-
-import PangoLayoutExtent
-
-import Control.Moffy
-import Control.Moffy.Event.CalcTextExtents qualified as CTE
-
 import CreateTextureGroup
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 
-import Trial.Followbox.ViewType as FV
-
 import Codec.Picture
+
+import Debug
 
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 rectangles2 inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-			enableValidationLayers do
+			debug do
 		(phd', qfis', fmt', dv', gq', pq', n') <-
 			withWindow False \dw ->
 			createSurface dw ist \dsfc -> do
@@ -236,9 +227,6 @@ data Event k
 	| EventDeleteWindow k
 	| EventNeedRedraw
 	deriving Show
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
@@ -324,14 +312,14 @@ fromRight (Right x) = x
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
+	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
+			debug . (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
 	print exts
 	Vk.Ist.create (crinfo exts) nil f
@@ -343,7 +331,7 @@ createInstance f = do
 		Vk.Ist.createInfoFlags = zeroBits,
 		Vk.Ist.createInfoApplicationInfo = Just appinfo,
 		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Ist.createInfoEnabledExtensionNames = es }
 	appinfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
@@ -478,7 +466,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	atomically (modifyTVar ges (M.insert k (glfwEvents k w outp vb vmbs))) >>
 	atomically (newTVar NoResized) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
-		(Just \w ky sc act mods -> do
+		(Just \_w ky sc act mods -> do
 			putStrLn $
 				show w ++ " " ++ show ky ++ " " ++
 				show sc ++ " " ++ show act ++ " " ++ show mods
@@ -663,7 +651,7 @@ createLogicalDevice phdvc dvcgrp k qfis =
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.createInfoEnabledFeatures = Just def {
 			Vk.PhDvc.featuresSamplerAnisotropy = True } }
@@ -1526,7 +1514,7 @@ instance Succable Int where
 
 mainLoop ::
 	forall n siv sf scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
-		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k s r .
+		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k .
 	(Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl ->
 
@@ -1552,8 +1540,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 	fix \loop -> do
 --		GlfwG.pollEvents
 		M.lookup zero' <$> atomically (readTVar vws) >>= \case
---			Just ws@(WinObjs (_, fbrszd) _ _ _ _ _) -> atomically (readTVar fbrszd) >>= bool (pure ()) (do
-			Just ws@(WinObjs (_, fbrszd) _ _ _ _ _) -> checkResizedState fbrszd >>= bool (pure ()) (do
+			Just (WinObjs (_, fbrszd) _ _ _ _ _) -> checkResizedState fbrszd >>= bool (pure ()) (do
 				putStrLn "recreateSwapchainEtcIfNeed: needed"
 				atomically $ writeTChan outp EventNeedRedraw)
 			_ -> pure ()
@@ -1584,13 +1571,6 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 				atomically (readTVar ges) >>= sequence_
 				loop
 			EndWorld -> pure ()
-	where
-	mkte ie le = CTE.TextExtents (r2r ie) (r2r le)
-	r2r r = rct
-		(pangoRectanglePixelX r) (pangoRectanglePixelY r)
-		(pangoRectanglePixelWidth r) (pangoRectanglePixelHeight r)
-	rct	(fromIntegral -> l) (fromIntegral -> t)
-		(fromIntegral -> w) (fromIntegral -> h) = CTE.Rectangle l t w h
 
 rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (b, [Rectangle])
 rectsToDummy = M.map \(tm, rects) -> (tm, bool rects dummy $ null rects)
