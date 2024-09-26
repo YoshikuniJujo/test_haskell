@@ -18,9 +18,9 @@ import UseTextureGroup (
 	useTextureGroup, Event(..), Command(..), ViewProjection(..),
 
 	Rectangle(..), RectPos(..), RectSize(..), RectColor(..),
-	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
+	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..)
 
-	readTVarOr )
+	)
 
 import Control.Monad
 import Control.Monad.Fix
@@ -60,6 +60,13 @@ action f = liftIO do
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	_ <- forkIO $ controller a inp
 	useTextureGroup inp outp vext
+
+readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
+readTVarOr d mp k = do
+	mv <- (M.lookup k) <$> readTVar mp
+	case mv of
+		Nothing -> pure d
+		Just v -> readTVar v
 
 newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
 
