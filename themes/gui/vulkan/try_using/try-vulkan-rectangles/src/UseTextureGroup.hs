@@ -21,7 +21,7 @@ module UseTextureGroup (
 
 	-- * COMMAND
 
-	Command(..), Succable(..),
+	Command(..),
 
 	-- ** VIEW PROJECTION
 
@@ -123,11 +123,11 @@ import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
-import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
-import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
+import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
+import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Tools
+import Tools hiding (onlyIf)
 
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
@@ -141,7 +141,7 @@ import CreateTextureGroup
 
 import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 
-import Codec.Picture
+import Codec.Picture qualified as Pct
 
 import Debug
 
@@ -149,6 +149,8 @@ import Data.Maybe.ToolsYj
 import Data.List.ToolsYj
 
 import Data.Ord.ToolsYj
+import Data.Bool.ToolsYj
+import Data.Either.ToolsYj
 
 ----------------------------------------------------------------------
 --
@@ -162,53 +164,175 @@ import Data.Ord.ToolsYj
 
 -- USE TEXTURE GROUP
 
-useTextureGroup :: forall k . (Ord k, Show k, Succable k) =>
-	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
-useTextureGroup inp outp vext = GlfwG.init error $ do
-	createInstance \ist ->
-		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist) debug $
-		withWindow False \dw ->
-		createSurface dw ist \dsfc ->
-		pickPhd ist dsfc >>= \(phd, qfis) ->
-		querySwpchSupport phd dsfc \spp' ->
-		chooseSwpSfcFmt (formatsNew spp') \(_ :: Vk.Khr.Sfc.Format fmt) -> do
-		(phd', qfis', dv', gq', pq', n') <- do
-			(dv, gq, pq) <- createLogicalDevice phd dvcgrp () qfis
-			ext <- chooseSwapExtent dw $ capabilitiesNew spp'
-			do	n <- getSwapchainImageNumNew
-					@fmt dv dsfc spp' ext qfis
-				pure (phd, qfis, dv, gq, pq, n)
-		getNum n' \(_ :: Proxy n) ->
-			body @n @fmt @_ @_ @k inp outp vext ist phd' qfis' dv' gq' pq'
-	atomically $ writeTChan outp EventEnd
-	where setupDebugMessenger ist f =
-		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
+useTextureGroup :: forall k . (Show k, Ord k, Succable k) =>
+	TChan (Command k) -> TChan (Event k) ->
+	TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
+useTextureGroup ip op vex = GlfwG.init error $
+	createIst \ist -> Vk.Dvc.group nil \dvg -> bool id (dbgm ist) debug $
+	withWindow False \dw -> createSfc dw ist \dsfc ->
+	pickPhd ist dsfc >>= \(pd, qfis) -> querySwpchSupport pd dsfc \ssd ->
+	chooseSwpSfcFmt (formats ssd) \(_ :: Vk.Khr.Sfc.Format fmt) ->
+	createLgDvc pd dvg () qfis >>= \(dv, gq, pq) ->
+	swapExtent dw (capabilities ssd) >>= \ex ->
+	getSwpchImgNum @fmt dv dsfc ssd ex qfis >>= \n ->
+	getNum n \(_ :: Proxy n) ->
+	body @n @fmt @_ @_ @k ip op vex ist pd qfis dv gq pq >>
+	atomically (writeTChan op EventEnd)
+	where dbgm i = Vk.DbgUtls.Msgr.create i dbgMsngrInfo nil
 
 data Command k
-	= Draw (M.Map k (ViewProjection, [Rectangle]))
-	| DrawPicture (Codec.Picture.Image PixelRGBA8)
-	| OpenWindow
-	| DestroyWindow k
-	| GetEvent
-	| EndWorld
+	= OpenWindow | DestroyWindow k | GetEvent | EndWorld
+	| Draw (M.Map k (ViewProjection, [Rectangle]))
+	| SetPicture (Pct.Image Pct.PixelRGBA8)
 
 data Event k
-	= EventEnd
-	| EventKeyDown k GlfwG.Ky.Key
-	| EventKeyUp k GlfwG.Ky.Key
+	= EventOpenWindow k | EventDeleteWindow k | EventNeedRedraw | EventEnd
+	| EventKeyDown k GlfwG.Ky.Key | EventKeyUp k GlfwG.Ky.Key
 	| EventMouseButtonDown k GlfwG.Ms.MouseButton
 	| EventMouseButtonUp k GlfwG.Ms.MouseButton
 	| EventCursorPosition k Double Double
-	| EventOpenWindow k
-	| EventDeleteWindow k
-	| EventNeedRedraw
 	deriving Show
 
-getSwapchainImageNumNew :: forall (fmt :: Vk.T.Format) sd ssfc fmts .
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	errorIf emsg . (debug &&) . elemNotAll vldLayers
+		. (Vk.layerPropertiesLayerName <$>)
+		=<< Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.DbgUtls.extensionName :) debug
+		. (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	bool	(Vk.Ist.create (info exts) nil f)
+		(Vk.Ist.create (infoDbg exts) nil f) debug
+	where
+	emsg = "validation layers requested, but not available!"
+	info exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.N,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = [],
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	infoDbg exts = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = exts }
+	ainfo = Vk.ApplicationInfo {
+		Vk.applicationInfoNext = TMaybe.N,
+		Vk.applicationInfoApplicationName = "Use Texture Group",
+		Vk.applicationInfoApplicationVersion =
+			Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoEngineName = "No Engine",
+		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
+
+dbgMsngrInfo :: Vk.DbgUtls.Msgr.CreateInfo 'Nothing '[] ()
+dbgMsngrInfo = Vk.DbgUtls.Msgr.CreateInfo {
+	Vk.DbgUtls.Msgr.createInfoNext = TMaybe.N,
+	Vk.DbgUtls.Msgr.createInfoFlags = zeroBits,
+	Vk.DbgUtls.Msgr.createInfoMessageSeverity =
+		Vk.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.DbgUtls.MessageSeverityErrorBit,
+	Vk.DbgUtls.Msgr.createInfoMessageType =
+		Vk.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.DbgUtls.MessageTypeValidationBit .|.
+		Vk.DbgUtls.MessageTypePerformanceBit,
+	Vk.DbgUtls.Msgr.createInfoFnUserCallback = dbgcb,
+	Vk.DbgUtls.Msgr.createInfoUserData = Nothing }
+	where dbgcb _svr _tp d _ud = False <$ Txt.putStrLn
+		("validation layer: " <> Vk.DbgUtls.Msgr.callbackDataMessage d)
+
+withWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
+withWindow v f = GlfwG.Win.group \wgrp -> initWindow v wgrp () >>= f
+
+initWindow :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
+initWindow v wgrp k = do
+	GlfwG.Win.hint
+		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible v
+	(forceRight' -> w) <- uncurry
+		(GlfwG.Win.create' wgrp k) wSize wName Nothing Nothing
+	pure w
+	where wName = "Use Texture Group"; wSize = (800, 600)
+
+createSfc :: GlfwG.Win.W sw -> Vk.Ist.I si ->
+	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
+createSfc win ist f = Vk.Khr.Sfc.group ist nil \sfcgrp ->
+	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp () win >>= f . forceRight'
+
+pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIdcs)
+pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
+	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
+	pds -> findMaybeM suit pds >>= \case
+		Nothing -> error "failed to find a suitable GPU!"
+		Just pdqfi -> pure pdqfi
+	where
+	suit pd = ((&&) <$> espt pd <*> sa pd) >>= bool (pure Nothing) do
+		qfis <- findQFams pd sfc
+		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
+			$	HPListC.null (snd $ formats ss) ||
+				null (presentModesNew ss)
+	espt pd = elemAll dvcExtensions
+		. (Vk.Phd.extensionPropertiesExtensionName <$>)
+		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
+	sa pd = Vk.Phd.featuresSamplerAnisotropy <$> Vk.Phd.getFeatures pd
+
+type QueueFamilyIndices = QFamIdcs
+
+data QFamIdcs = QFamIdcs {
+	grFam :: Vk.QFamily.Index,
+	prFam :: Vk.QFamily.Index }
+
+findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIdcs)
+findQFams pd sfc = do
+	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
+	mp <- listToMaybe
+		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
+	pure $ QFamIdcs <$> (fst <$> L.find (grbit . snd) prps) <*> mp
+	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFamily.propertiesQueueFlags
+
+dvcExtensions :: [Vk.Phd.ExtensionName]
+dvcExtensions = [Vk.Khr.Swpch.extensionName]
+
+createLgDvc :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
+	Vk.Phd.P -> Vk.Dvc.Group ma sd k -> k ->
+	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Q.Q, Vk.Q.Q)
+createLgDvc phdvc dvcgrp k qfis =
+	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
+	Vk.Dvc.create' phdvc dvcgrp k (createInfo qs) >>= \(forceRight' -> dvc) -> do
+		gq <- Vk.Dvc.getQueue dvc (grFam qfis) 0
+		pq <- Vk.Dvc.getQueue dvc (prFam qfis) 0
+		pure (dvc, gq, pq)
+	where
+	createInfo qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = def,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def {
+			Vk.Phd.featuresSamplerAnisotropy = True } }
+	uniqueQueueFamilies = L.nub [grFam qfis, prFam qfis]
+	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+
+mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
+	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
+mkHeteroParList _k [] f = f HeteroParList.Nil
+mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
+
+getSwpchImgNum :: forall (fmt :: Vk.T.Format) sd ssfc fmts .
 	Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Khr.Sfc.S ssfc -> SwpchSupportDetails fmts ->
 	Vk.Extent2d -> QueueFamilyIndices -> IO [()]
-getSwapchainImageNumNew dv sfc spp ext qfis =
+getSwpchImgNum dv sfc spp ext qfis =
 	withSwapchainNew @fmt dv sfc spp ext qfis \sc _ ->
 	sameNum () <$> Vk.Khr.Swpch.getImages dv sc
 
@@ -225,140 +349,6 @@ instance NumToValue '[] where numToValue = 0
 
 instance NumToValue n => NumToValue ('() ': n) where
 	numToValue = 1 + numToValue @n
-
-glfwEvents :: Show k => k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
-glfwEvents k w outp vscls vmb1p = do
---	threadDelay 10000
-	GlfwG.pollEvents
-	cls <- GlfwG.Win.shouldClose w
-	scls <- atomically $ readTVar vscls
-	atomically $ writeTVar vscls cls
---	when cls . putStrLn $ "glfwEvents: scls = " ++ show scls
-	when (not scls && cls) do
-		putStrLn $ "send EventDeleteWindow " ++ show k
-		atomically . writeTChan outp $ EventDeleteWindow k
-	mb1 <- getMouseButtons w
-	mb1p <- atomically $ readTVar vmb1p
-	atomically $ writeTVar vmb1p mb1
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
-	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
-	cls' <- GlfwG.Win.shouldClose w
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-
-mAny :: (a -> Bool) -> M.Map k a -> Bool
-mAny p = M.foldr (\x b -> p x || b) False
-
-getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
-getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
-	<$> GlfwG.Ms.getButton w `mapM` bs
-	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
-
-mouseButtonAll :: [GlfwG.Ms.MouseButton]
-mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-sendMouseButtonDown, sendMouseButtonUp ::
-	k -> GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown k w = sendMouseButton k w EventMouseButtonDown
-	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
-
-sendMouseButtonUp k w = sendMouseButton k w EventMouseButtonUp
-	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
-
-sendMouseButton ::
-	k -> GlfwG.Win.W sw ->
-	(k -> GlfwG.Ms.MouseButton -> Event k) ->
-	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButton k w ev pst st pbss bss outp b =
-	case (pbss M.! b == pst, bss M.! b == st) of
-		(True, True) -> do
---			print $ ev k b
-			atomically . writeTChan outp $ ev k b
-			cl <- GlfwG.Win.shouldClose w
-			when (not cl) $
-				atomically . writeTChan outp . uncurry (EventCursorPosition k)
-					=<< GlfwG.Ms.getCursorPos w
-		_ -> pure ()
-
-withWindow :: Bool -> (forall sw . GlfwG.Win.W sw -> IO a) -> IO a
-withWindow v f = GlfwG.Win.group \wgrp -> initWindow v wgrp () >>= f
-
-initWindow :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
-initWindow v wgrp k = do
-	GlfwG.Win.hint
-		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
-	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible v
-	(fromRight -> w) <- uncurry
-		(GlfwG.Win.create' wgrp k) wSize wName Nothing Nothing
-	pure w
-	where wName = "Triangle"; wSize = (800, 600)
-
-fromRight :: Either String a -> a
-fromRight (Left emsg) = error emsg
-fromRight (Right x) = x
-
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when debug $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers L.\\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			debug . (Vk.Ist.ExtensionName <$>)
-		<$> GlfwG.getRequiredInstanceExtensions
-	print exts
-	Vk.Ist.create (crinfo exts) nil f
-	where
-	crinfo :: [Vk.Ist.ExtensionName] -> Vk.Ist.CreateInfo
-		('Just (Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ())) 'Nothing
-	crinfo es = Vk.Ist.CreateInfo {
-		Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-		Vk.Ist.createInfoFlags = zeroBits,
-		Vk.Ist.createInfoApplicationInfo = Just appinfo,
-		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers debug,
-		Vk.Ist.createInfoEnabledExtensionNames = es }
-	appinfo = Vk.ApplicationInfo {
-		Vk.applicationInfoNext = TMaybe.N,
-		Vk.applicationInfoApplicationName = "Hello Triangle",
-		Vk.applicationInfoApplicationVersion =
-			Vk.makeApiVersion 0 1 0 0,
-		Vk.applicationInfoEngineName = "No Engine",
-		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
-		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
-
-debugMessengerCreateInfo :: Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
-	Vk.Ex.DUtls.Msgr.createInfoNext = TMaybe.N,
-	Vk.Ex.DUtls.Msgr.createInfoFlags = zeroBits,
-	Vk.Ex.DUtls.Msgr.createInfoMessageSeverity =
-		Vk.Ext.DUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DUtls.MessageSeverityErrorBit,
-	Vk.Ex.DUtls.Msgr.createInfoMessageType =
-		Vk.Ext.DUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DUtls.MessageTypePerformanceBit,
-	Vk.Ex.DUtls.Msgr.createInfoFnUserCallback = debugCallback,
-	Vk.Ex.DUtls.Msgr.createInfoUserData = Nothing }
-	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
-		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
 -- BODY
 
@@ -416,7 +406,7 @@ body inp outp vext_ ist phd qfis dv gq pq =
 			createTexture phd dv gq cp ubds txgrp txsmplr (ImageRgba8 pct) (zero' :: k)
 		drcr = destroyTexture txgrp (zero' :: k) in
 
-	either error convertRGBA8 <$> readImage "../../../../../files/images/texture.jpg" >>= \pct ->
+	either error Pct.convertRGBA8 <$> Pct.readImage "../../../../../files/images/texture.jpg" >>= \pct ->
 
 	crcr' pct >>
 
@@ -480,7 +470,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	GlfwG.Win.setFramebufferSizeCallback w
 		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
 
-	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(fromRight -> sfc) ->
+	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(forceRight' -> sfc) ->
 	createRenderPass @scfmt rpgrp k >>= \rp ->
 	prepareSwapchainNew w sfc phd \spp' ex ->
 
@@ -567,45 +557,70 @@ checkResizedState fbrszd = atomically $
 		HalfResized -> writeTVar fbrszd NoResized >> pure True
 		NoResized -> pure False
 
-createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
-createSurface win ist f =
-	Vk.Khr.Sfc.group ist nil \sfcgrp ->
-	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp () win >>= f . fromRight
+glfwEvents :: Show k => k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents k w outp vscls vmb1p = do
+--	threadDelay 10000
+	GlfwG.pollEvents
+	cls <- GlfwG.Win.shouldClose w
+	scls <- atomically $ readTVar vscls
+	atomically $ writeTVar vscls cls
+--	when cls . putStrLn $ "glfwEvents: scls = " ++ show scls
+	when (not scls && cls) do
+		putStrLn $ "send EventDeleteWindow " ++ show k
+		atomically . writeTChan outp $ EventDeleteWindow k
+	mb1 <- getMouseButtons w
+	mb1p <- atomically $ readTVar vmb1p
+	atomically $ writeTVar vmb1p mb1
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls
+	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
+		=<< GlfwG.Ms.getCursorPos w
+	else pure ()
+	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
+	cls' <- GlfwG.Win.shouldClose w
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
+	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
+		=<< GlfwG.Ms.getCursorPos w
+	else pure ()
 
-pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIdcs)
-pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
-	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
-	pds -> findMaybeM suit pds >>= \case
-		Nothing -> error "failed to find a suitable GPU!"
-		Just pdqfi -> pure pdqfi
-	where
-	suit pd = ((&&) <$> espt pd <*> sa pd) >>= bool (pure Nothing) do
-		qfis <- findQFams pd sfc
-		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
-			$	HPListC.null (snd $ formatsNew ss) ||
-				null (presentModesNew ss)
-	espt pd = elemAll dvcExtensions
-		. (Vk.Phd.extensionPropertiesExtensionName <$>)
-		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
-	sa pd = Vk.Phd.featuresSamplerAnisotropy <$> Vk.Phd.getFeatures pd
+mAny :: (a -> Bool) -> M.Map k a -> Bool
+mAny p = M.foldr (\x b -> p x || b) False
 
-type QueueFamilyIndices = QFamIdcs
+getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
+getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
+	<$> GlfwG.Ms.getButton w `mapM` bs
+	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
-data QFamIdcs = QFamIdcs {
-	grFam :: Vk.QFamily.Index,
-	prFam :: Vk.QFamily.Index }
+type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
-findQFams :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QFamIdcs)
-findQFams pd sfc = do
-	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
-	mp <- listToMaybe
-		<$> filterM (flip (Vk.Khr.Sfc.Phd.getSupport pd) sfc) is
-	pure $ QFamIdcs <$> (fst <$> L.find (grbit . snd) prps) <*> mp
-	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFamily.propertiesQueueFlags
+mouseButtonAll :: [GlfwG.Ms.MouseButton]
+mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
-dvcExtensions :: [Vk.Phd.ExtensionName]
-dvcExtensions = [Vk.Khr.Swpch.extensionName]
+sendMouseButtonDown, sendMouseButtonUp ::
+	k -> GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
+	GlfwG.Ms.MouseButton -> IO ()
+sendMouseButtonDown k w = sendMouseButton k w EventMouseButtonDown
+	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
+
+sendMouseButtonUp k w = sendMouseButton k w EventMouseButtonUp
+	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
+
+sendMouseButton ::
+	k -> GlfwG.Win.W sw ->
+	(k -> GlfwG.Ms.MouseButton -> Event k) ->
+	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
+	GlfwG.Ms.MouseButton -> IO ()
+sendMouseButton k w ev pst st pbss bss outp b =
+	case (pbss M.! b == pst, bss M.! b == st) of
+		(True, True) -> do
+--			print $ ev k b
+			atomically . writeTChan outp $ ev k b
+			cl <- GlfwG.Win.shouldClose w
+			when (not cl) $
+				atomically . writeTChan outp . uncurry (EventCursorPosition k)
+					=<< GlfwG.Ms.getCursorPos w
+		_ -> pure ()
 
 querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
@@ -617,49 +632,18 @@ querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
 		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
 
 data SwpchSupportDetails fmts = SwpchSupportDetails {
-	capabilitiesNew :: Vk.Khr.Sfc.Capabilities,
-	formatsNew :: (
+	capabilities :: Vk.Khr.Sfc.Capabilities,
+	formats :: (
 		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
 		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
 	presentModesNew :: [Vk.Khr.Sfc.PresentMode] }
-
-createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
-	Vk.Phd.P -> Vk.Dvc.Group ma sd k -> k ->
-	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Q.Q, Vk.Q.Q)
-createLogicalDevice phdvc dvcgrp k qfis =
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
-	Vk.Dvc.create' phdvc dvcgrp k (createInfo qs) >>= \(fromRight -> dvc) -> do
-		gq <- Vk.Dvc.getQueue dvc (grFam qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (prFam qfis) 0
-		pure (dvc, gq, pq)
-	where
-	createInfo qs = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = TMaybe.N,
-		Vk.Dvc.createInfoFlags = def,
-		Vk.Dvc.createInfoQueueCreateInfos = qs,
-		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers debug,
-		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
-		Vk.Dvc.createInfoEnabledFeatures = Just def {
-			Vk.Phd.featuresSamplerAnisotropy = True } }
-	uniqueQueueFamilies = L.nub [grFam qfis, prFam qfis]
-	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = def,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
-
-mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
-mkHeteroParList _k [] f = f HeteroParList.Nil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 prepareSwapchainNew :: forall sw ssfc a .
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	(forall fmts . SwpchSupportDetails fmts -> Vk.Extent2d -> IO a) -> IO a
 prepareSwapchainNew win sfc phdvc f =
 	querySwpchSupport phdvc sfc \spp -> do
-	ext <- swapExtent win $ capabilitiesNew spp
+	ext <- swapExtent win $ capabilities spp
 	f spp ext
 
 withSwapchainNew ::
@@ -680,7 +664,7 @@ createSwapchainNew ::
 	QueueFamilyIndices -> IO (Vk.Khr.Swpch.S scfmt ssc, Vk.Extent2d)
 createSwapchainNew scgrp k sfc spp ext qfis =
 	Vk.Khr.Swpch.create' @scfmt scgrp k crInfo
-		>>= \(fromRight -> sc) -> pure (sc, ext)
+		>>= \(forceRight' -> sc) -> pure (sc, ext)
 	where crInfo = mkSwpchCreateInfo sfc qfis spp ext
 
 swpchInfo :: forall fmt ss .
@@ -717,11 +701,11 @@ mkSwpchCreateInfo :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
 	SwpchSupportDetails fmts -> Vk.Extent2d ->
 	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
 mkSwpchCreateInfo sfc qfis0 spp ex =
-	chooseSwpSfcFmt (formatsNew spp)
+	chooseSwpSfcFmt (formats spp)
 		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
 		swpchInfo sfc qfis0 cps sc pm ex
 	where
-	cps = capabilitiesNew spp
+	cps = capabilities spp
 	pm = chooseSwapPresentMode $ presentModesNew spp
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
@@ -730,7 +714,7 @@ recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 	IO Vk.Extent2d
 recreateSwapchain win sfc phdvc qfis0 dvc sc =
 	querySwpchSupport phdvc sfc \spp -> do
-	ext <- swapExtent win $ capabilitiesNew spp
+	ext <- swapExtent win $ capabilities spp
 	let	crInfo = mkSwpchCreateInfo sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swpch.unsafeRecreate @'Nothing dvc crInfo nil sc
 
@@ -759,20 +743,6 @@ swapExtent win cps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
 
-chooseSwapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
-chooseSwapExtent win caps
-	| Vk.extent2dWidth curExt /= maxBound = pure curExt
-	| otherwise = do
-		(fromIntegral -> w, fromIntegral -> h) <-
-			GlfwG.Win.getFramebufferSize win
-		pure $ Vk.Extent2d
-			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clampOld h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
-	where
-	curExt = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent caps
-
 createImageViews' :: forall n ivfmt sd si siv k sm nm ifmt . (
 	Mappable n, Ord k, Vk.T.FormatToValue ivfmt ) =>
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
@@ -794,7 +764,7 @@ createImageView' :: forall ivfmt sd si siv k sm nm ifmt .
 	Vk.T.FormatToValue ivfmt =>
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
 	(k, Int) -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm ivfmt siv)
-createImageView' ivgrp k timg = fromRight <$>
+createImageView' ivgrp k timg = forceRight' <$>
 	Vk.ImgVw.create' ivgrp k (mkImageViewCreateInfoNew timg)
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
@@ -865,7 +835,7 @@ createRenderPass ::
 	Vk.AllocationCallbacks.ToMiddle ma ) =>
 	Vk.RndrPass.Group sd ma sr k -> k -> IO (Vk.RndrPass.R sr)
 createRenderPass rpgrp k =
-	fromRight <$> Vk.RndrPass.create' @_ @_ @'[scfmt] rpgrp k renderPassInfo
+	forceRight' <$> Vk.RndrPass.create' @_ @_ @'[scfmt] rpgrp k renderPassInfo
 	where
 	colorAttachment :: Vk.Att.Description scfmt
 	colorAttachment = Vk.Att.Description {
@@ -980,7 +950,7 @@ createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 			'(sl, '[AtomUbo sdsl], '[]))
 createGraphicsPipeline gpgrp k sce rp pllyt =
 	Vk.Ppl.Graphics.createGs' gpgrp k Nothing (U14 pplInfo :** HeteroParList.Nil)
-			>>= \(fromRight -> (U3 gpl :** HeteroParList.Nil)) -> pure gpl
+			>>= \(forceRight' -> (U3 gpl :** HeteroParList.Nil)) -> pure gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
@@ -1136,7 +1106,7 @@ createFramebuffers' ::
 	IO (HeteroParList.PL Vk.Frmbffr.F (Replicate ts sf))
 createFramebuffers' fbgrp k sce rp =
 	mapHomoListMWithI @_ @ts @_ @_ @siv 0 \i sciv ->
-	fromRight <$> Vk.Frmbffr.create'
+	forceRight' <$> Vk.Frmbffr.create'
 		fbgrp (k, i) (mkFramebufferCreateInfo sce rp sciv)
 
 recreateFramebuffers' :: forall ts sd sr nm fmt siv sf .
@@ -1480,24 +1450,19 @@ createSyncObjects :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
 	Vk.Semaphore.Group sd ma sias k -> Vk.Semaphore.Group sd ma srfs k ->
 	Vk.Fence.Group sd ma siff k -> k -> IO (SyncObjects '(sias, srfs, siff))
 createSyncObjects iasgrp rfsgrp iffgrp k =
-	Vk.Semaphore.create' @_ @'Nothing iasgrp k def >>= \(fromRight -> ias) ->
-	Vk.Semaphore.create' @_ @'Nothing rfsgrp k def >>= \(fromRight -> rfs) ->
-	Vk.Fence.create' @_ @'Nothing iffgrp k fncInfo >>= \(fromRight -> iff) ->
+	Vk.Semaphore.create' @_ @'Nothing iasgrp k def >>= \(forceRight' -> ias) ->
+	Vk.Semaphore.create' @_ @'Nothing rfsgrp k def >>= \(forceRight' -> rfs) ->
+	Vk.Fence.create' @_ @'Nothing iffgrp k fncInfo >>= \(forceRight' -> iff) ->
 	pure $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-class Succable n where
-	zero' :: n
-	succ' :: n -> n
+class Succable n where zero' :: n; succ' :: n -> n
 
 instance Succable Bool where
-	zero' = False
-	succ' = \case False -> True; True -> error "no more"
+	zero' = False; succ' = \case False -> True; True -> error "no more"
 
-instance Succable Int where
-	zero' = 0
-	succ' = succ
+instance Succable Int where zero' = 0; succ' = succ
 
 -- MAINLOOP
 
@@ -1519,7 +1484,7 @@ mainLoop ::
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar (M.Map k (IO ())) ->
-	(Codec.Picture.Image PixelRGBA8 -> IO ()) -> IO () -> IO ()
+	(Pct.Image Pct.PixelRGBA8 -> IO ()) -> IO () -> IO ()
 mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr' drcr = do
 	let	crwos' = do
 			wi <- atomically do
@@ -1540,7 +1505,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
-			DrawPicture pct -> do
+			SetPicture pct -> do
 				putStrLn "DRAW PICTURE BEGIN"
 				drcr >> crcr' pct
 				Vk.Dvc.waitIdle dvc

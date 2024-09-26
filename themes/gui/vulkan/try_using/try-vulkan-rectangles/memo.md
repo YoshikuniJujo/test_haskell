@@ -162,14 +162,29 @@ src
 * [x] ConvertPixel
 * [ ] UseTextureGroup
     + [ ] USE TEXTURE GROUP
-        - [ ] useTextureGroup
-        - [ ] Command
-        - [ ] Event
+        - [x] useTextureGroup
+        - [x] Command
+        - [x] Event
+        - [x] createIst
+        - [x] vldLayers
+        - [x] dbgMsngrInfo
+        - [ ] withWindow
+        - [ ] initWindow
+        - [ ] createSfc
+        - [ ] pickPhd
+        - [ ] QueueFamilyIndices
+        - [ ] QFamIdcs
+        - [ ] findQFams
+        - [ ] dvcExtensions
+        - [ ] createLogicalDevice
+        - [ ] mkHeteroParList
         - [ ] getSwapchainImageNumNew
         - [ ] sameNum
         - [ ] getNum
         - [ ] class NumToValue
         - [ ] instance NumToValue
+    + [ ] BODY
+        - [ ] ...
         - [ ] glfwEvents
         - [ ] mAny
         - [ ] getMouseButtons
@@ -178,13 +193,7 @@ src
         - [ ] sendMouseButtonDown
         - [ ] sendMouseButtonUp
         - [ ] sendMouseButton
-        - [ ] withWindow
-        - [ ] initWindow
-        - [ ] fromRight
-        - [ ] createInstance
-        - [ ] validationLayers
-        - [ ] debugMessengerCreateInfo
-    + [ ] BODY
+        - [ ] ...
     + [ ] MAINLOOP
     + [ ] DATA TYPES
     + [ ] SHADERS
