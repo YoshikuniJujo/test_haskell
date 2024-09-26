@@ -603,18 +603,6 @@ data SwpchSupportDetails fmts = SwpchSupportDetails {
 		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
 	presentModesNew :: [Vk.Khr.Sfc.PresentMode] }
 
-data SwapChainSupportDetails = SwapChainSupportDetails {
-	capabilitiesOld :: Vk.Khr.Sfc.Capabilities,
-	formatsOld :: [Vk.Khr.Sfc.FormatOld],
-	presentModesOld :: [Vk.Khr.PresentMode] }
-
-querySwapChainSupport ::
-	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapChainSupportDetails
-querySwapChainSupport dvc sfc = SwapChainSupportDetails
-	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
-	<*> Vk.Khr.Sfc.Phd.getFormatsOld dvc sfc
-	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
-
 createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
 	Vk.Phd.P -> Vk.Dvc.Group ma sd k -> k ->
 	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Q.Q, Vk.Q.Q)
@@ -716,24 +704,14 @@ mkSwpchCreateInfo sfc qfis0 spp ex =
 	cps = capabilitiesNew spp
 	pm = chooseSwapPresentMode $ presentModesNew spp
 
-mkSwapchainCreateInfoNew :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
-	SwapChainSupportDetails -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-mkSwapchainCreateInfoNew sfc qfis0 spp ex = swpchInfo sfc qfis0 cps cs pm ex
-	where
-	cs = Vk.Khr.Sfc.formatOldColorSpace fmt
-	fmt = chooseSwapSurfaceFormat $ formatsOld spp
-	pm = chooseSwapPresentMode $ presentModesOld spp
-	cps = capabilitiesOld spp
-
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S scfmt ssc ->
 	IO Vk.Extent2d
-recreateSwapchain win sfc phdvc qfis0 dvc sc = do
-	spp <- querySwapChainSupport phdvc sfc
-	ext <- chooseSwapExtent win $ capabilitiesOld spp
-	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
+recreateSwapchain win sfc phdvc qfis0 dvc sc =
+	querySwpchSupport phdvc sfc \spp -> do
+	ext <- swapExtent win $ capabilitiesNew spp
+	let	crInfo = mkSwpchCreateInfo sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swpch.unsafeRecreate @'Nothing dvc crInfo nil sc
 
 chooseSwpSfcFmt :: (
@@ -743,17 +721,6 @@ chooseSwpSfcFmt :: (
 chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
 	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
-
-chooseSwapSurfaceFormat  :: [Vk.Khr.Sfc.FormatOld] -> Vk.Khr.Sfc.FormatOld
-chooseSwapSurfaceFormat = \case
-	availableFormats@(af0 : _) -> fromMaybe af0
-		$ L.find preferredSwapSurfaceFormat availableFormats
-	_ -> error "no available swap surface formats"
-
-preferredSwapSurfaceFormat :: Vk.Khr.Sfc.FormatOld -> Bool
-preferredSwapSurfaceFormat f =
-	Vk.Khr.Sfc.formatOldFormat f == Vk.FormatB8g8r8a8Srgb &&
-	Vk.Khr.Sfc.formatOldColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
