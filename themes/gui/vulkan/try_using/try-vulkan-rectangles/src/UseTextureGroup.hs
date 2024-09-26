@@ -17,7 +17,7 @@ module UseTextureGroup (
 
 	-- * RECTANGLES
 
-	rectangles2,
+	useTextureGroup,
 
 	-- * COMMAND
 
@@ -154,9 +154,9 @@ import Data.List.ToolsYj
 
 import Data.Ord.ToolsYj
 
-rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
+useTextureGroup :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
-rectangles2 inp outp vext = GlfwG.init error $ do
+useTextureGroup inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist) debug $
 		withWindow False \dw ->

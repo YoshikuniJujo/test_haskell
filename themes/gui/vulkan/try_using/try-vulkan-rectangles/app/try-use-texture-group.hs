@@ -15,7 +15,7 @@
 module Main (main) where
 
 import UseTextureGroup (
-	rectangles2, Event(..), Command(..), ViewProjection(..),
+	useTextureGroup, Event(..), Command(..), ViewProjection(..),
 
 	Rectangle(..), RectPos(..), RectSize(..), RectColor(..),
 	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
@@ -42,12 +42,6 @@ import Graphics.UI.GLFW qualified as Glfw
 
 import Data.Map qualified as M
 
-import Control.Moffy.Event.Window
-import Control.Moffy.Event.CalcTextExtents qualified as CTE
-
-import Trial.Followbox.ViewType
-import Data.OneOfThem
-
 import Graphics.UI.GlfwG.Key as GlfwG.Ky
 
 import Codec.Picture
@@ -65,7 +59,7 @@ action f = liftIO do
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	_ <- forkIO $ controller a inp
-	rectangles2 inp outp vext
+	useTextureGroup inp outp vext
 
 newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
 
@@ -119,10 +113,7 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 
 	_ <- forkIO $ forever do
 		pct <- atomically $ readTChan tpct
-		a <- atomically $ readTVar ta
-		atomically do
-			e0 <- ext 0
-			inp $ DrawPicture pct
+		atomically . inp $ DrawPicture pct
 
 	tinput <- atomically $ newTVar False
 	vtxt <-  atomically $ newTVar []
@@ -144,27 +135,36 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		ti <- atomically $ readTVar tinput
 		if ti	then processText o loop rs tinput tbgn vtxt
-			else processOutput o loop rs inp tbgn tinput
+			else processOutput o loop rs inp tinput
 
+processText :: Maybe (Event k) ->
+	(t -> IO b) -> t -> TVar Bool -> TChan [Char] -> TVar [Char] -> IO b
 processText o loop rs tinput tbgn vtxt =
 	case o of
-		Just (EventKeyDown w Key'Enter) -> do
+		Just (EventKeyDown _w Key'Enter) -> do
 			atomically $ writeTVar tinput False
 			atomically $ writeTChan tbgn . reverse =<< readTVar vtxt
 			atomically $ writeTVar vtxt ""
 			loop rs
-		Just (EventKeyDown w ky) -> do
+		Just (EventKeyDown _w ky) -> do
 			atomically $ modifyTVar vtxt (maybe id (:) $ keyToChar ky)
 			loop rs
 		_ -> do
 			putStrLn . reverse =<< atomically (readTVar vtxt)
 			loop rs
 
-processOutput o loop rs inp tbgn tinput =
+processOutput :: (Show a, Eq a, Num a) =>
+	Maybe (Event a) -> ((Float -> [Rectangle]) -> IO ()) ->
+	(Float -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool -> IO ()
+processOutput o loop rs inp tinput =
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
 			Just (EventKeyDown _w Key'O) -> atomically (inp OpenWindow) >> loop rs
+			Just (EventKeyDown w Key'D) -> do
+				putStrLn $ "delete window: " ++ show w
+				atomically . inp $ DestroyWindow w
+				loop rs
 			Just (EventKeyDown w ky) -> do
 				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
 				loop rs
@@ -172,7 +172,7 @@ processOutput o loop rs inp tbgn tinput =
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
 				atomically . inp $ DestroyWindow w
 				loop rs
-			Just (EventKeyUp w Key'T) -> do
+			Just (EventKeyUp _w Key'T) -> do
 				putStrLn "T"
 				atomically $ writeTVar tinput True
 --				atomically $ writeTChan tbgn ()
@@ -192,10 +192,6 @@ processOutput o loop rs inp tbgn tinput =
 				loop rs
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
-				loop rs
-			Just (EventKeyDown w Key'D) -> do
-				putStrLn $ "delete window: " ++ show w
-				atomically . inp $ DestroyWindow w
 				loop rs
 			Just (EventDeleteWindow k) -> do
 				putStrLn $ "delete window: " ++ show k
