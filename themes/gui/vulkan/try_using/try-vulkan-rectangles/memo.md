@@ -161,30 +161,25 @@ src
     + [x] import list
 * [x] ConvertPixel
 * [ ] UseTextureGroup
-    + [ ] USE TEXTURE GROUP
+    + [x] USE TEXTURE GROUP
         - [x] useTextureGroup
         - [x] Command
         - [x] Event
         - [x] createIst
         - [x] vldLayers
         - [x] dbgMsngrInfo
-        - [ ] withWindow
-        - [ ] initWindow
-        - [ ] createSfc
-        - [ ] pickPhd
-        - [ ] QueueFamilyIndices
-        - [ ] QFamIdcs
-        - [ ] findQFams
-        - [ ] dvcExtensions
-        - [ ] createLogicalDevice
-        - [ ] mkHeteroParList
-        - [ ] getSwapchainImageNumNew
-        - [ ] sameNum
-        - [ ] getNum
-        - [ ] class NumToValue
-        - [ ] instance NumToValue
+        - [x] pickPhd
+        - [x] QFamIdcs
+        - [x] findQFams
+        - [x] dvcExtensions
+        - [x] createLgDvc
+        - [x] swpchImgNum
     + [ ] BODY
         - [ ] ...
+        - [ ] class NumToValue
+        - [ ] instance NumToValue
+        - [ ] ...
+        - [ ] initWindow
         - [ ] glfwEvents
         - [ ] mAny
         - [ ] getMouseButtons
