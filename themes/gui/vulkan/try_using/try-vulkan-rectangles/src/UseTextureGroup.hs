@@ -595,9 +595,18 @@ createDscSt :: forall sd sp sm sb nm alu sdsl nmt a . KnownNat alu =>
 	(forall sds . Vk.DscSt.D sds '(sdsl, DscStLytArg alu "" nmt) -> IO a) ->
 	IO a
 createDscSt dv dp vpb dsl f =
-	Vk.DscSt.group dv \dsg ->
-	Vk.DscSt.allocateDs' dsg () info >>= \(forceRight' -> HPList.Singleton ds) ->
-	Vk.DscSt.updateDs dv (HPList.Singleton . U5 $ wr ds) HPList.Nil >> f ds
+	Vk.DscSt.group dv \dsg -> f =<< createDscSt' dv dsg () dp vpb dsl
+
+createDscSt' :: forall sd sds sp sm sb nm alu sdsl nmt k . (Ord k, KnownNat alu) =>
+	Vk.Dvc.D sd ->
+	Vk.DscSt.Group sd sds k sp '[ '(sdsl, DscStLytArg alu "" nmt)] -> k ->
+	Vk.DscPl.P sp ->
+	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu ""] ->
+	Vk.DscStLyt.D sdsl (DscStLytArg alu "" nmt) ->
+	IO (Vk.DscSt.D sds '(sdsl, DscStLytArg alu "" nmt))
+createDscSt' dv dsg k dp vpb dsl =
+	Vk.DscSt.allocateDs' dsg k info >>= \(forceRight' -> HPList.Singleton ds) ->
+	Vk.DscSt.updateDs dv (HPList.Singleton . U5 $ wr ds) HPList.Nil >> pure ds
 	where
 	info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
