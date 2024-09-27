@@ -340,11 +340,8 @@ body ip op vex ist pd qfis dv gq pq =
 	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
 	let	dvs = (pd, qfis, dv, gq, pq, cp, cb) in
 	createPplLyt dv \dsl pl ->
-
---	createVtxBffr pd dv gq cp vertices \vb ->
-	createVertexBuffer pd dv gq cp \vb ->
-	createIndexBuffer pd dv gq cp \ib ->
-	let	vbs = (vb, ib) in
+	createVtxBffr pd dv gq cp vertices \vb ->
+	createIdxBffr pd dv gq cp indices \ib -> let vbs = (vb, ib) in
 
 	createUniformBuffer pd dv \ub ubm ->
 	createDescriptorPool dv \dp ->
@@ -567,38 +564,6 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
-createVertexBuffer :: Vk.Phd.P ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 Vertex ""] -> IO a ) -> IO a
-createVertexBuffer phdvc dvc gq cp f =
-	createBufferList phdvc dvc (fromIntegral $ length vertices)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
-	createBufferList phdvc dvc (fromIntegral $ length vertices)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		\(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[Vk.Obj.List 256 t ""]) bm' -> do
-		Vk.Mm.write @"vertex-buffer" @(Vk.Obj.List 256 Vertex "") @0 dvc bm' zeroBits vertices
-		copyBuffer dvc gq cp b' b
-	f b
-
-createIndexBuffer :: Vk.Phd.P ->
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 Word16 ""] -> IO a) -> IO a
-createIndexBuffer phdvc dvc gq cp f =
-	createBufferList phdvc dvc (fromIntegral $ length indices)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
-		Vk.Mm.PropertyDeviceLocalBit \b _ -> do
-	createBufferList phdvc dvc (fromIntegral $ length indices)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-			\(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[Vk.Obj.List 256 t ""]) bm' -> do
-		Vk.Mm.write @"vertex-buffer" @(Vk.Obj.List 256 Word16 "") @0 dvc bm' zeroBits indices
-		copyBuffer dvc gq cp b' b
-	f b
-
 createUniformBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sm sb "uniform-buffer" '[Vk.Obj.Atom 256 ViewProjection 'Nothing]  ->
 		UniformBufferMemory sm sb ->
@@ -710,7 +675,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
 	Vk.RndrPass.Group sd 'Nothing sr k ->
 	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
-		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(Rectangle, 'Vk.VtxInp.RateInstance) ],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
@@ -787,7 +752,7 @@ destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
 	Vk.RndrPass.Group sd 'Nothing sr k ->
 	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
-		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(Rectangle, 'Vk.VtxInp.RateInstance) ],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
@@ -1149,7 +1114,7 @@ type AtomUbo s = '(s, '[
 
 createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 	Vk.Ppl.Graphics.Group sd mac sg k '[ '(
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -1157,7 +1122,7 @@ createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 			'(sl, '[AtomUbo sdsl], '[]) )] -> k ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] -> IO (
 		Vk.Ppl.Graphics.G sg
-			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+			'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -1171,7 +1136,7 @@ createGraphicsPipeline gpgrp k sce rp pllyt =
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -1187,7 +1152,7 @@ mkGraphicsPipelineCreateInfo' ::
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 		'(	'Nothing,
-			'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
+			'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -1488,15 +1453,15 @@ createBuffer' :: forall sd sb nm o sm k .
 		Vk.Bffr.Binded sm sb nm '[o],
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] )
 createBuffer' p dv bgrp mgrp k ln usg props =
-	Vk.Bffr.create' bgrp k bffrInfo >>= \(AlwaysRight b) -> do
+	Vk.Bffr.create' bgrp k binfo >>= \(AlwaysRight b) -> do
 		reqs <- Vk.Bffr.getMemoryRequirements dv b
 		mt <- findMemoryType p (Vk.Mm.requirementsMemoryTypeBits reqs) props
 		Vk.Mm.allocateBind' mgrp k (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
 			(allcInfo mt) >>=
 			\(AlwaysRight (HPList.Singleton (U2 (Vk.Mm.BufferBinded bnd)), mem)) -> pure (bnd, mem)
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
-	bffrInfo = Vk.Bffr.CreateInfo {
+	binfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
+	binfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
 		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
@@ -1636,7 +1601,7 @@ type Swapchains scfmt ssc nm ss sr sfs = (
 	Vk.RndrPass.R sr, HPList.PL Vk.Frmbffr.F sfs )
 
 type Pipeline sg sl sdsl = Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
@@ -1646,8 +1611,8 @@ type Pipeline sg sl sdsl = Vk.Ppl.Graphics.G sg
 type PipelineLayout sl sdsl = Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[]
 
 type VertexBuffers sm sb nm sm' sb' nm' = (
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 Vertex ""],
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List 256 Word16 ""] )
+	Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.List WVertex ""],
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.ObjNA.List Word16 ""] )
 
 type UniformBuffers sds sdsl sm2 sb2 =
 	(Vk.DscSet.D sds (AtomUbo sdsl), UniformBufferMemory sm2 sb2)
@@ -1657,7 +1622,7 @@ data Recreates sw sl nm ssfc sr sg sdsl fmt ssc sis sfs = Recreates
 	(TVar Vk.Extent2d)
 	(Vk.RndrPass.R sr)
 	(Vk.Ppl.Graphics.G sg
-		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
@@ -1678,7 +1643,7 @@ winObjsToRecreates (WinObjs (w, _) sfc vex gpl _iasrfsifs (sc, scivs, rp, fbs)) 
 data Draws sl sr sg sdsl sias srfs siff fmt ssc sfs = Draws
 	(TVar Vk.Extent2d) (Vk.RndrPass.R sr)
 	(Vk.Ppl.Graphics.G sg
-		'[	'(Vertex, 'Vk.VtxInp.RateVertex),
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
 			'(3, RectSize), '(4, RectColor),
@@ -1709,8 +1674,8 @@ runLoop' :: forall n (siv :: Type) (sf :: Type)
 	Devices sd sc scb -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	(M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nmrct
 		(Replicate n siv) sr (Replicate n sf))) ->
-	(	Vk.Bffr.Binded sm' sb' nmrct '[Vk.Obj.List 256 Vertex ""],
-		Vk.Bffr.Binded sm2 sb2 nm2 '[Vk.Obj.List 256 Word16 ""] ) ->
+	(	Vk.Bffr.Binded sm' sb' nmrct '[Vk.ObjNA.List WVertex ""],
+		Vk.Bffr.Binded sm2 sb2 nm2 '[Vk.ObjNA.List Word16 ""] ) ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[Vk.Obj.List 256 Rectangle ""],
 		Vk.Mm.Group sd 'Nothing smrct k '[
 			'(sbrct, 'Vk.Mm.BufferArg nmrct '[Vk.Obj.List 256 Rectangle ""])] ) ->
@@ -1744,9 +1709,9 @@ catchAndDraw ::
 	(Mappable n, Vk.T.FormatToValue win) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.List WVertex ""] ->
 	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 256 Rectangle ""], Vk.Cmd.InstanceCount)  ->
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List 256 Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.ObjNA.List Word16 ""] ->
 	UniformBufferMemory sm2 sb2 -> Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	ViewProjection ->
@@ -1778,9 +1743,9 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Draws sl sr sg sdsl sias srfs siff scfmt ssc sfs ->
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.List WVertex ""] ->
 	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List 256 Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.ObjNA.List Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
@@ -1875,15 +1840,15 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl 
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[ '(Vertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
+		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
 			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl], '[]) ->
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.List WVertex ""] ->
 	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 256 Rectangle ""], Vk.Cmd.InstanceCount) ->
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List 256 Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[Vk.ObjNA.List Word16 ""] ->
 	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	IO ()
 recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
@@ -1891,7 +1856,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb (
-		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb) :**
+		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @"" vb) :**
 		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @Rectangle @"" rb) :**
 		HPList.Nil
 		) >>
@@ -1923,12 +1888,6 @@ data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3,
 	vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
-
-instance Storable Vertex where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
 
 instance StrG.G Vertex where
 
@@ -1991,8 +1950,8 @@ instance Default RectModel1 where def = let (_, d, _, _) = defaultRectModel in d
 instance Default RectModel2 where def = let (_, _, d, _) = defaultRectModel in d
 instance Default RectModel3 where def = let (_, _, _, d) = defaultRectModel in d
 
-vertices :: [Vertex]
-vertices = [
+vertices :: [WVertex]
+vertices = StrG.W <$> [
 	Vertex (Cglm.Vec2 $ (- 0) :. (- 0) :. NilL)
 		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 0 :. 0 :. NilL),
