@@ -596,7 +596,7 @@ createDscSt :: forall sd sp sm sb nm alu sdsl nmt a . KnownNat alu =>
 	IO a
 createDscSt dv dp vpb dsl f =
 	Vk.DscSt.group dv \dsg ->
-	Vk.DscSt.allocateDs' dv dsg () info >>= \(forceRight' -> HPList.Singleton ds) ->
+	Vk.DscSt.allocateDs' dsg () info >>= \(forceRight' -> HPList.Singleton ds) ->
 	Vk.DscSt.updateDs dv (HPList.Singleton . U5 $ wr ds) HPList.Nil >> f ds
 	where
 	info = Vk.DscSt.AllocateInfo {
