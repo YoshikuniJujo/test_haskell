@@ -175,6 +175,20 @@ src
         - [x] createLgDvc
         - [x] swpchImgNum
     + [ ] BODY
+        - [ ] body
+        - [ ] createCommandPool
+        - [ ] createCommandBuffer
+        - [ ] createPipelineLayout
+        - [ ] createDescriptorSetLayout
+        - [ ] createVertexBuffer
+        - [ ] createIndexBuffer
+        - [ ] createUniformBuffer
+        - [ ] UniformBufferMemory
+        - [ ] createDescriptorPool
+        - [ ] createDescriptorSet
+        - [ ] descriptorWrite
+        - [ ] createTextureSampler
+    + [ ] WINDOW OBJECTS
         - [ ] ...
         - [ ] class NumToValue
         - [ ] instance NumToValue
@@ -189,6 +203,7 @@ src
         - [ ] sendMouseButtonUp
         - [ ] sendMouseButton
         - [ ] ...
+    + [ ] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
     + [ ] DATA TYPES
     + [ ] SHADERS
