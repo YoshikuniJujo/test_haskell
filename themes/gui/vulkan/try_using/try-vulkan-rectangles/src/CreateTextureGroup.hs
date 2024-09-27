@@ -11,11 +11,13 @@ module CreateTextureGroup (
 
 	-- * GROUP
 
-	textureGroup, TextureGroup,
+	txGroup, TextureGroup,
+
+	createTxSmplr,
 
 	-- * CREATE AND UPDATE
 
-	createTexture, destroyTexture, updateTexture, createBuffer,
+	createTx, destroyTx, updateTexture, createBuffer,
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
@@ -44,7 +46,7 @@ import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.Word
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.PhysicalDevice qualified as Vk.PhDvc
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPool
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
@@ -78,22 +80,54 @@ type TextureGroup sd si sm siv fmt k = (
 	Vk.Mem.Group sd 'Nothing sm k '[ '(si, 'Vk.Mem.ImageArg "texture" fmt)],
 	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt )
 
-textureGroup :: Vk.Dvc.D sd ->
+txGroup :: Vk.Dvc.D sd ->
 	(forall si sm siv . TextureGroup sd si sm siv fmt k -> IO a) -> IO a
-textureGroup dv f =
+txGroup dv f =
 	Vk.Img.group dv nil \mng -> Vk.Mem.group dv nil \mmng ->
 	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
 
-createTexture :: forall bis img k sd sc sds sdsc sm si siv ss . (
+createTxSmplr ::
+	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTxSmplr phdv dvc f = do
+	prp <- Vk.Phd.getProperties phdv
+	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
+	let	samplerInfo = Vk.Smplr.CreateInfo {
+			Vk.Smplr.createInfoNext = TMaybe.N,
+			Vk.Smplr.createInfoFlags = zeroBits,
+			Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMipmapMode =
+				Vk.Smplr.MipmapModeLinear,
+			Vk.Smplr.createInfoAddressModeU =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeV =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeW =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoMipLodBias = 0,
+			Vk.Smplr.createInfoAnisotropyEnable = True,
+			Vk.Smplr.createInfoMaxAnisotropy =
+				Vk.Phd.limitsMaxSamplerAnisotropy
+					$ Vk.Phd.propertiesLimits prp,
+			Vk.Smplr.createInfoCompareEnable = False,
+			Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+			Vk.Smplr.createInfoMinLod = 0,
+			Vk.Smplr.createInfoMaxLod = 0,
+			Vk.Smplr.createInfoBorderColor =
+				Vk.BorderColorIntOpaqueBlack,
+			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
+	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
+
+createTx :: forall bis img k sd sc sds sdsc sm si siv ss . (
 	BObj.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '("texture", BObj.ImageFormat img)] 0,
 	Ord k ) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.D sds '(sdsc, bis) ->
 	TextureGroup sd si sm siv (BObj.ImageFormat img) k ->
 	Vk.Smplr.S ss -> img -> k -> IO ()
-createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
+createTx phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 	putStrLn "CREATE TEXTURE BEGIN" >>
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
@@ -103,8 +137,8 @@ createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
 	putStrLn "CREATE TEXTURE END"
 
-destroyTexture :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
-destroyTexture (mng, mmng, ivmng) k = do
+destroyTx :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
+destroyTx (mng, mmng, ivmng) k = do
 	putStrLn "DESTROY TEXTURE BEGIN"
 	Vk.Img.unsafeDestroy mng k
 	Vk.Mem.unsafeFree mmng k
@@ -144,7 +178,7 @@ mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfo {
 
 createTextureImage' :: forall k sim nm sd smm sc img . (
 	BObj.IsImage img, Ord k
-	) => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	) => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group sd 'Nothing sim k nm (BObj.ImageFormat img) ->
 	Vk.Mem.Group sd 'Nothing smm k
 		'[ '(sim, 'Vk.Mem.ImageArg nm (BObj.ImageFormat img))] ->
@@ -200,7 +234,7 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HeteroParList.Singleton region)
 
 createBufferImage :: Storable (BObj.ImagePixel t) =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ VObj.Image 1 t inm] ->
@@ -214,7 +248,7 @@ createBufferImage p dv (r, w, h, d) usg props f =
 		<* putStrLn "createBufferImage end"
 
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.Length o ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mem.M sm
@@ -241,7 +275,7 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil \b -> do
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createImage' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group sd 'Nothing sim k nm fmt ->
 	Vk.Mem.Group sd 'Nothing smm k '[ '(sim, 'Vk.Mem.ImageArg nm fmt)] ->
 	k ->
@@ -281,16 +315,16 @@ createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
 		Vk.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Mem.allocateInfoMemoryTypeIndex = mt }
 
-findMemoryType :: Vk.PhDvc.P -> Vk.Mem.TypeBits -> Vk.Mem.PropertyFlags ->
+findMemoryType :: Vk.Phd.P -> Vk.Mem.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.TypeIndex
 findMemoryType phdvc flt props =
-	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
+	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
 	suitable props1 = fst <$> find ((&&)
 		<$> (`Vk.Mem.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.mTypePropertyFlags . snd) tps
-		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
+		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->

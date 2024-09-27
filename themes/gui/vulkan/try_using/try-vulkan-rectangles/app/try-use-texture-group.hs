@@ -44,7 +44,7 @@ import Data.Map qualified as M
 
 import Graphics.UI.GlfwG.Key as GlfwG.Ky
 
-import Codec.Picture
+import Codec.Picture qualified as Pct
 
 main :: IO ()
 main = run_ action
@@ -59,7 +59,9 @@ action f = liftIO do
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	_ <- forkIO $ controller a inp
-	useTextureGroup inp outp vext
+	img <- Pct.readImage "../../../../../files/images/texture.jpg"
+	let	pct = either error Pct.convertRGBA8 img
+	useTextureGroup inp outp vext pct
 
 readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
 readTVarOr d mp k = do
@@ -102,19 +104,19 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 	_ <- forkIO $ forever do
 		fp <- atomically $ readTChan tbgn
 		img <- case fp of
-			"texture" -> Just <$> readImage "../../../../../files/images/texture.jpg"
-			"viking room" -> Just <$> readImage "../../../../../files/models/viking_room.png"
-			"flower" -> Just <$> readImage "../../../../../files/images/flower.jpg"
-			"dice" -> Just <$> readImage "../../../../../files/images/saikoro.png"
+			"texture" -> Just <$> Pct.readImage "../../../../../files/images/texture.jpg"
+			"viking room" -> Just <$> Pct.readImage "../../../../../files/models/viking_room.png"
+			"flower" -> Just <$> Pct.readImage "../../../../../files/images/flower.jpg"
+			"dice" -> Just <$> Pct.readImage "../../../../../files/images/saikoro.png"
 			_ -> pure Nothing
-		let	pct = either error convertRGBA8 <$> img
+		let	pct = either error Pct.convertRGBA8 <$> img
 			{-
 --		threadDelay 4000000
-		pct <- either error convertRGBA8 <$> readImage "../../../../../files/images/texture.jpg"
+		pct <- either error Pct.convertRGBA8 <$> Pct.readImage "../../../../../files/images/texture.jpg"
 		atomically $ writeTChan tpct pct
 --		threadDelay 4000000
 		atomically $ readTChan tbgn
-		pct' <- either error convertRGBA8 <$> readImage "../../../../../files/models/viking_room.png"
+		pct' <- either error Pct.convertRGBA8 <$> Pct.readImage "../../../../../files/models/viking_room.png"
 		-}
 		maybe (pure ()) (atomically . writeTChan tpct) pct
 

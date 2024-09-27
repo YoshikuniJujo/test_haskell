@@ -141,8 +141,6 @@ import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
 
 import CreateTextureGroup
 
-import Gpu.Vulkan.Sampler qualified as Vk.Smplr
-
 import Codec.Picture qualified as Pct
 
 import Debug
@@ -170,8 +168,8 @@ import Data.Either.ToolsYj
 
 useTextureGroup :: forall k . (Show k, Ord k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) ->
-	TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
-useTextureGroup ip op vex = GlfwG.init error $
+	TVar (M.Map k (TVar Vk.Extent2d)) -> Pct.Image Pct.PixelRGBA8 -> IO ()
+useTextureGroup ip op vex pct = GlfwG.init error $
 	createIst \ist -> Vk.Dvc.group nil \dvg -> bool id (dbgm ist) debug $
 	GlfwG.Win.group \wg -> initWindow False wg () >>= \dw ->
 	crsfc dw ist \dsfc -> pickPhd ist dsfc >>= \(pd, qfis) ->
@@ -180,7 +178,7 @@ useTextureGroup ip op vex = GlfwG.init error $
 	createLgDvc pd dvg () qfis >>= \(dv, gq, pq) ->
 	swapExtent dw (capabilities ssd) >>= \ex ->
 	swpchImgNum @fmt dv dsfc ssd ex qfis >>= \n -> num n \(_ :: Proxy n) ->
-	body @n @fmt ip op vex ist pd qfis dv gq pq >>
+	body @n @fmt ip op vex ist pd qfis dv gq pq pct >>
 	atomically (writeTChan op EventEnd)
 	where
 	dbgm i = Vk.DbgUtls.Msgr.create i dbgMsngrInfo nil
@@ -335,8 +333,8 @@ body :: forall (n :: [()]) (scfmt :: Vk.T.Format) k si sd . (
 	Show k, Ord k, Succable k ) =>
 	TChan (Command k) -> TChan (Event k) ->
 	TVar (M.Map k (TVar Vk.Extent2d)) -> Vk.Ist.I si -> Vk.Phd.P ->
-	QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO ()
-body ip op vex ist pd qfis dv gq pq =
+	QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Image Pct.PixelRGBA8 -> IO ()
+body ip op vex ist pd qfis dv gq pq pct =
 	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
 	let	dvs = (pd, qfis, dv, gq, pq, cp, cb) in
 	createPplLyt dv \dsl pl ->
@@ -358,28 +356,18 @@ body ip op vex ist pd qfis dv gq pq =
 	Vk.Bffr.group dv nil \rbg -> Vk.Mm.group dv nil \rmg ->
 	let	rgs = (rbg, rmg) in
 	atomically (newTVar M.empty) >>= \ges ->
-
 	let	crwos = winObjs @n @scfmt op pd dv gq cp qfis pl vex
 			wg sfcg rpg gpg rgs iasg rfsg iffg scg ivg fbg ges
 		drwos = destroyWinObjs @n
-			wg sfcg rpg gpg rgs iasg rfsg iffg scg ivg fbg in
+			wg sfcg rpg gpg rgs iasg rfsg iffg scg ivg fbg ges in
 
-	atomically (newTVar zero') >>= \vwid ->
-	atomically (newTVar M.empty) >>= \vws ->
+	txGroup dv \txg -> createTxSmplr pd dv \txs ->
 
-	createTextureSampler pd dv \txsmplr ->
+	let	crtx p = createTx pd dv gq cp ds txg txs (ImageRgba8 p) (zero' :: k)
+		drtx = destroyTx txg (zero' :: k) in
 
-	textureGroup dv \txgrp ->
-
-	let	crcr' pct =
-			createTexture pd dv gq cp ds txgrp txsmplr (ImageRgba8 pct) (zero' :: k)
-		drcr = destroyTexture txgrp (zero' :: k) in
-
-	either error Pct.convertRGBA8 <$> Pct.readImage "../../../../../files/images/texture.jpg" >>= \pct ->
-
-	crcr' pct >>
-
-	mainLoop @n @siv @sf ip op dvs pl crwos drwos vbs rgs vps vwid vws ges crcr' drcr
+	crtx pct >>
+	mainloop @n @siv @sf ip op dvs pl crwos drwos vbs rgs vps ges crtx drtx
 
 createCmdPl :: QFamIdcs -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
@@ -628,38 +616,6 @@ type DscStLytArg alu nmvp nmt = '[
 	'Vk.DscStLyt.Buffer '[AtomViewProj alu nmvp],
 	'Vk.DscStLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)] ]
 
-createTextureSampler ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler phdv dvc f = do
-	prp <- Vk.Phd.getProperties phdv
-	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
-	let	samplerInfo = Vk.Smplr.CreateInfo {
-			Vk.Smplr.createInfoNext = TMaybe.N,
-			Vk.Smplr.createInfoFlags = zeroBits,
-			Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
-			Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
-			Vk.Smplr.createInfoMipmapMode =
-				Vk.Smplr.MipmapModeLinear,
-			Vk.Smplr.createInfoAddressModeU =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoAddressModeV =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoAddressModeW =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoMipLodBias = 0,
-			Vk.Smplr.createInfoAnisotropyEnable = True,
-			Vk.Smplr.createInfoMaxAnisotropy =
-				Vk.Phd.limitsMaxSamplerAnisotropy
-					$ Vk.Phd.propertiesLimits prp,
-			Vk.Smplr.createInfoCompareEnable = False,
-			Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.createInfoMinLod = 0,
-			Vk.Smplr.createInfoMaxLod = 0,
-			Vk.Smplr.createInfoBorderColor =
-				Vk.BorderColorIntOpaqueBlack,
-			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
-
 -- WINDOW OBJECTS
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
@@ -690,7 +646,8 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Khr.Swpch.Group sd 'Nothing scfmt ssc k ->
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
-	TVar (M.Map k (IO ())) -> k ->
+	TVar (M.Map k (IO ())) ->
+	k ->
 	IO (WinObjs
 		sw ssfc sg sl sdsl mnm sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))
@@ -766,9 +723,12 @@ destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Fence.Group sd 'Nothing siff k ->
 	Vk.Khr.Swpch.Group sd 'Nothing scfmt ssc k ->
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
-	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> IO ()
+	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
+	TVar (M.Map k (IO ())) ->
+	k -> IO ()
 destroyWinObjs
-	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp k = do
+	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges k = do
+	atomically (modifyTVar ges (M.delete k))
 	mw <- GlfwG.Win.lookup wgrp k
 	case mw of
 		Nothing -> pure ()
@@ -1509,7 +1469,7 @@ copyBuffer dvc gq cp src dst = do
 
 -- MAINLOOP
 
-mainLoop ::
+mainloop ::
 	forall n siv sf scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
 		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k mnm .
 	(Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k) =>
@@ -1523,12 +1483,10 @@ mainLoop ::
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm k ->
 	UniformBuffers sds sdsl sm2 sb2 mnm->
-	TVar k ->
-	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl mnm sias srfs siff scfmt ssc nm
-		(Replicate n siv) sr (Replicate n sf))) ->
 	TVar (M.Map k (IO ())) ->
 	(Pct.Image Pct.PixelRGBA8 -> IO ()) -> IO () -> IO ()
-mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid vws ges crcr' drcr = do
+mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs ges crcr' drcr = do
+	(vwid, vws) <- atomically ((,) <$> newTVar zero' <*> newTVar M.empty)
 	let	crwos' = do
 			wi <- atomically do
 				i <- readTVar vwid
@@ -1558,7 +1516,6 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			DestroyWindow k -> do
 				putStrLn $ "DESTROY WINDOW: " ++ show k
 				atomically (modifyTVar vws (M.delete k)) >> drwos k
-				atomically (modifyTVar ges (M.delete k))
 				ws <- atomically $ readTVar vws
 				GlfwG.pollEvents
 				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
