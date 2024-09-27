@@ -1485,7 +1485,7 @@ mainloop ::
 	UniformBuffers sds sdsl sm2 sb2 mnm->
 	TVar (M.Map k (IO ())) ->
 	(Pct.Image Pct.PixelRGBA8 -> IO ()) -> IO () -> IO ()
-mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs ges crcr' drcr = do
+mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs ges crtx drcr = do
 	(vwid, vws) <- atomically ((,) <$> newTVar zero' <*> newTVar M.empty)
 	let	crwos' = do
 			wi <- atomically do
@@ -1508,7 +1508,7 @@ mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs ges 
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
 			SetPicture pct -> do
 				putStrLn "DRAW PICTURE BEGIN"
-				drcr >> crcr' pct
+				drcr >> crtx pct
 				Vk.Dvc.waitIdle dvc
 				loop
 			OpenWindow ->
