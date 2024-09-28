@@ -341,7 +341,8 @@ body ip op vex ist pd qfis dv gq pq pct =
 	createVtxBffr pd dv gq cp vertices \vb ->
 	createIdxBffr pd dv gq cp indices \ib -> let vbs = (vb, ib) in
 	createViewProjBffr pd dv \vp vpm ->
-	createDscPl dv \dp -> createDscSt dv dp vp dsl \ds ->
+	createDscPl dv \dp ->
+	Vk.DscSt.group dv \dsg -> createDscSt' dv dsg () dp vp dsl >>= \ds ->
 	let	vps = (ds, vpm) in
 	GlfwG.Win.group \wg -> Vk.Khr.Sfc.group ist nil \sfcg ->
 	Vk.Khr.Swpch.group dv nil \scg ->
@@ -587,15 +588,6 @@ createDscPl dv = Vk.DscPl.create dv info nil
 	sz1 = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPl.sizeDescriptorCount = 1 }
-
-createDscSt :: forall sd sp sm sb nm alu sdsl nmt a . KnownNat alu =>
-	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu ""] ->
-	Vk.DscStLyt.D sdsl (DscStLytArg alu "" nmt) ->
-	(forall sds . Vk.DscSt.D sds '(sdsl, DscStLytArg alu "" nmt) -> IO a) ->
-	IO a
-createDscSt dv dp vpb dsl f =
-	Vk.DscSt.group dv \dsg -> f =<< createDscSt' dv dsg () dp vpb dsl
 
 createDscSt' :: forall sd sds sp sm sb nm alu sdsl nmt k . (Ord k, KnownNat alu) =>
 	Vk.Dvc.D sd ->
