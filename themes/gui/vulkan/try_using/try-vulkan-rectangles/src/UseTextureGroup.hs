@@ -342,8 +342,7 @@ body ip op vex ist pd qfis dv gq pq pct =
 	createIdxBffr pd dv gq cp indices \ib -> let vbs = (vb, ib) in
 	createViewProjBffr pd dv \vp vpm ->
 	createDscPl dv \dp ->
-	Vk.DscSt.group dv \dsg -> createDscSt' dv dsg () dp vp dsl >>= \ds ->
-	let	vps = (ds, vpm) in
+	Vk.DscSt.group dv \dsg ->
 	GlfwG.Win.group \wg -> Vk.Khr.Sfc.group ist nil \sfcg ->
 	Vk.Khr.Swpch.group dv nil \scg ->
 	Vk.ImgVw.group dv nil
@@ -357,6 +356,9 @@ body ip op vex ist pd qfis dv gq pq pct =
 	Vk.Bffr.group dv nil \rbg -> Vk.Mm.group dv nil \rmg ->
 	let	rgs = (rbg, rmg) in
 	atomically (newTVar M.empty) >>= \ges ->
+
+	createDscSt' dv dsg () dp vp dsl >>= \ds ->
+
 	let	crwos = winObjs @n @scfmt op pd dv gq cp qfis pl vex
 			wg sfcg rpg gpg rgs iasg rfsg iffg scg ivg fbg ges
 		drwos = destroyWinObjs @n
@@ -368,7 +370,7 @@ body ip op vex ist pd qfis dv gq pq pct =
 		drtx = destroyTx txg (zero' :: k) in
 
 	crtx pct >>
-	mainloop @n @siv @sf ip op dvs pl crwos drwos vbs rgs vps ges crtx drtx
+	mainloop @n @siv @sf ip op dvs pl crwos drwos vbs rgs ds vpm ges crtx drtx
 
 createCmdPl :: QFamIdcs -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
@@ -1484,10 +1486,10 @@ mainloop ::
 
 	VertexBuffers sm sb nm sm' sb' nm' ->
 	RectGroups sd srm srb nm k ->
-	UniformBuffers sds sdsl sm2 sb2 mnm->
+	Vk.DscSt.D sds (AtomUbo sdsl mnm) -> UniformBufferMemory sm2 sb2 mnm ->
 	TVar (M.Map k (IO ())) ->
 	(Pct.Image Pct.PixelRGBA8 -> IO ()) -> IO () -> IO ()
-mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs ges crtx drcr = do
+mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ds vpm ges crtx drcr = do
 	(vwid, vws) <- atomically ((,) <$> newTVar zero' <*> newTVar M.empty)
 	let	crwos' = do
 			wi <- atomically do
@@ -1503,11 +1505,11 @@ mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs ges 
 			_ -> pure ()
 --		putStrLn "before readTChan"
 		atomically (readTChan inp) >>= \case
-			Draw ds -> do
+			Draw ds' -> do
 --				putStrLn "DRAW BEGIN"
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
-				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs outp loop
+				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds') (ds, vpm) outp loop
 			SetPicture pct -> do
 				putStrLn "DRAW PICTURE BEGIN"
 				drcr >> crtx pct
@@ -1560,9 +1562,6 @@ type PipelineLayout sl sdsl mnm = Vk.Ppl.Layout.P sl '[AtomUbo sdsl mnm] '[]
 type VertexBuffers sm sb nm sm' sb' nm' = (
 	Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.List WVertex ""],
 	Vk.Bffr.Binded sm' sb' nm' '[Vk.ObjNA.List Word16 ""] )
-
-type UniformBuffers sds sdsl sm2 sb2 mnm =
-	(Vk.DscSt.D sds (AtomUbo sdsl mnm), UniformBufferMemory sm2 sb2 mnm)
 
 data Recreates sw sl nm ssfc sr sg sdsl mnm fmt ssc sis sfs = Recreates
 	(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc)
