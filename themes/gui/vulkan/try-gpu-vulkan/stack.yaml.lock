@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-middle
     version: 0.1.0.54
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-middle
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core
     version: 0.1.0.7
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-language-spir-v
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/gui/vulkan/try-language-spir-v
     version: 0.1.0.0
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-language-spir-v
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-peek-poke
     pantry-tree:
@@ -53,11 +53,11 @@ packages:
     subdir: features/ffi/pointer/try-storable-peek-poke
     version: 0.1.0.1
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-peek-poke
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-hetero-list
     pantry-tree:
@@ -66,11 +66,11 @@ packages:
     subdir: features/ffi/pointer/try-storable-hetero-list
     version: 0.1.0.4
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-hetero-list
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-hetero-parameter-list
     pantry-tree:
@@ -79,11 +79,11 @@ packages:
     subdir: themes/hetero-list/try-hetero-parameter-list
     version: 0.1.0.12
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/hetero-list/try-hetero-parameter-list
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-hetero-parameter-list-with-typelevel-tools
     pantry-tree:
@@ -92,11 +92,11 @@ packages:
     subdir: themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
     version: 0.1.0.0
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-text-misc-yj
     pantry-tree:
@@ -105,11 +105,11 @@ packages:
     subdir: themes/string/try-text-misc-yj
     version: 0.1.0.0
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/string/try-text-misc-yj
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-monads-tf-misc-yj
     pantry-tree:
@@ -118,11 +118,11 @@ packages:
     subdir: themes/monad/try-monads-tf-misc-yj
     version: 0.1.0.1
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/monad/try-monads-tf-misc-yj
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: typelevel-tools
     pantry-tree:
@@ -131,20 +131,20 @@ packages:
     subdir: themes/type_level/typelevel-tools
     version: 0.1.0.6
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
 - completed:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-tools-yj
     pantry-tree:
-      sha256: c0768fe302fdae01b370fa8cf2d2014ab1a514e252d857fd10582c7af5634138
-      size: 1243
+      sha256: dbc6325d76f591c0a56f1ab94b1884c5c2e29f3e079f178354240911b3780c11
+      size: 1309
     subdir: packages/try-tools-yj
-    version: 0.1.0.14
+    version: 0.1.0.16
   original:
-    commit: 97a086e33f0a2818977d8b5fd110849b051a18c3
+    commit: af69e34821d967fa1a5805c404fe35b01ac81098
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: packages/try-tools-yj
 - completed:
@@ -156,7 +156,7 @@ packages:
     hackage: union-color-0.1.2.0
 snapshots:
 - completed:
-    sha256: 15aa39a9aef6b1b435914bdbd61c31a5bf382f8683979a549edc109a095eadaf
-    size: 660735
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/9/3.yaml
-  original: nightly-2024-09-03
+    sha256: d5d99012a7be5693100825b8619d5cebdd0537dc78cd5448ace3237beb40a196
+    size: 664619
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/9/29.yaml
+  original: nightly-2024-09-29
