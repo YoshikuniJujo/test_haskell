@@ -1522,7 +1522,7 @@ mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps dsg vpm 
 				Vk.Dvc.waitIdle dvc
 				ws <- atomically $ readTVar vws
 				(fromJust -> HPList.Singleton dsnew) <- Vk.DscSt.lookup dsg zero'
-				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds') (dsnew, vpm) outp loop
+				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds') dsg (dsnew, vpm) outp loop
 			SetPicture k pct -> do
 				putStrLn "DRAW PICTURE BEGIN"
 				drcr k >> crtx k pct
@@ -1628,7 +1628,7 @@ winObjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 runLoop' :: forall n (siv :: Type) (sf :: Type)
 	sd sc scb sl
 	sw ssfc sg sias srfs siff scfmt ssc sr
-	smrct sbrct nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k mnm .
+	smrct sbrct nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k mnm sdp .
 	(Mappable n, Vk.T.FormatToValue scfmt, Ord k) =>
 	Devices sd sc scb -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl mnm] '[] ->
 	(M.Map k (WinObjs sw ssfc sg sl sdsl mnm sias srfs siff scfmt ssc nmrct
@@ -1639,9 +1639,10 @@ runLoop' :: forall n (siv :: Type) (sf :: Type)
 		Vk.Mm.Group sd 'Nothing smrct k '[
 			'(sbrct, 'Vk.Mm.BufferArg nmrct '[Vk.Obj.List 256 Rectangle ""])] ) ->
 	M.Map k (WViewProj, [Rectangle]) ->
+	Vk.DscSt.Group sd sds k sdp '[AtomUbo sdsl mnm] ->
 	(Vk.DscSt.D sds (AtomUbo sdsl mnm), UniformBufferMemory sm sb mnm) ->
 	TChan (Event k) -> IO () -> IO ()
-runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
+runLoop' dvs pll ws vbs rgrps rectss dsg ubs outp loop = do
 	let	(phdvc, qfis, dvc, gq, pq, _cp, cb) = dvs
 		(vb, ib) = vbs
 		(ubds, ubm) = ubs
@@ -1650,7 +1651,8 @@ runLoop' dvs pll ws vbs rgrps rectss ubs outp loop = do
 		destroyRectangleBuffer rgrps k'
 		rb <- createRectangleBuffer dvs rgrps k' rects'
 		let	rb' = (rb, fromIntegral $ length rects')
-		catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
+		(fromJust -> HPList.Singleton dsnew) <- Vk.DscSt.lookup dsg k'
+		catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm dsnew cb tm wos
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
 	if cls then (pure ()) else do
 		for_ ws \wos ->
