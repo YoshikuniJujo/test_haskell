@@ -120,9 +120,11 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 		-}
 		maybe (pure ()) (atomically . writeTChan tpct) pct
 
+	vwin <- atomically $ newTVar 0
 	_ <- forkIO $ forever do
+		wi <- atomically $ readTVar vwin
 		pct <- atomically $ readTChan tpct
-		atomically . inp $ SetPicture 0 pct
+		atomically . inp $ SetPicture wi pct
 
 	tinput <- atomically $ newTVar False
 	vtxt <-  atomically $ newTVar []
@@ -143,12 +145,12 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 				] )
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		ti <- atomically $ readTVar tinput
-		if ti	then processText o loop rs tinput tbgn vtxt
-			else processOutput o loop rs inp tinput
+		if ti	then processText o loop rs tinput tbgn vtxt vwin
+			else processOutput o loop rs inp tinput vwin
 
-processText :: Maybe (Event k) ->
-	(t -> IO b) -> t -> TVar Bool -> TChan [Char] -> TVar [Char] -> IO b
-processText o loop rs tinput tbgn vtxt =
+processText :: Show a => Maybe (Event k) ->
+	(t -> IO b) -> t -> TVar Bool -> TChan [Char] -> TVar [Char] -> TVar a -> IO b
+processText o loop rs tinput tbgn vtxt vwin =
 	case o of
 		Just (EventKeyDown _w Key'Enter) -> do
 			atomically $ writeTVar tinput False
@@ -160,12 +162,14 @@ processText o loop rs tinput tbgn vtxt =
 			loop rs
 		_ -> do
 			putStrLn . reverse =<< atomically (readTVar vtxt)
+			print =<< atomically (readTVar vwin)
 			loop rs
 
 processOutput :: (Show a, Eq a, Num a) =>
 	Maybe (Event a) -> ((Float -> [Rectangle]) -> IO ()) ->
-	(Float -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool -> IO ()
-processOutput o loop rs inp tinput =
+	(Float -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool -> TVar a ->
+	IO ()
+processOutput o loop rs inp tinput vwin =
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
@@ -181,9 +185,10 @@ processOutput o loop rs inp tinput =
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
 				atomically . inp $ DestroyWindow w
 				loop rs
-			Just (EventKeyUp _w Key'T) -> do
+			Just (EventKeyUp w Key'T) -> do
 				putStrLn "T"
 				atomically $ writeTVar tinput True
+				atomically $ writeTVar vwin w
 --				atomically $ writeTChan tbgn ()
 --				threadDelay 2000000
 				loop rs
