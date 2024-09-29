@@ -17,7 +17,7 @@ module CreateTextureGroup (
 
 	-- * CREATE AND UPDATE
 
-	createTx, destroyTx, updateTexture, createBuffer,
+	createTx, createTx', destroyTx, updateTexture, createBuffer,
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
@@ -42,6 +42,7 @@ import Data.Bits
 import Data.Maybe
 import Data.List
 import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.Word
 import Gpu.Vulkan qualified as Vk
@@ -74,6 +75,9 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Data.List.ToolsYj
 import Data.Array
+
+import Data.Either.ToolsYj
+import Data.Maybe
 
 type TextureGroup sd si sm siv fmt k = (
 	Vk.Img.Group sd 'Nothing si k "texture" fmt,
@@ -133,6 +137,28 @@ createTx phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 
 	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat img)
 		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
+
+	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
+	putStrLn "CREATE TEXTURE END"
+
+createTx' :: forall bis img k sd sc sds sdsc sm si siv ss sdp slbtss . (
+	BObj.IsImage img,
+	Vk.DscSet.BindingAndArrayElemImage bis
+		'[ '("texture", BObj.ImageFormat img)] 0,
+	Ord k ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.DscSet.Group sd sds k sdp '[ '(sdsc, bis)] -> -- slbtss ->
+--	Vk.DscSet.D sds '(sdsc, bis) ->
+	TextureGroup sd si sm siv (BObj.ImageFormat img) k ->
+	Vk.Smplr.S ss -> img -> k -> IO ()
+createTx' phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
+	putStrLn "CREATE TEXTURE BEGIN" >>
+	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
+
+	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat img)
+		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
+
+	Vk.DscSet.lookup dsg k >>= \(fromJust -> HPList.Singleton ubds) ->
 
 	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
 	putStrLn "CREATE TEXTURE END"

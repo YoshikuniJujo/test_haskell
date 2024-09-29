@@ -122,7 +122,7 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 
 	_ <- forkIO $ forever do
 		pct <- atomically $ readTChan tpct
-		atomically . inp $ SetPicture pct
+		atomically . inp $ SetPicture 0 pct
 
 	tinput <- atomically $ newTVar False
 	vtxt <-  atomically $ newTVar []
