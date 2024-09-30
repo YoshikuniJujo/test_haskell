@@ -17,7 +17,7 @@ module CreateTextureGroup (
 
 	-- * CREATE AND UPDATE
 
-	createTx, createTx', destroyTx, updateTexture, createBuffer,
+	createTx, destroyTx, updateTexture, createBuffer,
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
@@ -40,7 +40,7 @@ import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
 import Data.Bits
 import Data.Maybe
-import Data.List
+import Data.List qualified as L
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
@@ -75,9 +75,6 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Data.List.ToolsYj
 import Data.Array
-
-import Data.Either.ToolsYj
-import Data.Maybe
 
 type TextureGroup sd si sm siv fmt k = (
 	Vk.Img.Group sd 'Nothing si k "texture" fmt,
@@ -122,36 +119,16 @@ createTxSmplr phdv dvc f = do
 			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
 
-createTx :: forall bis img k sd sc sds sdsc sm si siv ss . (
-	BObj.IsImage img,
-	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", BObj.ImageFormat img)] 0,
-	Ord k ) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.DscSet.D sds '(sdsc, bis) ->
-	TextureGroup sd si sm siv (BObj.ImageFormat img) k ->
-	Vk.Smplr.S ss -> img -> k -> IO ()
-createTx phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
-	putStrLn "CREATE TEXTURE BEGIN" >>
-	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
-
-	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat img)
-		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
-
-	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
-	putStrLn "CREATE TEXTURE END"
-
-createTx' :: forall bis img k sd sc sds sdsc sm si siv ss sdp slbtss . (
+createTx :: forall bis img k sd sc sds sdsc sm si siv ss sdp . (
 	BObj.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '("texture", BObj.ImageFormat img)] 0,
 	Ord k ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.DscSet.Group sd sds k sdp '[ '(sdsc, bis)] -> -- slbtss ->
---	Vk.DscSet.D sds '(sdsc, bis) ->
 	TextureGroup sd si sm siv (BObj.ImageFormat img) k ->
 	Vk.Smplr.S ss -> img -> k -> IO ()
-createTx' phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
+createTx phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
 	putStrLn "CREATE TEXTURE BEGIN" >>
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
@@ -166,9 +143,9 @@ createTx' phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
 destroyTx :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
 destroyTx (mng, mmng, ivmng) k = do
 	putStrLn "DESTROY TEXTURE BEGIN"
-	Vk.Img.unsafeDestroy mng k
-	Vk.Mem.unsafeFree mmng k
-	Vk.ImgVw.unsafeDestroy ivmng k
+	_ <- Vk.Img.unsafeDestroy mng k
+	_ <- Vk.Mem.unsafeFree mmng k
+	_ <- Vk.ImgVw.unsafeDestroy ivmng k
 	putStrLn "DESTROY TEXTURE END"
 	pure ()
 
@@ -347,7 +324,7 @@ findMemoryType phdvc flt props =
 	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
 	where
 	msg = "failed to find suitable memory type!"
-	suitable props1 = fst <$> find ((&&)
+	suitable props1 = fst <$> L.find ((&&)
 		<$> (`Vk.Mem.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.mTypePropertyFlags . snd) tps
 		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1

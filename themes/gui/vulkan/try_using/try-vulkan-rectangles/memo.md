@@ -175,10 +175,10 @@ src
         - [x] createLgDvc
         - [x] swpchImgNum
     + [ ] BODY
-        - [ ] body
-        - [ ] createCommandPool
-        - [ ] createCommandBuffer
-        - [ ] createPipelineLayout
+        - [x] body
+        - [x] createCmdPl
+        - [x] createCmdBffr
+        - [ ] createPplLyt
         - [ ] createDescriptorSetLayout
         - [ ] createVertexBuffer
         - [ ] createIndexBuffer
