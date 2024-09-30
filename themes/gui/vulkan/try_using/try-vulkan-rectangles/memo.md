@@ -189,22 +189,26 @@ src
         - [x] AtomViewProj
         - [x] createDscPl
     + [ ] WINDOW OBJECTS
-        - [ ] ...
+        - [ ] winObjs
+        - [ ] destroyWinObjs
         - [ ] class NumToValue
         - [ ] instance NumToValue
-        - [ ] ...
+        - [ ] WinObjs
+            * [ ] correct order of objects
+        - [ ] WinEnvs
+        - [ ] FramebufferResized
         - [ ] initWindow
+        - [ ] ...
+        - [ ] createDscSt'
+        - [ ] ...
+    + [ ] GLFW EVENTS
         - [ ] glfwEvents
-        - [ ] mAny
         - [ ] getMouseButtons
         - [ ] MouseButtonsStateDict
         - [ ] mouseButtonAll
         - [ ] sendMouseButtonDown
         - [ ] sendMouseButtonUp
         - [ ] sendMouseButton
-        - [ ] ...
-        - [ ] createDscSt'
-        - [ ] ...
     + [ ] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
     + [ ] DATA TYPES

@@ -534,11 +534,10 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
 			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
 				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
---	forkIO (glfwEvents k w outp False initMouseButtonStates) >>
 	atomically (newTVar False) >>= \vb ->
 	atomically (newTVar initMouseButtonStates) >>= \vmbs ->
 	atomically (modifyTVar ges (M.insert k (glfwEvents k w outp vb vmbs))) >>
-	atomically (newTVar NoResized) >>= \fbrszd ->
+	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
 		(Just \_w ky sc act mods -> do
 			putStrLn $
@@ -552,11 +551,15 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 				_ -> pure ()
 			) >>
 	GlfwG.Win.setFramebufferSizeCallback w
-		(Just \_ _ _ -> atomically $ writeTVar fbrszd Resized) >>
+		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
 
 	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(forceRight' -> sfc) ->
-	createRenderPass @scfmt rpgrp k >>= \rp ->
 	prepareSwapchainNew w sfc phd \spp' ex ->
+	createSwapchainNew @scfmt scgrp k sfc spp' ex qfis >>= \(sc, _) ->
+	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
+	createImageViews' @n ivgrp k scis >>= \scivs ->
+	createRenderPass @scfmt rpgrp k >>= \rp ->
+	createFramebuffers' @n @siv fbgrp k ex rp scivs >>= \fbs ->
 
 	createRectangleBuffer' phd dv gq cp rgrps k dummy >>
 
@@ -567,11 +570,6 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 
 	createGraphicsPipeline gpgrp k ex rp pllyt >>= \gpl ->
 	createSyncObjects iasgrp rfsgrp iffgrp k >>= \sos ->
-	createSwapchainNew @scfmt scgrp k sfc spp' ex qfis >>= \(sc, _) ->
-
-	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
-	createImageViews' @n ivgrp k scis >>= \scivs ->
-	createFramebuffers' @n @siv fbgrp k ex rp scivs >>= \fbs ->
 
 	createDscSt' dv dsg k dp vp dsl >>= \_ds ->
 
@@ -643,16 +641,7 @@ data WinObjs sw ssfc sg sl sdsl mnm sias srfs siff scfmt ssc nm ss sr sfs = WinO
 	(Swapchains scfmt ssc nm ss sr sfs)
 
 type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
-type FramebufferResized = TVar FramebufferResizedState
-
-data FramebufferResizedState = NoResized | HalfResized | Resized deriving Show
-
-checkResizedState :: FramebufferResized -> IO Bool
-checkResizedState fbrszd = atomically $
-	readTVar fbrszd >>= \case
-		Resized -> writeTVar fbrszd HalfResized >> pure True
-		HalfResized -> writeTVar fbrszd NoResized >> pure True
-		NoResized -> pure False
+type FramebufferResized = TVar Bool
 
 initWindow :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
 initWindow v wgrp k = do
@@ -663,71 +652,6 @@ initWindow v wgrp k = do
 		(GlfwG.Win.create' wgrp k) wSize wName Nothing Nothing
 	pure w
 	where wName = "Use Texture Group"; wSize = (800, 600)
-
-glfwEvents :: Show k => k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
-glfwEvents k w outp vscls vmb1p = do
---	threadDelay 10000
-	GlfwG.pollEvents
-	cls <- GlfwG.Win.shouldClose w
-	scls <- atomically $ readTVar vscls
-	atomically $ writeTVar vscls cls
---	when cls . putStrLn $ "glfwEvents: scls = " ++ show scls
-	when (not scls && cls) do
-		putStrLn $ "send EventDeleteWindow " ++ show k
-		atomically . writeTChan outp $ EventDeleteWindow k
-	mb1 <- getMouseButtons w
-	mb1p <- atomically $ readTVar vmb1p
-	atomically $ writeTVar vmb1p mb1
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
-	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
-	cls' <- GlfwG.Win.shouldClose w
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-
-mAny :: (a -> Bool) -> M.Map k a -> Bool
-mAny p = M.foldr (\x b -> p x || b) False
-
-getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
-getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
-	<$> GlfwG.Ms.getButton w `mapM` bs
-	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
-
-mouseButtonAll :: [GlfwG.Ms.MouseButton]
-mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-sendMouseButtonDown, sendMouseButtonUp ::
-	k -> GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown k w = sendMouseButton k w EventMouseButtonDown
-	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
-
-sendMouseButtonUp k w = sendMouseButton k w EventMouseButtonUp
-	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
-
-sendMouseButton ::
-	k -> GlfwG.Win.W sw ->
-	(k -> GlfwG.Ms.MouseButton -> Event k) ->
-	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButton k w ev pst st pbss bss outp b =
-	case (pbss M.! b == pst, bss M.! b == st) of
-		(True, True) -> do
---			print $ ev k b
-			atomically . writeTChan outp $ ev k b
-			cl <- GlfwG.Win.shouldClose w
-			when (not cl) $
-				atomically . writeTChan outp . uncurry (EventCursorPosition k)
-					=<< GlfwG.Ms.getCursorPos w
-		_ -> pure ()
 
 prepareSwapchainNew :: forall sw ssfc a .
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
@@ -841,6 +765,58 @@ swapExtent win cps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
 
+createRenderPass ::
+	forall (scfmt :: Vk.T.Format) sd ma sr k . (
+	Vk.T.FormatToValue scfmt, Ord k,
+	Vk.AllocationCallbacks.ToMiddle ma ) =>
+	Vk.RndrPss.Group sd ma sr k -> k -> IO (Vk.RndrPss.R sr)
+createRenderPass rpgrp k =
+	forceRight' <$> Vk.RndrPss.create' @_ @_ @'[scfmt] rpgrp k renderPassInfo
+	where
+	colorAttachment :: Vk.Att.Description scfmt
+	colorAttachment = Vk.Att.Description {
+		Vk.Att.descriptionFlags = zeroBits,
+		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+		Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+		Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+		Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+		Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
+		Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
+		Vk.Att.descriptionFinalLayout = Vk.Img.LayoutPresentSrcKhr }
+	colorAttachmentRef = Vk.Att.Reference {
+		Vk.Att.referenceAttachment = 0,
+		Vk.Att.referenceLayout = Vk.Img.LayoutColorAttachmentOptimal }
+	subpass = Vk.Subpass.Description {
+		Vk.Subpass.descriptionFlags = zeroBits,
+		Vk.Subpass.descriptionPipelineBindPoint =
+			Vk.Ppl.BindPointGraphics,
+		Vk.Subpass.descriptionInputAttachments = [],
+		Vk.Subpass.descriptionColorAndResolveAttachments =
+			Left [colorAttachmentRef],
+		Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+		Vk.Subpass.descriptionPreserveAttachments = [] }
+	dependency = Vk.Subpass.Dependency {
+		Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
+		Vk.Subpass.dependencyDstSubpass = 0,
+		Vk.Subpass.dependencySrcStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencySrcAccessMask = zeroBits,
+		Vk.Subpass.dependencyDstStageMask =
+			Vk.Ppl.StageColorAttachmentOutputBit .|.
+			Vk.Ppl.StageEarlyFragmentTestsBit,
+		Vk.Subpass.dependencyDstAccessMask =
+			Vk.AccessColorAttachmentWriteBit .|.
+			Vk.AccessDepthStencilAttachmentWriteBit,
+		Vk.Subpass.dependencyDependencyFlags = zeroBits }
+	renderPassInfo = Vk.RndrPss.CreateInfo {
+		Vk.RndrPss.createInfoNext = TMaybe.N,
+		Vk.RndrPss.createInfoFlags = zeroBits,
+		Vk.RndrPss.createInfoAttachments =
+			colorAttachment :** HPList.Nil,
+		Vk.RndrPss.createInfoSubpasses = [subpass],
+		Vk.RndrPss.createInfoDependencies = [dependency] }
+
 createImageViews' :: forall n ivfmt sd si siv k sm nm ifmt . (
 	Mappable n, Ord k, Vk.T.FormatToValue ivfmt ) =>
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
@@ -894,58 +870,6 @@ mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 }
-
-createRenderPass ::
-	forall (scfmt :: Vk.T.Format) sd ma sr k . (
-	Vk.T.FormatToValue scfmt, Ord k,
-	Vk.AllocationCallbacks.ToMiddle ma ) =>
-	Vk.RndrPss.Group sd ma sr k -> k -> IO (Vk.RndrPss.R sr)
-createRenderPass rpgrp k =
-	forceRight' <$> Vk.RndrPss.create' @_ @_ @'[scfmt] rpgrp k renderPassInfo
-	where
-	colorAttachment :: Vk.Att.Description scfmt
-	colorAttachment = Vk.Att.Description {
-		Vk.Att.descriptionFlags = zeroBits,
-		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
-		Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
-		Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
-		Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
-		Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
-		Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
-		Vk.Att.descriptionFinalLayout = Vk.Img.LayoutPresentSrcKhr }
-	colorAttachmentRef = Vk.Att.Reference {
-		Vk.Att.referenceAttachment = 0,
-		Vk.Att.referenceLayout = Vk.Img.LayoutColorAttachmentOptimal }
-	subpass = Vk.Subpass.Description {
-		Vk.Subpass.descriptionFlags = zeroBits,
-		Vk.Subpass.descriptionPipelineBindPoint =
-			Vk.Ppl.BindPointGraphics,
-		Vk.Subpass.descriptionInputAttachments = [],
-		Vk.Subpass.descriptionColorAndResolveAttachments =
-			Left [colorAttachmentRef],
-		Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
-		Vk.Subpass.descriptionPreserveAttachments = [] }
-	dependency = Vk.Subpass.Dependency {
-		Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
-		Vk.Subpass.dependencyDstSubpass = 0,
-		Vk.Subpass.dependencySrcStageMask =
-			Vk.Ppl.StageColorAttachmentOutputBit .|.
-			Vk.Ppl.StageEarlyFragmentTestsBit,
-		Vk.Subpass.dependencySrcAccessMask = zeroBits,
-		Vk.Subpass.dependencyDstStageMask =
-			Vk.Ppl.StageColorAttachmentOutputBit .|.
-			Vk.Ppl.StageEarlyFragmentTestsBit,
-		Vk.Subpass.dependencyDstAccessMask =
-			Vk.AccessColorAttachmentWriteBit .|.
-			Vk.AccessDepthStencilAttachmentWriteBit,
-		Vk.Subpass.dependencyDependencyFlags = zeroBits }
-	renderPassInfo = Vk.RndrPss.CreateInfo {
-		Vk.RndrPss.createInfoNext = TMaybe.N,
-		Vk.RndrPss.createInfoFlags = zeroBits,
-		Vk.RndrPss.createInfoAttachments =
-			colorAttachment :** HPList.Nil,
-		Vk.RndrPss.createInfoSubpasses = [subpass],
-		Vk.RndrPss.createInfoDependencies = [dependency] }
 
 type AtomUbo s alu mnm tnm = '(s, '[
 	'Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu WViewProj mnm],
@@ -1271,6 +1195,72 @@ createSyncObjects iasgrp rfsgrp iffgrp k =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
+-- GLFW EVENTS
+
+glfwEvents :: Show k => k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents k w outp vscls vmb1p = do
+--	threadDelay 10000
+	GlfwG.pollEvents
+	cls <- GlfwG.Win.shouldClose w
+	scls <- atomically $ readTVar vscls
+	atomically $ writeTVar vscls cls
+--	when cls . putStrLn $ "glfwEvents: scls = " ++ show scls
+	when (not scls && cls) do
+		putStrLn $ "send EventDeleteWindow " ++ show k
+		atomically . writeTChan outp $ EventDeleteWindow k
+	mb1 <- getMouseButtons w
+	mb1p <- atomically $ readTVar vmb1p
+	atomically $ writeTVar vmb1p mb1
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls
+	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
+		=<< GlfwG.Ms.getCursorPos w
+	else pure ()
+	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
+	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
+	cls' <- GlfwG.Win.shouldClose w
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
+	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
+		=<< GlfwG.Ms.getCursorPos w
+	else pure ()
+	where
+	mAny p = M.foldr (\x b -> p x || b) False
+
+getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
+getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
+	<$> GlfwG.Ms.getButton w `mapM` bs
+	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
+
+type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
+
+mouseButtonAll :: [GlfwG.Ms.MouseButton]
+mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
+
+sendMouseButtonDown, sendMouseButtonUp ::
+	k -> GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
+	GlfwG.Ms.MouseButton -> IO ()
+sendMouseButtonDown k w = sendMouseButton k w EventMouseButtonDown
+	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
+
+sendMouseButtonUp k w = sendMouseButton k w EventMouseButtonUp
+	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
+
+sendMouseButton ::
+	k -> GlfwG.Win.W sw ->
+	(k -> GlfwG.Ms.MouseButton -> Event k) ->
+	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
+	GlfwG.Ms.MouseButton -> IO ()
+sendMouseButton k w ev pst st pbss bss outp b =
+	case (pbss M.! b == pst, bss M.! b == st) of
+		(True, True) -> do
+--			print $ ev k b
+			atomically . writeTChan outp $ ev k b
+			cl <- GlfwG.Win.shouldClose w
+			when (not cl) $
+				atomically . writeTChan outp . uncurry (EventCursorPosition k)
+					=<< GlfwG.Ms.getCursorPos w
+		_ -> pure ()
+
 -- CREATE AND COPY BUFFERS
 
 createBffrAtm :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
@@ -1491,13 +1481,6 @@ mainloop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps dsg vpm 
 			crtx wi pct0
 			pure wi
 	fix \loop -> do
---		GlfwG.pollEvents
-		M.lookup zero' <$> atomically (readTVar vws) >>= \case
-			Just (WinObjs (_, fbrszd) _ _ _ _ _) -> checkResizedState fbrszd >>= bool (pure ()) (do
-				putStrLn "recreateAllIfNeed: needed"
-				atomically $ writeTChan outp EventNeedRedraw)
-			_ -> pure ()
---		putStrLn "before readTChan"
 		atomically (readTChan inp) >>= \case
 			Draw ds' -> do
 				Vk.Dvc.waitIdle dvc
@@ -1673,8 +1656,7 @@ recreateAllIfNeed ::
 	WinObjs sw ssfc sg sl sdsl mnm sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf) -> TChan (Event k) -> IO ()
 recreateAllIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
---	checkFlag fbrszd >>= bool (pure ()) (do
-	checkResizedState fbrszd >>= bool (pure ()) (do
+	checkFlag fbrszd >>= bool (pure ()) (do
 		putStrLn "recreateAllIfNeed: needed"
 		atomically $ writeTChan outp EventNeedRedraw
 		recreateAll @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
