@@ -122,15 +122,15 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 
 	vwin <- atomically $ newTVar 0
 	_ <- forkIO $ forever do
-		wi <- atomically $ readTVar vwin
 		pct <- atomically $ readTChan tpct
+		wi <- atomically $ readTVar vwin
 		atomically . inp $ SetPicture wi pct
 
 	tinput <- atomically $ newTVar False
 	vtxt <-  atomically $ newTVar []
 
 	($ instances) $ fix \loop rs -> do
-		threadDelay 2000
+		threadDelay 20000
 		a <- atomically $ readTVar ta
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
