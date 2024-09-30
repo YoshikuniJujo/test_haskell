@@ -174,20 +174,20 @@ src
         - [x] dvcExtensions
         - [x] createLgDvc
         - [x] swpchImgNum
-    + [ ] BODY
+    + [x] BODY
         - [x] body
         - [x] createCmdPl
         - [x] createCmdBffr
-        - [ ] createPplLyt
-        - [ ] createDescriptorSetLayout
-        - [ ] createVertexBuffer
-        - [ ] createIndexBuffer
-        - [ ] createUniformBuffer
-        - [ ] UniformBufferMemory
-        - [ ] createDescriptorPool
-        - [ ] createDescriptorSet
-        - [ ] descriptorWrite
-        - [ ] createTextureSampler
+        - [x] createPplLyt
+        - [x] createDSLyt
+        - [x] DscStLytArg
+        - [x] createVtxBffr
+        - [x] createIdxBffr
+        - [x] createBffrMem
+        - [x] createViewProjBffr
+        - [x] ViewProjMemory
+        - [x] AtomViewProj
+        - [x] createDscPl
     + [ ] WINDOW OBJECTS
         - [ ] ...
         - [ ] class NumToValue
@@ -202,6 +202,8 @@ src
         - [ ] sendMouseButtonDown
         - [ ] sendMouseButtonUp
         - [ ] sendMouseButton
+        - [ ] ...
+        - [ ] createDscSt'
         - [ ] ...
     + [ ] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
