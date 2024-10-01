@@ -10,7 +10,7 @@ module Graphics.UI.GlfwG.Window (
 
 	W, create, Group, group, create', unsafeDestroy, lookup,
 
-	shouldClose,
+	shouldClose, setSouldClose,
 
 	-- ** HINT
 
@@ -113,6 +113,9 @@ type KeyCallback s = W s -> B.Key -> Int -> B.KeyState -> B.ModifierKeys -> IO (
 
 shouldClose :: W sw -> IO Bool
 shouldClose (W w) = B.windowShouldClose w
+
+setSouldClose :: W sw -> Bool -> IO ()
+setSouldClose (W w) = B.setWindowShouldClose w
 
 getKey :: W sw -> B.Key -> IO B.KeyState
 getKey (W w) = B.getKey w
