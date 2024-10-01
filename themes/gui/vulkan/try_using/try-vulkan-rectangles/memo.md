@@ -217,10 +217,10 @@ src
         - [x] swpchInfoSsd
         - [x] chooseSwpSfcFmt
         - [x] swpchInfo
-        - [ ] createImgVws
-        - [ ] createImgVw
-        - [ ] recreateImageViews
-        - [ ] createRndrPss
+        - [x] createImgVws
+        - [x] createImgVw
+        - [x] recreateImageViews
+        - [x] createRndrPss
         - [ ] createFrmbffrs
         - [ ] recreateFramebuffers'
         - [ ] class Mappable
@@ -244,6 +244,7 @@ src
     + [ ] DATA TYPES
     + [ ] SHADERS
     + [ ] import list
+    + [ ] export list
 * [ ] CreateTextureGroup
 * [ ] Vertex
 * [ ] ThEnv

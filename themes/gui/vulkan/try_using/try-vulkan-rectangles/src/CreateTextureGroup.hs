@@ -25,7 +25,7 @@ module CreateTextureGroup (
 
 	-- * CREATE INFO
 
-	mkImageViewCreateInfo, imgVwInfo,
+	imgVwInfo, imgVwInfo',
 
 	-- * FOO
 
@@ -132,7 +132,7 @@ createTx phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
 	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat img)
-		ivmng k (mkImageViewCreateInfo tximg) >>= \(AlwaysRight tximgvw) ->
+		ivmng k (imgVwInfo tximg) >>= \(AlwaysRight tximgvw) ->
 
 	Vk.DscSet.lookup dsg k >>= \(fromJust -> HPList.Singleton ubds) ->
 
@@ -157,14 +157,14 @@ updateTexture dv udbs txsmplr imng k = do
 	Just tximgvw <- Vk.ImgVw.lookup imng k
 	updateDescriptorSetTex dv udbs tximgvw txsmplr
 
-mkImageViewCreateInfo ::
+imgVwInfo ::
 	Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfo i = imgVwInfo i Vk.Img.AspectColorBit
+imgVwInfo i = imgVwInfo' i Vk.Img.AspectColorBit
 
-imgVwInfo :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
+imgVwInfo' :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
-imgVwInfo i a = Vk.ImgVw.CreateInfo {
+imgVwInfo' i a = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
 	Vk.ImgVw.createInfoFlags = zeroBits,
 	Vk.ImgVw.createInfoImage = i,
