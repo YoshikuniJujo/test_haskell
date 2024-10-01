@@ -188,17 +188,17 @@ src
         - [x] ViewProjMemory
         - [x] AtomViewProj
         - [x] createDscPl
-    + [ ] PROVIDE WINDOW OBJECTS
+    + [x] PROVIDE WINDOW OBJECTS
         - [x] provideWinObjs
             * [x] forall ...
             * [x] constraint
             * [x] type declaration
             * [x] arguments
             * [x] body
-        - [ ] initWin
-        - [ ] createDscSt'
+        - [x] initWin
+        - [x] createDscSt'
     + [ ] WINDOW OBJECTS
-        - [ ] winObjs
+        - [x] winObjs
         - [ ] destroyWinObjs
         - [ ] class NumToValue
         - [ ] instance NumToValue

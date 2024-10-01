@@ -358,12 +358,10 @@ body ip op vex ist pd qfis dv gq pq pct =
 	let	rgs = (rbg, rmg) in
 	createDscPl dv \dp -> Vk.DscSt.group dv \dsg ->
 	atomically (newTVar M.empty) >>= \ges ->
-	let	crwos = provideWinObjs @n @scfmt op vex pd dv gq cp qfis pl wg
-			(sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg)
-			dsl dp dsg vp rgs ges
-		drwos = destroyWinObjs @n
-			wg sfcg rpg gpg rgs iasg rfsg iffg scg ivg fbg
-			dsg ges in
+	let	crwos = provideWinObjs @n @scfmt
+			op vex pd dv gq cp qfis pl wg gs dsl dp dsg vp rgs ges
+		drwos = destroyWinObjs @n wg gs dsg rgs ges
+		gs = (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg) in
 	txGroup dv \txg -> createTxSmplr pd dv \txs ->
 	let	crtx k p = createTx pd dv gq cp dsg txg txs (ImageRgba8 p) k
 		drtx = destroyTx txg in
@@ -498,7 +496,7 @@ createDscPl dv = Vk.DscPl.create dv info nil
 provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sl sdsl bnmvp alu mnmvp nmt sw ssfc ssc siv nmi sr sf sg
 	sias srfs siff smvp sbvp sdp sds smr sbr bnmr nmr .
-	(Mappable n, Show k, Ord k, Vk.T.FormatToValue scfmt, KnownNat alu) =>
+	(Mappable n, Vk.T.FormatToValue scfmt, Show k, Ord k, KnownNat alu) =>
 	TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> QFamIdcs ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
@@ -519,27 +517,22 @@ provideWinObjs op vexs pd dv gq cp qfis pl wg gs dsl dp dsg vp rgs ges k =
 	setGlfwEvents op w fr ges k
 
 initWin :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
-initWin v wgrp k = do
+initWin v wg k = do
 	GlfwG.Win.hint
 		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 	GlfwG.Win.hint $ GlfwG.Win.WindowHint'Visible v
-	(forceRight' -> w) <- uncurry
-		(GlfwG.Win.create' wgrp k) wSize wName Nothing Nothing
+	(forceRight' -> w) <-
+		uncurry (GlfwG.Win.create' wg k) wSize wName Nothing Nothing
 	pure w
 	where wName = "Use Texture Group"; wSize = (800, 600)
 
-createDscSt' :: forall sd sds sp sm sb nm alu sdsl nmt k mnmvp . (Ord k, KnownNat alu) =>
-	Vk.Dvc.D sd ->
-	Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp nmt) ->
+createDscSt' :: forall sd sdsl alu mnmvp nmt sds sp smvp sbvp bnmvp k .
+	(KnownNat alu, Ord k) =>
+	Vk.Dvc.D sd -> Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp nmt) ->
 	Vk.DscSt.Group sd sds k sp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] -> k ->
-	Vk.DscPl.P sp ->
-	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu mnmvp] ->
+	Vk.DscPl.P sp -> Vk.Bffr.Binded smvp sbvp bnmvp '[AtomViewProj alu mnmvp] ->
 	IO (Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp nmt))
-createDscSt' dv
-	dsl
-	dsg k
-	dp vpb
-	=
+createDscSt' dv dsl dsg k dp bvp =
 	Vk.DscSt.allocateDs' dsg k info >>= \(forceRight' -> HPList.Singleton ds) ->
 	Vk.DscSt.updateDs dv (HPList.Singleton . U5 $ wr ds) HPList.Nil >> pure ds
 	where
@@ -549,31 +542,28 @@ createDscSt' dv
 		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
 	wr :: Vk.DscSt.D sds slbts -> Vk.DscSt.Write 'Nothing sds slbts
 		('Vk.DscSt.WriteSourcesArgBuffer
-			'[ '(sm, sb, nm, AtomViewProj alu mnmvp, 0)]) 0
+			'[ '(smvp, sbvp, bnmvp, AtomViewProj alu mnmvp, 0)]) 0
 	wr ds = Vk.DscSt.Write {
 		Vk.DscSt.writeNext = TMaybe.N,
 		Vk.DscSt.writeDstSet = ds,
 		Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
-			. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo vpb }
+			. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bvp }
 
 -- WINDOW OBJECTS
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
-	si sd sl sdsl alu mnmvp nmt sw ssfc ssc siv nmi sr sf sg sias srfs siff .
-	(Mappable n, Ord k, Vk.T.FormatToValue scfmt) =>
+	si sd sl sdsl alu mnmvp nmt sw ssfc ssc sv nmi sr sf sg sias srfs siff .
+	(Mappable n, Vk.T.FormatToValue scfmt, Ord k) =>
 	TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Phd.P -> Vk.Dvc.D sd -> QFamIdcs ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
-	GlfwG.Win.W sw -> TVar Bool ->
-	WinObjGroups k si ssfc sd scfmt
-		ssc siv nmi sr sf sg sl sdsl alu mnmvp nmt sias srfs siff ->
-	k ->
-	IO (WinObjs sw ssfc scfmt ssc nmi (Replicate n siv) sr (Replicate n sf)
+	GlfwG.Win.W sw -> TVar Bool -> WinObjGroups k si ssfc sd scfmt
+		ssc sv nmi sr sf sg sl sdsl alu mnmvp nmt sias srfs siff -> k ->
+	IO (WinObjs sw ssfc scfmt ssc nmi (Replicate n sv) sr (Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff)
-winObjs vexs pd dv qfis pl w fr (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg)
-	k =
-
+winObjs vexs pd dv qfis pl w fr
+	(sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg) k =
 	Vk.Khr.Sfc.Glfw.Win.create' sfcg k w >>= \(forceRight' -> sfc) ->
 	prepareSwpch w sfc pd \ssd ex ->
 	atomically (
@@ -583,62 +573,42 @@ winObjs vexs pd dv qfis pl w fr (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
 	createImgVws @n ivg k scis >>= \scvs ->
 	createRndrPss @scfmt rpg k >>= \rp ->
-	createFrmbffrs @n @siv fbg k ex rp scvs >>= \fbs ->
+	createFrmbffrs @n @sv fbg k ex rp scvs >>= \fbs ->
 	createGrPpl gpg k ex rp pl >>= \gp ->
 	createSyncObjs iasg rfsg iffg k >>= \sos ->
 	pure $ WinObjs (w, fr) sfc vex (sc, scvs, rp, fbs) gp sos
 
 destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
-	si sd sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
-	smrct sbrct nmrct mnm sds sdp alu . (NumToValue n,  Ord k) =>
-	GlfwG.Win.Group sw k ->
-	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
-	Vk.RndrPss.Group sd 'Nothing sr k ->
-	Vk.Ppl.Graphics.Group sd 'Nothing sg k '[ '(
-		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(Rectangle, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3),
-			'(9, TexCoord) ],
-		'(sl, '[ '(sdsl, DscStLytArg alu mnm "texture")], '[]) )] ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[Vk.Obj.List 1 Rectangle ""],
-		Vk.Mm.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mm.BufferArg nmrct '[Vk.Obj.List 1 Rectangle ""])]
-		) ->
-	Vk.Smph.Group sd 'Nothing sias k ->
-	Vk.Smph.Group sd 'Nothing srfs k ->
-	Vk.Fnc.Group sd 'Nothing siff k ->
-	Vk.Khr.Swpch.Group sd 'Nothing scfmt ssc k ->
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
-	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
-	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu ('Just "") "texture")] ->
-	TVar (M.Map k (IO ())) ->
-	k -> IO ()
-destroyWinObjs
-	wgrp sfcgrp rpgrp gpgrp (rbgrp, rmgrp) iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp dsg ges k = do
-	atomically (modifyTVar ges (M.delete k))
-	mw <- GlfwG.Win.lookup wgrp k
+	si sd sl sdsl alu mnmvp nmt sw ssfc ssc siv nm sr sf sg sias srfs siff
+	smr sbr bnmr nmr sdp sds . (NumToValue n,  Ord k) =>
+	GlfwG.Win.Group sw k -> WinObjGroups k si ssfc sd scfmt
+		ssc siv nm sr sf sg sl sdsl alu mnmvp nmt sias srfs siff ->
+	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] ->
+	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) -> k -> IO ()
+destroyWinObjs wg (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg)
+	dsg (rbg, rmg) ges k = do
+	mw <- GlfwG.Win.lookup wg k
 	case mw of
 		Nothing -> pure ()
 		Just (GlfwG.Win.W w) -> do
 			Glfw.setWindowShouldClose w True
-			either error pure =<< GlfwG.Win.unsafeDestroy wgrp k
+			either error pure =<< GlfwG.Win.unsafeDestroy wg k
 
-			either error pure =<< Vk.Khr.Swpch.unsafeDestroy scgrp k
-			either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcgrp k
+			either error pure =<< Vk.Khr.Swpch.unsafeDestroy scg k
+			either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcg k
 
-			either error pure =<< Vk.RndrPss.unsafeDestroy rpgrp k
-			either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpgrp k
-			either error pure =<< Vk.Bffr.unsafeDestroy rbgrp k
-			either error pure =<< Vk.Mm.unsafeFree rmgrp k
-			either error pure =<< Vk.Smph.unsafeDestroy iasgrp k
-			either error pure =<< Vk.Smph.unsafeDestroy rfsgrp k
-			either error pure =<< Vk.Fnc.unsafeDestroy iffgrp k
+			either error pure =<< Vk.RndrPss.unsafeDestroy rpg k
+			either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpg k
+			either error pure =<< Vk.Bffr.unsafeDestroy rbg k
+			either error pure =<< Vk.Mm.unsafeFree rmg k
+			either error pure =<< Vk.Smph.unsafeDestroy iasg k
+			either error pure =<< Vk.Smph.unsafeDestroy rfsg k
+			either error pure =<< Vk.Fnc.unsafeDestroy iffg k
 			either error pure =<< Vk.DscSt.unsafeFreeDs dsg k
 			for_ [0 .. numToValue @n - 1] \i -> do
-				either error pure =<< Vk.ImgVw.unsafeDestroy ivgrp (k, i)
-				either error pure =<< Vk.Frmbffr.unsafeDestroy fbgrp (k, i)
+				either error pure =<< Vk.ImgVw.unsafeDestroy ivg (k, i)
+				either error pure =<< Vk.Frmbffr.unsafeDestroy fbg (k, i)
+	atomically (modifyTVar ges (M.delete k))
 
 class NumToValue (n :: [()]) where numToValue :: Int
 
