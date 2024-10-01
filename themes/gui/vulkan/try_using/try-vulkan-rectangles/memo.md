@@ -188,15 +188,17 @@ src
         - [x] ViewProjMemory
         - [x] AtomViewProj
         - [x] createDscPl
-    + [ ] WINDOW OBJECTS
-        - [ ] winObjs
+    + [ ] PROVIDE WINDOW OBJECTS
+        - [x] provideWinObjs
             * [x] forall ...
             * [x] constraint
             * [x] type declaration
             * [x] arguments
-            * [ ] body
-                + [x] make window objects
-                + [ ] others
+            * [x] body
+        - [ ] initWin
+        - [ ] createDscSt'
+    + [ ] WINDOW OBJECTS
+        - [ ] winObjs
         - [ ] destroyWinObjs
         - [ ] class NumToValue
         - [ ] instance NumToValue
@@ -205,18 +207,28 @@ src
             * [ ] others
         - [ ] WinEnvs
         - [ ] FramebufferResized
-        - [ ] initWindow
+        - [ ] WinObjGroups
         - [ ] prepareSwpch
         - [ ] querySwpchSupport
         - [ ] SwpchSupportDetails
         - [ ] createSwpch
+        - [ ] recreateSwpch
         - [ ] swpchInfoSsd
         - [ ] swpchInfo
-        - [ ] ...
-        - [ ] createDscSt'
-        - [ ] ...
-    + [ ] GRAPHICS PIPELINE
-    + [ ] GLFW EVENTS
+        - [ ] createImgVws
+        - [ ] createImgVw
+        - [ ] recreateImageViews
+        - [ ] createRndrPss
+        - [ ] createFrmbffrs
+        - [ ] recreateFramebuffers'
+        - [ ] class Mappable
+        - [ ] instance Mappable
+        - [ ] mkFramebufferCreateInfo
+        - [ ] createSyncObjs
+        - [ ] SyncObjects
+    * [ ] RECTANGLE BUFFER
+    + [ ] GET GLFW EVENTS
+        - [ ] setGlfwEvents
         - [ ] glfwEvents
         - [ ] getMouseButtons
         - [ ] MouseButtonsStateDict
@@ -224,6 +236,7 @@ src
         - [ ] sendMouseButtonDown
         - [ ] sendMouseButtonUp
         - [ ] sendMouseButton
+    + [ ] GRAPHICS PIPELINE
     + [ ] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
     + [ ] DATA TYPES
