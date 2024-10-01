@@ -191,8 +191,9 @@ src
     + [ ] WINDOW OBJECTS
         - [ ] winObjs
             * [x] forall ...
-            * [ ] constraint
-            * [ ] type declaration
+            * [x] constraint
+            * [x] type declaration
+            * [ ] arguments
             * [ ] body
         - [ ] destroyWinObjs
         - [ ] class NumToValue
