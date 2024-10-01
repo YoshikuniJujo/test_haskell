@@ -199,22 +199,24 @@ src
         - [x] createDscSt'
     + [ ] WINDOW OBJECTS
         - [x] winObjs
-        - [ ] destroyWinObjs
-        - [ ] class NumToValue
-        - [ ] instance NumToValue
-        - [ ] WinObjs
+        - [x] destroyWinObjs
+        - [x] class NumToVal
+        - [x] instance NumToVal
+        - [x] WinObjs
             * [x] correct order of objects
-            * [ ] others
-        - [ ] WinEnvs
-        - [ ] FramebufferResized
-        - [ ] WinObjGroups
-        - [ ] prepareSwpch
-        - [ ] querySwpchSupport
-        - [ ] SwpchSupportDetails
-        - [ ] createSwpch
-        - [ ] recreateSwpch
-        - [ ] swpchInfoSsd
-        - [ ] swpchInfo
+            * [x] others
+        - [x] WinEnvs
+        - [x] FramebufferResized
+        - [x] WinObjGroups
+        - [x] prepareSwpch
+        - [x] querySwpchSupport
+        - [x] SwpchSupportDetails
+        - [x] createSwpch'
+        - [x] recreateSwpch
+        - [x] swapExtent
+        - [x] swpchInfoSsd
+        - [x] chooseSwpSfcFmt
+        - [x] swpchInfo
         - [ ] createImgVws
         - [ ] createImgVw
         - [ ] recreateImageViews

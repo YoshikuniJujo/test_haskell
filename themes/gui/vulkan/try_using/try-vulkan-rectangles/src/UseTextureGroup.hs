@@ -136,8 +136,6 @@ import Graphics.UI.GlfwG.Window.Type as GlfwG.Win
 import Graphics.UI.GlfwG.Key as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
-import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
-
 import CreateTextureGroup
 
 import Codec.Picture qualified as Pct
@@ -188,7 +186,7 @@ useTextureGroup ip op vex pct = GlfwG.init error $
 	crsfc w i f = Vk.Khr.Sfc.group i nil \sg ->
 		Vk.Khr.Sfc.Glfw.Win.create' sg () w >>= f . forceRight'
 	num :: [a] -> (forall (n :: [()]) .
-		(Mappable n, NumToValue n) => Proxy n -> b) -> b
+		(Mappable n, NumToVal n) => Proxy n -> b) -> b
 	num [] f = f (Proxy :: Proxy '[])
 	num (_ : xs) f =
 		num xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
@@ -270,7 +268,7 @@ pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
 		qfis <- findQFams pd sfc
 		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
 			$	HPListC.null (snd $ formats ss) ||
-				null (presentModesNew ss)
+				null (presentModes ss)
 	espt pd = elemAll dvcExtensions
 		. (Vk.Phd.extensionPropertiesExtensionName <$>)
 		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
@@ -324,13 +322,13 @@ swpchImgNum :: forall (fmt :: Vk.T.Format) sd ssfc fmts .
 	Vk.Extent2d -> QFamIdcs -> IO [()]
 swpchImgNum dv sfc ssd ex qfis =
 	Vk.Khr.Swpch.group @fmt dv nil \scg ->
-	createSwpch scg () sfc ssd ex qfis >>= \sc ->
+	createSwpch' sfc qfis scg () ssd ex >>= \sc ->
 	map (const ()) <$> Vk.Khr.Swpch.getImages dv sc
 
 -- BODY
 
 body :: forall (n :: [()]) (scfmt :: Vk.T.Format) k si sd . (
-	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt,
+	Mappable n, NumToVal n, Vk.T.FormatToValue scfmt,
 	Show k, Ord k, Succable k ) =>
 	TChan (Command k) -> TChan (Event k) ->
 	TVar (M.Map k (TVar Vk.Extent2d)) -> Vk.Ist.I si -> Vk.Phd.P ->
@@ -558,7 +556,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Phd.P -> Vk.Dvc.D sd -> QFamIdcs ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
-	GlfwG.Win.W sw -> TVar Bool -> WinObjGroups k si ssfc sd scfmt
+	GlfwG.Win.W sw -> FramebufferResized -> WinObjGroups k si ssfc sd scfmt
 		ssc sv nmi sr sf sg sl sdsl alu mnmvp nmt sias srfs siff -> k ->
 	IO (WinObjs sw ssfc scfmt ssc nmi (Replicate n sv) sr (Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff)
@@ -569,7 +567,7 @@ winObjs vexs pd dv qfis pl w fr
 	atomically (
 		newTVar (Vk.Extent2d 0 0) >>= \v -> writeTVar v ex >>
 		v <$ modifyTVar vexs (M.insert k v) ) >>= \vex ->
-	createSwpch @scfmt scg k sfc ssd ex qfis >>= \sc ->
+	createSwpch' sfc qfis scg k ssd ex >>= \sc ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
 	createImgVws @n ivg k scis >>= \scvs ->
 	createRndrPss @scfmt rpg k >>= \rp ->
@@ -580,46 +578,40 @@ winObjs vexs pd dv qfis pl w fr
 
 destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sl sdsl alu mnmvp nmt sw ssfc ssc siv nm sr sf sg sias srfs siff
-	smr sbr bnmr nmr sdp sds . (NumToValue n,  Ord k) =>
+	smr sbr bnmr nmr sdp sds . (NumToVal n,  Ord k) =>
 	GlfwG.Win.Group sw k -> WinObjGroups k si ssfc sd scfmt
 		ssc siv nm sr sf sg sl sdsl alu mnmvp nmt sias srfs siff ->
 	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] ->
 	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) -> k -> IO ()
 destroyWinObjs wg (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg)
-	dsg (rbg, rmg) ges k = do
-	mw <- GlfwG.Win.lookup wg k
+	dsg (rbg, rmg) ges k = GlfwG.Win.lookup wg k >>= \mw -> do
 	case mw of
 		Nothing -> pure ()
-		Just (GlfwG.Win.W w) -> do
-			Glfw.setWindowShouldClose w True
-			either error pure =<< GlfwG.Win.unsafeDestroy wg k
-
-			either error pure =<< Vk.Khr.Swpch.unsafeDestroy scg k
-			either error pure =<< Vk.Khr.Sfc.unsafeDestroy sfcg k
-
-			either error pure =<< Vk.RndrPss.unsafeDestroy rpg k
-			either error pure =<< Vk.Ppl.Graphics.unsafeDestroyGs gpg k
-			either error pure =<< Vk.Bffr.unsafeDestroy rbg k
-			either error pure =<< Vk.Mm.unsafeFree rmg k
-			either error pure =<< Vk.Smph.unsafeDestroy iasg k
-			either error pure =<< Vk.Smph.unsafeDestroy rfsg k
-			either error pure =<< Vk.Fnc.unsafeDestroy iffg k
-			either error pure =<< Vk.DscSt.unsafeFreeDs dsg k
-			for_ [0 .. numToValue @n - 1] \i -> do
-				either error pure =<< Vk.ImgVw.unsafeDestroy ivg (k, i)
-				either error pure =<< Vk.Frmbffr.unsafeDestroy fbg (k, i)
+		Just w -> do
+			GlfwG.Win.setShouldClose w True
+			tr =<< GlfwG.Win.unsafeDestroy wg k
+			tr =<< Vk.Khr.Sfc.unsafeDestroy sfcg k
+			tr =<< Vk.Khr.Swpch.unsafeDestroy scg k
+			tr =<< Vk.RndrPss.unsafeDestroy rpg k
+			for_ [0 .. numToVal @n - 1] \i -> do
+				tr =<< Vk.ImgVw.unsafeDestroy ivg (k, i)
+				tr =<< Vk.Frmbffr.unsafeDestroy fbg (k, i)
+			tr =<< Vk.Ppl.Graphics.unsafeDestroyGs gpg k
+			tr =<< Vk.Smph.unsafeDestroy iasg k
+			tr =<< Vk.Smph.unsafeDestroy rfsg k
+			tr =<< Vk.Fnc.unsafeDestroy iffg k
+			tr =<< Vk.DscSt.unsafeFreeDs dsg k
+			tr =<< Vk.Bffr.unsafeDestroy rbg k
+			tr =<< Vk.Mm.unsafeFree rmg k
 	atomically (modifyTVar ges (M.delete k))
+	where tr = either error pure
 
-class NumToValue (n :: [()]) where numToValue :: Int
+class NumToVal (n :: [()]) where numToVal :: Int
+instance NumToVal '[] where numToVal = 0
+instance NumToVal n => NumToVal ('() ': n) where numToVal = 1 + numToVal @n
 
-instance NumToValue '[] where numToValue = 0
-
-instance NumToValue n => NumToValue ('() ': n) where
-	numToValue = 1 + numToValue @n
-
-data WinObjs
-	sw ssfc scfmt ssc nmscv svs sr sfs sg sl sdsl alu mnmvp nmt sias srfs siff
-	= WinObjs
+data WinObjs sw ssfc scfmt
+	ssc nmscv svs sr sfs sg sl sdsl alu mnmvp nmt sias srfs siff = WinObjs
 	(WinEnvs sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
 	(Swapchains scfmt ssc nmscv svs sr sfs)
 	(Pipeline sg sl sdsl alu mnmvp nmt) (SyncObjects '(sias, srfs, siff))
@@ -648,16 +640,14 @@ type WinObjGroups k si ssfc sd scfmt
 prepareSwpch :: forall sw ssfc a .
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	(forall fmts . SwpchSupportDetails fmts -> Vk.Extent2d -> IO a) -> IO a
-prepareSwpch win sfc phdvc f =
-	querySwpchSupport phdvc sfc \spp -> do
-	ext <- swapExtent win $ capabilities spp
-	f spp ext
+prepareSwpch w sfc pd f =
+	querySwpchSupport pd sfc \sd -> swapExtent w (capabilities sd) >>= f sd
 
-querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
+querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ssfc -> (forall fmts .
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
 	SwpchSupportDetails fmts -> IO a) -> IO a
-querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
-	f =<< SwpchSupportDetails
+querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts -> f
+	=<< SwpchSupportDetails
 		<$> Vk.Khr.Sfc.Phd.getCapabilities pd sfc
 		<*> ((, fmts) <$> Vk.Khr.Sfc.Phd.getFormatsFiltered pd sfc)
 		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
@@ -667,29 +657,45 @@ data SwpchSupportDetails fmts = SwpchSupportDetails {
 	formats :: (
 		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
 		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
-	presentModesNew :: [Vk.Khr.Sfc.PresentMode] }
+	presentModes :: [Vk.Khr.Sfc.PresentMode] }
 
-createSwpch ::
-	forall (scfmt :: Vk.T.Format) ssfc sd ma ssc k fmts . (
-	Ord k, Vk.AllocationCallbacks.ToMiddle ma ) =>
-	Vk.T.FormatToValue scfmt =>
-	Vk.Khr.Swpch.Group sd ma scfmt ssc k -> k ->
-	Vk.Khr.Sfc.S ssfc -> SwpchSupportDetails fmts -> Vk.Extent2d ->
-	QFamIdcs -> IO (Vk.Khr.Swpch.S scfmt ssc)
-createSwpch scgrp k sfc spp ext qfis =
-	Vk.Khr.Swpch.create' @scfmt scgrp k crInfo
-		>>= \(forceRight' -> sc) -> pure sc
-	where crInfo = swpchInfoSsd sfc qfis spp ext
+createSwpch' :: forall ssfc sd ma scfmt ssc k fmts .
+	(Vk.AllocationCallbacks.ToMiddle ma, Vk.T.FormatToValue scfmt, Ord k) =>
+	Vk.Khr.Sfc.S ssfc -> QFamIdcs -> Vk.Khr.Swpch.Group sd ma scfmt ssc k ->
+	k -> SwpchSupportDetails fmts -> Vk.Extent2d ->
+	IO (Vk.Khr.Swpch.S scfmt ssc)
+createSwpch' sfc qfis scg k ssd ex = (\(forceRight' -> sc) -> sc)
+	<$> Vk.Khr.Swpch.create' @scfmt scg k (swpchInfoSsd sfc qfis ssd ex)
 
 recreateSwpch :: Vk.T.FormatToValue scfmt =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	QFamIdcs -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S scfmt ssc ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S scfmt ssc ->
 	IO Vk.Extent2d
-recreateSwpch win sfc phdvc qfis0 dvc sc =
-	querySwpchSupport phdvc sfc \spp -> do
-	ext <- swapExtent win $ capabilities spp
-	let	crInfo = swpchInfoSsd sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swpch.unsafeRecreate @'Nothing dvc crInfo nil sc
+recreateSwpch w sfc pd qfis dv sc = querySwpchSupport pd sfc \ssd ->
+	swapExtent w (capabilities ssd) >>= \ex -> ex <$
+	Vk.Khr.Swpch.unsafeRecreate dv (swpchInfoSsd sfc qfis ssd ex) nil sc
+
+swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+swapExtent win cps
+	| Vk.extent2dWidth c /= maxBound = pure c
+	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
+		\(fromIntegral -> w, fromIntegral -> h) ->
+		Vk.Extent2d
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
+			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
+	where
+	c = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
+	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
+	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
+
+swpchInfoSsd ::
+	Vk.Khr.Sfc.S ss -> QFamIdcs -> SwpchSupportDetails fmts ->
+	Vk.Extent2d -> Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfoSsd sfc qfis ssd ex = chooseSwpSfcFmt (formats ssd)
+	\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
+	swpchInfo sfc qfis (capabilities ssd) sc (pmd $ presentModes ssd) ex
+	where pmd = fromMaybe
+		Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
 chooseSwpSfcFmt :: (
 	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
@@ -699,33 +705,10 @@ chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
 	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
-swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
-swapExtent win cps
-	| Vk.extent2dWidth cur /= maxBound = pure cur
-	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
-		\(fromIntegral -> w, fromIntegral -> h) ->
-		Vk.Extent2d
-			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
-			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
-	where
-	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
-	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
-	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
-
-swpchInfoSsd :: Vk.Khr.Sfc.S ss -> QFamIdcs ->
-	SwpchSupportDetails fmts -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-swpchInfoSsd sfc qfis0 ssd ex = chooseSwpSfcFmt (formats ssd)
-	\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
-	swpchInfo sfc qfis0 (capabilities ssd) sc
-	(chooseSwapPresentMode $ presentModesNew ssd) ex
-	where chooseSwapPresentMode =
-		fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
-
-swpchInfo :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> QFamIdcs -> Vk.Khr.Sfc.Capabilities ->
+swpchInfo :: forall ssfc fmt .
+	Vk.Khr.Sfc.S ssfc -> QFamIdcs -> Vk.Khr.Sfc.Capabilities ->
 	Vk.Khr.Sfc.ColorSpace -> Vk.Khr.Sfc.PresentMode -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
+	Vk.Khr.Swpch.CreateInfo 'Nothing ssfc fmt
 swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
 	Vk.Khr.Swpch.createInfoFlags = zeroBits,
@@ -947,8 +930,9 @@ type RectGroups sd sm sb nm nm' k = (
 
 -- GET GLFW EVENTS
 
-setGlfwEvents :: (Ord k, Show k) => TChan (Event k) ->
-	GlfwG.Win.W sw -> TVar Bool -> TVar (M.Map k (IO ())) -> k -> IO ()
+setGlfwEvents :: (Ord k, Show k) =>
+	TChan (Event k) -> GlfwG.Win.W sw -> FramebufferResized ->
+	TVar (M.Map k (IO ())) -> k -> IO ()
 setGlfwEvents op w fr ges k =
 	GlfwG.Win.setKeyCallback w
 		(Just \_w ky sc' act mods -> do
