@@ -116,7 +116,6 @@ import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Sample
-import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr
@@ -325,7 +324,7 @@ swpchImgNum :: forall (fmt :: Vk.T.Format) sd ssfc fmts .
 	Vk.Extent2d -> QFamIdcs -> IO [()]
 swpchImgNum dv sfc ssd ex qfis =
 	Vk.Khr.Swpch.group @fmt dv nil \scg ->
-	createSwapchainNew scg () sfc ssd ex qfis >>= \(sc, _) ->
+	createSwpch scg () sfc ssd ex qfis >>= \sc ->
 	map (const ()) <$> Vk.Khr.Swpch.getImages dv sc
 
 -- BODY
@@ -526,36 +525,26 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	TVar (M.Map k (IO ())) -> k ->
 	IO (WinObjs sw ssfc scfmt ssc nmi (Replicate n siv) sr (Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff)
-winObjs op vext_ phd dv gq cp qfis pl wg sfcg scg ivg rpg fbg gpg iasg rfsg iffg
-
-	dsl
-	dp
-	dsg
-	vp
-
-	rgs
-
-	ges k =
+winObjs op vexs pd dv gq cp qfis pl wg sfcg scg ivg rpg fbg gpg iasg rfsg iffg
+	dsl dp dsg vp rgs ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
 	Vk.Khr.Sfc.Glfw.Win.create' sfcg k w >>= \(forceRight' -> sfc) ->
-	prepareSwapchainNew w sfc phd \spp' ex ->
+	prepareSwpch w sfc pd \ssd ex ->
 	atomically (
-		newTVar (Vk.Extent2d 0 0) >>= \v ->
-		writeTVar v ex >>
-		v <$ modifyTVar vext_ (M.insert k v) ) >>= \vext ->
-	createSwapchainNew @scfmt scg k sfc spp' ex qfis >>= \(sc, _) ->
+		newTVar (Vk.Extent2d 0 0) >>= \v -> writeTVar v ex >>
+		v <$ modifyTVar vexs (M.insert k v) ) >>= \vex ->
+	createSwpch @scfmt scg k sfc ssd ex qfis >>= \sc ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
-	createImageViews' @n ivg k scis >>= \scivs ->
-	createRenderPass @scfmt rpg k >>= \rp ->
-	createFramebuffers' @n @siv fbg k ex rp scivs >>= \fbs ->
-	createGraphicsPipeline gpg k ex rp pl >>= \gpl ->
-	createSyncObjects iasg rfsg iffg k >>= \sos ->
-
-	let	wos = WinObjs (w, fr) sfc vext (sc, scivs, rp, fbs) gpl sos in
+	createImgVws @n ivg k scis >>= \scvs ->
+	createRndrPss @scfmt rpg k >>= \rp ->
+	createFrmbffrs @n @siv fbg k ex rp scvs >>= \fbs ->
+	createGrPpl gpg k ex rp pl >>= \gp ->
+	createSyncObjs iasg rfsg iffg k >>= \sos ->
+	let	wos = WinObjs (w, fr) sfc vex (sc, scvs, rp, fbs) gp sos in
 
 	createDscSt' dv dsl dsg k dp vp >>= \_ds ->
 
-	createRectangleBuffer' phd dv gq cp rgs k dummy >>
+	createRectangleBuffer' pd dv gq cp rgs k dummy >>
 
 	GlfwG.Win.setKeyCallback w
 		(Just \_w ky sc' act mods -> do
@@ -663,10 +652,10 @@ initWin v wgrp k = do
 	pure w
 	where wName = "Use Texture Group"; wSize = (800, 600)
 
-prepareSwapchainNew :: forall sw ssfc a .
+prepareSwpch :: forall sw ssfc a .
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	(forall fmts . SwpchSupportDetails fmts -> Vk.Extent2d -> IO a) -> IO a
-prepareSwapchainNew win sfc phdvc f =
+prepareSwpch win sfc phdvc f =
 	querySwpchSupport phdvc sfc \spp -> do
 	ext <- swapExtent win $ capabilities spp
 	f spp ext
@@ -687,17 +676,27 @@ data SwpchSupportDetails fmts = SwpchSupportDetails {
 		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
 	presentModesNew :: [Vk.Khr.Sfc.PresentMode] }
 
-createSwapchainNew ::
+createSwpch ::
 	forall (scfmt :: Vk.T.Format) ssfc sd ma ssc k fmts . (
 	Ord k, Vk.AllocationCallbacks.ToMiddle ma ) =>
 	Vk.T.FormatToValue scfmt =>
 	Vk.Khr.Swpch.Group sd ma scfmt ssc k -> k ->
 	Vk.Khr.Sfc.S ssfc -> SwpchSupportDetails fmts -> Vk.Extent2d ->
-	QFamIdcs -> IO (Vk.Khr.Swpch.S scfmt ssc, Vk.Extent2d)
-createSwapchainNew scgrp k sfc spp ext qfis =
+	QFamIdcs -> IO (Vk.Khr.Swpch.S scfmt ssc)
+createSwpch scgrp k sfc spp ext qfis =
 	Vk.Khr.Swpch.create' @scfmt scgrp k crInfo
-		>>= \(forceRight' -> sc) -> pure (sc, ext)
-	where crInfo = mkSwpchCreateInfo sfc qfis spp ext
+		>>= \(forceRight' -> sc) -> pure sc
+	where crInfo = swpchInfoSsd sfc qfis spp ext
+
+swpchInfoSsd :: Vk.Khr.Sfc.S ss -> QFamIdcs ->
+	SwpchSupportDetails fmts -> Vk.Extent2d ->
+	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfoSsd sfc qfis0 ssd ex = chooseSwpSfcFmt (formats ssd)
+	\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
+	swpchInfo sfc qfis0 (capabilities ssd) sc
+	(chooseSwapPresentMode $ presentModesNew ssd) ex
+	where chooseSwapPresentMode =
+		fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
 swpchInfo :: forall fmt ss .
 	Vk.Khr.Sfc.S ss -> QFamIdcs -> Vk.Khr.Sfc.Capabilities ->
@@ -729,25 +728,14 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
-mkSwpchCreateInfo :: Vk.Khr.Sfc.S ss -> QFamIdcs ->
-	SwpchSupportDetails fmts -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-mkSwpchCreateInfo sfc qfis0 spp ex =
-	chooseSwpSfcFmt (formats spp)
-		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
-		swpchInfo sfc qfis0 cps sc pm ex
-	where
-	cps = capabilities spp
-	pm = chooseSwapPresentMode $ presentModesNew spp
-
-recreateSwapchain :: Vk.T.FormatToValue scfmt =>
+recreateSwpch :: Vk.T.FormatToValue scfmt =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIdcs -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S scfmt ssc ->
 	IO Vk.Extent2d
-recreateSwapchain win sfc phdvc qfis0 dvc sc =
+recreateSwpch win sfc phdvc qfis0 dvc sc =
 	querySwpchSupport phdvc sfc \spp -> do
 	ext <- swapExtent win $ capabilities spp
-	let	crInfo = mkSwpchCreateInfo sfc qfis0 spp ext
+	let	crInfo = swpchInfoSsd sfc qfis0 spp ext
 	ext <$ Vk.Khr.Swpch.unsafeRecreate @'Nothing dvc crInfo nil sc
 
 chooseSwpSfcFmt :: (
@@ -757,10 +745,6 @@ chooseSwpSfcFmt :: (
 chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
 	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
-
-chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
-chooseSwapPresentMode =
-	fromMaybe Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
 
 swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
 swapExtent win cps
@@ -775,12 +759,37 @@ swapExtent win cps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
 
-createRenderPass ::
+createImgVws :: forall n ivfmt sd si siv k sm nm ifmt . (
+	Mappable n, Ord k, Vk.T.FormatToValue ivfmt ) =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
+	k -> [Vk.Img.Binded sm si nm ifmt] ->
+	IO (HPList.PL (Vk.ImgVw.I nm ivfmt) (Replicate n siv))
+createImgVws ivg k is = homoListFromList @_ @n
+	<$> mapM (\(i, img) -> createImgVw ivg (k, i) img) (zip [0 ..] is)
+
+createImgVw :: forall ivfmt sd si siv k sm nm ifmt .
+	Ord k =>
+	Vk.T.FormatToValue ivfmt =>
+	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
+	(k, Int) -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm ivfmt siv)
+createImgVw ivgrp k timg = forceRight' <$>
+	Vk.ImgVw.create' ivgrp k (mkImageViewCreateInfo timg)
+
+recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
+	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
+recreateImageViews _dvc [] HPList.Nil = pure ()
+recreateImageViews dvc (sci : scis) (iv :** ivs) =
+	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfo sci) nil iv >>
+	recreateImageViews dvc scis ivs
+recreateImageViews _ _ _ =
+	error "number of Vk.Img.I and Vk.ImageView.I should be same"
+
+createRndrPss ::
 	forall (scfmt :: Vk.T.Format) sd ma sr k . (
 	Vk.T.FormatToValue scfmt, Ord k,
 	Vk.AllocationCallbacks.ToMiddle ma ) =>
 	Vk.RndrPss.Group sd ma sr k -> k -> IO (Vk.RndrPss.R sr)
-createRenderPass rpgrp k =
+createRndrPss rpgrp k =
 	forceRight' <$> Vk.RndrPss.create' @_ @_ @'[scfmt] rpgrp k renderPassInfo
 	where
 	colorAttachment :: Vk.Att.Description scfmt
@@ -827,61 +836,168 @@ createRenderPass rpgrp k =
 		Vk.RndrPss.createInfoSubpasses = [subpass],
 		Vk.RndrPss.createInfoDependencies = [dependency] }
 
-createImageViews' :: forall n ivfmt sd si siv k sm nm ifmt . (
-	Mappable n, Ord k, Vk.T.FormatToValue ivfmt ) =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
-	k -> [Vk.Img.Binded sm si nm ifmt] ->
-	IO (HPList.PL (Vk.ImgVw.I nm ivfmt) (Replicate n siv))
-createImageViews' ivgrp k imgs = do
-	ivs <- createImageViewList ivgrp k imgs
-	pure $ homoListFromList @_ @n ivs
+createFrmbffrs ::
+	forall ts siv k sd sf sr nm fmt .
+	(Mappable ts, Ord k) =>
+	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
+	Vk.Extent2d -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
+	IO (HPList.PL Vk.Frmbffr.F (Replicate ts sf))
+createFrmbffrs fbgrp k sce rp =
+	mapHomoListMWithI @_ @ts @_ @_ @siv 0 \i sciv ->
+	forceRight' <$> Vk.Frmbffr.create'
+		fbgrp (k, i) (mkFramebufferCreateInfo sce rp sciv)
 
-createImageViewList :: forall ivfmt sd si siv k sm nm ifmt . (
-	Ord k, Vk.T.FormatToValue ivfmt ) =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
-	k -> [Vk.Img.Binded sm si nm ifmt] -> IO [Vk.ImgVw.I nm ivfmt siv]
-createImageViewList ivgrp k =
-	mapM (\(i, img) -> createImageView' ivgrp (k, i) img) . zip [0 ..]
+recreateFramebuffers' :: forall ts sd sr nm fmt siv sf .
+	Mappable ts =>
+	Vk.Dvc.D sd -> Vk.Extent2d ->
+	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
+	HPList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
+recreateFramebuffers' dvc sce rp =
+	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
+	Vk.Frmbffr.unsafeRecreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
 
-createImageView' :: forall ivfmt sd si siv k sm nm ifmt .
-	Ord k =>
-	Vk.T.FormatToValue ivfmt =>
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt ->
-	(k, Int) -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm ivfmt siv)
-createImageView' ivgrp k timg = forceRight' <$>
-	Vk.ImgVw.create' ivgrp k (mkImageViewCreateInfoNew timg)
+class Mappable (ts :: [knd]) where
+	type Replicate ts s :: [Type]
+	homoListFromList :: [t s] -> HPList.PL t (Replicate ts s)
+	mapHomoListMWithI :: Monad m => Int -> (Int -> t a -> m (t' b)) ->
+		HPList.PL t (Replicate ts a) ->
+		m (HPList.PL t' (Replicate ts b))
+	zipWithHomoListM_ :: Monad m => (t a -> t' b -> m c) ->
+		HPList.PL t (Replicate ts a) ->
+		HPList.PL t' (Replicate ts b) -> m ()
 
-recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis -> IO ()
-recreateImageViews _dvc [] HPList.Nil = pure ()
-recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.unsafeRecreate dvc (mkImageViewCreateInfoNew sci) nil iv >>
-	recreateImageViews dvc scis ivs
-recreateImageViews _ _ _ =
-	error "number of Vk.Img.I and Vk.ImageView.I should be same"
+instance Mappable '[] where
+	type Replicate '[] s = '[]
+	homoListFromList [] = HPList.Nil
+	homoListFromList _ = error "bad"
+	mapHomoListMWithI _ _ HPList.Nil = pure HPList.Nil
+	zipWithHomoListM_ _ HPList.Nil HPList.Nil = pure ()
 
-mkImageViewCreateInfoNew ::
-	Vk.Img.Binded sm si nm ifmt ->
-	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = TMaybe.N,
-	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
-	Vk.ImgVw.createInfoImage = sci,
-	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponents = components,
-	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
+instance Mappable ts => Mappable (t ': ts) where
+	type Replicate (t ': ts) s = s ': Replicate ts s
+	homoListFromList (x : xs) = x :** (homoListFromList @_ @ts xs)
+	homoListFromList _ = error "bad"
+	mapHomoListMWithI :: forall t' a t'' b m .
+		Monad m => Int -> (Int -> t' a -> m (t'' b)) ->
+		HPList.PL t' (Replicate (t ': ts) a) ->
+		m (HPList.PL t'' (Replicate (t ': ts) b))
+	mapHomoListMWithI i f (x :** xs) = (:**) <$> f i x
+		<*> mapHomoListMWithI @_ @ts @_ @_ @a @_ @b (i + 1) f xs
+	zipWithHomoListM_ f (x :** xs) (y :** ys) =
+		f x y >> zipWithHomoListM_ @_ @ts f xs ys
+
+
+mkFramebufferCreateInfo ::
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
+	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)]
+mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
+	Vk.Frmbffr.createInfoNext = TMaybe.N,
+	Vk.Frmbffr.createInfoFlags = zeroBits,
+	Vk.Frmbffr.createInfoRenderPass = rp,
+	Vk.Frmbffr.createInfoAttachments = U3 attch :** HPList.Nil,
+	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
+	Vk.Frmbffr.createInfoLayers = 1 }
 	where
-	components = Vk.Component.Mapping {
-		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
-		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
-		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
-		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
+	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
 
-createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
+createRectangleBuffer :: Ord k =>
+	Devices sd sc scb -> RectGroups sd sm sb nm nmrct k -> k -> [Rectangle] ->
+	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 Rectangle nmrct])
+createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
+	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
+	createBufferList phdvc dvc (fromIntegral $ length rs)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mm.PropertyHostVisibleBit .|.
+			Vk.Mm.PropertyHostCoherentBit )
+			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[Vk.Obj.List al t nmrct]) bm' -> do
+		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List 1 Rectangle nmrct) @0 dvc bm' zeroBits rs
+		copyBuffer dvc gq cp b' b
+	pure b
+
+createRectangleBuffer' :: Ord k =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	RectGroups sd sm sb nm nmrct k -> k -> [Rectangle] ->
+	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 Rectangle nmrct])
+createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
+	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
+	createBufferList phdvc dvc (fromIntegral $ length rs)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mm.PropertyHostVisibleBit .|.
+			Vk.Mm.PropertyHostCoherentBit )
+			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[Vk.Obj.List al t nmrct]) bm' -> do
+		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List al Rectangle nmrct) @0 dvc bm' zeroBits rs
+		copyBuffer dvc gq cp b' b
+	pure b
+
+destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm nmrct k -> k -> IO ()
+destroyRectangleBuffer (bgrp, mgrp) k = do
+	r1 <- Vk.Mm.unsafeFree mgrp k
+	r2 <- Vk.Bffr.unsafeDestroy bgrp k
+	case (r1, r2) of
+		(Left msg, _) -> error msg
+		(_, Left msg) -> error msg
+		_ -> pure ()
+
+type RectGroups sd sm sb nm nm' k = (
+	Vk.Bffr.Group sd 'Nothing sb k nm '[Vk.Obj.List 1 Rectangle nm'],
+	Vk.Mm.Group sd 'Nothing sm k
+		'[ '(sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.List 1 Rectangle nm'])] )
+
+createDscSt' :: forall sd sds sp sm sb nm alu sdsl nmt k mnmvp . (Ord k, KnownNat alu) =>
+	Vk.Dvc.D sd ->
+	Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp nmt) ->
+	Vk.DscSt.Group sd sds k sp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] -> k ->
+	Vk.DscPl.P sp ->
+	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu mnmvp] ->
+	IO (Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp nmt))
+createDscSt' dv
+	dsl
+	dsg k
+	dp vpb
+	=
+	Vk.DscSt.allocateDs' dsg k info >>= \(forceRight' -> HPList.Singleton ds) ->
+	Vk.DscSt.updateDs dv (HPList.Singleton . U5 $ wr ds) HPList.Nil >> pure ds
+	where
+	info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
+	wr :: Vk.DscSt.D sds slbts -> Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgBuffer
+			'[ '(sm, sb, nm, AtomViewProj alu mnmvp, 0)]) 0
+	wr ds = Vk.DscSt.Write {
+		Vk.DscSt.writeNext = TMaybe.N,
+		Vk.DscSt.writeDstSet = ds,
+		Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
+			. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo vpb }
+
+data SyncObjects (ssos :: (Type, Type, Type)) where
+	SyncObjects :: {
+		_imageAvailableSemaphores :: Vk.Smph.S sias,
+		_renderFinishedSemaphores :: Vk.Smph.S srfs,
+		_inFlightFences :: Vk.Fnc.F sfs } ->
+		SyncObjects '(sias, srfs, sfs)
+
+createSyncObjs :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
+	Vk.Smph.Group sd ma sias k -> Vk.Smph.Group sd ma srfs k ->
+	Vk.Fnc.Group sd ma siff k -> k -> IO (SyncObjects '(sias, srfs, siff))
+createSyncObjs iasgrp rfsgrp iffgrp k =
+	Vk.Smph.create' @_ @'Nothing iasgrp k def >>= \(forceRight' -> ias) ->
+	Vk.Smph.create' @_ @'Nothing rfsgrp k def >>= \(forceRight' -> rfs) ->
+	Vk.Fnc.create' @_ @'Nothing iffgrp k fncInfo >>= \(forceRight' -> iff) ->
+	pure $ SyncObjects ias rfs iff
+	where
+	fncInfo = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
+
+-- GRAPHICS PIPELINE
+
+createGrPpl :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 	Vk.Ppl.Graphics.Group sd mac sg k '[ '(
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(Rectangle, 'Vk.VtxInp.RateInstance)],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
@@ -897,7 +1013,7 @@ createGraphicsPipeline :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3),
 				'(9, TexCoord) ]
 			'(sl, '[AtomUbo sdsl alu mnm nmt], '[]))
-createGraphicsPipeline gpgrp k sce rp pllyt =
+createGrPpl gpgrp k sce rp pllyt =
 	Vk.Ppl.Graphics.createGs' gpgrp k Nothing (U14 pplInfo :** HPList.Nil)
 			>>= \(forceRight' -> (U3 gpl :** HPList.Nil)) -> pure gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
@@ -1045,165 +1161,6 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
-
-createFramebuffers' ::
-	forall ts siv k sd sf sr nm fmt .
-	(Mappable ts, Ord k) =>
-	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
-	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	HPList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
-	IO (HPList.PL Vk.Frmbffr.F (Replicate ts sf))
-createFramebuffers' fbgrp k sce rp =
-	mapHomoListMWithI @_ @ts @_ @_ @siv 0 \i sciv ->
-	forceRight' <$> Vk.Frmbffr.create'
-		fbgrp (k, i) (mkFramebufferCreateInfo sce rp sciv)
-
-recreateFramebuffers' :: forall ts sd sr nm fmt siv sf .
-	Mappable ts =>
-	Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
-	HPList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
-recreateFramebuffers' dvc sce rp =
-	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
-	Vk.Frmbffr.unsafeRecreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
-
-class Mappable (ts :: [knd]) where
-	type Replicate ts s :: [Type]
-	homoListFromList :: [t s] -> HPList.PL t (Replicate ts s)
-	mapHomoListMWithI :: Monad m => Int -> (Int -> t a -> m (t' b)) ->
-		HPList.PL t (Replicate ts a) ->
-		m (HPList.PL t' (Replicate ts b))
-	zipWithHomoListM_ :: Monad m => (t a -> t' b -> m c) ->
-		HPList.PL t (Replicate ts a) ->
-		HPList.PL t' (Replicate ts b) -> m ()
-
-instance Mappable '[] where
-	type Replicate '[] s = '[]
-	homoListFromList [] = HPList.Nil
-	homoListFromList _ = error "bad"
-	mapHomoListMWithI _ _ HPList.Nil = pure HPList.Nil
-	zipWithHomoListM_ _ HPList.Nil HPList.Nil = pure ()
-
-instance Mappable ts => Mappable (t ': ts) where
-	type Replicate (t ': ts) s = s ': Replicate ts s
-	homoListFromList (x : xs) = x :** (homoListFromList @_ @ts xs)
-	homoListFromList _ = error "bad"
-	mapHomoListMWithI :: forall t' a t'' b m .
-		Monad m => Int -> (Int -> t' a -> m (t'' b)) ->
-		HPList.PL t' (Replicate (t ': ts) a) ->
-		m (HPList.PL t'' (Replicate (t ': ts) b))
-	mapHomoListMWithI i f (x :** xs) = (:**) <$> f i x
-		<*> mapHomoListMWithI @_ @ts @_ @_ @a @_ @b (i + 1) f xs
-	zipWithHomoListM_ f (x :** xs) (y :** ys) =
-		f x y >> zipWithHomoListM_ @_ @ts f xs ys
-
-
-mkFramebufferCreateInfo ::
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
-	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)]
-mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
-	Vk.Frmbffr.createInfoNext = TMaybe.N,
-	Vk.Frmbffr.createInfoFlags = zeroBits,
-	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = U3 attch :** HPList.Nil,
-	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
-	Vk.Frmbffr.createInfoLayers = 1 }
-	where
-	Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = sce
-
-createRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sd sm sb nm nmrct k -> k -> [Rectangle] ->
-	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 Rectangle nmrct])
-createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
-	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
-	createBufferList phdvc dvc (fromIntegral $ length rs)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[Vk.Obj.List al t nmrct]) bm' -> do
-		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List 1 Rectangle nmrct) @0 dvc bm' zeroBits rs
-		copyBuffer dvc gq cp b' b
-	pure b
-
-createRectangleBuffer' :: Ord k =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	RectGroups sd sm sb nm nmrct k -> k -> [Rectangle] ->
-	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 Rectangle nmrct])
-createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
-	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
-	createBufferList phdvc dvc (fromIntegral $ length rs)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[Vk.Obj.List al t nmrct]) bm' -> do
-		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List al Rectangle nmrct) @0 dvc bm' zeroBits rs
-		copyBuffer dvc gq cp b' b
-	pure b
-
-destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm nmrct k -> k -> IO ()
-destroyRectangleBuffer (bgrp, mgrp) k = do
-	r1 <- Vk.Mm.unsafeFree mgrp k
-	r2 <- Vk.Bffr.unsafeDestroy bgrp k
-	case (r1, r2) of
-		(Left msg, _) -> error msg
-		(_, Left msg) -> error msg
-		_ -> pure ()
-
-type RectGroups sd sm sb nm nm' k = (
-	Vk.Bffr.Group sd 'Nothing sb k nm '[Vk.Obj.List 1 Rectangle nm'],
-	Vk.Mm.Group sd 'Nothing sm k
-		'[ '(sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.List 1 Rectangle nm'])] )
-
-createDscSt' :: forall sd sds sp sm sb nm alu sdsl nmt k mnmvp . (Ord k, KnownNat alu) =>
-	Vk.Dvc.D sd ->
-	Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp nmt) ->
-	Vk.DscSt.Group sd sds k sp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] -> k ->
-	Vk.DscPl.P sp ->
-	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu mnmvp] ->
-	IO (Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp nmt))
-createDscSt' dv
-	dsl
-	dsg k
-	dp vpb
-	=
-	Vk.DscSt.allocateDs' dsg k info >>= \(forceRight' -> HPList.Singleton ds) ->
-	Vk.DscSt.updateDs dv (HPList.Singleton . U5 $ wr ds) HPList.Nil >> pure ds
-	where
-	info = Vk.DscSt.AllocateInfo {
-		Vk.DscSt.allocateInfoNext = TMaybe.N,
-		Vk.DscSt.allocateInfoDescriptorPool = dp,
-		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
-	wr :: Vk.DscSt.D sds slbts -> Vk.DscSt.Write 'Nothing sds slbts
-		('Vk.DscSt.WriteSourcesArgBuffer
-			'[ '(sm, sb, nm, AtomViewProj alu mnmvp, 0)]) 0
-	wr ds = Vk.DscSt.Write {
-		Vk.DscSt.writeNext = TMaybe.N,
-		Vk.DscSt.writeDstSet = ds,
-		Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
-			. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo vpb }
-
-data SyncObjects (ssos :: (Type, Type, Type)) where
-	SyncObjects :: {
-		_imageAvailableSemaphores :: Vk.Smph.S sias,
-		_renderFinishedSemaphores :: Vk.Smph.S srfs,
-		_inFlightFences :: Vk.Fnc.F sfs } ->
-		SyncObjects '(sias, srfs, sfs)
-
-createSyncObjects :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
-	Vk.Smph.Group sd ma sias k -> Vk.Smph.Group sd ma srfs k ->
-	Vk.Fnc.Group sd ma siff k -> k -> IO (SyncObjects '(sias, srfs, siff))
-createSyncObjects iasgrp rfsgrp iffgrp k =
-	Vk.Smph.create' @_ @'Nothing iasgrp k def >>= \(forceRight' -> ias) ->
-	Vk.Smph.create' @_ @'Nothing rfsgrp k def >>= \(forceRight' -> rfs) ->
-	Vk.Fnc.create' @_ @'Nothing iffgrp k fncInfo >>= \(forceRight' -> iff) ->
-	pure $ SyncObjects ias rfs iff
-	where
-	fncInfo = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 
 -- GLFW EVENTS
 
@@ -1770,7 +1727,7 @@ recreateAll
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
-	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
+	ext <- recreateSwpch win sfc phdvc qfis dvc sc
 	atomically $ writeTVar vex ext
 	Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 		recreateImageViews dvc imgs scivs

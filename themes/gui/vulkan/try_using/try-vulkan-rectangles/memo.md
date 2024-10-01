@@ -193,8 +193,10 @@ src
             * [x] forall ...
             * [x] constraint
             * [x] type declaration
-            * [ ] arguments
+            * [x] arguments
             * [ ] body
+                + [x] make window objects
+                + [ ] others
         - [ ] destroyWinObjs
         - [ ] class NumToValue
         - [ ] instance NumToValue
@@ -204,9 +206,16 @@ src
         - [ ] WinEnvs
         - [ ] FramebufferResized
         - [ ] initWindow
+        - [ ] prepareSwpch
+        - [ ] querySwpchSupport
+        - [ ] SwpchSupportDetails
+        - [ ] createSwpch
+        - [ ] swpchInfoSsd
+        - [ ] swpchInfo
         - [ ] ...
         - [ ] createDscSt'
         - [ ] ...
+    + [ ] GRAPHICS PIPELINE
     + [ ] GLFW EVENTS
         - [ ] glfwEvents
         - [ ] getMouseButtons

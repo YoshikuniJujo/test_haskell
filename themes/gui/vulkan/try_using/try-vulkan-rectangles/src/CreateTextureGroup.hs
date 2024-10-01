@@ -25,7 +25,7 @@ module CreateTextureGroup (
 
 	-- * CREATE INFO
 
-	mkImageViewCreateInfo,
+	mkImageViewCreateInfo, imgVwInfo,
 
 	-- * FOO
 
@@ -63,7 +63,6 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mem
-import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Object.Base qualified as BObj
 
@@ -161,23 +160,22 @@ updateTexture dv udbs txsmplr imng k = do
 mkImageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfo {
+mkImageViewCreateInfo i = imgVwInfo i Vk.Img.AspectColorBit
+
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
+imgVwInfo i a = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
 	Vk.ImgVw.createInfoFlags = zeroBits,
-	Vk.ImgVw.createInfoImage = sci,
+	Vk.ImgVw.createInfoImage = i,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponents = components,
-	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
-	where
-	components = Vk.Component.Mapping {
-		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
-		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = a,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
+		Vk.Img.subresourceRangeLayerCount = 1 } }
 
 createTextureImage' :: forall k sim nm sd smm sc img . (
 	BObj.IsImage img, Ord k
