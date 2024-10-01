@@ -190,6 +190,10 @@ src
         - [x] createDscPl
     + [ ] WINDOW OBJECTS
         - [ ] winObjs
+            * [x] forall ...
+            * [ ] constraint
+            * [ ] type declaration
+            * [ ] body
         - [ ] destroyWinObjs
         - [ ] class NumToValue
         - [ ] instance NumToValue
