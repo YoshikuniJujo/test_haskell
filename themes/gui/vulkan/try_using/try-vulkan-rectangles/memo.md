@@ -194,7 +194,8 @@ src
         - [ ] class NumToValue
         - [ ] instance NumToValue
         - [ ] WinObjs
-            * [ ] correct order of objects
+            * [x] correct order of objects
+            * [ ] others
         - [ ] WinEnvs
         - [ ] FramebufferResized
         - [ ] initWindow
