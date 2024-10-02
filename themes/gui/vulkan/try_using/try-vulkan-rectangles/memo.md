@@ -197,7 +197,7 @@ src
             * [x] body
         - [x] initWin
         - [x] createDscSt'
-    + [ ] WINDOW OBJECTS
+    + [x] WINDOW OBJECTS
         - [x] winObjs
         - [x] destroyWinObjs
         - [x] class NumToVal
@@ -223,12 +223,13 @@ src
         - [x] createRndrPss
         - [x] createFrmbffrs
         - [x] recreateFrmbffrs
-        - [ ] class Mappable
-        - [ ] instance Mappable
-        - [ ] mkFramebufferCreateInfo
-        - [ ] createSyncObjs
-        - [ ] SyncObjects
-    * [ ] RECTANGLE BUFFER
+        - [x] frmbffrInfo
+        - [x] createSyncObjs
+        - [x] SyncObjects
+    * [x] RECTANGLE BUFFER
+        - [x] createRctBffr
+        - [x] destroyRctBffr
+        - [x] RctGroups
     + [ ] GET GLFW EVENTS
         - [ ] setGlfwEvents
         - [ ] glfwEvents
