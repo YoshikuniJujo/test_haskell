@@ -197,7 +197,7 @@ src
             * [x] body
         - [x] initWin
         - [x] createDscSt'
-    + [x] WINDOW OBJECTS
+    + [ ] WINDOW OBJECTS
         - [x] winObjs
         - [x] destroyWinObjs
         - [x] class NumToVal
@@ -207,6 +207,8 @@ src
             * [x] others
         - [x] WinEnvs
         - [x] FramebufferResized
+        - [ ] Swapchains
+        - [ ] Pipeline
         - [x] WinObjGroups
         - [x] prepareSwpch
         - [x] querySwpchSupport
@@ -239,9 +241,32 @@ src
         - [x] sendMouseButtonDown
         - [x] sendMouseButtonUp
         - [x] sendMouseButton
-    + [ ] GRAPHICS PIPELINE
-    + [ ] CREATE AND COPY BUFFERS
+    + [x] GRAPHICS PIPELINE
+        - [x] createGrPpl
+        - [x] recreateGrPpl
+        - [x] grPplInfo
+        - [x] shaderStages
+        - [x] vwpSt
+        - [x] clrBlnd
+    + [x] CREATE AND COPY BUFFERS
+        - [x] createBffrAtm
+        - [x] createBffrLst
+        - [x] createBffrLst'
+        - [x] createBffr''
+        - [x] copyBffrLst
     + [ ] MAINLOOP
+        - [ ] mainloop
+        - [ ] class Succable
+        - [ ] instance Succable Bool
+        - [ ] instance Succable Int
+        - [ ] Devices
+        - [ ] PipelineLayout
+        - [ ] VertexBuffers
+        - [ ] winObjsToWin
+        - [ ] run
+        - [ ] lookupRects
+    + [ ] RECREATE
+    + [ ] DRAW
     + [ ] DATA TYPES
     + [ ] SHADERS
     + [ ] import list
