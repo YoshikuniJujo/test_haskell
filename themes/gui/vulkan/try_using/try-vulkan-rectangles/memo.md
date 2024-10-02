@@ -260,15 +260,18 @@ src
             * [x] constraint
             * [x] type declaration
             * [x] body
-        - [ ] class Succable
-        - [ ] instance Succable Bool
-        - [ ] instance Succable Int
-        - [ ] Devices
-        - [ ] PipelineLayout
-        - [ ] VertexBuffers
-        - [ ] winObjsToWin
+        - [x] class Succable
+        - [x] instance Succable Bool
+        - [x] instance Succable Int
+        - [x] Devices
+        - [x] PipelineLayout
+        - [x] VertexBuffers
+        - [x] winObjsToWin
         - [ ] run
-        - [ ] lookupRects
+            * [ ] forall
+            * [ ] constraint
+            * [ ] type declaration
+            * [ ] body
     + [ ] RECREATE
     + [ ] DRAW
     + [ ] DATA TYPES

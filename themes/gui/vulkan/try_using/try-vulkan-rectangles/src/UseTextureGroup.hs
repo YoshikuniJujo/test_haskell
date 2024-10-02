@@ -1244,7 +1244,7 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 			Vk.Dvc.waitIdle dv
 			ws <- atomically $ readTVar vws
 			run @n @sv @sf
-				dvs pl ws vbs rgs (rects ds) dsg vpm op loop
+				op dvs pl ws vbs rgs (rects ds) dsg vpm loop
 		SetPicture k pct ->
 			drtx k >> crtx k pct >> Vk.Dvc.waitIdle dv >> loop
 	where rects = M.map \(vp, rs) -> (StrG.W vp, bool rs dummy $ null rs)
@@ -1263,13 +1263,12 @@ type Devices sd scp scb = (
 type PipelineLayout sl sdsl alu mnmvp nmt =
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[]
 
-type VertexBuffers sm sb bnm nm sm' sb' bnm' nm' = (
-	Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List WVertex nm],
-	Vk.Bffr.Binded sm' sb' bnm' '[Vk.ObjNA.List Word16 nm'] )
+type VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi = (
+	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv],
+	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] )
 
-winObjsToWin ::
-	WinObjs sw ssfc sg sl sdsl mnm sias srfs siff scfmt ssc alu nm nmt sscivs sr sfs ->
-	W sw
+winObjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
+	sg sl sdsl alu mnmvp nmt sias srfs siff -> W sw
 winObjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
 run :: forall n (siv :: Type) (sf :: Type)
@@ -1277,6 +1276,7 @@ run :: forall n (siv :: Type) (sf :: Type)
 	sw ssfc sg sias srfs siff scfmt ssc sr
 	smrct sbrct bnmv nmsv nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k mnm sdp alu nmt nmr nmv nmi bnmvp .
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k, KnownNat alu) =>
+	TChan (Event k) ->
 	Devices sd sc scb -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnm nmt)] '[] ->
 	(M.Map k (WinObjs sw ssfc
 		scfmt ssc nmsv (HPList.Replicate n siv) sr (HPList.Replicate n sf)
@@ -1290,27 +1290,24 @@ run :: forall n (siv :: Type) (sf :: Type)
 	M.Map k (WViewProj, [Rectangle]) ->
 	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnm nmt)] ->
 	ViewProjMemory sm sb bnmvp alu mnm ->
-	TChan (Event k) -> IO () -> IO ()
-run (pd, qfis, dv, gq, pq, cp, cb)  pl ws (vb, ib) rgrps rectss dsg ubm outp loop = do
+	IO () -> IO ()
+run op (pd, qfis, dv, gq, pq, cp, cb)  pl ws (vb, ib) rgs rss dsg vpm go = do
 	for_ (M.toList ws) \(k', wos) -> do
-		let	(vp, rects') = lookupRects rectss k'
-		destroyRctBffr rgrps k'
-		rb <- createRctBffr pd dv gq cp  rgrps k' rects'
-		let	rb' = (rb, fromIntegral $ length rects')
+		let	(vp, rs) = lookupRects rss k'
+		destroyRctBffr rgs k'
+		rb <- createRctBffr pd dv gq cp rgs k' rs
+		let	rb' = (rb, fromIntegral $ length rs)
 		(fromJust -> HPList.Singleton ds) <- Vk.DscSt.lookup dsg k'
 		catchAndRecreate @n @_ @siv @sf pd qfis dv pl (winObjsToRecreates wos)
-			$ drawFrame dv gq pq pl (winObjsToDraws wos) vb rb' ib ubm ds cb vp
+			$ drawFrame dv gq pq pl (winObjsToDraws wos) vb rb' ib vpm ds cb vp
 		Vk.Dvc.waitIdle dv
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
 	if cls then (pure ()) else do
 		for_ ws \wos ->
-			recreateAllIfNeed @n @siv @sf pd qfis dv pl wos outp
-		loop
-
-lookupRects :: Ord k =>
-	M.Map k (WViewProj, [Rectangle]) -> k ->
-	(WViewProj, [Rectangle])
-lookupRects rs = fromMaybe (StrG.W viewProjectionIdentity, dummy) . (`M.lookup` rs)
+			recreateAllIfNeed @n @siv @sf pd qfis dv pl wos op
+		go
+	where
+	lookupRects rs = fromMaybe (StrG.W viewProjectionIdentity, dummy) . (`M.lookup` rs)
 
 -- RECREATE
 
