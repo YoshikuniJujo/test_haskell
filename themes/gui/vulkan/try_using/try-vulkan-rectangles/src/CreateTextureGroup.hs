@@ -75,13 +75,13 @@ import Foreign.Marshal.Array
 import Data.List.ToolsYj
 import Data.Array
 
-type TextureGroup sd si sm siv fmt k = (
-	Vk.Img.Group sd 'Nothing si k "texture" fmt,
-	Vk.Mm.Group sd 'Nothing sm k '[ '(si, 'Vk.Mm.ImageArg "texture" fmt)],
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt )
+type TextureGroup sd si sm sv fmt nmt k = (
+	Vk.Img.Group sd 'Nothing si k nmt fmt,
+	Vk.Mm.Group sd 'Nothing sm k '[ '(si, 'Vk.Mm.ImageArg nmt fmt)],
+	Vk.ImgVw.Group sd 'Nothing sv k nmt fmt )
 
 txGroup :: Vk.Dvc.D sd ->
-	(forall si sm siv . TextureGroup sd si sm siv fmt k -> IO a) -> IO a
+	(forall si sm siv . TextureGroup sd si sm siv fmt nmt k -> IO a) -> IO a
 txGroup dv f =
 	Vk.Img.group dv nil \mng -> Vk.Mm.group dv nil \mmng ->
 	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
@@ -118,14 +118,14 @@ createTxSmplr phdv dvc f = do
 			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
 
-createTx :: forall bis img k sd sc sds sdsc sm si siv ss sdp . (
+createTx :: forall sd sc sds k sdp sdsc bis si sm siv img nmt ss . (
 	BObj.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", BObj.ImageFormat img)] 0,
+		'[ '(nmt, BObj.ImageFormat img)] 0,
 	Ord k ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.DscSet.Group sd sds k sdp '[ '(sdsc, bis)] -> -- slbtss ->
-	TextureGroup sd si sm siv (BObj.ImageFormat img) k ->
+	TextureGroup sd si sm siv (BObj.ImageFormat img) nmt k ->
 	Vk.Smplr.S ss -> img -> k -> IO ()
 createTx phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
 	putStrLn "CREATE TEXTURE BEGIN" >>
@@ -139,7 +139,7 @@ createTx phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
 	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
 	putStrLn "CREATE TEXTURE END"
 
-destroyTx :: Ord k => TextureGroup sd si sm siv fmt k -> k -> IO ()
+destroyTx :: Ord k => TextureGroup sd si sm siv fmt nmt k -> k -> IO ()
 destroyTx (mng, mmng, ivmng) k = do
 	putStrLn "DESTROY TEXTURE BEGIN"
 	_ <- Vk.Img.unsafeDestroy mng k
@@ -149,10 +149,10 @@ destroyTx (mng, mmng, ivmng) k = do
 	pure ()
 
 updateTexture :: (
-	Vk.DscSet.BindingAndArrayElemImage bis '[ '("texture", fmt)] 0,
+	Vk.DscSet.BindingAndArrayElemImage bis '[ '(nmt, fmt)] 0,
 	Ord k ) =>
 	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) -> Vk.Smplr.S ss ->
-	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt -> k -> IO ()
+	Vk.ImgVw.Group sd 'Nothing siv k nmt fmt -> k -> IO ()
 updateTexture dv udbs txsmplr imng k = do
 	Just tximgvw <- Vk.ImgVw.lookup imng k
 	updateDescriptorSetTex dv udbs tximgvw txsmplr
@@ -376,9 +376,9 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 
 updateDescriptorSetTex ::
 	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '("texture", fmt)] 0 =>
+		'[ '(nmt, fmt)] 0 =>
 	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) ->
-	Vk.ImgVw.I "texture" fmt siv  -> Vk.Smplr.S ss -> IO ()
+	Vk.ImgVw.I nmt fmt siv  -> Vk.Smplr.S ss -> IO ()
 updateDescriptorSetTex dvc dscs tximgvw txsmp = do
 	Vk.DscSet.updateDs dvc (
 		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HeteroParList.Nil )

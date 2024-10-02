@@ -174,8 +174,8 @@ src
         - [x] dvcExtensions
         - [x] createLgDvc
         - [x] swpchImgNum
-    + [x] BODY
-        - [x] body
+    + [ ] BODY
+        - [ ] body
         - [x] createCmdPl
         - [x] createCmdBffr
         - [x] createPplLyt
@@ -197,7 +197,7 @@ src
             * [x] body
         - [x] initWin
         - [x] createDscSt'
-    + [ ] WINDOW OBJECTS
+    + [x] WINDOW OBJECTS
         - [x] winObjs
         - [x] destroyWinObjs
         - [x] class NumToVal
@@ -207,8 +207,8 @@ src
             * [x] others
         - [x] WinEnvs
         - [x] FramebufferResized
-        - [ ] Swapchains
-        - [ ] Pipeline
+        - [x] Swapchains
+        - [x] Pipeline
         - [x] WinObjGroups
         - [x] prepareSwpch
         - [x] querySwpchSupport
@@ -256,6 +256,10 @@ src
         - [x] copyBffrLst
     + [ ] MAINLOOP
         - [ ] mainloop
+            * [ ] forall
+            * [ ] constraint
+            * [ ] type declaration
+            * [ ] body
         - [ ] class Succable
         - [ ] instance Succable Bool
         - [ ] instance Succable Int
