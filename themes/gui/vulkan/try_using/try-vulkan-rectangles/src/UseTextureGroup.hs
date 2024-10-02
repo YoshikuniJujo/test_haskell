@@ -1239,7 +1239,7 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 			ws <- atomically $ readTVar vws
 			GlfwG.pollEvents
 			bool loop (pure ()) =<< and <$> GlfwG.Win.shouldClose
-				`mapM` (winObjsToWin <$> ws)
+				`mapM` (wobjsToWin <$> ws)
 		Draw ds -> do
 			Vk.Dvc.waitIdle dv
 			ws <- atomically $ readTVar vws
@@ -1267,45 +1267,40 @@ type VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi = (
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv],
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] )
 
-winObjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
+wobjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
 	sg sl sdsl alu mnmvp nmt sias srfs siff -> W sw
-winObjsToWin (WinObjs (win, _) _ _ _ _ _) = win
+wobjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
-run :: forall n (siv :: Type) (sf :: Type)
-	sd sc scb sl
-	sw ssfc sg sias srfs siff scfmt ssc sr
-	smrct sbrct bnmv nmsv nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k mnm sdp alu nmt nmr nmv nmi bnmvp .
-	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k, KnownNat alu) =>
-	TChan (Event k) ->
-	Devices sd sc scb -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnm nmt)] '[] ->
-	(M.Map k (WinObjs sw ssfc
-		scfmt ssc nmsv (HPList.Replicate n siv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnm nmt sias srfs siff
-		)) ->
-	(	Vk.Bffr.Binded sm' sb' bnmv '[Vk.ObjNA.List WVertex nmv],
-		Vk.Bffr.Binded sm2 sb2 nm2 '[Vk.ObjNA.List Word16 nmi] ) ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[Vk.Obj.List 1 Rectangle nmr],
-		Vk.Mm.Group sd 'Nothing smrct k '[
-			'(sbrct, 'Vk.Mm.BufferArg nmrct '[Vk.Obj.List 1 Rectangle nmr])] ) ->
-	M.Map k (WViewProj, [Rectangle]) ->
-	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnm nmt)] ->
-	ViewProjMemory sm sb bnmvp alu mnm ->
-	IO () -> IO ()
-run op (pd, qfis, dv, gq, pq, cp, cb)  pl ws (vb, ib) rgs rss dsg vpm go = do
-	for_ (M.toList ws) \(k, wos) -> do
-		let	(vp, rs) = lookupRects rss k
+run :: forall
+	n (sv :: Type) (sf :: Type) k sd scp scb sl sdsl alu mnmvp nmt
+	sw ssfc scfmt ssc nmsv sr sg sias srfs siff
+	smv sbv bnmv nmv smi sbi bnmi nmi smr sbr bnmr nmr smvp sbvp bnmvp
+	sds sdp .
+	(HPList.HomoListN n, Ord k, KnownNat alu, Vk.T.FormatToValue scfmt) =>
+	TChan (Event k) -> Devices sd scp scb ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
+	(M.Map k (WinObjs sw ssfc scfmt ssc nmsv
+		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp nmt sias srfs siff)) ->
+	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
+	RectGroups sd smr sbr bnmr nmr k -> M.Map k (WViewProj, [Rectangle]) ->
+	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] ->
+	ViewProjMemory smvp sbvp bnmvp alu mnmvp -> IO () -> IO ()
+run op (pd, qfis, dv, gq, pq, cp, cb) pl ws (vb, ib) rgs rss dsg vpm go = do
+	for_ (M.toList ws) \(k, os) -> do
+		let	(vp, rs) = vprs k
 		destroyRctBffr rgs k
 		rb <- createRctBffr pd dv gq cp rgs k rs
 		(fromJust -> HPList.Singleton ds) <- Vk.DscSt.lookup dsg k
-		catchAndRecreate @n @_ @siv @sf pd qfis dv pl (winObjsToRecreates wos)
-			$ drawFrame dv gq pq pl (winObjsToDraws wos) vb rb ib vpm ds cb vp
+		catchAndRecreate @n @_ @sv @sf pd qfis dv pl (wobjsToRecrs os)
+			$ draw dv gq pq pl (wobjsToDrs os) vb rb ib vpm ds cb vp
 		Vk.Dvc.waitIdle dv
-	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+	cls <- and <$> GlfwG.Win.shouldClose `mapM` (wobjsToWin <$> ws)
 	if cls then (pure ()) else do
-		for_ ws \os -> recreateAllIfNeed @n @siv @sf pd qfis dv pl os op
+		for_ ws \os -> recreateAllIfNeed @n @sv @sf pd qfis dv pl os op
 		go
 	where
-	lookupRects rs = fromMaybe (StrG.W viewProjectionIdentity, dummy) . (`M.lookup` rs)
+	vprs = fromMaybe (StrG.W viewProjIdentity, dummy) . (`M.lookup` rss)
 
 -- RECREATE
 
@@ -1322,7 +1317,7 @@ recreateAllIfNeed ::
 recreateAllIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
 	checkFlag fbrszd >>= bool (pure ()) (do
 		atomically $ writeTChan outp EventNeedRedraw
-		recreateAll @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
+		recreateAll @n @siv @sf phdvc qfis dvc pllyt $ wobjsToRecrs wos)
 
 type AtomUbo s alu mnmvp tnm = '(s, '[
 	'Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu WViewProj mnmvp],
@@ -1383,18 +1378,18 @@ data Recreates sw sl nm ssfc sr sg sdsl alu mnm nmt fmt ssc sis sfs = Recreates
 	(HPList.PL (Vk.ImgVw.I nm fmt) sis)
 	(HPList.PL Vk.Frmbffr.F sfs)
 
-winObjsToRecreates ::
+wobjsToRecrs ::
 	WinObjs sw ssfc
 		scfmt ssc nm sscivs sr sfs
 		sg sl sdsl alu mnm nmt sias srfs siff
 		->
 	Recreates sw sl nm ssfc sr sg sdsl alu mnm nmt scfmt ssc sscivs sfs
-winObjsToRecreates (WinObjs (w, _) sfc vex (sc, scivs, rp, fbs) gpl _iasrfsifs) =
+wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scivs, rp, fbs) gpl _iasrfsifs) =
 	Recreates w sfc vex rp gpl sc scivs fbs
 
 -- DRAW
 	
-drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr bnmv nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds mnm alu nmt nmr nmv nmi bnmvp .
+draw :: forall sfs sd ssc sr sl sg sm sb smr sbr bnmv nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl scfmt sds mnm alu nmt nmr nmv nmi bnmvp .
 	KnownNat alu =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnm nmt] '[] ->
@@ -1406,7 +1401,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr bnmv nm sm' sb' nm' sm2 sb
 	Vk.DscSt.D sds (AtomUbo sdsl alu mnm nmt) ->
 	Vk.CmdBffr.C scb ->
 	WViewProj -> IO ()
-drawFrame dvc gq pq
+draw dvc gq pq
 	pllyt
 	(Draws vext rp gpl (SyncObjs ias rfs iff) sc fbs)
 	vb rb ib ubm ubds cb
@@ -1468,13 +1463,13 @@ data Draws sl sr sg sdsl alu mnm nmt sias srfs siff fmt ssc sfs = Draws
 	(Vk.Khr.Swpch.S fmt ssc)
 	(HPList.PL Vk.Frmbffr.F sfs)
 
-winObjsToDraws ::
+wobjsToDrs ::
 	WinObjs sw ssfc
 		scfmt ssc nm sscivs sr sfs
 		sg sl sdsl alu mnm nmt sias srfs siff
 		->
 	Draws sl sr sg sdsl alu mnm nmt sias srfs siff scfmt ssc sfs
-winObjsToDraws (WinObjs _ _sfc vex (sc, _scivs, rp, fbs) gpl iasrfsifs) =
+wobjsToDrs (WinObjs _ _sfc vex (sc, _scivs, rp, fbs) gpl iasrfsifs) =
 	Draws vex rp gpl iasrfsifs sc fbs
 
 recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr bnmv nm sm' sb' nm' sdsl sds mnm alu nmt nmr nmv nmi .
@@ -1630,8 +1625,8 @@ data ViewProjection = ViewProjection {
 	viewProjectionProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
-viewProjectionIdentity :: ViewProjection
-viewProjectionIdentity = ViewProjection {
+viewProjIdentity :: ViewProjection
+viewProjIdentity = ViewProjection {
 	viewProjectionView = Cglm.mat4Identity,
 	viewProjectionProj = Cglm.mat4Identity }
 

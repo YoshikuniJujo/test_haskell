@@ -254,7 +254,7 @@ src
         - [x] createBffrLst'
         - [x] createBffr''
         - [x] copyBffrLst
-    + [ ] MAINLOOP
+    + [x] MAINLOOP
         - [x] mainloop
             * [x] forall
             * [x] constraint
@@ -267,11 +267,11 @@ src
         - [x] PipelineLayout
         - [x] VertexBuffers
         - [x] winObjsToWin
-        - [ ] run
-            * [ ] forall
-            * [ ] constraint
-            * [ ] type declaration
-            * [ ] body
+        - [x] run
+            * [x] forall
+            * [x] constraint
+            * [x] type declaration
+            * [x] body
     + [ ] RECREATE
     + [ ] DRAW
     + [ ] DATA TYPES
