@@ -174,8 +174,8 @@ src
         - [x] dvcExtensions
         - [x] createLgDvc
         - [x] swpchImgNum
-    + [ ] BODY
-        - [ ] body
+    + [x] BODY
+        - [x] body
         - [x] createCmdPl
         - [x] createCmdBffr
         - [x] createPplLyt
@@ -255,11 +255,11 @@ src
         - [x] createBffr''
         - [x] copyBffrLst
     + [ ] MAINLOOP
-        - [ ] mainloop
-            * [ ] forall
-            * [ ] constraint
-            * [ ] type declaration
-            * [ ] body
+        - [x] mainloop
+            * [x] forall
+            * [x] constraint
+            * [x] type declaration
+            * [x] body
         - [ ] class Succable
         - [ ] instance Succable Bool
         - [ ] instance Succable Int

@@ -118,13 +118,13 @@ createTxSmplr phdv dvc f = do
 			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
 	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
 
-createTx :: forall sd sc sds k sdp sdsc bis si sm siv img nmt ss . (
+createTx :: forall bis nmt sd sc sds k sdp sdsc si sm siv img ss . (
 	BObj.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '(nmt, BObj.ImageFormat img)] 0,
 	Ord k ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.DscSet.Group sd sds k sdp '[ '(sdsc, bis)] -> -- slbtss ->
+	Vk.DscSet.Group sd sds k sdp '[ '(sdsc, bis)] ->
 	TextureGroup sd si sm siv (BObj.ImageFormat img) nmt k ->
 	Vk.Smplr.S ss -> img -> k -> IO ()
 createTx phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
