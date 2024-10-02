@@ -1292,19 +1292,17 @@ run :: forall n (siv :: Type) (sf :: Type)
 	ViewProjMemory sm sb bnmvp alu mnm ->
 	IO () -> IO ()
 run op (pd, qfis, dv, gq, pq, cp, cb)  pl ws (vb, ib) rgs rss dsg vpm go = do
-	for_ (M.toList ws) \(k', wos) -> do
-		let	(vp, rs) = lookupRects rss k'
-		destroyRctBffr rgs k'
-		rb <- createRctBffr pd dv gq cp rgs k' rs
-		let	rb' = (rb, fromIntegral $ length rs)
-		(fromJust -> HPList.Singleton ds) <- Vk.DscSt.lookup dsg k'
+	for_ (M.toList ws) \(k, wos) -> do
+		let	(vp, rs) = lookupRects rss k
+		destroyRctBffr rgs k
+		rb <- createRctBffr pd dv gq cp rgs k rs
+		(fromJust -> HPList.Singleton ds) <- Vk.DscSt.lookup dsg k
 		catchAndRecreate @n @_ @siv @sf pd qfis dv pl (winObjsToRecreates wos)
-			$ drawFrame dv gq pq pl (winObjsToDraws wos) vb rb' ib vpm ds cb vp
+			$ drawFrame dv gq pq pl (winObjsToDraws wos) vb rb ib vpm ds cb vp
 		Vk.Dvc.waitIdle dv
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
 	if cls then (pure ()) else do
-		for_ ws \wos ->
-			recreateAllIfNeed @n @siv @sf pd qfis dv pl wos op
+		for_ ws \os -> recreateAllIfNeed @n @siv @sf pd qfis dv pl os op
 		go
 	where
 	lookupRects rs = fromMaybe (StrG.W viewProjectionIdentity, dummy) . (`M.lookup` rs)
@@ -1323,7 +1321,6 @@ recreateAllIfNeed ::
 		-> TChan (Event k) -> IO ()
 recreateAllIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
 	checkFlag fbrszd >>= bool (pure ()) (do
-		putStrLn "recreateAllIfNeed: needed"
 		atomically $ writeTChan outp EventNeedRedraw
 		recreateAll @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
 
@@ -1403,7 +1400,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb smr sbr bnmv nm sm' sb' nm' sm2 sb
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnm nmt] '[] ->
 	Draws sl sr sg sdsl alu mnm nmt sias srfs siff scfmt ssc sfs ->
 	Vk.Bffr.Binded sm sb bnmv '[Vk.ObjNA.List WVertex nmv] ->
-	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 Rectangle nmr], Vk.Cmd.InstanceCount) ->
+	Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 Rectangle nmr] ->
 	Vk.Bffr.Binded sm' sb' nm' '[Vk.ObjNA.List Word16 nmi] ->
 	ViewProjMemory sm2 sb2 bnmvp alu mnm ->
 	Vk.DscSt.D sds (AtomUbo sdsl alu mnm nmt) ->
@@ -1492,11 +1489,11 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr bnmv nm sm' sb' nm' 
 			'(9, TexCoord) ]
 		'(sl, '[AtomUbo sdsl alu mnm nmt], '[]) ->
 	Vk.Bffr.Binded sm sb bnmv '[Vk.ObjNA.List WVertex nmv] ->
-	(Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 Rectangle nmr], Vk.Cmd.InstanceCount) ->
+	Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 Rectangle nmr] ->
 	Vk.Bffr.Binded sm' sb' nm' '[Vk.ObjNA.List Word16 nmi] ->
 	Vk.DscSt.D sds (AtomUbo sdsl alu mnm nmt) ->
 	IO ()
-recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
+recordCommandBuffer cb rp fb sce pllyt gpl vb rb ib ubds =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
@@ -1511,7 +1508,7 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 		(HPList.Singleton (
 			HPList.Nil :** HPList.Nil :**
 			HPList.Nil )) >>
-	Vk.Cmd.drawIndexed cbb (fromIntegral $ length indices) ic 0 0 0
+	Vk.Cmd.drawIndexed cbb (bffrLstLn ib) (bffrLstLn rb) 0 0 0
 	where
 	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -1524,6 +1521,11 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 			Vk.rect2dExtent = sce },
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
+
+bffrLstLn :: Num n =>
+	Vk.Bffr.Binded sm sb bnm '[Vk.Obj.ListMaybeName al v mnm] -> n
+bffrLstLn b = fromIntegral sz
+	where HPList.Singleton (Vk.Obj.LengthList' sz) = Vk.Bffr.lengthBinded b
 
 -- DATA TYPES
 
