@@ -805,26 +805,21 @@ createRndrPss rpg k = forceRight' <$> Vk.RndrPss.create' @_ @_ @_ rpg k info
 			Vk.AccessDepthStencilAttachmentWriteBit,
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
-createFrmbffrs ::
-	forall ts siv k sd sf sr nm fmt .
-	(Mappable ts, Ord k) =>
-	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k ->
-	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	HPList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
-	IO (HPList.PL Vk.Frmbffr.F (Replicate ts sf))
-createFrmbffrs fbgrp k sce rp =
-	mapHomoListMWithI @_ @ts @_ @_ @siv 0 \i sciv ->
-	forceRight' <$> Vk.Frmbffr.create'
-		fbgrp (k, i) (mkFramebufferCreateInfo sce rp sciv)
+createFrmbffrs :: forall n sv sd sf k sr nm fmt . (Mappable n, Ord k) =>
+	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> Vk.Extent2d ->
+	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) (Replicate n sv) ->
+	IO (HPList.PL Vk.Frmbffr.F (Replicate n sf))
+createFrmbffrs fbg k ex rp =
+	mapHomoListMWithI @_ @n @_ @_ @sv 0 \i v ->
+	forceRight' <$> Vk.Frmbffr.create' fbg (k, i) (frmbffrInfo ex rp v)
 
-recreateFramebuffers' :: forall ts sd sr nm fmt siv sf .
-	Mappable ts =>
-	Vk.Dvc.D sd -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) (Replicate ts siv) ->
-	HPList.PL Vk.Frmbffr.F (Replicate ts sf) -> IO ()
-recreateFramebuffers' dvc sce rp =
-	zipWithHomoListM_ @_ @ts @_ @_ @siv @_ @sf \sciv fb ->
-	Vk.Frmbffr.unsafeRecreate dvc (mkFramebufferCreateInfo sce rp sciv) nil fb
+recreateFrmbffrs :: forall n sd sr nm fmt sv sf . Mappable n =>
+	Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I nm fmt) (Replicate n sv) ->
+	HPList.PL Vk.Frmbffr.F (Replicate n sf) -> IO ()
+recreateFrmbffrs dv ex rp =
+	zipWithHomoListM_ @_ @n @_ @_ @sv @_ @sf \v fb ->
+	Vk.Frmbffr.unsafeRecreate dv (frmbffrInfo ex rp v) nil fb
 
 class Mappable (ts :: [knd]) where
 	type Replicate ts s :: [Type]
@@ -857,10 +852,10 @@ instance Mappable ts => Mappable (t ': ts) where
 		f x y >> zipWithHomoListM_ @_ @ts f xs ys
 
 
-mkFramebufferCreateInfo ::
+frmbffrInfo ::
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si ->
 	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)]
-mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
+frmbffrInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
@@ -1685,7 +1680,7 @@ recreateAll
 	Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 		recreateImgVws dvc imgs scivs
 	recreateGraphicsPipeline dvc ext rp pllyt gpl
-	recreateFramebuffers' @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
+	recreateFrmbffrs @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->

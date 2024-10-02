@@ -221,8 +221,8 @@ src
         - [x] createImgVw
         - [x] recreateImageViews
         - [x] createRndrPss
-        - [ ] createFrmbffrs
-        - [ ] recreateFramebuffers'
+        - [x] createFrmbffrs
+        - [x] recreateFrmbffrs
         - [ ] class Mappable
         - [ ] instance Mappable
         - [ ] mkFramebufferCreateInfo
