@@ -494,7 +494,7 @@ createDscPl dv = Vk.DscPl.create dv info nil
 provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sl sdsl bnmvp alu mnmvp nmt sw ssfc ssc siv nmi sr sf sg
 	sias srfs siff smvp sbvp sdp sds smr sbr bnmr nmr .
-	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Show k, Ord k, KnownNat alu) =>
+	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k, KnownNat alu) =>
 	TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> QFamIdcs ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
@@ -877,64 +877,44 @@ type RectGroups sd sm sb bnm nm k = (
 
 -- GET GLFW EVENTS
 
-setGlfwEvents :: (Ord k, Show k) =>
+setGlfwEvents :: Ord k =>
 	TChan (Event k) -> GlfwG.Win.W sw -> FramebufferResized ->
 	TVar (M.Map k (IO ())) -> k -> IO ()
-setGlfwEvents op w fr ges k =
-	GlfwG.Win.setKeyCallback w
-		(Just \_w ky sc' act mods -> do
-			putStrLn $
-				show w ++ " " ++ show ky ++ " " ++
-				show sc' ++ " " ++ show act ++ " " ++ show mods
-			case act of
-				GlfwG.Ky.KeyState'Pressed ->
-					atomically $ writeTChan op $ EventKeyDown k ky
-				GlfwG.Ky.KeyState'Released ->
-					atomically $ writeTChan op $ EventKeyUp k ky
-				_ -> pure ()
-			) >>
-	GlfwG.Win.setFramebufferSizeCallback w
-		(Just \_ _ _ -> atomically $ writeTVar fr True) >>
+setGlfwEvents op w fr ges k = do
+	GlfwG.Win.setKeyCallback w $ Just \_ ky _ a _ -> atomically case a of
+		GlfwG.Ky.KeyState'Pressed -> writeTChan op $ EventKeyDown k ky
+		GlfwG.Ky.KeyState'Released -> writeTChan op $ EventKeyUp k ky
+		_ -> pure ()
+	GlfwG.Win.setFramebufferSizeCallback w $ Just \_ _ _ ->
+		atomically $ writeTVar fr True
+	atomically do
+		(vcls, vmbs) <- (,) <$> newTVar False <*> newTVar mbst0
+		modifyTVar ges . M.insert k $ glfwEvents k w op vcls vmbs
+	where mbst0 = foldr (uncurry M.insert) M.empty
+		$ (, GlfwG.Ms.MouseButtonState'Released)
+			<$> [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
-	let	initMouseButtonStates = foldr (uncurry M.insert) M.empty
-			$ (, GlfwG.Ms.MouseButtonState'Released) <$>
-				[GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8] in
-	atomically (newTVar False) >>= \vb ->
-	atomically (newTVar initMouseButtonStates) >>= \vmbs ->
-	atomically (modifyTVar ges (M.insert k (glfwEvents k w op vb vmbs)))
-
-glfwEvents :: Show k => k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
-glfwEvents k w outp vscls vmb1p = do
---	threadDelay 10000
+glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents k w op vcls vmbst = do
 	GlfwG.pollEvents
-	cls <- GlfwG.Win.shouldClose w
-	scls <- atomically $ readTVar vscls
-	atomically $ writeTVar vscls cls
---	when cls . putStrLn $ "glfwEvents: scls = " ++ show scls
-	when (not scls && cls) do
-		putStrLn $ "send EventDeleteWindow " ++ show k
-		atomically . writeTChan outp $ EventDeleteWindow k
-	mb1 <- getMouseButtons w
-	mb1p <- atomically $ readTVar vmb1p
-	atomically $ writeTVar vmb1p mb1
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
+	(cls, scls) <- (,)
+		<$> GlfwG.Win.shouldClose w <*> atomically (readTVar vcls)
+	atomically $ writeTVar vcls cls
+	when (not scls && cls)
+		$ atomically . writeTChan op $ EventDeleteWindow k
+	(mb, mbst) <- (,) <$> getMouseButtons w <*> atomically (readTVar vmbst)
+	atomically $ writeTVar vmbst mb
+	sendMouseButtonDown k mbst mb op `mapM_` mouseButtonAll
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb && not cls
+	then atomically . writeTChan op . uncurry (EventCursorPosition k)
 		=<< GlfwG.Ms.getCursorPos w
 	else pure ()
-	sendMouseButtonDown k w mb1p mb1 outp `mapM_` mouseButtonAll
-	sendMouseButtonUp k w mb1p mb1 outp `mapM_` mouseButtonAll
-	cls' <- GlfwG.Win.shouldClose w
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb1 && not cls'
-	then atomically . writeTChan outp . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-	where
-	mAny p = M.foldr (\x b -> p x || b) False
+	sendMouseButtonUp k mbst mb op `mapM_` mouseButtonAll
+	where mAny p = M.foldr (\x b -> p x || b) False
 
 getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
-getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
-	<$> GlfwG.Ms.getButton w `mapM` bs
-	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
+getMouseButtons w = foldr (uncurry M.insert) M.empty
+	. zip mouseButtonAll <$> GlfwG.Ms.getButton w `mapM` mouseButtonAll
 
 type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
@@ -942,30 +922,22 @@ mouseButtonAll :: [GlfwG.Ms.MouseButton]
 mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
 sendMouseButtonDown, sendMouseButtonUp ::
-	k -> GlfwG.Win.W sw -> MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown k w = sendMouseButton k w EventMouseButtonDown
+	k -> MouseButtonStateDict -> MouseButtonStateDict ->
+	TChan (Event k) -> GlfwG.Ms.MouseButton -> IO ()
+sendMouseButtonDown k = sendMouseButton k EventMouseButtonDown
 	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
 
-sendMouseButtonUp k w = sendMouseButton k w EventMouseButtonUp
+sendMouseButtonUp k = sendMouseButton k EventMouseButtonUp
 	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
 
 sendMouseButton ::
-	k -> GlfwG.Win.W sw ->
-	(k -> GlfwG.Ms.MouseButton -> Event k) ->
+	k -> (k -> GlfwG.Ms.MouseButton -> Event k) ->
 	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
 	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
 	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButton k w ev pst st pbss bss outp b =
-	case (pbss M.! b == pst, bss M.! b == st) of
-		(True, True) -> do
---			print $ ev k b
-			atomically . writeTChan outp $ ev k b
-			cl <- GlfwG.Win.shouldClose w
-			when (not cl) $
-				atomically . writeTChan outp . uncurry (EventCursorPosition k)
-					=<< GlfwG.Ms.getCursorPos w
-		_ -> pure ()
+sendMouseButton k ev pst st pbss bss op b =
+	if pbss M.! b == pst && bss M.! b == st
+	then atomically . writeTChan op $ ev k b else pure ()
 
 -- GRAPHICS PIPELINE
 

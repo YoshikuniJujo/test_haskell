@@ -230,15 +230,15 @@ src
         - [x] createRctBffr
         - [x] destroyRctBffr
         - [x] RctGroups
-    + [ ] GET GLFW EVENTS
-        - [ ] setGlfwEvents
-        - [ ] glfwEvents
-        - [ ] getMouseButtons
-        - [ ] MouseButtonsStateDict
-        - [ ] mouseButtonAll
-        - [ ] sendMouseButtonDown
-        - [ ] sendMouseButtonUp
-        - [ ] sendMouseButton
+    + [x] GET GLFW EVENTS
+        - [x] setGlfwEvents
+        - [x] glfwEvents
+        - [x] getMouseButtons
+        - [x] MouseButtonsStateDict
+        - [x] mouseButtonAll
+        - [x] sendMouseButtonDown
+        - [x] sendMouseButtonUp
+        - [x] sendMouseButton
     + [ ] GRAPHICS PIPELINE
     + [ ] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
