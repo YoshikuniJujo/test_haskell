@@ -272,22 +272,27 @@ src
             * [x] constraint
             * [x] type declaration
             * [x] body
-    + [ ] RECREATE
+    + [x] RECREATE
         - [x] catchAndRecreate
             * [x] forall
             * [x] constraint
             * [x] type declaration
             * [x] body
-        - [ ] recreateAllIfNeed
+        - [x] recreateAllIfNeed
             * [x] forall
             * [x] constraint
             * [x] type declaration
-            * [ ] body
-        - [ ] recreateAll
-        - [ ] Recreates
+            * [x] body
+        - [x] recreateAll
+            * [x] forall
+            * [x] constraint
+            * [x] type declaration
+            * [x] body
+        - [x] waitFrmbffrSize
+        - [x] Recreates
             * [x] order of type variables
-            * [ ] others
-        - [ ] wobjToRecrs
+            * [x] others
+        - [x] wobjToRecrs
     + [ ] DRAW
     + [ ] DATA TYPES
     + [ ] SHADERS

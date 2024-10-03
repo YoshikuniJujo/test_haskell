@@ -1309,8 +1309,8 @@ catchAndRecreate ::
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
-	Recreates sw ssfc sr ssc nmi scfmt
-		(HPList.Replicate n sv) (HPList.Replicate n sf)
+	Recreates sw ssfc scfmt ssc nmi
+		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt -> IO () -> IO ()
 catchAndRecreate pd qfis dv pl rcs act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ();
@@ -1331,35 +1331,32 @@ recreateAllIfNeed op pd qfis dv pl wos@(WinObjs (_, fr) _ _ _ _ _) =
 		recreateAll @n @sv @sf pd qfis dv pl $ wobjsToRecrs wos
 
 recreateAll :: forall
-	n siv sf scfmt sw ssfc sd ssc nm sr sl sdsl sg mnm alu nmt .
-	(
-	Vk.T.FormatToValue scfmt, HPList.HomoListN n ) =>
+	n sv sf sd sl sdsl alu mnmvp nmt sw ssfc sr ssc nmi scfmt sg .
+	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnm nmt)] '[] ->
-	Recreates sw ssfc sr ssc nm scfmt
-		(HPList.Replicate n siv)
-		(HPList.Replicate n sf)
-		sg sl sdsl alu mnm nmt ->
-	IO ()
-recreateAll
-	phdvc qfis dvc pllyt
-	(Recreates win sfc vex rp sc scivs fbs gpl) = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
+	Recreates sw ssfc scfmt ssc nmi
+		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp nmt -> IO ()
+recreateAll pd qfis dv pl (Recreates w sfc vex sc scvs rp fbs gp) = do
+	waitFrmbffrSize w >> Vk.Dvc.waitIdle dv
+	ex <- recreateSwpch w sfc pd qfis dv sc
+	atomically $ writeTVar vex ex
+	Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is scvs
+	recreateFrmbffrs @n @_ @_ @_ @_ @sv @sf dv ex rp scvs fbs
+	recreateGrPpl dv ex rp pl gp
 
-	ext <- recreateSwpch win sfc phdvc qfis dvc sc
-	atomically $ writeTVar vex ext
-	Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-		recreateImgVws dvc imgs scivs
-	recreateGrPpl dvc ext rp pllyt gpl
-	recreateFrmbffrs @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
+waitFrmbffrSize :: GlfwG.Win.W sw -> IO ()
+waitFrmbffrSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
+	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-data Recreates sw ssfc sr ssc nmi scfmt svs sfs sg sl sdsl alu mnmvp nmt =
+data Recreates sw ssfc scfmt ssc nmi svs sr sfs sg sl sdsl alu mnmvp nmt =
 	Recreates
 		(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
-		(Vk.RndrPss.R sr)
 		(Vk.Khr.Swpch.S scfmt ssc)
-		(HPList.PL (Vk.ImgVw.I nmi scfmt) svs)
+		(HPList.PL (Vk.ImgVw.I nmi scfmt) svs) (Vk.RndrPss.R sr)
 		(HPList.PL Vk.Frmbffr.F sfs)
 		(Vk.Ppl.Gr.G sg
 			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
@@ -1372,13 +1369,11 @@ data Recreates sw ssfc sr ssc nmi scfmt svs sfs sg sl sdsl alu mnmvp nmt =
 			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]))
 
 wobjsToRecrs ::
-	WinObjs sw ssfc
-		scfmt ssc nm scivs sr sfs
-		sg sl sdsl alu mnm nmt sias srfs siff
-		->
-	Recreates sw ssfc sr ssc nm scfmt scivs sfs sg sl sdsl alu mnm nmt
-wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scivs, rp, fbs) gpl _iasrfsifs) =
-	Recreates w sfc vex rp sc scivs fbs gpl
+	WinObjs sw ssfc scfmt ssc nmi sscvs sr sfs
+		sg sl sdsl alu mnm nmt sias srfs siff ->
+	Recreates sw ssfc scfmt ssc nmi sscvs sr sfs sg sl sdsl alu mnm nmt
+wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scvs, rp, fbs) gp _) =
+	Recreates w sfc vex sc scvs rp fbs gp
 
 -- DRAW
 	
@@ -1438,12 +1433,6 @@ updateUniformBuffer' :: forall sd sm2 sb2 mnm alu bnmvp . KnownNat alu => Vk.Dvc
 updateUniformBuffer' dvc um obj = do
 	Vk.Mm.write @bnmvp @(Vk.Obj.Atom alu WViewProj mnm) @0
 		dvc um zeroBits obj
-
-waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
-waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
-	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 data Draws sl sr sg sdsl alu mnm nmt sias srfs siff fmt ssc sfs = Draws
 	(TVar Vk.Extent2d) (Vk.RndrPss.R sr)
