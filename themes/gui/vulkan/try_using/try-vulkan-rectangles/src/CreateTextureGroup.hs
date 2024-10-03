@@ -18,21 +18,22 @@ module CreateTextureGroup (
 	createTx, destroyTx,
 	createImgVw, recreateImgVw, createBffr, createBffr',
 
+	-- * BEGIN SINGLE TIME COMMANDS
+
+	singleTimeCmds,
+
 	-- * SAMPLER
 
 	createTxSmplr,
 
-	-- * IMAGE
+	-- * IMAGE TYPE
 
-	ImageRgba8(..),
-
-	-- * BEGIN SINGLE TIME COMMANDS
-
-	singleTimeCmds
+	ImageRgba8(..)
 
 	) where
 
 import Foreign.Storable
+import Data.Foldable
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.TypeLevel.Tuple.Uncurry
@@ -76,109 +77,55 @@ import Data.Array
 
 import Data.Either.ToolsYj
 
+----------------------------------------------------------------------
+--
+-- * GROUP
+-- * CREATE AND DESTROY
+-- * BUFFER
+-- * IMAGE
+-- * IMAGE VIEW
+-- * DESCRIPTOR SET
+-- * BEGIN SINGLE TIME COMMANDS
+-- * SAMPLER
+-- * IMAGE TYPE
+--
+----------------------------------------------------------------------
+
+-- GROUP
+
+txGroup :: Vk.Dvc.D sd ->
+	(forall si sm sv . TextureGroup sd si sm sv fmt nmt k -> IO a) -> IO a
+txGroup dv f =
+	Vk.Img.group dv nil \ig -> Vk.Mm.group dv nil \mg ->
+	Vk.ImgVw.group dv nil \vg -> f (ig, mg, vg)
+
 type TextureGroup sd si sm sv fmt nmt k = (
 	Vk.Img.Group sd 'Nothing si k nmt fmt,
 	Vk.Mm.Group sd 'Nothing sm k '[ '(si, 'Vk.Mm.ImageArg nmt fmt)],
 	Vk.ImgVw.Group sd 'Nothing sv k nmt fmt )
 
-txGroup :: Vk.Dvc.D sd ->
-	(forall si sm siv . TextureGroup sd si sm siv fmt nmt k -> IO a) -> IO a
-txGroup dv f =
-	Vk.Img.group dv nil \mng -> Vk.Mm.group dv nil \mmng ->
-	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
+-- CREATE AND DESTROY
 
-createTxSmplr ::
-	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTxSmplr phdv dvc f = do
-	prp <- Vk.Phd.getProperties phdv
-	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
-	let	samplerInfo = Vk.Smplr.CreateInfo {
-			Vk.Smplr.createInfoNext = TMaybe.N,
-			Vk.Smplr.createInfoFlags = zeroBits,
-			Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
-			Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
-			Vk.Smplr.createInfoMipmapMode =
-				Vk.Smplr.MipmapModeLinear,
-			Vk.Smplr.createInfoAddressModeU =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoAddressModeV =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoAddressModeW =
-				Vk.Smplr.AddressModeRepeat,
-			Vk.Smplr.createInfoMipLodBias = 0,
-			Vk.Smplr.createInfoAnisotropyEnable = True,
-			Vk.Smplr.createInfoMaxAnisotropy =
-				Vk.Phd.limitsMaxSamplerAnisotropy
-					$ Vk.Phd.propertiesLimits prp,
-			Vk.Smplr.createInfoCompareEnable = False,
-			Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.createInfoMinLod = 0,
-			Vk.Smplr.createInfoMaxLod = 0,
-			Vk.Smplr.createInfoBorderColor =
-				Vk.BorderColorIntOpaqueBlack,
-			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
-
-createTx :: forall bis nmt sd sc sds k sdp sdsc si sm siv img ss . (
-	BObj.IsImage img,
+createTx :: forall bis nmt sd scp sds k sdp sdsl si sm sv img ssmp . (
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '(nmt, BObj.ImageFormat img)] 0,
-	Ord k ) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.DscSet.Group sd sds k sdp '[ '(sdsc, bis)] ->
-	TextureGroup sd si sm siv (BObj.ImageFormat img) nmt k ->
-	Vk.Smplr.S ss -> img -> k -> IO ()
-createTx phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
-	putStrLn "CREATE TEXTURE BEGIN" >>
-	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
+	Ord k, BObj.IsImage img ) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp ->
+	Vk.DscSet.Group sd sds k sdp '[ '(sdsl, bis)] ->
+	TextureGroup sd si sm sv (BObj.ImageFormat img) nmt k ->
+	Vk.Smplr.S ssmp -> img -> k -> IO ()
+createTx pd dv gq cp dsg (ig, mg, vg) smp img k =
+	createTxImg pd dv ig mg gq cp k img >>= \i ->
+	createImgVw vg k i >>= \v ->
+	Vk.DscSet.lookup dsg k >>= \(fromJust -> HPList.Singleton ds) ->
+	updateDscStTx dv ds v smp
 
-	createImgVw ivmng k tximg >>= \tximgvw ->
+destroyTx :: Ord k => TextureGroup sd si sm sv fmt nmt k -> k -> IO ()
+destroyTx (ig, mg, vg) = for_ [
+	Vk.Img.unsafeDestroy ig, Vk.Mm.unsafeFree mg,
+	Vk.ImgVw.unsafeDestroy vg ] . flip ($)
 
-	Vk.DscSet.lookup dsg k >>= \(fromJust -> HPList.Singleton ubds) ->
-
-	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
-	putStrLn "CREATE TEXTURE END"
-
-createImgVw :: forall sd sv k nm vfmt sm si ifmt .
-	(Ord k, Vk.T.FormatToValue vfmt) =>
-	Vk.ImgVw.Group sd 'Nothing sv k nm vfmt ->
-	k -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm vfmt sv)
-createImgVw vg k i = forceRight' <$> Vk.ImgVw.create' vg k (imgVwInfo i)
-
-recreateImgVw :: Vk.T.FormatToValue ivfmt => Vk.Dvc.D sd ->
-	Vk.Img.Binded sm si nm ifmt -> Vk.ImgVw.I nm ivfmt sv -> IO ()
-recreateImgVw dv i = Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil
-
-destroyTx :: Ord k => TextureGroup sd si sm siv fmt nmt k -> k -> IO ()
-destroyTx (mng, mmng, ivmng) k = do
-	putStrLn "DESTROY TEXTURE BEGIN"
-	_ <- Vk.Img.unsafeDestroy mng k
-	_ <- Vk.Mm.unsafeFree mmng k
-	_ <- Vk.ImgVw.unsafeDestroy ivmng k
-	putStrLn "DESTROY TEXTURE END"
-	pure ()
-
-imgVwInfo ::
-	Vk.Img.Binded sm si nm ifmt ->
-	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
-imgVwInfo i = imgVwInfo' i Vk.Img.AspectColorBit
-
-imgVwInfo' :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
-	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
-imgVwInfo' i a = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = TMaybe.N,
-	Vk.ImgVw.createInfoFlags = zeroBits,
-	Vk.ImgVw.createInfoImage = i,
-	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoComponents = def,
-	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = a,
-		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
-		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 } }
-
-createTextureImage' :: forall k sim nm sd smm sc img . (
+createTxImg :: forall k sim nm sd smm sc img . (
 	BObj.IsImage img, Ord k
 	) => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group sd 'Nothing sim k nm (BObj.ImageFormat img) ->
@@ -186,7 +133,7 @@ createTextureImage' :: forall k sim nm sd smm sc img . (
 		'[ '(sim, 'Vk.Mm.ImageArg nm (BObj.ImageFormat img))] ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> k -> img ->
 	IO (Vk.Img.Binded smm sim nm (BObj.ImageFormat img))
-createTextureImage' phdvc dvc mng mmng gq cp k img = do
+createTxImg phdvc dvc mng mmng gq cp k img = do
 	let	wdt = fromIntegral $ BObj.imageWidth img
 		hgt = fromIntegral $ BObj.imageHeight img
 	(tximg, _txmem) <- createImage' @(BObj.ImageFormat img) phdvc dvc mng mmng k
@@ -234,6 +181,8 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyBufferToImage @1
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HeteroParList.Singleton region)
+
+-- BUFFER
 
 createBufferImage :: Storable (BObj.ImagePixel t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
@@ -313,6 +262,8 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
+-- IMAGE
+
 createImage' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group sd 'Nothing sim k nm fmt ->
@@ -327,7 +278,7 @@ createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
 	AlwaysRight img <- Vk.Img.create' @_ @'Nothing mng k imageInfo
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
-	mt <- findMemoryType pd (Vk.Mm.requirementsMemoryTypeBits reqs) prps
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits reqs) prps
 	print mt
 	Right (HeteroParList.Singleton (U2 (Vk.Mm.ImageBinded bnd)), m) <-
 		Vk.Mm.allocateBind' @_ @'Nothing mmng k
@@ -353,17 +304,6 @@ createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
 	memInfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
-
-findMemoryType :: Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags ->
-	IO Vk.Mm.TypeIndex
-findMemoryType phdvc flt props =
-	fromMaybe (error msg) . suitable <$> Vk.Phd.getMemoryProperties phdvc
-	where
-	msg = "failed to find suitable memory type!"
-	suitable props1 = fst <$> L.find ((&&)
-		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
-		<*> checkBits props . Vk.Mm.mTypePropertyFlags . snd) tps
-		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
@@ -403,12 +343,46 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
 		_ -> error "unsupported layout transition!"
 
-updateDescriptorSetTex ::
+-- IMAGE VIEW
+
+createImgVw :: forall sd sv k nm vfmt sm si ifmt .
+	(Ord k, Vk.T.FormatToValue vfmt) =>
+	Vk.ImgVw.Group sd 'Nothing sv k nm vfmt ->
+	k -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm vfmt sv)
+createImgVw vg k i = forceRight' <$> Vk.ImgVw.create' vg k (imgVwInfo i)
+
+recreateImgVw :: Vk.T.FormatToValue ivfmt => Vk.Dvc.D sd ->
+	Vk.Img.Binded sm si nm ifmt -> Vk.ImgVw.I nm ivfmt sv -> IO ()
+recreateImgVw dv i = Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil
+
+imgVwInfo ::
+	Vk.Img.Binded sm si nm ifmt ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
+imgVwInfo i = imgVwInfo' i Vk.Img.AspectColorBit
+
+imgVwInfo' :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
+imgVwInfo' i a = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = i,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = a,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 } }
+
+-- DESCRIPTOR SET
+
+updateDscStTx ::
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '(nmt, fmt)] 0 =>
 	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) ->
 	Vk.ImgVw.I nmt fmt siv  -> Vk.Smplr.S ss -> IO ()
-updateDescriptorSetTex dvc dscs tximgvw txsmp = do
+updateDscStTx dvc dscs tximgvw txsmp = do
 	Vk.DscSet.updateDs dvc (
 		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HeteroParList.Nil )
 		HeteroParList.Nil
@@ -428,6 +402,8 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 			Vk.Dsc.imageInfoImageView = tiv,
 			Vk.Dsc.imageInfoSampler = tsmp }
 	}
+
+-- BEGIN SINGLE TIME COMMANDS
 
 singleTimeCmds :: forall sd sc a . Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> (forall s . Vk.CmdBffr.C s -> IO a) -> IO a
@@ -452,10 +428,46 @@ singleTimeCmds dv gq cp cmd =
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
+-- SAMPLER
+
+createTxSmplr ::
+	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTxSmplr phdv dvc f = do
+	prp <- Vk.Phd.getProperties phdv
+	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
+	let	samplerInfo = Vk.Smplr.CreateInfo {
+			Vk.Smplr.createInfoNext = TMaybe.N,
+			Vk.Smplr.createInfoFlags = zeroBits,
+			Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMipmapMode =
+				Vk.Smplr.MipmapModeLinear,
+			Vk.Smplr.createInfoAddressModeU =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeV =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeW =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoMipLodBias = 0,
+			Vk.Smplr.createInfoAnisotropyEnable = True,
+			Vk.Smplr.createInfoMaxAnisotropy =
+				Vk.Phd.limitsMaxSamplerAnisotropy
+					$ Vk.Phd.propertiesLimits prp,
+			Vk.Smplr.createInfoCompareEnable = False,
+			Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+			Vk.Smplr.createInfoMinLod = 0,
+			Vk.Smplr.createInfoMaxLod = 0,
+			Vk.Smplr.createInfoBorderColor =
+				Vk.BorderColorIntOpaqueBlack,
+			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
+	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
+
 {-# COMPLETE AlwaysRight #-}
 
 pattern AlwaysRight :: b -> Either a b
 pattern AlwaysRight x <- Right x
+
+-- IMAGE TYPE
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
