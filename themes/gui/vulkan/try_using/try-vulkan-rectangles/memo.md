@@ -293,7 +293,7 @@ src
             * [x] order of type variables
             * [x] others
         - [x] wobjToRecrs
-    + [ ] DRAW
+    + [x] DRAW
         - [x] draw
             * [x] forall
             * [x] constraint
@@ -306,11 +306,8 @@ src
             * [x] order of type variables
             * [x] others
         - [x] wobjsToDrs
-        - [ ] recordCommandBuffer
-            * [ ] order of arguments
-            * [ ] order of type variables
-            * [ ] others
-        - [ ] bffrLstLn
+        - [x] recordCommandBuffer
+        - [x] bffrLstLn
     + [ ] DATA TYPES
     + [ ] SHADERS
     + [ ] import list
