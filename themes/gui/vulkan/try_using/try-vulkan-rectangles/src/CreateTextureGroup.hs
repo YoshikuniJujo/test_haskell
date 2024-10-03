@@ -13,23 +13,22 @@ module CreateTextureGroup (
 
 	txGroup, TextureGroup,
 
+	-- * CREATE AND DESTROY
+
+	createTx, destroyTx,
+	createImgVw, recreateImgVw, createBffr, createBffr',
+
+	-- * SAMPLER
+
 	createTxSmplr,
 
-	-- * CREATE AND UPDATE
+	-- * IMAGE
 
-	createTx, destroyTx, updateTexture, createBffr, bffrInfo, findMmType,
+	ImageRgba8(..),
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
-	singleTimeCmds,
-
-	-- * CREATE INFO
-
-	imgVwInfo, imgVwInfo',
-
-	-- * FOO
-
-	ImageRgba8(..)
+	singleTimeCmds
 
 	) where
 
@@ -74,6 +73,8 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Data.List.ToolsYj
 import Data.Array
+
+import Data.Either.ToolsYj
 
 type TextureGroup sd si sm sv fmt nmt k = (
 	Vk.Img.Group sd 'Nothing si k nmt fmt,
@@ -131,13 +132,22 @@ createTx phdv dv gq cp dsg (mng, mmng, ivmng) txsmplr img k =
 	putStrLn "CREATE TEXTURE BEGIN" >>
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
-	Vk.ImgVw.create' @_ @_ @(BObj.ImageFormat img)
-		ivmng k (imgVwInfo tximg) >>= \(AlwaysRight tximgvw) ->
+	createImgVw ivmng k tximg >>= \tximgvw ->
 
 	Vk.DscSet.lookup dsg k >>= \(fromJust -> HPList.Singleton ubds) ->
 
 	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
 	putStrLn "CREATE TEXTURE END"
+
+createImgVw :: forall sd sv k nm vfmt sm si ifmt .
+	(Ord k, Vk.T.FormatToValue vfmt) =>
+	Vk.ImgVw.Group sd 'Nothing sv k nm vfmt ->
+	k -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm vfmt sv)
+createImgVw vg k i = forceRight' <$> Vk.ImgVw.create' vg k (imgVwInfo i)
+
+recreateImgVw :: Vk.T.FormatToValue ivfmt => Vk.Dvc.D sd ->
+	Vk.Img.Binded sm si nm ifmt -> Vk.ImgVw.I nm ivfmt sv -> IO ()
+recreateImgVw dv i = Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil
 
 destroyTx :: Ord k => TextureGroup sd si sm siv fmt nmt k -> k -> IO ()
 destroyTx (mng, mmng, ivmng) k = do
@@ -147,15 +157,6 @@ destroyTx (mng, mmng, ivmng) k = do
 	_ <- Vk.ImgVw.unsafeDestroy ivmng k
 	putStrLn "DESTROY TEXTURE END"
 	pure ()
-
-updateTexture :: (
-	Vk.DscSet.BindingAndArrayElemImage bis '[ '(nmt, fmt)] 0,
-	Ord k ) =>
-	Vk.Dvc.D sd -> Vk.DscSet.D sds '(sdsc, bis) -> Vk.Smplr.S ss ->
-	Vk.ImgVw.Group sd 'Nothing siv k nmt fmt -> k -> IO ()
-updateTexture dv udbs txsmplr imng k = do
-	Just tximgvw <- Vk.ImgVw.lookup imng k
-	updateDescriptorSetTex dv udbs tximgvw txsmplr
 
 imgVwInfo ::
 	Vk.Img.Binded sm si nm ifmt ->
@@ -260,6 +261,34 @@ createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
 		(ainfo mt) nil
 		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bb))) -> bb
 	where ainfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+createBffr' :: forall sd sm sb k nm o . (Ord k, Vk.Obj.SizeAlignment o) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
+	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> k ->
+	Vk.Obj.Length o -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> IO (
+		Vk.Bffr.Binded sm sb nm '[o],
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] )
+createBffr' p dv bg mg k ln us prs =
+	Vk.Bffr.create' bg k binfo >>= \(forceRight' -> b) -> do
+		rqs <- Vk.Bffr.getMemoryRequirements dv b
+		mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits rqs) prs
+		(<$> Vk.Mm.allocateBind' mg k
+			(HPList.Singleton . U2 $ Vk.Mm.Buffer b) (ainfo mt))
+			\(forceRight' -> (HPList.Singleton
+				(U2 (Vk.Mm.BufferBinded bnd)), m)) -> (bnd, m)
+	where
+	binfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
+	binfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = TMaybe.N,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+		Vk.Bffr.createInfoUsage = us,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	ainfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
+	ainfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 

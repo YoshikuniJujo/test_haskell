@@ -745,19 +745,12 @@ createImgVws :: forall n sd sv k nm vfmt sm si ifmt .
 createImgVws vg k is = HPList.homoListNFromList @_ @n
 	<$> (\(i, img) -> createImgVw vg (k, i) img) `mapM` zip [0 ..] is
 
-createImgVw :: forall sd sv k nm vfmt sm si ifmt .
-	(Ord k, Vk.T.FormatToValue vfmt) =>
-	Vk.ImgVw.Group sd 'Nothing sv (k, Int) nm vfmt ->
-	(k, Int) -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm vfmt sv)
-createImgVw vg k i = forceRight' <$> Vk.ImgVw.create' vg k (imgVwInfo i)
-
 recreateImgVws :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
 	IO ()
 recreateImgVws _ [] HPList.Nil = pure ()
-recreateImgVws dv (i : is) (v :** vs) = do
-	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil v
-	recreateImgVws dv is vs
+recreateImgVws dv (i : is) (v :** vs) =
+	recreateImgVw dv i v >> recreateImgVws dv is vs
 recreateImgVws _ _ _ = error "number of Vk.Img.I and Vk.ImgVw.I should be same"
 
 createRndrPss :: forall scfmt sd ma sr k .
@@ -1152,34 +1145,6 @@ createBffrLst' :: forall sd sm sb k bnm a t nm .
 			sb,
 			'Vk.Mm.BufferArg bnm '[Vk.Obj.ListMaybeName a t nm] )] )
 createBffrLst' p dv bg mg k ln = createBffr' p dv bg mg k (Vk.Obj.LengthList ln)
-
-createBffr' :: forall sd sm sb k nm o . (Ord k, Vk.Obj.SizeAlignment o) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
-	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] -> k ->
-	Vk.Obj.Length o -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> IO (
-		Vk.Bffr.Binded sm sb nm '[o],
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] )
-createBffr' p dv bg mg k ln us prs =
-	Vk.Bffr.create' bg k binfo >>= \(forceRight' -> b) -> do
-		rqs <- Vk.Bffr.getMemoryRequirements dv b
-		mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits rqs) prs
-		(<$> Vk.Mm.allocateBind' mg k
-			(HPList.Singleton . U2 $ Vk.Mm.Buffer b) (ainfo mt))
-			\(forceRight' -> (HPList.Singleton
-				(U2 (Vk.Mm.BufferBinded bnd)), m)) -> (bnd, m)
-	where
-	binfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
-	binfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = TMaybe.N,
-		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
-		Vk.Bffr.createInfoUsage = us,
-		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	ainfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
-	ainfo mt = Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 copyBffrLst :: forall sd sc sm sb bnm t lnm sm' sb' bnm' . Storable' t =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
