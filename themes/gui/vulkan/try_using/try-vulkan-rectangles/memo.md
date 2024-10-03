@@ -309,7 +309,7 @@ src
         - [x] recordCommandBuffer
         - [x] bffrLstLn
     + [ ] DATA TYPES
-    + [ ] SHADERS
+    + [x] SHADERS
     + [ ] import list
     + [ ] export list
 * [ ] CreateTextureGroup
