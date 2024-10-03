@@ -15,27 +15,18 @@
 
 module UseTextureGroup (
 
-	-- * RECTANGLES
+	-- * RUN
 
 	useTextureGroup,
 
-	-- * COMMAND
+	-- * COMMAND AND EVENT
 
-	Command(..),
+	Command(..), Event(..),
 
-	-- ** VIEW PROJECTION
+	-- ** VIEW PROJECTION AND RECTANGLE
 
 	ViewProjection(..),
-
-	-- ** RECTANGLE
-
-	Rectangle(..),
-	RectPos(..), RectSize(..), RectColor(..),
-	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
-
-	-- * EVENT
-
-	Event(..),
+	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
 
 	) where
 
@@ -43,36 +34,49 @@ import GHC.Generics
 import GHC.TypeLits (Symbol)
 import GHC.TypeNats
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
 import Foreign.Storable.Generic qualified as StrG
+import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent.STM
+import Control.Concurrent.STM.ToolsYj
 import Control.Exception
 import Data.Kind
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
-import Data.TypeLevel.Tuple.Uncurry
 import Data.Foldable
 import Data.Proxy
-import Data.Default
+import Data.Ord.ToolsYj
 import Data.Bits
+import Data.Bits.ToolsYj
+import Data.Default
 import Data.Maybe
+import Data.Maybe.ToolsYj
+import Data.Either.ToolsYj
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.List.Length
+import Data.List.ToolsYj
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Map qualified as M
 import Data.Bool
+import Data.Bool.ToolsYj
 import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Color
+
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
+import Codec.Picture qualified as Pct
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Key as GlfwG.Ky
+import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -80,76 +84,56 @@ import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Object qualified as Vk.Obj
 import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocationCallbacks
-import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
+import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device qualified as Vk.Dvc
-import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
-import Gpu.Vulkan.Queue qualified as Vk.Q
-import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
-import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.Semaphore qualified as Vk.Smph
 import Gpu.Vulkan.Fence qualified as Vk.Fnc
+
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Gr
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
-import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
-import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
-import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
-import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
+import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
 import Gpu.Vulkan.Pipeline.MultisampleState qualified as Vk.Ppl.MltSmplSt
+import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
+import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
 import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
 import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
-import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
-import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
-import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+import Gpu.Vulkan.Attachment qualified as Vk.Att
+import Gpu.Vulkan.Subpass qualified as Vk.Subpass
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Tools hiding (onlyIf)
-
-import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type as GlfwG.Win
-import Graphics.UI.GlfwG.Key as GlfwG.Ky
-import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
-
-import CreateTextureGroup
-
-import Codec.Picture qualified as Pct
-
 import Debug
-
-import Data.Maybe.ToolsYj
-import Data.List.ToolsYj
-
-import Data.Ord.ToolsYj
-import Data.Bool.ToolsYj
-import Data.Either.ToolsYj
-
-import Gpu.Vulkan.PushConstant qualified as Vk.PushConstant
+import CreateTextureGroup
 
 ----------------------------------------------------------------------
 --
@@ -336,8 +320,8 @@ body :: forall
 	Vk.T.FormatToValue scfmt ) =>
 	TChan (Command k) -> TChan (Event k) ->
 	TVar (M.Map k (TVar Vk.Extent2d)) -> Vk.Ist.I si -> Vk.Phd.P ->
-	QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Image Pct.PixelRGBA8 ->
-	IO ()
+	QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
+	Pct.Image Pct.PixelRGBA8 -> IO ()
 body ip op vex ist pd qfis dv gq pq pct =
 	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
 	let	dvs = (pd, qfis, dv, gq, pq, cp, cb) in
@@ -516,7 +500,7 @@ provideWinObjs op vexs pd dv gq cp qfis pl wg gs dsl dp dsg vp rgs ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
 	winObjs @n vexs pd dv qfis pl w fr gs k <* do
 	_ <- createDscSt' dv dsl dsg k dp vp
-	_ <- createRctBffr pd dv gq cp rgs k dummy
+	_ <- createRctBffr pd dv gq cp rgs k $ rectToRectRaw <$> dummy
 	setGlfwEvents op w fr ges k
 
 initWin :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
@@ -712,8 +696,8 @@ swpchInfoSsd ::
 swpchInfoSsd sfc qfis ssd ex = chooseSwpSfcFmt (formats ssd)
 	\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
 	swpchInfo sfc qfis (capabilities ssd) sc (pmd $ presentModes ssd) ex
-	where pmd = fromMaybe
-		Vk.Khr.PresentModeFifo . L.find (== Vk.Khr.PresentModeMailbox)
+	where pmd = fromMaybe Vk.Khr.Sfc.PresentModeFifo
+		. L.find (== Vk.Khr.Sfc.PresentModeMailbox)
 
 chooseSwpSfcFmt :: (
 	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
@@ -870,7 +854,7 @@ data SyncObjs (ssos :: (Type, Type, Type)) where
 
 createRctBffr :: Ord k =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	RectGroups sd sm sb bnm nm k -> k -> [Rectangle] ->
+	RectGroups sd sm sb bnm nm k -> k -> [WRect] ->
 	IO (Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List WRect nm])
 createRctBffr pd dv gq cp (bg, mg) k rs =
 	createBffrLst' pd dv bg mg k (fromIntegral $ length rs)
@@ -881,7 +865,7 @@ createRctBffr pd dv gq cp (bg, mg) k rs =
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(c :: Vk.Bffr.Binded m b bn '[Vk.ObjNA.List t n]) m ->
 		Vk.Mm.write @bn
-			@(Vk.ObjNA.List t n) @0 dv m zeroBits (StrG.W <$> rs) >>
+			@(Vk.ObjNA.List t n) @0 dv m zeroBits rs >>
 		copyBffrLst dv gq cp c b
 
 destroyRctBffr :: Ord k => RectGroups sd sm sb nm nmrct k -> k -> IO ()
@@ -1230,25 +1214,25 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 			wi <- atomically $ readTVar vwi <* modifyTVar vwi succ'
 			atomically . modifyTVar vws . M.insert wi =<< crwos wi
 			wi <$ crtx wi pct0
-	fix \loop -> atomically (readTChan ip) >>= \case
-		GetEvent -> atomically (readTVar ges) >>= sequence_ >> loop
+	fix \go -> atomically (readTChan ip) >>= \case
+		GetEvent -> atomically (readTVar ges) >>= sequence_ >> go
 		EndWorld -> pure ()
 		OpenWindow -> crwos' >>=
-			atomically . writeTChan op . EventOpenWindow >> loop
+			atomically . writeTChan op . EventOpenWindow >> go
 		DestroyWindow k -> do
 			atomically (modifyTVar vws (M.delete k)) >> drwos k
 			ws <- atomically $ readTVar vws
 			GlfwG.pollEvents
-			bool loop (pure ()) =<< and <$> GlfwG.Win.shouldClose
+			bool go (pure ()) =<< and <$> GlfwG.Win.shouldClose
 				`mapM` (wobjsToWin <$> ws)
 		Draw ds -> do
 			Vk.Dvc.waitIdle dv
 			ws <- atomically $ readTVar vws
-			run @n @sv @sf
-				op dvs pl ws vbs rgs (rects ds) dsg vpm loop
+			run @n @sv @sf op dvs pl ws vbs rgs (rects ds) dsg vpm go
 		SetPicture k pct ->
-			drtx k >> crtx k pct >> Vk.Dvc.waitIdle dv >> loop
-	where rects = M.map \(vp, rs) -> (StrG.W vp, bool rs dummy $ null rs)
+			drtx k >> crtx k pct >> Vk.Dvc.waitIdle dv >> go
+	where rects = M.map \(vp, rs) ->
+		(StrG.W vp, rectToRectRaw <$> bool rs dummy (null rs))
 
 class Succable n where zero' :: n; succ' :: n -> n
 
@@ -1269,7 +1253,7 @@ type VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi = (
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] )
 
 wobjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
-	sg sl sdsl alu mnmvp nmt sias srfs siff -> W sw
+	sg sl sdsl alu mnmvp nmt sias srfs siff -> GlfwG.Win.W sw
 wobjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
 run :: forall
@@ -1284,7 +1268,7 @@ run :: forall
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff)) ->
 	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
-	RectGroups sd smr sbr bnmr nmr k -> M.Map k (WViewProj, [Rectangle]) ->
+	RectGroups sd smr sbr bnmr nmr k -> M.Map k (WViewProj, [WRect]) ->
 	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] ->
 	ViewProjMemory smvp sbvp bnmvp alu mnmvp -> IO () -> IO ()
 run op (pd, qfis, dv, gq, pq, cp, cb) pl ws (vb, ib) rgs rss dsg vpm go = do
@@ -1301,7 +1285,7 @@ run op (pd, qfis, dv, gq, pq, cp, cb) pl ws (vb, ib) rgs rss dsg vpm go = do
 		for_ ws \os -> recreateAllIfNeed @n @sv @sf op pd qfis dv pl os
 		go
 	where
-	vprs = fromMaybe (StrG.W viewProjIdentity, dummy) . (`M.lookup` rss)
+	vprs = fromMaybe (StrG.W viewProjIdentity, rectToRectRaw <$> dummy) . (`M.lookup` rss)
 
 -- RECREATE
 
@@ -1327,7 +1311,7 @@ recreateAllIfNeed :: forall
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff -> IO ()
 recreateAllIfNeed op pd qfis dv pl wos@(WinObjs (_, fr) _ _ _ _ _) =
-	checkFlag fr >>= bool (pure ()) do
+	atomically (checkFlag fr) >>= bool (pure ()) do
 		atomically $ writeTChan op EventNeedRedraw
 		recreateAll @n @sv @sf pd qfis dv pl $ wobjsToRecrs wos
 
@@ -1396,12 +1380,12 @@ draw dv gq pq pl (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
 	ex <- atomically $ readTVar vex
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
 	Vk.CmdBffr.reset cb def
-	ii <- Vk.Khr.acquireNextImageResult
+	ii <- Vk.Khr.Swpch.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	HPList.index fbs ii \fb -> recordCmdBffr cb rp fb ex pl gp vb rb ib ds
 	updateViewProjBffr dv mvp vp
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
-	catchAndSerialize . Vk.Khr.queuePresent @'Nothing pq $ pinfo ii
+	catchAndSerialize . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
 	where
 	siff = HPList.Singleton iff
 	sinfo = Vk.SubmitInfo {
@@ -1411,11 +1395,11 @@ draw dv gq pq pl (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
 				Vk.Ppl.StageColorAttachmentOutputBit,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-	pinfo ii = Vk.Khr.PresentInfo {
-		Vk.Khr.presentInfoNext = TMaybe.N,
-		Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-		Vk.Khr.presentInfoSwapchainImageIndices =
-			HPList.Singleton $ Vk.Khr.SwapchainImageIndex sc ii }
+	pinfo ii = Vk.Khr.Swpch.PresentInfo {
+		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
+			$ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
@@ -1508,38 +1492,6 @@ instance StrG.G Vertex where
 newtype TexCoord = TexCoord Cglm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-type WRect = StrG.W Rectangle
-
-data Rectangle = Rectangle {
-	rectanglePos :: RectPos, rectangleSize :: RectSize,
-	rectagnleColor :: RectColor,
-	rectangleModel0 :: RectModel0, rectangleModel1 :: RectModel1,
-	rectangleModel2 :: RectModel2, rectangleModel3 :: RectModel3 }
-	deriving (Show, Generic)
-
-instance StrG.G Rectangle where
-
-newtype RectPos = RectPos Cglm.Vec2
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype RectSize = RectSize Cglm.Vec2
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype RectColor = RectColor Cglm.Vec4
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype RectModel0 = RectModel0 Cglm.Vec4
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype RectModel1 = RectModel1 Cglm.Vec4
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype RectModel2 = RectModel2 Cglm.Vec4
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype RectModel3 = RectModel3 Cglm.Vec4
-	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
 vertices :: [WVertex]
 vertices = StrG.W <$> [
 	Vertex (Cglm.Vec2 $ (- 0) :. (- 0) :. NilL)
@@ -1558,13 +1510,64 @@ vertices = StrG.W <$> [
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
+data Rectangle = Rectangle {
+	rectanglePos' :: RectPos, rectangleSize' :: RectSize,
+	rectangleColor' :: RectColor, rectangleModel' :: RectModel }
+	deriving (Show, Generic)
+
+type WRect = StrG.W RectangleRaw
+
+data RectangleRaw = RectangleRaw {
+	rectanglePos :: RectPos, rectangleSize :: RectSize,
+	rectangleColor :: RectColor,
+	rectangleModel0 :: RectModel0, rectangleModel1 :: RectModel1,
+	rectangleModel2 :: RectModel2, rectangleModel3 :: RectModel3 }
+	deriving (Show, Generic)
+
+rectToRectRaw :: Rectangle -> WRect
+rectToRectRaw Rectangle {
+	rectanglePos' = p, rectangleSize' = s,
+	rectangleColor' = c, rectangleModel' = RectModel m } =
+	StrG.W RectangleRaw {
+		rectanglePos = p, rectangleSize = s,
+		rectangleColor = c,
+		rectangleModel0 = RectModel0 m0,
+		rectangleModel1 = RectModel1 m1,
+		rectangleModel2 = RectModel2 m2,
+		rectangleModel3 = RectModel3 m3 }
+	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
+
+instance StrG.G RectangleRaw where
+
+newtype RectPos = RectPos Cglm.Vec2
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectSize = RectSize Cglm.Vec2
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectColor = RectColor Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel = RectModel Cglm.Mat4 deriving (Show, Eq, Ord, Storable)
+
+newtype RectModel0 = RectModel0 Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel1 = RectModel1 Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel2 = RectModel2 Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel3 = RectModel3 Cglm.Vec4
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
 dummy :: [Rectangle]
-dummy = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-	[Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
-			(RectModel0 m0) (RectModel1 m1)
-			(RectModel2 m2) (RectModel3 m3)]
+dummy = [Rectangle
+	(RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+	(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+	(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
+	(RectModel Cglm.mat4Identity)]
 
 type WViewProj = StrG.W ViewProjection
 

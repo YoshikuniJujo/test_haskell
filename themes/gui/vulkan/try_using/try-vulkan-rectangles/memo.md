@@ -160,7 +160,7 @@ src
     + [x] drawImage
     + [x] import list
 * [x] ConvertPixel
-* [ ] UseTextureGroup
+* [x] UseTextureGroup
     + [x] USE TEXTURE GROUP
         - [x] useTextureGroup
         - [x] Command
@@ -308,10 +308,10 @@ src
         - [x] wobjsToDrs
         - [x] recordCommandBuffer
         - [x] bffrLstLn
-    + [ ] DATA TYPES
+    + [x] DATA TYPES
     + [x] SHADERS
-    + [ ] import list
-    + [ ] export list
+    + [x] import list
+    + [x] export list
 * [ ] CreateTextureGroup
 * [ ] Vertex
 * [ ] ThEnv
