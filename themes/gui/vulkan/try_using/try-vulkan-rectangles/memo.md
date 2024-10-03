@@ -294,6 +294,23 @@ src
             * [x] others
         - [x] wobjToRecrs
     + [ ] DRAW
+        - [x] draw
+            * [x] forall
+            * [x] constraint
+            * [x] type declaration
+            * [x] body
+        - [x] catchAndSerialize
+        - [x] updateViewProjBffr
+        - [x] Draws
+            * [x] order of arguments
+            * [x] order of type variables
+            * [x] others
+        - [x] wobjsToDrs
+        - [ ] recordCommandBuffer
+            * [ ] order of arguments
+            * [ ] order of type variables
+            * [ ] others
+        - [ ] bffrLstLn
     + [ ] DATA TYPES
     + [ ] SHADERS
     + [ ] import list
