@@ -1292,65 +1292,58 @@ run op (pd, qfis, dv, gq, pq, cp, cb) pl ws (vb, ib) rgs rss dsg vpm go = do
 		destroyRctBffr rgs k
 		rb <- createRctBffr pd dv gq cp rgs k rs
 		(fromJust -> HPList.Singleton ds) <- Vk.DscSt.lookup dsg k
-		catchAndRecreate @n @_ @sv @sf pd qfis dv pl (wobjsToRecrs os)
+		catchAndRecreate @n @sv @sf pd qfis dv pl (wobjsToRecrs os)
 			$ draw dv gq pq pl (wobjsToDrs os) vb rb ib vpm ds cb vp
 		Vk.Dvc.waitIdle dv
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (wobjsToWin <$> ws)
 	if cls then (pure ()) else do
-		for_ ws \os -> recreateAllIfNeed @n @sv @sf pd qfis dv pl os op
+		for_ ws \os -> recreateAllIfNeed @n @sv @sf op pd qfis dv pl os
 		go
 	where
 	vprs = fromMaybe (StrG.W viewProjIdentity, dummy) . (`M.lookup` rss)
 
 -- RECREATE
 
-recreateAllIfNeed ::
-	forall n siv sf
-		sd sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm sr k mnm alu nmt .
-	(Vk.T.FormatToValue scfmt, HPList.HomoListN n) =>
-	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnm nmt] '[] ->
-	WinObjs sw ssfc
-		scfmt ssc nm (HPList.Replicate n siv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnm nmt sias srfs siff
-		-> TChan (Event k) -> IO ()
-recreateAllIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) outp =
-	checkFlag fbrszd >>= bool (pure ()) (do
-		atomically $ writeTChan outp EventNeedRedraw
-		recreateAll @n @siv @sf phdvc qfis dvc pllyt $ wobjsToRecrs wos)
-
-type AtomUbo s alu mnmvp tnm = '(s, '[
-	'Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu WViewProj mnmvp],
-	'Vk.DscStLyt.Image '[ '(tnm, 'Vk.T.FormatR8g8b8a8Srgb)] ])
-
 catchAndRecreate ::
-	forall n scfmt siv sf sw ssfc sd nm sr ssc sl sdsl sg mnm alu nmt .
+	forall n sv sf sd sl sdsl alu mnmvp nmt sw ssfc sr ssc nmi scfmt sg .
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnm nmt] '[] ->
-	Recreates sw sl nm ssfc sr sg sdsl alu mnm nmt scfmt
-		ssc (HPList.Replicate n siv) (HPList.Replicate n sf) ->
-	IO () -> IO ()
-catchAndRecreate phdvc qfis dvc pllyt rcs act = catchJust
-	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just ()
-		_ -> Nothing)
-	act
-	\_ -> do
-		putStrLn "catchAndRecreate: catched"
-		recreateAll @n @siv @sf phdvc qfis dvc pllyt rcs
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
+	Recreates sw ssfc sr ssc nmi scfmt
+		(HPList.Replicate n sv) (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp nmt -> IO () -> IO ()
+catchAndRecreate pd qfis dv pl rcs act = catchJust
+	(\case	Vk.ErrorOutOfDateKhr -> Just ();
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
+	\_ -> recreateAll @n @sv @sf pd qfis dv pl rcs
+
+recreateAllIfNeed :: forall
+	n sv sf k sd sl sdsl mnmvp nmt sw ssfc scfmt ssc nmi sr sg alu
+	sias srfs siff . (HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
+	TChan (Event k) -> Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
+	WinObjs sw ssfc scfmt ssc nmi
+		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp nmt sias srfs siff -> IO ()
+recreateAllIfNeed op pd qfis dv pl wos@(WinObjs (_, fr) _ _ _ _ _) =
+	checkFlag fr >>= bool (pure ()) do
+		atomically $ writeTChan op EventNeedRedraw
+		recreateAll @n @sv @sf pd qfis dv pl $ wobjsToRecrs wos
 
 recreateAll :: forall
 	n siv sf scfmt sw ssfc sd ssc nm sr sl sdsl sg mnm alu nmt .
 	(
 	Vk.T.FormatToValue scfmt, HPList.HomoListN n ) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnm nmt] '[] ->
-	Recreates sw sl nm ssfc sr sg sdsl alu mnm nmt scfmt ssc (HPList.Replicate n siv) (HPList.Replicate n sf) ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnm nmt)] '[] ->
+	Recreates sw ssfc sr ssc nm scfmt
+		(HPList.Replicate n siv)
+		(HPList.Replicate n sf)
+		sg sl sdsl alu mnm nmt ->
 	IO ()
 recreateAll
 	phdvc qfis dvc pllyt
-	(Recreates win sfc vex rp gpl sc scivs fbs) = do
+	(Recreates win sfc vex rp sc scivs fbs gpl) = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
@@ -1361,31 +1354,31 @@ recreateAll
 	recreateGrPpl dvc ext rp pllyt gpl
 	recreateFrmbffrs @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
 
-data Recreates sw sl nm ssfc sr sg sdsl alu mnm nmt fmt ssc sis sfs = Recreates
-	(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc)
-	(TVar Vk.Extent2d)
-	(Vk.RndrPss.R sr)
-	(Vk.Ppl.Gr.G sg
-		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(Rectangle, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3),
-			'(9, TexCoord) ]
-		'(sl, '[ '(sdsl, DscStLytArg alu mnm nmt)], '[]))
-	(Vk.Khr.Swpch.S fmt ssc)
-	(HPList.PL (Vk.ImgVw.I nm fmt) sis)
-	(HPList.PL Vk.Frmbffr.F sfs)
+data Recreates sw ssfc sr ssc nmi scfmt svs sfs sg sl sdsl alu mnmvp nmt =
+	Recreates
+		(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
+		(Vk.RndrPss.R sr)
+		(Vk.Khr.Swpch.S scfmt ssc)
+		(HPList.PL (Vk.ImgVw.I nmi scfmt) svs)
+		(HPList.PL Vk.Frmbffr.F sfs)
+		(Vk.Ppl.Gr.G sg
+			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+				'(Rectangle, 'Vk.VtxInp.RateInstance) ]
+			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
+				'(3, RectSize), '(4, RectColor),
+				'(5, RectModel0), '(6, RectModel1),
+				'(7, RectModel2), '(8, RectModel3),
+				'(9, TexCoord) ]
+			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]))
 
 wobjsToRecrs ::
 	WinObjs sw ssfc
-		scfmt ssc nm sscivs sr sfs
+		scfmt ssc nm scivs sr sfs
 		sg sl sdsl alu mnm nmt sias srfs siff
 		->
-	Recreates sw sl nm ssfc sr sg sdsl alu mnm nmt scfmt ssc sscivs sfs
+	Recreates sw ssfc sr ssc nm scfmt scivs sfs sg sl sdsl alu mnm nmt
 wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scivs, rp, fbs) gpl _iasrfsifs) =
-	Recreates w sfc vex rp gpl sc scivs fbs
+	Recreates w sfc vex rp sc scivs fbs gpl
 
 -- DRAW
 	
@@ -1431,6 +1424,10 @@ draw dvc gq pq
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
 	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
+
+type AtomUbo s alu mnmvp tnm = '(s, '[
+	'Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu WViewProj mnmvp],
+	'Vk.DscStLyt.Image '[ '(tnm, 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =

@@ -273,6 +273,21 @@ src
             * [x] type declaration
             * [x] body
     + [ ] RECREATE
+        - [x] catchAndRecreate
+            * [x] forall
+            * [x] constraint
+            * [x] type declaration
+            * [x] body
+        - [ ] recreateAllIfNeed
+            * [x] forall
+            * [x] constraint
+            * [x] type declaration
+            * [ ] body
+        - [ ] recreateAll
+        - [ ] Recreates
+            * [x] order of type variables
+            * [ ] others
+        - [ ] wobjToRecrs
     + [ ] DRAW
     + [ ] DATA TYPES
     + [ ] SHADERS
