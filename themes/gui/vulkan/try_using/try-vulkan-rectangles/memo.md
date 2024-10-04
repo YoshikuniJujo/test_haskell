@@ -321,7 +321,13 @@ src
         - [x] destroyTx
         - [x] createTxImg
         - [x] copyBffrToImg
-    + [ ] BUFFER
+    + [x] BUFFER
+        - [x] createBffrImg
+        - [x] createBffr
+        - [x] createBffr'
+        - [x] bffrInfo
+        - [x] findMmType
+        - [x] mmAllcInfo
     + [ ] IMAGE
     + [ ] IMAGE VIEW
     + [ ] DESCRIPTOR SET

@@ -33,6 +33,7 @@ module CreateTextureGroup (
 	) where
 
 import Foreign.Storable
+import Control.Arrow
 import Data.Foldable
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -174,19 +175,17 @@ copyBffrToImg dv gq cp bf i w h = singleTimeCmds dv gq cp \cb ->
 
 -- BUFFER
 
-createBffrImg :: Storable (Vk.ObjB.ImagePixel t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
+createBffrImg :: Storable (Vk.ObjB.ImagePixel i) =>
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	(Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ Vk.Obj.Image 1 t inm] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[ Vk.Obj.Image 1 t inm])] ->
+	(forall m b .
+		Vk.Bffr.Binded m b bn '[ Vk.ObjNA.Image i n] ->
+		Vk.Mm.M m '[ '(b, 'Vk.Mm.BufferArg bn '[Vk.ObjNA.Image i n])] ->
 		IO a) -> IO a
-createBffrImg p dv (r, w, h, d) usg props f =
-	createBffr p dv (Vk.Obj.LengthImage r w h d) usg props f
+createBffrImg p dv (r, w, h, d) = createBffr p dv (Vk.Obj.LengthImage r w h d)
 
-createBffr :: forall sd nm o a . Vk.Obj.SizeAlignment o =>
+createBffr :: forall sd o nm a . Vk.Obj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] ->
@@ -195,11 +194,8 @@ createBffr p dv ln us prs f = Vk.Bffr.create dv (bffrInfo ln us) nil \b -> do
 	rqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits rqs) prs
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
-		(ainfo mt) nil
+		(mmAllcInfo mt) nil
 		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bb))) -> bb
-	where ainfo mt = Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 createBffr' :: forall sd sm sb k nm o . (Ord k, Vk.Obj.SizeAlignment o) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.Group sd 'Nothing sb k nm '[o] ->
@@ -208,26 +204,23 @@ createBffr' :: forall sd sm sb k nm o . (Ord k, Vk.Obj.SizeAlignment o) =>
 		Vk.Bffr.Binded sm sb nm '[o],
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg nm '[o])] )
 createBffr' p dv bg mg k ln us prs =
-	Vk.Bffr.create' bg k binfo >>= \(forceRight' -> b) -> do
-		rqs <- Vk.Bffr.getMemoryRequirements dv b
-		mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits rqs) prs
-		(<$> Vk.Mm.allocateBind' mg k
-			(HPList.Singleton . U2 $ Vk.Mm.Buffer b) (ainfo mt))
-			\(forceRight' -> (HPList.Singleton
-				(U2 (Vk.Mm.BufferBinded bnd)), m)) -> (bnd, m)
-	where
-	binfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
-	binfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = TMaybe.N,
-		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = HPList.Singleton ln,
-		Vk.Bffr.createInfoUsage = us,
-		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	ainfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
-	ainfo mt = Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+	Vk.Bffr.create' bg k (bffrInfo ln us) >>= \(forceRight' -> b) -> do
+	rqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMmType p (Vk.Mm.requirementsMemoryTypeBits rqs) prs
+	(<$> Vk.Mm.allocateBind' mg k
+		(HPList.Singleton . U2 $ Vk.Mm.Buffer b) (mmAllcInfo mt))
+		\(forceRight' ->
+			(HPList.Singleton (U2 (Vk.Mm.BufferBinded bb)), m)) ->
+		(bb, m)
+
+bffrInfo ::
+	Vk.Obj.Length s -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo Nothing '[s]
+bffrInfo ln us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 findMmType ::
 	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
@@ -235,20 +228,15 @@ findMmType pd flt prs =
 	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
 	where
 	msg = "failed to find suitable memory type!"
-	suit prs1 = fst <$> L.find ((&&)
-		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
-		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
-			(Vk.Phd.memoryPropertiesMemoryTypes prs1)
+	suit p = fst <$> L.find (uncurry (&&) .
+			((`Vk.Mm.elemTypeIndex` flt) ***
+			checkBits prs . Vk.Mm.mTypePropertyFlags))
+		(Vk.Phd.memoryPropertiesMemoryTypes p)
 
-bffrInfo ::
-	Vk.Obj.Length s -> Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo Nothing '[s]
-bffrInfo ln us = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N,
-	Vk.Bffr.createInfoFlags = zeroBits,
-	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
-	Vk.Bffr.createInfoUsage = us,
-	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+mmAllcInfo :: Vk.Mm.TypeIndex -> Vk.Mm.AllocateInfo 'Nothing
+mmAllcInfo mt = Vk.Mm.AllocateInfo {
+	Vk.Mm.allocateInfoNext = TMaybe.N,
+	Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 -- IMAGE
 
