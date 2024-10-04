@@ -316,11 +316,11 @@ src
     + [x] GROUP
         - [x] txGroup
         - [x] TextureGroup
-    + [ ] CREATE AND DESTROY
+    + [x] CREATE AND DESTROY
         - [x] createTx
         - [x] destroyTx
-        - [ ] createTxImg
-        - [ ] copyBufferToImage
+        - [x] createTxImg
+        - [x] copyBffrToImg
     + [ ] BUFFER
     + [ ] IMAGE
     + [ ] IMAGE VIEW

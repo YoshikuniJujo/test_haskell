@@ -41,7 +41,6 @@ import Data.Default
 import Data.Bits
 import Data.Maybe
 import Data.List qualified as L
-import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.Word
@@ -64,7 +63,8 @@ import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Object qualified as Vk.Obj
-import Gpu.Vulkan.Object.Base qualified as BObj
+import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
+import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
 
 import Tools
 
@@ -108,14 +108,14 @@ type TextureGroup sd si sm sv fmt nmt k = (
 
 createTx :: forall bis nmt sd scp sds k sdp sdsl si sm sv img ssmp . (
 	Vk.DscSet.BindingAndArrayElemImage bis
-		'[ '(nmt, BObj.ImageFormat img)] 0,
-	Ord k, BObj.IsImage img ) =>
+		'[ '(nmt, Vk.ObjB.ImageFormat img)] 0,
+	Ord k, Vk.ObjB.IsImage img ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp ->
 	Vk.DscSet.Group sd sds k sdp '[ '(sdsl, bis)] ->
-	TextureGroup sd si sm sv (BObj.ImageFormat img) nmt k ->
+	TextureGroup sd si sm sv (Vk.ObjB.ImageFormat img) nmt k ->
 	Vk.Smplr.S ssmp -> img -> k -> IO ()
 createTx pd dv gq cp dsg (ig, mg, vg) smp img k =
-	createTxImg pd dv ig mg gq cp k img >>= \i ->
+	createTxImg pd dv gq cp ig mg k img >>= \i ->
 	createImgVw vg k i >>= \v ->
 	Vk.DscSet.lookup dsg k >>= \(fromJust -> HPList.Singleton ds) ->
 	updateDscStTx dv ds v smp
@@ -125,66 +125,56 @@ destroyTx (ig, mg, vg) = for_ [
 	Vk.Img.unsafeDestroy ig, Vk.Mm.unsafeFree mg,
 	Vk.ImgVw.unsafeDestroy vg ] . flip ($)
 
-createTxImg :: forall k sim nm sd smm sc img . (
-	BObj.IsImage img, Ord k
-	) => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Img.Group sd 'Nothing sim k nm (BObj.ImageFormat img) ->
-	Vk.Mm.Group sd 'Nothing smm k
-		'[ '(sim, 'Vk.Mm.ImageArg nm (BObj.ImageFormat img))] ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> k -> img ->
-	IO (Vk.Img.Binded smm sim nm (BObj.ImageFormat img))
-createTxImg phdvc dvc mng mmng gq cp k img = do
-	let	wdt = fromIntegral $ BObj.imageWidth img
-		hgt = fromIntegral $ BObj.imageHeight img
-	(tximg, _txmem) <- createImage' @(BObj.ImageFormat img) phdvc dvc mng mmng k
-		wdt hgt Vk.Img.TilingOptimal
+createTxImg :: forall sd sc smi si k nmi img . (Ord k, Vk.ObjB.IsImage img) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Img.Group sd 'Nothing si k nmi (Vk.ObjB.ImageFormat img) ->
+	Vk.Mm.Group sd 'Nothing smi k
+		'[ '(si, 'Vk.Mm.ImageArg nmi (Vk.ObjB.ImageFormat img))] ->
+	k -> img -> IO (Vk.Img.Binded smi si nmi (Vk.ObjB.ImageFormat img))
+createTxImg pd dv gq cp ig mg k img = do
+	(i, _) <- createImg' @(Vk.ObjB.ImageFormat img) pd dv ig mg k w h
+		Vk.Img.TilingOptimal
 		(Vk.Img.UsageTransferDstBit .|. Vk.Img.UsageSampledBit)
 		Vk.Mm.PropertyDeviceLocalBit
-	putStrLn "before createBufferImage"
-	createBufferImage @img @_ phdvc dvc
-		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
+	i <$ createBffrImg @img pd dv (w, w, h, 1)
 		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mm.PropertyHostVisibleBit .|.
-			Vk.Mm.PropertyHostCoherentBit )
-		\(sb :: Vk.Bffr.Binded
-			sm sb "texture-buffer" '[ Vk.Obj.Image 1 a inm]) sbm -> do
-		Vk.Mm.write @"texture-buffer"
-			@(Vk.Obj.Image 1 img inm) @0 dvc sbm zeroBits img -- (MyImage img)
-		print sb
-		transitionImageLayout dvc gq cp tximg
-			Vk.Img.LayoutUndefined
+		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+		\(sb :: Vk.Bffr.Binded sm sb n '[ Vk.Obj.Image 1 a inm]) m -> do
+		Vk.Mm.write @n @(Vk.Obj.Image 1 img inm) @0 dv m zeroBits img
+		transitionImgLyt dv gq cp i Vk.Img.LayoutUndefined
 			Vk.Img.LayoutTransferDstOptimal
-		copyBufferToImage dvc gq cp sb tximg wdt hgt
-		transitionImageLayout dvc gq cp tximg
-			Vk.Img.LayoutTransferDstOptimal
+		copyBffrToImg dv gq cp sb i w h
+		transitionImgLyt dv gq cp i Vk.Img.LayoutTransferDstOptimal
 			Vk.Img.LayoutShaderReadOnlyOptimal
-	pure tximg
+	where
+	w, h :: Num n => n
+	w = fromIntegral $ Vk.ObjB.imageWidth img
+	h = fromIntegral $ Vk.ObjB.imageHeight img
 
-copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
-	Storable (BObj.ImagePixel img) =>
+copyBffrToImg :: forall sd sc smb sb bnmi img nmi si smi .
+	Storable (Vk.ObjB.ImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ Vk.Obj.Image 1 img inm]  ->
-	Vk.Img.Binded sm' si nm' (BObj.ImageFormat img) ->
+	Vk.Bffr.Binded smb sb bnmi '[ Vk.ObjNA.Image img nmi]  ->
+	Vk.Img.Binded smi si nmi (Vk.ObjB.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
-copyBufferToImage dvc gq cp bf img wdt hgt =
-	singleTimeCmds dvc gq cp \cb -> do
-	let	region :: Vk.Bffr.ImageCopy img inm
-		region = Vk.Bffr.ImageCopy {
-			Vk.Bffr.imageCopyImageSubresource = isr,
-			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
-			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d wdt hgt 1 }
-		isr = Vk.Img.SubresourceLayers {
-			Vk.Img.subresourceLayersAspectMask =
-				Vk.Img.AspectColorBit,
-			Vk.Img.subresourceLayersMipLevel = 0,
-			Vk.Img.subresourceLayersBaseArrayLayer = 0,
-			Vk.Img.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyBufferToImage @1
-		cb bf img Vk.Img.LayoutTransferDstOptimal (HeteroParList.Singleton region)
+copyBffrToImg dv gq cp bf i w h = singleTimeCmds dv gq cp \cb ->
+	Vk.Cmd.copyBufferToImage @1 cb bf i
+		Vk.Img.LayoutTransferDstOptimal (HPList.Singleton rgn)
+	where
+	rgn :: Vk.Bffr.ImageCopy img nmi
+	rgn = Vk.Bffr.ImageCopy {
+		Vk.Bffr.imageCopyImageSubresource = isr,
+		Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
+		Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
+	isr = Vk.Img.SubresourceLayers {
+		Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceLayersMipLevel = 0,
+		Vk.Img.subresourceLayersBaseArrayLayer = 0,
+		Vk.Img.subresourceLayersLayerCount = 1 }
 
 -- BUFFER
 
-createBufferImage :: Storable (BObj.ImagePixel t) =>
+createBffrImg :: Storable (Vk.ObjB.ImagePixel t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> (Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size, Vk.Dvc.Size) ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
@@ -193,10 +183,8 @@ createBufferImage :: Storable (BObj.ImagePixel t) =>
 			sb,
 			'Vk.Mm.BufferArg nm '[ Vk.Obj.Image 1 t inm])] ->
 		IO a) -> IO a
-createBufferImage p dv (r, w, h, d) usg props f =
-	putStrLn "createBufferImage begin" >>
+createBffrImg p dv (r, w, h, d) usg props f =
 	createBffr p dv (Vk.Obj.LengthImage r w h d) usg props f
-		<* putStrLn "createBufferImage end"
 
 createBffr :: forall sd nm o a . Vk.Obj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
@@ -264,7 +252,7 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 
 -- IMAGE
 
-createImage' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
+createImg' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Img.Group sd 'Nothing sim k nm fmt ->
 	Vk.Mm.Group sd 'Nothing smm k '[ '(sim, 'Vk.Mm.ImageArg nm fmt)] ->
@@ -274,15 +262,15 @@ createImage' :: forall fmt sim smm nm sd k . Ord k => Vk.T.FormatToValue fmt =>
 		Vk.Img.Binded smm sim nm fmt,
 		Vk.Mm.M smm
 			'[ '(sim, 'Vk.Mm.ImageArg nm fmt)] )
-createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
+createImg' pd dvc mng mmng k wdt hgt tlng usg prps = do
 	AlwaysRight img <- Vk.Img.create' @_ @'Nothing mng k imageInfo
 	reqs <- Vk.Img.getMemoryRequirements dvc img
 	print reqs
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits reqs) prps
 	print mt
-	Right (HeteroParList.Singleton (U2 (Vk.Mm.ImageBinded bnd)), m) <-
+	Right (HPList.Singleton (U2 (Vk.Mm.ImageBinded bnd)), m) <-
 		Vk.Mm.allocateBind' @_ @'Nothing mmng k
-			(HeteroParList.Singleton . U2 $ Vk.Mm.Image img) (memInfo mt)
+			(HPList.Singleton . U2 $ Vk.Mm.Image img) (memInfo mt)
 	pure (bnd :: Vk.Img.Binded smm sim nm fmt, m)
 	where
 	imageInfo = Vk.Img.CreateInfo {
@@ -305,11 +293,11 @@ createImage' pd dvc mng mmng k wdt hgt tlng usg prps = do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-transitionImageLayout :: forall sd sc si sm nm fmt .
+transitionImgLyt :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
-transitionImageLayout dvc gq cp img olyt nlyt =
+transitionImgLyt dvc gq cp img olyt nlyt =
 	singleTimeCmds dvc gq cp \cb -> do
 	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
 		barrier = Vk.Img.MemoryBarrier {
@@ -332,7 +320,7 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.subresourceRangeBaseArrayLayer = 0,
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ U5 barrier)
+		sstg dstg zeroBits HPList.Nil HPList.Nil (HPList.Singleton $ U5 barrier)
 	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
@@ -384,8 +372,8 @@ updateDscStTx ::
 	Vk.ImgVw.I nmt fmt siv  -> Vk.Smplr.S ss -> IO ()
 updateDscStTx dvc dscs tximgvw txsmp = do
 	Vk.DscSet.updateDs dvc (
-		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HeteroParList.Nil )
-		HeteroParList.Nil
+		U5 (descriptorWrite1 dscs tximgvw txsmp) :** HPList.Nil )
+		HPList.Nil
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds slbts -> Vk.ImgVw.I nm fmt si -> Vk.Smplr.S ss ->
@@ -395,7 +383,7 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
-	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HeteroParList.Singleton
+	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HPList.Singleton
 		$ U4 Vk.Dsc.ImageInfo {
 			Vk.Dsc.imageInfoImageLayout =
 				Vk.Img.LayoutShaderReadOnlyOptimal,
@@ -473,10 +461,10 @@ newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 
 newtype PixelRgba8 = PixelRgba8 PixelRGBA8
 
-instance BObj.IsImage ImageRgba8 where
+instance Vk.ObjB.IsImage ImageRgba8 where
 	type ImagePixel ImageRgba8 = PixelRgba8
 	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow = BObj.imageWidth
+	imageRow = Vk.ObjB.imageWidth
 	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
 	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
 	imageDepth _ = 1
