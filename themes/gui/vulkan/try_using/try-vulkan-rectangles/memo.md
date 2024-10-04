@@ -12,6 +12,13 @@ app
     + [x] rectangles
     + [x] import list
 * [ ] try-use-texture-group
+    + [x] MAIN
+        - [x] main
+        - [x] realMain
+        - [x] Angle
+    + [ ] CONTROLLER
+    + [ ] BODY
+    + [ ] RECTANGLES
 * [ ] try-multi-rectangles.hs
 * [ ] try-multi-rectangles2.hs
 
@@ -342,9 +349,9 @@ src
     + [x] IMAGE TYPE
     + [x] import list
     + [x] export list
+* [ ] Rectangles
+* [ ] Rectangles2
 * [ ] Vertex
 * [ ] ThEnv
 * [ ] Tools
 * [ ] PangoLayoutExtent
-* [ ] Rectangles
-* [ ] Rectangles2

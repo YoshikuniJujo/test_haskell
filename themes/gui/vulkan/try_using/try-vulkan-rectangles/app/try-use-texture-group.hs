@@ -42,34 +42,37 @@ import Graphics.UI.GlfwG.Key as GlfwG.Ky
 
 import Codec.Picture qualified as Pct
 
+----------------------------------------------------------------------
+--
+-- * MAIN
+-- * CONTROLLER
+-- * BODY
+-- * RECTANGLES
+--
+----------------------------------------------------------------------
+
+-- MAIN
+
 main :: IO ()
-main = run_ action
+main = run_ realMain
 
-action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
-	Cmd "Draw Rectangles" ()
-action f = liftIO do
-	a <- newAngle
-	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	vext <- atomically $ newTVar M.empty
-	_ <- forkIO $ untilEnd (get f) a (
-		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
-		readTVarOr (Vk.Extent2d 0 0) vext )
-	_ <- forkIO $ controller a inp
-	img <- Pct.readImage "../../../../../files/images/texture.jpg"
-	let	pct = either error Pct.convertRGBA8 img
-	useTextureGroup inp outp vext pct
-
-readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
-readTVarOr d mp k = do
-	mv <- (M.lookup k) <$> readTVar mp
-	case mv of
-		Nothing -> pure d
-		Just v -> readTVar v
+realMain ::
+	Flag "f" '["flat"] "BOOL" "flat or not" Bool -> Cmd "Draw Rectangles" ()
+realMain f = liftIO do
+	(ip, op) <- atomically $ (,) <$> newTChan <*> newTChan
+	(a, vex) <- atomically $ (,) <$> newTVar 0 <*> newTVar M.empty
+	_ <- forkIO $ controller a ip
+	_ <- forkIO $ body (get f) a
+		(writeTChan ip) (isEmptyTChan op, readTChan op)
+		(lookupOr (Vk.Extent2d 0 0) vex)
+	useTextureGroup ip op vex =<< either error Pct.convertRGBA8
+		<$> Pct.readImage "../../../../../files/images/texture.jpg"
+	where
+	lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
 
 newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
 
-newAngle :: IO (TVar Angle)
-newAngle = atomically $ newTVar 0
+-- CONTROLLER
 
 controller :: TVar Angle -> TChan (Command Int) -> IO ()
 controller a inp = fix \go -> (>> go) $ (threadDelay 100000 >>) do
@@ -84,10 +87,12 @@ controller a inp = fix \go -> (>> go) $ (threadDelay 100000 >>) do
 			print =<< atomically (readTVar a)
 		Nothing -> pure ()
 
-untilEnd :: Bool -> TVar Angle -> (
-	(Command Int -> STM (), (STM Bool, STM (Event Int))),
-	Int -> STM Vk.Extent2d ) -> IO ()
-untilEnd f ta ((inp, (oute, outp)), ext) = do
+-- BODY
+
+body :: Bool -> TVar Angle ->
+	(Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
+	(Int -> STM Vk.Extent2d) -> IO ()
+body f ta inp (oute, outp) ext = do
 	tbgn <- atomically newTChan
 	tpct <- atomically newTChan
 	tm0 <- getCurrentTime
@@ -144,6 +149,21 @@ untilEnd f ta ((inp, (oute, outp)), ext) = do
 		if ti	then processText o loop rs tinput tbgn vtxt vwin
 			else processOutput o loop rs inp tinput vwin
 
+uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
+uniformBufferObject (Angle a) sce = ViewProjection {
+	viewProjectionView = Cglm.lookat
+--		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+		(Cglm.Vec3 $ lax :. lay :. 3 :. NilL)
+		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+	viewProjectionProj = Cglm.modifyMat4 1 1 negate
+		$ Cglm.perspective
+			(Cglm.rad 45)
+			(fromIntegral (Vk.extent2dWidth sce) /
+				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
+	where
+	lax = realToFrac $ cos a; lay = realToFrac $ sin a
+
 processText :: Show a => Maybe (Event k) ->
 	(t -> IO b) -> t -> TVar Bool -> TChan [Char] -> TVar [Char] -> TVar a -> IO b
 processText o loop rs tinput tbgn vtxt vwin =
@@ -160,6 +180,31 @@ processText o loop rs tinput tbgn vtxt vwin =
 			putStrLn . reverse =<< atomically (readTVar vtxt)
 			print =<< atomically (readTVar vwin)
 			loop rs
+
+keyToChar :: Key -> Maybe Char
+keyToChar = (`lookup` keyCharTable)
+
+keyCharTable :: [(Key, Char)]
+keyCharTable = [
+	(Key'C, 'c'),
+	(Key'D, 'd'),
+	(Key'E, 'e'),
+	(Key'F, 'f'),
+	(Key'G, 'g'),
+	(Key'I, 'i'),
+	(Key'K, 'k'),
+	(Key'L, 'l'),
+	(Key'M, 'm'),
+	(Key'N, 'n'),
+	(Key'O, 'o'),
+	(Key'R, 'r'),
+	(Key'T, 't'),
+	(Key'U, 'u'),
+	(Key'V, 'v'),
+	(Key'W, 'w'),
+	(Key'X, 'x'),
+	(Key'Space, ' ')
+	]
 
 processOutput :: (Show a, Eq a, Num a) =>
 	Maybe (Event a) -> ((Float -> [Rectangle]) -> IO ()) ->
@@ -213,45 +258,7 @@ processOutput o loop rs inp tinput vwin =
 				putStrLn "EVENT NEED REDRAW"
 				loop rs
 
-keyToChar :: Key -> Maybe Char
-keyToChar = (`lookup` keyCharTable)
-
-keyCharTable :: [(Key, Char)]
-keyCharTable = [
-	(Key'C, 'c'),
-	(Key'D, 'd'),
-	(Key'E, 'e'),
-	(Key'F, 'f'),
-	(Key'G, 'g'),
-	(Key'I, 'i'),
-	(Key'K, 'k'),
-	(Key'L, 'l'),
-	(Key'M, 'm'),
-	(Key'N, 'n'),
-	(Key'O, 'o'),
-	(Key'R, 'r'),
-	(Key'T, 't'),
-	(Key'U, 'u'),
-	(Key'V, 'v'),
-	(Key'W, 'w'),
-	(Key'X, 'x'),
-	(Key'Space, ' ')
-	]
-
-uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
-uniformBufferObject (Angle a) sce = ViewProjection {
-	viewProjectionView = Cglm.lookat
---		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-		(Cglm.Vec3 $ lax :. lay :. 3 :. NilL)
-		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-	viewProjectionProj = Cglm.modifyMat4 1 1 negate
-		$ Cglm.perspective
-			(Cglm.rad 45)
-			(fromIntegral (Vk.extent2dWidth sce) /
-				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
-	where
-	lax = realToFrac $ cos a; lay = realToFrac $ sin a
+-- RECTANGLES
 
 instances :: Float -> [Rectangle]
 instances tm = let m = calcModel' tm in
@@ -297,10 +304,6 @@ instances2 tm = let m = calcModel' tm in
 			m
 		]
 
-calcModel' :: Float -> RectModel
-calcModel' tm = RectModel $ Cglm.rotate
-	Cglm.mat4Identity (tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
-
 instances' :: Float -> Float -> Vk.Extent2d -> [Rectangle]
 instances' w h ex = let m = calcModel2' w h ex in
 	[
@@ -323,6 +326,10 @@ instances' w h ex = let m = calcModel2' w h ex in
 			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
 			m
 		]
+
+calcModel' :: Float -> RectModel
+calcModel' tm = RectModel $ Cglm.rotate
+	Cglm.mat4Identity (tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
 
 calcModel2' :: Float -> Float -> Vk.Extent2d -> RectModel
 calcModel2' w0 h0 Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } =
