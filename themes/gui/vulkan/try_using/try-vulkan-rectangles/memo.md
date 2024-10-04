@@ -18,7 +18,20 @@ app
         - [x] Angle
     + [x] CONTROLLER
     + [ ] BODY
+        - [ ] body
+        - [ ] viewProj
+        - [ ] filePathToPicture
+        - [ ] setPicture
+        - [ ] processText
+        - [ ] keyToChar
+        - [ ] keyCharTable
+        - [ ] processOutput
     + [ ] RECTANGLES
+        - [ ] instances
+        - [ ] instances2
+        - [ ] instances'
+        - [ ] calcModel'
+        - [ ] calcModel2'
 * [ ] try-multi-rectangles.hs
 * [ ] try-multi-rectangles2.hs
 

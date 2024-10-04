@@ -90,40 +90,15 @@ controller a inp = fix \go -> (>> go) . (threadDelay 50000 >>)
 body :: Bool -> TVar Angle ->
 	(Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
 	(Int -> STM Vk.Extent2d) -> IO ()
-body f ta inp (oute, outp) ext = do
+body f ta ip (oe, op) ex = do
+	vwin <- atomically $ newTVar 0
 	tbgn <- atomically newTChan
 	tpct <- atomically newTChan
 	tm0 <- getCurrentTime
-	atomically $ inp OpenWindow
-
-	_ <- forkIO $ forever do
-		threadDelay 5000
-		atomically $ inp GetEvent
-
-	_ <- forkIO $ forever do
-		fp <- atomically $ readTChan tbgn
-		img <- case fp of
-			"texture" -> Just <$> Pct.readImage "../../../../../files/images/texture.jpg"
-			"viking room" -> Just <$> Pct.readImage "../../../../../files/models/viking_room.png"
-			"flower" -> Just <$> Pct.readImage "../../../../../files/images/flower.jpg"
-			"dice" -> Just <$> Pct.readImage "../../../../../files/images/saikoro.png"
-			_ -> pure Nothing
-		let	pct = either error Pct.convertRGBA8 <$> img
-			{-
---		threadDelay 4000000
-		pct <- either error Pct.convertRGBA8 <$> Pct.readImage "../../../../../files/images/texture.jpg"
-		atomically $ writeTChan tpct pct
---		threadDelay 4000000
-		atomically $ readTChan tbgn
-		pct' <- either error Pct.convertRGBA8 <$> Pct.readImage "../../../../../files/models/viking_room.png"
-		-}
-		maybe (pure ()) (atomically . writeTChan tpct) pct
-
-	vwin <- atomically $ newTVar 0
-	_ <- forkIO $ forever do
-		pct <- atomically $ readTChan tpct
-		wi <- atomically $ readTVar vwin
-		atomically . inp $ SetPicture wi pct
+	atomically $ ip OpenWindow
+	_ <- forkIO . forever $ threadDelay 5000 >> atomically (ip GetEvent)
+	_ <- forkIO . forever $ filePathToPicture tbgn tpct
+	_ <- forkIO . forever $ setPicture ip tpct vwin
 
 	tinput <- atomically $ newTVar False
 	vtxt <-  atomically $ newTVar []
@@ -133,19 +108,18 @@ body f ta inp (oute, outp) ext = do
 		a <- atomically $ readTVar ta
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
---		print =<< atomically (ext 0)
 		o <- atomically do
-			e0 <- ext 0
-			e1 <- ext 1
-			inp $ Draw (M.fromList [
+			e0 <- ex 0
+			e1 <- ex 1
+			ip $ Draw (M.fromList [
 				(0, ((bool (viewProj a e0) def f), instances' 1024 1024 e0)),
 --				(0, ((bool (viewProj e0) def f), (rs tm))),
 				(1, ((bool (viewProj a e1) def f), (instances2 tm)))
 				] )
-			bool (Just <$> outp) (pure Nothing) =<< oute
+			bool (Just <$> op) (pure Nothing) =<< oe
 		ti <- atomically $ readTVar tinput
 		if ti	then processText o loop rs tinput tbgn vtxt vwin
-			else processOutput o loop rs inp tinput vwin
+			else processOutput o loop rs ip tinput vwin
 
 viewProj :: Angle -> Vk.Extent2d -> ViewProjection
 viewProj (Angle a) sce = ViewProjection {
@@ -161,6 +135,26 @@ viewProj (Angle a) sce = ViewProjection {
 				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 	where
 	lax = realToFrac $ cos a; lay = realToFrac $ sin a
+
+filePathToPicture :: TChan String -> TChan (Pct.Image Pct.PixelRGBA8) -> IO ()
+filePathToPicture tbgn tpct = do
+		fp <- atomically $ readTChan tbgn
+		img <- case fp of
+			"texture" -> Just <$> Pct.readImage "../../../../../files/images/texture.jpg"
+			"viking room" -> Just <$> Pct.readImage "../../../../../files/models/viking_room.png"
+			"flower" -> Just <$> Pct.readImage "../../../../../files/images/flower.jpg"
+			"dice" -> Just <$> Pct.readImage "../../../../../files/images/saikoro.png"
+			_ -> pure Nothing
+		let	pct = either error Pct.convertRGBA8 <$> img
+		maybe (pure ()) (atomically . writeTChan tpct) pct
+
+setPicture :: (Command k -> STM b) ->
+	TChan (Pct.Image Pct.PixelRGBA8) -> TVar k -> IO b
+setPicture ip tpct vwin = do
+		pct <- atomically $ readTChan tpct
+		wi <- atomically $ readTVar vwin
+		atomically . ip $ SetPicture wi pct
+
 
 processText :: Show a => Maybe (Event k) ->
 	(t -> IO b) -> t -> TVar Bool -> TChan [Char] -> TVar [Char] -> TVar a -> IO b
