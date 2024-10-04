@@ -312,7 +312,7 @@ src
     + [x] SHADERS
     + [x] import list
     + [x] export list
-* [ ] CreateTextureGroup
+* [x] CreateTextureGroup
     + [x] GROUP
         - [x] txGroup
         - [x] TextureGroup
@@ -328,12 +328,20 @@ src
         - [x] bffrInfo
         - [x] findMmType
         - [x] mmAllcInfo
-    + [ ] IMAGE
-    + [ ] IMAGE VIEW
-    + [ ] DESCRIPTOR SET
-    + [ ] BEGIN SINGLE TIME COMMANDS
-    + [ ] SAMPLER
-    + [ ] IMAGE TYPE
+    + [x] IMAGE
+        - [x] createImg'
+            * [x] forall
+            * [x] constraint
+            * [x] type declaration
+            * [x] body
+        - [x] transitionImgLyt
+    + [x] IMAGE VIEW
+    + [x] DESCRIPTOR SET
+    + [x] BEGIN SINGLE TIME COMMANDS
+    + [x] SAMPLER
+    + [x] IMAGE TYPE
+    + [x] import list
+    + [x] export list
 * [ ] Vertex
 * [ ] ThEnv
 * [ ] Tools

@@ -743,7 +743,7 @@ createImgVws :: forall n sd sv k nm vfmt sm si ifmt .
 	[Vk.Img.Binded sm si nm ifmt] ->
 	IO (HPList.PL (Vk.ImgVw.I nm vfmt) (HPList.Replicate n sv))
 createImgVws vg k is = HPList.homoListNFromList @_ @n
-	<$> (\(i, img) -> createImgVw vg (k, i) img) `mapM` zip [0 ..] is
+	<$> (\(i, img) -> createImgVw' vg (k, i) img) `mapM` zip [0 ..] is
 
 recreateImgVws :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
