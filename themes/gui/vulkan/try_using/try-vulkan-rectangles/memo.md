@@ -16,7 +16,7 @@ app
         - [x] main
         - [x] realMain
         - [x] Angle
-    + [ ] CONTROLLER
+    + [x] CONTROLLER
     + [ ] BODY
     + [ ] RECTANGLES
 * [ ] try-multi-rectangles.hs

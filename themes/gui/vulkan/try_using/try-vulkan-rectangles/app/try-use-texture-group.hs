@@ -75,17 +75,15 @@ newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
 -- CONTROLLER
 
 controller :: TVar Angle -> TChan (Command Int) -> IO ()
-controller a inp = fix \go -> (>> go) $ (threadDelay 100000 >>) do
-	cs <- Glfw.getGamepadState Glfw.Joystick'1
-	case cs of
-		Just (Glfw.GamepadState gb ga) -> do
-			when (gb Glfw.GamepadButton'A == Glfw.GamepadButtonState'Pressed)
-				. atomically $ writeTChan inp EndWorld
-			print $ ga Glfw.GamepadAxis'LeftX
-			print $ ga Glfw.GamepadAxis'LeftY
-			atomically $ modifyTVar a (+ realToFrac (pi * ga Glfw.GamepadAxis'LeftX / 100))
-			print =<< atomically (readTVar a)
+controller a inp = fix \go -> (>> go) . (threadDelay 50000 >>)
+	$ Glfw.getGamepadState Glfw.Joystick'1 >>= \case
 		Nothing -> pure ()
+		Just (Glfw.GamepadState gb ga) -> do
+			when (gb Glfw.GamepadButton'A ==
+				Glfw.GamepadButtonState'Pressed)
+				. atomically $ writeTChan inp EndWorld
+			atomically $ modifyTVar a (+ realToFrac
+				(pi * ga Glfw.GamepadAxis'LeftX / 100))
 
 -- BODY
 
@@ -140,17 +138,17 @@ body f ta inp (oute, outp) ext = do
 			e0 <- ext 0
 			e1 <- ext 1
 			inp $ Draw (M.fromList [
-				(0, ((bool (uniformBufferObject a e0) def f), instances' 1024 1024 e0)),
---				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
-				(1, ((bool (uniformBufferObject a e1) def f), (instances2 tm)))
+				(0, ((bool (viewProj a e0) def f), instances' 1024 1024 e0)),
+--				(0, ((bool (viewProj e0) def f), (rs tm))),
+				(1, ((bool (viewProj a e1) def f), (instances2 tm)))
 				] )
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		ti <- atomically $ readTVar tinput
 		if ti	then processText o loop rs tinput tbgn vtxt vwin
 			else processOutput o loop rs inp tinput vwin
 
-uniformBufferObject :: Angle -> Vk.Extent2d -> ViewProjection
-uniformBufferObject (Angle a) sce = ViewProjection {
+viewProj :: Angle -> Vk.Extent2d -> ViewProjection
+viewProj (Angle a) sce = ViewProjection {
 	viewProjectionView = Cglm.lookat
 --		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
 		(Cglm.Vec3 $ lax :. lay :. 3 :. NilL)
@@ -203,8 +201,7 @@ keyCharTable = [
 	(Key'V, 'v'),
 	(Key'W, 'w'),
 	(Key'X, 'x'),
-	(Key'Space, ' ')
-	]
+	(Key'Space, ' ') ]
 
 processOutput :: (Show a, Eq a, Num a) =>
 	Maybe (Event a) -> ((Float -> [Rectangle]) -> IO ()) ->
