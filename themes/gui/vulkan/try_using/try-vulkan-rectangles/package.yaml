@@ -36,6 +36,7 @@ dependencies:
 - array
 - vector
 - text
+- filepath
 - JuicyPixels
 - union-color
 - try-gpu-vulkan

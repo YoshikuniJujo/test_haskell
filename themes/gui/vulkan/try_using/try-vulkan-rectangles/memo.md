@@ -16,16 +16,17 @@ app
         - [x] main
         - [x] realMain
         - [x] Angle
-    + [x] CONTROLLER
+        - [x] controller
+        - [x] setPicture
+        - [x] imgDir
+        - [x] mdlDir
     + [ ] BODY
         - [ ] body
         - [ ] viewProj
-        - [ ] filePathToPicture
-        - [ ] setPicture
-        - [ ] processText
+        - [ ] processOutput
+        - [ ] inputTxFilePath
         - [ ] keyToChar
         - [ ] keyCharTable
-        - [ ] processOutput
     + [ ] RECTANGLES
         - [ ] instances
         - [ ] instances2

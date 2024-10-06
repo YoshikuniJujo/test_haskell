@@ -26,6 +26,7 @@ import Data.List.Length
 import Data.Default
 import Data.Bool
 import Data.Time
+import System.FilePath
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Cglm qualified as Cglm
@@ -45,7 +46,6 @@ import Codec.Picture qualified as Pct
 ----------------------------------------------------------------------
 --
 -- * MAIN
--- * CONTROLLER
 -- * BODY
 -- * RECTANGLES
 --
@@ -62,9 +62,13 @@ realMain f = liftIO do
 	(ip, op) <- atomically $ (,) <$> newTChan <*> newTChan
 	(a, vex) <- atomically $ (,) <$> newTVar 0 <*> newTVar M.empty
 	_ <- forkIO $ controller a ip
+	_ <- forkIO . forever
+		$ threadDelay 10000 >> atomically (writeTChan ip GetEvent)
+	tpctf <- atomically newTChan
+	_ <- forkIO . forever $ setPicture ip tpctf
 	_ <- forkIO $ body (get f) a
 		(writeTChan ip) (isEmptyTChan op, readTChan op)
-		(lookupOr (Vk.Extent2d 0 0) vex)
+		(lookupOr (Vk.Extent2d 0 0) vex) tpctf
 	useTextureGroup ip op vex =<< either error Pct.convertRGBA8
 		<$> Pct.readImage "../../../../../files/images/texture.jpg"
 	where
@@ -72,54 +76,55 @@ realMain f = liftIO do
 
 newtype Angle = Angle Double deriving (Show, Eq, Ord, Num, Real, Fractional)
 
--- CONTROLLER
-
 controller :: TVar Angle -> TChan (Command Int) -> IO ()
 controller a inp = fix \go -> (>> go) . (threadDelay 50000 >>)
 	$ Glfw.getGamepadState Glfw.Joystick'1 >>= \case
 		Nothing -> pure ()
 		Just (Glfw.GamepadState gb ga) -> do
+			print =<< atomically (readTVar a)
 			when (gb Glfw.GamepadButton'A ==
 				Glfw.GamepadButtonState'Pressed)
 				. atomically $ writeTChan inp EndWorld
 			atomically $ modifyTVar a (+ realToFrac
 				(pi * ga Glfw.GamepadAxis'LeftX / 100))
 
+setPicture :: TChan (Command k) -> TChan (k, String) -> IO ()
+setPicture ip tpctf = atomically (readTChan tpctf) >>= \(w, fp) ->
+	maybe (pure ()) (void . atomically . writeTChan ip . SetPicture w) =<<
+	(either error Pct.convertRGBA8 <$>) <$> case fp of
+		"texture" -> Just <$> Pct.readImage (imgDir </> "texture.jpg")
+		"viking room" ->
+			Just <$> Pct.readImage (mdlDir </> "viking_room.png")
+		"flower" -> Just <$> Pct.readImage (imgDir </> "flower.jpg")
+		"dice" -> Just <$> Pct.readImage (imgDir </> "saikoro.png")
+		_ -> pure Nothing
+
+imgDir, mdlDir :: FilePath
+imgDir = "../../../../../files/images"; mdlDir = "../../../../../files/models"
+
 -- BODY
 
 body :: Bool -> TVar Angle ->
 	(Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
-	(Int -> STM Vk.Extent2d) -> IO ()
-body f ta ip (oe, op) ex = do
-	vwin <- atomically $ newTVar 0
-	tbgn <- atomically newTChan
-	tpct <- atomically newTChan
-	tm0 <- getCurrentTime
+	(Int -> STM Vk.Extent2d) -> TChan (Int, String) -> IO ()
+body f ta ip (oe, op) ex tpctf = getCurrentTime >>= \tm0 ->
+	atomically ((,) <$> newTVar False <*> newTVar "") >>= \(tip, vtxt) -> do
 	atomically $ ip OpenWindow
-	_ <- forkIO . forever $ threadDelay 5000 >> atomically (ip GetEvent)
-	_ <- forkIO . forever $ filePathToPicture tbgn tpct
-	_ <- forkIO . forever $ setPicture ip tpct vwin
-
-	tinput <- atomically $ newTVar False
-	vtxt <-  atomically $ newTVar []
-
-	($ instances) $ fix \loop rs -> do
-		threadDelay 20000
+	($ instances) $ fix \go rs -> do
+		threadDelay 10000
 		a <- atomically $ readTVar ta
-		now <- getCurrentTime
-		let	tm = realToFrac $ now `diffUTCTime` tm0
+		tm <- realToFrac . (`diffUTCTime` tm0) <$> getCurrentTime
 		o <- atomically do
 			e0 <- ex 0
 			e1 <- ex 1
 			ip $ Draw (M.fromList [
 				(0, ((bool (viewProj a e0) def f), instances' 1024 1024 e0)),
---				(0, ((bool (viewProj e0) def f), (rs tm))),
-				(1, ((bool (viewProj a e1) def f), (instances2 tm)))
+				(1, ((bool (viewProj a e1) def f), (rs tm)))
 				] )
 			bool (Just <$> op) (pure Nothing) =<< oe
-		ti <- atomically $ readTVar tinput
-		if ti	then processText o loop rs tinput tbgn vtxt vwin
-			else processOutput o loop rs ip tinput vwin
+		atomically (readTVar tip) >>= bool
+			(processOutput o go rs ip tip)
+			(inputTxFilePath o go rs tip tpctf vtxt)
 
 viewProj :: Angle -> Vk.Extent2d -> ViewProjection
 viewProj (Angle a) sce = ViewProjection {
@@ -136,33 +141,64 @@ viewProj (Angle a) sce = ViewProjection {
 	where
 	lax = realToFrac $ cos a; lay = realToFrac $ sin a
 
-filePathToPicture :: TChan String -> TChan (Pct.Image Pct.PixelRGBA8) -> IO ()
-filePathToPicture tbgn tpct = do
-		fp <- atomically $ readTChan tbgn
-		img <- case fp of
-			"texture" -> Just <$> Pct.readImage "../../../../../files/images/texture.jpg"
-			"viking room" -> Just <$> Pct.readImage "../../../../../files/models/viking_room.png"
-			"flower" -> Just <$> Pct.readImage "../../../../../files/images/flower.jpg"
-			"dice" -> Just <$> Pct.readImage "../../../../../files/images/saikoro.png"
-			_ -> pure Nothing
-		let	pct = either error Pct.convertRGBA8 <$> img
-		maybe (pure ()) (atomically . writeTChan tpct) pct
+processOutput :: (Show a, Eq a, Num a) =>
+	Maybe (Event a) -> ((Float -> [Rectangle]) -> IO ()) ->
+	(Float -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool ->
+	IO ()
+processOutput o loop rs inp tinput =
+		case o of
+			Nothing -> loop rs
+			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just (EventKeyDown _w Key'O) -> atomically (inp OpenWindow) >> loop rs
+			Just (EventKeyDown w Key'D) -> do
+				putStrLn $ "delete window: " ++ show w
+				atomically . inp $ DestroyWindow w
+				loop rs
+			Just (EventKeyDown w ky) -> do
+				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
+				loop rs
+			Just (EventKeyUp w Key'Q) -> do
+				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
+				atomically . inp $ DestroyWindow w
+				loop rs
+			Just (EventKeyUp _ Key'T) -> do
+				putStrLn "T"
+				atomically $ writeTVar tinput True
+--				atomically $ writeTChan tbgn ()
+--				threadDelay 2000000
+				loop rs
+			Just (EventKeyUp w ky) -> do
+				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
+				loop rs
+			Just (EventMouseButtonDown 1 GlfwG.Ms.MouseButton'1) ->
+				loop instances
+			Just (EventMouseButtonDown 1 GlfwG.Ms.MouseButton'2) ->
+				loop instances2
+			Just (EventMouseButtonDown _ _) -> loop rs
+			Just (EventMouseButtonUp _ _) -> loop rs
+			Just (EventCursorPosition _k _x _y) ->
+--				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
+				loop rs
+			Just (EventOpenWindow k) -> do
+				putStrLn $ "open window: " ++ show k
+				loop rs
+			Just (EventDeleteWindow k) -> do
+				putStrLn $ "delete window: " ++ show k
+				atomically . inp $ DestroyWindow k
+				putStrLn $ "EventDeleteWindow " ++ show k ++
+					": before next loop"
+				loop rs
+			Just EventNeedRedraw -> do
+				putStrLn "EVENT NEED REDRAW"
+				loop rs
 
-setPicture :: (Command k -> STM b) ->
-	TChan (Pct.Image Pct.PixelRGBA8) -> TVar k -> IO b
-setPicture ip tpct vwin = do
-		pct <- atomically $ readTChan tpct
-		wi <- atomically $ readTVar vwin
-		atomically . ip $ SetPicture wi pct
-
-
-processText :: Show a => Maybe (Event k) ->
-	(t -> IO b) -> t -> TVar Bool -> TChan [Char] -> TVar [Char] -> TVar a -> IO b
-processText o loop rs tinput tbgn vtxt vwin =
+inputTxFilePath :: Maybe (Event k) ->
+	(t -> IO b) -> t -> TVar Bool -> TChan (k, String) -> TVar [Char] -> IO b
+inputTxFilePath o loop rs tinput tbgn vtxt =
 	case o of
-		Just (EventKeyDown _w Key'Enter) -> do
+		Just (EventKeyDown w Key'Enter) -> do
 			atomically $ writeTVar tinput False
-			atomically $ writeTChan tbgn . reverse =<< readTVar vtxt
+			atomically $ writeTChan tbgn . (w ,) . reverse =<< readTVar vtxt
 			atomically $ writeTVar vtxt ""
 			loop rs
 		Just (EventKeyDown _w ky) -> do
@@ -170,7 +206,6 @@ processText o loop rs tinput tbgn vtxt vwin =
 			loop rs
 		_ -> do
 			putStrLn . reverse =<< atomically (readTVar vtxt)
-			print =<< atomically (readTVar vwin)
 			loop rs
 
 keyToChar :: Key -> Maybe Char
@@ -196,58 +231,6 @@ keyCharTable = [
 	(Key'W, 'w'),
 	(Key'X, 'x'),
 	(Key'Space, ' ') ]
-
-processOutput :: (Show a, Eq a, Num a) =>
-	Maybe (Event a) -> ((Float -> [Rectangle]) -> IO ()) ->
-	(Float -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool -> TVar a ->
-	IO ()
-processOutput o loop rs inp tinput vwin =
-		case o of
-			Nothing -> loop rs
-			Just EventEnd -> putStrLn "THE WORLD ENDS"
-			Just (EventKeyDown _w Key'O) -> atomically (inp OpenWindow) >> loop rs
-			Just (EventKeyDown w Key'D) -> do
-				putStrLn $ "delete window: " ++ show w
-				atomically . inp $ DestroyWindow w
-				loop rs
-			Just (EventKeyDown w ky) -> do
-				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
-				loop rs
-			Just (EventKeyUp w Key'Q) -> do
-				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
-				atomically . inp $ DestroyWindow w
-				loop rs
-			Just (EventKeyUp w Key'T) -> do
-				putStrLn "T"
-				atomically $ writeTVar tinput True
-				atomically $ writeTVar vwin w
---				atomically $ writeTChan tbgn ()
---				threadDelay 2000000
-				loop rs
-			Just (EventKeyUp w ky) -> do
-				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
-				loop rs
-			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
-				loop instances
-			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
-				loop instances2
-			Just (EventMouseButtonDown _ _) -> loop rs
-			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition _k _x _y) ->
---				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
-				loop rs
-			Just (EventOpenWindow k) -> do
-				putStrLn $ "open window: " ++ show k
-				loop rs
-			Just (EventDeleteWindow k) -> do
-				putStrLn $ "delete window: " ++ show k
-				atomically . inp $ DestroyWindow k
-				putStrLn $ "EventDeleteWindow " ++ show k ++
-					": before next loop"
-				loop rs
-			Just EventNeedRedraw -> do
-				putStrLn "EVENT NEED REDRAW"
-				loop rs
 
 -- RECTANGLES
 

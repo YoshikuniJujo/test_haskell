@@ -56,6 +56,7 @@ library
     , cairo-image
     , containers
     , data-default
+    , filepath
     , moffy
     , mtl
     , optparse-declarative
@@ -113,6 +114,7 @@ executable try-cairo-image-as-texture
     , cairo-image
     , containers
     , data-default
+    , filepath
     , moffy
     , mtl
     , optparse-declarative
@@ -161,6 +163,7 @@ executable try-multi-rectangles
     , cairo-image
     , containers
     , data-default
+    , filepath
     , moffy
     , mtl
     , optparse-declarative
@@ -209,6 +212,7 @@ executable try-multi-rectangles2
     , cairo-image
     , containers
     , data-default
+    , filepath
     , moffy
     , mtl
     , optparse-declarative
@@ -257,6 +261,7 @@ executable try-use-cairo
     , cairo-image
     , containers
     , data-default
+    , filepath
     , moffy
     , mtl
     , optparse-declarative
@@ -305,6 +310,7 @@ executable try-use-texture-group
     , cairo-image
     , containers
     , data-default
+    , filepath
     , moffy
     , mtl
     , optparse-declarative
@@ -354,6 +360,7 @@ test-suite try-vulkan-rectangles-test
     , cairo-image
     , containers
     , data-default
+    , filepath
     , moffy
     , mtl
     , optparse-declarative
