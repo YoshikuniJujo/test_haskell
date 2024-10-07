@@ -55,23 +55,23 @@ import Codec.Picture qualified as Pct
 -- MAIN
 
 main :: IO ()
-main = run_ $ realMain rectangles
+main = run_ $ realMain rectTable
 
 realMain ::
-	Rectangles ->
+	RectangleTable ->
 	Flag "f" '["flat"] "BOOL" "flat or not" Bool -> Cmd "Draw Rectangles" ()
-realMain rects f = liftIO do
-	(ip, op) <- atomically $ (,) <$> newTChan <*> newTChan
+realMain rt f = liftIO do
+	(cmd, ev) <- atomically $ (,) <$> newTChan <*> newTChan
 	(a, vex) <- atomically $ (,) <$> newTVar 0 <*> newTVar M.empty
-	_ <- forkIO $ controller a ip
+	_ <- forkIO $ controller a cmd
 	_ <- forkIO . forever
-		$ threadDelay 10000 >> atomically (writeTChan ip GetEvent)
-	tpctf <- atomically newTChan
-	_ <- forkIO . forever $ setPicture ip tpctf
-	_ <- forkIO $ body rects (get f) a
-		(writeTChan ip) (isEmptyTChan op, readTChan op)
-		(lookupOr (Vk.Extent2d 0 0) vex) tpctf
-	useTextureGroup ip op vex =<< either error Pct.convertRGBA8
+		$ threadDelay 10000 >> atomically (writeTChan cmd GetEvent)
+	txf <- atomically newTChan
+	_ <- forkIO . forever $ setPicture cmd txf
+	_ <- forkIO $ body rt (get f) a
+		(writeTChan cmd) (isEmptyTChan ev, readTChan ev)
+		(lookupOr (Vk.Extent2d 0 0) vex) txf
+	useTextureGroup cmd ev vex =<< either error Pct.convertRGBA8
 		<$> Pct.readImage "../../../../../files/images/texture.jpg"
 	where
 	lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
@@ -90,7 +90,7 @@ controller a inp = fix \go -> (>> go) . (threadDelay 50000 >>)
 				(pi * ga Glfw.GamepadAxis'LeftX / 100))
 
 setPicture :: TChan (Command k) -> TChan (k, String) -> IO ()
-setPicture ip tpctf = atomically (readTChan tpctf) >>= \(w, fp) ->
+setPicture ip txf = atomically (readTChan txf) >>= \(w, fp) ->
 	maybe (pure ()) (void . atomically . writeTChan ip . SetPicture w) =<<
 	(either error Pct.convertRGBA8 <$>) <$> case fp of
 		"texture" -> Just <$> Pct.readImage (imgDir </> "texture.jpg")
@@ -105,27 +105,29 @@ imgDir = "../../../../../files/images"; mdlDir = "../../../../../files/models"
 
 -- BODY
 
-body :: Rectangles -> Bool -> TVar Angle ->
+body :: RectangleTable -> Bool -> TVar Angle ->
 	(Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
 	(Int -> STM Vk.Extent2d) -> TChan (Int, String) -> IO ()
-body rects f ta ip (oe, op) ex tpctf = getCurrentTime >>= \tm0 ->
+body rt f ta cmd (nev, ev) ex txf = getCurrentTime >>= \tm0 ->
 	atomically ((,) <$> newTVar False <*> newTVar "") >>= \(tip, vtxt) -> do
-	atomically $ ip OpenWindow
-	($ initRects) $ fix \go rs -> threadDelay 10000 >> do
+	atomically $ cmd OpenWindow
+	($ irs) $ fix \go rs -> threadDelay 10000 >> do
 		tm <- realToFrac . (`diffUTCTime` tm0) <$> getCurrentTime
-		o <- atomically do
+		e <- atomically do
 			a <- readTVar ta
-			ip =<< mkDraws f a ex rs tm
-			bool (Just <$> op) (pure Nothing) =<< oe
+			cmd =<< draws f a rs ex tm
+			bool (Just <$> ev) (pure Nothing) =<< nev
 		atomically (readTVar tip) >>= bool
-			(processOutput rects o go rs ip tip)
-			(inputTxFilePath o go rs tip tpctf vtxt)
-	where
-	initRects = M.map (M.! GlfwG.Ms.MouseButton'1) rectangles
+			(processEvent rt cmd e tip go rs)
+			(inputTxFilePath e tip vtxt txf >> go rs)
+	where irs = M.map (M.! GlfwG.Ms.MouseButton'1) rt
 
-mkDraws :: (Ord k, Num k, Enum k, Monad m) =>
-	Bool -> Angle -> (k -> m Vk.Extent2d) -> M.Map k (Vk.Extent2d -> t -> [Rectangle]) -> t -> m (Command k)
-mkDraws f a ex rs tm = Draw . M.fromList
+draws :: (Ord k, Num k, Enum k, Monad m) =>
+	Bool -> Angle ->
+	M.Map k (Vk.Extent2d -> t -> [Rectangle]) ->
+	(k -> m Vk.Extent2d) ->
+	t -> m (Command k)
+draws f a rs ex tm = Draw . M.fromList
 	<$> for [0 .. 1] \k -> mkDraw f a ex (rs M.! k) tm k
 
 mkDraw :: Monad m =>
@@ -149,12 +151,13 @@ viewProj (Angle a) sce = ViewProjection {
 	where
 	lax = realToFrac $ cos a; lay = realToFrac $ sin a
 
-processOutput ::
-	Rectangles ->
-	Maybe (Event Int) -> (M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) -> IO ()) ->
-	M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) -> (Command Int -> STM ()) -> TVar Bool ->
+processEvent ::
+	RectangleTable -> (Command Int -> STM ()) -> Maybe (Event Int) ->
+	TVar Bool ->
+	(M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) -> IO ()) ->
+	M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) ->
 	IO ()
-processOutput rects o loop rs inp tinput =
+processEvent rects inp o tinput loop rs =
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
@@ -198,25 +201,23 @@ processOutput rects o loop rs inp tinput =
 				putStrLn "EVENT NEED REDRAW"
 				loop rs
 
-rectangle :: Rectangles -> Int -> GlfwG.Ms.MouseButton ->
+rectangle :: RectangleTable -> Int -> GlfwG.Ms.MouseButton ->
 	Maybe (Vk.Extent2d -> Float -> [Rectangle])
 rectangle rs n b = M.lookup b =<< M.lookup n rs
 
 inputTxFilePath :: Maybe (Event k) ->
-	(t -> IO b) -> t -> TVar Bool -> TChan (k, String) -> TVar [Char] -> IO b
-inputTxFilePath o loop rs tinput tbgn vtxt =
+	TVar Bool ->
+	TVar [Char] ->
+	TChan (k, String) -> IO ()
+inputTxFilePath o tinput vtxt tbgn =
 	case o of
 		Just (EventKeyDown w Key'Enter) -> do
 			atomically $ writeTVar tinput False
 			atomically $ writeTChan tbgn . (w ,) . reverse =<< readTVar vtxt
 			atomically $ writeTVar vtxt ""
-			loop rs
 		Just (EventKeyDown _w ky) -> do
 			atomically $ modifyTVar vtxt (maybe id (:) $ keyToChar ky)
-			loop rs
-		_ -> do
-			putStrLn . reverse =<< atomically (readTVar vtxt)
-			loop rs
+		_ -> putStrLn . reverse =<< atomically (readTVar vtxt)
 
 keyToChar :: Key -> Maybe Char
 keyToChar = (`lookup` keyCharTable)
@@ -244,10 +245,10 @@ keyCharTable = [
 
 -- RECTANGLES
 
-type Rectangles = M.Map Int (M.Map GlfwG.Ms.MouseButton (Vk.Extent2d -> Float -> [Rectangle]))
+type RectangleTable = M.Map Int (M.Map GlfwG.Ms.MouseButton (Vk.Extent2d -> Float -> [Rectangle]))
 
-rectangles :: Rectangles
-rectangles = M.fromList [
+rectTable :: RectangleTable
+rectTable = M.fromList [
 	(0, M.fromList [
 		(GlfwG.Ms.MouseButton'1, \e _ -> instances' 1024 1024 e),
 		(GlfwG.Ms.MouseButton'2, \e _ -> instances' 1024 1024 e) ]),

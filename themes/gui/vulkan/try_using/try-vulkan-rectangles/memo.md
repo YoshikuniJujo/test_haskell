@@ -12,24 +12,24 @@ app
     + [x] rectangles
     + [x] import list
 * [ ] try-use-texture-group
-    + [ ] MAIN
-        - [ ] main
-        - [ ] realMain
+    + [x] MAIN
+        - [x] main
+        - [x] realMain
         - [x] Angle
         - [x] controller
         - [x] setPicture
         - [x] imgDir
         - [x] mdlDir
     + [ ] BODY
-        - [ ] body
+        - [x] body
         - [ ] viewProj
         - [ ] processOutput
         - [ ] inputTxFilePath
         - [ ] keyToChar
         - [ ] keyCharTable
     + [ ] RECTANGLES
-        - [ ] Rectangles
-        - [ ] rectangles
+        - [ ] RectangleTable
+        - [ ] rectTable
         - [ ] instances
         - [ ] instances2
         - [ ] instances'
