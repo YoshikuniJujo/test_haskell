@@ -22,6 +22,7 @@ import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM
+import Data.Traversable
 import Data.List.Length
 import Data.Default
 import Data.Bool
@@ -81,7 +82,6 @@ controller a inp = fix \go -> (>> go) . (threadDelay 50000 >>)
 	$ Glfw.getGamepadState Glfw.Joystick'1 >>= \case
 		Nothing -> pure ()
 		Just (Glfw.GamepadState gb ga) -> do
-			print =<< atomically (readTVar a)
 			when (gb Glfw.GamepadButton'A ==
 				Glfw.GamepadButtonState'Pressed)
 				. atomically $ writeTChan inp EndWorld
@@ -110,21 +110,24 @@ body :: Bool -> TVar Angle ->
 body f ta ip (oe, op) ex tpctf = getCurrentTime >>= \tm0 ->
 	atomically ((,) <$> newTVar False <*> newTVar "") >>= \(tip, vtxt) -> do
 	atomically $ ip OpenWindow
-	($ instances) $ fix \go rs -> do
-		threadDelay 10000
-		a <- atomically $ readTVar ta
+	($ \e t -> instances e) $ fix \go rs -> threadDelay 10000 >> do
 		tm <- realToFrac . (`diffUTCTime` tm0) <$> getCurrentTime
 		o <- atomically do
-			e0 <- ex 0
-			e1 <- ex 1
-			ip $ Draw (M.fromList [
-				(0, ((bool (viewProj a e0) def f), instances' 1024 1024 e0)),
-				(1, ((bool (viewProj a e1) def f), (rs tm)))
-				] )
+			a <- readTVar ta
+			ip =<< mkDraws f a ex (($ rs) <$> rectangles) tm
 			bool (Just <$> op) (pure Nothing) =<< oe
 		atomically (readTVar tip) >>= bool
 			(processOutput o go rs ip tip)
 			(inputTxFilePath o go rs tip tpctf vtxt)
+
+rectangles = [\_ e _ -> instances' 1024 1024 e, \r e t -> r t e]
+
+mkDraws f a ex rss tm = Draw . M.fromList
+	<$> for (zip [0 ..] rss) \(k, rs) -> mkDraw f a ex rs tm k
+
+mkDraw f a ex rs tm k = do
+	e <- ex k
+	pure (k, ((bool (viewProj a e) def f), rs e tm))
 
 viewProj :: Angle -> Vk.Extent2d -> ViewProjection
 viewProj (Angle a) sce = ViewProjection {
@@ -142,8 +145,8 @@ viewProj (Angle a) sce = ViewProjection {
 	lax = realToFrac $ cos a; lay = realToFrac $ sin a
 
 processOutput :: (Show a, Eq a, Num a) =>
-	Maybe (Event a) -> ((Float -> [Rectangle]) -> IO ()) ->
-	(Float -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool ->
+	Maybe (Event a) -> ((Float -> Vk.Extent2d -> [Rectangle]) -> IO ()) ->
+	(Float -> Vk.Extent2d -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool ->
 	IO ()
 processOutput o loop rs inp tinput =
 		case o of
@@ -171,9 +174,9 @@ processOutput o loop rs inp tinput =
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
 				loop rs
 			Just (EventMouseButtonDown 1 GlfwG.Ms.MouseButton'1) ->
-				loop instances
+				loop \t e -> instances t
 			Just (EventMouseButtonDown 1 GlfwG.Ms.MouseButton'2) ->
-				loop instances2
+				loop \t e -> instances2 t
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
 			Just (EventCursorPosition _k _x _y) ->
