@@ -12,9 +12,9 @@ app
     + [x] rectangles
     + [x] import list
 * [ ] try-use-texture-group
-    + [x] MAIN
-        - [x] main
-        - [x] realMain
+    + [ ] MAIN
+        - [ ] main
+        - [ ] realMain
         - [x] Angle
         - [x] controller
         - [x] setPicture
@@ -28,6 +28,8 @@ app
         - [ ] keyToChar
         - [ ] keyCharTable
     + [ ] RECTANGLES
+        - [ ] Rectangles
+        - [ ] rectangles
         - [ ] instances
         - [ ] instances2
         - [ ] instances'

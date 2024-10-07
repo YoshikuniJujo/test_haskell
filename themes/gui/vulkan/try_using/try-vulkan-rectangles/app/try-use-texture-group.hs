@@ -55,11 +55,12 @@ import Codec.Picture qualified as Pct
 -- MAIN
 
 main :: IO ()
-main = run_ realMain
+main = run_ $ realMain rectangles
 
 realMain ::
+	Rectangles ->
 	Flag "f" '["flat"] "BOOL" "flat or not" Bool -> Cmd "Draw Rectangles" ()
-realMain f = liftIO do
+realMain rects f = liftIO do
 	(ip, op) <- atomically $ (,) <$> newTChan <*> newTChan
 	(a, vex) <- atomically $ (,) <$> newTVar 0 <*> newTVar M.empty
 	_ <- forkIO $ controller a ip
@@ -67,7 +68,7 @@ realMain f = liftIO do
 		$ threadDelay 10000 >> atomically (writeTChan ip GetEvent)
 	tpctf <- atomically newTChan
 	_ <- forkIO . forever $ setPicture ip tpctf
-	_ <- forkIO $ body (get f) a
+	_ <- forkIO $ body rects (get f) a
 		(writeTChan ip) (isEmptyTChan op, readTChan op)
 		(lookupOr (Vk.Extent2d 0 0) vex) tpctf
 	useTextureGroup ip op vex =<< either error Pct.convertRGBA8
@@ -104,27 +105,31 @@ imgDir = "../../../../../files/images"; mdlDir = "../../../../../files/models"
 
 -- BODY
 
-body :: Bool -> TVar Angle ->
+body :: Rectangles -> Bool -> TVar Angle ->
 	(Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
 	(Int -> STM Vk.Extent2d) -> TChan (Int, String) -> IO ()
-body f ta ip (oe, op) ex tpctf = getCurrentTime >>= \tm0 ->
+body rects f ta ip (oe, op) ex tpctf = getCurrentTime >>= \tm0 ->
 	atomically ((,) <$> newTVar False <*> newTVar "") >>= \(tip, vtxt) -> do
 	atomically $ ip OpenWindow
-	($ \e t -> instances e) $ fix \go rs -> threadDelay 10000 >> do
+	($ initRects) $ fix \go rs -> threadDelay 10000 >> do
 		tm <- realToFrac . (`diffUTCTime` tm0) <$> getCurrentTime
 		o <- atomically do
 			a <- readTVar ta
-			ip =<< mkDraws f a ex (($ rs) <$> rectangles) tm
+			ip =<< mkDraws f a ex rs tm
 			bool (Just <$> op) (pure Nothing) =<< oe
 		atomically (readTVar tip) >>= bool
-			(processOutput o go rs ip tip)
+			(processOutput rects o go rs ip tip)
 			(inputTxFilePath o go rs tip tpctf vtxt)
+	where
+	initRects = M.map (M.! GlfwG.Ms.MouseButton'1) rectangles
 
-rectangles = [\_ e _ -> instances' 1024 1024 e, \r e t -> r t e]
+mkDraws :: (Ord k, Num k, Enum k, Monad m) =>
+	Bool -> Angle -> (k -> m Vk.Extent2d) -> M.Map k (Vk.Extent2d -> t -> [Rectangle]) -> t -> m (Command k)
+mkDraws f a ex rs tm = Draw . M.fromList
+	<$> for [0 .. 1] \k -> mkDraw f a ex (rs M.! k) tm k
 
-mkDraws f a ex rss tm = Draw . M.fromList
-	<$> for (zip [0 ..] rss) \(k, rs) -> mkDraw f a ex rs tm k
-
+mkDraw :: Monad m =>
+	Bool -> Angle -> (a -> m Vk.Extent2d) -> (Vk.Extent2d -> t -> b) -> t -> a -> m (a, (ViewProjection, b))
 mkDraw f a ex rs tm k = do
 	e <- ex k
 	pure (k, ((bool (viewProj a e) def f), rs e tm))
@@ -144,11 +149,12 @@ viewProj (Angle a) sce = ViewProjection {
 	where
 	lax = realToFrac $ cos a; lay = realToFrac $ sin a
 
-processOutput :: (Show a, Eq a, Num a) =>
-	Maybe (Event a) -> ((Float -> Vk.Extent2d -> [Rectangle]) -> IO ()) ->
-	(Float -> Vk.Extent2d -> [Rectangle]) -> (Command a -> STM ()) -> TVar Bool ->
+processOutput ::
+	Rectangles ->
+	Maybe (Event Int) -> (M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) -> IO ()) ->
+	M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) -> (Command Int -> STM ()) -> TVar Bool ->
 	IO ()
-processOutput o loop rs inp tinput =
+processOutput rects o loop rs inp tinput =
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
@@ -173,11 +179,8 @@ processOutput o loop rs inp tinput =
 			Just (EventKeyUp w ky) -> do
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
 				loop rs
-			Just (EventMouseButtonDown 1 GlfwG.Ms.MouseButton'1) ->
-				loop \t e -> instances t
-			Just (EventMouseButtonDown 1 GlfwG.Ms.MouseButton'2) ->
-				loop \t e -> instances2 t
-			Just (EventMouseButtonDown _ _) -> loop rs
+			Just (EventMouseButtonDown n b) ->
+				loop $ maybe rs (\r -> M.insert n r rs) (rectangle rects n b)
 			Just (EventMouseButtonUp _ _) -> loop rs
 			Just (EventCursorPosition _k _x _y) ->
 --				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
@@ -194,6 +197,10 @@ processOutput o loop rs inp tinput =
 			Just EventNeedRedraw -> do
 				putStrLn "EVENT NEED REDRAW"
 				loop rs
+
+rectangle :: Rectangles -> Int -> GlfwG.Ms.MouseButton ->
+	Maybe (Vk.Extent2d -> Float -> [Rectangle])
+rectangle rs n b = M.lookup b =<< M.lookup n rs
 
 inputTxFilePath :: Maybe (Event k) ->
 	(t -> IO b) -> t -> TVar Bool -> TChan (k, String) -> TVar [Char] -> IO b
@@ -236,6 +243,17 @@ keyCharTable = [
 	(Key'Space, ' ') ]
 
 -- RECTANGLES
+
+type Rectangles = M.Map Int (M.Map GlfwG.Ms.MouseButton (Vk.Extent2d -> Float -> [Rectangle]))
+
+rectangles :: Rectangles
+rectangles = M.fromList [
+	(0, M.fromList [
+		(GlfwG.Ms.MouseButton'1, \e _ -> instances' 1024 1024 e),
+		(GlfwG.Ms.MouseButton'2, \e _ -> instances' 1024 1024 e) ]),
+	(1, M.fromList [
+		(GlfwG.Ms.MouseButton'1, \_ t -> instances t),
+		(GlfwG.Ms.MouseButton'2, \_ t -> instances2 t) ]) ]
 
 instances :: Float -> [Rectangle]
 instances tm = let m = calcModel' tm in
