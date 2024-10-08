@@ -367,6 +367,30 @@ src
     + [x] import list
     + [x] export list
 * [ ] Rectangles
+    + [x] RECTANGLES
+        - [x] rectangles
+        - [x] Command
+        - [x] Event
+        - [x] createIst
+        - [x] vldLayers
+        - [x] dbgMsngrInfo
+        - [x] pickPhd
+        - [x] QFamIdcs
+        - [x] findQFams
+        - [x] createLgDvc
+        - [x] swpchImgNum
+    + [ ] BODY
+        - [ ] body
+        - [ ] others
+    + [ ] WINDOW OBJECTS
+    + [ ] CREATE AND COPY BUFFERS
+    + [ ] MAINLOOP
+    + [ ] RECREATE
+    + [ ] DRAW
+    + [ ] DATA TYPES
+    + [ ] SHADERS
+    + [ ] import list
+    + [ ] export list
 * [ ] Rectangles2
     + [x] repair get events
     + [ ] others

@@ -287,12 +287,12 @@ createLgDvc pd dvg k qfis =
 		HPList.PL t ss -> b) -> b
 	hetero _ [] f = f HPList.Nil
 	hetero g (x : xs) f = hetero g xs \xs' -> f (g x :** xs')
-	unqqfs = L.nub [grFam qfis, prFam qfis]
 	qinfo qf = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+	unqqfs = L.nub [grFam qfis, prFam qfis]
 	cinfo qs = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
 		Vk.Dvc.createInfoFlags = zeroBits,

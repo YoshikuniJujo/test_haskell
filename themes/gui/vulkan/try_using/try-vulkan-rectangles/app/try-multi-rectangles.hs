@@ -16,6 +16,7 @@ module Main (main) where
 
 import Rectangles
 
+import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -40,7 +41,22 @@ main = run_ action
 
 action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
-action f = liftIO $ untilEnd (get f) =<< rectangles
+action f = liftIO do
+	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
+	vex <- atomically $ newTVar M.empty
+	let	inp' = writeTChan inp
+		outp' = (isEmptyTChan outp, readTChan outp)
+		vex' = readTVarOr (Vk.Extent2d 0 0) vex
+	_ <- forkIO . forever $ threadDelay 10000 >> atomically (inp' GetEvent)
+	_ <- forkIO $ untilEnd (get f) ((inp', outp'), vex')
+	rectangles inp outp vex
+
+readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
+readTVarOr d mp k = do
+	mv <- (M.lookup k) <$> readTVar mp
+	case mv of
+		Nothing -> pure d
+		Just v -> readTVar v
 
 untilEnd :: Bool -> ((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
 untilEnd f ((inp, (oute, outp)), ext) = do
