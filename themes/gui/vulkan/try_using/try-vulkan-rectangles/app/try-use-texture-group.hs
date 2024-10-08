@@ -18,6 +18,7 @@ import UseTextureGroup (
 	useTextureGroup, Event(..), Command(..), ViewProjection(..),
 	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..) )
 
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent
@@ -115,133 +116,71 @@ body rt f ta cmd (nev, ev) ex txf = getCurrentTime >>= \tm0 ->
 		tm <- realToFrac . (`diffUTCTime` tm0) <$> getCurrentTime
 		e <- atomically do
 			a <- readTVar ta
-			cmd =<< draws f a rs ex tm
+			cmd =<< draw f a rs ex tm
 			bool (Just <$> ev) (pure Nothing) =<< nev
 		atomically (readTVar tip) >>= bool
 			(processEvent rt cmd e tip go rs)
 			(inputTxFilePath e tip vtxt txf >> go rs)
 	where irs = M.map (M.! GlfwG.Ms.MouseButton'1) rt
 
-draws :: (Ord k, Num k, Enum k, Monad m) =>
-	Bool -> Angle ->
-	M.Map k (Vk.Extent2d -> t -> [Rectangle]) ->
-	(k -> m Vk.Extent2d) ->
-	t -> m (Command k)
-draws f a rs ex tm = Draw . M.fromList
-	<$> for [0 .. 1] \k -> mkDraw f a ex (rs M.! k) tm k
-
-mkDraw :: Monad m =>
-	Bool -> Angle -> (a -> m Vk.Extent2d) -> (Vk.Extent2d -> t -> b) -> t -> a -> m (a, (ViewProjection, b))
-mkDraw f a ex rs tm k = do
-	e <- ex k
-	pure (k, ((bool (viewProj a e) def f), rs e tm))
+draw :: (Ord k, Num k, Enum k, Monad m) =>
+	Bool -> Angle -> M.Map k (Vk.Extent2d -> t -> [Rectangle]) ->
+	(k -> m Vk.Extent2d) -> t -> m (Command k)
+draw f a rs ex tm =
+	Draw . M.fromList <$> for [0 .. 1] \k -> (<$> ex k) \e ->
+	(k, ((bool (viewProj a e) def f), (rs M.! k) e tm))
 
 viewProj :: Angle -> Vk.Extent2d -> ViewProjection
-viewProj (Angle a) sce = ViewProjection {
+viewProj (Angle a) Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } = ViewProjection {
 	viewProjectionView = Cglm.lookat
---		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-		(Cglm.Vec3 $ lax :. lay :. 3 :. NilL)
+		(Cglm.Vec3 $ cx :. cy :. 3 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 	viewProjectionProj = Cglm.modifyMat4 1 1 negate
-		$ Cglm.perspective
-			(Cglm.rad 45)
-			(fromIntegral (Vk.extent2dWidth sce) /
-				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
-	where
-	lax = realToFrac $ cos a; lay = realToFrac $ sin a
+		$ Cglm.perspective (Cglm.rad 45) (w / h) 0.1 10 }
+	where (cx, cy) = realToFrac *** realToFrac $ (cos &&& sin) a
 
-processEvent ::
-	RectangleTable -> (Command Int -> STM ()) -> Maybe (Event Int) ->
-	TVar Bool ->
+processEvent :: RectangleTable ->
+	(Command Int -> STM ()) -> Maybe (Event Int) -> TVar Bool ->
 	(M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) -> IO ()) ->
-	M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) ->
-	IO ()
-processEvent rects inp o tinput loop rs =
-		case o of
-			Nothing -> loop rs
-			Just EventEnd -> putStrLn "THE WORLD ENDS"
-			Just (EventKeyDown _w Key'O) -> atomically (inp OpenWindow) >> loop rs
-			Just (EventKeyDown w Key'D) -> do
-				putStrLn $ "delete window: " ++ show w
-				atomically . inp $ DestroyWindow w
-				loop rs
-			Just (EventKeyDown w ky) -> do
-				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
-				loop rs
-			Just (EventKeyUp w Key'Q) -> do
-				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show Key'Q)
-				atomically . inp $ DestroyWindow w
-				loop rs
-			Just (EventKeyUp _ Key'T) -> do
-				putStrLn "T"
-				atomically $ writeTVar tinput True
---				atomically $ writeTChan tbgn ()
---				threadDelay 2000000
-				loop rs
-			Just (EventKeyUp w ky) -> do
-				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
-				loop rs
-			Just (EventMouseButtonDown n b) ->
-				loop $ maybe rs (\r -> M.insert n r rs) (rectangle rects n b)
-			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition _k _x _y) ->
---				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
-				loop rs
-			Just (EventOpenWindow k) -> do
-				putStrLn $ "open window: " ++ show k
-				loop rs
-			Just (EventDeleteWindow k) -> do
-				putStrLn $ "delete window: " ++ show k
-				atomically . inp $ DestroyWindow k
-				putStrLn $ "EventDeleteWindow " ++ show k ++
-					": before next loop"
-				loop rs
-			Just EventNeedRedraw -> do
-				putStrLn "EVENT NEED REDRAW"
-				loop rs
-
-rectangle :: RectangleTable -> Int -> GlfwG.Ms.MouseButton ->
-	Maybe (Vk.Extent2d -> Float -> [Rectangle])
-rectangle rs n b = M.lookup b =<< M.lookup n rs
+	M.Map Int (Vk.Extent2d -> Float -> [Rectangle]) -> IO ()
+processEvent rt ((atomically .) -> cmd) o tip go rs = case o of
+	Nothing -> go rs
+	Just (EventOpenWindow _) -> go rs
+	Just (EventDeleteWindow k) -> cmd (DestroyWindow k) >> go rs
+	Just (EventKeyDown w Key'D) -> cmd (DestroyWindow w) >> go rs
+	Just (EventKeyUp w Key'Q) -> cmd (DestroyWindow w) >> go rs
+	Just EventNeedRedraw -> go rs; Just EventEnd -> pure ()
+	Just (EventKeyDown _ Key'O) -> cmd OpenWindow >> go rs
+	Just (EventKeyUp _ Key'T) -> atomically (writeTVar tip True) >> go rs
+	Just (EventMouseButtonDown n b) ->
+		go $ maybe rs (\r -> M.insert n r rs) (rects n b)
+	Just (EventKeyDown _ _) -> go rs; Just (EventKeyUp _ _) -> go rs
+	Just (EventMouseButtonUp _ _) -> go rs
+	Just (EventCursorPosition _ _ _) -> go rs
+	where rects n b = M.lookup b =<< M.lookup n rt
 
 inputTxFilePath :: Maybe (Event k) ->
-	TVar Bool ->
-	TVar [Char] ->
-	TChan (k, String) -> IO ()
-inputTxFilePath o tinput vtxt tbgn =
-	case o of
-		Just (EventKeyDown w Key'Enter) -> do
-			atomically $ writeTVar tinput False
-			atomically $ writeTChan tbgn . (w ,) . reverse =<< readTVar vtxt
-			atomically $ writeTVar vtxt ""
-		Just (EventKeyDown _w ky) -> do
-			atomically $ modifyTVar vtxt (maybe id (:) $ keyToChar ky)
-		_ -> putStrLn . reverse =<< atomically (readTVar vtxt)
+	TVar Bool -> TVar [Char] -> TChan (k, String) -> IO ()
+inputTxFilePath o tip txt txf = case o of
+	Just (EventKeyDown w Key'Enter) -> atomically do
+		writeTChan txf . (w ,) . reverse =<< readTVar txt
+		writeTVar tip False; writeTVar txt ""
+	Just (EventKeyDown _ ky) -> do
+		atomically $ modifyTVar txt (maybe id (:) $ keyToChar ky)
+		putStrLn . reverse =<< atomically (readTVar txt)
+	_ -> pure ()
 
 keyToChar :: Key -> Maybe Char
-keyToChar = (`lookup` keyCharTable)
-
-keyCharTable :: [(Key, Char)]
-keyCharTable = [
-	(Key'C, 'c'),
-	(Key'D, 'd'),
-	(Key'E, 'e'),
-	(Key'F, 'f'),
-	(Key'G, 'g'),
-	(Key'I, 'i'),
-	(Key'K, 'k'),
-	(Key'L, 'l'),
-	(Key'M, 'm'),
-	(Key'N, 'n'),
-	(Key'O, 'o'),
-	(Key'R, 'r'),
-	(Key'T, 't'),
-	(Key'U, 'u'),
-	(Key'V, 'v'),
-	(Key'W, 'w'),
-	(Key'X, 'x'),
-	(Key'Space, ' ') ]
+keyToChar = (`lookup` [
+	(Key'A, 'a'), (Key'B, 'b'), (Key'C, 'c'), (Key'D, 'd'), (Key'E, 'e'),
+	(Key'F, 'f'), (Key'G, 'g'), (Key'H, 'h'), (Key'I, 'i'), (Key'J, 'j'),
+	(Key'K, 'k'), (Key'L, 'l'), (Key'M, 'm'), (Key'N, 'n'), (Key'O, 'o'),
+	(Key'P, 'p'), (Key'Q, 'q'), (Key'R, 'r'), (Key'S, 's'), (Key'T, 't'),
+	(Key'U, 'u'), (Key'V, 'v'), (Key'W, 'w'), (Key'X, 'x'), (Key'Y, 'y'),
+	(Key'Z, 'z'), (Key'Space, ' ') ])
 
 -- RECTANGLES
 

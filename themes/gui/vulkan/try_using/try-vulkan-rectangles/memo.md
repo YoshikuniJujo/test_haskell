@@ -20,13 +20,13 @@ app
         - [x] setPicture
         - [x] imgDir
         - [x] mdlDir
-    + [ ] BODY
+    + [x] BODY
         - [x] body
-        - [ ] viewProj
-        - [ ] processOutput
-        - [ ] inputTxFilePath
-        - [ ] keyToChar
-        - [ ] keyCharTable
+        - [x] draw
+        - [x] viewProj
+        - [x] processEvent
+        - [x] inputTxFilePath
+        - [x] keyToChar
     + [ ] RECTANGLES
         - [ ] RectangleTable
         - [ ] rectTable
