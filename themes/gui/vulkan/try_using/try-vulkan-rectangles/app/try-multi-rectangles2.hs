@@ -32,6 +32,7 @@ import Options.Declarative
 import Control.Monad.Trans
 
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
+import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 
 import Data.Map qualified as M
 
@@ -74,6 +75,10 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 		case o of
 			Nothing -> loop rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
+			Just (EventKeyDown w GlfwG.Ky.Key'D) -> do
+				putStrLn ("KEY DOWN: " ++ show w ++ " d")
+				atomically . inp $ DestroyWindow w
+				loop rs
 			Just (EventKeyDown w ky) -> do
 				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
 				loop rs

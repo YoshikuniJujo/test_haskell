@@ -394,7 +394,7 @@ run' inp outp vext_ ist phd qfis dv gq pq =
 	Vk.Bffr.group dv nil \rbgrp -> Vk.Mem.group dv nil \rmgrp ->
 	let	rgrps = (rbgrp, rmgrp) in
 
-	atomically (newTVar []) >>= \ges ->
+	atomically (newTVar M.empty) >>= \ges ->
 
 	let	crwos = winObjs @n @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
 			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges
@@ -434,7 +434,7 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.Khr.Swapchain.Group sd 'Nothing scfmt ssc k ->
 	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
-	TVar [IO ()] -> k ->
+	TVar (M.Map k (IO ())) -> k ->
 	IO (WinObjs
 		sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))
@@ -447,7 +447,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 --	forkIO (glfwEvents k w outp False initMouseButtonStates) >>
 	atomically (newTVar False) >>= \vb ->
 	atomically (newTVar initMouseButtonStates) >>= \vmbs ->
-	atomically (modifyTVar ges (glfwEvents k w outp vb vmbs :)) >>
+	atomically (modifyTVar ges (M.insert k (glfwEvents k w outp vb vmbs))) >>
 	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
 		(Just \w ky sc act mods -> do
@@ -1488,7 +1488,7 @@ mainLoop' ::
 	TVar k ->
 	TVar (M.Map k (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf))) ->
-	TVar [IO ()] ->
+	TVar (M.Map k (IO ())) ->
 	IO ()
 mainLoop' inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges = do
 	let	crwos' = do
@@ -1500,6 +1500,7 @@ mainLoop' inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges = do
 --		GlfwG.pollEvents
 		atomically (readTChan inp) >>= \case
 			Draw ds -> do
+				putStrLn "Draw begin"
 				ws <- atomically $ readTVar vws
 				runLoop' @n @siv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
 			OpenWindow ->
@@ -1507,11 +1508,14 @@ mainLoop' inp outp dvs pll crwos drwos vbs rgrps ubs vwid vws ges = do
 			DestroyWindow k -> do
 				putStrLn $ "DESTROY WINDOW: " ++ show k
 				atomically (modifyTVar vws (M.delete k)) >> drwos k
+				atomically $ modifyTVar ges (M.delete k)
 				ws <- atomically $ readTVar vws
 				GlfwG.pollEvents
 				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+				putStrLn $ "DESTROY WINDOW END"
 				if cls then pure () else loop
 			GetEvent -> do
+				putStrLn "GetEvent begin"
 				atomically (readTVar ges) >>= sequence_
 				loop
 
