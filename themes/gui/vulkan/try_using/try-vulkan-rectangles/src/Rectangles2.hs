@@ -130,7 +130,11 @@ import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Tools
+import Control.Concurrent.STM.ToolsYj
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Bool.ToolsYj
+
 import Debug
 
 import Graphics.UI.GlfwG as GlfwG
@@ -711,8 +715,9 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
-	imgc = clampOld
-		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1) 0 maxImgc
+	imgc = clamp
+		0 maxImgc
+		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
@@ -751,8 +756,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			GlfwG.Win.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clampOld h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
+			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
 	where
 	curExt = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
@@ -1668,7 +1673,7 @@ recreateSwapchainEtcIfNeed ::
 	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf) -> IO ()
 recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) =
-	checkFlag fbrszd >>= bool (pure ())
+	atomically (checkFlag fbrszd) >>= bool (pure ())
 		(recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
 	
 
