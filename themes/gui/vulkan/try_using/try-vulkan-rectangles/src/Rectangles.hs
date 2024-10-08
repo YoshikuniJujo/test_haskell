@@ -126,9 +126,6 @@ import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Tools
-import ThEnv
-
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
 import Graphics.UI.GlfwG.Window.Type as GlfwG.Win
@@ -136,6 +133,12 @@ import Graphics.UI.GlfwG.Key as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
+
+import Debug
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Bool.ToolsYj
+import Control.Concurrent.STM.ToolsYj
 
 rectangles :: forall k . (Ord k, Succable k) =>
 	IO ((Command k -> STM (), (STM Bool, STM (Event k))), k -> STM Vk.Extent2d)
@@ -145,7 +148,7 @@ rectangles = do
 	_ <- forkIO . GlfwG.init error $ do
 		createInstance \ist ->
 			Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-				enableValidationLayers do
+				debug do
 			(phd', qfis', fmt', dv', gq', pq', n') <-
 				withWindow False \dw ->
 				createSurface dw ist \dsfc -> do
@@ -227,9 +230,6 @@ data Event k
 	| EventDeleteWindow k
 	deriving Show
 
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
-
 type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
 getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
@@ -308,14 +308,14 @@ fromRight (Right x) = x
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
+	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
+			debug . (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
 	print exts
 	Vk.Ist.create (crinfo exts) nil f
@@ -327,7 +327,7 @@ createInstance f = do
 		Vk.Ist.createInfoFlags = zeroBits,
 		Vk.Ist.createInfoApplicationInfo = Just appinfo,
 		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Ist.createInfoEnabledExtensionNames = es }
 	appinfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
@@ -624,7 +624,7 @@ createLogicalDevice phdvc dvcgrp k qfis =
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.createInfoEnabledFeatures = Just def }
 	uniqueQueueFamilies = L.nub [graphicsFamily qfis, presentFamily qfis]
@@ -704,8 +704,9 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
-	imgc = clampOld
-		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1) 0 maxImgc
+	imgc = clamp
+		0 maxImgc
+		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
@@ -744,8 +745,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			GlfwG.Win.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clampOld h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
+			(clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
 	where
 	curExt = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps
@@ -1650,7 +1651,7 @@ recreateSwapchainEtcIfNeed ::
 	WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
 		(Replicate n siv) sr (Replicate n sf) -> IO ()
 recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) =
-	checkFlag fbrszd >>= bool (pure ())
+	atomically (checkFlag fbrszd) >>= bool (pure ())
 		(recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)
 	
 

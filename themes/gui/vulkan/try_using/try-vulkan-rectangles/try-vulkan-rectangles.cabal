@@ -34,11 +34,9 @@ library
       CairoImage
       ConvertPixel
       CreateTextureGroup
-      PangoLayoutExtent
       Rectangles
       Rectangles2
       Texture
-      ThEnv
       Tools
       UseCairo
       UseTextureGroup

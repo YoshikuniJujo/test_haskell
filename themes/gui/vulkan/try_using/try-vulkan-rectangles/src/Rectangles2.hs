@@ -131,7 +131,7 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
 import Tools
-import ThEnv
+import Debug
 
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
@@ -146,7 +146,7 @@ rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 rectangles2 inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-			enableValidationLayers do
+			debug do
 		(phd', qfis', fmt', dv', gq', pq', n') <-
 			withWindow False \dw ->
 			createSurface dw ist \dsfc -> do
@@ -226,9 +226,6 @@ data Event k
 	| EventOpenWindow k
 	| EventDeleteWindow k
 	deriving Show
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
@@ -312,14 +309,14 @@ fromRight (Right x) = x
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
+	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
+			debug . (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
 	print exts
 	Vk.Ist.create (crinfo exts) nil f
@@ -331,7 +328,7 @@ createInstance f = do
 		Vk.Ist.createInfoFlags = zeroBits,
 		Vk.Ist.createInfoApplicationInfo = Just appinfo,
 		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Ist.createInfoEnabledExtensionNames = es }
 	appinfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
@@ -634,7 +631,7 @@ createLogicalDevice phdvc dvcgrp k qfis =
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.createInfoEnabledFeatures = Just def }
 	uniqueQueueFamilies = L.nub [graphicsFamily qfis, presentFamily qfis]

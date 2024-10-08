@@ -369,6 +369,4 @@ src
 * [ ] Rectangles
 * [ ] Rectangles2
 * [ ] Vertex
-* [ ] ThEnv
 * [ ] Tools
-* [ ] PangoLayoutExtent
