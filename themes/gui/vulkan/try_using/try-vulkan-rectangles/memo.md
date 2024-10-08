@@ -11,7 +11,7 @@ app
     + [x] Angle
     + [x] rectangles
     + [x] import list
-* [ ] try-use-texture-group
+* [x] try-use-texture-group
     + [x] MAIN
         - [x] main
         - [x] realMain
@@ -27,14 +27,15 @@ app
         - [x] processEvent
         - [x] inputTxFilePath
         - [x] keyToChar
-    + [ ] RECTANGLES
-        - [ ] RectangleTable
-        - [ ] rectTable
-        - [ ] instances
-        - [ ] instances2
-        - [ ] instances'
-        - [ ] calcModel'
-        - [ ] calcModel2'
+    + [x] RECTANGLES
+        - [x] rectTable
+        - [x] RectangleTable
+        - [x] scaled
+        - [x] rotrated
+        - [x] rotated
+        - [x] scale
+        - [x] rotate
+    + [x] import list
 * [ ] try-multi-rectangles.hs
 * [ ] try-multi-rectangles2.hs
 
