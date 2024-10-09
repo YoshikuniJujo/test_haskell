@@ -510,12 +510,13 @@ provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	WinObjGroups k si ssfc sd scfmt
 		ssc siv nmi sr sf sg sl sdsl alu mnmvp sias srfs siff ->
 	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) -> k ->
-	IO (WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nmi
-		(HPList.Replicate n siv) sr (HPList.Replicate n sf))
-provideWinObjs outp vext_ phd dv gq cp qfis pllyt
-	wg (sfcgrp, scgrp, ivgrp, rpgrp, fbgrp, gpgrp, iasgrp, rfsgrp, iffgrp) rgrps ges k =
+	IO (WinObjs sw ssfc scfmt ssc nmi
+		(HPList.Replicate n siv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp sias srfs siff)
+provideWinObjs op vexs pd dv gq cp qfis pl wg
+	(sfcgrp, scgrp, ivgrp, rpgrp, fbgrp, gpgrp, iasgrp, rfsgrp, iffgrp) rgrps ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
-	winObjs @n outp phd dv gq cp qfis pllyt vext_
+	winObjs @n op pd dv gq cp qfis pl vexs
 		sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges w fr k
 
 initWin :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
@@ -559,8 +560,10 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	GlfwG.Win.W sw -> TVar Bool ->
 	k ->
 	IO (WinObjs
-		sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nm
-		(HPList.Replicate n siv) sr (HPList.Replicate n sf))
+		sw ssfc scfmt ssc
+		nm (HPList.Replicate n siv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp sias srfs siff
+		)
 winObjs outp phd dv gq cp qfis pllyt vext_
 	sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges w fbrszd k =
 	GlfwG.Win.setKeyCallback w
@@ -598,7 +601,10 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	createFramebuffers' @n @siv fbgrp k ext rp scivs >>= \fbs ->
 
 	let	wos = WinObjs
-			(w, fbrszd) sfc vext gpl sos (sc, scivs, rp, fbs) in
+			(w, fbrszd) sfc vext
+			(sc, scivs, rp, fbs)
+			gpl sos
+			in
 
 	setGlfwEvents outp w fbrszd ges k >>
 
@@ -643,10 +649,13 @@ instance NumToVal '[] where numToValue = 0
 instance NumToVal n => NumToVal ('() ': n) where
 	numToValue = 1 + numToValue @n
 
-data WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nm ss sr sfs = WinObjs
+data WinObjs sw ssfc scfmt
+	ssc nmscv svs sr sfs sg sl sdsl alu mnmvp sias srfs siff = WinObjs
 	(WinEnvs sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
-	(Pipeline sg sl sdsl alu mnmvp) (SyncObjects '(sias, srfs, siff))
-	(Swapchains scfmt ssc nm ss sr sfs)
+	(Swapchains scfmt ssc nmscv svs sr sfs)
+
+	(Pipeline sg sl sdsl alu mnmvp)
+	(SyncObjects '(sias, srfs, siff))
 
 type WinObjGroups k si ssfc sd scfmt
 	ssc siv nmi sr sf sg sl sdsl alu mnmvp sias srfs siff = (
@@ -1405,8 +1414,10 @@ mainloop ::
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k, Succable k, KnownNat alu) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl alu mnmvp ->
 
-	(k -> IO (WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nm
-		(HPList.Replicate n siv) sr (HPList.Replicate n sf))) ->
+	(k -> IO (WinObjs sw ssfc scfmt ssc
+		nm (HPList.Replicate n siv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp sias srfs siff
+		)) ->
 
 	(k -> IO ()) ->
 
@@ -1488,9 +1499,12 @@ data Recreates sw sl nm ssfc sr sg sdsl alu mnmvp fmt ssc sis sfs = Recreates
 	(HPList.PL Vk.Frmbffr.F sfs)
 
 winObjsToRecreates ::
-	WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nm sscivs sr sfs ->
+	WinObjs sw ssfc scfmt ssc
+		nm sscivs sr sfs
+		sg sl sdsl alu mnmvp sias srfs siff
+		->
 	Recreates sw sl nm ssfc sr sg sdsl alu mnmvp scfmt ssc sscivs sfs
-winObjsToRecreates (WinObjs (w, _) sfc vex gpl _iasrfsifs (sc, scivs, rp, fbs)) =
+winObjsToRecreates (WinObjs (w, _) sfc vex (sc, scivs, rp, fbs) gpl _iasrfsifs) =
 	Recreates w sfc vex rp gpl sc scivs fbs
 
 data Draws sl sr sg sdsl alu mnmvp sias srfs siff fmt ssc sfs = Draws
@@ -1508,13 +1522,19 @@ data Draws sl sr sg sdsl alu mnmvp sias srfs siff fmt ssc sfs = Draws
 	(HPList.PL Vk.Frmbffr.F sfs)
 
 winObjsToDraws ::
-	WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nm sscivs sr sfs ->
+	WinObjs sw ssfc scfmt ssc
+		nm sscivs sr sfs
+		sg sl sdsl alu mnmvp sias srfs siff
+		->
 	Draws sl sr sg sdsl alu mnmvp sias srfs siff scfmt ssc sfs
-winObjsToDraws (WinObjs _ _sfc vex gpl iasrfsifs (sc, _scivs, rp, fbs)) =
+winObjsToDraws (WinObjs _ _sfc vex (sc, _, rp, fbs) gpl iasrfsifs) =
 	Draws vex rp gpl iasrfsifs sc fbs
 
 winObjsToWin ::
-	WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nm sscivs sr sfs ->
+	WinObjs sw ssfc scfmt ssc
+		nm sscivs sr sfs
+		sg sl sdsl alu mnmvp sias srfs siff
+		->
 	W sw
 winObjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
@@ -1524,8 +1544,10 @@ runLoop' :: forall n (siv :: Type) (sf :: Type)
 	smrct sbrct nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k alu mnmvp nmr .
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k, KnownNat alu) =>
 	Devices sd sc scb -> Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
-	(M.Map k (WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nmrct
-		(HPList.Replicate n siv) sr (HPList.Replicate n sf))) ->
+	(M.Map k (WinObjs sw ssfc scfmt ssc
+			nmrct (HPList.Replicate n siv) sr (HPList.Replicate n sf)
+			sg sl sdsl alu mnmvp sias srfs siff
+			)) ->
 	(	Vk.Bffr.Binded sm' sb' nmrct '[Vk.Obj.List 1 WVertex ""],
 		Vk.Bffr.Binded sm2 sb2 nm2 '[Vk.Obj.List 1 Word16 ""] ) ->
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[Vk.Obj.List 256 WRect nmr],
@@ -1557,8 +1579,8 @@ lookupRects rs = fromMaybe (viewProjectionIdentity, dummy) . (`M.lookup` rs)
 
 catchAndDraw ::
 	forall n siv sf
-		sd sl sdsl sm sb smr sbr nm sm' sb' sm2 sb2 nm' sw ssfc sg sias srfs siff win ssc sr sds scb alu mnmvp nmr .
-	(HPList.HomoListN n, Vk.T.FormatToValue win, KnownNat alu) =>
+		sd sl sdsl sm sb smr sbr nm sm' sb' sm2 sb2 nm' sw ssfc sg sias srfs siff ssc sr sds scb alu mnmvp nmr scfmt .
+	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, KnownNat alu) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
 	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 WVertex ""] ->
@@ -1567,8 +1589,9 @@ catchAndDraw ::
 	UniformBufferMemory sm2 sb2 alu mnmvp -> Vk.DscSt.D sds (AtomUbo sdsl alu mnmvp) ->
 	Vk.CmdBffr.C scb ->
 	WViewProj ->
-	WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff win ssc nm
-		(HPList.Replicate n siv) sr (HPList.Replicate n sf) ->
+	WinObjs sw ssfc scfmt ssc
+		nm (HPList.Replicate n siv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp sias srfs siff ->
 	IO ()
 catchAndDraw phdvc qfis dvc gq pq pllyt vb rb ib ubm ubds cb ubo wos = do
 	catchAndRecreate @n @_ @siv @sf phdvc qfis dvc pllyt (winObjsToRecreates wos)
@@ -1581,8 +1604,10 @@ recreateSwapchainEtcIfNeed ::
 	(Vk.T.FormatToValue scfmt, HPList.HomoListN n) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
-	WinObjs sw ssfc sg sl sdsl alu mnmvp sias srfs siff scfmt ssc nm
-		(HPList.Replicate n siv) sr (HPList.Replicate n sf) -> IO ()
+	WinObjs sw ssfc scfmt ssc
+		nm (HPList.Replicate n siv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp sias srfs siff
+		-> IO ()
 recreateSwapchainEtcIfNeed phdvc qfis dvc pllyt wos@(WinObjs (_, fbrszd) _ _ _ _ _) =
 	atomically (checkFlag fbrszd) >>= bool (pure ())
 		(recreateSwapchainEtc @n @siv @sf phdvc qfis dvc pllyt $ winObjsToRecreates wos)

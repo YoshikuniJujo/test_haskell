@@ -494,7 +494,8 @@ provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] ->
 	Vk.Bffr.Binded smvp sbvp bnmvp '[AtomViewProj alu mnmvp] ->
 	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) -> k ->
-	IO (WinObjs sw ssfc scfmt ssc nmi (HPList.Replicate n siv) sr (HPList.Replicate n sf)
+	IO (WinObjs sw ssfc scfmt ssc nmi
+		(HPList.Replicate n siv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff)
 provideWinObjs op vexs pd dv gq cp qfis pl wg gs dsl dp dsg vp rgs ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
