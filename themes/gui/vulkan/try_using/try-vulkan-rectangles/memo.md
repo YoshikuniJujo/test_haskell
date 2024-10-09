@@ -396,15 +396,44 @@ src
         - [x] createDscPl
         - [x] createDscSt
         - [x] dscWrite
-    + [ ] PROVIDE WINDOW OBJECTS
-        - [ ] provideWinObjs
-        - [ ] initWin
-        - [ ] winObjs
-        - [ ] destroyWinObjs
-        - [ ] class NumToVal
-        - [ ] instance NumToVal
-        - [ ] others
+    + [x] PROVIDE WINDOW OBJECTS
+        - [x] provideWinObjs
+        - [x] initWin
+    + [ ] WINDOW OBJECTS
+        - [x] winObjs
+        - [x] destroyWinObjs
+        - [x] class NumToVal
+        - [x] instance NumToVal
+        - [x] WinObjs
+        - [x] WinEnvs
+        - [x] FramebufferResized
+        - [x] Swapchains
+        - [x] Pipeline
+        - [x] WinObjGroups
+        - [x] prepareSwpch
+        - [x] querySwpchSupport
+        - [x] SwpchSupportDetails
+        - [x] creteSwpch'
+        - [x] recreateSwpch
+        - [x] swpExtent
+        - [x] swpchInfoSsd
+        - [x] chooseSwpSfcFmt
+        - [x] swpchInfo
+        - [x] createImgVws
+        - [x] recreateImgVws
+        - [x] createImgVw'
+        - [x] recreateImgVw
+        - [x] imgVwInfo
+        - [x] createRndrPss
+        - [x] createFrmbffrs
+        - [ ] recreateFramebuffers'
+        - [x] frmbffrInfo
+        - [x] createSyncObjs
+        - [x] SyncObjs
+    + [ ] RECTANGLE BUFFER
+    + [ ] GET GLFW EVENTS
     + [ ] CREATE AND COPY BUFFERS
+    + [ ] GRAPHICS PIPELINE
     + [ ] MAINLOOP
     + [ ] RECREATE
     + [ ] DRAW

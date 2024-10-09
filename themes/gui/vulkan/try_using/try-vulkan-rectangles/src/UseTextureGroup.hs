@@ -139,8 +139,12 @@ import CreateTextureGroup
 --
 -- * USE TEXTURE GROUP
 -- * BODY
+-- * PROVIDE WINDOW OBJECTS
 -- * WINDOW OBJECTS
+-- * RECTANGLE BUFFER
+-- * GET GLFW EVENTS
 -- * CREATE AND COPY BUFFERS
+-- * GRAPHICS PIPELINE
 -- * MAINLOOP
 -- * RECREATE
 -- * DRAW
@@ -575,26 +579,25 @@ destroyWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.DscSt.Group sd sds k sdp '[ '(sdsl, DscStLytArg alu mnmvp nmt)] ->
 	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) -> k -> IO ()
 destroyWinObjs wg (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg)
-	dsg (rbg, rmg) ges k = GlfwG.Win.lookup wg k >>= \mw -> do
-	case mw of
-		Nothing -> pure ()
-		Just w -> do
-			GlfwG.Win.setShouldClose w True
-			tr =<< GlfwG.Win.unsafeDestroy wg k
-			tr =<< Vk.Khr.Swpch.unsafeDestroy scg k
-			tr =<< Vk.Khr.Sfc.unsafeDestroy sfcg k
-			tr =<< Vk.RndrPss.unsafeDestroy rpg k
-			for_ [0 .. numToVal @n - 1] \i -> do
-				tr =<< Vk.ImgVw.unsafeDestroy ivg (k, i)
-				tr =<< Vk.Frmbffr.unsafeDestroy fbg (k, i)
-			tr =<< Vk.Ppl.Gr.unsafeDestroyGs gpg k
-			tr =<< Vk.Smph.unsafeDestroy iasg k
-			tr =<< Vk.Smph.unsafeDestroy rfsg k
-			tr =<< Vk.Fnc.unsafeDestroy iffg k
-			tr =<< Vk.DscSt.unsafeFreeDs dsg k
-			tr =<< Vk.Bffr.unsafeDestroy rbg k
-			tr =<< Vk.Mm.unsafeFree rmg k
-	atomically (modifyTVar ges (M.delete k))
+	dsg (rbg, rmg) ges k = GlfwG.Win.lookup wg k >>= \case
+	Nothing -> pure ()
+	Just w -> do
+		GlfwG.Win.setShouldClose w True
+		tr =<< GlfwG.Win.unsafeDestroy wg k
+		tr =<< Vk.Khr.Swpch.unsafeDestroy scg k
+		tr =<< Vk.Khr.Sfc.unsafeDestroy sfcg k
+		tr =<< Vk.RndrPss.unsafeDestroy rpg k
+		for_ [0 .. numToVal @n - 1] \i -> do
+			tr =<< Vk.ImgVw.unsafeDestroy ivg (k, i)
+			tr =<< Vk.Frmbffr.unsafeDestroy fbg (k, i)
+		tr =<< Vk.Ppl.Gr.unsafeDestroyGs gpg k
+		tr =<< Vk.Smph.unsafeDestroy iasg k
+		tr =<< Vk.Smph.unsafeDestroy rfsg k
+		tr =<< Vk.Fnc.unsafeDestroy iffg k
+		tr =<< Vk.DscSt.unsafeFreeDs dsg k
+		tr =<< Vk.Bffr.unsafeDestroy rbg k
+		tr =<< Vk.Mm.unsafeFree rmg k
+		atomically (modifyTVar ges (M.delete k))
 	where tr = either error pure
 
 class NumToVal (n :: [()]) where numToVal :: Int
@@ -615,13 +618,12 @@ type Swapchains scfmt ssc nmi svs sr sfs = (
 	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
 
 type Pipeline sg sl sdsl alu mnmvp nmt = Vk.Ppl.Gr.G sg
-		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
-		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[])
+	'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
+	'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+		'(2, RectPos), '(3, RectSize), '(4, RectColor),
+		'(5, RectModel0), '(6, RectModel1),
+		'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
+	'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[])
 
 type WinObjGroups k si ssfc sd scfmt
 	ssc siv nmi sr sf sg sl sdsl alu mnmvp nmt sias srfs siff = (
@@ -758,7 +760,7 @@ recreateImgVws _ _ _ = error "number of Vk.Img.I and Vk.ImgVw.I should be same"
 createRndrPss :: forall scfmt sd ma sr k .
 	(Vk.T.FormatToValue scfmt, Vk.AllocationCallbacks.ToMiddle ma, Ord k) =>
 	Vk.RndrPss.Group sd ma sr k -> k -> IO (Vk.RndrPss.R sr)
-createRndrPss rpg k = forceRight' <$> Vk.RndrPss.create' @_ @_ @_ rpg k info
+createRndrPss rpg k = forceRight' <$> Vk.RndrPss.create' rpg k info
 	where
 	info = Vk.RndrPss.CreateInfo {
 		Vk.RndrPss.createInfoNext = TMaybe.N,
@@ -804,7 +806,8 @@ createRndrPss rpg k = forceRight' <$> Vk.RndrPss.create' @_ @_ @_ rpg k info
 
 createFrmbffrs :: forall n sv sd sf k sr nm fmt . (HPList.HomoListN n, Ord k) =>
 	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) -> k -> Vk.Extent2d ->
-	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) (HPList.Replicate n sv) ->
+	Vk.RndrPss.R sr ->
+	HPList.PL (Vk.ImgVw.I nm fmt) (HPList.Replicate n sv) ->
 	IO (HPList.PL Vk.Frmbffr.F (HPList.Replicate n sf))
 createFrmbffrs fbg k ex rp =
 	HPList.mapHomoListNMWithI @_ @n @_ @_ @sv 0 \i v ->
