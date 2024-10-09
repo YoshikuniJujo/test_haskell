@@ -381,6 +381,21 @@ src
         - [x] swpchImgNum
     + [ ] BODY
         - [ ] body
+        - [x] createCmdPl
+        - [x] createCmdBffr
+        - [x] unfrmBffrOstAlgn
+        - [x] createPplLyt
+        - [ ] createDSLyt
+        - [ ] DscStLytArg
+        - [x] createVtxBffr
+        - [x] createIdxBffr
+        - [x] createBffrMem
+        - [x] createViewProjBffr
+        - [x] ViewProjMemory
+        - [x] AtomViewProj
+        - [ ] createDscPl
+        - [ ] createDscSt
+        - [ ] descriptorWrite
         - [ ] others
     + [ ] WINDOW OBJECTS
     + [ ] CREATE AND COPY BUFFERS
