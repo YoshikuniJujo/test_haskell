@@ -513,11 +513,9 @@ provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	IO (WinObjs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n siv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp sias srfs siff)
-provideWinObjs op vexs pd dv gq cp qfis pl wg
-	(sfcgrp, scgrp, ivgrp, rpgrp, fbgrp, gpgrp, iasgrp, rfsgrp, iffgrp) rgrps ges k =
+provideWinObjs op vexs pd dv gq cp qfis pl wg gs rgrps ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
-	winObjs @n op pd dv gq cp qfis pl vexs
-		sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges w fr k
+	winObjs @n op vexs pd dv gq cp qfis pl w fr gs rgrps ges k
 
 initWin :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
 initWin v wg k = do
@@ -530,42 +528,26 @@ initWin v wg k = do
 	where wName = "Rectangles"; wSize = (800, 600)
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
-	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
-	smrct sbrct nmrct alu mnmvp nmr . (
-	HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k ) =>
-	TChan (Event k) -> Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc ->
-	QFamIdcs -> Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
+	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nmi sv sr sf
+	smr sbr bnmr alu mnmvp nmr .
+	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k) =>
+	TChan (Event k) ->
 	TVar (M.Map k (TVar Vk.Extent2d)) ->
-	Vk.Khr.Sfc.Group si 'Nothing ssfc k ->
-	Vk.RndrPss.Group sd 'Nothing sr k ->
-	Vk.Ppl.Gr.Group sd 'Nothing sg k '[ '(
-		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(WRect, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ],
-		'(sl, '[AtomUbo sdsl alu mnmvp], '[]) )] ->
-	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[Vk.Obj.List 256 WRect nmr],
-		Vk.Mm.Group sd 'Nothing smrct k '[ '(sbrct, Vk.Mm.BufferArg nmrct '[Vk.Obj.List 256 WRect nmr])]
-		) ->
-	Vk.Smph.Group sd 'Nothing sias k ->
-	Vk.Smph.Group sd 'Nothing srfs k ->
-	Vk.Fnc.Group sd 'Nothing siff k ->
-	Vk.Khr.Swpch.Group sd 'Nothing scfmt ssc k ->
-	Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm scfmt ->
-	Vk.Frmbffr.Group sd 'Nothing sf (k, Int) ->
-	TVar (M.Map k (IO ())) ->
-	GlfwG.Win.W sw -> TVar Bool ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> QFamIdcs ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	GlfwG.Win.W sw -> FramebufferResized -> WinObjGroups k si ssfc sd scfmt
+		ssc sv nmi sr sf sg sl sdsl alu mnmvp sias srfs siff ->
+	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) ->
 	k ->
-	IO (WinObjs
-		sw ssfc scfmt ssc
-		nm (HPList.Replicate n siv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnmvp sias srfs siff
-		)
-winObjs outp phd dv gq cp qfis pllyt vext_
-	sfcgrp rpgrp gpgrp rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges w fbrszd k =
+	IO (WinObjs sw ssfc scfmt ssc nmi
+		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp sias srfs siff)
+winObjs outp vext_ phd dv gq cp qfis pllyt
+	w fr
+	(sfcgrp, scgrp, ivgrp, rpgrp, fbgrp,
+	gpgrp, iasgrp, rfsgrp, iffgrp)
+	rgrps ges
+	k =
 	GlfwG.Win.setKeyCallback w
 		(Just \dw ky sc act mods -> do
 			putStrLn $
@@ -579,7 +561,7 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 				_ -> pure ()
 			) >>
 	GlfwG.Win.setFramebufferSizeCallback w
-		(Just \_ _ _ -> atomically $ writeTVar fbrszd True) >>
+		(Just \_ _ _ -> atomically $ writeTVar fr True) >>
 
 	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(forceRight' -> sfc) ->
 	createRenderPass @scfmt rpgrp k >>= \rp ->
@@ -598,15 +580,15 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 
 	Vk.Khr.Swpch.getImages dv sc >>= \scis ->
 	createImageViews' @n ivgrp k scis >>= \scivs ->
-	createFramebuffers' @n @siv fbgrp k ext rp scivs >>= \fbs ->
+	createFramebuffers' @n @sv fbgrp k ext rp scivs >>= \fbs ->
 
 	let	wos = WinObjs
-			(w, fbrszd) sfc vext
+			(w, fr) sfc vext
 			(sc, scivs, rp, fbs)
 			gpl sos
 			in
 
-	setGlfwEvents outp w fbrszd ges k >>
+	setGlfwEvents outp w fr ges k >>
 
 	pure wos
 

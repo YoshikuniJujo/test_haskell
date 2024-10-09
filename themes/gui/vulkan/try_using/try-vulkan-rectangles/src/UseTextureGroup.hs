@@ -548,7 +548,8 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
 	GlfwG.Win.W sw -> FramebufferResized -> WinObjGroups k si ssfc sd scfmt
 		ssc sv nmi sr sf sg sl sdsl alu mnmvp nmt sias srfs siff -> k ->
-	IO (WinObjs sw ssfc scfmt ssc nmi (HPList.Replicate n sv) sr (HPList.Replicate n sf)
+	IO (WinObjs sw ssfc scfmt ssc nmi
+		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff)
 winObjs vexs pd dv qfis pl w fr
 	(sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg) k =
