@@ -118,44 +118,44 @@ uniformBufferObject sce = ViewProjection {
 			(fromIntegral (Vk.extent2dWidth sce) /
 				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 
-instances :: Float -> [Rectangle]
+instances :: Float -> [RectangleRaw]
 instances tm = let
 	(m0, m1, m2, m3) = calcModel tm in
 	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3
 		]
 
-instances2 :: Float -> [Rectangle]
+instances2 :: Float -> [RectangleRaw]
 instances2 tm = let (m0, m1, m2, m3) = calcModel tm in
 	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+		RectangleRaw (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
 			m0 m1 m2 m3

@@ -29,7 +29,7 @@ module Rectangles (
 
 	-- ** RECTANGLE
 
-	Rectangle(..),
+	RectangleRaw(..),
 	RectPos(..), RectSize(..), RectColor(..),
 	RectModel0(..), RectModel1(..), RectModel2(..), RectModel3(..),
 
@@ -192,7 +192,7 @@ rectangles ip op vex = GlfwG.init error $
 
 data Command k
 	= OpenWindow | DestroyWindow k | GetEvent
-	| Draw (M.Map k (ViewProjection, [Rectangle]))
+	| Draw (M.Map k (ViewProjection, [RectangleRaw]))
 	deriving Show
 
 data Event k
@@ -513,9 +513,11 @@ provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	IO (WinObjs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n siv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp sias srfs siff)
-provideWinObjs op vexs pd dv gq cp qfis pl wg gs rgrps ges k =
+provideWinObjs op vexs pd dv gq cp qfis pl wg gs rgs ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
-	winObjs @n op vexs pd dv gq cp qfis pl w fr gs rgrps ges k
+	winObjs @n vexs pd dv qfis pl w fr gs k <* do
+	_ <- createRctBffr pd dv gq cp rgs k $ rectToRectRaw <$> dummy
+	setGlfwEvents op w fr ges k
 
 initWin :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
 initWin v wg k = do
@@ -528,46 +530,26 @@ initWin v wg k = do
 	where wName = "Rectangles"; wSize = (800, 600)
 
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
-	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nmi sv sr sf
-	smr sbr bnmr alu mnmvp nmr .
+	si sd sw ssfc sg sl sdsl sias srfs siff ssc nmi sv sr sf
+	alu mnmvp .
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k) =>
-	TChan (Event k) ->
 	TVar (M.Map k (TVar Vk.Extent2d)) ->
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> QFamIdcs ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> QFamIdcs ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
 	GlfwG.Win.W sw -> FramebufferResized -> WinObjGroups k si ssfc sd scfmt
 		ssc sv nmi sr sf sg sl sdsl alu mnmvp sias srfs siff ->
-	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) ->
 	k ->
 	IO (WinObjs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp sias srfs siff)
-winObjs outp vext_ phd dv gq cp qfis pllyt
+winObjs vext_ pd dv qfis pllyt
 	w fr
 	(sfcgrp, scgrp, ivgrp, rpgrp, fbgrp,
 	gpgrp, iasgrp, rfsgrp, iffgrp)
-	rgrps ges
 	k =
-	GlfwG.Win.setKeyCallback w
-		(Just \dw ky sc act mods -> do
-			putStrLn $
-				show dw ++ " " ++ show ky ++ " " ++
-				show sc ++ " " ++ show act ++ " " ++ show mods
-			case act of
-				GlfwG.Ky.KeyState'Pressed ->
-					atomically $ writeTChan outp $ EventKeyDown k ky
-				GlfwG.Ky.KeyState'Released ->
-					atomically $ writeTChan outp $ EventKeyUp k ky
-				_ -> pure ()
-			) >>
-	GlfwG.Win.setFramebufferSizeCallback w
-		(Just \_ _ _ -> atomically $ writeTVar fr True) >>
-
 	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp k w >>= \(forceRight' -> sfc) ->
 	createRenderPass @scfmt rpgrp k >>= \rp ->
-	prepareSwpch w sfc phd \spp' ext ->
-
-	createRectangleBuffer' phd dv gq cp rgrps k dummy >>
+	prepareSwpch w sfc pd \spp' ext ->
 
 	atomically (
 		newTVar (Vk.Extent2d 0 0) >>= \v ->
@@ -582,13 +564,7 @@ winObjs outp vext_ phd dv gq cp qfis pllyt
 	createImageViews' @n ivgrp k scis >>= \scivs ->
 	createFramebuffers' @n @sv fbgrp k ext rp scivs >>= \fbs ->
 
-	let	wos = WinObjs
-			(w, fr) sfc vext
-			(sc, scivs, rp, fbs)
-			gpl sos
-			in
-
-	setGlfwEvents outp w fr ges k >>
+	let	wos = WinObjs (w, fr) sfc vext (sc, scivs, rp, fbs) gpl sos in
 
 	pure wos
 
@@ -1159,7 +1135,7 @@ mmAllcInfo mt = Vk.Mm.AllocateInfo {
 	Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 createRectangleBuffer :: Ord k =>
-	Devices sd sc scb -> RectGroups sd sm sb nm nmr k -> k -> [Rectangle] ->
+	Devices sd sc scb -> RectGroups sd sm sb nm nmr k -> k -> [WRect] ->
 	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 WRect nmr])
 createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
@@ -1170,15 +1146,15 @@ createRectangleBuffer (phdvc, _qfis, dvc, gq, _pq, cp, _cb) (bgrp, mgrp) k rs =
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit )
 			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[Vk.Obj.List 256 t nmr]) bm' -> do
-		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List 256 WRect nmr) @0 dvc bm' zeroBits $ StrG.W <$> rs
+		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List 256 WRect nmr) @0 dvc bm' zeroBits rs
 		copyBuffer dvc gq cp b' b
 	pure b
 
-createRectangleBuffer' :: Ord k =>
+createRctBffr :: Ord k =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	RectGroups sd sm sb nm nmr k -> k -> [Rectangle] ->
+	RectGroups sd sm sb nm nmr k -> k -> [WRect] ->
 	IO (Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 256 WRect nmr])
-createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
+createRctBffr phdvc dvc gq cp (bgrp, mgrp) k rs =
 	createBufferList' phdvc dvc bgrp mgrp k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) -> do
@@ -1187,7 +1163,7 @@ createRectangleBuffer' phdvc dvc gq cp (bgrp, mgrp) k rs =
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit )
 			\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[Vk.Obj.List 256 t nmr]) bm' -> do
-		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List 256 WRect nmr) @0 dvc bm' zeroBits $ StrG.W <$> rs
+		Vk.Mm.write @"rectangle-buffer" @(Vk.Obj.List 256 WRect nmr) @0 dvc bm' zeroBits rs
 		copyBuffer dvc gq cp b' b
 	pure b
 
@@ -1431,8 +1407,8 @@ mainloop inp outp dvs pll crwos drwos vbs rgrps ubs ges =
 				if cls then pure () else loop
 			GetEvent -> atomically (readTVar ges) >>= sequence_ >> loop
 
-rectsToDummy :: M.Map k (b, [Rectangle]) -> M.Map k (StrG.W b, [Rectangle])
-rectsToDummy = M.map \(tm, rects) -> (StrG.W tm, bool rects dummy $ null rects)
+rectsToDummy :: M.Map k (b, [RectangleRaw]) -> M.Map k (StrG.W b, [WRect])
+rectsToDummy = M.map \(tm, rects) -> (StrG.W tm, bool (StrG.W <$> rects) (rectToRectRaw <$> dummy) $ null rects)
 
 type Devices sd scp scb = (
 	Vk.Phd.P, QFamIdcs, Vk.Dvc.D sd,
@@ -1535,7 +1511,7 @@ runLoop' :: forall n (siv :: Type) (sf :: Type)
 	(	Vk.Bffr.Group sd 'Nothing sbrct k nmrct '[Vk.Obj.List 256 WRect nmr],
 		Vk.Mm.Group sd 'Nothing smrct k '[
 			'(sbrct, 'Vk.Mm.BufferArg nmrct '[Vk.Obj.List 256 WRect nmr])] ) ->
-	M.Map k (WViewProj, [Rectangle]) ->
+	M.Map k (WViewProj, [WRect]) ->
 	(Vk.DscSt.D sds (AtomUbo sdsl alu mnmvp), UniformBufferMemory sm sb alu mnmvp) ->
 	IO () -> IO ()
 runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
@@ -1555,9 +1531,9 @@ runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
 		loop
 
 lookupRects :: Ord k =>
-	M.Map k (WViewProj, [Rectangle]) -> k ->
-	(WViewProj, [Rectangle])
-lookupRects rs = fromMaybe (viewProjectionIdentity, dummy) . (`M.lookup` rs)
+	M.Map k (WViewProj, [WRect]) -> k ->
+	(WViewProj, [WRect])
+lookupRects rs = fromMaybe (viewProjectionIdentity, rectToRectRaw <$> dummy) . (`M.lookup` rs)
 
 catchAndDraw ::
 	forall n siv sf
@@ -1703,32 +1679,37 @@ instance Storable Vertex where
 
 instance StrG.G Vertex
 
-type WRect = StrG.W Rectangle
-
 data Rectangle = Rectangle {
+	rectanglePos' :: RectPos, rectangleSize' :: RectSize,
+	rectangleColor' :: RectColor, rectangleModel' :: RectModel }
+	deriving (Show, Generic)
+
+type WRect = StrG.W RectangleRaw
+
+data RectangleRaw = RectangleRaw {
 	rectanglePos :: RectPos,
 	rectangleSize :: RectSize,
-	rectagnleColor :: RectColor,
+	rectangleColor :: RectColor,
 	rectangleModel0 :: RectModel0,
 	rectangleModel1 :: RectModel1,
 	rectangleModel2 :: RectModel2,
 	rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
 
-instance StrG.G Rectangle where
+rectToRectRaw :: Rectangle -> WRect
+rectToRectRaw Rectangle {
+	rectanglePos' = p, rectangleSize' = s,
+	rectangleColor' = c, rectangleModel' = RectModel m } =
+	StrG.W RectangleRaw {
+		rectanglePos = p, rectangleSize = s,
+		rectangleColor = c,
+		rectangleModel0 = RectModel0 m0,
+		rectangleModel1 = RectModel1 m1,
+		rectangleModel2 = RectModel2 m2,
+		rectangleModel3 = RectModel3 m3 }
+	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
 
-instance Storable Rectangle where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
-
-instance Default Rectangle where
-	def = Rectangle
-		(RectPos . Cglm.Vec2 $ 0 :. 0 :. NilL)
-		(RectSize . Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(RectColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL)
-		def def def def
+instance StrG.G RectangleRaw where
 
 newtype RectPos = RectPos Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
@@ -1738,6 +1719,8 @@ newtype RectSize = RectSize Cglm.Vec2
 
 newtype RectColor = RectColor Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype RectModel = RectModel Cglm.Mat4 deriving (Show, Eq, Ord, Storable)
 
 newtype RectModel0 = RectModel0 Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
@@ -1776,12 +1759,11 @@ indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
 
 dummy :: [Rectangle]
-dummy = let m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s Cglm.mat4Identity in
-	[Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
-			(RectModel0 m0) (RectModel1 m1)
-			(RectModel2 m2) (RectModel3 m3)]
+dummy = [Rectangle
+	(RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+	(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+	(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
+	(RectModel Cglm.mat4Identity)]
 
 type WViewProj = StrG.W ViewProjection
 
