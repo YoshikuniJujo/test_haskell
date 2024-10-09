@@ -385,19 +385,25 @@ src
         - [x] createCmdBffr
         - [x] unfrmBffrOstAlgn
         - [x] createPplLyt
-        - [ ] createDSLyt
-        - [ ] DscStLytArg
+        - [x] createDSLyt
+        - [x] DscStLytArg
         - [x] createVtxBffr
         - [x] createIdxBffr
         - [x] createBffrMem
         - [x] createViewProjBffr
         - [x] ViewProjMemory
         - [x] AtomViewProj
-        - [ ] createDscPl
-        - [ ] createDscSt
-        - [ ] descriptorWrite
+        - [x] createDscPl
+        - [x] createDscSt
+        - [x] dscWrite
+    + [ ] PROVIDE WINDOW OBJECTS
+        - [ ] provideWinObjs
+        - [ ] initWin
+        - [ ] winObjs
+        - [ ] destroyWinObjs
+        - [ ] class NumToVal
+        - [ ] instance NumToVal
         - [ ] others
-    + [ ] WINDOW OBJECTS
     + [ ] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
     + [ ] RECREATE
