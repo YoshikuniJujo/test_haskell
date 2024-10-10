@@ -399,7 +399,7 @@ src
     + [x] PROVIDE WINDOW OBJECTS
         - [x] provideWinObjs
         - [x] initWin
-    + [ ] WINDOW OBJECTS
+    + [x] WINDOW OBJECTS
         - [x] winObjs
         - [x] destroyWinObjs
         - [x] class NumToVal
@@ -426,7 +426,7 @@ src
         - [x] imgVwInfo
         - [x] createRndrPss
         - [x] createFrmbffrs
-        - [ ] recreateFramebuffers'
+        - [x] recreateFrmbffrs
         - [x] frmbffrInfo
         - [x] createSyncObjs
         - [x] SyncObjs
