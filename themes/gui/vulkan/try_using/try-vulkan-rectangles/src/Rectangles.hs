@@ -1255,28 +1255,25 @@ mainloop :: forall
 	RectGroups sd srm srb nmscv "" k ->
 	UniformBuffers sds sdsl alu mnmvp sm2 sb2 -> TVar (M.Map k (IO ())) ->
 	IO ()
-mainloop inp outp dvs pll crwos drwos vbs rgrps ubs ges =
-	atomically (newTVar zero') >>= \vwid ->
-	atomically (newTVar M.empty) >>= \vws -> do
+mainloop ip op dvs pl crwos drwos vbs rgs ubs ges = do
+	(vwi, vws) <- atomically $ (,) <$> newTVar zero' <*> newTVar M.empty
 	let	crwos' = do
-			wi <- atomically do
-				i <- readTVar vwid
-				i <$ modifyTVar vwid succ'
-			wi <$ (atomically . modifyTVar vws . M.insert wi =<< crwos wi)
-	fix \loop -> do
-		GlfwG.pollEvents
-		atomically (readTChan inp) >>= \case
-			Draw ds -> do
-				ws <- atomically $ readTVar vws
-				runLoop' @n @sv @sf dvs pll ws vbs rgrps (rectsToDummy ds) ubs loop
-			OpenWindow -> crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
-			DestroyWindow k -> do
---				atomically (modifyTVar ges (M.delete k))
-				atomically (modifyTVar vws (M.delete k)) >> drwos k
-				ws <- atomically $ readTVar vws
-				cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
-				if cls then pure () else loop
-			GetEvent -> atomically (readTVar ges) >>= sequence_ >> loop
+			wi <- atomically $ readTVar vwi <* modifyTVar vwi succ'
+			wi <$ (atomically
+				. modifyTVar vws . M.insert wi =<< crwos wi)
+	fix \go -> atomically (readTChan ip) >>= \case
+		GetEvent -> atomically (readTVar ges) >>= sequence_ >> go
+		OpenWindow -> crwos' >>=
+			atomically . writeTChan op . EventOpenWindow >> go
+		DestroyWindow k -> do
+			atomically (modifyTVar vws (M.delete k)) >> drwos k
+			ws <- atomically $ readTVar vws
+			GlfwG.pollEvents
+			bool go (pure ()) =<< and <$> GlfwG.Win.shouldClose
+				`mapM` (wobjsToWin <$> ws)
+		Draw ds -> do
+			ws <- atomically $ readTVar vws
+			run @n @sv @sf dvs pl ws vbs rgs (rectsToDummy ds) ubs go
 
 recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl sds alu mnmvp nmr .
 	Vk.CmdBffr.C scb ->
@@ -1410,15 +1407,15 @@ winObjsToDraws ::
 winObjsToDraws (WinObjs _ _sfc vex (sc, _, rp, fbs) gpl iasrfsifs) =
 	Draws vex rp gpl iasrfsifs sc fbs
 
-winObjsToWin ::
+wobjsToWin ::
 	WinObjs sw ssfc scfmt ssc
 		nm sscivs sr sfs
 		sg sl sdsl alu mnmvp sias srfs siff
 		->
 	W sw
-winObjsToWin (WinObjs (win, _) _ _ _ _ _) = win
+wobjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
-runLoop' :: forall n (siv :: Type) (sf :: Type)
+run :: forall n (siv :: Type) (sf :: Type)
 	sd sc scb sl
 	sw ssfc sg sias srfs siff scfmt ssc sr
 	smrct sbrct nmrct sds sdsl sm sb sm' sb' sm2 sb2 nm2 k alu mnmvp nmr .
@@ -1436,7 +1433,7 @@ runLoop' :: forall n (siv :: Type) (sf :: Type)
 	M.Map k (WViewProj, [WRect]) ->
 	(Vk.DscSt.D sds (AtomUbo sdsl alu mnmvp), UniformBufferMemory sm sb alu mnmvp) ->
 	IO () -> IO ()
-runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
+run dvs pll ws vbs rgrps rectss ubs loop = do
 	let	(phdvc, qfis, dvc, gq, pq, _cp, cb) = dvs
 		(vb, ib) = vbs
 		(ubds, ubm) = ubs
@@ -1446,7 +1443,7 @@ runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
 		rb <- createRectangleBuffer dvs rgrps k' rects'
 		let	rb' = (rb, fromIntegral $ length rects')
 		catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
-	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+	cls <- and <$> GlfwG.Win.shouldClose `mapM` (wobjsToWin <$> ws)
 	if cls then (pure ()) else do
 		for_ ws \wos ->
 			recreateSwapchainEtcIfNeed @n @siv @sf phdvc qfis dvc pll wos

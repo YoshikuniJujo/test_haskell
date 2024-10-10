@@ -1179,7 +1179,7 @@ mainloop :: forall
 	(k -> IO ()) -> IO ()
 mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 	crtx pct0 drtx = do
-	(vwi, vws) <- atomically ((,) <$> newTVar zero' <*> newTVar M.empty)
+	(vwi, vws) <- atomically $ (,) <$> newTVar zero' <*> newTVar M.empty
 	let	crwos' = do
 			wi <- atomically $ readTVar vwi <* modifyTVar vwi succ'
 			atomically . modifyTVar vws . M.insert wi =<< crwos wi
