@@ -448,6 +448,16 @@ src
         - [x] copyBffrLst
         - [x] singleTimeCmds
     + [ ] MAINLOOP
+        - [ ] mainloop
+        - [ ] rectsToDummy
+        - [ ] class Succable
+        - [ ] instance Succable Bool
+        - [ ] instance Succable Int
+        - [ ] Devices
+        - [ ] PipelineLayout
+        - [ ] VertexBuffers
+        - [ ] wobjsToWin
+        - [ ] run
     + [ ] RECREATE
     + [ ] DRAW
     + [ ] DATA TYPES
