@@ -980,14 +980,6 @@ recreateGrPpl dv ex rp pl gp = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	(HPList.Singleton $ U3 gp)
 
-type GlslVertexShaderArgs = '(
-	'Nothing, 'Nothing,
-	'GlslVertexShader, 'Nothing :: Maybe (Type, Type), '[] )
-
-type GlslFragmentShaderArgs = '(
-	'Nothing, 'Nothing,
-	'GlslFragmentShader, 'Nothing :: Maybe (Type, Type), '[] )
-
 grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
 	Vk.Ppl.Gr.CreateInfo 'Nothing
@@ -1076,6 +1068,14 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.ShaderModule.createInfoNext = TMaybe.N,
 		Vk.ShaderModule.createInfoFlags = zeroBits,
 		Vk.ShaderModule.createInfoCode = cd }
+
+type GlslVertexShaderArgs = '(
+	'Nothing, 'Nothing,
+	'GlslVertexShader, 'Nothing :: Maybe (Type, Type), '[] )
+
+type GlslFragmentShaderArgs = '(
+	'Nothing, 'Nothing,
+	'GlslFragmentShader, 'Nothing :: Maybe (Type, Type), '[] )
 
 vwpSt :: Vk.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo 'Nothing
 vwpSt ex = Vk.Ppl.ViewportSt.CreateInfo {

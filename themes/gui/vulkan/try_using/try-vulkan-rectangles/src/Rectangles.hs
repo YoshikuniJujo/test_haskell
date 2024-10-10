@@ -973,23 +973,24 @@ createGrPpl gpg k ex rp pl = (\(forceRight' -> (HPList.Singleton (U3 p))) -> p)
 	<$> Vk.Ppl.Gr.createGs' gpg k Nothing
 		(HPList.Singleton . U14 $ grPplInfo ex rp pl)
 
-recreateGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
 	Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+			'(WRect, 'Vk.VtxInp.RateInstance) ]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3) ]
 		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) -> IO ()
-recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Gr.unsafeRecreateGs
-	dvc Nothing (U14 pplInfo :** HPList.Nil) nil (U3 gpls :** HPList.Nil)
-	where pplInfo = grPplInfo sce rp pllyt
+recreateGrPpl dv ex rp pl gp = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
+	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
+	(HPList.Singleton $ U3 gp)
 
-grPplInfo ::
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
-	Vk.Ppl.Gr.CreateInfo 'Nothing '[
-			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
-			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
+grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.Ppl.Gr.CreateInfo 'Nothing
+		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing,
 			'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
@@ -1036,6 +1037,14 @@ shaderStages = U5 vertShaderStageInfo :** U5 fragShaderStageInfo :** HPList.Nil
 			shaderModuleCreateInfo glslFragmentShaderMain, nil ),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+
+type GlslVertexShaderArgs = '(
+	'Nothing, 'Nothing,
+	'GlslVertexShader, 'Nothing :: Maybe (Type, Type), '[] )
+
+type GlslFragmentShaderArgs = '(
+	'Nothing, 'Nothing,
+	'GlslFragmentShader, 'Nothing :: Maybe (Type, Type), '[] )
 
 inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo 'Nothing
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
@@ -1608,7 +1617,7 @@ recreateSwapchainEtc
 	atomically $ writeTVar vex ext
 	Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
 		recreateImgVws dvc imgs scivs
-	recreateGraphicsPipeline dvc ext rp pllyt gpl
+	recreateGrPpl dvc ext rp pllyt gpl
 	recreateFrmbffrs @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()

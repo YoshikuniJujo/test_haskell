@@ -437,7 +437,7 @@ src
     + [x] GET GLFW EVENTS
     + [ ] GRAPHICS PIPELINE
         - [x] createGrPpl
-        - [ ] recreateGraphicsPipeline
+        - [x] recreateGrPpl
         - [ ] grPplInfo
         - [ ] shaderStages
         - [ ] inputAssembly
