@@ -430,10 +430,23 @@ src
         - [x] frmbffrInfo
         - [x] createSyncObjs
         - [x] SyncObjs
-    + [ ] RECTANGLE BUFFER
-    + [ ] GET GLFW EVENTS
-    + [ ] CREATE AND COPY BUFFERS
+    + [x] RECTANGLE BUFFER
+        - [x] createRctBffr
+        - [x] destroyRectangleBuffer
+        - [x] RectGroups
+    + [x] GET GLFW EVENTS
     + [ ] GRAPHICS PIPELINE
+        - [x] createGrPpl
+        - [ ] recreateGraphicsPipeline
+        - [ ] grPplInfo
+        - [ ] shaderStages
+        - [ ] inputAssembly
+        - [ ] mkViewportState
+        - [ ] rasterizer
+        - [ ] multisampling
+        - [ ] colorBlending
+        - [ ] colorBlendAttachment
+    + [ ] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
     + [ ] RECREATE
     + [ ] DRAW

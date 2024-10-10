@@ -143,8 +143,8 @@ import CreateTextureGroup
 -- * WINDOW OBJECTS
 -- * RECTANGLE BUFFER
 -- * GET GLFW EVENTS
--- * CREATE AND COPY BUFFERS
 -- * GRAPHICS PIPELINE
+-- * CREATE AND COPY BUFFERS
 -- * MAINLOOP
 -- * RECREATE
 -- * DRAW
@@ -866,7 +866,7 @@ createRctBffr pd dv gq cp (bg, mg) k rs =
 			@(Vk.ObjNA.List t n) @0 dv m zeroBits rs >>
 		copyBffrLst dv gq cp c b
 
-destroyRctBffr :: Ord k => RectGroups sd sm sb nm nmrct k -> k -> IO ()
+destroyRctBffr :: Ord k => RectGroups sd sm sb bnm nm k -> k -> IO ()
 destroyRctBffr (bg, mg) k =
 	(,) <$> Vk.Mm.unsafeFree mg k <*> Vk.Bffr.unsafeDestroy bg k >>= \case
 		(Left m, _) -> error m; (_, Left m) -> error m; _ -> pure ()

@@ -863,25 +863,21 @@ createRctBffr :: Ord k =>
 	RectGroups sd sm sb bnm nm k -> k -> [WRect] ->
 	IO (Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List WRect nm])
 createRctBffr pd dv gq cp (bg, mg) k rs =
-	createBufferList' pd dv bg mg k (fromIntegral $ length rs)
+	createBffrLst' pd dv bg mg k (fromIntegral $ length rs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mm.PropertyDeviceLocalBit >>= \(b, _) ->
-	b <$ createBufferList pd dv (fromIntegral $ length rs)
+	b <$ createBffrLst pd dv (fromIntegral $ length rs)
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
-		\(b' :: Vk.Bffr.Binded sm sb "rectangle-buffer" '[Vk.Obj.List 1 t nmr]) bm' -> do
-		Vk.Mm.write @"rectangle-buffer"
-			@(Vk.Obj.List 1 WRect nmr) @0 dv bm' zeroBits rs
-		copyBuffer dv gq cp b' b
+		\(c :: Vk.Bffr.Binded m b bn '[Vk.ObjNA.List t n]) m ->
+		Vk.Mm.write @bn
+			@(Vk.ObjNA.List t n) @0 dv m zeroBits rs >>
+		copyBffrLst dv gq cp c b
 
-destroyRectangleBuffer :: Ord k => RectGroups sd sm sb nm nmr k -> k -> IO ()
-destroyRectangleBuffer (bgrp, mgrp) k = do
-	r1 <- Vk.Mm.unsafeFree mgrp k
-	r2 <- Vk.Bffr.unsafeDestroy bgrp k
-	case (r1, r2) of
-		(Left msg, _) -> error msg
-		(_, Left msg) -> error msg
-		_ -> pure ()
+destroyRctBffr :: Ord k => RectGroups sd sm sb bnm nm k -> k -> IO ()
+destroyRctBffr (bg, mg) k =
+	(,) <$> Vk.Mm.unsafeFree mg k <*> Vk.Bffr.unsafeDestroy bg k >>= \case
+		(Left m, _) -> error m; (_, Left m) -> error m; _ -> pure ()
 
 type RectGroups sd sm sb bnm nm k = (
 	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.List 1 WRect nm],
@@ -889,53 +885,108 @@ type RectGroups sd sm sb bnm nm k = (
 		'[ '(sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.List 1 WRect nm])] )
 
 -- GET GLFW EVENTS
--- CREATE AND COPY BUFFERS
--- GRAPHICS PIPELINE
--- MAINLOOP
--- RECREATE
--- DRAW
--- DATA TYPES
--- SHADERS
 
-createGrPpl :: (Ord k, Vk.AllocationCallbacks.ToMiddle mac) =>
-	Vk.Ppl.Gr.Group sd mac sg k '[ '(
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)],
+setGlfwEvents :: Ord k =>
+	TChan (Event k) -> GlfwG.Win.W sw -> FramebufferResized ->
+	TVar (M.Map k (IO ())) -> k -> IO ()
+setGlfwEvents op w fr ges k = do
+	GlfwG.Win.setKeyCallback w $ Just \_ ky _ a _ -> atomically case a of
+		GlfwG.Ky.KeyState'Pressed -> writeTChan op $ EventKeyDown k ky
+		GlfwG.Ky.KeyState'Released -> writeTChan op $ EventKeyUp k ky
+		_ -> pure ()
+	GlfwG.Win.setFramebufferSizeCallback w $ Just \_ _ _ ->
+		atomically $ writeTVar fr True
+	atomically do
+		(vcls, vmbs) <- (,) <$> newTVar False <*> newTVar mbst0
+		modifyTVar ges . M.insert k $ glfwEvents k w op vcls vmbs
+	where mbst0 = foldr (uncurry M.insert) M.empty
+		$ (, GlfwG.Ms.MouseButtonState'Released)
+			<$> [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
+
+glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents k w op vcls vmbst = do
+	GlfwG.pollEvents
+	(cls, scls) <- (,)
+		<$> GlfwG.Win.shouldClose w <*> atomically (readTVar vcls)
+	atomically $ writeTVar vcls cls
+	when (not scls && cls)
+		$ atomically . writeTChan op $ EventDeleteWindow k
+	(mb, mbst) <- (,) <$> getMouseButtons w <*> atomically (readTVar vmbst)
+	atomically $ writeTVar vmbst mb
+	sendMouseButtonDown k mbst mb op `mapM_` mouseButtonAll
+	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb && not cls
+	then atomically . writeTChan op . uncurry (EventCursorPosition k)
+		=<< GlfwG.Ms.getCursorPos w
+	else pure ()
+	sendMouseButtonUp k mbst mb op `mapM_` mouseButtonAll
+	where mAny p = M.foldr (\x b -> p x || b) False
+
+getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
+getMouseButtons w = foldr (uncurry M.insert) M.empty
+	. zip mouseButtonAll <$> GlfwG.Ms.getButton w `mapM` mouseButtonAll
+
+type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
+
+mouseButtonAll :: [GlfwG.Ms.MouseButton]
+mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
+
+sendMouseButtonDown, sendMouseButtonUp ::
+	k -> MouseButtonStateDict -> MouseButtonStateDict ->
+	TChan (Event k) -> GlfwG.Ms.MouseButton -> IO ()
+sendMouseButtonDown k = sendMouseButton k EventMouseButtonDown
+	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
+
+sendMouseButtonUp k = sendMouseButton k EventMouseButtonUp
+	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
+
+sendMouseButton ::
+	k -> (k -> GlfwG.Ms.MouseButton -> Event k) ->
+	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
+	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
+	GlfwG.Ms.MouseButton -> IO ()
+sendMouseButton k ev pst st pbss bss op b =
+	if pbss M.! b == pst && bss M.! b == st
+	then atomically . writeTChan op $ ev k b else pure ()
+
+-- GRAPHICS PIPELINE
+
+createGrPpl :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
+	Vk.Ppl.Gr.Group sd ma sg k '[ '(
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+			'(WRect, 'Vk.VtxInp.RateInstance) ],
 		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ],
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3) ],
 			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) )] -> k ->
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] -> IO (
+	Vk.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] -> IO (
 		Vk.Ppl.Gr.G sg
-			'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
+			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+				'(WRect, 'Vk.VtxInp.RateInstance) ]
 			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
+				'(5, RectModel0), '(6, RectModel1),
+				'(7, RectModel2), '(8, RectModel3) ]
 			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]))
-createGrPpl gpgrp k sce rp pllyt =
-	Vk.Ppl.Gr.createGs' gpgrp k Nothing (U14 pplInfo :** HPList.Nil)
-			>>= \(fromRight -> (U3 gpl :** HPList.Nil)) -> pure gpl
-	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
-
-fromRight :: Either String a -> a
-fromRight (Left emsg) = error emsg
-fromRight (Right x) = x
+createGrPpl gpg k ex rp pl = (\(forceRight' -> (HPList.Singleton (U3 p))) -> p)
+	<$> Vk.Ppl.Gr.createGs' gpg k Nothing
+		(HPList.Singleton . U14 $ grPplInfo ex rp pl)
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[AtomUbo sdsl alu mnmvp], '[]) -> IO ()
+		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) -> IO ()
 recreateGraphicsPipeline dvc sce rp pllyt gpls = Vk.Ppl.Gr.unsafeRecreateGs
 	dvc Nothing (U14 pplInfo :** HPList.Nil) nil (U3 gpls :** HPList.Nil)
-	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp pllyt
+	where pplInfo = grPplInfo sce rp pllyt
 
-type AtomUbo s alu mnmvp = '(s, '[ 'Vk.DscStLyt.Buffer '[Vk.Obj.AtomMaybeName alu WViewProj mnmvp]])
-
-mkGraphicsPipelineCreateInfo' ::
-	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
+grPplInfo ::
+	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
 	Vk.Ppl.Gr.CreateInfo 'Nothing '[
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
@@ -944,8 +995,8 @@ mkGraphicsPipelineCreateInfo' ::
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ] )
-		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl alu mnmvp], '[]) sr '(sb, vs', ts', foo)
-mkGraphicsPipelineCreateInfo' sce rp pllyt = Vk.Ppl.Gr.CreateInfo {
+		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) sr '(sb, vs', ts', foo)
+grPplInfo sce rp pllyt = Vk.Ppl.Gr.CreateInfo {
 	Vk.Ppl.Gr.createInfoNext = TMaybe.N,
 	Vk.Ppl.Gr.createInfoFlags = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Gr.createInfoStages = shaderStages,
@@ -1058,6 +1109,13 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
+-- CREATE AND COPY BUFFERS
+-- MAINLOOP
+-- RECREATE
+-- DRAW
+-- DATA TYPES
+-- SHADERS
+
 copyBffrLst :: forall sd sc sm sb bnm t lnm sm' sb' bnm' . Storable' t =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t lnm] ->
@@ -1147,18 +1205,7 @@ mmAllcInfo mt = Vk.Mm.AllocateInfo {
 	Vk.Mm.allocateInfoNext = TMaybe.N,
 	Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-createBufferList :: forall sd nm t a nmm . Storable t =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
-	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 t nmm] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg nm '[Vk.Obj.List 1 t nmm] ) ] ->
-		IO a) -> IO a
-createBufferList p dv ln usg props =
-	createBuffer p dv (Vk.Obj.LengthList ln) usg props
-
-createBufferList' :: forall sd nm t sm sb k nmm . (Ord k, Storable t) =>
+createBffrLst' :: forall sd nm t sm sb k nmm . (Ord k, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.Group sd 'Nothing sb k nm '[Vk.Obj.List 1 t nmm]  ->
 	Vk.Mm.Group sd 'Nothing sm k '[ '(sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.List 1 t nmm])] ->
@@ -1168,19 +1215,8 @@ createBufferList' :: forall sd nm t sm sb k nmm . (Ord k, Storable t) =>
 		Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 t nmm],
 		Vk.Mm.M sm '[ '(
 			sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.List 1 t nmm] ) ] )
-createBufferList' p dv bgrp mgrp k ln usg props =
+createBffrLst' p dv bgrp mgrp k ln usg props =
 	createBuffer' p dv bgrp mgrp k (Vk.Obj.LengthList ln) usg props
-
-createBuffer :: forall sd nm o a . Vk.Obj.SizeAlignment o =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[o] ->
-		Vk.Mm.M sm
-			'[ '(sb, 'Vk.Mm.BufferArg nm '[o])] ->
-		IO a) -> IO a
-createBuffer p dv ln usg props f =
-	Vk.Bffr.group dv nil \bgrp -> Vk.Mm.group dv nil \mgrp ->
-	uncurry f =<< createBuffer' p dv bgrp mgrp () ln usg props
 
 createBuffer' :: forall sd sb nm o sm k .
 	(Ord k, Vk.Obj.SizeAlignment o) =>
@@ -1229,35 +1265,6 @@ findMemoryType phdvc flt props =
 		<*> checkBits props . Vk.Mm.mTypePropertyFlags . snd) tps
 		where tps = Vk.Phd.memoryPropertiesMemoryTypes props1
 
-copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a nmm . Storable' a =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.List 1 a nmm] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List 1 a nmm] -> IO ()
-copyBuffer dvc gq cp src dst = do
-	Vk.CmdBffr.allocate
-		dvc allocInfo \(cb :*. HPList.Nil) -> do
-		let	submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = TMaybe.N,
-				Vk.submitInfoWaitSemaphoreDstStageMasks =
-					HPList.Nil,
-				Vk.submitInfoCommandBuffers =
-					HPList.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HPList.Nil }
-		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '( '[Vk.Obj.List 1 a nmm], 0, 0)] cb src dst
-		Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) Nothing
-		Vk.Q.waitIdle gq
-	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
-	beginInfo = Vk.CmdBffr.BeginInfo {
-		Vk.CmdBffr.beginInfoNext = TMaybe.N,
-		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
-		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
-
 recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr nm sm' sb' nm' sdsl sds alu mnmvp nmr .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
@@ -1301,6 +1308,8 @@ recordCommandBuffer cb rp fb sce pllyt gpl vb (rb, ic) ib ubds =
 			Vk.rect2dExtent = sce },
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
+
+type AtomUbo s alu mnmvp = '(s, '[ 'Vk.DscStLyt.Buffer '[Vk.Obj.AtomMaybeName alu WViewProj mnmvp]])
 
 class Succable n where
 	zero' :: n
@@ -1456,7 +1465,7 @@ runLoop' dvs pll ws vbs rgrps rectss ubs loop = do
 		(ubds, ubm) = ubs
 	for_ (M.toList ws) \(k', wos) -> do
 		let	(tm, rects') = lookupRects rectss k'
-		destroyRectangleBuffer rgrps k'
+		destroyRctBffr rgrps k'
 		rb <- createRectangleBuffer dvs rgrps k' rects'
 		let	rb' = (rb, fromIntegral $ length rects')
 		catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
@@ -1729,70 +1738,6 @@ shaderModuleCreateInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
 	Vk.ShaderModule.createInfoFlags = def,
 	Vk.ShaderModule.createInfoCode = code }
-
--- GET GLFW EVENTS
-
-setGlfwEvents :: Ord k =>
-	TChan (Event k) -> GlfwG.Win.W sw -> FramebufferResized ->
-	TVar (M.Map k (IO ())) -> k -> IO ()
-setGlfwEvents op w fr ges k = do
-	GlfwG.Win.setKeyCallback w $ Just \_ ky _ a _ -> atomically case a of
-		GlfwG.Ky.KeyState'Pressed -> writeTChan op $ EventKeyDown k ky
-		GlfwG.Ky.KeyState'Released -> writeTChan op $ EventKeyUp k ky
-		_ -> pure ()
-	GlfwG.Win.setFramebufferSizeCallback w $ Just \_ _ _ ->
-		atomically $ writeTVar fr True
-	atomically do
-		(vcls, vmbs) <- (,) <$> newTVar False <*> newTVar mbst0
-		modifyTVar ges . M.insert k $ glfwEvents k w op vcls vmbs
-	where mbst0 = foldr (uncurry M.insert) M.empty
-		$ (, GlfwG.Ms.MouseButtonState'Released)
-			<$> [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
-glfwEvents k w op vcls vmbst = do
-	GlfwG.pollEvents
-	(cls, scls) <- (,)
-		<$> GlfwG.Win.shouldClose w <*> atomically (readTVar vcls)
-	atomically $ writeTVar vcls cls
-	when (not scls && cls)
-		$ atomically . writeTChan op $ EventDeleteWindow k
-	(mb, mbst) <- (,) <$> getMouseButtons w <*> atomically (readTVar vmbst)
-	atomically $ writeTVar vmbst mb
-	sendMouseButtonDown k mbst mb op `mapM_` mouseButtonAll
-	if mAny (== GlfwG.Ms.MouseButtonState'Pressed) mb && not cls
-	then atomically . writeTChan op . uncurry (EventCursorPosition k)
-		=<< GlfwG.Ms.getCursorPos w
-	else pure ()
-	sendMouseButtonUp k mbst mb op `mapM_` mouseButtonAll
-	where mAny p = M.foldr (\x b -> p x || b) False
-
-getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
-getMouseButtons w = foldr (uncurry M.insert) M.empty
-	. zip mouseButtonAll <$> GlfwG.Ms.getButton w `mapM` mouseButtonAll
-
-type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
-
-mouseButtonAll :: [GlfwG.Ms.MouseButton]
-mouseButtonAll = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
-
-sendMouseButtonDown, sendMouseButtonUp ::
-	k -> MouseButtonStateDict -> MouseButtonStateDict ->
-	TChan (Event k) -> GlfwG.Ms.MouseButton -> IO ()
-sendMouseButtonDown k = sendMouseButton k EventMouseButtonDown
-	GlfwG.Ms.MouseButtonState'Released GlfwG.Ms.MouseButtonState'Pressed
-
-sendMouseButtonUp k = sendMouseButton k EventMouseButtonUp
-	GlfwG.Ms.MouseButtonState'Pressed GlfwG.Ms.MouseButtonState'Released
-
-sendMouseButton ::
-	k -> (k -> GlfwG.Ms.MouseButton -> Event k) ->
-	GlfwG.Ms.MouseButtonState -> GlfwG.Ms.MouseButtonState ->
-	MouseButtonStateDict -> MouseButtonStateDict -> TChan (Event k) ->
-	GlfwG.Ms.MouseButton -> IO ()
-sendMouseButton k ev pst st pbss bss op b =
-	if pbss M.! b == pst && bss M.! b == st
-	then atomically . writeTChan op $ ev k b else pure ()
 
 [glslVertexShader|
 
