@@ -1195,10 +1195,10 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 			GlfwG.pollEvents
 			bool go (pure ()) =<< and <$> GlfwG.Win.shouldClose
 				`mapM` (wobjsToWin <$> ws)
-		Draw ds -> do
+		Draw drs -> do
 			Vk.Dvc.waitIdle dv
 			ws <- atomically $ readTVar vws
-			run @n @sv @sf op dvs pl ws vbs rgs (rects ds) dsg vpm go
+			run @n @sv @sf op dvs pl ws vbs rgs (rects drs) dsg vpm go
 		SetPicture k pct ->
 			drtx k >> crtx k pct >> Vk.Dvc.waitIdle dv >> go
 	where rects = M.map \(vp, rs) ->
