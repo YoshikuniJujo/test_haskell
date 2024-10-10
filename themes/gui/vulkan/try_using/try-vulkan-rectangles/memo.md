@@ -435,18 +435,18 @@ src
         - [x] destroyRectangleBuffer
         - [x] RectGroups
     + [x] GET GLFW EVENTS
-    + [ ] GRAPHICS PIPELINE
-        - [x] createGrPpl
-        - [x] recreateGrPpl
-        - [ ] grPplInfo
-        - [ ] shaderStages
-        - [ ] inputAssembly
-        - [ ] mkViewportState
-        - [ ] rasterizer
-        - [ ] multisampling
-        - [ ] colorBlending
-        - [ ] colorBlendAttachment
-    + [ ] CREATE AND COPY BUFFERS
+    + [x] GRAPHICS PIPELINE
+    + [x] CREATE AND COPY BUFFERS
+        - [x] createBffrAtm
+        - [x] createBffrLst
+        - [x] createBffrLst'
+        - [x] createBffr
+        - [x] createBffr'
+        - [x] bffrInfo
+        - [x] findMmType
+        - [x] mmAllcInfo
+        - [x] copyBffrLst
+        - [x] singleTimeCmds
     + [ ] MAINLOOP
     + [ ] RECREATE
     + [ ] DRAW
