@@ -458,6 +458,12 @@ src
         - [x] wobjsToWin
         - [x] run
     + [ ] RECREATE
+        - [x] catchAndRecreate
+        - [x] recreateAllIfNeed
+        - [ ] recreateAll
+        - [ ] waitFramebufferSize
+        - [ ] Recreates
+        - [ ] wobjsToRecrs
     + [ ] DRAW
     + [ ] DATA TYPES
     + [ ] SHADERS

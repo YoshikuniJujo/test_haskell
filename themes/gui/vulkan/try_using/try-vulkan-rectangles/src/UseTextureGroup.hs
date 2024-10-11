@@ -1261,7 +1261,7 @@ catchAndRecreate ::
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt -> IO () -> IO ()
 catchAndRecreate pd qfis dv pl rcs act = catchJust
-	(\case	Vk.ErrorOutOfDateKhr -> Just ();
+	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
 	\_ -> recreateAll @n @sv @sf pd qfis dv pl rcs
 
