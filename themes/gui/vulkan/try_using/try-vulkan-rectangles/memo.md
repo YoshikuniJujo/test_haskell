@@ -457,13 +457,13 @@ src
         - [x] VertexBuffers
         - [x] wobjsToWin
         - [x] run
-    + [ ] RECREATE
+    + [x] RECREATE
         - [x] catchAndRecreate
         - [x] recreateAllIfNeed
-        - [ ] recreateAll
-        - [ ] waitFramebufferSize
-        - [ ] Recreates
-        - [ ] wobjsToRecrs
+        - [x] recreateAll
+        - [x] waitFrmbffrSize
+        - [x] Recreates
+        - [x] wobjsToRecrs
     + [ ] DRAW
     + [ ] DATA TYPES
     + [ ] SHADERS

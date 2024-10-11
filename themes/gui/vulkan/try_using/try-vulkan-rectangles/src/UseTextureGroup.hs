@@ -1257,7 +1257,7 @@ catchAndRecreate ::
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
-	Recreates sw ssfc scfmt ssc nmi
+	Recrs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt -> IO () -> IO ()
 catchAndRecreate pd qfis dv pl rcs act = catchJust
@@ -1283,10 +1283,10 @@ recreateAll :: forall
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
-	Recreates sw ssfc scfmt ssc nmi
+	Recrs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt -> IO ()
-recreateAll pd qfis dv pl (Recreates w sfc vex sc scvs rp fbs gp) = do
+recreateAll pd qfis dv pl (Recrs w sfc vex sc scvs rp fbs gp) = do
 	waitFrmbffrSize w >> Vk.Dvc.waitIdle dv
 	ex <- recreateSwpch w sfc pd qfis dv sc
 	atomically $ writeTVar vex ex
@@ -1300,31 +1300,29 @@ waitFrmbffrSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-data Recreates sw ssfc scfmt ssc nmi svs sr sfs sg sl sdsl alu mnmvp nmt =
-	Recreates
-		(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
-		(Vk.Khr.Swpch.S scfmt ssc)
-		(HPList.PL (Vk.ImgVw.I nmi scfmt) svs) (Vk.RndrPss.R sr)
-		(HPList.PL Vk.Frmbffr.F sfs)
-		(Vk.Ppl.Gr.G sg
-			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-				'(WRect, 'Vk.VtxInp.RateInstance) ]
-			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-				'(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1),
-				'(7, RectModel2), '(8, RectModel3),
-				'(9, TexCoord) ]
-			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]))
+data Recrs sw ssfc scfmt ssc nmv svs sr sfs sg sl sdsl alu mnmvp nmt = Recrs
+	(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
+	(Vk.Khr.Swpch.S scfmt ssc)
+	(HPList.PL (Vk.ImgVw.I nmv scfmt) svs) (Vk.RndrPss.R sr)
+	(HPList.PL Vk.Frmbffr.F sfs)
+	(Vk.Ppl.Gr.G sg
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+			'(WRect, 'Vk.VtxInp.RateInstance) ]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
+			'(3, RectSize), '(4, RectColor),
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
+		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]))
 
 wobjsToRecrs ::
-	WinObjs sw ssfc scfmt ssc nmi sscvs sr sfs
+	WinObjs sw ssfc scfmt ssc nmv sscvs sr sfs
 		sg sl sdsl alu mnm nmt sias srfs siff ->
-	Recreates sw ssfc scfmt ssc nmi sscvs sr sfs sg sl sdsl alu mnm nmt
+	Recrs sw ssfc scfmt ssc nmv sscvs sr sfs sg sl sdsl alu mnm nmt
 wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scvs, rp, fbs) gp _) =
-	Recreates w sfc vex sc scvs rp fbs gp
+	Recrs w sfc vex sc scvs rp fbs gp
 
 -- DRAW
-	
+
 draw :: forall
 	sd sl sdsl alu mnmvp nmt scfmt ssc sr sfs sg sias srfs siff
 	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi smvp sbvp bnmvp

@@ -1333,7 +1333,7 @@ catchAndRecreate ::
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
-	Recreates sw ssfc scfmt ssc nmi
+	Recrs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp -> IO () -> IO ()
 catchAndRecreate pd qfis dv pl rcs act = catchJust
@@ -1354,43 +1354,31 @@ recreateAllIfNeed pd qfis dv pl wos@(WinObjs (_, fr) _ _ _ _ _) =
 		(recreateAll @n @sv @sf pd qfis dv pl $ wobjsToRecrs wos)
 
 recreateAll :: forall
-	n siv sf
-
-	scfmt sw ssfc sd ssc nm sr sl sdsl sg alu mnmvp .
-	(
-	Vk.T.FormatToValue scfmt, HPList.HomoListN n ) =>
+	n sv sf sd sl sdsl alu mnmvp sw ssfc sr ssc nmi scfmt sg .
+	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
-	Recreates sw ssfc scfmt ssc nm
-		(HPList.Replicate n siv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnmvp
-		->
-	IO ()
-recreateAll
-	phdvc qfis dvc pllyt
-	(Recreates win sfc vex sc scivs rp fbs gpl) = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
+	Recrs sw ssfc scfmt ssc nmi
+		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
+		sg sl sdsl alu mnmvp -> IO ()
+recreateAll pd qfis dv pl (Recrs w sfc vex sc scvs rp fbs gp) = do
+	waitFrmbffrSize w >> Vk.Dvc.waitIdle dv
+	ex <- recreateSwpch w sfc pd qfis dv sc
+	atomically $ writeTVar vex ex
+	Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is scvs
+	recreateFrmbffrs @n @_ @_ @_ @_ @sv @sf dv ex rp scvs fbs
+	recreateGrPpl dv ex rp pl gp
 
-	ext <- recreateSwpch win sfc phdvc qfis dvc sc
-	atomically $ writeTVar vex ext
-	Vk.Khr.Swpch.getImages dvc sc >>= \imgs ->
-		recreateImgVws dvc imgs scivs
-	recreateGrPpl dvc ext rp pllyt gpl
-	recreateFrmbffrs @n @_ @_ @_ @_ @siv @sf dvc ext rp scivs fbs
-
-waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
-waitFramebufferSize win = GlfwG.Win.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
+waitFrmbffrSize :: GlfwG.Win.W sw -> IO ()
+waitFrmbffrSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-data Recreates sw ssfc fmt ssc nm sis sr sfs sg sl
-	sdsl alu mnmvp = Recreates
+data Recrs sw ssfc scfmt ssc nmv svs sr sfs sg sl sdsl alu mnmvp = Recrs
 	(GlfwG.Win.W sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
-	(Vk.Khr.Swpch.S fmt ssc)
-	(HPList.PL (Vk.ImgVw.I nm fmt) sis)
-	(Vk.RndrPss.R sr)
+	(Vk.Khr.Swpch.S scfmt ssc)
+	(HPList.PL (Vk.ImgVw.I nmv scfmt) svs) (Vk.RndrPss.R sr)
 	(HPList.PL Vk.Frmbffr.F sfs)
 	(Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
@@ -1402,15 +1390,11 @@ data Recreates sw ssfc fmt ssc nm sis sr sfs sg sl
 		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]))
 
 wobjsToRecrs ::
-	WinObjs sw ssfc scfmt ssc
-		nm sscivs sr sfs
-		sg sl sdsl alu mnmvp sias srfs siff
-		->
-	Recreates sw ssfc scfmt ssc nm
-		sscivs sr sfs
-		sg sl sdsl alu mnmvp
-wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scivs, rp, fbs) gpl _iasrfsifs) =
-	Recreates w sfc vex sc scivs rp fbs gpl
+	WinObjs sw ssfc scfmt ssc nmv sscvs sr sfs
+		sg sl sdsl alu mnmvp sias srfs siff ->
+	Recrs sw ssfc scfmt ssc nmv sscvs sr sfs sg sl sdsl alu mnmvp
+wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scvs, rp, fbs) gp _) =
+	Recrs w sfc vex sc scvs rp fbs gp
 
 -- DRAW
 
