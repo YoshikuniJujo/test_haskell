@@ -14,27 +14,25 @@
 
 module Main (main) where
 
-import Rectangles
-
 import Control.Monad
 import Control.Monad.Fix
+import Control.Monad.Trans
 import Control.Concurrent
 import Control.Concurrent.STM
-import Data.List.Length
 import Data.Default
+import Data.List.Length
+import Data.Map qualified as M
 import Data.Bool
 import Data.Time
-
-import Gpu.Vulkan qualified as Vk
-import Gpu.Vulkan.Cglm qualified as Cglm
-
 import Options.Declarative
-import Control.Monad.Trans
 
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 
-import Data.Map qualified as M
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.Cglm qualified as Cglm
+
+import Rectangles
 
 ----------------------------------------------------------------------
 --
@@ -66,52 +64,36 @@ realMain f = liftIO do
 
 body :: Bool -> (Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
 	(Int -> STM Vk.Extent2d) -> IO ()
-body f inp (oute, outp) ext = do
-	tm0 <- getCurrentTime
-	atomically $ inp OpenWindow
-	atomically $ inp OpenWindow
-	atomically $ inp OpenWindow
-	($ rects1) $ fix \loop rs -> do
+body f ip (oe, op) ex = getCurrentTime >>= \tm0 -> do
+	atomically $ ip OpenWindow
+	atomically $ ip OpenWindow
+	atomically $ ip OpenWindow
+	($ rects1) $ fix \go rs -> do
 		threadDelay 10000
-		now <- getCurrentTime
-		let	tm = realToFrac $ now `diffUTCTime` tm0
+		tm <- realToFrac . (`diffUTCTime` tm0) <$> getCurrentTime
 		o <- atomically do
-			e0 <- ext 0
-			e1 <- ext 1
-			inp . Draw $ M.fromList [
-				(0, ((bool (viewProj e0) def f), (rs tm))),
-				(1, ((bool (viewProj e1) def f), (rects2 tm)))
-				]
-			bool (Just <$> outp) (pure Nothing) =<< oute
+			(e0, e1) <- (,) <$> ex 0 <*> ex 1
+			ip . Draw $ M.fromList [
+				(0, (bool (viewProj e0) def f, rs tm)),
+				(1, (bool (viewProj e1) def f, rects2 tm)) ]
+			bool (Just <$> op) (pure Nothing) =<< oe
 		case o of
-			Nothing -> loop rs
-			Just (EventKeyDown w GlfwG.Ky.Key'D) -> do
-				putStrLn ("KEY DOWN: " ++ show w ++ " d")
-				atomically . inp $ DestroyWindow w
-				loop rs
-			Just EventEnd -> putStrLn "THE WORLD ENDS"
-			Just (EventKeyDown w ky) -> do
-				putStrLn ("KEY DOWN: " ++ show w ++ " " ++ show ky)
-				loop rs
-			Just (EventKeyUp w ky) -> do
-				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
-				loop rs
+			Nothing -> go rs
+			Just EventEnd -> pure ()
+			Just (EventOpenWindow _) -> go rs
+			Just (EventDeleteWindow k) ->
+				atomically (ip $ DestroyWindow k) >> go rs
+			Just (EventKeyDown w GlfwG.Ky.Key'D) ->
+				atomically (ip $ DestroyWindow w) >> go rs
+			Just (EventKeyDown _ _) -> go rs
+			Just (EventKeyUp _ _) -> go rs
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
-				loop rects1
+				go rects1
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
-				loop rects2
-			Just (EventMouseButtonDown _ _) -> loop rs
-			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition k x y) ->
-				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
-				loop rs
-			Just (EventOpenWindow k) -> do
-				putStrLn $ "open window: " ++ show k
-				loop rs
-			Just (EventDeleteWindow k) -> do
-				putStrLn $ "delete window: " ++ show k
-				atomically . inp $ DestroyWindow k
-				loop rs
+				go rects2
+			Just (EventMouseButtonDown _ _) -> go rs
+			Just (EventMouseButtonUp _ _) -> go rs
+			Just (EventCursorPosition _ _ _) -> go rs
 
 viewProj :: Vk.Extent2d -> ViewProjection
 viewProj Vk.Extent2d {

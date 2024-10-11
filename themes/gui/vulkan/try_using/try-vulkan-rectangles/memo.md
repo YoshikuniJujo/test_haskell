@@ -36,18 +36,18 @@ app
         - [x] scale
         - [x] rotate
     + [x] import list
-* [ ] try-multi-rectangles.hs
+* [x] try-multi-rectangles.hs
     + [x] MAIN
         - [x] main
         - [x] realMain
-    + [ ] BODY
-        - [ ] body
+    + [x] BODY
+        - [x] body
         - [x] viewProj
     + [x] RECTANGLES
         - [x] rects1
         - [x] rects2
         - [x] rotModel
-    + [ ] import list
+    + [x] import list
 * [ ] try-multi-rectangles2.hs
 
 src
