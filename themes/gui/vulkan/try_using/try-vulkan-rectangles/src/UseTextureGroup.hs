@@ -404,19 +404,14 @@ createDSLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscStLyt.D s (DscStLytArg alu mnmvp nmt)  -> IO a) -> IO a
 createDSLyt dv = Vk.DscStLyt.create dv info nil
 	where
-	info :: Vk.DscStLyt.CreateInfo 'Nothing (DscStLytArg alu mnmvp nmt)
 	info = Vk.DscStLyt.CreateInfo {
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
 		Vk.DscStLyt.createInfoFlags = zeroBits,
 		Vk.DscStLyt.createInfoBindings = vpb :** txb :** HPList.Nil }
-	vpb :: Vk.DscStLyt.Binding
-		('Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu WViewProj mnmvp])
 	vpb = Vk.DscStLyt.BindingBuffer {
 		Vk.DscStLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
-	txb :: Vk.DscStLyt.Binding
-		('Vk.DscStLyt.Image '[ '(nmt, Vk.T.FormatR8g8b8a8Srgb)])
 	txb = Vk.DscStLyt.BindingImage {
 		Vk.DscStLyt.bindingImageDescriptorType =
 			Vk.Dsc.TypeCombinedImageSampler,
@@ -456,7 +451,7 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 	f b
 
 createViewProjBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu mnmvp]  ->
+	Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu mnmvp] ->
 	ViewProjMemory sm sb bnmvp alu mnmvp -> IO a) -> IO a
 createViewProjBffr pd dv = createBffrAtm pd dv
 	Vk.Bffr.UsageUniformBufferBit
@@ -505,7 +500,7 @@ provideWinObjs op vexs pd dv gq cp qfis pl wg gs dsl dp dsg vp rgs ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
 	winObjs @n vexs pd dv qfis pl w fr gs k <* do
 	_ <- createDscSt' dv dsl dsg k dp vp
-	_ <- createRctBffr pd dv gq cp rgs k $ rectToRectRaw <$> dummy
+	_ <- createRctBffr pd dv gq cp rgs k dummy
 	setGlfwEvents op w fr ges k
 
 initWin :: Ord k => Bool -> GlfwG.Win.Group sw k -> k -> IO (GlfwG.Win.W sw)
@@ -1202,7 +1197,7 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 		SetPicture k pct ->
 			drtx k >> crtx k pct >> Vk.Dvc.waitIdle dv >> go
 	where rects = M.map \(vp, rs) ->
-		(StrG.W vp, rectToRectRaw <$> bool rs dummy (null rs))
+		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy (null rs))
 
 class Succable n where zero' :: n; succ' :: n -> n
 
@@ -1249,13 +1244,11 @@ run op (pd, qfis, dv, gq, pq, cp, cb) pl ws (vb, ib) rgs rss dsg vpm go = do
 		(fromJust -> HPList.Singleton ds) <- Vk.DscSt.lookup dsg k
 		catchAndRecreate @n @sv @sf pd qfis dv pl (wobjsToRecrs os)
 			$ draw dv gq pq pl (wobjsToDrs os) vb rb ib vpm ds cb vp
-		Vk.Dvc.waitIdle dv
+	Vk.Dvc.waitIdle dv
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (wobjsToWin <$> ws)
-	if cls then (pure ()) else do
-		for_ ws \os -> recreateAllIfNeed @n @sv @sf op pd qfis dv pl os
-		go
-	where
-	vprs = fromMaybe (StrG.W viewProjIdentity, rectToRectRaw <$> dummy) . (`M.lookup` rss)
+	when (not cls)
+		$ for_ ws (recreateAllIfNeed @n @sv @sf op pd qfis dv pl) >> go
+	where vprs = fromMaybe (viewProjIdentity, dummy) . (`M.lookup` rss)
 
 -- RECREATE
 
@@ -1532,8 +1525,8 @@ newtype RectModel2 = RectModel2 Cglm.Vec4
 newtype RectModel3 = RectModel3 Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-dummy :: [Rectangle]
-dummy = [Rectangle
+dummy :: [WRect]
+dummy = rectToRectRaw <$> [Rectangle
 	(RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 	(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 	(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
@@ -1545,8 +1538,8 @@ data ViewProjection = ViewProjection {
 	viewProjectionView :: Cglm.Mat4, viewProjectionProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
-viewProjIdentity :: ViewProjection
-viewProjIdentity = ViewProjection {
+viewProjIdentity :: WViewProj
+viewProjIdentity = StrG.W ViewProjection {
 	viewProjectionView = Cglm.mat4Identity,
 	viewProjectionProj = Cglm.mat4Identity }
 

@@ -379,8 +379,8 @@ src
         - [x] findQFams
         - [x] createLgDvc
         - [x] swpchImgNum
-    + [ ] BODY
-        - [ ] body
+    + [x] BODY
+        - [x] body
         - [x] createCmdPl
         - [x] createCmdBffr
         - [x] unfrmBffrOstAlgn
@@ -447,17 +447,16 @@ src
         - [x] mmAllcInfo
         - [x] copyBffrLst
         - [x] singleTimeCmds
-    + [ ] MAINLOOP
-        - [ ] mainloop
-        - [ ] rectsToDummy
-        - [ ] class Succable
-        - [ ] instance Succable Bool
-        - [ ] instance Succable Int
-        - [ ] Devices
-        - [ ] PipelineLayout
-        - [ ] VertexBuffers
-        - [ ] wobjsToWin
-        - [ ] run
+    + [x] MAINLOOP
+        - [x] mainloop
+        - [x] class Succable
+        - [x] instance Succable Bool
+        - [x] instance Succable Int
+        - [x] Devices
+        - [x] PipelineLayout
+        - [x] VertexBuffers
+        - [x] wobjsToWin
+        - [x] run
     + [ ] RECREATE
     + [ ] DRAW
     + [ ] DATA TYPES
