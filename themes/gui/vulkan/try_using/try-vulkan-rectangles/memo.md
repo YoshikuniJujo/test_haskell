@@ -496,14 +496,14 @@ src
         - [ ] createIst
         - [ ] validationLayers
         - [ ] debugMessengerCreateInfo
-        - [ ] pickPhysicalDevice
-        - [ ] findDevice
-        - [ ] isDevicedSuitable
+        - [ ] pickPhd
+        - [ ] QFamIdcs
+        - [ ] findQFams
+        - [ ] querySwpchSupport
+        - [ ] SwpchSupportDetails
+        - [ ] dvcExtensions
         - [ ] QueueFamilyIndices
-        - [ ] QueueFamilyIndicesMaybe
-        - [ ] completeQueueFamilies
-        - [ ] findQueueFamilies
-        - [ ] checkDeviceExtensions
+        - [ ] deviceExtensions
         - [ ] createLogicalDevice
         - [ ] mkHeteroParList
         - [ ] getSwapchainImageNum
