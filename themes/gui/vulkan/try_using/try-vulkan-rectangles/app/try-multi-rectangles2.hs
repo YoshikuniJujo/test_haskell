@@ -64,11 +64,11 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 	atomically $ inp OpenWindow
 
 	forkIO $ forever do
-		threadDelay 5000
+		threadDelay 10000
 		atomically $ inp GetEvent
 
 	($ instances) $ fix \loop rs -> do
-		threadDelay 2000
+		threadDelay 10000
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
