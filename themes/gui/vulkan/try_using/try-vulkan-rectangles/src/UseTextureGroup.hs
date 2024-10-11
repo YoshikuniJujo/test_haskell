@@ -17,7 +17,7 @@ module UseTextureGroup (
 
 	-- * RUN
 
-	useTextureGroup,
+	useTextureGroup, Succable,
 
 	-- * COMMAND AND EVENT
 

@@ -366,7 +366,7 @@ src
     + [x] IMAGE TYPE
     + [x] import list
     + [x] export list
-* [ ] Rectangles
+* [x] Rectangles
     + [x] RECTANGLES
         - [x] rectangles
         - [x] Command
@@ -474,8 +474,8 @@ src
         - [x] bffrLstLn
     + [x] DATA TYPES
     + [x] SHADERS
-    + [ ] import list
-    + [ ] export list
+    + [x] import list
+    + [x] export list
 * [ ] Rectangles2
     + [x] repair get events
     + [ ] others
