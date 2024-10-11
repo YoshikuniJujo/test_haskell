@@ -489,4 +489,35 @@ src
     + [x] export list
 * [ ] Rectangles2
     + [x] repair get events
-    + [ ] others
+    + [ ] RECTANGLES2
+        - [ ] rectangles2
+        - [ ] Command
+        - [ ] Event
+        - [ ] createIst
+        - [ ] validationLayers
+        - [ ] debugMessengerCreateInfo
+        - [ ] pickPhysicalDevice
+        - [ ] findDevice
+        - [ ] isDevicedSuitable
+        - [ ] QueueFamilyIndices
+        - [ ] QueueFamilyIndicesMaybe
+        - [ ] completeQueueFamilies
+        - [ ] findQueueFamilies
+        - [ ] checkDeviceExtensions
+        - [ ] createLogicalDevice
+        - [ ] mkHeteroParList
+        - [ ] getSwapchainImageNum
+    + [ ] BODY
+    + [ ] PROVIDE WINDOW OBJECTS
+    + [ ] WINDOW OBJECTS
+    + [ ] RECTANGLE BUFFER
+    + [ ] GET GLFW BUFFER
+    + [ ] CREATE AND COPY BUFFERS
+    + [ ] GRAPHICS PIPELINE
+    + [ ] MAINLOOP
+    + [ ] RECREATE
+    + [ ] DRAW
+    + [ ] DATA TYPES
+    + [ ] SHADERS
+    + [ ] import list
+    + [ ] export list

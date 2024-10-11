@@ -49,6 +49,13 @@ action f = liftIO do
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	rectangles2 inp outp vext
 
+readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
+readTVarOr d mp k = do
+	mv <- (M.lookup k) <$> readTVar mp
+	case mv of
+		Nothing -> pure d
+		Just v -> readTVar v
+
 untilEnd :: Bool -> ((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
 untilEnd f ((inp, (oute, outp)), ext) = do
 	tm0 <- getCurrentTime

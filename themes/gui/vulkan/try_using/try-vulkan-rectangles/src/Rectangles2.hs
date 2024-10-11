@@ -15,7 +15,7 @@
 
 module Rectangles2 (
 
-	-- * RECTANGLES
+	-- * RECTANGLES2
 
 	rectangles2,
 
@@ -37,10 +37,6 @@ module Rectangles2 (
 
 	Event(..),
 
-	-- * OTHERS
-
-	readTVarOr
-
 	) where
 
 import GHC.Generics
@@ -50,7 +46,6 @@ import Foreign.Storable.Generic qualified as StrG
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
-import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
@@ -145,10 +140,30 @@ import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
 
 import Graphics.UI.GLFW qualified as Glfw (setWindowShouldClose)
 
+----------------------------------------------------------------------
+--
+-- * RECTANGLES2
+-- * BODY
+-- * PROVIDE WINDOW OBJECTS
+-- * WINDOW OBJECTS
+-- * RECTANGLE BUFFER
+-- * GET GLFW EVENTS
+-- * CREATE AND COPY BUFFERS
+-- * GRAPHICS PIPELINE
+-- * MAINLOOP
+-- * RECREATE
+-- * DRAW
+-- * DATA TYPES
+-- * SHADERS
+--
+----------------------------------------------------------------------
+
+-- RECTANGLES2
+
 rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
 rectangles2 inp outp vext = GlfwG.init error $ do
-	createInstance \ist ->
+	createIst \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
 			debug do
 		(phd', qfis', fmt', dv', gq', pq', n') <-
@@ -171,25 +186,184 @@ rectangles2 inp outp vext = GlfwG.init error $ do
 						$ formats spp, dv, gq, pq, n )
 		getNum n' \(_ :: Proxy n) ->
 			Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
-				run' @n @fmt @_ @_ @k inp outp vext
+				body @n @fmt @_ @_ @k inp outp vext
 					ist phd' qfis' dv' gq' pq'
 	atomically $ writeTChan outp EventEnd
-	where setupDebugMessenger ist f =
+	where
+	setupDebugMessenger ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
+	createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
+		(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
+	createSurface win ist f =
+		Vk.Khr.Sfc.group ist nil \sfcgrp ->
+		Vk.Khr.Sfc.Glfw.Win.create' sfcgrp () win >>= f . fromRight
+	getNum :: [a] -> (forall (n :: [()]) . (Mappable n, NumToValue n) => Proxy n -> b) -> b
+	getNum [] f = f (Proxy :: Proxy '[])
+	getNum (_ : xs) f =
+		getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
 
-readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
-readTVarOr d mp k = do
-	mv <- (M.lookup k) <$> readTVar mp
-	case mv of
-		Nothing -> pure d
-		Just v -> readTVar v
+data Command k
+	= OpenWindow | DestroyWindow k | GetEvent
+	| Draw (M.Map k (ViewProjection, [Rectangle]))
+	deriving Show
 
-waitAndRead :: Ord k => TVar (M.Map k (TVar a)) -> k -> STM a
-waitAndRead vmv k = do
-	mv <- (M.lookup k) <$> readTVar vmv
-	case mv of
-		Nothing -> retry
-		Just v -> readTVar v
+data Event k
+	= EventOpenWindow k | EventDeleteWindow k | EventEnd
+	| EventKeyDown k GlfwG.Ky.Key | EventKeyUp k GlfwG.Ky.Key
+	| EventMouseButtonDown k GlfwG.Ms.MouseButton
+	| EventMouseButtonUp k GlfwG.Ms.MouseButton
+	| EventCursorPosition k Double Double
+	deriving Show
+
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
+	when debug $ bool
+		(error "validation layers requested, but not available!")
+		(pure ())
+		=<< null . (validationLayers L.\\)
+				. (Vk.layerPropertiesLayerName <$>)
+			<$> Vk.Ist.enumerateLayerProperties
+	exts <- bool id (Vk.Ext.DUtls.extensionName :)
+			debug . (Vk.Ist.ExtensionName <$>)
+		<$> GlfwG.getRequiredInstanceExtensions
+	print exts
+	Vk.Ist.create (crinfo exts) nil f
+	where
+	crinfo :: [Vk.Ist.ExtensionName] -> Vk.Ist.CreateInfo
+		('Just (Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ())) 'Nothing
+	crinfo es = Vk.Ist.CreateInfo {
+		Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
+		Vk.Ist.createInfoFlags = zeroBits,
+		Vk.Ist.createInfoApplicationInfo = Just appinfo,
+		Vk.Ist.createInfoEnabledLayerNames =
+			bool [] validationLayers debug,
+		Vk.Ist.createInfoEnabledExtensionNames = es }
+	appinfo = Vk.ApplicationInfo {
+		Vk.applicationInfoNext = TMaybe.N,
+		Vk.applicationInfoApplicationName = "Hello Triangle",
+		Vk.applicationInfoApplicationVersion =
+			Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoEngineName = "No Engine",
+		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+
+validationLayers :: [Vk.LayerName]
+validationLayers = [Vk.layerKhronosValidation]
+
+debugMessengerCreateInfo :: Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ()
+debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
+	Vk.Ex.DUtls.Msgr.createInfoNext = TMaybe.N,
+	Vk.Ex.DUtls.Msgr.createInfoFlags = zeroBits,
+	Vk.Ex.DUtls.Msgr.createInfoMessageSeverity =
+		Vk.Ext.DUtls.MessageSeverityVerboseBit .|.
+		Vk.Ext.DUtls.MessageSeverityWarningBit .|.
+		Vk.Ext.DUtls.MessageSeverityErrorBit,
+	Vk.Ex.DUtls.Msgr.createInfoMessageType =
+		Vk.Ext.DUtls.MessageTypeGeneralBit .|.
+		Vk.Ext.DUtls.MessageTypeValidationBit .|.
+		Vk.Ext.DUtls.MessageTypePerformanceBit,
+	Vk.Ex.DUtls.Msgr.createInfoFnUserCallback = debugCallback,
+	Vk.Ex.DUtls.Msgr.createInfoUserData = Nothing }
+	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
+		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
+
+pickPhysicalDevice :: Vk.Ist.I si ->
+	Vk.Khr.Sfc.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
+pickPhysicalDevice ist sfc = do
+	dvcs <- Vk.PhDvc.enumerate ist
+	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
+	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
+		Just pdvc -> pure pdvc
+		Nothing -> error "failed to find a suitable GPU!"
+
+findDevice :: Monad m =>
+	(Vk.PhDvc.P -> m (Maybe a)) -> [Vk.PhDvc.P] ->
+	m (Maybe (Vk.PhDvc.P, a))
+findDevice prd = \case
+	[] -> pure Nothing
+	p : ps -> prd p >>= \case
+		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
+
+isDeviceSuitable ::
+	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QueueFamilyIndices)
+isDeviceSuitable phdvc sfc = do
+	_deviceProperties <- Vk.PhDvc.getProperties phdvc
+	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
+	is <- findQueueFamilies phdvc sfc
+	extensionSupported <- checkDeviceExtensionSupport phdvc
+	if extensionSupported
+	then (<$> querySwapChainSupport phdvc sfc) \spp ->
+		bool (completeQueueFamilies is) Nothing
+			$ null (formats spp) || null (presentModes spp)
+	else pure Nothing
+
+data QueueFamilyIndices = QueueFamilyIndices {
+	graphicsFamily :: Vk.QueueFamily.Index,
+	presentFamily :: Vk.QueueFamily.Index }
+
+data QueueFamilyIndicesMaybe = QueueFamilyIndicesMaybe {
+	graphicsFamilyMaybe :: Maybe Vk.QueueFamily.Index,
+	presentFamilyMaybe :: Maybe Vk.QueueFamily.Index }
+
+completeQueueFamilies :: QueueFamilyIndicesMaybe -> Maybe QueueFamilyIndices
+completeQueueFamilies = \case
+	QueueFamilyIndicesMaybe {
+		graphicsFamilyMaybe = Just gf, presentFamilyMaybe = Just pf } ->
+		Just QueueFamilyIndices {
+			graphicsFamily = gf, presentFamily = pf }
+	_ -> Nothing
+
+findQueueFamilies ::
+	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
+findQueueFamilies device sfc = do
+	queueFamilies <- Vk.PhDvc.getQueueFamilyProperties device
+	pfis <- filterM
+		(\i -> Vk.Khr.Sfc.Phd.getSupport device i sfc)
+		(fst <$> queueFamilies)
+	pure QueueFamilyIndicesMaybe {
+		graphicsFamilyMaybe = fst <$> L.find
+			(checkBits Vk.Queue.GraphicsBit
+				. Vk.QueueFamily.propertiesQueueFlags . snd)
+			queueFamilies,
+		presentFamilyMaybe = listToMaybe pfis }
+
+checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
+checkDeviceExtensionSupport dvc =
+	null . (deviceExtensions L.\\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
+		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
+
+deviceExtensions :: [Vk.PhDvc.ExtensionName]
+deviceExtensions = [Vk.Khr.Swapchain.extensionName]
+
+createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
+	Vk.PhDvc.P -> Vk.Dvc.Group ma sd k -> k ->
+	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q)
+createLogicalDevice phdvc dvcgrp k qfis =
+	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
+	Vk.Dvc.create' phdvc dvcgrp k (createInfo qs) >>= \(fromRight -> dvc) -> do
+		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
+		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
+		pure (dvc, gq, pq)
+	where
+	createInfo qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = def,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames =
+			bool [] validationLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def }
+	uniqueQueueFamilies = L.nub [graphicsFamily qfis, presentFamily qfis]
+	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+
+mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
+	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
+mkHeteroParList _k [] f = f HeteroParList.Nil
+mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
 	Vk.T.FormatToValue fmt =>
@@ -198,45 +372,76 @@ getSwapchainImageNum :: forall (fmt :: Vk.T.Format) sd ssfc .
 getSwapchainImageNum dv sfc spp ext qfis =
 	withSwapchain @fmt dv sfc spp ext qfis \sc _ ->
 	sameNum () <$> Vk.Khr.Swapchain.getImages dv sc
+	where sameNum x = \case [] -> []; _ : ys -> x : sameNum x ys
 
-sameNum :: b -> [a] -> [b]
-sameNum x = \case [] -> []; _ : ys -> x : sameNum x ys
+-- BODY
 
-getNum :: [a] -> (forall (n :: [()]) . (Mappable n, NumToValue n) => Proxy n -> b) -> b
-getNum [] f = f (Proxy :: Proxy '[])
-getNum (_ : xs) f =
-	getNum xs \(Proxy :: Proxy n) -> f (Proxy :: Proxy ('() ': n))
+body :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
+	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k ) =>
+	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
+	Vk.Ist.I si -> Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
+body inp outp vext_ ist phd qfis dv gq pq =
+	createCommandPool qfis dv \cp ->
+	createCommandBuffer dv cp \cb ->
+	let	dvs = (phd, qfis, dv, gq, pq, cp, cb) in
+	createPipelineLayout dv \dslyt pllyt ->
 
-class NumToValue (n :: [()]) where numToValue :: Int
-instance NumToValue '[] where numToValue = 0
+	createVertexBuffer phd dv gq cp \vb ->
+	createIndexBuffer phd dv gq cp \ib ->
+	let	vbs = (vb, ib) in
 
-instance NumToValue n => NumToValue ('() ': n) where
-	numToValue = 1 + numToValue @n
+	createUniformBuffer phd dv \ub ubm ->
+	createDescriptorPool dv \dp ->
+	createDescriptorSet dv dp ub dslyt \ubds ->
+	let	ubs = (ubds, ubm) in
 
-data Command k
-	= Draw (M.Map k (ViewProjection, [Rectangle]))
-	| OpenWindow
-	| DestroyWindow k
-	| GetEvent
-	deriving Show
+	GlfwG.Win.group \wgrp ->
+	Vk.Khr.Sfc.group ist nil \sfcgrp ->
+	Vk.RndrPass.group dv nil \rpgrp ->
+	Vk.Ppl.Graphics.group dv nil \gpgrp ->
+	Vk.Semaphore.group dv nil \iasgrp ->
+	Vk.Semaphore.group dv nil \rfsgrp ->
+	Vk.Fence.group dv nil \iffgrp ->
+	Vk.Khr.Swapchain.group dv nil \scgrp ->
+	Vk.ImgVw.group dv nil
+		\(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt) ->
+	Vk.Frmbffr.group dv nil
+		\(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf (k, Int)) ->
+	Vk.Bffr.group dv nil \rbgrp -> Vk.Mem.group dv nil \rmgrp ->
+	let	rgrps = (rbgrp, rmgrp) in
 
-data Event k
-	= EventEnd
-	| EventKeyDown k GlfwG.Ky.Key
-	| EventKeyUp k GlfwG.Ky.Key
-	| EventMouseButtonDown k GlfwG.Ms.MouseButton
-	| EventMouseButtonUp k GlfwG.Ms.MouseButton
-	| EventCursorPosition k Double Double
-	| EventOpenWindow k
-	| EventDeleteWindow k
-	deriving Show
+	atomically (newTVar M.empty) >>= \ges ->
 
-type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
+	let	crwos = winObjs @n @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
+			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges
+		drwos = destroyWinObjs @n wgrp sfcgrp rpgrp gpgrp
+			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp
+		in
+
+	atomically (newTVar zero') >>= \vwid ->
+	atomically (newTVar M.empty) >>= \vws ->
+
+	mainLoop' @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges
+
+-- PROVIDE WINDOW OBJECTS
+-- WINDOW OBJECTS
+-- RECTANGLE BUFFER
+-- GET GLFW EVENTS
+-- CREATE AND COPY BUFFERS
+-- GRAPHICS PIPELINE
+-- MAINLOOP
+-- RECREATE
+-- DRAW
+-- DATA TYPES
+-- SHADERS
 
 getMouseButtons :: GlfwG.Win.W sw -> IO MouseButtonStateDict
 getMouseButtons w = foldr (uncurry M.insert) M.empty . zip bs
 	<$> GlfwG.Ms.getButton w `mapM` bs
 	where bs = [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
+
+type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
 mAny :: (a -> Bool) -> M.Map k a -> Bool
 mAny p = M.foldr (\x b -> p x || b) False
@@ -311,110 +516,10 @@ fromRight :: Either String a -> a
 fromRight (Left emsg) = error emsg
 fromRight (Right x) = x
 
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
-	when debug $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
-		=<< null . (validationLayers L.\\)
-				. (Vk.layerPropertiesLayerName <$>)
-			<$> Vk.Ist.enumerateLayerProperties
-	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			debug . (Vk.Ist.ExtensionName <$>)
-		<$> GlfwG.getRequiredInstanceExtensions
-	print exts
-	Vk.Ist.create (crinfo exts) nil f
-	where
-	crinfo :: [Vk.Ist.ExtensionName] -> Vk.Ist.CreateInfo
-		('Just (Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ())) 'Nothing
-	crinfo es = Vk.Ist.CreateInfo {
-		Vk.Ist.createInfoNext = TMaybe.J debugMessengerCreateInfo,
-		Vk.Ist.createInfoFlags = zeroBits,
-		Vk.Ist.createInfoApplicationInfo = Just appinfo,
-		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers debug,
-		Vk.Ist.createInfoEnabledExtensionNames = es }
-	appinfo = Vk.ApplicationInfo {
-		Vk.applicationInfoNext = TMaybe.N,
-		Vk.applicationInfoApplicationName = "Hello Triangle",
-		Vk.applicationInfoApplicationVersion =
-			Vk.makeApiVersion 0 1 0 0,
-		Vk.applicationInfoEngineName = "No Engine",
-		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
-		Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-
-validationLayers :: [Vk.LayerName]
-validationLayers = [Vk.layerKhronosValidation]
-
-debugMessengerCreateInfo :: Vk.Ex.DUtls.Msgr.CreateInfo 'Nothing '[] ()
-debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
-	Vk.Ex.DUtls.Msgr.createInfoNext = TMaybe.N,
-	Vk.Ex.DUtls.Msgr.createInfoFlags = zeroBits,
-	Vk.Ex.DUtls.Msgr.createInfoMessageSeverity =
-		Vk.Ext.DUtls.MessageSeverityVerboseBit .|.
-		Vk.Ext.DUtls.MessageSeverityWarningBit .|.
-		Vk.Ext.DUtls.MessageSeverityErrorBit,
-	Vk.Ex.DUtls.Msgr.createInfoMessageType =
-		Vk.Ext.DUtls.MessageTypeGeneralBit .|.
-		Vk.Ext.DUtls.MessageTypeValidationBit .|.
-		Vk.Ext.DUtls.MessageTypePerformanceBit,
-	Vk.Ex.DUtls.Msgr.createInfoFnUserCallback = debugCallback,
-	Vk.Ex.DUtls.Msgr.createInfoUserData = Nothing }
-	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
-		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
-
-run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
-	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k ) =>
-	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
-	Vk.Ist.I si -> Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
-run' inp outp vext_ ist phd qfis dv gq pq =
-	createCommandPool qfis dv \cp ->
-	createCommandBuffer dv cp \cb ->
-	let	dvs = (phd, qfis, dv, gq, pq, cp, cb) in
-	createPipelineLayout dv \dslyt pllyt ->
-
-	createVertexBuffer phd dv gq cp \vb ->
-	createIndexBuffer phd dv gq cp \ib ->
-	let	vbs = (vb, ib) in
-
-	createUniformBuffer phd dv \ub ubm ->
-	createDescriptorPool dv \dp ->
-	createDescriptorSet dv dp ub dslyt \ubds ->
-	let	ubs = (ubds, ubm) in
-
-	GlfwG.Win.group \wgrp ->
-	Vk.Khr.Sfc.group ist nil \sfcgrp ->
-	Vk.RndrPass.group dv nil \rpgrp ->
-	Vk.Ppl.Graphics.group dv nil \gpgrp ->
-	Vk.Semaphore.group dv nil \iasgrp ->
-	Vk.Semaphore.group dv nil \rfsgrp ->
-	Vk.Fence.group dv nil \iffgrp ->
-	Vk.Khr.Swapchain.group dv nil \scgrp ->
-	Vk.ImgVw.group dv nil
-		\(ivgrp :: Vk.ImgVw.Group sd 'Nothing siv (k, Int) nm ivfmt) ->
-	Vk.Frmbffr.group dv nil
-		\(fbgrp :: Vk.Frmbffr.Group sd 'Nothing sf (k, Int)) ->
-	Vk.Bffr.group dv nil \rbgrp -> Vk.Mem.group dv nil \rmgrp ->
-	let	rgrps = (rbgrp, rmgrp) in
-
-	atomically (newTVar M.empty) >>= \ges ->
-
-	let	crwos = winObjs @n @scfmt outp phd dv gq cp qfis pllyt vext_ wgrp sfcgrp rpgrp gpgrp
-			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp ges
-		drwos = destroyWinObjs @n wgrp sfcgrp rpgrp gpgrp
-			rgrps iasgrp rfsgrp iffgrp scgrp ivgrp fbgrp
-		in
-
-	atomically (newTVar zero') >>= \vwid ->
-	atomically (newTVar M.empty) >>= \vws ->
-
-	mainLoop' @n @siv @sf inp outp dvs pllyt crwos drwos vbs rgrps ubs vwid vws ges
-
 winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	si sd sc sw ssfc sg sl sdsl sias srfs siff ssc nm siv sr sf
-	smrct sbrct nmrct . (
-	Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k ) =>
+	smrct sbrct nmrct .
+	(Mappable n, Vk.T.FormatToValue scfmt, Ord k) =>
 	TChan (Event k) -> Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	QueueFamilyIndices -> Vk.Ppl.Layout.P sl '[AtomUbo sdsl] '[] ->
@@ -454,9 +559,9 @@ winObjs outp phd dv gq cp qfis pllyt vext_
 	atomically (modifyTVar ges (M.insert k (glfwEvents k w outp vb vmbs))) >>
 	atomically (newTVar False) >>= \fbrszd ->
 	GlfwG.Win.setKeyCallback w
-		(Just \w ky sc act mods -> do
+		(Just \_ ky sc act mods -> do
 			putStrLn $
-				show w ++ " " ++ show ky ++ " " ++
+				show ky ++ " " ++
 				show sc ++ " " ++ show act ++ " " ++ show mods
 			case act of
 				GlfwG.Ky.KeyState'Pressed ->
@@ -534,79 +639,11 @@ destroyWinObjs
 		either error pure =<< Vk.ImgVw.unsafeDestroy ivgrp (k, i)
 		either error pure =<< Vk.Frmbffr.unsafeDestroy fbgrp (k, i)
 
-createSurface :: GlfwG.Win.W sw -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
-createSurface win ist f =
-	Vk.Khr.Sfc.group ist nil \sfcgrp ->
-	Vk.Khr.Sfc.Glfw.Win.create' sfcgrp () win >>= f . fromRight
+class NumToValue (n :: [()]) where numToValue :: Int
+instance NumToValue '[] where numToValue = 0
 
-pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Sfc.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
-pickPhysicalDevice ist sfc = do
-	dvcs <- Vk.PhDvc.enumerate ist
-	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
-	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
-		Just pdvc -> pure pdvc
-		Nothing -> error "failed to find a suitable GPU!"
-
-findDevice :: Monad m =>
-	(Vk.PhDvc.P -> m (Maybe a)) -> [Vk.PhDvc.P] ->
-	m (Maybe (Vk.PhDvc.P, a))
-findDevice prd = \case
-	[] -> pure Nothing
-	p : ps -> prd p >>= \case
-		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
-
-isDeviceSuitable ::
-	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO (Maybe QueueFamilyIndices)
-isDeviceSuitable phdvc sfc = do
-	_deviceProperties <- Vk.PhDvc.getProperties phdvc
-	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
-	is <- findQueueFamilies phdvc sfc
-	extensionSupported <- checkDeviceExtensionSupport phdvc
-	if extensionSupported
-	then (<$> querySwapChainSupport phdvc sfc) \spp ->
-		bool (completeQueueFamilies is) Nothing
-			$ null (formats spp) || null (presentModes spp)
-	else pure Nothing
-
-data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Vk.QueueFamily.Index,
-	presentFamily :: Vk.QueueFamily.Index }
-
-data QueueFamilyIndicesMaybe = QueueFamilyIndicesMaybe {
-	graphicsFamilyMaybe :: Maybe Vk.QueueFamily.Index,
-	presentFamilyMaybe :: Maybe Vk.QueueFamily.Index }
-
-completeQueueFamilies :: QueueFamilyIndicesMaybe -> Maybe QueueFamilyIndices
-completeQueueFamilies = \case
-	QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = Just gf, presentFamilyMaybe = Just pf } ->
-		Just QueueFamilyIndices {
-			graphicsFamily = gf, presentFamily = pf }
-	_ -> Nothing
-
-findQueueFamilies ::
-	Vk.PhDvc.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
-findQueueFamilies device sfc = do
-	queueFamilies <- Vk.PhDvc.getQueueFamilyProperties device
-	pfis <- filterM
-		(\i -> Vk.Khr.Sfc.Phd.getSupport device i sfc)
-		(fst <$> queueFamilies)
-	pure QueueFamilyIndicesMaybe {
-		graphicsFamilyMaybe = fst <$> L.find
-			(checkBits Vk.Queue.GraphicsBit
-				. Vk.QueueFamily.propertiesQueueFlags . snd)
-			queueFamilies,
-		presentFamilyMaybe = listToMaybe pfis }
-
-checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
-checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions L.\\) . (Vk.PhDvc.extensionPropertiesExtensionName <$>)
-		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
-
-deviceExtensions :: [Vk.PhDvc.ExtensionName]
-deviceExtensions = [Vk.Khr.Swapchain.extensionName]
+instance NumToValue n => NumToValue ('() ': n) where
+	numToValue = 1 + numToValue @n
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	capabilities :: Vk.Khr.Sfc.Capabilities,
@@ -619,36 +656,6 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
 	<*> Vk.Khr.Sfc.Phd.getFormatsOld dvc sfc
 	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
-
-createLogicalDevice :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
-	Vk.PhDvc.P -> Vk.Dvc.Group ma sd k -> k ->
-	QueueFamilyIndices -> IO (Vk.Dvc.D sd, Vk.Queue.Q, Vk.Queue.Q)
-createLogicalDevice phdvc dvcgrp k qfis =
-	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs ->
-	Vk.Dvc.create' phdvc dvcgrp k (createInfo qs) >>= \(fromRight -> dvc) -> do
-		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		pure (dvc, gq, pq)
-	where
-	createInfo qs = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = TMaybe.N,
-		Vk.Dvc.createInfoFlags = def,
-		Vk.Dvc.createInfoQueueCreateInfos = qs,
-		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers debug,
-		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
-		Vk.Dvc.createInfoEnabledFeatures = Just def }
-	uniqueQueueFamilies = L.nub [graphicsFamily qfis, presentFamily qfis]
-	queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
-		Vk.Dvc.queueCreateInfoFlags = def,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
-
-mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
-mkHeteroParList _k [] f = f HeteroParList.Nil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 prepareSwapchain :: forall (scfmt :: Vk.T.Format) sw ssfc .
 	Vk.T.FormatToValue scfmt =>
