@@ -490,4 +490,3 @@ src
 * [ ] Rectangles2
     + [x] repair get events
     + [ ] others
-* [ ] Vertex

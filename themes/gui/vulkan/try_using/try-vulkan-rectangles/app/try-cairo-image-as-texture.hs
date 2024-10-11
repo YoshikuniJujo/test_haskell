@@ -86,6 +86,7 @@ import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
 import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
@@ -113,8 +114,6 @@ import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
-
-import Vertex
 
 import Data.CairoImage.Internal
 import Graphics.Cairo.Drawing.CairoT
@@ -1469,6 +1468,23 @@ instance RealFrac d => Storable (PixelRgba d) where
 		. listToTuple4 <$> peekArray 4 (castPtr p)
 	poke p (PixelRgba (RgbaWord8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
+
+type WVertex = GStorable.W Vertex
+
+data Vertex = Vertex {
+	vertexPos :: Pos, vertexColor :: Color, vertexTexCoord :: TexCoord }
+	deriving (Show, Eq, Ord, Generic)
+
+newtype Pos = Pos Glm.Vec3
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype Color = Color Glm.Vec3
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+newtype TexCoord = TexCoord Glm.Vec2
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+instance GStorable.G Vertex
 
 [glslVertexShader|
 

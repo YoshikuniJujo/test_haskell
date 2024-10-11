@@ -39,7 +39,6 @@ library
       Texture
       UseCairo
       UseTextureGroup
-      Vertex
   other-modules:
       Paths_try_vulkan_rectangles
   hs-source-dirs:
