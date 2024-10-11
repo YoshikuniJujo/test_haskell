@@ -113,7 +113,6 @@ import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -1399,99 +1398,114 @@ wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scvs, rp, fbs) gp _) =
 -- DRAW
 
 draw :: forall
-	sfs sd ssc sr sl sg sm sb smr sbr nm sm' sb' nm' sm2 sb2 scb
-	sias srfs siff sdsl scfmt sds alu mnmvp nmr bnmv nmv nmi bnmvp .
-	KnownNat alu =>
+	sd sl sdsl alu mnmvp scfmt ssc sr sfs sg sias srfs siff
+	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi smvp sbvp bnmvp
+	sds scb . KnownNat alu =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
-	Draws sl sr sg sdsl alu mnmvp sias srfs siff scfmt ssc sfs ->
-	Vk.Bffr.Binded sm sb bnmv '[Vk.Obj.List 1 WVertex nmv] ->
-	Vk.Bffr.Binded smr sbr nm '[Vk.Obj.List 1 WRect nmr] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List 1 Word16 nmi] ->
-	ViewProjMemory sm2 sb2 bnmvp alu mnmvp ->
-	Vk.DscSt.D sds (AtomUbo sdsl alu mnmvp) ->
-	Vk.CmdBffr.C scb ->
-	WViewProj -> IO ()
-draw dvc gq pq
-	pllyt
-	(Draws vext rp gpl (SyncObjs ias rfs iff) sc fbs)
-	vb rb ib ubm ubds cb
-	ubo = do
-	let	siff = HPList.Singleton iff
-	ext <- atomically $ readTVar vext
-	Vk.Fnc.waitForFs dvc siff True Nothing
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc maxBound (Just ias) Nothing
-	Vk.Fnc.resetFs dvc siff
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Draws scfmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff ->
+	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
+	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
+	ViewProjMemory smvp sbvp bnmvp alu mnmvp ->
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp) ->
+	Vk.CmdBffr.C scb -> WViewProj -> IO ()
+draw dv gq pq pl (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
+	vb rb ib mvp ds cb vp = do
+	ex <- atomically $ readTVar vex
+	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
 	Vk.CmdBffr.reset cb def
-	HPList.index fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext pllyt gpl vb rb ib ubds
-	updateUniformBuffer' dvc ubm ubo
-	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
-		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = TMaybe.N,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Singleton
-				$ Vk.SemaphorePipelineStageFlags ias
-					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-			Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = TMaybe.N,
-			Vk.Khr.presentInfoWaitSemaphores = HPList.Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = HPList.Singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Q.submit gq (HPList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
+	ii <- Vk.Khr.Swpch.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+	HPList.index fbs ii \fb -> recordCmdBffr cb rp fb ex pl gp vb rb ib ds
+	updateViewProjBffr dv mvp vp
+	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
+	catchAndSerialize . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
+	where
+	siff = HPList.Singleton iff
+	sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags ias
+				Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
+	pinfo ii = Vk.Khr.Swpch.PresentInfo {
+		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
+			$ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 
-type AtomUbo s alu mnmvp = '(s, '[ 'Vk.DscStLyt.Buffer '[Vk.Obj.AtomMaybeName alu WViewProj mnmvp]])
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-updateUniformBuffer' :: forall sd sm2 sb2 bnmvp alu mnmvp . KnownNat alu => Vk.Dvc.D sd ->
-	ViewProjMemory sm2 sb2 bnmvp alu mnmvp -> WViewProj -> IO ()
-updateUniformBuffer' dvc um obj = do
-	Vk.Mm.write @bnmvp @(Vk.Obj.Atom alu WViewProj mnmvp) @0
-		dvc um zeroBits obj
+updateViewProjBffr :: forall sd sm sb bnm alu mnm . KnownNat alu =>
+	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm alu mnm -> WViewProj -> IO ()
+updateViewProjBffr dv mvp vp =
+	Vk.Mm.write @bnm @(Vk.Obj.Atom alu WViewProj mnm) @0 dv mvp zeroBits vp
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb smr sbr sm' sb' nm' sdsl sds alu mnmvp nmr bnmv bnmr nmv nmi .
-	Vk.CmdBffr.C scb ->
-	Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
-	Vk.PplLyt.P sl '[AtomUbo sdsl alu mnmvp] '[] ->
+data Draws fmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff = Draws
+	(TVar Vk.Extent2d) (Vk.Khr.Swpch.S fmt ssc) (Vk.RndrPss.R sr)
+	(HPList.PL Vk.Frmbffr.F sfs)
+	(Vk.Ppl.Gr.G sg
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+			'(WRect, 'Vk.VtxInp.RateInstance) ]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
+			'(3, RectSize), '(4, RectColor),
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3) ]
+		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]))
+	(SyncObjs '(sias, srfs, siff))
+
+wobjsToDrs ::
+	WinObjs sw ssfc scfmt ssc nm sscivs sr sfs sg sl sdsl alu mnmvp
+		sias srfs siff ->
+	Draws scfmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff
+wobjsToDrs (WinObjs _ _ vex (sc, _, rp, fbs) gp soss) =
+	Draws vex sc rp fbs gp soss
+
+recordCmdBffr :: forall
+	scb sr sf sl sdsl alu mnmvp sg
+	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi sds .
+	Vk.CmdBffr.C scb -> Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
 	Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
+		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
+			'(WRect, 'Vk.VtxInp.RateInstance) ]
+		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1), '(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[AtomUbo sdsl alu mnmvp], '[]) ->
-	Vk.Bffr.Binded sm sb bnmv '[Vk.Obj.List 1 WVertex nmv] ->
-	Vk.Bffr.Binded smr sbr bnmr '[Vk.Obj.List 1 WRect nmr] ->
-	Vk.Bffr.Binded sm' sb' nm' '[Vk.Obj.List 1 Word16 nmi] ->
-	Vk.DscSt.D sds (AtomUbo sdsl alu mnmvp) ->
-	IO ()
-recordCommandBuffer cb rp fb sce pllyt gpl vb rb ib ubds =
+			'(5, RectModel0), '(6, RectModel1),
+			'(7, RectModel2), '(8, RectModel3) ]
+		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) ->
+	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
+	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
+	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
+	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp) -> IO ()
+recordCmdBffr cb rp fb ex pl gp vb rb ib ds =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
-	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
+	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline $
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb (
 		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @WVertex @nmv vb) :**
 		U5 (Vk.Bffr.IndexedForList @_ @_ @_ @WRect @nmr rb) :**
-		HPList.Nil
-		) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
-	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pllyt
-		(HPList.Singleton $ U2 ubds)
-		(HPList.Singleton (
-			HPList.Nil :**
-			HPList.Nil )) >>
+		HPList.Nil ) >>
+	Vk.Cmd.bindIndexBuffer cbb
+		(Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
+	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
+		(HPList.Singleton $ U2 ds)
+		(HPList.Singleton (HPList.Nil :** HPList.Nil )) >>
 	Vk.Cmd.drawIndexed cbb (bffrLstLn ib) (bffrLstLn rb) 0 0 0
 	where
-	rpInfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
+	rpinfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
-	rpInfo = Vk.RndrPss.BeginInfo {
+	rpinfo = Vk.RndrPss.BeginInfo {
 		Vk.RndrPss.beginInfoNext = TMaybe.N,
 		Vk.RndrPss.beginInfoRenderPass = rp,
 		Vk.RndrPss.beginInfoFramebuffer = fb,
 		Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
 			Vk.rect2dOffset = Vk.Offset2d 0 0,
-			Vk.rect2dExtent = sce },
+			Vk.rect2dExtent = ex },
 		Vk.RndrPss.beginInfoClearValues = HPList.Singleton
 			. Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
@@ -1500,33 +1514,6 @@ bffrLstLn :: Num n =>
 bffrLstLn b = fromIntegral sz
 	where HPList.Singleton (Vk.Obj.LengthList' sz) = Vk.Bffr.lengthBinded b
 
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
-
-data Draws sl sr sg sdsl alu mnmvp sias srfs siff fmt ssc sfs = Draws
-	(TVar Vk.Extent2d) (Vk.RndrPss.R sr)
-	(Vk.Ppl.Gr.G sg
-		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
-			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[AtomUbo sdsl alu mnmvp], '[]))
-	(SyncObjs '(sias, srfs, siff))
-	(Vk.Khr.Swpch.S fmt ssc)
-	(HPList.PL Vk.Frmbffr.F sfs)
-
-wobjsToDrs ::
-	WinObjs sw ssfc scfmt ssc
-		nm sscivs sr sfs
-		sg sl sdsl alu mnmvp sias srfs siff
-		->
-	Draws sl sr sg sdsl alu mnmvp sias srfs siff scfmt ssc sfs
-wobjsToDrs (WinObjs _ _sfc vex (sc, _, rp, fbs) gpl iasrfsifs) =
-	Draws vex rp gpl iasrfsifs sc fbs
-
 -- DATA TYPES
 
 type WVertex = StrG.W Vertex
@@ -1534,13 +1521,21 @@ type WVertex = StrG.W Vertex
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
-instance Storable Vertex where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
-
 instance StrG.G Vertex
+
+vertices :: [WVertex]
+vertices = StrG.W <$> [
+	Vertex (Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ 1 :. (- 1) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ 1 :. 1 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Cglm.Vec2 $ (- 1) :. 1 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+
+indices :: [Word16]
+indices = [0, 1, 2, 2, 3, 0]
 
 data Rectangle = Rectangle {
 	rectanglePos' :: RectPos, rectangleSize' :: RectSize,
@@ -1550,13 +1545,10 @@ data Rectangle = Rectangle {
 type WRect = StrG.W RectangleRaw
 
 data RectangleRaw = RectangleRaw {
-	rectanglePos :: RectPos,
-	rectangleSize :: RectSize,
+	rectanglePos :: RectPos, rectangleSize :: RectSize,
 	rectangleColor :: RectColor,
-	rectangleModel0 :: RectModel0,
-	rectangleModel1 :: RectModel1,
-	rectangleModel2 :: RectModel2,
-	rectangleModel3 :: RectModel3 }
+	rectangleModel0 :: RectModel0, rectangleModel1 :: RectModel1,
+	rectangleModel2 :: RectModel2, rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
 
 rectToRectRaw :: Rectangle -> WRect
@@ -1597,20 +1589,6 @@ newtype RectModel2 = RectModel2 Cglm.Vec4
 newtype RectModel3 = RectModel3 Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-vertices :: [WVertex]
-vertices = StrG.W <$> [
-	Vertex (Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 1 :. (- 1) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec2 $ (- 1) :. 1 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
-
-indices :: [Word16]
-indices = [0, 1, 2, 2, 3, 0]
-
 dummy :: [WRect]
 dummy = rectToRectRaw <$> [Rectangle
 	(RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
@@ -1621,8 +1599,7 @@ dummy = rectToRectRaw <$> [Rectangle
 type WViewProj = StrG.W ViewProjection
 
 data ViewProjection = ViewProjection {
-	viewProjectionView :: Cglm.Mat4,
-	viewProjectionProj :: Cglm.Mat4 }
+	viewProjectionView :: Cglm.Mat4, viewProjectionProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
 
 viewProjIdentity :: WViewProj
@@ -1641,10 +1618,7 @@ instance Default ViewProjection where
 
 #version 450
 
-layout(binding = 0) uniform ViewProjection {
-	mat4 view;
-	mat4 proj;
-} ubo;
+layout(binding = 0) uniform ViewProjection { mat4 view; mat4 proj; } vp;
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -1658,8 +1632,7 @@ layout(location = 0) out vec4 fragColor;
 void
 main()
 {
-	gl_Position =
-		ubo.proj * ubo.view * rectModel *
+	gl_Position = vp.proj * vp.view * rectModel *
 		vec4(inPosition * rectSize, 0.0, 1.0) +
 		vec4(rectPosition, 0.0, 1.0);
 //	fragColor = inColor;

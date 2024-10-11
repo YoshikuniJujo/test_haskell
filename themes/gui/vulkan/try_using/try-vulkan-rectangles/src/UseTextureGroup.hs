@@ -1366,7 +1366,7 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-updateViewProjBffr :: forall sd sm sb mnm alu bnm . KnownNat alu =>
+updateViewProjBffr :: forall sd sm sb bnm alu mnm . KnownNat alu =>
 	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm alu mnm -> WViewProj -> IO ()
 updateViewProjBffr dv mvp vp =
 	Vk.Mm.write @bnm @(Vk.Obj.Atom alu WViewProj mnm) @0 dv mvp zeroBits vp
@@ -1391,7 +1391,8 @@ wobjsToDrs ::
 wobjsToDrs (WinObjs _ _ vex (sc, _, rp, fbs) gp soss) =
 	Draws vex sc rp fbs gp soss
 
-recordCmdBffr :: forall scb sr sf sl sdsl alu mnmvp nmt sg
+recordCmdBffr :: forall
+	scb sr sf sl sdsl alu mnmvp nmt sg
 	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi sds .
 	Vk.CmdBffr.C scb -> Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
@@ -1448,7 +1449,7 @@ data Vertex = Vertex {
 	vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
 
-instance StrG.G Vertex where
+instance StrG.G Vertex
 
 newtype TexCoord = TexCoord Cglm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)

@@ -464,9 +464,16 @@ src
         - [x] waitFrmbffrSize
         - [x] Recreates
         - [x] wobjsToRecrs
-    + [ ] DRAW
-    + [ ] DATA TYPES
-    + [ ] SHADERS
+    + [x] DRAW
+        - [x] draw
+        - [x] catchAndSerialize
+        - [x] updateUniformBuffer'
+        - [x] Draws
+        - [x] wobjsToDrs
+        - [x] recordCommandBuffer
+        - [x] bffrLstLn
+    + [x] DATA TYPES
+    + [x] SHADERS
     + [ ] import list
     + [ ] export list
 * [ ] Rectangles2
