@@ -36,35 +36,42 @@ import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 
 import Data.Map qualified as M
 
+----------------------------------------------------------------------
+--
+-- * MAIN
+-- * BODY
+-- * RECTANGLES
+--
+----------------------------------------------------------------------
+
+-- MAIN
+
 main :: IO ()
-main = run_ action
+main = run_ realMain
 
-action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
+realMain :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
-action f = liftIO do
-	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
-	vex <- atomically $ newTVar M.empty
-	let	inp' = writeTChan inp
-		outp' = (isEmptyTChan outp, readTChan outp)
-		vex' = readTVarOr (Vk.Extent2d 0 0) vex
-	_ <- forkIO . forever $ threadDelay 10000 >> atomically (inp' GetEvent)
-	_ <- forkIO $ untilEnd (get f) ((inp', outp'), vex')
-	rectangles inp outp vex
+realMain f = liftIO do
+	(ip, op, vex) <- atomically
+		$ (,,) <$> newTChan <*> newTChan <*> newTVar M.empty
+	_ <- forkIO . forever
+		$ threadDelay 10000 >> atomically (writeTChan ip GetEvent)
+	_ <- forkIO $ body (get f) (writeTChan ip)
+		(isEmptyTChan op, readTChan op) (lookupOr (Vk.Extent2d 0 0) vex)
+	rectangles ip op vex
+	where
+	lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
 
-readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
-readTVarOr d mp k = do
-	mv <- (M.lookup k) <$> readTVar mp
-	case mv of
-		Nothing -> pure d
-		Just v -> readTVar v
+-- BODY
 
-untilEnd :: Bool -> ((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
-untilEnd f ((inp, (oute, outp)), ext) = do
+body :: Bool -> (Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
+	(Int -> STM Vk.Extent2d) -> IO ()
+body f inp (oute, outp) ext = do
 	tm0 <- getCurrentTime
 	atomically $ inp OpenWindow
 	atomically $ inp OpenWindow
 	atomically $ inp OpenWindow
-	($ instances) $ fix \loop rs -> do
+	($ rects1) $ fix \loop rs -> do
 		threadDelay 10000
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
@@ -72,8 +79,8 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 			e0 <- ext 0
 			e1 <- ext 1
 			inp . Draw $ M.fromList [
-				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
-				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
+				(0, ((bool (viewProj e0) def f), (rs tm))),
+				(1, ((bool (viewProj e1) def f), (rects2 tm)))
 				]
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
@@ -90,9 +97,9 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 				putStrLn ("KEY UP  : " ++ show w ++ " " ++ show ky)
 				loop rs
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
-				loop instances
+				loop rects1
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
-				loop instances2
+				loop rects2
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
 			Just (EventCursorPosition k x y) ->
@@ -106,61 +113,43 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 				atomically . inp $ DestroyWindow k
 				loop rs
 
-uniformBufferObject :: Vk.Extent2d -> ViewProjection
-uniformBufferObject sce = ViewProjection {
+viewProj :: Vk.Extent2d -> ViewProjection
+viewProj Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } = ViewProjection {
 	viewProjectionView = Cglm.lookat
 		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 	viewProjectionProj = Cglm.modifyMat4 1 1 negate
-		$ Cglm.perspective
-			(Cglm.rad 45)
-			(fromIntegral (Vk.extent2dWidth sce) /
-				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
+		$ Cglm.perspective (Cglm.rad 45) (w / h) 0.1 10 }
 
-instances :: Float -> [Rectangle]
-instances tm = let
-	m = calcModel' tm in
-	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m
-		]
+-- RECTANGLES
 
-instances2 :: Float -> [Rectangle]
-instances2 tm = let m = calcModel' tm in
-	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m
-		]
+rects1 :: Float -> [Rectangle]
+rects1 tm = [
+	Rectangle (rectPos (- 1) (- 1))
+		(rectSize 0.3 0.3) (rectColor 1.0 0.0 0.0 1.0) m,
+	Rectangle (rectPos 1 1)
+		(rectSize 0.2 0.2) (rectColor 0.0 1.0 0.0 1.0) m,
+	Rectangle (rectPos 1.5 (- 1.5))
+		(rectSize 0.3 0.6) (rectColor 0.0 0.0 1.0 1.0) m,
+	Rectangle (rectPos (- 1.5) 1.5)
+		(rectSize 0.6 0.3) (rectColor 1.0 1.0 1.0 1.0) m ]
+	where m = rotModel tm
 
-calcModel' :: Float -> RectModel
-calcModel' tm = RectModel $ Cglm.rotate Cglm.mat4Identity
+rects2 :: Float -> [Rectangle]
+rects2 tm = [
+	Rectangle (rectPos (- 1) (- 1))
+		(rectSize 0.3 0.3) (rectColor 0.0 1.0 0.0 1.0) m,
+	Rectangle (rectPos 1 1)
+		(rectSize 0.6 0.6) (rectColor 0.0 0.0 1.0 1.0) m,
+	Rectangle (rectPos 1.5 (- 1.5))
+		(rectSize 0.6 0.3) (rectColor 1.0 1.0 1.0 1.0) m,
+	Rectangle (rectPos (- 1.5) 1.5)
+		(rectSize 0.6 0.3) (rectColor 1.0 0.0 0.0 1.0) m ]
+	where m = rotModel tm
+
+rotModel :: Float -> RectModel
+rotModel tm = RectModel $ Cglm.rotate Cglm.mat4Identity
 		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
