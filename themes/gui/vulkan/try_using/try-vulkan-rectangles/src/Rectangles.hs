@@ -163,11 +163,10 @@ rectangles ip op vex = GlfwG.init error $
 	crsfc dw ist \sfcg dsfc -> pickPhd ist dsfc >>= \(pd, qfis) ->
 	querySwpchSupport pd dsfc \ssd ->
 	chooseSwpSfcFmt (formats ssd) \(_ :: Vk.Khr.Sfc.Format fmt) ->
-	createLgDvc pd dvg () qfis >>= \(dv, gq, pq) ->
 	swapExtent dw (capabilities ssd) >>= \ex ->
+	createLgDvc pd dvg () qfis >>= \(dv, gq, pq) ->
 	swpchImgNum @fmt dv dsfc ssd ex qfis >>= \n -> num n \(_ :: Proxy n) ->
-	GlfwG.Win.unsafeDestroy wg () >>
-	Vk.Khr.Sfc.unsafeDestroy sfcg () >>
+	GlfwG.Win.unsafeDestroy wg () >> Vk.Khr.Sfc.unsafeDestroy sfcg () >>
 	body @n @fmt ip op vex ist pd qfis dv gq pq >>
 	atomically (writeTChan op EventEnd)
 	where
@@ -208,12 +207,12 @@ createIst f = do
 		(Vk.Ist.create (infoDbg exts) nil f) debug
 	where
 	emsg = "validation layers requested, but not available!"
-	info exts = Vk.Ist.CreateInfo {
+	info es = Vk.Ist.CreateInfo {
 		Vk.Ist.createInfoNext = TMaybe.N,
 		Vk.Ist.createInfoFlags = zeroBits,
 		Vk.Ist.createInfoApplicationInfo = Just ainfo,
 		Vk.Ist.createInfoEnabledLayerNames = [],
-		Vk.Ist.createInfoEnabledExtensionNames = exts }
+		Vk.Ist.createInfoEnabledExtensionNames = es }
 	infoDbg exts = Vk.Ist.CreateInfo {
 		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
 		Vk.Ist.createInfoFlags = zeroBits,
@@ -318,9 +317,7 @@ swpchImgNum dv sfc ssd ex qfis =
 
 -- BODY
 
-body :: forall
-	(n :: [()]) (scfmt :: Vk.T.Format)
-	k si sd . (
+body :: forall (n :: [()]) (scfmt :: Vk.T.Format) k si sd . (
 	HPList.HomoListN n, NumToVal n, Ord k, Succable k,
 	Vk.T.FormatToValue scfmt ) =>
 	TChan (Command k) -> TChan (Event k) ->

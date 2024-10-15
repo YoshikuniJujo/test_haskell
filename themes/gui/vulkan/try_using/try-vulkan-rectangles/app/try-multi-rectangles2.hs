@@ -44,7 +44,7 @@ action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 action f = liftIO do
 	(inp, outp) <- atomically $ (,) <$> newTChan <*> newTChan
 	vext <- atomically $ newTVar M.empty
-	forkIO $ untilEnd (get f) (
+	_ <- forkIO $ untilEnd (get f) (
 		(writeTChan inp, (isEmptyTChan outp, readTChan outp)),
 		readTVarOr (Vk.Extent2d 0 0) vext )
 	rectangles2 inp outp vext
@@ -63,7 +63,7 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 	atomically $ inp OpenWindow
 	atomically $ inp OpenWindow
 
-	forkIO $ forever do
+	_ <- forkIO $ forever do
 		threadDelay 10000
 		atomically $ inp GetEvent
 
@@ -98,9 +98,7 @@ untilEnd f ((inp, (oute, outp)), ext) = do
 				loop instances2
 			Just (EventMouseButtonDown _ _) -> loop rs
 			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition k x y) ->
---				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
-				loop rs
+			Just (EventCursorPosition _ _ _) -> loop rs
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
 				loop rs
