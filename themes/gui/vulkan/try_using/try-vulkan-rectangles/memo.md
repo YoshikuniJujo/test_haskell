@@ -505,10 +505,17 @@ src
     + [ ] BODY
         - [ ] body
         - [x] createCmdPl
-        - [ ] createCmdBffr
-        - [ ] others
+        - [x] createCmdBffr
+        - [x] others
     + [ ] PROVIDE WINDOW OBJECTS
+        - [ ] provideWinObjs
+        - [x] initWin
     + [ ] WINDOW OBJECTS
+        - [ ] winObjs
+        - [ ] destroyWinObjs
+        - [ ] class NumToVal
+        - [ ] instance NumToVal
+        - [ ] others
     + [ ] RECTANGLE BUFFER
     + [ ] GET GLFW BUFFER
     + [ ] CREATE AND COPY BUFFERS
