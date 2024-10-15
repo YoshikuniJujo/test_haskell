@@ -489,25 +489,24 @@ src
     + [x] export list
 * [ ] Rectangles2
     + [x] repair get events
-    + [ ] RECTANGLES2
-        - [ ] rectangles2
-        - [ ] Command
-        - [ ] Event
-        - [ ] createIst
-        - [ ] validationLayers
-        - [ ] debugMessengerCreateInfo
-        - [ ] pickPhd
-        - [ ] QFamIdcs
-        - [ ] findQFams
-        - [ ] querySwpchSupport
-        - [ ] SwpchSupportDetails
-        - [ ] dvcExtensions
-        - [ ] QueueFamilyIndices
-        - [ ] deviceExtensions
-        - [ ] createLogicalDevice
-        - [ ] mkHeteroParList
-        - [ ] getSwapchainImageNum
+    + [x] RECTANGLES2
+        - [x] rectangles2
+        - [x] Command
+        - [x] Event
+        - [x] createIst
+        - [x] vldLayers
+        - [x] dbgMsngrInfo
+        - [x] pickPhd
+        - [x] QFamIdcs
+        - [x] findQFams
+        - [x] dvcExtensions
+        - [x] createLgDvc
+        - [x] swpchImgNum
     + [ ] BODY
+        - [ ] body
+        - [x] createCmdPl
+        - [ ] createCmdBffr
+        - [ ] others
     + [ ] PROVIDE WINDOW OBJECTS
     + [ ] WINDOW OBJECTS
     + [ ] RECTANGLE BUFFER
