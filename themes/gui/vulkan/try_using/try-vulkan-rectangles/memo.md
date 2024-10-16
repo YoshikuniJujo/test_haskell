@@ -48,7 +48,7 @@ app
         - [x] rects2
         - [x] rotModel
     + [x] import list
-* [ ] try-multi-rectangles2.hs
+* [x] try-multi-rectangles2.hs
 
 src
 ---
