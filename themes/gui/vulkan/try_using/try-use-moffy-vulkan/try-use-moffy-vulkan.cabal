@@ -18,10 +18,16 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+    debug/Debug.hs
+    nodebug/Debug.hs
 
 source-repository head
   type: git
   location: https://github.com/githubuser/try-use-moffy-vulkan
+
+flag debug
+  manual: True
+  default: True
 
 library
   exposed-modules:
@@ -78,6 +84,7 @@ library
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , type-flip
     , type-set
     , typelevel-tools
@@ -85,6 +92,16 @@ library
     , vector
     , x-keysym
   default-language: Haskell2010
+  if flag(debug)
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        debug
+  else
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        nodebug
 
 executable try-boxes
   main-is: try-boxes.hs
@@ -128,6 +145,7 @@ executable try-boxes
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -179,6 +197,7 @@ executable try-followbox
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -230,6 +249,7 @@ executable try-hello-windows
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -281,6 +301,7 @@ executable try-multi-rectangles
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -331,6 +352,7 @@ executable try-use-moffy-vulkan-exe
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -382,6 +404,7 @@ test-suite try-use-moffy-vulkan-test
     , try-shaderc
     , try-storable-generic
     , try-storable-peek-poke
+    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set

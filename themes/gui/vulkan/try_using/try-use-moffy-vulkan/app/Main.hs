@@ -64,12 +64,18 @@ main = run_ action
 action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
 action f = liftIO do
-	((inp, (oute, outp)), ext) <- rectangles
+	(ip, op, vex) <- atomically
+		$ (,,) <$> newTChan <*> newTChan <*> newTVar M.empty
 	cow <- atomically newTChan
 	cocc <- atomically newTChan
 	c' <- atomically newTChan
 	e <- atomically newTChan
-	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext)
+	_ <- forkIO $ untilEnd (get f) e cow cocc c' (
+		(writeTChan ip, (isEmptyTChan op, readTChan op)),
+		(lookupOr (Vk.Extent2d 0 0) vex) )
+	rectangles ip op vex
+--	((inp, (oute, outp)), ext) <- rectangles
+--	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext)
 --	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.5 cow cocc) c' threeWindows . initialBoxesState . systemToTAITime =<< getSystemTime
 --	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.5 cow cocc) c' bar . initialBoxesState . systemToTAITime =<< getSystemTime
 	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' baz . initialBoxesState . systemToTAITime =<< getSystemTime
@@ -80,6 +86,8 @@ action f = liftIO do
 -}
 --	forkIO . forever $ print =<< atomically (readTChanMesh 10 c')
 	atomically $ readTChan e
+	where
+	lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
 
 readTChanMesh :: Int -> TChan a -> STM a
 readTChanMesh 0 c = readTChan c
@@ -135,9 +143,9 @@ boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
 			(RectPos . Cglm.Vec2 $ l' :. u' :. NilL)
 			(RectSize . Cglm.Vec2 $ (r' - l') :. (d' - u') :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3
+			m
 	where
-	(m0, m1, m2, m3) = calcModel 0
+	m = calcModel 0
 
 untilEnd :: Bool -> TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> TChan [Box] ->
 	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
@@ -265,49 +273,47 @@ uniformBufferObject sce = ViewProjection {
 
 instances :: Float -> [Rectangle]
 instances tm = let
-	(m0, m1, m2, m3) = calcModel tm in
+	m = calcModel tm in
 	[
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3
+			m
 		]
 
 instances2 :: Float -> [Rectangle]
-instances2 tm = let (m0, m1, m2, m3) = calcModel tm in
+instances2 tm = let m = calcModel tm in
 	[
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3
+			m
 		]
 
-calcModel :: Float -> (RectModel0, RectModel1, RectModel2, RectModel3)
-calcModel tm = let
-	m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s $ Cglm.rotate Cglm.mat4Identity
-		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) in
-	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
+calcModel :: Float -> RectModel
+calcModel tm = RectModel $ Cglm.rotate Cglm.mat4Identity
+		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
