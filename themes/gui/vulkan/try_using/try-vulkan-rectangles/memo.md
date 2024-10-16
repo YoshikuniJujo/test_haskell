@@ -523,8 +523,8 @@ src
     + [x] GET GLFW EVENTS
     + [x] GRAPHICS PIPELINE
     + [x] CREATE AND COPY BUFFERS
-    + [ ] MAINLOOP
-    + [ ] RECREATE
+    + [x] MAINLOOP
+    + [x] RECREATE
     + [ ] DRAW
     + [ ] DATA TYPES
     + [ ] SHADERS

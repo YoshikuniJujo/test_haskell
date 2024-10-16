@@ -1263,7 +1263,7 @@ mainloop ip op dvs pl crwos drwos vbs rgs ds vpm ges = do
 			ws <- atomically $ readTVar vws
 			run @n @sv @sf dvs pl ws vbs rgs (rects drs) ds vpm go
 	where rects = M.map \(vp, rs) ->
-		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy (null rs))
+		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy $ null rs)
 
 class Succable n where zero' :: n; succ' :: n -> n
 
@@ -1285,16 +1285,16 @@ type VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi = (
 
 wobjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
 	sg sl sdsl alu mnmvp sias srfs siff -> GlfwG.Win.W sw
-wobjsToWin (WinObjs (win, _) _ _ _ _ _) = win
+wobjsToWin (WinObjs (w, _) _ _ _ _ _) = w
 
 run :: forall
 	n (sv :: Type) (sf :: Type) k sd sc scb sl sdsl alu mnmvp
-	sw ssfc scfmt ssc nmsv sr sg sias srfs siff
+	sw ssfc scfmt ssc nmscv sr sg sias srfs siff
 	smv sbv bnmv nmv smi sbi bnmi nmi smr sbr bnmr nmr smvp sbvp bnmvp
 	sds .
 	(HPList.HomoListN n, Ord k, KnownNat alu, Vk.T.FormatToValue scfmt) =>
 	Devices sd sc scb -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
-	(M.Map k (WinObjs sw ssfc scfmt ssc nmsv
+	(M.Map k (WinObjs sw ssfc scfmt ssc nmscv
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp sias srfs siff)) ->
 	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
@@ -1330,7 +1330,7 @@ catchAndRecreate pd qfis dv pl rcs act = catchJust
 	\_ -> recreateAll @n @sv @sf pd qfis dv pl rcs
 
 recreateAllIfNeed :: forall
-	n sv sf sd sl sdsl mnmvp sw ssfc scfmt ssc nmi sr sg alu
+	n sv sf sd sl sdsl alu mnmvp sw ssfc scfmt ssc nmi sr sg
 	sias srfs siff . (HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
@@ -1342,11 +1342,11 @@ recreateAllIfNeed pd qfis dv pl wos@(WinObjs (_, fr) _ _ _ _ _) =
 		(recreateAll @n @sv @sf pd qfis dv pl $ wobjsToRecrs wos)
 
 recreateAll :: forall
-	n sv sf sd sl sdsl alu mnmvp sw ssfc sr ssc nmi scfmt sg .
+	n sv sf sd sl sdsl alu mnmvp sw ssfc sr ssc nmv scfmt sg .
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
-	Recrs sw ssfc scfmt ssc nmi
+	Recrs sw ssfc scfmt ssc nmv
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp -> IO ()
 recreateAll pd qfis dv pl (Recrs w sfc vex sc scvs rp fbs gp) = do
