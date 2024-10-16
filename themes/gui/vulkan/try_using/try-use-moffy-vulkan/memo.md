@@ -8,7 +8,7 @@ app
 src
 ---
 
-* [ ] Rectangles
+* [x] Rectangles
 * [ ] Rectangles2
 * [ ] UseCairo
 * [ ] ThEnv

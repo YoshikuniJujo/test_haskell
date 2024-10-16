@@ -16,6 +16,7 @@ module Main (main) where
 
 import Rectangles
 
+import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -31,59 +32,76 @@ import Options.Declarative
 import Control.Monad.Trans
 
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
+import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 
 import Data.Map qualified as M
 
-main :: IO ()
-main = run_ action
+----------------------------------------------------------------------
+--
+-- * MAIN
+-- * BODY
+-- * RECTANGLES
+--
+----------------------------------------------------------------------
 
-action :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
+-- MAIN
+
+main :: IO ()
+main = run_ realMain
+
+realMain :: Flag "f" '["flat"] "BOOL" "flat or not" Bool ->
 	Cmd "Draw Rectangles" ()
-action f = liftIO do
+realMain f = liftIO do
 	(ip, op, vex) <- atomically
 		$ (,,) <$> newTChan <*> newTChan <*> newTVar M.empty
-	_ <- forkIO $ untilEnd (get f) (
-		(writeTChan ip, (isEmptyTChan op, readTChan op)),
-		(lookupOr (Vk.Extent2d 0 0) vex) )
+	_ <- forkIO . forever
+		$ threadDelay 10000 >> atomically (writeTChan ip GetEvent)
+	_ <- forkIO $ body (get f) (writeTChan ip)
+		(isEmptyTChan op, readTChan op) (lookupOr (Vk.Extent2d 0 0) vex)
 	rectangles ip op vex
 	where
 	lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
 
-untilEnd :: Bool -> ((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
-untilEnd f ((inp, (oute, outp)), ext) = do
-	tm0 <- getCurrentTime
-	atomically $ inp OpenWindow
-	atomically $ inp OpenWindow
-	($ instances) $ fix \loop rs -> do
+-- BODY
+
+body :: Bool -> (Command Int -> STM ()) -> (STM Bool, STM (Event Int)) ->
+	(Int -> STM Vk.Extent2d) -> IO ()
+body f ip (oe, op) ex = getCurrentTime >>= \tm0 -> do
+	atomically $ ip OpenWindow
+	atomically $ ip OpenWindow
+	atomically $ ip OpenWindow
+	($ rects1) $ fix \go rs -> do
 		threadDelay 10000
 		now <- getCurrentTime
 		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
-			e0 <- ext 0
-			e1 <- ext 1
-			inp . Draw $ M.fromList [
+			e0 <- ex 0
+			e1 <- ex 1
+			ip . Draw $ M.fromList [
 				(0, ((bool (uniformBufferObject e0) def f), (rs tm))),
 				(1, ((bool (uniformBufferObject e1) def f), (instances2 tm)))
 				]
-			bool (Just <$> outp) (pure Nothing) =<< oute
+			bool (Just <$> op) (pure Nothing) =<< oe
 		case o of
-			Nothing -> loop rs
+			Nothing -> go rs
 			Just EventEnd -> putStrLn "THE WORLD ENDS"
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'1) ->
-				loop instances
+				go rects1
 			Just (EventMouseButtonDown 0 GlfwG.Ms.MouseButton'2) ->
-				loop instances2
-			Just (EventMouseButtonDown _ _) -> loop rs
-			Just (EventMouseButtonUp _ _) -> loop rs
+				go instances2
+			Just (EventMouseButtonDown _ _) -> go rs
+			Just (EventMouseButtonUp _ _) -> go rs
 			Just (EventCursorPosition _k _x _y) ->
 --				putStrLn ("position: " ++ show k ++ " " ++ show (x, y)) >>
-				loop rs
+				go rs
 			Just (EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
-				loop rs
+				go rs
+			Just (EventKeyDown w GlfwG.Ky.Key'D) ->
+				atomically (ip $ DestroyWindow w) >> go rs
 			Just ev -> do
 				putStrLn $ "unknown event occur: " ++ show ev
-				loop rs
+				go rs
 
 uniformBufferObject :: Vk.Extent2d -> ViewProjection
 uniformBufferObject sce = ViewProjection {
@@ -97,8 +115,10 @@ uniformBufferObject sce = ViewProjection {
 			(fromIntegral (Vk.extent2dWidth sce) /
 				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 
-instances :: Float -> [Rectangle]
-instances tm = let
+-- RECTANGLES
+
+rects1 :: Float -> [Rectangle]
+rects1 tm = let
 	m = calcModel tm in
 	[
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
