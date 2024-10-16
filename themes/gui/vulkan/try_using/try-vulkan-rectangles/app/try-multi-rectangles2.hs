@@ -120,46 +120,28 @@ uniformBufferObject sce = ViewProjection {
 				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 
 instances :: Float -> [Rectangle]
-instances tm = let m = calcModel tm in
-	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m
-		]
+instances tm = [
+	Rectangle (rectPos (- 1) (- 1)) (rectSize 0.3 0.3)
+		(rectColor 1.0 0.0 0.0 1.0) m,
+	Rectangle (rectPos 1 1) (rectSize 0.2 0.2)
+		(rectColor 0.0 1.0 0.0 1.0) m,
+	Rectangle (rectPos 1.5 (- 1.5)) (rectSize 0.3 0.6)
+		(rectColor 0.0 0.0 1.0 1.0) m,
+	Rectangle (rectPos (- 1.5) 1.5) (rectSize 0.6 0.3)
+		(rectColor 1.0 1.0 1.0 1.0) m ]
+	where m = calcModel tm
 
 instances2 :: Float -> [Rectangle]
-instances2 tm = let m = calcModel tm in
-	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m
-		]
+instances2 tm = [
+	Rectangle (rectPos (- 1) (- 1)) (rectSize 0.3 0.3)
+		(rectColor 0.0 1.0 0.0 1.0) m,
+	Rectangle (rectPos 1 1) (rectSize 0.6 0.6)
+		(rectColor 0.0 0.0 1.0 1.0) m,
+	Rectangle (rectPos 1.5 (- 1.5)) (rectSize 0.6 0.3)
+		(rectColor 1.0 1.0 1.0 1.0) m,
+	Rectangle (rectPos (- 1.5) 1.5) (rectSize 0.6 0.3)
+		(rectColor 1.0 0.0 0.0 1.0) m ]
+	where m = calcModel tm
 
 calcModel :: Float -> RectModel
 calcModel tm = RectModel $ Cglm.rotate Cglm.mat4Identity

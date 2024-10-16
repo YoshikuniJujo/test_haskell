@@ -487,7 +487,7 @@ src
     + [x] SHADERS
     + [x] import list
     + [x] export list
-* [ ] Rectangles2
+* [x] Rectangles2
     + [x] repair get events
     + [x] RECTANGLES2
         - [x] rectangles2
@@ -525,8 +525,8 @@ src
     + [x] CREATE AND COPY BUFFERS
     + [x] MAINLOOP
     + [x] RECREATE
-    + [ ] DRAW
-    + [ ] DATA TYPES
-    + [ ] SHADERS
-    + [ ] import list
-    + [ ] export list
+    + [x] DRAW
+    + [x] DATA TYPES
+    + [x] SHADERS
+    + [x] import list
+    + [x] export list

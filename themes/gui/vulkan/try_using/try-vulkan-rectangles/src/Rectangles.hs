@@ -1483,7 +1483,7 @@ recordCmdBffr cb rp fb ex pl gp vb rb ib ds =
 		(Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
 		(HPList.Singleton $ U2 ds)
-		(HPList.Singleton (HPList.Nil :** HPList.Nil )) >>
+		(HPList.Singleton $ HPList.Singleton HPList.Nil) >>
 	Vk.Cmd.drawIndexed cbb (bffrLstLn ib) (bffrLstLn rb) 0 0 0
 	where
 	rpinfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
@@ -1540,6 +1540,8 @@ data RectangleRaw = RectangleRaw {
 	rectangleModel2 :: RectModel2, rectangleModel3 :: RectModel3 }
 	deriving (Show, Generic)
 
+instance StrG.G RectangleRaw
+
 rectToRectRaw :: Rectangle -> WRect
 rectToRectRaw Rectangle {
 	rectanglePos' = p, rectangleSize' = s,
@@ -1552,8 +1554,6 @@ rectToRectRaw Rectangle {
 		rectangleModel2 = RectModel2 m2,
 		rectangleModel3 = RectModel3 m3 }
 	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
-
-instance StrG.G RectangleRaw where
 
 rectPos :: Float -> Float -> RectPos
 rectPos x y = RectPos . Cglm.Vec2 $ x :. y :. NilL
