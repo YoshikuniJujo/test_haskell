@@ -1591,12 +1591,6 @@ type WVertex = StrG.W Vertex
 data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
-instance Storable Vertex where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
-
 instance StrG.G Vertex where
 
 type WRect = StrG.W Rectangle
@@ -1612,12 +1606,6 @@ data Rectangle = Rectangle {
 	deriving (Show, Generic)
 
 instance StrG.G Rectangle where
-
-instance Storable Rectangle where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
 
 instance Default Rectangle where
 	def = Rectangle
@@ -1690,12 +1678,6 @@ viewProjectionIdentity :: ViewProjection
 viewProjectionIdentity = ViewProjection {
 	viewProjectionView = Cglm.mat4Identity,
 	viewProjectionProj = Cglm.mat4Identity }
-
-instance Storable ViewProjection where
-	sizeOf = StrG.gSizeOf
-	alignment = StrG.gAlignment
-	peek = StrG.gPeek
-	poke = StrG.gPoke
 
 instance StrG.G ViewProjection
 
