@@ -502,24 +502,27 @@ src
         - [x] dvcExtensions
         - [x] createLgDvc
         - [x] swpchImgNum
-    + [ ] BODY
-        - [ ] body
+    + [x] BODY
+        - [x] body
         - [x] createCmdPl
         - [x] createCmdBffr
         - [x] others
-    + [ ] PROVIDE WINDOW OBJECTS
-        - [ ] provideWinObjs
+    + [x] PROVIDE WINDOW OBJECTS
+        - [x] provideWinObjs
         - [x] initWin
-    + [ ] WINDOW OBJECTS
-        - [ ] winObjs
-        - [ ] destroyWinObjs
-        - [ ] class NumToVal
-        - [ ] instance NumToVal
-        - [ ] others
-    + [ ] RECTANGLE BUFFER
-    + [ ] GET GLFW BUFFER
-    + [ ] CREATE AND COPY BUFFERS
-    + [ ] GRAPHICS PIPELINE
+    + [x] WINDOW OBJECTS
+        - [x] winObjs
+        - [x] destroyWinObjs
+        - [x] class NumToVal
+        - [x] instance NumToVal
+        - [x] others
+    + [x] RECTANGLE BUFFER
+        - [x] createRctBffr
+        - [x] destroyRectangleBuffer
+        - [x] RectGroups
+    + [x] GET GLFW EVENTS
+    + [x] GRAPHICS PIPELINE
+    + [x] CREATE AND COPY BUFFERS
     + [ ] MAINLOOP
     + [ ] RECREATE
     + [ ] DRAW

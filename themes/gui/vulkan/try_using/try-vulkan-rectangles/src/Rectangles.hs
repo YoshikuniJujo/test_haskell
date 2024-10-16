@@ -142,8 +142,8 @@ import Debug
 -- * WINDOW OBJECTS
 -- * RECTANGLE BUFFER
 -- * GET GLFW EVENTS
--- * CREATE AND COPY BUFFERS
 -- * GRAPHICS PIPELINE
+-- * CREATE AND COPY BUFFERS
 -- * MAINLOOP
 -- * RECREATE
 -- * DRAW
@@ -569,7 +569,7 @@ destroyWinObjs wg (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg)
 		tr =<< Vk.Fnc.unsafeDestroy iffg k
 		tr =<< Vk.Bffr.unsafeDestroy rbg k
 		tr =<< Vk.Mm.unsafeFree rmg k
-		atomically (modifyTVar ges (M.delete k))
+		atomically . modifyTVar ges $ M.delete k
 	where tr = either error pure
 
 class NumToVal (n :: [()]) where numToVal :: Int
@@ -585,8 +585,8 @@ data WinObjs sw ssfc scfmt
 type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
 type FramebufferResized = TVar Bool
 
-type Swapchains scfmt ssc nmi svs sr sfs = (
-	Vk.Khr.Swpch.S scfmt ssc, HPList.PL (Vk.ImgVw.I nmi scfmt) svs,
+type Swapchains scfmt ssc nmscv svs sr sfs = (
+	Vk.Khr.Swpch.S scfmt ssc, HPList.PL (Vk.ImgVw.I nmscv scfmt) svs,
 	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
 
 type Pipeline sg sl sdsl alu mnmvp = Vk.Ppl.Gr.G sg
@@ -721,23 +721,20 @@ createImgVws :: forall n sd sv k nm vfmt sm si ifmt .
 createImgVws vg k is = HPList.homoListNFromList @_ @n
 	<$> (\(i, img) -> createImgVw' vg (k, i) img) `mapM` zip [0 ..] is
 
-recreateImgVws :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
-	IO ()
-recreateImgVws _ [] HPList.Nil = pure ()
-recreateImgVws dv (i : is) (v :** vs) =
-	recreateImgVw dv i v >> recreateImgVws dv is vs
-recreateImgVws _ _ _ = error "number of Vk.Img.I and Vk.ImgVw.I should be same"
-
 createImgVw' :: forall sd sv k nm vfmt sm si ifmt .
 	(Ord k, Vk.T.FormatToValue vfmt) =>
 	Vk.ImgVw.Group sd 'Nothing sv k nm vfmt ->
 	k -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm vfmt sv)
 createImgVw' vg k i = forceRight' <$> Vk.ImgVw.create' vg k (imgVwInfo i)
 
-recreateImgVw :: Vk.T.FormatToValue ivfmt => Vk.Dvc.D sd ->
-	Vk.Img.Binded sm si nm ifmt -> Vk.ImgVw.I nm ivfmt sv -> IO ()
-recreateImgVw dv i = Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil
+recreateImgVws :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
+	[Vk.Img.Binded ss ss nm scfmt] -> HPList.PL (Vk.ImgVw.I nm scfmt) sis ->
+	IO ()
+recreateImgVws _ [] HPList.Nil = pure ()
+recreateImgVws dv (i : is) (v :** vs) =
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil v >>
+	recreateImgVws dv is vs
+recreateImgVws _ _ _ = error "number of Vk.Img.I and Vk.ImgVw.I should be same"
 
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
@@ -859,8 +856,7 @@ createRctBffr pd dv gq cp (bg, mg) k rs =
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(c :: Vk.Bffr.Binded m b bn '[Vk.ObjNA.List t n]) m ->
-		Vk.Mm.write @bn
-			@(Vk.ObjNA.List t n) @0 dv m zeroBits rs >>
+		Vk.Mm.write @bn @(Vk.ObjNA.List WRect n) @0 dv m zeroBits rs >>
 		copyBffrLst dv gq cp c b
 
 destroyRctBffr :: Ord k => RectGroups sd sm sb bnm nm k -> k -> IO ()
@@ -1038,7 +1034,7 @@ grPplInfo ex rp pl = Vk.Ppl.Gr.CreateInfo {
 		Vk.Ppl.MltSmplSt.createInfoMinSampleShading = 1,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
-	
+
 shaderStages :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo)
 	'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
@@ -1235,7 +1231,6 @@ mainloop :: forall
 	n sv sf k sd scp scb sl sdsl alu mnmvp sw ssfc scfmt ssc nmscv sr sg
 	sias srfs siff smv sbv bnmv nmv smi sbi bnmi nmi smr sbr bnmr nmr
 	sds smvp sbvp bnmvp . (
-
 	HPList.HomoListN n, Ord k, Succable k, KnownNat alu,
 	Vk.T.FormatToValue scfmt ) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd scp scb ->
