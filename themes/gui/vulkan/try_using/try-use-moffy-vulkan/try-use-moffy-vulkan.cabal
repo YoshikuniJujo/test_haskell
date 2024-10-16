@@ -43,7 +43,6 @@ library
       ThEnv
       ThreeWindows
       Tools
-      Trial.Rectangles
       UseCairo
   other-modules:
       Paths_try_use_moffy_vulkan
@@ -106,7 +105,6 @@ library
 executable try-boxes
   main-is: try-boxes.hs
   other-modules:
-      Main
       Paths_try_use_moffy_vulkan
   hs-source-dirs:
       app
@@ -158,59 +156,6 @@ executable try-boxes
 executable try-followbox
   main-is: try-followbox.hs
   other-modules:
-      Main
-      Paths_try_use_moffy_vulkan
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , array
-    , base >=4.7 && <5
-    , cairo-image
-    , containers
-    , data-default
-    , extra-data-yj
-    , moffy
-    , mtl
-    , optparse-declarative
-    , primitive
-    , random
-    , ranged-list
-    , simple-cairo
-    , simple-pango
-    , stm
-    , template-haskell
-    , text
-    , time
-    , try-glfw-group
-    , try-gpu-vulkan
-    , try-gpu-vulkan-cglm
-    , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
-    , try-language-spir-v
-    , try-moffy-with-gtk3
-    , try-shaderc
-    , try-storable-generic
-    , try-storable-peek-poke
-    , try-tools-yj
-    , try-use-moffy-vulkan
-    , type-flip
-    , type-set
-    , typelevel-tools
-    , union-color
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable try-hello-windows
-  main-is: try-hello-windows.hs
-  other-modules:
-      Main
       Paths_try_use_moffy_vulkan
   hs-source-dirs:
       app
@@ -261,58 +206,6 @@ executable try-hello-windows
 
 executable try-multi-rectangles
   main-is: try-multi-rectangles.hs
-  other-modules:
-      Main
-      Paths_try_use_moffy_vulkan
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , array
-    , base >=4.7 && <5
-    , cairo-image
-    , containers
-    , data-default
-    , extra-data-yj
-    , moffy
-    , mtl
-    , optparse-declarative
-    , primitive
-    , random
-    , ranged-list
-    , simple-cairo
-    , simple-pango
-    , stm
-    , template-haskell
-    , text
-    , time
-    , try-glfw-group
-    , try-gpu-vulkan
-    , try-gpu-vulkan-cglm
-    , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
-    , try-language-spir-v
-    , try-moffy-with-gtk3
-    , try-shaderc
-    , try-storable-generic
-    , try-storable-peek-poke
-    , try-tools-yj
-    , try-use-moffy-vulkan
-    , type-flip
-    , type-set
-    , typelevel-tools
-    , union-color
-    , vector
-    , x-keysym
-  default-language: Haskell2010
-
-executable try-use-moffy-vulkan-exe
-  main-is: Main.hs
   other-modules:
       Paths_try_use_moffy_vulkan
   hs-source-dirs:
