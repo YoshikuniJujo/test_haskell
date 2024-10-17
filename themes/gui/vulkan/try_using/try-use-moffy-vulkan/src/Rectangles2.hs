@@ -521,10 +521,10 @@ type Swapchains scfmt ssc nmscv svs sr sfs = (
 
 type Pipeline sg sl = Vk.Ppl.Gr.G sg
 	'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
-	'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-		'(2, RectPos), '(3, RectSize), '(4, RectColor),
-		'(5, RectModel0), '(6, RectModel1),
-		'(7, RectModel2), '(8, RectModel3) ]
+	'[ '(0, Cglm.Vec2),
+		'(1, RectPos), '(2, RectSize), '(3, RectColor),
+		'(4, RectModel0), '(5, RectModel1),
+		'(6, RectModel2), '(7, RectModel3) ]
 	'(sl, '[], '[])
 
 type WinObjGroups k si ssfc sd scfmt
@@ -537,10 +537,10 @@ type WinObjGroups k si ssfc sd scfmt
 	Vk.Ppl.Gr.Group sd 'Nothing sg k '[ '(
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ],
+		'[	'(0, Cglm.Vec2), '(1, RectPos),
+			'(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3) ],
 		'(sl, DscStLytArgs sdsl, '[]) )],
 	Vk.Smph.Group sd 'Nothing sias k, Vk.Smph.Group sd 'Nothing srfs k,
 	Vk.Fnc.Group sd 'Nothing siff k )
@@ -868,20 +868,20 @@ createGrPpl :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
 	Vk.Ppl.Gr.Group sd ma sg k '[ '(
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ],
+		'[	'(0, Cglm.Vec2),
+			'(1, RectPos), '(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3) ],
 			'(sl, DscStLytArgs sdsl, '[]) )] -> k ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] -> IO (
 		Vk.Ppl.Gr.G sg
 			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 				'(WRect, 'Vk.VtxInp.RateInstance) ]
-			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1),
-				'(7, RectModel2), '(8, RectModel3) ]
+			'[	'(0, Cglm.Vec2),
+				'(1, RectPos), '(2, RectSize), '(3, RectColor),
+				'(4, RectModel0), '(5, RectModel1),
+				'(6, RectModel2), '(7, RectModel3) ]
 			'(sl, DscStLytArgs sdsl, '[]))
 createGrPpl gpg k ex rp pl = (\(forceRight' -> (HPList.Singleton (U3 p))) -> p)
 	<$> Vk.Ppl.Gr.createGs' gpg k Nothing
@@ -892,10 +892,10 @@ recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ]
+		'[	'(0, Cglm.Vec2),
+			'(1, RectPos), '(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3) ]
 		'(sl, DscStLytArgs sdsl, '[]) -> IO ()
 recreateGrPpl dv ex rp pl gp = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
@@ -908,10 +908,10 @@ grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 		'(	'Nothing,
 			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 				'(WRect, 'Vk.VtxInp.RateInstance) ],
-			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1),
-				'(7, RectModel2), '(8, RectModel3) ] )
+			'[	'(0, Cglm.Vec2),
+				'(1, RectPos), '(2, RectSize), '(3, RectColor),
+				'(4, RectModel0), '(5, RectModel1),
+				'(6, RectModel2), '(7, RectModel3) ] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'Nothing '(sl, DscStLytArgs sdsl, '[])
 		sr '(sb, vs, ts, plas)
@@ -1284,10 +1284,10 @@ data Recrs sw ssfc scfmt ssc nmv svs sr sfs sg sl sdsl alu mnmvp = Recrs
 	(Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ]
+		'[	'(0, Cglm.Vec2), '(1, RectPos),
+			'(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3) ]
 		'(sl, DscStLytArgs sdsl, '[]))
 
 wobjsToRecrs ::
@@ -1345,10 +1345,10 @@ data Draws fmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff = Draws
 	(Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ]
+		'[	'(0, Cglm.Vec2), '(1, RectPos),
+			'(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3) ]
 		'(sl, DscStLytArgs sdsl, '[]))
 	(SyncObjs '(sias, srfs, siff))
 
@@ -1366,10 +1366,10 @@ recordCmdBffr :: forall
 	Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3) ]
+		'[	'(0, Cglm.Vec2),
+			'(1, RectPos), '(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3) ]
 		'(sl, DscStLytArgs sdsl, '[]) ->
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
 	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
@@ -1411,21 +1411,17 @@ bffrLstLn b = fromIntegral sz
 
 type WVertex = StrG.W Vertex
 
-data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
+data Vertex = Vertex { vertexPos :: Cglm.Vec2 } --, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
 instance StrG.G Vertex
 
 vertices :: [WVertex]
 vertices = StrG.W <$> [
-	Vertex (Cglm.Vec2 $ (- 0) :. (- 0) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 1 :. (- 0) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec2 $ (- 0) :. 1 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+	Vertex (Cglm.Vec2 $ (- 0) :. (- 0) :. NilL),
+	Vertex (Cglm.Vec2 $ 1 :. (- 0) :. NilL),
+	Vertex (Cglm.Vec2 $ 1 :. 1 :. NilL),
+	Vertex (Cglm.Vec2 $ (- 0) :. 1 :. NilL) ]
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
@@ -1505,10 +1501,10 @@ dummy = rectToRectRaw <$> [Rectangle
 #version 450
 
 layout(location = 0) in vec2 inPosition;
-layout(location = 2) in vec2 rectPosition;
-layout(location = 3) in vec2 rectSize;
-layout(location = 4) in vec4 rectColor;
-layout(location = 5) in mat4 rectModel;
+layout(location = 1) in vec2 rectPosition;
+layout(location = 2) in vec2 rectSize;
+layout(location = 3) in vec4 rectColor;
+layout(location = 4) in mat4 rectModel;
 
 layout(location = 0) out vec4 fragColor;
 
