@@ -3,7 +3,7 @@ app
 
 * [x] try-multi-rectangles.hs
     + [x] MAIN
-    + [ ] BODY
+    + [x] BODY
         - [x] body
         - [x] viewProj
     + [x] RECTANGLES
