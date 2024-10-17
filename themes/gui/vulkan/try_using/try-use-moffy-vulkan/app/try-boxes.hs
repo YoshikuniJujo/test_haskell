@@ -9,12 +9,13 @@ module Main (main) where
 
 import Prelude hiding (break)
 
+import Control.Arrow ((&&&))
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Viewable.Shape
 import Trial.Boxes
 
-import Rectangles2
+import VulkanRectangles qualified as Vk
 import KeyToXKey
 
 import Control.Monad.Fix
@@ -50,7 +51,10 @@ import Control.Moffy.Event.Time
 ----------------------------------------------------------------------
 --
 -- * MAIN
--- * BODY
+-- * EVENT REQUEST
+-- * BOX TO RECTANGLE
+-- * RUN BOXES
+-- * EVENT FROM VULKAN TO MOFFY
 -- * RECTANGLES
 --
 ----------------------------------------------------------------------
@@ -59,22 +63,66 @@ import Control.Moffy.Event.Time
 
 main :: IO ()
 main = do
-	(ccmd, cev, vex) <- atomically
+	(cmd, ev, ex) <- atomically
 		$ (,,) <$> newTChan <*> newTChan <*> newTVar M.empty
-	let	inp = writeTChan ccmd
-		oute = isEmptyTChan cev
-		outp = readTChan cev
-		ext = lookupOr (Vk.Extent2d 0 0) vex
-	cow <- atomically newTChan
-	cocc <- atomically newTChan
-	c' <- atomically newTChan
-	_ <- forkIO . forever
-		$ threadDelay 20000 >> atomically (writeTChan ccmd GetEvent)
-	_ <- forkIO $ body cow cocc c' ((inp, (oute, outp)), ext)
-	_ <- forkIO . void $ interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' baz . initialBoxesState . systemToTAITime =<< getSystemTime
-	rectangles2 ccmd cev vex
+	ff $ threadDelay 20000 >> atomically (writeTChan cmd Vk.GetEvent)
+	(crqs, cocc) <- atomically $ (,) <$> newTChan <*> newTChan
+	ff $ mffReqsToVk (writeTChan cmd) cocc =<< atomically (readTChan crqs)
+	f $ vkEvToMoffy (isEmptyTChan &&& readTChan $ ev) cocc
+	bxs <- atomically newTChan
+	ffa $ writeTChan cmd . Vk.Draw
+		. M.singleton 0 =<< (boxToRect ex `mapM`) =<< readTChan bxs
+	f $ interpretSt (retrySt $ handleBoxes 0.1 crqs cocc) bxs
+		baz . initialBoxesState . systemToTAITime =<< getSystemTime
+	Vk.rectangles cmd ev ex
 	where
-	lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
+	f = void . forkIO . void
+	ff = void . forkIO . forever; ffa = ff . atomically
+	
+-- MOFFY EVENT REQUEST TO VULKAN COMMAND
+
+mffReqsToVk ::
+	(Vk.Command Int -> STM ()) -> TChan (EvOccs GuiEv) -> EvReqs GuiEv -> IO ()
+mffReqsToVk cmd cocc rqs = do
+	maybeWhen (project rqs) \WindowNewReq -> atomically $ cmd Vk.OpenWindow
+	maybeWhen (project rqs)
+		\(WindowDestroyReq i@(WindowId k)) -> atomically do
+		cmd . Vk.DestroyWindow $ fromIntegral k
+		writeTChan cocc . App.expand . App.Singleton $ OccWindowDestroy i
+
+maybeWhen :: Monad m => Maybe a -> (a -> m ()) -> m ()
+maybeWhen = maybe (const $ pure ()) (flip ($))
+
+-- BOX TO RECTANGLE
+
+boxToRect :: (Ord k, Num k) =>
+	TVar (M.Map k (TVar Vk.Extent2d)) -> Box -> STM Vk.Rectangle
+boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
+	lookupOr (Vk.Extent2d 0 0) ex 0 >>= \(Vk.Extent2d (fromIntegral -> w) (fromIntegral -> h)) -> do
+		let	l' = realToFrac $ 4 * l / w - 2
+			r' = realToFrac $ 4 * r / w - 2
+			u' = realToFrac $ 4 * u / h - 2
+			d' = realToFrac $ 4 * d / h - 2
+		pure $ Vk.Rectangle
+			(Vk.RectPos . Cglm.Vec2 $ l' :. u' :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ (r' - l') :. (d' - u') :. NilL)
+			(colorToColor clr)
+			m
+	where m = calcModel 0
+
+colorToColor :: BColor -> Vk.RectColor
+colorToColor = \case
+	Red -> Vk.RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL
+	Green -> Vk.RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
+	Blue -> Vk.RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
+	Yellow -> Vk.RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
+	Cyan -> Vk.RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 1.0 :. 1.0 :. NilL
+	Magenta -> Vk.RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
+
+lookupOr :: Ord k => b -> TVar (M.Map k (TVar b)) -> k -> STM b
+lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
+
+-- RUN BOXES
 
 baz :: Sig s (TimeEv :+: DefaultWindowEv :+: GuiEv) [Box] ()
 baz = do
@@ -84,178 +132,128 @@ baz = do
 	_ <- adjustSig $ boxes `break` deleteEvent
 	waitFor $ adjust $ windowDestroy wi
 
--- BODY
+-- EVENT FROM VULKAN TO MOFFY
 
-body :: TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> TChan [Box] ->
-	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) -> IO ()
-body cow cocc c' ((cmd, (oute, outp)), ext) = do
-	_ <- forkIO $ forever do
-		rs' <- atomically do
-			bs <- readTChan c'
-			boxToRect (ext 0) `mapM` bs
-		atomically do
-			cmd . Draw $ M.fromList [(0, rs')]
-
-	_ <- forkIO $ forever do
-		threadDelay 500
-		ow <- atomically $ tryReadTChan cow
-		maybe (pure ()) (processEvReqs cmd cocc) ow
+vkEvToMoffy :: (STM Bool, STM (Vk.Event Int)) -> TChan (EvOccs GuiEv) -> IO ()
+vkEvToMoffy (nev, ev) cocc = do
 
 	($ instances) $ fix \loop rs -> do
-		threadDelay 500
 		o <- atomically do
-			bool (Just <$> outp) (pure Nothing) =<< oute
+			bool (Just <$> ev) (pure Nothing) =<< nev
 		case o of
 			Nothing -> loop rs
-			Just EventEnd -> pure ()
-			Just (EventKeyDown k GlfwG.Ky.Key'D) -> do
+			Just Vk.EventEnd -> pure ()
+			Just (Vk.EventKeyDown k GlfwG.Ky.Key'D) -> do
 				putStrLn $ "delete window by key `d': " ++ show k
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					. OccDeleteEvent . WindowId $ fromIntegral k
 				loop rs
-			Just (EventKeyDown w ky) -> do
+			Just (Vk.EventKeyDown w ky) -> do
 				putStrLn $ "KEY DOWN: " ++ show w ++ " " ++ show ky
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					. OccKeyDown (WindowId $ fromIntegral w) $ keyToXKey ky
 				loop rs
-			Just (EventKeyUp w ky) -> do
+			Just (Vk.EventKeyUp w ky) -> do
 				putStrLn $ "KEY UP  : " ++ show w ++ " " ++ show ky
 				loop rs
-			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'1) -> do
+			Just (Vk.EventMouseButtonDown w GlfwG.Ms.MouseButton'1) -> do
 				putStrLn "BUTTON LEFT DOWN"
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseDown (WindowId $ fromIntegral w) ButtonLeft
 				loop instances
-			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'2) -> do
+			Just (Vk.EventMouseButtonDown w GlfwG.Ms.MouseButton'2) -> do
 				putStrLn "BUTTON RIGHT DOWN"
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseDown (WindowId $ fromIntegral w) ButtonRight
 				loop instances2
-			Just (EventMouseButtonDown w GlfwG.Ms.MouseButton'3) -> do
+			Just (Vk.EventMouseButtonDown w GlfwG.Ms.MouseButton'3) -> do
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseDown (WindowId $ fromIntegral w) ButtonMiddle
 				loop rs
-			Just (EventMouseButtonUp w GlfwG.Ms.MouseButton'1) -> do
+			Just (Vk.EventMouseButtonUp w GlfwG.Ms.MouseButton'1) -> do
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseUp (WindowId $ fromIntegral w) ButtonLeft
 				loop rs
-			Just (EventMouseButtonUp w GlfwG.Ms.MouseButton'2) -> do
+			Just (Vk.EventMouseButtonUp w GlfwG.Ms.MouseButton'2) -> do
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseUp (WindowId $ fromIntegral w) ButtonRight
 				loop rs
-			Just (EventMouseButtonUp w GlfwG.Ms.MouseButton'3) -> do
+			Just (Vk.EventMouseButtonUp w GlfwG.Ms.MouseButton'3) -> do
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseUp (WindowId $ fromIntegral w) ButtonMiddle
 				loop rs
-			Just (EventMouseButtonDown _ _) -> loop rs
-			Just (EventMouseButtonUp _ _) -> loop rs
-			Just (EventCursorPosition k x y) -> do
+			Just (Vk.EventMouseButtonDown _ _) -> loop rs
+			Just (Vk.EventMouseButtonUp _ _) -> loop rs
+			Just (Vk.EventCursorPosition k x y) -> do
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					$ OccMouseMove (WindowId $ fromIntegral k) (x, y)
 				loop rs
-			Just (EventOpenWindow k) -> do
+			Just (Vk.EventOpenWindow k) -> do
 				putStrLn $ "open window: " ++ show k
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					. OccWindowNew . WindowId $ fromIntegral k
 				loop rs
-			Just (EventDeleteWindow k) -> do
+			Just (Vk.EventDeleteWindow k) -> do
 				putStrLn $ "delete window: " ++ show k
 				atomically . writeTChan cocc
 					. App.expand . App.Singleton
 					. OccDeleteEvent . WindowId $ fromIntegral k
 				loop rs
 
-processEvReqs :: (Command Int -> STM ()) -> TChan (EvOccs GuiEv) -> EvReqs GuiEv -> IO ()
-processEvReqs cmd cocc rqs = do
-	case project rqs of
-		Nothing -> pure ()
-		Just WindowNewReq -> atomically do
-			cmd OpenWindow
-	case project rqs of
-		Nothing -> pure ()
-		Just (WindowDestroyReq i@(WindowId k)) -> do
-			putStrLn $ "window destroy: " ++ show i
-			atomically do
-				cmd . DestroyWindow $ fromIntegral k
-				writeTChan cocc . App.expand . App.Singleton $ OccWindowDestroy i
-
-boxToRect :: STM Vk.Extent2d -> Box -> STM Rectangle
-boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
-	ex >>= \(Vk.Extent2d (fromIntegral -> w) (fromIntegral -> h)) -> do
-		let	l' = realToFrac $ 4 * l / w - 2
-			r' = realToFrac $ 4 * r / w - 2
-			u' = realToFrac $ 4 * u / h - 2
-			d' = realToFrac $ 4 * d / h - 2
-		pure $ Rectangle
-			(RectPos . Cglm.Vec2 $ l' :. u' :. NilL)
-			(RectSize . Cglm.Vec2 $ (r' - l') :. (d' - u') :. NilL)
-			(colorToColor clr)
-			m
-	where m = calcModel 0
-
-colorToColor :: BColor -> RectColor
-colorToColor = \case
-	Red -> RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL
-	Green -> RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
-	Blue -> RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
-	Yellow -> RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
-	Cyan -> RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 1.0 :. 1.0 :. NilL
-	Magenta -> RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
-
 -- RECTANGLES
 
-instances :: Float -> [Rectangle]
+instances :: Float -> [Vk.Rectangle]
 instances tm = let m = calcModel tm in
 	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
 			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
 			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
 			m,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
 			m
 		]
 
-instances2 :: Float -> [Rectangle]
+instances2 :: Float -> [Vk.Rectangle]
 instances2 tm = let m = calcModel tm in
 	[
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
 			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
-			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
 			m,
-		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
 			m,
-		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
+		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
+			(Vk.RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
+			(Vk.RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
 			m
 		]
 
-calcModel :: Float -> RectModel
-calcModel tm = RectModel $ Cglm.rotate Cglm.mat4Identity
+calcModel :: Float -> Vk.RectModel
+calcModel tm = Vk.RectModel $ Cglm.rotate Cglm.mat4Identity
 		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)

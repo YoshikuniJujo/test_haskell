@@ -38,12 +38,12 @@ library
       KeyToXKey.TH
       PangoLayoutExtent
       Rectangles
-      Rectangles2
       SampleImages
       ThEnv
       ThreeWindows
       Tools
       UseCairo
+      VulkanRectangles
   other-modules:
       Paths_try_use_moffy_vulkan
   hs-source-dirs:

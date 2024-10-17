@@ -13,11 +13,11 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Rectangles2 (
+module VulkanRectangles (
 
 	-- * RUN
 
-	rectangles2, Succable,
+	rectangles, Succable,
 
 	-- * COMMAND AND EVENT
 
@@ -131,7 +131,7 @@ import Debug
 
 ----------------------------------------------------------------------
 --
--- * RECTANGLES2
+-- * RUN
 -- * BODY
 -- * PROVIDE WINDOW OBJECTS
 -- * WINDOW OBJECTS
@@ -147,12 +147,12 @@ import Debug
 --
 ----------------------------------------------------------------------
 
--- RECTANGLES2
+-- RUN
 
-rectangles2 :: (Ord k, Succable k) =>
+rectangles :: (Ord k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) ->
 	TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
-rectangles2 ip op vex = GlfwG.init error $
+rectangles ip op vex = GlfwG.init error $
 	createIst \ist -> Vk.Dvc.group nil \dvg -> bool id (dbgm ist) debug $
 	GlfwG.Win.group \wg -> initWin False wg () >>= \dw ->
 	crsfc dw ist \sfcg dsfc -> pickPhd ist dsfc >>= \(pd, qfis) ->
@@ -216,7 +216,7 @@ createIst f = do
 		Vk.Ist.createInfoEnabledExtensionNames = exts }
 	ainfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
-		Vk.applicationInfoApplicationName = "Rectangles2",
+		Vk.applicationInfoApplicationName = "Rectangles",
 		Vk.applicationInfoApplicationVersion =
 			Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoEngineName = "No Engine",
@@ -444,7 +444,7 @@ initWin v wg k = do
 	(forceRight' -> w) <-
 		uncurry (GlfwG.Win.create' wg k) wSize wName Nothing Nothing
 	pure w
-	where wName = "Rectangles2"; wSize = (800, 600)
+	where wName = "Rectangles"; wSize = (800, 600)
 
 -- WINDOW OBJECTS
 

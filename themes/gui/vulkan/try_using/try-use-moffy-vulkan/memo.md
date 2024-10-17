@@ -13,12 +13,16 @@ app
 * [ ] try-boxes.hs
     + [ ] MAIN
         - [ ] main
-        - [ ] baz
-    + [ ] BODY
-        - [ ] body
-        - [ ] processEvReqs
+    + [ ] EVENT REQUEST
+        - [ ] procEvReqs
+        - [ ] maybeWhen
+    + [ ] BOX TO RECTANGLE
         - [ ] boxToRect
         - [ ] colorToColor
+    + [ ] RUN BOXES
+        - [ ] baz
+    + [ ] EVENT FROM VULKAN TO MOFFY
+        - [ ] eventToMoffy
     + [ ] RECTANGLES
         - [ ] instances
         - [ ] instances2
