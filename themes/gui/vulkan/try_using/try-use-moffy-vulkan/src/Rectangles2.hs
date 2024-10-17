@@ -25,7 +25,6 @@ module Rectangles2 (
 
 	-- ** VIEW PROJECTION AND RECTANGLE
 
-	ViewProjection(..),
 	Rectangle(..),
 	rectPos, RectPos(..), rectSize, RectSize(..),
 	rectColor, RectColor(..), RectModel(..)
@@ -119,10 +118,6 @@ import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Subpass qualified as Vk.Subpass
-import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
-import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
-import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
-import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -184,7 +179,7 @@ rectangles2 ip op vex = GlfwG.init error $
 
 data Command k
 	= OpenWindow | DestroyWindow k | GetEvent
-	| Draw (M.Map k (ViewProjection, [Rectangle]))
+	| Draw (M.Map k [Rectangle])
 	deriving Show
 
 data Event k
@@ -327,10 +322,9 @@ body ip op vex ist pd qfis dv gq pq =
 	createCmdPl qfis dv \cp -> createCmdBffr dv cp \cb ->
 	let	dvs = (pd, qfis, dv, gq, pq, cp, cb) in
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
-	createPplLyt @alu dv \dsl pl ->
+	createPplLyt dv \pl ->
 	createVtxBffr pd dv gq cp vertices \vb ->
 	createIdxBffr pd dv gq cp indices \ib -> let vbs = (vb, ib) in
-	createViewProjBffr pd dv \vp vpm ->
 	GlfwG.Win.group \wg -> Vk.Khr.Sfc.group ist nil \sfcg ->
 	Vk.Khr.Swpch.group dv nil \scg ->
 	Vk.ImgVw.group dv nil
@@ -343,13 +337,12 @@ body ip op vex ist pd qfis dv gq pq =
 	Vk.Fnc.group dv nil \iffg ->
 	Vk.Bffr.group dv nil \rbg -> Vk.Mm.group dv nil \rmg ->
 	let	rgs = (rbg, rmg) in
-	createDscPl dv \dp -> createDscSt dv dp vp dsl \ds ->
 	atomically (newTVar M.empty) >>= \ges ->
 	let	crwos = provideWinObjs @n @scfmt
 			op vex pd dv gq cp qfis pl wg gs rgs ges
 		drwos = destroyWinObjs @n wg gs rgs ges
 		gs = (sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg) in
-	mainloop @n @siv @sf ip op dvs pl crwos drwos vbs rgs ds vpm ges
+	mainloop @n @siv @sf ip op dvs pl crwos drwos vbs rgs ges
 
 createCmdPl ::
 	QFamIdcs -> Vk.Dvc.D sd -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
@@ -377,34 +370,20 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-createPplLyt :: forall alu sd mnmvp a . Vk.Dvc.D sd -> (forall sdsl sl .
-	Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp) ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] -> IO a) -> IO a
-createPplLyt dv f = createDSLyt dv \d -> Vk.PplLyt.create dv (info d) nil $ f d
+createPplLyt :: forall sd a . Vk.Dvc.D sd -> (forall sdsl sl .
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] -> IO a) -> IO a
+createPplLyt dv f = Vk.PplLyt.create dv info nil $ f
 	where
-	info :: Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp) ->
-		Vk.PplLyt.CreateInfo 'Nothing
-			'[ '(sdsl, DscStLytArg alu mnmvp)]
+	info :: Vk.PplLyt.CreateInfo 'Nothing
+			(DscStLytArgs sdsl)
 			('Vk.PushConstant.Layout '[] '[])
-	info d = Vk.PplLyt.CreateInfo {
+	info = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
-		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 d }
+--		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 d }
+		Vk.PplLyt.createInfoSetLayouts = HPList.Nil }
 
-createDSLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscStLyt.D s (DscStLytArg alu mnmvp) -> IO a) -> IO a
-createDSLyt dv = Vk.DscStLyt.create dv info nil
-	where
-	info = Vk.DscStLyt.CreateInfo {
-		Vk.DscStLyt.createInfoNext = TMaybe.N,
-		Vk.DscStLyt.createInfoFlags = zeroBits,
-		Vk.DscStLyt.createInfoBindings = HPList.Singleton vpb }
-	vpb = Vk.DscStLyt.BindingBuffer {
-		Vk.DscStLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeUniformBuffer,
-		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
-
-type DscStLytArg alu mnmvp = '[ 'Vk.DscStLyt.Buffer '[AtomViewProj alu mnmvp]]
+type DscStLytArgs sdsl = '[]
 
 createVtxBffr ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> [WVertex] ->
@@ -435,55 +414,6 @@ createBffrMem us pd dv gq cp xs@(fromIntegral . length -> ln) f =
 		copyBffrLst dv gq cp b' b
 	f b
 
-createViewProjBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu mnmvp] ->
-	ViewProjMemory sm sb bnmvp alu mnmvp -> IO a) -> IO a
-createViewProjBffr pd dv = createBffrAtm pd dv
-	Vk.Bffr.UsageUniformBufferBit
-	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
-
-type ViewProjMemory sm sb bnm alu mnm =
-	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnm '[AtomViewProj alu mnm])]
-
-type AtomViewProj alu mnm = Vk.Obj.AtomMaybeName alu WViewProj mnm
-
-createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
-createDscPl dv = Vk.DscPl.create dv info nil
-	where
-	info = Vk.DscPl.CreateInfo {
-		Vk.DscPl.createInfoNext = TMaybe.N,
-		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
-		Vk.DscPl.createInfoMaxSets = 1,
-		Vk.DscPl.createInfoPoolSizes = [szvp] }
-	szvp = Vk.DscPl.Size {
-		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPl.sizeDescriptorCount = 1 }
-
-createDscSt :: KnownNat alu => Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.AtomMaybeName alu WViewProj mnmvp] ->
-	Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp) ->
-	(forall sds .
-		Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp) -> IO a) -> IO a
-createDscSt dv dp vpb dsl f =
-	Vk.DscSt.allocateDs dv ainfo \(HPList.Singleton ds) ->
-	Vk.DscSt.updateDs dv
-		(HPList.Singleton . U5 $ dscWrite vpb ds) HPList.Nil >> f ds
-	where ainfo = Vk.DscSt.AllocateInfo {
-		Vk.DscSt.allocateInfoNext = TMaybe.N,
-		Vk.DscSt.allocateInfoDescriptorPool = dp,
-		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
-
-dscWrite :: KnownNat alu =>
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.Atom alu WViewProj mnmvp] ->
-	Vk.DscSt.D sds slbts ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, nm, Vk.Obj.Atom alu WViewProj mnmvp, 0)]) 0
-dscWrite vpb ds = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
-	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
-		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo vpb }
-
 -- PROVIDE WINDOW OBJECTS
 
 provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
@@ -492,14 +422,14 @@ provideWinObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k) =>
 	TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> QFamIdcs ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	GlfwG.Win.Group sw k ->
 	WinObjGroups k si ssfc sd scfmt
 		ssc siv nmi sr sf sg sl sdsl alu mnmvp sias srfs siff ->
 	RectGroups sd smr sbr bnmr nmr k -> TVar (M.Map k (IO ())) -> k ->
 	IO (WinObjs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n siv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnmvp sias srfs siff)
+		sg sl sias srfs siff)
 provideWinObjs op vexs pd dv gq cp qfis pl wg gs rgs ges k =
 	(,) <$> initWin True wg k <*> atomically (newTVar False) >>= \(w, fr) ->
 	winObjs @n vexs pd dv qfis pl w fr gs k <* do
@@ -523,12 +453,12 @@ winObjs :: forall (n :: [()]) (scfmt :: Vk.T.Format) k
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt, Ord k) =>
 	TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Phd.P -> Vk.Dvc.D sd -> QFamIdcs ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	GlfwG.Win.W sw -> FramebufferResized -> WinObjGroups k si ssfc sd scfmt
 		ssc sv nmi sr sf sg sl sdsl alu mnmvp sias srfs siff -> k ->
 	IO (WinObjs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnmvp sias srfs siff)
+		sg sl sias srfs siff)
 winObjs vexs pd dv qfis pl w fr
 	(sfcg, scg, ivg, rpg, fbg, gpg, iasg, rfsg, iffg) k =
 	Vk.Khr.Sfc.Glfw.Win.create' sfcg k w >>= \(forceRight' -> sfc) ->
@@ -577,10 +507,10 @@ instance NumToVal '[] where numToVal = 0
 instance NumToVal n => NumToVal ('() ': n) where numToVal = 1 + numToVal @n
 
 data WinObjs sw ssfc scfmt
-	ssc nmscv svs sr sfs sg sl sdsl alu mnmvp sias srfs siff = WinObjs
+	ssc nmscv svs sr sfs sg sl sias srfs siff = WinObjs
 	(WinEnvs sw) (Vk.Khr.Sfc.S ssfc) (TVar Vk.Extent2d)
 	(Swapchains scfmt ssc nmscv svs sr sfs)
-	(Pipeline sg sl sdsl alu mnmvp) (SyncObjs '(sias, srfs, siff))
+	(Pipeline sg sl) (SyncObjs '(sias, srfs, siff))
 
 type WinEnvs sw = (GlfwG.Win.W sw , FramebufferResized)
 type FramebufferResized = TVar Bool
@@ -589,13 +519,13 @@ type Swapchains scfmt ssc nmscv svs sr sfs = (
 	Vk.Khr.Swpch.S scfmt ssc, HPList.PL (Vk.ImgVw.I nmscv scfmt) svs,
 	Vk.RndrPss.R sr, HPList.PL Vk.Frmbffr.F sfs )
 
-type Pipeline sg sl sdsl alu mnmvp = Vk.Ppl.Gr.G sg
+type Pipeline sg sl = Vk.Ppl.Gr.G sg
 	'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
 	'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
 		'(2, RectPos), '(3, RectSize), '(4, RectColor),
 		'(5, RectModel0), '(6, RectModel1),
 		'(7, RectModel2), '(8, RectModel3) ]
-	'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[])
+	'(sl, '[], '[])
 
 type WinObjGroups k si ssfc sd scfmt
 	ssc siv nmi sr sf sg sl sdsl alu mnmvp sias srfs siff = (
@@ -611,7 +541,7 @@ type WinObjGroups k si ssfc sd scfmt
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3) ],
-		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) )],
+		'(sl, DscStLytArgs sdsl, '[]) )],
 	Vk.Smph.Group sd 'Nothing sias k, Vk.Smph.Group sd 'Nothing srfs k,
 	Vk.Fnc.Group sd 'Nothing siff k )
 
@@ -942,9 +872,9 @@ createGrPpl :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3) ],
-			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) )] -> k ->
+			'(sl, DscStLytArgs sdsl, '[]) )] -> k ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] -> IO (
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] -> IO (
 		Vk.Ppl.Gr.G sg
 			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 				'(WRect, 'Vk.VtxInp.RateInstance) ]
@@ -952,13 +882,13 @@ createGrPpl :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
 				'(2, RectPos), '(3, RectSize), '(4, RectColor),
 				'(5, RectModel0), '(6, RectModel1),
 				'(7, RectModel2), '(8, RectModel3) ]
-			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]))
+			'(sl, DscStLytArgs sdsl, '[]))
 createGrPpl gpg k ex rp pl = (\(forceRight' -> (HPList.Singleton (U3 p))) -> p)
 	<$> Vk.Ppl.Gr.createGs' gpg k Nothing
 		(HPList.Singleton . U14 $ grPplInfo ex rp pl)
 
 recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
@@ -966,13 +896,13 @@ recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) -> IO ()
+		'(sl, DscStLytArgs sdsl, '[]) -> IO ()
 recreateGrPpl dv ex rp pl gp = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	(HPList.Singleton $ U3 gp)
 
 grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	Vk.Ppl.Gr.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing,
@@ -983,7 +913,7 @@ grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 				'(5, RectModel0), '(6, RectModel1),
 				'(7, RectModel2), '(8, RectModel3) ] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
-		'Nothing '(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[])
+		'Nothing '(sl, DscStLytArgs sdsl, '[])
 		sr '(sb, vs, ts, plas)
 grPplInfo ex rp pl = Vk.Ppl.Gr.CreateInfo {
 	Vk.Ppl.Gr.createInfoNext = TMaybe.N,
@@ -1105,17 +1035,6 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 
 -- CREATE AND COPY BUFFERS
 
-createBffrAtm :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.AtomMaybeName al t mnm] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg
-				bnm '[Vk.Obj.AtomMaybeName al t mnm] )] ->
-		IO a) -> IO a
-createBffrAtm p dv = createBffr p dv Vk.Obj.LengthAtom
-
 createBffrLst :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
 	Vk.Mm.PropertyFlags -> (forall sm sb .
@@ -1229,20 +1148,18 @@ singleTimeCmds dv gq cp cmds =
 mainloop :: forall
 	n sv sf k sd scp scb sl sdsl alu mnmvp sw ssfc scfmt ssc nmscv sr sg
 	sias srfs siff smv sbv bnmv nmv smi sbi bnmi nmi smr sbr bnmr nmr
-	sds smvp sbvp bnmvp . (
-	HPList.HomoListN n, Ord k, Succable k, KnownNat alu,
+	. (
+	HPList.HomoListN n, Ord k, Succable k, -- KnownNat alu,
 	Vk.T.FormatToValue scfmt ) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd scp scb ->
 	PipelineLayout sl sdsl alu mnmvp ->
 	(k -> IO (WinObjs sw ssfc scfmt ssc nmscv
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnmvp sias srfs siff)) -> (k -> IO ()) ->
+		sg sl sias srfs siff)) -> (k -> IO ()) ->
 	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
 	RectGroups sd smr sbr bnmr nmr k ->
-	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp) ->
-	ViewProjMemory smvp sbvp bnmvp alu mnmvp -> TVar (M.Map k (IO ())) ->
-	IO ()
-mainloop ip op dvs pl crwos drwos vbs rgs ds vpm ges = do
+	TVar (M.Map k (IO ())) -> IO ()
+mainloop ip op dvs pl crwos drwos vbs rgs ges = do
 	(vwi, vws) <- atomically $ (,) <$> newTVar zero' <*> newTVar M.empty
 	let	crwos' = do
 			wi <- atomically $ readTVar vwi <* modifyTVar vwi succ'
@@ -1260,9 +1177,8 @@ mainloop ip op dvs pl crwos drwos vbs rgs ds vpm ges = do
 				`mapM` (wobjsToWin <$> ws)
 		Draw drs -> do
 			ws <- atomically $ readTVar vws
-			run @n @sv @sf dvs pl ws vbs rgs (rects drs) ds vpm go
-	where rects = M.map \(vp, rs) ->
-		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy $ null rs)
+			run @n @sv @sf dvs pl ws vbs rgs (rects drs) go
+	where rects = M.map \rs -> bool (rectToRectRaw <$> rs) dummy $ null rs
 
 class Succable n where zero' :: n; succ' :: n -> n
 
@@ -1276,42 +1192,40 @@ type Devices sd scp scb = (
 	Vk.Q.Q, Vk.Q.Q, Vk.CmdPl.C scp, Vk.CmdBffr.C scb )
 
 type PipelineLayout sl sdsl alu mnmvp =
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[]
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[]
 
 type VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi = (
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv],
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] )
 
 wobjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
-	sg sl sdsl alu mnmvp sias srfs siff -> GlfwG.Win.W sw
+	sg sl sias srfs siff -> GlfwG.Win.W sw
 wobjsToWin (WinObjs (w, _) _ _ _ _ _) = w
 
 run :: forall
-	n (sv :: Type) (sf :: Type) k sd sc scb sl sdsl alu mnmvp
+	n (sv :: Type) (sf :: Type) k sd sc scb sl sdsl
 	sw ssfc scfmt ssc nmscv sr sg sias srfs siff
-	smv sbv bnmv nmv smi sbi bnmi nmi smr sbr bnmr nmr smvp sbvp bnmvp
-	sds .
-	(HPList.HomoListN n, Ord k, KnownNat alu, Vk.T.FormatToValue scfmt) =>
-	Devices sd sc scb -> Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	smv sbv bnmv nmv smi sbi bnmi nmi smr sbr bnmr nmr .
+	(HPList.HomoListN n, Ord k, {- KnownNat alu, -} Vk.T.FormatToValue scfmt) =>
+	Devices sd sc scb -> Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	(M.Map k (WinObjs sw ssfc scfmt ssc nmscv
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnmvp sias srfs siff)) ->
+		sg sl sias srfs siff)) ->
 	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
-	RectGroups sd smr sbr bnmr nmr k -> M.Map k (WViewProj, [WRect]) ->
-	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp) ->
-	ViewProjMemory smvp sbvp bnmvp alu mnmvp -> IO () -> IO ()
-run (pd, qfis, dv, gq, pq, cp, cb) pl ws (vb, ib) rgs rss ds vpm go = do
+	RectGroups sd smr sbr bnmr nmr k -> M.Map k [WRect] ->
+	IO () -> IO ()
+run (pd, qfis, dv, gq, pq, cp, cb) pl ws (vb, ib) rgs rss go = do
 	for_ (M.toList ws) \(k, os) -> do
-		let	(vp, rs) = vprs k
+		let	rs = vprs k
 		destroyRctBffr rgs k
 		rb <- createRctBffr pd dv gq cp rgs k rs
 		catchAndRecreate @n @sv @sf pd qfis dv pl (wobjsToRecrs os)
-			$ draw dv gq pq pl (wobjsToDrs os) vb rb ib vpm ds cb vp
+			$ draw dv gq pq (wobjsToDrs os) vb rb ib cb
 	Vk.Dvc.waitIdle dv
 	cls <- and <$> GlfwG.Win.shouldClose `mapM` (wobjsToWin <$> ws)
 	when (not cls)
 		$ for_ ws (recreateAllIfNeed @n @sv @sf pd qfis dv pl) >> go
-	where vprs = fromMaybe (viewProjIdentity, dummy) . (`M.lookup` rss)
+	where vprs = fromMaybe dummy . (`M.lookup` rss)
 
 -- RECREATE
 
@@ -1319,7 +1233,7 @@ catchAndRecreate ::
 	forall n sv sf sd sl sdsl alu mnmvp sw ssfc sr ssc nmi scfmt sg .
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	Recrs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp -> IO () -> IO ()
@@ -1329,13 +1243,13 @@ catchAndRecreate pd qfis dv pl rcs act = catchJust
 	\_ -> recreateAll @n @sv @sf pd qfis dv pl rcs
 
 recreateAllIfNeed :: forall
-	n sv sf sd sl sdsl alu mnmvp sw ssfc scfmt ssc nmi sr sg
+	n sv sf sd sl sdsl sw ssfc scfmt ssc nmi sr sg
 	sias srfs siff . (HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	WinObjs sw ssfc scfmt ssc nmi
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
-		sg sl sdsl alu mnmvp sias srfs siff -> IO ()
+		sg sl sias srfs siff -> IO ()
 recreateAllIfNeed pd qfis dv pl wos@(WinObjs (_, fr) _ _ _ _ _) =
 	atomically (checkFlag fr) >>= bool (pure ())
 		(recreateAll @n @sv @sf pd qfis dv pl $ wobjsToRecrs wos)
@@ -1344,7 +1258,7 @@ recreateAll :: forall
 	n sv sf sd sl sdsl alu mnmvp sw ssfc sr ssc nmv scfmt sg .
 	(HPList.HomoListN n, Vk.T.FormatToValue scfmt) =>
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
+	Vk.PplLyt.P sl (DscStLytArgs sdsl) '[] ->
 	Recrs sw ssfc scfmt ssc nmv
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp -> IO ()
@@ -1374,11 +1288,11 @@ data Recrs sw ssfc scfmt ssc nmv svs sr sfs sg sl sdsl alu mnmvp = Recrs
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]))
+		'(sl, DscStLytArgs sdsl, '[]))
 
 wobjsToRecrs ::
 	WinObjs sw ssfc scfmt ssc nmv sscvs sr sfs
-		sg sl sdsl alu mnmvp sias srfs siff ->
+		sg sl sias srfs siff ->
 	Recrs sw ssfc scfmt ssc nmv sscvs sr sfs sg sl sdsl alu mnmvp
 wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scvs, rp, fbs) gp _) =
 	Recrs w sfc vex sc scvs rp fbs gp
@@ -1387,26 +1301,23 @@ wobjsToRecrs (WinObjs (w, _) sfc vex (sc, scvs, rp, fbs) gp _) =
 
 draw :: forall
 	sd sl sdsl alu mnmvp scfmt ssc sr sfs sg sias srfs siff
-	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi smvp sbvp bnmvp
-	sds scb . KnownNat alu =>
+	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi
+	scb .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
 	Draws scfmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff ->
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
 	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
-	ViewProjMemory smvp sbvp bnmvp alu mnmvp ->
-	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp) ->
-	Vk.CmdBffr.C scb -> WViewProj -> IO ()
-draw dv gq pq pl (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
-	vb rb ib mvp ds cb vp = do
+	Vk.CmdBffr.C scb ->
+	IO ()
+draw dv gq pq (Draws vex sc rp fbs gp (SyncObjs ias rfs iff))
+	vb rb ib cb = do
 	ex <- atomically $ readTVar vex
 	Vk.Fnc.waitForFs dv siff True Nothing >> Vk.Fnc.resetFs dv siff
 	Vk.CmdBffr.reset cb def
 	ii <- Vk.Khr.Swpch.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
-	HPList.index fbs ii \fb -> recordCmdBffr cb rp fb ex pl gp vb rb ib ds
-	updateViewProjBffr dv mvp vp
+	HPList.index fbs ii \fb -> recordCmdBffr cb rp fb ex gp vb rb ib
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
 	catchAndSerialize . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
 	where
@@ -1428,11 +1339,6 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-updateViewProjBffr :: forall sd sm sb bnm alu mnm . KnownNat alu =>
-	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm alu mnm -> WViewProj -> IO ()
-updateViewProjBffr dv mvp vp =
-	Vk.Mm.write @bnm @(Vk.Obj.Atom alu WViewProj mnm) @0 dv mvp zeroBits vp
-
 data Draws fmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff = Draws
 	(TVar Vk.Extent2d) (Vk.Khr.Swpch.S fmt ssc) (Vk.RndrPss.R sr)
 	(HPList.PL Vk.Frmbffr.F sfs)
@@ -1443,21 +1349,20 @@ data Draws fmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff = Draws
 			'(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]))
+		'(sl, DscStLytArgs sdsl, '[]))
 	(SyncObjs '(sias, srfs, siff))
 
 wobjsToDrs ::
-	WinObjs sw ssfc scfmt ssc nm sscivs sr sfs sg sl sdsl alu mnmvp
+	WinObjs sw ssfc scfmt ssc nm sscivs sr sfs sg sl
 		sias srfs siff ->
 	Draws scfmt ssc sr sfs sg sl sdsl alu mnmvp sias srfs siff
 wobjsToDrs (WinObjs _ _ vex (sc, _, rp, fbs) gp soss) =
 	Draws vex sc rp fbs gp soss
 
 recordCmdBffr :: forall
-	scb sr sf sl sdsl alu mnmvp sg
-	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi sds .
+	scb sr sf sl sdsl sg
+	smv sbv bnmv nmv smr sbr bnmr nmr smi sbi bnmi nmi .
 	Vk.CmdBffr.C scb -> Vk.RndrPss.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp)] '[] ->
 	Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
@@ -1465,12 +1370,12 @@ recordCmdBffr :: forall
 			'(2, RectPos), '(3, RectSize), '(4, RectColor),
 			'(5, RectModel0), '(6, RectModel1),
 			'(7, RectModel2), '(8, RectModel3) ]
-		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp)], '[]) ->
+		'(sl, DscStLytArgs sdsl, '[]) ->
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
 	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
 	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] ->
-	Vk.DscSt.D sds '(sdsl, DscStLytArg alu mnmvp) -> IO ()
-recordCmdBffr cb rp fb ex pl gp vb rb ib ds =
+	IO ()
+recordCmdBffr cb rp fb ex gp vb rb ib =
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gp \cbb ->
@@ -1480,9 +1385,9 @@ recordCmdBffr cb rp fb ex pl gp vb rb ib ds =
 		HPList.Nil ) >>
 	Vk.Cmd.bindIndexBuffer cbb
 		(Vk.Bffr.IndexedForList @_ @_ @_ @Word16 @nmi ib) >>
-	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
-		(HPList.Singleton $ U2 ds)
-		(HPList.Singleton $ HPList.Singleton HPList.Nil) >>
+--	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
+--		(HPList.Singleton $ U2 ds)
+--		(HPList.Singleton $ HPList.Singleton HPList.Nil) >>
 	Vk.Cmd.drawIndexed cbb (bffrLstLn ib) (bffrLstLn rb) 0 0 0
 	where
 	rpinfo :: Vk.RndrPss.BeginInfo 'Nothing sr sf
@@ -1593,32 +1498,13 @@ dummy = rectToRectRaw <$> [Rectangle
 	(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 0.0 :. NilL)
 	(RectModel Cglm.mat4Identity)]
 
-type WViewProj = StrG.W ViewProjection
-
-data ViewProjection = ViewProjection {
-	viewProjectionView :: Cglm.Mat4, viewProjectionProj :: Cglm.Mat4 }
-	deriving (Show, Generic)
-
-viewProjIdentity :: WViewProj
-viewProjIdentity = StrG.W ViewProjection {
-	viewProjectionView = Cglm.mat4Identity,
-	viewProjectionProj = Cglm.mat4Identity }
-
-instance StrG.G ViewProjection
-
-instance Default ViewProjection where
-	def = ViewProjection Cglm.mat4Identity Cglm.mat4Identity
-
 -- SHADERS
 
 [glslVertexShader|
 
 #version 450
 
-layout(binding = 0) uniform ViewProjection { mat4 view; mat4 proj; } vp;
-
 layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec2 rectPosition;
 layout(location = 3) in vec2 rectSize;
 layout(location = 4) in vec4 rectColor;
@@ -1630,10 +1516,8 @@ void
 main()
 {
 	gl_Position =
-//		vp.proj * vp.view * rectModel *
 		vec4(inPosition * rectSize, 0.0, 1.0) +
 		vec4(rectPosition, 0.0, 1.0);
-//	fragColor = inColor;
 	fragColor = rectColor;
 }
 
@@ -1644,7 +1528,6 @@ main()
 #version 450
 
 layout(location = 0) in vec4 fragColor;
-
 layout(location = 0) out vec4 outColor;
 
 void

@@ -20,7 +20,6 @@ import KeyToXKey
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
-import Data.Default
 import Data.List.Length
 import Data.Map qualified as M
 import Data.Bool
@@ -95,7 +94,7 @@ body cow cocc c' ((cmd, (oute, outp)), ext) = do
 			bs <- readTChan c'
 			boxToRect (ext 0) `mapM` bs
 		atomically do
-			cmd . Draw $ M.fromList [(0, (def, rs'))]
+			cmd . Draw $ M.fromList [(0, rs')]
 
 	_ <- forkIO $ forever do
 		threadDelay 500
