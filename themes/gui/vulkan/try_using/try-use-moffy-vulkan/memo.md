@@ -11,13 +11,25 @@ app
         - [x] rects2
         - [x] calcModel
 * [ ] try-boxes.hs
+    + [ ] MAIN
+        - [ ] main
+        - [ ] baz
+    + [ ] BODY
+        - [ ] body
+        - [ ] processEvReqs
+        - [ ] boxToRect
+        - [ ] colorToColor
+    + [ ] RECTANGLES
+        - [ ] instances
+        - [ ] instances2
+        - [ ] calcModel
 * [ ] try-followbox.hs
 
 src
 ---
 
 * [x] Rectangles
-* [x] Rectangles2
+* [ ] Rectangles2
 * [ ] UseCairo
 * [ ] ThEnv
 * [ ] Tools
