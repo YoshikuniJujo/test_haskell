@@ -1,7 +1,15 @@
 app
 ---
 
-* [ ] try-multi-rectangles.hs
+* [x] try-multi-rectangles.hs
+    + [x] MAIN
+    + [ ] BODY
+        - [x] body
+        - [x] viewProj
+    + [x] RECTANGLES
+        - [x] rects1
+        - [x] rects2
+        - [x] calcModel
 * [ ] try-boxes.hs
 * [ ] try-followbox.hs
 
