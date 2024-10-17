@@ -17,7 +17,7 @@ src
 ---
 
 * [x] Rectangles
-* [ ] Rectangles2
+* [x] Rectangles2
 * [ ] UseCairo
 * [ ] ThEnv
 * [ ] Tools

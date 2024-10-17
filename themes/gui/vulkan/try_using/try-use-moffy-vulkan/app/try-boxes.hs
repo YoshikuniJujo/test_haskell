@@ -69,15 +69,19 @@ action f = liftIO do
 	let	inp = writeTChan cinp
 		oute = isEmptyTChan cout
 		outp = readTChan cout
-		ext = readTVarOr (Vk.Extent2d 0 0) vext
+		ext = lookupOr (Vk.Extent2d 0 0) vext
 	cow <- atomically newTChan
 	cocc <- atomically newTChan
 	c' <- atomically newTChan
 	e <- atomically newTChan
+	_ <- forkIO . forever
+		$ threadDelay 100000 >> atomically (writeTChan cinp GetEvent)
 	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext)
 	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' baz . initialBoxesState . systemToTAITime =<< getSystemTime
 	rectangles2 cinp cout vext
 	atomically $ readTChan e
+	where
+	lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
 
 readTChanMesh :: Int -> TChan a -> STM a
 readTChanMesh 0 c = readTChan c
@@ -133,9 +137,8 @@ boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
 			(RectPos . Cglm.Vec2 $ l' :. u' :. NilL)
 			(RectSize . Cglm.Vec2 $ (r' - l') :. (d' - u') :. NilL)
 			(colorToColor clr)
-			m0 m1 m2 m3
-	where
-	(m0, m1, m2, m3) = calcModel 0
+			m
+	where m = calcModel 0
 
 colorToColor :: BColor -> RectColor
 colorToColor = \case
@@ -250,50 +253,47 @@ uniformBufferObject sce = ViewProjection {
 				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 
 instances :: Float -> [Rectangle]
-instances tm = let
-	(m0, m1, m2, m3) = calcModel tm in
+instances tm = let m = calcModel tm in
 	[
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3
+			m
 		]
 
 instances2 :: Float -> [Rectangle]
-instances2 tm = let (m0, m1, m2, m3) = calcModel tm in
+instances2 tm = let m = calcModel tm in
 	[
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.6 :. NilL)
 			(RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3,
+			m,
 		Rectangle (RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
 			(RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
 			(RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m0 m1 m2 m3
+			m
 		]
 
-calcModel :: Float -> (RectModel0, RectModel1, RectModel2, RectModel3)
-calcModel tm = let
-	m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s $ Cglm.rotate Cglm.mat4Identity
-		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL) in
-	(RectModel0 m0, RectModel1 m1, RectModel2 m2, RectModel3 m3)
+calcModel :: Float -> RectModel
+calcModel tm = RectModel $ Cglm.rotate Cglm.mat4Identity
+		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
