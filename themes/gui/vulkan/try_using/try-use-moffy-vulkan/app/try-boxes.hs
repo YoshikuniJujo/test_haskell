@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -38,7 +39,7 @@ import Control.Moffy.Event.Mouse (
 import Data.OneOrMore (project)
 import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
 
-import Control.Moffy.Handle (retrySt)
+import Control.Moffy.Handle (retrySt, ExpandableOccurred)
 import Control.Moffy.Run.TChan
 
 import Data.Time.Clock.System
@@ -94,14 +95,9 @@ vkEvToMoffy :: STM (Vk.Event Int) -> (EvOccs GuiEv -> STM ())  -> IO ()
 vkEvToMoffy ev occ = ($ rects1) $ fix \go rs -> atomically ev >>= \case
 	Vk.EventEnd -> pure ()
 	Vk.EventOpenWindow k ->
-		atomically (occ . App.expand . App.Singleton
-			. OccWindowNew . WindowId $ fromIntegral k) >> go rs
-	Vk.EventDeleteWindow k -> do
-		putStrLn $ "delete window: " ++ show k
-		atomically . occ
-			. App.expand . App.Singleton
-			. OccDeleteEvent . WindowId $ fromIntegral k
-		go rs
+		o (OccWindowNew . WindowId $ fromIntegral k) >> go rs
+	Vk.EventDeleteWindow k ->
+		o (OccDeleteEvent . WindowId $ fromIntegral k) >> go rs
 	Vk.EventKeyDown k GlfwG.Ky.Key'D -> do
 		putStrLn $ "delete window by key `d': " ++ show k
 		atomically . occ
@@ -125,11 +121,11 @@ vkEvToMoffy ev occ = ($ rects1) $ fix \go rs -> atomically ev >>= \case
 		atomically . occ . App.expand . App.Singleton
 			$ OccMouseUp (WindowId $ fromIntegral w) mb
 		go rs
-	Vk.EventCursorPosition k x y -> do
-		atomically . occ
-			. App.expand . App.Singleton
-			$ OccMouseMove (WindowId $ fromIntegral k) (x, y)
-		go rs
+	Vk.EventCursorPosition k x y ->
+		o (OccMouseMove (WindowId $ fromIntegral k) (x, y)) >> go rs
+	where
+	o :: ExpandableOccurred (Singleton a) GuiEv => Occurred a -> IO ()
+	o = atomically . occ . App.expand . App.Singleton
 
 buttonToButton :: GlfwG.Ms.MouseButton -> MouseBtn
 buttonToButton = \case
