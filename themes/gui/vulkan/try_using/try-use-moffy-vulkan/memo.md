@@ -11,18 +11,17 @@ app
         - [x] rects2
         - [x] calcModel
 * [ ] try-boxes.hs
-    + [ ] MAIN
-        - [ ] main
-    + [ ] EVENT REQUEST
-        - [ ] procEvReqs
-        - [ ] maybeWhen
+    + [x] MAIN
+        - [x] main
+    + [x] MOFFY EVENT REQUEST TO VULKAN COMMAND
+        - [x] mffReqsToVk
+    + [ ] EVENT FROM VULKAN TO MOFFY
+        - [ ] vkEvToMoffy
     + [ ] BOX TO RECTANGLE
         - [ ] boxToRect
         - [ ] colorToColor
     + [ ] RUN BOXES
-        - [ ] baz
-    + [ ] EVENT FROM VULKAN TO MOFFY
-        - [ ] eventToMoffy
+        - [ ] runBoxes
     + [ ] RECTANGLES
         - [ ] instances
         - [ ] instances2
