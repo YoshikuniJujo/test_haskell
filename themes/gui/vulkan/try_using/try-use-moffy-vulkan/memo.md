@@ -10,22 +10,18 @@ app
         - [x] rects1
         - [x] rects2
         - [x] calcModel
-* [ ] try-boxes.hs
+* [x] try-boxes.hs
     + [x] MAIN
         - [x] main
-    + [x] MOFFY EVENT REQUEST TO VULKAN COMMAND
+    + [x] SEND REQUEST/EVENT TO VULKAN/MOFFY
         - [x] mffReqsToVk
-    + [ ] EVENT FROM VULKAN TO MOFFY
-        - [ ] vkEvToMoffy
-    + [ ] BOX TO RECTANGLE
-        - [ ] boxToRect
-        - [ ] colorToColor
-    + [ ] RUN BOXES
-        - [ ] runBoxes
-    + [ ] RECTANGLES
-        - [ ] instances
-        - [ ] instances2
-        - [ ] calcModel
+        - [x] vkEvToMoffy
+    + [x] BOX TO RECTANGLE
+        - [x] boxToRect
+        - [x] colorToColor
+        - [x] lookupOr
+    + [x] RUN BOXES
+        - [x] runBoxes
 * [ ] try-followbox.hs
 
 src

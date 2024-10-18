@@ -26,8 +26,8 @@ module VulkanRectangles (
 	-- ** VIEW PROJECTION AND RECTANGLE
 
 	Rectangle(..),
-	rectPos, RectPos(..), rectSize, RectSize(..),
-	rectColor, RectColor(..), RectModel(..)
+	rectPos, RectPos, rectSize, RectSize,
+	rectColor, RectColor, RectModel(..)
 
 	) where
 

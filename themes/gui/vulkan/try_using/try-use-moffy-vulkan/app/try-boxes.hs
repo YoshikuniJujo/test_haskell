@@ -11,23 +11,12 @@ module Main (main) where
 import Prelude hiding (break)
 
 import Control.Monad
-import Control.Moffy
-import Control.Moffy.Viewable.Shape
-import Trial.Boxes
-
-import VulkanRectangles qualified as Vk
-import KeyToXKey
-
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
-import Data.List.Length
-import Data.Map qualified as M
-import Gpu.Vulkan.Cglm qualified as Cglm
-import Gpu.Vulkan qualified as Vk
-import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
-import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
+import Control.Moffy
+import Control.Moffy.Event.Time
 import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
@@ -35,26 +24,33 @@ import Control.Moffy.Event.Delete hiding (deleteEvent)
 import Control.Moffy.Event.Delete.DefaultWindow
 import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse (
-	pattern OccMouseDown, pattern OccMouseUp, pattern OccMouseMove, MouseBtn(..))
-import Data.OneOrMore (project)
-import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
-
+	MouseBtn(..),
+	pattern OccMouseDown, pattern OccMouseUp, pattern OccMouseMove )
 import Control.Moffy.Handle (retrySt, ExpandableOccurred)
 import Control.Moffy.Run.TChan
+import Control.Moffy.Viewable.Shape
 
-import Data.Time.Clock.System
-import Trial.Boxes.RunGtkField (handleBoxes, initialBoxesState)
 import Data.Type.Set
-import Control.Moffy.Event.Time
+import Data.OneOrMore (project)
+import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
+import Data.Map qualified as M
+import Data.Time.Clock.System
+import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
+import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
+import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.Cglm qualified as Cglm
+
+import Trial.Boxes
+import Trial.Boxes.RunGtkField (handleBoxes, initialBoxesState)
+import VulkanRectangles qualified as Vk
+import KeyToXKey
 
 ----------------------------------------------------------------------
 --
 -- * MAIN
--- * MOFFY EVENT REQUEST TO VULKAN COMMAND
--- * EVENT FROM VULKAN TO MOFFY
+-- * SEND REQUEST/EVENT TO VULKAN/MOFFY
 -- * BOX TO RECTANGLE
 -- * RUN BOXES
--- * RECTANGLES
 --
 ----------------------------------------------------------------------
 
@@ -77,7 +73,7 @@ main = do
 	f = void . forkIO . void
 	ff = void . forkIO . forever; ffa = ff . atomically
 	
--- MOFFY EVENT REQUEST TO VULKAN COMMAND
+-- SEND REQUEST/EVENT TO VULKAN/MOFFY
 
 mffReqsToVk :: (Vk.Command Int -> STM ()) ->
 	(EvOccs GuiEv -> STM ()) -> EvReqs GuiEv -> STM ()
@@ -89,112 +85,55 @@ mffReqsToVk cmd occ rqs = do
 		occ . App.expand . App.Singleton $ OccWindowDestroy i
 	where maybeWhen = maybe (const $ pure ()) (flip ($))
 
--- EVENT FROM VULKAN TO MOFFY
-
 vkEvToMoffy :: STM (Vk.Event Int) -> (EvOccs GuiEv -> STM ())  -> IO ()
-vkEvToMoffy ev occ = ($ rects1) $ fix \go rs -> atomically ev >>= \case
+vkEvToMoffy ev occ = fix \go -> atomically ev >>= \case
 	Vk.EventEnd -> pure ()
-	Vk.EventOpenWindow k ->
-		o (OccWindowNew . WindowId $ fromIntegral k) >> go rs
-	Vk.EventDeleteWindow k ->
-		o (OccDeleteEvent . WindowId $ fromIntegral k) >> go rs
-	Vk.EventKeyDown k GlfwG.Ky.Key'D -> do
-		putStrLn $ "delete window by key `d': " ++ show k
-		atomically . occ
-			. App.expand . App.Singleton
-			. OccDeleteEvent . WindowId $ fromIntegral k
-		go rs
-	Vk.EventKeyDown w ky -> do
-		putStrLn $ "KEY DOWN: " ++ show w ++ " " ++ show ky
-		atomically . occ
-			. App.expand . App.Singleton
-			. OccKeyDown (WindowId $ fromIntegral w) $ keyToXKey ky
-		go rs
-	Vk.EventKeyUp w ky -> do
-		putStrLn $ "KEY UP  : " ++ show w ++ " " ++ show ky
-		go rs
-	Vk.EventMouseButtonDown w (buttonToButton -> mb) -> do
-		atomically . occ . App.expand . App.Singleton
-			$ OccMouseDown (WindowId $ fromIntegral w) mb
-		go rects1
-	Vk.EventMouseButtonUp w (buttonToButton -> mb) -> do
-		atomically . occ . App.expand . App.Singleton
-			$ OccMouseUp (WindowId $ fromIntegral w) mb
-		go rs
-	Vk.EventCursorPosition k x y ->
-		o (OccMouseMove (WindowId $ fromIntegral k) (x, y)) >> go rs
+	Vk.EventOpenWindow (w -> i) -> o (OccWindowNew i) >> go
+	Vk.EventDeleteWindow (w -> i) -> o (OccDeleteEvent i) >> go
+	Vk.EventKeyDown (w -> i) GlfwG.Ky.Key'D -> o (OccDeleteEvent i) >> go
+	Vk.EventKeyDown (w -> i) ky -> o (OccKeyDown i $ keyToXKey ky) >> go
+	Vk.EventKeyUp (w -> i) ky -> o (OccKeyUp i $ keyToXKey ky) >> go
+	Vk.EventMouseButtonDown (w -> i) (bt -> b) -> o (OccMouseDown i b) >> go
+	Vk.EventMouseButtonUp (w -> i) (bt -> b) -> o (OccMouseUp i b) >> go
+	Vk.EventCursorPosition (w -> i) x y -> o (OccMouseMove i (x, y)) >> go
 	where
 	o :: ExpandableOccurred (Singleton a) GuiEv => Occurred a -> IO ()
 	o = atomically . occ . App.expand . App.Singleton
-
-buttonToButton :: GlfwG.Ms.MouseButton -> MouseBtn
-buttonToButton = \case
-	GlfwG.Ms.MouseButton'1 -> ButtonLeft
-	GlfwG.Ms.MouseButton'2 -> ButtonRight
-	GlfwG.Ms.MouseButton'3 -> ButtonMiddle
-	_ -> ButtonUnknown maxBound
+	w = WindowId . fromIntegral
+	bt = \case
+		GlfwG.Ms.MouseButton'1 -> ButtonLeft
+		GlfwG.Ms.MouseButton'2 -> ButtonRight
+		GlfwG.Ms.MouseButton'3 -> ButtonMiddle
+		_ -> ButtonUnknown maxBound
 
 -- BOX TO RECTANGLE
 
 boxToRect :: (Ord k, Num k) =>
 	TVar (M.Map k (TVar Vk.Extent2d)) -> Box -> STM Vk.Rectangle
-boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
-	lookupOr (Vk.Extent2d 0 0) ex 0 >>= \(Vk.Extent2d (fromIntegral -> w) (fromIntegral -> h)) -> do
-		let	l' = realToFrac $ 4 * l / w - 2
-			r' = realToFrac $ 4 * r / w - 2
-			u' = realToFrac $ 4 * u / h - 2
-			d' = realToFrac $ 4 * d / h - 2
-		pure $ Vk.Rectangle
-			(Vk.RectPos . Cglm.Vec2 $ l' :. u' :. NilL)
-			(Vk.RectSize . Cglm.Vec2 $ (r' - l') :. (d' - u') :. NilL)
-			(colorToColor clr)
-			m
-	where m = calcModel 0
+boxToRect ex (Box (Rect (l, t) (r, b)) clr) = (<$> sz) \(w, h) ->
+	let	(l', r', t', b') = (cnv l w, cnv r w, cnv t h, cnv b h) in
+	Vk.Rectangle
+		(Vk.rectPos l' t') (Vk.rectSize (r' - l') (b' - t'))
+		(colorToColor clr) (Vk.RectModel Cglm.mat4Identity)
+	where
+	sz = (<$> lookupOr (Vk.Extent2d 0 0) ex 0)
+		\(Vk.Extent2d (fromIntegral -> w) (fromIntegral -> h)) -> (w, h)
+	cnv xy wh = realToFrac $ 4 * xy / wh - 2
 
 colorToColor :: BColor -> Vk.RectColor
-colorToColor = \case
-	Red -> Vk.RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL
-	Green -> Vk.RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
-	Blue -> Vk.RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
-	Yellow -> Vk.RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
-	Cyan -> Vk.RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 1.0 :. 1.0 :. NilL
-	Magenta -> Vk.RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
+colorToColor = ($ 1.0) . \case
+	Red -> Vk.rectColor 1.0 0.0 0.0; Green -> Vk.rectColor 0.0 1.0 0.0
+	Blue -> Vk.rectColor 0.0 0.0 1.0; Yellow -> Vk.rectColor 1.0 1.0 0.0
+	Cyan -> Vk.rectColor 0.0 1.0 1.0; Magenta -> Vk.rectColor 1.0 0.0 1.0
 
-lookupOr :: Ord k => b -> TVar (M.Map k (TVar b)) -> k -> STM b
+lookupOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
 lookupOr d t k = M.lookup k <$> readTVar t >>= maybe (pure d) readTVar
 
 -- RUN BOXES
 
 runBoxes :: Sig s (TimeEv :+: DefaultWindowEv :+: GuiEv) [Box] ()
 runBoxes = do
-	wi <- waitFor $ adjust windowNew >>= \i ->
-		i <$ adjust (storeDefaultWindow i)
+	wi <- waitFor
+		$ adjust windowNew >>= \i -> i <$ adjust (storeDefaultWindow i)
 	_ <- adjustSig $ boxes `break` deleteEvent
-	waitFor $ adjust $ windowDestroy wi
-
--- RECTANGLES
-
-rects1 :: Float -> [Vk.Rectangle]
-rects1 tm = let m = calcModel tm in
-	[
-		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ (- 1) :. (- 1) :. NilL)
-			(Vk.RectSize . Cglm.Vec2 $ 0.3 :. 0.3 :. NilL)
-			(Vk.RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ 1 :. 1 :. NilL)
-			(Vk.RectSize . Cglm.Vec2 $ 0.2 :. 0.2 :. NilL)
-			(Vk.RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL)
-			m,
-		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ 1.5 :. (- 1.5) :. NilL)
-			(Vk.RectSize . Cglm.Vec2 $ 0.3 :. 0.6 :. NilL)
-			(Vk.RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL)
-			m,
-		Vk.Rectangle (Vk.RectPos . Cglm.Vec2 $ (- 1.5) :. 1.5 :. NilL)
-			(Vk.RectSize . Cglm.Vec2 $ 0.6 :. 0.3 :. NilL)
-			(Vk.RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL)
-			m
-		]
-
-calcModel :: Float -> Vk.RectModel
-calcModel tm = Vk.RectModel $ Cglm.rotate Cglm.mat4Identity
-		(tm * Cglm.rad 90) (Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
+	waitFor . adjust $ windowDestroy wi
