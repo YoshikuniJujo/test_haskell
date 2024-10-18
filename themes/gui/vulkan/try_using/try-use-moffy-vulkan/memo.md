@@ -28,10 +28,8 @@ src
 ---
 
 * [x] Rectangles
-* [ ] Rectangles2
+* [x] VulkanRectangles
 * [ ] UseCairo
-* [ ] ThEnv
-* [ ] Tools
 * [ ] Convert
 * [ ] CreateTextureGroup
 * [ ] Gpu.Vulkan.CairoImage
@@ -39,4 +37,3 @@ src
 * [ ] KeyToKey.TH
 * [ ] PangoLayoutExtent
 * [ ] SampleImages
-* [ ] ThreeWindows

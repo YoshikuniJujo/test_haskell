@@ -39,9 +39,6 @@ library
       PangoLayoutExtent
       Rectangles
       SampleImages
-      ThEnv
-      ThreeWindows
-      Tools
       UseCairo
       VulkanRectangles
   other-modules:

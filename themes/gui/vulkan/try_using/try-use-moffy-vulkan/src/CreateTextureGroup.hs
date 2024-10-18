@@ -60,7 +60,7 @@ import Gpu.Vulkan.Component qualified as Vk.Component
 import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Object.Base qualified as KObj
 
-import Tools
+import Data.Bits.ToolsYj
 
 type TextureGroup sd si sm siv fmt k = (
 	Vk.Img.Group sd 'Nothing si k "texture" fmt,

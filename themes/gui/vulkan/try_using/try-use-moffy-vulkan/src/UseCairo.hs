@@ -17,7 +17,7 @@ module UseCairo (
 
 	-- * RECTANGLES
 
-	rectangles2,
+	rectangles,
 
 	-- * COMMAND
 
@@ -130,8 +130,9 @@ import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.Ext.DUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.Ex.DUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
 
-import Tools
-import ThEnv
+import Data.Ord.ToolsYj
+import Data.Bits.ToolsYj
+import Data.Bool.ToolsYj
 
 import Graphics.UI.GlfwG as GlfwG
 import Graphics.UI.GlfwG.Window as GlfwG.Win
@@ -159,12 +160,34 @@ import Gpu.Vulkan.Sampler qualified as Vk.Smplr
 
 import Trial.Followbox.ViewType as FV
 
-rectangles2 :: forall k . (Ord k, Show k, Succable k) =>
+import Debug
+
+----------------------------------------------------------------------
+--
+-- * RUN
+-- * BODY
+-- * PROVIDE WINDOW OBJECTS
+-- * WINDOW OBJECTS
+-- * RECTANGLE BUFFER
+-- * GET GLFW EVENTS
+-- * CREATE AND COPY BUFFERS
+-- * GRAPHICS PIPELINE
+-- * MAINLOOP
+-- * RECREATE
+-- * DRAW
+-- * DATA TYPES
+-- * SHADERS
+--
+----------------------------------------------------------------------
+
+-- RUN
+
+rectangles :: forall k . (Ord k, Show k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
-rectangles2 inp outp vext = GlfwG.init error $ do
+rectangles inp outp vext = GlfwG.init error $ do
 	createInstance \ist ->
 		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-			enableValidationLayers do
+			debug do
 		(phd', qfis', fmt', dv', gq', pq', n') <-
 			withWindow False \dw ->
 			createSurface dw ist \dsfc -> do
@@ -185,7 +208,7 @@ rectangles2 inp outp vext = GlfwG.init error $ do
 						$ formats spp, dv, gq, pq, n )
 		getNum n' \(_ :: Proxy n) ->
 			Vk.T.formatToType fmt' \(_ :: Proxy fmt) ->
-				run' @n @fmt @_ @_ @k inp outp vext
+				body @n @fmt @_ @_ @k inp outp vext
 					ist phd' qfis' dv' gq' pq'
 	atomically $ writeTChan outp EventEnd
 	where setupDebugMessenger ist f =
@@ -241,9 +264,6 @@ data Event k
 	| EventTextLayoutExtentResult (Occurred CTE.CalcTextExtents)
 	| EventNeedRedraw
 	deriving Show
-
-enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 type MouseButtonStateDict = M.Map GlfwG.Ms.MouseButton GlfwG.Ms.MouseButtonState
 
@@ -327,14 +347,14 @@ fromRight (Right x) = x
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
+	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers L.\\)
 				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DUtls.extensionName :)
-			enableValidationLayers . (Vk.Ist.ExtensionName <$>)
+			debug . (Vk.Ist.ExtensionName <$>)
 		<$> GlfwG.getRequiredInstanceExtensions
 	print exts
 	Vk.Ist.create (crinfo exts) nil f
@@ -346,7 +366,7 @@ createInstance f = do
 		Vk.Ist.createInfoFlags = zeroBits,
 		Vk.Ist.createInfoApplicationInfo = Just appinfo,
 		Vk.Ist.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Ist.createInfoEnabledExtensionNames = es }
 	appinfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
@@ -377,12 +397,14 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 	where debugCallback _msgsvr _msgtp d _udata = False <$ Txt.putStrLn
 		("validation layer: " <> Vk.Ex.DUtls.Msgr.callbackDataMessage d)
 
-run' :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
+-- BODY
+
+body :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
 	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k ) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q -> IO ()
-run' inp outp vext_ ist phd qfis dv gq pq =
+body inp outp vext_ ist phd qfis dv gq pq =
 	createCommandPool qfis dv \cp ->
 	createCommandBuffer dv cp \cb ->
 	let	dvs = (phd, qfis, dv, gq, pq, cp, cb) in
@@ -665,7 +687,7 @@ createLogicalDevice phdvc dvcgrp k qfis =
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.createInfoEnabledLayerNames =
-			bool [] validationLayers enableValidationLayers,
+			bool [] validationLayers debug,
 		Vk.Dvc.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.createInfoEnabledFeatures = Just def {
 			Vk.PhDvc.featuresSamplerAnisotropy = True } }
@@ -746,8 +768,8 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Sfc.capabilitiesMaxImageCount caps
-	imgc = clampOld
-		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1) 0 maxImgc
+	imgc = clamp 0 maxImgc
+		(Vk.Khr.Sfc.capabilitiesMinImageCount caps + 1)
 	(ism, qfis) = bool
 		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
@@ -786,8 +808,8 @@ chooseSwapExtent win caps
 		(fromIntegral -> w, fromIntegral -> h) <-
 			GlfwG.Win.getFramebufferSize win
 		pure $ Vk.Extent2d
-			(clampOld w (Vk.extent2dWidth n) (Vk.extent2dHeight n))
-			(clampOld h (Vk.extent2dWidth x) (Vk.extent2dHeight x))
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dHeight n) w)
+			(clamp (Vk.extent2dWidth x) (Vk.extent2dHeight x) h)
 	where
 	curExt = Vk.Khr.Sfc.capabilitiesCurrentExtent caps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent caps

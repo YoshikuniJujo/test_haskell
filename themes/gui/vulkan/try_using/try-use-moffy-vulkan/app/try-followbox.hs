@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -12,11 +13,7 @@ import Prelude hiding (break)
 
 import Control.Monad
 import Control.Moffy
-import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Event.CalcTextExtents qualified as CTE
-import Control.Moffy.Viewable.Shape
-import Trial.Boxes
-import Trial.Paper
 
 import UseCairo
 import KeyToXKey
@@ -29,36 +26,20 @@ import Data.Default
 import Data.List.Length
 import Data.Map qualified as M
 import Data.Bool
-import Data.Time
-import Data.KeySym
 import Options.Declarative
 import Gpu.Vulkan.Cglm qualified as Cglm
 import Gpu.Vulkan qualified as Vk
-import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
 import Control.Moffy.Event.Lock
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Delete hiding (deleteEvent)
-import Control.Moffy.Event.Delete.DefaultWindow
 import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse (
 	pattern OccMouseDown, pattern OccMouseUp, pattern OccMouseMove, MouseBtn(..))
-import Data.OneOrMore (project, pattern Singleton, expand)
+import Data.OneOrMore (project)
 import Data.OneOrMoreApp qualified as App (pattern Singleton, expand)
-
-import ThreeWindows
-import Control.Moffy.Handle (retry, retrySt)
-import Control.Moffy.Handle.TChan
-import Control.Moffy.Run.TChan
-
-import Data.Time.Clock.System
-import Trial.Boxes.RunGtkField
-import Data.Type.Set
-import Data.Or
-import Control.Moffy.Event.Time
-import Data.Maybe
 
 import Trial.Followbox
 import Trial.Followbox.ViewType
@@ -67,7 +48,6 @@ import Trial.Followbox.RunGtkField
 import Control.Moffy.Event.Gui
 
 import Control.Moffy.Event.Cursor
-import Control.Moffy.Event.DefaultWindow
 import Data.Type.Flip
 
 import Control.Moffy.Event.CalcTextExtents (CalcTextExtents(..))
@@ -88,51 +68,19 @@ action f = liftIO do
 	cocc <- atomically newTChan
 	c' <- atomically newTChan
 	e <- atomically newTChan
-	x <- atomically newTChan
 	v <- atomically . newTVar $ View []
-	forkIO $ untilEnd (get f) e cow cocc c' ((inp, (oute, outp)), ext) v
-	forkIO $ runFollowboxGen cow cocc "firefox" Nothing c' do
+	_ <- forkIO $ untilEnd e cow cocc c' ((inp, (oute, outp)), ext) v
+	_ <- forkIO $ runFollowboxGen cow cocc "firefox" Nothing c' do
 		i <- waitFor $ adjust windowNew
 		_ <- waitFor . adjust $ setCursorFromName i Default
 		waitFor . adjust $ storeDefaultWindow i
 		M.singleton i <$%> adjustSig (followbox i)
 		waitFor . adjust $ windowDestroy i
---	forkIO . void $ interpretSt (retrySt $ handleBoxes 0.1 cow cocc) c' baz . initialBoxesState . systemToTAITime =<< getSystemTime
---	forkIO . forever $ putStrLn . ("VIEW: " ++) . show =<< atomically (readTChan c')
-	rectangles2 cinp cout vext
+	rectangles cinp cout vext
 	atomically $ readTChan e
 
-readTChanMesh :: Int -> TChan a -> STM a
-readTChanMesh 0 c = readTChan c
-readTChanMesh n c = readTChan c >> readTChanMesh (n - 1) c
-
-foo :: React s (TimeEv :+: DefaultWindowEv :+: GuiEv) ()
-foo = do
-	i <- adjust windowNew
-	adjust $ storeDefaultWindow i
-	adjust $ deleteEvent `first` (drClickOn $ Rect (50, 50) (400, 400))
-	adjust $ windowDestroy i
-
-bar :: Sig s (TimeEv :+: DefaultWindowEv :+: GuiEv) BColor ()
-bar = do
-	wi <- waitFor do
-		i <- adjust windowNew
-		i <$ adjust (storeDefaultWindow i)
-	adjustSig $ cycleColor `break` deleteEvent
-	waitFor $ adjust $ windowDestroy wi
-
-baz :: Sig s (TimeEv :+: DefaultWindowEv :+: GuiEv) [Box] ()
-baz = do
-	wi <- waitFor do
-		i <- adjust windowNew
-		i <$ adjust (storeDefaultWindow i)
-	adjustSig $ boxes `break` deleteEvent
-	waitFor $ adjust $ windowDestroy wi
-
-data OpenWin = OpenWin
-
-processEvReqs :: (Command Int -> STM ()) -> (STM Bool, STM (Event Int)) -> TChan (EvOccs GuiEv) -> EvReqs GuiEv -> IO ()
-processEvReqs inp (oute, outp) cocc rqs = do
+processEvReqs :: (Command Int -> STM ()) -> TChan (EvOccs GuiEv) -> EvReqs GuiEv -> IO ()
+processEvReqs inp cocc rqs = do
 	case project rqs of
 		Nothing -> pure ()
 		Just WindowNewReq -> atomically do
@@ -159,7 +107,7 @@ processEvReqs inp (oute, outp) cocc rqs = do
 					$ OccSetCursorFromName wid nc Success
 	case project rqs of
 		Nothing -> pure ()
-		Just (SetCursorFromPngReq wid nc) -> do
+		Just (SetCursorFromPngReq _ _) -> do
 			putStrLn "SetCursorFromPngReq"
 	case project rqs of
 		Nothing -> pure ()
@@ -173,67 +121,28 @@ processEvReqs inp (oute, outp) cocc rqs = do
 		Nothing -> pure ()
 		Just (r :: NewLockId) -> putStrLn $ "NewLockIdReq: " ++ show r
 
-boxToRect :: STM Vk.Extent2d -> Box -> STM Rectangle
-boxToRect ex (Box (Rect (l, u) (r, d)) clr) =
-	ex >>= \(Vk.Extent2d (fromIntegral -> w) (fromIntegral -> h)) -> do
-		let	l' = realToFrac $ 4 * l / w - 2
-			r' = realToFrac $ 4 * r / w - 2
-			u' = realToFrac $ 4 * u / h - 2
-			d' = realToFrac $ 4 * d / h - 2
-		pure $ Rectangle
-			(RectPos . Cglm.Vec2 $ l' :. u' :. NilL)
-			(RectSize . Cglm.Vec2 $ (r' - l') :. (d' - u') :. NilL)
-			(colorToColor clr)
-			m0 m1 m2 m3
-	where
-	(m0, m1, m2, m3) = calcModel 0
-
-colorToColor :: BColor -> RectColor
-colorToColor = \case
-	Red -> RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL
-	Green -> RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
-	Blue -> RectColor . Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
-	Yellow -> RectColor . Cglm.Vec4 $ 1.0 :. 1.0 :. 0.0 :. 1.0 :. NilL
-	Cyan -> RectColor . Cglm.Vec4 $ 0.0 :. 1.0 :. 1.0 :. 1.0 :. NilL
-	Magenta -> RectColor . Cglm.Vec4 $ 1.0 :. 0.0 :. 1.0 :. 1.0 :. NilL
-
-untilEnd :: Bool -> TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
+untilEnd :: TChan () -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
 	TChan (M.Map WindowId View) ->
 	((Command Int -> STM (), (STM Bool, STM (Event Int))), Int -> STM Vk.Extent2d) ->
 	TVar View -> IO ()
-untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) tvw = do
-	tm0 <- getCurrentTime
-
-	forkIO $ forever do
+untilEnd e cow cocc c' ((inp, (oute, outp)), ext) tvw = do
+	_ <- forkIO $ forever do
 		threadDelay 20000
 		atomically $ inp GetEvent
 
-	forkIO . forever $ atomically (readTChan c') >>= \vs -> do
+	_ <- forkIO . forever $ atomically (readTChan c') >>= \vs -> do
 		putStrLn $ "VIEW: " ++ show vs
 		atomically . writeTVar tvw $ vs M.! WindowId 0
 		e0 <- atomically $ ext 0
---		atomically . inp $ Draw2 (M.fromList [(0, (def, instances 0))]) (vs M.! WindowId 0)
 		atomically . inp $ Draw2 (M.fromList [(0, (def, instances' 1024 1024 e0))]) (vs M.! WindowId 0)
---		atomically . inp $ Draw2 (M.fromList [(0, (def, instances 0))]) (View [])
 
-{-
-	forkIO $ forever do
-		rs' <- atomically do
-			bs <- readTChan c'
-			boxToRect (ext 0) `mapM` bs
-		atomically do
-			inp . Draw $ M.fromList [(0, (def, rs'))]
-			-}
-
-	forkIO $ forever do
+	_ <- forkIO $ forever do
 		threadDelay 500
 		ow <- atomically $ tryReadTChan cow
-		maybe (pure ()) (processEvReqs inp (oute, outp) cocc) ow
+		maybe (pure ()) (processEvReqs inp cocc) ow
 
 	($ instances) $ fix \loop rs -> do
 		threadDelay 500
-		now <- getCurrentTime
-		let	tm = realToFrac $ now `diffUTCTime` tm0
 		o <- atomically do
 			bool (Just <$> outp) (pure Nothing) =<< oute
 		case o of
@@ -310,18 +219,6 @@ untilEnd f e cow cocc c' ((inp, (oute, outp)), ext) tvw = do
 				e0 <- atomically $ ext 0
 				atomically . inp $ Draw2 (M.fromList [(0, (def, instances' 1024 1024 e0))]) vs
 				loop rs
-
-uniformBufferObject :: Vk.Extent2d -> ViewProjection
-uniformBufferObject sce = ViewProjection {
-	viewProjectionView = Cglm.lookat
-		(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-		(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-		(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-	viewProjectionProj = Cglm.modifyMat4 1 1 negate
-		$ Cglm.perspective
-			(Cglm.rad 45)
-			(fromIntegral (Vk.extent2dWidth sce) /
-				fromIntegral (Vk.extent2dHeight sce)) 0.1 10 }
 
 instances :: Float -> [Rectangle]
 instances tm = let
