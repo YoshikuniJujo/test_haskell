@@ -187,12 +187,11 @@ import Data.HeteroParList.Constrained qualified as HPListC
 
 -- RUN
 
-rectangles :: forall k . (Ord k, Show k, Succable k) =>
-	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
-rectangles inp outp vext = GlfwG.init error $ do
-	createInstance \ist ->
-		Vk.Dvc.group nil \dvcgrp -> bool id (setupDebugMessenger ist)
-			debug $
+rectangles :: (Ord k, Succable k) =>
+	TChan (Command k) -> TChan (Event k) ->
+	TVar (M.Map k (TVar Vk.Extent2d)) -> IO ()
+rectangles ip op vex = GlfwG.init error $
+	createIst \ist -> Vk.Dvc.group nil \dvg -> bool id (dbgm ist) debug $
 		withWindow False \dw ->
 		createSurface dw ist \dsfc ->
 		pickPhd ist dsfc >>= \(phd, qfis) ->
@@ -201,14 +200,14 @@ rectangles inp outp vext = GlfwG.init error $ do
 		(phd', qfis', dv', gq', pq', n') <- do
 			ex <- swapExtent dw (capabilitiesNew ssd)
 			(dv, gq, pq) <-
-				createLogicalDevice phd dvcgrp () qfis
+				createLogicalDevice phd dvg () qfis
 			do
 				n <- swpchImgNum @fmt dv dsfc ssd ex qfis
 				pure (	phd, qfis, dv, gq, pq, n )
 		getNum n' \(_ :: Proxy n) ->
-			body @n @fmt @_ @_ @k inp outp vext ist phd' qfis' dv' gq' pq'
-	atomically $ writeTChan outp EventEnd
-	where setupDebugMessenger ist f =
+			body @n @fmt @_ @_ @_ ip op vex ist phd' qfis' dv' gq' pq'
+		atomically $ writeTChan op EventEnd
+	where dbgm ist f =
 		Vk.Ex.DUtls.Msgr.create ist debugMessengerCreateInfo nil f
 
 readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
@@ -340,8 +339,8 @@ fromRight :: Either String a -> a
 fromRight (Left emsg) = error emsg
 fromRight (Right x) = x
 
-createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createInstance f = do
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = do
 	when debug $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
@@ -395,7 +394,7 @@ debugMessengerCreateInfo = Vk.Ex.DUtls.Msgr.CreateInfo {
 -- BODY
 
 body :: forall (n :: [()]) (scfmt :: Vk.T.Format) si sd k . (
-	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k ) =>
+	Mappable n, NumToValue n, Vk.T.FormatToValue scfmt, Ord k, Succable k ) =>
 	TChan (Command k) -> TChan (Event k) -> TVar (M.Map k (TVar Vk.Extent2d)) ->
 	Vk.Ist.I si -> Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.Q.Q -> IO ()
@@ -1487,7 +1486,7 @@ instance Succable Int where
 mainLoop ::
 	forall n siv sf scfmt sw ssfc sd sc scb sias srfs siff ssc nm sr sg sl
 		sdsl sm sb sm' sb' nm' srm srb sds sm2 sb2 k r .
-	(Mappable n, Vk.T.FormatToValue scfmt, Ord k, Show k, Succable k) =>
+	(Mappable n, Vk.T.FormatToValue scfmt, Ord k, Succable k) =>
 	TChan (Command k) -> TChan (Event k) -> Devices sd sc scb -> PipelineLayout sl sdsl ->
 
 	(k -> IO (WinObjs sw ssfc sg sl sdsl sias srfs siff scfmt ssc nm
@@ -1532,7 +1531,7 @@ mainLoop inp outp dvs@(_, _, dvc, _, _, _, _) pll crwos drwos vbs rgrps ubs vwid
 			OpenWindow ->
 				crwos' >>= atomically . writeTChan outp . EventOpenWindow >> loop
 			DestroyWindow k -> do
-				putStrLn $ "DESTROY WINDOW: " ++ show k
+				putStrLn "DESTROY WINDOW"
 				atomically (modifyTVar vws (M.delete k)) >> drwos k
 				ws <- atomically $ readTVar vws
 				GlfwG.pollEvents
