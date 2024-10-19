@@ -79,6 +79,13 @@ action f = liftIO do
 	rectangles cinp cout vext
 	atomically $ readTChan e
 
+readTVarOr :: Ord k => a -> TVar (M.Map k (TVar a)) -> k -> STM a
+readTVarOr d mp k = do
+	mv <- (M.lookup k) <$> readTVar mp
+	case mv of
+		Nothing -> pure d
+		Just v -> readTVar v
+
 processEvReqs :: (Command Int -> STM ()) -> TChan (EvOccs GuiEv) -> EvReqs GuiEv -> IO ()
 processEvReqs inp cocc rqs = do
 	case project rqs of

@@ -30,6 +30,33 @@ src
 * [x] Rectangles
 * [x] VulkanRectangles
 * [ ] UseCairo
+    + [ ] RUN
+        - [x] rectangles
+        - [ ] Command
+        - [ ] Event
+        - [x] createIst
+        - [x] vldLayers
+        - [x] dbgMsngrInfo
+        - [x] pickPhd
+        - [x] QFamIdcs
+        - [x] findQFams
+        - [x] dvcExtensions
+        - [x] createLgDvc
+        - [x] swpchImgNum
+    + [ ] BODY
+        - [ ] body
+        - [ ] others
+    + [ ] PROVIDE WINDOW OBJECTS
+    + [ ] WINDOW OBJECTS
+    + [ ] RECTANGLE BUFFER
+    + [ ] GET GLFW EVENTS
+    + [ ] CREATE AND COPY BUFFERS
+    + [ ] GRAPHICS PIPELINE
+    + [ ] MAINLOOP
+    + [ ] RECREATE
+    + [ ] DARW
+    + [ ] DATA TYPES
+    + [ ] SHADERS
 * [ ] Convert
 * [ ] CreateTextureGroup
 * [ ] Gpu.Vulkan.CairoImage
