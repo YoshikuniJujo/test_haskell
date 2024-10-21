@@ -61,6 +61,8 @@ src
         - [ ] createDscSt
         - [ ] descriptorWrite
     + [ ] PROVIDE WINDOW OBJECTS
+        - [ ] provideWinObjs
+        - [ ] others
     + [ ] WINDOW OBJECTS
     + [ ] RECTANGLE BUFFER
     + [ ] GET GLFW EVENTS
