@@ -11,7 +11,7 @@ module CreateTextureGroup (
 
 	-- * GROUP
 
-	textureGroup, TextureGroup,
+	txGroup, TextureGroup,
 
 	-- * CREATE AND UPDATE
 
@@ -67,9 +67,9 @@ type TextureGroup sd si sm siv fmt k = (
 	Vk.Mem.Group sd 'Nothing sm k '[ '(si, 'Vk.Mem.ImageArg "texture" fmt)],
 	Vk.ImgVw.Group sd 'Nothing siv k "texture" fmt )
 
-textureGroup :: Vk.Dvc.D sd ->
+txGroup :: Vk.Dvc.D sd ->
 	(forall si sm siv . TextureGroup sd si sm siv fmt k -> IO a) -> IO a
-textureGroup dv f =
+txGroup dv f =
 	Vk.Img.group dv nil \mng -> Vk.Mem.group dv nil \mmng ->
 	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
 

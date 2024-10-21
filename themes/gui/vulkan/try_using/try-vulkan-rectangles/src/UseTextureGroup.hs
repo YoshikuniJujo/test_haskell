@@ -208,12 +208,12 @@ createIst f = do
 		(Vk.Ist.create (infoDbg exts) nil f) debug
 	where
 	emsg = "validation layers requested, but not available!"
-	info exts = Vk.Ist.CreateInfo {
+	info es = Vk.Ist.CreateInfo {
 		Vk.Ist.createInfoNext = TMaybe.N,
 		Vk.Ist.createInfoFlags = zeroBits,
 		Vk.Ist.createInfoApplicationInfo = Just ainfo,
 		Vk.Ist.createInfoEnabledLayerNames = [],
-		Vk.Ist.createInfoEnabledExtensionNames = exts }
+		Vk.Ist.createInfoEnabledExtensionNames = es }
 	infoDbg exts = Vk.Ist.CreateInfo {
 		Vk.Ist.createInfoNext = TMaybe.J dbgMsngrInfo,
 		Vk.Ist.createInfoFlags = zeroBits,
@@ -387,10 +387,10 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-createPplLyt :: forall alu sd mnmvp nmt b . Vk.Dvc.D sd -> (forall sdsl sl .
+createPplLyt :: forall alu sd mnmvp nmt a . Vk.Dvc.D sd -> (forall sdsl sl .
 	Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp nmt) ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
-	IO b) -> IO b
+	IO a) -> IO a
 createPplLyt dv f = createDSLyt dv \d -> Vk.PplLyt.create dv (info d) nil $ f d
 	where
 	info :: Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp nmt) ->
@@ -403,7 +403,7 @@ createPplLyt dv f = createDSLyt dv \d -> Vk.PplLyt.create dv (info d) nil $ f d
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 d }
 
 createDSLyt :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscStLyt.D s (DscStLytArg alu mnmvp nmt)  -> IO a) -> IO a
+	Vk.DscStLyt.D s (DscStLytArg alu mnmvp nmt) -> IO a) -> IO a
 createDSLyt dv = Vk.DscStLyt.create dv info nil
 	where
 	info = Vk.DscStLyt.CreateInfo {
