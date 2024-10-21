@@ -161,20 +161,22 @@ useTextureGroup :: forall k . (Ord k, Succable k) =>
 useTextureGroup ip op vex pct = GlfwG.init error $
 	createIst \ist -> Vk.Dvc.group nil \dvg -> bool id (dbgm ist) debug $
 	GlfwG.Win.group \wg -> initWin False wg () >>= \dw ->
-	crsfc dw ist \dsfc -> pickPhd ist dsfc >>= \(pd, qfis) ->
+	crsfc dw ist \sfcg dsfc -> pickPhd ist dsfc >>= \(pd, qfis) ->
 	querySwpchSupport pd dsfc \ssd ->
 	chooseSwpSfcFmt (formats ssd) \(_ :: Vk.Khr.Sfc.Format fmt) ->
 	createLgDvc pd dvg () qfis >>= \(dv, gq, pq) ->
 	swapExtent dw (capabilities ssd) >>= \ex ->
 	swpchImgNum @fmt dv dsfc ssd ex qfis >>= \n -> num n \(_ :: Proxy n) ->
+	GlfwG.Win.unsafeDestroy wg () >> Vk.Khr.Sfc.unsafeDestroy sfcg () >>
 	body @n @fmt ip op vex ist pd qfis dv gq pq pct >>
 	atomically (writeTChan op EventEnd)
 	where
 	dbgm i = Vk.DbgUtls.Msgr.create i dbgMsngrInfo nil
-	crsfc :: GlfwG.Win.W sw -> Vk.Ist.I si ->
-		(forall ss . Vk.Khr.Sfc.S ss -> IO a) -> IO a
+	crsfc :: GlfwG.Win.W sw -> Vk.Ist.I si -> (forall ss .
+		Vk.Khr.Sfc.Group si 'Nothing ss () ->
+		Vk.Khr.Sfc.S ss -> IO a) -> IO a
 	crsfc w i f = Vk.Khr.Sfc.group i nil \sg ->
-		Vk.Khr.Sfc.Glfw.Win.create' sg () w >>= f . forceRight'
+		Vk.Khr.Sfc.Glfw.Win.create' sg () w >>= f sg . forceRight'
 	num :: [a] -> (forall (n :: [()]) .
 		(HPList.HomoListN n, NumToVal n) => Proxy n -> b) -> b
 	num [] f = f (Proxy :: Proxy '[])
