@@ -1255,7 +1255,7 @@ mainloop ip op dvs@(pd, qfis, dv, _, _, _, _) pl crwos drwos vbs rgs ds vpm ges
 			atomically (modifyTVar vws (M.delete k)) >> drwos k
 			ws' <- atomically $ readTVar vws
 			GlfwG.pollEvents
-			cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws')
+			cls <- and <$> GlfwG.Win.shouldClose `mapM` (wobjsToWin <$> ws')
 			if cls then pure () else go
 		Draw drs -> do
 			Vk.Dvc.waitIdle dv
@@ -1302,12 +1302,12 @@ type PipelineLayout sl sdsl alu mnmvp nmt =
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[]
 
 type VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi = (
-	Vk.Bffr.Binded smv sbv bnmv '[Vk.Obj.List 1 WVertex nmv],
-	Vk.Bffr.Binded smi sbi bnmi '[Vk.Obj.List 1 Word16 nmi] )
+	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv],
+	Vk.Bffr.Binded smi sbi bnmi '[Vk.ObjNA.List Word16 nmi] )
 
-winObjsToWin :: WinObjs sw ssfc scfmt ssc nm sscivs sr sfs
+wobjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
 	sg sl sdsl alu mnmvp nmt sias srfs siff -> GlfwG.Win.W sw
-winObjsToWin (WinObjs (win, _) _ _ _ _ _) = win
+wobjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
 run :: forall
 	n (siv :: Type) (sf :: Type)
@@ -1338,7 +1338,7 @@ run dvs pll ws vbs rgrps rectss ubs loop = do
 		rb <- createRectangleBuffer dvs rgrps k' rects'
 		let	rb' = (rb, fromIntegral $ length rects')
 		catchAndDraw @n @siv @sf phdvc qfis dvc gq pq pll vb rb' ib ubm ubds cb tm wos
-	cls <- and <$> GlfwG.Win.shouldClose `mapM` (winObjsToWin <$> ws)
+	cls <- and <$> GlfwG.Win.shouldClose `mapM` (wobjsToWin <$> ws)
 	if cls then (pure ()) else loop
 
 createRectangleBuffer :: Ord k =>
