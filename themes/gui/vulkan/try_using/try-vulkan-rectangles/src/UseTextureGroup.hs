@@ -143,8 +143,8 @@ import CreateTextureGroup
 -- * WINDOW OBJECTS
 -- * RECTANGLE BUFFER
 -- * GET GLFW EVENTS
--- * GRAPHICS PIPELINE
 -- * CREATE AND COPY BUFFERS
+-- * GRAPHICS PIPELINE
 -- * MAINLOOP
 -- * RECREATE
 -- * DRAW
@@ -859,8 +859,7 @@ createRctBffr pd dv gq cp (bg, mg) k rs =
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(c :: Vk.Bffr.Binded m b bn '[Vk.ObjNA.List t n]) m ->
-		Vk.Mm.write @bn
-			@(Vk.ObjNA.List t n) @0 dv m zeroBits rs >>
+		Vk.Mm.write @bn @(Vk.ObjNA.List t n) @0 dv m zeroBits rs >>
 		copyBffrLst dv gq cp c b
 
 destroyRctBffr :: Ord k => RectGroups sd sm sb bnm nm k -> k -> IO ()
@@ -892,14 +891,15 @@ setGlfwEvents op w fr ges k = do
 		$ (, GlfwG.Ms.MouseButtonState'Released)
 			<$> [GlfwG.Ms.MouseButton'1 .. GlfwG.Ms.MouseButton'8]
 
-glfwEvents :: k -> GlfwG.Win.W sw -> TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
+glfwEvents :: k -> GlfwG.Win.W sw ->
+	TChan (Event k) -> TVar Bool -> TVar MouseButtonStateDict -> IO ()
 glfwEvents k w op vcls vmbst = do
 	GlfwG.pollEvents
 	(cls, scls) <- (,)
 		<$> GlfwG.Win.shouldClose w <*> atomically (readTVar vcls)
 	atomically $ writeTVar vcls cls
 	when (not scls && cls)
-		$ atomically . writeTChan op $ EventDeleteWindow k
+		. atomically . writeTChan op $ EventDeleteWindow k
 	(mb, mbst) <- (,) <$> getMouseButtons w <*> atomically (readTVar vmbst)
 	atomically $ writeTVar vmbst mb
 	sendMouseButtonDown k mbst mb op `mapM_` mouseButtonAll
@@ -936,6 +936,51 @@ sendMouseButton ::
 sendMouseButton k ev pst st pbss bss op b =
 	if pbss M.! b == pst && bss M.! b == st
 	then atomically . writeTChan op $ ev k b else pure ()
+
+-- CREATE AND COPY BUFFERS
+
+createBffrAtm :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	(forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.AtomMaybeName al t mnm] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg
+				bnm '[Vk.Obj.AtomMaybeName al t mnm] )] ->
+		IO a) -> IO a
+createBffrAtm p dv = createBffr p dv Vk.Obj.LengthAtom
+
+createBffrLst :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
+	Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.ListMaybeName al t mnm] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg
+				bnm '[Vk.Obj.ListMaybeName al t mnm])] ->
+		IO a) -> IO a
+createBffrLst p dv ln = createBffr p dv $ Vk.Obj.LengthList ln
+
+createBffrLst' :: forall sd sm sb k bnm a t nm .
+	(Ord k, KnownNat a, Storable t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.ListMaybeName a t nm] ->
+	Vk.Mm.Group sd 'Nothing sm k '[ '(
+		sb,
+		'Vk.Mm.BufferArg bnm '[Vk.Obj.ListMaybeName a t nm] )] ->
+	k -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	IO (	Vk.Bffr.Binded sm sb bnm '[Vk.Obj.ListMaybeName a t nm],
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg bnm '[Vk.Obj.ListMaybeName a t nm] )] )
+createBffrLst' p dv bg mg k ln = createBffr' p dv bg mg k (Vk.Obj.LengthList ln)
+
+copyBffrLst :: forall sd sc sm sb bnm t lnm sm' sb' bnm' . Storable' t =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t lnm] ->
+	Vk.Bffr.Binded sm' sb' bnm' '[Vk.ObjNA.List t lnm] -> IO ()
+copyBffrLst dv gq cp s d = singleTimeCmds dv gq cp \cb ->
+	Vk.Cmd.copyBuffer @'[ '( '[Vk.ObjNA.List t lnm], 0, 0)] cb s d
 
 -- GRAPHICS PIPELINE
 
@@ -1040,7 +1085,7 @@ grPplInfo ex rp pl = Vk.Ppl.Gr.CreateInfo {
 		Vk.Ppl.MltSmplSt.createInfoMinSampleShading = 1,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
-	
+
 shaderStages :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo)
 	'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
@@ -1109,51 +1154,6 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 		Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
 		Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 		Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
-
--- CREATE AND COPY BUFFERS
-
-createBffrAtm :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.AtomMaybeName al t mnm] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg
-				bnm '[Vk.Obj.AtomMaybeName al t mnm] )] ->
-		IO a) -> IO a
-createBffrAtm p dv = createBffr p dv Vk.Obj.LengthAtom
-
-createBffrLst :: forall sd bnm al t mnm a . (KnownNat al, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags ->
-	Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.ListMaybeName al t mnm] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg
-				bnm '[Vk.Obj.ListMaybeName al t mnm])] ->
-		IO a) -> IO a
-createBffrLst p dv ln = createBffr p dv $ Vk.Obj.LengthList ln
-
-createBffrLst' :: forall sd sm sb k bnm a t nm .
-	(Ord k, KnownNat a, Storable t) =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Bffr.Group sd 'Nothing sb k bnm '[Vk.Obj.ListMaybeName a t nm] ->
-	Vk.Mm.Group sd 'Nothing sm k '[ '(
-		sb,
-		'Vk.Mm.BufferArg bnm '[Vk.Obj.ListMaybeName a t nm] )] ->
-	k -> Vk.Dvc.Size -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
-	IO (	Vk.Bffr.Binded sm sb bnm '[Vk.Obj.ListMaybeName a t nm],
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg bnm '[Vk.Obj.ListMaybeName a t nm] )] )
-createBffrLst' p dv bg mg k ln = createBffr' p dv bg mg k (Vk.Obj.LengthList ln)
-
-copyBffrLst :: forall sd sc sm sb bnm t lnm sm' sb' bnm' . Storable' t =>
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t lnm] ->
-	Vk.Bffr.Binded sm' sb' bnm' '[Vk.ObjNA.List t lnm] -> IO ()
-copyBffrLst dv gq cp s d = singleTimeCmds dv gq cp \cb ->
-	Vk.Cmd.copyBuffer @'[ '( '[Vk.ObjNA.List t lnm], 0, 0)] cb s d
 
 -- MAINLOOP
 

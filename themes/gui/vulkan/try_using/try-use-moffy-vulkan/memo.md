@@ -62,8 +62,36 @@ src
         - [ ] descriptorWrite
     + [ ] PROVIDE WINDOW OBJECTS
         - [ ] provideWinObjs
-        - [ ] others
+        - [ ] initWin
     + [ ] WINDOW OBJECTS
+        - [ ] winObjs
+        - [ ] destroyWinObjs
+        - [ ] class NumToVal
+        - [ ] instance NumToVal
+        - [ ] WinObjs
+        - [ ] FramebufferResizedState
+        - [ ] checkResizedState
+        - [ ] WinEnvs
+        - [ ] FramebufferResized
+        - [ ] Swapchain
+        - [ ] Pipeline
+        - [ ] WinObjGroups
+        - [ ] prepareSwpch
+        - [ ] querySwpchSupport
+        - [ ] SwpchSupportDetails
+        - [ ] createSwpch'
+        - [ ] recreateSwpch
+        - [ ] swapExtent
+        - [ ] swpchInfoSsd
+        - [ ] chooseSwpSfcFmt
+        - [ ] swpchInfo
+        - [ ] createImgVws
+        - [ ] recreateImgVws
+        - [ ] createRndrPss
+        - [ ] createFrmbffrs
+        - [ ] recreateFramebuffers'
+        - [ ] SyncObjs
+        - [ ] createSyncObjs
     + [ ] RECTANGLE BUFFER
     + [ ] GET GLFW EVENTS
     + [ ] CREATE AND COPY BUFFERS
