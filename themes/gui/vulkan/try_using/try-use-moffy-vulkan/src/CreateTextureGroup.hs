@@ -23,7 +23,11 @@ module CreateTextureGroup (
 
 	-- * CREATE INFO
 
-	mkImageViewCreateInfo
+	mkImageViewCreateInfo,
+
+	-- * NOT CLASSIFIED YET
+
+	createImgVw', recreateImgVw
 
 	) where
 
@@ -61,6 +65,7 @@ import Gpu.Vulkan.Object qualified as VObj
 import Gpu.Vulkan.Object.Base qualified as KObj
 
 import Data.Bits.ToolsYj
+import Data.Either.ToolsYj
 
 type TextureGroup sd si sm siv fmt k = (
 	Vk.Img.Group sd 'Nothing si k "texture" fmt,
@@ -374,3 +379,30 @@ beginSingleTimeCommands dvc gq cp cmd = do
 
 pattern AlwaysRight :: b -> Either a b
 pattern AlwaysRight x <- Right x
+
+-- IMAGE VIEW
+
+createImgVw' :: forall sd sv k nm vfmt sm si ifmt .
+	(Ord k, Vk.T.FormatToValue vfmt) =>
+	Vk.ImgVw.Group sd 'Nothing sv k nm vfmt ->
+	k -> Vk.Img.Binded sm si nm ifmt -> IO (Vk.ImgVw.I nm vfmt sv)
+createImgVw' vg k i = forceRight' <$> Vk.ImgVw.create' vg k (imgVwInfo i)
+
+recreateImgVw :: Vk.T.FormatToValue ivfmt => Vk.Dvc.D sd ->
+	Vk.Img.Binded sm si nm ifmt -> Vk.ImgVw.I nm ivfmt sv -> IO ()
+recreateImgVw dv i = Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil
+
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
+imgVwInfo i = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = i,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 } }
