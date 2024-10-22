@@ -141,7 +141,8 @@ untilEnd e cow cocc c' ((inp, (oute, outp)), ext) tvw = do
 		putStrLn $ "VIEW: " ++ show vs
 		atomically . writeTVar tvw $ vs M.! WindowId 0
 		e0 <- atomically $ ext 0
-		atomically . inp $ Draw2 (M.fromList [(0, (def, instances' 1024 1024 e0))]) (vs M.! WindowId 0)
+		atomically . inp $ SetPicture (vs M.! WindowId 0)
+		atomically . inp $ Draw (M.fromList [(0, (def, instances' 1024 1024 e0))])
 
 	_ <- forkIO $ forever do
 		threadDelay 500
@@ -224,7 +225,7 @@ untilEnd e cow cocc c' ((inp, (oute, outp)), ext) tvw = do
 				putStrLn "EVENT NEED REDRAW"
 				vs <- atomically $ readTVar tvw
 				e0 <- atomically $ ext 0
-				atomically . inp $ Draw2 (M.fromList [(0, (def, instances' 1024 1024 e0))]) vs
+				atomically . inp $ Draw (M.fromList [(0, (def, instances' 1024 1024 e0))])
 				loop rs
 
 instances :: Float -> [Rectangle]
