@@ -75,8 +75,8 @@ import Language.SpirV.Shaderc.TH
 import Codec.Picture qualified as Pct
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Key as GlfwG.Ky
-import Graphics.UI.GlfwG.Mouse as GlfwG.Ms
+import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
+import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
