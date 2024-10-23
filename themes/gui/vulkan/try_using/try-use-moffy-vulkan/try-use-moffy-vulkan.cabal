@@ -31,14 +31,11 @@ flag debug
 
 library
   exposed-modules:
-      Convert
       CreateTextureGroup
       Gpu.Vulkan.CairoImage
       KeyToXKey
       KeyToXKey.TH
-      PangoLayoutExtent
       Rectangles
-      SampleImages
       UseCairo
       VulkanRectangles
   other-modules:

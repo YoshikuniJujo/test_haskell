@@ -129,6 +129,7 @@ src
         - [x] PipelineLayout
         - [x] VertexBuffers
         - [x] wobjsToWin
+        - [x] getPangoLayoutExtent
         - [x] run
     + [x] RECREATE
         - [x] catchAndRecreate
@@ -173,10 +174,7 @@ src
     + [x] SHADERS
         - [x] glslVertexShader
         - [x] glslFragmentShader
-* [ ] Convert
 * [ ] CreateTextureGroup
 * [ ] Gpu.Vulkan.CairoImage
-* [ ] KeyToKey
-* [ ] KeyToKey.TH
-* [ ] PangoLayoutExtent
-* [ ] SampleImages
+* [ ] KeyToXKey
+* [ ] KeyToXKey.TH

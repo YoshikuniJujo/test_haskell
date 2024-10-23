@@ -26,8 +26,6 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Object.Base qualified as BObj
 
-import Convert
-import SampleImages
 import Trial.Followbox.ViewType as VT
 
 import Data.OneOfThem
@@ -37,6 +35,12 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Cairo.Surfaces.PngSupport
+
+import Control.Monad.ST
+import Data.CairoContext
+
+import Graphics.Cairo.Surfaces.CairoSurfaceT
+import Data.CairoImage.Internal
 
 newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
 
@@ -166,3 +170,51 @@ drawImage cr (Image' (x, y) (Png w h img)) = do
 	cairoPaint cr
 
 	cairoIdentityMatrix cr
+
+pixelArgb32ToRgba :: PixelArgb32 -> Rgba d
+pixelArgb32ToRgba (PixelArgb32Premultiplied a r g b) =
+	fromJustWithErrorMsg (
+			"pixelArgb32ToRgba: (a, r, g, b) = (" ++
+			show a ++ ", " ++ show r ++ ", " ++
+			show g ++ ", " ++ show b ++ ")" )
+		$ rgbaPremultipliedWord8 r g b a
+
+rgbaToPixelArgb32 :: RealFrac d => Rgba d -> PixelArgb32
+rgbaToPixelArgb32 (RgbaPremultipliedWord8 a r g b) =
+	fromJust $ pixelArgb32Premultiplied a r g b
+
+fromJustWithErrorMsg :: String -> Maybe a -> a
+fromJustWithErrorMsg msg = \case
+	Nothing -> error msg
+	Just x -> x
+
+twoRectangles :: Argb32
+twoRectangles = runST twoRectanglesPrim
+
+twoRectanglesPrim :: PrimMonad m => m Argb32
+twoRectanglesPrim = do
+	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
+	cr <- cairoCreate sfc0
+
+	twoRectanglesPrim' sfc0 cr
+
+twoRectanglesPrim' :: PrimMonad m =>
+	CairoSurfaceImageT s (PrimState m) -> CairoT r (PrimState m) -> m Argb32
+twoRectanglesPrim' sfc0 cr = do
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
+	cairoRectangle cr 0 0 256 256
+	cairoFill cr
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.3
+	cairoRectangle cr 50 50 110 110
+	cairoFill cr
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.3
+	cairoRectangle cr 100 130 100 70
+	cairoFill cr
+
+	cairoSurfaceFlush sfc0
+
+	cairoImageSurfaceGetCairoImage sfc0 >>= \case
+		CairoImageArgb32 i -> pure i
+		_ -> error "never occur"

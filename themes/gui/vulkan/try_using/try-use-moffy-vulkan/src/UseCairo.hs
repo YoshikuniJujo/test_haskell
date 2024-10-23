@@ -34,6 +34,7 @@ module UseCairo (
 import GHC.Generics
 import GHC.TypeLits (Symbol)
 import GHC.TypeNats
+import Foreign.C.Types
 import Foreign.Storable
 import Foreign.Storable.Generic qualified as StrG
 import Foreign.Storable.PeekPoke
@@ -71,6 +72,7 @@ import Data.Map qualified as M
 import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Word
+import Data.Text qualified as T
 import Data.Text.IO qualified as Txt
 import Data.Color
 import Data.CairoImage.Internal
@@ -84,6 +86,10 @@ import Graphics.UI.GlfwG.Key qualified as GlfwG.Ky
 import Graphics.UI.GlfwG.Mouse qualified as GlfwG.Ms
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
+import Graphics.Pango.Basic.GlyphStorage
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Rendering.Cairo
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -144,7 +150,6 @@ import CreateTextureGroup
 
 import Debug
 import Trial.Followbox.ViewType as FV
-import PangoLayoutExtent
 
 ----------------------------------------------------------------------
 --
@@ -165,8 +170,7 @@ import PangoLayoutExtent
 ----------------------------------------------------------------------
 
 textureWidth, textureHeight :: Integral n => n
-(textureWidth, textureHeight) =
-	(1024 :: forall n . Num n => n, 1024 :: forall n . Num n => n)
+(textureWidth, textureHeight) = (1024, 1024)
 
 -- RUN
 
@@ -1217,7 +1221,7 @@ mainloop ip op dvs@(pd, qfis, dv, _, _, _, _) pl crwos drwos vbs rgs ds vpm ges
 			(>> go) . atomically . writeTChan op
 				. EventTextLayoutExtentResult
 				. CTE.OccCalcTextExtents wid fn fs tx . e2e
-				=<< getPangoLayoutExtent cr fn (realToFrac fs) tx
+				=<< getPngLytExt cr fn (realToFrac fs) tx
 	where
 	rects = M.map \(vp, rs) ->
 		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy $ null rs)
@@ -1246,6 +1250,17 @@ type VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi = (
 wobjsToWin :: WinObjs sw ssfc scfmt ssc nmscv svs sr sfs
 	sg sl sdsl alu mnmvp nmt sias srfs siff -> GlfwG.Win.W sw
 wobjsToWin (WinObjs (win, _) _ _ _ _ _) = win
+
+getPngLytExt ::
+	CairoT r RealWorld -> String -> CDouble -> T.Text -> IO PixelExtents
+getPngLytExt cr fm sz tx = do
+	(l, fd) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	pangoFontDescriptionSet fd $ Family fm
+	pangoFontDescriptionSet fd $ AbsoluteSize sz
+	pangoLayoutSet l . pangoFontDescriptionToNullable . Just
+		=<< pangoFontDescriptionFreeze fd
+	pangoLayoutSet l tx
+	pangoLayoutInfo <$> pangoLayoutFreeze l
 
 run :: forall
 	n (sv :: Type) (sf :: Type) k sd scp scb sl sdsl alu mnmvp nmt
