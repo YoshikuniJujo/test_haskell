@@ -1,7 +1,16 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Maybe.ToolsYj (orErrorIO, findMaybe, findMaybeM) where
+module Data.Maybe.ToolsYj (
+	forceJust, forceJust', orErrorIO, findMaybe, findMaybeM ) where
+
+import Control.Exception
+
+forceJust :: Exception e => e -> Maybe a -> a
+forceJust e = maybe (throw e) id
+
+forceJust' :: String -> Maybe a -> a
+forceJust' = forceJust . ErrorCall
 
 orErrorIO :: String -> Maybe a -> IO a
 orErrorIO msg = maybe (error msg) pure
