@@ -29,15 +29,14 @@ src
 
 * [x] Rectangles
 * [x] VulkanRectangles
-* [ ] UseCairo
-    + [ ] PRE
-        - [ ] textureSize
-        - [ ] textureWidth
-        - [ ] textureHeight
-    + [ ] RUN
+* [x] UseCairo
+    + [x] PRE
+        - [x] textureWidth
+        - [x] textureHeight
+    + [x] RUN
         - [x] rectangles
-        - [ ] Command
-        - [ ] Event
+        - [x] Command
+        - [x] Event
         - [x] createIst
         - [x] vldLayers
         - [x] dbgMsngrInfo
@@ -47,8 +46,8 @@ src
         - [x] dvcExtensions
         - [x] createLgDvc
         - [x] swpchImgNum
-    + [ ] BODY
-        - [ ] body
+    + [x] BODY
+        - [x] body
         - [x] createCmdPl
         - [x] createCmdBffr
         - [x] unfrmBffrOstAlgn
@@ -58,122 +57,122 @@ src
         - [x] createVtxBffr
         - [x] createIdxBffr
         - [x] createBffrMem
-        - [ ] createViewProjBffr
+        - [x] createViewProjBffr
         - [x] ViewProjMemory
         - [x] AtomViewProj
         - [x] createDscPl
-        - [ ] createDscSt
-        - [ ] descriptorWrite
-    + [ ] PROVIDE WINDOW OBJECTS
-        - [ ] provideWinObjs
-        - [ ] initWin
-    + [ ] WINDOW OBJECTS
-        - [ ] winObjs
-        - [ ] destroyWinObjs
-        - [ ] class NumToVal
-        - [ ] instance NumToVal
-        - [ ] WinObjs
-        - [ ] WinEnvs
-        - [ ] FramebufferResized
-        - [ ] Swapchains
-        - [ ] Pipeline
-        - [ ] WinObjGroups
-        - [ ] prepareSwpch
-        - [ ] querySwpchSupport
-        - [ ] SwpchSupportDetails
-        - [ ] createSwpch'
-        - [ ] recreateSwpch
-        - [ ] swapExtent
-        - [ ] swpchInfoSsd
-        - [ ] chooseSwpSfcFmt
-        - [ ] swpchInfo
-        - [ ] createImgVws
-        - [ ] recreateImgVws
-        - [ ] createRndrPss
-        - [ ] createFrmbffrs
-        - [ ] recreateFrmbffrs
-        - [ ] createSyncObjs
-        - [ ] SyncObjs
-    + [ ] RECTANGLE BUFFER
-        - [ ] createRctBffr
-        - [ ] destroyRctBffr
-        - [ ] RectGroups
-    + [ ] GET GLFW EVENTS
-        - [ ] setGlfwEvents
-        - [ ] glfwEvents
-        - [ ] getMouseButtons
-        - [ ] MouseButtonStateDict
-        - [ ] mouseButtonAll
-        - [ ] sendMouseButtonDown
-        - [ ] sendMouseButtonUp
-        - [ ] sendMouseButton
-    + [ ] CREATE AND COPY BUFFERS
-        - [ ] createBffrAtm
-        - [ ] createBffrLst
-        - [ ] createBffrLst'
-        - [ ] copyBffrLst
-    + [ ] GRAPHICS PIPELINE
-        - [ ] createGrPpl
-        - [ ] recreateGrPpl
-        - [ ] grPplInfo
-        - [ ] shaderStages
-        - [ ] GlslVertexShaderArgs
-        - [ ] GlslFragmentShaderArgs
-        - [ ] vwpSt
-        - [ ] clrBlnd
-    + [ ] MAINLOOP
-        - [ ] mainloop
-        - [ ] class Succable
-        - [ ] instance Succable Bool
-        - [ ] instance Succable Int
-        - [ ] Devices
-        - [ ] PipelineLayout
-        - [ ] VertexBuffers
-        - [ ] wobjsToWin
-        - [ ] run
-    + [ ] RECREATE
-        - [ ] catchAndRecreate
-        - [ ] recreateAllIfNeed
-        - [ ] recreateAll
-        - [ ] waitFrmbffrSize
-        - [ ] Recrs
-        - [ ] wobjsToRecrs
-    + [ ] DARW
-        - [ ] draw
-        - [ ] catchAndSerialize
-        - [ ] Draws
-        - [ ] wobjsToDrs
-        - [ ] recordCmdBffr
-        - [ ] bffrLstLn
-    + [ ] DATA TYPES
-        - [ ] WVertex
-        - [ ] Vertex
-        - [ ] instance StrG.G Vertex
-        - [ ] TexCoord
-        - [ ] verrtices
-        - [ ] indices
-        - [ ] Rectangle
-        - [ ] WRect
-        - [ ] RectangleRaw
-        - [ ] rectToRectRaw
-        - [ ] instance StrG.G RectangleRaw
-        - [ ] RectPos
-        - [ ] RectSize
-        - [ ] RectColor
-        - [ ] RectModel
-        - [ ] RectModel0
-        - [ ] RectModel1
-        - [ ] RectModel2
-        - [ ] RectModel3
-        - [ ] dummy
-        - [ ] WViewProj
-        - [ ] ViewProjection
-        - [ ] viewProjIdentity
-        - [ ] instance StrG.G ViewProjection
-        - [ ] instance Default ViewProjection
-    + [ ] SHADERS
-        - [ ] glslVertexShader
-        - [ ] glslFragmentShader
+        - [x] createDscSt
+        - [x] dscWrite
+    + [x] PROVIDE WINDOW OBJECTS
+        - [x] provideWinObjs
+        - [x] initWin
+    + [x] WINDOW OBJECTS
+        - [x] winObjs
+        - [x] destroyWinObjs
+        - [x] class NumToVal
+        - [x] instance NumToVal
+        - [x] WinObjs
+        - [x] WinEnvs
+        - [x] FramebufferResized
+        - [x] Swapchains
+        - [x] Pipeline
+        - [x] WinObjGroups
+        - [x] prepareSwpch
+        - [x] querySwpchSupport
+        - [x] SwpchSupportDetails
+        - [x] createSwpch'
+        - [x] recreateSwpch
+        - [x] swapExtent
+        - [x] swpchInfoSsd
+        - [x] chooseSwpSfcFmt
+        - [x] swpchInfo
+        - [x] createImgVws
+        - [x] recreateImgVws
+        - [x] createRndrPss
+        - [x] createFrmbffrs
+        - [x] recreateFrmbffrs
+        - [x] createSyncObjs
+        - [x] SyncObjs
+    + [x] RECTANGLE BUFFER
+        - [x] createRctBffr
+        - [x] destroyRctBffr
+        - [x] RectGroups
+    + [x] GET GLFW EVENTS
+        - [x] setGlfwEvents
+        - [x] glfwEvents
+        - [x] getMouseButtons
+        - [x] MouseButtonStateDict
+        - [x] mouseButtonAll
+        - [x] sendMouseButtonDown
+        - [x] sendMouseButtonUp
+        - [x] sendMouseButton
+    + [x] CREATE AND COPY BUFFERS
+        - [x] createBffrAtm
+        - [x] createBffrLst
+        - [x] createBffrLst'
+        - [x] copyBffrLst
+    + [x] GRAPHICS PIPELINE
+        - [x] createGrPpl
+        - [x] recreateGrPpl
+        - [x] grPplInfo
+        - [x] shaderStages
+        - [x] GlslVertexShaderArgs
+        - [x] GlslFragmentShaderArgs
+        - [x] vwpSt
+        - [x] clrBlnd
+    + [x] MAINLOOP
+        - [x] mainloop
+        - [x] class Succable
+        - [x] instance Succable Bool
+        - [x] instance Succable Int
+        - [x] Devices
+        - [x] PipelineLayout
+        - [x] VertexBuffers
+        - [x] wobjsToWin
+        - [x] run
+    + [x] RECREATE
+        - [x] catchAndRecreate
+        - [x] recreateAllIfNeed
+        - [x] recreateAll
+        - [x] waitFrmbffrSize
+        - [x] Recrs
+        - [x] wobjsToRecrs
+    + [x] DARW
+        - [x] draw
+        - [x] catchAndSerialize
+        - [x] Draws
+        - [x] wobjsToDrs
+        - [x] recordCmdBffr
+        - [x] bffrLstLn
+    + [x] DATA TYPES
+        - [x] WVertex
+        - [x] Vertex
+        - [x] instance StrG.G Vertex
+        - [x] TexCoord
+        - [x] verrtices
+        - [x] indices
+        - [x] Rectangle
+        - [x] WRect
+        - [x] RectangleRaw
+        - [x] rectToRectRaw
+        - [x] instance StrG.G RectangleRaw
+        - [x] RectPos
+        - [x] RectSize
+        - [x] RectColor
+        - [x] RectModel
+        - [x] RectModel0
+        - [x] RectModel1
+        - [x] RectModel2
+        - [x] RectModel3
+        - [x] dummy
+        - [x] WViewProj
+        - [x] ViewProjection
+        - [x] viewProjIdentity
+        - [x] instance StrG.G ViewProjection
+        - [x] instance Default ViewProjection
+    + [x] SHADERS
+        - [x] glslVertexShader
+        - [x] glslFragmentShader
 * [ ] Convert
 * [ ] CreateTextureGroup
 * [ ] Gpu.Vulkan.CairoImage

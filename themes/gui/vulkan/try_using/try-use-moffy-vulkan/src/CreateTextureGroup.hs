@@ -15,7 +15,7 @@ module CreateTextureGroup (
 
 	-- * CREATE AND UPDATE
 
-	createTexture, destroyTexture, updateTexture, createBuffer,
+	createTx, destroyTx, updateTexture, createBuffer,
 
 	-- * BEGIN SINGLE TIME COMMANDS
 
@@ -83,7 +83,7 @@ txGroup dv f =
 	Vk.Img.group dv nil \mng -> Vk.Mm.group dv nil \mmng ->
 	Vk.ImgVw.group dv nil \ivmng -> f (mng, mmng, ivmng)
 
-createTexture :: forall bis nmt img k sd sc sds sdsc sm si siv ss . (
+createTx :: forall bis nmt img k sd sc sds sdsc sm si siv ss . (
 	Vk.ObjB.IsImage img,
 	Vk.DscSet.BindingAndArrayElemImage bis
 		'[ '(nmt, Vk.ObjB.ImageFormat img)] 0,
@@ -92,7 +92,7 @@ createTexture :: forall bis nmt img k sd sc sds sdsc sm si siv ss . (
 	Vk.DscSet.D sds '(sdsc, bis) ->
 	TextureGroup sd si nmt sm siv (Vk.ObjB.ImageFormat img) k ->
 	Vk.Smplr.S ss -> img -> k -> IO ()
-createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
+createTx phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 	putStrLn "CREATE TEXTURE BEGIN" >>
 	createTextureImage' phdv dv mng mmng gq cp k img >>= \tximg ->
 
@@ -102,8 +102,8 @@ createTexture phdv dv gq cp ubds (mng, mmng, ivmng) txsmplr img k =
 	updateDescriptorSetTex dv ubds tximgvw txsmplr >>
 	putStrLn "CREATE TEXTURE END"
 
-destroyTexture :: Ord k => TextureGroup sd si nmt sm siv fmt k -> k -> IO ()
-destroyTexture (mng, mmng, ivmng) k = do
+destroyTx :: Ord k => TextureGroup sd si nmt sm siv fmt k -> k -> IO ()
+destroyTx (mng, mmng, ivmng) k = do
 	putStrLn "DESTROY TEXTURE BEGIN"
 	Vk.Img.unsafeDestroy mng k
 	Vk.Mm.unsafeFree mmng k

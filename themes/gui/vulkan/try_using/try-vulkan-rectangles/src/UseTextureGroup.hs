@@ -1202,10 +1202,7 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy $ null rs)
 
 class Succable n where zero' :: n; succ' :: n -> n
-
-instance Succable Bool where
-	zero' = False; succ' = \case False -> True; True -> error "no more"
-
+instance Succable Bool where zero' = False; succ' = bool True (error "no more")
 instance Succable Int where zero' = 0; succ' = succ
 
 type Devices sd scp scb = (

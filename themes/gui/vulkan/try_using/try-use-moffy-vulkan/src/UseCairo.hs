@@ -164,9 +164,8 @@ import PangoLayoutExtent
 --
 ----------------------------------------------------------------------
 
-textureSize :: Integral n => (n, n)
 textureWidth, textureHeight :: Integral n => n
-textureSize@(textureWidth, textureHeight) =
+(textureWidth, textureHeight) =
 	(1024 :: forall n . Num n => n, 1024 :: forall n . Num n => n)
 
 -- RUN
@@ -376,11 +375,10 @@ body ip op vex ist pd qfis dv gq pq =
 	cairoImageSurfaceCreate
 		CairoFormatArgb32 textureWidth textureHeight >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
-	let	crtx v =
-			drawViewIO crsfc cr v >>= \trs ->
-			createTexture @(DscStLytArg alu mnmvp nmt) @nmt pd dv gq cp ds txg txs trs (zero' :: k)
-		drtx = destroyTexture txg (zero' :: k) in
-	crtx (View []) >>
+	let	crtx v = drawViewIO crsfc cr v >>= \img ->
+			createTx @(DscStLytArg alu mnmvp nmt) @nmt
+				pd dv gq cp ds txg txs img (zero' :: k)
+		drtx = destroyTx txg (zero' :: k) in crtx (View []) >>
 	mainloop @n @siv @sf
 		ip op dvs pl crwos drwos vbs rgs ds vpm ges crtx drtx cr
 
@@ -503,40 +501,31 @@ createDscPl dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.sizeDescriptorCount = 1 }
 
 createDscSt :: KnownNat alu =>
-	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.Bffr.Binded sm sb nm '[Vk.Obj.Atom alu WViewProj mnmvp] ->
-	Vk.DscStLyt.D sdsc '[
-		'Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu WViewProj mnmvp],
-		'Vk.DscStLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)]] ->
-	(forall sds .
-		Vk.DscSt.D sds '(sdsc, '[
-			'Vk.DscStLyt.Buffer '[Vk.Obj.Atom alu WViewProj mnmvp],
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu mnmvp] ->
+	Vk.DscStLyt.D sdsl (DscStLytArg alu mnmvp nmt) -> (forall sds .
+		Vk.DscSt.D sds '(sdsl, '[
+			'Vk.DscStLyt.Buffer '[AtomViewProj alu mnmvp],
 			'Vk.DscStLyt.Image
 				'[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)] ]) ->
 		IO a) -> IO a
-createDscSt dvc dscp ub dscslyt f =
-	Vk.DscSt.allocateDs dvc allocInfo \(HPList.Singleton dscs) -> do
-	Vk.DscSt.updateDs dvc
-		(HPList.Singleton . U5 $ descriptorWrite ub dscs) HPList.Nil
-	f dscs
-	where
-	allocInfo = Vk.DscSt.AllocateInfo {
+createDscSt d dp bvp dsl f =
+	Vk.DscSt.allocateDs d info \(HPList.Singleton ds) -> (>> f ds) $
+	Vk.DscSt.updateDs d (HPList.Singleton . U5 $ dscWrite ds bvp) HPList.Nil
+	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
-		Vk.DscSt.allocateInfoDescriptorPool = dscp,
-		Vk.DscSt.allocateInfoSetLayouts =
-			HPList.Singleton $ U2 dscslyt }
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-descriptorWrite :: KnownNat alu =>
-	Vk.Bffr.Binded sm sb nm '[Vk.Obj.Atom alu WViewProj mnmvp] ->
-	Vk.DscSt.D sds slbts ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer '[ '(
-		sm, sb, nm, Vk.Obj.Atom alu WViewProj mnmvp, 0)]) 0
-descriptorWrite ub dscs = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N,
-	Vk.DscSt.writeDstSet = dscs,
+dscWrite :: KnownNat alu => Vk.DscSt.D sds slbts ->
+	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu mnmvp] ->
+	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
+		'[ '(sm, sb, nm, Vk.Obj.Atom alu WViewProj mnmvp, 0)]) 0
+dscWrite ds bvp = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos $
-		HPList.Singleton bufferInfo }
-	where bufferInfo = U5 $ Vk.Dsc.BufferInfo ub
+	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
+		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bvp }
 
 -- PROVIDE WINDOW OBJECTS
 
@@ -645,10 +634,10 @@ type Swapchains scfmt ssc nmi svs sr sfs = (
 
 type Pipeline sg sl sdsl alu mnmvp nmt = Vk.Ppl.Gr.G sg
 	'[ '(WVertex, 'Vk.VtxInp.RateVertex), '(WRect, 'Vk.VtxInp.RateInstance)]
-	'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3),
-		'(2, RectPos), '(3, RectSize), '(4, RectColor),
-		'(5, RectModel0), '(6, RectModel1),
-		'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
+	'[ '(0, Cglm.Vec2), 
+		'(1, RectPos), '(2, RectSize), '(3, RectColor),
+		'(4, RectModel0), '(5, RectModel1),
+		'(6, RectModel2), '(7, RectModel3), '(8, TexCoord) ]
 	'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[])
 
 type WinObjGroups k si ssfc sd scfmt
@@ -661,10 +650,10 @@ type WinObjGroups k si ssfc sd scfmt
 	Vk.Ppl.Gr.Group sd 'Nothing sg k '[ '(
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ],
+		'[	'(0, Cglm.Vec2), '(1, RectPos),
+			'(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3), '(8, TexCoord) ],
 		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]) )],
 	Vk.Smph.Group sd 'Nothing sias k, Vk.Smph.Group sd 'Nothing srfs k,
 	Vk.Fnc.Group sd 'Nothing siff k )
@@ -1017,21 +1006,21 @@ createGrPpl :: (Ord k, Vk.AllocationCallbacks.ToMiddle ma) =>
 	Vk.Ppl.Gr.Group sd ma sg k '[ '(
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ],
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ],
+		'[	'(0, Cglm.Vec2),
+			'(1, RectPos), '(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3), '(8, TexCoord) ],
 			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]) )] ->
 	k -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] -> IO (
 		Vk.Ppl.Gr.G sg
 			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 				'(WRect, 'Vk.VtxInp.RateInstance) ]
-			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1),
-				'(7, RectModel2), '(8, RectModel3),
-				'(9, TexCoord) ]
+			'[	'(0, Cglm.Vec2),
+				'(1, RectPos), '(2, RectSize), '(3, RectColor),
+				'(4, RectModel0), '(5, RectModel1),
+				'(6, RectModel2), '(7, RectModel3),
+				'(8, TexCoord) ]
 			'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]) )
 createGrPpl gpg k ex rp pl = (\(forceRight' -> (HPList.Singleton (U3 p))) -> p)
 	<$> Vk.Ppl.Gr.createGs' gpg k Nothing
@@ -1042,10 +1031,10 @@ recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
+		'[	'(0, Cglm.Vec2),
+			'(1, RectPos), '(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3), '(8, TexCoord) ]
 		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]) -> IO ()
 recreateGrPpl dv ex rp pl gp = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
@@ -1058,11 +1047,11 @@ grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 		'(	'Nothing,
 			'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 				'(WRect, 'Vk.VtxInp.RateInstance) ],
-			'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-				'(2, RectPos), '(3, RectSize), '(4, RectColor),
-				'(5, RectModel0), '(6, RectModel1),
-				'(7, RectModel2), '(8, RectModel3),
-				'(9, TexCoord) ] )
+			'[	'(0, Cglm.Vec2),
+				'(1, RectPos), '(2, RectSize), '(3, RectColor),
+				'(4, RectModel0), '(5, RectModel1),
+				'(6, RectModel2), '(7, RectModel3),
+				'(8, TexCoord) ] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'Nothing '(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[])
 		sr '(sb, vs, ts, plas)
@@ -1211,21 +1200,19 @@ mainloop ip op dvs@(pd, qfis, dv, _, _, _, _) pl crwos drwos vbs rgs ds vpm ges
 				. modifyTVar vws . M.insert wi =<< crwos wi)
 	fix \go ->
 		atomically (readTVar vws) >>= \ws ->
-		(for_ ws \wos -> recreateAllIfNeed @n @sv @sf op pd qfis dv pl wos) >>
+		(for_ ws $ recreateAllIfNeed @n @sv @sf op pd qfis dv pl) >>
 		atomically (readTChan ip) >>= \case
 		GetEvent -> atomically (readTVar ges) >>= sequence_ >> go
 		OpenWindow -> crwos' >>=
 			atomically . writeTChan op . EventOpenWindow >> go
 		DestroyWindow k -> do
 			atomically (modifyTVar vws (M.delete k)) >> drwos k
-			ws' <- atomically $ readTVar vws
+			ws' <- (wobjsToWin <$>) <$> atomically (readTVar vws)
 			GlfwG.pollEvents
-			bool go (pure ()) =<< and <$> GlfwG.Win.shouldClose
-				`mapM` (wobjsToWin <$> ws')
-		Draw drs -> do
-			Vk.Dvc.waitIdle dv
-			run @n @sv @sf dvs pl ws vbs rgs (rects drs) ds vpm go
-		SetPicture view -> drtx >> crtx view >> Vk.Dvc.waitIdle dv >> go
+			(`when` go) . not
+				=<< and <$> GlfwG.Win.shouldClose `mapM` ws'
+		Draw dr -> run @n @sv @sf dvs pl ws vbs rgs (rects dr) ds vpm go
+		SetPicture v -> drtx >> crtx v >> Vk.Dvc.waitIdle dv >> go
 		CalcTextLayoutExtent (CTE.CalcTextExtentsReq wid fn fs tx) ->
 			(>> go) . atomically . writeTChan op
 				. EventTextLayoutExtentResult
@@ -1242,10 +1229,7 @@ mainloop ip op dvs@(pd, qfis, dv, _, _, _, _) pl crwos drwos vbs rgs ds vpm ges
 		(fromIntegral $ pangoRectanglePixelHeight r)
 
 class Succable n where zero' :: n; succ' :: n -> n
-
-instance Succable Bool where
-	zero' = False; succ' = \case False -> True; True -> error "no more"
-
+instance Succable Bool where zero' = False; succ' = bool True (error "no more")
 instance Succable Int where zero' = 0; succ' = succ
 
 type Devices sd scp scb = (
@@ -1348,10 +1332,10 @@ data Recrs sw ssfc scfmt ssc nmv svs sr sfs sg sl sdsl alu mnmvp nmt = Recrs
 	(Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
+		'[	'(0, Cglm.Vec2), '(1, RectPos),
+			'(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3), '(8, TexCoord) ]
 		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]))
 
 wobjsToRecrs ::
@@ -1417,10 +1401,10 @@ data Draws fmt ssc sr sfs sg sl sdsl alu mnmvp nmt sias srfs siff = Draws
 	(Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, RectPos),
-			'(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
+		'[	'(0, Cglm.Vec2), '(1, RectPos),
+			'(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3), '(8, TexCoord) ]
 		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]))
 	(SyncObjs '(sias, srfs, siff))
 
@@ -1439,10 +1423,10 @@ recordCmdBffr :: forall
 	Vk.Ppl.Gr.G sg
 		'[	'(WVertex, 'Vk.VtxInp.RateVertex),
 			'(WRect, 'Vk.VtxInp.RateInstance) ]
-		'[	'(0, Cglm.Vec2), '(1, Cglm.Vec3),
-			'(2, RectPos), '(3, RectSize), '(4, RectColor),
-			'(5, RectModel0), '(6, RectModel1),
-			'(7, RectModel2), '(8, RectModel3), '(9, TexCoord) ]
+		'[	'(0, Cglm.Vec2),
+			'(1, RectPos), '(2, RectSize), '(3, RectColor),
+			'(4, RectModel0), '(5, RectModel1),
+			'(6, RectModel2), '(7, RectModel3), '(8, TexCoord) ]
 		'(sl, '[ '(sdsl, DscStLytArg alu mnmvp nmt)], '[]) ->
 	Vk.Bffr.Binded smv sbv bnmv '[Vk.ObjNA.List WVertex nmv] ->
 	Vk.Bffr.Binded smr sbr bnmr '[Vk.ObjNA.List WRect nmr] ->
@@ -1485,8 +1469,7 @@ bffrLstLn b = fromIntegral sz
 type WVertex = StrG.W Vertex
 
 data Vertex = Vertex {
-	vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3,
-	vertexTexCoord :: TexCoord }
+	vertexPos :: Cglm.Vec2, vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
 
 instance StrG.G Vertex
@@ -1497,16 +1480,12 @@ newtype TexCoord = TexCoord Cglm.Vec2
 vertices :: [WVertex]
 vertices = StrG.W <$> [
 	Vertex (Cglm.Vec2 $ (- 0) :. (- 0) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 0 :. 0 :. NilL),
 	Vertex (Cglm.Vec2 $ 1 :. (- 0) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1 :. 0 :. NilL),
 	Vertex (Cglm.Vec2 $ 1 :. 1 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1 :. 1 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0) :. 1 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 0 :. 1 :. NilL) ]
 
 indices :: [Word16]
@@ -1596,12 +1575,11 @@ instance Default ViewProjection where
 layout(binding = 0) uniform ViewProjection { mat4 view; mat4 proj; } vp;
 
 layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec3 inColor;
-layout(location = 2) in vec2 rectPosition;
-layout(location = 3) in vec2 rectSize;
-layout(location = 4) in vec4 rectColor;
-layout(location = 5) in mat4 rectModel;
-layout(location = 9) in vec2 inTexCoord;
+layout(location = 1) in vec2 rectPosition;
+layout(location = 2) in vec2 rectSize;
+layout(location = 3) in vec4 rectColor;
+layout(location = 4) in mat4 rectModel;
+layout(location = 8) in vec2 inTexCoord;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
@@ -1612,7 +1590,6 @@ main()
 	gl_Position = vp.proj * vp.view * rectModel *
 		vec4(inPosition * rectSize, 0.0, 1.0) +
 		vec4(rectPosition, 0.0, 1.0);
-//	fragColor = inColor;
 	fragColor = rectColor;
 	fragTexCoord = inTexCoord;
 }
@@ -1625,7 +1602,6 @@ main()
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
-
 layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
@@ -1633,7 +1609,6 @@ layout(binding = 1) uniform sampler2D texSampler;
 void
 main()
 {
-//	outColor = fragColor;
 	outColor = vec4(texture(texSampler, fragTexCoord).rgb, 1.0);
 	if (outColor.w < 1) { discard; }
 }
