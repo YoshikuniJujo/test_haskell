@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-10-11
+resolver: nightly-2024-10-22
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: eebd065063381e9a07abf7fb08528ddf72f561a7
+  commit: e12873fdba35246a61ea9046f3b8e8ad22b650dc
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try-glfw-group

@@ -175,6 +175,20 @@ src
         - [x] glslVertexShader
         - [x] glslFragmentShader
 * [x] CreateTextureGroup
-* [ ] Gpu.Vulkan.CairoImage
+* [ ] DrawView
+    + [ ] DRAW VIEW
+        - [x] drawView
+        - [x] drRect
+        - [ ] drLn
+        - [ ] drTxt
+        - [ ] drImg
+    + [ ] CAIRO ARGB 32
+        - [ ] PixelRgba
+        - [ ] pixelArgb32ToPixelRgba
+        - [ ] pixelRgbaToPixelArgb32
+        - [ ] instance Storable (PixelRgba d)
+        - [ ] instance BObj.IsImage CairoArgb32
+        - [ ] pixelArgb32ToRgba
+        - [ ] rgbaToPixelArgb32
 * [ ] KeyToXKey
 * [ ] KeyToXKey.TH

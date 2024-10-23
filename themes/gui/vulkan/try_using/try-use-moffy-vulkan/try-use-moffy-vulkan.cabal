@@ -32,7 +32,7 @@ flag debug
 library
   exposed-modules:
       CreateTextureGroup
-      Gpu.Vulkan.CairoImage
+      DrawView
       KeyToXKey
       KeyToXKey.TH
       Rectangles

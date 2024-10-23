@@ -144,11 +144,11 @@ import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msgr
 import Gpu.Vulkan.Cglm qualified as Cglm
-import Gpu.Vulkan.CairoImage
 
 import CreateTextureGroup
 
 import Debug
+import DrawView
 import Trial.Followbox.ViewType as FV
 
 ----------------------------------------------------------------------
@@ -379,7 +379,7 @@ body ip op vex ist pd qfis dv gq pq =
 	cairoImageSurfaceCreate
 		CairoFormatArgb32 textureWidth textureHeight >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
-	let	crtx v = drawViewIO crsfc cr v >>= \img ->
+	let	crtx v = drawView crsfc cr v >>= \img ->
 			createTx @(DscStLytArg alu mnmvp nmt) @nmt
 				pd dv gq cp ds txg txs img (zero' :: k)
 		drtx = destroyTx txg (zero' :: k) in crtx (View []) >>
