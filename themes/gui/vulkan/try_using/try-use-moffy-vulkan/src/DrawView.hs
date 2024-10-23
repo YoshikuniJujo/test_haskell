@@ -72,38 +72,34 @@ drLn cr (Line' (Color r g b) (realToFrac -> lw)
 	(realToFrac -> x2, realToFrac -> y2)) = do
 	cairoSetSourceRgb cr $ RgbWord8 r g b
 	cairoSetLineWidth cr lw
-	cairoMoveTo cr x1 y1
-	cairoLineTo cr x2 y2
+	cairoMoveTo cr x1 y1 >> cairoLineTo cr x2 y2
 	cairoStroke cr
 
 drTxt :: CairoT r RealWorld -> VText -> IO ()
-drTxt cr (Text' (Color r g b) fnm (realToFrac -> fsz) (realToFrac -> x, realToFrac -> y) txt) = do
+drTxt cr (Text' (Color r g b) fnm (realToFrac -> fsz)
+	(realToFrac -> x, realToFrac -> y) txt) = do
 	cairoSetSourceRgb cr $ RgbWord8 r g b
-	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionNew
-	pangoFontDescriptionSet pfd $ Family fnm
-	pangoFontDescriptionSet pfd $ AbsoluteSize fsz
-	pangoLayoutSet pl . pangoFontDescriptionToNullable . Just
-		=<< pangoFontDescriptionFreeze pfd
-	pangoLayoutSet pl txt
-	fpl <- pangoLayoutFreeze pl
+	(l, fd) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	pangoFontDescriptionSet fd $ Family fnm
+	pangoFontDescriptionSet fd $ AbsoluteSize fsz
+	pangoLayoutSet l . pangoFontDescriptionToNullable
+		. Just =<< pangoFontDescriptionFreeze fd
+	pangoLayoutSet l txt
+	fl <- pangoLayoutFreeze l
 	cairoMoveTo cr x y
-	pangoCairoShowLayout cr fpl
+	pangoCairoShowLayout cr fl
 
 drImg :: PrimMonad m => CairoT r (PrimState m) -> VT.Image -> m ()
 drImg cr (Image' (x, y) (Png w h img)) = do
-
 	sfc <- cairoSurfaceCreateFromPngByteString img
 	w0 <- cairoImageSurfaceGetWidth sfc
 	h0 <- cairoImageSurfaceGetHeight sfc
-
 	cairoTranslate cr (realToFrac x) (realToFrac y)
 	cairoScale cr
 		(realToFrac w / fromIntegral w0)
 		(realToFrac h / fromIntegral h0)
 	cairoSetSourceSurface cr sfc 0 0
 	cairoPaint cr
-
 	cairoIdentityMatrix cr
 
 -- CAIRO ARGB 32

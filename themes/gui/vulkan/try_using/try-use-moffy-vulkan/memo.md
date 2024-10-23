@@ -176,12 +176,12 @@ src
         - [x] glslFragmentShader
 * [x] CreateTextureGroup
 * [ ] DrawView
-    + [ ] DRAW VIEW
+    + [x] DRAW VIEW
         - [x] drawView
         - [x] drRect
-        - [ ] drLn
-        - [ ] drTxt
-        - [ ] drImg
+        - [x] drLn
+        - [x] drTxt
+        - [x] drImg
     + [ ] CAIRO ARGB 32
         - [ ] PixelRgba
         - [ ] pixelArgb32ToPixelRgba
