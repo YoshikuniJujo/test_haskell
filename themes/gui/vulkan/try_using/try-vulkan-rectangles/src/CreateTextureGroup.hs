@@ -244,7 +244,7 @@ createImg' :: forall fmt sd sm si k nmi . (Vk.T.FormatToValue fmt, Ord k) =>
 		Vk.Img.Binded sm si nmi fmt,
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nmi fmt)] )
 createImg' pd dv ig mg k w h tl us prs = do
-	(forceRight' -> i) <- Vk.Img.create' @_ @'Nothing ig k iinfo
+	(forceRight' -> i) <- Vk.Img.create' ig k iinfo
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) prs
 	(forceRight' -> (HPList.Singleton (U2 (Vk.Mm.ImageBinded bi)), m)) <-
@@ -384,8 +384,8 @@ createTxSmplr ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
 createTxSmplr pd dv f =
 	Vk.Phd.getProperties pd >>= \(Vk.Phd.propertiesLimits -> lm) ->
-	Vk.Smplr.create @'Nothing dv (samplerInfo lm) nil f
-	where samplerInfo lm = Vk.Smplr.CreateInfo {
+	Vk.Smplr.create @'Nothing dv (info lm) nil f
+	where info lm = Vk.Smplr.CreateInfo {
 		Vk.Smplr.createInfoNext = TMaybe.N,
 		Vk.Smplr.createInfoFlags = zeroBits,
 		Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,

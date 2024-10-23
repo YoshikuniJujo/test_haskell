@@ -174,7 +174,7 @@ src
     + [x] SHADERS
         - [x] glslVertexShader
         - [x] glslFragmentShader
-* [ ] CreateTextureGroup
+* [x] CreateTextureGroup
 * [ ] Gpu.Vulkan.CairoImage
 * [ ] KeyToXKey
 * [ ] KeyToXKey.TH
