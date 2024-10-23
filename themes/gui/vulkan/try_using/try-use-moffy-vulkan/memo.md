@@ -97,6 +97,16 @@ src
     + [ ] CREATE AND COPY BUFFERS
     + [ ] GRAPHICS PIPELINE
     + [ ] MAINLOOP
+        - [ ] mainloop
+        - [ ] class Succable
+        - [ ] instance Succable Bool
+        - [ ] instance Succable Int
+        - [ ] tectsToDummy
+        - [ ] Devices
+        - [ ] PipelineLayout
+        - [ ] VertexBuffers
+        - [ ] wobjsToWin
+        - [ ] run
     + [ ] RECREATE
     + [ ] DARW
     + [ ] DATA TYPES

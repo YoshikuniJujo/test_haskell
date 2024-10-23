@@ -1199,7 +1199,7 @@ mainloop ip op dvs@(_, _, dv, _, _, _, _) pl crwos drwos vbs rgs dsg vpm ges
 		SetPicture k pct ->
 			drtx k >> crtx k pct >> Vk.Dvc.waitIdle dv >> go
 	where rects = M.map \(vp, rs) ->
-		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy (null rs))
+		(StrG.W vp, bool (rectToRectRaw <$> rs) dummy $ null rs)
 
 class Succable n where zero' :: n; succ' :: n -> n
 
@@ -1225,13 +1225,13 @@ wobjsToWin (WinObjs (win, _) _ _ _ _ _) = win
 
 run :: forall
 	n (sv :: Type) (sf :: Type) k sd scp scb sl sdsl alu mnmvp nmt
-	sw ssfc scfmt ssc nmsv sr sg sias srfs siff
+	sw ssfc scfmt ssc nmscv sr sg sias srfs siff
 	smv sbv bnmv nmv smi sbi bnmi nmi smr sbr bnmr nmr smvp sbvp bnmvp
 	sds sdp .
 	(HPList.HomoListN n, Ord k, KnownNat alu, Vk.T.FormatToValue scfmt) =>
 	TChan (Event k) -> Devices sd scp scb ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu mnmvp nmt)] '[] ->
-	(M.Map k (WinObjs sw ssfc scfmt ssc nmsv
+	(M.Map k (WinObjs sw ssfc scfmt ssc nmscv
 		(HPList.Replicate n sv) sr (HPList.Replicate n sf)
 		sg sl sdsl alu mnmvp nmt sias srfs siff)) ->
 	VertexBuffers smv sbv bnmv nmv smi sbi bnmi nmi ->
@@ -1277,8 +1277,8 @@ recreateAllIfNeed :: forall
 		sg sl sdsl alu mnmvp nmt sias srfs siff -> IO ()
 recreateAllIfNeed op pd qfis dv pl wos@(WinObjs (_, fr) _ _ _ _ _) =
 	atomically (checkFlag fr) >>= bool (pure ()) do
-		atomically $ writeTChan op EventNeedRedraw
 		recreateAll @n @sv @sf pd qfis dv pl $ wobjsToRecrs wos
+		atomically $ writeTChan op EventNeedRedraw
 
 recreateAll :: forall
 	n sv sf sd sl sdsl alu mnmvp nmt sw ssfc sr ssc nmi scfmt sg .
