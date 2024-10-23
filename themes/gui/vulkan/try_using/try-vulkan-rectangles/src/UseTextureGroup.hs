@@ -1501,7 +1501,7 @@ rectToRectRaw Rectangle {
 		rectangleModel3 = RectModel3 m3 }
 	where m0 :. m1 :. m2 :. m3 :. NilL = Cglm.mat4ToVec4s m
 
-instance StrG.G RectangleRaw where
+instance StrG.G RectangleRaw
 
 newtype RectPos = RectPos Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
@@ -1571,9 +1571,9 @@ layout(location = 1) out vec2 fragTexCoord;
 void
 main()
 {
-	gl_Position = vp.proj * vp.view * rectModel * (
+	gl_Position = vp.proj * vp.view * rectModel *
 		vec4(inPosition * rectSize, 0.0, 1.0) +
-		vec4(rectPosition, 0.0, 1.0) );
+		vec4(rectPosition, 0.0, 1.0);
 //	fragColor = inColor;
 	fragColor = rectColor;
 	fragTexCoord = inTexCoord;

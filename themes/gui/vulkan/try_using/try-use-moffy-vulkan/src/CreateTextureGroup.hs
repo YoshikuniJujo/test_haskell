@@ -29,7 +29,8 @@ module CreateTextureGroup (
 
 	createBffr, createBffr',
 	createImgVw', recreateImgVw,
-	singleTimeCmds
+	singleTimeCmds,
+	createTxSmplr
 
 	) where
 
@@ -500,3 +501,35 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
+
+createTxSmplr ::
+	Vk.Phd.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTxSmplr phdv dvc f = do
+	prp <- Vk.Phd.getProperties phdv
+	print . Vk.Phd.limitsMaxSamplerAnisotropy $ Vk.Phd.propertiesLimits prp
+	let	samplerInfo = Vk.Smplr.CreateInfo {
+			Vk.Smplr.createInfoNext = TMaybe.N,
+			Vk.Smplr.createInfoFlags = zeroBits,
+			Vk.Smplr.createInfoMagFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMinFilter = Vk.FilterLinear,
+			Vk.Smplr.createInfoMipmapMode =
+				Vk.Smplr.MipmapModeLinear,
+			Vk.Smplr.createInfoAddressModeU =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeV =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoAddressModeW =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.createInfoMipLodBias = 0,
+			Vk.Smplr.createInfoAnisotropyEnable = True,
+			Vk.Smplr.createInfoMaxAnisotropy =
+				Vk.Phd.limitsMaxSamplerAnisotropy
+					$ Vk.Phd.propertiesLimits prp,
+			Vk.Smplr.createInfoCompareEnable = False,
+			Vk.Smplr.createInfoCompareOp = Vk.CompareOpAlways,
+			Vk.Smplr.createInfoMinLod = 0,
+			Vk.Smplr.createInfoMaxLod = 0,
+			Vk.Smplr.createInfoBorderColor =
+				Vk.BorderColorIntOpaqueBlack,
+			Vk.Smplr.createInfoUnnormalizedCoordinates = False }
+	Vk.Smplr.create @'Nothing dvc samplerInfo nil f
