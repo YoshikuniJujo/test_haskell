@@ -189,5 +189,5 @@ src
         - [x] instance Storable (PixelRgba d)
         - [x] pixelArgb32ToRgba
         - [x] pixelRgbaToArgb32
-* [ ] KeyToXKey
-* [ ] KeyToXKey.TH
+* [x] KeyToXKey
+* [x] KeyToXKey.TH
