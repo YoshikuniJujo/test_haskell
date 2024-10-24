@@ -27,9 +27,9 @@ module UseCairo (
 	-- ** VIEW PROJECTION AND RECTANGLE
 
 	ViewProjection(..),
-	Rectangle(..), RectPos(..), RectSize(..), RectColor(..), RectModel(..)
-
-	) where
+	Rectangle(..),
+	rectPos, RectPos, rectSize, RectSize,
+	rectColor, RectColor, RectModel(..) ) where
 
 import GHC.Generics
 import GHC.TypeLits (Symbol)
@@ -1535,11 +1535,20 @@ rectToRectRaw Rectangle {
 
 instance StrG.G RectangleRaw
 
+rectPos :: Float -> Float -> RectPos
+rectPos x y = RectPos . Cglm.Vec2 $ x :. y :. NilL
+
 newtype RectPos = RectPos Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
+rectSize :: Float -> Float -> RectSize
+rectSize w h = RectSize . Cglm.Vec2 $ w :. h :. NilL
+
 newtype RectSize = RectSize Cglm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
+
+rectColor :: Float -> Float -> Float -> Float -> RectColor
+rectColor r g b a = RectColor . Cglm.Vec4 $ r :. g :. b :. a :. NilL
 
 newtype RectColor = RectColor Cglm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)

@@ -58,29 +58,28 @@ import KeyToXKey
 
 main :: IO ()
 main = do
-	(ccmd@(writeTChan -> cmd), cev@(readTChan -> ev), ex) <- atomically
+	(ccmd@(writeTChan -> cmd), cev@(readTChan -> ev), cex) <- atomically
 		$ (,,) <$> newTChan <*> newTChan <*> newTVar M.empty
 	ff $ threadDelay 20000 >> atomically (cmd Vk.GetEvent)
 	(crqs@(readTChan -> rqs), cocc@(writeTChan -> occ))
 		<- atomically $ (,) <$> newTChan <*> newTChan
 	ffa $ mffReqsToVk cmd occ =<< rqs; f $ vkEvToMoffy ev occ
 	cbxs@(readTChan -> bxs) <- atomically newTChan
-	ffa $ cmd . Vk.Draw . M.singleton 0 =<< (boxToRect ex `mapM`) =<< bxs
+	ffa $ cmd . Vk.Draw . M.singleton 0 =<< (boxToRect cex `mapM`) =<< bxs
 	f $ interpretSt (retrySt $ handleBoxes 0.1 crqs cocc) cbxs
 		runBoxes . initialBoxesState . systemToTAITime =<< getSystemTime
-	Vk.rectangles ccmd cev ex
+	Vk.rectangles ccmd cev cex
 	where
 	f = void . forkIO . void
 	ff = void . forkIO . forever; ffa = ff . atomically
-	
+
 -- SEND REQUEST/EVENT TO VULKAN/MOFFY
 
 mffReqsToVk :: (Vk.Command Int -> STM ()) ->
 	(EvOccs GuiEv -> STM ()) -> EvReqs GuiEv -> STM ()
 mffReqsToVk cmd occ rqs = do
 	maybeWhen (project rqs) \WindowNewReq -> cmd Vk.OpenWindow
-	maybeWhen (project rqs)
-		\(WindowDestroyReq i@(WindowId k)) -> do
+	maybeWhen (project rqs) \(WindowDestroyReq i@(WindowId k)) -> do
 		cmd . Vk.DestroyWindow $ fromIntegral k
 		occ . App.expand . App.Singleton $ OccWindowDestroy i
 	where maybeWhen = maybe (const $ pure ()) (flip ($))

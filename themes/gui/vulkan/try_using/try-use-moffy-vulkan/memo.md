@@ -22,7 +22,17 @@ app
         - [x] lookupOr
     + [x] RUN BOXES
         - [x] runBoxes
-* [ ] try-followbox.hs
+* [x] try-followbox.hs
+    + [x] MAIN
+        - [x] main
+    + [x] SEND REQUEST/EVENT TO VULKAN/MOFFY
+        - [x] mffReqsToVk
+        - [x] vkEvToMoffy
+    + [x] RUN FOLLOWBOX
+        - [x] runFollowbox
+    + [x] RECTANGLES
+        - [x] rects
+        - [x] model
 
 src
 ---

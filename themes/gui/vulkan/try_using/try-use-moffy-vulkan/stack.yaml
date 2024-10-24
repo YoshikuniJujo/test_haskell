@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: e12873fdba35246a61ea9046f3b8e8ad22b650dc
+  commit: d9ecfc9920125f0d697e324d0151c347878855d8
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try-glfw-group
