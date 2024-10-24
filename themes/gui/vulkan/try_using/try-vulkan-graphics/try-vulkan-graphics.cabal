@@ -244,6 +244,47 @@ executable try-multiple-windows
     , vector
   default-language: Haskell2010
 
+executable try-point-rectangle-single
+  main-is: try-point-rectangle-single.hs
+  other-modules:
+      Paths_try_vulkan_graphics
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , mtl
+    , optparse-declarative
+    , ranged-list
+    , stm
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
+    , try-tools-yj
+    , try-vulkan-graphics
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
 executable try-rectangle-single
   main-is: try-rectangle-single.hs
   other-modules:
