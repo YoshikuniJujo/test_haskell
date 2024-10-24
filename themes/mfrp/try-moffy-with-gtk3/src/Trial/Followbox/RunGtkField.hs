@@ -3,7 +3,8 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.RunGtkField (runFollowbox, runFollowboxGen) where
+module Trial.Followbox.RunGtkField (
+	runFollowbox, runFollowboxGen, handleFollowbox) where
 
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents

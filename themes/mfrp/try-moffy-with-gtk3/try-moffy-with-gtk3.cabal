@@ -1,11 +1,11 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
 name:           try-moffy-with-gtk3
-version:        0.1.0.4
+version:        0.1.0.5
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-moffy-with-gtk3#readme>
 homepage:       https://github.com/githubuser/try-moffy-with-gtk3#readme
 bug-reports:    https://github.com/githubuser/try-moffy-with-gtk3/issues
