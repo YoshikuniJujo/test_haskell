@@ -175,20 +175,19 @@ src
         - [x] glslVertexShader
         - [x] glslFragmentShader
 * [x] CreateTextureGroup
-* [ ] DrawView
+* [x] DrawView
     + [x] DRAW VIEW
         - [x] drawView
         - [x] drRect
         - [x] drLn
         - [x] drTxt
         - [x] drImg
-    + [ ] CAIRO ARGB 32
-        - [ ] PixelRgba
-        - [ ] pixelArgb32ToPixelRgba
-        - [ ] pixelRgbaToPixelArgb32
-        - [ ] instance Storable (PixelRgba d)
-        - [ ] instance BObj.IsImage CairoArgb32
-        - [ ] pixelArgb32ToRgba
-        - [ ] rgbaToPixelArgb32
+    + [x] CAIRO ARGB 32
+        - [x] CairoArgb32
+        - [x] instance BObj.IsImage CairoArgb32
+        - [x] PixelRgba
+        - [x] instance Storable (PixelRgba d)
+        - [x] pixelArgb32ToRgba
+        - [x] pixelRgbaToArgb32
 * [ ] KeyToXKey
 * [ ] KeyToXKey.TH

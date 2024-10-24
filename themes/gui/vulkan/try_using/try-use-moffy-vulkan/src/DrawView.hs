@@ -39,8 +39,6 @@ import Data.CairoContext
 
 import Data.Maybe.ToolsYj
 
-newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
-
 ---------------------------------------------------------------------------
 --
 -- * DRAW VIEW
@@ -104,47 +102,41 @@ drImg cr (Image' (x, y) (Png w h img)) = do
 
 -- CAIRO ARGB 32
 
-newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
-
-pixelArgb32ToPixelRgba :: PixelArgb32 -> PixelRgba d
-pixelArgb32ToPixelRgba = PixelRgba . pixelArgb32ToRgba
-
-pixelRgbaToPixelArgb32 :: RealFrac d => PixelRgba d -> PixelArgb32
-pixelRgbaToPixelArgb32 (PixelRgba p) = rgbaToPixelArgb32 p
-
-instance RealFrac d => Storable (PixelRgba d) where
-	sizeOf _ = 4
-	alignment _ = alignment @Word32 undefined
-	peek p = do
-		[r, g, b, a] <- peekArray 4 $ castPtr p
-		pure . PixelRgba $ RgbaWord8 r g b a
-	poke p (PixelRgba (RgbaWord8 r g b a)) =
-		pokeArray (castPtr p) [r, g, b, a]
+newtype CairoArgb32 = CairoArgb32 Argb32 deriving Show
 
 instance BObj.IsImage CairoArgb32 where
 	type ImagePixel CairoArgb32 = PixelRgba Double
 	type ImageFormat CairoArgb32 = 'Vk.T.FormatR8g8b8a8Srgb
-	imageRow (CairoArgb32 img) = fromIntegral . fst $ imageSize img
-	imageWidth (CairoArgb32 img) = fromIntegral . fst $ imageSize img
-	imageHeight (CairoArgb32 img) = fromIntegral . snd $ imageSize img
+	imageRow (CairoArgb32 i) = fromIntegral . fst $ imageSize i
+	imageWidth (CairoArgb32 i) = fromIntegral . fst $ imageSize i
+	imageHeight (CairoArgb32 i) = fromIntegral . snd $ imageSize i
 	imageDepth _ = 1
-	imageBody (CairoArgb32 img) =
+	imageBody (CairoArgb32 i@(imageSize -> (w, h))) =
 		(<$> [0 .. w - 1]) \y -> (<$> [0 .. h - 1]) \x ->
-			pixelArgb32ToPixelRgba . fromJust $ pixelAt img x y
-		where (w, h) = imageSize img
+			pixelArgb32ToRgba . fromJust $ pixelAt i x y
 	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
 		CairoArgb32 $ generateImage w h \x y ->
-			pixelRgbaToPixelArgb32 $ (pss' ! y) ! x
+			pixelRgbaToArgb32 $ (pss' ! y) ! x
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
-pixelArgb32ToRgba :: PixelArgb32 -> Rgba d
-pixelArgb32ToRgba (PixelArgb32Premultiplied a r g b) =
-	forceJust' (
-			"pixelArgb32ToRgba: (a, r, g, b) = (" ++
-			show a ++ ", " ++ show r ++ ", " ++
-			show g ++ ", " ++ show b ++ ")" )
-		$ rgbaPremultipliedWord8 r g b a
+newtype PixelRgba d = PixelRgba (Rgba d) deriving Show
 
-rgbaToPixelArgb32 :: RealFrac d => Rgba d -> PixelArgb32
-rgbaToPixelArgb32 (RgbaPremultipliedWord8 a r g b) =
+instance RealFrac d => Storable (PixelRgba d) where
+	sizeOf _ = 4; alignment _ = alignment @Word32 undefined
+	peek (castPtr -> p) = do
+		[r, g, b, a] <- peekArray 4 p
+		pure . PixelRgba $ RgbaWord8 r g b a
+	poke (castPtr -> p) (PixelRgba (RgbaWord8 r g b a)) =
+		pokeArray p [r, g, b, a]
+
+pixelArgb32ToRgba :: PixelArgb32 -> PixelRgba d
+pixelArgb32ToRgba (PixelArgb32Premultiplied a r g b) = PixelRgba
+	. forceJust' (
+		"pixelArgb32ToRgba: (a, r, g, b) = (" ++
+		show a ++ ", " ++ show r ++ ", " ++
+		show g ++ ", " ++ show b ++ ")" )
+	$ rgbaPremultipliedWord8 r g b a
+
+pixelRgbaToArgb32 :: RealFrac d => PixelRgba d -> PixelArgb32
+pixelRgbaToArgb32 (PixelRgba (RgbaPremultipliedWord8 a r g b)) =
 	fromJust $ pixelArgb32Premultiplied a r g b
