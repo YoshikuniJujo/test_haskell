@@ -127,7 +127,8 @@ import System.Random
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
 
 particleCount :: Integral n => n
-particleCount = 8192
+-- particleCount = 8192
+particleCount = 50
 
 main :: IO ()
 main = newIORef False >>= \fr -> withWindow fr \w ->
@@ -673,7 +674,7 @@ grPplInfo ex rp pl spcnt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoViewportState = Just $ vwpSt ex,
 	Vk.Ppl.Graphics.createInfoRasterizationState = Just rst,
 	Vk.Ppl.Graphics.createInfoMultisampleState = Just ms,
-	Vk.Ppl.Graphics.createInfoDepthStencilState = Just ds,
+	Vk.Ppl.Graphics.createInfoDepthStencilState = Just ds, -- Nothing,
 	Vk.Ppl.Graphics.createInfoColorBlendState = Just clrBlnd,
 	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
 	Vk.Ppl.Graphics.createInfoLayout = U3 pl,
@@ -714,7 +715,7 @@ grPplInfo ex rp pl spcnt = Vk.Ppl.Graphics.CreateInfo {
 	ds = Vk.Ppl.DptStnSt.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
-		Vk.Ppl.DptStnSt.createInfoDepthTestEnable = True,
+		Vk.Ppl.DptStnSt.createInfoDepthTestEnable = False,
 		Vk.Ppl.DptStnSt.createInfoDepthWriteEnable = True,
 		Vk.Ppl.DptStnSt.createInfoDepthCompareOp = Vk.CompareOpLess,
 		Vk.Ppl.DptStnSt.createInfoDepthBoundsTestEnable = False,
