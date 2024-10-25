@@ -110,6 +110,8 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Debug
 
+import System.Random
+
 main :: IO ()
 main = atomically (newTVar False) >>= \fr -> withWin fr \w ->
 	createIst \ist -> bool id (dbgm ist) debug $ body fr w ist
@@ -197,7 +199,7 @@ body fr w ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl \gp ->
 	createFrmbffrs d ex rp scvs \fbs ->
 	createCmdPl qfis d \cp ->
-	createVtxBffr pd d gq cp vertices \vb ->
+	createVtxBffr pd d gq cp (vertices' $ mkStdGen 8) \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
 	createMvpBffr pd d \mb mbm ->
 	createDscPl d \dp -> createDscSt d dp mb dsl \ds ->
@@ -620,9 +622,9 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 		Vk.Ppl.ClrBlndAtt.stateColorWriteMask =
 			Vk.ClrCmp.RBit .|. Vk.ClrCmp.GBit .|.
 			Vk.ClrCmp.BBit .|. Vk.ClrCmp.ABit,
-		Vk.Ppl.ClrBlndAtt.stateBlendEnable = False,
-		Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor = Vk.BlendFactorOne,
-		Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor = Vk.BlendFactorZero,
+		Vk.Ppl.ClrBlndAtt.stateBlendEnable = True,
+		Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor = Vk.BlendFactorSrcAlpha,
+		Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor = Vk.BlendFactorOneMinusSrcAlpha,
 		Vk.Ppl.ClrBlndAtt.stateColorBlendOp = Vk.BlendOpAdd,
 		Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
 		Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
@@ -1006,7 +1008,7 @@ recordCmdBffr cb ex rp pl gp fb vb ib mds =
 	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics pl
 		(HPList.Singleton $ U2 mds)
 		(HPList.Singleton $ HPList.Nil :** HPList.Nil)
-	Vk.Cmd.drawIndexed cbb indicesNum 1 0 0 0
+	Vk.Cmd.draw cbb (fromIntegral . length . vertices' $ mkStdGen 8) 1 0 0
 	where
 	info :: Vk.RndrPss.BeginInfo 'Nothing sr sf
 		'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
@@ -1062,24 +1064,34 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 
 type WVertex = Foreign.Storable.Generic.W Vertex
 
-data Vertex = Vertex { vertexPos :: Cglm.Vec3, vertexColor :: Cglm.Vec4 }
+data Vertex = Vertex {
+	vertexPos :: Cglm.Vec3,
+	vertexVelocity :: Cglm.Vec2,
+	vertexColor :: Cglm.Vec4 }
 	deriving (Show, Generic)
 
 instance Foreign.Storable.Generic.G Vertex
 
-vertices :: [WVertex]
-vertices = Foreign.Storable.Generic.W <$> [
-	Vertex (Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
-		(Cglm.Vec4 $ 1.0 :. 0.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0 :. NilL)
-		(Cglm.Vec4 $ 0.0 :. 1.0 :. 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec3 $ 0.5 :. 0.5 :. 0 :. NilL)
-		(Cglm.Vec4 $ 0.0 :. 0.0 :. 1.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
-		(Cglm.Vec4 $ 1.0 :. 1.0 :. 1.0 :. 1.0 :. NilL) ]
+vertices' :: StdGen -> [WVertex]
+vertices' g = Foreign.Storable.Generic.W
+	<$> take 500 (L.unfoldr (Just . randomVertex) g)
 
-indicesNum :: Integral n => n
-indicesNum = fromIntegral $ length indices
+randomVertex :: StdGen -> (Vertex, StdGen)
+randomVertex g0 = let
+	(r_, g1) = randomR (0.0, 1.0) g0
+	(theta, g2) = randomR (0.0, 2 * pi) g1
+	r = 1.0 * sqrt r_
+	x = r * cos theta
+	y = r * sin theta
+	vx = 0
+	vy = 0
+	(rd, g3) = randomR (0, 1.0) g2
+	(g, g4) = randomR (0, 1.0) g3
+	(b, g5) = randomR (0, 1.0) g4
+	in
+	(Vertex (Cglm.Vec3 $ x :. y :. 0 :. NilL)
+		(Cglm.Vec2 $ vx :. vy :. NilL)
+		(Cglm.Vec4 $ rd :. g :. b :. 1.0 :. NilL), g5)
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
@@ -1125,10 +1137,11 @@ layout(location = 0) out vec4 outColor;
 void
 main()
 {
-//	vec2 coord = gl_PointCoord - vec2(0.5);
-//	outColor = vec4(fragColor.xyz, 0.5 - length(coord));
-	if (length(gl_PointCoord - vec2(0.5)) > 0.5) { discard; }
-	outColor = fragColor;
+	vec2 coord = gl_PointCoord - vec2(0.5);
+	outColor = vec4(fragColor.xyz, 0.5 - length(coord));
+
+//	if (length(gl_PointCoord - vec2(0.5)) > 0.5) { discard; }
+//	outColor = fragColor;
 }
 
 |]

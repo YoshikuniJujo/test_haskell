@@ -46,6 +46,7 @@ library
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -96,6 +97,7 @@ executable try-cube-single
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -137,6 +139,7 @@ executable try-depth-buffering-single
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -178,6 +181,7 @@ executable try-gamepad-button
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -219,6 +223,7 @@ executable try-multiple-windows
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -260,6 +265,7 @@ executable try-point-rectangle-single
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -301,6 +307,7 @@ executable try-rectangle-single
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -342,6 +349,7 @@ executable try-triangle-single
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
@@ -384,6 +392,7 @@ test-suite try-vulkan-graphics-test
     , data-default
     , mtl
     , optparse-declarative
+    , random
     , ranged-list
     , stm
     , template-haskell
