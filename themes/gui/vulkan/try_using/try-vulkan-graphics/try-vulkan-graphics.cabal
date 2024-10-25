@@ -44,6 +44,8 @@ library
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -81,6 +83,50 @@ library
     hs-source-dirs:
         nodebug
 
+executable try-compute
+  main-is: try-compute.hs
+  other-modules:
+      Paths_try_vulkan_graphics
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , extra-data-yj
+    , mono-traversable
+    , mtl
+    , optparse-declarative
+    , random
+    , ranged-list
+    , stm
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , try-glfw-group
+    , try-gpu-vulkan
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-hetero-parameter-list
+    , try-language-spir-v
+    , try-shaderc
+    , try-storable-generic
+    , try-storable-peek-poke
+    , try-tools-yj
+    , try-vulkan-graphics
+    , typelevel-tools
+    , union-color
+    , vector
+  default-language: Haskell2010
+
 executable try-cube-single
   main-is: try-cube-single.hs
   other-modules:
@@ -95,6 +141,8 @@ executable try-cube-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -137,6 +185,8 @@ executable try-depth-buffering-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -179,6 +229,8 @@ executable try-gamepad-button
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -221,6 +273,8 @@ executable try-multiple-windows
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -263,6 +317,8 @@ executable try-point-rectangle-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -305,6 +361,8 @@ executable try-rectangle-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -347,6 +405,8 @@ executable try-triangle-single
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
@@ -390,6 +450,8 @@ test-suite try-vulkan-graphics-test
     , base >=4.7 && <5
     , containers
     , data-default
+    , extra-data-yj
+    , mono-traversable
     , mtl
     , optparse-declarative
     , random
