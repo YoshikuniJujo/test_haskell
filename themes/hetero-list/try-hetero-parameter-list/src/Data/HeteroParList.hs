@@ -69,12 +69,12 @@ module Data.HeteroParList (
 
 	-- * Map and ReplicateM
 
-	map, mapM, MapM'(..),
+	map, mapM, mapM_, MapM'(..),
 	Rep(..), RepM(..), replicate, replicateM,
 
 	) where
 
-import Prelude hiding (map, mapM, replicate, Num)
+import Prelude hiding (map, mapM, mapM_, replicate, Num)
 
 import GHC.TypeLits
 import Data.Kind
@@ -361,6 +361,11 @@ mapM :: Applicative m => (forall s . t s -> m (t' s)) -> PL t ss -> m (PL t' ss)
 mapM f = \case
 	Nil -> pure Nil
 	x :** xs -> (:**) <$> f x <*> mapM f xs
+
+mapM_ :: Applicative m => (forall s . t s -> m a) -> PL t ss -> m ()
+mapM_ f = \case
+	Nil -> pure ()
+	x :** xs -> f x *> mapM_ f xs
 
 class MapM' (f :: k -> k') ss where
 	type Ss' f ss :: [k']
