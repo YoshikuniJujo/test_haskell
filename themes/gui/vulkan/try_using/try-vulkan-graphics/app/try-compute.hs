@@ -841,7 +841,7 @@ createVtxBffr :: (IsSequence lst, Element lst ~ WVertex) =>
 		'[Vk.ObjNA.List WVertex lnm] -> IO a) -> IO a
 createVtxBffr pd d gq cp vtcs@(fromIntegral . olength -> ln) f =
 	createVtxBffr' pd d ln \b _ ->
-	writeVtxBffr pd d gq cp b vtcs >> f b
+	writeVtxBffr pd d gq cp (HPList.Singleton (U3 $ VtxBffr b)) vtcs >> f b
 
 createVtxBffr' :: (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> (forall sm sb .
@@ -853,10 +853,15 @@ createVtxBffr' pd dv ln = createBffrLst pd dv ln
 		Vk.Bffr.UsageStorageBufferBit .|. Vk.Bffr.UsageTransferDstBit )
 	Vk.Mm.PropertyDeviceLocalBit
 
+newtype VtxBffr t lnm sm sb bnm =
+	VtxBffr (Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t lnm])
+
+type VtxBffr' t lnm = U3 (VtxBffr t lnm)
+
 writeVtxBffr :: forall sd sc lst lnm smd sbd bnmd .
 	(IsSequence lst, Storable' (Element lst)) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded smd sbd bnmd '[Vk.ObjNA.List (Element lst) lnm] ->
+	HPList.PL (VtxBffr' (Element lst) lnm) '[ '(smd, sbd, bnmd)] ->
 	lst -> IO ()
 writeVtxBffr pd dv gq cp b xs@(fromIntegral . olength -> ln) =
 		createBffrLst pd dv ln
@@ -867,12 +872,12 @@ writeVtxBffr pd dv gq cp b xs@(fromIntegral . olength -> ln) =
 			bm' -> do
 			Vk.Mm.write
 				@bnm' @(Vk.ObjNA.List t lnm') @0 dv bm' zeroBits xs
-			copy b' b
+			HPList.mapM_ (copy b') b
 	where
-	copy :: forall sm sb bnm sm' sb' bnm' .
+	copy :: forall sm sb bnm s .
 		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List (Element lst) lnm] ->
-		Vk.Bffr.Binded sm' sb' bnm' '[Vk.ObjNA.List (Element lst) lnm] -> IO ()
-	copy s d = singleTimeCmds dv gq cp \cb ->
+		VtxBffr' (Element lst) lnm s -> IO ()
+	copy s (U3 (VtxBffr d)) = singleTimeCmds dv gq cp \cb ->
 		Vk.Cmd.copyBuffer @'[ '( '[Vk.ObjNA.List (Element lst) lnm], 0, 0)] cb s d
 
 createMvpBffrs' :: KnownNat al =>
