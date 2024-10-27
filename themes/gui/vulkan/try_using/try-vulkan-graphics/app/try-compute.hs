@@ -129,8 +129,7 @@ import System.Random
 import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
 
 particleCount :: Integral n => n
--- particleCount = 8192
-particleCount = 50
+particleCount = 8192
 
 main :: IO ()
 main = newIORef False >>= \fr -> withWindow fr \w ->
@@ -228,15 +227,20 @@ body fr w ist =
 	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
 
-	createBffrAtm @1 @_ @_ @Float
+	createBffrAtm @1 @_ @_ @_ @Float
 		Vk.Bffr.UsageUniformBufferBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		pd d \bdt mdt ->
-	createCmpPpl d \cdsl cpl cmppl ->
+	createCmpPpl d \cdsl cpl cmpppl ->
+	HPList.replicateMWithI maxFramesInFlight
+		(createCmpDscSt' d dp cdsl bdt vbs) \cmpdss ->
+	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cmpcbs ->
+	let cruns = zipToList (\(HPList.Dummy cmpcb) (CmpDscSt cmpds) ->
+		cmpRun cq cmpcb cpl cmpppl cmpds particleCount) cmpcbs cmpdss in
 
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
-		sc ex scvs rp pl gp fbs crs vbs mbms dss cbs sos
+		sc ex scvs rp pl gp fbs crs vbs mbms dss cbs cruns sos
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
@@ -244,6 +248,15 @@ body fr w ist =
 	tnum 0 f = f (Proxy @'[])
 	tnum n f = tnum (n - 1) \p -> f $ plus1 p
 		where plus1 :: Proxy n -> Proxy ('() ': n); plus1 Proxy = Proxy
+
+mapToList :: (forall s . t s -> a) -> HPList.PL t ss -> [a]
+mapToList _ HPList.Nil = []
+mapToList f (x :** xs) = f x : mapToList f xs
+
+zipToList :: (forall (s :: k) (s' :: k') . t s -> t' s' -> a) -> HPList.PL t ss -> HPList.PL t' ss' ->  [a]
+zipToList _ HPList.Nil _ = []
+zipToList _ _ HPList.Nil = []
+zipToList f (x :** xs) (y :** ys) = f x y : zipToList f xs ys
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -1130,12 +1143,12 @@ createMvpBffr = createBffrAtm
 type ModelViewProjMemory sm sb mnm alu =
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg mnm '[AtomModelViewProj alu])]
 
-createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
+createBffrAtm :: forall al sd bnm mnm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Vk.Obj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.Atom al a mnm] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[Vk.Obj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.Atom al a mnm] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv Vk.Obj.LengthAtom us prs
 
@@ -1189,11 +1202,14 @@ createDscPl dv = Vk.DscPl.create dv info nil
 	info = Vk.DscPl.CreateInfo {
 		Vk.DscPl.createInfoNext = TMaybe.N,
 		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
-		Vk.DscPl.createInfoMaxSets = maxFramesInFlight,
-		Vk.DscPl.createInfoPoolSizes = [sz0, sz1] }
+		Vk.DscPl.createInfoMaxSets = maxFramesInFlight * 3,
+		Vk.DscPl.createInfoPoolSizes = [sz0, sz, sz1] }
 	sz0 = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight }
+		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight * 2 }
+	sz = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageBuffer,
+		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight * 2 }
 	sz1 = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight }
@@ -1287,9 +1303,9 @@ mainloop :: (
 	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) slyts ->
-	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> UTCTime -> IO ()
+	HPList.LL (Vk.CBffr.C scb) mff -> [IO ()] -> SyncObjs ssoss -> UTCTime -> IO ()
 mainloop fr w sfc pd qfis dv gq pq
-	sc ex0 vs rp pl gp fbs crs vbs mms dss cbs soss tm0 = do
+	sc ex0 vs rp pl gp fbs crs vbs mms dss cbs cruns soss tm0 = do
 	($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
 		. ($ ex0) $ fix \go ex (cf :~ cfs) ->
 		GlfwG.pollEvents >>
@@ -1297,7 +1313,7 @@ mainloop fr w sfc pd qfis dv gq pq
 		run fr w sfc pd qfis dv gq pq
 			sc ex vs rp pl gp fbs crs
 			vbs
-			mms dss cbs soss (realToFrac $ tm `diffUTCTime` tm0)
+			mms dss cbs cruns soss (realToFrac $ tm `diffUTCTime` tm0)
 			cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
 
@@ -1319,13 +1335,13 @@ run :: (
 	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) slyts ->
-	HPList.LL (Vk.CBffr.C scb) mff ->
+	HPList.LL (Vk.CBffr.C scb) mff -> [IO ()] ->
 	SyncObjs ssoss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq
-	sc ex vs rp pl gp fbs crs vbs mms dss cbs soss tm cf go = do
+	sc ex vs rp pl gp fbs crs vbs mms dss cbs cruns soss tm cf go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs crs go
 		$ draw dv gq pq sc ex rp pl gp fbs vbs
-		mms dss cbs soss tm cf
+		mms dss cbs cruns soss tm cf
 	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
 		(True, _) -> pure (); (_, False) -> go ex
 		(_, _) -> go =<< recreateAll
@@ -1347,9 +1363,10 @@ draw :: forall
 	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) sls ->
-	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Float -> Int -> IO ()
+	HPList.LL (Vk.CBffr.C scb) mff -> [IO ()] -> SyncObjs ssos -> Float -> Int -> IO ()
 draw dv gq pq sc ex rp pl gp fbs
-	vbs mms dss cbs (SyncObjs iass rfss iffs) tm cf =
+	vbs mms dss cbs cruns (SyncObjs iass rfss iffs) tm cf =
+	cruns !! cf >>
 	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
 	HPList.index mms cf \mm ->
@@ -1388,8 +1405,13 @@ updateModelViewProj :: forall sd alu sm nmm . KnownNat alu => Vk.Dvc.D sd ->
 updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
+	let tm = 0 in
 	Vk.Mm.write @nmm @(Vk.Obj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ GStorable.W ModelViewProj {
+			model = Glm.mat4Identity,
+			view = Glm.mat4Identity,
+			projection = Glm.mat4Identity }
+		{-
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 			view = Glm.lookat
@@ -1398,6 +1420,7 @@ updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 			projection = Glm.modifyMat4 1 1 negate
 				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
+				-}
 
 recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv nmv sds sdsl alu .
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1544,7 +1567,7 @@ randomVertex g0 = let
 	(b, g5) = randomR (0, 1.0) g4
 	in (	Vertex (Pos . Glm.Vec2 $ x :. y :. NilL)
 			(Glm.Vec2 $ vx :. vy :. NilL)
-			(Color . Glm.Vec3 $ rd :. g :. b :. NilL),
+			(Color . Glm.Vec4 $ rd :. g :. b :. 1 :. NilL),
 		g5)
 
 type WVertex = GStorable.W Vertex
@@ -1558,7 +1581,7 @@ data Vertex = Vertex {
 newtype Pos = Pos Glm.Vec2
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
-newtype Color = Color Glm.Vec3
+newtype Color = Color Glm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance GStorable.G Vertex
@@ -1635,7 +1658,7 @@ void main()
 	Particle particleIn = particlesIn[index];
 
 //	particlesOut[index].position = particleIn.position + particleIn.velocity.xy * ubo.deltaTime;
-	particlesOut[index].position = particleIn.position + particleIn.velocity.xy * 1;
+	particlesOut[index].position = particleIn.position + particleIn.velocity.xy * 6;
 	particlesOut[index].velocity = particleIn.velocity;
 
 	// Flip movement at window border
