@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -477,7 +477,6 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-
 createCmpPpl :: Vk.Dvc.D sd -> (forall sds scmpp spl .
 	Vk.DscStLyt.D sds [
 		'Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
@@ -534,7 +533,7 @@ cmpPplLytInfo dsl = Vk.PplLyt.CreateInfo {
 	Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createCmpDscStLyt :: Vk.Dvc.D sd ->
-	(forall sds . Vk.DscStLyt.D sds [
+	(forall (sds :: Type) . Vk.DscStLyt.D sds [
 		Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh] ] -> IO a) ->
@@ -684,7 +683,7 @@ createPplLyt dv f = createDscStLyt dv \dsl ->
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createDscStLyt :: Vk.Dvc.D sd ->
-	(forall s . Vk.DscStLyt.D s '[BufferModelViewProj alu] -> IO a) -> IO a
+	(forall (s :: Type) . Vk.DscStLyt.D s '[BufferModelViewProj alu] -> IO a) -> IO a
 createDscStLyt dv = Vk.DscStLyt.create dv info nil
 	where info = Vk.DscStLyt.CreateInfo {
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
