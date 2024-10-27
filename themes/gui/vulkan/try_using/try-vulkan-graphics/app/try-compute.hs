@@ -219,7 +219,7 @@ body fr w ist =
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl spcnt \gp ->
 	createFrmbffrs d ex rp scvs cv \fbs ->
 	let vtcs = vertices' $ mkStdGen 8 in
-	createVtxBffr pd d gq cp vtcs \vb ->
+	createVtxBffr pd d gq cp vtcs \vbs ->
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
 	createMvpBffrs' maxFramesInFlight pd d dsl \dsls mbs mbms ->
 	createDscPl d \dp -> createDscSts d dp mbs dsls \dss ->
@@ -227,7 +227,7 @@ body fr w ist =
 	createSyncObjs @mff d \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
-		sc ex scvs rp pl gp fbs crs vb mbms dss cbs sos
+		sc ex scvs rp pl gp fbs crs vbs mbms dss cbs sos
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
@@ -837,11 +837,15 @@ singleTimeCmds dv gq cp cmd =
 
 createVtxBffr :: (IsSequence lst, Element lst ~ WVertex) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> lst ->
-	(forall sm sb . Vk.Bffr.Binded sm sb bnm
-		'[Vk.ObjNA.List WVertex lnm] -> IO a) -> IO a
+	(forall sm sb smsbbnmvs .
+		HPList.PL (VtxBffr' WVertex lnm) smsbbnmvs ->
+--		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List WVertex lnm] ->
+		IO a) -> IO a
 createVtxBffr pd d gq cp vtcs@(fromIntegral . olength -> ln) f =
-	createVtxBffr' pd d ln \b _ ->
-	writeVtxBffr pd d gq cp (HPList.Singleton (U3 $ VtxBffr b)) vtcs >> f b
+	HPList.replicateM 2 (createVtxBffr'' pd d ln) \bs ->
+	writeVtxBffr pd d gq cp bs vtcs >> f bs
+--	createVtxBffr'' pd d ln \b ->
+--	writeVtxBffr pd d gq cp (HPList.Singleton (U3 $ VtxBffr b)) vtcs >> f (HPList.Singleton . U3 $ VtxBffr b)
 
 createVtxBffr' :: (KnownNat al, Storable t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> (forall sm sb .
@@ -853,15 +857,25 @@ createVtxBffr' pd dv ln = createBffrLst pd dv ln
 		Vk.Bffr.UsageStorageBufferBit .|. Vk.Bffr.UsageTransferDstBit )
 	Vk.Mm.PropertyDeviceLocalBit
 
+createVtxBffr'' :: Storable t =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> (forall sm sb smsbbnmvs .
+		VtxBffr' t lnm smsbbnmvs ->
+		IO a) -> IO a
+createVtxBffr'' pd dv ln f = createBffrLst pd dv ln
+	(	Vk.Bffr.UsageVertexBufferBit .|.
+		Vk.Bffr.UsageStorageBufferBit .|. Vk.Bffr.UsageTransferDstBit )
+	Vk.Mm.PropertyDeviceLocalBit \b m -> f . U3 $ VtxBffr b
+
 newtype VtxBffr t lnm sm sb bnm =
 	VtxBffr (Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.List t lnm])
 
 type VtxBffr' t lnm = U3 (VtxBffr t lnm)
 
-writeVtxBffr :: forall sd sc lst lnm smd sbd bnmd .
+writeVtxBffr :: forall sd sc lst lnm smd sbd bnmd smsbbnms .
 	(IsSequence lst, Storable' (Element lst)) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	HPList.PL (VtxBffr' (Element lst) lnm) '[ '(smd, sbd, bnmd)] ->
+	HPList.PL (VtxBffr' (Element lst) lnm) smsbbnms ->
+--	HPList.PL (VtxBffr' (Element lst) lnm) '[ '(smd, sbd, bnmd)] ->
 	lst -> IO ()
 writeVtxBffr pd dv gq cp b xs@(fromIntegral . olength -> ln) =
 		createBffrLst pd dv ln
@@ -1058,7 +1072,7 @@ mainloop :: (
 	Vk.T.FormatToValue scfmt,
 	RecreateFrmbffrs ss sfs,
 	HPList.HomoList '(sdsl, DscStLytArg alu) slyts, HPList.HomoList '() mff,
-	KnownNat alu, KnownNat alv ) =>
+	KnownNat alu ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
@@ -1070,18 +1084,19 @@ mainloop :: (
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
-	Vk.Bffr.Binded smv sbv bnmv '[Vk.Obj.List alv WVertex nmv] ->
+	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssoss -> UTCTime -> IO ()
 mainloop fr w sfc pd qfis dv gq pq
-	sc ex0 vs rp pl gp fbs crs vb mms dss cbs soss tm0 = do
+	sc ex0 vs rp pl gp fbs crs vbs mms dss cbs soss tm0 = do
 	($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
 		. ($ ex0) $ fix \go ex (cf :~ cfs) ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
 		run fr w sfc pd qfis dv gq pq
-			sc ex vs rp pl gp fbs crs vb
+			sc ex vs rp pl gp fbs crs
+			vbs
 			mms dss cbs soss (realToFrac $ tm `diffUTCTime` tm0)
 			cf (`go` cfs)
 	Vk.Dvc.waitIdle dv
@@ -1090,7 +1105,7 @@ run :: (
 	HPList.HomoList '() mff, RecreateFrmbffrs svs sfs,
 	Vk.T.FormatToValue scfmt,
 	HPList.HomoList '(sdsl, DscStLytArg alu) slyts,
-	KnownNat alu, KnownNat alv ) =>
+	KnownNat alu ) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
@@ -1101,24 +1116,25 @@ run :: (
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
-	Vk.Bffr.Binded smv sbv bnmv '[Vk.Obj.List alv WVertex nmv] ->
+	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff ->
 	SyncObjs ssoss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq
-	sc ex vs rp pl gp fbs crs vb mms dss cbs soss tm cf go = do
+	sc ex vs rp pl gp fbs crs vbs mms dss cbs soss tm cf go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs crs go
-		$ draw dv gq pq sc ex rp pl gp fbs vb mms dss cbs soss tm cf
+		$ draw dv gq pq sc ex rp pl gp fbs vbs
+		mms dss cbs soss tm cf
 	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
 		(True, _) -> pure (); (_, False) -> go ex
 		(_, _) -> go =<< recreateAll
 			w sfc pd qfis dv sc vs rp pl gp crs fbs
 
 draw :: forall
-	sd fmt ssc sr sl sdsl sg sfs smv sbv bnmv alv nmv
-	alu nmm smsbs sds sls scb mff ssos . (
-	KnownNat alu, KnownNat alv,
+	sd fmt ssc sr sl sdsl sg sfs nmv
+	alu nmm smsbs sds sls scb mff ssos smsbbnmvs . (
+	KnownNat alu,
 	HPList.HomoList '() mff,
 	HPList.HomoList '(sdsl, DscStLytArg alu) sls ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
@@ -1128,15 +1144,17 @@ draw :: forall
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded smv sbv bnmv '[Vk.Obj.List alv WVertex nmv] ->
+	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) sls ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Float -> Int -> IO ()
 draw dv gq pq sc ex rp pl gp fbs
-	vb mms dss cbs (SyncObjs iass rfss iffs) tm cf =
+	vbs mms dss cbs (SyncObjs iass rfss iffs) tm cf =
 	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
-	HPList.index mms cf \mm -> ($ HPList.homoListIndex dss cf) \ds -> do
+	HPList.index mms cf \mm ->
+	HPList.index vbs cf \(U3 (VtxBffr vb)) ->
+	($ HPList.homoListIndex dss cf) \ds -> do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
@@ -1181,8 +1199,7 @@ updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 			projection = Glm.modifyMat4 1 1 negate
 				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
 
-recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv alv nmv sds sdsl alu .
-	KnownNat alv =>
+recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv nmv sds sdsl alu .
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1190,7 +1207,7 @@ recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv alv nmv sds sdsl alu .
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded smv sbv bnmv '[Vk.Obj.List alv WVertex nmv] ->
+	Vk.Bffr.Binded smv sbv bnmv '[Vk.Obj.List 1 WVertex nmv] ->
 	Vk.DscSt.D sds '(sdsl, DscStLytArg alu) -> IO ()
 recordCmdBffr cb ex rp pl gp fb vb ds =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
