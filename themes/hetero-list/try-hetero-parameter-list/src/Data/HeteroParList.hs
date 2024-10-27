@@ -70,7 +70,7 @@ module Data.HeteroParList (
 	-- * Map and ReplicateM
 
 	map, mapM, mapM_, MapM'(..),
-	Rep(..), RepM(..), replicate, replicateM,
+	Rep(..), RepM(..), replicate, replicateM, replicateMWithI
 
 	) where
 
@@ -411,6 +411,15 @@ replicateM :: Int -> (forall a . (forall s . t s -> m a) -> m a) ->
 replicateM 0 _ f = f Nil
 replicateM n x f = x \v -> replicateM (n - 1) x \vs ->
 	f $ v :** vs
+
+replicateMWithI :: Int -> (forall a . Int -> (forall s . t s -> m a) -> m a) ->
+	(forall ss . PL t ss -> m b) -> m b
+replicateMWithI = go 0
+	where
+	go :: Int -> Int -> (forall a . Int -> (forall s . t s -> m a) -> m a) ->
+		(forall ss . PL t ss -> m b) -> m b
+	go _ 0 _ f = f Nil
+	go i n x f = x i \v -> go (i + 1) (n - 1) x \vs -> f $ v :** vs
 
 -- Default
 
