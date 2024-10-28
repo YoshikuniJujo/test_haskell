@@ -132,6 +132,8 @@ import Language.SpirV qualified as SpirV
 -- * PARTICLE COUNT
 -- * MAIN
 -- * BODY
+-- * BUFFERS
+-- * COMPUTE DESCRIPTOR SET
 -- * COMPUTE PIPELINE
 -- * GRAPHICS PIPELINE
 -- * MAINLOOP
@@ -531,96 +533,6 @@ createRndrPss dv = Vk.RndrPss.create @_ @'[fmt] dv info nil
 			Vk.AccessColorAttachmentWriteBit,
 		Vk.Subpass.dependencyDependencyFlags = zeroBits }
 
-newtype CmpDscSt sdsl nmdt nmh sds =
-	CmpDscSt (Vk.DscSt.D sds '(sdsl, CmpDscStLytArg nmdt nmh))
-
-createCmpDscSt' :: forall sd sp sdsl nmdt nmh sm0 sb0 bnmh0 a smsbbnm .
-	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.DscStLyt.D sdsl (CmpDscStLytArg nmdt nmh) ->
-	Vk.Bffr.Binded sm0 sb0 bnmh0 '[AtomDiffTime nmdt] ->
-	HPList.PL (VtxBffr' WVertex nmh) smsbbnm -> Int -> (forall sds .
-		CmpDscSt sdsl nmdt nmh sds -> IO a) -> IO a
-createCmpDscSt' dv dp dsl bf0 vbs i f =
-	HPList.index vbs ((i - 1) `mod` maxFramesInFlight) \(U3 (VtxBffr lvb)) ->
-	HPList.index vbs i \(U3 (VtxBffr cvb)) ->
-	createCmpDscSt dv dp dsl bf0 lvb cvb (f . CmpDscSt)
-
-createCmpDscSt :: forall sd sp sdsl nmdt nmh
-	sm0 sb0 bnmh0
-	sm1 sb1 bnmh1
-	sm2 sb2 bnmh2 a
-	.
-	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.DscStLyt.D sdsl '[
-		BufferDiffTime nmdt,
-		BufferVertex nmh,
-		BufferVertex nmh
-		] ->
-	Vk.Bffr.Binded sm0 sb0 bnmh0 '[AtomDiffTime nmdt] ->
-	Vk.Bffr.Binded sm1 sb1 bnmh1 '[ListVertex nmh] ->
-	Vk.Bffr.Binded sm2 sb2 bnmh2 '[ListVertex nmh] ->
-	(forall sds . Vk.DscSt.D sds '(sdsl, '[
-		BufferDiffTime nmdt,
-		BufferVertex nmh,
-		BufferVertex nmh ]) -> IO a) -> IO a
-createCmpDscSt dv dp dsl bf0 bf1 bf2 f =
-	Vk.DscSt.allocateDs dv (cmpDscStInfo dp dsl) \(HPList.Singleton ds) ->
-	Vk.DscSt.updateDs dv (
-		U5 (cmpWriteDscStUniform @_ @nmdt ds bf0) :**
-		U5 (cmpWriteDscStStorage0 @_ @nmh ds bf1) :**
-		U5 (cmpWriteDscStStorage1 @_ @nmh ds bf2) :** HPList.Nil)
-		HPList.Nil >>
-	f ds
-
-type BufferVertex nm = 'Vk.DscStLyt.Buffer '[ListVertex nm]
-type ListVertex nm = Vk.Obj.List 1 WVertex nm
-
-type BufferDiffTime nm = 'Vk.DscStLyt.Buffer '[AtomDiffTime nm]
-type AtomDiffTime nm = Vk.Obj.AtomNew 1 Float nm
-
-cmpDscStInfo :: Vk.DscPl.P sp -> Vk.DscStLyt.D sl bts ->
-	Vk.DscSt.AllocateInfo 'Nothing sp '[ '(sl, bts)]
-cmpDscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
-	Vk.DscSt.allocateInfoNext = TMaybe.N,
-	Vk.DscSt.allocateInfoDescriptorPool = dpl,
-	Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
-
-cmpWriteDscStUniform :: forall bnmh nmdt sds slbts sm sb os . (
-	Show (HPList.PL Vk.Obj.Length os),
-	Vk.Obj.OffsetRange (Vk.Obj.AtomNew 1 Float nmdt) os 0 ) =>
-	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, Vk.Obj.AtomNew 1 Float nmdt, 0)]) 0
-cmpWriteDscStUniform ds bf = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
-	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSt.writeSources =
-		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
-
-cmpWriteDscStStorage0 :: forall bnmh nmh sds slbts sm sb os . (
-	Show (HPList.PL Vk.Obj.Length os),
-	Vk.Obj.OffsetRange (Vk.Obj.List 1 WVertex nmh) os 0 ) =>
-	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, Vk.Obj.List 1 WVertex nmh, 0)]) 0
-cmpWriteDscStStorage0 ds bf = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
-	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSt.writeSources =
-		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
-
-cmpWriteDscStStorage1 :: forall bnmh nmh sds slbts sm sb os . (
-	Show (HPList.PL Vk.Obj.Length os),
-	Vk.Obj.OffsetRange (Vk.Obj.List 1 WVertex nmh) os 0 ) =>
-	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, Vk.Obj.List 1 WVertex nmh, 0)]) 1
-cmpWriteDscStStorage1 ds bf = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
-	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSt.writeSources =
-		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
-
 createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	HPList.PL (Vk.ImgVw.I inm fmt) sis ->
 	(forall sfs . RecreateFrmbffrs sis sfs =>
@@ -665,24 +577,60 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = grFam qfis }
 
-singleTimeCmds :: forall sd sc a .
-	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	(forall s . Vk.CBffr.C s -> IO a) -> IO a
-singleTimeCmds dv gq cp cmd =
-	Vk.CBffr.allocate dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
-	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
-		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
-		Vk.Q.waitIdle gq
+createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDscPl dv = Vk.DscPl.create dv info nil
 	where
-	sinfo cb = Vk.SubmitInfo {
-		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Nil }
-	binfo = Vk.CBffr.BeginInfo {
-		Vk.CBffr.beginInfoNext = TMaybe.N,
-		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
-		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
+	info = Vk.DscPl.CreateInfo {
+		Vk.DscPl.createInfoNext = TMaybe.N,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+		Vk.DscPl.createInfoMaxSets = maxFramesInFlight * 3,
+		Vk.DscPl.createInfoPoolSizes = [sz0, sz, sz1] }
+	sz0 = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight * 2 }
+	sz = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageBuffer,
+		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight * 2 }
+	sz1 = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight }
+
+cmdBffrInfo :: forall n scp .
+	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
+cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
+	Vk.CBffr.allocateInfoNext = TMaybe.N,
+	Vk.CBffr.allocateInfoCommandPool = cp,
+	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+
+createSyncObjs :: forall n sd a . HPList.RepM n =>
+	Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
+createSyncObjs dv f =
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \iass ->
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \rfss ->
+	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \iffs ->
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \cfss ->
+	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \ciffs ->
+	f $ SyncObjs iass rfss iffs cfss ciffs
+	where
+	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+
+data SyncObjs (ssos :: ([Type], [Type], [Type], [Type], [Type])) where
+	SyncObjs :: {
+		_imageAvailableSemaphores :: HPList.PL Vk.Semaphore.S siass,
+		_renderFinishedSemaphores :: HPList.PL Vk.Semaphore.S srfss,
+		_inFlightFences :: HPList.PL Vk.Fence.F sfss,
+		_computeFinishedSemaphores :: HPList.PL Vk.Semaphore.S scfss,
+		_computeInFlightFences :: HPList.PL Vk.Fence.F scifss
+		} ->
+		SyncObjs '(siass, srfss, sfss, scifss, scfss)
+
+-- BUFFERS
+
+type BufferVertex nm = 'Vk.DscStLyt.Buffer '[ListVertex nm]
+type ListVertex nm = Vk.Obj.List 1 WVertex nm
+
+type BufferDiffTime nm = 'Vk.DscStLyt.Buffer '[AtomDiffTime nm]
+type AtomDiffTime nm = Vk.Obj.AtomNew 1 Float nm
 
 createVtxBffr :: (IsSequence lst, Element lst ~ WVertex) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> lst ->
@@ -728,6 +676,25 @@ writeVtxBffr pd dv gq cp b xs@(fromIntegral . olength -> ln) =
 		VtxBffr' (Element lst) lnm s -> IO ()
 	copy s (U3 (VtxBffr d)) = singleTimeCmds dv gq cp \cb ->
 		Vk.Cmd.copyBuffer @'[ '( '[Vk.ObjNA.List (Element lst) lnm], 0, 0)] cb s d
+
+singleTimeCmds :: forall sd sc a .
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	(forall s . Vk.CBffr.C s -> IO a) -> IO a
+singleTimeCmds dv gq cp cmd =
+	Vk.CBffr.allocate dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
+		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
+		Vk.Q.waitIdle gq
+	where
+	sinfo cb = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Nil }
+	binfo = Vk.CBffr.BeginInfo {
+		Vk.CBffr.beginInfoNext = TMaybe.N,
+		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
+		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 
 createBffrAtm :: forall al sd bnm mnm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -782,52 +749,91 @@ findMmType pd flt prs =
 		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
 			(Vk.Phd.memoryPropertiesMemoryTypes prs1)
 
-createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
-createDscPl dv = Vk.DscPl.create dv info nil
-	where
-	info = Vk.DscPl.CreateInfo {
-		Vk.DscPl.createInfoNext = TMaybe.N,
-		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
-		Vk.DscPl.createInfoMaxSets = maxFramesInFlight * 3,
-		Vk.DscPl.createInfoPoolSizes = [sz0, sz, sz1] }
-	sz0 = Vk.DscPl.Size {
-		Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight * 2 }
-	sz = Vk.DscPl.Size {
-		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight * 2 }
-	sz1 = Vk.DscPl.Size {
-		Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
-		Vk.DscPl.sizeDescriptorCount = maxFramesInFlight }
+-- COMPUTE DESCRIPTOR SET
 
-cmdBffrInfo :: forall n scp .
-	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
-cmdBffrInfo cp = Vk.CBffr.AllocateInfo {
-	Vk.CBffr.allocateInfoNext = TMaybe.N,
-	Vk.CBffr.allocateInfoCommandPool = cp,
-	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+newtype CmpDscSt sdsl nmdt nmh sds =
+	CmpDscSt (Vk.DscSt.D sds '(sdsl, CmpDscStLytArg nmdt nmh))
 
-createSyncObjs :: forall n sd a . HPList.RepM n =>
-	Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
-createSyncObjs dv f =
-	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \iass ->
-	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \rfss ->
-	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \iffs ->
-	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \cfss ->
-	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \ciffs ->
-	f $ SyncObjs iass rfss iffs cfss ciffs
-	where
-	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+createCmpDscSt' :: forall sd sp sdsl nmdt nmh sm0 sb0 bnmh0 a smsbbnm .
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.DscStLyt.D sdsl (CmpDscStLytArg nmdt nmh) ->
+	Vk.Bffr.Binded sm0 sb0 bnmh0 '[AtomDiffTime nmdt] ->
+	HPList.PL (VtxBffr' WVertex nmh) smsbbnm -> Int -> (forall sds .
+		CmpDscSt sdsl nmdt nmh sds -> IO a) -> IO a
+createCmpDscSt' dv dp dsl bf0 vbs i f =
+	HPList.index vbs ((i - 1) `mod` maxFramesInFlight) \(U3 (VtxBffr lvb)) ->
+	HPList.index vbs i \(U3 (VtxBffr cvb)) ->
+	createCmpDscSt dv dp dsl bf0 lvb cvb (f . CmpDscSt)
 
-data SyncObjs (ssos :: ([Type], [Type], [Type], [Type], [Type])) where
-	SyncObjs :: {
-		_imageAvailableSemaphores :: HPList.PL Vk.Semaphore.S siass,
-		_renderFinishedSemaphores :: HPList.PL Vk.Semaphore.S srfss,
-		_inFlightFences :: HPList.PL Vk.Fence.F sfss,
-		_computeFinishedSemaphores :: HPList.PL Vk.Semaphore.S scfss,
-		_computeInFlightFences :: HPList.PL Vk.Fence.F scifss
-		} ->
-		SyncObjs '(siass, srfss, sfss, scifss, scfss)
+createCmpDscSt :: forall sd sp sdsl nmdt nmh
+	sm0 sb0 bnmh0
+	sm1 sb1 bnmh1
+	sm2 sb2 bnmh2 a
+	.
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.DscStLyt.D sdsl '[
+		BufferDiffTime nmdt,
+		BufferVertex nmh,
+		BufferVertex nmh
+		] ->
+	Vk.Bffr.Binded sm0 sb0 bnmh0 '[AtomDiffTime nmdt] ->
+	Vk.Bffr.Binded sm1 sb1 bnmh1 '[ListVertex nmh] ->
+	Vk.Bffr.Binded sm2 sb2 bnmh2 '[ListVertex nmh] ->
+	(forall sds . Vk.DscSt.D sds '(sdsl, '[
+		BufferDiffTime nmdt,
+		BufferVertex nmh,
+		BufferVertex nmh ]) -> IO a) -> IO a
+createCmpDscSt dv dp dsl bf0 bf1 bf2 f =
+	Vk.DscSt.allocateDs dv (cmpDscStInfo dp dsl) \(HPList.Singleton ds) ->
+	Vk.DscSt.updateDs dv (
+		U5 (cmpWriteDscStUniform @_ @nmdt ds bf0) :**
+		U5 (cmpWriteDscStStorage0 @_ @nmh ds bf1) :**
+		U5 (cmpWriteDscStStorage1 @_ @nmh ds bf2) :** HPList.Nil)
+		HPList.Nil >>
+	f ds
+
+cmpDscStInfo :: Vk.DscPl.P sp -> Vk.DscStLyt.D sl bts ->
+	Vk.DscSt.AllocateInfo 'Nothing sp '[ '(sl, bts)]
+cmpDscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
+	Vk.DscSt.allocateInfoNext = TMaybe.N,
+	Vk.DscSt.allocateInfoDescriptorPool = dpl,
+	Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
+cmpWriteDscStUniform :: forall bnmh nmdt sds slbts sm sb os . (
+	Show (HPList.PL Vk.Obj.Length os),
+	Vk.Obj.OffsetRange (Vk.Obj.AtomNew 1 Float nmdt) os 0 ) =>
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
+	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
+		'[ '(sm, sb, bnmh, Vk.Obj.AtomNew 1 Float nmdt, 0)]) 0
+cmpWriteDscStUniform ds bf = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSt.writeSources =
+		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
+
+cmpWriteDscStStorage0 :: forall bnmh nmh sds slbts sm sb os . (
+	Show (HPList.PL Vk.Obj.Length os),
+	Vk.Obj.OffsetRange (Vk.Obj.List 1 WVertex nmh) os 0 ) =>
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
+	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
+		'[ '(sm, sb, bnmh, Vk.Obj.List 1 WVertex nmh, 0)]) 0
+cmpWriteDscStStorage0 ds bf = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSt.writeSources =
+		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
+
+cmpWriteDscStStorage1 :: forall bnmh nmh sds slbts sm sb os . (
+	Show (HPList.PL Vk.Obj.Length os),
+	Vk.Obj.OffsetRange (Vk.Obj.List 1 WVertex nmh) os 0 ) =>
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
+	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
+		'[ '(sm, sb, bnmh, Vk.Obj.List 1 WVertex nmh, 0)]) 1
+cmpWriteDscStStorage1 ds bf = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSt.writeSources =
+		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
 
 -- COMPUTE PIPELINE
 
