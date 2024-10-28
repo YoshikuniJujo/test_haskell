@@ -13,6 +13,8 @@
 
 module Main (main) where
 
+import Control.Concurrent.STM
+
 import GHC.Generics
 import GHC.TypeNats
 import Foreign.Ptr
@@ -225,7 +227,7 @@ body fr w ist =
 	createMvpBffrs' maxFramesInFlight pd d dsl \dsls mbs mbms ->
 	createDscPl d \dp -> createDscSts d dp mbs dsls \dss ->
 	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
-	createSyncObjs @mff d \sos ->
+	createSyncObjs @mff d \sos@(SyncObjs _ _ _ cfss ciffs) ->
 
 	createBffrAtm @1 @_ @_ @_ @Float
 		Vk.Bffr.UsageUniformBufferBit
@@ -235,8 +237,10 @@ body fr w ist =
 	HPList.replicateMWithI maxFramesInFlight
 		(createCmpDscSt' d dp cdsl bdt vbs) \cmpdss ->
 	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cmpcbs ->
-	let cruns = zipToList (\(HPList.Dummy cmpcb) (CmpDscSt cmpds) ->
-		cmpRun cq cmpcb cpl cmpppl cmpds particleCount) cmpcbs cmpdss in
+	getCurrentTime >>= \ft0 ->
+	atomically (newTVar ft0) >>= \vft ->
+	let cruns = zip4ToList (\(HPList.Dummy cmpcb) (CmpDscSt cmpds) ciff cfs ->
+		cmpRun vft d cq cmpcb cpl cmpppl mdt cmpds particleCount ciff cfs) cmpcbs cmpdss ciffs cfss in
 
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
@@ -257,6 +261,25 @@ zipToList :: (forall (s :: k) (s' :: k') . t s -> t' s' -> a) -> HPList.PL t ss 
 zipToList _ HPList.Nil _ = []
 zipToList _ _ HPList.Nil = []
 zipToList f (x :** xs) (y :** ys) = f x y : zipToList f xs ys
+
+zip3ToList :: (forall (s1 :: k1) (s2 :: k2) (s3 :: k3) .
+		t1 s1 -> t2 s2 -> t3 s3 -> a) ->
+	HPList.PL t1 ss1 -> HPList.PL t2 ss2 -> HPList.PL t3 ss3 ->  [a]
+zip3ToList _ HPList.Nil _ _ = []
+zip3ToList _ _ HPList.Nil _ = []
+zip3ToList _ _ _ HPList.Nil = []
+zip3ToList f (x :** xs) (y :** ys) (z :** zs) = f x y z : zip3ToList f xs ys zs
+
+zip4ToList :: (forall (s1 :: k1) (s2 :: k2) (s3 :: k3) (s4 :: k4) .
+		t1 s1 -> t2 s2 -> t3 s3 -> t4 s4 -> a) ->
+	HPList.PL t1 ss1 -> HPList.PL t2 ss2 ->
+	HPList.PL t3 ss3 -> HPList.PL t4 ss4 -> [a]
+zip4ToList _ HPList.Nil _ _ _ = []
+zip4ToList _ _ HPList.Nil _ _ = []
+zip4ToList _ _ _ HPList.Nil _ = []
+zip4ToList _ _ _ _ HPList.Nil = []
+zip4ToList f (x :** xs) (y :** ys) (z :** zs) (w :** ws) =
+	f x y z w : zip4ToList f xs ys zs ws
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -641,25 +664,38 @@ cmpDscStLytInfo = Vk.DscStLyt.CreateInfo {
 			Vk.Dsc.TypeStorageBuffer,
 		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
 
-cmpRun :: forall slbts sc spl sg sds .
+cmpRun :: forall sd slbts sc spl sg sds sciff scfs smdt sbdt bnmdt nmdt .
 	(Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[], '[], '[]]]) =>
+	TVar UTCTime ->
+	Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.PplLyt.P spl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[]) ->
-	Vk.DscSt.D sds slbts -> Word32 -> IO ()
-cmpRun q cb pl cppl dss sz = do
+	Vk.Mm.M smdt '[ '(sbdt, Vk.Mm.BufferArg bnmdt '[Vk.ObjNA.Atom Float nmdt])] ->
+	Vk.DscSt.D sds slbts -> Word32 ->
+	Vk.Fence.F sciff -> Vk.Semaphore.S scfs -> IO ()
+cmpRun vft dv q cb pl cppl mdt dss sz ciff cfs = do
+	Vk.Fence.waitForFs dv (HPList.Singleton ciff) True Nothing
+	cft <- getCurrentTime
+	lft <- atomically do
+		readTVar vft <* writeTVar vft cft
+	Vk.Mm.write @bnmdt @(Vk.ObjNA.Atom Float nmdt) @0 dv mdt zeroBits
+		(realToFrac $ cft `diffUTCTime` lft * 1000 :: Float)
+--		(12 :: Float)
+	Vk.Fence.resetFs dv (HPList.Singleton ciff)
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute
 			cb Vk.Ppl.BindPointCompute cppl \ccb ->
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb pl (HPList.Singleton $ U2 dss) def >>
-		Vk.Cmd.dispatch ccb (sz `div` 256 + 1) 1 1
-	Vk.Q.submit q (HPList.Singleton $ U4 sinfo) Nothing
+		Vk.Cmd.dispatch ccb (sz `div` 256) 1 1
+--		Vk.Cmd.dispatch ccb (sz `div` 256 + 1) 1 1
+	Vk.Q.submit q (HPList.Singleton $ U4 sinfo) $ Just ciff
 	Vk.Q.waitIdle q
 	where sinfo = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Nil }
+		Vk.submitInfoSignalSemaphores = HPList.Singleton cfs }
 
 newtype CmpDscSt sdsl nmdt nmh sds =
 	CmpDscSt (Vk.DscSt.D sds '(sdsl, CmpDscStLytArg nmdt nmh))
@@ -1273,16 +1309,21 @@ createSyncObjs dv f =
 	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \iass ->
 	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \rfss ->
 	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \iffs ->
-	f $ SyncObjs iass rfss iffs
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \cfss ->
+	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \ciffs ->
+	f $ SyncObjs iass rfss iffs cfss ciffs
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-data SyncObjs (ssos :: ([Type], [Type], [Type])) where
+data SyncObjs (ssos :: ([Type], [Type], [Type], [Type], [Type])) where
 	SyncObjs :: {
 		_imageAvailableSemaphores :: HPList.PL Vk.Semaphore.S siass,
 		_renderFinishedSemaphores :: HPList.PL Vk.Semaphore.S srfss,
-		_inFlightFences :: HPList.PL Vk.Fence.F sfss } ->
-		SyncObjs '(siass, srfss, sfss)
+		_inFlightFences :: HPList.PL Vk.Fence.F sfss,
+		_computeFinishedSemaphores :: HPList.PL Vk.Semaphore.S scfss,
+		_computeInFlightFences :: HPList.PL Vk.Fence.F scifss
+		} ->
+		SyncObjs '(siass, srfss, sfss, scifss, scfss)
 
 mainloop :: (
 	Vk.T.FormatToValue scfmt,
@@ -1365,31 +1406,39 @@ draw :: forall
 	HPList.PL (Vk.DscSt.D sds) sls ->
 	HPList.LL (Vk.CBffr.C scb) mff -> [IO ()] -> SyncObjs ssos -> Float -> Int -> IO ()
 draw dv gq pq sc ex rp pl gp fbs
-	vbs mms dss cbs cruns (SyncObjs iass rfss iffs) tm cf =
+	vbs mms dss cbs cruns (SyncObjs iass rfss iffs cfss ciffs) tm cf =
 	cruns !! cf >>
-	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
+	HPList.index iass cf \ias ->
+	HPList.index cfss cf \cfs ->
+	HPList.index rfss cf \rfs ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
 	HPList.index mms cf \mm ->
 	HPList.index vbs cf \(U3 (VtxBffr vb)) ->
 	($ HPList.homoListIndex dss cf) \ds -> do
-	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
+	Vk.Fence.waitForFs dv siff True Nothing
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+	Vk.Fence.resetFs dv siff
 	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ds
 	updateModelViewProj dv mm ex tm
-	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cfs ias rfs) $ Just iff
 	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo rfs ii
 	where
 	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
 		HPList.Dummy (Vk.CBffr.C scb) '()
-	sinfo :: Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
-		Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
-	sinfo ias rfs = Vk.SubmitInfo {
+	sinfo ::
+		Vk.Semaphore.S scfs ->
+		Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
+		Vk.SubmitInfo 'Nothing '[scfs, sias] '[scb] '[srfs]
+	sinfo cfs ias rfs = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks =
-			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
-				ias Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.SemaphorePipelineStageFlags
+				cfs Vk.Ppl.StageVertexInputBit :**
+			Vk.SemaphorePipelineStageFlags
+				ias Vk.Ppl.StageColorAttachmentOutputBit :**
+			HPList.Nil,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Singleton rfs }
 	pinfo :: Vk.Semaphore.S srfs -> Word32 ->
@@ -1561,7 +1610,7 @@ randomVertex w h g0 = let
 	r = 0.25 * sqrt r_
 	x = r * cos theta * h / w
 	y = r * sin theta
-	d = sqrt $ x ^ (2 :: Int) + y ^ (2 :: Int)
+	d = sqrt $ (x * w / h) ^ (2 :: Int) + y ^ (2 :: Int)
 	vx = x / d * 0.00025
 	vy = y / d * 0.00025
 	(rd, g3) = randomR (0, 1.0) g2
@@ -1659,18 +1708,20 @@ void main()
 
 	Particle particleIn = particlesIn[index];
 
-//	particlesOut[index].position = particleIn.position + particleIn.velocity.xy * ubo.deltaTime;
-	particlesOut[index].position = particleIn.position + particleIn.velocity.xy * 6;
-	particlesOut[index].velocity = particleIn.velocity;
+	particlesOut[index].position = particleIn.position + particleIn.velocity.xy * ubo.deltaTime;
 
-	// Flip movement at window border
-	if ((particlesOut[index].position.x <= -1.0) || (particlesOut[index].position.x >= 1.0)) {
-	    particlesOut[index].velocity.x = -particlesOut[index].velocity.x;
-	}
-	if ((particlesOut[index].position.y <= -1.0) || (particlesOut[index].position.y >= 1.0)) {
-	    particlesOut[index].velocity.y = -particlesOut[index].velocity.y;
-	}
+	float x = particlesOut[index].position.x;
+	float y = particlesOut[index].position.y;
+	float vx = particlesIn[index].velocity.x;
+	float vy = particlesIn[index].velocity.y;
 
+	if (x <= -1.0) {	particlesOut[index].velocity.x = abs(vx); }
+	else if (x < 1.0) {	particlesOut[index].velocity.x = vx; }
+	else {			particlesOut[index].velocity.x = - abs(vx); }
+
+	if (y <= -1.0) {	particlesOut[index].velocity.y = abs(vy); }
+	else if (y < 1.0) {	particlesOut[index].velocity.y = vy; }
+	else {		particlesOut[index].velocity.y = - abs(vy); }
 }
 
 |]
