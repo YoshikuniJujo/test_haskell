@@ -235,11 +235,10 @@ body fr w ist =
 	createCmdPl qfis d \cp ->
 	createSwpch w sfc pd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ss) ex ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
-	createClrRsrcs @scifmt pd d ex spcnt \crs@(_, _, cv, _) ->
 	createRndrPss @scifmt d spcnt \rp ->
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl spcnt \gp ->
-	createFrmbffrs d ex rp scvs cv \fbs ->
+	createFrmbffrs d ex rp scvs \fbs ->
 	let vtcs = vertices' ex $ mkStdGen 8 in
 	createVtxBffr pd d gq cp vtcs \vbs ->
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
@@ -263,7 +262,7 @@ body fr w ist =
 
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
-		sc ex scvs rp pl gp fbs crs vbs mbms dss cbs cruns sos
+		sc ex scvs rp pl gp fbs vbs mbms dss cbs cruns sos
 	where
 	tnum :: Int -> (forall (n :: [()]) . (
 		TList.Length n, HPList.FromList n,
@@ -483,32 +482,6 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
-createClrRsrcs :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Sample.CountFlags ->
-	(forall si sm siv . ClrRsrcs fmt nm si sm siv -> IO a) -> IO a
-createClrRsrcs pd dv (Vk.Extent2d w h) spcnt f =
-	prepareImg pd dv Vk.Img.TilingOptimal
-		(	Vk.Img.UsageTransientAttachmentBit .|.
-			Vk.Img.UsageColorAttachmentBit )
-		Vk.Mm.PropertyDeviceLocalBit w h 1 spcnt \ci cm ->
-	Vk.ImgVw.create dv (imgVwInfo ci Vk.Img.AspectColorBit 1) nil \cv ->
-	f (ci, cm, cv, spcnt)
-
-recreateClrRsrcs :: forall fmt sd nm si sm siv . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> ClrRsrcs fmt nm si sm siv ->
-	IO ()
-recreateClrRsrcs pd dv (Vk.Extent2d w h) (ci, cm, cv, spcnt) = do
-	reprepareImg pd dv Vk.Img.TilingOptimal
-		(	Vk.Img.UsageTransientAttachmentBit .|.
-			Vk.Img.UsageColorAttachmentBit )
-		Vk.Mm.PropertyDeviceLocalBit w h 1 spcnt ci cm
-	Vk.ImgVw.unsafeRecreate dv (imgVwInfo ci Vk.Img.AspectColorBit 1) nil cv
-
-type ClrRsrcs fmt nm si sm siv = (
-	Vk.Img.Binded sm si nm fmt,
-	Vk.Mm.M sm '[ '(si, 'Vk.Mm.ImageArg nm fmt)],
-	Vk.ImgVw.I nm fmt siv, Vk.Sample.CountFlags )
-
 createImgVws :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss inm fmt] ->
 	(forall si . HPList.PL (Vk.ImgVw.I inm fmt) si -> IO a) -> IO a
@@ -545,25 +518,25 @@ imgVwInfo i a ml = Vk.ImgVw.CreateInfo {
 createRndrPss :: forall fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Sample.CountFlags ->
 	(forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
-createRndrPss dv spcnt = Vk.RndrPss.create @_ @'[fmt, fmt] dv info nil
+createRndrPss dv spcnt = Vk.RndrPss.create @_ @'[fmt] dv info nil
 	where
 	info = Vk.RndrPss.CreateInfo {
 		Vk.RndrPss.createInfoNext = TMaybe.N,
 		Vk.RndrPss.createInfoFlags = zeroBits,
 		Vk.RndrPss.createInfoAttachments =
-			ca :** rslv :** HPList.Nil,
+			ca :** HPList.Nil,
 		Vk.RndrPss.createInfoSubpasses = [sbpss],
 		Vk.RndrPss.createInfoDependencies = [dpnd] }
 	ca = Vk.Att.Description {
 		Vk.Att.descriptionFlags = zeroBits,
-		Vk.Att.descriptionSamples = spcnt,
+		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit, -- spcnt,
 		Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
 		Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
 		Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
 		Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
 		Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
 		Vk.Att.descriptionFinalLayout =
-			Vk.Img.LayoutColorAttachmentOptimal }
+			Vk.Img.LayoutPresentSrcKhr }
 	rslv = Vk.Att.Description {
 		Vk.Att.descriptionFlags = zeroBits,
 		Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
@@ -578,8 +551,7 @@ createRndrPss dv spcnt = Vk.RndrPss.create @_ @'[fmt, fmt] dv info nil
 		Vk.Subpass.descriptionPipelineBindPoint =
 			Vk.Ppl.BindPointGraphics,
 		Vk.Subpass.descriptionInputAttachments = [],
-		Vk.Subpass.descriptionColorAndResolveAttachments =
-			Right [(car, rslvr)],
+		Vk.Subpass.descriptionColorAndResolveAttachments = Left [car],
 		Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 		Vk.Subpass.descriptionPreserveAttachments = [] }
 	car = Vk.Att.Reference {
@@ -733,40 +705,36 @@ cmpWriteDscStStorage1 ds bf = Vk.DscSt.Write {
 
 createFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	HPList.PL (Vk.ImgVw.I inm fmt) sis ->
-	Vk.ImgVw.I clrnm clrfmt sciv ->
 	(forall sfs . RecreateFrmbffrs sis sfs =>
 		HPList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFrmbffrs _ _ _ HPList.Nil _ f = f HPList.Nil
-createFrmbffrs dv ex rp (v :** vs) cvw f =
-	Vk.Frmbffr.create dv (frmbffrInfo ex rp v cvw) nil \fb ->
-	createFrmbffrs dv ex rp vs cvw \fbs -> f (fb :** fbs)
+createFrmbffrs _ _ _ HPList.Nil f = f HPList.Nil
+createFrmbffrs dv ex rp (v :** vs) f =
+	Vk.Frmbffr.create dv (frmbffrInfo ex rp v) nil \fb ->
+	createFrmbffrs dv ex rp vs \fbs -> f (fb :** fbs)
 
 class RecreateFrmbffrs (sis :: [Type]) (sfs :: [Type]) where
 	recreateFrmbffrs :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 		HPList.PL (Vk.ImgVw.I inm fmt) sis ->
-		Vk.ImgVw.I clrnm clrfmt clrsdiv ->
 		HPList.PL Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFrmbffrs '[] '[] where
-	recreateFrmbffrs _ _ _ HPList.Nil _ HPList.Nil = pure ()
+	recreateFrmbffrs _ _ _ HPList.Nil HPList.Nil = pure ()
 
 instance RecreateFrmbffrs sis sfs =>
 	RecreateFrmbffrs (si ': sis) (sf ': sfs) where
-	recreateFrmbffrs d ex rp (v :** vs) cv (fb :** fbs) = do
-		Vk.Frmbffr.unsafeRecreate d (frmbffrInfo ex rp v cv) nil fb
-		recreateFrmbffrs d ex rp vs cv fbs
+	recreateFrmbffrs d ex rp (v :** vs) (fb :** fbs) = do
+		Vk.Frmbffr.unsafeRecreate d (frmbffrInfo ex rp v) nil fb
+		recreateFrmbffrs d ex rp vs fbs
 
 frmbffrInfo :: Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.I inm fmt si ->
-	Vk.ImgVw.I clrnm clrfmt sciv ->
 	Vk.Frmbffr.CreateInfo 'Nothing sr '[
-		'(clrnm, clrfmt, sciv),
 		'(inm, fmt, si) ]
-frmbffrInfo ex rp att clr = Vk.Frmbffr.CreateInfo {
+frmbffrInfo ex rp att = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
 	Vk.Frmbffr.createInfoAttachments =
-		U3 clr :** U3 att :** HPList.Nil,
+		U3 att :** HPList.Nil,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } = ex
@@ -1206,23 +1174,21 @@ createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) -> IO a) -> IO a
 createGrPpl dv ex rp pl spcnt f = Vk.Ppl.Graphics.createGs dv Nothing
-	(HPList.Singleton . U14 $ grPplInfo ex rp pl spcnt) nil
+	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	\(HPList.Singleton (U3 p)) -> f p
 
 recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
-	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) -> IO ()
-recreateGrPpl dv ex rp pl spcnt p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
-	(HPList.Singleton . U14 $ grPplInfo ex rp pl spcnt) nil
+recreateGrPpl dv ex rp pl p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
+	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	(HPList.Singleton $ U3 p)
 
 grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
-	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
@@ -1230,7 +1196,7 @@ grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'Nothing '(sl, '[ '(sdsl, DscStLytArg alu)], '[])
 		sr '(sb, vs, ts, plas)
-grPplInfo ex rp pl spcnt = Vk.Ppl.Graphics.CreateInfo {
+grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = zeroBits,
 	Vk.Ppl.Graphics.createInfoStages = shaderStages,
@@ -1273,7 +1239,7 @@ grPplInfo ex rp pl spcnt = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.MltSmplSt.createInfoFlags = zeroBits,
 		Vk.Ppl.MltSmplSt.createInfoSampleShadingEnable = False,
 		Vk.Ppl.MltSmplSt.createInfoRasterizationSamplesAndMask =
-			Vk.Sample.CountAndMask spcnt Nothing,
+			Vk.Sample.CountAndMask Vk.Sample.Count1Bit Nothing,
 		Vk.Ppl.MltSmplSt.createInfoMinSampleShading = 1,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
@@ -1365,19 +1331,18 @@ mainloop :: (
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> [IO ()] -> SyncObjs ssoss -> UTCTime -> IO ()
 mainloop fr w sfc pd qfis dv gq pq
-	sc ex0 vs rp pl gp fbs crs vbs mms dss cbs cruns soss tm0 = do
+	sc ex0 vs rp pl gp fbs vbs mms dss cbs cruns soss tm0 = do
 	($ Inf.cycle $ NE.fromList [0 .. maxFramesInFlight - 1])
 		. ($ ex0) $ fix \go ex (cf :~ cfs) ->
 		GlfwG.pollEvents >>
 		getCurrentTime >>= \tm ->
 		run fr w sfc pd qfis dv gq pq
-			sc ex vs rp pl gp fbs crs
+			sc ex vs rp pl gp fbs
 			vbs
 			mms dss cbs cruns soss (realToFrac $ tm `diffUTCTime` tm0)
 			cf (`go` cfs)
@@ -1397,21 +1362,20 @@ run :: (
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	HPList.PL (VtxBffr' WVertex nmv) smsbbnmvs ->
 	HPList.PL (MemoryModelViewProj alu nmm) smsbs ->
 	HPList.PL (Vk.DscSt.D sds) slyts ->
 	HPList.LL (Vk.CBffr.C scb) mff -> [IO ()] ->
 	SyncObjs ssoss -> Float -> Int -> (Vk.Extent2d -> IO ()) -> IO ()
 run fr w sfc pd qfis dv gq pq
-	sc ex vs rp pl gp fbs crs vbs mms dss cbs cruns soss tm cf go = do
-	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs crs go
+	sc ex vs rp pl gp fbs vbs mms dss cbs cruns soss tm cf go = do
+	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
 		$ draw dv gq pq sc ex rp pl gp fbs vbs
 		mms dss cbs cruns soss tm cf
 	(,) <$> GlfwG.Win.shouldClose w <*> checkFlag fr >>= \case
 		(True, _) -> pure (); (_, False) -> go ex
 		(_, _) -> go =<< recreateAll
-			w sfc pd qfis dv sc vs rp pl gp crs fbs
+			w sfc pd qfis dv sc vs rp pl gp fbs
 
 draw :: forall
 	sd fmt ssc sr sl sdsl sg sfs nmv
@@ -1554,13 +1518,12 @@ catchAndRecreate :: (
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
-	ClrRsrcs scfmt clrnm clrsi clrsm clrsiv ->
 	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs crs go act =
+catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act \_ ->
-	go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp crs fbs
+	go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
 recreateAll :: (
 	Vk.T.FormatToValue fmt,
@@ -1573,17 +1536,15 @@ recreateAll :: (
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[ '(sdsl, DscStLytArg alu)], '[]) ->
-	ClrRsrcs fmt clnm clrsi clrsm clrsiv ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
 recreateAll w sfc pd qfis dv sc vs rp pl gp
-	crs@(_, _, cvw, mss) fbs = do
+	fbs = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
 	ex <- recreateSwpch w sfc pd qfis dv sc
 	ex <$ do
 		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
-		recreateClrRsrcs pd dv ex crs
-		recreateGrPpl dv ex rp pl mss gp
-		recreateFrmbffrs dv ex rp vs cvw fbs
+		recreateGrPpl dv ex rp pl gp
+		recreateFrmbffrs dv ex rp vs fbs
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
