@@ -219,7 +219,7 @@ body fr w ist =
 	unfrmBffrOstAlgn pd \(_ :: Proxy alu) ->
 	createPplLyt @alu d \dsl pl -> createGrPpl d ex rp pl spcnt \gp ->
 	createFrmbffrs d ex rp scvs cv \fbs ->
-	let vtcs = vertices' $ mkStdGen 8 in
+	let vtcs = vertices' ex $ mkStdGen 8 in
 	createVtxBffr pd d gq cp vtcs \vbs ->
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
 	createMvpBffrs' maxFramesInFlight pd d dsl \dsls mbs mbms ->
@@ -1548,16 +1548,18 @@ instance BObj.IsImage ImageRgba8 where
 			(\x y -> let PixelRgba8 p = (pss' ! y) ! x in p) w h
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
-vertices' :: StdGen -> [WVertex]
-vertices' g = GStorable.W
-	<$> take particleCount (L.unfoldr (Just . randomVertex) g)
+vertices' :: Vk.Extent2d -> StdGen -> [WVertex]
+vertices' Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } g = GStorable.W
+	<$> take particleCount (L.unfoldr (Just . randomVertex w h) g)
 
-randomVertex :: StdGen -> (Vertex, StdGen)
-randomVertex g0 = let
+randomVertex :: Float -> Float -> StdGen -> (Vertex, StdGen)
+randomVertex w h g0 = let
 	(r_, g1) = randomR (0.0, 1.0) g0
 	(theta, g2) = randomR (0.0, 2 * pi) g1
 	r = 0.25 * sqrt r_
-	x = r * cos theta
+	x = r * cos theta * h / w
 	y = r * sin theta
 	d = sqrt $ x ^ (2 :: Int) + y ^ (2 :: Int)
 	vx = x / d * 0.00025
@@ -1593,8 +1595,8 @@ instance GStorable.G Vertex
 layout(binding = 0) uniform
 	ModelViewProj { mat4 model; mat4 view; mat4 proj; } mvp;
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
+layout(location = 0) in vec2 inPosition;
+layout(location = 1) in vec4 inColor;
 
 layout(location = 0) out vec3 fragColor;
 
@@ -1602,8 +1604,8 @@ void
 main()
 {
 	gl_PointSize = 14.0;
-	gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 1.0);
-	fragColor = inColor;
+	gl_Position = vec4(inPosition, 1.0, 1.0);
+	fragColor = inColor.rgb;
 }
 
 |]
