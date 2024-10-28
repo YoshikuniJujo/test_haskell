@@ -580,39 +580,6 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 	. Vk.Phd.limitsMinUniformBufferOffsetAlignment . Vk.Phd.propertiesLimits
 	=<< Vk.Phd.getProperties pd
 
-cmpRun :: forall sd slbts sc spl sg sds sciff scfs smdt sbdt bnmdt nmdt .
-	(Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[], '[], '[]]]) =>
-	TVar UTCTime ->
-	Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.PplLyt.P spl '[slbts] '[] ->
-	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[]) ->
-	Vk.Mm.M smdt '[ '(sbdt, Vk.Mm.BufferArg bnmdt '[Vk.ObjNA.Atom Float nmdt])] ->
-	Vk.DscSt.D sds slbts -> Word32 ->
-	Vk.Fence.F sciff -> Vk.Semaphore.S scfs -> IO ()
-cmpRun vft dv q cb pl cppl mdt dss sz ciff cfs = do
-	Vk.Fence.waitForFs dv (HPList.Singleton ciff) True Nothing
-	cft <- getCurrentTime
-	lft <- atomically do
-		readTVar vft <* writeTVar vft cft
-	Vk.Mm.write @bnmdt @(Vk.ObjNA.Atom Float nmdt) @0 dv mdt zeroBits
-		(realToFrac $ cft `diffUTCTime` lft * 1000 :: Float)
---		(12 :: Float)
-	Vk.Fence.resetFs dv (HPList.Singleton ciff)
-	Vk.CBffr.begin @'Nothing @'Nothing cb def $
-		Vk.Cmd.bindPipelineCompute
-			cb Vk.Ppl.BindPointCompute cppl \ccb ->
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb pl (HPList.Singleton $ U2 dss) def >>
-		Vk.Cmd.dispatch ccb (sz `div` 256) 1 1
---		Vk.Cmd.dispatch ccb (sz `div` 256 + 1) 1 1
-	Vk.Q.submit q (HPList.Singleton $ U4 sinfo) $ Just ciff
-	Vk.Q.waitIdle q
-	where sinfo = Vk.SubmitInfo {
-		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Singleton cfs }
-
 newtype CmpDscSt sdsl nmdt nmh sds =
 	CmpDscSt (Vk.DscSt.D sds '(sdsl, CmpDscStLytArg nmdt nmh))
 
@@ -1011,8 +978,6 @@ dscWrite0 ds mb = Vk.DscSt.Write {
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
 		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo mb }
-
-type TxFmt = Vk.T.FormatR8g8b8a8Srgb
 
 cmdBffrInfo :: forall n scp .
 	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfo 'Nothing scp n
@@ -1443,22 +1408,44 @@ updateModelViewProj :: forall sd alu sm nmm . KnownNat alu => Vk.Dvc.D sd ->
 updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	let tm = 0 in
 	Vk.Mm.write @nmm @(Vk.Obj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.mat4Identity,
 			view = Glm.mat4Identity,
 			projection = Glm.mat4Identity }
-		{-
-			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
-				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-			view = Glm.lookat
-				(Glm.Vec3 $ 2 :. 2 :. 2 :. NilL)
-				(Glm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-			projection = Glm.modifyMat4 1 1 negate
-				$ Glm.perspective (Glm.rad 45) (w / h) 0.1 10 }
-				-}
+
+cmpRun :: forall sd slbts sc spl sg sds sciff scfs smdt sbdt bnmdt nmdt .
+	(Vk.Cmd.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[], '[], '[]]]) =>
+	TVar UTCTime ->
+	Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.PplLyt.P spl '[slbts] '[] ->
+	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[]) ->
+	Vk.Mm.M smdt '[ '(sbdt, Vk.Mm.BufferArg bnmdt '[Vk.ObjNA.Atom Float nmdt])] ->
+	Vk.DscSt.D sds slbts -> Word32 ->
+	Vk.Fence.F sciff -> Vk.Semaphore.S scfs -> IO ()
+cmpRun vft dv q cb pl cppl mdt dss sz ciff cfs = do
+	Vk.Fence.waitForFs dv (HPList.Singleton ciff) True Nothing
+	cft <- getCurrentTime
+	lft <- atomically do
+		readTVar vft <* writeTVar vft cft
+	Vk.Mm.write @bnmdt @(Vk.ObjNA.Atom Float nmdt) @0 dv mdt zeroBits
+		(realToFrac $ cft `diffUTCTime` lft * 1000 :: Float)
+--		(12 :: Float)
+	Vk.Fence.resetFs dv (HPList.Singleton ciff)
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
+		Vk.Cmd.bindPipelineCompute
+			cb Vk.Ppl.BindPointCompute cppl \ccb ->
+		Vk.Cmd.bindDescriptorSetsCompute
+			ccb pl (HPList.Singleton $ U2 dss) def >>
+		Vk.Cmd.dispatch ccb (sz `div` 256) 1 1
+--		Vk.Cmd.dispatch ccb (sz `div` 256 + 1) 1 1
+	Vk.Q.submit q (HPList.Singleton $ U4 sinfo) $ Just ciff
+	Vk.Q.waitIdle q
+	where sinfo = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Singleton cfs }
 
 recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv nmv sds sdsl alu .
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1561,31 +1548,6 @@ data ModelViewProj = ModelViewProj {
 	deriving (Show, Generic)
 
 instance GStorable.G ModelViewProj
-
-newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
-newtype PixelRgba8 = PixelRgba8 PixelRGBA8
-
-instance Storable PixelRgba8 where
-	sizeOf _ = 4 * sizeOf @Pixel8 undefined
-	alignment _ = alignment @Pixel8 undefined
-	peek p = PixelRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a)
-		. listToTuple4 <$> peekArray 4 (castPtr p)
-	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
-		pokeArray (castPtr p) [r, g, b, a]
-
-instance BObj.IsImage ImageRgba8 where
-	type ImagePixel ImageRgba8 = PixelRgba8
-	type ImageFormat ImageRgba8 = TxFmt
-	imageRow = BObj.imageWidth
-	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
-	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
-	imageDepth _ = 1
-	imageBody (ImageRgba8 i) = (<$> [0 .. imageHeight i - 1]) \y ->
-		(<$> [0 .. imageWidth i - 1]) \x -> PixelRgba8 $ pixelAt i x y
-	imageMake (fromIntegral -> w) (fromIntegral -> h) _d pss =
-		ImageRgba8 $ generateImage
-			(\x y -> let PixelRgba8 p = (pss' ! y) ! x in p) w h
-		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 vertices' :: Vk.Extent2d -> StdGen -> [WVertex]
 vertices' Vk.Extent2d {
