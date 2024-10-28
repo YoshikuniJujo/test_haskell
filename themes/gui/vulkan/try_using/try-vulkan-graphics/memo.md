@@ -6,6 +6,7 @@
 * [x] try-depth-buffering-single.hs
 * [x] try-cube-single.hs
 * [x] try-multiple-windows.hs
+* [ ] try-compute.hs
 
 ### src
 
