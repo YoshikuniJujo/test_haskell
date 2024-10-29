@@ -313,7 +313,7 @@ instance HomoList s ss => HomoList s (s ': ss) where
 -- Homo List With Num
 
 class HomoListN (n :: Num k) where
-	type Replicate n s :: [Type]
+	type Replicate n (s :: k') :: [k']
 	homoListNFromList :: [t s] -> PL t (Replicate n s)
 	mapHomoListNM :: Monad m => (t a -> m (u b)) ->
 		PL t (Replicate n a) -> m (PL u (Replicate n b))
