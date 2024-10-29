@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.List.ToolsYj (
-	list, list',
+	list, list', replicateWithI,
 	elemAll, elemNotAll, findDefault, listToTuple4
 	) where
 
@@ -15,6 +15,10 @@ list n c = \case [] -> n; x : xs -> c x xs
 
 list' :: b -> (NonEmpty a -> b) -> [a] -> b
 list' n c = \case [] -> n; x : xs -> c $ x :| xs
+
+replicateWithI :: Int -> (Int -> a) -> [a]
+replicateWithI n f = go 0
+	where go i | i < n = f i : go (i + 1) | otherwise = []
 
 elemAll :: Eq a => [a] -> [a] -> Bool
 elemAll es = null . (es \\)
