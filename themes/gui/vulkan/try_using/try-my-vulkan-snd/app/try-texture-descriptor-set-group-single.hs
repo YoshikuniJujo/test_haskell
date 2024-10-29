@@ -721,7 +721,7 @@ createCmdPl qfis dv = Vk.CmdPl.create dv info nil
 
 createTxImg :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Smplr.S ss ->
-	Vk.DscSet.Group sgrp GlfwG.Key sp '[ '(sdsl, DscStLytArg alu)] ->
+	Vk.DscSet.Group sd sgrp GlfwG.Key sp '[ '(sdsl, DscStLytArg alu)] ->
 	Vk.Img.Group sd 'Nothing si GlfwG.Key "texture" 'Vk.T.FormatR8g8b8a8Srgb ->
 	Vk.Mm.Group sd 'Nothing sm GlfwG.Key '[
 		'(si, 'Vk.Mm.ImageArg "texture" 'Vk.T.FormatR8g8b8a8Srgb) ] ->
@@ -1042,10 +1042,10 @@ createDscPl dv = Vk.DscPl.create dv info nil
 createDscSt :: (KnownNat alu, Ord k) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.DscSetLyt.D sdsl (DscStLytArg alu) ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.Atom alu WModelViewProj 'Nothing] ->
-	Vk.DscSet.Group sds k sp '[ '(sdsl, DscStLytArg alu)] -> k ->
+	Vk.DscSet.Group sd sds k sp '[ '(sdsl, DscStLytArg alu)] -> k ->
 	IO (Vk.DscSet.D sds '(sdsl, DscStLytArg alu))
 createDscSt dv dp dl mb dg k = do
-	(Right (HPList.Singleton ds)) <- Vk.DscSet.allocateDs' dv dg k info
+	(Right (HPList.Singleton ds)) <- Vk.DscSet.allocateDs' dg k info
 	Vk.DscSet.updateDs dv (U5 (dscWriteMvp ds mb) :** HPList.Nil) HPList.Nil
 	pure ds
 	where info = Vk.DscSet.AllocateInfo {
