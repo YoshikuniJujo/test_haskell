@@ -42,8 +42,8 @@ module Data.HeteroParList (
 
 	-- *** zipList
 
-	zipList, zipList2, zipList3,
-	zipListM, zipListM2, zipListM3, zipListM_, zipListM2_, zipListM3_,
+--	zipList, zipList2, zipList3,
+--	zipListM, zipListM2, zipListM3, zipListM_, zipListM2_, zipListM3_,
 
 	-- *** with constraint
 
