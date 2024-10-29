@@ -40,6 +40,10 @@ module Data.HeteroParList (
 	toListM, toListM2, toListM3, toListM_, toListM2_, toListM3_,
 	ToListT2(..), ToListT3(..),
 
+	-- *** zipToList
+
+	zipToList, zip3ToList, zip4ToList,
+
 	-- *** zipList
 
 --	zipList, zipList2, zipList3,
@@ -223,6 +227,30 @@ instance ToListT3 k1 k2 k3 '[] where toListT3 _ Nil = []
 
 instance ToListT3 k1 k2 k3 ss => ToListT3 k1 k2 k3 ('(s1, s2, s3) ': ss) where
 	toListT3 f (x :** xs) = f x : toListT3 f xs
+
+zipToList :: (forall (s :: k) (s' :: k') . t s -> t' s' -> a) ->
+	PL t ss -> PL t' ss' -> [a]
+zipToList _ Nil _ = []
+zipToList _ _ Nil = []
+zipToList f (x :** xs) (y :** ys) = f x y : zipToList f xs ys
+
+zip3ToList :: (forall (s1 :: k1) (s2 :: k2) (s3 :: k3) .
+	t1 s1 -> t2 s2 -> t3 s3 -> a) ->
+	PL t1 ss1 -> PL t2 ss2 -> PL t3 ss3 -> [a]
+zip3ToList _ Nil _ _ = []
+zip3ToList _ _ Nil _ = []
+zip3ToList _ _ _ Nil = []
+zip3ToList f (x :** xs) (y :** ys) (z :** zs) = f x y z : zip3ToList f xs ys zs
+
+zip4ToList :: (forall (s1 :: k1) (s2 :: k2) (s3 :: k3) (s4 :: k4) .
+	t1 s1 -> t2 s2 -> t3 s3 -> t4 s4 -> a) ->
+	PL t1 ss1 -> PL t2 ss2 -> PL t3 ss3 -> PL t4 ss4 -> [a]
+zip4ToList _ Nil _ _ _ = []
+zip4ToList _ _ Nil _ _ = []
+zip4ToList _ _ _ Nil _ = []
+zip4ToList _ _ _ _ Nil = []
+zip4ToList f (x :** xs) (y :** ys) (z :** zs) (w :** ws) =
+	f x y z w : zip4ToList f xs ys zs ws
 
 zipList :: (forall (s :: k) . t s -> t' s -> a) ->
 	PL t ss -> PL t' ss -> [a]
