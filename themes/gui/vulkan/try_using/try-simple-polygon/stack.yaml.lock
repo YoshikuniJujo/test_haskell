@@ -5,59 +5,59 @@
 
 packages:
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan
     pantry-tree:
-      sha256: 810c1779383ac8b7dfc2ef79b0eb4f97729d3aaa42b9f4841a09f82054e5bfca
-      size: 11728
+      sha256: e9799a0b74f7bcd49e870f6216402ba11b2e939c4e064c925a942578c05ffb3b
+      size: 11804
     subdir: themes/gui/vulkan/try-gpu-vulkan
-    version: 0.1.0.121
+    version: 0.1.0.135
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-swapchain
     pantry-tree:
-      sha256: 83b1a270f8e4634b1dec0a5ec248af5ebcef6d38e2ad7b8c7ffe67d5a1d1c8ce
+      sha256: 4883d51eb7abd68064a8cadc3919562ba714f95172fee024d0d9163668f3ff89
       size: 679
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface
     pantry-tree:
-      sha256: 3706c7a8692f89a681b65531fc7296ebfddfd5805a832c37f2eaed5fd7dfc10c
+      sha256: 9dfabe7c1ff96cabf08d52ac155ff8485ef1fb12ab65a61c7783d4aad8063b7a
       size: 910
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
     version: 0.1.0.1
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface-glfw
     pantry-tree:
-      sha256: ab25776ae907ee10ce6df84730cc5eaff2f2244bd29754c5be772f4d7b6636bd
+      sha256: 48c66708e3ca1a0e7df145c035f68f228e3ef15620d3bebd2b224c53c9679df8
       size: 691
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
-    version: 0.1.0.0
+    version: 0.1.0.1
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-ext-debug-utils
     pantry-tree:
@@ -66,11 +66,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     version: 0.1.0.8
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-cglm
     pantry-tree:
@@ -79,24 +79,24 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-cglm
     version: 0.1.0.7
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-cglm
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle
     pantry-tree:
-      sha256: bcb6a966a149e4fc4d30a9f11abee3e920bc48e5da6a019a0004b0c70d717868
+      sha256: 006402367a0ba26a50f94d44563605634c1c55bd0a593cf249294a290fb1933a
       size: 14906
     subdir: themes/gui/vulkan/try-vulkan-middle
-    version: 0.1.0.51
+    version: 0.1.0.54
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-middle
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-swapchain
     pantry-tree:
@@ -105,11 +105,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-surface
     pantry-tree:
@@ -118,11 +118,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-surface-glfw
     pantry-tree:
@@ -131,11 +131,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle-ext-debug-utils
     pantry-tree:
@@ -144,24 +144,24 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
     version: 0.1.0.4
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
-      sha256: b728fe83750523d97846476d72495978131532bff2f67535b7b286e36b420dbd
+      sha256: ff65bc4e505d139c134eec152a06fb6d7196ac24aeba5ce8919f2a9edec7593f
       size: 5179
     subdir: themes/gui/vulkan/try-vulkan-core
-    version: 0.1.0.5
+    version: 0.1.0.7
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-core-khr-swapchain
     pantry-tree:
@@ -170,11 +170,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-core-khr-surface
     pantry-tree:
@@ -183,11 +183,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-ext-debug-utils
     pantry-tree:
@@ -196,11 +196,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-language-spir-v
     pantry-tree:
@@ -209,11 +209,11 @@ packages:
     subdir: themes/gui/vulkan/try-language-spir-v
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-language-spir-v
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-shaderc
     pantry-tree:
@@ -222,11 +222,11 @@ packages:
     subdir: themes/gui/vulkan/try-shaderc
     version: 0.1.0.5
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-shaderc
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-generic
     pantry-tree:
@@ -235,11 +235,11 @@ packages:
     subdir: features/ffi/pointer/try-storable-generic
     version: 0.1.0.5
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-generic
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-hetero-list
     pantry-tree:
@@ -248,11 +248,11 @@ packages:
     subdir: features/ffi/pointer/try-storable-hetero-list
     version: 0.1.0.4
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-hetero-list
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-peek-poke
     pantry-tree:
@@ -261,24 +261,24 @@ packages:
     subdir: features/ffi/pointer/try-storable-peek-poke
     version: 0.1.0.1
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-peek-poke
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-hetero-parameter-list
     pantry-tree:
-      sha256: 2c3eb028f78bc4050a6c1d3795f2e77c78b0feb30858a61f523e079a42aff891
+      sha256: 6a38249f5b893b0155a746bc5f43994c213a79f3f03d9995099b4108e65d0d27
       size: 671
     subdir: themes/hetero-list/try-hetero-parameter-list
-    version: 0.1.0.11
+    version: 0.1.0.15
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/hetero-list/try-hetero-parameter-list
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-hetero-parameter-list-with-typelevel-tools
     pantry-tree:
@@ -287,11 +287,11 @@ packages:
     subdir: themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-monads-tf-misc-yj
     pantry-tree:
@@ -300,11 +300,11 @@ packages:
     subdir: themes/monad/try-monads-tf-misc-yj
     version: 0.1.0.1
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/monad/try-monads-tf-misc-yj
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-text-misc-yj
     pantry-tree:
@@ -313,11 +313,11 @@ packages:
     subdir: themes/string/try-text-misc-yj
     version: 0.1.0.0
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/string/try-text-misc-yj
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: typelevel-tools
     pantry-tree:
@@ -326,11 +326,11 @@ packages:
     subdir: themes/type_level/typelevel-tools
     version: 0.1.0.6
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-codec-wavefront-obj
     pantry-tree:
@@ -339,33 +339,33 @@ packages:
     subdir: themes/codec/try-codec-wavefront-obj
     version: 0.1.0.2
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/codec/try-codec-wavefront-obj
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-glfw-group
     pantry-tree:
-      sha256: 12db6fd48b6e8b596d31e1de3ee582083a8dbade0d0f1cd011eca538a27dfe63
+      sha256: 0a15879a7e228abb64b3f09fdf10e7cf7bf7b2f8ae5a3d1cddc0fbd8d1b1136c
       size: 1012
     subdir: themes/gui/vulkan/try-glfw-group
-    version: 0.1.0.8
+    version: 0.1.0.11
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-glfw-group
 - completed:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-tools-yj
     pantry-tree:
-      sha256: 85d1486bd3346348aab27ab6c1725051b96581e6c6fe79e16330d6b322c83d9d
-      size: 1243
+      sha256: 101d0db6753beb208dabbf349d19bae1db5f4b617ea98be5949947e73b043d8b
+      size: 1309
     subdir: packages/try-tools-yj
-    version: 0.1.0.14
+    version: 0.1.0.17
   original:
-    commit: 506667333a4ecc8fa20467a5c76296ebfad7ee54
+    commit: e220b5c45b50afb856b1e6161c6e26850a6545a3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: packages/try-tools-yj
 - completed:
@@ -388,7 +388,7 @@ packages:
     git: https://github.com/tanakh/optparse-declarative
 snapshots:
 - completed:
-    sha256: c901311711617797296f9d58af325d473232633042c9d1db8e4c7b860c3be6ca
-    size: 640466
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/5/21.yaml
-  original: nightly-2024-05-21
+    sha256: f9ac29d4f7a49deed9960d9f8ce5bd2eba68d19ec04cfebf4295a381f1ed0546
+    size: 671543
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/10/29.yaml
+  original: nightly-2024-10-29
