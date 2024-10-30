@@ -75,10 +75,20 @@
         - [x] ListVertex
     + [x] COMPUTE PIPELINE
         - [x] createCmpPpl
+        - [x] shaderMdInfo
         - [x] createCmpPplLyt
         - [x] createCmpDscStLyt
         - [x] CmpDscStLytArg
-    + [ ] GRAPHICS PIPELINE
+    + [x] GRAPHICS PIPELINE
+        - [x] createPplLyt
+        - [x] createGrPpl
+        - [x] recreateGrPpl
+        - [x] grPplInfo
+        - [x] shdrSt
+        - [x] GlslVertexShaderArgs
+        - [x] GlslFragmentShaderArgs
+        - [x] vwpSt
+        - [x] clrBlnd
     + [ ] MAINLOOP
     + [ ] RECREATE
     + [ ] SHADERS

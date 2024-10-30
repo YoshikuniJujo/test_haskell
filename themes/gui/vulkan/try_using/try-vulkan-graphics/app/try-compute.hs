@@ -83,7 +83,7 @@ import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
-import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
+import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Gr
 import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cp
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
@@ -94,7 +94,7 @@ import Gpu.Vulkan.Pipeline.ColorBlendAttachment qualified as Vk.Ppl.ClrBlndAtt
 import Gpu.Vulkan.Pipeline.ColorBlendState qualified as Vk.Ppl.ClrBlndSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
-import Gpu.Vulkan.ShaderModule qualified as Vk.ShaderModule
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShdrMd
 import Gpu.Vulkan.VertexInput qualified as Vk.VtxInp
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 import Gpu.Vulkan.ColorComponent qualified as Vk.ClrCmp
@@ -819,6 +819,11 @@ createCmpPpl d f = createCmpPplLyt d \dsl pl ->
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
+shdrMdInfo :: SpirV.S sknd -> Vk.ShdrMd.CreateInfo 'Nothing sknd
+shdrMdInfo cd = Vk.ShdrMd.CreateInfo {
+	Vk.ShdrMd.createInfoNext = TMaybe.N,
+	Vk.ShdrMd.createInfoFlags = zeroBits, Vk.ShdrMd.createInfoCode = cd }
+
 createCmpPplLyt :: Vk.Dvc.D sd -> (forall sds spl .
 	Vk.DscStLyt.D sds (CmpDscStLytArg nmdt nmv) ->
 	Vk.PplLyt.P spl '[ '(sds, CmpDscStLytArg nmdt nmv)] '[] -> IO a) -> IO a
@@ -857,61 +862,57 @@ type CmpDscStLytArg nmdt nmv = '[
 
 -- GRAPHICS PIPELINE
 
-createPplLyt :: forall sd a . Vk.Dvc.D sd -> (forall sl .
-	Vk.PplLyt.P sl '[] '[] -> IO a) -> IO a
-createPplLyt dv f = Vk.PplLyt.create @_ @_ @_ @'[] dv info nil $ f
+createPplLyt :: forall sd a . Vk.Dvc.D sd ->
+	(forall sl . Vk.PplLyt.P sl '[] '[] -> IO a) -> IO a
+createPplLyt dv = Vk.PplLyt.create @_ @_ @_ @'[] dv info nil
 	where info = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Nil }
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[] '[] ->
-	(forall sg . Vk.Ppl.Graphics.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color)]
-		'(sl, '[], '[]) -> IO a) -> IO a
-createGrPpl dv ex rp pl f = Vk.Ppl.Graphics.createGs dv Nothing
+	Vk.PplLyt.P sl '[] '[] -> (forall sg .
+		Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+			'[ '(0, Pos), '(1, Color)] '(sl, '[], '[]) ->
+		IO a) -> IO a
+createGrPpl dv ex rp pl f = Vk.Ppl.Gr.createGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	\(HPList.Singleton (U3 p)) -> f p
 
 recreateGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Graphics.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color)]
-		'(sl, '[], '[]) -> IO ()
-recreateGrPpl dv ex rp pl p = Vk.Ppl.Graphics.unsafeRecreateGs dv Nothing
+	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Pos), '(1, Color)] '(sl, '[], '[]) -> IO ()
+recreateGrPpl dv ex rp pl p = Vk.Ppl.Gr.unsafeRecreateGs dv Nothing
 	(HPList.Singleton . U14 $ grPplInfo ex rp pl) nil
 	(HPList.Singleton $ U3 p)
 
 grPplInfo :: Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Graphics.CreateInfo 'Nothing
+	Vk.Ppl.Gr.CreateInfo 'Nothing
 		'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
 		'(	'Nothing, '[ '(WVertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Pos), '(1, Color)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
-		'Nothing '(sl, '[], '[])
-		sr '(sb, vs, ts, plas)
-grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
-	Vk.Ppl.Graphics.createInfoFlags = zeroBits,
-	Vk.Ppl.Graphics.createInfoStages = shaderStages,
-	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ U3 def,
-	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just ia,
-	Vk.Ppl.Graphics.createInfoViewportState = Just $ vwpSt ex,
-	Vk.Ppl.Graphics.createInfoRasterizationState = Just rst,
-	Vk.Ppl.Graphics.createInfoMultisampleState = Just ms,
-	Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
-	Vk.Ppl.Graphics.createInfoColorBlendState = Just clrBlnd,
-	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
-	Vk.Ppl.Graphics.createInfoLayout = U3 pl,
-	Vk.Ppl.Graphics.createInfoRenderPass = rp,
-	Vk.Ppl.Graphics.createInfoSubpass = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+		'Nothing '(sl, '[], '[]) sr '(sb, vs, ts, plas)
+grPplInfo ex rp pl = Vk.Ppl.Gr.CreateInfo {
+	Vk.Ppl.Gr.createInfoNext = TMaybe.N,
+	Vk.Ppl.Gr.createInfoFlags = zeroBits,
+	Vk.Ppl.Gr.createInfoStages = shdrSt,
+	Vk.Ppl.Gr.createInfoVertexInputState = Just $ U3 def,
+	Vk.Ppl.Gr.createInfoInputAssemblyState = Just ia,
+	Vk.Ppl.Gr.createInfoViewportState = Just $ vwpSt ex,
+	Vk.Ppl.Gr.createInfoRasterizationState = Just rst,
+	Vk.Ppl.Gr.createInfoMultisampleState = Just ms,
+	Vk.Ppl.Gr.createInfoDepthStencilState = Nothing,
+	Vk.Ppl.Gr.createInfoColorBlendState = Just clrBlnd,
+	Vk.Ppl.Gr.createInfoDynamicState = Nothing,
+	Vk.Ppl.Gr.createInfoLayout = U3 pl,
+	Vk.Ppl.Gr.createInfoRenderPass = rp,
+	Vk.Ppl.Gr.createInfoSubpass = 0,
+	Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1,
+	Vk.Ppl.Gr.createInfoTessellationState = Nothing }
 	where
 	ia = Vk.Ppl.InpAsmbSt.CreateInfo {
 		Vk.Ppl.InpAsmbSt.createInfoNext = TMaybe.N,
@@ -942,9 +943,9 @@ grPplInfo ex rp pl = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 		Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
 
-shaderStages :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo)
+shdrSt :: HPList.PL (U5 Vk.Ppl.ShdrSt.CreateInfo)
 	'[GlslVertexShaderArgs, GlslFragmentShaderArgs]
-shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
+shdrSt = U5 vinfo :** U5 finfo :** HPList.Nil
 	where
 	vinfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
@@ -963,12 +964,6 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
-shdrMdInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
-shdrMdInfo code = Vk.ShaderModule.CreateInfo {
-	Vk.ShaderModule.createInfoNext = TMaybe.N,
-	Vk.ShaderModule.createInfoFlags = zeroBits,
-	Vk.ShaderModule.createInfoCode = code }
-
 type GlslVertexShaderArgs = '(
 	'Nothing, 'Nothing,
 	'GlslVertexShader, 'Nothing :: Maybe (Type, Type), '[] )
@@ -978,7 +973,9 @@ type GlslFragmentShaderArgs = '(
 	'GlslFragmentShader, 'Nothing :: Maybe (Type, Type), '[] )
 
 vwpSt :: Vk.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo 'Nothing
-vwpSt ex = Vk.Ppl.ViewportSt.CreateInfo {
+vwpSt ex@Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } = Vk.Ppl.ViewportSt.CreateInfo {
 	Vk.Ppl.ViewportSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ViewportSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ViewportSt.createInfoViewports = [vp],
@@ -986,8 +983,7 @@ vwpSt ex = Vk.Ppl.ViewportSt.CreateInfo {
 	where
 	vp = Vk.Viewport {
 		Vk.viewportX = 0, Vk.viewportY = 0,
-		Vk.viewportWidth = fromIntegral $ Vk.extent2dWidth ex,
-		Vk.viewportHeight = fromIntegral $ Vk.extent2dHeight ex,
+		Vk.viewportWidth = w, Vk.viewportHeight = h,
 		Vk.viewportMinDepth = 0, Vk.viewportMaxDepth = 1 }
 	scssr = Vk.Rect2d {
 		Vk.rect2dOffset = Vk.Offset2d 0 0, Vk.rect2dExtent = ex }
@@ -1006,8 +1002,10 @@ clrBlnd = Vk.Ppl.ClrBlndSt.CreateInfo {
 			Vk.ClrCmp.RBit .|. Vk.ClrCmp.GBit .|.
 			Vk.ClrCmp.BBit .|. Vk.ClrCmp.ABit,
 		Vk.Ppl.ClrBlndAtt.stateBlendEnable = True,
-		Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor = Vk.BlendFactorSrcAlpha,
-		Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor = Vk.BlendFactorOneMinusSrcAlpha,
+		Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor =
+			Vk.BlendFactorSrcAlpha,
+		Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor =
+			Vk.BlendFactorOneMinusSrcAlpha,
 		Vk.Ppl.ClrBlndAtt.stateColorBlendOp = Vk.BlendOpAdd,
 		Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
 		Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
@@ -1028,7 +1026,7 @@ mainloop :: (
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) ss ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[], '[]) ->
@@ -1052,7 +1050,7 @@ run :: (
 	Vk.Phd.P -> QFamIdcs -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S scfmt ssc -> Vk.Extent2d ->
 	HPList.PL (Vk.ImgVw.I inm scfmt) svs -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[], '[]) ->
@@ -1074,7 +1072,7 @@ draw :: forall sd fmt ssc sr sl sg sfs nmv scb mff ssos smsbbnmvs . (
 	) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[], '[]) ->
@@ -1157,7 +1155,7 @@ cmpRun vft dv q cb pl cppl mdt dss pc ciff cfs = do
 
 recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv nmv .
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[], '[]) ->
@@ -1204,7 +1202,7 @@ catchAndRecreate :: (
 	Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[], '[]) ->
@@ -1223,7 +1221,7 @@ recreateAll :: (
 	Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S fmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color)]
 		'(sl, '[], '[]) ->
