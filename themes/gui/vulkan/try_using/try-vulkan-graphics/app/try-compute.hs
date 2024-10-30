@@ -726,105 +726,68 @@ singleTimeCmds dv gq cp cmd =
 
 createCmpDscSts :: forall n sd sp sdsl nmdt nmh a . (
 	HPList.HomoListN n,
-	Vk.DscSt.DListFromMiddle (HPList.Replicate n '(sdsl, '[
-		BufferDiffTime nmdt,
-		BufferVertex nmh,
-		BufferVertex nmh
-		])),
+	Vk.DscSt.DListFromMiddle
+		(HPList.Replicate n '(sdsl, CmpDscStLytArg nmdt nmh)),
 	HPList.HomoList '(sdsl, CmpDscStLytArg nmdt nmh)
-		(HPList.Replicate n
-			'(sdsl, '[
-				BufferDiffTime nmdt,
-				BufferVertex nmh,
-				BufferVertex nmh ]))
-	) =>
+		(HPList.Replicate n '(sdsl, CmpDscStLytArg nmdt nmh)) ) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.DscStLyt.D sdsl '[
-		BufferDiffTime nmdt,
-		BufferVertex nmh,
-		BufferVertex nmh
-		] ->
-	(forall sds .
+	Vk.DscStLyt.D sdsl (CmpDscStLytArg nmdt nmh) -> (forall sds .
 		HPList.HomoList '(sdsl, CmpDscStLytArg nmdt nmh)
-			(HPList.Replicate n
-				'(sdsl, '[
-					BufferDiffTime nmdt,
-					BufferVertex nmh,
-					BufferVertex nmh ])) =>
+			(HPList.Replicate n '(sdsl, CmpDscStLytArg nmdt nmh)) =>
 		HPList.PL (Vk.DscSt.D sds)
-			(HPList.Replicate n
-				'(sdsl, '[
-					BufferDiffTime nmdt,
-					BufferVertex nmh,
-					BufferVertex nmh ])) -> IO a) -> IO a
-createCmpDscSts dv dp dsl f =
-	Vk.DscSt.allocateDs dv (cmpDscStInfo @n dp dsl) \ds ->
-	f ds
-
-type BufferDiffTime nm = 'Vk.DscStLyt.Buffer '[AtomDiffTime nm]
-
-type BufferVertex nm = 'Vk.DscStLyt.Buffer '[ListVertex nm]
-type ListVertex nm = Vk.ObjNA.List WVertex nm
+			(HPList.Replicate n '(sdsl, CmpDscStLytArg nmdt nmh)) ->
+		IO a) -> IO a
+createCmpDscSts dv dp dsl = Vk.DscSt.allocateDs dv $ cmpDscStInfo @n dp dsl
 
 cmpDscStInfo :: forall n sp sl bts . HPList.HomoListN n =>
 	Vk.DscPl.P sp -> Vk.DscStLyt.D sl bts ->
 	Vk.DscSt.AllocateInfo 'Nothing sp (HPList.Replicate n '(sl, bts))
-cmpDscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
+cmpDscStInfo dp dsl = Vk.DscSt.AllocateInfo {
 	Vk.DscSt.allocateInfoNext = TMaybe.N,
-	Vk.DscSt.allocateInfoDescriptorPool = dpl,
-	Vk.DscSt.allocateInfoSetLayouts = HPList.homoListNFromList @_ @n $ replicate 2 (U2 dsl) }
+	Vk.DscSt.allocateInfoDescriptorPool = dp,
+	Vk.DscSt.allocateInfoSetLayouts =
+		HPList.homoListNFromList @_ @n $ replicate 2 (U2 dsl) }
 
-updateCmpDscSt :: forall sd (sdsl :: Type) nmdt nmh sm0 sb0 bnmh0 smsbbnm sds .
+updateCmpDscSt :: forall sd sdsl nmdt nmh smdt sbdt bnmdt smsbbnms sds .
 	Vk.Dvc.D sd ->
 	(Int -> Vk.DscSt.D sds '(sdsl, CmpDscStLytArg nmdt nmh)) ->
-	Vk.Bffr.Binded sm0 sb0 bnmh0 '[AtomDiffTime nmdt] ->
-	HPList.PL (LstBffr WVertex nmh) smsbbnm -> Int -> IO ()
-updateCmpDscSt dv dss bf0 vbs i =
+	Vk.Bffr.Binded smdt sbdt bnmdt '[AtomDiffTime nmdt] ->
+	HPList.PL (LstBffr WVertex nmh) smsbbnms -> Int -> IO ()
+updateCmpDscSt dv dss dtbs vbs i =
 	HPList.index vbs ((i - 1) `mod` maxFramesInFlight) \(U3 (LstBffr' lvb)) ->
 	HPList.index vbs i \(U3 (LstBffr' cvb)) ->
 	Vk.DscSt.updateDs dv (
-		U5 (cmpWriteDscStUniform @_ @nmdt ds bf0) :**
-		U5 (cmpWriteDscStStorage0 @_ @nmh ds lvb) :**
-		U5 (cmpWriteDscStStorage1 @_ @nmh ds cvb) :** HPList.Nil)
+		U5 (cmpWriteDscStUniform @nmdt ds dtbs) :**
+		U5 (cmpWriteDscStStorageN @0 @nmh ds lvb) :**
+		U5 (cmpWriteDscStStorageN @1 @nmh ds cvb) :** HPList.Nil)
 		HPList.Nil
-	where
-	ds = dss i
+	where ds = dss i
 
-cmpWriteDscStUniform :: forall bnmh nmdt sds slbts sm sb os . (
+cmpWriteDscStUniform :: forall nm sds slbts sm sb bnm os . (
 	Show (HPList.PL Vk.Obj.Length os),
-	Vk.Obj.OffsetRange (AtomDiffTime nmdt) os 0 ) =>
-	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, AtomDiffTime nmdt, 0)]) 0
+	Vk.Obj.OffsetRange (AtomDiffTime nm) os 0 ) =>
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnm os ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgBuffer
+			'[ '(sm, sb, bnm, AtomDiffTime nm, 0)]) 0
 cmpWriteDscStUniform ds bf = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSt.writeSources =
-		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
+	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
+		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
 
-cmpWriteDscStStorage0 :: forall bnmh nmh sds slbts sm sb os . (
+cmpWriteDscStStorageN :: forall n nm sds slbts sm sb bnm os . (
 	Show (HPList.PL Vk.Obj.Length os),
-	Vk.Obj.OffsetRange (ListVertex nmh) os 0 ) =>
-	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, ListVertex nmh, 0)]) 0
-cmpWriteDscStStorage0 ds bf = Vk.DscSt.Write {
+	Vk.Obj.OffsetRange (ListVertex nm) os 0 ) =>
+	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnm os ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgBuffer
+			'[ '(sm, sb, bnm, ListVertex nm, 0)]) n
+cmpWriteDscStStorageN ds bf = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSt.writeSources =
-		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
-
-cmpWriteDscStStorage1 :: forall bnmh nmh sds slbts sm sb os . (
-	Show (HPList.PL Vk.Obj.Length os),
-	Vk.Obj.OffsetRange (ListVertex nmh) os 0 ) =>
-	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
-	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, ListVertex nmh, 0)]) 1
-cmpWriteDscStStorage1 ds bf = Vk.DscSt.Write {
-	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
-	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSt.writeSources =
-		Vk.DscSt.BufferInfos . HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
+	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
+		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
 
 -- COMPUTE PIPELINE
 
@@ -884,6 +847,10 @@ createCmpDscStLyt dv = Vk.DscStLyt.create dv cmpDscStLytInfo nil
 
 type CmpDscStLytArg nmdt nmh =
 	'[ BufferDiffTime nmdt, BufferVertex nmh, BufferVertex nmh ]
+
+type BufferDiffTime nm = 'Vk.DscStLyt.Buffer '[AtomDiffTime nm]
+type BufferVertex nm = 'Vk.DscStLyt.Buffer '[ListVertex nm]
+type ListVertex nm = Vk.ObjNA.List WVertex nm
 
 cmpDscStLytInfo :: Vk.DscStLyt.CreateInfo 'Nothing '[
 	'Vk.DscStLyt.Buffer '[AtomDiffTime nmdt],

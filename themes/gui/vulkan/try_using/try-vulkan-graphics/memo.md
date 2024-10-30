@@ -66,11 +66,18 @@
         - [x] bffrInfo
         - [x] writeBffrLsts
         - [x] singleTimeCmds
-    + [ ] COMPUTE DESCRIPTOR SET
+    + [x] COMPUTE DESCRIPTOR SET
+        - [x] createCmpDscSts
+        - [x] cmpDscStInfo
+        - [x] updateCmpDscSt
+        - [x] cmpWriteDscStUniform
+        - [x] cmpWriteDscStStorageN
+    + [ ] COMPUTE PIPELINE
         - ...
         - [ ] BufferDiffTime
+        - [ ] BufferVertex
+        - [ ] ListVertex
         - ...
-    + [ ] COMPUTE PIPELINE
     + [ ] GRAPHICS PIPELINE
     + [ ] MAINLOOP
     + [ ] RECREATE
