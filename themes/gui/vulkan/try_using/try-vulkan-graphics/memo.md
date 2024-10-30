@@ -40,18 +40,18 @@
         - [x] class RecreateFrmbffrs
         - [x] instance RecreateFrmbffrs
         - [x] frmbffrInfo
-    + [ ] CREATE SWAP CHAIN
-        - [ ] createSwpch
-        - [ ] instance Show (SwpchSupportDetails fmts)
-        - [ ] chooseSwpSfcFmt
-        - [ ] recreateSwpch
-        - [ ] querySwpchSupportFmt
-        - [ ] SwpchSuppotDetailsFmt
-        - [ ] swapExtent
-        - [ ] swpchInfo
-        - [ ] createImgVws
-        - [ ] recreateImgVws
-        - [ ] imgVwInfo
+    + [x] CREATE SWAP CHAIN
+        - [x] createSwpch
+        - [x] chooseSwpSfcFmt
+        - [x] recreateSwpch
+        - [x] querySwpchSupportFmt
+        - [x] SwpchSuppotDetailsFmt
+        - [x] swpExt
+        - [x] choosePresentMode
+        - [x] swpchInfo
+        - [x] createImgVws
+        - [x] recreateImgVws
+        - [x] imgVwInfo
     + [ ] BUFFERS
     + [ ] COMPUTE DESCRIPTOR SET
     + [ ] COMPUTE PIPELINE

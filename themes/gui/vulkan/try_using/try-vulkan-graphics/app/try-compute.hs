@@ -254,7 +254,7 @@ body fr w ist =
 				ccbs ciffs cfss in
 
 	Vk.CBffr.allocate @_ @MaxFramesInFlight d (cmdBffrInfo cp) \cbs ->
-	createSwpch w sfc ssd qfis d \(sc :: Vk.Khr.Swpch.S scifmt ssc) ->
+	createSwpch sfc ssd ex qfis d \(sc :: Vk.Khr.Swpch.S scifmt ssc) ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
 	createRndrPss @scifmt d \rp -> createFrmbffrs d ex rp scvs \fbs ->
 	createPplLyt d \pl -> createGrPpl d ex rp pl \gp ->
@@ -473,20 +473,15 @@ frmbffrInfo Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } rp att =
 
 -- CREATE SWAP CHAIN
 
-createSwpch ::
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> SwpchSupportDetails fmts ->
-	QFamIdcs -> Vk.Dvc.D sd -> (forall ss scfmt .
+createSwpch :: Vk.Khr.Sfc.S ssfc -> SwpchSupportDetails fmts ->
+	Vk.Extent2d -> QFamIdcs -> Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swpch.S scfmt ss -> IO a) -> IO a
-createSwpch w sfc ss qfis dv f = do
-	ex <- swpExt w $ capabilities ss
-	let	cps = capabilities ss
-		pm = findDefault Vk.Khr.PresentModeFifo
-			(== Vk.Khr.PresentModeMailbox) $ presentModes ss
-	chooseSwpSfcFmt (formats ss)
-		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
-		Vk.Khr.Swpch.create @_ @fmt dv
-			(swpchInfo sfc qfis cps sc pm ex) nil f
+createSwpch sfc ssd ex qfis dv f = chooseSwpSfcFmt (formats ssd)
+	\(Vk.Khr.Sfc.Format cs :: Vk.Khr.Sfc.Format fmt) ->
+	Vk.Khr.Swpch.create @_ @fmt dv (swpchInfo sfc qfis cps cs pm ex) nil f
+	where
+	(cps, pm) = (capabilities ssd, choosePresentMode $ presentModes ssd)
 
 chooseSwpSfcFmt :: (
 	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
@@ -499,24 +494,23 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QFamIdcs -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
-recreateSwpch win sfc pd qfis0 dvc sc = do
-	ss <- querySwpchSupportFmt @fmt pd sfc
-	ex <- swpExt win $ capabilitiesFmt ss
-	let	cps = capabilitiesFmt ss
+recreateSwpch w sfc pd qfis dv sc = do
+	ssd <- querySwpchSupportFmt @fmt pd sfc
+	let	cps = capabilitiesFmt ssd
 		Vk.Khr.Sfc.Format cs = fromMaybe
 			(error "no available swap surface formats")
-			. listToMaybe $ formatsFmt ss
-		pm = findDefault Vk.Khr.PresentModeFifo
-			(== Vk.Khr.PresentModeMailbox) $ presentModesFmt ss
-	ex <$ Vk.Khr.Swpch.unsafeRecreate dvc
-		(swpchInfo @fmt sfc qfis0 cps cs pm ex) nil sc
+			. listToMaybe $ formatsFmt ssd
+		pm = choosePresentMode $ presentModesFmt ssd
+	ex <- swpExt w cps
+	ex <$ Vk.Khr.Swpch.unsafeRecreate dv
+		(swpchInfo @fmt sfc qfis cps cs pm ex) nil sc
 
 querySwpchSupportFmt :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO (SwpchSupportDetailsFmt fmt)
-querySwpchSupportFmt dvc sfc = SwpchSupportDetailsFmt
-	<$> Vk.Khr.Sfc.Phd.getCapabilities dvc sfc
-	<*> Vk.Khr.Sfc.Phd.getFormatsFiltered dvc sfc
-	<*> Vk.Khr.Sfc.Phd.getPresentModes dvc sfc
+querySwpchSupportFmt dv sfc = SwpchSupportDetailsFmt
+	<$> Vk.Khr.Sfc.Phd.getCapabilities dv sfc
+	<*> Vk.Khr.Sfc.Phd.getFormatsFiltered dv sfc
+	<*> Vk.Khr.Sfc.Phd.getPresentModes dv sfc
 
 data SwpchSupportDetailsFmt fmt = SwpchSupportDetailsFmt {
 	capabilitiesFmt :: Vk.Khr.Sfc.Capabilities,
@@ -535,6 +529,10 @@ swpExt win cps
 	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
 	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
+
+choosePresentMode :: [Vk.Khr.Sfc.PresentMode] -> Vk.Khr.Sfc.PresentMode
+choosePresentMode =
+	findDefault Vk.Khr.PresentModeFifo (== Vk.Khr.PresentModeMailbox)
 
 swpchInfo :: forall fmt ss .
 	Vk.Khr.Sfc.S ss -> QFamIdcs -> Vk.Khr.Sfc.Capabilities ->
@@ -565,36 +563,36 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 		(Vk.SharingModeConcurrent, [grFam qfis0, prFam qfis0])
 		(Vk.SharingModeExclusive, []) (grFam qfis0 == prFam qfis0)
 
-createImgVws :: Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss inm fmt] ->
+createImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
+	[Vk.Img.Binded ss ss inm fmt] ->
 	(forall si . HPList.PL (Vk.ImgVw.I inm fmt) si -> IO a) -> IO a
-createImgVws _dv [] f = f HPList.Nil
+createImgVws _ [] f = f HPList.Nil
 createImgVws dv (i : is) f =
-	Vk.ImgVw.create dv (imgVwInfo i Vk.Img.AspectColorBit 1) nil \v ->
+	Vk.ImgVw.create dv (imgVwInfo i) nil \v ->
 	createImgVws dv is \vs -> f $ v :** vs
 
 recreateImgVws :: Vk.T.FormatToValue fmt => Vk.Dvc.D sd ->
 	[Vk.Img.Binded ss ss inm fmt] ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs -> IO ()
-recreateImgVws _dv [] HPList.Nil = pure ()
+recreateImgVws _ [] HPList.Nil = pure ()
 recreateImgVws dv (i : is) (v :** vs) =
-	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i Vk.Img.AspectColorBit 1) nil v >>
+	Vk.ImgVw.unsafeRecreate dv (imgVwInfo i) nil v >>
 	recreateImgVws dv is vs
 recreateImgVws _ _ _ =
 	error "number of Vk.Image.I and Vk.ImageView.I should be same"
 
-imgVwInfo :: Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
-imgVwInfo i a ml = Vk.ImgVw.CreateInfo {
+imgVwInfo i = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = TMaybe.N,
 	Vk.ImgVw.createInfoFlags = zeroBits,
 	Vk.ImgVw.createInfoImage = i,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
 	Vk.ImgVw.createInfoComponents = def,
 	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = a,
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = ml,
+		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
 
