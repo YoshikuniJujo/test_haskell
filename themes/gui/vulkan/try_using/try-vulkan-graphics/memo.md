@@ -90,6 +90,13 @@
         - [x] vwpSt
         - [x] clrBlnd
     + [ ] MAINLOOP
+        - [x] mainloop
+        - [x] cmpRun
+        - [x] run
+        - [ ] draw
+        - [ ] catchAndSerialize
+        - [ ] recordCmdBffr
+        - [ ] bffrLstLn
     + [ ] RECREATE
     + [ ] SHADERS
     + [ ] import list
