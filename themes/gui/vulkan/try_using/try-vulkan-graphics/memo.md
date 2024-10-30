@@ -23,28 +23,23 @@
         - [x] dbgMsngrInfo
     + [ ] BODY
         - [ ] body
-        - [ ] pickPhd
-        - [ ] forMaybe
-        - [ ] dvcExtensions
-        - [ ] findQFams
-        - [ ] QFamIndices
-        - [ ] querySwpchSupport
-        - [ ] SwapchSupportDetails
-        - [ ] instance Show (SwpchSupportDetails fmts)
-        - [ ] createLgDvc
-        - [ ] createCmdPl
-        - [ ] createImgVws
-        - [ ] recreateImgVws
-        - [ ] imgVwInfo
-        - [ ] createRndrPss
-        - [ ] createFrmbffrs
-        - [ ] class RecreateFrmbffrs
-        - [ ] instance RecreateFrmbffrs
-        - [ ] frmbffrInfo
-        - [ ] createDscPl
-        - [ ] cmdBffrInfo
-        - [ ] createSyncObjs
-        - [ ] SyncObjs
+        - [x] pickPhd
+        - [x] dvcExtensions
+        - [x] findQFams
+        - [x] QFamIndcs
+        - [x] querySwpchSupport
+        - [x] SwapchSupportDetails
+        - [x] createLgDvc
+        - [x] createCmdPl
+        - [x] createDscPl
+        - [x] createSyncObjs
+        - [x] SyncObjs
+        - [x] cmdBffrInfo
+        - [x] createRndrPss
+        - [x] createFrmbffrs
+        - [x] class RecreateFrmbffrs
+        - [x] instance RecreateFrmbffrs
+        - [x] frmbffrInfo
     + [ ] CREATE SWAP CHAIN
         - [ ] createSwpch
         - [ ] instance Show (SwpchSupportDetails fmts)
@@ -54,6 +49,9 @@
         - [ ] SwpchSuppotDetailsFmt
         - [ ] swapExtent
         - [ ] swpchInfo
+        - [ ] createImgVws
+        - [ ] recreateImgVws
+        - [ ] imgVwInfo
     + [ ] BUFFERS
     + [ ] COMPUTE DESCRIPTOR SET
     + [ ] COMPUTE PIPELINE
