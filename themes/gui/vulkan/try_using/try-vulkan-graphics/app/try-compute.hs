@@ -84,7 +84,7 @@ import Gpu.Vulkan.Fence qualified as Vk.Fence
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Graphics
-import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cmpt
+import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cp
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
@@ -789,103 +789,71 @@ cmpWriteDscStStorageN ds bf = Vk.DscSt.Write {
 	Vk.DscSt.writeSources = Vk.DscSt.BufferInfos
 		. HPList.Singleton . U5 $ Vk.Dsc.BufferInfo bf }
 
--- COMPUTE PIPELINE
-
-createCmpPpl :: Vk.Dvc.D sd -> (forall sds scmpp spl .
-	Vk.DscStLyt.D sds [
-		'Vk.DscStLyt.Buffer '[AtomDiffTime nmdt],
-		Vk.DscStLyt.Buffer '[ListVertex nmh],
-		Vk.DscStLyt.Buffer '[ListVertex nmh]  ] ->
-	Vk.PplLyt.P spl '[ '(sds, '[
-		'Vk.DscStLyt.Buffer '[AtomDiffTime nmdt],
-		'Vk.DscStLyt.Buffer '[ListVertex nmh],
-		'Vk.DscStLyt.Buffer '[ListVertex nmh] ])] '[] ->
-	Vk.Ppl.Cmpt.C scmpp
-		'(	spl,
-			'[ '( sds, '[	'Vk.DscStLyt.Buffer '[AtomDiffTime nmdt],
-					Vk.DscStLyt.Buffer '[ListVertex nmh],
-					Vk.DscStLyt.Buffer '[ListVertex nmh] ])],
-			'[]) ->
-	IO a) -> IO a
-createCmpPpl dv f =
-	createCmpPplLyt dv \dsl pl ->
-	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ cmpPplInfo pl) nil
-		\(HPList.Singleton cmpp) ->
-		f dsl pl cmpp
-
-cmpPplInfo :: Vk.PplLyt.P sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo
-		'Nothing GlslComputeShaderArgs '(sl, sbtss, '[]) sbph
-cmpPplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
-	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
-	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStage = U5 cmpShaderStages,
-	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
-
-createCmpPplLyt :: Vk.Dvc.D sd -> (forall sds spl .
-	Vk.DscStLyt.D sds [
-		'Vk.DscStLyt.Buffer '[AtomDiffTime nmdt],
-		Vk.DscStLyt.Buffer '[ListVertex nmh],
-		Vk.DscStLyt.Buffer '[ListVertex nmh]  ] ->
-	Vk.PplLyt.P spl '[ '(sds, CmpDscStLytArg nmdt nmh)] '[] ->
-	IO a) -> IO a
-createCmpPplLyt dv f =
-	createCmpDscStLyt dv \dsl ->
-	Vk.PplLyt.create dv (cmpPplLytInfo dsl) nil (f dsl)
-
-cmpPplLytInfo :: Vk.DscStLyt.D sl bts -> Vk.PplLyt.CreateInfo
-	'Nothing '[ '(sl, bts)] ('Vk.PshCnst.Layout '[] '[])
-cmpPplLytInfo dsl = Vk.PplLyt.CreateInfo {
-	Vk.PplLyt.createInfoNext = TMaybe.N,
-	Vk.PplLyt.createInfoFlags = zeroBits,
-	Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
-
-createCmpDscStLyt :: Vk.Dvc.D sd -> (forall (sds :: Type) .
-	Vk.DscStLyt.D sds (CmpDscStLytArg nmdt nmh) -> IO a) -> IO a
-createCmpDscStLyt dv = Vk.DscStLyt.create dv cmpDscStLytInfo nil
-
-type CmpDscStLytArg nmdt nmh =
-	'[ BufferDiffTime nmdt, BufferVertex nmh, BufferVertex nmh ]
-
-type BufferDiffTime nm = 'Vk.DscStLyt.Buffer '[AtomDiffTime nm]
-type BufferVertex nm = 'Vk.DscStLyt.Buffer '[ListVertex nm]
 type ListVertex nm = Vk.ObjNA.List WVertex nm
 
-cmpDscStLytInfo :: Vk.DscStLyt.CreateInfo 'Nothing '[
-	'Vk.DscStLyt.Buffer '[AtomDiffTime nmdt],
-	'Vk.DscStLyt.Buffer '[ListVertex nmh],
-	'Vk.DscStLyt.Buffer '[ListVertex nmh] ]
-cmpDscStLytInfo = Vk.DscStLyt.CreateInfo {
-	Vk.DscStLyt.createInfoNext = TMaybe.N,
-	Vk.DscStLyt.createInfoFlags = zeroBits,
-	Vk.DscStLyt.createInfoBindings = bdg0 :** bdg1 :** bdg1 :** HPList.Nil }
-	where
-	bdg0 = Vk.DscStLyt.BindingBuffer {
-		Vk.DscStLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeUniformBuffer,
-		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
-	bdg1 = Vk.DscStLyt.BindingBuffer {
-		Vk.DscStLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeStorageBuffer,
-		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+-- COMPUTE PIPELINE
 
-cmpShaderStages :: Vk.Ppl.ShdrSt.CreateInfo
-	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
-cmpShaderStages = cinfo
+createCmpPpl :: Vk.Dvc.D sd -> (forall sds scppl spl .
+	Vk.DscStLyt.D sds (CmpDscStLytArg nmdt nmv) ->
+	Vk.PplLyt.P spl '[ '(sds, CmpDscStLytArg nmdt nmv)] '[] ->
+	Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, CmpDscStLytArg nmdt nmv)], '[]) ->
+	IO a) -> IO a
+createCmpPpl d f = createCmpPplLyt d \dsl pl ->
+	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
+		\(HPList.Singleton p) -> f dsl pl p
 	where
-	cinfo = Vk.Ppl.ShdrSt.CreateInfo {
+	info pl = Vk.Ppl.Cp.CreateInfo {
+		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
+		Vk.Ppl.Cp.createInfoFlags = zeroBits,
+		Vk.Ppl.Cp.createInfoStage = U5 shdrst,
+		Vk.Ppl.Cp.createInfoLayout = U3 pl,
+		Vk.Ppl.Cp.createInfoBasePipelineHandleOrIndex = Nothing }
+	shdrst :: Vk.Ppl.ShdrSt.CreateInfo
+		'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
+	shdrst = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageComputeBit,
 		Vk.Ppl.ShdrSt.createInfoModule =
-			(minfo glslComputeShaderMain, nil),
+			(shdrMdInfo glslComputeShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
-type GlslComputeShaderArgs = '(
-	'Nothing, 'Nothing,
-	'GlslComputeShader, 'Nothing :: Maybe (Type, Type), '[] )
+createCmpPplLyt :: Vk.Dvc.D sd -> (forall sds spl .
+	Vk.DscStLyt.D sds (CmpDscStLytArg nmdt nmv) ->
+	Vk.PplLyt.P spl '[ '(sds, CmpDscStLytArg nmdt nmv)] '[] -> IO a) -> IO a
+createCmpPplLyt dv f = createCmpDscStLyt dv \dsl ->
+	Vk.PplLyt.create dv (info dsl) nil $ f dsl
+	where
+	info :: Vk.DscStLyt.D sl bts -> Vk.PplLyt.CreateInfo
+		'Nothing '[ '(sl, bts)] ('Vk.PshCnst.Layout '[] '[])
+	info dsl = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
+createCmpDscStLyt :: Vk.Dvc.D sd -> (forall (sds :: Type) .
+	Vk.DscStLyt.D sds (CmpDscStLytArg nmdt nmh) -> IO a) -> IO a
+createCmpDscStLyt dv = Vk.DscStLyt.create dv info nil
+	where
+	info = Vk.DscStLyt.CreateInfo {
+		Vk.DscStLyt.createInfoNext = TMaybe.N,
+		Vk.DscStLyt.createInfoFlags = zeroBits,
+		Vk.DscStLyt.createInfoBindings =
+			bu :** bs :** bs :** HPList.Nil }
+	bu = Vk.DscStLyt.BindingBuffer {
+		Vk.DscStLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeUniformBuffer,
+		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+	bs = Vk.DscStLyt.BindingBuffer {
+		Vk.DscStLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeStorageBuffer,
+		Vk.DscStLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+
+type CmpDscStLytArg nmdt nmv = '[
+	'Vk.DscStLyt.Buffer '[AtomDiffTime nmdt],
+	'Vk.DscStLyt.Buffer '[ListVertex nmv],
+	'Vk.DscStLyt.Buffer '[ListVertex nmv] ]
 
 -- GRAPHICS PIPELINE
 
@@ -983,7 +951,7 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
 		Vk.Ppl.ShdrSt.createInfoModule =
-			(minfo glslVertexShaderMain, nil),
+			(shdrMdInfo glslVertexShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 	finfo = Vk.Ppl.ShdrSt.CreateInfo {
@@ -991,12 +959,12 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
 		Vk.Ppl.ShdrSt.createInfoModule =
-			(minfo glslFragmentShaderMain, nil),
+			(shdrMdInfo glslFragmentShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
-minfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
-minfo code = Vk.ShaderModule.CreateInfo {
+shdrMdInfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
+shdrMdInfo code = Vk.ShaderModule.CreateInfo {
 	Vk.ShaderModule.createInfoNext = TMaybe.N,
 	Vk.ShaderModule.createInfoFlags = zeroBits,
 	Vk.ShaderModule.createInfoCode = code }
@@ -1159,7 +1127,7 @@ cmpRun :: forall sd slbts sc spl sg sds sciff scfs smdt sbdt bnmdt nmdt .
 	TVar UTCTime ->
 	Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CBffr.C sc -> Vk.PplLyt.P spl '[slbts] '[] ->
-	Vk.Ppl.Cmpt.C sg '(spl, '[slbts], '[]) ->
+	Vk.Ppl.Cp.C sg '(spl, '[slbts], '[]) ->
 	Vk.Mm.M smdt '[ '(sbdt, Vk.Mm.BufferArg bnmdt '[AtomDiffTime nmdt])] ->
 	Vk.DscSt.D sds slbts -> Word32 ->
 	Vk.Fence.F sciff -> Vk.Semaphore.S scfs -> IO ()

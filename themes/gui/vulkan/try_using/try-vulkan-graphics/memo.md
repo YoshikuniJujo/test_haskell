@@ -72,12 +72,12 @@
         - [x] updateCmpDscSt
         - [x] cmpWriteDscStUniform
         - [x] cmpWriteDscStStorageN
-    + [ ] COMPUTE PIPELINE
-        - ...
-        - [ ] BufferDiffTime
-        - [ ] BufferVertex
-        - [ ] ListVertex
-        - ...
+        - [x] ListVertex
+    + [x] COMPUTE PIPELINE
+        - [x] createCmpPpl
+        - [x] createCmpPplLyt
+        - [x] createCmpDscStLyt
+        - [x] CmpDscStLytArg
     + [ ] GRAPHICS PIPELINE
     + [ ] MAINLOOP
     + [ ] RECREATE
