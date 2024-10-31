@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.RenderPass.Enum (module Gpu.Vulkan.RenderPass.Enum) where
 
-import "try-vulkan-middle" Gpu.Vulkan.RenderPass.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.RenderPass.Enum

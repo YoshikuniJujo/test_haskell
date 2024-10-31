@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.Query.Enum (module Gpu.Vulkan.Query.Enum) where
 
-import "try-vulkan-middle" Gpu.Vulkan.Query.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.Query.Enum

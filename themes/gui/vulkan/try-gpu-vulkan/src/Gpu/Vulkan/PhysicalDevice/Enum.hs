@@ -4,4 +4,4 @@
 module Gpu.Vulkan.PhysicalDevice.Enum (
 	module Gpu.Vulkan.PhysicalDevice.Enum ) where
 
-import "try-vulkan-middle" Gpu.Vulkan.PhysicalDevice.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.PhysicalDevice.Enum

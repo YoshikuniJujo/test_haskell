@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.Framebuffer.Enum (module Gpu.Vulkan.Framebuffer.Enum) where
 
-import "try-vulkan-middle" Gpu.Vulkan.Framebuffer.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.Framebuffer.Enum

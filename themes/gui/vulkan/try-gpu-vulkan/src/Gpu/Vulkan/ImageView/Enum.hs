@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.ImageView.Enum (module Gpu.Vulkan.ImageView.Enum) where
 
-import "try-vulkan-middle" Gpu.Vulkan.ImageView.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.ImageView.Enum

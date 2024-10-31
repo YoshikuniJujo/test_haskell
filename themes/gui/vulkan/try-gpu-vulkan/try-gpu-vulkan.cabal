@@ -183,6 +183,7 @@ library
     , bytestring
     , containers
     , data-default
+    , gpu-vulkan-middle
     , mono-traversable
     , stm
     , template-haskell
@@ -195,7 +196,6 @@ library
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , try-vulkan-middle
     , typelevel-tools
   default-language: Haskell2010
   if flag(debug)
@@ -222,6 +222,7 @@ test-suite try-gpu-vulkan-test
     , bytestring
     , containers
     , data-default
+    , gpu-vulkan-middle
     , mono-traversable
     , stm
     , template-haskell
@@ -235,6 +236,5 @@ test-suite try-gpu-vulkan-test
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , try-vulkan-middle
     , typelevel-tools
   default-language: Haskell2010

@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.Memory.Enum (module Gpu.Vulkan.Memory.Enum) where
 
-import "try-vulkan-middle" Gpu.Vulkan.Memory.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.Memory.Enum

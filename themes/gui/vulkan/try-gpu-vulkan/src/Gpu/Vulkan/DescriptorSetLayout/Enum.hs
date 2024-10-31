@@ -4,4 +4,4 @@
 module Gpu.Vulkan.DescriptorSetLayout.Enum (
 	module Gpu.Vulkan.DescriptorSetLayout.Enum ) where
 
-import "try-vulkan-middle" Gpu.Vulkan.DescriptorSetLayout.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.DescriptorSetLayout.Enum

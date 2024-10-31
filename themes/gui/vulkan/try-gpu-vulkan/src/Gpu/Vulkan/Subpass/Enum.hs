@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.Subpass.Enum (module Gpu.Vulkan.Subpass.Enum) where
 
-import "try-vulkan-middle" Gpu.Vulkan.Subpass.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.Subpass.Enum

@@ -4,4 +4,4 @@
 module Gpu.Vulkan.ColorComponent.Enum (
 	module Gpu.Vulkan.ColorComponent.Enum ) where
 
-import "try-vulkan-middle" Gpu.Vulkan.ColorComponent.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.ColorComponent.Enum

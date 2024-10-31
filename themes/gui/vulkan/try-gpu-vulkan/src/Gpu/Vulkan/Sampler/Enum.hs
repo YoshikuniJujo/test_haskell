@@ -3,4 +3,4 @@
 
 module Gpu.Vulkan.Sampler.Enum (module Gpu.Vulkan.Sampler.Enum) where
 
-import "try-vulkan-middle" Gpu.Vulkan.Sampler.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.Sampler.Enum

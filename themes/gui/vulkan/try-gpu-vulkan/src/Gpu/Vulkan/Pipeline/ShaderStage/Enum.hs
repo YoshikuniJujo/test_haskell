@@ -4,4 +4,4 @@
 module Gpu.Vulkan.Pipeline.ShaderStage.Enum (
 	module Gpu.Vulkan.Pipeline.ShaderStage.Enum ) where
 
-import "try-vulkan-middle" Gpu.Vulkan.Pipeline.ShaderStage.Enum
+import "gpu-vulkan-middle" Gpu.Vulkan.Pipeline.ShaderStage.Enum
