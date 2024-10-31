@@ -37,7 +37,7 @@ import Data.Word
 import Data.Int
 
 import qualified Data.Text as T
-import Data.Text.Foreign.Misc
+import Data.Text.Foreign.MiscYj
 
 import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.PNext.Middle.Internal

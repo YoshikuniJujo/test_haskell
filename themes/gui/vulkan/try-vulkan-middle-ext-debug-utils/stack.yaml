@@ -43,10 +43,8 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 5ded4b21e5de6ed938260f7b751e6231269e4651
+  commit: d98b892f0a81b800d536c46a0af4d22fbe821c3b
   subdirs:
-  - themes/monad/try-monads-tf-misc-yj
-  - themes/string/try-text-misc-yj
   - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
@@ -57,6 +55,8 @@ extra-deps:
   - features/ffi/pointer/try-storable-hetero-list
   - themes/type_level/typelevel-tools
 - union-color-0.1.2.0
+- mtl-misc-yj-0.1.0.1
+- text-misc-yj-0.1.0.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

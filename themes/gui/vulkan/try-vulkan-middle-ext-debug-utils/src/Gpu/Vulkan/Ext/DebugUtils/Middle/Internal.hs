@@ -31,7 +31,7 @@ import Data.String
 import System.IO.Unsafe
 
 import qualified Data.Text as T
-import Data.Text.Foreign.Misc as T
+import Data.Text.Foreign.MiscYj as T
 
 import Data.Color
 
