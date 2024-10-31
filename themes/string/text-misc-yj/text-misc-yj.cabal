@@ -4,9 +4,9 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-text-misc-yj
+name:           text-misc-yj
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/try-text-misc-yj#readme>
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/test_haskell/tree/master/themes/string/text-misc-yj#readme>
 homepage:       https://github.com/githubuser/try-text-misc-yj#readme
 bug-reports:    https://github.com/githubuser/try-text-misc-yj/issues
 author:         Author name here
@@ -27,7 +27,7 @@ library
   exposed-modules:
       Data.Text.Foreign.MiscYj
   other-modules:
-      Paths_try_text_misc_yj
+      Paths_text_misc_yj
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -41,7 +41,7 @@ test-suite try-text-misc-yj-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_text_misc_yj
+      Paths_text_misc_yj
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
