@@ -42,10 +42,7 @@ packages:
 #
 
 extra-deps:
-- git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 08297e474635e55e3fc3e282c2b1a7b8216733a2
-  subdirs:
-  - themes/monad/mtl-misc-yj
+- mtl-misc-yj-0.1.0.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

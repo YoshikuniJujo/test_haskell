@@ -7,8 +7,8 @@ cabal-version: 1.12
 name:           text-misc-yj
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/test_haskell/tree/master/themes/string/text-misc-yj#readme>
-homepage:       https://github.com/githubuser/try-text-misc-yj#readme
-bug-reports:    https://github.com/githubuser/try-text-misc-yj/issues
+homepage:       https://github.com/YoshikuniJujo/text-misc-yj#readme
+bug-reports:    https://github.com/YoshikuniJujo/text-misc-yj/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2023 Author name here
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/try-text-misc-yj
+  location: https://github.com/YoshikuniJujo/text-misc-yj
 
 library
   exposed-modules:

@@ -5,18 +5,12 @@
 
 packages:
 - completed:
-    commit: 08297e474635e55e3fc3e282c2b1a7b8216733a2
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: mtl-misc-yj
+    hackage: mtl-misc-yj-0.1.0.1@sha256:6de7d1c523f9e1114f28eb4043c0e06d2cec1a03bd2bd346de335cf052259e21,1737
     pantry-tree:
-      sha256: 9e8488138860e7775c5fee4b3d5f09d34d7ed16cf751b97894214acc7d50e7d8
-      size: 585
-    subdir: themes/monad/mtl-misc-yj
-    version: 0.1.0.1
+      sha256: 02112af6131e7ac6800f0ef67cc5f6648e6e4dfe24c445d094d44ba28710967c
+      size: 377
   original:
-    commit: 08297e474635e55e3fc3e282c2b1a7b8216733a2
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/monad/mtl-misc-yj
+    hackage: mtl-misc-yj-0.1.0.1
 snapshots:
 - completed:
     sha256: 0c65cc459d037697e6238a11dc0bbdc958a82ac9eb24907f486e33626117ae5e
