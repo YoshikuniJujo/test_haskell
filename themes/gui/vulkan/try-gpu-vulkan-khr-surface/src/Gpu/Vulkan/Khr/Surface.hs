@@ -5,9 +5,7 @@
 module Gpu.Vulkan.Khr.Surface (
 	S, group, Group, unsafeDestroy, lookup,
 
-	Capabilities(..),
-	FormatOld, pattern FormatOld, formatOldFormat, formatOldColorSpace,
-	Format(..),
+	Capabilities(..), Format(..),
 
 	-- * ENUM
 

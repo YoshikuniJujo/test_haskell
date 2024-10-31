@@ -1,5 +1,5 @@
 name:                try-gpu-vulkan-khr-surface
-version:             0.1.0.1
+version:             0.1.0.2
 github:              "githubuser/try-gpu-vulkan-khr-surface"
 license:             BSD-3-Clause
 author:              "Author name here"

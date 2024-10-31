@@ -7,7 +7,7 @@ module Gpu.Vulkan.Khr.Surface.PhysicalDevice (
 
 	-- * GET SUPPORT, FORMATS, CAPABILITIES AND PRESENT MODES
 
-	getSupport, getFormatsOld, getFormats, getFormatsFiltered, getCapabilities, getPresentModes
+	getSupport, getFormats, getFormatsFiltered, getCapabilities, getPresentModes
 
 	) where
 
