@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - try-vulkan-middle
-- try-vulkan-core
+- gpu-vulkan-core
 - try-gpu-vulkan-middle-khr-surface
 - try-gpu-vulkan-core-khr-swapchain
 - data-default
