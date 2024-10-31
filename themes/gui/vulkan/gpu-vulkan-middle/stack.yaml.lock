@@ -46,19 +46,6 @@ packages:
 - completed:
     commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: mtl-misc-yj
-    pantry-tree:
-      sha256: 9e8488138860e7775c5fee4b3d5f09d34d7ed16cf751b97894214acc7d50e7d8
-      size: 585
-    subdir: themes/monad/mtl-misc-yj
-    version: 0.1.0.1
-  original:
-    commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/monad/mtl-misc-yj
-- completed:
-    commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
-    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-hetero-parameter-list
     pantry-tree:
       sha256: 039bfb68687ffecc262f6062752d135ce0afc8a555bb0a1b2a62ce62fa3366ba
@@ -69,19 +56,6 @@ packages:
     commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/hetero-list/try-hetero-parameter-list
-- completed:
-    commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: text-misc-yj
-    pantry-tree:
-      sha256: 992dd3018514de78a3492a85a096f500ce34df44130f3fc6d41fa630f85db139
-      size: 586
-    subdir: themes/string/text-misc-yj
-    version: 0.1.0.0
-  original:
-    commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/string/text-misc-yj
 - completed:
     commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
     git: https://github.com/YoshikuniJujo/test_haskell
@@ -108,6 +82,20 @@ packages:
     commit: 8748160951df3d26a5b96eb430ee7a0b838c434b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-core
+- completed:
+    hackage: mtl-misc-yj-0.1.0.1@sha256:6de7d1c523f9e1114f28eb4043c0e06d2cec1a03bd2bd346de335cf052259e21,1737
+    pantry-tree:
+      sha256: 02112af6131e7ac6800f0ef67cc5f6648e6e4dfe24c445d094d44ba28710967c
+      size: 377
+  original:
+    hackage: mtl-misc-yj-0.1.0.1
+- completed:
+    hackage: text-misc-yj-0.1.0.0@sha256:0d8853471820c0bba526ee9de8cf2eb506657c20b82e34314e06f211d4521273,1782
+    pantry-tree:
+      sha256: 42697a9f6f4eca39528db95f9757d81199d4154daef9777126bcd17ffdbb0e00
+      size: 378
+  original:
+    hackage: text-misc-yj-0.1.0.0
 snapshots:
 - completed:
     sha256: 0c65cc459d037697e6238a11dc0bbdc958a82ac9eb24907f486e33626117ae5e
