@@ -42,11 +42,11 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 5f3c15f4e137caee2276d33c9af002c8a55a2bd7
+  commit: 07d60e92746ab142905882fe89959421a6cf5824
   subdirs:
   - themes/monad/try-monads-tf-misc-yj
   - themes/string/try-text-misc-yj
-  - themes/gui/vulkan/try-vulkan-middle
+  - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
