@@ -38,7 +38,7 @@ dependencies:
 - try-hetero-parameter-list
 - try-storable-peek-poke
 - try-storable-hetero-list
-- try-vulkan-core
+- gpu-vulkan-core
 - try-language-spir-v
 - typelevel-tools
 

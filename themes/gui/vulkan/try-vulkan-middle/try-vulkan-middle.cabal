@@ -178,6 +178,7 @@ library
     , containers
     , data-default
     , exception-hierarchy
+    , gpu-vulkan-core
     , mtl
     , ranged-list
     , stm
@@ -189,7 +190,6 @@ library
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-text-misc-yj
-    , try-vulkan-core
     , typelevel-tools
     , union-color
     , uuid
@@ -210,6 +210,7 @@ test-suite try-vulkan-middle-test
     , containers
     , data-default
     , exception-hierarchy
+    , gpu-vulkan-core
     , mtl
     , ranged-list
     , stm
@@ -221,7 +222,6 @@ test-suite try-vulkan-middle-test
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-text-misc-yj
-    , try-vulkan-core
     , try-vulkan-middle
     , typelevel-tools
     , union-color
