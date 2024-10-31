@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 
-module Control.Monad.Cont.Misc where
+module Control.Monad.Cont.MiscYj where
 
 import Control.Monad.Cont
 

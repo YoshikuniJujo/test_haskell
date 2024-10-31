@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-monads-tf-misc-yj
+name:           mtl-misc-yj
 version:        0.1.0.1
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-monads-tf-misc-yj#readme>
 homepage:       https://github.com/githubuser/try-monads-tf-misc-yj#readme
@@ -25,9 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Monad.Cont.Misc
+      Control.Monad.Cont.MiscYj
   other-modules:
-      Paths_try_monads_tf_misc_yj
+      Paths_mtl_misc_yj
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -40,7 +40,7 @@ test-suite try-monads-tf-misc-yj-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_monads_tf_misc_yj
+      Paths_mtl_misc_yj
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
