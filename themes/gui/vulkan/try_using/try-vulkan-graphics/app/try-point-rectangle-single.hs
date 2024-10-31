@@ -479,16 +479,16 @@ unfrmBffrOstAlgn pd f = (\(SomeNat p) -> f p) . someNatVal . fromIntegral
 
 createCmpPpl :: Vk.Dvc.D sd -> (forall sds scmpp spl .
 	Vk.DscStLyt.D sds [
-		'Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
+		'Vk.DscStLyt.Buffer '[Obj.Atom 1 Float nmdt],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh]  ] ->
 	Vk.PplLyt.P spl '[ '(sds, '[
-		'Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
+		'Vk.DscStLyt.Buffer '[Obj.Atom 1 Float nmdt],
 		'Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 		'Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh] ])] '[] ->
 	Vk.Ppl.Cmpt.C scmpp
 		'(	spl,
-			'[ '( sds, '[	'Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
+			'[ '( sds, '[	'Vk.DscStLyt.Buffer '[Obj.Atom 1 Float nmdt],
 					Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 					Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh] ])],
 			'[]) ->
@@ -511,12 +511,12 @@ cmpPplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 
 createCmpPplLyt :: Vk.Dvc.D sd -> (forall sds spl .
 	Vk.DscStLyt.D sds [
-		'Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
+		'Vk.DscStLyt.Buffer '[Obj.Atom 1 Float nmdt],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh]  ] ->
 	Vk.PplLyt.P spl
 		'[ '(sds, '[
-			'Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
+			'Vk.DscStLyt.Buffer '[Obj.Atom 1 Float nmdt],
 			Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 			Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh] ])]
 		'[] ->
@@ -534,14 +534,14 @@ cmpPplLytInfo dsl = Vk.PplLyt.CreateInfo {
 
 createCmpDscStLyt :: Vk.Dvc.D sd ->
 	(forall (sds :: Type) . Vk.DscStLyt.D sds [
-		Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
+		Vk.DscStLyt.Buffer '[Obj.Atom 1 Float nmdt],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 		Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh] ] -> IO a) ->
 	IO a
 createCmpDscStLyt dv = Vk.DscStLyt.create dv cmpDscStLytInfo nil
 
 cmpDscStLytInfo :: Vk.DscStLyt.CreateInfo 'Nothing '[
-	'Vk.DscStLyt.Buffer '[Obj.AtomNew 1 Float nmdt],
+	'Vk.DscStLyt.Buffer '[Obj.Atom 1 Float nmdt],
 	'Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh],
 	'Vk.DscStLyt.Buffer '[Obj.List 1 WVertex nmh] ]
 cmpDscStLytInfo = Vk.DscStLyt.CreateInfo {
@@ -626,7 +626,7 @@ type BufferVertex nm = 'Vk.DscStLyt.Buffer '[AtomVertex nm]
 type AtomVertex nm = Obj.List 1 WVertex nm
 
 type BufferDiffTime nm = 'Vk.DscStLyt.Buffer '[AtomDiffTime nm]
-type AtomDiffTime nm = Obj.AtomNew 1 Float nm
+type AtomDiffTime nm = Obj.Atom 1 Float nm
 
 cmpDscStInfo :: Vk.DscPl.P sp -> Vk.DscStLyt.D sl bts ->
 	Vk.DscSt.AllocateInfo 'Nothing sp '[ '(sl, bts)]
@@ -637,10 +637,10 @@ cmpDscStInfo dpl dsl = Vk.DscSt.AllocateInfo {
 
 cmpWriteDscStUniform :: forall bnmh nmdt sds slbts sm sb os . (
 	Show (HPList.PL Obj.Length os),
-	Obj.OffsetRange (Obj.AtomNew 1 Float nmdt) os 0 ) =>
+	Obj.OffsetRange (Obj.Atom 1 Float nmdt) os 0 ) =>
 	Vk.DscSt.D sds slbts -> Vk.Bffr.Binded sm sb bnmh os ->
 	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, bnmh, Obj.AtomNew 1 Float nmdt, 0)]) 0
+		'[ '(sm, sb, bnmh, Obj.Atom 1 Float nmdt, 0)]) 0
 cmpWriteDscStUniform ds bf = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,

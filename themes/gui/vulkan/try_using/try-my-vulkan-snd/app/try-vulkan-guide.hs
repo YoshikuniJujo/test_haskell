@@ -593,7 +593,7 @@ type DscStLytArg alu = '[BufferViewProj alu, BufferSceneData alu]
 type BufferViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomViewProj alu]
 type BufferSceneData alu = 'Vk.DscSetLyt.Buffer '[AtomSceneData alu]
 
-type AtomViewProj alu = Vk.Obj.AtomNew alu WViewProj ""
+type AtomViewProj alu = Vk.Obj.Atom alu WViewProj ""
 type AtomSceneData alu = Vk.Obj.AtomNoName alu WScene
 
 createGrPpl :: ShaderX -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1000,7 +1000,7 @@ instance CreateVpBffrs al '[] where
 
 instance (
 	KnownNat alvp,
-	Vk.Obj.OffsetRange (Vk.Obj.AtomNew alvp WScene sd)
+	Vk.Obj.OffsetRange (Vk.Obj.Atom alvp WScene sd)
 		(SceneBffrArg alvp SceneNames) 0,
 	CreateVpBffrs alvp sds ) => CreateVpBffrs alvp (sd ': sds) where
 	createVpBffrs pd dv dl f = createVpBffr pd dv \bnd mm ->
@@ -1030,7 +1030,7 @@ type SceneNames = '["scene-data-0", "scene-data-1"]
 type family SceneBffrArg al snns where
 	SceneBffrArg _al '[] = '[]
 	SceneBffrArg al (snn ': snns) =
-		Vk.Obj.AtomNew al WScene snn ': SceneBffrArg al snns
+		Vk.Obj.Atom al WScene snn ': SceneBffrArg al snns
 
 createBffrAtm :: forall al sd nm mnm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
@@ -1128,10 +1128,10 @@ instance (
 	KnownNat alu,
 	Vk.DscSet.BindingAndArrayElemBuffer bts '[AtomViewProj alu] 0,
 	Vk.DscSet.BindingAndArrayElemBuffer bts
-		'[Vk.Obj.AtomNew alu WScene sn] 0,
+		'[Vk.Obj.Atom alu WScene sn] 0,
 	Vk.DscSet.UpdateDynamicLength bts '[AtomViewProj alu],
-	Vk.DscSet.UpdateDynamicLength bts '[Vk.Obj.AtomNew alu WScene sn],
-	Vk.Obj.OffsetRange (Vk.Obj.AtomNew alu WScene sn) snb 0,
+	Vk.DscSet.UpdateDynamicLength bts '[Vk.Obj.Atom alu WScene sn],
+	Vk.Obj.OffsetRange (Vk.Obj.Atom alu WScene sn) snb 0,
 	Show (HPList.PL Vk.Obj.Length snb), Update alu snb smsbs dss sns ) =>
 	Update alu snb (smsb ': smsbs) ('(ds, bts) ': dss) (sn ': sns) where
 	update dv (ds :** dss) (BindedVp bvp :** bvps) scnb = do
@@ -1315,10 +1315,10 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 	Vk.Mm.write @bnmvp @(AtomViewProj alu) @0 dv vpm zeroBits (viewProjData ex)
 	case cf of
 		0 -> Vk.Mm.write @bnmsn
-			@(Vk.Obj.AtomNew alu WScene "scene-data-0") @0
+			@(Vk.Obj.Atom alu WScene "scene-data-0") @0
 			dv snm zeroBits (sceneData fn)
 		1 -> Vk.Mm.write @bnmsn
-			@(Vk.Obj.AtomNew alu WScene "scene-data-1") @0
+			@(Vk.Obj.Atom alu WScene "scene-data-1") @0
 			dv snm zeroBits (sceneData fn)
 		_ -> error "never occur"
 	ii <- Vk.Khr.acquireNextImageResult

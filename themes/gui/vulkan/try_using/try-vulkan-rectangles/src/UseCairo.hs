@@ -403,7 +403,7 @@ type DscStLytArg alu nmvp nmt = '[
 	'Vk.DscStLyt.Buffer '[AtomViewProj alu nmvp],
 	'Vk.DscStLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)] ]
 
-type AtomViewProj alu nmvp = Vk.Obj.AtomNew alu WViewProj nmvp
+type AtomViewProj alu nmvp = Vk.Obj.Atom alu WViewProj nmvp
 
 createViewProjBffr :: KnownNat alu => Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
 	Vk.Bffr.Binded sm sb bnmvp '[AtomViewProj alu nmvp]  ->
@@ -1245,7 +1245,7 @@ bffrLstLn b = fromIntegral sz
 updateViewProjBffr :: forall sd sm sb al bnm nm . KnownNat al =>
 	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm al nm -> WViewProj -> IO ()
 updateViewProjBffr dvc um obj =
-	Vk.Mm.write @bnm @(Vk.Obj.AtomNew al WViewProj nm) @0 dvc um zeroBits obj
+	Vk.Mm.write @bnm @(Vk.Obj.Atom al WViewProj nm) @0 dvc um zeroBits obj
 
 -- DATA TYPES
 

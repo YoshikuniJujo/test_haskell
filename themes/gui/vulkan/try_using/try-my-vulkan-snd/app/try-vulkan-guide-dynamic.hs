@@ -606,7 +606,7 @@ type DscStLytArg alu mff = '[BufferViewProj alu, BufferSceneData alu mff]
 type BufferViewProj alu = 'Vk.DSLt.Buffer '[AtmViewProj alu]
 type BufferSceneData alu mff = 'Vk.DSLt.Buffer '[AtmScene alu mff]
 
-type AtmViewProj alu = Vk.Obj.AtomNew alu WViewProj ""
+type AtmViewProj alu = Vk.Obj.Atom alu WViewProj ""
 type AtmScene alu mff = Vk.Obj.DynAtomNew mff alu WScene ""
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->

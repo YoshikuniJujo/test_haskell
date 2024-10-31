@@ -647,7 +647,7 @@ type DscStLytArg alu mff = '[
 type DscStLytArgOd als = '[ 'Vk.DSLt.Buffer '[ListObjData als]]
 
 type AtmViewProj alu = Obj.AtomMaybeName alu WViewProj 'Nothing
-type AtmScene alu mff = Obj.DynAtom mff alu WScene 'Nothing
+type AtmScene alu mff = Obj.DynAtomMaybeName mff alu WScene 'Nothing
 type ListObjData als = Obj.List als WObjData ""
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->

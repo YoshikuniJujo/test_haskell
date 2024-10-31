@@ -680,7 +680,7 @@ type DscStLytArgOd als = '[ 'Vk.DSLt.Buffer '[ListObjData als]]
 type DscStLytArgTx = '[ 'Vk.DSLt.Image '[Tx]]
 
 type AtmViewProj alu = Obj.AtomMaybeName alu WViewProj 'Nothing
-type AtmScene alu mff = Obj.DynAtom mff alu WScene 'Nothing
+type AtmScene alu mff = Obj.DynAtomMaybeName mff alu WScene 'Nothing
 type ListObjData als = Obj.List als WObjData ""
 type Tx = '(TxName, TxFormat)
 type TxName = "texture"; type TxFormat = Vk.T.FormatR8g8b8a8Srgb
