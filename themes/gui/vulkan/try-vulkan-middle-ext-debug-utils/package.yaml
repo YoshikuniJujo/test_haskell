@@ -27,7 +27,7 @@ dependencies:
 - c-enum
 - union-color
 - try-storable-peek-poke
-- try-vulkan-middle
+- gpu-vulkan-middle
 - try-vulkan-core-ext-debug-utils
 - typelevel-tools
 - try-hetero-parameter-list
