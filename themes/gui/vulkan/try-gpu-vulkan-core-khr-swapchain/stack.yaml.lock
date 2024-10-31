@@ -5,34 +5,34 @@
 
 packages:
 - completed:
-    commit: 3b277a7069eea8cf57eb0840eb19f5c2d01fcdae
+    commit: 12c1ad38569f8479793c02c15bc60ff2ed2d5c06
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-vulkan-core
+    name: gpu-vulkan-core
     pantry-tree:
-      sha256: b728fe83750523d97846476d72495978131532bff2f67535b7b286e36b420dbd
+      sha256: a0a4eb359e74c381304a372a321d0f381c53131e59e3c2d3ed50baa956dfde39
       size: 5179
-    subdir: themes/gui/vulkan/try-vulkan-core
-    version: 0.1.0.5
+    subdir: themes/gui/vulkan/gpu-vulkan-core
+    version: 0.1.0.7
   original:
-    commit: 3b277a7069eea8cf57eb0840eb19f5c2d01fcdae
+    commit: 12c1ad38569f8479793c02c15bc60ff2ed2d5c06
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-vulkan-core
+    subdir: themes/gui/vulkan/gpu-vulkan-core
 - completed:
-    commit: 3b277a7069eea8cf57eb0840eb19f5c2d01fcdae
+    commit: 12c1ad38569f8479793c02c15bc60ff2ed2d5c06
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-core-khr-surface
     pantry-tree:
-      sha256: b602d9bbd2a732cb85c5f9718b574c6c494ca2f089163a441904e012162cc7ad
+      sha256: 532b59278492d1a26a25c8250e4507c9c1d9f712ef61f8d33f3d0c4f34772fb6
       size: 700
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
     version: 0.1.0.0
   original:
-    commit: 3b277a7069eea8cf57eb0840eb19f5c2d01fcdae
+    commit: 12c1ad38569f8479793c02c15bc60ff2ed2d5c06
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
 snapshots:
 - completed:
-    sha256: b66176d92f4e55079a946948d23fc80bf68fb328e23d1066ed9f73a609a3d8b8
-    size: 631258
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/5/6.yaml
-  original: nightly-2024-05-06
+    sha256: 0c65cc459d037697e6238a11dc0bbdc958a82ac9eb24907f486e33626117ae5e
+    size: 672822
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/10/30.yaml
+  original: nightly-2024-10-30
