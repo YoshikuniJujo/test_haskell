@@ -89,15 +89,25 @@
         - [x] GlslFragmentShaderArgs
         - [x] vwpSt
         - [x] clrBlnd
-    + [ ] MAINLOOP
+    + [x] MAINLOOP
         - [x] mainloop
         - [x] cmpRun
         - [x] run
-        - [ ] draw
-        - [ ] catchAndSerialize
-        - [ ] recordCmdBffr
-        - [ ] bffrLstLn
-    + [ ] RECREATE
+        - [x] draw
+        - [x] catchAndSerialize
+        - [x] recordCmdBffr
+        - [x] bffrLstLn
+    + [x] RECREATE
+        - [x] catchAndRecreate
+        - [x] recreateAll
+    + [x] DATA TYPES
+        - [x] WVertex
+        - [x] Vertex
+        - [x] instance GStorable.G Vertex
+        - [x] Pos
+        - [x] Color
+        - [x] vertices
+        - [x] randomVertex
     + [ ] SHADERS
     + [ ] import list
 

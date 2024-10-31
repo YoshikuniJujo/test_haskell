@@ -1081,41 +1081,35 @@ run fr w sfc pd qfis dv soss gq pq sc ex vs rp pl gp fbs vbs cbs cf go = do
 		(True, _) -> pure (); (_, False) -> go ex
 		(_, _) -> go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-draw :: forall sd fmt ssc sr sl sg sfs nmv scb mff ssos smsbbnmvs . (
-	HPList.HomoList '() mff
-	) =>
+draw :: forall sd fmt ssc sr sg sl sfs nmv smsbbnmvs scb mff ssos .
+	HPList.HomoList '() mff =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color)]
-		'(sl, '[], '[]) ->
+	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Pos), '(1, Color)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs ->
 	HPList.PL (LstBffr WVertex nmv) smsbbnmvs ->
 	HPList.LL (Vk.CBffr.C scb) mff -> SyncObjs ssos -> Int -> IO ()
-draw dv gq pq sc ex rp gp fbs
-	vbs cbs (SyncObjs iass rfss iffs cfss _) cf =
-	HPList.index iass cf \ias ->
-	HPList.index cfss cf \cfs ->
-	HPList.index rfss cf \rfs ->
+draw dv gq pq sc ex rp gp fbs vbs cbs (SyncObjs iass rfss iffs cfss _) cf =
+	HPList.index vbs cf \(U3 (LstBffr' vb)) ->
+	HPList.index iass cf \ias -> HPList.index rfss cf \rfs ->
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) ->
-	HPList.index vbs cf \(U3 (LstBffr' vb)) -> do
+	HPList.index cfss cf \cfs -> do
 	Vk.Fence.waitForFs dv siff True Nothing
 	ii <- Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
 	Vk.Fence.resetFs dv siff
 	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
-	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cfs ias rfs) $ Just iff
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs cfs) $ Just iff
 	catchAndSerialize . Vk.Khr.queuePresent pq $ pinfo rfs ii
 	where
 	HPList.Dummy cb = cbs `HPList.homoListIndex` cf ::
 		HPList.Dummy (Vk.CBffr.C scb) '()
-	sinfo ::
+	sinfo :: Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
 		Vk.Semaphore.S scfs ->
-		Vk.Semaphore.S sias -> Vk.Semaphore.S srfs ->
 		Vk.SubmitInfo 'Nothing '[scfs, sias] '[scb] '[srfs]
-	sinfo cfs ias rfs = Vk.SubmitInfo {
+	sinfo ias rfs cfs = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks =
 			Vk.SemaphorePipelineStageFlags
@@ -1137,14 +1131,11 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-recordCmdBffr :: forall scb sr sl sg sf smv sbv bnmv nmv .
+recordCmdBffr :: forall scb sr sg sl sf smv sbv bnmv nmv .
 	Vk.CBffr.C scb -> Vk.Extent2d -> Vk.RndrPss.R sr ->
-	Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color)]
-		'(sl, '[], '[]) ->
-	Vk.Frmbffr.F sf ->
-	Vk.Bffr.Binded smv sbv bnmv '[ListVertex nmv] ->
+	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Pos), '(1, Color)] '(sl, '[], '[]) ->
+	Vk.Frmbffr.F sf -> Vk.Bffr.Binded smv sbv bnmv '[ListVertex nmv] ->
 	IO ()
 recordCmdBffr cb ex rp gp fb vb =
 	Vk.CBffr.begin @'Nothing @'Nothing cb def $
@@ -1174,85 +1165,46 @@ bffrLstLn b = fromIntegral sz
 
 -- RECREATE
 
-catchAndRecreate :: (
-	Vk.T.FormatToValue scfmt,
-	RecreateFrmbffrs svs sfs ) =>
+catchAndRecreate :: (Vk.T.FormatToValue scfmt, RecreateFrmbffrs svs sfs) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIdcs ->
-	Vk.Dvc.D sd ->
-	Vk.Khr.Swpch.S scfmt ssc ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S scfmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm scfmt) svs -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[] '[] ->
-	Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color)]
-		'(sl, '[], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs ->
-	(Vk.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act =
-	catchJust
+	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Pos), '(1, Color)] '(sl, '[], '[]) ->
+	HPList.PL Vk.Frmbffr.F sfs -> (Vk.Extent2d -> IO ()) -> IO () -> IO ()
+catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act \_ ->
 	go =<< recreateAll w sfc pd qfis dv sc vs rp pl gp fbs
 
-recreateAll :: (
-	Vk.T.FormatToValue fmt,
-	RecreateFrmbffrs svs sfs ) =>
+recreateAll :: (Vk.T.FormatToValue fmt, RecreateFrmbffrs svs sfs) =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QFamIdcs ->
-	Vk.Dvc.D sd ->
-	Vk.Khr.Swpch.S fmt ssc ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
 	HPList.PL (Vk.ImgVw.I nm fmt) svs -> Vk.RndrPss.R sr ->
-	Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Gr.G sg
-		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Pos), '(1, Color)]
-		'(sl, '[], '[]) ->
+	Vk.PplLyt.P sl '[] '[] ->
+	Vk.Ppl.Gr.G sg '[ '(WVertex, 'Vk.VtxInp.RateVertex)]
+		'[ '(0, Pos), '(1, Color)] '(sl, '[], '[]) ->
 	HPList.PL Vk.Frmbffr.F sfs -> IO Vk.Extent2d
-recreateAll w sfc pd qfis dv sc vs rp pl gp
-	fbs = do
-	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
+recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
+	waitFramebufferSize >> Vk.Dvc.waitIdle dv
 	ex <- recreateSwpch w sfc pd qfis dv sc
 	ex <$ do
 		Vk.Khr.Swpch.getImages dv sc >>= \is -> recreateImgVws dv is vs
 		recreateGrPpl dv ex rp pl gp
 		recreateFrmbffrs dv ex rp vs fbs
-
-waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
-waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
-	when (zero sz) $ fix \go -> (`when` go) . zero =<<
-		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
-	where zero = uncurry (||) . ((== 0) *** (== 0))
+	where
+	waitFramebufferSize = GlfwG.Win.getFramebufferSize w >>= \sz ->
+		when (zero sz) $ fix \go -> (`when` go) . zero =<<
+			GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
+	zero = uncurry (||) . ((== 0) *** (== 0))
 
 -- DATA TYPES
 
-vertices :: Vk.Extent2d -> StdGen -> [WVertex]
-vertices Vk.Extent2d {
-	Vk.extent2dWidth = fromIntegral -> w,
-	Vk.extent2dHeight = fromIntegral -> h } g = GStorable.W
-	<$> take particleCount (L.unfoldr (Just . randomVertex w h) g)
-
-randomVertex :: Float -> Float -> StdGen -> (Vertex, StdGen)
-randomVertex w h g0 = let
-	(r_, g1) = randomR (0.0, 1.0) g0
-	(theta, g2) = randomR (0.0, 2 * pi) g1
-	r = 0.25 * sqrt r_
-	x = r * cos theta * h / w
-	y = r * sin theta
-	d = sqrt $ (x * w / h) ^ (2 :: Int) + y ^ (2 :: Int)
-	vx = x / d * 0.00025
-	vy = y / d * 0.00025
-	(rd, g3) = randomR (0, 1.0) g2
-	(g, g4) = randomR (0, 1.0) g3
-	(b, g5) = randomR (0, 1.0) g4
-	in (	Vertex (Pos . Glm.Vec2 $ x :. y :. NilL)
-			(Glm.Vec2 $ vx :. vy :. NilL)
-			(Color . Glm.Vec4 $ rd :. g :. b :. 1 :. NilL),
-		g5)
-
 type WVertex = GStorable.W Vertex
 
-data Vertex = Vertex {
-	vertexPos :: Pos,
-	vertexVelocity :: Glm.Vec2,
-	vertexColor :: Color }
+data Vertex =
+	Vertex { vertexPos :: Pos, vertexVel :: Glm.Vec2, vertexColor :: Color }
 	deriving (Show, Eq, Ord, Generic)
 
 instance GStorable.G Vertex
@@ -1263,6 +1215,29 @@ newtype Pos = Pos Glm.Vec2
 newtype Color = Color Glm.Vec4
 	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
+vertices :: Vk.Extent2d -> StdGen -> [WVertex]
+vertices Vk.Extent2d {
+	Vk.extent2dWidth = fromIntegral -> w,
+	Vk.extent2dHeight = fromIntegral -> h } g = GStorable.W
+	<$> take particleCount (L.unfoldr (Just . randomVertex w h) g)
+
+randomVertex :: Float -> Float -> StdGen -> (Vertex, StdGen)
+randomVertex w h g0 = (
+	Vertex	(Pos . Glm.Vec2 $ x' :. y :. NilL)
+		(Glm.Vec2 $ vx :. vy :. NilL)
+		(Color . Glm.Vec4 $ rd :. g :. b :. 1 :. NilL), g5 )
+	where
+	(r, g1) = ((0.25 *) . sqrt) `first` randomR (0.0, 1.0) g0
+	(theta, g2) = randomR (0.0, 2 * pi) g1
+	(rd, g3) = randomR (0, 1.0) g2
+	(g, g4) = randomR (0, 1.0) g3
+	(b, g5) = randomR (0, 1.0) g4
+	x = r * cos theta; x' = x * h / w
+	y = r * sin theta
+	vx = x' / d * 0.00025
+	vy = y / d * 0.00025
+	d = sqrt $ x ^ (2 :: Int) + y ^ (2 :: Int)
+
 -- SHADERS
 
 [glslVertexShader|
@@ -1271,7 +1246,6 @@ newtype Color = Color Glm.Vec4
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec4 inColor;
-
 layout(location = 0) out vec3 fragColor;
 
 void
