@@ -17,8 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/23.yaml
+
+resolver: nightly-2024-10-30
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,9 +43,9 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 287566bff3d1db485b7a3363f9db9d0dbef18130
+  commit: 08297e474635e55e3fc3e282c2b1a7b8216733a2
   subdirs:
-  - themes/monad/try-monads-tf-misc-yj
+  - themes/monad/mtl-misc-yj
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

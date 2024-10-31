@@ -5,22 +5,21 @@
 
 packages:
 - completed:
-    commit: 287566bff3d1db485b7a3363f9db9d0dbef18130
+    commit: 08297e474635e55e3fc3e282c2b1a7b8216733a2
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-monads-tf-misc-yj
+    name: mtl-misc-yj
     pantry-tree:
-      sha256: 31fe6ef86486d1b8144eaaadbff5e5b140c0bc842c4eebb5dba1e9ff8fc99228
-      size: 593
-    subdir: themes/monad/try-monads-tf-misc-yj
-    version: 0.1.0.0
+      sha256: 9e8488138860e7775c5fee4b3d5f09d34d7ed16cf751b97894214acc7d50e7d8
+      size: 585
+    subdir: themes/monad/mtl-misc-yj
+    version: 0.1.0.1
   original:
-    commit: 287566bff3d1db485b7a3363f9db9d0dbef18130
+    commit: 08297e474635e55e3fc3e282c2b1a7b8216733a2
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/monad/try-monads-tf-misc-yj
+    subdir: themes/monad/mtl-misc-yj
 snapshots:
 - completed:
-    sha256: 4c972e067bae16b95961dbfdd12e07f1ee6c8fffabbfa05c3d65100b03f548b7
-    size: 650253
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/23.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/23.yaml
+    sha256: 0c65cc459d037697e6238a11dc0bbdc958a82ac9eb24907f486e33626117ae5e
+    size: 672822
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/10/30.yaml
+  original: nightly-2024-10-30

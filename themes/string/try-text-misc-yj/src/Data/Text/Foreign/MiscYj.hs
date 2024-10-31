@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Text.Foreign.Misc (
+module Data.Text.Foreign.MiscYj (
 
 	-- * CONVERSION WITH CSTRING
 
@@ -21,7 +21,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
-import Control.Monad.Cont.Misc
+import Control.Monad.Cont.MiscYj
 
 import qualified Data.Text as Txt
 import qualified Data.Text.Foreign as Txt
