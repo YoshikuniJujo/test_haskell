@@ -936,14 +936,14 @@ type ModelViewProjMemory sm sb mnm alu =
 
 type BufferModelViewProj alu = 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]
 
-type AtomModelViewProj alu = Obj.Atom alu WModelViewProj 'Nothing
+type AtomModelViewProj alu = Obj.AtomMaybeName alu WModelViewProj 'Nothing
 
 createBffrAtm :: forall al sd bnm a nm b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Obj.Atom al a nm] ->
+		Vk.Bffr.Binded sm sb bnm '[Obj.AtomMaybeName al a nm] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg bnm '[Obj.Atom al a nm] )] ->
+			sb, 'Vk.Mm.BufferArg bnm '[Obj.AtomMaybeName al a nm] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv Obj.LengthAtom us prs
 
@@ -1186,7 +1186,7 @@ updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dHeight = fromIntegral -> h } tm =
 	let tm = 0 in
 	Vk.Mm.write
-		@nmm @(Obj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
+		@nmm @(Obj.AtomMaybeName alu WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ Foreign.Storable.Generic.W ModelViewProj {
 			model = Cglm.mat4Identity,
 			view = Cglm.mat4Identity,

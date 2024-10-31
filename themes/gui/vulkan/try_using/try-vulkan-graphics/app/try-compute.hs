@@ -620,9 +620,9 @@ type AtomDiffTime nm = Vk.ObjNA.Atom Float nm
 createBffrAtm :: forall al sd bnm mnm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.Atom al a mnm] ->
+		Vk.Bffr.Binded sm sb bnm '[Vk.Obj.AtomMaybeName al a mnm] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.Atom al a mnm] )] ->
+			sb, 'Vk.Mm.BufferArg bnm '[Vk.Obj.AtomMaybeName al a mnm] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv Vk.Obj.LengthAtom us prs
 

@@ -725,14 +725,14 @@ type ModelViewProjMemory sm sb mnm alu =
 
 type BufferModelViewProj alu = 'Vk.DscSetLyt.Buffer '[AtomModelViewProj alu]
 
-type AtomModelViewProj alu = VObj.Atom alu WModelViewProj 'Nothing
+type AtomModelViewProj alu = VObj.AtomMaybeName alu WModelViewProj 'Nothing
 
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[VObj.AtomMaybeName al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[VObj.AtomMaybeName al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv VObj.LengthAtom us prs
 
@@ -971,7 +971,7 @@ updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
 	Vk.Mm.write
-		@nmm @(VObj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
+		@nmm @(VObj.AtomMaybeName alu WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ Foreign.Storable.Generic.W ModelViewProj {
 			model = Cglm.rotate Cglm.mat4Identity (tm * Cglm.rad 90)
 				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),

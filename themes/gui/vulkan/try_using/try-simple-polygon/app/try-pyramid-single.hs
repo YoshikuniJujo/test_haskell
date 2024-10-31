@@ -444,7 +444,7 @@ createDscStLyt dv = Vk.DscStLyt.create dv info nil
 
 type DscStLytArg alu = '[BufferModelViewProj alu]
 type BufferModelViewProj alu = 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]
-type AtomModelViewProj alu = Obj.Atom alu WModelViewProj 'Nothing
+type AtomModelViewProj alu = Obj.AtomMaybeName alu WModelViewProj 'Nothing
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg alu)] '[] ->
@@ -714,9 +714,9 @@ type ModelViewProjMemory sm sb nmm alu =
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[Obj.AtomMaybeName al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[Obj.AtomMaybeName al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv Obj.LengthAtom us prs
 

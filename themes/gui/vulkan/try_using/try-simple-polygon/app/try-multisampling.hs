@@ -583,7 +583,7 @@ createDscStLyt dv = Vk.DscStLyt.create dv info nil
 
 type DscStLytArg alu nmt = '[BufferModelViewProj alu, TxImg nmt]
 type BufferModelViewProj alu = 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]
-type AtomModelViewProj alu = Obj.Atom alu WModelViewProj 'Nothing
+type AtomModelViewProj alu = Obj.AtomMaybeName alu WModelViewProj 'Nothing
 type TxImg nmt = 'Vk.DscStLyt.Image '[ '(nmt, 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1223,9 +1223,9 @@ type ModelViewProjMemory sm sb mnm alu =
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[Obj.AtomMaybeName al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[Obj.AtomMaybeName al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv Obj.LengthAtom us prs
 
@@ -1313,9 +1313,9 @@ instance Update nmt _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure 
 instance (
 	KnownNat al,
 	Vk.DscSt.BindingAndArrayElemBuffer
-		cs '[Obj.Atom al WModelViewProj 'Nothing] 0,
+		cs '[Obj.AtomMaybeName al WModelViewProj 'Nothing] 0,
 	Vk.DscSt.UpdateDynamicLength
-		cs '[Obj.Atom al WModelViewProj 'Nothing],
+		cs '[Obj.AtomMaybeName al WModelViewProj 'Nothing],
 	Vk.DscSt.BindingAndArrayElemImage cs '[ '(nmt, TxFmt)] 0,
 	Update nmt al smsbs slbtss ) =>
 	Update nmt al (smsb ': smsbs) ('(ds, cs) ': slbtss) where
@@ -1484,9 +1484,9 @@ class UpdateTx nmt alu slbtss slbts where
 		imgsrc ~ 'Vk.DscSt.WriteSourcesArgImage
 			'[ '(ssmp, nmt, 'Vk.T.FormatR8g8b8a8Srgb, siv)],
 		Vk.DscSt.BindingAndArrayElemBuffer
-			dsla '[Obj.Atom alu WModelViewProj 'Nothing] 0,
+			dsla '[Obj.AtomMaybeName alu WModelViewProj 'Nothing] 0,
 		Vk.DscSt.UpdateDynamicLength
-			dsla '[Obj.Atom alu WModelViewProj 'Nothing],
+			dsla '[Obj.AtomMaybeName alu WModelViewProj 'Nothing],
 		Vk.DscSt.WriteSourcesToMiddle dsla imgsrc 0,
 		Vk.DscSt.WriteListUpdateDynamicLengths
 			'[ '( 'Nothing, sds, slbts, imgsrc, 0)] ) =>
@@ -1574,7 +1574,7 @@ updateModelViewProj :: forall sd alu sm nmm . KnownNat alu => Vk.Dvc.D sd ->
 updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @nmm @(Obj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
+	Vk.Mm.write @nmm @(Obj.AtomMaybeName alu WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),

@@ -570,7 +570,7 @@ createDscStLyt dv = Vk.DscStLyt.create dv info nil
 
 type DscStLytArg alu = '[BufferModelViewProj alu, TxImg]
 type BufferModelViewProj alu = 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]
-type AtomModelViewProj alu = VObj.Atom alu WModelViewProj 'Nothing
+type AtomModelViewProj alu = VObj.AtomMaybeName alu WModelViewProj 'Nothing
 type TxImg = 'Vk.DscStLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1035,9 +1035,9 @@ type ModelViewProjMemory sm sb nmm alu =
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[VObj.AtomMaybeName al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[VObj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[VObj.AtomMaybeName al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv VObj.LengthAtom us prs
 
@@ -1274,7 +1274,7 @@ updateModelViewProj :: forall sd smm sbm bnmm alu . KnownNat alu =>
 updateModelViewProj dv mm Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @bnmm @(VObj.Atom alu WModelViewProj 'Nothing) @0
+	Vk.Mm.write @bnmm @(VObj.AtomMaybeName alu WModelViewProj 'Nothing) @0
 		dv mm zeroBits $ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),

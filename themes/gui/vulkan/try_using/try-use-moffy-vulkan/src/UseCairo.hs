@@ -524,7 +524,7 @@ createDscSt d dp bvp dsl f =
 dscWrite :: KnownNat alu => Vk.DscSt.D sds slbts ->
 	Vk.Bffr.Binded sm sb nm '[AtomViewProj alu mnmvp] ->
 	Vk.DscSt.Write 'Nothing sds slbts ('Vk.DscSt.WriteSourcesArgBuffer
-		'[ '(sm, sb, nm, Vk.Obj.Atom alu WViewProj mnmvp, 0)]) 0
+		'[ '(sm, sb, nm, Vk.Obj.AtomMaybeName alu WViewProj mnmvp, 0)]) 0
 dscWrite ds bvp = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
@@ -1408,7 +1408,7 @@ catchAndSerialize =
 updateViewProjBffr :: forall sd sm sb bnm alu mnm . KnownNat alu =>
 	Vk.Dvc.D sd -> ViewProjMemory sm sb bnm alu mnm -> WViewProj -> IO ()
 updateViewProjBffr dv mvp vp =
-	Vk.Mm.write @bnm @(Vk.Obj.Atom alu WViewProj mnm) @0 dv mvp zeroBits vp
+	Vk.Mm.write @bnm @(Vk.Obj.AtomMaybeName alu WViewProj mnm) @0 dv mvp zeroBits vp
 
 data Draws fmt ssc sr sfs sg sl sdsl alu mnmvp nmt sias srfs siff = Draws
 	(TVar Vk.Extent2d) (Vk.Khr.Swpch.S fmt ssc) (Vk.RndrPss.R sr)
