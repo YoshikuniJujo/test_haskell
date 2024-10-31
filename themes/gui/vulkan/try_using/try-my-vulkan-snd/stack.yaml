@@ -42,10 +42,8 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 7d74c944c0e844195245e77735f1a9ceb7135a12
+  commit: ee93723a903c5f714634e6a01ea379bf44b603c0
   subdirs:
-  - themes/monad/try-monads-tf-misc-yj
-  - themes/string/try-text-misc-yj
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
@@ -74,6 +72,8 @@ extra-deps:
   - packages/try-tools-yj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
+- mtl-misc-yj-0.1.0.1
+- text-misc-yj-0.1.0.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
