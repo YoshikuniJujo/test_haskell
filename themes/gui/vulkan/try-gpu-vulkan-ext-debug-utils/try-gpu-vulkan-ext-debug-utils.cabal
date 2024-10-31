@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.36.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -35,9 +35,9 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , gpu-vulkan-middle
     , try-gpu-vulkan
     , try-storable-peek-poke
-    , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , typelevel-tools
   default-language: Haskell2010
@@ -52,10 +52,10 @@ test-suite try-gpu-vulkan-ext-debug-utils-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , gpu-vulkan-middle
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
     , try-storable-peek-poke
-    , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , typelevel-tools
   default-language: Haskell2010
