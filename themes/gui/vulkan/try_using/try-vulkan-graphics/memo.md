@@ -6,7 +6,7 @@
 * [x] try-depth-buffering-single.hs
 * [x] try-cube-single.hs
 * [x] try-multiple-windows.hs
-* [ ] try-compute.hs
+* [x] try-compute.hs
     + [x] PARAMETERS
         - [x] MaxFramesInFlight
         - [x] TNum
@@ -21,8 +21,8 @@
         - [x] createIst
         - [x] vldLayers
         - [x] dbgMsngrInfo
-    + [ ] BODY
-        - [ ] body
+    + [x] BODY
+        - [x] body
         - [x] pickPhd
         - [x] dvcExtensions
         - [x] findQFams
@@ -108,8 +108,8 @@
         - [x] Color
         - [x] vertices
         - [x] randomVertex
-    + [ ] SHADERS
-    + [ ] import list
+    + [x] SHADERS
+    + [x] import list
 
 ### src
 

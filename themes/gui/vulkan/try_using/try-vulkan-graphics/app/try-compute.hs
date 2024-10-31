@@ -13,8 +13,6 @@
 
 module Main (main) where
 
-import Control.Concurrent.STM
-
 import GHC.Generics
 import GHC.TypeNats
 import Foreign.Storable
@@ -23,6 +21,7 @@ import Foreign.Storable.PeekPoke
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
+import Control.Concurrent.STM
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
@@ -55,7 +54,9 @@ import Data.Time
 import Data.Color
 import Data.IORef
 import Data.IORef.ToolsYj
+import System.Random
 
+import Language.SpirV qualified as SpirV
 import Language.SpirV.ShaderKind
 import Language.SpirV.Shaderc.TH
 import Graphics.UI.GlfwG qualified as GlfwG
@@ -86,6 +87,7 @@ import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Pipeline.Graphics qualified as Vk.Ppl.Gr
 import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cp
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
 import Gpu.Vulkan.Pipeline.InputAssemblyState qualified as Vk.Ppl.InpAsmbSt
 import Gpu.Vulkan.Pipeline.ViewportState qualified as Vk.Ppl.ViewportSt
 import Gpu.Vulkan.Pipeline.RasterizationState qualified as Vk.Ppl.RstSt
@@ -117,11 +119,6 @@ import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Debug
-
-import System.Random
-import Gpu.Vulkan.Pipeline.VertexInputState qualified as Vk.Ppl.VertexInputSt
-
-import Language.SpirV qualified as SpirV
 
 ---------------------------------------------------------------------------
 --
@@ -1263,16 +1260,13 @@ main()
 #version 450
 
 layout(location = 0) in vec3 fragColor;
-
 layout(location = 0) out vec4 outColor;
 
 void
 main()
 {
-
 	vec2 coord = gl_PointCoord - vec2(0.5);
 	outColor = vec4(fragColor, 0.5 - length(coord));
-
 }
 
 |]
@@ -1281,23 +1275,15 @@ main()
 
 #version 450
 
-struct Particle {
-	vec2 position;
-	vec2 velocity;
-	vec4 color;
-};
+layout (binding = 0) uniform DeltaTime { float deltaTime; } dt;
 
-layout (binding = 0) uniform ParameterUBO {
-	float deltaTime;
-} ubo;
+struct Particle { vec2 position; vec2 velocity; vec4 color; };
 
-layout(std140, binding = 1) readonly buffer ParticleSSBOIn {
-	Particle particlesIn[ ];
-};
+layout(std140, binding = 1) readonly buffer
+	ParticleSSBOIn { Particle particlesIn[ ]; };
 
-layout(std140, binding = 2) buffer ParticleSSBOOut {
-	Particle particlesOut[ ];
-};
+layout(std140, binding = 2) buffer
+	ParticleSSBOOut { Particle particlesOut[ ]; };
 
 layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
@@ -1306,8 +1292,8 @@ void main()
 	uint index = gl_GlobalInvocationID.x;
 
 	Particle particleIn = particlesIn[index];
-
-	particlesOut[index].position = particleIn.position + particleIn.velocity.xy * ubo.deltaTime;
+	particlesOut[index].position =
+		particleIn.position + particleIn.velocity.xy * dt.deltaTime;
 
 	float x = particlesOut[index].position.x;
 	float y = particlesOut[index].position.y;
