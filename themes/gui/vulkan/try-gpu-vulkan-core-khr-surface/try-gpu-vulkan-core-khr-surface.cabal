@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.36.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -37,7 +37,7 @@ library
   build-depends:
       base >=4.7 && <5
     , c-struct
-    , try-vulkan-core
+    , gpu-vulkan-core
   default-language: Haskell2010
 
 test-suite try-gpu-vulkan-core-khr-surface-test
@@ -53,6 +53,6 @@ test-suite try-gpu-vulkan-core-khr-surface-test
   build-depends:
       base >=4.7 && <5
     , c-struct
+    , gpu-vulkan-core
     , try-gpu-vulkan-core-khr-surface
-    , try-vulkan-core
   default-language: Haskell2010
