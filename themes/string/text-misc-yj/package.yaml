@@ -2,9 +2,9 @@ name:                text-misc-yj
 version:             0.1.0.0
 github:              "YoshikuniJujo/text-misc-yj"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2023 Author name here"
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "2023 Yoshikuni Jujo"
 
 extra-source-files:
 - README.md
