@@ -22,7 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - GLFW-b
-- try-vulkan-middle
+- gpu-vulkan-middle
 - try-gpu-vulkan-middle-khr-surface
 - typelevel-tools
 
