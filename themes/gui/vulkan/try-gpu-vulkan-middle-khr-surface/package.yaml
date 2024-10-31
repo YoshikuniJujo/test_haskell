@@ -22,7 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - try-vulkan-middle
-- try-vulkan-core
+- gpu-vulkan-core
 - try-gpu-vulkan-core-khr-surface
 - try-storable-peek-poke
 - c-enum
