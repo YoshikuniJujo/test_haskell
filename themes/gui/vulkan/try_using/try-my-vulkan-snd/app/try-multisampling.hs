@@ -656,7 +656,7 @@ createDscStLyt dv = Vk.DscStLyt.create dv info nil
 
 type DscStLytArg alu = '[BufferModelViewProj alu, TxImg]
 type BufferModelViewProj alu = 'Vk.DscStLyt.Buffer '[AtomModelViewProj alu]
-type AtomModelViewProj alu = Obj.Atom alu WModelViewProj 'Nothing
+type AtomModelViewProj alu = Obj.AtomMaybeName alu WModelViewProj 'Nothing
 type TxImg = 'Vk.DscStLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]
 
 createGrPpl :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
@@ -1252,9 +1252,9 @@ type ModelViewProjMemory sm sb mnm alu =
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[Obj.AtomMaybeName al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[Obj.AtomMaybeName al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv = createBffr p dv Obj.LengthAtom us prs
 
@@ -1342,9 +1342,9 @@ instance Update _al '[] '[] where update _ HPList.Nil _ _ HPList.Nil = pure ()
 instance (
 	KnownNat al,
 	Vk.DscSt.BindingAndArrayElemBuffer
-		cs '[Obj.Atom al WModelViewProj 'Nothing] 0,
+		cs '[Obj.AtomMaybeName al WModelViewProj 'Nothing] 0,
 	Vk.DscSt.UpdateDynamicLength
-		cs '[Obj.Atom al WModelViewProj 'Nothing],
+		cs '[Obj.AtomMaybeName al WModelViewProj 'Nothing],
 	Vk.DscSt.BindingAndArrayElemImage cs '[ '(Tx, TxFmt)] 0,
 	Update al smsbs slbtss ) =>
 	Update al (smsb ': smsbs) ('(ds, cs) ': slbtss) where
@@ -1358,7 +1358,7 @@ dscWrite0 :: KnownNat alu => Vk.DscSt.D sds slbts ->
 	Vk.Bffr.Binded sm sb bnm '[AtomModelViewProj alu] ->
 	Vk.DscSt.Write 'Nothing sds slbts
 		('Vk.DscSt.WriteSourcesArgBuffer '[ '(
-			sm, sb, bnm, Obj.Atom alu WModelViewProj 'Nothing, 0 )]) 0
+			sm, sb, bnm, Obj.AtomMaybeName alu WModelViewProj 'Nothing, 0 )]) 0
 dscWrite0 ds mb = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
@@ -1531,7 +1531,7 @@ updateModelViewProj :: forall sd alu sm nmm . KnownNat alu => Vk.Dvc.D sd ->
 updateModelViewProj dv (MemoryModelViewProj mm) Vk.Extent2d {
 	Vk.extent2dWidth = fromIntegral -> w,
 	Vk.extent2dHeight = fromIntegral -> h } tm =
-	Vk.Mm.write @nmm @(Obj.Atom alu WModelViewProj 'Nothing) @0 dv mm zeroBits
+	Vk.Mm.write @nmm @(Obj.AtomMaybeName alu WModelViewProj 'Nothing) @0 dv mm zeroBits
 		$ GStorable.W ModelViewProj {
 			model = Glm.rotate Glm.mat4Identity (tm * Glm.rad 90)
 				(Glm.Vec3 $ 0 :. 0 :. 1 :. NilL),

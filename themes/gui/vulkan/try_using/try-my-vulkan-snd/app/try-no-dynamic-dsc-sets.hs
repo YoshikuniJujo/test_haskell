@@ -83,7 +83,7 @@ newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 
 type OList w = Obj.List 256 w ""
-type OAtom w mnm = Obj.Atom 256 w mnm
+type OAtom w mnm = Obj.AtomMaybeName 256 w mnm
 
 withDvc :: (forall sd scpl .
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scpl ->

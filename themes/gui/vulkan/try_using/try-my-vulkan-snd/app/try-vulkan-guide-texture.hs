@@ -679,7 +679,7 @@ type DscStLytArg alu mff = '[
 type DscStLytArgOd als = '[ 'Vk.DSLt.Buffer '[ListObjData als]]
 type DscStLytArgTx = '[ 'Vk.DSLt.Image '[Tx]]
 
-type AtmViewProj alu = Obj.Atom alu WViewProj 'Nothing
+type AtmViewProj alu = Obj.AtomMaybeName alu WViewProj 'Nothing
 type AtmScene alu mff = Obj.DynAtom mff alu WScene 'Nothing
 type ListObjData als = Obj.List als WObjData ""
 type Tx = '(TxName, TxFormat)
@@ -1094,9 +1094,9 @@ createScnBffr pd dv = createBffr pd dv
 createBffrAtm :: forall al sd nm a b . (KnownNat al, Storable a) =>
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Obj.Atom al a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[Obj.AtomMaybeName al a 'Nothing] ->
 		Vk.Mm.M sm '[ '(
-			sb, 'Vk.Mm.BufferArg nm '[Obj.Atom al a 'Nothing] )] ->
+			sb, 'Vk.Mm.BufferArg nm '[Obj.AtomMaybeName al a 'Nothing] )] ->
 		IO b) -> IO b
 createBffrAtm us prs p dv =
 	createBffr p dv (HPList.Singleton Obj.LengthAtom) us prs
