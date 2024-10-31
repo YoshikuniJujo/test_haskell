@@ -1,1 +1,3 @@
-# try-text-misc-yj
+# text-misc-yj
+
+tribial tools about text
