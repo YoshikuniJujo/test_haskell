@@ -21,13 +21,13 @@ module Gpu.Vulkan.Object (
 
 	-- *** static
 
-	AtomNew, List, Image,
+	Atom, List, Image,
 	AtomNoName, ListNoName, ImageNoName,
 	AtomMaybeName, ListMaybeName, ImageMaybeName,
 
 	-- *** dynamic
 
-	DynAtom, DynAtomNew, DynList, DynImage,
+	DynAtomNew, DynList, DynImage,
 	DynAtomNoName, DynListNoName, DynImageNoName,
 	DynAtomMaybeName, DynListMaybeName, DynImageMaybeName,
 
@@ -105,7 +105,7 @@ data O = Static_ K.O | Dynamic Nat K.O
 type Static algn mnm ot v = 'Static_ ('K.O algn mnm ot v)
 type Dynamic n algn mnm ot v = 'Dynamic n ('K.O algn mnm ot v)
 
-type AtomNew algn v nm = AtomMaybeName algn v ('Just nm)
+type Atom algn v nm = AtomMaybeName algn v ('Just nm)
 type List algn v nm = ListMaybeName algn v ('Just nm)
 type Image algn v nm = ImageMaybeName algn v ('Just nm)
 
@@ -117,7 +117,6 @@ type AtomMaybeName algn v mnm = Static_ (K.AtomMaybeName algn v mnm)
 type ListMaybeName algn v mnm = Static_ (K.ListMaybeName algn v mnm)
 type ImageMaybeName algn v mnm = Static_ (K.ImageMaybeName algn v mnm)
 
-type DynAtom n algn v nm = 'Dynamic n (K.Atom algn v nm)
 type DynAtomNew n algn v nm = 'Dynamic n (K.AtomNew algn v nm)
 type DynList n algn v nm = 'Dynamic n (K.List algn v nm)
 type DynImage n algn v nm = 'Dynamic n (K.Image algn v nm)

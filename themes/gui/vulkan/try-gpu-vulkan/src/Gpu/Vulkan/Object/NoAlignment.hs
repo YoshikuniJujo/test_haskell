@@ -9,7 +9,7 @@ module Gpu.Vulkan.Object.NoAlignment (
 
 import Gpu.Vulkan.Object qualified as Vk.Obj
 
-type Atom v nm = Vk.Obj.AtomNew 1 v nm
+type Atom v nm = Vk.Obj.Atom 1 v nm
 type List v nm = Vk.Obj.List 1 v nm
 type Image v nm = Vk.Obj.Image 1 v nm
 
