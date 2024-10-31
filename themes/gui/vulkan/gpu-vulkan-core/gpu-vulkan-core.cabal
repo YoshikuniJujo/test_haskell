@@ -4,9 +4,9 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-vulkan-core
+name:           gpu-vulkan-core
 version:        0.1.0.7
-description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-core#readme>
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/test_haskell/tree/master/themes/gui/vulkan/try-gpu-vulkan#readme>
 homepage:       https://github.com/githubuser/try-vulkan-core#readme
 bug-reports:    https://github.com/githubuser/try-vulkan-core/issues
 author:         Author name here
@@ -78,7 +78,7 @@ library
       Gpu.Vulkan.TypeSynonyms.Core
   other-modules:
       Data.Text.Tools
-      Paths_try_vulkan_core
+      Paths_gpu_vulkan_core
   hs-source-dirs:
       src
   pkgconfig-depends:
@@ -95,7 +95,7 @@ test-suite try-vulkan-core-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_vulkan_core
+      Paths_gpu_vulkan_core
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N

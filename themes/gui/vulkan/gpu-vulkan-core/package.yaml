@@ -1,4 +1,4 @@
-name:                try-vulkan-core
+name:                gpu-vulkan-core
 version:             0.1.0.7
 github:              "githubuser/try-vulkan-core"
 license:             BSD3
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-core#readme>
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/test_haskell/tree/master/themes/gui/vulkan/try-gpu-vulkan#readme>
 
 dependencies:
 - base >= 4.7 && < 5
