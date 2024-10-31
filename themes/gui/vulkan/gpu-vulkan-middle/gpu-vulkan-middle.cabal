@@ -180,16 +180,16 @@ library
     , exception-hierarchy
     , gpu-vulkan-core
     , mtl
+    , mtl-misc-yj
     , ranged-list
     , stm
     , template-haskell
     , text
+    , text-misc-yj
     , try-hetero-parameter-list
     , try-language-spir-v
-    , try-monads-tf-misc-yj
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-text-misc-yj
     , typelevel-tools
     , union-color
     , uuid
@@ -212,16 +212,16 @@ test-suite try-vulkan-middle-test
     , exception-hierarchy
     , gpu-vulkan-core
     , mtl
+    , mtl-misc-yj
     , ranged-list
     , stm
     , template-haskell
     , text
+    , text-misc-yj
     , try-hetero-parameter-list
     , try-language-spir-v
-    , try-monads-tf-misc-yj
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-text-misc-yj
     , try-vulkan-middle
     , typelevel-tools
     , union-color

@@ -59,7 +59,7 @@ import Data.TypeLevel.List qualified as TL
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
-import Data.Text.Foreign.Misc
+import Data.Text.Foreign.MiscYj
 import Data.Color.Internal
 
 import qualified Data.Text as T

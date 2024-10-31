@@ -30,7 +30,7 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 
 import Data.Text qualified as T
-import Data.Text.Foreign.Misc
+import Data.Text.Foreign.MiscYj
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal

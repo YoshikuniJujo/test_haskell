@@ -25,11 +25,11 @@ dependencies:
 - stm
 - containers
 - text
-- try-text-misc-yj
+- text-misc-yj
 - bytestring
 - data-default
 - mtl
-- try-monads-tf-misc-yj
+- mtl-misc-yj
 - uuid
 - c-enum
 - ranged-list

@@ -47,7 +47,7 @@ import Data.Word
 import Data.Ix
 
 import Data.Text qualified as T
-import Data.Text.Foreign.Misc
+import Data.Text.Foreign.MiscYj
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum

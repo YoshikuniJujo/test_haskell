@@ -49,7 +49,7 @@ import Data.UUID
 import qualified Data.ByteString.Lazy as LBS
 
 import Data.Text qualified as T
-import Data.Text.Foreign.Misc
+import Data.Text.Foreign.MiscYj
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Middle.Internal
