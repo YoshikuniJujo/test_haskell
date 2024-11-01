@@ -40,7 +40,7 @@ dependencies:
 - try-storable-hetero-list
 - try-hetero-parameter-list
 - try-hetero-parameter-list-with-typelevel-tools
-- typelevel-tools
+- typelevel-tools-yj
 - temporary
 - try-tools-yj
 
