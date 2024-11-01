@@ -26,7 +26,7 @@ dependencies:
 - try-gpu-vulkan
 - try-gpu-vulkan-middle-khr-surface
 - try-hetero-parameter-list
-- typelevel-tools
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall
