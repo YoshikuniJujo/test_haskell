@@ -184,13 +184,13 @@ library
     , containers
     , data-default
     , gpu-vulkan-middle
+    , hetero-parameter-list
     , mono-traversable
     , stm
     , template-haskell
     , temporary
     , text
     , time
-    , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
     , try-storable-hetero-list
@@ -223,6 +223,7 @@ test-suite try-gpu-vulkan-test
     , containers
     , data-default
     , gpu-vulkan-middle
+    , hetero-parameter-list
     , mono-traversable
     , stm
     , template-haskell
@@ -230,7 +231,6 @@ test-suite try-gpu-vulkan-test
     , text
     , time
     , try-gpu-vulkan
-    , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
     , try-storable-hetero-list

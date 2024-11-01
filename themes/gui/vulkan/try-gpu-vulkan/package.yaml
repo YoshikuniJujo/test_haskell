@@ -38,7 +38,7 @@ dependencies:
 - try-language-spir-v
 - try-storable-peek-poke
 - try-storable-hetero-list
-- try-hetero-parameter-list
+- hetero-parameter-list
 - try-hetero-parameter-list-with-typelevel-tools
 - typelevel-tools-yj
 - temporary
