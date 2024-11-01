@@ -4,9 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-hetero-parameter-list
+name:           hetero-parameter-list
 version:        0.1.0.17
-description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-hetero-parameter-list#readme>
+synopsis:       hetero list with parameter list
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/hetero-parameter-list#readme>
+category:       Data
 homepage:       https://github.com/YoshikuniJujo/try-hetero-parameter-list#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-hetero-parameter-list/issues
 author:         Yoshikuni Jujo
@@ -28,7 +30,7 @@ library
       Data.HeteroParList
       Data.HeteroParList.Constrained
   other-modules:
-      Paths_try_hetero_parameter_list
+      Paths_hetero_parameter_list
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -42,7 +44,7 @@ test-suite try-hetero-parameter-list-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_hetero_parameter_list
+      Paths_hetero_parameter_list
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N

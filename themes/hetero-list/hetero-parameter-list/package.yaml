@@ -1,4 +1,4 @@
-name:                try-hetero-parameter-list
+name:                hetero-parameter-list
 version:             0.1.0.17
 github:              "YoshikuniJujo/try-hetero-parameter-list"
 license:             BSD3
@@ -11,13 +11,13 @@ extra-source-files:
 - CHANGELOG.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis:            hetero list with parameter list
+category:            Data
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-hetero-parameter-list#readme>
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/hetero-parameter-list#readme>
 
 dependencies:
 - base >= 4.7 && < 5
