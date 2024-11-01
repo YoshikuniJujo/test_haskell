@@ -58,7 +58,7 @@ dependencies:
 - try-storable-peek-poke
 - try-storable-generic
 - try-storable-hetero-list
-- typelevel-tools
+- typelevel-tools-yj
 - try-codec-wavefront-obj
 - try-gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-middle-khr-surface-glfw

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.36.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -87,7 +87,7 @@ library
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -149,7 +149,7 @@ executable my-glslc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -201,7 +201,7 @@ executable try-allocation-callbacks
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -253,7 +253,7 @@ executable try-copy-descriptor-set
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -305,7 +305,7 @@ executable try-depth-buffering
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -357,7 +357,7 @@ executable try-depth-buffering-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -409,7 +409,7 @@ executable try-dynamic-dsc-sets
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -461,7 +461,7 @@ executable try-generating-mipmaps
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -513,7 +513,7 @@ executable try-generating-mipmaps-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -565,7 +565,7 @@ executable try-hello-world
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -617,7 +617,7 @@ executable try-image-buffer
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -669,7 +669,7 @@ executable try-loading-models
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -721,7 +721,7 @@ executable try-loading-models-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -773,7 +773,7 @@ executable try-multisampling
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -825,7 +825,7 @@ executable try-multisampling-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -877,7 +877,7 @@ executable try-multisampling-use-groups-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -929,7 +929,7 @@ executable try-no-dynamic-dsc-sets
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -981,7 +981,7 @@ executable try-object-index
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1033,7 +1033,7 @@ executable try-pipeline-cache
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1085,7 +1085,7 @@ executable try-query
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1137,7 +1137,7 @@ executable try-rectangle
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1189,7 +1189,7 @@ executable try-rectangle-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1241,7 +1241,7 @@ executable try-saitan
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1293,7 +1293,7 @@ executable try-saitan-float
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1345,7 +1345,7 @@ executable try-saitan-simple
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1397,7 +1397,7 @@ executable try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1449,7 +1449,7 @@ executable try-texel-buffer-float
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1501,7 +1501,7 @@ executable try-texel-buffer-word32
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1553,7 +1553,7 @@ executable try-texture
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1605,7 +1605,7 @@ executable try-texture-descriptor-set-group-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1657,7 +1657,7 @@ executable try-texture-image-manager-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1709,7 +1709,7 @@ executable try-texture-immutable-sampler-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1761,7 +1761,7 @@ executable try-texture-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1813,7 +1813,7 @@ executable try-triangle
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1865,7 +1865,7 @@ executable try-triangle-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1917,7 +1917,7 @@ executable try-vulkan-guide
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -1969,7 +1969,7 @@ executable try-vulkan-guide-dynamic
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -2021,7 +2021,7 @@ executable try-vulkan-guide-storage
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -2073,7 +2073,7 @@ executable try-vulkan-guide-texture
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -2125,7 +2125,7 @@ executable try-wavefront-obj
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -2177,7 +2177,7 @@ executable try-yatteiku
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -2230,7 +2230,7 @@ test-suite try-my-vulkan-snd-test
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
