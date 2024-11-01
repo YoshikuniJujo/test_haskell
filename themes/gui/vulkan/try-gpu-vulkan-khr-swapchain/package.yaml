@@ -26,7 +26,7 @@ dependencies:
 - try-gpu-vulkan
 - try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-middle-khr-swapchain
-- try-hetero-parameter-list
+- hetero-parameter-list
 - try-storable-peek-poke
 - typelevel-tools-yj
 
