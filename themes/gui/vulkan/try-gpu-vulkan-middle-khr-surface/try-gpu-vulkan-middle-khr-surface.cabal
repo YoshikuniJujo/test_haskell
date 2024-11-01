@@ -43,7 +43,7 @@ library
     , gpu-vulkan-middle
     , try-gpu-vulkan-core-khr-surface
     , try-storable-peek-poke
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-gpu-vulkan-middle-khr-surface-test
@@ -64,5 +64,5 @@ test-suite try-gpu-vulkan-middle-khr-surface-test
     , try-gpu-vulkan-core-khr-surface
     , try-gpu-vulkan-middle-khr-surface
     , try-storable-peek-poke
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010
