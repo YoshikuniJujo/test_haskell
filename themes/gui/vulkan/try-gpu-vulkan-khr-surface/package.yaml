@@ -25,7 +25,7 @@ dependencies:
 - containers
 - try-gpu-vulkan
 - try-gpu-vulkan-middle-khr-surface
-- try-hetero-parameter-list
+- hetero-parameter-list
 - typelevel-tools-yj
 
 ghc-options:

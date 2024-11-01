@@ -40,10 +40,10 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , hetero-parameter-list
     , stm
     , try-gpu-vulkan
     , try-gpu-vulkan-middle-khr-surface
-    , try-hetero-parameter-list
     , typelevel-tools-yj
   default-language: Haskell2010
 
@@ -60,10 +60,10 @@ test-suite try-gpu-vulkan-khr-surface-test
   build-depends:
       base >=4.7 && <5
     , containers
+    , hetero-parameter-list
     , stm
     , try-gpu-vulkan
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-middle-khr-surface
-    , try-hetero-parameter-list
     , typelevel-tools-yj
   default-language: Haskell2010
