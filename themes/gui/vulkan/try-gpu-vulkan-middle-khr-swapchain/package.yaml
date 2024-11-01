@@ -28,7 +28,7 @@ dependencies:
 - try-gpu-vulkan-core-khr-swapchain
 - data-default
 - c-enum
-- typelevel-tools
+- typelevel-tools-yj
 - try-storable-peek-poke
 
 ghc-options:
