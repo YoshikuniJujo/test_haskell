@@ -179,6 +179,7 @@ library
     , data-default
     , exception-hierarchy
     , gpu-vulkan-core
+    , hetero-parameter-list
     , mtl
     , mtl-misc-yj
     , ranged-list
@@ -186,7 +187,6 @@ library
     , template-haskell
     , text
     , text-misc-yj
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-storable-hetero-list
     , try-storable-peek-poke
@@ -211,6 +211,7 @@ test-suite try-vulkan-middle-test
     , data-default
     , exception-hierarchy
     , gpu-vulkan-core
+    , hetero-parameter-list
     , mtl
     , mtl-misc-yj
     , ranged-list
@@ -218,7 +219,6 @@ test-suite try-vulkan-middle-test
     , template-haskell
     , text
     , text-misc-yj
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-storable-hetero-list
     , try-storable-peek-poke

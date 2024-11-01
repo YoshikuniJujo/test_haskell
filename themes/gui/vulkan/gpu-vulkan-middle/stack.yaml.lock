@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-peek-poke
     pantry-tree:
@@ -14,37 +14,24 @@ packages:
     subdir: features/ffi/pointer/try-storable-peek-poke
     version: 0.1.0.1
   original:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-peek-poke
 - completed:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-hetero-list
     pantry-tree:
-      sha256: 3e934ded210efaa78a7bb727bc53be594570b9ff00148a2fe4178437bc90f592
+      sha256: fe260274c7f8eb7b9532cc61910a5594f9ffc3383f1bdb935d888b4d2a96315a
       size: 602
     subdir: features/ffi/pointer/try-storable-hetero-list
     version: 0.1.0.4
   original:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-hetero-list
 - completed:
-    commit: e465965600e10c704d54fef559b1f93c67791294
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-hetero-parameter-list
-    pantry-tree:
-      sha256: 039bfb68687ffecc262f6062752d135ce0afc8a555bb0a1b2a62ce62fa3366ba
-      size: 671
-    subdir: themes/hetero-list/try-hetero-parameter-list
-    version: 0.1.0.17
-  original:
-    commit: e465965600e10c704d54fef559b1f93c67791294
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/hetero-list/try-hetero-parameter-list
-- completed:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-language-spir-v
     pantry-tree:
@@ -53,11 +40,11 @@ packages:
     subdir: themes/gui/vulkan/try-language-spir-v
     version: 0.1.0.0
   original:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-language-spir-v
 - completed:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: gpu-vulkan-core
     pantry-tree:
@@ -66,7 +53,7 @@ packages:
     subdir: themes/gui/vulkan/gpu-vulkan-core
     version: 0.1.0.7
   original:
-    commit: e465965600e10c704d54fef559b1f93c67791294
+    commit: d61d06dd86ef3c66e0f14e7ab528c7514f9bfce3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-core
 - completed:
@@ -90,6 +77,13 @@ packages:
       size: 1395
   original:
     hackage: typelevel-tools-yj-0.1.0.6
+- completed:
+    hackage: hetero-parameter-list-0.1.0.18@sha256:0aa3a237315e4517fef8ade4810f26285992f2bc1de0efc73b97bb5410fc6e68,1884
+    pantry-tree:
+      sha256: 29724eeba90461de9c0d07470a33a94e6d392e4a1a6cd7110784a694fea87045
+      size: 459
+  original:
+    hackage: hetero-parameter-list-0.1.0.18
 snapshots:
 - completed:
     sha256: 0c65cc459d037697e6238a11dc0bbdc958a82ac9eb24907f486e33626117ae5e

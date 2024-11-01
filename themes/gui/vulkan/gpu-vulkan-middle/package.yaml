@@ -35,7 +35,7 @@ dependencies:
 - ranged-list
 - exception-hierarchy
 - union-color
-- try-hetero-parameter-list
+- hetero-parameter-list
 - try-storable-peek-poke
 - try-storable-hetero-list
 - gpu-vulkan-core
