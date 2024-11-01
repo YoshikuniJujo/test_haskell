@@ -190,7 +190,7 @@ library
     , try-language-spir-v
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , uuid
   default-language: Haskell2010
@@ -223,7 +223,7 @@ test-suite try-vulkan-middle-test
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-middle
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , uuid
   default-language: Haskell2010

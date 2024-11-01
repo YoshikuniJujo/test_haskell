@@ -40,7 +40,7 @@ dependencies:
 - try-storable-hetero-list
 - gpu-vulkan-core
 - try-language-spir-v
-- typelevel-tools
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall
