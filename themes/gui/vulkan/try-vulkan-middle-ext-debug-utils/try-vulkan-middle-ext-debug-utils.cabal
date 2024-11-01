@@ -44,7 +44,7 @@ library
     , try-hetero-parameter-list
     , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
   default-language: Haskell2010
 
@@ -67,6 +67,6 @@ test-suite try-vulkan-middle-ext-debug-utils-test
     , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-middle-ext-debug-utils
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
   default-language: Haskell2010

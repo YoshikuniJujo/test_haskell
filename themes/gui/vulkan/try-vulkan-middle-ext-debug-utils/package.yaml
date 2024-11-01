@@ -29,7 +29,7 @@ dependencies:
 - try-storable-peek-poke
 - gpu-vulkan-middle
 - try-vulkan-core-ext-debug-utils
-- typelevel-tools
+- typelevel-tools-yj
 - try-hetero-parameter-list
 
 ghc-options:
