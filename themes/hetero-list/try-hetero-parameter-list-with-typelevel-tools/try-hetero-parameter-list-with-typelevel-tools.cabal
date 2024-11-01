@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -36,7 +36,7 @@ library
       base >=4.7 && <5
     , template-haskell
     , try-hetero-parameter-list
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-hetero-parameter-list-with-typelevel-tools-test
@@ -52,5 +52,5 @@ test-suite try-hetero-parameter-list-with-typelevel-tools-test
     , template-haskell
     , try-hetero-parameter-list
     , try-hetero-parameter-list-with-typelevel-tools
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010

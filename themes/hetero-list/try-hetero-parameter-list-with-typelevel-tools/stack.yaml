@@ -17,8 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/0.yaml
+
+resolver: nightly-2024-10-31
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,10 +42,10 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 15096909ab3371ca8060e451426e33b7fa94d02a
+  commit: a8fdf403e4b5b6d87dedf824c29dbf6534ec6a58
   subdirs:
-  - themes/type_level/typelevel-tools
   - themes/hetero-list/try-hetero-parameter-list
+- typelevel-tools-yj-0.1.0.6
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

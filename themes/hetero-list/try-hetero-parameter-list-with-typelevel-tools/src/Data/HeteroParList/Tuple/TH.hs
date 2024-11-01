@@ -12,20 +12,10 @@ module Data.HeteroParList.Tuple.TH where
 
 import Control.Monad
 import Language.Haskell.TH
-import Language.Haskell.TH.Syntax
 
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
-
-foo :: DecsQ
-foo = [d|
-	class Map0_2 (ss :: [(k0, k1)]) where
-		map0_2 :: (	forall (a :: k0) (b :: k1) .
-				t '(a, b) -> t' b ) ->
-			HeteroParList.PL t ss ->
-			HeteroParList.PL t' (TMapIndex.M0_2 ss)
-	|]
 
 mkMap :: Int -> Int -> DecsQ
 mkMap i n = do
