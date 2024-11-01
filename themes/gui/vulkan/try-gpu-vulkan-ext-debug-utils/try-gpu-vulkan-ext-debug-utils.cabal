@@ -39,7 +39,7 @@ library
     , try-gpu-vulkan
     , try-storable-peek-poke
     , try-vulkan-middle-ext-debug-utils
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-gpu-vulkan-ext-debug-utils-test
@@ -57,5 +57,5 @@ test-suite try-gpu-vulkan-ext-debug-utils-test
     , try-gpu-vulkan-ext-debug-utils
     , try-storable-peek-poke
     , try-vulkan-middle-ext-debug-utils
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010

@@ -43,11 +43,9 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: ecf95a6ec905acfbe89711aed8176e6d986f9700
+  commit: acd5984f35e367acd6377f1490d7ec8d97bb1484
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
-  - themes/monad/try-monads-tf-misc-yj
-  - themes/string/try-text-misc-yj
   - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/gpu-vulkan-core
@@ -57,10 +55,12 @@ extra-deps:
   - themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list
-  - themes/type_level/typelevel-tools
   - packages/try-tools-yj
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
+- mtl-misc-yj-0.1.0.2
+- text-misc-yj-0.1.0.1
+- typelevel-tools-yj-0.1.0.6
 
 # - git: https://github.com/YoshikuniJujo/size-alignment-list.git
 #   commit: 93dfe34c125b2b4548c6c9ba53336fec59940a0c
