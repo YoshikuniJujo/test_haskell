@@ -24,7 +24,7 @@ dependencies:
 - GLFW-b
 - gpu-vulkan-middle
 - try-gpu-vulkan-middle-khr-surface
-- typelevel-tools
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall

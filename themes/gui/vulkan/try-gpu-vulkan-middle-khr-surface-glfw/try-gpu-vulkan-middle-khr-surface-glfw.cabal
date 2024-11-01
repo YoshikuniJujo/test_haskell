@@ -38,7 +38,7 @@ library
     , base >=4.7 && <5
     , gpu-vulkan-middle
     , try-gpu-vulkan-middle-khr-surface
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-gpu-vulkan-middle-khr-surface-glfw-test
@@ -57,5 +57,5 @@ test-suite try-gpu-vulkan-middle-khr-surface-glfw-test
     , gpu-vulkan-middle
     , try-gpu-vulkan-middle-khr-surface
     , try-gpu-vulkan-middle-khr-surface-glfw
-    , typelevel-tools
+    , typelevel-tools-yj
   default-language: Haskell2010
