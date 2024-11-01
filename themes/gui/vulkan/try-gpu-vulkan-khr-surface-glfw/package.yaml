@@ -29,7 +29,7 @@ dependencies:
 - try-gpu-vulkan-middle-khr-surface
 - try-gpu-vulkan-middle-khr-surface-glfw
 - try-glfw-group
-- typelevel-tools
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall

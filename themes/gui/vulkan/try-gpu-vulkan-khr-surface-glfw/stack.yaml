@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2023-01-01.yaml
 
-resolver: nightly-2024-09-09
+resolver: nightly-2024-10-31
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,25 +42,25 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 8a8062c6de78ab918961f94a93472820e6dc00a6
+  commit: 9401134c386c33e30f803fc7b8665e58f7349715
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
-  - themes/gui/vulkan/try-vulkan-middle
+  - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-glfw-group
-  - themes/gui/vulkan/try-vulkan-core
+  - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-language-spir-v
-  - themes/monad/try-monads-tf-misc-yj
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list
   - themes/hetero-list/try-hetero-parameter-list
   - themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
-  - themes/string/try-text-misc-yj
-  - themes/type_level/typelevel-tools
   - packages/try-tools-yj
+- mtl-misc-yj-0.1.0.2
+- text-misc-yj-0.1.0.1
+- typelevel-tools-yj-0.1.0.6
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
