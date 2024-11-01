@@ -5,25 +5,19 @@
 
 packages:
 - completed:
-    commit: a8fdf403e4b5b6d87dedf824c29dbf6534ec6a58
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-hetero-parameter-list
-    pantry-tree:
-      sha256: 039bfb68687ffecc262f6062752d135ce0afc8a555bb0a1b2a62ce62fa3366ba
-      size: 671
-    subdir: themes/hetero-list/try-hetero-parameter-list
-    version: 0.1.0.17
-  original:
-    commit: a8fdf403e4b5b6d87dedf824c29dbf6534ec6a58
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/hetero-list/try-hetero-parameter-list
-- completed:
     hackage: typelevel-tools-yj-0.1.0.6@sha256:33f336a1cea83dda17d6e1be1b184d7696c988fe7ee056b3b7e0be33a416eefe,2187
     pantry-tree:
       sha256: faccce94148b87b2b39a1d5e8c24c41356e48fac6fceda56075967f66e9a182f
       size: 1395
   original:
     hackage: typelevel-tools-yj-0.1.0.6
+- completed:
+    hackage: hetero-parameter-list-0.1.0.18@sha256:0aa3a237315e4517fef8ade4810f26285992f2bc1de0efc73b97bb5410fc6e68,1884
+    pantry-tree:
+      sha256: 29724eeba90461de9c0d07470a33a94e6d392e4a1a6cd7110784a694fea87045
+      size: 459
+  original:
+    hackage: hetero-parameter-list-0.1.0.18
 snapshots:
 - completed:
     sha256: f42485a583f6c2e1d25341c8626af031df9f8dd15c05aba6051d145b7731cae4

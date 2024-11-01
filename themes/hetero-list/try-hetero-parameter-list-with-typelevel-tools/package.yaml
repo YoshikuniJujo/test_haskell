@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - template-haskell
 - typelevel-tools-yj
-- try-hetero-parameter-list
+- hetero-parameter-list
 
 ghc-options:
 - -Wall
