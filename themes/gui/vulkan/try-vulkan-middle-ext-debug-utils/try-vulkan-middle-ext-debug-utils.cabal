@@ -39,9 +39,9 @@ library
     , c-enum
     , data-default
     , gpu-vulkan-middle
+    , hetero-parameter-list
     , text
     , text-misc-yj
-    , try-hetero-parameter-list
     , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
     , typelevel-tools-yj
@@ -61,9 +61,9 @@ test-suite try-vulkan-middle-ext-debug-utils-test
     , c-enum
     , data-default
     , gpu-vulkan-middle
+    , hetero-parameter-list
     , text
     , text-misc-yj
-    , try-hetero-parameter-list
     , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-middle-ext-debug-utils

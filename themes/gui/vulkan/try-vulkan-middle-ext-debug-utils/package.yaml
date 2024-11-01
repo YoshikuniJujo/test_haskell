@@ -30,7 +30,7 @@ dependencies:
 - gpu-vulkan-middle
 - try-vulkan-core-ext-debug-utils
 - typelevel-tools-yj
-- try-hetero-parameter-list
+- hetero-parameter-list
 
 ghc-options:
 - -Wall
