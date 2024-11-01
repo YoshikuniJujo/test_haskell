@@ -28,7 +28,7 @@ dependencies:
 - try-gpu-vulkan-middle-khr-swapchain
 - try-hetero-parameter-list
 - try-storable-peek-poke
-- typelevel-tools
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall
