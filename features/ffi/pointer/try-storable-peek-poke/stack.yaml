@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2023-02-14
+resolver: nightly-2024-10-31
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,10 +40,7 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-- git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 6bf76fc2f9161d03033e54c2d573ee44b5d42756
-  subdirs:
-  - themes/type_level/typelevel-tools
+- typelevel-tools-yj-0.1.0.6
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
