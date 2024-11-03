@@ -39,6 +39,8 @@ ghc-options:
 
 library:
   source-dirs: src
+  pkg-config-dependencies:
+  - shaderc
 
 tests:
   try-language-spir-v-test:
