@@ -5,47 +5,34 @@
 
 packages:
 - completed:
-    commit: e2c99bb1f4b5fd53cee1cc5ea1f70c1ff1eb1f91
+    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-language-spir-v
     pantry-tree:
-      sha256: 5802e5028c2943c7bbdad7f643ab5e76f112cbfa07f6acf90f19711d9b3cbd16
+      sha256: 7e0c40fa976404654eb5bf5896467fa69087cc25b46205db94403b4e06a4bb09
       size: 933
     subdir: themes/gui/vulkan/try-language-spir-v
     version: 0.1.0.0
   original:
-    commit: e2c99bb1f4b5fd53cee1cc5ea1f70c1ff1eb1f91
+    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-language-spir-v
 - completed:
-    commit: e2c99bb1f4b5fd53cee1cc5ea1f70c1ff1eb1f91
+    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-storable-peek-poke
+    name: storable-peek-poke
     pantry-tree:
-      sha256: 3a416a40e213f6625ef04c4f632c9d6f9faea20262deca26e98342129cfe86a5
-      size: 678
-    subdir: features/ffi/pointer/try-storable-peek-poke
+      sha256: 48ca3d7f3caa0d3c3814cf7baf73c87c2470c6659d3a9ba136fc4b0872ad47cf
+      size: 674
+    subdir: features/ffi/pointer/storable-peek-poke
     version: 0.1.0.1
   original:
-    commit: e2c99bb1f4b5fd53cee1cc5ea1f70c1ff1eb1f91
+    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/try-storable-peek-poke
-- completed:
-    commit: e2c99bb1f4b5fd53cee1cc5ea1f70c1ff1eb1f91
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: typelevel-tools
-    pantry-tree:
-      sha256: c9f34816c8f5e1adfdb6956ff81846527d731a2a63d3b60748001688aa3af5a2
-      size: 1599
-    subdir: themes/type_level/typelevel-tools
-    version: 0.1.0.5
-  original:
-    commit: e2c99bb1f4b5fd53cee1cc5ea1f70c1ff1eb1f91
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/type_level/typelevel-tools
+    subdir: features/ffi/pointer/storable-peek-poke
 snapshots:
 - completed:
-    sha256: 5362057cb009c3df7b588bcb37ade11ffeecf2feb056dae9b418116680117383
-    size: 529494
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/1/3.yaml
-  original: nightly-2024-01-03
+    sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a
+    size: 674598
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/3.yaml
+  original: nightly-2024-11-03

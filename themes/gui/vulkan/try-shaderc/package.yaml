@@ -30,7 +30,7 @@ dependencies:
 - exception-hierarchy
 - c-enum
 - c-struct
-- try-storable-peek-poke
+- storable-peek-poke
 
 library:
   source-dirs: src
