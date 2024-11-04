@@ -3,17 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: typelevel-tools-yj-0.1.0.6@sha256:33f336a1cea83dda17d6e1be1b184d7696c988fe7ee056b3b7e0be33a416eefe,2187
-    pantry-tree:
-      sha256: faccce94148b87b2b39a1d5e8c24c41356e48fac6fceda56075967f66e9a182f
-      size: 1395
-  original:
-    hackage: typelevel-tools-yj-0.1.0.6
+packages: []
 snapshots:
 - completed:
-    sha256: f42485a583f6c2e1d25341c8626af031df9f8dd15c05aba6051d145b7731cae4
-    size: 673671
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/10/31.yaml
-  original: nightly-2024-10-31
+    sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a
+    size: 674598
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/3.yaml
+  original: nightly-2024-11-03

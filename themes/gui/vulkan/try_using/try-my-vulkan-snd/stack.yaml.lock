@@ -341,16 +341,9 @@ packages:
       size: 378
   original:
     hackage: text-misc-yj-0.1.0.0
-- completed:
-    hackage: typelevel-tools-yj-0.1.0.6@sha256:33f336a1cea83dda17d6e1be1b184d7696c988fe7ee056b3b7e0be33a416eefe,2187
-    pantry-tree:
-      sha256: faccce94148b87b2b39a1d5e8c24c41356e48fac6fceda56075967f66e9a182f
-      size: 1395
-  original:
-    hackage: typelevel-tools-yj-0.1.0.6
 snapshots:
 - completed:
-    sha256: 11e3f2511aa48bb344eb467bf247b7b7ef4c7f729df4ca262f08d3325223d8b6
-    size: 674613
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/2.yaml
-  original: nightly-2024-11-02
+    sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a
+    size: 674598
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/3.yaml
+  original: nightly-2024-11-03
