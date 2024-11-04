@@ -5,35 +5,21 @@
 
 packages:
 - completed:
-    commit: ad752b7d4a4c37d91cf263179168465045f14e2d
+    commit: 22f359f318da49b31971eec1e613bafae87f2b16
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-storable-peek-poke
+    name: storable-peek-poke
     pantry-tree:
-      sha256: 3a416a40e213f6625ef04c4f632c9d6f9faea20262deca26e98342129cfe86a5
-      size: 678
-    subdir: features/ffi/pointer/try-storable-peek-poke
+      sha256: 48ca3d7f3caa0d3c3814cf7baf73c87c2470c6659d3a9ba136fc4b0872ad47cf
+      size: 674
+    subdir: features/ffi/pointer/storable-peek-poke
     version: 0.1.0.1
   original:
-    commit: ad752b7d4a4c37d91cf263179168465045f14e2d
+    commit: 22f359f318da49b31971eec1e613bafae87f2b16
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/try-storable-peek-poke
-- completed:
-    commit: ad752b7d4a4c37d91cf263179168465045f14e2d
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: typelevel-tools
-    pantry-tree:
-      sha256: c9f34816c8f5e1adfdb6956ff81846527d731a2a63d3b60748001688aa3af5a2
-      size: 1599
-    subdir: themes/type_level/typelevel-tools
-    version: 0.1.0.5
-  original:
-    commit: ad752b7d4a4c37d91cf263179168465045f14e2d
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/type_level/typelevel-tools
+    subdir: features/ffi/pointer/storable-peek-poke
 snapshots:
 - completed:
-    sha256: 2e7d4a730d8eb5373b2d383fac84efcf7c81e3b7a5fce71b4c2e19a1768f25a6
-    size: 640239
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/6.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/6.yaml
+    sha256: 3400a8802fb651fc684a3055c73ca551e0b419c99df61ba26a4d6dbfb2b032ec
+    size: 674814
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/4.yaml
+  original: nightly-2024-11-04
