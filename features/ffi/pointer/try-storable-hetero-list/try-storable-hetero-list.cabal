@@ -34,7 +34,7 @@ library
   build-depends:
       base >=4.7 && <5
     , hetero-parameter-list
-    , try-storable-peek-poke
+    , storable-peek-poke
   default-language: Haskell2010
 
 test-suite try-storable-hetero-list-test
@@ -48,6 +48,6 @@ test-suite try-storable-hetero-list-test
   build-depends:
       base >=4.7 && <5
     , hetero-parameter-list
+    , storable-peek-poke
     , try-storable-hetero-list
-    , try-storable-peek-poke
   default-language: Haskell2010
