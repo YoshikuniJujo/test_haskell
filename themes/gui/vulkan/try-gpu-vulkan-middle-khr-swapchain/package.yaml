@@ -29,7 +29,7 @@ dependencies:
 - data-default
 - c-enum
 - typelevel-tools-yj
-- try-storable-peek-poke
+- storable-peek-poke
 
 ghc-options:
 - -Wall
