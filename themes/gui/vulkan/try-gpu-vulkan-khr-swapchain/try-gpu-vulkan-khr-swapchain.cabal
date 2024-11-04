@@ -39,10 +39,10 @@ library
     , containers
     , hetero-parameter-list
     , stm
+    , storable-peek-poke
     , try-gpu-vulkan
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-middle-khr-swapchain
-    , try-storable-peek-poke
     , typelevel-tools-yj
   default-language: Haskell2010
 
@@ -61,10 +61,10 @@ test-suite try-gpu-vulkan-khr-swapchain-test
     , containers
     , hetero-parameter-list
     , stm
+    , storable-peek-poke
     , try-gpu-vulkan
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-swapchain
-    , try-storable-peek-poke
     , typelevel-tools-yj
   default-language: Haskell2010
