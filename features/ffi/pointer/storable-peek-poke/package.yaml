@@ -1,6 +1,6 @@
-name:                try-storable-peek-poke
+name:                storable-peek-poke
 version:             0.1.0.1
-github:              "YoshikuniJujo/try-storable-peek-poke"
+github:              "YoshikuniJujo/storable-peek-poke"
 license:             BSD3
 author:              "Yoshikuni Jujo"
 maintainer:          "yoshikuni.jujo@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-storable-peek-poke#readme>
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/storable-peek-poke#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -38,7 +38,7 @@ library:
   source-dirs: src
 
 tests:
-  try-storable-peek-poke-test:
+  storable-peek-poke-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -46,4 +46,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-storable-peek-poke
+    - storable-peek-poke
