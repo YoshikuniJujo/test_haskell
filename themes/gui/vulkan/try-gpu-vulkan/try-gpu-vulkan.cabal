@@ -187,6 +187,7 @@ library
     , hetero-parameter-list
     , mono-traversable
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -194,7 +195,6 @@ library
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
   default-language: Haskell2010
@@ -226,6 +226,7 @@ test-suite try-gpu-vulkan-test
     , hetero-parameter-list
     , mono-traversable
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -234,7 +235,6 @@ test-suite try-gpu-vulkan-test
     , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
   default-language: Haskell2010
