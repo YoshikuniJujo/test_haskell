@@ -184,12 +184,12 @@ library
     , mtl-misc-yj
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , text-misc-yj
     , try-language-spir-v
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , typelevel-tools-yj
     , union-color
     , uuid
@@ -216,12 +216,12 @@ test-suite try-vulkan-middle-test
     , mtl-misc-yj
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , text-misc-yj
     , try-language-spir-v
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-vulkan-middle
     , typelevel-tools-yj
     , union-color

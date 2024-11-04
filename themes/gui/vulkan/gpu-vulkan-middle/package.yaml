@@ -36,7 +36,7 @@ dependencies:
 - exception-hierarchy
 - union-color
 - hetero-parameter-list
-- try-storable-peek-poke
+- storable-peek-poke
 - try-storable-hetero-list
 - gpu-vulkan-core
 - try-language-spir-v
