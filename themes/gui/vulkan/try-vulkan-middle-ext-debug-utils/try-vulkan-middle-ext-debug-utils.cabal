@@ -40,9 +40,9 @@ library
     , data-default
     , gpu-vulkan-middle
     , hetero-parameter-list
+    , storable-peek-poke
     , text
     , text-misc-yj
-    , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
     , typelevel-tools-yj
     , union-color
@@ -62,9 +62,9 @@ test-suite try-vulkan-middle-ext-debug-utils-test
     , data-default
     , gpu-vulkan-middle
     , hetero-parameter-list
+    , storable-peek-poke
     , text
     , text-misc-yj
-    , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-middle-ext-debug-utils
     , typelevel-tools-yj

@@ -26,7 +26,7 @@ dependencies:
 - text-misc-yj
 - c-enum
 - union-color
-- try-storable-peek-poke
+- storable-peek-poke
 - gpu-vulkan-middle
 - try-vulkan-core-ext-debug-utils
 - typelevel-tools-yj
