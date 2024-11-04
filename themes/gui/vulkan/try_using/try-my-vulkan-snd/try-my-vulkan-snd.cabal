@@ -66,6 +66,7 @@ library
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -85,7 +86,6 @@ library
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -127,6 +127,7 @@ executable my-glslc
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -147,7 +148,6 @@ executable my-glslc
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -179,6 +179,7 @@ executable try-allocation-callbacks
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -199,7 +200,6 @@ executable try-allocation-callbacks
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -231,6 +231,7 @@ executable try-copy-descriptor-set
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -251,7 +252,6 @@ executable try-copy-descriptor-set
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -283,6 +283,7 @@ executable try-depth-buffering
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -303,7 +304,6 @@ executable try-depth-buffering
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -335,6 +335,7 @@ executable try-depth-buffering-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -355,7 +356,6 @@ executable try-depth-buffering-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -387,6 +387,7 @@ executable try-dynamic-dsc-sets
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -407,7 +408,6 @@ executable try-dynamic-dsc-sets
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -439,6 +439,7 @@ executable try-generating-mipmaps
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -459,7 +460,6 @@ executable try-generating-mipmaps
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -491,6 +491,7 @@ executable try-generating-mipmaps-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -511,7 +512,6 @@ executable try-generating-mipmaps-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -543,6 +543,7 @@ executable try-hello-world
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -563,7 +564,6 @@ executable try-hello-world
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -595,6 +595,7 @@ executable try-image-buffer
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -615,7 +616,6 @@ executable try-image-buffer
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -647,6 +647,7 @@ executable try-loading-models
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -667,7 +668,6 @@ executable try-loading-models
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -699,6 +699,7 @@ executable try-loading-models-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -719,7 +720,6 @@ executable try-loading-models-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -751,6 +751,7 @@ executable try-multisampling
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -771,7 +772,6 @@ executable try-multisampling
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -803,6 +803,7 @@ executable try-multisampling-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -823,7 +824,6 @@ executable try-multisampling-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -855,6 +855,7 @@ executable try-multisampling-use-groups-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -875,7 +876,6 @@ executable try-multisampling-use-groups-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -907,6 +907,7 @@ executable try-no-dynamic-dsc-sets
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -927,7 +928,6 @@ executable try-no-dynamic-dsc-sets
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -959,6 +959,7 @@ executable try-object-index
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -979,7 +980,6 @@ executable try-object-index
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1011,6 +1011,7 @@ executable try-pipeline-cache
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1031,7 +1032,6 @@ executable try-pipeline-cache
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1063,6 +1063,7 @@ executable try-query
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1083,7 +1084,6 @@ executable try-query
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1115,6 +1115,7 @@ executable try-rectangle
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1135,7 +1136,6 @@ executable try-rectangle
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1167,6 +1167,7 @@ executable try-rectangle-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1187,7 +1188,6 @@ executable try-rectangle-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1219,6 +1219,7 @@ executable try-saitan
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1239,7 +1240,6 @@ executable try-saitan
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1271,6 +1271,7 @@ executable try-saitan-float
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1291,7 +1292,6 @@ executable try-saitan-float
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1323,6 +1323,7 @@ executable try-saitan-simple
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1343,7 +1344,6 @@ executable try-saitan-simple
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1375,6 +1375,7 @@ executable try-shaderc
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1395,7 +1396,6 @@ executable try-shaderc
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1427,6 +1427,7 @@ executable try-texel-buffer-float
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1447,7 +1448,6 @@ executable try-texel-buffer-float
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1479,6 +1479,7 @@ executable try-texel-buffer-word32
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1499,7 +1500,6 @@ executable try-texel-buffer-word32
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1531,6 +1531,7 @@ executable try-texture
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1551,7 +1552,6 @@ executable try-texture
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1583,6 +1583,7 @@ executable try-texture-descriptor-set-group-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1603,7 +1604,6 @@ executable try-texture-descriptor-set-group-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1635,6 +1635,7 @@ executable try-texture-image-manager-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1655,7 +1656,6 @@ executable try-texture-image-manager-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1687,6 +1687,7 @@ executable try-texture-immutable-sampler-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1707,7 +1708,6 @@ executable try-texture-immutable-sampler-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1739,6 +1739,7 @@ executable try-texture-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1759,7 +1760,6 @@ executable try-texture-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1791,6 +1791,7 @@ executable try-triangle
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1811,7 +1812,6 @@ executable try-triangle
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1843,6 +1843,7 @@ executable try-triangle-single
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1863,7 +1864,6 @@ executable try-triangle-single
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1895,6 +1895,7 @@ executable try-vulkan-guide
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1915,7 +1916,6 @@ executable try-vulkan-guide
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1947,6 +1947,7 @@ executable try-vulkan-guide-dynamic
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -1967,7 +1968,6 @@ executable try-vulkan-guide-dynamic
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -1999,6 +1999,7 @@ executable try-vulkan-guide-storage
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -2019,7 +2020,6 @@ executable try-vulkan-guide-storage
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -2051,6 +2051,7 @@ executable try-vulkan-guide-texture
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -2071,7 +2072,6 @@ executable try-vulkan-guide-texture
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -2103,6 +2103,7 @@ executable try-wavefront-obj
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -2123,7 +2124,6 @@ executable try-wavefront-obj
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -2155,6 +2155,7 @@ executable try-yatteiku
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -2175,7 +2176,6 @@ executable try-yatteiku
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
@@ -2208,6 +2208,7 @@ test-suite try-my-vulkan-snd-test
     , optparse-declarative
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -2228,7 +2229,6 @@ test-suite try-my-vulkan-snd-test
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , typelevel-tools-yj
     , union-color
