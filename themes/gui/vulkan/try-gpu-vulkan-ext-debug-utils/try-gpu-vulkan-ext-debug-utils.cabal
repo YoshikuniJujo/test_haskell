@@ -36,8 +36,8 @@ library
   build-depends:
       base >=4.7 && <5
     , gpu-vulkan-middle
+    , storable-peek-poke
     , try-gpu-vulkan
-    , try-storable-peek-poke
     , try-vulkan-middle-ext-debug-utils
     , typelevel-tools-yj
   default-language: Haskell2010
@@ -53,9 +53,9 @@ test-suite try-gpu-vulkan-ext-debug-utils-test
   build-depends:
       base >=4.7 && <5
     , gpu-vulkan-middle
+    , storable-peek-poke
     , try-gpu-vulkan
     , try-gpu-vulkan-ext-debug-utils
-    , try-storable-peek-poke
     , try-vulkan-middle-ext-debug-utils
     , typelevel-tools-yj
   default-language: Haskell2010

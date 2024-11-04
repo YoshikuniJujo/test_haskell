@@ -24,7 +24,7 @@ dependencies:
 - try-gpu-vulkan
 - gpu-vulkan-middle
 - try-vulkan-middle-ext-debug-utils
-- try-storable-peek-poke
+- storable-peek-poke
 - typelevel-tools-yj
 
 ghc-options:
