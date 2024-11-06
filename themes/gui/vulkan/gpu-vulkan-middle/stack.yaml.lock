@@ -5,20 +5,7 @@
 
 packages:
 - completed:
-    commit: 8e6f75877a085f3158845c0add2c74eaaef0a655
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-language-spir-v
-    pantry-tree:
-      sha256: 7e0c40fa976404654eb5bf5896467fa69087cc25b46205db94403b4e06a4bb09
-      size: 933
-    subdir: themes/gui/vulkan/try-language-spir-v
-    version: 0.1.0.0
-  original:
-    commit: 8e6f75877a085f3158845c0add2c74eaaef0a655
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-language-spir-v
-- completed:
-    commit: 8e6f75877a085f3158845c0add2c74eaaef0a655
+    commit: 29e3cbad1b7727f4a773babfac782b6a3fd0532c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: gpu-vulkan-core
     pantry-tree:
@@ -27,23 +14,16 @@ packages:
     subdir: themes/gui/vulkan/gpu-vulkan-core
     version: 0.1.0.7
   original:
-    commit: 8e6f75877a085f3158845c0add2c74eaaef0a655
+    commit: 29e3cbad1b7727f4a773babfac782b6a3fd0532c
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-core
 - completed:
-    hackage: mtl-misc-yj-0.1.0.1@sha256:6de7d1c523f9e1114f28eb4043c0e06d2cec1a03bd2bd346de335cf052259e21,1737
+    hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
-      sha256: 02112af6131e7ac6800f0ef67cc5f6648e6e4dfe24c445d094d44ba28710967c
-      size: 377
+      sha256: abce419a94c3bceaa50e2a211c1e9de63d47e7b33a2ff8017b04904defd6dcdd
+      size: 650
   original:
-    hackage: mtl-misc-yj-0.1.0.1
-- completed:
-    hackage: text-misc-yj-0.1.0.0@sha256:0d8853471820c0bba526ee9de8cf2eb506657c20b82e34314e06f211d4521273,1782
-    pantry-tree:
-      sha256: 42697a9f6f4eca39528db95f9757d81199d4154daef9777126bcd17ffdbb0e00
-      size: 378
-  original:
-    hackage: text-misc-yj-0.1.0.0
+    hackage: language-spir-v-0.1.0.1
 - completed:
     hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
     pantry-tree:
@@ -58,6 +38,20 @@ packages:
       size: 389
   original:
     hackage: storable-hetero-list-0.1.0.4
+- completed:
+    hackage: mtl-misc-yj-0.1.0.1@sha256:6de7d1c523f9e1114f28eb4043c0e06d2cec1a03bd2bd346de335cf052259e21,1737
+    pantry-tree:
+      sha256: 02112af6131e7ac6800f0ef67cc5f6648e6e4dfe24c445d094d44ba28710967c
+      size: 377
+  original:
+    hackage: mtl-misc-yj-0.1.0.1
+- completed:
+    hackage: text-misc-yj-0.1.0.0@sha256:0d8853471820c0bba526ee9de8cf2eb506657c20b82e34314e06f211d4521273,1782
+    pantry-tree:
+      sha256: 42697a9f6f4eca39528db95f9757d81199d4154daef9777126bcd17ffdbb0e00
+      size: 378
+  original:
+    hackage: text-misc-yj-0.1.0.0
 snapshots:
 - completed:
     sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a

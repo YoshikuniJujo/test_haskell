@@ -1,6 +1,6 @@
 name:                gpu-vulkan-middle
 version:             0.1.0.54
-github:              "githubuser/try-vulkan-middle"
+github:              "githubuser/gpu-vulkan-middle"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
@@ -39,7 +39,7 @@ dependencies:
 - storable-peek-poke
 - storable-hetero-list
 - gpu-vulkan-core
-- try-language-spir-v
+- language-spir-v
 - typelevel-tools-yj
 
 ghc-options:
@@ -151,7 +151,7 @@ library:
   - Gpu.Vulkan.VertexInput.Middle
 
 tests:
-  try-vulkan-middle-test:
+  gpu-vulkan-middle-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -159,4 +159,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-vulkan-middle
+    - gpu-vulkan-middle

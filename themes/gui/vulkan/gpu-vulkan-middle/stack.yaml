@@ -42,14 +42,14 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 8e6f75877a085f3158845c0add2c74eaaef0a655
+  commit: 29e3cbad1b7727f4a773babfac782b6a3fd0532c
   subdirs:
-  - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/gpu-vulkan-core
-- mtl-misc-yj-0.1.0.1
-- text-misc-yj-0.1.0.0
+- language-spir-v-0.1.0.1
 - storable-peek-poke-0.1.0.1
 - storable-hetero-list-0.1.0.4
+- mtl-misc-yj-0.1.0.1
+- text-misc-yj-0.1.0.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

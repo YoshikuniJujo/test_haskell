@@ -7,8 +7,8 @@ cabal-version: 1.12
 name:           gpu-vulkan-middle
 version:        0.1.0.54
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/tree/master/try-gpu-vulkan#readme>
-homepage:       https://github.com/githubuser/try-vulkan-middle#readme
-bug-reports:    https://github.com/githubuser/try-vulkan-middle/issues
+homepage:       https://github.com/githubuser/gpu-vulkan-middle#readme
+bug-reports:    https://github.com/githubuser/gpu-vulkan-middle/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2022 Author name here
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/try-vulkan-middle
+  location: https://github.com/githubuser/gpu-vulkan-middle
 
 library
   exposed-modules:
@@ -180,6 +180,7 @@ library
     , exception-hierarchy
     , gpu-vulkan-core
     , hetero-parameter-list
+    , language-spir-v
     , mtl
     , mtl-misc-yj
     , ranged-list
@@ -189,13 +190,12 @@ library
     , template-haskell
     , text
     , text-misc-yj
-    , try-language-spir-v
     , typelevel-tools-yj
     , union-color
     , uuid
   default-language: Haskell2010
 
-test-suite try-vulkan-middle-test
+test-suite gpu-vulkan-middle-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -211,7 +211,9 @@ test-suite try-vulkan-middle-test
     , data-default
     , exception-hierarchy
     , gpu-vulkan-core
+    , gpu-vulkan-middle
     , hetero-parameter-list
+    , language-spir-v
     , mtl
     , mtl-misc-yj
     , ranged-list
@@ -221,8 +223,6 @@ test-suite try-vulkan-middle-test
     , template-haskell
     , text
     , text-misc-yj
-    , try-language-spir-v
-    , try-vulkan-middle
     , typelevel-tools-yj
     , union-color
     , uuid
