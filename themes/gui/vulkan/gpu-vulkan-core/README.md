@@ -1,1 +1,3 @@
-# try-vulkan-core
+# gpu-vulkan-core
+
+See package gpu-vulkan
