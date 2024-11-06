@@ -54,10 +54,10 @@ dependencies:
 - mono-traversable
 - data-default
 - hetero-parameter-list
-- try-hetero-parameter-list-with-typelevel-tools
+- hetero-parameter-list-with-typelevel-tools
 - storable-peek-poke
 - try-storable-generic
-- try-storable-hetero-list
+- storable-hetero-list
 - typelevel-tools-yj
 - try-codec-wavefront-obj
 - try-gpu-vulkan-khr-surface-glfw
