@@ -1,10 +1,10 @@
-name:                try-language-spir-v
+name:                language-spir-v
 version:             0.1.0.0
-github:              "githubuser/try-language-spir-v"
+github:              "githubuser/language-spir-v"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2023 Author name here"
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "2023 Yoshikuni Jujo"
 
 extra-source-files:
 - README.md
@@ -17,14 +17,14 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/try-language-spir-v#readme>
+description:         Please see the README on GitHub at <https://github.com/githubuser/language-spir-v#readme>
 
 dependencies:
 - base >= 4.7 && < 5
-- template-haskell
-- bytestring
-- nowdoc
-- c-enum
+- template-haskell < 3
+- bytestring < 1
+- nowdoc < 1
+- c-enum < 1
 
 ghc-options:
 - -Wall
@@ -43,7 +43,7 @@ library:
   - shaderc
 
 tests:
-  try-language-spir-v-test:
+  language-spir-v-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -51,4 +51,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-language-spir-v
+    - language-spir-v
