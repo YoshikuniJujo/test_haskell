@@ -4,11 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-storable-hetero-list
+name:           storable-hetero-list
 version:        0.1.0.4
-description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-storable-hetero-list#readme>
-homepage:       https://github.com/YoshikuniJujo/try-storable-hetero-list#readme
-bug-reports:    https://github.com/YoshikuniJujo/try-storable-hetero-list/issues
+synopsis:       about Storable and Hetero list
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/storable-hetero-list#readme>
+category:       Data, Foreign
+homepage:       https://github.com/YoshikuniJujo/storable-hetero-list#readme
+bug-reports:    https://github.com/YoshikuniJujo/storable-hetero-list/issues
 author:         Yoshikuni Jujo
 maintainer:     yoshikuni.jujo@gmail.com
 copyright:      2023 Yoshikuni Jujo
@@ -21,13 +23,13 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/YoshikuniJujo/try-storable-hetero-list
+  location: https://github.com/YoshikuniJujo/storable-hetero-list
 
 library
   exposed-modules:
       Foreign.Storable.HeteroList
   other-modules:
-      Paths_try_storable_hetero_list
+      Paths_storable_hetero_list
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -37,17 +39,17 @@ library
     , storable-peek-poke
   default-language: Haskell2010
 
-test-suite try-storable-hetero-list-test
+test-suite storable-hetero-list-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_storable_hetero_list
+      Paths_storable_hetero_list
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , hetero-parameter-list
+    , storable-hetero-list
     , storable-peek-poke
-    , try-storable-hetero-list
   default-language: Haskell2010
