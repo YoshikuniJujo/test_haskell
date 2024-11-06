@@ -4,11 +4,11 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-tools-yj
+name:           tools-yj
 version:        0.1.0.19
-description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-tools-yj#readme>
-homepage:       https://github.com/YoshikuniJujo/try-tools-yj#readme
-bug-reports:    https://github.com/YoshikuniJujo/try-tools-yj/issues
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/tools-yj#readme>
+homepage:       https://github.com/YoshikuniJujo/tools-yj#readme
+bug-reports:    https://github.com/YoshikuniJujo/tools-yj/issues
 author:         Yoshikuni Jujo
 maintainer:     yoshikuni.jujo@gmail.com
 copyright:      Copyright (c) 2023 Yoshikuni Jujo
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/YoshikuniJujo/try-tools-yj
+  location: https://github.com/YoshikuniJujo/tools-yj
 
 library
   exposed-modules:
@@ -38,37 +38,37 @@ library
       Data.Text.ToolsYj
       Data.Tuple.ToolsYj
   other-modules:
-      Paths_try_tools_yj
+      Paths_tools_yj
   autogen-modules:
-      Paths_try_tools_yj
+      Paths_tools_yj
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , containers
-    , data-default
-    , mono-traversable
-    , stm
-    , text
+    , containers <1
+    , data-default <1
+    , mono-traversable <2
+    , stm <3
+    , text <3
   default-language: Haskell2010
 
-test-suite try-tools-yj-test
+test-suite tools-yj-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_tools_yj
+      Paths_tools_yj
   autogen-modules:
-      Paths_try_tools_yj
+      Paths_tools_yj
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , containers
-    , data-default
-    , mono-traversable
-    , stm
-    , text
-    , try-tools-yj
+    , containers <1
+    , data-default <1
+    , mono-traversable <2
+    , stm <3
+    , text <3
+    , tools-yj
   default-language: Haskell2010
