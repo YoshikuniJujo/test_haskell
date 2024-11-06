@@ -4,11 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-hetero-parameter-list-with-typelevel-tools
+name:           hetero-parameter-list-with-typelevel-tools
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/try-hetero-parameter-list-with-typelevel-tools#readme>
-homepage:       https://github.com/githubuser/try-hetero-parameter-list-with-typelevel-tools#readme
-bug-reports:    https://github.com/githubuser/try-hetero-parameter-list-with-typelevel-tools/issues
+synopsis:       Hetero parameter list with type level tools
+description:    Please see the README on GitHub at <https://github.com/githubuser/hetero-parameter-list-with-typelevel-tools#readme>
+category:       Data
+homepage:       https://github.com/githubuser/hetero-parameter-list-with-typelevel-tools#readme
+bug-reports:    https://github.com/githubuser/hetero-parameter-list-with-typelevel-tools/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2023 Author name here
@@ -21,14 +23,14 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/try-hetero-parameter-list-with-typelevel-tools
+  location: https://github.com/githubuser/hetero-parameter-list-with-typelevel-tools
 
 library
   exposed-modules:
       Data.HeteroParList.Tuple
       Data.HeteroParList.Tuple.TH
   other-modules:
-      Paths_try_hetero_parameter_list_with_typelevel_tools
+      Paths_hetero_parameter_list_with_typelevel_tools
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -39,18 +41,18 @@ library
     , typelevel-tools-yj
   default-language: Haskell2010
 
-test-suite try-hetero-parameter-list-with-typelevel-tools-test
+test-suite hetero-parameter-list-with-typelevel-tools-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_hetero_parameter_list_with_typelevel_tools
+      Paths_hetero_parameter_list_with_typelevel_tools
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , hetero-parameter-list
+    , hetero-parameter-list-with-typelevel-tools
     , template-haskell
-    , try-hetero-parameter-list-with-typelevel-tools
     , typelevel-tools-yj
   default-language: Haskell2010
