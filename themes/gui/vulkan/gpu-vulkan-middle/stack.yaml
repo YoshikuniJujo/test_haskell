@@ -41,10 +41,7 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-- git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 29e3cbad1b7727f4a773babfac782b6a3fd0532c
-  subdirs:
-  - themes/gui/vulkan/gpu-vulkan-core
+- gpu-vulkan-core-0.1.0.8
 - language-spir-v-0.1.0.1
 - storable-peek-poke-0.1.0.1
 - storable-hetero-list-0.1.0.4

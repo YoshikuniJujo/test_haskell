@@ -18,18 +18,12 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-middle
 - completed:
-    commit: 2fbb0cd7f5f55ceaa530083361f5f4ac19f8638a
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: gpu-vulkan-core
+    hackage: gpu-vulkan-core-0.1.0.8@sha256:a4dcd94ed86133a1d7b991fb2f3547f3838e05a0dfdb6a308a61e44a0828baa5,3369
     pantry-tree:
-      sha256: a0a4eb359e74c381304a372a321d0f381c53131e59e3c2d3ed50baa956dfde39
-      size: 5179
-    subdir: themes/gui/vulkan/gpu-vulkan-core
-    version: 0.1.0.7
+      sha256: d28722b391dba8c9bdce82266895b63a714c6a7300f29d530a17577164a47b71
+      size: 4777
   original:
-    commit: 2fbb0cd7f5f55ceaa530083361f5f4ac19f8638a
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/gpu-vulkan-core
+    hackage: gpu-vulkan-core-0.1.0.8
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:

@@ -52,7 +52,6 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
-  - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
@@ -65,6 +64,7 @@ extra-deps:
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
+- gpu-vulkan-core-0.1.0.8
 - language-spir-v-0.1.0.1
 - mtl-misc-yj-0.1.0.1
 - text-misc-yj-0.1.0.0
