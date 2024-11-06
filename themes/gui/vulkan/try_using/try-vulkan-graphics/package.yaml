@@ -50,12 +50,12 @@ dependencies:
 - try-glfw-group
 - try-language-spir-v
 - try-shaderc
-- try-hetero-parameter-list
-- try-storable-peek-poke
+- hetero-parameter-list
+- storable-peek-poke
 - try-storable-generic
 - union-color
 - ranged-list
-- typelevel-tools
+- typelevel-tools-yj
 - temporary
 - try-tools-yj
 - mono-traversable

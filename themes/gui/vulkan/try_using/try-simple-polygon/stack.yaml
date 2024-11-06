@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-10-29
+resolver: nightly-2024-11-05
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 7b6739f979cafa76641cf2810b8e4e76a206bfc4
+  commit: 4dc0a6028250cf886e931061029c6d8ee522a6bf
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
@@ -50,12 +50,12 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-gpu-vulkan-cglm
-  - themes/gui/vulkan/try-vulkan-middle
+  - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
-  - themes/gui/vulkan/try-vulkan-core
+  - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
@@ -63,18 +63,16 @@ extra-deps:
   - themes/gui/vulkan/try-shaderc
   - features/ffi/pointer/try-storable-generic
   - features/ffi/pointer/try-storable-hetero-list
-  - features/ffi/pointer/try-storable-peek-poke
-  - themes/hetero-list/try-hetero-parameter-list
+  - features/ffi/pointer/storable-peek-poke
   - themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
-  - themes/monad/try-monads-tf-misc-yj
-  - themes/string/try-text-misc-yj
-  - themes/type_level/typelevel-tools
   - themes/codec/try-codec-wavefront-obj
   - themes/gui/vulkan/try-glfw-group
   - packages/try-tools-yj
 - union-color-0.1.2.0
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
+- mtl-misc-yj-0.1.0.2
+- text-misc-yj-0.1.0.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

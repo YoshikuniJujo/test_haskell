@@ -52,6 +52,7 @@ library
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -61,6 +62,7 @@ library
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -71,16 +73,14 @@ library
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , type-flip
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
     , x-keysym
@@ -112,6 +112,7 @@ executable try-boxes
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -121,6 +122,7 @@ executable try-boxes
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -131,17 +133,15 @@ executable try-boxes
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
     , x-keysym
@@ -163,6 +163,7 @@ executable try-followbox
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -172,6 +173,7 @@ executable try-followbox
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -182,17 +184,15 @@ executable try-followbox
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
     , x-keysym
@@ -214,6 +214,7 @@ executable try-multi-rectangles
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -223,6 +224,7 @@ executable try-multi-rectangles
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -233,17 +235,15 @@ executable try-multi-rectangles
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
     , x-keysym
@@ -266,6 +266,7 @@ test-suite try-use-moffy-vulkan-test
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -275,6 +276,7 @@ test-suite try-use-moffy-vulkan-test
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -285,17 +287,15 @@ test-suite try-use-moffy-vulkan-test
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
     , x-keysym

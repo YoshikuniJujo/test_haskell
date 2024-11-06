@@ -44,10 +44,10 @@ dependencies:
 - try-language-spir-v
 - try-shaderc
 - try-storable-generic
-- try-storable-peek-poke
-- try-hetero-parameter-list
+- storable-peek-poke
+- hetero-parameter-list
 - union-color
-- typelevel-tools
+- typelevel-tools-yj
 - array
 - bytestring
 - try-codec-wavefront-obj

@@ -53,6 +53,7 @@ library
     , containers
     , data-default
     , filepath
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -61,6 +62,7 @@ library
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -71,16 +73,14 @@ library
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -111,6 +111,7 @@ executable try-cairo-image-as-texture
     , containers
     , data-default
     , filepath
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -119,6 +120,7 @@ executable try-cairo-image-as-texture
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -129,17 +131,15 @@ executable try-cairo-image-as-texture
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-rectangles
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -160,6 +160,7 @@ executable try-multi-rectangles
     , containers
     , data-default
     , filepath
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -168,6 +169,7 @@ executable try-multi-rectangles
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -178,17 +180,15 @@ executable try-multi-rectangles
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-rectangles
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -209,6 +209,7 @@ executable try-multi-rectangles2
     , containers
     , data-default
     , filepath
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -217,6 +218,7 @@ executable try-multi-rectangles2
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -227,17 +229,15 @@ executable try-multi-rectangles2
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-rectangles
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -258,6 +258,7 @@ executable try-use-cairo
     , containers
     , data-default
     , filepath
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -266,6 +267,7 @@ executable try-use-cairo
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -276,17 +278,15 @@ executable try-use-cairo
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-rectangles
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -307,6 +307,7 @@ executable try-use-texture-group
     , containers
     , data-default
     , filepath
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -315,6 +316,7 @@ executable try-use-texture-group
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -325,17 +327,15 @@ executable try-use-texture-group
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-rectangles
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -357,6 +357,7 @@ test-suite try-vulkan-rectangles-test
     , containers
     , data-default
     , filepath
+    , hetero-parameter-list
     , moffy
     , mtl
     , optparse-declarative
@@ -365,6 +366,7 @@ test-suite try-vulkan-rectangles-test
     , simple-cairo
     , simple-pango
     , stm
+    , storable-peek-poke
     , template-haskell
     , text
     , time
@@ -375,17 +377,15 @@ test-suite try-vulkan-rectangles-test
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
     , try-storable-hetero-list
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-rectangles
     , type-set
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010

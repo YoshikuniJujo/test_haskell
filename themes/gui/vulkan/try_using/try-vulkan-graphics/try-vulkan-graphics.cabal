@@ -45,12 +45,14 @@ library
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -62,13 +64,11 @@ library
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -98,12 +98,14 @@ executable try-compute
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -115,14 +117,12 @@ executable try-compute
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -142,12 +142,14 @@ executable try-cube-single
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -159,14 +161,12 @@ executable try-cube-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -186,12 +186,14 @@ executable try-depth-buffering-single
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -203,14 +205,12 @@ executable try-depth-buffering-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -230,12 +230,14 @@ executable try-gamepad-button
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -247,14 +249,12 @@ executable try-gamepad-button
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -274,12 +274,14 @@ executable try-multiple-windows
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -291,14 +293,12 @@ executable try-multiple-windows
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -318,12 +318,14 @@ executable try-point-rectangle-single
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -335,14 +337,12 @@ executable try-point-rectangle-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -362,12 +362,14 @@ executable try-rectangle-single
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -379,14 +381,12 @@ executable try-rectangle-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -406,12 +406,14 @@ executable try-triangle-single
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -423,14 +425,12 @@ executable try-triangle-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010
@@ -451,12 +451,14 @@ test-suite try-vulkan-graphics-test
     , containers
     , data-default
     , extra-data-yj
+    , hetero-parameter-list
     , mono-traversable
     , mtl
     , optparse-declarative
     , random
     , ranged-list
     , stm
+    , storable-peek-poke
     , template-haskell
     , temporary
     , text
@@ -468,14 +470,12 @@ test-suite try-vulkan-graphics-test
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-hetero-parameter-list
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-storable-peek-poke
     , try-tools-yj
     , try-vulkan-graphics
-    , typelevel-tools
+    , typelevel-tools-yj
     , union-color
     , vector
   default-language: Haskell2010

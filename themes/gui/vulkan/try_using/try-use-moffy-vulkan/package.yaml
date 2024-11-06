@@ -57,11 +57,11 @@ dependencies:
 - try-gpu-vulkan-khr-surface-glfw
 - try-language-spir-v
 - try-shaderc
-- try-hetero-parameter-list
+- hetero-parameter-list
 - text
 - union-color
-- typelevel-tools
-- try-storable-peek-poke
+- typelevel-tools-yj
+- storable-peek-poke
 - simple-pango
 - cairo-image
 - array

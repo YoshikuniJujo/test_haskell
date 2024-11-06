@@ -47,12 +47,12 @@ dependencies:
 - try-gpu-vulkan-cglm
 - try-shaderc
 - try-language-spir-v
-- try-hetero-parameter-list
+- hetero-parameter-list
 - ranged-list
 - try-storable-hetero-list
-- try-storable-peek-poke
+- storable-peek-poke
 - try-storable-generic
-- typelevel-tools
+- typelevel-tools-yj
 - try-glfw-group
 - GLFW-b
 - time
