@@ -37,7 +37,7 @@ dependencies:
 - union-color
 - hetero-parameter-list
 - storable-peek-poke
-- try-storable-hetero-list
+- storable-hetero-list
 - gpu-vulkan-core
 - try-language-spir-v
 - typelevel-tools-yj
