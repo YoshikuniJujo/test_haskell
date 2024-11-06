@@ -54,11 +54,11 @@ library
     , c-struct
     , data-default
     , exception-hierarchy
+    , language-spir-v
     , mtl
     , nowdoc
     , storable-peek-poke
     , template-haskell
-    , try-language-spir-v
   default-language: Haskell2010
 
 executable try-shaderc-exe
@@ -75,11 +75,11 @@ executable try-shaderc-exe
     , c-struct
     , data-default
     , exception-hierarchy
+    , language-spir-v
     , mtl
     , nowdoc
     , storable-peek-poke
     , template-haskell
-    , try-language-spir-v
     , try-shaderc
   default-language: Haskell2010
 
@@ -98,10 +98,10 @@ test-suite try-shaderc-test
     , c-struct
     , data-default
     , exception-hierarchy
+    , language-spir-v
     , mtl
     , nowdoc
     , storable-peek-poke
     , template-haskell
-    , try-language-spir-v
     , try-shaderc
   default-language: Haskell2010

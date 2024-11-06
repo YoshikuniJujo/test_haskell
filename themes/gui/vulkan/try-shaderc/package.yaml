@@ -25,7 +25,7 @@ dependencies:
 - bytestring
 - mtl
 - data-default
-- try-language-spir-v
+- language-spir-v
 - nowdoc
 - exception-hierarchy
 - c-enum

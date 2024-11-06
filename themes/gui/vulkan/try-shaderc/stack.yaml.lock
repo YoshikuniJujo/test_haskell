@@ -5,34 +5,22 @@
 
 packages:
 - completed:
-    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-language-spir-v
+    hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
-      sha256: 7e0c40fa976404654eb5bf5896467fa69087cc25b46205db94403b4e06a4bb09
-      size: 933
-    subdir: themes/gui/vulkan/try-language-spir-v
-    version: 0.1.0.0
+      sha256: abce419a94c3bceaa50e2a211c1e9de63d47e7b33a2ff8017b04904defd6dcdd
+      size: 650
   original:
-    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-language-spir-v
+    hackage: language-spir-v-0.1.0.1
 - completed:
-    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: storable-peek-poke
+    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
     pantry-tree:
-      sha256: 48ca3d7f3caa0d3c3814cf7baf73c87c2470c6659d3a9ba136fc4b0872ad47cf
-      size: 674
-    subdir: features/ffi/pointer/storable-peek-poke
-    version: 0.1.0.1
+      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
+      size: 466
   original:
-    commit: 041d95b75ac0f588fa100f25fef0f809a7fff01c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/storable-peek-poke
+    hackage: storable-peek-poke-0.1.0.1
 snapshots:
 - completed:
-    sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a
-    size: 674598
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/3.yaml
-  original: nightly-2024-11-03
+    sha256: b69efabdef0bfb1631597151c92fb855d5f3ef2fbcc66e3396f76bb4e828a7ab
+    size: 677103
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/6.yaml
+  original: nightly-2024-11-06
