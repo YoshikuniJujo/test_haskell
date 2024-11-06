@@ -73,6 +73,7 @@ library
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -86,7 +87,6 @@ library
     , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -134,6 +134,7 @@ executable my-glslc
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -148,7 +149,6 @@ executable my-glslc
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -186,6 +186,7 @@ executable try-allocation-callbacks
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -200,7 +201,6 @@ executable try-allocation-callbacks
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -238,6 +238,7 @@ executable try-copy-descriptor-set
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -252,7 +253,6 @@ executable try-copy-descriptor-set
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -290,6 +290,7 @@ executable try-depth-buffering
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -304,7 +305,6 @@ executable try-depth-buffering
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -342,6 +342,7 @@ executable try-depth-buffering-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -356,7 +357,6 @@ executable try-depth-buffering-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -394,6 +394,7 @@ executable try-dynamic-dsc-sets
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -408,7 +409,6 @@ executable try-dynamic-dsc-sets
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -446,6 +446,7 @@ executable try-generating-mipmaps
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -460,7 +461,6 @@ executable try-generating-mipmaps
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -498,6 +498,7 @@ executable try-generating-mipmaps-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -512,7 +513,6 @@ executable try-generating-mipmaps-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -550,6 +550,7 @@ executable try-hello-world
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -564,7 +565,6 @@ executable try-hello-world
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -602,6 +602,7 @@ executable try-image-buffer
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -616,7 +617,6 @@ executable try-image-buffer
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -654,6 +654,7 @@ executable try-loading-models
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -668,7 +669,6 @@ executable try-loading-models
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -706,6 +706,7 @@ executable try-loading-models-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -720,7 +721,6 @@ executable try-loading-models-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -758,6 +758,7 @@ executable try-multisampling
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -772,7 +773,6 @@ executable try-multisampling
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -810,6 +810,7 @@ executable try-multisampling-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -824,7 +825,6 @@ executable try-multisampling-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -862,6 +862,7 @@ executable try-multisampling-use-groups-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -876,7 +877,6 @@ executable try-multisampling-use-groups-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -914,6 +914,7 @@ executable try-no-dynamic-dsc-sets
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -928,7 +929,6 @@ executable try-no-dynamic-dsc-sets
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -966,6 +966,7 @@ executable try-object-index
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -980,7 +981,6 @@ executable try-object-index
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1018,6 +1018,7 @@ executable try-pipeline-cache
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1032,7 +1033,6 @@ executable try-pipeline-cache
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1070,6 +1070,7 @@ executable try-query
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1084,7 +1085,6 @@ executable try-query
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1122,6 +1122,7 @@ executable try-rectangle
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1136,7 +1137,6 @@ executable try-rectangle
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1174,6 +1174,7 @@ executable try-rectangle-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1188,7 +1189,6 @@ executable try-rectangle-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1226,6 +1226,7 @@ executable try-saitan
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1240,7 +1241,6 @@ executable try-saitan
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1278,6 +1278,7 @@ executable try-saitan-float
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1292,7 +1293,6 @@ executable try-saitan-float
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1330,6 +1330,7 @@ executable try-saitan-simple
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1344,7 +1345,6 @@ executable try-saitan-simple
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1382,6 +1382,7 @@ executable try-shaderc
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1396,7 +1397,6 @@ executable try-shaderc
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1434,6 +1434,7 @@ executable try-texel-buffer-float
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1448,7 +1449,6 @@ executable try-texel-buffer-float
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1486,6 +1486,7 @@ executable try-texel-buffer-word32
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1500,7 +1501,6 @@ executable try-texel-buffer-word32
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1538,6 +1538,7 @@ executable try-texture
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1552,7 +1553,6 @@ executable try-texture
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1590,6 +1590,7 @@ executable try-texture-descriptor-set-group-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1604,7 +1605,6 @@ executable try-texture-descriptor-set-group-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1642,6 +1642,7 @@ executable try-texture-image-manager-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1656,7 +1657,6 @@ executable try-texture-image-manager-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1694,6 +1694,7 @@ executable try-texture-immutable-sampler-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1708,7 +1709,6 @@ executable try-texture-immutable-sampler-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1746,6 +1746,7 @@ executable try-texture-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1760,7 +1761,6 @@ executable try-texture-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1798,6 +1798,7 @@ executable try-triangle
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1812,7 +1813,6 @@ executable try-triangle
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1850,6 +1850,7 @@ executable try-triangle-single
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1864,7 +1865,6 @@ executable try-triangle-single
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1902,6 +1902,7 @@ executable try-vulkan-guide
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1916,7 +1917,6 @@ executable try-vulkan-guide
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1954,6 +1954,7 @@ executable try-vulkan-guide-dynamic
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -1968,7 +1969,6 @@ executable try-vulkan-guide-dynamic
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2006,6 +2006,7 @@ executable try-vulkan-guide-storage
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -2020,7 +2021,6 @@ executable try-vulkan-guide-storage
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2058,6 +2058,7 @@ executable try-vulkan-guide-texture
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -2072,7 +2073,6 @@ executable try-vulkan-guide-texture
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2110,6 +2110,7 @@ executable try-wavefront-obj
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -2124,7 +2125,6 @@ executable try-wavefront-obj
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2162,6 +2162,7 @@ executable try-yatteiku
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -2176,7 +2177,6 @@ executable try-yatteiku
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2215,6 +2215,7 @@ test-suite try-my-vulkan-snd-test
     , temporary
     , text
     , time
+    , tools-yj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
@@ -2229,7 +2230,6 @@ test-suite try-my-vulkan-snd-test
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector

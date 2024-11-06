@@ -68,7 +68,7 @@ dependencies:
 - directory
 - temporary
 
-- try-tools-yj
+- tools-yj
 - extra-data-yj
 
 library:
