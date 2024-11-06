@@ -185,6 +185,7 @@ library
     , data-default
     , gpu-vulkan-middle
     , hetero-parameter-list
+    , hetero-parameter-list-with-typelevel-tools
     , mono-traversable
     , stm
     , storable-hetero-list
@@ -193,7 +194,6 @@ library
     , temporary
     , text
     , time
-    , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
     , try-tools-yj
     , typelevel-tools-yj
@@ -224,6 +224,7 @@ test-suite try-gpu-vulkan-test
     , data-default
     , gpu-vulkan-middle
     , hetero-parameter-list
+    , hetero-parameter-list-with-typelevel-tools
     , mono-traversable
     , stm
     , storable-hetero-list
@@ -233,7 +234,6 @@ test-suite try-gpu-vulkan-test
     , text
     , time
     , try-gpu-vulkan
-    , try-hetero-parameter-list-with-typelevel-tools
     , try-language-spir-v
     , try-tools-yj
     , typelevel-tools-yj
