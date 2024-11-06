@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-11-05
+resolver: nightly-2024-11-06
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,18 +43,18 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 66331b29e9bd439ac1518313d2ae6b8e0785a947
+  commit: 1019a02b22ab1c4273ab2157d8c1d766fcc58969
   subdirs:
   - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-language-spir-v
-  - packages/try-tools-yj
 - union-color-0.1.2.0
 - mtl-misc-yj-0.1.0.1
 - text-misc-yj-0.1.0.0
 - storable-peek-poke-0.1.0.1
 - storable-hetero-list-0.1.0.4
 - hetero-parameter-list-with-typelevel-tools-0.1.0.1
+- tools-yj-0.1.0.19
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -42,7 +42,7 @@ dependencies:
 - hetero-parameter-list-with-typelevel-tools
 - typelevel-tools-yj
 - temporary
-- try-tools-yj
+- tools-yj
 
 ghc-options:
 - -Wall
