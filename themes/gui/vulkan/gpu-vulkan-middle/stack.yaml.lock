@@ -5,20 +5,7 @@
 
 packages:
 - completed:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: storable-peek-poke
-    pantry-tree:
-      sha256: 48ca3d7f3caa0d3c3814cf7baf73c87c2470c6659d3a9ba136fc4b0872ad47cf
-      size: 674
-    subdir: features/ffi/pointer/storable-peek-poke
-    version: 0.1.0.1
-  original:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/storable-peek-poke
-- completed:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
+    commit: 14a9f5c4bb86d2f463c57da96fe14b4363aff4df
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-hetero-list
     pantry-tree:
@@ -27,11 +14,11 @@ packages:
     subdir: features/ffi/pointer/try-storable-hetero-list
     version: 0.1.0.4
   original:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
+    commit: 14a9f5c4bb86d2f463c57da96fe14b4363aff4df
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-hetero-list
 - completed:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
+    commit: 14a9f5c4bb86d2f463c57da96fe14b4363aff4df
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-language-spir-v
     pantry-tree:
@@ -40,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-language-spir-v
     version: 0.1.0.0
   original:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
+    commit: 14a9f5c4bb86d2f463c57da96fe14b4363aff4df
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-language-spir-v
 - completed:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
+    commit: 14a9f5c4bb86d2f463c57da96fe14b4363aff4df
     git: https://github.com/YoshikuniJujo/test_haskell
     name: gpu-vulkan-core
     pantry-tree:
@@ -53,7 +40,7 @@ packages:
     subdir: themes/gui/vulkan/gpu-vulkan-core
     version: 0.1.0.7
   original:
-    commit: 32164f3a888f4b53cc90b73972ebca6b9fd724fb
+    commit: 14a9f5c4bb86d2f463c57da96fe14b4363aff4df
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-core
 - completed:
@@ -70,6 +57,13 @@ packages:
       size: 378
   original:
     hackage: text-misc-yj-0.1.0.0
+- completed:
+    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
+    pantry-tree:
+      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
+      size: 466
+  original:
+    hackage: storable-peek-poke-0.1.0.1
 snapshots:
 - completed:
     sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a

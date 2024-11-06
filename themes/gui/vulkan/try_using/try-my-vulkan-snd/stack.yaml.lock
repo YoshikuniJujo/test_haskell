@@ -202,19 +202,6 @@ packages:
 - completed:
     commit: 4dc0a6028250cf886e931061029c6d8ee522a6bf
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: storable-peek-poke
-    pantry-tree:
-      sha256: 48ca3d7f3caa0d3c3814cf7baf73c87c2470c6659d3a9ba136fc4b0872ad47cf
-      size: 674
-    subdir: features/ffi/pointer/storable-peek-poke
-    version: 0.1.0.1
-  original:
-    commit: 4dc0a6028250cf886e931061029c6d8ee522a6bf
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/storable-peek-poke
-- completed:
-    commit: 4dc0a6028250cf886e931061029c6d8ee522a6bf
-    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-hetero-list
     pantry-tree:
       sha256: 90683cb1e334f2bc4e879d69e26ce9a57f2e7afd613194c8182d6d9322695189
@@ -341,6 +328,13 @@ packages:
       size: 378
   original:
     hackage: text-misc-yj-0.1.0.0
+- completed:
+    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
+    pantry-tree:
+      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
+      size: 466
+  original:
+    hackage: storable-peek-poke-0.1.0.1
 snapshots:
 - completed:
     sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a
