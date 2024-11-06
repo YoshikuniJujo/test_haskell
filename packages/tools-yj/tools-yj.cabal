@@ -6,7 +6,9 @@ cabal-version: 2.2
 
 name:           tools-yj
 version:        0.1.0.19
+synopsis:       Tribial tools
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/tools-yj#readme>
+category:       Tools
 homepage:       https://github.com/YoshikuniJujo/tools-yj#readme
 bug-reports:    https://github.com/YoshikuniJujo/tools-yj/issues
 author:         Yoshikuni Jujo
