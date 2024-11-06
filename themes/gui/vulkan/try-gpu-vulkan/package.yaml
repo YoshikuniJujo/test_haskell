@@ -35,7 +35,7 @@ dependencies:
 - text
 - time
 - gpu-vulkan-middle
-- try-language-spir-v
+- language-spir-v
 - storable-peek-poke
 - storable-hetero-list
 - hetero-parameter-list

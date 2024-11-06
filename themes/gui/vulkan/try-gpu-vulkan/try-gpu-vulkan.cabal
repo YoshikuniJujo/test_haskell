@@ -186,6 +186,7 @@ library
     , gpu-vulkan-middle
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
+    , language-spir-v
     , mono-traversable
     , stm
     , storable-hetero-list
@@ -195,7 +196,6 @@ library
     , text
     , time
     , tools-yj
-    , try-language-spir-v
     , typelevel-tools-yj
   default-language: Haskell2010
   if flag(debug)
@@ -225,6 +225,7 @@ test-suite try-gpu-vulkan-test
     , gpu-vulkan-middle
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
+    , language-spir-v
     , mono-traversable
     , stm
     , storable-hetero-list
@@ -235,6 +236,5 @@ test-suite try-gpu-vulkan-test
     , time
     , tools-yj
     , try-gpu-vulkan
-    , try-language-spir-v
     , typelevel-tools-yj
   default-language: Haskell2010

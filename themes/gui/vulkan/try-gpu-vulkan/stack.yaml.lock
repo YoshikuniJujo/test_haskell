@@ -5,20 +5,20 @@
 
 packages:
 - completed:
-    commit: 1019a02b22ab1c4273ab2157d8c1d766fcc58969
+    commit: 2fbb0cd7f5f55ceaa530083361f5f4ac19f8638a
     git: https://github.com/YoshikuniJujo/test_haskell
     name: gpu-vulkan-middle
     pantry-tree:
-      sha256: 6f5f22e5f8224e2c2cc608ab1ed00090a907c8eab87a17f75258a5e6dc0c6f44
+      sha256: 3ecb2f39af593a2b52114ac03995db93618deab47d8ec529a2a470b5527bd50e
       size: 14906
     subdir: themes/gui/vulkan/gpu-vulkan-middle
     version: 0.1.0.54
   original:
-    commit: 1019a02b22ab1c4273ab2157d8c1d766fcc58969
+    commit: 2fbb0cd7f5f55ceaa530083361f5f4ac19f8638a
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-middle
 - completed:
-    commit: 1019a02b22ab1c4273ab2157d8c1d766fcc58969
+    commit: 2fbb0cd7f5f55ceaa530083361f5f4ac19f8638a
     git: https://github.com/YoshikuniJujo/test_haskell
     name: gpu-vulkan-core
     pantry-tree:
@@ -27,22 +27,16 @@ packages:
     subdir: themes/gui/vulkan/gpu-vulkan-core
     version: 0.1.0.7
   original:
-    commit: 1019a02b22ab1c4273ab2157d8c1d766fcc58969
+    commit: 2fbb0cd7f5f55ceaa530083361f5f4ac19f8638a
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-core
 - completed:
-    commit: 1019a02b22ab1c4273ab2157d8c1d766fcc58969
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-language-spir-v
+    hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
-      sha256: 7e0c40fa976404654eb5bf5896467fa69087cc25b46205db94403b4e06a4bb09
-      size: 933
-    subdir: themes/gui/vulkan/try-language-spir-v
-    version: 0.1.0.0
+      sha256: abce419a94c3bceaa50e2a211c1e9de63d47e7b33a2ff8017b04904defd6dcdd
+      size: 650
   original:
-    commit: 1019a02b22ab1c4273ab2157d8c1d766fcc58969
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-language-spir-v
+    hackage: language-spir-v-0.1.0.1
 - completed:
     hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
     pantry-tree:
