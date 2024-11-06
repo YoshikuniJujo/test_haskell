@@ -5,20 +5,20 @@
 
 packages:
 - completed:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     name: gpu-vulkan-middle
     pantry-tree:
-      sha256: 22f8c6d294cbe897e33513f4d4f2204992f03419210df5a543166af243025658
+      sha256: 6f5f22e5f8224e2c2cc608ab1ed00090a907c8eab87a17f75258a5e6dc0c6f44
       size: 14906
     subdir: themes/gui/vulkan/gpu-vulkan-middle
     version: 0.1.0.54
   original:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-middle
 - completed:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     name: gpu-vulkan-core
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/gpu-vulkan-core
     version: 0.1.0.7
   original:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/gpu-vulkan-core
 - completed:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-language-spir-v
     pantry-tree:
@@ -40,37 +40,11 @@ packages:
     subdir: themes/gui/vulkan/try-language-spir-v
     version: 0.1.0.0
   original:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-language-spir-v
 - completed:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: storable-peek-poke
-    pantry-tree:
-      sha256: 48ca3d7f3caa0d3c3814cf7baf73c87c2470c6659d3a9ba136fc4b0872ad47cf
-      size: 674
-    subdir: features/ffi/pointer/storable-peek-poke
-    version: 0.1.0.1
-  original:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/storable-peek-poke
-- completed:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-storable-hetero-list
-    pantry-tree:
-      sha256: 90683cb1e334f2bc4e879d69e26ce9a57f2e7afd613194c8182d6d9322695189
-      size: 601
-    subdir: features/ffi/pointer/try-storable-hetero-list
-    version: 0.1.0.4
-  original:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/try-storable-hetero-list
-- completed:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-hetero-parameter-list-with-typelevel-tools
     pantry-tree:
@@ -79,11 +53,11 @@ packages:
     subdir: themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
     version: 0.1.0.0
   original:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
 - completed:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-tools-yj
     pantry-tree:
@@ -92,7 +66,7 @@ packages:
     subdir: packages/try-tools-yj
     version: 0.1.0.19
   original:
-    commit: c1ce29da17611df2e4b3d5b4b12a537d58bf7ec8
+    commit: 6e10da1a838ce1133bce23cc7a2aa3ae11848e02
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: packages/try-tools-yj
 - completed:
@@ -116,9 +90,23 @@ packages:
       size: 378
   original:
     hackage: text-misc-yj-0.1.0.0
+- completed:
+    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
+    pantry-tree:
+      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
+      size: 466
+  original:
+    hackage: storable-peek-poke-0.1.0.1
+- completed:
+    hackage: storable-hetero-list-0.1.0.4@sha256:90b29b61329b0b837cacf49a8d7066133b988addadf4d43d04593aa071d1cca5,1868
+    pantry-tree:
+      sha256: 1fc9939a059c3e67a496f9e9bc68f96607f301f06965368797d126b29a12fd73
+      size: 389
+  original:
+    hackage: storable-hetero-list-0.1.0.4
 snapshots:
 - completed:
-    sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a
-    size: 674598
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/3.yaml
-  original: nightly-2024-11-03
+    sha256: e1faadf92913a8d3c29ca9f9de2d474a989e816eca7a01d1c3394cc425b9ef4a
+    size: 677102
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/5.yaml
+  original: nightly-2024-11-05
