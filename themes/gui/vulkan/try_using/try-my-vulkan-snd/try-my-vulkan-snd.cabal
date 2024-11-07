@@ -60,6 +60,7 @@ library
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -78,7 +79,6 @@ library
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -121,6 +121,7 @@ executable my-glslc
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -139,7 +140,6 @@ executable my-glslc
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -173,6 +173,7 @@ executable try-allocation-callbacks
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -191,7 +192,6 @@ executable try-allocation-callbacks
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -225,6 +225,7 @@ executable try-copy-descriptor-set
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -243,7 +244,6 @@ executable try-copy-descriptor-set
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -277,6 +277,7 @@ executable try-depth-buffering
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -295,7 +296,6 @@ executable try-depth-buffering
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -329,6 +329,7 @@ executable try-depth-buffering-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -347,7 +348,6 @@ executable try-depth-buffering-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -381,6 +381,7 @@ executable try-dynamic-dsc-sets
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -399,7 +400,6 @@ executable try-dynamic-dsc-sets
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -433,6 +433,7 @@ executable try-generating-mipmaps
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -451,7 +452,6 @@ executable try-generating-mipmaps
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -485,6 +485,7 @@ executable try-generating-mipmaps-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -503,7 +504,6 @@ executable try-generating-mipmaps-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -537,6 +537,7 @@ executable try-hello-world
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -555,7 +556,6 @@ executable try-hello-world
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -589,6 +589,7 @@ executable try-image-buffer
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -607,7 +608,6 @@ executable try-image-buffer
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -641,6 +641,7 @@ executable try-loading-models
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -659,7 +660,6 @@ executable try-loading-models
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -693,6 +693,7 @@ executable try-loading-models-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -711,7 +712,6 @@ executable try-loading-models-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -745,6 +745,7 @@ executable try-multisampling
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -763,7 +764,6 @@ executable try-multisampling
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -797,6 +797,7 @@ executable try-multisampling-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -815,7 +816,6 @@ executable try-multisampling-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -849,6 +849,7 @@ executable try-multisampling-use-groups-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -867,7 +868,6 @@ executable try-multisampling-use-groups-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -901,6 +901,7 @@ executable try-no-dynamic-dsc-sets
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -919,7 +920,6 @@ executable try-no-dynamic-dsc-sets
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -953,6 +953,7 @@ executable try-object-index
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -971,7 +972,6 @@ executable try-object-index
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1005,6 +1005,7 @@ executable try-pipeline-cache
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1023,7 +1024,6 @@ executable try-pipeline-cache
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1057,6 +1057,7 @@ executable try-query
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1075,7 +1076,6 @@ executable try-query
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1109,6 +1109,7 @@ executable try-rectangle
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1127,7 +1128,6 @@ executable try-rectangle
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1161,6 +1161,7 @@ executable try-rectangle-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1179,7 +1180,6 @@ executable try-rectangle-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1213,6 +1213,7 @@ executable try-saitan
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1231,7 +1232,6 @@ executable try-saitan
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1265,6 +1265,7 @@ executable try-saitan-float
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1283,7 +1284,6 @@ executable try-saitan-float
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1317,6 +1317,7 @@ executable try-saitan-simple
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1335,7 +1336,6 @@ executable try-saitan-simple
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1369,6 +1369,7 @@ executable try-shaderc
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1387,7 +1388,6 @@ executable try-shaderc
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1421,6 +1421,7 @@ executable try-texel-buffer-float
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1439,7 +1440,6 @@ executable try-texel-buffer-float
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1473,6 +1473,7 @@ executable try-texel-buffer-word32
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1491,7 +1492,6 @@ executable try-texel-buffer-word32
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1525,6 +1525,7 @@ executable try-texture
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1543,7 +1544,6 @@ executable try-texture
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1577,6 +1577,7 @@ executable try-texture-descriptor-set-group-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1595,7 +1596,6 @@ executable try-texture-descriptor-set-group-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1629,6 +1629,7 @@ executable try-texture-image-manager-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1647,7 +1648,6 @@ executable try-texture-image-manager-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1681,6 +1681,7 @@ executable try-texture-immutable-sampler-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1699,7 +1700,6 @@ executable try-texture-immutable-sampler-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1733,6 +1733,7 @@ executable try-texture-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1751,7 +1752,6 @@ executable try-texture-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1785,6 +1785,7 @@ executable try-triangle
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1803,7 +1804,6 @@ executable try-triangle
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1837,6 +1837,7 @@ executable try-triangle-single
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1855,7 +1856,6 @@ executable try-triangle-single
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1889,6 +1889,7 @@ executable try-vulkan-guide
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1907,7 +1908,6 @@ executable try-vulkan-guide
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1941,6 +1941,7 @@ executable try-vulkan-guide-dynamic
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -1959,7 +1960,6 @@ executable try-vulkan-guide-dynamic
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -1993,6 +1993,7 @@ executable try-vulkan-guide-storage
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -2011,7 +2012,6 @@ executable try-vulkan-guide-storage
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -2045,6 +2045,7 @@ executable try-vulkan-guide-texture
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -2063,7 +2064,6 @@ executable try-vulkan-guide-texture
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -2097,6 +2097,7 @@ executable try-wavefront-obj
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -2115,7 +2116,6 @@ executable try-wavefront-obj
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -2149,6 +2149,7 @@ executable try-yatteiku
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -2167,7 +2168,6 @@ executable try-yatteiku
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
@@ -2202,6 +2202,7 @@ test-suite try-my-vulkan-snd-test
     , extra-data-yj
     , filepath
     , ghc-prim
+    , gpu-vulkan
     , hetero-parameter-list
     , hetero-parameter-list-with-typelevel-tools
     , language-spir-v
@@ -2220,7 +2221,6 @@ test-suite try-my-vulkan-snd-test
     , transformers
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
