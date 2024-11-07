@@ -24,7 +24,7 @@ dependencies:
 - stm
 - containers
 - GLFW-b
-- try-gpu-vulkan
+- gpu-vulkan
 - try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-middle-khr-surface
 - try-gpu-vulkan-middle-khr-surface-glfw

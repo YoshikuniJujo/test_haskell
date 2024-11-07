@@ -38,9 +38,9 @@ library
       GLFW-b
     , base >=4.7 && <5
     , containers
+    , gpu-vulkan
     , stm
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-middle-khr-surface
     , try-gpu-vulkan-middle-khr-surface-glfw
@@ -61,9 +61,9 @@ test-suite try-gpu-vulkan-khr-surface-glfw-test
       GLFW-b
     , base >=4.7 && <5
     , containers
+    , gpu-vulkan
     , stm
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-middle-khr-surface
