@@ -66,7 +66,7 @@ main =	createIst \it -> pickPhd it >>= \(pd, qfi) -> createLgDvc pd qfi \dv ->
 		\(b :: RsltBffr sm sb nm img) bm -> do
 	Vk.Dvc.getQueue dv qfi 0 >>= \gq -> createCmdPl qfi dv \cp ->
 		body pd dv gq cp i \cb img ->
-		copyImgToBffr' @1 cb img b wdt hgt
+		copyImgToBffr @1 cb img b wdt hgt
 	ImageRgba8 img <- Vk.Mm.read @nm @img @0 dv bm zeroBits
 	writePng "try-blit.png" img
 
@@ -127,21 +127,19 @@ body pd dv gq cp i f = prepareRsltImg @RsltFmt pd dv wdt hgt \img0 _ ->
 			Vk.Mm.PropertyHostCoherentBit ) wdt hgt
 		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm ->
 	singleTimeCmds dv gq cp \cb -> do
-	transitionImgLyt' cb img0
+	transitionImgLyt cb img0
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	do
-		Vk.Mm.write @inm @bimg @0 dv bm zeroBits i
-		transitionImgLyt' cb img
-			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-		copyBffrToImg' cb b img0
-	transitionImgLyt' cb img0
+	transitionImgLyt cb img
+		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	Vk.Mm.write @inm @bimg @0 dv bm zeroBits i
+	copyBffrToImg cb b img0
+	transitionImgLyt cb img0
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
-	copyImgToImg' cb img0 img (fromIntegral wdt) (fromIntegral hgt)
-	transitionImgLyt' cb img
+	copyImgToImg cb img0 img (fromIntegral wdt) (fromIntegral hgt)
+	transitionImgLyt cb img
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
 	f cb img
 	where
-	wdt, hgt :: Word32
 	wdt = fromIntegral $ BObj.imageWidth i
 	hgt = fromIntegral $ BObj.imageHeight i
 
@@ -250,9 +248,9 @@ prepareImg pd dv tl us pr w h a = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-transitionImgLyt' :: Vk.CBffr.C scb ->
+transitionImgLyt :: Vk.CBffr.C scb ->
 	Vk.Img.Binded s2 s3 s4 s5 -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImgLyt' cb i ol nl =
+transitionImgLyt cb i ol nl =
 	Vk.Cmd.pipelineBarrier cb ss ds
 		zeroBits HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
 	where
@@ -285,12 +283,12 @@ transitionImgLyt' cb i ol nl =
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
 		_ -> error "unsupported layout transition!"
 
-copyBffrToImg' :: forall smb sbb nmb al img imgnm smi si nmi scb .
+copyBffrToImg :: forall smb sbb nmb al img imgnm smi si nmi scb .
 	(KnownNat al, Storable (BObj.ImagePixel img)) =>
 	Vk.CBffr.C scb ->
 	Vk.Bffr.Binded smb sbb nmb '[ VObj.Image al img imgnm]  ->
 	Vk.Img.Binded smi si nmi (BObj.ImageFormat img) -> IO ()
-copyBffrToImg' cb bf img =
+copyBffrToImg cb bf img =
 	Vk.Cmd.copyBufferToImage @al @img @'[imgnm] cb bf img
 		Vk.Img.LayoutTransferDstOptimal
 		$ HPList.Singleton Vk.Bffr.ImageCopy {
@@ -306,14 +304,14 @@ copyBffrToImg' cb bf img =
 	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
 		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
 
-copyImgToBffr' ::
+copyImgToBffr ::
 	forall al img sms sis inms smd sbd bnmd nmd scb . KnownNat al =>
 	Storable (BObj.ImagePixel img) =>
 	Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis inms (BObj.ImageFormat img) ->
 	Vk.Bffr.Binded smd sbd bnmd '[ VObj.Image al img nmd] ->
 	Word32 -> Word32 -> IO ()
-copyImgToBffr' cb i bf w h =
+copyImgToBffr cb i bf w h =
 	Vk.Cmd.copyImageToBuffer @al cb i Vk.Img.LayoutTransferSrcOptimal bf rgn
 	where
 	rgn :: HPList.PL (Vk.Bffr.ImageCopy img) '[nmd]
@@ -327,10 +325,10 @@ copyImgToBffr' cb i bf w h =
 		Vk.Img.subresourceLayersBaseArrayLayer = 0,
 		Vk.Img.subresourceLayersLayerCount = 1 }
 
-copyImgToImg' :: Vk.CBffr.C scb ->
+copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts ->
 	Vk.Img.Binded smd sid nmd fmtd -> Int32 -> Int32 -> IO ()
-copyImgToImg' cb si di w h =
+copyImgToImg cb si di w h =
 	Vk.Cmd.blitImage cb
 		si Vk.Img.LayoutTransferSrcOptimal
 		di Vk.Img.LayoutTransferDstOptimal [blit] Vk.FilterLinear
@@ -340,10 +338,10 @@ copyImgToImg' cb si di w h =
 		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
 		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
 		Vk.Img.blitDstSubresource = sr 0,
---		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 0 (half h) 0,
---		Vk.Img.blitDstOffsetTo = Vk.Offset3d (half w) h 1 }
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d (half w) (half h) 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d w h 1 }
+		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 0 (half h) 0,
+		Vk.Img.blitDstOffsetTo = Vk.Offset3d (half w) h 1 }
+--		Vk.Img.blitDstOffsetFrom = Vk.Offset3d (half w) (half h) 0,
+--		Vk.Img.blitDstOffsetTo = Vk.Offset3d w h 1 }
 	sr sd = Vk.Img.SubresourceLayers {
 		Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceLayersMipLevel = sd,
