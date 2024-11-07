@@ -37,10 +37,10 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , gpu-vulkan
     , hetero-parameter-list
     , stm
     , storable-peek-poke
-    , try-gpu-vulkan
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-middle-khr-swapchain
     , typelevel-tools-yj
@@ -59,10 +59,10 @@ test-suite try-gpu-vulkan-khr-swapchain-test
   build-depends:
       base >=4.7 && <5
     , containers
+    , gpu-vulkan
     , hetero-parameter-list
     , stm
     , storable-peek-poke
-    , try-gpu-vulkan
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-swapchain
