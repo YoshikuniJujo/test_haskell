@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - stm
 - containers
-- try-gpu-vulkan
+- gpu-vulkan
 - try-gpu-vulkan-middle-khr-surface
 - hetero-parameter-list
 - typelevel-tools-yj
