@@ -1,10 +1,10 @@
-name:                try-gpu-vulkan
+name:                gpu-vulkan
 version:             0.1.0.137
-github:              "githubuser/try-gpu-vulkan"
+github:              "YoshikuniJujo/gpu-vulkan"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2023 Author name here"
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "2023 Yoshikuni Jujo"
 
 extra-source-files:
 - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/gpu-vulkan#readme>
 
 flags:
   debug:
@@ -26,23 +26,23 @@ flags:
 
 dependencies:
 - base >= 4.7 && < 5
-- template-haskell
-- stm
-- containers
-- bytestring
-- mono-traversable
-- data-default
-- text
-- time
-- gpu-vulkan-middle
-- language-spir-v
-- storable-peek-poke
-- storable-hetero-list
-- hetero-parameter-list
-- hetero-parameter-list-with-typelevel-tools
-- typelevel-tools-yj
-- temporary
-- tools-yj
+- template-haskell < 3
+- stm < 3
+- containers < 1
+- bytestring < 1
+- mono-traversable < 2
+- data-default < 1
+- text < 3
+- time < 2
+- gpu-vulkan-middle < 1
+- language-spir-v < 1
+- storable-peek-poke < 1
+- storable-hetero-list < 1
+- hetero-parameter-list < 1
+- hetero-parameter-list-with-typelevel-tools < 1
+- typelevel-tools-yj < 1
+- temporary < 2
+- tools-yj < 1
 
 ghc-options:
 - -Wall
@@ -134,7 +134,7 @@ data-files:
   - th/vkShaderStageFlagBits.txt
 
 tests:
-  try-gpu-vulkan-test:
+  gpu-vulkan-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -142,4 +142,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-gpu-vulkan
+    - gpu-vulkan

@@ -4,14 +4,14 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-gpu-vulkan
+name:           gpu-vulkan
 version:        0.1.0.137
-description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan#readme>
-homepage:       https://github.com/githubuser/try-gpu-vulkan#readme
-bug-reports:    https://github.com/githubuser/try-gpu-vulkan/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2023 Author name here
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/gpu-vulkan#readme>
+homepage:       https://github.com/YoshikuniJujo/gpu-vulkan#readme
+bug-reports:    https://github.com/YoshikuniJujo/gpu-vulkan/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      2023 Yoshikuni Jujo
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -26,7 +26,7 @@ data-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/try-gpu-vulkan
+  location: https://github.com/YoshikuniJujo/gpu-vulkan
 
 flag debug
   manual: True
@@ -174,29 +174,29 @@ library
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.TypeEnum.TypeValues
       Gpu.Vulkan.VertexInput.Internal
-      Paths_try_gpu_vulkan
+      Paths_gpu_vulkan
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , containers
-    , data-default
-    , gpu-vulkan-middle
-    , hetero-parameter-list
-    , hetero-parameter-list-with-typelevel-tools
-    , language-spir-v
-    , mono-traversable
-    , stm
-    , storable-hetero-list
-    , storable-peek-poke
-    , template-haskell
-    , temporary
-    , text
-    , time
-    , tools-yj
-    , typelevel-tools-yj
+    , bytestring <1
+    , containers <1
+    , data-default <1
+    , gpu-vulkan-middle <1
+    , hetero-parameter-list <1
+    , hetero-parameter-list-with-typelevel-tools <1
+    , language-spir-v <1
+    , mono-traversable <2
+    , stm <3
+    , storable-hetero-list <1
+    , storable-peek-poke <1
+    , template-haskell <3
+    , temporary <2
+    , text <3
+    , time <2
+    , tools-yj <1
+    , typelevel-tools-yj <1
   default-language: Haskell2010
   if flag(debug)
     other-modules:
@@ -209,32 +209,32 @@ library
     hs-source-dirs:
         nodebug
 
-test-suite try-gpu-vulkan-test
+test-suite gpu-vulkan-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_gpu_vulkan
+      Paths_gpu_vulkan
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , containers
-    , data-default
-    , gpu-vulkan-middle
-    , hetero-parameter-list
-    , hetero-parameter-list-with-typelevel-tools
-    , language-spir-v
-    , mono-traversable
-    , stm
-    , storable-hetero-list
-    , storable-peek-poke
-    , template-haskell
-    , temporary
-    , text
-    , time
-    , tools-yj
-    , try-gpu-vulkan
-    , typelevel-tools-yj
+    , bytestring <1
+    , containers <1
+    , data-default <1
+    , gpu-vulkan
+    , gpu-vulkan-middle <1
+    , hetero-parameter-list <1
+    , hetero-parameter-list-with-typelevel-tools <1
+    , language-spir-v <1
+    , mono-traversable <2
+    , stm <3
+    , storable-hetero-list <1
+    , storable-peek-poke <1
+    , template-haskell <3
+    , temporary <2
+    , text <3
+    , time <2
+    , tools-yj <1
+    , typelevel-tools-yj <1
   default-language: Haskell2010
