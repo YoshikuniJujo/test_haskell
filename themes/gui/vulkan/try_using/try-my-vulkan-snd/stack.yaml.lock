@@ -266,13 +266,6 @@ packages:
   original:
     hackage: text-misc-yj-0.1.0.0
 - completed:
-    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
-    pantry-tree:
-      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
-      size: 466
-  original:
-    hackage: storable-peek-poke-0.1.0.1
-- completed:
     hackage: storable-hetero-list-0.1.0.4@sha256:90b29b61329b0b837cacf49a8d7066133b988addadf4d43d04593aa071d1cca5,1868
     pantry-tree:
       sha256: 1fc9939a059c3e67a496f9e9bc68f96607f301f06965368797d126b29a12fd73
@@ -295,7 +288,7 @@ packages:
     hackage: tools-yj-0.1.0.19
 snapshots:
 - completed:
-    sha256: f6fdd2fa1a565089a46b0a265db61ae6b95c60d6aefb9b3ff20262eb14e04a8a
-    size: 674598
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/3.yaml
-  original: nightly-2024-11-03
+    sha256: 15ccdfb21662aa8b994238c15449403b90f9660b9cbb6c794188e3b5345fa075
+    size: 677324
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/7.yaml
+  original: nightly-2024-11-07
