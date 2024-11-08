@@ -14,25 +14,27 @@ new
         - [x] creaetLgDvc
         - [x] createCmdPl
         - [x] body
-    + [ ] BUFFER
-        - [ ] resultBffr
-        - [ ] createBffrImg
-        - [ ] createBffr
-    + [ ] IMAGE
-        - [ ] prepareImg
-        - [ ] findMmType
-    + [ ] COMMANDS
-        - [ ] runCmds
-        - [ ] transitionImgLyt
-        - [ ] copyBffrToImg
-        - [ ] copyImgToBffr
-        - [ ] copyImgToImg
-    + [ ] DATA TYPE IMAGE RGBA8
-        - [ ] ImageRgba8
-        - [ ] PixelRgba8
-        - [ ] instance Storable PixelRgba8
-        - [ ] BObj.IsImage ImageRgba8
-    + [ ] import list
+    + [x] BUFFER
+        - [x] resultBffr
+        - [x] createBffrImg
+        - [x] createBffr
+        - [x] bffrImgExtent
+    + [x] IMAGE
+        - [x] prepareImg
+        - [x] findMmType
+    + [x] COMMANDS
+        - [x] runCmds
+        - [x] transitionImgLyt
+        - [x] copyBffrToImg
+        - [x] copyImgToBffr
+        - [x] copyImgToImg
+        - [x] colorLayer0
+    + [x] DATA TYPE IMAGE RGBA8
+        - [x] ImageRgba8
+        - [x] PixelRgba8
+        - [x] instance Storable PixelRgba8
+        - [x] BObj.IsImage ImageRgba8
+    + [x] import list
 
 old
 ---
