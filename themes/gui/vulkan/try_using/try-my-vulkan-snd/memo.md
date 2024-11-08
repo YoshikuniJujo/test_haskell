@@ -4,8 +4,35 @@ memo
 new
 ---
 
-* [x] remove OffsetRange etc
-* [x] rename OffsetRange' to OffsetRange etc
+* app/try-blit.hs
+    + [ ] MAIN
+        - [ ] main
+        - [ ] realMain
+        - [ ] createIst
+        - [ ] vldLayers
+        - [ ] pickPhd
+        - [ ] creaetLgDvc
+        - [ ] createCmdPl
+        - [ ] body
+    + [ ] BUFFER
+        - [ ] resultBffr
+        - [ ] createBffrImg
+        - [ ] createBffr
+    + [ ] IMAGE
+        - [ ] prepareImg
+        - [ ] findMmType
+    + [ ] COMMANDS
+        - [ ] runCmds
+        - [ ] transitionImgLyt
+        - [ ] copyBffrToImg
+        - [ ] copyImgToBffr
+        - [ ] copyImgToImg
+    + [ ] DATA TYPE IMAGE RGBA8
+        - [ ] ImageRgba8
+        - [ ] PixelRgba8
+        - [ ] instance Storable PixelRgba8
+        - [ ] BObj.IsImage ImageRgba8
+    + [ ] import list
 
 old
 ---
