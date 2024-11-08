@@ -52,23 +52,27 @@ import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 
-import Data.Bool
-
-saikoro :: FilePath
-saikoro = "../../../../../files/images/saikoro.png"
+import System.Environment
+import Text.Read
 
 main :: IO ()
-main =	createIst \it -> pickPhd it >>= \(pd, qfi) -> createLgDvc pd qfi \dv ->
-	either error convertRGBA8 <$> readImage saikoro >>= \(ImageRgba8 -> i) ->
-	let	wdt = fromIntegral $ BObj.imageWidth i
-		hgt = fromIntegral $ BObj.imageHeight i in
+main = getArgs >>= \case
+	[fp, readMaybe -> Just n, readMaybe -> Just i] -> realMain fp n i
+	_ -> error "bad arguments"
+
+realMain :: FilePath -> Int32 -> Int32 -> IO ()
+realMain ifp n i =
+	createIst \it -> pickPhd it >>= \(pd, qfi) -> createLgDvc pd qfi \dv ->
+	either error convertRGBA8 <$> readImage ifp >>= \(ImageRgba8 -> img) ->
+	let	wdt = fromIntegral $ BObj.imageWidth img
+		hgt = fromIntegral $ BObj.imageHeight img in
 	createRsltBffr pd dv wdt hgt
 		\(b :: RsltBffr sm sb nm img) bm -> do
 	Vk.Dvc.getQueue dv qfi 0 >>= \gq -> createCmdPl qfi dv \cp ->
-		body pd dv gq cp i \cb img ->
-		copyImgToBffr @1 cb img b wdt hgt
-	ImageRgba8 img <- Vk.Mm.read @nm @img @0 dv bm zeroBits
-	writePng "try-blit.png" img
+		body pd dv gq cp img n i \cb img1 ->
+		copyImgToBffr @1 cb img1 b wdt hgt
+	ImageRgba8 img1 <- Vk.Mm.read @nm @img @0 dv bm zeroBits
+	writePng "try-blit.png" img1
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = Vk.Ist.create info nil f
@@ -85,11 +89,10 @@ pickPhd ist = Vk.Phd.enumerate ist >>= \case
 	pds -> findMaybeM suit pds >>= \case
 		Nothing -> error "failed to find a suitable GPU!"
 		Just pdqfi -> pure pdqfi
-	where suit pd = findQFams <$> Vk.Phd.getQueueFamilyProperties pd
-
-findQFams :: [(Vk.QFam.Index, Vk.QFam.Properties)] -> Maybe Vk.QFam.Index
-findQFams ps = fst <$> find (grbit . snd) ps
-	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
+	where
+	suit pd = findQFams <$> Vk.Phd.getQueueFamilyProperties pd
+	findQFams ps = fst <$> find (grbit . snd) ps
+	grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
 createLgDvc :: Vk.Phd.P -> Vk.QFam.Index ->
 	(forall sd . Vk.Dvc.D sd -> IO a) -> IO a
@@ -117,31 +120,31 @@ createCmdPl gqfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = zeroBits,
 		Vk.CmdPl.createInfoQueueFamilyIndex = gqfi }
 
-body :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> ImageRgba8 ->
+body :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> ImageRgba8 -> Int32 -> Int32 ->
 	(forall scb sm' si . Vk.CBffr.C scb -> Vk.Img.Binded sm' si nm' RsltFmt -> IO a) -> IO a
-body pd dv gq cp i f = prepareRsltImg @RsltFmt pd dv wdt hgt \img0 _ ->
-	prepareRsltImg pd dv wdt hgt \img _mimg ->
+body pd dv gq cp img n i f = prepareRsltImg @RsltFmt pd dv wdt hgt \img0 _ ->
+	prepareRsltImg pd dv wdt hgt \img1 _mimg ->
 	createBffrImg @1 @_ @ImageRgba8 pd dv
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) wdt hgt
 		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm ->
-	singleTimeCmds dv gq cp \cb -> do
+	runCmds dv gq cp \cb -> do
 	transitionImgLyt cb img0
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	transitionImgLyt cb img
+	transitionImgLyt cb img1
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	Vk.Mm.write @inm @bimg @0 dv bm zeroBits i
+	Vk.Mm.write @inm @bimg @0 dv bm zeroBits img
 	copyBffrToImg cb b img0
 	transitionImgLyt cb img0
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
-	copyImgToImg cb img0 img (fromIntegral wdt) (fromIntegral hgt)
-	transitionImgLyt cb img
+	copyImgToImg cb img0 img1 (fromIntegral wdt) (fromIntegral hgt) n i
+	transitionImgLyt cb img1
 		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
-	f cb img
+	f cb img1
 	where
-	wdt = fromIntegral $ BObj.imageWidth i
-	hgt = fromIntegral $ BObj.imageHeight i
+	wdt = fromIntegral $ BObj.imageWidth img
+	hgt = fromIntegral $ BObj.imageHeight img
 
 createRsltBffr :: Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
 	(forall sm sb .
@@ -327,31 +330,32 @@ copyImgToBffr cb i bf w h =
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts ->
-	Vk.Img.Binded smd sid nmd fmtd -> Int32 -> Int32 -> IO ()
-copyImgToImg cb si di w h =
+	Vk.Img.Binded smd sid nmd fmtd -> Int32 -> Int32 -> Int32 -> Int32 -> IO ()
+copyImgToImg cb si di w h n i =
 	Vk.Cmd.blitImage cb
 		si Vk.Img.LayoutTransferSrcOptimal
 		di Vk.Img.LayoutTransferDstOptimal [blit] Vk.FilterLinear
 	where
 	blit = Vk.Img.Blit {
 		Vk.Img.blitSrcSubresource = sr 0,
-		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
-		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
+		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d l t 0,
+		Vk.Img.blitSrcOffsetTo = Vk.Offset3d r b 1,
 		Vk.Img.blitDstSubresource = sr 0,
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 0 (half h) 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d (half w) h 1 }
---		Vk.Img.blitDstOffsetFrom = Vk.Offset3d (half w) (half h) 0,
---		Vk.Img.blitDstOffsetTo = Vk.Offset3d w h 1 }
+		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blitDstOffsetTo = Vk.Offset3d w h 1 }
 	sr sd = Vk.Img.SubresourceLayers {
 		Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceLayersMipLevel = sd,
 		Vk.Img.subresourceLayersBaseArrayLayer = 0,
 		Vk.Img.subresourceLayersLayerCount = 1 }
+	(l, r, t, b) = (
+		w * (i `mod` n) `div` n, w * (i `mod` n + 1) `div` n,
+		h * (i `div` n) `div` n, h * (i `div` n + 1) `div` n )
 
-singleTimeCmds :: forall sd sc a .
+runCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
-singleTimeCmds dv gq cp cmd =
+runCmds dv gq cp cmd =
 	Vk.CBffr.allocate dv cmdBffrInfo \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
@@ -371,9 +375,6 @@ singleTimeCmds dv gq cp cmd =
 		Vk.CBffr.allocateInfoNext = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPool = cp,
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
-
-half :: Integral i => i -> i
-half n = bool 1 (n `div` 2) (n > 1)
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
 newtype PixelRgba8 = PixelRgba8 PixelRGBA8
