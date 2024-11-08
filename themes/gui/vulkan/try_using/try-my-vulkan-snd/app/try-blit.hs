@@ -35,8 +35,9 @@ import Codec.Picture
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Object qualified as VObj
-import Gpu.Vulkan.Object.Base qualified as BObj
+import Gpu.Vulkan.Object qualified as Vk.Obj
+import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
+import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
 import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
@@ -96,14 +97,13 @@ pickPhd ist = Vk.Phd.enumerate ist >>= \case
 		Nothing -> error "failed to find a suitable GPU!"
 		Just pdqfi -> pure pdqfi
 	where
-	suit pd = findQFams <$> Vk.Phd.getQueueFamilyProperties pd
-	findQFams ps = fst <$> find (grbit . snd) ps
+	suit pd = findf <$> Vk.Phd.getQueueFamilyProperties pd
+	findf ps = fst <$> find (grbit . snd) ps
 	grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
-createLgDvc :: Vk.Phd.P -> Vk.QFam.Index ->
-	(forall sd . Vk.Dvc.D sd -> IO a) -> IO a
-createLgDvc pd gqfi a =
-	Vk.Dvc.create pd info nil \dv -> a dv
+createLgDvc ::
+	Vk.Phd.P -> Vk.QFam.Index -> (forall sd . Vk.Dvc.D sd -> IO a) -> IO a
+createLgDvc pd qfi = Vk.Dvc.create pd info nil
 	where
 	info = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
@@ -115,66 +115,61 @@ createLgDvc pd gqfi a =
 	qinfo = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = gqfi,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qfi,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1.0] }
 
-createCmdPl :: Vk.QFam.Index -> Vk.Dvc.D sd ->
-	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
-createCmdPl gqfi dv = Vk.CmdPl.create dv info nil
+createCmdPl :: Vk.QFam.Index ->
+	Vk.Dvc.D sd -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 	where info = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = zeroBits,
-		Vk.CmdPl.createInfoQueueFamilyIndex = gqfi }
+		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
-body :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	ImageRgba8 -> Int32 -> Int32 -> IO ImageRgba8
-body pd dv gq cp img n i =
-	resultBffr @ImageRgba8 pd dv wdt hgt \(br :: Vk.Bffr.Binded smr sbr nmr '[imgr]) ->
-	prepareImg pd dv wdt hgt \imgd ->
-	prepareImg @(BObj.ImageFormat ImageRgba8) pd dv wdt hgt \imgs ->
-	createBffrImg @1 @_ @ImageRgba8 pd dv Vk.Bffr.UsageTransferSrcBit
-		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
-		wdt hgt \(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm ->
+body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
+body pd dv gq cp img n i = resultBffr @img pd dv w h \rb ->
+	prepareImg pd dv w h \imgd -> prepareImg pd dv w h \imgs ->
+	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
+		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
+	Vk.Mm.write @nm @o @0 dv bm zeroBits img >>
 	runCmds dv gq cp \cb -> do
-	transitionImgLyt cb imgs
-		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	transitionImgLyt cb imgd
-		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	Vk.Mm.write @inm @bimg @0 dv bm zeroBits img
+	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
-	transitionImgLyt cb imgs
-		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
-	copyImgToImg cb imgs imgd (fromIntegral wdt) (fromIntegral hgt) n i
-	transitionImgLyt cb imgd
-		Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
-	copyImgToBffr @1 cb imgd br wdt hgt
+	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+	copyImgToImg cb imgs imgd w h n i
+	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+	copyImgToBffr cb imgd rb w h
 	where
-	wdt = fromIntegral $ BObj.imageWidth img
-	hgt = fromIntegral $ BObj.imageHeight img
+	w, h :: Integral n => n
+	w = fromIntegral $ Vk.ObjB.imageWidth img
+	h = fromIntegral $ Vk.ObjB.imageHeight img
+	tr = transitionImgLyt
 
 -- BUFFER
 
-resultBffr :: BObj.IsImage imgr => Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
-	(forall sm sb . Vk.Bffr.Binded sm sb inm '[VObj.Image 1 imgr nmi] -> IO a) -> IO imgr
+resultBffr :: Vk.ObjB.IsImage imgr => Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
+	(forall sm sb . Vk.Bffr.Binded sm sb inm '[Vk.ObjNA.Image imgr nmi] -> IO a) -> IO imgr
 resultBffr pd dv wdt hgt f =
-	createBffrImg @1 pd dv Vk.Bffr.UsageTransferDstBit
-		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit) wdt hgt
+	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit wdt hgt
 		\(br :: Vk.Bffr.Binded smr sbr nmr '[imgr]) bmr -> do
 	_ <- f br
 	Vk.Mm.read @nmr @imgr @0 dv bmr zeroBits
 
-createBffrImg :: forall al sd img nm inm a . (BObj.IsImage img, KnownNat al) =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+createBffrImg :: forall img sd nm inm a . Vk.ObjB.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags ->
 	Word32 -> Word32 -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[VObj.Image al img inm] ->
+		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.Image img inm] ->
 		Vk.Mm.M sm '[
-			'(sb, 'Vk.Mm.BufferArg nm '[VObj.Image al img inm]) ] ->
+			'(sb, 'Vk.Mm.BufferArg nm '[Vk.ObjNA.Image img inm]) ] ->
 		IO a) -> IO a
-createBffrImg p dv us prs (fromIntegral -> w) (fromIntegral -> h) =
-	createBffr @_ @_ @(VObj.Image al img inm) p dv (VObj.LengthImage w w h 1) us prs
+createBffrImg p dv us (fromIntegral -> w) (fromIntegral -> h) =
+	createBffr @_ @_ @(Vk.ObjNA.Image img inm) p dv (Vk.Obj.LengthImage w w h 1) us
+		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
-createBffr :: forall sd bnm o a . VObj.SizeAlignment o =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->
+createBffr :: forall sd bnm o a . Vk.Obj.SizeAlignment o =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb bnm '[o] -> Vk.Mm.M sm
 			'[ '(sb, 'Vk.Mm.BufferArg bnm '[o])] -> IO a) -> IO a
@@ -305,10 +300,10 @@ transitionImgLyt cb i ol nl =
 		_ -> error "unsupported layout transition!"
 
 copyBffrToImg :: forall smb sbb nmb al img imgnm smi si nmi scb .
-	(KnownNat al, Storable (BObj.ImagePixel img)) =>
+	(KnownNat al, Storable (Vk.ObjB.ImagePixel img)) =>
 	Vk.CBffr.C scb ->
-	Vk.Bffr.Binded smb sbb nmb '[ VObj.Image al img imgnm]  ->
-	Vk.Img.Binded smi si nmi (BObj.ImageFormat img) -> IO ()
+	Vk.Bffr.Binded smb sbb nmb '[ Vk.Obj.Image al img imgnm]  ->
+	Vk.Img.Binded smi si nmi (Vk.ObjB.ImageFormat img) -> IO ()
 copyBffrToImg cb bf img =
 	Vk.Cmd.copyBufferToImage @al @img @'[imgnm] cb bf img
 		Vk.Img.LayoutTransferDstOptimal
@@ -322,18 +317,18 @@ copyBffrToImg cb bf img =
 		Vk.Img.subresourceLayersMipLevel = 0,
 		Vk.Img.subresourceLayersBaseArrayLayer = 0,
 		Vk.Img.subresourceLayersLayerCount = 1 }
-	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
-		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
+	Vk.Obj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
+		Vk.Obj.lengthOf @(Vk.Obj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
 
 copyImgToBffr ::
-	forall al img sms sis inms smd sbd bnmd nmd scb . KnownNat al =>
-	Storable (BObj.ImagePixel img) =>
+	forall img sms sis inms smd sbd bnmd nmd scb .
+	Storable (Vk.ObjB.ImagePixel img) =>
 	Vk.CBffr.C scb ->
-	Vk.Img.Binded sms sis inms (BObj.ImageFormat img) ->
-	Vk.Bffr.Binded smd sbd bnmd '[ VObj.Image al img nmd] ->
+	Vk.Img.Binded sms sis inms (Vk.ObjB.ImageFormat img) ->
+	Vk.Bffr.Binded smd sbd bnmd '[ Vk.Obj.Image 1 img nmd] ->
 	Word32 -> Word32 -> IO ()
 copyImgToBffr cb i bf w h =
-	Vk.Cmd.copyImageToBuffer @al cb i Vk.Img.LayoutTransferSrcOptimal bf rgn
+	Vk.Cmd.copyImageToBuffer @1 cb i Vk.Img.LayoutTransferSrcOptimal bf rgn
 	where
 	rgn :: HPList.PL (Vk.Bffr.ImageCopy img) '[nmd]
 	rgn = HPList.Singleton Vk.Bffr.ImageCopy {
@@ -383,10 +378,10 @@ instance Storable PixelRgba8 where
 	poke p (PixelRgba8 (PixelRGBA8 r g b a)) =
 		pokeArray (castPtr p) [r, g, b, a]
 
-instance BObj.IsImage ImageRgba8 where
+instance Vk.ObjB.IsImage ImageRgba8 where
 	type ImagePixel ImageRgba8 = PixelRgba8
 	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Unorm
-	imageRow = BObj.imageWidth
+	imageRow = Vk.ObjB.imageWidth
 	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
 	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
 	imageDepth _ = 1

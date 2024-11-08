@@ -5,15 +5,15 @@ new
 ---
 
 * app/try-blit.hs
-    + [ ] MAIN
-        - [ ] main
-        - [ ] realMain
-        - [ ] createIst
-        - [ ] vldLayers
-        - [ ] pickPhd
-        - [ ] creaetLgDvc
-        - [ ] createCmdPl
-        - [ ] body
+    + [x] MAIN
+        - [x] main
+        - [x] realMain
+        - [x] createIst
+        - [x] vldLayers
+        - [x] pickPhd
+        - [x] creaetLgDvc
+        - [x] createCmdPl
+        - [x] body
     + [ ] BUFFER
         - [ ] resultBffr
         - [ ] createBffrImg
