@@ -54,13 +54,6 @@ packages:
   original:
     hackage: text-misc-yj-0.1.0.0
 - completed:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1@sha256:4e19d4a42e83cfc3735d49ed735d84bb8a2200be35bc92adc2cfc5a97fcc71c6,2150
-    pantry-tree:
-      sha256: 9bffd57b8d57bb72d8d49a70d501cfbc9b86d2c8e4b925b58eb385c5976e4a9f
-      size: 482
-  original:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1
-- completed:
     hackage: tools-yj-0.1.0.19@sha256:f68285bdf1655779dfd9c88e5639750b6667e2943164b56acdd67b4447f08d88,2186
     pantry-tree:
       sha256: d40da9da2f85d7097980003b3a52bde22668ed1829e143aa065b085bf8036ad0
@@ -69,7 +62,7 @@ packages:
     hackage: tools-yj-0.1.0.19
 snapshots:
 - completed:
-    sha256: cc349aa33d839e6bef536c3943dd902a18ec2f535380c1e60b0d860c7bede00d
-    size: 677547
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/8.yaml
-  original: nightly-2024-11-08
+    sha256: 4799e63f7fc5bbd746d28a4efde2a515ebbe6f3c719126c3914eaed88de266fc
+    size: 678226
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/10.yaml
+  original: nightly-2024-11-10

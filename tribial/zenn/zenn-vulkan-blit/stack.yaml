@@ -17,7 +17,7 @@
 #
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
-snapshot: nightly-2024-11-08
+snapshot: nightly-2024-11-10
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -49,7 +49,6 @@ extra-deps:
 - union-color-0.1.2.0
 - mtl-misc-yj-0.1.0.1
 - text-misc-yj-0.1.0.0
-- hetero-parameter-list-with-typelevel-tools-0.1.0.1
 - tools-yj-0.1.0.19
 
 # Override default flag values for project packages and extra-deps
