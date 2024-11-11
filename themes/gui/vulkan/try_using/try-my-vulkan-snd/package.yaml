@@ -458,6 +458,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
+  show-layers:
+    main:                show-layers.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-my-vulkan-snd
 
 tests:
   try-my-vulkan-snd-test:

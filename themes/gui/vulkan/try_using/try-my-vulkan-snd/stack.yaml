@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-11-08
+resolver: nightly-2024-11-10
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -68,7 +68,6 @@ extra-deps:
 - language-spir-v-0.1.0.1
 - mtl-misc-yj-0.1.0.1
 - text-misc-yj-0.1.0.0
-- hetero-parameter-list-with-typelevel-tools-0.1.0.1
 - tools-yj-0.1.0.19
 
 # Override default flag values for local packages and extra-deps
