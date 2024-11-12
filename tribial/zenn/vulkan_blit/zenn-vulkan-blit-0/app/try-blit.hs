@@ -1,12 +1,9 @@
-{-# LANGUAGE PackageImports, ImportQualifiedPost #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
-{-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
 
