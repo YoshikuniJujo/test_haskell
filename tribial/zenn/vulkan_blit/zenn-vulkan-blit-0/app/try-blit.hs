@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
@@ -20,7 +20,7 @@ import Data.Bits.ToolsYj
 import Data.Default
 import Data.Maybe
 import Data.Maybe.ToolsYj
-import Data.List
+import Data.List qualified as L
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:*.))
 import Data.HeteroParList qualified as HPList
@@ -92,7 +92,7 @@ pickPhd ist = Vk.Phd.enumerate ist >>= \case
 		Just pdqfi -> pure pdqfi
 	where
 	suit pd = findf <$> Vk.Phd.getQueueFamilyProperties pd
-	findf ps = fst <$> find (grbit . snd) ps
+	findf ps = fst <$> L.find (grbit . snd) ps
 	grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
 createLgDvc ::
@@ -230,7 +230,7 @@ findMmType pd flt prs =
 	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
 	where
 	msg = "failed to find suitable memory type!"
-	suit p = fst <$> find ((&&)
+	suit p = fst <$> L.find ((&&)
 		<$> (`Vk.Mm.elemTypeIndex` flt) . fst
 		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
 			(Vk.Phd.memoryPropertiesMemoryTypes p)
