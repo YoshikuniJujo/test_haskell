@@ -52,15 +52,25 @@ import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Sample qualified as Vk.Sample
 
-import Lib
+-- MAIN
 
 main :: IO ()
-main = someFunc
+main = getArgs >>= \case
+	[ifp, ofp, readMaybe -> Just n, readMaybe -> Just i] -> do
+		img <- either error convertRGBA8 <$> readImage ifp
+		ImageRgba8 img' <- realMain (ImageRgba8 img) n i
+		writePng ofp img'
+	_ -> error "bad arguments"
+
+realMain :: ImageRgba8 -> Int32 -> Int32 -> IO ImageRgba8
+realMain img n i = do
+	print $ Vk.ObjB.imageBody img !! fromIntegral i !! fromIntegral n
+	pure img
 
 -- DATA TYPE IMAGE RGBA8
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
-newtype PixelRgba8 = PixelRgba8 PixelRGBA8
+newtype PixelRgba8 = PixelRgba8 PixelRGBA8 deriving Show
 
 instance Vk.ObjB.IsImage ImageRgba8 where
 	type ImagePixel ImageRgba8 = PixelRgba8
