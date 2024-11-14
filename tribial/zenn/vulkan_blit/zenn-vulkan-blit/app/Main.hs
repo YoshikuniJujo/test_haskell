@@ -63,9 +63,30 @@ main = getArgs >>= \case
 	_ -> error "bad arguments"
 
 realMain :: ImageRgba8 -> Int32 -> Int32 -> IO ImageRgba8
-realMain img n i = do
-	print $ Vk.ObjB.imageBody img !! fromIntegral i !! fromIntegral n
-	pure img
+realMain img n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
+	print pd >>
+	(print . Vk.Phd.propertiesDeviceName =<< Vk.Phd.getProperties pd) >>
+	print qfi >> pure img
+
+createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
+createIst f = Vk.Ist.create info nil f
+	where
+	info :: Vk.Ist.CreateInfo 'Nothing 'Nothing
+	info = def { Vk.Ist.createInfoEnabledLayerNames = vldLayers }
+
+vldLayers :: [Vk.LayerName]
+vldLayers = [Vk.layerKhronosValidation]
+
+pickPhd :: Vk.Ist.I si -> IO (Vk.Phd.P, Vk.QFam.Index)
+pickPhd ist = Vk.Phd.enumerate ist >>= \case
+	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
+	pds -> findMaybeM suit pds >>= \case
+		Nothing -> error "failed to find a suitable GPU!"
+		Just pdqfi -> pure pdqfi
+	where
+	suit pd = findf <$> Vk.Phd.getQueueFamilyProperties pd
+	findf ps = fst <$> L.find (grbit . snd) ps
+	grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
 
 -- DATA TYPE IMAGE RGBA8
 
