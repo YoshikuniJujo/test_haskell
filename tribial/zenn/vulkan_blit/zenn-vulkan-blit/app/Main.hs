@@ -64,9 +64,8 @@ main = getArgs >>= \case
 
 realMain :: ImageRgba8 -> Int32 -> Int32 -> IO ImageRgba8
 realMain img n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
-	print pd >>
-	(print . Vk.Phd.propertiesDeviceName =<< Vk.Phd.getProperties pd) >>
-	print qfi >> pure img
+	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
+	createCmdPl qfi dv \cp -> body pd dv gq cp img n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = Vk.Ist.create info nil f
@@ -87,6 +86,35 @@ pickPhd ist = Vk.Phd.enumerate ist >>= \case
 	suit pd = findf <$> Vk.Phd.getQueueFamilyProperties pd
 	findf ps = fst <$> L.find (grbit . snd) ps
 	grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
+
+createLgDvc ::
+	Vk.Phd.P -> Vk.QFam.Index -> (forall sd . Vk.Dvc.D sd -> IO a) -> IO a
+createLgDvc pd qfi = Vk.Dvc.create pd info nil
+	where
+	info = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
+		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
+		Vk.Dvc.createInfoEnabledExtensionNames = [],
+		Vk.Dvc.createInfoEnabledFeatures = Just def }
+	qinfo = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qfi,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1.0] }
+
+createCmdPl :: Vk.QFam.Index ->
+	Vk.Dvc.D sd -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl qfi dv = Vk.CmdPl.create dv info nil
+	where info = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = zeroBits,
+		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
+
+body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
+body pd dv gq cp img n i = pure img
 
 -- DATA TYPE IMAGE RGBA8
 
