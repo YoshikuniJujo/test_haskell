@@ -33,27 +33,6 @@ packages:
   original:
     hackage: language-spir-v-0.1.0.1
 - completed:
-    hackage: storable-hetero-list-0.1.0.4@sha256:90b29b61329b0b837cacf49a8d7066133b988addadf4d43d04593aa071d1cca5,1868
-    pantry-tree:
-      sha256: 1fc9939a059c3e67a496f9e9bc68f96607f301f06965368797d126b29a12fd73
-      size: 389
-  original:
-    hackage: storable-hetero-list-0.1.0.4
-- completed:
-    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
-    pantry-tree:
-      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
-      size: 466
-  original:
-    hackage: storable-peek-poke-0.1.0.1
-- completed:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1@sha256:4e19d4a42e83cfc3735d49ed735d84bb8a2200be35bc92adc2cfc5a97fcc71c6,2150
-    pantry-tree:
-      sha256: 9bffd57b8d57bb72d8d49a70d501cfbc9b86d2c8e4b925b58eb385c5976e4a9f
-      size: 482
-  original:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1
-- completed:
     hackage: mtl-misc-yj-0.1.0.2@sha256:a7cefb8b63b5406d6ab29dddd2c3913d73e83f3cb902fad931dd59f948192aaf,1768
     pantry-tree:
       sha256: cde0b60f446a4f36bf32642deee33927d57eb35d8323d35723de824093b3dc5a
@@ -67,30 +46,9 @@ packages:
       size: 379
   original:
     hackage: text-misc-yj-0.1.0.1
-- completed:
-    hackage: typelevel-tools-yj-0.1.0.6@sha256:33f336a1cea83dda17d6e1be1b184d7696c988fe7ee056b3b7e0be33a416eefe,2187
-    pantry-tree:
-      sha256: faccce94148b87b2b39a1d5e8c24c41356e48fac6fceda56075967f66e9a182f
-      size: 1395
-  original:
-    hackage: typelevel-tools-yj-0.1.0.6
-- completed:
-    hackage: hetero-parameter-list-0.1.0.18@sha256:0aa3a237315e4517fef8ade4810f26285992f2bc1de0efc73b97bb5410fc6e68,1884
-    pantry-tree:
-      sha256: 29724eeba90461de9c0d07470a33a94e6d392e4a1a6cd7110784a694fea87045
-      size: 459
-  original:
-    hackage: hetero-parameter-list-0.1.0.18
-- completed:
-    hackage: tools-yj-0.1.0.19@sha256:f68285bdf1655779dfd9c88e5639750b6667e2943164b56acdd67b4447f08d88,2186
-    pantry-tree:
-      sha256: d40da9da2f85d7097980003b3a52bde22668ed1829e143aa065b085bf8036ad0
-      size: 1098
-  original:
-    hackage: tools-yj-0.1.0.19
 snapshots:
 - completed:
-    sha256: b69efabdef0bfb1631597151c92fb855d5f3ef2fbcc66e3396f76bb4e828a7ab
-    size: 677103
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/6.yaml
-  original: nightly-2024-11-06
+    sha256: 0e0dac587cf0201d6c0be2047d6aaeb593b416aa5683e8c47f451c0e5860081b
+    size: 678231
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/12.yaml
+  original: nightly-2024-11-12
