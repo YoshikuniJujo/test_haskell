@@ -62,7 +62,7 @@ extra-deps:
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-- gpu-vulkan-0.1.0.137
+- gpu-vulkan-0.1.0.138
 - gpu-vulkan-middle-0.1.0.54
 - gpu-vulkan-core-0.1.0.8
 - language-spir-v-0.1.0.1
