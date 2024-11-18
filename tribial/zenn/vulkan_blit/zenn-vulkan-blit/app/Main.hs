@@ -114,7 +114,24 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
-body pd dv gq cp img n i = pure img
+body pd dv gq cp img n i =
+	Vk.Bffr.create @_ @'[Vk.ObjNA.Image img "sample"] dv (
+		bffrInfo
+			(Vk.Obj.LengthImage 100 100 100 1)
+			Vk.Bffr.UsageTransferDstBit
+		) nil \b -> print b >> pure img
+
+-- BUFFER
+
+bffrInfo :: Vk.Obj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
+bffrInfo ln us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N,
+	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 -- DATA TYPE IMAGE RGBA8
 
