@@ -5,19 +5,19 @@
 
 packages:
 - completed:
-    hackage: gpu-vulkan-0.1.0.137@sha256:444bd732e58a0ab884efad7719d320036949f5f7a20c05dab76dbaabbb281433,7633
+    hackage: gpu-vulkan-0.1.0.139@sha256:74decba3de17cf8996097dd96308027cd8f522309acbe66e7b600f31c7d408e6,7633
     pantry-tree:
-      sha256: d817f542724ea282d212e04af9f79d004953f9326d3a983e5633a417e957fbfb
+      sha256: 25b4d986d4ba030a9ef3bbf5cdd23a334a9569660b059361a71f1fe8e3d3a916
       size: 11164
   original:
-    hackage: gpu-vulkan-0.1.0.137
+    hackage: gpu-vulkan-0.1.0.139
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.54@sha256:824a10d7968f1ac6ad968bfe6e2eb01dbfead3e13104091cbaab84792f936697,8441
+    hackage: gpu-vulkan-middle-0.1.0.56@sha256:927090e3106b8ba12f752221d872742af6205588869513dd6a328c52492a89da,8441
     pantry-tree:
-      sha256: 483e9566833f94d214f6f561029af5c2fc2606183d030f5e24d15748156081ed
+      sha256: e5f6e6b3da616dc575e9d40872090f8f5390f16494d547f702abbba1ab27ea84
       size: 12409
   original:
-    hackage: gpu-vulkan-middle-0.1.0.54
+    hackage: gpu-vulkan-middle-0.1.0.56
 - completed:
     hackage: gpu-vulkan-core-0.1.0.8@sha256:a4dcd94ed86133a1d7b991fb2f3547f3838e05a0dfdb6a308a61e44a0828baa5,3369
     pantry-tree:
@@ -47,22 +47,15 @@ packages:
   original:
     hackage: text-misc-yj-0.1.0.0
 - completed:
-    hackage: mtl-misc-yj-0.1.0.1@sha256:497e39aa4e71fca0832bc5f55423ee44f14f33d9c94344e7df2d4c0a6b89c082,1806
+    hackage: tools-yj-0.1.0.20@sha256:1a353e0061d325b563a31659d42cc9b2caf94ac37293f2070c84e0df333b6741,2186
     pantry-tree:
-      sha256: bf2829c00ae038f92d04a438ad387e0d5c5479ae120edbd31995be3b309589f8
-      size: 377
-  original:
-    hackage: mtl-misc-yj-0.1.0.1
-- completed:
-    hackage: tools-yj-0.1.0.19@sha256:f68285bdf1655779dfd9c88e5639750b6667e2943164b56acdd67b4447f08d88,2186
-    pantry-tree:
-      sha256: d40da9da2f85d7097980003b3a52bde22668ed1829e143aa065b085bf8036ad0
+      sha256: 80c430d7de23005242626ba0742670e127d66cc9283831508ec07c0b25c1a0e8
       size: 1098
   original:
-    hackage: tools-yj-0.1.0.19
+    hackage: tools-yj-0.1.0.20
 snapshots:
 - completed:
-    sha256: 46fbebea5788b08138cee4b16cbe58c889f85ef1438eb862b8735751583eddd9
-    size: 678017
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/11.yaml
-  original: nightly-2024-11-11
+    sha256: cbf6903eef9ccd71564eaf4209ec65e0fd9cb76aa915c80f569b50cd35f280e5
+    size: 678850
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/18.yaml
+  original: nightly-2024-11-18

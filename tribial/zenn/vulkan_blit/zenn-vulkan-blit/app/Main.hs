@@ -14,6 +14,7 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Control.Arrow
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -121,9 +122,41 @@ body pd dv gq cp img n i =
 			Vk.Bffr.UsageTransferDstBit
 		) nil \b -> do
 			print =<< Vk.Bffr.getMemoryRequirements dv b
+			print =<< (second (bitsList
+					. Vk.Mm.mTypePropertyFlags) <$>)
+				. Vk.Phd.memoryPropertiesMemoryTypes
+				<$> Vk.Phd.getMemoryProperties pd
 			pure img
 
 -- BUFFER
+
+createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags ->
+	Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
+		IO a) -> IO a
+createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1) us
+	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+
+createBffr :: forall sd bnm o a . Vk.Obj.SizeAlignment o =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[o] ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnm '[o])] -> IO a) -> IO a
+createBffr pd dv ln us prs f = Vk.Bffr.create dv binfo nil \b -> do
+	rqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) prs
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
+		(ainfo mt) nil
+		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
+	where
+	binfo = bffrInfo ln us
+	ainfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 bffrInfo :: Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
@@ -134,6 +167,17 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoUsage = us,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+findMmType ::
+	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmType pd tbs prs =
+	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
+	where
+	msg = "failed to find suitable memory type!"
+	suit p = fst <$> L.find ((&&)
+		<$> (`Vk.Mm.elemTypeIndex` tbs) . fst
+		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
+			(Vk.Phd.memoryPropertiesMemoryTypes p)
 
 -- DATA TYPE IMAGE RGBA8
 
