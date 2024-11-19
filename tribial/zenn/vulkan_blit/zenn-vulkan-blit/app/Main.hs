@@ -174,6 +174,38 @@ findMmType pd tbs prs =
 		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
 			(Vk.Phd.memoryPropertiesMemoryTypes p)
 
+-- IMAGE
+
+prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
+	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
+prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+	rqs <- Vk.Img.getMemoryRequirements dv i
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
+		nil \(HPList.Singleton (U2 (Vk.Mm.ImageBinded bd))) _ -> f bd
+	where
+	iinfo = Vk.Img.CreateInfo {
+		Vk.Img.createInfoNext = TMaybe.N,
+		Vk.Img.createInfoFlags = zeroBits,
+		Vk.Img.createInfoImageType = Vk.Img.Type2d,
+		Vk.Img.createInfoExtent = Vk.Extent3d {
+			Vk.extent3dWidth = w, Vk.extent3dHeight = h,
+			Vk.extent3dDepth = 1 },
+		Vk.Img.createInfoMipLevels = 1,
+		Vk.Img.createInfoArrayLayers = 1,
+		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
+		Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
+		Vk.Img.createInfoUsage =
+			Vk.Img.UsageTransferSrcBit .|.
+			Vk.Img.UsageTransferDstBit,
+		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Img.createInfoQueueFamilyIndices = [],
+		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
+	minfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
 -- DATA TYPE IMAGE RGBA8
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
