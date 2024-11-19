@@ -116,8 +116,7 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
 body pd dv gq cp img n i =
-	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h \b bm ->
-		print b >> pure img
+	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd -> pure img
 	where
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
