@@ -244,7 +244,7 @@ body kfs fr w ist =
 	crtx GlfwG.Key'H >>
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
-	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 
 	createSyncObjs d \sos ->
 	K.newChans (K.hjkl ++ K.gf) >>= \(oke, kenv) ->

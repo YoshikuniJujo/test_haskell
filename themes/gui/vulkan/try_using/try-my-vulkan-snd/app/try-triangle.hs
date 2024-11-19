@@ -730,7 +730,7 @@ copyBffr :: forall sd sc sm sb sm' sb' bnm bnm' al t lnm .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb bnm '[VObj.List al t lnm] ->
 	Vk.Bffr.Binded sm' sb' bnm' '[VObj.List al t lnm] -> IO ()
-copyBffr dv gq cp s d = Vk.CmdBffr.allocate dv ainfo \(cb :*. HPList.Nil) -> do
+copyBffr dv gq cp s d = Vk.CmdBffr.allocateCs dv ainfo \(cb :*. HPList.Nil) -> do
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo $
 		Vk.Cmd.copyBuffer @'[ '( '[VObj.List al t lnm], 0, 0)] cb s d
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
@@ -754,7 +754,7 @@ copyBffr dv gq cp s d = Vk.CmdBffr.allocate dv ainfo \(cb :*. HPList.Nil) -> do
 createCmdBffrs :: forall n sd scp a . (TList.Length n, HPList.FromList n) =>
 	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . HPList.LL (Vk.CmdBffr.C scb) n -> IO a) -> IO a
-createCmdBffrs dv cp f = Vk.CmdBffr.allocate dv info f
+createCmdBffrs dv cp f = Vk.CmdBffr.allocateCs dv info f
 	where info = Vk.CmdBffr.AllocateInfo {
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,

@@ -238,7 +238,7 @@ body kfs fr w ist =
 	crds GlfwG.Key'H >>= \ds -> crtx GlfwG.Key'H >>
 	createVtxBffr pd d gq cp vertices \vb ->
 	createIdxBffr pd d gq cp indices \ib ->
-	Vk.CBffr.allocate d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs d (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	createSyncObjs d \sos ->
 	K.newChans (K.hjkl ++ K.gf) >>= \(oke, kenv) ->
 	getCurrentTime >>=
@@ -871,7 +871,7 @@ singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 singleTimeCmds dv gq cp cmd =
-	Vk.CBffr.allocate dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 		Vk.Q.waitIdle gq

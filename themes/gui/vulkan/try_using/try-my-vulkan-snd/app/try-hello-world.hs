@@ -222,7 +222,7 @@ calc dv q cpl dsl dss sz =
 	Vk.PplLyt.create dv (pplLytInfo dsl) nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing (HPList.Singleton . U4 $ pplInfo pl)
 		nil \(cppl :** HPList.Nil) ->
-	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
 	run q cb pl cppl dss sz
 
 pplLytInfo :: Vk.DscStLyt.D sl bts -> Vk.PplLyt.CreateInfo

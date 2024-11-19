@@ -207,7 +207,7 @@ body fr w ist =
 	tnum maxFramesInFlight \(_ :: Proxy mff) ->
 	createMvpBffrs @mff pd d dsl \dsls mbs mbms ->
 	createDscPl d \dp -> createDscSts d dp mbs dsls \dss ->
-	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
+	Vk.CBffr.allocateCs @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
 	getCurrentTime >>=
 	mainloop fr w sfc pd qfis d gq pq
@@ -841,7 +841,7 @@ copyBffr dv gq cp s d = cmdBffr \cb -> do
 	Vk.Q.waitIdle gq
 	where
 	cmdBffr :: (forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-	cmdBffr f = Vk.CBffr.allocate dv
+	cmdBffr f = Vk.CBffr.allocateCs dv
 		(cmdBffrInfo @_ @'[ '()] cp) $ f . \(cb :*. HPList.Nil) -> cb
 	binfo = Vk.CBffr.BeginInfo {
 		Vk.CBffr.beginInfoNext = TMaybe.N,

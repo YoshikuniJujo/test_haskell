@@ -231,7 +231,7 @@ body mdlfp fr w ist =
 	($ (Proxy :: Proxy (MapToUnit SceneNames))) \(_ :: Proxy mff) ->
 	createVpBffrs @alu @SceneNames pd d dsl \dsls vpbs vpbms ->
 	createScnBffr pd d \scb scbm ->
-	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
+	Vk.CBffr.allocateCs @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
 	createDscPl d \dp -> createDscSts d dp dsls vpbs scb \dss ->
 	mainloop fr w sfc pd qfis d gq pq cp
@@ -914,7 +914,7 @@ singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 singleTimeCmds dv gq cp cmd =
-	Vk.CBffr.allocate dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 		Vk.Q.waitIdle gq

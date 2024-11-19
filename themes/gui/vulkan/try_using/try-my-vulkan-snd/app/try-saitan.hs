@@ -494,7 +494,7 @@ calc dv q cpl dsl dss n ma mb mc =
 	Vk.Ppl.Cp.createCs dv Nothing
 		(HPList.Singleton . U4 $ cpplinfo pl) nil
 		\(cppl :** HPList.Nil) ->
-	Vk.CBffr.allocate dv cbinfo \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) ->
 	run @nm1 @nm2 @nm3 dv q cb cppl pl dss n ma mb mc
 	where
 	plinfo :: Vk.PplLyt.CreateInfo

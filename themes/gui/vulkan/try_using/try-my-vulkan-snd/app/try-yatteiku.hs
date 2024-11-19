@@ -212,7 +212,7 @@ body pd dv gq cp f = prepareRsltImg pd dv \img _mimg -> do
 		Vk.Frmbffr.create
 			dv (frmbffrInfo imgWidth imgHeight rp iv) nil \fb ->
 		createPplLyt dv \pl -> createGrPpl dv rp pl \ppl ->
-		Vk.CBffr.allocate dv (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
+		Vk.CBffr.allocateCs dv (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
 		runCmd gq cb $
 			Vk.Cmd.beginRenderPass @'Nothing @'[]
 				cb (binfo rp fb) Vk.Sbp.ContentsInline $
@@ -556,7 +556,7 @@ singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 singleTimeCmds dv gq cp cmd =
-	Vk.CBffr.allocate dv (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 		Vk.Q.waitIdle gq

@@ -232,7 +232,7 @@ calc dv q cpl dsl ds sz =
 	Vk.Ppl.Lyt.create dv (pplLytInfo dsl) nil \pl ->
 	Vk.Ppl.Cmpt.createCs dv Nothing
 		(HPList.Singleton . U4 $ pplInfo pl) nil \(cppl :** HPList.Nil) ->
-	Vk.CBffr.allocate dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo cpl) \(cb :*. HPList.Nil) ->
 	run q ds cb pl cppl sz
 
 pplLytInfo :: Vk.DSLyt.D sl bts ->
@@ -317,7 +317,7 @@ singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 singleTimeCmds dv gq cp cmd =
-	Vk.CBffr.allocate dv (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo cp) \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq

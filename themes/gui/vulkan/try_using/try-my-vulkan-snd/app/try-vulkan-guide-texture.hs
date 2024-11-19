@@ -248,7 +248,7 @@ body mdlfp txfp mff fr w ist =
 	createTxImg pd d gq cp (ImageRgba8 txi) \tx ->
 	Vk.ImgVw.create d (imgVwInfo tx Vk.Img.AspectColorBit) nil \tv ->
 	createDscStTx d dp dslt tv \dst ->
-	Vk.CBffr.allocate @_ @mff d (cmdBffrInfo cp) \cbs ->
+	Vk.CBffr.allocateCs @_ @mff d (cmdBffrInfo cp) \cbs ->
 	createSyncObjs @mff d \sos ->
 	mainloop mff fr w sfc pd qfis d gq pq cp
 		sc ex scvs rp pl gp fbs drs
@@ -956,7 +956,7 @@ singleTimeCmds :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 singleTimeCmds dv gq cp cmd =
-	Vk.CBffr.allocate dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 		Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 		Vk.Q.waitIdle gq
