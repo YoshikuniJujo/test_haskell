@@ -116,17 +116,12 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
 body pd dv gq cp img n i =
-	Vk.Bffr.create @_ @'[Vk.ObjNA.Image img "sample-buffer"] dv (
-		bffrInfo
-			(Vk.Obj.LengthImage 100 100 100 1)
-			Vk.Bffr.UsageTransferDstBit
-		) nil \b -> do
-			print =<< Vk.Bffr.getMemoryRequirements dv b
-			print =<< (second (bitsList
-					. Vk.Mm.mTypePropertyFlags) <$>)
-				. Vk.Phd.memoryPropertiesMemoryTypes
-				<$> Vk.Phd.getMemoryProperties pd
-			pure img
+	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h \b bm ->
+		print b >> pure img
+	where
+	w, h :: Integral n => n
+	w = fromIntegral $ Vk.ObjB.imageWidth img
+	h = fromIntegral $ Vk.ObjB.imageHeight img
 
 -- BUFFER
 
