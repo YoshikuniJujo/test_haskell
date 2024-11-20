@@ -17,7 +17,7 @@
 #
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
-snapshot: nightly-2024-11-10
+snapshot: nightly-2024-11-19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,14 +42,12 @@ packages:
 # extra-deps: []
 
 extra-deps:
-- gpu-vulkan-0.1.0.137
-- gpu-vulkan-middle-0.1.0.54
+- gpu-vulkan-0.1.0.141
+- gpu-vulkan-middle-0.1.0.57
 - gpu-vulkan-core-0.1.0.8
 - language-spir-v-0.1.0.1
 - union-color-0.1.2.0
-- mtl-misc-yj-0.1.0.1
 - text-misc-yj-0.1.0.0
-- tools-yj-0.1.0.19
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

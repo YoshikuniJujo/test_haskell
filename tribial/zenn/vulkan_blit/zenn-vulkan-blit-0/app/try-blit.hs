@@ -240,7 +240,7 @@ findMmType pd flt prs =
 runCmds :: forall sd sc a . Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> (forall s . Vk.CBffr.C s -> IO a) -> IO a
 runCmds dv gq cp cmds =
-	Vk.CBffr.allocate dv cbinfo \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq
@@ -286,7 +286,7 @@ transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier
 			zeroBits, Vk.AccessTransferWriteBit,
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferSrcOptimal) -> (
-			zeroBits, Vk.AccessTransferWriteBit,
+			zeroBits, Vk.AccessTransferReadBit,
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
 		_ -> error "unsupported layout transition!"
 
