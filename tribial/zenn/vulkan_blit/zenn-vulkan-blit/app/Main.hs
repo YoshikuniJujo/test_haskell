@@ -120,11 +120,15 @@ body pd dv gq cp img n i =
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits img >>
-	runCmds dv gq cp \cb -> copyBffrToImg cb b imgs >> pure img
+	runCmds dv gq cp \cb -> do
+	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	copyBffrToImg cb b imgs
+	pure img
 	where
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
+	tr = transitionImgLyt
 
 -- BUFFER
 
@@ -233,6 +237,35 @@ runCmds dv gq cp cmds =
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
+
+transitionImgLyt :: Vk.CBffr.C scb ->
+	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImgLyt cb i ol nl =
+	Vk.Cmd.pipelineBarrier cb
+		Vk.Ppl.StageTopOfPipeBit Vk.Ppl.StageTransferBit zeroBits
+		HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
+	where
+	brrr = Vk.Img.MemoryBarrier {
+		Vk.Img.memoryBarrierNext = TMaybe.N,
+		Vk.Img.memoryBarrierOldLayout = ol,
+		Vk.Img.memoryBarrierNewLayout = nl,
+		Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrierImage = i,
+		Vk.Img.memoryBarrierSubresourceRange = srr,
+		Vk.Img.memoryBarrierSrcAccessMask = zeroBits,
+		Vk.Img.memoryBarrierDstAccessMask = case nl of
+			Vk.Img.LayoutTransferDstOptimal ->
+				Vk.AccessTransferWriteBit
+			Vk.Img.LayoutTransferSrcOptimal ->
+				Vk.AccessTransferReadBit
+			_ -> error "unsupported layout transition!" }
+	srr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
 
 copyBffrToImg :: forall scb smb sbb bnm img imgnm smi si inm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
