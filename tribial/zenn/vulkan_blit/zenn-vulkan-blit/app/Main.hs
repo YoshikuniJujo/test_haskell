@@ -115,8 +115,7 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
-body pd dv gq cp img n i =
-	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd -> pure img
+body pd dv gq cp img n i = runCmds dv gq cp \cb -> pure img
 	where
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
@@ -204,6 +203,31 @@ prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 	minfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+-- COMMANDS
+
+runCmds :: forall sd sc a . Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> (forall s . Vk.CBffr.C s -> IO a) -> IO a
+runCmds dv gq cp cmds =
+	Vk.CBffr.allocate dv cbinfo \(cb :*. HPList.Nil) ->
+	Vk.CBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
+	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
+	Vk.Q.waitIdle gq
+	where
+	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing sc '[ '()]
+	cbinfo = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cp,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+	binfo = Vk.CBffr.BeginInfo {
+		Vk.CBffr.beginInfoNext = TMaybe.N,
+		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
+		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
+	sinfo cb = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Nil }
 
 -- DATA TYPE IMAGE RGBA8
 
