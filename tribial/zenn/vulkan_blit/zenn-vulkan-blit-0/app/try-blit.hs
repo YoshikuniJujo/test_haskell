@@ -131,9 +131,9 @@ body pd dv gq cp img n i = resultBffr @img pd dv w h \rb ->
 	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
-	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+	tr cb imgs Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToImg cb imgs imgd w h n i
-	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+	tr cb imgd Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToBffr cb imgd rb
 	where
 	w, h :: Integral n => n
@@ -286,6 +286,9 @@ transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier
 			zeroBits, Vk.AccessTransferWriteBit,
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferSrcOptimal) -> (
+			zeroBits, Vk.AccessTransferReadBit,
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
+		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutTransferSrcOptimal) -> (
 			zeroBits, Vk.AccessTransferReadBit,
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
 		_ -> error "unsupported layout transition!"
