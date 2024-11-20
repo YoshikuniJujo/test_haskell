@@ -115,7 +115,12 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
-body pd dv gq cp img n i = runCmds dv gq cp \cb -> pure img
+body pd dv gq cp img n i =
+	prepareImg pd dv w h \imgs ->
+	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
+		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
+	Vk.Mm.write @nm @o @0 dv bm zeroBits img >>
+	runCmds dv gq cp \cb -> copyBffrToImg cb b imgs >> pure img
 	where
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
@@ -228,6 +233,31 @@ runCmds dv gq cp cmds =
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil }
+
+copyBffrToImg :: forall scb smb sbb bnm img imgnm smi si inm .
+	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
+	Vk.Bffr.Binded smb sbb bnm '[Vk.ObjNA.Image img imgnm]  ->
+	Vk.Img.Binded smi si inm (Vk.ObjB.ImageFormat img) -> IO ()
+copyBffrToImg cb b@(bffrImgExtent -> (w, h)) i =
+	Vk.Cmd.copyBufferToImage @1 @img @'[imgnm] cb b i
+		Vk.Img.LayoutTransferDstOptimal
+		$ HPList.Singleton Vk.Bffr.ImageCopy {
+			Vk.Bffr.imageCopyImageSubresource = colorLayer0,
+			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
+
+colorLayer0 :: Vk.Img.SubresourceLayers
+colorLayer0 = Vk.Img.SubresourceLayers {
+	Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
+	Vk.Img.subresourceLayersMipLevel = 0,
+	Vk.Img.subresourceLayersBaseArrayLayer = 0,
+	Vk.Img.subresourceLayersLayerCount = 1 }
+
+bffrImgExtent :: forall sm sb bnm img nm .
+	Vk.Bffr.Binded sm sb bnm '[ Vk.ObjNA.Image img nm] -> (Word32, Word32)
+bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
+	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ =
+		Vk.Obj.lengthOf @(Vk.ObjNA.Image img nm) ln
 
 -- DATA TYPE IMAGE RGBA8
 
