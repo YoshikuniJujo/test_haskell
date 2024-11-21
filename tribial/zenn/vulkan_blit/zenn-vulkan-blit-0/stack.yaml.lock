@@ -39,16 +39,9 @@ packages:
       size: 429
   original:
     hackage: union-color-0.1.2.0
-- completed:
-    hackage: text-misc-yj-0.1.0.0@sha256:66042424b825dcf9bca55c5a33ae8b5c0bd92fa9b7f7b90998d8c89078d3835a,1853
-    pantry-tree:
-      sha256: 47e018fc1a2e2379e7199e8e9762130d35a985cb7add231d24e0e4154f07ae54
-      size: 378
-  original:
-    hackage: text-misc-yj-0.1.0.0
 snapshots:
 - completed:
-    sha256: f6d403206fdd3d7970a8b671870e9e25b4f7c29ad8f7a62cc0d872f9aaee477f
-    size: 678850
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/19.yaml
-  original: nightly-2024-11-19
+    sha256: ddd882a4577193f6002c111fb7ad443341d21418267a14116c2139be70a73cb2
+    size: 679066
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/21.yaml
+  original: nightly-2024-11-21
