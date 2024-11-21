@@ -5,19 +5,19 @@
 
 packages:
 - completed:
-    hackage: gpu-vulkan-0.1.0.139@sha256:74decba3de17cf8996097dd96308027cd8f522309acbe66e7b600f31c7d408e6,7633
+    hackage: gpu-vulkan-0.1.0.142@sha256:16c6eaff59b82d06a99959118c606691f2fb224b297b17c618ec45e3afc95a2f,7633
     pantry-tree:
-      sha256: 25b4d986d4ba030a9ef3bbf5cdd23a334a9569660b059361a71f1fe8e3d3a916
+      sha256: 207d4c0209870905cadf09cfc4f39403b44eb8046980c9b848ce5590155b3608
       size: 11164
   original:
-    hackage: gpu-vulkan-0.1.0.139
+    hackage: gpu-vulkan-0.1.0.142
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.56@sha256:927090e3106b8ba12f752221d872742af6205588869513dd6a328c52492a89da,8441
+    hackage: gpu-vulkan-middle-0.1.0.57@sha256:9ee37e6071596d8edd39635e3b996b71c1230feacbed6f544d737139baff7b1f,8441
     pantry-tree:
-      sha256: e5f6e6b3da616dc575e9d40872090f8f5390f16494d547f702abbba1ab27ea84
+      sha256: 9eb363663bcd1f2dbb820dea70ca495e54aed32e4bee5d8be01800fb949689c3
       size: 12409
   original:
-    hackage: gpu-vulkan-middle-0.1.0.56
+    hackage: gpu-vulkan-middle-0.1.0.57
 - completed:
     hackage: gpu-vulkan-core-0.1.0.8@sha256:a4dcd94ed86133a1d7b991fb2f3547f3838e05a0dfdb6a308a61e44a0828baa5,3369
     pantry-tree:
@@ -39,23 +39,9 @@ packages:
       size: 429
   original:
     hackage: union-color-0.1.2.0
-- completed:
-    hackage: text-misc-yj-0.1.0.0@sha256:66042424b825dcf9bca55c5a33ae8b5c0bd92fa9b7f7b90998d8c89078d3835a,1853
-    pantry-tree:
-      sha256: 47e018fc1a2e2379e7199e8e9762130d35a985cb7add231d24e0e4154f07ae54
-      size: 378
-  original:
-    hackage: text-misc-yj-0.1.0.0
-- completed:
-    hackage: tools-yj-0.1.0.20@sha256:1a353e0061d325b563a31659d42cc9b2caf94ac37293f2070c84e0df333b6741,2186
-    pantry-tree:
-      sha256: 80c430d7de23005242626ba0742670e127d66cc9283831508ec07c0b25c1a0e8
-      size: 1098
-  original:
-    hackage: tools-yj-0.1.0.20
 snapshots:
 - completed:
-    sha256: cbf6903eef9ccd71564eaf4209ec65e0fd9cb76aa915c80f569b50cd35f280e5
-    size: 678850
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/18.yaml
-  original: nightly-2024-11-18
+    sha256: ddd882a4577193f6002c111fb7ad443341d21418267a14116c2139be70a73cb2
+    size: 679066
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/21.yaml
+  original: nightly-2024-11-21

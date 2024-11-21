@@ -14,7 +14,6 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Control.Arrow
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -121,9 +120,7 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Int32 -> Int32 -> IO img
-body pd dv gq cp img flt n i =
-	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
-		\(rb :: Vk.Bffr.Binded smr sbr nm '[o]) rbm ->
+body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	prepareImg pd dv w h \imgd -> prepareImg pd dv w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
@@ -135,8 +132,9 @@ body pd dv gq cp img flt n i =
 	tr cb imgs
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToImg cb imgs imgd w h flt n i
+	tr cb imgd
+		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToBffr cb imgd rb
-	pure img
 	where
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
@@ -144,6 +142,15 @@ body pd dv gq cp img flt n i =
 	tr = transitionImgLyt
 
 -- BUFFER
+
+resultBffr :: Vk.ObjB.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.Image img nmi] -> IO a) ->
+	IO img
+resultBffr pd dv w h f =
+	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
+		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
+	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
 
 createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags ->
@@ -231,7 +238,7 @@ prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 runCmds :: forall sd sc a . Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> (forall s . Vk.CBffr.C s -> IO a) -> IO a
 runCmds dv gq cp cmds =
-	Vk.CBffr.allocate dv cbinfo \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq
