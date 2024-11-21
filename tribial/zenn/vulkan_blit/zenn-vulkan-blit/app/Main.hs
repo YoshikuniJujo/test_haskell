@@ -57,16 +57,22 @@ import Gpu.Vulkan.Sample qualified as Vk.Sample
 
 main :: IO ()
 main = getArgs >>= \case
-	[ifp, ofp, readMaybe -> Just n, readMaybe -> Just i] -> do
+	[ifp, ofp, getFilter -> Just flt,
+		readMaybe -> Just n, readMaybe -> Just i] -> do
 		img <- either error convertRGBA8 <$> readImage ifp
-		ImageRgba8 img' <- realMain (ImageRgba8 img) n i
+		ImageRgba8 img' <- realMain (ImageRgba8 img) flt n i
 		writePng ofp img'
 	_ -> error "bad arguments"
 
-realMain :: ImageRgba8 -> Int32 -> Int32 -> IO ImageRgba8
-realMain img n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
+getFilter :: String -> Maybe Vk.Filter
+getFilter = \case
+	"nearest" -> Just Vk.FilterNearest; "linear" -> Just Vk.FilterLinear
+	_ -> Nothing
+
+realMain :: ImageRgba8 -> Vk.Filter -> Int32 -> Int32 -> IO ImageRgba8
+realMain img flt n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
-	createCmdPl qfi dv \cp -> body pd dv gq cp img n i
+	createCmdPl qfi dv \cp -> body pd dv gq cp img flt n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = Vk.Ist.create info nil f
@@ -114,15 +120,22 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Int32 -> Int32 -> IO img
-body pd dv gq cp img n i =
-	prepareImg pd dv w h \imgs ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Int32 -> Int32 -> IO img
+body pd dv gq cp img flt n i =
+	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
+		\(rb :: Vk.Bffr.Binded smr sbr nm '[o]) rbm ->
+	prepareImg pd dv w h \imgd -> prepareImg pd dv w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits img >>
 	runCmds dv gq cp \cb -> do
 	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
+	tr cb imgs
+		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+	copyImgToImg cb imgs imgd w h flt n i
+	copyImgToBffr cb imgd rb
 	pure img
 	where
 	w, h :: Integral n => n
@@ -291,6 +304,37 @@ bffrImgExtent :: forall sm sb bnm img nm .
 bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ =
 		Vk.Obj.lengthOf @(Vk.ObjNA.Image img nm) ln
+
+copyImgToImg :: Vk.CBffr.C scb ->
+	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
+	Int32 -> Int32 -> Vk.Filter -> Int32 -> Int32 -> IO ()
+copyImgToImg cb si di w h flt n i = Vk.Cmd.blitImage cb
+	si Vk.Img.LayoutTransferSrcOptimal
+	di Vk.Img.LayoutTransferDstOptimal [blt] flt
+	where
+	blt = Vk.Img.Blit {
+		Vk.Img.blitSrcSubresource = colorLayer0,
+		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d l t 0,
+		Vk.Img.blitSrcOffsetTo = Vk.Offset3d r b 1,
+		Vk.Img.blitDstSubresource = colorLayer0,
+		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blitDstOffsetTo = Vk.Offset3d w h 1 }
+	(l, r, t, b) = (
+		w * (i `mod` n) `div` n, w * (i `mod` n + 1) `div` n,
+		h * (i `div` n) `div` n, h * (i `div` n + 1) `div` n )
+
+copyImgToBffr :: forall
+	scb img smi si inm smb sbb bnm imgnm .
+	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
+	Vk.Img.Binded smi si inm (Vk.ObjB.ImageFormat img) ->
+	Vk.Bffr.Binded smb sbb bnm '[ Vk.Obj.Image 1 img imgnm] -> IO ()
+copyImgToBffr cb i b@(bffrImgExtent -> (w, h)) =
+	Vk.Cmd.copyImageToBuffer @1 @img @'[imgnm] cb i
+		Vk.Img.LayoutTransferSrcOptimal b
+		$ HPList.Singleton Vk.Bffr.ImageCopy {
+			Vk.Bffr.imageCopyImageSubresource = colorLayer0,
+			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
 
 -- DATA TYPE IMAGE RGBA8
 
