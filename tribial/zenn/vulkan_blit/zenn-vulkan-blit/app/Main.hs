@@ -61,7 +61,7 @@ main = getArgs >>= \case
 		img <- either error convertRGBA8 <$> readImage ifp
 		ImageRgba8 img' <- realMain (ImageRgba8 img) flt n i
 		writePng ofp img'
-	_ -> error "bad arguments"
+	_ -> error "invalid command line arguments"
 
 getFilter :: String -> Maybe Vk.Filter
 getFilter = \case
