@@ -32,13 +32,6 @@ packages:
       size: 650
   original:
     hackage: language-spir-v-0.1.0.1
-- completed:
-    hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
-    pantry-tree:
-      sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850
-      size: 429
-  original:
-    hackage: union-color-0.1.2.0
 snapshots:
 - completed:
     sha256: ddd882a4577193f6002c111fb7ad443341d21418267a14116c2139be70a73cb2

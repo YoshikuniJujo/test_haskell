@@ -45,7 +45,6 @@ extra-deps:
 - gpu-vulkan-middle-0.1.0.57
 - gpu-vulkan-core-0.1.0.8
 - language-spir-v-0.1.0.1
-- union-color-0.1.2.0
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
