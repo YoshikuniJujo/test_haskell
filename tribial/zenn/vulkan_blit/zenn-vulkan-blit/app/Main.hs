@@ -84,7 +84,7 @@ vldLayers = [Vk.layerKhronosValidation]
 
 pickPhd :: Vk.Ist.I si -> IO (Vk.Phd.P, Vk.QFam.Index)
 pickPhd ist = Vk.Phd.enumerate ist >>= \case
-	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
+	[] -> error "failed to find GPUs with Vulkan support!"
 	pds -> findMaybeM suit pds >>= \case
 		Nothing -> error "failed to find a suitable GPU!"
 		Just pdqfi -> pure pdqfi
