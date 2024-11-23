@@ -356,7 +356,7 @@ createCmdBffr :: forall sd scp a .
 	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
 createCmdBffr dv cp f =
-	Vk.CmdBffr.allocate dv ainfo $ f . \(cb :*. HPList.Nil) -> cb
+	Vk.CmdBffr.allocateCs dv ainfo $ f . \(cb :*. HPList.Nil) -> cb
 	where
 	ainfo :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
 	ainfo = Vk.CmdBffr.AllocateInfo {
@@ -1123,7 +1123,7 @@ copyBffrLst dv gq cp s d = singleTimeCmds dv gq cp \cb ->
 singleTimeCmds :: forall sd sc a . Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> (forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
 singleTimeCmds dv gq cp cmds =
-	Vk.CmdBffr.allocate dv ainfo \(cb :*. HPList.Nil) ->
+	Vk.CmdBffr.allocateCs dv ainfo \(cb :*. HPList.Nil) ->
 	Vk.CmdBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq

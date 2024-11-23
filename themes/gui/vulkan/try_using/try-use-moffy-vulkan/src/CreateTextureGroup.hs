@@ -348,7 +348,7 @@ dscWrite ds v smp = Vk.DscSet.Write {
 singleTimeCmds :: forall sd sc a . Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> (forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
 singleTimeCmds dv gq cp cmds =
-	Vk.CmdBffr.allocate dv ainfo \(cb :*. HPList.Nil) ->
+	Vk.CmdBffr.allocateCs dv ainfo \(cb :*. HPList.Nil) ->
 	Vk.CmdBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq

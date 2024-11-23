@@ -41,7 +41,7 @@ dependencies:
 - type-flip
 - ranged-list
 - try-moffy-with-gtk3
-- try-gpu-vulkan
+- gpu-vulkan
 - try-gpu-vulkan-cglm
 - try-glfw-group
 - x-keysym
@@ -55,7 +55,7 @@ dependencies:
 - try-gpu-vulkan-khr-swapchain
 - try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-khr-surface-glfw
-- try-language-spir-v
+- language-spir-v
 - try-shaderc
 - hetero-parameter-list
 - text
@@ -66,7 +66,7 @@ dependencies:
 - cairo-image
 - array
 - primitive
-- try-tools-yj
+- tools-yj
 
 ghc-options:
 - -Wall

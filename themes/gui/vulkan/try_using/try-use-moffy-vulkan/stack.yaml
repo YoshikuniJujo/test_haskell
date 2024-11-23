@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-11-05
+resolver: nightly-2024-11-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,34 +42,26 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4dc0a6028250cf886e931061029c6d8ee522a6bf
+  commit: 197c7990217e976fe6bf73e0275c0f68c0d659a5
   subdirs:
   - themes/mfrp/try-moffy-with-gtk3
   - themes/gui/vulkan/try-glfw-group
-  - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-gpu-vulkan-cglm
-  - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
-  - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-  - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
-  - themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
-  - features/ffi/pointer/try-storable-hetero-list
   - features/ffi/pointer/try-storable-generic
-  - features/ffi/pointer/storable-peek-poke
   - themes/gui/cairo/try-cairo-image-samples
   - themes/mfrp/try-moffy-core
-  - packages/try-tools-yj
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: 67d8121c976e018f0ee33ff08c801cd88e3a11b7
 - git: https://github.com/YoshikuniJujo/simple-gdk3
@@ -81,8 +73,10 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: 429e8b95651bafaa67131a917d94581c89d1c90c
 - simple-pango-0.1.0.1
-- mtl-misc-yj-0.1.0.2
-- text-misc-yj-0.1.0.1
+- gpu-vulkan-0.1.0.142
+- gpu-vulkan-middle-0.1.0.57
+- gpu-vulkan-core-0.1.0.8
+- language-spir-v-0.1.0.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

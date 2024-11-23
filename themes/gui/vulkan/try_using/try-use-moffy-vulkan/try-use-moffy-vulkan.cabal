@@ -52,7 +52,9 @@ library
     , containers
     , data-default
     , extra-data-yj
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -66,18 +68,16 @@ library
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , type-flip
     , type-set
     , typelevel-tools-yj
@@ -112,7 +112,9 @@ executable try-boxes
     , containers
     , data-default
     , extra-data-yj
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -126,18 +128,16 @@ executable try-boxes
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -163,7 +163,9 @@ executable try-followbox
     , containers
     , data-default
     , extra-data-yj
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -177,18 +179,16 @@ executable try-followbox
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -214,7 +214,9 @@ executable try-multi-rectangles
     , containers
     , data-default
     , extra-data-yj
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -228,18 +230,16 @@ executable try-multi-rectangles
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -266,7 +266,9 @@ test-suite try-use-moffy-vulkan-test
     , containers
     , data-default
     , extra-data-yj
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -280,18 +282,16 @@ test-suite try-use-moffy-vulkan-test
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-use-moffy-vulkan
     , type-flip
     , type-set
