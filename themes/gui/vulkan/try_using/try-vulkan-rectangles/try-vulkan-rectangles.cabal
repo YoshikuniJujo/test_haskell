@@ -53,7 +53,9 @@ library
     , containers
     , data-default
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -62,23 +64,21 @@ library
     , simple-cairo
     , simple-pango
     , stm
+    , storable-hetero-list
     , storable-peek-poke
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-hetero-list
-    , try-tools-yj
     , type-set
     , typelevel-tools-yj
     , union-color
@@ -111,7 +111,9 @@ executable try-cairo-image-as-texture
     , containers
     , data-default
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -120,23 +122,21 @@ executable try-cairo-image-as-texture
     , simple-cairo
     , simple-pango
     , stm
+    , storable-hetero-list
     , storable-peek-poke
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-hetero-list
-    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -160,7 +160,9 @@ executable try-multi-rectangles
     , containers
     , data-default
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -169,23 +171,21 @@ executable try-multi-rectangles
     , simple-cairo
     , simple-pango
     , stm
+    , storable-hetero-list
     , storable-peek-poke
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-hetero-list
-    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -209,7 +209,9 @@ executable try-multi-rectangles2
     , containers
     , data-default
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -218,23 +220,21 @@ executable try-multi-rectangles2
     , simple-cairo
     , simple-pango
     , stm
+    , storable-hetero-list
     , storable-peek-poke
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-hetero-list
-    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -258,7 +258,9 @@ executable try-use-cairo
     , containers
     , data-default
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -267,23 +269,21 @@ executable try-use-cairo
     , simple-cairo
     , simple-pango
     , stm
+    , storable-hetero-list
     , storable-peek-poke
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-hetero-list
-    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -307,7 +307,9 @@ executable try-use-texture-group
     , containers
     , data-default
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -316,23 +318,21 @@ executable try-use-texture-group
     , simple-cairo
     , simple-pango
     , stm
+    , storable-hetero-list
     , storable-peek-poke
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-hetero-list
-    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -357,7 +357,9 @@ test-suite try-vulkan-rectangles-test
     , containers
     , data-default
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , moffy
     , mtl
     , optparse-declarative
@@ -366,23 +368,21 @@ test-suite try-vulkan-rectangles-test
     , simple-cairo
     , simple-pango
     , stm
+    , storable-hetero-list
     , storable-peek-poke
     , template-haskell
     , text
     , time
+    , tools-yj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-moffy-with-gtk3
     , try-shaderc
     , try-storable-generic
-    , try-storable-hetero-list
-    , try-tools-yj
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj

@@ -373,7 +373,7 @@ createCmdBffr :: forall sd scp a .
 	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
 createCmdBffr dv cp f =
-	Vk.CmdBffr.allocate dv ainfo $ f . \(cb :*. HPList.Nil) -> cb
+	Vk.CmdBffr.allocateCs dv ainfo $ f . \(cb :*. HPList.Nil) -> cb
 	where
 	ainfo :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
 	ainfo = Vk.CmdBffr.AllocateInfo {

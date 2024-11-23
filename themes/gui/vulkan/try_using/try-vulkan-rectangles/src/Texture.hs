@@ -297,7 +297,7 @@ copyBffrLst dv gq cp s d = singleTimeCmds dv gq cp \cb ->
 singleTimeCmds :: forall sd sc a . Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> (forall s . Vk.CmdBffr.C s -> IO a) -> IO a
 singleTimeCmds dv gq cp cmd =
-	Vk.CmdBffr.allocate dv ainfo \(cb :*. HPList.Nil) ->
+	Vk.CmdBffr.allocateCs dv ainfo \(cb :*. HPList.Nil) ->
 	Vk.CmdBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq

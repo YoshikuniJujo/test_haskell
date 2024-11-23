@@ -39,17 +39,17 @@ dependencies:
 - filepath
 - JuicyPixels
 - union-color
-- try-gpu-vulkan
+- gpu-vulkan
 - try-gpu-vulkan-khr-swapchain
 - try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
 - try-shaderc
-- try-language-spir-v
+- language-spir-v
 - hetero-parameter-list
 - ranged-list
-- try-storable-hetero-list
+- storable-hetero-list
 - storable-peek-poke
 - try-storable-generic
 - typelevel-tools-yj
@@ -64,7 +64,7 @@ dependencies:
 - try-moffy-with-gtk3
 - moffy
 - type-set
-- try-tools-yj
+- tools-yj
 
 ghc-options:
 - -Wall
