@@ -35,13 +35,13 @@ dependencies:
 - time
 - JuicyPixels
 - ranged-list
-- try-gpu-vulkan
+- gpu-vulkan
 - try-gpu-vulkan-khr-swapchain
 - try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
-- try-language-spir-v
+- language-spir-v
 - try-shaderc
 - try-storable-generic
 - storable-peek-poke
@@ -55,7 +55,7 @@ dependencies:
 - optparse-declarative
 - mtl
 - stm
-- try-tools-yj
+- tools-yj
 - try-glfw-group
 - mono-traversable
 

@@ -49,7 +49,9 @@ library
     , containers
     , data-default
     , ghc
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
@@ -60,18 +62,16 @@ library
     , temporary
     , text
     , time
+    , tools-yj
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -102,7 +102,9 @@ executable try-multisampling
     , containers
     , data-default
     , ghc
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
@@ -113,19 +115,17 @@ executable try-multisampling
     , temporary
     , text
     , time
+    , tools-yj
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-shaderc
     , try-simple-polygon
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -146,7 +146,9 @@ executable try-pyramid-single
     , containers
     , data-default
     , ghc
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
@@ -157,19 +159,17 @@ executable try-pyramid-single
     , temporary
     , text
     , time
+    , tools-yj
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-shaderc
     , try-simple-polygon
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
@@ -191,7 +191,9 @@ test-suite try-simple-polygon-test
     , containers
     , data-default
     , ghc
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
@@ -202,19 +204,17 @@ test-suite try-simple-polygon-test
     , temporary
     , text
     , time
+    , tools-yj
     , try-codec-wavefront-obj
     , try-glfw-group
-    , try-gpu-vulkan
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-language-spir-v
     , try-shaderc
     , try-simple-polygon
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , union-color
     , vector
