@@ -34,16 +34,16 @@ dependencies:
 - time
 - filepath
 - JuicyPixels
-- try-gpu-vulkan
+- gpu-vulkan
 - try-gpu-vulkan-ext-debug-utils
 - try-shaderc
-- try-language-spir-v
+- language-spir-v
 - hetero-parameter-list
 - try-storable-generic
 - ranged-list
 - typelevel-tools-yj
 - temporary
-- try-tools-yj
+- tools-yj
 
 ghc-options:
 - -Wall

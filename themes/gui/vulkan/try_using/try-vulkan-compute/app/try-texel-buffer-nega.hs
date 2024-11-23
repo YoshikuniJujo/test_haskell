@@ -170,7 +170,7 @@ findQFam pd qf =
 crCmdBffr :: forall sd a . Vk.Dv.D sd ->
 	Vk.QF.Index -> (forall scb . Vk.CmdBuf.C scb -> IO a) -> IO a
 crCmdBffr dv qf a = Vk.CmdPl.create dv cpinfo nil \cp ->
-	Vk.CmdBuf.allocate dv (cbInfo cp) \(cb :*. HPList.Nil) -> a cb where
+	Vk.CmdBuf.allocateCs dv (cbInfo cp) \(cb :*. HPList.Nil) -> a cb where
 	cpinfo = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,

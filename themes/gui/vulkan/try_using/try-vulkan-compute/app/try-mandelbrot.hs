@@ -41,7 +41,7 @@ import qualified Gpu.Vulkan.Memory as Vk.Mm
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
-import qualified "try-gpu-vulkan" Gpu.Vulkan.Pipeline as Vk.Ppl
+import qualified Gpu.Vulkan.Pipeline as Vk.Ppl
 import qualified Gpu.Vulkan.PipelineLayout as Vk.PplLyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
@@ -114,7 +114,7 @@ withDvc a = Vk.Inst.create iinfo nil \ist -> do
 	Vk.Dvc.create pd (dinfo qfi) nil \dv ->
 		Vk.Dvc.getQueue dv qfi 0 >>= \q ->
 		Vk.CmdPl.create dv (cpinfo qfi) nil \cp ->
-		Vk.CBffr.allocate dv (cbinfo cp) \(cb :*. HPList.Nil) ->
+		Vk.CBffr.allocateCs dv (cbinfo cp) \(cb :*. HPList.Nil) ->
 		a pd dv q cb
 	where
 	iinfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing

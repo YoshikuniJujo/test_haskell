@@ -51,7 +51,9 @@ library
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -59,12 +61,10 @@ library
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , typelevel-tools-yj
     , vector
   default-language: Haskell2010
@@ -85,7 +85,9 @@ executable try-bitonic-sort-new
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -93,12 +95,10 @@ executable try-bitonic-sort-new
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -120,7 +120,9 @@ executable try-bitonic-sort-new-test
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -128,12 +130,10 @@ executable try-bitonic-sort-new-test
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -155,7 +155,9 @@ executable try-hello
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -163,12 +165,10 @@ executable try-hello
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -190,7 +190,9 @@ executable try-hello-world
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -198,12 +200,10 @@ executable try-hello-world
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -225,7 +225,9 @@ executable try-mandelbrot
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -233,12 +235,10 @@ executable try-mandelbrot
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -260,7 +260,9 @@ executable try-mandelbrot-cpu
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -268,12 +270,10 @@ executable try-mandelbrot-cpu
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -295,7 +295,9 @@ executable try-mandelbrot-hs
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -303,12 +305,10 @@ executable try-mandelbrot-hs
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -330,7 +330,9 @@ executable try-push-constant
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -338,12 +340,10 @@ executable try-push-constant
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -365,7 +365,9 @@ executable try-quick-bitonic-sort
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -373,12 +375,10 @@ executable try-quick-bitonic-sort
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -400,7 +400,9 @@ executable try-saitan-simple
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -408,12 +410,10 @@ executable try-saitan-simple
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -435,7 +435,9 @@ executable try-texel-buffer-nega
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -443,12 +445,10 @@ executable try-texel-buffer-nega
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -471,7 +471,9 @@ test-suite try-vulkan-compute-test
     , data-default
     , deepseq
     , filepath
+    , gpu-vulkan
     , hetero-parameter-list
+    , language-spir-v
     , parallel
     , random
     , ranged-list
@@ -479,12 +481,10 @@ test-suite try-vulkan-compute-test
     , temporary
     , text
     , time
-    , try-gpu-vulkan
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
-    , try-language-spir-v
     , try-shaderc
     , try-storable-generic
-    , try-tools-yj
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
