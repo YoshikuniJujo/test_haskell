@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-11-05
+resolver: nightly-2024-11-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,35 +43,29 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4dc0a6028250cf886e931061029c6d8ee522a6bf
+  commit: 08fb1b71a4cbbebd3552df150f7a363249f21354
   subdirs:
-  - themes/gui/vulkan/try-gpu-vulkan
   - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-gpu-vulkan-cglm
-  - themes/gui/vulkan/gpu-vulkan-middle
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
-  - themes/gui/vulkan/gpu-vulkan-core
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-  - themes/gui/vulkan/try-language-spir-v
   - themes/gui/vulkan/try-shaderc
   - themes/gui/vulkan/try-glfw-group
-  - themes/hetero-list/try-hetero-parameter-list-with-typelevel-tools
-  - features/ffi/pointer/try-storable-hetero-list
   - features/ffi/pointer/try-storable-generic
-  - features/ffi/pointer/storable-peek-poke
-  - packages/try-tools-yj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-- mtl-misc-yj-0.1.0.2
-- text-misc-yj-0.1.0.1
+- gpu-vulkan-0.1.0.142
+- gpu-vulkan-middle-0.1.0.57
+- gpu-vulkan-core-0.1.0.8
+- language-spir-v-0.1.0.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

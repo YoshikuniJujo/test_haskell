@@ -237,7 +237,7 @@ body fr w ist =
 	createSyncObjs @MaxFramesInFlight d \sos@(SyncObjs _ _ _ cfss ciffs) ->
 	createVtxBffrs pd d gq cp (vertices ex $ mkStdGen 8) \vbs ->
 
-	Vk.CBffr.allocate @_ @MaxFramesInFlight d (cmdBffrInfo cp) \ccbs ->
+	Vk.CBffr.allocateCs @_ @MaxFramesInFlight d (cmdBffrInfo cp) \ccbs ->
 	createCmpPpl d \cdsl cpl cppl ->
 	createDeltaTimeBffr pd d \bdt mdt ->
 	createCmpDscSts
@@ -250,7 +250,7 @@ body fr w ist =
 					cq ccb cpl cppl mdt (cdss i) pc cif cf)
 				ccbs ciffs cfss in
 
-	Vk.CBffr.allocate @_ @MaxFramesInFlight d (cmdBffrInfo cp) \cbs ->
+	Vk.CBffr.allocateCs @_ @MaxFramesInFlight d (cmdBffrInfo cp) \cbs ->
 	createSwpch sfc ssd ex qfis d \(sc :: Vk.Khr.Swpch.S scifmt ssc) ->
 	Vk.Khr.Swpch.getImages d sc >>= \scis -> createImgVws d scis \scvs ->
 	createRndrPss @scifmt d \rp -> createFrmbffrs d ex rp scvs \fbs ->
@@ -704,7 +704,7 @@ writeBffrLsts pd dv gq cp bs xs@(fromIntegral . olength -> ln) =
 singleTimeCmds :: forall sd scp a . Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C scp -> (forall s . Vk.CBffr.C s -> IO a) -> IO a
 singleTimeCmds dv gq cp cmd =
-	Vk.CBffr.allocate dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
+	Vk.CBffr.allocateCs dv (cmdBffrInfo @'[ '()] cp) \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmd cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
 	Vk.Q.waitIdle gq

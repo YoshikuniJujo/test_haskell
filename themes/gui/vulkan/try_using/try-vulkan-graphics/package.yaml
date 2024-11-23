@@ -41,14 +41,14 @@ dependencies:
 - JuicyPixels
 - GLFW-b
 - optparse-declarative
-- try-gpu-vulkan
+- gpu-vulkan
 - try-gpu-vulkan-khr-swapchain
 - try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
 - try-glfw-group
-- try-language-spir-v
+- language-spir-v
 - try-shaderc
 - hetero-parameter-list
 - storable-peek-poke
@@ -57,7 +57,7 @@ dependencies:
 - ranged-list
 - typelevel-tools-yj
 - temporary
-- try-tools-yj
+- tools-yj
 - mono-traversable
 - extra-data-yj
 

@@ -841,7 +841,7 @@ dscWrite mb ds = Vk.DscSet.Write {
 createCmdBffr :: forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
 createCmdBffr dv cp f =
-	Vk.CBffr.allocate dv info $ f . \(cb :*. HPList.Nil) -> cb
+	Vk.CBffr.allocateCs dv info $ f . \(cb :*. HPList.Nil) -> cb
 	where
 	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
 	info = Vk.CBffr.AllocateInfo {
