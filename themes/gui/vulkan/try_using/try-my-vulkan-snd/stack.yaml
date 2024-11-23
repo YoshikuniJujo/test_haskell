@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4bcfcf79c9ad48d54a61f0efc094ce15b69cd952
+  commit: 93f9955ea853ac9b0901943232a5971ee082160b
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
@@ -62,7 +62,7 @@ extra-deps:
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-- gpu-vulkan-0.1.0.141
+- gpu-vulkan-0.1.0.142
 - gpu-vulkan-middle-0.1.0.57
 - gpu-vulkan-core-0.1.0.8
 - language-spir-v-0.1.0.1
