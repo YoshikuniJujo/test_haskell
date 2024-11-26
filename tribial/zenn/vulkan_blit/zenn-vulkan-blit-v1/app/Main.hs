@@ -12,6 +12,7 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Control.Arrow
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -34,7 +35,7 @@ import Codec.Picture
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Object qualified as Vk.Obj
-import Gpu.Vulkan.Object.NoAlignment qualified as VkObjNA
+import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
 import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
@@ -96,7 +97,7 @@ getFilter = \case
 realMain :: ImageRgba8 -> Vk.Filter -> Int32 -> Int32 -> IO ImageRgba8
 realMain img flt n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
-	print gq >> pure img
+	createCmdPl qfi dv \cp -> body pd dv gq cp img flt n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = Vk.Ist.create info nil f
@@ -134,3 +135,77 @@ createLgDvc pd qfi = Vk.Dvc.create pd info nil
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qfi,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1.0] }
+
+createCmdPl :: Vk.QFam.Index ->
+	Vk.Dvc.D sd -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl qfi dv = Vk.CmdPl.create dv info nil
+	where info = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = zeroBits,
+		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
+
+body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Int32 -> Int32 -> IO img
+body pd dv gq cp img flt n i =
+	Vk.Bffr.create @_ @'[Vk.ObjNA.Image img "samle-buffer"] dv (
+		bffrInfo
+			(Vk.Obj.LengthImage 100 100 100 1)
+			Vk.Bffr.UsageTransferDstBit
+		) nil \b -> do
+			print =<< Vk.Bffr.getMemoryRequirements dv b
+			print =<< (second (bitsList
+					. Vk.Mm.mTypePropertyFlags) <$>)
+				. Vk.Phd.memoryPropertiesMemoryTypes
+				<$> Vk.Phd.getMemoryProperties pd
+			pure img
+
+-- BUFFER
+
+bffrInfo :: Vk.Obj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
+bffrInfo ln us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N,
+	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+findMmType ::
+	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmType pd tbs prs =
+	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
+	where
+	msg = "failed to find suitable memory type!"
+	suit p = fst <$> L.find ((&&)
+		<$> (`Vk.Mm.elemTypeIndex` tbs) . fst
+		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
+			(Vk.Phd.memoryPropertiesMemoryTypes p)
+
+createBffr :: forall sd bnm o a . Vk.Obj.SizeAlignment o =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[o] ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.BufferArg bnm '[o])] -> IO a) -> IO a
+createBffr pd dv ln us prs f = Vk.Bffr.create dv binfo nil \b -> do
+	rqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) prs
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Buffer b)
+		(ainfo mt) nil
+		$ f . \(HPList.Singleton (U2 (Vk.Mm.BufferBinded bd))) -> bd
+	where
+	binfo = bffrInfo ln us
+	ainfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateINfoMemoryTypeIndex = mt }
+
+createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags ->
+	Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
+		IO a) -> IO a
+createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengvthImage w w h 1) us
+	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
