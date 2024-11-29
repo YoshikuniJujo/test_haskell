@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-ext-debug-utils
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     version: 0.1.0.8
   original:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
 - completed:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle-ext-debug-utils
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
     version: 0.1.0.4
   original:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
 - completed:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-ext-debug-utils
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
     version: 0.1.0.0
   original:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-shaderc
     pantry-tree:
@@ -53,11 +53,11 @@ packages:
     subdir: themes/gui/vulkan/try-shaderc
     version: 0.1.0.5
   original:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-shaderc
 - completed:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-generic
     pantry-tree:
@@ -66,7 +66,7 @@ packages:
     subdir: features/ffi/pointer/try-storable-generic
     version: 0.1.0.5
   original:
-    commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+    commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-generic
 - completed:
@@ -99,7 +99,7 @@ packages:
     hackage: language-spir-v-0.1.0.1
 snapshots:
 - completed:
-    sha256: 594543b95f186514e91f1ff13f9644643afea32a94a63e183185ea4acd7372bb
-    size: 679064
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/23.yaml
-  original: nightly-2024-11-23
+    sha256: 2986dc4a4c2c76ad81b7d98e500e261369ee4e3c99f619559238326eacba66aa
+    size: 679067
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/28.yaml
+  original: nightly-2024-11-28

@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-11-23
+resolver: nightly-2024-11-28
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 7926884f5ae65b233748610bd9d2923da84b1b63
+  commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
