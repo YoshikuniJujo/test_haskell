@@ -89,6 +89,7 @@ withDvc :: (forall sd scp .
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C scp -> IO a) -> IO a
 withDvc a = Vk.Inst.create instInfo nil \inst -> do
 	pd <- head' <$> Vk.Phd.enumerate inst
+	print =<< Vk.Phd.getFeatures pd
 	qfi <- fst . head' . filter (
 			checkBits Vk.Q.ComputeBit .
 			Vk.QFam.propertiesQueueFlags . snd )
