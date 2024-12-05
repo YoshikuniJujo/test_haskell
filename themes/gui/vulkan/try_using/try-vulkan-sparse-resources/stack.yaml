@@ -50,9 +50,11 @@ extra-deps:
   - themes/gui/vulkan/try-shaderc
   - features/ffi/pointer/try-storable-generic
 - git: https://github.com/YoshikuniJujo/gpu-vulkan
-  commit: 20703000e4ec97d0f37c5809da653fe9f525e67b
-- gpu-vulkan-middle-0.1.0.57
-- gpu-vulkan-core-0.1.0.8
+  commit: 8fb300c3f3e335b3048125a263271d0b14146573
+- git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
+  commit: 30044ea95a14e73e90859fcd6e7eb1b5ef2d6b95
+- git: https://github.com/YOshikuniJujo/gpu-vulkan-core
+  commit: 3276e8545f625e05451e6614c3316b614a8021df
 - language-spir-v-0.1.0.1
 
 # Override default flag values for project packages and extra-deps
