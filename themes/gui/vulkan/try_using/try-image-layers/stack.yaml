@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/gpu-vulkan
-    commit: cbbfa8f8e3923fc58b3812a1ea0f10f749c618cf
+    commit: 0fdcf3840ea3ec9c33798ac0f860e9f2d5aa987c
   - gpu-vulkan-middle-0.1.0.60
   - gpu-vulkan-core-0.1.0.11
   - language-spir-v-0.1.0.1
