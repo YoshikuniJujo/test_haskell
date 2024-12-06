@@ -46,6 +46,25 @@ library
     , typelevel-tools-yj
   default-language: Haskell2010
 
+executable try-blit
+  main-is: try-blit.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , data-default
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , tools-yj
+    , try-shaderc
+    , try-vulkan-sparse-resources
+    , typelevel-tools-yj
+  default-language: Haskell2010
+
 executable try-blit-opaque
   main-is: try-blit-opaque.hs
   hs-source-dirs:
