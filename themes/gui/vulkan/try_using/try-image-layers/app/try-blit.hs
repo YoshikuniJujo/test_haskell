@@ -82,11 +82,13 @@ instance Storable PixelRgba8 where
 
 main :: IO ()
 main = getArgs >>= \case
-	[ifp, ofp, getFilter -> Just flt,
+	[ifp, ifp2, ofp, ofp2, getFilter -> Just flt,
 		readMaybe -> Just n, readMaybe -> Just i] -> do
 		img <- either error convertRGBA8 <$> readImage ifp
-		ImageRgba8 img' <- realMain (ImageRgba8 img) flt n i
+		img2 <- either error convertRGBA8 <$> readImage ifp2
+		[ImageRgba8 img', ImageRgba8 img2'] <- realMain (ImageRgba8 img) (ImageRgba8 img2) flt n i
 		writePng ofp img'
+		writePng ofp2 img2'
 	_ -> error "Invalid command line arguments"
 
 getFilter :: String -> Maybe Vk.Filter
@@ -94,10 +96,10 @@ getFilter = \case
 	"nearest" -> Just Vk.FilterNearest; "linear" -> Just Vk.FilterLinear
 	_ -> Nothing
 
-realMain :: ImageRgba8 -> Vk.Filter -> Int32 -> Int32 -> IO ImageRgba8
-realMain img flt n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
+realMain :: ImageRgba8 -> ImageRgba8 -> Vk.Filter -> Int32 -> Int32 -> IO [ImageRgba8]
+realMain img img2 flt n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
-	createCmdPl qfi dv \cp -> body pd dv gq cp img flt n i
+	createCmdPl qfi dv \cp -> body pd dv gq cp img img2 flt n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = Vk.Ist.create info nil f
@@ -145,13 +147,13 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Int32 -> Int32 -> IO img
-body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> img -> Vk.Filter -> Int32 -> Int32 -> IO [img]
+body pd dv gq cp img img2 flt n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
 	prepareImg pd dv w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
-	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
+	Vk.Mm.write @nm @o @0 dv bm zeroBits [img, img2] >>
 	runCmds dv gq cp \cb -> do
 	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
@@ -216,7 +218,7 @@ createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
 			sb,
 			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
 		IO a) -> IO a
-createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
+createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 2) us
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
@@ -236,7 +238,7 @@ prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 			Vk.extent3dWidth = w, Vk.extent3dHeight = h,
 			Vk.extent3dDepth = 1 },
 		Vk.Img.createInfoMipLevels = 1,
-		Vk.Img.createInfoArrayLayers = 1,
+		Vk.Img.createInfoArrayLayers = 2,
 		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
 		Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
 		Vk.Img.createInfoUsage =
@@ -291,7 +293,7 @@ colorLayer0 = Vk.Img.SubresourceLayers {
 	Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
 	Vk.Img.subresourceLayersMipLevel = 0,
 	Vk.Img.subresourceLayersBaseArrayLayer = 0,
-	Vk.Img.subresourceLayersLayerCount = 1 }
+	Vk.Img.subresourceLayersLayerCount = 2 }
 
 bffrImgExtent :: forall sm sb bnm img nm .
 	Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] -> (Word32, Word32)
@@ -326,7 +328,7 @@ transitionImgLyt cb i ol nl =
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
+		Vk.Img.subresourceRangeLayerCount = 2 }
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
@@ -363,8 +365,8 @@ copyImgToBffr cb i b@(bffrImgExtent -> (w, h)) =
 resultBffr :: Vk.ObjB.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.Image img nmi] -> IO a) ->
-	IO img
+	IO [img]
 resultBffr pd dv w h f =
 	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
-	f b >> (head <$> Vk.Mm.read @nm @o @0 dv m zeroBits)
+	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
