@@ -75,8 +75,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-sparse-resources
-  try-blit:
-    main:                try-blit.hs
+  try-blit-opaque:
+    main:                try-blit-opaque.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:

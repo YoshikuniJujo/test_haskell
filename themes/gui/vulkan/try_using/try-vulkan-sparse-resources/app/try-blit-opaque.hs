@@ -93,7 +93,7 @@ main = getArgs >>= \case
 
 cmdlErrMsg :: String
 cmdlErrMsg = "Invalid command line arguments\n\
-	\USAGE: stack exec try-blit infile outfile nearest/linear n i"
+	\USAGE: stack exec try-blit-opaque infile outfile nearest/linear n i"
 
 getFilter :: String -> Maybe Vk.Filter
 getFilter = \case

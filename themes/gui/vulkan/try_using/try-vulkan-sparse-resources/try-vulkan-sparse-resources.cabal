@@ -46,8 +46,8 @@ library
     , typelevel-tools-yj
   default-language: Haskell2010
 
-executable try-blit
-  main-is: try-blit.hs
+executable try-blit-opaque
+  main-is: try-blit-opaque.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
