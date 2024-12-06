@@ -34,7 +34,9 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
     , data-default
     , gpu-vulkan
     , hetero-parameter-list
@@ -44,13 +46,34 @@ library
     , typelevel-tools-yj
   default-language: Haskell2010
 
+executable try-blit
+  main-is: try-blit.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , data-default
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , tools-yj
+    , try-shaderc
+    , try-vulkan-sparse-resources
+    , typelevel-tools-yj
+  default-language: Haskell2010
+
 executable try-hello-copy
   main-is: try-hello-copy.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
     , data-default
     , gpu-vulkan
     , hetero-parameter-list
@@ -67,7 +90,9 @@ executable try-hello-world
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
     , data-default
     , gpu-vulkan
     , hetero-parameter-list
@@ -88,7 +113,9 @@ executable try-vulkan-sparse-resources-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
     , data-default
     , gpu-vulkan
     , hetero-parameter-list
@@ -110,7 +137,9 @@ test-suite try-vulkan-sparse-resources-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
     , data-default
     , gpu-vulkan
     , hetero-parameter-list
