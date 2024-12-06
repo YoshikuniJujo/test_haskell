@@ -22,7 +22,7 @@ import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
 import Data.List.ToolsYj
-import Data.HeteroParList (pattern (:*.))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.HeteroParList qualified as HPList
 import Data.Array
 import Data.Word
@@ -49,6 +49,9 @@ import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Sample qualified as Vk.Sample
+
+import Gpu.Vulkan.Sparse qualified as Vk.Sp
+import Gpu.Vulkan.Sparse.Image qualified as Vk.Sp.Img
 
 -- DATA TYPE IMAGE RGBA8
 
@@ -132,7 +135,8 @@ createLgDvc pd qfi = Vk.Dvc.create pd info nil
 		Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
 		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
-		Vk.Dvc.createInfoEnabledFeatures = Just def }
+		Vk.Dvc.createInfoEnabledFeatures =
+			Just def { Vk.Phd.featuresSparseBinding = True } }
 	qinfo = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
@@ -150,8 +154,8 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Int32 -> Int32 -> IO img
 body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
-	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
-	prepareImg pd dv w h \imgs ->
+	prepareImg @(Vk.ObjB.ImageFormat img) pd dv gq w h \imgd ->
+	prepareImg pd dv gq w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits img >>
@@ -223,17 +227,20 @@ createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1) us
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Word32 -> Word32 ->
 	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
-prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+prepareImg pd dv gq w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
+	print rqs
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
-	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
-		nil \(HPList.Singleton (U2 (Vk.Mm.ImageBinded bd))) _ -> f bd
+	Vk.Mm.allocateBind dv (U2 (Vk.Mm.Raw 65536 2293760) :** HPList.Nil) (minfo mt)
+		nil \((U2 (Vk.Mm.RawBinded _ _) :** HPList.Nil)) mm -> do
+		Vk.Q.bindSparse dv gq (HPList.Singleton . U6 $ bindSparseInfoOpaque i mm) Nothing
+		f (Vk.Img.unsafeToBinded i)
 	where
 	iinfo = Vk.Img.CreateInfo {
 		Vk.Img.createInfoNext = TMaybe.N,
-		Vk.Img.createInfoFlags = zeroBits,
+		Vk.Img.createInfoFlags = Vk.Img.CreateSparseBindingBit,
 		Vk.Img.createInfoImageType = Vk.Img.Type2d,
 		Vk.Img.createInfoExtent = Vk.Extent3d {
 			Vk.extent3dWidth = w, Vk.extent3dHeight = h,
@@ -251,6 +258,35 @@ prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 	minfo mt = Vk.Mm.AllocateInfo {
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+bindSparseInfoOpaque ::
+	Vk.Img.I si inm fmt -> Vk.Mm.M sm ibargs ->
+	Vk.Q.BindSparseInfo 'Nothing
+		'[] '[] '[ '(si, inm, fmt, '[ '(sm, ibargs, 0)])] '[] '[]
+bindSparseInfoOpaque img mm = Vk.Q.BindSparseInfo {
+	Vk.Q.bindSparseInfoNext = TMaybe.N,
+	Vk.Q.bindSparseInfoWaitSemaphores = HPList.Nil,
+	Vk.Q.bindSparseInfoBufferBinds = HPList.Nil,
+	Vk.Q.bindSparseInfoImageOpaqueBinds =
+		HPList.Singleton . U4 $ opaqueMemoryBindInfo img mm,
+	Vk.Q.bindSparseInfoImageBinds = HPList.Nil,
+	Vk.Q.bindSparseInfoSignalSemaphores = HPList.Nil }
+
+opaqueMemoryBindInfo ::
+	Vk.Img.I si inm fmt -> Vk.Mm.M sm ibargs ->
+	Vk.Sp.Img.OpaqueMemoryBindInfo si inm fmt '[ '(sm, ibargs, 0)]
+opaqueMemoryBindInfo img mm = Vk.Sp.Img.OpaqueMemoryBindInfo {
+	Vk.Sp.Img.opaqueMemoryBindInfoImage = img,
+	Vk.Sp.Img.opaqueMemoryBindInfoBinds =
+		HPList.Singleton . U3 $ memoryBind mm }
+
+memoryBind :: Vk.Mm.M sm ibargs -> Vk.Sp.MemoryBind sm ibargs 0
+memoryBind mm = Vk.Sp.MemoryBind {
+	Vk.Sp.memoryBindResourceOffset = 0,
+	Vk.Sp.memoryBindSize = 2293760,
+	Vk.Sp.memoryBindMemory = mm,
+	Vk.Sp.memoryBindMemoryOffset = 0,
+	Vk.Sp.memoryBindFlags = zeroBits }
 
 -- COMMANDS
 
