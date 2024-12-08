@@ -109,7 +109,7 @@ createImg' pd dv gq cp ig mg k img = do
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(b :: Vk.Bffr.Binded sm' sb bnm '[ VObj.Image 1 a nm]) bm -> do
-		Vk.Mm.write @bnm @(VObj.Image 1 i nm) @0 dv bm zeroBits img
+		Vk.Mm.write @bnm @(VObj.Image 1 i nm) @0 dv bm zeroBits [img]
 		transitionImgLyt dv gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal 1
 		copyBffrToImg dv gq cp b i
@@ -221,7 +221,7 @@ copyBffrToImg dv gq cp bf img = singleTimeCmds dv gq cp \cb ->
 		Vk.Img.subresourceLayersMipLevel = 0,
 		Vk.Img.subresourceLayersBaseArrayLayer = 0,
 		Vk.Img.subresourceLayersLayerCount = 1 }
-	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
+	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d _ =
 		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
 
 -- TRANSITION IMAGE LAYOUT
@@ -313,7 +313,7 @@ createBffrImg :: Storable (BObj.ImagePixel t) =>
 			sb,
 			'Vk.Mm.BufferArg nm '[ VObj.Image 1 t inm])] ->
 		IO a) -> IO a
-createBffrImg p dv (r, w, h, d) = createBffr p dv (VObj.LengthImage r w h d)
+createBffrImg p dv (r, w, h, d) = createBffr p dv (VObj.LengthImage r w h d 1)
 
 createBffr :: forall sd bnm o a . VObj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> VObj.Length o ->

@@ -730,7 +730,7 @@ createImg pd dv gq cp img a = prepareImg pd dv Vk.Img.TilingOptimal
 		(	Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) img
 		\(b :: Vk.Bffr.Binded sm sb inm '[bimg]) bm -> do
-		Vk.Mm.write @inm @bimg @0 dv bm zeroBits img
+		Vk.Mm.write @inm @bimg @0 dv bm zeroBits [img]
 		transitionImgLyt dv gq cp i
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyBffrToImg dv gq cp b i
@@ -787,7 +787,7 @@ createBffrImg p dv us prs img a =
 	ln :: VObj.Length (VObj.Image al img inm)
 	ln = VObj.LengthImage
 		(BObj.imageRow img) (BObj.imageWidth img)
-		(BObj.imageHeight img) (BObj.imageDepth img)
+		(BObj.imageHeight img) (BObj.imageDepth img) 1
 
 transitionImgLyt :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> Vk.Img.Binded sm si nm fmt ->
@@ -840,7 +840,7 @@ copyBffrToImg dv gq cp bf img = singleTimeCmds dv gq cp \cb ->
 		Vk.Img.subresourceLayersMipLevel = 0,
 		Vk.Img.subresourceLayersBaseArrayLayer = 0,
 		Vk.Img.subresourceLayersLayerCount = 1 }
-	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d =
+	VObj.LengthImage _r (fromIntegral -> w) (fromIntegral -> h) _d _ =
 		VObj.lengthOf @(VObj.Image al img imgnm) $ Vk.Bffr.lengthBinded bf
 
 singleTimeCmds :: forall sd sc a .

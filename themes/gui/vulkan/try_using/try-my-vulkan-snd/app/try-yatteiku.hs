@@ -80,7 +80,7 @@ main =	createIst \it -> pickPhd it >>= \(pd, qfi) -> createLgDvc pd qfi \dv ->
 	Vk.Dvc.getQueue dv qfi 0 >>= \gq -> createCmdPl qfi dv \cp ->
 		body pd dv gq cp \img ->
 		copyImgToBffr dv gq cp img b imgWidth imgHeight
-	ImageRgba8 img <- Vk.Mm.read @nm @img @0 dv bm zeroBits
+	ImageRgba8 img <- head <$> Vk.Mm.read @nm @img @0 dv bm zeroBits
 	writePng "yatteiku.png" img
 
 imgWidth, imgHeight :: Word32
@@ -152,7 +152,7 @@ createBffrImg p dv us prs (fromIntegral -> w) (fromIntegral -> h) a =
 	createBffr @_ @_ @(VObj.Image al img inm) p dv ln us prs a
 	where
 	ln :: VObj.Length (VObj.Image al img inm)
-	ln = VObj.LengthImage w w h 1
+	ln = VObj.LengthImage w w h 1 1
 
 bffrAlgn :: forall o sd a . VObj.SizeAlignment o =>
 	Vk.Dvc.D sd -> VObj.Length o -> Vk.Bffr.UsageFlags ->

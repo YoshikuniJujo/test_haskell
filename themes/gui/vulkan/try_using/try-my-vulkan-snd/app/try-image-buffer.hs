@@ -549,13 +549,18 @@ getMmInfo pd dv ib = do
 			Vk.Mm.PropertyHostVisibleBit .|.
 			Vk.Mm.PropertyHostCoherentBit ) mprs }
 
-findMmTpIdx :: [Vk.Mm.Requirements] ->
+maybeAll :: (x -> Bool) -> [Maybe x] -> Bool
+maybeAll _ [] = True
+maybeAll _ (Nothing : _mxs) = False
+maybeAll p (Just x : mxs) = p x && maybeAll p mxs
+
+findMmTpIdx :: [Either (Vk.Dvc.Size, Vk.Dvc.Size) Vk.Mm.Requirements] ->
 	Vk.Mm.PropertyFlags -> Vk.Phd.MemoryProperties -> Vk.Mm.TypeIndex
 findMmTpIdx rqss prs0 mprs =
-	case filter (\x -> all (Vk.Mm.elemTypeIndex x) rqtps) prtps of
+	case filter (\x -> maybeAll (Vk.Mm.elemTypeIndex x) mrqtps) prtps of
 		[] -> error "No available memory types"; i : _ -> i
 	where
-	rqtps = Vk.Mm.requirementsMemoryTypeBits <$> rqss
+	mrqtps = (either (const Nothing) (Just . Vk.Mm.requirementsMemoryTypeBits)) <$> rqss
 	prtps = (fst <$>)
 		. filter (checkBits prs0 . Vk.Mm.mTypePropertyFlags . snd)
 		$ Vk.Phd.memoryPropertiesMemoryTypes mprs

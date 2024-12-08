@@ -224,26 +224,30 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
-    hackage: gpu-vulkan-0.1.0.142@sha256:16c6eaff59b82d06a99959118c606691f2fb224b297b17c618ec45e3afc95a2f,7633
+    commit: 56fb5dbcf995c5afad4ec1120b18da2a2c0003d6
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    name: gpu-vulkan
     pantry-tree:
-      sha256: 207d4c0209870905cadf09cfc4f39403b44eb8046980c9b848ce5590155b3608
-      size: 11164
+      sha256: f57bbd73b54239449b329961e0baead8b9a0c01fb33f5bc039efb71818525a39
+      size: 12379
+    version: 0.1.0.154
   original:
-    hackage: gpu-vulkan-0.1.0.142
+    commit: 56fb5dbcf995c5afad4ec1120b18da2a2c0003d6
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.57@sha256:9ee37e6071596d8edd39635e3b996b71c1230feacbed6f544d737139baff7b1f,8441
+    hackage: gpu-vulkan-middle-0.1.0.60@sha256:2819b5f160074554ce5c5325dc9fbec3d67fe506731f283be8a21e4bdb2c02c3,8941
     pantry-tree:
-      sha256: 9eb363663bcd1f2dbb820dea70ca495e54aed32e4bee5d8be01800fb949689c3
-      size: 12409
+      sha256: 5225c5e4fc38c40db9d19bfcff1bbc4109b8e296a44643b045b402a1279e4b61
+      size: 13155
   original:
-    hackage: gpu-vulkan-middle-0.1.0.57
+    hackage: gpu-vulkan-middle-0.1.0.60
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.8@sha256:a4dcd94ed86133a1d7b991fb2f3547f3838e05a0dfdb6a308a61e44a0828baa5,3369
+    hackage: gpu-vulkan-core-0.1.0.11@sha256:c50caacbb1468fd351dc9d43ab2322b4b010c454b2e157e36933354cb71d56bb,3475
     pantry-tree:
-      sha256: d28722b391dba8c9bdce82266895b63a714c6a7300f29d530a17577164a47b71
-      size: 4777
+      sha256: 3c8395e7785847313b67ea646d076950b08e0582212f8566f29fb573d3034951
+      size: 5004
   original:
-    hackage: gpu-vulkan-core-0.1.0.8
+    hackage: gpu-vulkan-core-0.1.0.11
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
@@ -253,7 +257,7 @@ packages:
     hackage: language-spir-v-0.1.0.1
 snapshots:
 - completed:
-    sha256: eb9446be288f468cf6b77932ed0d7d934b5cc62ab1a4f77971121fd82d12b86a
-    size: 679064
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/22.yaml
-  original: nightly-2024-11-22
+    sha256: d9a180517c3dd43272cb4191bbe1f64bb01cc8336a2213f2b3f19a7ce35885fe
+    size: 678856
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/7.yaml
+  original: nightly-2024-12-07
