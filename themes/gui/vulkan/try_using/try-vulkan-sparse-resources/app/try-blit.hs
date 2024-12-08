@@ -160,7 +160,7 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	prepareImg pd dv gq w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
-	Vk.Mm.write @nm @o @0 dv bm zeroBits img >>
+	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
 	runCmds dv gq cp \cb -> do
 	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
@@ -225,7 +225,7 @@ createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
 			sb,
 			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
 		IO a) -> IO a
-createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1) us
+createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
@@ -347,7 +347,7 @@ colorLayer0 = Vk.Img.SubresourceLayers {
 bffrImgExtent :: forall sm sb bnm img nm .
 	Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] -> (Word32, Word32)
 bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
-	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ =
+	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ _ =
 		Vk.Obj.lengthOf @(Vk.ObjNA.Image img nm) ln
 
 transitionImgLyt :: Vk.CBffr.C scb ->
@@ -418,4 +418,4 @@ resultBffr :: Vk.ObjB.IsImage img =>
 resultBffr pd dv w h f =
 	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
-	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
+	f b >> (head <$> Vk.Mm.read @nm @o @0 dv m zeroBits)

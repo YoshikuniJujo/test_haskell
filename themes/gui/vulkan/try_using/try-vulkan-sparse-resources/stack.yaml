@@ -50,7 +50,7 @@ extra-deps:
   - themes/gui/vulkan/try-shaderc
   - features/ffi/pointer/try-storable-generic
 - git: https://github.com/YoshikuniJujo/gpu-vulkan
-  commit: 69ae7a7ce7e1395d0cadd801bfb038c09024ad8d
+  commit: 56fb5dbcf995c5afad4ec1120b18da2a2c0003d6
 - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
   commit: 30044ea95a14e73e90859fcd6e7eb1b5ef2d6b95
 - git: https://github.com/YOshikuniJujo/gpu-vulkan-core

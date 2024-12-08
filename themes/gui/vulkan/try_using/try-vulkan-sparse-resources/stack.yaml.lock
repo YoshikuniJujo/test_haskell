@@ -70,15 +70,15 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-generic
 - completed:
-    commit: 69ae7a7ce7e1395d0cadd801bfb038c09024ad8d
+    commit: 56fb5dbcf995c5afad4ec1120b18da2a2c0003d6
     git: https://github.com/YoshikuniJujo/gpu-vulkan
     name: gpu-vulkan
     pantry-tree:
-      sha256: da6f668eae7ac89405b5fc50d0390f74ac39248822ac23fd4b9887a2565f7540
+      sha256: f57bbd73b54239449b329961e0baead8b9a0c01fb33f5bc039efb71818525a39
       size: 12379
-    version: 0.1.0.153
+    version: 0.1.0.154
   original:
-    commit: 69ae7a7ce7e1395d0cadd801bfb038c09024ad8d
+    commit: 56fb5dbcf995c5afad4ec1120b18da2a2c0003d6
     git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
     commit: 30044ea95a14e73e90859fcd6e7eb1b5ef2d6b95
