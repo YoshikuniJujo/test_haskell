@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2024-12-05
+snapshot: nightly-2024-12-08
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,8 +41,9 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - git: https://github.com/YoshikuniJujo/gpu-vulkan
-    commit: 0fdcf3840ea3ec9c33798ac0f860e9f2d5aa987c
+  #  - git: https://github.com/YoshikuniJujo/gpu-vulkan
+  #    commit: 0fdcf3840ea3ec9c33798ac0f860e9f2d5aa987c
+  - gpu-vulkan-0.1.0.155
   - gpu-vulkan-middle-0.1.0.60
   - gpu-vulkan-core-0.1.0.11
   - language-spir-v-0.1.0.1
