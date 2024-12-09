@@ -164,7 +164,7 @@ createBffrImg :: forall sd bnm i nm . Vk.ObjB.IsImage i =>
 		Vk.Mm.M sm '[
 			'(sb, Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image i nm]) ] ->
 		IO ()) -> IO ()
-createBffrImg pd dv (w, h) = createBffr pd dv (Vk.Obj.LengthImage w w h 1)
+createBffrImg pd dv (w, h) = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1)
 	Vk.Bffr.UsageTransferSrcBit
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
@@ -218,7 +218,7 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 
 writeBffr :: forall sd sm sb bnm i nm . Vk.ObjB.IsImage i =>
 	Vk.Dvc.D sd ->
-	Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image i nm])] -> i ->
+	Vk.Mm.M sm '[ '(sb, Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image i nm])] -> [i] ->
 	IO ()
 writeBffr dv m = Vk.Mm.write @bnm @(Vk.ObjNA.Image i nm) @0 dv m zeroBits
 

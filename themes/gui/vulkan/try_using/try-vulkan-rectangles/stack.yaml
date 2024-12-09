@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-11-23
+resolver: nightly-2024-12-08
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -67,9 +67,9 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: 429e8b95651bafaa67131a917d94581c89d1c90c
 - simple-pango-0.1.0.1
-- gpu-vulkan-0.1.0.142
-- gpu-vulkan-middle-0.1.0.57
-- gpu-vulkan-core-0.1.0.8
+- gpu-vulkan-0.1.0.155
+- gpu-vulkan-middle-0.1.0.60
+- gpu-vulkan-core-0.1.0.11
 - language-spir-v-0.1.0.1
 
 # Override default flag values for local packages and extra-deps

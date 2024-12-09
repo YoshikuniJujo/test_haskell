@@ -339,7 +339,7 @@ body ip op vex w sfc pd qfis dv gq pq =
 	cairoImageSurfaceCreate
 		CairoFormatArgb32 textureWidth textureHeight >>= \crsfc ->
 	cairoCreate crsfc >>= \cr ->
-	let	viewToBffr = (writeBffr dv ibfm =<<) . drawViewIO crsfc cr
+	let	viewToBffr = (writeBffr dv ibfm =<<) . ((: []) <$>) . drawViewIO crsfc cr
 		bffrToImg = flashImg dv gq cp txi ibf textureSize in
 	viewToBffr (FV.View []) >> bffrToImg >>
 	mainloop ip op (pd, qfis, dv, gq, pq, cp, cb)
