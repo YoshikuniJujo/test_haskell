@@ -70,38 +70,26 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-generic
 - completed:
-    commit: 56fb5dbcf995c5afad4ec1120b18da2a2c0003d6
-    git: https://github.com/YoshikuniJujo/gpu-vulkan
-    name: gpu-vulkan
+    hackage: gpu-vulkan-0.1.0.155@sha256:61f14fb2627884673077ae49ced49359eaf37206ff2aa0a63220049d0a5e6b13,7887
     pantry-tree:
-      sha256: f57bbd73b54239449b329961e0baead8b9a0c01fb33f5bc039efb71818525a39
-      size: 12379
-    version: 0.1.0.154
+      sha256: b1968e593a41387ac7803690ee81cd17bb210227dfa1b47e199cfd2d0bd80a0a
+      size: 11743
   original:
-    commit: 56fb5dbcf995c5afad4ec1120b18da2a2c0003d6
-    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    hackage: gpu-vulkan-0.1.0.155
 - completed:
-    commit: 30044ea95a14e73e90859fcd6e7eb1b5ef2d6b95
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
-    name: gpu-vulkan-middle
+    hackage: gpu-vulkan-middle-0.1.0.60@sha256:2819b5f160074554ce5c5325dc9fbec3d67fe506731f283be8a21e4bdb2c02c3,8941
     pantry-tree:
-      sha256: 543ec204a2b4dd24412af0686ee6faf3a10192875f18dbfa488fcd84b4395fbd
-      size: 15717
-    version: 0.1.0.60
+      sha256: 5225c5e4fc38c40db9d19bfcff1bbc4109b8e296a44643b045b402a1279e4b61
+      size: 13155
   original:
-    commit: 30044ea95a14e73e90859fcd6e7eb1b5ef2d6b95
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
+    hackage: gpu-vulkan-middle-0.1.0.60
 - completed:
-    commit: 3276e8545f625e05451e6614c3316b614a8021df
-    git: https://github.com/YOshikuniJujo/gpu-vulkan-core
-    name: gpu-vulkan-core
+    hackage: gpu-vulkan-core-0.1.0.11@sha256:c50caacbb1468fd351dc9d43ab2322b4b010c454b2e157e36933354cb71d56bb,3475
     pantry-tree:
-      sha256: 54413aab69c25c57d03ecb075dd5bf4a9907d3fe7a49934baa06fbfc820e1786
-      size: 5406
-    version: 0.1.0.11
+      sha256: 3c8395e7785847313b67ea646d076950b08e0582212f8566f29fb573d3034951
+      size: 5004
   original:
-    commit: 3276e8545f625e05451e6614c3316b614a8021df
-    git: https://github.com/YOshikuniJujo/gpu-vulkan-core
+    hackage: gpu-vulkan-core-0.1.0.11
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
@@ -111,7 +99,7 @@ packages:
     hackage: language-spir-v-0.1.0.1
 snapshots:
 - completed:
-    sha256: 2986dc4a4c2c76ad81b7d98e500e261369ee4e3c99f619559238326eacba66aa
-    size: 679067
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/28.yaml
-  original: nightly-2024-11-28
+    sha256: 8a232e7e496989d6a810d4d85f54bdf5f53ea7025860909d533d8b3fd02099da
+    size: 678858
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/8.yaml
+  original: nightly-2024-12-08
