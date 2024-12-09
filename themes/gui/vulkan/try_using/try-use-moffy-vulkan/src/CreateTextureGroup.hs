@@ -127,7 +127,7 @@ createTxImg pd dv gq cp ig mg k img = do
 		Vk.Bffr.UsageTransferSrcBit
 		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 		\(sb :: Vk.Bffr.Binded sm sb n '[ Vk.Obj.Image 1 a inm]) m -> do
-		Vk.Mm.write @n @(Vk.Obj.Image 1 img inm) @0 dv m zeroBits img
+		Vk.Mm.write @n @(Vk.Obj.Image 1 img inm) @0 dv m zeroBits [img]
 		transitionImgLyt dv gq cp i Vk.Img.LayoutUndefined
 			Vk.Img.LayoutTransferDstOptimal
 		copyBffrToImg dv gq cp sb i w h
@@ -169,7 +169,7 @@ createBffrImg :: Storable (Vk.ObjB.ImagePixel i) =>
 		Vk.Bffr.Binded m b bn '[ Vk.ObjNA.Image i n] ->
 		Vk.Mm.M m '[ '(b, 'Vk.Mm.BufferArg bn '[Vk.ObjNA.Image i n])] ->
 		IO a) -> IO a
-createBffrImg p dv (r, w, h, d) = createBffr p dv (Vk.Obj.LengthImage r w h d)
+createBffrImg p dv (r, w, h, d) = createBffr p dv (Vk.Obj.LengthImage r w h d 1)
 
 createBffr :: forall sd o nm a . Vk.Obj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
