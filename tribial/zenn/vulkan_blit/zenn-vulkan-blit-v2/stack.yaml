@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2024-12-05
+snapshot: nightly-2024-12-08
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
