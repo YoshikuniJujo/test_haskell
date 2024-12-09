@@ -41,7 +41,7 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - gpu-vulkan-0.1.0.154
+  - gpu-vulkan-0.1.0.155
   - gpu-vulkan-middle-0.1.0.60
   - gpu-vulkan-core-0.1.0.11
   - language-spir-v-0.1.0.1
