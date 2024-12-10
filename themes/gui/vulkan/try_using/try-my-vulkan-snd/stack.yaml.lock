@@ -189,19 +189,6 @@ packages:
 - completed:
     commit: 78b79ede754ef46bb4373c7a1484c2ac2f74892d
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: storable-generic
-    pantry-tree:
-      sha256: 39347d89414dc8ecc782aba8242598bb73d87b703f71056c4d45d1b150d5e158
-      size: 744
-    subdir: features/ffi/pointer/storable-generic
-    version: 0.1.0.5
-  original:
-    commit: 78b79ede754ef46bb4373c7a1484c2ac2f74892d
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/storable-generic
-- completed:
-    commit: 78b79ede754ef46bb4373c7a1484c2ac2f74892d
-    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-codec-wavefront-obj
     pantry-tree:
       sha256: f5d85ad728782057897fb362bee2f84297ecb3251ed7d2f92d5fc998784a4d9e
@@ -251,6 +238,13 @@ packages:
       size: 650
   original:
     hackage: language-spir-v-0.1.0.1
+- completed:
+    hackage: storable-generic-0.1.0.5@sha256:c113ea3ea79cedcd3d60294c825a2c5aa4730ce1abf77e6bbc219389267af26e,1900
+    pantry-tree:
+      sha256: 81d5793bdbe325cb7d386d806e2486d4fca9d2b7108cfa79daf3660495480c98
+      size: 536
+  original:
+    hackage: storable-generic-0.1.0.5
 snapshots:
 - completed:
     sha256: d9a180517c3dd43272cb4191bbe1f64bb01cc8336a2213f2b3f19a7ce35885fe

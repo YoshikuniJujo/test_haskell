@@ -58,7 +58,6 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-cglm
   - themes/gui/vulkan/try-shaderc
   - themes/gui/vulkan/try-glfw-group
-  - features/ffi/pointer/storable-generic
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
@@ -66,6 +65,7 @@ extra-deps:
 - gpu-vulkan-middle-0.1.0.60
 - gpu-vulkan-core-0.1.0.11
 - language-spir-v-0.1.0.1
+- storable-generic-0.1.0.5
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
