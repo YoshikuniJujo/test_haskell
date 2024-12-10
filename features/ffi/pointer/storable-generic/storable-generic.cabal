@@ -4,14 +4,14 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-storable-generic
+name:           storable-generic
 version:        0.1.0.5
-description:    Please see the README on GitHub at <https://github.com/githubuser/try-storable-generic#readme>
-homepage:       https://github.com/githubuser/try-storable-generic#readme
-bug-reports:    https://github.com/githubuser/try-storable-generic/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2023 Author name here
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/storable-generic#readme>
+homepage:       https://github.com/YoshikuniJujo/storable-generic#readme
+bug-reports:    https://github.com/YoshikuniJujo/storable-generic/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      2023 Yoshikuni Jujo
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,15 +21,15 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/try-storable-generic
+  location: https://github.com/YoshikuniJujo/storable-generic
 
 library
   exposed-modules:
       Foreign.Storable.Generic
+  other-modules:
       Foreign.Storable.Generic.Internal
       Foreign.Storable.Generic.TH
-  other-modules:
-      Paths_try_storable_generic
+      Paths_storable_generic
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -39,17 +39,17 @@ library
     , template-haskell
   default-language: Haskell2010
 
-test-suite try-storable-generic-test
+test-suite storable-generic-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_storable_generic
+      Paths_storable_generic
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , storable-generic
     , storable-peek-poke
     , template-haskell
-    , try-storable-generic
   default-language: Haskell2010

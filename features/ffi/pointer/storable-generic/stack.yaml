@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-11-04
+resolver: nightly-2024-12-09
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,11 +41,7 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 
-extra-deps:
-- git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 22f359f318da49b31971eec1e613bafae87f2b16
-  subdirs:
-  - features/ffi/pointer/storable-peek-poke
+extra-deps: []
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
