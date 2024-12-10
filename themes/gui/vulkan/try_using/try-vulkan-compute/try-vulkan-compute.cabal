@@ -58,13 +58,13 @@ library
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , typelevel-tools-yj
     , vector
   default-language: Haskell2010
@@ -92,13 +92,13 @@ executable try-bitonic-sort-new
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -127,13 +127,13 @@ executable try-bitonic-sort-new-test
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -162,13 +162,13 @@ executable try-hello
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -197,13 +197,13 @@ executable try-hello-world
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -232,13 +232,13 @@ executable try-mandelbrot
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -267,13 +267,13 @@ executable try-mandelbrot-cpu
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -302,13 +302,13 @@ executable try-mandelbrot-hs
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -337,13 +337,13 @@ executable try-push-constant
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -372,13 +372,13 @@ executable try-quick-bitonic-sort
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -407,13 +407,13 @@ executable try-saitan-simple
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -442,13 +442,13 @@ executable try-texel-buffer-nega
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector
@@ -478,13 +478,13 @@ test-suite try-vulkan-compute-test
     , random
     , ranged-list
     , stm
+    , storable-generic
     , temporary
     , text
     , time
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-compute
     , typelevel-tools-yj
     , vector

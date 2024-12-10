@@ -39,7 +39,7 @@ dependencies:
 - try-shaderc
 - language-spir-v
 - hetero-parameter-list
-- try-storable-generic
+- storable-generic
 - ranged-list
 - typelevel-tools-yj
 - temporary

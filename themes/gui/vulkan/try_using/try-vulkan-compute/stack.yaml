@@ -42,13 +42,13 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f4a2699d3d929b9a0cb07b5f895dad1e3c33cf1f
+  commit: c9a1456a65fe035b4ea4b7b37985faefc222ed33
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-shaderc
-  - features/ffi/pointer/try-storable-generic
+  - features/ffi/pointer/storable-generic
 - gpu-vulkan-0.1.0.155
 - gpu-vulkan-middle-0.1.0.60
 - gpu-vulkan-core-0.1.0.11

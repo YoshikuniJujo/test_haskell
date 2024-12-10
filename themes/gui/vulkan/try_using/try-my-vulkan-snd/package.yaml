@@ -56,7 +56,7 @@ dependencies:
 - hetero-parameter-list
 - hetero-parameter-list-with-typelevel-tools
 - storable-peek-poke
-- try-storable-generic
+- storable-generic
 - storable-hetero-list
 - typelevel-tools-yj
 - try-codec-wavefront-obj
