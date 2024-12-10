@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.36.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -35,8 +35,8 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , storable-generic
     , transformers
-    , try-storable-generic
     , vector
   default-language: Haskell2010
 
@@ -51,8 +51,8 @@ test-suite try-codec-wavefront-obj-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , storable-generic
     , transformers
     , try-codec-wavefront-obj
-    , try-storable-generic
     , vector
   default-language: Haskell2010

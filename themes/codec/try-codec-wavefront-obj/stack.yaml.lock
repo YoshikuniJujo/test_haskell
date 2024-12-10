@@ -5,47 +5,21 @@
 
 packages:
 - completed:
-    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
+    commit: c9a1456a65fe035b4ea4b7b37985faefc222ed33
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-storable-generic
+    name: storable-generic
     pantry-tree:
-      sha256: 35a92aacd041a05114605cd5ba5df78f48c66b7e8aa838beffef97f9205fc792
-      size: 749
-    subdir: features/ffi/pointer/try-storable-generic
-    version: 0.1.0.2
-  original:
-    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/try-storable-generic
-- completed:
-    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-storable-peek-poke
-    pantry-tree:
-      sha256: 3a416a40e213f6625ef04c4f632c9d6f9faea20262deca26e98342129cfe86a5
-      size: 678
-    subdir: features/ffi/pointer/try-storable-peek-poke
-    version: 0.1.0.1
-  original:
-    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/try-storable-peek-poke
-- completed:
-    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: typelevel-tools
-    pantry-tree:
-      sha256: c9f34816c8f5e1adfdb6956ff81846527d731a2a63d3b60748001688aa3af5a2
-      size: 1599
-    subdir: themes/type_level/typelevel-tools
+      sha256: 39347d89414dc8ecc782aba8242598bb73d87b703f71056c4d45d1b150d5e158
+      size: 744
+    subdir: features/ffi/pointer/storable-generic
     version: 0.1.0.5
   original:
-    commit: 57b7f71a73f15e39be6f50ab46f2b5d9b5e8bbdd
+    commit: c9a1456a65fe035b4ea4b7b37985faefc222ed33
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/type_level/typelevel-tools
+    subdir: features/ffi/pointer/storable-generic
 snapshots:
 - completed:
-    sha256: 780549d388f510f79757ace642c46a01309c8387e316e3dab40339f2021d758c
-    size: 604415
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/3/1.yaml
-  original: nightly-2024-03-01
+    sha256: cbae768d7cd535b298ba827c2d90f3ac11fa2e907ee7d30fd02d1f7b893f3b28
+    size: 678857
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/9.yaml
+  original: nightly-2024-12-09

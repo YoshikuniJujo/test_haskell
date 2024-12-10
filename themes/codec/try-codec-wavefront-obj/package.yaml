@@ -24,7 +24,7 @@ dependencies:
 - transformers
 - vector
 - bytestring
-- try-storable-generic
+- storable-generic
 
 ghc-options:
 - -Wall
