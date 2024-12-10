@@ -100,7 +100,7 @@ realMain img flt n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createCmdPl qfi dv \cp -> body pd dv gq cp img flt n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createIst f = Vk.Ist.create info nil f
+createIst = Vk.Ist.create info nil
 	where
 	info :: Vk.Ist.CreateInfo 'Nothing 'Nothing
 	info = def { Vk.Ist.createInfoEnabledLayerNames = vldLayers }
