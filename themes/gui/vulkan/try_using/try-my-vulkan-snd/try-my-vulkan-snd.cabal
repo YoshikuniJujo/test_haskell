@@ -68,6 +68,7 @@ library
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -86,7 +87,6 @@ library
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -129,6 +129,7 @@ executable my-glslc
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -148,7 +149,6 @@ executable my-glslc
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -181,6 +181,7 @@ executable show-layers
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -200,7 +201,6 @@ executable show-layers
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -233,6 +233,7 @@ executable try-allocation-callbacks
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -252,7 +253,6 @@ executable try-allocation-callbacks
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -285,6 +285,7 @@ executable try-blit
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -304,7 +305,6 @@ executable try-blit
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -337,6 +337,7 @@ executable try-copy-descriptor-set
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -356,7 +357,6 @@ executable try-copy-descriptor-set
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -389,6 +389,7 @@ executable try-depth-buffering
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -408,7 +409,6 @@ executable try-depth-buffering
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -441,6 +441,7 @@ executable try-depth-buffering-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -460,7 +461,6 @@ executable try-depth-buffering-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -493,6 +493,7 @@ executable try-dynamic-dsc-sets
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -512,7 +513,6 @@ executable try-dynamic-dsc-sets
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -545,6 +545,7 @@ executable try-generating-mipmaps
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -564,7 +565,6 @@ executable try-generating-mipmaps
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -597,6 +597,7 @@ executable try-generating-mipmaps-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -616,7 +617,6 @@ executable try-generating-mipmaps-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -649,6 +649,7 @@ executable try-hello-world
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -668,7 +669,6 @@ executable try-hello-world
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -701,6 +701,7 @@ executable try-image-buffer
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -720,7 +721,6 @@ executable try-image-buffer
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -753,6 +753,7 @@ executable try-loading-models
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -772,7 +773,6 @@ executable try-loading-models
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -805,6 +805,7 @@ executable try-loading-models-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -824,7 +825,6 @@ executable try-loading-models-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -857,6 +857,7 @@ executable try-multisampling
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -876,7 +877,6 @@ executable try-multisampling
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -909,6 +909,7 @@ executable try-multisampling-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -928,7 +929,6 @@ executable try-multisampling-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -961,6 +961,7 @@ executable try-multisampling-use-groups-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -980,7 +981,6 @@ executable try-multisampling-use-groups-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1013,6 +1013,7 @@ executable try-no-dynamic-dsc-sets
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1032,7 +1033,6 @@ executable try-no-dynamic-dsc-sets
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1065,6 +1065,7 @@ executable try-object-index
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1084,7 +1085,6 @@ executable try-object-index
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1117,6 +1117,7 @@ executable try-pipeline-cache
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1136,7 +1137,6 @@ executable try-pipeline-cache
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1169,6 +1169,7 @@ executable try-query
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1188,7 +1189,6 @@ executable try-query
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1221,6 +1221,7 @@ executable try-rectangle
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1240,7 +1241,6 @@ executable try-rectangle
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1273,6 +1273,7 @@ executable try-rectangle-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1292,7 +1293,6 @@ executable try-rectangle-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1325,6 +1325,7 @@ executable try-saitan
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1344,7 +1345,6 @@ executable try-saitan
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1377,6 +1377,7 @@ executable try-saitan-float
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1396,7 +1397,6 @@ executable try-saitan-float
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1429,6 +1429,7 @@ executable try-saitan-simple
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1448,7 +1449,6 @@ executable try-saitan-simple
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1481,6 +1481,7 @@ executable try-shaderc
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1500,7 +1501,6 @@ executable try-shaderc
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1533,6 +1533,7 @@ executable try-texel-buffer-float
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1552,7 +1553,6 @@ executable try-texel-buffer-float
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1585,6 +1585,7 @@ executable try-texel-buffer-word32
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1604,7 +1605,6 @@ executable try-texel-buffer-word32
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1637,6 +1637,7 @@ executable try-texture
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1656,7 +1657,6 @@ executable try-texture
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1689,6 +1689,7 @@ executable try-texture-descriptor-set-group-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1708,7 +1709,6 @@ executable try-texture-descriptor-set-group-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1741,6 +1741,7 @@ executable try-texture-image-manager-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1760,7 +1761,6 @@ executable try-texture-image-manager-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1793,6 +1793,7 @@ executable try-texture-immutable-sampler-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1812,7 +1813,6 @@ executable try-texture-immutable-sampler-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1845,6 +1845,7 @@ executable try-texture-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1864,7 +1865,6 @@ executable try-texture-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1897,6 +1897,7 @@ executable try-triangle
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1916,7 +1917,6 @@ executable try-triangle
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1949,6 +1949,7 @@ executable try-triangle-single
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -1968,7 +1969,6 @@ executable try-triangle-single
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2001,6 +2001,7 @@ executable try-vulkan-guide
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -2020,7 +2021,6 @@ executable try-vulkan-guide
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2053,6 +2053,7 @@ executable try-vulkan-guide-dynamic
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -2072,7 +2073,6 @@ executable try-vulkan-guide-dynamic
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2105,6 +2105,7 @@ executable try-vulkan-guide-storage
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -2124,7 +2125,6 @@ executable try-vulkan-guide-storage
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2157,6 +2157,7 @@ executable try-vulkan-guide-texture
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -2176,7 +2177,6 @@ executable try-vulkan-guide-texture
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2209,6 +2209,7 @@ executable try-wavefront-obj
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -2228,7 +2229,6 @@ executable try-wavefront-obj
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2261,6 +2261,7 @@ executable try-yatteiku
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -2280,7 +2281,6 @@ executable try-yatteiku
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector
@@ -2314,6 +2314,7 @@ test-suite try-my-vulkan-snd-test
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
     , storable-generic
     , storable-hetero-list
@@ -2333,7 +2334,6 @@ test-suite try-my-vulkan-snd-test
     , try-gpu-vulkan-khr-swapchain
     , try-gpu-vulkan-middle-khr-surface-glfw
     , try-my-vulkan-snd
-    , try-shaderc
     , typelevel-tools-yj
     , union-color
     , vector

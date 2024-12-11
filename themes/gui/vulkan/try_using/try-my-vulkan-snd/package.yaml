@@ -47,7 +47,7 @@ dependencies:
 - try-gpu-vulkan-ext-debug-utils
 - ranged-list
 - language-spir-v
-- try-shaderc
+- shaderc
 - union-color
 - ghc-prim
 - time
