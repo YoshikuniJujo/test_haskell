@@ -4,14 +4,16 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-shaderc
+name:           shaderc
 version:        0.1.0.5
-description:    Please see the README on GitHub at <https://github.com/githubuser/try-shaderc#readme>
-homepage:       https://github.com/githubuser/try-shaderc#readme
-bug-reports:    https://github.com/githubuser/try-shaderc/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2022 Author name here
+synopsis:       A collection of tools and libraries for Vulkan shader compilation
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/shaderc#readme>
+category:       Language
+homepage:       https://github.com/YoshikuniJujo/shaderc#readme
+bug-reports:    https://github.com/YoshikuniJujo/shaderc/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      2022 Yoshikuni Jujo
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -23,7 +25,7 @@ data-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/try-shaderc
+  location: https://github.com/YoshikuniJujo/shaderc
 
 library
   exposed-modules:
@@ -42,7 +44,7 @@ library
       Shaderc.Include
       Shaderc.Include.Core
       Shaderc.Middle
-      Paths_try_shaderc
+      Paths_shaderc
   hs-source-dirs:
       src
   pkgconfig-depends:
@@ -61,10 +63,10 @@ library
     , template-haskell
   default-language: Haskell2010
 
-executable try-shaderc-exe
+executable shaderc-exe
   main-is: Main.hs
   other-modules:
-      Paths_try_shaderc
+      Paths_shaderc
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
@@ -78,16 +80,16 @@ executable try-shaderc-exe
     , language-spir-v
     , mtl
     , nowdoc
+    , shaderc
     , storable-peek-poke
     , template-haskell
-    , try-shaderc
   default-language: Haskell2010
 
-test-suite try-shaderc-test
+test-suite shaderc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_shaderc
+      Paths_shaderc
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
@@ -101,7 +103,7 @@ test-suite try-shaderc-test
     , language-spir-v
     , mtl
     , nowdoc
+    , shaderc
     , storable-peek-poke
     , template-haskell
-    , try-shaderc
   default-language: Haskell2010
