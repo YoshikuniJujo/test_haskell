@@ -139,6 +139,41 @@ executable try-bitonic-sort-new-test
     , vector
   default-language: Haskell2010
 
+executable try-grayscale-bicubic
+  main-is: try-grayscale-bicubic.hs
+  other-modules:
+      Paths_try_vulkan_compute
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , deepseq
+    , filepath
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , parallel
+    , random
+    , ranged-list
+    , shaderc
+    , stm
+    , storable-generic
+    , temporary
+    , text
+    , time
+    , tools-yj
+    , try-gpu-vulkan-ext-debug-utils
+    , try-vulkan-compute
+    , typelevel-tools-yj
+    , vector
+  default-language: Haskell2010
+
 executable try-hello
   main-is: try-hello.hs
   other-modules:
