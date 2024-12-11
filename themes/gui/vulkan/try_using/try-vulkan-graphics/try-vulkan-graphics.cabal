@@ -53,7 +53,9 @@ library
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -66,8 +68,6 @@ library
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , typelevel-tools-yj
     , union-color
     , vector
@@ -106,7 +106,9 @@ executable try-compute
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -119,8 +121,6 @@ executable try-compute
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -150,7 +150,9 @@ executable try-cube-single
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -163,8 +165,6 @@ executable try-cube-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -194,7 +194,9 @@ executable try-depth-buffering-single
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -207,8 +209,6 @@ executable try-depth-buffering-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -238,7 +238,9 @@ executable try-gamepad-button
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -251,8 +253,6 @@ executable try-gamepad-button
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -282,7 +282,9 @@ executable try-multiple-windows
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -295,8 +297,6 @@ executable try-multiple-windows
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -326,7 +326,9 @@ executable try-point-rectangle-single
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -339,8 +341,6 @@ executable try-point-rectangle-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -370,7 +370,9 @@ executable try-rectangle-single
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -383,8 +385,6 @@ executable try-rectangle-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -414,7 +414,9 @@ executable try-triangle-single
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -427,8 +429,50 @@ executable try-triangle-single
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
+    , try-vulkan-graphics
+    , typelevel-tools-yj
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+executable try-vulkan-guide-drawing-with-compute
+  main-is: try-vulkan-guide-drawing-with-compute.hs
+  other-modules:
+      Paths_try_vulkan_graphics
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , containers
+    , data-default
+    , extra-data-yj
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , mono-traversable
+    , mtl
+    , optparse-declarative
+    , random
+    , ranged-list
+    , shaderc
+    , stm
+    , storable-generic
+    , storable-peek-poke
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , tools-yj
+    , try-glfw-group
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -459,7 +503,9 @@ test-suite try-vulkan-graphics-test
     , optparse-declarative
     , random
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -472,8 +518,6 @@ test-suite try-vulkan-graphics-test
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
