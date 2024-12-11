@@ -36,7 +36,7 @@ dependencies:
 - JuicyPixels
 - gpu-vulkan
 - try-gpu-vulkan-ext-debug-utils
-- try-shaderc
+- shaderc
 - language-spir-v
 - hetero-parameter-list
 - storable-generic
