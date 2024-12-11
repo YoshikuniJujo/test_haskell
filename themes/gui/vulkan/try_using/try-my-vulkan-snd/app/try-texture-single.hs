@@ -1037,6 +1037,7 @@ dscWriteTxImg ds v s = Vk.DscSet.Write {
 			Vk.Dsc.imageInfoImageLayout =
 				Vk.Img.LayoutShaderReadOnlyOptimal,
 			Vk.Dsc.imageInfoImageView = v,
+--			Vk.Dsc.imageInfoSampler = Vk.Smplr.Null } }
 			Vk.Dsc.imageInfoSampler = s } }
 
 createSyncObjs :: Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a

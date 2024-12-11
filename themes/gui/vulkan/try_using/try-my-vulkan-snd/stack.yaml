@@ -60,7 +60,9 @@ extra-deps:
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-- gpu-vulkan-0.1.0.155
+- git: https://github.com/YoshikuniJujo/gpu-vulkan
+  commit: 8b952ecc7b1057ca92f0e9aed0a76bbd70a77c9a
+# - gpu-vulkan-0.1.0.155
 - gpu-vulkan-middle-0.1.0.60
 - gpu-vulkan-core-0.1.0.11
 - language-spir-v-0.1.0.1

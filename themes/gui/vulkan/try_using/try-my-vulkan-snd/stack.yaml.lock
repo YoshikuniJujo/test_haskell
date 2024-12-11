@@ -198,12 +198,16 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
-    hackage: gpu-vulkan-0.1.0.155@sha256:61f14fb2627884673077ae49ced49359eaf37206ff2aa0a63220049d0a5e6b13,7887
+    commit: 8b952ecc7b1057ca92f0e9aed0a76bbd70a77c9a
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    name: gpu-vulkan
     pantry-tree:
-      sha256: b1968e593a41387ac7803690ee81cd17bb210227dfa1b47e199cfd2d0bd80a0a
-      size: 11743
+      sha256: 22226485caca09e2cdf852e8bccd3025f8e2c1ae85401795c6c2a4b9fb1cfb58
+      size: 12379
+    version: 0.1.0.156
   original:
-    hackage: gpu-vulkan-0.1.0.155
+    commit: 8b952ecc7b1057ca92f0e9aed0a76bbd70a77c9a
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
     hackage: gpu-vulkan-middle-0.1.0.60@sha256:2819b5f160074554ce5c5325dc9fbec3d67fe506731f283be8a21e4bdb2c02c3,8941
     pantry-tree:
