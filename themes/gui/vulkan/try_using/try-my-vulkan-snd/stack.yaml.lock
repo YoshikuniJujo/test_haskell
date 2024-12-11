@@ -163,19 +163,6 @@ packages:
 - completed:
     commit: a27d1f2016a56b73c894420a783465726fa77edf
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: shaderc
-    pantry-tree:
-      sha256: 8f4ea2d8a5aa04e9e0ea63d1fbfebcd18de63e80b8880708e8733e8fdcbd7dde
-      size: 1731
-    subdir: themes/gui/vulkan/shaderc
-    version: 0.1.0.5
-  original:
-    commit: a27d1f2016a56b73c894420a783465726fa77edf
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/shaderc
-- completed:
-    commit: a27d1f2016a56b73c894420a783465726fa77edf
-    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-glfw-group
     pantry-tree:
       sha256: 0a15879a7e228abb64b3f09fdf10e7cf7bf7b2f8ae5a3d1cddc0fbd8d1b1136c
@@ -238,6 +225,13 @@ packages:
       size: 650
   original:
     hackage: language-spir-v-0.1.0.1
+- completed:
+    hackage: shaderc-0.1.0.5@sha256:abd04455e790464abf492d2f679a50c11ba9d9fbde034279c7cb9615bd8e563a,2241
+    pantry-tree:
+      sha256: 21170a1c6843f2555cf2313c3d842ece6a330f007a7f7f78de709bc1578aa5e7
+      size: 1402
+  original:
+    hackage: shaderc-0.1.0.5
 - completed:
     hackage: storable-generic-0.1.0.5@sha256:c113ea3ea79cedcd3d60294c825a2c5aa4730ce1abf77e6bbc219389267af26e,1900
     pantry-tree:
