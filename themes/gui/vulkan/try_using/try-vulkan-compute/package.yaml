@@ -164,8 +164,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-compute
-  try-grayscale-bicubic:
-    main:                try-grayscale-bicubic.hs
+  try-bicubic:
+    main:                try-bicubic.hs
     source-dirs:         app
     ghc-options:
     - -threaded
