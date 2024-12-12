@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-12-09
+resolver: nightly-2024-12-12
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -60,14 +60,16 @@ extra-deps:
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-- git: https://github.com/YoshikuniJujo/gpu-vulkan
-  commit: 8b952ecc7b1057ca92f0e9aed0a76bbd70a77c9a
-# - gpu-vulkan-0.1.0.155
-- gpu-vulkan-middle-0.1.0.60
-- gpu-vulkan-core-0.1.0.11
+  # - git: https://github.com/YoshikuniJujo/gpu-vulkan
+  # commit: 8b952ecc7b1057ca92f0e9aed0a76bbd70a77c9a
+- gpu-vulkan-0.1.0.157
+- gpu-vulkan-middle-0.1.0.61
+- gpu-vulkan-core-0.1.0.13
 - language-spir-v-0.1.0.1
 - shaderc-0.1.0.5
-- storable-generic-0.1.0.5
+- exception-hierarchy-0.1.0.12
+- ranged-list-0.1.2.3
+- typecheck-plugin-nat-simple-0.1.0.11
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
