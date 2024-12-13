@@ -25,6 +25,8 @@ import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
@@ -32,7 +34,10 @@ import Debug
 
 main :: IO ()
 main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
-	Vk.Phd.enumerate ist >>= \[pd] ->
+	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
+	Vk.Phd.enumerate ist >>= \[pd] -> printPhdPrps pd >>
+	{-
+	Vk.Phd.getProperties pd >>= print >>
 	v1213Features pd >>= \v1213fs ->
 	let TMaybe.J v13fs = Vk.Phd.vulkan12FeaturesNext v1213fs in
 	print v1213fs >>
@@ -40,6 +45,7 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	print (Vk.Phd.vulkan12FeaturesDescriptorIndexing v1213fs) >>
 	print (Vk.Phd.vulkan13FeaturesDynamicRendering v13fs) >>
 	print (Vk.Phd.vulkan13FeaturesSynchronization2 v13fs) >>
+	-}
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -50,6 +56,16 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 		Vk.Phd.Features2 (TMaybe.J v1213fs) _fs <- Vk.Phd.getFeatures2
 			@('Just (Vk.Phd.Vulkan12Features ('Just (Vk.Phd.Vulkan13Features 'Nothing)))) pd
 		pure v1213fs
+
+printPhdPrps :: Vk.Phd.P -> IO ()
+printPhdPrps pd = do
+	prps <- Vk.Phd.getProperties pd
+	fs <- Vk.Phd.getFeatures2 @(
+		'Just (Vk.Phd.Vulkan12Features (
+		'Just (Vk.Phd.Vulkan13Features 'Nothing) )) ) pd
+	let	v12fs = Vk.Phd.features2Next fs
+	print $ Vk.Phd.propertiesApiVersion prps
+	print v12fs
 
 type FramebufferResized = IORef Bool
 
