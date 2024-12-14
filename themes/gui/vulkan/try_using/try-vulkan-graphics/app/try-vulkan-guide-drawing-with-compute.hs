@@ -43,6 +43,7 @@ import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -60,6 +61,8 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	Vk.Phd.enumerate ist >>= \[pd] -> printPhdPrps pd sfc >>= \qfi ->
 	createLgDvc pd qfi \dv q -> createSwpch w sfc pd qfi dv \sc ex ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
+	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps@(cp1 :** cp2 :** HPList.Nil) ->
+	print cp1 >> print cp2 >>
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -70,6 +73,9 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 		Vk.Phd.Features2 (TMaybe.J v1213fs) _fs <- Vk.Phd.getFeatures2
 			@('Just (Vk.Phd.Vulkan12Features ('Just (Vk.Phd.Vulkan13Features 'Nothing)))) pd
 		pure v1213fs
+
+frameOverlap :: Int
+frameOverlap = 2
 
 type FramebufferResized = IORef Bool
 
@@ -369,3 +375,11 @@ recreateAll w sfc pd qfis dv sc vs rp pl gp fbs = do
 		recreateGrPpl dv ex rp pl gp
 		recreateFrmbffrs dv ex rp vs fbs
 -}
+
+createCmdPl :: Vk.QFm.Index -> Vk.Dvc.D sd ->
+	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCmdPl qfi dv = Vk.CmdPl.create dv info nil
+	where info = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
+		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
