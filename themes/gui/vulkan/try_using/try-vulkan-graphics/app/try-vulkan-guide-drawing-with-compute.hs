@@ -22,7 +22,7 @@ import Data.Tuple.ToolsYj
 import Data.Maybe
 import Data.List qualified as L
 import Data.List.ToolsYj
-import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
@@ -44,6 +44,7 @@ import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -63,6 +64,7 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps@(cp1 :** cp2 :** HPList.Nil) ->
 	print cp1 >> print cp2 >>
+	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -383,3 +385,17 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
+
+createCmdBffrs :: Vk.Dvc.D sd -> HPList.PL Vk.CmdPl.C scps ->
+	(forall scbs . HPList.PL Vk.CmdBffr.C scbs -> IO a) -> IO a
+createCmdBffrs _ HPList.Nil f = f HPList.Nil
+createCmdBffrs dv (cp :** cps) f =
+	createCmdBffr dv cp \cb -> createCmdBffrs dv cps \cbs -> f $ cb :** cbs
+
+createCmdBffr :: Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
+	(forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
+createCmdBffr dv cp f = Vk.CmdBffr.allocateCs @_ @'[ '()] dv info \(cb :*. HPList.Nil) -> f cb
+	where info = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
