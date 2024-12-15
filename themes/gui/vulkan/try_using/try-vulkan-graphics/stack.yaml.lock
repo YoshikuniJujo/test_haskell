@@ -219,16 +219,9 @@ packages:
       size: 1402
   original:
     hackage: shaderc-0.1.0.5
-- completed:
-    hackage: exception-hierarchy-0.1.0.12@sha256:69dd8c0d60d1fc5d0a56e5c4c6036f200e30b1a0085c5c82cdb565a6f965844a,871
-    pantry-tree:
-      sha256: 7adff6b75f60adcb02c45287df7b99c14c54fe3ad52a490eca7eb0ce941bfc27
-      size: 299
-  original:
-    hackage: exception-hierarchy-0.1.0.12
 snapshots:
 - completed:
-    sha256: d916c9e8ff5c95b38fb2fc5b25f2c3e35358dee76386c40fbbb27e579a36e9c6
-    size: 605818
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/13.yaml
-  original: nightly-2024-12-13
+    sha256: d8dc721b84e82edf05bbcccfb474fb206e848743d75e2a3aef7219cbdd0e767b
+    size: 611659
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/15.yaml
+  original: nightly-2024-12-15
