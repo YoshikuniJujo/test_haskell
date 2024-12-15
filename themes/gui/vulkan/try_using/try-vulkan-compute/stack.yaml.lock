@@ -78,30 +78,9 @@ packages:
       size: 1402
   original:
     hackage: shaderc-0.1.0.5
-- completed:
-    hackage: exception-hierarchy-0.1.0.12@sha256:69dd8c0d60d1fc5d0a56e5c4c6036f200e30b1a0085c5c82cdb565a6f965844a,871
-    pantry-tree:
-      sha256: 7adff6b75f60adcb02c45287df7b99c14c54fe3ad52a490eca7eb0ce941bfc27
-      size: 299
-  original:
-    hackage: exception-hierarchy-0.1.0.12
-- completed:
-    hackage: ranged-list-0.1.2.3@sha256:003aae13aee986a50e3cf34f448c0d106c51f063d92d0fcd5d10043b77ff1c01,2220
-    pantry-tree:
-      sha256: 75dc8c74bdf8ac9a36ed3c093e43bac33d0c7b35ccd99750bc0a6ca30c95c1ae
-      size: 1339
-  original:
-    hackage: ranged-list-0.1.2.3
-- completed:
-    hackage: typecheck-plugin-nat-simple-0.1.0.11@sha256:d24fc47b7b60bf3499775a2bcb1ac14af83bdb02edcaa9956472a51e78c6084e,3122
-    pantry-tree:
-      sha256: 91084aa742cd2b463b1eed50dd6891310ea0ea19b8c0ba578b9cf5d7c96d3b8b
-      size: 1743
-  original:
-    hackage: typecheck-plugin-nat-simple-0.1.0.11
 snapshots:
 - completed:
-    sha256: b0933eba5b921a0e96a54fa7ea43fd0ca73288edb836d44fea32420419c02a8f
-    size: 603055
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/12.yaml
-  original: nightly-2024-12-12
+    sha256: d8dc721b84e82edf05bbcccfb474fb206e848743d75e2a3aef7219cbdd0e767b
+    size: 611659
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/15.yaml
+  original: nightly-2024-12-15
