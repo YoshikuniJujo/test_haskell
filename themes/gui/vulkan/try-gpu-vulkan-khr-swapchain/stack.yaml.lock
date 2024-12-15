@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
     version: 0.1.0.2
   original:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
 - completed:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-surface
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
     version: 0.1.0.0
   original:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
 - completed:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-swapchain
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
 - completed:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-core-khr-surface
     pantry-tree:
@@ -53,11 +53,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
     version: 0.1.0.0
   original:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
 - completed:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-core-khr-swapchain
     pantry-tree:
@@ -66,30 +66,30 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: c6911169a857b9302bedcccd3dcf4b47e005c4d2
+    commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
 - completed:
-    hackage: gpu-vulkan-0.1.0.137@sha256:444bd732e58a0ab884efad7719d320036949f5f7a20c05dab76dbaabbb281433,7633
+    hackage: gpu-vulkan-0.1.0.159@sha256:96972b9a190c125faa91dc25b9e01a6dcc561ef5f67bdb77bc8d193dd5957385,7887
     pantry-tree:
-      sha256: d817f542724ea282d212e04af9f79d004953f9326d3a983e5633a417e957fbfb
-      size: 11164
+      sha256: cb217f6d7377c4db3c8523e44f2a2bb27b7ac0209f8a5a68f904b8acc9677d72
+      size: 11743
   original:
-    hackage: gpu-vulkan-0.1.0.137
+    hackage: gpu-vulkan-0.1.0.159
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.54@sha256:824a10d7968f1ac6ad968bfe6e2eb01dbfead3e13104091cbaab84792f936697,8441
+    hackage: gpu-vulkan-middle-0.1.0.64@sha256:355a17ab50c89d38b5f368dd20da301014debc9b9faa689b663fea06fa92d460,9029
     pantry-tree:
-      sha256: 483e9566833f94d214f6f561029af5c2fc2606183d030f5e24d15748156081ed
-      size: 12409
+      sha256: e67b29c02347f6049cd6ab8002e516687c20ceaa93fbc6276c1a425c018157c5
+      size: 13314
   original:
-    hackage: gpu-vulkan-middle-0.1.0.54
+    hackage: gpu-vulkan-middle-0.1.0.64
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.8@sha256:a4dcd94ed86133a1d7b991fb2f3547f3838e05a0dfdb6a308a61e44a0828baa5,3369
+    hackage: gpu-vulkan-core-0.1.0.16@sha256:80b1d9dddc1f2adcfaacb03776be062ee74c028d57b4115f5f114782147aa96d,3475
     pantry-tree:
-      sha256: d28722b391dba8c9bdce82266895b63a714c6a7300f29d530a17577164a47b71
-      size: 4777
+      sha256: f139956c7d6c7e2abd272f2ea00cff59bdde98219ba1bbc4d8b9d20e89cdc3c1
+      size: 5004
   original:
-    hackage: gpu-vulkan-core-0.1.0.8
+    hackage: gpu-vulkan-core-0.1.0.16
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
@@ -97,51 +97,9 @@ packages:
       size: 650
   original:
     hackage: language-spir-v-0.1.0.1
-- completed:
-    hackage: storable-hetero-list-0.1.0.4@sha256:90b29b61329b0b837cacf49a8d7066133b988addadf4d43d04593aa071d1cca5,1868
-    pantry-tree:
-      sha256: 1fc9939a059c3e67a496f9e9bc68f96607f301f06965368797d126b29a12fd73
-      size: 389
-  original:
-    hackage: storable-hetero-list-0.1.0.4
-- completed:
-    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
-    pantry-tree:
-      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
-      size: 466
-  original:
-    hackage: storable-peek-poke-0.1.0.1
-- completed:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1@sha256:4e19d4a42e83cfc3735d49ed735d84bb8a2200be35bc92adc2cfc5a97fcc71c6,2150
-    pantry-tree:
-      sha256: 9bffd57b8d57bb72d8d49a70d501cfbc9b86d2c8e4b925b58eb385c5976e4a9f
-      size: 482
-  original:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1
-- completed:
-    hackage: tools-yj-0.1.0.19@sha256:f68285bdf1655779dfd9c88e5639750b6667e2943164b56acdd67b4447f08d88,2186
-    pantry-tree:
-      sha256: d40da9da2f85d7097980003b3a52bde22668ed1829e143aa065b085bf8036ad0
-      size: 1098
-  original:
-    hackage: tools-yj-0.1.0.19
-- completed:
-    hackage: mtl-misc-yj-0.1.0.2@sha256:a7cefb8b63b5406d6ab29dddd2c3913d73e83f3cb902fad931dd59f948192aaf,1768
-    pantry-tree:
-      sha256: cde0b60f446a4f36bf32642deee33927d57eb35d8323d35723de824093b3dc5a
-      size: 377
-  original:
-    hackage: mtl-misc-yj-0.1.0.2
-- completed:
-    hackage: text-misc-yj-0.1.0.1@sha256:753f14d0a7a9e343a420b6621b6b14ee46a576af1b9e81774d6395552d45c42c,1757
-    pantry-tree:
-      sha256: 2320eafbf3e506d2a37652b4d4db400af2486b89838e0744ac3e388aeea38103
-      size: 379
-  original:
-    hackage: text-misc-yj-0.1.0.1
 snapshots:
 - completed:
-    sha256: b69efabdef0bfb1631597151c92fb855d5f3ef2fbcc66e3396f76bb4e828a7ab
-    size: 677103
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/11/6.yaml
-  original: nightly-2024-11-06
+    sha256: d8dc721b84e82edf05bbcccfb474fb206e848743d75e2a3aef7219cbdd0e767b
+    size: 611659
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/15.yaml
+  original: nightly-2024-12-15
