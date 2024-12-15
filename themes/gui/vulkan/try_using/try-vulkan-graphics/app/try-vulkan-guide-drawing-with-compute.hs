@@ -1,8 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
-{-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -12,6 +14,7 @@ module Main(main) where
 
 import Foreign.Storable.PeekPoke
 import Control.Monad.Fix
+import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Ord.ToolsYj
@@ -45,6 +48,8 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
+import Gpu.Vulkan.Fence qualified as Vk.Fence
+import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -65,6 +70,7 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps@(cp1 :** cp2 :** HPList.Nil) ->
 	print cp1 >> print cp2 >>
 	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
+	createSyncObjs @'[ '(), '()] dv \soss ->
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -399,3 +405,20 @@ createCmdBffr dv cp f = Vk.CmdBffr.allocateCs @_ @'[ '()] dv info \(cb :*. HPLis
 		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+
+data SyncObjs (ssos :: ([Type], [Type], [Type])) where
+	SyncObjs :: {
+		_swapchainSemaphore :: HPList.PL Vk.Semaphore.S sscss,
+		_renderSemaphore :: HPList.PL Vk.Semaphore.S srss,
+		_renderFence :: HPList.PL Vk.Fence.F srfs } ->
+		SyncObjs '(sscss, srss, srfs)
+
+createSyncObjs :: forall n sd a . HPList.RepM n =>
+	Vk.Dvc.D sd -> (forall ssos . SyncObjs ssos -> IO a) -> IO a
+createSyncObjs dv f =
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \scss ->
+	HPList.repM @n (Vk.Semaphore.create @'Nothing dv def nil) \rss ->
+	HPList.repM @n (Vk.Fence.create @'Nothing dv finfo nil) \rfs ->
+	f $ SyncObjs scss rss rfs
+	where
+	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
