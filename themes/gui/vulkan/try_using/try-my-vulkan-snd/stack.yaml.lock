@@ -198,26 +198,26 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
-    hackage: gpu-vulkan-0.1.0.157@sha256:fc72ab5f38c8583a2ed4aa915d3516c660455a68f50918a626ae5f59ace6e1a2,7887
+    hackage: gpu-vulkan-0.1.0.159@sha256:96972b9a190c125faa91dc25b9e01a6dcc561ef5f67bdb77bc8d193dd5957385,7887
     pantry-tree:
-      sha256: 71af0ee09b6edd34d7db3ec92fadcaec0db15162f931f977d3ecf99a1c3a5c3e
+      sha256: cb217f6d7377c4db3c8523e44f2a2bb27b7ac0209f8a5a68f904b8acc9677d72
       size: 11743
   original:
-    hackage: gpu-vulkan-0.1.0.157
+    hackage: gpu-vulkan-0.1.0.159
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.61@sha256:ca2722e5f5c0344167818799c765a35d20e809481d48131f1debbec77cc5430e,8941
+    hackage: gpu-vulkan-middle-0.1.0.64@sha256:355a17ab50c89d38b5f368dd20da301014debc9b9faa689b663fea06fa92d460,9029
     pantry-tree:
-      sha256: 445d5abcf2682ee21bbbb109680cd3a4b6183598796ba89da448aaf2640ce1d9
-      size: 13155
+      sha256: e67b29c02347f6049cd6ab8002e516687c20ceaa93fbc6276c1a425c018157c5
+      size: 13314
   original:
-    hackage: gpu-vulkan-middle-0.1.0.61
+    hackage: gpu-vulkan-middle-0.1.0.64
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.13@sha256:da06dbcb0740ec8b9f2afadfcc3401303a0bd241351e1ccac9f172205e75e042,3475
+    hackage: gpu-vulkan-core-0.1.0.16@sha256:80b1d9dddc1f2adcfaacb03776be062ee74c028d57b4115f5f114782147aa96d,3475
     pantry-tree:
-      sha256: 2d5c293a15a038943f818b3a4d6b47bf90ec2ba24f0f7f0690052e740e64cd4f
+      sha256: f139956c7d6c7e2abd272f2ea00cff59bdde98219ba1bbc4d8b9d20e89cdc3c1
       size: 5004
   original:
-    hackage: gpu-vulkan-core-0.1.0.13
+    hackage: gpu-vulkan-core-0.1.0.16
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
@@ -232,30 +232,9 @@ packages:
       size: 1402
   original:
     hackage: shaderc-0.1.0.5
-- completed:
-    hackage: exception-hierarchy-0.1.0.12@sha256:69dd8c0d60d1fc5d0a56e5c4c6036f200e30b1a0085c5c82cdb565a6f965844a,871
-    pantry-tree:
-      sha256: 7adff6b75f60adcb02c45287df7b99c14c54fe3ad52a490eca7eb0ce941bfc27
-      size: 299
-  original:
-    hackage: exception-hierarchy-0.1.0.12
-- completed:
-    hackage: ranged-list-0.1.2.3@sha256:003aae13aee986a50e3cf34f448c0d106c51f063d92d0fcd5d10043b77ff1c01,2220
-    pantry-tree:
-      sha256: 75dc8c74bdf8ac9a36ed3c093e43bac33d0c7b35ccd99750bc0a6ca30c95c1ae
-      size: 1339
-  original:
-    hackage: ranged-list-0.1.2.3
-- completed:
-    hackage: typecheck-plugin-nat-simple-0.1.0.11@sha256:d24fc47b7b60bf3499775a2bcb1ac14af83bdb02edcaa9956472a51e78c6084e,3122
-    pantry-tree:
-      sha256: 91084aa742cd2b463b1eed50dd6891310ea0ea19b8c0ba578b9cf5d7c96d3b8b
-      size: 1743
-  original:
-    hackage: typecheck-plugin-nat-simple-0.1.0.11
 snapshots:
 - completed:
-    sha256: b0933eba5b921a0e96a54fa7ea43fd0ca73288edb836d44fea32420419c02a8f
-    size: 603055
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/12.yaml
-  original: nightly-2024-12-12
+    sha256: d8dc721b84e82edf05bbcccfb474fb206e848743d75e2a3aef7219cbdd0e767b
+    size: 611659
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/15.yaml
+  original: nightly-2024-12-15
