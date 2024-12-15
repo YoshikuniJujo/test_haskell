@@ -71,6 +71,7 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	print cp1 >> print cp2 >>
 	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
+	draw dv soss 0 >>
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -422,3 +423,9 @@ createSyncObjs dv f =
 	f $ SyncObjs scss rss rfs
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+
+draw :: Vk.Dvc.D sd -> SyncObjs ssos -> Int -> IO ()
+draw dv (SyncObjs _ _  rfs) cf =
+	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
+	Vk.Fence.waitForFs dv rf' True (Just 1) >> Vk.Fence.resetFs dv rf'
+--	ii <- Vk.Khr.aquireNextImage dv sc
