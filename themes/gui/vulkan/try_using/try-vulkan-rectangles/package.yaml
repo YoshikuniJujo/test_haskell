@@ -51,7 +51,7 @@ dependencies:
 - ranged-list
 - storable-hetero-list
 - storable-peek-poke
-- try-storable-generic
+- storable-generic
 - typelevel-tools-yj
 - try-glfw-group
 - GLFW-b

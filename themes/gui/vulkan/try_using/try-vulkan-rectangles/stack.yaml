@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-12-08
+resolver: nightly-2024-12-15
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -53,7 +53,7 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-shaderc
-  - features/ffi/pointer/try-storable-generic
+  #  - features/ffi/pointer/try-storable-generic
   - themes/gui/vulkan/try-glfw-group
   - themes/mfrp/try-moffy-with-gtk3
 - git: https://github.com/tanakh/optparse-declarative
@@ -64,13 +64,16 @@ extra-deps:
   commit: a40d1864356a72f006baf96a7ba99a06b3a912ac
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
-- git: https://github.com/YoshikuniJujo/glib-stopgap
-  commit: 429e8b95651bafaa67131a917d94581c89d1c90c
-- simple-pango-0.1.0.1
-- gpu-vulkan-0.1.0.155
-- gpu-vulkan-middle-0.1.0.60
-- gpu-vulkan-core-0.1.0.11
+  # - git: https://github.com/YoshikuniJujo/glib-stopgap
+  # commit: 429e8b95651bafaa67131a917d94581c89d1c90c
+- simple-pango-0.1.0.2
+- gpu-vulkan-0.1.0.159
+- gpu-vulkan-middle-0.1.0.64
+- gpu-vulkan-core-0.1.0.16
 - language-spir-v-0.1.0.1
+- X11-xft-0.3.4
+- X11-1.10.3
+- data-default-class-0.1.2.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

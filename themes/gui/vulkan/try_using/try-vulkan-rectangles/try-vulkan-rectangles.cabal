@@ -64,6 +64,7 @@ library
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-hetero-list
     , storable-peek-poke
     , template-haskell
@@ -78,7 +79,6 @@ library
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
     , try-shaderc
-    , try-storable-generic
     , type-set
     , typelevel-tools-yj
     , union-color
@@ -122,6 +122,7 @@ executable try-cairo-image-as-texture
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-hetero-list
     , storable-peek-poke
     , template-haskell
@@ -136,7 +137,6 @@ executable try-cairo-image-as-texture
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -171,6 +171,7 @@ executable try-multi-rectangles
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-hetero-list
     , storable-peek-poke
     , template-haskell
@@ -185,7 +186,6 @@ executable try-multi-rectangles
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -220,6 +220,7 @@ executable try-multi-rectangles2
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-hetero-list
     , storable-peek-poke
     , template-haskell
@@ -234,7 +235,6 @@ executable try-multi-rectangles2
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -269,6 +269,7 @@ executable try-use-cairo
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-hetero-list
     , storable-peek-poke
     , template-haskell
@@ -283,7 +284,6 @@ executable try-use-cairo
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -318,6 +318,7 @@ executable try-use-texture-group
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-hetero-list
     , storable-peek-poke
     , template-haskell
@@ -332,7 +333,6 @@ executable try-use-texture-group
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -368,6 +368,7 @@ test-suite try-vulkan-rectangles-test
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-hetero-list
     , storable-peek-poke
     , template-haskell
@@ -382,7 +383,6 @@ test-suite try-vulkan-rectangles-test
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
     , try-shaderc
-    , try-storable-generic
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
