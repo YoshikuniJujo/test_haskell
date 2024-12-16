@@ -54,6 +54,7 @@ import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
@@ -67,11 +68,10 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	Vk.Phd.enumerate ist >>= \[pd] -> printPhdPrps pd sfc >>= \qfi ->
 	createLgDvc pd qfi \dv q -> createSwpch w sfc pd qfi dv \sc ex ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
-	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps@(cp1 :** cp2 :** HPList.Nil) ->
-	print cp1 >> print cp2 >>
+	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
 	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
-	draw dv soss 0 >>
+	draw dv sc cbs soss 0 >>
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -424,8 +424,21 @@ createSyncObjs dv f =
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-draw :: Vk.Dvc.D sd -> SyncObjs ssos -> Int -> IO ()
-draw dv (SyncObjs _ _  rfs) cf =
+draw :: Vk.Dvc.D sd ->
+	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL Vk.CmdBffr.C scbs ->
+	SyncObjs ssos -> Int -> IO ()
+draw dv sc cbs (SyncObjs scss _  rfs) cf =
+	HPList.index cbs cf \cb ->
+	HPList.index scss cf \scs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
-	Vk.Fence.waitForFs dv rf' True (Just 1) >> Vk.Fence.resetFs dv rf'
---	ii <- Vk.Khr.aquireNextImage dv sc
+	Vk.Fence.waitForFs dv rf' True (Just 1) >> Vk.Fence.resetFs dv rf' >>
+	Vk.Khr.acquireNextImage dv sc maxBound (Just scs) Nothing >>= \ii ->
+	print ii >>
+	Vk.CmdBffr.reset cb def >>
+	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
+		pure ()
+	where
+	binfo = Vk.CmdBffr.BeginInfo {
+		Vk.CmdBffr.beginInfoNext = TMaybe.N,
+		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
+		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
