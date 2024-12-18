@@ -234,7 +234,7 @@ packages:
     hackage: shaderc-0.1.0.5
 snapshots:
 - completed:
-    sha256: d8dc721b84e82edf05bbcccfb474fb206e848743d75e2a3aef7219cbdd0e767b
-    size: 611659
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/15.yaml
-  original: nightly-2024-12-15
+    sha256: 7fddb148e37575dd57eeba8b6bad5e8d38a0d478bbdeb0a84b40d8d0b1a8755b
+    size: 618102
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/18.yaml
+  original: nightly-2024-12-18
