@@ -61,9 +61,11 @@ library
     , primitive
     , random
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , text
@@ -76,8 +78,6 @@ library
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
-    , try-storable-generic
     , type-flip
     , type-set
     , typelevel-tools-yj
@@ -121,9 +121,11 @@ executable try-boxes
     , primitive
     , random
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , text
@@ -136,8 +138,6 @@ executable try-boxes
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
-    , try-storable-generic
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -172,9 +172,11 @@ executable try-followbox
     , primitive
     , random
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , text
@@ -187,8 +189,6 @@ executable try-followbox
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
-    , try-storable-generic
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -223,9 +223,11 @@ executable try-multi-rectangles
     , primitive
     , random
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , text
@@ -238,8 +240,6 @@ executable try-multi-rectangles
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
-    , try-storable-generic
     , try-use-moffy-vulkan
     , type-flip
     , type-set
@@ -275,9 +275,11 @@ test-suite try-use-moffy-vulkan-test
     , primitive
     , random
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , text
@@ -290,8 +292,6 @@ test-suite try-use-moffy-vulkan-test
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
-    , try-storable-generic
     , try-use-moffy-vulkan
     , type-flip
     , type-set

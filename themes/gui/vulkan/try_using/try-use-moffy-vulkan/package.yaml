@@ -49,14 +49,14 @@ dependencies:
 - simple-cairo
 - moffy
 - type-set
-- try-storable-generic
+- storable-generic
 - try-gpu-vulkan-ext-debug-utils
 - GLFW-b
 - try-gpu-vulkan-khr-swapchain
 - try-gpu-vulkan-khr-surface
 - try-gpu-vulkan-khr-surface-glfw
 - language-spir-v
-- try-shaderc
+- shaderc
 - hetero-parameter-list
 - text
 - union-color
