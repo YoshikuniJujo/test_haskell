@@ -81,11 +81,10 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
 	draw dv sc scis q cbs soss 0 0 >>
 	draw dv sc scis q cbs soss 1 120 >>
-	fix \go ->
-	GlfwG.pollEvents >>
-	GlfwG.Win.shouldClose w >>= \case
-	False -> go
-	True -> pure ()
+	(fix \go -> do
+		GlfwG.pollEvents
+		GlfwG.Win.shouldClose w >>= \case False -> go; True -> pure ()) >>
+	Vk.Dvc.waitIdle dv
 	where
 	v1213Features pd = do
 		Vk.Phd.Features2 (TMaybe.J v1213fs) _fs <- Vk.Phd.getFeatures2
@@ -452,9 +451,10 @@ draw dv sc scis q cbs (SyncObjs scss _  rfs) cf fn =
 			clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
 			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
 		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
+		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral Vk.Img.LayoutPresentSrcKhr
 		pure ()
 	>>
-	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb) Nothing -- $ Just iff
+	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb scs) Nothing -- $ Just iff
 	>>
 	catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing q $ pinfo ii)
 	where
@@ -463,12 +463,12 @@ draw dv sc scis q cbs (SyncObjs scss _  rfs) cf fn =
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 --	siff = HPList.Singleton iff
-	sinfo :: forall s . Vk.CmdBffr.C s -> Vk.SubmitInfo 'Nothing '[] '[s] '[]
-	sinfo cb = Vk.SubmitInfo {
+	sinfo :: forall s sscs . Vk.CmdBffr.C s -> Vk.Semaphore.S sscs -> Vk.SubmitInfo 'Nothing '[sscs] '[s] '[]
+	sinfo cb scs = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
---			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
---				ias Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoWaitSemaphoreDstStageMasks =
+			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+				scs Vk.Ppl.StageColorAttachmentOutputBit,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil } -- HPList.Singleton rfs }
 	pinfo ii = Vk.Khr.Swpch.PresentInfo {
