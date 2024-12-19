@@ -15,6 +15,7 @@ module Main(main) where
 import Foreign.Storable.PeekPoke
 import Control.Monad.Fix
 import Data.Kind
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Ord.ToolsYj
@@ -46,10 +47,13 @@ import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -71,7 +75,8 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
 	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
-	draw dv sc cbs soss 0 >>
+	draw dv sc scis cbs soss 0 >>
+	draw dv sc scis cbs soss 1 >>
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -425,9 +430,10 @@ createSyncObjs dv f =
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 draw :: Vk.Dvc.D sd ->
-	Vk.Khr.Swpch.S scfmt ssc -> HPList.PL Vk.CmdBffr.C scbs ->
+	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] ->
+	HPList.PL Vk.CmdBffr.C scbs ->
 	SyncObjs ssos -> Int -> IO ()
-draw dv sc cbs (SyncObjs scss _  rfs) cf =
+draw dv sc scis cbs (SyncObjs scss _  rfs) cf =
 	HPList.index cbs cf \cb ->
 	HPList.index scss cf \scs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
@@ -436,9 +442,41 @@ draw dv sc cbs (SyncObjs scss _  rfs) cf =
 	print ii >>
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
+		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 		pure ()
 	where
 	binfo = Vk.CmdBffr.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+
+transitionImage :: Vk.CmdBffr.C scb -> Vk.Img.Binded ss ss inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
+	where
+	depInfo = Vk.DependencyInfo {
+		Vk.dependencyInfoNext = TMaybe.N,
+		Vk.dependencyInfoDependencyFlags = zeroBits,
+		Vk.dependencyInfoMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoBufferMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoImageMemoryBarriers = HPList.Singleton $ U5 imgBarrier }
+	imgBarrier = Vk.Img.MemoryBarrier2 {
+		Vk.Img.memoryBarrier2Next = TMaybe.N,
+		Vk.Img.memoryBarrier2SrcStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2SrcAccessMask = Vk.Access2MemoryWriteBit,
+		Vk.Img.memoryBarrier2DstStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2DstAccessMask =
+			Vk.Access2MemoryWriteBit .|. Vk.Access2MemoryReadBit,
+		Vk.Img.memoryBarrier2OldLayout = cl,
+		Vk.Img.memoryBarrier2NewLayout = nl,
+		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
+		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
+		Vk.Img.memoryBarrier2Image = img,
+		Vk.Img.memoryBarrier2SubresourceRange = srr }
+	srr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = case nl of
+			Vk.Img.LayoutDepthAttachmentOptimal -> Vk.Img.AspectDepthBit
+			_ -> Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
