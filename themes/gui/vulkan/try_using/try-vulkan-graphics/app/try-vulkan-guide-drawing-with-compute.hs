@@ -446,13 +446,11 @@ draw dv sc scis q cbs (SyncObjs scss _  rfs) cf fn =
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
-		let	-- flash = sin (fromIntegral fn / 120)
-			flash = 1
+		let	flash = sin (fromIntegral fn / 120)
 			clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
 			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
 		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral Vk.Img.LayoutPresentSrcKhr
-		pure ()
 	>>
 	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb scs) Nothing -- $ Just iff
 	>>
