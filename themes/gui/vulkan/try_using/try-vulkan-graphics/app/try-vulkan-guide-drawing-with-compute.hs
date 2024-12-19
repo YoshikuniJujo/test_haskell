@@ -14,6 +14,7 @@ module Main(main) where
 
 import Foreign.Storable.PeekPoke
 import Control.Monad.Fix
+import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -25,6 +26,7 @@ import Data.Default
 import Data.Tuple.ToolsYj
 import Data.Maybe
 import Data.List qualified as L
+import Data.List.NonEmpty qualified as NE
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.HeteroParList qualified as HPList
@@ -33,6 +35,7 @@ import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Text.IO qualified as Txt
+import Data.Color
 import Data.IORef
 
 import Graphics.UI.GlfwG qualified as GlfwG
@@ -40,6 +43,7 @@ import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFm
@@ -71,12 +75,12 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	Vk.Phd.enumerate ist >>= \[pd] -> printPhdPrps pd sfc >>= \qfi ->
 	createLgDvc pd qfi \dv q -> createSwpch w sfc pd qfi dv \sc ex ->
-	Vk.Khr.Swpch.getImages dv sc >>= \scis -> createImgVws dv scis \scvs ->
+	Vk.Khr.Swpch.getImages dv sc >>= \scis -> -- createImgVws dv scis \scvs ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
 	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
-	draw dv sc scis cbs soss 0 >>
-	draw dv sc scis cbs soss 1 >>
+	draw dv sc scis q cbs soss 0 0 >>
+	draw dv sc scis q cbs soss 1 120 >>
 	fix \go ->
 	GlfwG.pollEvents >>
 	GlfwG.Win.shouldClose w >>= \case
@@ -323,7 +327,7 @@ swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoImageColorSpace = cs,
 	Vk.Khr.Swpch.createInfoImageExtent = ex,
 	Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
-	Vk.Khr.Swpch.createInfoImageUsage = Vk.Img.UsageColorAttachmentBit,
+	Vk.Khr.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
 	Vk.Khr.Swpch.createInfoImageSharingMode = ism,
 	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
 	Vk.Khr.Swpch.createInfoPreTransform =
@@ -430,10 +434,10 @@ createSyncObjs dv f =
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 draw :: Vk.Dvc.D sd ->
-	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] ->
+	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] -> Vk.Q.Q ->
 	HPList.PL Vk.CmdBffr.C scbs ->
-	SyncObjs ssos -> Int -> IO ()
-draw dv sc scis cbs (SyncObjs scss _  rfs) cf =
+	SyncObjs ssos -> Int -> Int -> IO ()
+draw dv sc scis q cbs (SyncObjs scss _  rfs) cf fn =
 	HPList.index cbs cf \cb ->
 	HPList.index scss cf \scs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
@@ -443,12 +447,39 @@ draw dv sc scis cbs (SyncObjs scss _  rfs) cf =
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
+		let	-- flash = sin (fromIntegral fn / 120)
+			flash = 1
+			clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
+			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
+		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
 		pure ()
+	>>
+	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb) Nothing -- $ Just iff
+	>>
+	catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing q $ pinfo ii)
 	where
 	binfo = Vk.CmdBffr.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+--	siff = HPList.Singleton iff
+	sinfo :: forall s . Vk.CmdBffr.C s -> Vk.SubmitInfo 'Nothing '[] '[s] '[]
+	sinfo cb = Vk.SubmitInfo {
+		Vk.submitInfoNext = TMaybe.N,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+--			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
+--				ias Vk.Ppl.StageColorAttachmentOutputBit,
+		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HPList.Nil } -- HPList.Singleton rfs }
+	pinfo ii = Vk.Khr.Swpch.PresentInfo {
+		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Nil, -- HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 transitionImage :: Vk.CmdBffr.C scb -> Vk.Img.Binded ss ss inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
 transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
@@ -471,12 +502,17 @@ transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
 		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
 		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
 		Vk.Img.memoryBarrier2Image = img,
-		Vk.Img.memoryBarrier2SubresourceRange = srr }
-	srr = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = case nl of
-			Vk.Img.LayoutDepthAttachmentOptimal -> Vk.Img.AspectDepthBit
-			_ -> Vk.Img.AspectColorBit,
-		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
-		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
+		Vk.Img.memoryBarrier2SubresourceRange =
+			imageSubresourceRange case nl of
+				Vk.Img.LayoutDepthAttachmentOptimal ->
+					Vk.Img.AspectDepthBit
+				_ -> Vk.Img.AspectColorBit }
+				
+
+imageSubresourceRange :: Vk.Img.AspectFlags -> Vk.Img.SubresourceRange
+imageSubresourceRange am = Vk.Img.SubresourceRange {
+	Vk.Img.subresourceRangeAspectMask = am,
+	Vk.Img.subresourceRangeBaseMipLevel = 0,
+	Vk.Img.subresourceRangeLevelCount = 1,
+	Vk.Img.subresourceRangeBaseArrayLayer = 0,
+	Vk.Img.subresourceRangeLayerCount = 1 }
