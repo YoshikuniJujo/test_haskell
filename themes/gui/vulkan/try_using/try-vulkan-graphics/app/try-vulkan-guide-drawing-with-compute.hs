@@ -436,9 +436,9 @@ draw :: Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] -> Vk.Q.Q ->
 	HPList.PL Vk.CmdBffr.C scbs ->
 	SyncObjs ssos -> Int -> Int -> IO ()
-draw dv sc scis q cbs (SyncObjs scss _  rfs) cf fn =
+draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 	HPList.index cbs cf \cb ->
-	HPList.index scss cf \scs ->
+	HPList.index scss cf \scs -> HPList.index rss cf \rs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
 	Vk.Fence.waitForFs dv rf' True (Just 1) >> Vk.Fence.resetFs dv rf' >>
 	Vk.Khr.acquireNextImage dv sc maxBound (Just scs) Nothing >>= \ii ->
@@ -452,7 +452,9 @@ draw dv sc scis q cbs (SyncObjs scss _  rfs) cf fn =
 		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral Vk.Img.LayoutPresentSrcKhr
 	>>
-	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb scs) Nothing -- $ Just iff
+--	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb scs) Nothing -- $ Just iff
+	Vk.Q.submit2 q (HPList.Singleton . U4 $ submit cb scs rs) Nothing -- $ Just iff
+--	pure ()
 	>>
 	catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing q $ pinfo ii)
 	where
@@ -474,6 +476,37 @@ draw dv sc scis q cbs (SyncObjs scss _  rfs) cf fn =
 		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Nil, -- HPList.Singleton rfs,
 		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+	submit cb scs rs = submitInfo (cmdinfo cb) (signalinfo rs) (waitinfo scs)
+	cmdinfo cb = commandBufferSubmitInfo cb
+	waitinfo scs = semaphoreSubmitInfo Vk.Ppl.Stage2ColorAttachmentOutputBit scs
+	signalinfo rs = semaphoreSubmitInfo Vk.Ppl.Stage2AllGraphicsBit rs
+
+submitInfo :: Vk.CmdBffr.SubmitInfo mncb scb ->
+	Vk.Semaphore.SubmitInfo mnss ss -> Vk.Semaphore.SubmitInfo mnws ws ->
+	Vk.SubmitInfo2 'Nothing '[ '(mnws, ws)] '[ '(mncb, scb)] '[ '(mnss, ss)]
+submitInfo cb ss ws = Vk.SubmitInfo2 {
+	Vk.submitInfo2Next = TMaybe.N,
+	Vk.submitInfo2Flags = zeroBits,
+	Vk.submitInfo2WaitSemaphoreInfos = HPList.Singleton $ U2 ws,
+	Vk.submitInfo2CommandBufferInfos = HPList.Singleton $ U2 cb,
+	Vk.submitInfo2SignalSemaphoreInfos = HPList.Singleton $ U2 ss }
+
+semaphoreSubmitInfo ::
+	Vk.Ppl.StageFlags2 -> Vk.Semaphore.S ss ->
+	Vk.Semaphore.SubmitInfo 'Nothing ss
+semaphoreSubmitInfo sm smp = Vk.Semaphore.SubmitInfo {
+	Vk.Semaphore.submitInfoNext = TMaybe.N,
+	Vk.Semaphore.submitInfoSemaphore = smp,
+	Vk.Semaphore.submitInfoValue = 1,
+	Vk.Semaphore.submitInfoStageMask = sm,
+	Vk.Semaphore.submitInfoDeviceIndex = 0 }
+
+commandBufferSubmitInfo ::
+	Vk.CmdBffr.C scb -> Vk.CmdBffr.SubmitInfo 'Nothing scb
+commandBufferSubmitInfo cb = Vk.CmdBffr.SubmitInfo {
+	Vk.CmdBffr.submitInfoNext = TMaybe.N,
+	Vk.CmdBffr.submitInfoCommandBuffer = cb,
+	Vk.CmdBffr.submitInfoDeviceMask = 0 }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
