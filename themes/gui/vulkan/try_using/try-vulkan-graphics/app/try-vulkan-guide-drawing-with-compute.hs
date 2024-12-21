@@ -34,6 +34,7 @@ import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
+import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Color
 import Data.IORef
@@ -79,11 +80,13 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
 	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
-	draw dv sc scis q cbs soss 0 0 >>
-	draw dv sc scis q cbs soss 1 120 >>
-	(fix \go -> do
+--	draw dv sc scis q cbs soss 0 0 >>
+--	draw dv sc scis q cbs soss 1 120 >>
+	(($ 0) $ fix \go fn -> do
 		GlfwG.pollEvents
-		GlfwG.Win.shouldClose w >>= \case False -> go; True -> pure ()) >>
+		draw dv sc scis q cbs soss (fn `mod` 2) fn
+		GlfwG.Win.shouldClose w >>= \case False -> go (fn + 1); True -> pure ()
+		) >>
 	Vk.Dvc.waitIdle dv
 	where
 	v1213Features pd = do
@@ -432,7 +435,8 @@ createSyncObjs dv f =
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-draw :: Vk.Dvc.D sd ->
+draw :: forall sd scfmt ssc ss inm scbs ssos .
+	Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] -> Vk.Q.Q ->
 	HPList.PL Vk.CmdBffr.C scbs ->
 	SyncObjs ssos -> Int -> Int -> IO ()
@@ -446,17 +450,19 @@ draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
-		let	flash = sin (fromIntegral fn / 120)
-			clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
+--		let	flash = sin (fromIntegral fn / 120) / 2 + 0.5
+		let	flash = sin (fromIntegral fn / 720) / 2 + 0.5
+		print flash
+		let	clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
 			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
 		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral Vk.Img.LayoutPresentSrcKhr
 	>>
 --	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb scs) Nothing -- $ Just iff
-	Vk.Q.submit2 q (HPList.Singleton . U4 $ submit cb scs rs) Nothing -- $ Just iff
+	Vk.Q.submit2 q (HPList.Singleton . U4 $ submit cb scs rs) (Just rf) -- Nothing -- $ Just iff
 --	pure ()
 	>>
-	catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing q $ pinfo ii)
+	catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing q $ pinfo ii rs)
 	where
 	binfo = Vk.CmdBffr.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
@@ -471,9 +477,10 @@ draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 				scs Vk.Ppl.StageColorAttachmentOutputBit,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HPList.Nil } -- HPList.Singleton rfs }
-	pinfo ii = Vk.Khr.Swpch.PresentInfo {
+	pinfo :: forall s . Word32 -> Vk.Semaphore.S s -> Vk.Khr.Swpch.PresentInfo 'Nothing '[s] scfmt '[ssc]
+	pinfo ii rs = Vk.Khr.Swpch.PresentInfo {
 		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
-		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Nil, -- HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rs, -- HPList.Nil, -- HPList.Singleton rfs,
 		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 	submit cb scs rs = submitInfo (cmdinfo cb) (signalinfo rs) (waitinfo scs)
