@@ -158,8 +158,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-vulkan-graphics
-  try-vulkan-guide-drawing-with-compute:
-    main:                try-vulkan-guide-drawing-with-compute.hs
+  try-vulkan-guide-initializing:
+    main:                try-vulkan-guide-initializing.hs
     source-dirs:         app
     ghc-options:
     - -threaded
