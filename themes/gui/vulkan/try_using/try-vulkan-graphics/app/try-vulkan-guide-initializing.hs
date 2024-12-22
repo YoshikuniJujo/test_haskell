@@ -148,7 +148,7 @@ createIst f = do
 		Vk.Ist.createInfoEnabledExtensionNames = exts }
 	ainfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
-		Vk.applicationInfoApplicationName = "Hello Triangle",
+		Vk.applicationInfoApplicationName = "Example Vulkan Application",
 		Vk.applicationInfoApplicationVersion =
 			Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoEngineName = "No Engine",
