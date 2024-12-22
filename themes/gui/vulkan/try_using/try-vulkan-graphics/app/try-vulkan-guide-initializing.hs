@@ -13,6 +13,8 @@
 module Main(main) where
 
 import Foreign.Storable.PeekPoke
+import Control.Arrow
+import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
@@ -38,6 +40,7 @@ import Data.Word
 import Data.Text.IO qualified as Txt
 import Data.Color
 import Data.IORef
+import Data.IORef.ToolsYj
 
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
@@ -76,16 +79,22 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	Vk.Phd.enumerate ist >>= \[pd] -> printPhdPrps pd sfc >>= \qfi ->
 	createLgDvc pd qfi \dv q -> createSwpch w sfc pd qfi dv \sc ex ->
-	Vk.Khr.Swpch.getImages dv sc >>= \scis -> -- createImgVws dv scis \scvs ->
+	Vk.Khr.Swpch.getImages dv sc >>= \scis0 -> -- createImgVws dv scis \scvs ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
 	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
---	draw dv sc scis q cbs soss 0 0 >>
---	draw dv sc scis q cbs soss 1 120 >>
-	(($ 0) $ fix \go fn -> do
+	(($ scis0) . ($ 0) $ fix \go fn scis -> do
+		catchAndRecreate w sfc pd qfi dv sc (go $ fn + 1)
+			$ draw dv sc scis q cbs soss (fn `mod` 2) fn
 		GlfwG.pollEvents
-		draw dv sc scis q cbs soss (fn `mod` 2) fn
-		GlfwG.Win.shouldClose w >>= \case False -> go (fn + 1); True -> pure ()
+		sz <- checkFlag fr
+		GlfwG.Win.shouldClose w >>= \case
+			False -> if sz
+				then do
+					when sz . void $ recreateAll w sfc pd qfi dv sc
+					go (fn + 1) =<< Vk.Khr.Swpch.getImages dv sc
+				else go (fn + 1) scis
+			True -> pure ()
 		) >>
 	Vk.Dvc.waitIdle dv
 	where
@@ -111,7 +120,7 @@ initWindow fr g = do
 		w (Just . const3 $ writeIORef fr True)
 	where
 	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
-	sizeName = ((800, 600), "Vulkan Guide Drawing With Compute")
+	sizeName = ((800, 600), "Vulkan Guide Initializing")
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
@@ -435,6 +444,31 @@ createSyncObjs dv f =
 	where
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
+catchAndRecreate :: Vk.T.FormatToValue fmt =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> Vk.QFm.Index ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
+	([Vk.Img.Binded ssc ssc nm fmt] -> IO ()) -> IO () -> IO ()
+catchAndRecreate w sfc pd qfis dv sc go act = catchJust
+	(\case	Vk.ErrorOutOfDateKhr -> Just ()
+		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
+	\_ -> do
+		_ <- recreateAll w sfc pd qfis dv sc
+		go =<< Vk.Khr.Swpch.getImages dv sc
+
+recreateAll :: Vk.T.FormatToValue fmt =>
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> Vk.QFm.Index ->
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
+	IO Vk.Extent2d
+recreateAll w sfc pd qfis dv sc = do
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
+	recreateSwpch w sfc pd qfis dv sc
+
+waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
+waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
+	when (zero sz) $ fix \go -> (`when` go) . zero =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
+	where zero = uncurry (||) . ((== 0) *** (== 0))
+
 draw :: forall sd scfmt ssc ss inm scbs ssos .
 	Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] -> Vk.Q.Q ->
@@ -445,14 +479,16 @@ draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 	HPList.index scss cf \scs -> HPList.index rss cf \rs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
 	Vk.Fence.waitForFs dv rf' True (Just 1) >> Vk.Fence.resetFs dv rf' >>
-	Vk.Khr.acquireNextImage dv sc maxBound (Just scs) Nothing >>= \ii ->
-	print ii >>
+	Vk.Khr.acquireNextImageResult
+		[Vk.Success, Vk.SuboptimalKhr]
+		dv sc maxBound (Just scs) Nothing >>= \ii ->
+--	print ii >>
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 --		let	flash = sin (fromIntegral fn / 120) / 2 + 0.5
 		let	flash = sin (fromIntegral fn / 720) / 2 + 0.5
-		print flash
+--		print flash
 		let	clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
 			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
 		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
