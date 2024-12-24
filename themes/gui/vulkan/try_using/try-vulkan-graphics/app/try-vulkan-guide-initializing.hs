@@ -187,7 +187,7 @@ printPhdPrps pd sfc = do
 		TMaybe.J v13fs = Vk.Phd.vulkan12FeaturesNext v12fs
 		qi0 = fst $ head qfs
 	putStrLn $ "API Version          : " ++
-		show (Vk.Phd.propertiesApiVersion prps)
+		show (Vk.fromApiVersion $ Vk.Phd.propertiesApiVersion prps)
 	putStrLn $ "Dynamic Rendering    : " ++
 		show (Vk.Phd.vulkan13FeaturesDynamicRendering v13fs)
 	putStrLn $ "Synchronization 2    : " ++
@@ -203,8 +203,8 @@ printPhdPrps pd sfc = do
 createLgDvc :: Vk.Phd.P -> Vk.QFm.Index ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> IO a) -> IO a
 createLgDvc pd qfi act = hetero qinfo [qfi] \qs ->
-	Vk.Dvc.create pd (info qs) nil \dv -> act dv
-		=<< Vk.Dvc.getQueue dv qfi 0
+	Vk.Dvc.create pd (info qs) nil \dv ->
+	act dv =<< Vk.Dvc.getQueue dv qfi 0
 	where
 	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
 		HPList.ToListWithCM' WithPoked TMaybe.M ss =>

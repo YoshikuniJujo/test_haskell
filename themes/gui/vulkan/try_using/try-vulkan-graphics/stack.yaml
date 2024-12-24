@@ -60,14 +60,14 @@ extra-deps:
   - themes/gui/vulkan/try-glfw-group
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-  # - git: https://github.com/YoshikuniJujo/gpu-vulkan
-  # commit: 11c13f34c89ae5205848d4dd5a86e9677484ab49
-  # - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
-  # commit: f87516923cb2ddc95df2ba0c51af87964045d228
+- git: https://github.com/YoshikuniJujo/gpu-vulkan
+  commit: df38450a6c9f23eb4b04bf6dad188df7d834fac4
+- git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
+  commit: cc70b7ea95d10e8eb3e36b2ad3aebf467bf22492
   # - git: https://github.com/YoshikuniJujo/gpu-vulkan-core.git
   # commit: bd342f2870f6c8c3fe47ed203871209c8e93dc26
-- gpu-vulkan-0.1.0.162
-- gpu-vulkan-middle-0.1.0.67
+  # - gpu-vulkan-0.1.0.162
+  #- gpu-vulkan-middle-0.1.0.67
 - gpu-vulkan-core-0.1.0.19
 - language-spir-v-0.1.0.1
 - shaderc-0.1.0.5
