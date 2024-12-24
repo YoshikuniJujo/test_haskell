@@ -594,3 +594,19 @@ imageCreateInfo usageFlags extent = Vk.Img.CreateInfo {
 	Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Img.createInfoQueueFamilyIndices = [],
 	Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
+
+imageViewCreateInfo ::
+	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
+imageViewCreateInfo image aspectFlags = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = image,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = aspectFlags,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 } }
