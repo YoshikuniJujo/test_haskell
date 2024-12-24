@@ -78,20 +78,20 @@ main :: IO ()
 main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	Vk.Khr.Sfc.Glfw.Win.create ist w nil \sfc ->
 	Vk.Phd.enumerate ist >>= \[pd] -> printPhdPrps pd sfc >>= \qfi ->
-	createLgDvc pd qfi \dv q -> createSwpch w sfc pd qfi dv \sc ex ->
+	createLgDvc pd qfi \dv q -> createSwpch w sfc pd dv \sc ex ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis0 -> -- createImgVws dv scis \scvs ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
-	createCmdBffrs dv cps \cbs@(cb1 :** cb2 :** HPList.Nil) ->
+	createCmdBffrs dv cps \cbs ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
 	(($ scis0) . ($ 0) $ fix \go fn scis -> do
-		catchAndRecreate w sfc pd qfi dv sc (go $ fn + 1)
+		catchAndRecreate w sfc pd dv sc (go $ fn + 1)
 			$ draw dv sc scis q cbs soss (fn `mod` 2) fn
 		GlfwG.pollEvents
 		sz <- checkFlag fr
 		GlfwG.Win.shouldClose w >>= \case
 			False -> if sz
 				then do
-					when sz . void $ recreateAll w sfc pd qfi dv sc
+					when sz . void $ recreateAll w sfc pd dv sc
 					go (fn + 1) =<< Vk.Khr.Swpch.getImages dv sc
 				else go (fn + 1) scis
 			True -> pure ()
@@ -245,10 +245,10 @@ features13 = (Vk.Phd.vulkan13FeaturesZero TMaybe.N) {
 	Vk.Phd.vulkan13FeaturesSynchronization2 = True }
 
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	Vk.QFm.Index -> Vk.Dvc.D sd -> (forall ss scfmt .
+	Vk.Dvc.D sd -> (forall ss scfmt .
 		Vk.T.FormatToValue scfmt =>
 		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
-createSwpch win sfc pd qfi dv f = querySwpchSupport pd sfc \ss -> do
+createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
 	ex <- swapExtent win $ capabilities ss
 	let	cps = capabilities ss
 		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
@@ -256,7 +256,7 @@ createSwpch win sfc pd qfi dv f = querySwpchSupport pd sfc \ss -> do
 	chooseSwpSfcFmt (formats ss)
 		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
 		Vk.Khr.Swpch.create @_ @fmt dv
-			(swpchInfo sfc qfi cps sc pm ex) nil (`f` ex)
+			(swpchInfo sfc cps sc pm ex) nil (`f` ex)
 
 data SwpchSupportDetails fmts = SwpchSupportDetails {
 	capabilities :: Vk.Khr.Sfc.Capabilities,
@@ -288,8 +288,8 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 recreateSwpch :: forall sw ssfc sd fmt ssc . Vk.T.FormatToValue fmt =>
 	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	Vk.QFm.Index -> Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
-recreateSwpch win sfc phdvc qfi dvc sc = do
+	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc -> IO Vk.Extent2d
+recreateSwpch win sfc phdvc dvc sc = do
 	ss <- querySwpchSupportFmt @fmt phdvc sfc
 	ex <- swapExtent win $ capabilitiesFmt ss
 	let	cps = capabilitiesFmt ss
@@ -299,7 +299,7 @@ recreateSwpch win sfc phdvc qfi dvc sc = do
 		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
 			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModesFmt ss
 	ex <$ Vk.Khr.Swpch.unsafeRecreate dvc
-		(swpchInfo @fmt sfc qfi cps cs pm ex) nil sc
+		(swpchInfo @fmt sfc cps cs pm ex) nil sc
 
 data SwpchSupportDetailsFmt fmt = SwpchSupportDetailsFmt {
 	capabilitiesFmt :: Vk.Khr.Sfc.Capabilities,
@@ -327,10 +327,10 @@ swapExtent win cps
 	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
 
 swpchInfo :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> Vk.QFm.Index -> Vk.Khr.Sfc.Capabilities ->
+	Vk.Khr.Sfc.S ss -> Vk.Khr.Sfc.Capabilities ->
 	Vk.Khr.Sfc.ColorSpace -> Vk.Khr.Sfc.PresentMode -> Vk.Extent2d ->
 	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-swpchInfo sfc qfis0 cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
+swpchInfo sfc cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
 	Vk.Khr.Swpch.createInfoFlags = zeroBits,
 	Vk.Khr.Swpch.createInfoSurface = sfc,
@@ -445,23 +445,23 @@ createSyncObjs dv f =
 	finfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 catchAndRecreate :: Vk.T.FormatToValue fmt =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> Vk.QFm.Index ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
 	([Vk.Img.Binded ssc ssc nm fmt] -> IO ()) -> IO () -> IO ()
-catchAndRecreate w sfc pd qfis dv sc go act = catchJust
+catchAndRecreate w sfc pd dv sc go act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just (); _ -> Nothing) act
 	\_ -> do
-		_ <- recreateAll w sfc pd qfis dv sc
+		_ <- recreateAll w sfc pd dv sc
 		go =<< Vk.Khr.Swpch.getImages dv sc
 
 recreateAll :: Vk.T.FormatToValue fmt =>
-	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> Vk.QFm.Index ->
+	GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Khr.Swpch.S fmt ssc ->
 	IO Vk.Extent2d
-recreateAll w sfc pd qfis dv sc = do
+recreateAll w sfc pd dv sc = do
 	waitFramebufferSize w >> Vk.Dvc.waitIdle dv
-	recreateSwpch w sfc pd qfis dv sc
+	recreateSwpch w sfc pd dv sc
 
 waitFramebufferSize :: GlfwG.Win.W sw -> IO ()
 waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
@@ -482,21 +482,17 @@ draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 	Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr]
 		dv sc maxBound (Just scs) Nothing >>= \ii ->
---	print ii >>
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 --		let	flash = sin (fromIntegral fn / 120) / 2 + 0.5
 		let	flash = sin (fromIntegral fn / 720) / 2 + 0.5
---		print flash
-		let	clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
+			clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
 			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
 		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral Vk.Img.LayoutPresentSrcKhr
 	>>
---	Vk.Q.submit q (HPList.Singleton . U4 $ sinfo cb scs) Nothing -- $ Just iff
-	Vk.Q.submit2 q (HPList.Singleton . U4 $ submit cb scs rs) (Just rf) -- Nothing -- $ Just iff
---	pure ()
+	Vk.Q.submit2 q (HPList.Singleton . U4 $ submit cb scs rs) (Just rf)
 	>>
 	catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing q $ pinfo ii rs)
 	where
@@ -504,19 +500,10 @@ draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
---	siff = HPList.Singleton iff
-	sinfo :: forall s sscs . Vk.CmdBffr.C s -> Vk.Semaphore.S sscs -> Vk.SubmitInfo 'Nothing '[sscs] '[s] '[]
-	sinfo cb scs = Vk.SubmitInfo {
-		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks =
-			HPList.Singleton $ Vk.SemaphorePipelineStageFlags
-				scs Vk.Ppl.StageColorAttachmentOutputBit,
-		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Nil } -- HPList.Singleton rfs }
 	pinfo :: forall s . Word32 -> Vk.Semaphore.S s -> Vk.Khr.Swpch.PresentInfo 'Nothing '[s] scfmt '[ssc]
 	pinfo ii rs = Vk.Khr.Swpch.PresentInfo {
 		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
-		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rs, -- HPList.Nil, -- HPList.Singleton rfs,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rs,
 		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 	submit cb scs rs = submitInfo (cmdinfo cb) (signalinfo rs) (waitinfo scs)
