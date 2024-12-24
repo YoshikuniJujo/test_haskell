@@ -60,6 +60,7 @@ import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
+import Gpu.Vulkan.Sample qualified as Vk.Smp
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 
@@ -577,3 +578,19 @@ imageSubresourceRange am = Vk.Img.SubresourceRange {
 	Vk.Img.subresourceRangeLevelCount = 1,
 	Vk.Img.subresourceRangeBaseArrayLayer = 0,
 	Vk.Img.subresourceRangeLayerCount = 1 }
+
+imageCreateInfo ::
+	Vk.Img.UsageFlags -> Vk.Extent3d -> Vk.Img.CreateInfo 'Nothing fmt
+imageCreateInfo usageFlags extent = Vk.Img.CreateInfo {
+	Vk.Img.createInfoNext = TMaybe.N,
+	Vk.Img.createInfoFlags = zeroBits,
+	Vk.Img.createInfoImageType = Vk.Img.Type2d,
+	Vk.Img.createInfoExtent = extent,
+	Vk.Img.createInfoMipLevels = 1,
+	Vk.Img.createInfoArrayLayers = 1,
+	Vk.Img.createInfoSamples = Vk.Smp.Count1Bit,
+	Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
+	Vk.Img.createInfoUsage = usageFlags,
+	Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Img.createInfoQueueFamilyIndices = [],
+	Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
