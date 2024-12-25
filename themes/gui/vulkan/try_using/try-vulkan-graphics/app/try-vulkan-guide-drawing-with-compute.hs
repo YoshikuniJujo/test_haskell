@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
@@ -43,6 +44,10 @@ import Data.Color
 import Data.IORef
 import Data.IORef.ToolsYj
 
+import Language.SpirV qualified as SpirV
+import Language.SpirV.Shaderc.TH
+import Language.SpirV.ShaderKind
+
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 
@@ -63,8 +68,18 @@ import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Fence qualified as Vk.Fence
 import Gpu.Vulkan.Semaphore qualified as Vk.Semaphore
 import Gpu.Vulkan.Sample qualified as Vk.Smp
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
+
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShdrMd
 
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cp
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
@@ -88,9 +103,12 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
 	createCmdBffrs dv cps \cbs ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
+	createCmpPpl dv \dsl pl ppl ->
+	createDscPl dv \dp ->
+	createDscSt dv dp dimgvw dsl \ds ->
 	(($ scis0) . ($ 0) $ fix \go fn scis -> do
 		catchAndRecreate w sfc pd dv sc (go $ fn + 1)
-			$ draw dv sc scis q cbs dimg ex soss (fn `mod` 2) fn
+			$ draw dv sc scis q cbs dimg ex soss pl ppl ds (fn `mod` 2) fn
 		GlfwG.pollEvents
 		sz <- checkFlag fr
 		GlfwG.Win.shouldClose w >>= \case
@@ -476,12 +494,16 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-draw :: forall sd scfmt ssc ss inm scbs ssos smd sid nmd fmtd .
+draw :: forall sd scfmt ssc ss inm scbs ssos smd sid nmd fmtd  spl sds scppl sds1 .
 	Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] -> Vk.Q.Q ->
 	HPList.PL Vk.CmdBffr.C scbs -> Vk.Img.Binded smd sid nmd fmtd -> Vk.Extent2d ->
-	SyncObjs ssos -> Int -> Int -> IO ()
-draw dv sc scis q cbs di ex (SyncObjs scss rss  rfs) cf fn =
+	SyncObjs ssos ->
+	Vk.PplLyt.P spl '[ '(sds, DscStLytArg)] '[] ->
+	Vk.Ppl.Cp.C scppl '(spl, '[ '(sds, DscStLytArg)], '[]) ->
+	Vk.DscSt.D sds1 '(sds, '[TxImg]) ->
+	Int -> Int -> IO ()
+draw dv sc scis q cbs di ex (SyncObjs scss rss  rfs) pl ppl ds cf fn =
 	HPList.index cbs cf \cb ->
 	HPList.index scss cf \scs -> HPList.index rss cf \rs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
@@ -496,8 +518,14 @@ draw dv sc scis q cbs di ex (SyncObjs scss rss  rfs) cf fn =
 			clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
 			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
 		transitionImage cb di Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
-		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb di Vk.Img.LayoutGeneral clearValue [clearRange]
---		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
+--		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb di Vk.Img.LayoutGeneral clearValue [clearRange]
+		Vk.Cmd.bindPipelineCompute
+			cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute
+				ccb pl (HPList.Singleton $ U2 ds) def
+			Vk.Cmd.dispatch ccb
+				(Vk.extent2dWidth ex `div` 16)
+				(Vk.extent2dHeight ex `div` 16) 1
 		transitionImage cb di Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImageToImage cb di (scis !! fromIntegral ii) ex ex
@@ -687,3 +715,124 @@ colorLayer0 = Vk.Img.SubresourceLayers {
 	Vk.Img.subresourceLayersMipLevel = 0,
 	Vk.Img.subresourceLayersBaseArrayLayer = 0,
 	Vk.Img.subresourceLayersLayerCount = 1 }
+
+createDscStLyt :: Vk.Dvc.D sd ->
+	(forall (s :: Type) . Vk.DscStLyt.D s DscStLytArg -> IO a) -> IO a
+createDscStLyt dv = Vk.DscStLyt.create dv info nil
+	where
+	info = Vk.DscStLyt.CreateInfo {
+		Vk.DscStLyt.createInfoNext = TMaybe.N,
+		Vk.DscStLyt.createInfoFlags = zeroBits,
+		Vk.DscStLyt.createInfoBindings = tbd :** HPList.Nil }
+	tbd = Vk.DscStLyt.BindingImage {
+		Vk.DscStLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeStorageImage,
+		Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
+
+type DscStLytArg = '[TxImg]
+type TxImg = 'Vk.DscStLyt.Image '[ '("texture", 'Vk.T.FormatR16g16b16a16Sfloat)]
+
+createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDscPl dv = Vk.DscPl.create dv info nil
+	where
+	info = Vk.DscPl.CreateInfo {
+		Vk.DscPl.createInfoNext = TMaybe.N,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+		Vk.DscPl.createInfoMaxSets = 10,
+		Vk.DscPl.createInfoPoolSizes = [sz] }
+	sz = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageImage,
+		Vk.DscPl.sizeDescriptorCount = 1 }
+
+createDscSt ::
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.ImgVw.I "texture" 'Vk.T.FormatR16g16b16a16Sfloat siv ->
+	Vk.DscStLyt.D sdsl '[TxImg] ->
+	(forall sds . Vk.DscSt.D sds
+		'(sdsl, '[TxImg]) -> IO a) -> IO a
+createDscSt dv dp tv dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
+	$ Vk.DscSt.updateDs dv (
+		U5 (dscWriteTxImg ds tv) :** HPList.Nil ) HPList.Nil
+	where info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
+
+dscWriteTxImg :: Vk.DscSt.D sds slbts -> Vk.ImgVw.I nm fmt si ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
+dscWriteTxImg ds v = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageImage,
+	Vk.DscSt.writeSources = Vk.DscSt.ImageInfos . HPList.Singleton
+		$ U4 Vk.Dsc.ImageInfo {
+			Vk.Dsc.imageInfoImageLayout = Vk.Img.LayoutGeneral,
+			Vk.Dsc.imageInfoImageView = v,
+			Vk.Dsc.imageInfoSampler = Vk.Smplr.Null } }
+
+createPplLyt :: forall sd a . Vk.Dvc.D sd -> (forall sl sdsl .
+	Vk.DscStLyt.D sdsl DscStLytArg ->
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg)] '[] -> IO a) -> IO a
+createPplLyt dv f = createDscStLyt dv \dsl ->
+	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
+	where info dsl = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
+createCmpPpl :: Vk.Dvc.D sd -> (forall sds scppl spl .
+	Vk.DscStLyt.D sds DscStLytArg ->
+	Vk.PplLyt.P spl '[ '(sds, DscStLytArg)] '[] ->
+	Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, DscStLytArg)], '[]) ->
+	IO a) -> IO a
+createCmpPpl d f = createPplLyt d \dsl pl ->
+	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
+		\(HPList.Singleton p) -> f dsl pl p
+	where
+	info pl = Vk.Ppl.Cp.CreateInfo {
+		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
+		Vk.Ppl.Cp.createInfoFlags = zeroBits,
+		Vk.Ppl.Cp.createInfoStage = U5 shdrst,
+		Vk.Ppl.Cp.createInfoLayout = U3 pl,
+		Vk.Ppl.Cp.createInfoBasePipelineHandleOrIndex = Nothing }
+	shdrst :: Vk.Ppl.ShdrSt.CreateInfo
+		'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
+	shdrst = Vk.Ppl.ShdrSt.CreateInfo {
+		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
+		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageComputeBit,
+		Vk.Ppl.ShdrSt.createInfoModule =
+			(shdrMdInfo glslComputeShaderMain, nil),
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+
+shdrMdInfo :: SpirV.S sknd -> Vk.ShdrMd.CreateInfo 'Nothing sknd
+shdrMdInfo cd = Vk.ShdrMd.CreateInfo {
+	Vk.ShdrMd.createInfoNext = TMaybe.N,
+	Vk.ShdrMd.createInfoFlags = zeroBits, Vk.ShdrMd.createInfoCode = cd }
+
+[glslComputeShader|
+
+#version 460
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f,set = 0, binding = 0) uniform image2D image;
+
+void
+main()
+{
+	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 size = imageSize(image);
+
+	if (texelCoord.x < size.x && texelCoord.y < size.y) {
+		vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
+
+		if (gl_LocalInvocationID.x != 0 && gl_LocalInvocationID.y != 0) {
+			color.x = float(texelCoord.x) / (size.x);
+			color.y = float(texelCoord.y) / (size.y); }
+		imageStore(image, texelCoord, color); }
+}
+
+|]
