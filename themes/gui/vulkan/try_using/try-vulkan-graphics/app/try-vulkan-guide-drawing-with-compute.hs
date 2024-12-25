@@ -625,15 +625,20 @@ drawImageUsages =
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.UsageFlags -> Vk.Extent2d ->
 	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
-prepareImg pd dv us Vk.Extent2d {
-	Vk.extent2dWidth = w,
-	Vk.extent2dHeight = h} f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+prepareImg pd dv us ex f = Vk.Img.create @'Nothing dv (drawImageInfo ex us) nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
 		nil \(HPList.Singleton (U2 (Vk.Mm.ImageBinded bd))) _ -> f bd
 	where
-	iinfo = Vk.Img.CreateInfo {
+	minfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+drawImageInfo ::
+	Vk.Extent2d -> Vk.Img.UsageFlags -> Vk.Img.CreateInfo 'Nothing fmt
+drawImageInfo Vk.Extent2d { Vk.extent2dWidth = w, Vk.extent2dHeight = h } us =
+	Vk.Img.CreateInfo {
 		Vk.Img.createInfoNext = TMaybe.N,
 		Vk.Img.createInfoFlags = zeroBits,
 		Vk.Img.createInfoImageType = Vk.Img.Type2d,
@@ -648,9 +653,6 @@ prepareImg pd dv us Vk.Extent2d {
 		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Img.createInfoQueueFamilyIndices = [],
 		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
-	minfo mt = Vk.Mm.AllocateInfo {
-		Vk.Mm.allocateInfoNext = TMaybe.N,
-		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
 findMmType ::
 	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
