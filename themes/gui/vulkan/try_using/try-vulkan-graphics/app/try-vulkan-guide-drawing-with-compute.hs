@@ -23,6 +23,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Ord.ToolsYj
 import Data.Bits
+import Data.Bits.ToolsYj
 import Data.Function.ToolsYj
 import Data.Default
 import Data.Tuple.ToolsYj
@@ -53,6 +54,7 @@ import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFm
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.Device qualified as Vk.Dvc
+import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
@@ -81,12 +83,14 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 	Vk.Phd.enumerate ist >>= \[pd] -> printPhdPrps pd sfc >>= \qfi ->
 	createLgDvc pd qfi \dv q -> createSwpch w sfc pd dv \sc ex ->
 	Vk.Khr.Swpch.getImages dv sc >>= \scis0 -> -- createImgVws dv scis \scvs ->
+	prepareImg @DrawFormat pd dv drawImageUsages ex \dimg ->
+	Vk.ImgVw.create @_ @DrawFormat dv (imageViewCreateInfo dimg Vk.Img.AspectColorBit) nil \dimgvw ->
 	HPList.replicateM frameOverlap (createCmdPl qfi dv) \cps ->
 	createCmdBffrs dv cps \cbs ->
 	createSyncObjs @'[ '(), '()] dv \soss ->
 	(($ scis0) . ($ 0) $ fix \go fn scis -> do
 		catchAndRecreate w sfc pd dv sc (go $ fn + 1)
-			$ draw dv sc scis q cbs soss (fn `mod` 2) fn
+			$ draw dv sc scis q cbs dimg ex soss (fn `mod` 2) fn
 		GlfwG.pollEvents
 		sz <- checkFlag fr
 		GlfwG.Win.shouldClose w >>= \case
@@ -103,6 +107,8 @@ main = newIORef False >>= \fr -> withWindow fr \w -> createIst \ist ->
 		Vk.Phd.Features2 (TMaybe.J v1213fs) _fs <- Vk.Phd.getFeatures2
 			@('Just (Vk.Phd.Vulkan12Features ('Just (Vk.Phd.Vulkan13Features 'Nothing)))) pd
 		pure v1213fs
+
+type DrawFormat = Vk.T.FormatR16g16b16a16Sfloat
 
 frameOverlap :: Int
 frameOverlap = 2
@@ -470,12 +476,12 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-draw :: forall sd scfmt ssc ss inm scbs ssos .
+draw :: forall sd scfmt ssc ss inm scbs ssos smd sid nmd fmtd .
 	Vk.Dvc.D sd ->
 	Vk.Khr.Swpch.S scfmt ssc -> [Vk.Img.Binded ss ss inm scfmt] -> Vk.Q.Q ->
-	HPList.PL Vk.CmdBffr.C scbs ->
+	HPList.PL Vk.CmdBffr.C scbs -> Vk.Img.Binded smd sid nmd fmtd -> Vk.Extent2d ->
 	SyncObjs ssos -> Int -> Int -> IO ()
-draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
+draw dv sc scis q cbs di ex (SyncObjs scss rss  rfs) cf fn =
 	HPList.index cbs cf \cb ->
 	HPList.index scss cf \scs -> HPList.index rss cf \rs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
@@ -485,13 +491,17 @@ draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 		dv sc maxBound (Just scs) Nothing >>= \ii ->
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
-		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 --		let	flash = sin (fromIntegral fn / 120) / 2 + 0.5
 		let	flash = sin (fromIntegral fn / 720) / 2 + 0.5
 			clearValue = Vk.ClearValueColor . fromJust $ rgbaDouble 0 0 flash 1
 			clearRange = imageSubresourceRange Vk.Img.AspectColorBit
-		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
-		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral Vk.Img.LayoutPresentSrcKhr
+		transitionImage cb di Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
+		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb di Vk.Img.LayoutGeneral clearValue [clearRange]
+--		Vk.Cmd.clearColorImage @Vk.ClearColorTypeFloat32 cb (scis !! fromIntegral ii) Vk.Img.LayoutGeneral clearValue [clearRange]
+		transitionImage cb di Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyImageToImage cb di (scis !! fromIntegral ii) ex ex
+		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
 	>>
 	Vk.Q.submit2 q (HPList.Singleton . U4 $ submit cb scs rs) (Just rf)
 	>>
@@ -543,7 +553,7 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-transitionImage :: Vk.CmdBffr.C scb -> Vk.Img.Binded ss ss inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImage :: Vk.CmdBffr.C scb -> Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
 transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
 	where
 	depInfo = Vk.DependencyInfo {
@@ -579,21 +589,51 @@ imageSubresourceRange am = Vk.Img.SubresourceRange {
 	Vk.Img.subresourceRangeBaseArrayLayer = 0,
 	Vk.Img.subresourceRangeLayerCount = 1 }
 
-imageCreateInfo ::
-	Vk.Img.UsageFlags -> Vk.Extent3d -> Vk.Img.CreateInfo 'Nothing fmt
-imageCreateInfo usageFlags extent = Vk.Img.CreateInfo {
-	Vk.Img.createInfoNext = TMaybe.N,
-	Vk.Img.createInfoFlags = zeroBits,
-	Vk.Img.createInfoImageType = Vk.Img.Type2d,
-	Vk.Img.createInfoExtent = extent,
-	Vk.Img.createInfoMipLevels = 1,
-	Vk.Img.createInfoArrayLayers = 1,
-	Vk.Img.createInfoSamples = Vk.Smp.Count1Bit,
-	Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
-	Vk.Img.createInfoUsage = usageFlags,
-	Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
-	Vk.Img.createInfoQueueFamilyIndices = [],
-	Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
+drawImageUsages :: Vk.Img.UsageFlags
+drawImageUsages =
+	Vk.Img.UsageTransferSrcBit .|. Vk.Img.UsageTransferDstBit .|.
+	Vk.Img.UsageStorageBit .|. Vk.Img.UsageColorAttachmentBit
+
+prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.UsageFlags -> Vk.Extent2d ->
+	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
+prepareImg pd dv us Vk.Extent2d {
+	Vk.extent2dWidth = w,
+	Vk.extent2dHeight = h} f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+	rqs <- Vk.Img.getMemoryRequirements dv i
+	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
+	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
+		nil \(HPList.Singleton (U2 (Vk.Mm.ImageBinded bd))) _ -> f bd
+	where
+	iinfo = Vk.Img.CreateInfo {
+		Vk.Img.createInfoNext = TMaybe.N,
+		Vk.Img.createInfoFlags = zeroBits,
+		Vk.Img.createInfoImageType = Vk.Img.Type2d,
+		Vk.Img.createInfoExtent = Vk.Extent3d {
+			Vk.extent3dWidth = w, Vk.extent3dHeight = h,
+			Vk.extent3dDepth = 1 },
+		Vk.Img.createInfoMipLevels = 1,
+		Vk.Img.createInfoArrayLayers = 1,
+		Vk.Img.createInfoSamples = Vk.Smp.Count1Bit,
+		Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
+		Vk.Img.createInfoUsage = us,
+		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Img.createInfoQueueFamilyIndices = [],
+		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
+	minfo mt = Vk.Mm.AllocateInfo {
+		Vk.Mm.allocateInfoNext = TMaybe.N,
+		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
+
+findMmType ::
+	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmType pd tbs prs =
+	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
+	where
+	msg = "failed to find suitable memory type!"
+	suit p = fst <$> L.find ((&&)
+		<$> (`Vk.Mm.elemTypeIndex` tbs) . fst
+		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
+			(Vk.Phd.memoryPropertiesMemoryTypes p)
 
 imageViewCreateInfo ::
 	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
@@ -610,3 +650,40 @@ imageViewCreateInfo image aspectFlags = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 } }
+
+copyImageToImage :: Vk.CmdBffr.C scb ->
+	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
+	Vk.Extent2d -> Vk.Extent2d -> IO ()
+copyImageToImage cmd source destination
+	Vk.Extent2d {
+		Vk.extent2dWidth = fromIntegral -> sw,
+		Vk.extent2dHeight = fromIntegral -> sh }
+	Vk.Extent2d {
+		Vk.extent2dWidth = fromIntegral -> dw,
+		Vk.extent2dHeight = fromIntegral -> dh } = Vk.Cmd.blitImage2 cmd blitInfo
+	where
+	blitInfo = Vk.BlitImageInfo2 {
+		Vk.blitImageInfo2Next = TMaybe.N,
+		Vk.blitImageInfo2SrcImage = source,
+		Vk.blitImageInfo2SrcImageLayout =
+			Vk.Img.LayoutTransferSrcOptimal,
+		Vk.blitImageInfo2DstImage = destination,
+		Vk.blitImageInfo2DstImageLayout =
+			Vk.Img.LayoutTransferDstOptimal,
+		Vk.blitImageInfo2Regions = HPList.Singleton blitRegion,
+		Vk.blitImageInfo2Filter = Vk.FilterLinear }
+	blitRegion = Vk.Img.Blit2 {
+		Vk.Img.blit2Next = TMaybe.N,
+		Vk.Img.blit2SrcSubresource = colorLayer0,
+		Vk.Img.blit2SrcOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blit2SrcOffsetTo = Vk.Offset3d sw sh 1,
+		Vk.Img.blit2DstSubresource = colorLayer0,
+		Vk.Img.blit2DstOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blit2DstOffsetTo = Vk.Offset3d dw dh 1 }
+
+colorLayer0 :: Vk.Img.SubresourceLayers
+colorLayer0 = Vk.Img.SubresourceLayers {
+	Vk.Img.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
+	Vk.Img.subresourceLayersMipLevel = 0,
+	Vk.Img.subresourceLayersBaseArrayLayer = 0,
+	Vk.Img.subresourceLayersLayerCount = 1 }

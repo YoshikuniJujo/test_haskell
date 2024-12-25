@@ -185,34 +185,38 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
-    commit: df38450a6c9f23eb4b04bf6dad188df7d834fac4
+    commit: e91302adfef66911b884b78ae6dbb0667d05c4f7
     git: https://github.com/YoshikuniJujo/gpu-vulkan
     name: gpu-vulkan
     pantry-tree:
-      sha256: 3a83ae8a263d9511190354643a325f8c5a1d2ce9c1a40a0616d063410515a746
+      sha256: 3b0e613a20786ae8be273239a3b0620410e3cda530f06e1d4bd2ad883eb55b4b
       size: 12585
     version: 0.1.0.163
   original:
-    commit: df38450a6c9f23eb4b04bf6dad188df7d834fac4
+    commit: e91302adfef66911b884b78ae6dbb0667d05c4f7
     git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
-    commit: cc70b7ea95d10e8eb3e36b2ad3aebf467bf22492
+    commit: 0b5d96bf4f0988d9c172babfb077e1357b2bc40f
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
     name: gpu-vulkan-middle
     pantry-tree:
-      sha256: 5c6741a92046f47e14108f183dbe084b17f933fd047fdd807dc42d985af575cf
+      sha256: 389471c934aa795fb3291452053b8a91a09bc091d4f7173ffc295f4393b4b0c0
       size: 15963
     version: 0.1.0.69
   original:
-    commit: cc70b7ea95d10e8eb3e36b2ad3aebf467bf22492
+    commit: 0b5d96bf4f0988d9c172babfb077e1357b2bc40f
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.19@sha256:7afd7c263bff805cd6dfef5fea1948f2ff852a3d3f6a6fe4186e5ecbd84c3428,3475
+    commit: 3f61d72650740e36644ce87d4f6546390b324b46
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-core.git
+    name: gpu-vulkan-core
     pantry-tree:
-      sha256: a1043a109e33396c060ede527e95794187232e62140b95b7539607a87294b343
-      size: 5152
+      sha256: 8cdcd3a7ceb6bc0e68dea8af8815ef3396829da2668325202debe8ebce431f7d
+      size: 5554
+    version: 0.1.0.19
   original:
-    hackage: gpu-vulkan-core-0.1.0.19
+    commit: 3f61d72650740e36644ce87d4f6546390b324b46
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-core.git
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
