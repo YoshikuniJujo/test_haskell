@@ -185,38 +185,26 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
-    commit: e91302adfef66911b884b78ae6dbb0667d05c4f7
-    git: https://github.com/YoshikuniJujo/gpu-vulkan
-    name: gpu-vulkan
+    hackage: gpu-vulkan-0.1.0.164@sha256:0c105536342b6337cea20b03932f12c2ae9c9ffe684e88755ea52311f32c7c75,7927
     pantry-tree:
-      sha256: 3b0e613a20786ae8be273239a3b0620410e3cda530f06e1d4bd2ad883eb55b4b
-      size: 12585
-    version: 0.1.0.163
+      sha256: 4073baedff08824f3f12d65479e19d35f5699c6e8d2cf097c9bd525068bd9757
+      size: 11903
   original:
-    commit: e91302adfef66911b884b78ae6dbb0667d05c4f7
-    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    hackage: gpu-vulkan-0.1.0.164
 - completed:
-    commit: 0b5d96bf4f0988d9c172babfb077e1357b2bc40f
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
-    name: gpu-vulkan-middle
+    hackage: gpu-vulkan-middle-0.1.0.70@sha256:3f9cda9ef33b54b7074ebba3aa99109a8527ecfd1635fb3e854e4e08eafe1390,9029
     pantry-tree:
-      sha256: 389471c934aa795fb3291452053b8a91a09bc091d4f7173ffc295f4393b4b0c0
-      size: 15963
-    version: 0.1.0.69
+      sha256: c46fa449f7ececdf1c82802e9155428172ce4733078c6708e74485f6fb08435a
+      size: 13400
   original:
-    commit: 0b5d96bf4f0988d9c172babfb077e1357b2bc40f
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
+    hackage: gpu-vulkan-middle-0.1.0.70
 - completed:
-    commit: 3f61d72650740e36644ce87d4f6546390b324b46
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-core.git
-    name: gpu-vulkan-core
+    hackage: gpu-vulkan-core-0.1.0.20@sha256:c23c2d9d2834c078f6dd1bed9d895bcd0f6655c98e6f70f5c3606dacc4571ec1,3475
     pantry-tree:
-      sha256: 8cdcd3a7ceb6bc0e68dea8af8815ef3396829da2668325202debe8ebce431f7d
-      size: 5554
-    version: 0.1.0.19
+      sha256: 9172eb514a5470ebb1801fa6435f7f0d0756d8266ad4be8b3439327a5d683ce4
+      size: 5152
   original:
-    commit: 3f61d72650740e36644ce87d4f6546390b324b46
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-core.git
+    hackage: gpu-vulkan-core-0.1.0.20
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
