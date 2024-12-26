@@ -507,7 +507,7 @@ draw dv sc scis q cbs di ex (SyncObjs scss rss  rfs) pl ppl ds cf fn =
 	HPList.index cbs cf \cb ->
 	HPList.index scss cf \scs -> HPList.index rss cf \rs ->
 	HPList.index rfs cf \rf -> let rf' = HPList.Singleton rf in
-	Vk.Fence.waitForFs dv rf' True (Just 1) >> Vk.Fence.resetFs dv rf' >>
+	Vk.Fence.waitForFs dv rf' True (Just $ Vk.Sec 1) >> Vk.Fence.resetFs dv rf' >>
 	Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr]
 		dv sc maxBound (Just scs) Nothing >>= \ii ->
