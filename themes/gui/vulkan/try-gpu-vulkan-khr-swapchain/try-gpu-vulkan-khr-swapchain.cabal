@@ -37,6 +37,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , fixed-generic
     , gpu-vulkan
     , hetero-parameter-list
     , stm
@@ -59,6 +60,7 @@ test-suite try-gpu-vulkan-khr-swapchain-test
   build-depends:
       base >=4.7 && <5
     , containers
+    , fixed-generic
     , gpu-vulkan
     , hetero-parameter-list
     , stm

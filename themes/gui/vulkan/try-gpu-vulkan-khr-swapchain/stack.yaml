@@ -49,10 +49,13 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
-- gpu-vulkan-0.1.0.159
-- gpu-vulkan-middle-0.1.0.64
-- gpu-vulkan-core-0.1.0.16
+- git: https://github.com/YoshikuniJujo/gpu-vulkan
+  commit: ee00cb894b0d75865fa4571525372c2ced67e4a6
+  # - gpu-vulkan-0.1.0.159
+- gpu-vulkan-middle-0.1.0.70
+- gpu-vulkan-core-0.1.0.20
 - language-spir-v-0.1.0.1
+- fixed-generic-0.1.0.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -48,6 +48,7 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Map qualified as Map
 import Data.Word
+import Data.Fixed.Generic qualified as FixedG
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Khr.Surface.Enum
@@ -238,11 +239,13 @@ swapchainImageIndexToMiddle (SwapchainImageIndex (S sc) idx) =
 	(sc, idx)
 
 acquireNextImage :: Device.D sd ->
-	S scfmt ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe (Fence.F sf) -> IO Word32
+	S scfmt ssc -> Maybe Sec -> Maybe (Semaphore.S ss) -> Maybe (Fence.F sf) -> IO Word32
 acquireNextImage = acquireNextImageResult [Success]
 
 acquireNextImageResult :: [Result] -> Device.D sd ->
-	S scfmt ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe (Fence.F sf) -> IO Word32
-acquireNextImageResult sccs (Device.D mdvc) (S msc) to msmp (((\(Fence.F f) -> f) <$>) -> mfnc) =
+	S scfmt ssc -> Maybe Sec -> Maybe (Semaphore.S ss) -> Maybe (Fence.F sf) -> IO Word32
+acquireNextImageResult sccs (Device.D mdvc) (S msc)
+	(maybe maxBound (\(Sec (FixedG.MkF ns)) -> ns) -> to)
+	msmp (((\(Fence.F f) -> f) <$>) -> mfnc) =
 	M.acquireNextImageResult
 		sccs mdvc msc to ((\(Semaphore.S smp) -> smp) <$> msmp) mfnc

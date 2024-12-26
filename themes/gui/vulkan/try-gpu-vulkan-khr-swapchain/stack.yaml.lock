@@ -70,26 +70,30 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
 - completed:
-    hackage: gpu-vulkan-0.1.0.159@sha256:96972b9a190c125faa91dc25b9e01a6dcc561ef5f67bdb77bc8d193dd5957385,7887
+    commit: ee00cb894b0d75865fa4571525372c2ced67e4a6
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    name: gpu-vulkan
     pantry-tree:
-      sha256: cb217f6d7377c4db3c8523e44f2a2bb27b7ac0209f8a5a68f904b8acc9677d72
-      size: 11743
+      sha256: cdcdcfb9c897336196bd66373a8b8828941efd9fa6ab72d019ee6df8c029c6a6
+      size: 12585
+    version: 0.1.0.164
   original:
-    hackage: gpu-vulkan-0.1.0.159
+    commit: ee00cb894b0d75865fa4571525372c2ced67e4a6
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.64@sha256:355a17ab50c89d38b5f368dd20da301014debc9b9faa689b663fea06fa92d460,9029
+    hackage: gpu-vulkan-middle-0.1.0.70@sha256:3f9cda9ef33b54b7074ebba3aa99109a8527ecfd1635fb3e854e4e08eafe1390,9029
     pantry-tree:
-      sha256: e67b29c02347f6049cd6ab8002e516687c20ceaa93fbc6276c1a425c018157c5
-      size: 13314
+      sha256: c46fa449f7ececdf1c82802e9155428172ce4733078c6708e74485f6fb08435a
+      size: 13400
   original:
-    hackage: gpu-vulkan-middle-0.1.0.64
+    hackage: gpu-vulkan-middle-0.1.0.70
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.16@sha256:80b1d9dddc1f2adcfaacb03776be062ee74c028d57b4115f5f114782147aa96d,3475
+    hackage: gpu-vulkan-core-0.1.0.20@sha256:c23c2d9d2834c078f6dd1bed9d895bcd0f6655c98e6f70f5c3606dacc4571ec1,3475
     pantry-tree:
-      sha256: f139956c7d6c7e2abd272f2ea00cff59bdde98219ba1bbc4d8b9d20e89cdc3c1
-      size: 5004
+      sha256: 9172eb514a5470ebb1801fa6435f7f0d0756d8266ad4be8b3439327a5d683ce4
+      size: 5152
   original:
-    hackage: gpu-vulkan-core-0.1.0.16
+    hackage: gpu-vulkan-core-0.1.0.20
 - completed:
     hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
     pantry-tree:
@@ -97,6 +101,13 @@ packages:
       size: 650
   original:
     hackage: language-spir-v-0.1.0.1
+- completed:
+    hackage: fixed-generic-0.1.0.2@sha256:5dc353b0a45105cc62a85112b3d961f6ef65af18fc792eb79ca1ac839dc455cb,1847
+    pantry-tree:
+      sha256: a38217c02894cdc01c4c9c717403d7fa47f2a7b9b62c4bd93ebaa958900c60ea
+      size: 373
+  original:
+    hackage: fixed-generic-0.1.0.2
 snapshots:
 - completed:
     sha256: d8dc721b84e82edf05bbcccfb474fb206e848743d75e2a3aef7219cbdd0e767b
