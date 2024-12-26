@@ -167,20 +167,25 @@ body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
 	prepareImg @DrawFormat pd dv w h \imgd' ->
+	prepareImg @DrawFormat pd dv w h \imgs' ->
 	Vk.ImgVw.create @_ @DrawFormat dv (imageViewCreateInfo imgd' Vk.Img.AspectColorBit) nil \imgvwd' ->
+	Vk.ImgVw.create @_ @DrawFormat dv (imageViewCreateInfo imgs' Vk.Img.AspectColorBit) nil \imgvws' ->
 	prepareImg pd dv w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
 	createCmpPpl dv \dsl pl ppl ->
 	createDscPl dv \dp ->
-	createDscSt dv dp imgvwd' dsl \ds ->
+	createDscSt dv dp imgvws' imgvwd' dsl \ds ->
 	runCmds dv gq cp \cb -> do
 	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
 	tr cb imgs
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+	tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	copyImgToImg cb imgs imgs' w h flt 1 0
 --	copyImgToImg cb imgs imgd w h flt n i
+	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
 	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 		Vk.Cmd.bindDescriptorSetsCompute ccb pl (HPList.Singleton $ U2 ds) def
@@ -431,8 +436,9 @@ createCmpPpl d f = createPplLyt d \dsl pl ->
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
-type DscStLytArg = '[TxImg]
-type TxImg = 'Vk.DscStLyt.Image '[ '("destination_image", 'Vk.T.FormatR16g16b16a16Sfloat)]
+type DscStLytArg = '[SrcImg, DstImg]
+type DstImg = 'Vk.DscStLyt.Image '[ '("destination_image", 'Vk.T.FormatR16g16b16a16Sfloat)]
+type SrcImg = 'Vk.DscStLyt.Image '[ '("source_image", 'Vk.T.FormatR16g16b16a16Sfloat)]
 
 shdrMdInfo :: SpirV.S sknd -> Vk.ShdrMd.CreateInfo 'Nothing sknd
 shdrMdInfo cd = Vk.ShdrMd.CreateInfo {
@@ -456,8 +462,12 @@ createDscStLyt dv = Vk.DscStLyt.create dv info nil
 	info = Vk.DscStLyt.CreateInfo {
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
 		Vk.DscStLyt.createInfoFlags = zeroBits,
-		Vk.DscStLyt.createInfoBindings = tbd :** HPList.Nil }
+		Vk.DscStLyt.createInfoBindings = tbd :** tbd' :** HPList.Nil }
 	tbd = Vk.DscStLyt.BindingImage {
+		Vk.DscStLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeStorageImage,
+		Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
+	tbd' = Vk.DscStLyt.BindingImage {
 		Vk.DscStLyt.bindingImageDescriptorType =
 			Vk.Dsc.TypeStorageImage,
 		Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
@@ -472,18 +482,20 @@ createDscPl dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.createInfoPoolSizes = [sz] }
 	sz = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageImage,
-		Vk.DscPl.sizeDescriptorCount = 1 }
+		Vk.DscPl.sizeDescriptorCount = 2 }
 
 createDscSt ::
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.ImgVw.I "destination_image" 'Vk.T.FormatR16g16b16a16Sfloat siv ->
-	Vk.DscStLyt.D sdsl '[TxImg] ->
+	Vk.ImgVw.I "source_image" 'Vk.T.FormatR16g16b16a16Sfloat sivs ->
+	Vk.ImgVw.I "destination_image" 'Vk.T.FormatR16g16b16a16Sfloat sivd ->
+	Vk.DscStLyt.D sdsl '[SrcImg, DstImg] ->
 	(forall sds . Vk.DscSt.D sds
-		'(sdsl, '[TxImg]) -> IO a) -> IO a
-createDscSt dv dp tv dl a =
+		'(sdsl, '[SrcImg, DstImg]) -> IO a) -> IO a
+createDscSt dv dp svw dvw dl a =
 	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
 	$ Vk.DscSt.updateDs dv (
-		U5 (dscWriteTxImg ds tv) :** HPList.Nil ) HPList.Nil
+		U5 (dscWriteTxImg ds svw) :**
+		U5 (dscWriteTxImg ds dvw) :** HPList.Nil ) HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
@@ -525,21 +537,26 @@ type DrawFormat = Vk.T.FormatR16g16b16a16Sfloat
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
-layout(rgba16f,set = 0, binding = 0) uniform image2D image;
+layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
+layout(rgba16f,set = 0, binding = 1) uniform image2D dimg;
 
 void
 main()
 {
 	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-	ivec2 size = imageSize(image);
+	ivec2 size = imageSize(dimg);
 
 	if (texelCoord.x < size.x && texelCoord.y < size.y) {
 		vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 
-		if (gl_LocalInvocationID.x != 0 && gl_LocalInvocationID.y != 0) {
-			color.x = float(texelCoord.x) / (size.x);
-			color.y = float(texelCoord.y) / (size.y); }
-		imageStore(image, texelCoord, color); }
+		if (1 == 1) {
+			color = imageLoad(simg, ivec2(
+				size.x * 13 / 25 + texelCoord.x / 25,
+				size.y * 15 / 25 + texelCoord.y / 25)); }
+//			color = imageLoad(simg, texelCoord); }
+//			color.x = float(texelCoord.x) / (size.x);
+//			color.y = float(texelCoord.y) / (size.y); }
+		imageStore(dimg, texelCoord, color); }
 }
 
 |]
