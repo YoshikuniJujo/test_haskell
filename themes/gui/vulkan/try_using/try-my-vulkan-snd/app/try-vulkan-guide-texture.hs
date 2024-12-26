@@ -1600,7 +1600,7 @@ draw dv gq pq sc ex rp pl gp fbs
 		$ model (fromIntegral fn) :
 			[ objMtx x y | x <- [- 20 .. 20], y <- [- 20 .. 20] ]
 	ii <- Vk.Khr.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.CBffr.reset cb zeroBits
 	HPList.index fbs ii \fb ->
 		recordCmdBffr cb ex rp pl gp fb vbmk vbtr cf fn ds dso dst

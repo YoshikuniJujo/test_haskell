@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-12-18
+resolver: nightly-2024-12-26
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: a27d1f2016a56b73c894420a783465726fa77edf
+  commit: 8696f8efe266ab9fcbc2bb295a6f66fb50b6fbfe
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
@@ -60,13 +60,14 @@ extra-deps:
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-  # - git: https://github.com/YoshikuniJujo/gpu-vulkan
-  # commit: 8b952ecc7b1057ca92f0e9aed0a76bbd70a77c9a
-- gpu-vulkan-0.1.0.159
-- gpu-vulkan-middle-0.1.0.64
-- gpu-vulkan-core-0.1.0.16
+- git: https://github.com/YoshikuniJujo/gpu-vulkan
+  commit: ee00cb894b0d75865fa4571525372c2ced67e4a6
+  # - gpu-vulkan-0.1.0.159
+- gpu-vulkan-middle-0.1.0.70
+- gpu-vulkan-core-0.1.0.20
 - language-spir-v-0.1.0.1
 - shaderc-0.1.0.5
+- fixed-generic-0.1.0.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

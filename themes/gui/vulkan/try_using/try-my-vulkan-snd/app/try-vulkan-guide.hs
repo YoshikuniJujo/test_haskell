@@ -1322,7 +1322,7 @@ draw dv gq pq sc ex rp pl gp0 gp1 fbs
 			dv snm zeroBits (sceneData fn)
 		_ -> error "never occur"
 	ii <- Vk.Khr.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.CBffr.reset cb zeroBits
 	HPList.index fbs ii \fb -> case sdrn of
 		Shader0 -> recordCmdBffr cb ex rp pl gp0 fb vbmk vbtr fn ds

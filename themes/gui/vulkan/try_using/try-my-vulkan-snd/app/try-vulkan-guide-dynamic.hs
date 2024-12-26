@@ -1282,7 +1282,7 @@ draw dv gq pq sc ex rp pl gp fbs
 	Vk.Mm.write @bnmsn @(AtmScene alu mffn) @0 dv snm zeroBits . (!! cf)
 		$ iterate (Nothing :) [Just $ sceneData fn]
 	ii <- Vk.Khr.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.CBffr.reset cb zeroBits
 	HPList.index fbs ii \fb ->
 		recordCmdBffr cb ex rp pl gp fb vbmk vbtr cf fn ds

@@ -833,7 +833,7 @@ draw dv gq pq sc ex rp gp fbs vb cbs (SyncObjs iass rfss iffs) cf =
 	HPList.index iffs cf \(id &&& HPList.Singleton -> (iff, siff)) -> do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ii <- Vk.Khr.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.CmdBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo ias rfs) $ Just iff

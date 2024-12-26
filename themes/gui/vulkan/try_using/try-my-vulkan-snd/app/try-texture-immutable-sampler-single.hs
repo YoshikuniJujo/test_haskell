@@ -1131,7 +1131,7 @@ draw :: forall sd fmt ssc sr sl sg sfs sds sdsl
 draw dv gq pq sc ex rp pl gp fbs vb ib mm ds cb (SyncObjs ias rfs iff) tm = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ii <- Vk.Khr.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp pl gp fb vb ib ds
 	updateModelViewProj dv mm ex tm
