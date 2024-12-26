@@ -408,9 +408,9 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 } }
+		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers } }
 
 {-
 recreateAll :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt) =>
@@ -613,9 +613,9 @@ imageSubresourceRange :: Vk.Img.AspectFlags -> Vk.Img.SubresourceRange
 imageSubresourceRange am = Vk.Img.SubresourceRange {
 	Vk.Img.subresourceRangeAspectMask = am,
 	Vk.Img.subresourceRangeBaseMipLevel = 0,
-	Vk.Img.subresourceRangeLevelCount = 1,
+	Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 	Vk.Img.subresourceRangeBaseArrayLayer = 0,
-	Vk.Img.subresourceRangeLayerCount = 1 }
+	Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers }
 
 drawImageUsages :: Vk.Img.UsageFlags
 drawImageUsages =
@@ -677,9 +677,9 @@ imageViewCreateInfo image aspectFlags = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = aspectFlags,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 } }
+		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers } }
 
 copyImageToImage :: Vk.CmdBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
