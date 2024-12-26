@@ -510,7 +510,7 @@ draw dv sc scis q cbs di ex (SyncObjs scss rss  rfs) pl ppl ds cf fn =
 	Vk.Fence.waitForFs dv rf' True (Just $ Vk.Sec 1) >> Vk.Fence.resetFs dv rf' >>
 	Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr]
-		dv sc maxBound (Just scs) Nothing >>= \ii ->
+		dv sc Nothing (Just scs) Nothing >>= \ii ->
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
 --		let	flash = sin (fromIntegral fn / 120) / 2 + 0.5

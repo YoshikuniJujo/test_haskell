@@ -481,7 +481,7 @@ draw dv sc scis q cbs (SyncObjs scss rss  rfs) cf fn =
 	Vk.Fence.waitForFs dv rf' True (Just $ Vk.Sec 1) >> Vk.Fence.resetFs dv rf' >>
 	Vk.Khr.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr]
-		dv sc maxBound (Just scs) Nothing >>= \ii ->
+		dv sc Nothing (Just scs) Nothing >>= \ii ->
 	Vk.CmdBffr.reset cb def >>
 	Vk.CmdBffr.begin @'Nothing @'Nothing cb binfo do
 		transitionImage cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral

@@ -974,7 +974,7 @@ draw dv gq pq cb vb (vex, rp, gp, (SyncObjs ias rfs iff), sc, fbs) = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ex <-atomically (readTVar vex)
 	ii <- Vk.Khr.Swpch.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff

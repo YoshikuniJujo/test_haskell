@@ -1094,7 +1094,7 @@ draw dv gq pq sc ex rp gp fbs vbs cbs (SyncObjs iass rfss iffs cfss _) cf =
 	HPList.index cfss cf \cfs -> do
 	Vk.Fence.waitForFs dv siff True Nothing
 	ii <- Vk.Khr.acquireNextImageResult
-		[Vk.Success, Vk.SuboptimalKhr] dv sc maxBound (Just ias) Nothing
+		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.Fence.resetFs dv siff
 	Vk.CBffr.reset cb def
 	HPList.index fbs ii \fb -> recordCmdBffr cb ex rp gp fb vb
