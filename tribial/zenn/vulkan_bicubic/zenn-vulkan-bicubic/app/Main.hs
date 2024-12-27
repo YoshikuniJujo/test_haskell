@@ -552,6 +552,18 @@ formula12(float x)
 	return (- pow(x, 3) + 5 * pow(x, 2) - 8 * x + 4) / 2;
 }
 
+float
+formula_n01(float x)
+{
+	return 1 - x;
+}
+
+float
+formula_n12(float x)
+{
+	return 0;
+}
+
 float[4]
 coefficients(float x)
 {
@@ -559,7 +571,8 @@ coefficients(float x)
 	float d = fract(x);
 	co[0] = formula12(d + 1); co[1] = formula01(d);
 	co[2] = formula01(1 - d); co[3] = formula12(2 - d);
-//	co[1] = d;
+//	co[0] = formula_n12(d + 1); co[1] = formula_n01(d);
+//	co[2] = formula_n01(1 - d); co[3] = formula_n12(2 - d);
 	return co;
 }
 
