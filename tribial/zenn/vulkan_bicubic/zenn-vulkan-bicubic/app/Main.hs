@@ -540,12 +540,82 @@ layout (local_size_x = 16, local_size_y = 16) in;
 layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
 layout(rgba16f,set = 0, binding = 1) uniform image2D dimg;
 
+float
+formula01(float x)
+{
+	return (3 * pow(x, 3) - 5 * pow(x,  2) + 2) / 2;
+}
+
+float
+formula12(float x)
+{
+	return (- pow(x, 3) + 5 * pow(x, 2) - 8 * x + 4) / 2;
+}
+
+float[4]
+coefficients(float x)
+{
+	float co[4];
+	float d = fract(x);
+	co[0] = formula12(d + 1); co[1] = formula01(d);
+	co[2] = formula01(1 - d); co[3] = formula12(2 - d);
+//	co[1] = d;
+	return co;
+}
+
+vec4[4][4]
+points(ivec2 p)
+{
+	vec4 c16[4][4];
+
+	for (int y = 0; y < 4; y++)
+		for (int x = 0; x < 4; x++)
+			c16[y][x] = imageLoad(simg, ivec2(x + p.x - 2, y + p.y - 1));
+//			c16[y][x] = imageLoad(simg, ivec2(x + p.x, y + p.y));
+	/*
+	for (int y = p.y - 1; y < p.y + 3; y++)
+		for (int x = p.x - 1; x < p.x + 3; x++)
+			c16[y][x] = imageLoad(simg, ivec2(x, y));
+			*/
+//	c16[1][1] = vec4(0.0, 0.0, 1.0, 1.0);
+	return c16;
+}
+
 void
 main()
 {
 	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 size = imageSize(dimg);
 
+	vec2 pos = vec2(
+		float(size.x) * 13.0 / 25.0 + float(texelCoord.x) / 25.0,
+		float(size.y) * 15.0 / 25.0 + float(texelCoord.y) / 25.0);
+
+	float cox[4] = coefficients(pos.x);
+	float coy[4] = coefficients(pos.y);
+
+//	cox[0] = 0; cox[1] = 1; cox[2] = 0; cox[3] = 0;
+//	coy[0] = 0; coy[1] = 1; coy[2] = 0; coy[3] = 0;
+
+	vec4 c16[4][4] = points(ivec2(floor(pos.x), floor(pos.y)));
+
+//	c16[1][1] = vec4(0.0, 1.0, 0.0, 1.0);
+
+	vec4 c = vec4(0.0, 0.0, 0.0, 0.0);
+
+//	for (int y = int(floor(pos.y)) - 1; y < int(floor(pos.y)) + 3; y++)
+//		for (int x = int(floor(pos.x)) - 1; x < int(floor(pos.x)) + 3; x++)
+	for (int y = 0; y < 4; y++)
+		for (int x = 0; x < 4; x++)
+			c += cox[x] * coy[y] * c16[y][x];
+
+//	c = cox[1] * coy[1] * c16[1][1];
+
+//	c = vec4(0.0, 1.0, 0.0, 1.0);
+
+	imageStore(dimg, texelCoord, c);
+
+/*
 	if (texelCoord.x < size.x && texelCoord.y < size.y) {
 		vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -556,7 +626,8 @@ main()
 //			color = imageLoad(simg, texelCoord); }
 //			color.x = float(texelCoord.x) / (size.x);
 //			color.y = float(texelCoord.y) / (size.y); }
-		imageStore(dimg, texelCoord, color); }
+		imageStore(dimg, texelCoord, c); }
+		*/
 }
 
 |]
