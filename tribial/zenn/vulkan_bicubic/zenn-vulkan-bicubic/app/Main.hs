@@ -7,6 +7,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -110,12 +111,12 @@ main = getArgs >>= \case
 		writePng ofp img'
 	_ -> error "Invalid command line arguments"
 
-getFilter :: String -> Maybe Vk.Filter
+getFilter :: String -> Maybe Filter
 getFilter = \case
-	"nearest" -> Just Vk.FilterNearest; "linear" -> Just Vk.FilterLinear
-	_ -> Nothing
+	"nearest" -> Just Nearest; "linear" -> Just Linear
+	"cubic" -> Just Cubic; _ -> Nothing
 
-realMain :: ImageRgba8 -> Vk.Filter -> Float -> Int32 -> Int32 -> IO ImageRgba8
+realMain :: ImageRgba8 -> Filter -> Float -> Int32 -> Int32 -> IO ImageRgba8
 realMain img flt a n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
 	createCmdPl qfi dv \cp -> body pd dv gq cp img flt a n i
@@ -166,7 +167,7 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Float -> Int32 -> Int32 -> IO img
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
 body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
 	prepareImg @DrawFormat pd dv w h \imgd' ->
@@ -193,8 +194,8 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	createDscSt' dv hdp imgvws' hdsl \hds ->
 
 	createCmpPpl
-		@'[Word32, Word32, Word32]
-		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32])
+		@'[Filter, Word32, Word32, Word32]
+		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Filter, Word32, Word32, Word32])
 		dv (tbd :** tbd :** HPList.Nil) cubicShader (a :* HPList.Nil :: (HPList.L '[Float])) \cdsl cpl cppl ->
 	createDscPl dv \dp ->
 	createDscSt dv dp imgvws' imgvwd' cdsl \ds ->
@@ -205,7 +206,7 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	tr cb imgs
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg' cb imgs imgs' w h flt
+	copyImgToImg' cb imgs imgs' w h Vk.FilterNearest
 --	copyImgToImg cb imgs imgd w h flt n i
 	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
 	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
@@ -224,13 +225,13 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute cppl \ccb -> do
 		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-			ccb cpl ((fromIntegral n :: Word32) :* (ix :: Word32) :* (iy :: Word32) :* HPList.Nil)
+			ccb cpl (flt :* (fromIntegral n :: Word32) :* (ix :: Word32) :* (iy :: Word32) :* HPList.Nil)
 		Vk.Cmd.bindDescriptorSetsCompute ccb cpl (HPList.Singleton $ U2 ds) def
 		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
 
 	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
 	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg cb imgd' imgd w h flt 1 0
+	copyImgToImg cb imgd' imgd w h Vk.FilterNearest 1 0
 	tr cb imgd
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToBffr cb imgd rb
@@ -242,6 +243,13 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	ix, iy :: Word32
 	ix = fromIntegral $ i `mod` n
 	iy = fromIntegral $ i `div` n
+
+newtype Filter = Filter Word32 deriving (Show, Storable)
+
+pattern Nearest, Linear, Cubic :: Filter
+pattern Nearest = Filter 0
+pattern Linear = Filter 1
+pattern Cubic = Filter 2
 
 div' :: Integral n => n -> n -> n
 a `div'` b = case a `divMod` b of (d, 0) -> d; (d, _) -> d + 1
@@ -683,12 +691,16 @@ cubicShader = [glslComputeShader|
 
 #version 460
 
+#define Nearest 0
+#define Linear 1
+#define Cubic 2
+
 layout (local_size_x = 16, local_size_y = 16) in;
 
 layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
 layout(rgba16f,set = 0, binding = 1) uniform image2D dimg;
 
-layout(push_constant) uniform P { uint n; uint ix; uint iy; } p;
+layout(push_constant) uniform P { uint fltr; uint n; uint ix; uint iy; } p;
 
 layout(constant_id = 0) const float a = - 0.5;
 
@@ -709,8 +721,13 @@ formula12(float x)
 float
 formula_n01(float x)
 {
+	if (x < 0.5) return 1; else return 0;
+}
+
+float
+formula_l01(float x)
+{
 	return 1 - x;
-//	if (x < 0.5) return 1; else return 0;
 }
 
 float
@@ -724,8 +741,20 @@ coefficients(float x)
 {
 	float co[4];
 	float d = fract(x);
-	co[0] = formula12(d + 1); co[1] = formula01(d);
-	co[2] = formula01(1 - d); co[3] = formula12(2 - d);
+	switch (p.fltr) {
+	case Nearest:
+		co[0] = formula_n12(d + 1); co[1] = formula_n01(d);
+		co[2] = formula_n01(1 - d); co[3] = formula_n12(2 - d);
+		break;
+	case Linear:
+		co[0] = formula_n12(d + 1); co[1] = formula_l01(d);
+		co[2] = formula_l01(1 - d); co[3] = formula_n12(2 - d);
+		break;
+	case Cubic:
+		co[0] = formula12(d + 1); co[1] = formula01(d);
+		co[2] = formula01(1 - d); co[3] = formula12(2 - d);
+		break;
+	}
 //	co[0] = formula_n12(d + 1); co[1] = formula_n01(d);
 //	co[2] = formula_n01(1 - d); co[3] = formula_n12(2 - d);
 	return co;
