@@ -25,7 +25,7 @@ import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
 import Data.List.ToolsYj
-import Data.HeteroParList (pattern (:**), pattern (:*.))
+import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
 import Data.Array
 import Data.Word
@@ -68,6 +68,7 @@ import Gpu.Vulkan.ShaderModule qualified as Vk.ShdrMd
 import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cp
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
 
 -- DATA TYPE IMAGE RGBA8
 
@@ -167,7 +168,7 @@ body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
 	prepareImg @DrawFormat pd dv w h \imgd' ->
-	prepareImg @DrawFormat pd dv w h \imgs' ->
+	prepareImg @DrawFormat pd dv (w + 2) (h + 2) \imgs' ->
 	Vk.ImgVw.create @_ @DrawFormat dv (imageViewCreateInfo imgd' Vk.Img.AspectColorBit) nil \imgvwd' ->
 	Vk.ImgVw.create @_ @DrawFormat dv (imageViewCreateInfo imgs' Vk.Img.AspectColorBit) nil \imgvws' ->
 	prepareImg pd dv w h \imgs ->
@@ -183,11 +184,13 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	tr cb imgs
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg cb imgs imgs' w h flt 1 0
+	copyImgToImg' cb imgs imgs' w h flt
 --	copyImgToImg cb imgs imgd w h flt n i
 	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
 	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			ccb pl ((fromIntegral n :: Word32) :* (ix :: Word32) :* (iy :: Word32) :* HPList.Nil)
 		Vk.Cmd.bindDescriptorSetsCompute ccb pl (HPList.Singleton $ U2 ds) def
 		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
 	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
@@ -201,6 +204,9 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
 	tr = transitionImgLyt
+	ix, iy :: Word32
+	ix = fromIntegral $ i `mod` n
+	iy = fromIntegral $ i `div` n
 
 div' :: Integral n => n -> n -> n
 a `div'` b = case a `divMod` b of (d, 0) -> d; (d, _) -> d + 1
@@ -387,6 +393,21 @@ copyImgToImg cb si di w h flt n i = Vk.Cmd.blitImage cb
 		w * (i `mod` n) `div` n, w * (i `mod` n + 1) `div` n,
 		h * (i `div` n) `div` n, h * (i `div` n + 1) `div` n )
 
+copyImgToImg' :: Vk.CBffr.C scb ->
+	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
+	Int32 -> Int32 -> Vk.Filter -> IO ()
+copyImgToImg' cb si di w h flt = Vk.Cmd.blitImage cb
+	si Vk.Img.LayoutTransferSrcOptimal
+	di Vk.Img.LayoutTransferDstOptimal [blt] flt
+	where
+	blt = Vk.Img.Blit {
+		Vk.Img.blitSrcSubresource = colorLayer0,
+		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
+		Vk.Img.blitDstSubresource = colorLayer0,
+		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 1 1 0,
+		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + 1) (h + 1) 1 }
+
 copyImgToBffr :: forall scb img smi si inm smb sbb bnm imgnm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
 	Vk.Img.Binded smi si inm (Vk.ObjB.ImageFormat img) ->
@@ -412,8 +433,8 @@ resultBffr pd dv w h f = head
 
 createCmpPpl :: Vk.Dvc.D sd -> (forall sds scppl spl .
 	Vk.DscStLyt.D sds DscStLytArg ->
-	Vk.PplLyt.P spl '[ '(sds, DscStLytArg)] '[] ->
-	Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, DscStLytArg)], '[]) ->
+	Vk.PplLyt.P spl '[ '(sds, DscStLytArg)] '[Word32, Word32, Word32] ->
+	Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, DscStLytArg)], '[Word32, Word32, Word32]) ->
 	IO a) -> IO a
 createCmpPpl d f = createPplLyt d \dsl pl ->
 	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
@@ -432,7 +453,7 @@ createCmpPpl d f = createPplLyt d \dsl pl ->
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageComputeBit,
 		Vk.Ppl.ShdrSt.createInfoModule =
-			(shdrMdInfo glslComputeShaderMain, nil),
+			(shdrMdInfo cubicShader, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
@@ -447,10 +468,14 @@ shdrMdInfo cd = Vk.ShdrMd.CreateInfo {
 
 createPplLyt :: forall sd a . Vk.Dvc.D sd -> (forall sl sdsl .
 	Vk.DscStLyt.D sdsl DscStLytArg ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg)] '[] -> IO a) -> IO a
+	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg)] '[Word32, Word32, Word32] -> IO a) -> IO a
 createPplLyt dv f = createDscStLyt dv \dsl ->
-	Vk.PplLyt.create @_ @_ @_ @'[] dv (info dsl) nil $ f dsl
-	where info dsl = Vk.PplLyt.CreateInfo {
+	Vk.PplLyt.create @_ @_ @_ dv (info dsl) nil $ f dsl
+	where
+	info :: Vk.DscStLyt.D sdsl DscStLytArg ->
+		Vk.PplLyt.CreateInfo 'Nothing '[ '(sdsl, DscStLytArg)] ('Vk.PshCnst.Layout
+			'[Word32, Word32, Word32] '[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32]])
+	info dsl = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
@@ -531,7 +556,8 @@ imageViewCreateInfo image aspectFlags = Vk.ImgVw.CreateInfo {
 
 type DrawFormat = Vk.T.FormatR16g16b16a16Sfloat
 
-[glslComputeShader|
+cubicShader :: SpirV.S GlslComputeShader
+cubicShader = [glslComputeShader|
 
 #version 460
 
@@ -539,6 +565,8 @@ layout (local_size_x = 16, local_size_y = 16) in;
 
 layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
 layout(rgba16f,set = 0, binding = 1) uniform image2D dimg;
+
+layout(push_constant) uniform P { uint n; uint ix; uint iy; } p;
 
 float
 formula01(float x)
@@ -556,6 +584,7 @@ float
 formula_n01(float x)
 {
 	return 1 - x;
+//	if (x < 0.5) return 1; else return 0;
 }
 
 float
@@ -583,8 +612,7 @@ points(ivec2 p)
 
 	for (int y = 0; y < 4; y++)
 		for (int x = 0; x < 4; x++)
-			c16[y][x] = imageLoad(simg, ivec2(x + p.x - 2, y + p.y - 1));
-//			c16[y][x] = imageLoad(simg, ivec2(x + p.x, y + p.y));
+			c16[y][x] = imageLoad(simg, ivec2(x + p.x, y + p.y));
 	/*
 	for (int y = p.y - 1; y < p.y + 3; y++)
 		for (int x = p.x - 1; x < p.x + 3; x++)
@@ -600,9 +628,14 @@ main()
 	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 size = imageSize(dimg);
 
+	float n, ix, iy;
+	n = float(p.n);
+	ix = float(p.ix);
+	iy = float(p.iy);
+
 	vec2 pos = vec2(
-		float(size.x) * 13.0 / 25.0 + float(texelCoord.x) / 25.0,
-		float(size.y) * 15.0 / 25.0 + float(texelCoord.y) / 25.0);
+		float(size.x - 1) * ix / n + float(texelCoord.x) / n,
+		float(size.y - 1) * iy / n + float(texelCoord.y) / n);
 
 	float cox[4] = coefficients(pos.x);
 	float coy[4] = coefficients(pos.y);
@@ -626,7 +659,8 @@ main()
 
 //	c = vec4(0.0, 1.0, 0.0, 1.0);
 
-	imageStore(dimg, texelCoord, c);
+	if (texelCoord.x < size.x && texelCoord.y < size.y)
+		imageStore(dimg, texelCoord, c);
 
 /*
 	if (texelCoord.x < size.x && texelCoord.y < size.y) {
