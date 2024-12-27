@@ -181,21 +181,21 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	createCmpPpl
 		@'[Word32]
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
-		dv (tbd :** HPList.Nil) expandWidthShader (Nothing :: Maybe (HPList.L '[])) \wdsl wpl wppl ->
+		dv (tbd :** HPList.Nil) expandWidthShader HPList.Nil \wdsl wpl wppl ->
 	createDscPl dv \wdp ->
 	createDscSt' dv wdp imgvws' wdsl \wds ->
 
 	createCmpPpl
 		@'[Word32]
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
-		dv (tbd :** HPList.Nil) expandHeightShader (Nothing :: Maybe (HPList.L '[])) \hdsl hpl hppl ->
+		dv (tbd :** HPList.Nil) expandHeightShader HPList.Nil \hdsl hpl hppl ->
 	createDscPl dv \hdp ->
 	createDscSt' dv hdp imgvws' hdsl \hds ->
 
 	createCmpPpl
 		@'[Word32, Word32, Word32]
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32])
-		dv (tbd :** tbd :** HPList.Nil) cubicShader (Just (a :* HPList.Nil) :: Maybe (HPList.L '[Float])) \cdsl cpl cppl ->
+		dv (tbd :** tbd :** HPList.Nil) cubicShader (a :* HPList.Nil :: (HPList.L '[Float])) \cdsl cpl cppl ->
 	createDscPl dv \dp ->
 	createDscSt dv dp imgvws' imgvwd' cdsl \ds ->
 
@@ -470,7 +470,7 @@ createCmpPpl :: forall (pctps :: [Type]) (pcrng :: Vk.PshCnst.Range) sd bds vs a
 	Vk.PshCnst.RangeListToMiddle pctps '[pcrng],
 	Vk.DscStLyt.BindingListToMiddle bds,
 	PokableList vs ) =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> SpirV.S GlslComputeShader -> Maybe (HPList.L vs) ->
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> SpirV.S GlslComputeShader -> HPList.L vs ->
 	(forall sds scppl spl .
 		Vk.DscStLyt.D sds bds ->
 		Vk.PplLyt.P spl '[ '(sds, bds)] pctps ->
