@@ -524,7 +524,7 @@ shdrStInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoModule = (mdinfo, nil),
 	Vk.Ppl.ShaderSt.createInfoName = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
-		Just $ HPList.Id 3 :** HPList.Id 10 :** HPList.Nil }
+		HPList.Id 3 :** HPList.Id 10 :** HPList.Nil }
 	where mdinfo = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,

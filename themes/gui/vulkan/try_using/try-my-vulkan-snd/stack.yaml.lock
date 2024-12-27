@@ -198,23 +198,27 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
-    commit: ee00cb894b0d75865fa4571525372c2ced67e4a6
-    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    commit: e126945f2751df8fed8c47d15a1d1eab3e599f46
+    git: https://github.com/YoshikuniJujo/gpu-vulkan.git
     name: gpu-vulkan
     pantry-tree:
-      sha256: cdcdcfb9c897336196bd66373a8b8828941efd9fa6ab72d019ee6df8c029c6a6
+      sha256: 1547a44bb2297b1f0bf706635d44de96d5c1a7bd016da01bf7269920f77df148
       size: 12585
-    version: 0.1.0.164
+    version: 0.1.0.165
   original:
-    commit: ee00cb894b0d75865fa4571525372c2ced67e4a6
-    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    commit: e126945f2751df8fed8c47d15a1d1eab3e599f46
+    git: https://github.com/YoshikuniJujo/gpu-vulkan.git
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.70@sha256:3f9cda9ef33b54b7074ebba3aa99109a8527ecfd1635fb3e854e4e08eafe1390,9029
+    commit: e03047b727f5e802cf4bd090fe8658a7f127b401
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
+    name: gpu-vulkan-middle
     pantry-tree:
-      sha256: c46fa449f7ececdf1c82802e9155428172ce4733078c6708e74485f6fb08435a
-      size: 13400
+      sha256: 1204fe9669a90f6b9d1326fb9e40353b01efc48a6464acae5a489911c6a7440b
+      size: 15963
+    version: 0.1.0.71
   original:
-    hackage: gpu-vulkan-middle-0.1.0.70
+    commit: e03047b727f5e802cf4bd090fe8658a7f127b401
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
 - completed:
     hackage: gpu-vulkan-core-0.1.0.20@sha256:c23c2d9d2834c078f6dd1bed9d895bcd0f6655c98e6f70f5c3606dacc4571ec1,3475
     pantry-tree:
@@ -236,16 +240,9 @@ packages:
       size: 1402
   original:
     hackage: shaderc-0.1.0.5
-- completed:
-    hackage: fixed-generic-0.1.0.2@sha256:5dc353b0a45105cc62a85112b3d961f6ef65af18fc792eb79ca1ac839dc455cb,1847
-    pantry-tree:
-      sha256: a38217c02894cdc01c4c9c717403d7fa47f2a7b9b62c4bd93ebaa958900c60ea
-      size: 373
-  original:
-    hackage: fixed-generic-0.1.0.2
 snapshots:
 - completed:
-    sha256: aa35a270aac57cf98a7f9d99348958fcc9c1e104b1591e79de3524711b02a3b1
-    size: 620478
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/26.yaml
-  original: nightly-2024-12-26
+    sha256: c496a1a8368855df5978f4b63727c601f5d4ddbdafab66dbba448891745c26f2
+    size: 620694
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/27.yaml
+  original: nightly-2024-12-27
