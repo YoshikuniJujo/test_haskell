@@ -14,6 +14,7 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.HeteroList
 import Control.Arrow
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
@@ -102,10 +103,10 @@ instance Storable PixelRgba8 where
 
 main :: IO ()
 main = getArgs >>= \case
-	[ifp, ofp, getFilter -> Just flt,
+	[ifp, ofp, getFilter -> Just flt, readMaybe -> Just (a :: Float),
 		readMaybe -> Just n, readMaybe -> Just i] -> do
 		img <- either error convertRGBA8 <$> readImage ifp
-		ImageRgba8 img' <- realMain (ImageRgba8 img) flt n i
+		ImageRgba8 img' <- realMain (ImageRgba8 img) flt a n i
 		writePng ofp img'
 	_ -> error "Invalid command line arguments"
 
@@ -114,10 +115,10 @@ getFilter = \case
 	"nearest" -> Just Vk.FilterNearest; "linear" -> Just Vk.FilterLinear
 	_ -> Nothing
 
-realMain :: ImageRgba8 -> Vk.Filter -> Int32 -> Int32 -> IO ImageRgba8
-realMain img flt n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
+realMain :: ImageRgba8 -> Vk.Filter -> Float -> Int32 -> Int32 -> IO ImageRgba8
+realMain img flt a n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
-	createCmdPl qfi dv \cp -> body pd dv gq cp img flt n i
+	createCmdPl qfi dv \cp -> body pd dv gq cp img flt a n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst = Vk.Ist.create info nil
@@ -165,8 +166,8 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Int32 -> Int32 -> IO img
-body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Float -> Int32 -> Int32 -> IO img
+body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
 	prepareImg @DrawFormat pd dv w h \imgd' ->
 	prepareImg @DrawFormat pd dv (w + 2) (h + 2) \imgs' ->
@@ -180,21 +181,21 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	createCmpPpl
 		@'[Word32]
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
-		dv (tbd :** HPList.Nil) expandWidthShader \wdsl wpl wppl ->
+		dv (tbd :** HPList.Nil) expandWidthShader (Nothing :: Maybe (HPList.L '[])) \wdsl wpl wppl ->
 	createDscPl dv \wdp ->
 	createDscSt' dv wdp imgvws' wdsl \wds ->
 
 	createCmpPpl
 		@'[Word32]
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
-		dv (tbd :** HPList.Nil) expandHeightShader \hdsl hpl hppl ->
+		dv (tbd :** HPList.Nil) expandHeightShader (Nothing :: Maybe (HPList.L '[])) \hdsl hpl hppl ->
 	createDscPl dv \hdp ->
 	createDscSt' dv hdp imgvws' hdsl \hds ->
 
 	createCmpPpl
 		@'[Word32, Word32, Word32]
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32])
-		dv (tbd :** tbd :** HPList.Nil) cubicShader \cdsl cpl cppl ->
+		dv (tbd :** tbd :** HPList.Nil) cubicShader (Just (a :* HPList.Nil) :: Maybe (HPList.L '[Float])) \cdsl cpl cppl ->
 	createDscPl dv \dp ->
 	createDscSt dv dp imgvws' imgvwd' cdsl \ds ->
 
@@ -465,21 +466,25 @@ resultBffr pd dv w h f = head
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
 	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
 
-createCmpPpl :: forall (pctps :: [Type]) (pcrng :: Vk.PshCnst.Range) sd bds a . (
+createCmpPpl :: forall (pctps :: [Type]) (pcrng :: Vk.PshCnst.Range) sd bds vs a . (
 	Vk.PshCnst.RangeListToMiddle pctps '[pcrng],
-	Vk.DscStLyt.BindingListToMiddle bds
-	) =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> SpirV.S GlslComputeShader ->
+	Vk.DscStLyt.BindingListToMiddle bds,
+	PokableList vs ) =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> SpirV.S GlslComputeShader -> Maybe (HPList.L vs) ->
 	(forall sds scppl spl .
 		Vk.DscStLyt.D sds bds ->
 		Vk.PplLyt.P spl '[ '(sds, bds)] pctps ->
 		Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, bds)], pctps) ->
 		IO a) -> IO a
-createCmpPpl d tbds shdr f = createPplLyt @pctps @pcrng
+createCmpPpl d tbds shdr mvs f = createPplLyt @pctps @pcrng
 		d tbds \dsl pl ->
 	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
 		\(HPList.Singleton p) -> f dsl pl p
 	where
+	info :: -- forall s1 s2 s3 bpha .
+		Vk.PplLyt.P s1 s2 s3 ->
+		Vk.Ppl.Cp.CreateInfo 'Nothing
+			'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, vs) '(s1, s2, s3) bpha
 	info pl = Vk.Ppl.Cp.CreateInfo {
 		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
 		Vk.Ppl.Cp.createInfoFlags = zeroBits,
@@ -487,7 +492,7 @@ createCmpPpl d tbds shdr f = createPplLyt @pctps @pcrng
 		Vk.Ppl.Cp.createInfoLayout = U3 pl,
 		Vk.Ppl.Cp.createInfoBasePipelineHandleOrIndex = Nothing }
 	shdrst :: Vk.Ppl.ShdrSt.CreateInfo
-		'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
+		'Nothing 'Nothing 'GlslComputeShader 'Nothing vs
 	shdrst = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
@@ -495,7 +500,7 @@ createCmpPpl d tbds shdr f = createPplLyt @pctps @pcrng
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(shdrMdInfo shdr, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = mvs }
 
 type DscStLytArg = '[SrcImg, DstImg]
 type DstImg = 'Vk.DscStLyt.Image '[ '("destination_image", 'Vk.T.FormatR16g16b16a16Sfloat)]
@@ -685,16 +690,20 @@ layout(rgba16f,set = 0, binding = 1) uniform image2D dimg;
 
 layout(push_constant) uniform P { uint n; uint ix; uint iy; } p;
 
+layout(constant_id = 0) const float a = - 0.5;
+
 float
 formula01(float x)
 {
-	return (3 * pow(x, 3) - 5 * pow(x,  2) + 2) / 2;
+//	return (3 * pow(x, 3) - 5 * pow(x,  2) + 2) / 2;
+	return (a + 2) * pow(x, 3) - (a + 3) * pow(x, 2) + 1;
 }
 
 float
 formula12(float x)
 {
-	return (- pow(x, 3) + 5 * pow(x, 2) - 8 * x + 4) / 2;
+//	return (- pow(x, 3) + 5 * pow(x, 2) - 8 * x + 4) / 2;
+	return a * pow(x, 3) - 5 * a * pow(x, 2) + 8 * a * x - 4 * a;
 }
 
 float
