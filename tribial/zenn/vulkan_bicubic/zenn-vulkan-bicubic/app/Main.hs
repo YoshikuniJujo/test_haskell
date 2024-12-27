@@ -4,6 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -175,9 +176,28 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
-	createCmpPpl dv \dsl pl ppl ->
+
+	createCmpPpl
+		@'[Word32]
+		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
+		dv (tbd :** HPList.Nil) expandWidthShader \wdsl wpl wppl ->
+	createDscPl dv \wdp ->
+	createDscSt' dv wdp imgvws' wdsl \wds ->
+
+	createCmpPpl
+		@'[Word32]
+		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
+		dv (tbd :** HPList.Nil) expandHeightShader \hdsl hpl hppl ->
+	createDscPl dv \hdp ->
+	createDscSt' dv hdp imgvws' hdsl \hds ->
+
+	createCmpPpl
+		@'[Word32, Word32, Word32]
+		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32])
+		dv (tbd :** tbd :** HPList.Nil) cubicShader \cdsl cpl cppl ->
 	createDscPl dv \dp ->
-	createDscSt dv dp imgvws' imgvwd' dsl \ds ->
+	createDscSt dv dp imgvws' imgvwd' cdsl \ds ->
+
 	runCmds dv gq cp \cb -> do
 	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
@@ -188,11 +208,25 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 --	copyImgToImg cb imgs imgd w h flt n i
 	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
 	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
-	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+
+	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
 		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-			ccb pl ((fromIntegral n :: Word32) :* (ix :: Word32) :* (iy :: Word32) :* HPList.Nil)
-		Vk.Cmd.bindDescriptorSetsCompute ccb pl (HPList.Singleton $ U2 ds) def
+			ccb wpl ((w :: Word32) :* HPList.Nil)
+		Vk.Cmd.bindDescriptorSetsCompute ccb wpl (HPList.Singleton $ U2 wds) def
+		Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
+
+	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute hppl \ccb -> do
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			ccb hpl ((h :: Word32) :* HPList.Nil)
+		Vk.Cmd.bindDescriptorSetsCompute ccb hpl (HPList.Singleton $ U2 hds) def
+		Vk.Cmd.dispatch ccb ((w + 2) `div` 16) 1 1
+
+	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute cppl \ccb -> do
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			ccb cpl ((fromIntegral n :: Word32) :* (ix :: Word32) :* (iy :: Word32) :* HPList.Nil)
+		Vk.Cmd.bindDescriptorSetsCompute ccb cpl (HPList.Singleton $ U2 ds) def
 		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+
 	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
 	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyImgToImg cb imgd' imgd w h flt 1 0
@@ -431,12 +465,18 @@ resultBffr pd dv w h f = head
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
 	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
 
-createCmpPpl :: Vk.Dvc.D sd -> (forall sds scppl spl .
-	Vk.DscStLyt.D sds DscStLytArg ->
-	Vk.PplLyt.P spl '[ '(sds, DscStLytArg)] '[Word32, Word32, Word32] ->
-	Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, DscStLytArg)], '[Word32, Word32, Word32]) ->
-	IO a) -> IO a
-createCmpPpl d f = createPplLyt d \dsl pl ->
+createCmpPpl :: forall (pctps :: [Type]) (pcrng :: Vk.PshCnst.Range) sd bds a . (
+	Vk.PshCnst.RangeListToMiddle pctps '[pcrng],
+	Vk.DscStLyt.BindingListToMiddle bds
+	) =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> SpirV.S GlslComputeShader ->
+	(forall sds scppl spl .
+		Vk.DscStLyt.D sds bds ->
+		Vk.PplLyt.P spl '[ '(sds, bds)] pctps ->
+		Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, bds)], pctps) ->
+		IO a) -> IO a
+createCmpPpl d tbds shdr f = createPplLyt @pctps @pcrng
+		d tbds \dsl pl ->
 	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
 		\(HPList.Singleton p) -> f dsl pl p
 	where
@@ -453,7 +493,7 @@ createCmpPpl d f = createPplLyt d \dsl pl ->
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
 		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageComputeBit,
 		Vk.Ppl.ShdrSt.createInfoModule =
-			(shdrMdInfo cubicShader, nil),
+			(shdrMdInfo shdr, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
@@ -466,36 +506,40 @@ shdrMdInfo cd = Vk.ShdrMd.CreateInfo {
 	Vk.ShdrMd.createInfoNext = TMaybe.N,
 	Vk.ShdrMd.createInfoFlags = zeroBits, Vk.ShdrMd.createInfoCode = cd }
 
-createPplLyt :: forall sd a . Vk.Dvc.D sd -> (forall sl sdsl .
-	Vk.DscStLyt.D sdsl DscStLytArg ->
-	Vk.PplLyt.P sl '[ '(sdsl, DscStLytArg)] '[Word32, Word32, Word32] -> IO a) -> IO a
-createPplLyt dv f = createDscStLyt dv \dsl ->
+createPplLyt :: forall (pctps :: [Type]) (pcrng :: Vk.PshCnst.Range) sd a bds . (
+	Vk.DscStLyt.BindingListToMiddle bds,
+	Vk.PshCnst.RangeListToMiddle pctps '[pcrng]
+	) =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds ->
+	(forall sl sdsl .
+	Vk.DscStLyt.D sdsl bds ->
+	Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
+createPplLyt dv tbds f = createDscStLyt dv tbds \dsl ->
 	Vk.PplLyt.create @_ @_ @_ dv (info dsl) nil $ f dsl
 	where
-	info :: Vk.DscStLyt.D sdsl DscStLytArg ->
-		Vk.PplLyt.CreateInfo 'Nothing '[ '(sdsl, DscStLytArg)] ('Vk.PshCnst.Layout
-			'[Word32, Word32, Word32] '[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32]])
+	info :: Vk.DscStLyt.D sdsl bds ->
+		Vk.PplLyt.CreateInfo 'Nothing '[ '(sdsl, bds)] ('Vk.PshCnst.Layout
+--			'[Word32, Word32, Word32] '[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32]])
+			pctps '[pcrng])
 	info dsl = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createDscStLyt :: Vk.Dvc.D sd ->
-	(forall (s :: Type) . Vk.DscStLyt.D s DscStLytArg -> IO a) -> IO a
-createDscStLyt dv = Vk.DscStLyt.create dv info nil
+createDscStLyt :: Vk.DscStLyt.BindingListToMiddle arg =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding arg ->
+	(forall (s :: Type) . Vk.DscStLyt.D s arg -> IO a) -> IO a
+createDscStLyt dv tbds = Vk.DscStLyt.create dv info nil
 	where
 	info = Vk.DscStLyt.CreateInfo {
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
 		Vk.DscStLyt.createInfoFlags = zeroBits,
-		Vk.DscStLyt.createInfoBindings = tbd :** tbd' :** HPList.Nil }
-	tbd = Vk.DscStLyt.BindingImage {
-		Vk.DscStLyt.bindingImageDescriptorType =
-			Vk.Dsc.TypeStorageImage,
-		Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
-	tbd' = Vk.DscStLyt.BindingImage {
-		Vk.DscStLyt.bindingImageDescriptorType =
-			Vk.Dsc.TypeStorageImage,
-		Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
+		Vk.DscStLyt.createInfoBindings = tbds }
+
+tbd :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
+tbd = Vk.DscStLyt.BindingImage {
+	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
+	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
 
 createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
 createDscPl dv = Vk.DscPl.create dv info nil
@@ -508,6 +552,21 @@ createDscPl dv = Vk.DscPl.create dv info nil
 	sz = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageImage,
 		Vk.DscPl.sizeDescriptorCount = 2 }
+
+createDscSt' ::
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.ImgVw.I "source_image" 'Vk.T.FormatR16g16b16a16Sfloat sivs ->
+	Vk.DscStLyt.D sdsl '[SrcImg] ->
+	(forall sds . Vk.DscSt.D sds
+		'(sdsl, '[SrcImg]) -> IO a) -> IO a
+createDscSt' dv dp svw dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
+	$ Vk.DscSt.updateDs dv (
+		U5 (dscWriteTxImg ds svw) :** HPList.Nil ) HPList.Nil
+	where info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
 createDscSt ::
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
@@ -555,6 +614,64 @@ imageViewCreateInfo image aspectFlags = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers } }
 
 type DrawFormat = Vk.T.FormatR16g16b16a16Sfloat
+
+expandWidthShader :: SpirV.S GlslComputeShader
+expandWidthShader = [glslComputeShader|
+
+#version 460
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
+layout(push_constant) uniform P { uint w; } p;
+
+void
+main()
+{
+	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+	if (texelCoord.x == 0) {
+		vec4 c, c_;
+		vec4 c1 = imageLoad(simg, ivec2(1, texelCoord.y));
+		vec4 c2 = imageLoad(simg, ivec2(2, texelCoord.y));
+		vec4 c1_ = imageLoad(simg, ivec2(p.w, texelCoord.y));
+		vec4 c2_ = imageLoad(simg, ivec2(p.w - 1, texelCoord.y));
+		c = 2 * c1 - c2;
+		c_ = 2 * c1_ - c2_;
+		imageStore(simg, texelCoord, c);
+		imageStore(simg, ivec2(p.w + 1, texelCoord.y), c_);
+		}
+}
+
+|]
+
+expandHeightShader :: SpirV.S GlslComputeShader
+expandHeightShader = [glslComputeShader|
+
+#version 460
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
+layout(push_constant) uniform P { uint h; } p;
+
+void
+main()
+{
+	ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+	if (texelCoord.y == 0) {
+		vec4 c, c_;
+		vec4 c1 = imageLoad(simg, ivec2(texelCoord.x, 1));
+		vec4 c2 = imageLoad(simg, ivec2(texelCoord.y, 2));
+		vec4 c1_ = imageLoad(simg, ivec2(texelCoord.x, p.h));
+		vec4 c2_ = imageLoad(simg, ivec2(texelCoord.y, p.h - 1));
+		c = 2 * c1 - c2;
+		c_ = 2 * c1_ - c2_;
+		imageStore(simg, texelCoord, c);
+		imageStore(simg, ivec2(texelCoord.x, p.h + 1), c_);
+		}
+}
+
+|]
 
 cubicShader :: SpirV.S GlslComputeShader
 cubicShader = [glslComputeShader|
