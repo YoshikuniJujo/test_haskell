@@ -795,41 +795,16 @@ main()
 	float cox[4] = coefficients(pos.x);
 	float coy[4] = coefficients(pos.y);
 
-//	cox[0] = 0; cox[1] = 1; cox[2] = 0; cox[3] = 0;
-//	coy[0] = 0; coy[1] = 1; coy[2] = 0; coy[3] = 0;
-
 	vec4 c16[4][4] = points(ivec2(floor(pos.x), floor(pos.y)));
-
-//	c16[1][1] = vec4(0.0, 1.0, 0.0, 1.0);
 
 	vec4 c = vec4(0.0, 0.0, 0.0, 0.0);
 
-//	for (int y = int(floor(pos.y)) - 1; y < int(floor(pos.y)) + 3; y++)
-//		for (int x = int(floor(pos.x)) - 1; x < int(floor(pos.x)) + 3; x++)
 	for (int y = 0; y < 4; y++)
 		for (int x = 0; x < 4; x++)
 			c += cox[x] * coy[y] * c16[y][x];
 
-//	c = cox[1] * coy[1] * c16[1][1];
-
-//	c = vec4(0.0, 1.0, 0.0, 1.0);
-
 	if (texelCoord.x < size.x && texelCoord.y < size.y)
 		imageStore(dimg, texelCoord, c);
-
-/*
-	if (texelCoord.x < size.x && texelCoord.y < size.y) {
-		vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
-
-		if (1 == 1) {
-			color = imageLoad(simg, ivec2(
-				size.x * 13 / 25 + texelCoord.x / 25,
-				size.y * 15 / 25 + texelCoord.y / 25)); }
-//			color = imageLoad(simg, texelCoord); }
-//			color.x = float(texelCoord.x) / (size.x);
-//			color.y = float(texelCoord.y) / (size.y); }
-		imageStore(dimg, texelCoord, c); }
-		*/
 }
 
 |]
