@@ -7,7 +7,7 @@ import Control.Monad.Primitive
 import Data.Foldable
 import Data.Maybe
 import Data.CairoContext
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Data.Color
 import Codec.Picture
@@ -23,7 +23,7 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 512 1936
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 512 1936
 	cr <- cairoCreate sr
 
 	cairoTranslate cr 16 16

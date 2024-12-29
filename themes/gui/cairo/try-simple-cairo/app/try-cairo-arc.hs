@@ -7,7 +7,7 @@ import Control.Monad.Primitive
 import Data.Bool
 import Data.Maybe
 import Data.CairoContext
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Data.Color
 import Codec.Picture
@@ -20,7 +20,7 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 128
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 256 128
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoSet cr $ LineWidth 8

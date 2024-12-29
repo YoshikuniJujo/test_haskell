@@ -4,7 +4,7 @@
 
 module Main where
 
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
@@ -12,7 +12,7 @@ import Graphics.Cairo.Drawing.CairoPatternT
 import Graphics.Cairo.Drawing.CairoPatternT.Setting
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Utilities.CairoMatrixT
-import Graphics.Cairo.Values
+-- import Graphics.Cairo.Values
 
 main :: IO ()
 main = readImage "data/HaskellLogo.png" >>= \case
@@ -28,7 +28,7 @@ main = readImage "data/HaskellLogo.png" >>= \case
 
 		print =<< cairoMatrixGet =<< cairoPatternGetMatrix pt
 
-		sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
+		sr <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
 		cr <- cairoCreate sr
 		cairoSetSource cr pt
 		cairoPaint cr

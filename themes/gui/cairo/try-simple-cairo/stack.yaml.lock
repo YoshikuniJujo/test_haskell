@@ -3,43 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    name: simple-cairo
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/simple-cairo
-    pantry-tree:
-      size: 5014
-      sha256: 86472182329a8e8a3640f7131e8fe8fd04ca0e8f1103a154c8d8310ac30b672a
-    commit: 5c5f2b52247918141586b137fe3ea1ccd2714675
-  original:
-    git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: 5c5f2b52247918141586b137fe3ea1ccd2714675
-- completed:
-    name: cairo-image
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/cairo-image
-    pantry-tree:
-      size: 887
-      sha256: 46d3b277fcd23a824bc7d035f7288a16db7a211cef6fa858e85c24f079d1cf8a
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
-  original:
-    git: https://github.com/YoshikuniJujo/cairo-image
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
-- completed:
-    name: JuicyCairo
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/JuicyCairo
-    pantry-tree:
-      size: 621
-      sha256: 53a5dc38c1d87f107f8c29ddc3c5117456813b02db51f8e7c71f825735686508
-    commit: ff6c900967213c6c5df1c2b748cfb8e2ce5a1fe0
-  original:
-    git: https://github.com/YoshikuniJujo/JuicyCairo
-    commit: ff6c900967213c6c5df1c2b748cfb8e2ce5a1fe0
+packages: []
 snapshots:
 - completed:
-    size: 585392
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/1.yaml
-    sha256: 4e4c5e435a2f1c6f3c650f282db0f387f806406ed4fe6ef1aa4e6add9035d065
-  original: lts-18.1
+    sha256: 24d27a5eb78ef9232264d7390857dd0e499c21ffe0a0fa4b6a2b5a814f0e4cba
+    size: 620696
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/29.yaml
+  original: nightly-2024-12-29

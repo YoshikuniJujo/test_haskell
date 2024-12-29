@@ -5,7 +5,7 @@ module Main where
 
 import Control.Monad.Primitive
 import Data.Maybe
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Data.CairoContext
 import Data.Color
@@ -19,7 +19,7 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 256 256
 	cr <- cairoCreate sr
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.1 0.3 0.05

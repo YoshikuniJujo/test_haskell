@@ -5,7 +5,7 @@
 module Main where
 
 import Data.Maybe
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Data.Color
 import Codec.Picture
@@ -17,7 +17,7 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 128 128
 	cr <- cairoCreate sr
 	print =<< cairoGet @LineWidth cr
 	cairoSet cr $ LineWidth 3

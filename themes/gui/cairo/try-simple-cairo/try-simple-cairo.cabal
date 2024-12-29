@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 332996127fa3bebfac8c10261f58f69ba46010ac9cebf53934d14da2faf9057c
+-- hash: 879246a47f63f97acaf1e67d96f93a20362d34f2c82da37f73276b9e295e5bc0
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -41,6 +41,7 @@ library
     , primitive
     , simple-cairo
     , text
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-arc
@@ -61,6 +62,7 @@ executable try-cairo-arc
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-clip
@@ -81,6 +83,7 @@ executable try-cairo-clip
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-close-path
@@ -101,6 +104,7 @@ executable try-cairo-close-path
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-curve-to
@@ -121,6 +125,7 @@ executable try-cairo-curve-to
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-fill-rule
@@ -141,6 +146,7 @@ executable try-cairo-fill-rule
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-line-cap
@@ -161,6 +167,7 @@ executable try-cairo-line-cap
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-line-join
@@ -181,6 +188,7 @@ executable try-cairo-line-join
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-mask
@@ -201,6 +209,7 @@ executable try-cairo-mask
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-mask-surface
@@ -221,6 +230,7 @@ executable try-cairo-mask-surface
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-miter-limit
@@ -241,6 +251,7 @@ executable try-cairo-miter-limit
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-new-path
@@ -261,6 +272,7 @@ executable try-cairo-new-path
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-new-sub-path
@@ -281,6 +293,7 @@ executable try-cairo-new-sub-path
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-operator
@@ -301,6 +314,7 @@ executable try-cairo-operator
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-path-extents
@@ -321,6 +335,7 @@ executable try-cairo-path-extents
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-pattern-create-radial
@@ -341,6 +356,7 @@ executable try-cairo-pattern-create-radial
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-pattern-create-rgb
@@ -361,6 +377,7 @@ executable try-cairo-pattern-create-rgb
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-pattern-create-surface
@@ -381,6 +398,7 @@ executable try-cairo-pattern-create-surface
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-pattern-set-matrix
@@ -401,6 +419,7 @@ executable try-cairo-pattern-set-matrix
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-rel-move-error
@@ -421,6 +440,7 @@ executable try-cairo-rel-move-error
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-relative
@@ -441,6 +461,7 @@ executable try-cairo-relative
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-save-restore
@@ -461,6 +482,7 @@ executable try-cairo-save-restore
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-set-source
@@ -481,6 +503,7 @@ executable try-cairo-set-source
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-set-source-surface
@@ -501,6 +524,7 @@ executable try-cairo-set-source-surface
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-stroke
@@ -521,6 +545,7 @@ executable try-cairo-stroke
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-cairo-stroke-preserve
@@ -541,6 +566,7 @@ executable try-cairo-stroke-preserve
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-pdf
@@ -561,6 +587,7 @@ executable try-pdf
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-pdf-stream
@@ -581,6 +608,7 @@ executable try-pdf-stream
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-simple-cairo-exe
@@ -600,6 +628,7 @@ executable try-simple-cairo-exe
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-svg
@@ -620,6 +649,7 @@ executable try-svg
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 executable try-svg-stream
@@ -640,6 +670,7 @@ executable try-svg-stream
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010
 
 test-suite try-simple-cairo-test
@@ -660,4 +691,5 @@ test-suite try-simple-cairo-test
     , simple-cairo
     , text
     , try-simple-cairo
+    , union-color
   default-language: Haskell2010

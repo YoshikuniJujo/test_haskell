@@ -4,7 +4,7 @@
 module Main where
 
 import Data.Maybe
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Data.Color
 import Codec.Picture
@@ -16,7 +16,7 @@ import Graphics.Cairo.Drawing.CairoPatternT.Basic
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
+	sr <- cairoImageSurfaceCreate CairoFormatArgb32 128 128
 	cr <- cairoCreate sr
 	pt <- cairoPatternCreateLinear 96 32 32 96
 	cairoPatternAddColorStopRgb pt 0.2 . fromJust $ rgbDouble 1.0 0.0 0.0
