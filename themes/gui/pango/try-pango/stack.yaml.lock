@@ -3,83 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: union-angle-0.1.0.1@sha256:1aad0108ec091196e0aeb1ba75a31bdeb8d0b8c5dbdb5656e7b5e17349c2bfc0,1307
-    pantry-tree:
-      sha256: 9a8b5e0104052a92a159fff8969e31cb3cbb41296a46b3cdf35f910d568fe89e
-      size: 363
-  original:
-    hackage: union-angle-0.1.0.1
-- completed:
-    commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
-    git: https://github.com/YoshikuniJujo/simple-cairo
-    name: simple-cairo
-    pantry-tree:
-      sha256: 3cefa56f71e50f710257e05aa844061ca948e5438665370978c251e4f8d7a212
-      size: 4958
-    version: 0.1.0.0
-  original:
-    commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
-    git: https://github.com/YoshikuniJujo/simple-cairo
-- completed:
-    commit: a5667505de3f7a9afd1a81e1986c51f2e2ac920c
-    git: https://github.com/YoshikuniJujo/cairo-image
-    name: cairo-image
-    pantry-tree:
-      sha256: b3607b55a00177ccd0813381def933c9d808aab02854fc6847bd6b133d1302c7
-      size: 887
-    version: 0.1.0.0
-  original:
-    commit: a5667505de3f7a9afd1a81e1986c51f2e2ac920c
-    git: https://github.com/YoshikuniJujo/cairo-image
-- completed:
-    commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
-    git: https://github.com/YoshikuniJujo/union-color
-    name: union-color
-    pantry-tree:
-      sha256: b3edab388c6b1bd8298171b9d8c86da664c530ea673d7f7d69c58fb99318bbcc
-      size: 637
-    version: 0.1.2.0
-  original:
-    commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
-    git: https://github.com/YoshikuniJujo/union-color
-- completed:
-    commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
-    git: https://github.com/YoshikuniJujo/JuicyCairo
-    name: JuicyCairo
-    pantry-tree:
-      sha256: ce9e0bbbc4b9db6d85c209040f73222f7e9ab66b95f85536dd71f3aa6ec19a09
-      size: 622
-    version: 0.1.0.0
-  original:
-    commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
-    git: https://github.com/YoshikuniJujo/JuicyCairo
-- completed:
-    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
-    git: https://github.com/YoshikuniJujo/simple-pango
-    name: simple-pango
-    pantry-tree:
-      sha256: c9018bd60f1ab409e0f4b9f4ae6e6265725006c5062b4d5254014ec5aeb473fa
-      size: 3830
-    version: 0.1.0.1
-  original:
-    commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
-    git: https://github.com/YoshikuniJujo/simple-pango
-- completed:
-    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
-    git: https://github.com/YoshikuniJujo/glib-stopgap
-    name: glib-stopgap
-    pantry-tree:
-      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
-      size: 1273
-    version: 0.1.0.0
-  original:
-    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
-    git: https://github.com/YoshikuniJujo/glib-stopgap
+packages: []
 snapshots:
 - completed:
-    sha256: 85d2382958c178491d3fe50d770a624621f5ab456beef7d31ac7521f780c9bc7
-    size: 640042
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/17.yaml
-  original: lts-21.17
+    sha256: 76c2c51158564402ff34d49d9216fbcd97d909e03dec45ee137916233937a11e
+    size: 620698
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/30.yaml
+  original: nightly-2024-12-30

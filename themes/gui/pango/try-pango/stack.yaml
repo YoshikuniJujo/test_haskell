@@ -17,7 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-21.17
+
+resolver: nightly-2024-12-30
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -38,21 +39,8 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
-extra-deps:
-- union-angle-0.1.0.1
-- git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
-- git: https://github.com/YoshikuniJujo/cairo-image
-  commit: a5667505de3f7a9afd1a81e1986c51f2e2ac920c
-- git: https://github.com/YoshikuniJujo/union-color
-  commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
-- git: https://github.com/YoshikuniJujo/JuicyCairo
-  commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
-- git: https://github.com/YoshikuniJujo/simple-pango
-  commit: 14a22cb431f59cc3bd72807b1d1abff0daabbc05
-- git: https://github.com/YoshikuniJujo/glib-stopgap
-  commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+
+extra-deps: []
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
