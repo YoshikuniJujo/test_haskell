@@ -28,6 +28,8 @@ dependencies:
 - JuicyPixels
 - JuicyCairo
 - union-color
+- random
+- array
 
 ghc-options:
 - -Wall
@@ -56,6 +58,16 @@ executables:
     - zenn-bicubic
   simple:
     main:                simple.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - zenn-bicubic
+  nearest:
+    main:                nearest.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
