@@ -60,7 +60,7 @@ main = do
 				(3 * unit * (1 / 3))
 			cairoFill cr
 
-	cairoSet cr $ LineWidth 2
+	cairoSet cr $ LineWidth 1
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.6 0.6 0.6
 
 	for_ [0 .. number] \y -> do
