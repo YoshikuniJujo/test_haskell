@@ -24,8 +24,6 @@ source-repository head
   location: https://github.com/YoshikuniJujo/zenn-bicubic
 
 library
-  exposed-modules:
-      Lib
   other-modules:
       Paths_zenn_bicubic
   autogen-modules:
