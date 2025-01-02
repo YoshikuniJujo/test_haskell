@@ -47,7 +47,7 @@ grid :: PrimMonad m =>
 	CairoT r (PrimState m) -> Margin -> CDouble -> Int -> m ()
 grid cr m u n = do
 	cairoSet cr $ LineWidth 1
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.6 0.6 0.6
 	for_ [0 .. fromIntegral n] \y -> do
 		cairoMoveTo cr 0 (topMargin m + u * y)
 		cairoLineTo cr (leftMargin m + u * fromIntegral n + rightMargin m) (topMargin m + u * y)
