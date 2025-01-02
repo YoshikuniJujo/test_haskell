@@ -24,6 +24,9 @@ source-repository head
   location: https://github.com/YoshikuniJujo/zenn-bicubic
 
 library
+  exposed-modules:
+      Draw
+      Pixels
   other-modules:
       Paths_zenn_bicubic
   autogen-modules:
@@ -41,6 +44,7 @@ library
     , simple-cairo
     , simple-pango
     , text
+    , tools-yj
     , union-color
   default-language: Haskell2010
 
@@ -59,6 +63,7 @@ executable cubic
     , simple-cairo
     , simple-pango
     , text
+    , tools-yj
     , union-color
     , zenn-bicubic
   default-language: Haskell2010
@@ -78,6 +83,7 @@ executable linear
     , simple-cairo
     , simple-pango
     , text
+    , tools-yj
     , union-color
     , zenn-bicubic
   default-language: Haskell2010
@@ -97,6 +103,7 @@ executable nearest
     , simple-cairo
     , simple-pango
     , text
+    , tools-yj
     , union-color
     , zenn-bicubic
   default-language: Haskell2010
@@ -116,6 +123,7 @@ executable simple
     , simple-cairo
     , simple-pango
     , text
+    , tools-yj
     , union-color
     , zenn-bicubic
   default-language: Haskell2010
@@ -135,6 +143,7 @@ executable zenn-bicubic-exe
     , simple-cairo
     , simple-pango
     , text
+    , tools-yj
     , union-color
     , zenn-bicubic
   default-language: Haskell2010
@@ -159,6 +168,7 @@ test-suite zenn-bicubic-test
     , simple-cairo
     , simple-pango
     , text
+    , tools-yj
     , union-color
     , zenn-bicubic
   default-language: Haskell2010

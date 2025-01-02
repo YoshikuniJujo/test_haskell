@@ -30,6 +30,7 @@ dependencies:
 - union-color
 - random
 - array
+- tools-yj
 
 ghc-options:
 - -Wall

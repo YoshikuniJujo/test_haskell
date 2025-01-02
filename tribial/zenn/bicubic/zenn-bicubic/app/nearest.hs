@@ -2,29 +2,20 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import Foreign.C.Types
 import Data.Foldable
 import Data.Maybe
+import Data.Array
 import Data.Color
-import Data.CairoImage.Internal
-import Data.JuicyCairo
-import Codec.Picture
-import System.Random
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting
 import Graphics.Cairo.Drawing.Paths
-import Graphics.Cairo.Surfaces.ImageSurfaces
 
-import Graphics.Pango.Basic.Fonts.PangoFontDescription
-import Graphics.Pango.Basic.LayoutObjects.PangoLayout
-import Graphics.Pango.Rendering.Cairo
-
-import qualified Data.Text as T
-
-import Data.Array
+import Pixels
+import Draw
 
 leftMargin, rightMargin, topMargin, bottomMargin :: CDouble
 leftMargin = 20; rightMargin = 20; topMargin = 20; bottomMargin = 20
@@ -42,12 +33,9 @@ radius' :: CDouble
 radius' = 3
 
 main :: IO ()
-main = do
-	s <- cairoImageSurfaceCreate CairoFormatArgb32
+main = withPng "nearest.png"
 		(floor $ leftMargin + unit * number + rightMargin)
-		(floor $ topMargin + unit * number + bottomMargin)
-	cr <- cairoCreate s
-
+		(floor $ topMargin + unit * number + bottomMargin) \cr -> do
 
 	for_ [1, 1 + 1 / 3 .. 3] \y ->
 		for_ [1, 1 + 1 / 3 .. 3] \x -> do
@@ -103,59 +91,3 @@ main = do
 			cairoStrokePreserve cr
 			cairoSetSourceRgb cr c
 			cairoFill cr
-			
-
-{-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
-	pl <- pangoCairoCreateLayout cr
-	fd <- pangoFontDescriptionNew
-	fd' <- pangoFontDescriptionFreeze fd
-	pangoLayoutSet pl . pangoFontDescriptionToNullable $ Just fd'
-	pangoLayoutSet @T.Text pl "あいうえお\nfoobar"
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
--}
-
-	cairoImageSurfaceGetCairoImage s >>= \case
-		CairoImageArgb32 a -> writePng "nearest.png" $ cairoArgb32ToJuicyRGBA8 a
-		_ -> error "never occur"
-
-colors :: [[Rgb CDouble]]
-colors = sep 5 randomColors
-{-
-colors = (fromJust . uncurry3 rgbDouble . div100 <$>) <$> [
-	[(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)],
-	[(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)],
-	[(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)],
-	[(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)],
-	[(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)] ]
-	-}
-
-colorsA :: Array Int (Array Int (Rgb CDouble))
-colorsA = listArray (0, 4) (listArray (0, 4) <$> colors)
-
-sep :: Int -> [a] -> [[a]]
-sep n [] = []
-sep n xs = take n xs : sep n (drop n xs)
-
-uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
-uncurry3 f (x, y, z) = f x y z
-
-div100 :: Fractional n => (n, n, n) -> (n, n, n)
-div100 (a, b, c) = (a / 100, b / 100, c / 100)
-
-randomColors :: [Rgb CDouble]
-randomColors = fromJust . uncurry3 rgbDouble . div100 <$> tuples3 (randomRs (0, 100) (mkStdGen 8))
-
-tuples3 :: [a] -> [(a, a, a)]
-tuples3 [] = []
-tuples3 [_] = []
-tuples3 [_, _] = []
-tuples3 (x : y : z : xs) = (x, y, z) : tuples3 xs
-
-newtype Point16 a = Point16 [[a]] deriving Show
-
-{-
-mkPoint16s :: [([a], [a])] -> [[Point16 a]]
-mkPoint16s (
-	(xs, xs'), (ys, ys'), (zs, zs'), (ws, ws') = []
-	-}
