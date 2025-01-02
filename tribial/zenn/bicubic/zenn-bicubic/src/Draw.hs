@@ -3,7 +3,7 @@
 
 module Draw (
 	withPng, withPng',
-	fill, strokeAndFill, circle,
+	fill, strokeAndFill, circle, rectangle,
 	grid, Margin(..), coordinateX, coordinateY
 	) where
 
@@ -88,3 +88,8 @@ circle cr m u x y r = do
 		(coordinateX m u x + r) (coordinateY m u y)
 	cairoArc cr
 		(coordinateX m u x) (coordinateY m u y) r 0 (2 * pi)
+
+rectangle :: PrimMonad m => CairoT r (PrimState m) ->
+	Margin -> CDouble -> CDouble -> CDouble -> m ()
+rectangle cr m u x y = cairoRectangle cr
+	(coordinateX m u (x - 1 / 6)) (coordinateY m u (y - 1 / 6)) u u

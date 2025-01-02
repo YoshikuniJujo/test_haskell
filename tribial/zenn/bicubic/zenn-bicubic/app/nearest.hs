@@ -5,12 +5,8 @@
 module Main (main) where
 
 import Foreign.C.Types
-import Graphics.Cairo.Drawing.Paths
 import Pixels
 import Draw
-
-import Control.Monad.Primitive
-import Data.CairoContext
 
 margin :: Margin
 margin = Margin {
@@ -31,9 +27,7 @@ radius' = 3
 main :: IO ()
 main = withPng' "nearest.png" margin unit number \cr -> do
 	forXyv_ distXs distYs nearestColors \x y c -> do
-		cairoRectangle cr
-			(coordinateX margin unit (x - 1 / 6))
-			(coordinateY margin unit (y - 1 / 6)) unit unit
+		rectangle cr margin unit x y
 		fill cr c
 	grid cr margin unit number
 	forXyv_ distXs distYs nearestColors \x y c -> do
@@ -42,8 +36,3 @@ main = withPng' "nearest.png" margin unit number \cr -> do
 	forXyv_ srcXs srcYs colors \x y c -> do
 		circle cr margin unit x y radius
 		strokeAndFill cr 2 gray c
-
-rectangle cr m u x y =
-	cairoRectangle cr
-		(coordinateX m u (x - 1 / 6))
-		(coordinateY m u (y - 1 / 6)) unit unit
