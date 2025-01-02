@@ -20,13 +20,13 @@ import Data.Array
 import Pixels
 import Draw
 
-leftMargin, rightMargin, topMargin, bottomMargin :: CDouble
-leftMargin = 20; rightMargin = 20; topMargin = 20; bottomMargin = 20
+leftMargin', rightMargin', topMargin', bottomMargin' :: CDouble
+leftMargin' = 20; rightMargin' = 20; topMargin' = 20; bottomMargin' = 20
 
 unit :: CDouble
 unit = 30
 
-number :: CDouble
+number :: Int
 number = 12
 
 radius :: CDouble
@@ -37,8 +37,8 @@ radius' = 3
 
 main :: HasCallStack => IO ()
 main = withPng "cubic.png"
-		(floor $ leftMargin + unit * number + rightMargin)
-		(floor $ topMargin + unit * number + bottomMargin) \cr -> do
+		(floor $ leftMargin' + unit * fromIntegral number + rightMargin')
+		(floor $ topMargin' + unit * fromIntegral number + bottomMargin') \cr -> do
 
 	for_ [1, 1 + 1 / 3 .. 3] \y ->
 		for_ [1, 1 + 1 / 3 .. 3] \x -> do
@@ -52,8 +52,8 @@ main = withPng "cubic.png"
 			let	c = foldl add (0, 0, 0) $ concat css'
 			cairoSetSourceRgb cr $ uncurry3 rgbDouble' c
 			cairoRectangle cr
-				(leftMargin + 3 * unit * (x - 1 / 6))
-				(topMargin + 3 * unit * (y - 1 / 6))
+				(leftMargin' + 3 * unit * (x - 1 / 6))
+				(topMargin' + 3 * unit * (y - 1 / 6))
 				(3 * unit * (1 / 3))
 				(3 * unit * (1 / 3))
 			cairoFill cr
@@ -61,15 +61,7 @@ main = withPng "cubic.png"
 	cairoSet cr $ LineWidth 1
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.6 0.6 0.6
 
-	for_ [0 .. number] \y -> do
-		cairoMoveTo cr 0 (topMargin + unit * y)
-		cairoLineTo cr (leftMargin + unit * number + rightMargin) (topMargin + unit * y)
-
-	for_ [0 .. number] \x -> do
-		cairoMoveTo cr (leftMargin + unit * x) 0
-		cairoLineTo cr (leftMargin + unit * x) (topMargin + unit * number + bottomMargin)
-
-	cairoStroke cr
+	grid cr (Margin topMargin' bottomMargin' leftMargin' rightMargin') unit number
 
 	for_ [1, 1 + 1 / 3 .. 3] \y ->
 		for_ [1, 1 + 1 / 3 .. 3] \x -> do
@@ -82,11 +74,11 @@ main = withPng "cubic.png"
 						c `mul` (formula (abs $ yd - yi') * formula (abs $ xd - xi'))
 			let	c = foldl add (0, 0, 0) $ concat css'
 			cairoMoveTo cr
-				(leftMargin + 3 * unit * x + radius')
-				(topMargin + 3 * unit * y)
+				(leftMargin' + 3 * unit * x + radius')
+				(topMargin' + 3 * unit * y)
 			cairoArc cr
-				(leftMargin + 3 * unit * x)
-				(topMargin + 3 * unit * y)
+				(leftMargin' + 3 * unit * x)
+				(topMargin' + 3 * unit * y)
 				radius' 0 (2 * pi)
 			cairoSet cr $ LineWidth 2
 			cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
@@ -97,11 +89,11 @@ main = withPng "cubic.png"
 	for_ (zip [0 .. 4] colors) \(y, cs) ->
 		for_ (zip [0 .. 4] cs) \(x, c) -> do
 			cairoMoveTo cr
-				(leftMargin + 3 * unit * x + radius)
-				(topMargin + 3 * unit * y)
+				(leftMargin' + 3 * unit * x + radius)
+				(topMargin' + 3 * unit * y)
 			cairoArc cr
-				(leftMargin + 3 * unit * x)
-				(topMargin + 3 * unit * y)
+				(leftMargin' + 3 * unit * x)
+				(topMargin' + 3 * unit * y)
 				radius 0 (2 * pi)
 			cairoSet cr $ LineWidth 2
 			cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5

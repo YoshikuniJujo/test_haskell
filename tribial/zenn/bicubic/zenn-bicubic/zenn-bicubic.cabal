@@ -40,6 +40,7 @@ library
     , array
     , base >=4.7 && <5
     , cairo-image
+    , primitive
     , random
     , simple-cairo
     , simple-pango
@@ -59,6 +60,7 @@ executable cubic
     , array
     , base >=4.7 && <5
     , cairo-image
+    , primitive
     , random
     , simple-cairo
     , simple-pango
@@ -79,6 +81,7 @@ executable linear
     , array
     , base >=4.7 && <5
     , cairo-image
+    , primitive
     , random
     , simple-cairo
     , simple-pango
@@ -99,6 +102,7 @@ executable nearest
     , array
     , base >=4.7 && <5
     , cairo-image
+    , primitive
     , random
     , simple-cairo
     , simple-pango
@@ -119,6 +123,7 @@ executable simple
     , array
     , base >=4.7 && <5
     , cairo-image
+    , primitive
     , random
     , simple-cairo
     , simple-pango
@@ -139,6 +144,7 @@ executable zenn-bicubic-exe
     , array
     , base >=4.7 && <5
     , cairo-image
+    , primitive
     , random
     , simple-cairo
     , simple-pango
@@ -164,6 +170,7 @@ test-suite zenn-bicubic-test
     , array
     , base >=4.7 && <5
     , cairo-image
+    , primitive
     , random
     , simple-cairo
     , simple-pango
