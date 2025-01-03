@@ -5,7 +5,7 @@
 module Pixels (
 	colors, colorsA, gray,
 
-	nearestColors, linearColors,
+	nearestColors, linearColors, cubicColors,
 
 	forXyv_, srcXs, srcYs, distXs, distYs
 	) where
@@ -40,13 +40,18 @@ popTuple3 _ = Nothing
 gray :: (Ord d, Fractional d) => Rgb d
 gray = fromJust $ rgbDouble 0.5 0.5 0.5
 
-nearestColors, linearColors :: [[Rgb CDouble]]
+nearestColors, linearColors, cubicColors :: [[Rgb CDouble]]
 nearestColors = interpolate nearest distXs distYs colorsA
 linearColors = interpolate linear distXs distYs colorsA
+cubicColors = interpolate cubic distXs distYs colorsA
 
-nearest, linear :: CDouble -> CDouble
+nearest, linear, cubic :: CDouble -> CDouble
 nearest x = if (x < 0.5) then 1 else 0
+
 linear x = if (x < 1) then 1 - x else 0
+
+cubic x	| x < 1 = (3 * x ^ (3 :: Int) - 5 * x ^ (2 :: Int) + 2) / 2
+	| otherwise = (- x ^ (3 :: Int) + 5 * x ^ (2 :: Int) - 8 * x + 4) / 2
 
 forXyv_ :: Applicative m => [d] -> [d] -> [[v]] -> (d -> d -> v -> m a) -> m ()
 forXyv_ xs ys vss f =

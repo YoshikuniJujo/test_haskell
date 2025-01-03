@@ -68,28 +68,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - zenn-bicubic
-  nearest:
-    main:                nearest.hs
-    other-modules:       []
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - zenn-bicubic
-  linear:
-    main:                linear.hs
-    other-modules:       []
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - zenn-bicubic
-  cubic:
-    main:                cubic.hs
+  enlarged:
+    main:                enlarged.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
