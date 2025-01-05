@@ -5,6 +5,7 @@
 module Main where
 
 import GHC.Stack
+import Foreign.C.Types
 import Data.Foldable
 import Data.Maybe
 import Data.Color
@@ -26,9 +27,12 @@ import qualified Data.Text as T
 
 import Pixels
 
+bottom :: CDouble
+bottom = 250
+
 main :: HasCallStack => IO ()
 main = do
-	s <- cairoImageSurfaceCreate CairoFormatArgb32 500 400
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 450 270
 	cr <- cairoCreate s
 
 	(nm, f, cs) <- getArgs >>= \case
@@ -39,19 +43,19 @@ main = do
 
 	for_ (zip [0 ..] (cs !! 3)) \(i, c) -> do
 		cairoSetSourceRgb cr c
-		cairoRectangle cr (30 + i * 50) (300 - sumRgb c * 80) 50 (sumRgb c * 80)
+		cairoRectangle cr (30 + i * 50) (bottom - sumRgb c * 80) 50 (sumRgb c * 80)
 		cairoFill cr
 
 	let	fn = 15
 		cs' = interpolate f
 			[1, 1 + 1 / (3 * fn) .. 3] [1, 1 + 1 / 3 .. 3] colorsA
 
---	cairoMoveTo cr 50 (300 - sumRgb (cs' !! 3 !! 0) * 80)
+--	cairoMoveTo cr 50 (bottom - sumRgb (cs' !! 3 !! 0) * 80)
 	for_ (zip [0 ..] (cs' !! 3)) \(i, c) -> do
 		let	x = (30 + (i / fn) * 50) + 25
-			y = (300 - sumRgb c * 80)
+			y = (bottom - sumRgb c * 80)
 		cairoLineTo cr x y
---	cairoLineTo cr (30 + fromIntegral (length (cs' !! 3) * 50) / 9) (300 - sumRgb (last $ cs' !! 3) * 80)
+--	cairoLineTo cr (30 + fromIntegral (length (cs' !! 3) * 50) / 9) (bottom - sumRgb (last $ cs' !! 3) * 80)
 	cairoSet cr $ LineWidth 3
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
 	cairoStroke cr
