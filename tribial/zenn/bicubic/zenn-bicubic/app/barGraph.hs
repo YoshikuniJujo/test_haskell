@@ -31,13 +31,6 @@ main = do
 	s <- cairoImageSurfaceCreate CairoFormatArgb32 500 400
 	cr <- cairoCreate s
 
-	cairoSet cr $ LineWidth 8
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.8 0
-	cairoMoveTo cr 20 20
-	cairoLineTo cr 150 150
-	cairoLineTo cr 20 280
-	cairoStroke cr
-
 	(nm, f, cs) <- getArgs >>= \case
 		["nearest"] -> pure ("Nearest", nearest, nearestColors)
 		["linear"] -> pure ("Linear", linear, linearColors)
@@ -49,7 +42,7 @@ main = do
 		cairoRectangle cr (30 + i * 50) (300 - sumRgb c * 80) 50 (sumRgb c * 80)
 		cairoFill cr
 
-	let	fn = 5
+	let	fn = 15
 		cs' = interpolate f
 			[1, 1 + 1 / (3 * fn) .. 3] [1, 1 + 1 / 3 .. 3] colorsA
 
@@ -63,6 +56,14 @@ main = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
 	cairoStroke cr
 
+{-
+	cairoSet cr $ LineWidth 8
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.8 0
+	cairoMoveTo cr 20 20
+	cairoLineTo cr 150 150
+	cairoLineTo cr 20 280
+	cairoStroke cr
+
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	pl <- pangoCairoCreateLayout cr
 	fd <- pangoFontDescriptionNew
@@ -70,6 +71,7 @@ main = do
 	pangoLayoutSet pl . pangoFontDescriptionToNullable $ Just fd'
 	pangoLayoutSet @T.Text pl "あいうえお\nfoobar"
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+-}
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng ("barGraph" ++ nm ++ ".png")
