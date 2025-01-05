@@ -49,6 +49,27 @@ library
     , union-color
   default-language: Haskell2010
 
+executable barGraph
+  main-is: barGraph.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , random
+    , simple-cairo
+    , simple-pango
+    , text
+    , tools-yj
+    , union-color
+    , zenn-bicubic
+  default-language: Haskell2010
+
 executable enlarged
   main-is: enlarged.hs
   hs-source-dirs:

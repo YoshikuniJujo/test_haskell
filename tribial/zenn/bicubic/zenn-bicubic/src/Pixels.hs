@@ -5,6 +5,7 @@
 module Pixels (
 	colors, colorsA, gray,
 
+	interpolate, nearest, linear, cubic,
 	nearestColors, linearColors, cubicColors,
 
 	forXyv_, srcXs, srcYs, distXs, distYs
@@ -63,7 +64,7 @@ srcXs = [0 .. 4]; srcYs = [0 .. 4]
 distXs, distYs :: [CDouble]
 distXs = [1, 1 + 1 / 3 .. 3]; distYs = [1, 1 + 1 / 3 .. 3]
 
-interpolate :: (CDouble -> CDouble) -> [CDouble] -> [CDouble] ->
+interpolate :: HasCallStack => (CDouble -> CDouble) -> [CDouble] -> [CDouble] ->
 	Array Int (Array Int (Rgb CDouble)) -> [[Rgb CDouble]]
 interpolate f xs ys caa = (<$> ys) \y -> (<$> xs) \x ->
 	let	(xi, xd) = properFraction x
