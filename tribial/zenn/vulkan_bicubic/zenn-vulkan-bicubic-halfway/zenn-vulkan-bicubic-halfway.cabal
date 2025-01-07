@@ -42,7 +42,6 @@ library
     , hetero-parameter-list
     , language-spir-v
     , shaderc
-    , storable-hetero-list
     , tools-yj
     , typelevel-tools-yj
   default-language: Haskell2010
@@ -65,7 +64,6 @@ executable zenn-vulkan-bicubic-halfway-exe
     , hetero-parameter-list
     , language-spir-v
     , shaderc
-    , storable-hetero-list
     , tools-yj
     , typelevel-tools-yj
     , zenn-vulkan-bicubic-halfway
@@ -90,7 +88,6 @@ test-suite zenn-vulkan-bicubic-halfway-test
     , hetero-parameter-list
     , language-spir-v
     , shaderc
-    , storable-hetero-list
     , tools-yj
     , typelevel-tools-yj
     , zenn-vulkan-bicubic-halfway

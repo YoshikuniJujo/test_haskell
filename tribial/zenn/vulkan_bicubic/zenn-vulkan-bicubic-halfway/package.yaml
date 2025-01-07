@@ -27,7 +27,6 @@ dependencies:
 - gpu-vulkan
 - shaderc
 - language-spir-v
-- storable-hetero-list
 - hetero-parameter-list
 - tools-yj
 - typelevel-tools-yj
