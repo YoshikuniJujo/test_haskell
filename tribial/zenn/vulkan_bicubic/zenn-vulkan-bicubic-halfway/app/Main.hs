@@ -484,7 +484,7 @@ createCmpPpl d bds shdr f =
 		Vk.ShdrMd.createInfoFlags = zeroBits,
 		Vk.ShdrMd.createInfoCode = shdr }
 
-createPplLyt :: forall (pctps :: [Type]) (pcrng :: Vk.PshCnst.Range) sd a bds . (
+createPplLyt :: forall pctps pcrng sd a bds . (
 	Vk.DscStLyt.BindingListToMiddle bds,
 	Vk.PshCnst.RangeListToMiddle pctps '[pcrng] ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
