@@ -5,27 +5,19 @@
 
 packages:
 - completed:
-    commit: e126945f2751df8fed8c47d15a1d1eab3e599f46
-    git: https://github.com/YoshikuniJujo/gpu-vulkan.git
-    name: gpu-vulkan
+    hackage: gpu-vulkan-0.1.0.166@sha256:0c7ec25d653040262cee83dec7893263180f48ebf13aa707a7b525dcf89f78df,7973
     pantry-tree:
-      sha256: 1547a44bb2297b1f0bf706635d44de96d5c1a7bd016da01bf7269920f77df148
-      size: 12585
-    version: 0.1.0.165
+      sha256: 8971039b0404cabaec3964e28465c20acccbb055787f4df68f77fc761a387ce7
+      size: 11903
   original:
-    commit: e126945f2751df8fed8c47d15a1d1eab3e599f46
-    git: https://github.com/YoshikuniJujo/gpu-vulkan.git
+    hackage: gpu-vulkan-0.1.0.166
 - completed:
-    commit: e03047b727f5e802cf4bd090fe8658a7f127b401
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
-    name: gpu-vulkan-middle
+    hackage: gpu-vulkan-middle-0.1.0.72@sha256:cc17231fcc7844bb49c37cae20584dc0fd307778aa41721b5fbc4ecf762546cc,9029
     pantry-tree:
-      sha256: 1204fe9669a90f6b9d1326fb9e40353b01efc48a6464acae5a489911c6a7440b
-      size: 15963
-    version: 0.1.0.71
+      sha256: 6cd7a4ac212707b97129fc3757cb665f16e66664823cea18c5686d177b7a12ae
+      size: 13400
   original:
-    commit: e03047b727f5e802cf4bd090fe8658a7f127b401
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
+    hackage: gpu-vulkan-middle-0.1.0.72
 - completed:
     hackage: gpu-vulkan-core-0.1.0.20@sha256:c23c2d9d2834c078f6dd1bed9d895bcd0f6655c98e6f70f5c3606dacc4571ec1,3475
     pantry-tree:
@@ -49,7 +41,7 @@ packages:
     hackage: language-spir-v-0.1.0.3
 snapshots:
 - completed:
-    sha256: c496a1a8368855df5978f4b63727c601f5d4ddbdafab66dbba448891745c26f2
-    size: 620694
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/27.yaml
-  original: nightly-2024-12-27
+    sha256: 96d941a6c484efb750ceab66a2dd177caa580391a4e2e4afb14fc4e9f536846f
+    size: 621372
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/6.yaml
+  original: nightly-2025-01-06
