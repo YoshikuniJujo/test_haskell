@@ -574,6 +574,12 @@ formula_n(float x)
 }
 
 float
+formula_n_(float x)
+{
+	if (x <= 0.5) return 1; else return 0;
+}
+
+float
 formula_l(float x)
 {
 	return 1 - x;
@@ -586,7 +592,7 @@ coefficients(float x)
 	float d = fract(x);
 	switch (p.fltr) {
 	case Nearest:
-		co[0] = formula_n(d); co[1] = formula_n(1 - d);
+		co[0] = formula_n(d); co[1] = formula_n_(1 - d);
 		break;
 	case Linear:
 		co[0] = formula_l(d); co[1] = formula_l(1 - d);
