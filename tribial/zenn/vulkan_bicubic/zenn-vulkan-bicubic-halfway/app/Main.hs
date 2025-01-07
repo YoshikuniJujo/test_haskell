@@ -197,9 +197,10 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-		Vk.Cmd.bindDescriptorSetsCompute ccb pl (HPList.Singleton $ U2 ds) def
+		Vk.Cmd.bindDescriptorSetsCompute
+			ccb pl (HPList.Singleton $ U2 ds) def
 		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-			ccb pl (flt :* (fromIntegral n :: Word32) :* ix :* iy :* HPList.Nil)
+			ccb pl (flt :* n' :* ix :* iy :* HPList.Nil)
 		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
 
 	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
@@ -213,10 +214,11 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
 	tr = transitionImgLyt
-	ix, iy :: Word32
+	n', ix, iy :: Word32
+	n' = fromIntegral n
 	ix = fromIntegral $ i `mod` n
 	iy = fromIntegral $ i `div` n
-	a `div'` b = case a `divMod` b of (d, 0) -> d; (d, _) -> d + 1
+	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
 
 type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
