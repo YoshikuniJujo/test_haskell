@@ -206,7 +206,6 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyImgToImg' cb imgs imgs' w h Vk.FilterNearest
---	copyImgToImg cb imgs imgd w h flt n i
 	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
 	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 
@@ -529,9 +528,8 @@ createPplLyt dv tbds f = createDscStLyt dv tbds \dsl ->
 	Vk.PplLyt.create @_ @_ @_ dv (info dsl) nil $ f dsl
 	where
 	info :: Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.CreateInfo 'Nothing '[ '(sdsl, bds)] ('Vk.PshCnst.Layout
---			'[Word32, Word32, Word32] '[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32, Word32, Word32]])
-			pctps '[pcrng])
+		Vk.PplLyt.CreateInfo 'Nothing
+			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps '[pcrng])
 	info dsl = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
@@ -703,14 +701,12 @@ layout(push_constant) uniform P { uint fltr; float a; uint n; uint ix; uint iy; 
 float
 formula01(float x)
 {
-//	return (3 * pow(x, 3) - 5 * pow(x,  2) + 2) / 2;
 	return (p.a + 2) * pow(x, 3) - (p.a + 3) * pow(x, 2) + 1;
 }
 
 float
 formula12(float x)
 {
-//	return (- pow(x, 3) + 5 * pow(x, 2) - 8 * x + 4) / 2;
 	return p.a * pow(x, 3) - 5 * p.a * pow(x, 2) + 8 * p.a * x - 4 * p.a;
 }
 
@@ -751,8 +747,6 @@ coefficients(float x)
 		co[2] = formula01(1 - d); co[3] = formula12(2 - d);
 		break;
 	}
-//	co[0] = formula_n12(d + 1); co[1] = formula_n01(d);
-//	co[2] = formula_n01(1 - d); co[3] = formula_n12(2 - d);
 	return co;
 }
 
@@ -764,12 +758,6 @@ points(ivec2 p)
 	for (int y = 0; y < 4; y++)
 		for (int x = 0; x < 4; x++)
 			c16[y][x] = imageLoad(simg, ivec2(x + p.x, y + p.y));
-	/*
-	for (int y = p.y - 1; y < p.y + 3; y++)
-		for (int x = p.x - 1; x < p.x + 3; x++)
-			c16[y][x] = imageLoad(simg, ivec2(x, y));
-			*/
-//	c16[1][1] = vec4(0.0, 0.0, 1.0, 1.0);
 	return c16;
 }
 
