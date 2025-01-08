@@ -1,0 +1,82 @@
+#version 460
+
+#define Nearest 0
+#define Linear 1
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
+layout(rgba16f,set = 0, binding = 1) uniform image2D dimg;
+
+layout(push_constant) uniform P { uint fltr; uint n; uint ix; uint iy; } p;
+
+float
+formula_n(float x)
+{
+	if (x < 0.5) return 1; else return 0;
+}
+
+float
+formula_n_(float x)
+{
+	if (x <= 0.5) return 1; else return 0;
+}
+
+float
+formula_l(float x)
+{
+	return 1 - x;
+}
+
+float[2]
+coefficients(float x)
+{
+	float co[2];
+	float d = fract(x);
+	switch (p.fltr) {
+	case Nearest:
+		co[0] = formula_n(d); co[1] = formula_n_(1 - d);
+		break;
+	case Linear:
+		co[0] = formula_l(d); co[1] = formula_l(1 - d);
+		break;
+	}
+	return co;
+}
+
+vec4[2][2]
+points(ivec2 p)
+{
+	vec4 c[2][2];
+
+	for (int y = 0; y < 2; y++)
+		for (int x = 0; x < 2; x++)
+			c[y][x] = imageLoad(simg, ivec2(p.x + x, p.y + y));
+	return c;
+}
+
+void
+main()
+{
+	ivec2 size = imageSize(dimg);
+	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+
+	float n, ix, iy;
+	n = float(p.n); ix = float(p.ix); iy = float(p.iy);
+
+	vec2 pos = vec2(
+		float(size.x - 1) * ix / n + float(coord.x) / n,
+		float(size.y - 1) * iy / n + float(coord.y) / n);
+
+	float cox[2] = coefficients(pos.x);
+	float coy[2] = coefficients(pos.y);
+
+	vec4 c4[2][2] = points(ivec2(floor(pos.x), floor(pos.y)));
+
+	vec4 c = vec4(0.0, 0.0, 0.0, 0.0);
+	for (int y = 0; y < 2; y++)
+		for (int x = 0; x < 2; x++)
+			c += cox[x] * coy[y] * c4[y][x];
+
+	if (coord.x < size.x && coord.y < size.y) imageStore(dimg, coord, c);
+}
