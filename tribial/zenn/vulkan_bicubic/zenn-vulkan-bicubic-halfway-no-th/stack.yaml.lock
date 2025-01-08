@@ -26,12 +26,12 @@ packages:
   original:
     hackage: gpu-vulkan-core-0.1.0.20
 - completed:
-    hackage: shaderc-0.1.0.5@sha256:abd04455e790464abf492d2f679a50c11ba9d9fbde034279c7cb9615bd8e563a,2241
+    hackage: shaderc-0.1.0.6@sha256:efa1d3be20c73d1ab585e5667dd0084d43562a0494a0212079ecd163e084ce2b,2241
     pantry-tree:
-      sha256: 21170a1c6843f2555cf2313c3d842ece6a330f007a7f7f78de709bc1578aa5e7
+      sha256: de63cedf112dd1370c7aa07574ef4093c6c9901e15b3463ccee0bfc90b4d374e
       size: 1402
   original:
-    hackage: shaderc-0.1.0.5
+    hackage: shaderc-0.1.0.6
 - completed:
     hackage: language-spir-v-0.1.0.3@sha256:c07d92777e2b0e4ac9bd3ef0902e50c046d42edf1a1a98d17e78d039d60d1351,2079
     pantry-tree:

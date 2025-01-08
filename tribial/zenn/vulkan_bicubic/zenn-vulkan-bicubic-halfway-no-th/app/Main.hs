@@ -37,7 +37,6 @@ import Codec.Picture
 
 import Language.SpirV qualified as SpirV
 import Language.SpirV.Shaderc
-import Language.SpirV.Shaderc.CompileOptions qualified as CompileOptions
 import Language.SpirV.ShaderKind
 
 import Gpu.Vulkan qualified as Vk
@@ -558,10 +557,4 @@ dscWrite ds v = Vk.DscSt.Write {
 compileShader :: IO (SpirV.S GlslComputeShader)
 compileShader = do
 	cd <- BS.readFile "shader/interpolate.comp"
-	compile @() cd "interpolate.comp" "main" CompileOptions.C {
-		CompileOptions.cMacroDefinitions = [],
-		CompileOptions.cSourceLanguage = Nothing,
-		CompileOptions.cGenerateDebugInfo = False,
-		CompileOptions.cOptimizationLevel = Nothing,
-		CompileOptions.cForcedVersionProfile = Nothing,
-		CompileOptions.cIncludeCallbacks = Nothing }
+	compile @() cd "interpolate.comp" "main" def
