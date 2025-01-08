@@ -59,14 +59,26 @@ ghc-options:
 library:
   source-dirs: src
   c-sources:
-  - csrc/hello.c
-  - csrc/quicksort.c
-  - csrc/bitonicsort.c
-  - csrc/mandelbrot.c
+    - csrc/hello.c
+    - csrc/quicksort.c
+    - csrc/bitonicsort.c
+    - csrc/mandelbrot.c
+
+data-files:
+  - shader/hello.spv
 
 executables:
   try-hello-world:
     main:                try-hello-world.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-compute
+  try-hello-world-noth:
+    main:                try-hello-world-noth.hs
     source-dirs:         app
     ghc-options:
     - -threaded

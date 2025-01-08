@@ -18,6 +18,8 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+data-files:
+    shader/hello.spv
 
 source-repository head
   type: git
@@ -211,6 +213,41 @@ executable try-hello
 
 executable try-hello-world
   main-is: try-hello-world.hs
+  other-modules:
+      Paths_try_vulkan_compute
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , deepseq
+    , filepath
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , parallel
+    , random
+    , ranged-list
+    , shaderc
+    , stm
+    , storable-generic
+    , temporary
+    , text
+    , time
+    , tools-yj
+    , try-gpu-vulkan-ext-debug-utils
+    , try-vulkan-compute
+    , typelevel-tools-yj
+    , vector
+  default-language: Haskell2010
+
+executable try-hello-world-noth
+  main-is: try-hello-world-noth.hs
   other-modules:
       Paths_try_vulkan_compute
   hs-source-dirs:
