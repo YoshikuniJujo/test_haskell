@@ -1,0 +1,19 @@
+#version 460
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
+layout(push_constant) uniform P { uint w; } p;
+
+void
+main()
+{
+	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+	if (coord.x == 0) {
+		vec4 c1 = imageLoad(simg, ivec2(1, coord.y));
+		vec4 c2 = imageLoad(simg, ivec2(2, coord.y));
+		vec4 cw = imageLoad(simg, ivec2(p.w, coord.y));
+		vec4 cw1 = imageLoad(simg, ivec2(p.w - 1, coord.y));
+		imageStore(simg, coord, 2 * c1 - c2);
+		imageStore(simg, ivec2(p.w + 1, coord.y), 2 * cw - cw1); }
+}

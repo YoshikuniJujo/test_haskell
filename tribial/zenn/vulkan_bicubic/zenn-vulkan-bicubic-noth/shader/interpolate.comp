@@ -1,0 +1,102 @@
+#version 460
+
+#define Nearest 0
+#define Linear 1
+#define Cubic 2
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
+layout(rgba16f,set = 0, binding = 1) uniform image2D dimg;
+
+layout(push_constant) uniform P { uint fltr; float a; uint n; uint ix; uint iy; } p;
+
+float
+formula01(float x)
+{
+	return (p.a + 2) * pow(x, 3) - (p.a + 3) * pow(x, 2) + 1;
+}
+
+float
+formula12(float x)
+{
+	return p.a * pow(x, 3) - 5 * p.a * pow(x, 2) + 8 * p.a * x - 4 * p.a;
+}
+
+float
+formula_n(float x)
+{
+	if (x < 0.5) return 1; else return 0;
+}
+
+float
+formula_n_(float x)
+{
+	if (x <= 0.5) return 1; else return 0;
+}
+
+float
+formula_l(float x)
+{
+	return 1 - x;
+}
+
+float[4]
+coefficients(float x)
+{
+	float co[4];
+	float d = fract(x);
+	switch (p.fltr) {
+	case Nearest:
+		co[0] = 0; co[3] = 0;
+		co[1] = formula_n(d); co[2] = formula_n_(1 - d);
+		break;
+	case Linear:
+		co[0] = 0; co[3] = 0;
+		co[1] = formula_l(d); co[2] = formula_l(1 - d);
+		break;
+	case Cubic:
+		co[0] = formula12(d + 1); co[1] = formula01(d);
+		co[2] = formula01(1 - d); co[3] = formula12(2 - d);
+		break;
+	}
+	return co;
+}
+
+vec4[4][4]
+points(ivec2 p)
+{
+	vec4 c16[4][4];
+
+	for (int y = 0; y < 4; y++)
+		for (int x = 0; x < 4; x++)
+			c16[y][x] = imageLoad(simg, ivec2(x + p.x, y + p.y));
+	return c16;
+}
+
+void
+main()
+{
+	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 size = imageSize(dimg);
+
+	float n, ix, iy;
+	n = float(p.n); ix = float(p.ix); iy = float(p.iy);
+
+	vec2 pos = vec2(
+		float(size.x - 1) * ix / n + float(coord.x) / n,
+		float(size.y - 1) * iy / n + float(coord.y) / n);
+
+	float cox[4] = coefficients(pos.x);
+	float coy[4] = coefficients(pos.y);
+
+	vec4 c16[4][4] = points(ivec2(floor(pos.x), floor(pos.y)));
+
+	vec4 c = vec4(0.0, 0.0, 0.0, 0.0);
+
+	for (int y = 0; y < 4; y++)
+		for (int x = 0; x < 4; x++)
+			c += cox[x] * coy[y] * c16[y][x];
+
+	if (coord.x < size.x && coord.y < size.y) imageStore(dimg, coord, c);
+}
