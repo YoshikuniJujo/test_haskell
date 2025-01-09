@@ -46,6 +46,9 @@ ghc-options:
 library:
   source-dirs: src
 
+data-files:
+  - shader/interpolate.comp
+
 executables:
   zenn-vulkan-bicubic-halfway-no-th-exe:
     main:                Main.hs

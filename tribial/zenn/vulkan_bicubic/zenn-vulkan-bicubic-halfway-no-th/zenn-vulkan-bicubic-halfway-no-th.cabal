@@ -18,6 +18,8 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+data-files:
+    shader/interpolate.comp
 
 source-repository head
   type: git

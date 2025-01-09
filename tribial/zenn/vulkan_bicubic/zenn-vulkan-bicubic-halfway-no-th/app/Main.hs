@@ -71,6 +71,8 @@ import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
 
+import Paths_zenn_vulkan_bicubic_halfway_no_th
+
 -- DATA TYPE IMAGE RGBA8
 
 newtype ImageRgba8 = ImageRgba8 (Image PixelRGBA8)
@@ -556,5 +558,5 @@ dscWrite ds v = Vk.DscSt.Write {
 
 compileShader :: IO (SpirV.S GlslComputeShader)
 compileShader = do
-	cd <- BS.readFile "shader/interpolate.comp"
+	cd <- BS.readFile =<< getDataFileName "shader/interpolate.comp"
 	compile @() cd "interpolate.comp" "main" def
