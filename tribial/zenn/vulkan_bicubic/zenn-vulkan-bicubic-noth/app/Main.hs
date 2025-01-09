@@ -172,6 +172,8 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = zeroBits,
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
+type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
+
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
 body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
@@ -251,8 +253,6 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	ix = fromIntegral $ i `mod` n
 	iy = fromIntegral $ i `div` n
 	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
-
-type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
