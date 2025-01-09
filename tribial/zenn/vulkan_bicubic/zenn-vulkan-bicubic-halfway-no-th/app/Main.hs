@@ -31,13 +31,14 @@ import Data.Array
 import Data.Word
 import Data.Int
 import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC
 import Text.Read
 import System.Environment
 import Codec.Picture
 
 import Language.SpirV qualified as SpirV
-import Language.SpirV.Shaderc
 import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc qualified as Shaderc
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -182,7 +183,7 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
 
-	compileShader >>= \shdr ->
+	compileShader "shader/interpolate.comp" >>= \shdr ->
 	createCmpPpl @PshCnsts
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts)
 		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
@@ -556,7 +557,7 @@ dscWrite ds v = Vk.DscSt.Write {
 			Vk.Dsc.imageInfoImageView = v,
 			Vk.Dsc.imageInfoSampler = Vk.Smplr.Null } }
 
-compileShader :: IO (SpirV.S GlslComputeShader)
-compileShader = do
-	cd <- BS.readFile =<< getDataFileName "shader/interpolate.comp"
-	compile @() cd "interpolate.comp" "main" def
+compileShader :: FilePath -> IO (SpirV.S GlslComputeShader)
+compileShader fp = do
+	cd <- BS.readFile =<< getDataFileName fp
+	Shaderc.compile @() cd (BSC.pack fp) "main" def
