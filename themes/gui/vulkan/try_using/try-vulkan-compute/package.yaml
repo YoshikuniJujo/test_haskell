@@ -65,6 +65,7 @@ library:
     - csrc/mandelbrot.c
 
 data-files:
+  - shader/hello.comp
   - shader/hello.spv
 
 executables:
@@ -79,6 +80,15 @@ executables:
     - try-vulkan-compute
   try-hello-world-noth:
     main:                try-hello-world-noth.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-compute
+  try-hello-world-noth2:
+    main:                try-hello-world-noth2.hs
     source-dirs:         app
     ghc-options:
     - -threaded
