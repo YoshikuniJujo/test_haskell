@@ -44,43 +44,43 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    hackage: gpu-vulkan-0.1.0.157@sha256:fc72ab5f38c8583a2ed4aa915d3516c660455a68f50918a626ae5f59ace6e1a2,7887
+    hackage: gpu-vulkan-0.1.0.166@sha256:0c7ec25d653040262cee83dec7893263180f48ebf13aa707a7b525dcf89f78df,7973
     pantry-tree:
-      sha256: 71af0ee09b6edd34d7db3ec92fadcaec0db15162f931f977d3ecf99a1c3a5c3e
-      size: 11743
+      sha256: 8971039b0404cabaec3964e28465c20acccbb055787f4df68f77fc761a387ce7
+      size: 11903
   original:
-    hackage: gpu-vulkan-0.1.0.157
+    hackage: gpu-vulkan-0.1.0.166
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.61@sha256:ca2722e5f5c0344167818799c765a35d20e809481d48131f1debbec77cc5430e,8941
+    hackage: gpu-vulkan-middle-0.1.0.72@sha256:cc17231fcc7844bb49c37cae20584dc0fd307778aa41721b5fbc4ecf762546cc,9029
     pantry-tree:
-      sha256: 445d5abcf2682ee21bbbb109680cd3a4b6183598796ba89da448aaf2640ce1d9
-      size: 13155
+      sha256: 6cd7a4ac212707b97129fc3757cb665f16e66664823cea18c5686d177b7a12ae
+      size: 13400
   original:
-    hackage: gpu-vulkan-middle-0.1.0.61
+    hackage: gpu-vulkan-middle-0.1.0.72
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.13@sha256:da06dbcb0740ec8b9f2afadfcc3401303a0bd241351e1ccac9f172205e75e042,3475
+    hackage: gpu-vulkan-core-0.1.0.20@sha256:c23c2d9d2834c078f6dd1bed9d895bcd0f6655c98e6f70f5c3606dacc4571ec1,3475
     pantry-tree:
-      sha256: 2d5c293a15a038943f818b3a4d6b47bf90ec2ba24f0f7f0690052e740e64cd4f
-      size: 5004
+      sha256: 9172eb514a5470ebb1801fa6435f7f0d0756d8266ad4be8b3439327a5d683ce4
+      size: 5152
   original:
-    hackage: gpu-vulkan-core-0.1.0.13
+    hackage: gpu-vulkan-core-0.1.0.20
 - completed:
-    hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
+    hackage: language-spir-v-0.1.0.3@sha256:c07d92777e2b0e4ac9bd3ef0902e50c046d42edf1a1a98d17e78d039d60d1351,2079
     pantry-tree:
-      sha256: abce419a94c3bceaa50e2a211c1e9de63d47e7b33a2ff8017b04904defd6dcdd
+      sha256: 070eec1689892418ff45135d972b3464fc884e102bbbbbf43f99e934d77db5e8
       size: 650
   original:
-    hackage: language-spir-v-0.1.0.1
+    hackage: language-spir-v-0.1.0.3
 - completed:
-    hackage: shaderc-0.1.0.5@sha256:abd04455e790464abf492d2f679a50c11ba9d9fbde034279c7cb9615bd8e563a,2241
+    hackage: shaderc-0.1.0.6@sha256:efa1d3be20c73d1ab585e5667dd0084d43562a0494a0212079ecd163e084ce2b,2241
     pantry-tree:
-      sha256: 21170a1c6843f2555cf2313c3d842ece6a330f007a7f7f78de709bc1578aa5e7
+      sha256: de63cedf112dd1370c7aa07574ef4093c6c9901e15b3463ccee0bfc90b4d374e
       size: 1402
   original:
-    hackage: shaderc-0.1.0.5
+    hackage: shaderc-0.1.0.6
 snapshots:
 - completed:
-    sha256: d8dc721b84e82edf05bbcccfb474fb206e848743d75e2a3aef7219cbdd0e767b
-    size: 611659
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/12/15.yaml
-  original: nightly-2024-12-15
+    sha256: ff0e48768873e05a2a70e1a9b432ad81b3fa4bb3b0931fbaff714a09ff2201ec
+    size: 621381
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/8.yaml
+  original: nightly-2025-01-08

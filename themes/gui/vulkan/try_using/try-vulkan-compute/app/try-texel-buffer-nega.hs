@@ -232,7 +232,7 @@ crPpls dv dsl a =
 		Vk.Ppl.ShaderSt.createInfoModule = (mdinfo sdr, nil),
 		Vk.Ppl.ShaderSt.createInfoName = "main",
 		Vk.Ppl.ShaderSt.createInfoSpecializationInfo =
-			Just $ 3 :* 10 :* HPList.Nil }
+			3 :* 10 :* HPList.Nil }
 	mdinfo sdr = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
