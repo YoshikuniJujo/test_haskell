@@ -26,13 +26,13 @@ mkSwizzleSigTup :: String -> Name -> TypeQ
 mkSwizzleSigTup cs a = tupT $ (<$> cs) \c -> typX c `appT` varT a
 
 clsSwizzle :: Int -> TypeQ
-clsSwizzle = conT . mkNameG_tc swizzleClassPkg "Data.Swizzle.Class" . ("Swizzle" ++) . show
+clsSwizzle = conT . mkNameG_tc swizzleClassPkg "Data.Swizzle.Class.Base" . ("Swizzle" ++) . show
 
 funX :: Char -> ExpQ
-funX = varE . mkNameG_v swizzleClassPkg "Data.Swizzle.Class" . (: "")
+funX = varE . mkNameG_v swizzleClassPkg "Data.Swizzle.Class.Base" . (: "")
 
 typX :: Char -> TypeQ
-typX = conT . mkNameG_tc swizzleClassPkg "Data.Swizzle.Class" . (: "") . toUpper
+typX = conT . mkNameG_tc swizzleClassPkg "Data.Swizzle.Class.Base" . (: "") . toUpper
 
 tupT :: [TypeQ] -> TypeQ
 tupT ts = foldl appT (tupleT $ length ts) ts

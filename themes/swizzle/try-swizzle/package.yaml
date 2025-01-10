@@ -31,7 +31,6 @@ library:
   - Data.Swizzle
   - Data.Swizzle.TH
   - Data.Swizzle.Class
-  - Data.Swizzle.Class.TH
 
 executables:
   try-swizzle-exe:

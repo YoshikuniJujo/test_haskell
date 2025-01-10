@@ -3,9 +3,10 @@
 {-# LANGUAGE StandaloneDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Try.InstanceSwizzleTuple where
+module Data.Swizzle.Instance.Tuple57OrMore where
 
-import Data.Swizzle.Class
+import GHC.Exts
+import Data.Swizzle.Class.Base
 import Data.Swizzle.Class.TH
 
--- instanceSwizzleTuple 30
+concat <$> instanceSwizzleTuple `mapM` [57 .. maxTupleSize]

@@ -5,6 +5,10 @@ module Data.Swizzle where
 
 import Data.Swizzle.TH
 
-concat <$> swizzle `mapM` reverse [ [a, b] | a <- "xyz", b <- "xyz" ]
-concat <$> swizzle `mapM` reverse
-	[ [a, b, c] | a <- "xyz", b <- "xyz", c <- "xyz"]
+concat <$> swizzle `mapM` [ [a'] | a' <- "xyz" ++ reverse ['a' .. 'w'] ]
+concat <$> swizzle `mapM` [ [a', b'] | a' <- "xyzw", b' <- "xyzw" ]
+concat <$> swizzle `mapM`
+	[ [a', b', c'] | a' <- "xyzw", b' <- "xyzw", c' <- "xyzw"]
+concat <$> swizzle `mapM`
+	[ [a', b', c', d'] |
+		a' <- "xyzw", b' <- "xyzw", c' <- "xyzw", d' <- "xyzw"]

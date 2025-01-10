@@ -1,15 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE StandaloneDeriving, DeriveGeneric #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
+module Data.Swizzle.Class (module Data.Swizzle.Class.Base) where
 
-module Data.Swizzle.Class where
-
-import Data.Swizzle.Class.TH.Internal
-
-concat <$> classSwizzle `mapM` [1 .. 26]
-
-concat <$> instanceSwizzleTuple `mapM` [1 .. 26]
+import Data.Swizzle.Class.Base
+import Data.Swizzle.Instance.TupleBetween27And30
+import Data.Swizzle.Instance.TupleBetween31And40
+import Data.Swizzle.Instance.TupleBetween41And50
+import Data.Swizzle.Instance.TupleBetween51And56
+import Data.Swizzle.Instance.Tuple57OrMore

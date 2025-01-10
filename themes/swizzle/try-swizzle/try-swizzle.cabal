@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -30,13 +30,18 @@ library
       Data.Swizzle
       Data.Swizzle.TH
       Data.Swizzle.Class
-      Data.Swizzle.Class.TH
   other-modules:
+      Data.Swizzle.Class.Base
       Data.Swizzle.Class.Pkg
+      Data.Swizzle.Class.TH
       Data.Swizzle.Class.TH.Internal
+      Data.Swizzle.Instance.Tuple57OrMore
+      Data.Swizzle.Instance.TupleBetween27And30
+      Data.Swizzle.Instance.TupleBetween31And40
+      Data.Swizzle.Instance.TupleBetween41And50
+      Data.Swizzle.Instance.TupleBetween51And56
       Try.Color
       Try.Flip
-      Try.InstanceSwizzleTuple
       Try.SwizzleFun
       Paths_try_swizzle
   hs-source-dirs:
