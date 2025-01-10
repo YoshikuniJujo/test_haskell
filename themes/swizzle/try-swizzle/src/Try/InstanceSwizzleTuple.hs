@@ -8,4 +8,4 @@ module Try.InstanceSwizzleTuple where
 import Data.Swizzle.Class
 import Data.Swizzle.Class.TH
 
-instanceSwizzleTuple 30
+-- instanceSwizzleTuple 30

@@ -8,10 +8,8 @@
 
 module Data.Swizzle.Class where
 
-import GHC.Exts
 import Data.Swizzle.Class.TH.Internal
 
 concat <$> classSwizzle `mapM` [1 .. 26]
 
--- concat <$> instanceSwizzleTuple `mapM` [1 .. maxTupleSize]
 concat <$> instanceSwizzleTuple `mapM` [1 .. 26]

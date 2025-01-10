@@ -16,8 +16,6 @@ classSwizzle i = sequence ((bool id (instanceGswizzle1K1 :) $ i == 1) [
 		instanceGswizzleProd i,
 		instanceGswizzleProdProd i,
 		classSwizzleClass i ])
---	<*> instanceSwizzleTuples n
---	<*> deriveGeneric i
 
 instanceSwizzleTuple :: Int -> DecsQ
 instanceSwizzleTuple n = (++)
@@ -220,10 +218,6 @@ alphabet i = (("xyz" ++ reverse ['a' .. 'w']) !!) $ subtract 1 i
 
 vars :: [String]
 vars = ((: "") <$> ['a' .. 'z']) ++ [ cs ++ [c] | cs <- vars, c <- ['a' .. 'z'] ]
-
-instanceSwizzleTuples :: Int -> DecsQ
-instanceSwizzleTuples = \case
-	i -> mapM (`instanceSwizzleTuple_` i) [1 .. min i 26]
 
 instanceSwizzleTuple_ :: Int -> Int -> Q Dec
 instanceSwizzleTuple_ i n = mapM (newName . (vars !!)) [0 .. n - 1] >>= \ns ->
