@@ -5,18 +5,16 @@
 
 packages:
 - completed:
-    commit: 698154c7eb252c4e78c407e27a400edcc51411f3
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-swizzle
+    commit: f4933bf3a52007533b580104574b575f4bffd0e3
+    git: https://github.com/YoshikuniJujo/swizzle
+    name: swizzle
     pantry-tree:
-      sha256: a584cc91ccbda0b288926cd501c95dc7c20e6968f4fc42ac98a2077a86188d9b
-      size: 1758
-    subdir: themes/swizzle/try-swizzle
+      sha256: 564f1533130aebd7ad0398d4d4c6b3d1ce42ba185d50ec8339db50840f2729ae
+      size: 1533
     version: 0.1.0.0
   original:
-    commit: 698154c7eb252c4e78c407e27a400edcc51411f3
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/swizzle/try-swizzle
+    commit: f4933bf3a52007533b580104574b575f4bffd0e3
+    git: https://github.com/YoshikuniJujo/swizzle
 snapshots:
 - completed:
     sha256: ecd239d0bc1d0fc6a03846a2d16a14eb387f4804560b2952e25b6c33553c7568

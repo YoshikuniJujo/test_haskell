@@ -28,6 +28,8 @@ library
       Lib
       Try.Color
       Try.Flip
+      Try.ReadMeSample1
+      Try.ReadMeSample2
       Try.SwizzleFun
   other-modules:
       Paths_try_use_swizzle
@@ -38,7 +40,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , try-swizzle
+    , swizzle
   default-language: Haskell2010
 
 executable try-use-swizzle-exe
@@ -52,7 +54,7 @@ executable try-use-swizzle-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , try-swizzle
+    , swizzle
     , try-use-swizzle
   default-language: Haskell2010
 
@@ -68,6 +70,6 @@ test-suite try-use-swizzle-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , try-swizzle
+    , swizzle
     , try-use-swizzle
   default-language: Haskell2010
