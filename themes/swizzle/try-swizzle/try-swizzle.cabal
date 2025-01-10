@@ -40,9 +40,6 @@ library
       Data.Swizzle.Instance.TupleBetween31And40
       Data.Swizzle.Instance.TupleBetween41And50
       Data.Swizzle.Instance.TupleBetween51And56
-      Try.Color
-      Try.Flip
-      Try.SwizzleFun
       Paths_try_swizzle
   hs-source-dirs:
       src
