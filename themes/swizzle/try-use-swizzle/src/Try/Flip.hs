@@ -18,3 +18,9 @@ flip' f = crr3 $ unc3 f . yzx
 
 flip'' :: (c -> a -> b -> r) -> a -> b -> c -> r
 flip'' f = crr3 $ unc3 f . zxy
+
+foo :: (Show a, Show b, Show c, Show d) => a -> b -> c -> d -> String
+foo x y z w = show x ++ show y ++ show z ++ show w
+
+bar :: String
+bar = flip13 foo 1 2 3 4
