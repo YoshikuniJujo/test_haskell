@@ -28,6 +28,7 @@ library
       Lib
       Try.Color
       Try.Flip
+      Try.Flip2
       Try.ReadMeSample1
       Try.ReadMeSample2
       Try.SwizzleFun
