@@ -3,17 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: swizzle-0.1.0.3@sha256:de31c2e9879ea6cc3236b9d235bd8cfe9b3b38113f14f3d46e171e248771074c,2224
-    pantry-tree:
-      sha256: 6f6ea8ab27d1eecd01d58e71864b311251a1c338787010bcecf62a4fd70573a8
-      size: 1414
-  original:
-    hackage: swizzle-0.1.0.3
+packages: []
 snapshots:
 - completed:
-    sha256: 776b860cca4e9106b51f401ddbc6d8d95ba417ec326d9c869013fef1086a9a17
-    size: 621385
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/11.yaml
-  original: nightly-2025-01-11
+    sha256: a7ceba64970d8efabd56c5be91450344bf06c3b63bcf04327af64abe03db6698
+    size: 629581
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/13.yaml
+  original: nightly-2025-01-13
