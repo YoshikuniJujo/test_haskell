@@ -20,7 +20,5 @@ bar :: String
 bar = flip13 foo 1 2 3 4
 
 baz :: IO ()
-baz = crr3 (unc3 zipWithM_ . Swz.zxy) [1 :: Int ..] strs \i n ->
+baz = crr3 (unc3 zipWithM_ . Swz.zxy) [1 :: Int ..] ["Hwllo", "World"] \i n ->
 	putStrLn $ show i ++ " " ++ n
-	where
-	strs = ["Hello", "World", "Yoshio"]
