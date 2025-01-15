@@ -505,9 +505,9 @@ createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createDscStLyt :: Vk.DscStLyt.BindingListToMiddle arg =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding arg ->
-	(forall (s :: Type) . Vk.DscStLyt.D s arg -> IO a) -> IO a
+createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
+	(forall sdsl . Vk.DscStLyt.D sdsl bts -> IO a) -> IO a
 createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
 	where info = Vk.DscStLyt.CreateInfo {
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
