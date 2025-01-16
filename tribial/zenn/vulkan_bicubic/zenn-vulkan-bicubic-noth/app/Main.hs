@@ -14,7 +14,6 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -177,12 +176,12 @@ type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
 body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
-	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
-	prepareImg @ShaderFormat pd dv w h \imgd' ->
-	prepareImg @ShaderFormat pd dv (w + 2) (h + 2) \imgs' ->
+	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
+	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
+	prepareImg @ShaderFormat pd dv std (w + 2) (h + 2) \imgs' ->
 	Vk.ImgVw.create @_ @ShaderFormat dv (imgVwInfo imgd') nil \imgvwd' ->
 	Vk.ImgVw.create @_ @ShaderFormat dv (imgVwInfo imgs') nil \imgvws' ->
-	prepareImg pd dv w h \imgs ->
+	prepareImg pd dv trsd w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
@@ -202,8 +201,8 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	compileShader "shader/interpolate.comp" >>= \ips ->
 	createCmpPpl @PshCnsts
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts)
-		dv (strImgBinding :** strImgBinding :** HPList.Nil)
-		ips \dsl pl ppl ->
+		dv (strImgBinding :** strImgBinding :** HPList.Nil) ips
+		\dsl pl ppl ->
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
 
 	runCmds dv gq cp \cb -> do
@@ -244,6 +243,9 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToBffr cb imgd rb
 	where
+	trsd = Vk.Img.UsageTransferSrcBit .|. Vk.Img.UsageTransferDstBit
+	sts = Vk.Img.UsageStorageBit .|. Vk.Img.UsageTransferSrcBit
+	std = Vk.Img.UsageStorageBit .|. Vk.Img.UsageTransferDstBit
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
@@ -328,9 +330,9 @@ createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.UsageFlags -> Word32 -> Word32 ->
 	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
-prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
@@ -347,10 +349,7 @@ prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Img.createInfoArrayLayers = 1,
 		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
 		Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
-		Vk.Img.createInfoUsage =
-			Vk.Img.UsageSampledBit .|. Vk.Img.UsageStorageBit .|.
-			Vk.Img.UsageTransferSrcBit .|.
-			Vk.Img.UsageTransferDstBit,
+		Vk.Img.createInfoUsage = usg,
 		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Img.createInfoQueueFamilyIndices = [],
 		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
@@ -411,8 +410,7 @@ bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 transitionImgLyt :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
 transitionImgLyt cb i ol nl =
-	Vk.Cmd.pipelineBarrier cb
-		Vk.Ppl.StageTopOfPipeBit Vk.Ppl.StageTransferBit zeroBits
+	Vk.Cmd.pipelineBarrier cb srcst dstst zeroBits
 		HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
 	where
 	brrr = Vk.Img.MemoryBarrier {
@@ -423,20 +421,32 @@ transitionImgLyt cb i ol nl =
 		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
 		Vk.Img.memoryBarrierImage = i,
 		Vk.Img.memoryBarrierSubresourceRange = srr,
-		Vk.Img.memoryBarrierSrcAccessMask = zeroBits,
-		Vk.Img.memoryBarrierDstAccessMask = case nl of
-			Vk.Img.LayoutTransferSrcOptimal ->
-				Vk.AccessTransferReadBit
-			Vk.Img.LayoutTransferDstOptimal ->
-				Vk.AccessTransferWriteBit
-			Vk.Img.LayoutGeneral -> Vk.AccessTransferReadBit
-			_ -> error "unsupported layout transition!" }
+		Vk.Img.memoryBarrierSrcAccessMask = srcam,
+		Vk.Img.memoryBarrierDstAccessMask = dstam }
 	srr = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 }
+	(srcst, dstst, srcam, dstam) = case (ol, nl) of
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit,
+			zeroBits, Vk.AccessTransferWriteBit )
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutGeneral) -> (
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageComputeShaderBit,
+			zeroBits, Vk.AccessShaderWriteBit )
+		(Vk.Img.LayoutTransferDstOptimal,
+			Vk.Img.LayoutTransferSrcOptimal) -> (
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit,
+			Vk.AccessTransferWriteBit, Vk.AccessTransferReadBit )
+		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutGeneral) -> (
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageComputeShaderBit,
+			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit )
+		(Vk.Img.LayoutGeneral, Vk.Img.LayoutTransferSrcOptimal) -> (
+			Vk.Ppl.StageComputeShaderBit, Vk.Ppl.StageTransferBit,
+			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
+		_ -> error "unsupported layout transition!"
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
@@ -547,9 +557,9 @@ createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createDscStLyt :: Vk.DscStLyt.BindingListToMiddle arg =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding arg ->
-	(forall (s :: Type) . Vk.DscStLyt.D s arg -> IO a) -> IO a
+createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
+	(forall sdsl . Vk.DscStLyt.D sdsl bts -> IO a) -> IO a
 createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
 	where info = Vk.DscStLyt.CreateInfo {
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
