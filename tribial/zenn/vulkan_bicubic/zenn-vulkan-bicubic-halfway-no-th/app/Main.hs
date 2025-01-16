@@ -382,8 +382,7 @@ bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 transitionImgLyt :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
 transitionImgLyt cb i ol nl =
-	Vk.Cmd.pipelineBarrier cb
-		Vk.Ppl.StageTopOfPipeBit Vk.Ppl.StageTransferBit zeroBits
+	Vk.Cmd.pipelineBarrier cb srcst dstst zeroBits
 		HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
 	where
 	brrr = Vk.Img.MemoryBarrier {
@@ -394,20 +393,32 @@ transitionImgLyt cb i ol nl =
 		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
 		Vk.Img.memoryBarrierImage = i,
 		Vk.Img.memoryBarrierSubresourceRange = srr,
-		Vk.Img.memoryBarrierSrcAccessMask = zeroBits,
-		Vk.Img.memoryBarrierDstAccessMask = case nl of
-			Vk.Img.LayoutTransferSrcOptimal ->
-				Vk.AccessTransferReadBit
-			Vk.Img.LayoutTransferDstOptimal ->
-				Vk.AccessTransferWriteBit
-			Vk.Img.LayoutGeneral -> Vk.AccessTransferReadBit
-			_ -> error "unsupported layout transition!" }
+		Vk.Img.memoryBarrierSrcAccessMask = srcam,
+		Vk.Img.memoryBarrierDstAccessMask = dstam }
 	srr = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = 1,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = 1 }
+	(srcst, dstst, srcam, dstam) = case (ol, nl) of
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit,
+			zeroBits, Vk.AccessTransferWriteBit )
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutGeneral) -> (
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageComputeShaderBit,
+			zeroBits, Vk.AccessShaderWriteBit )
+		(Vk.Img.LayoutTransferDstOptimal,
+			Vk.Img.LayoutTransferSrcOptimal) -> (
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit,
+			Vk.AccessTransferWriteBit, Vk.AccessTransferReadBit )
+		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutGeneral) -> (
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageComputeShaderBit,
+			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit )
+		(Vk.Img.LayoutGeneral, Vk.Img.LayoutTransferSrcOptimal) -> (
+			Vk.Ppl.StageComputeShaderBit, Vk.Ppl.StageTransferBit,
+			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
+		_ -> error "unsupported layout transition!"
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
