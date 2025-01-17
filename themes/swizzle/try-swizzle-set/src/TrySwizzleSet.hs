@@ -1,15 +1,15 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE DefaultSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TrySwizzleSet where
 
-import GHC.Generics
+import Data.Swizzle.Set.Class.TH.Internal
 
-class GSwizzleSet1 f where
-	type GX f
+concat <$> classSwizzle `mapM` [1 .. 26]
 
-	gx :: GX f -> f a -> f a
-
-instance GSwizzleSet1 (K1 i a) where
-	type GX (K1 i a) = a
-	gx a (K1 _) = K1 a
+instance SwizzleSet1 (x, b, c) where type X (x, b, c) = x
+instance SwizzleSet2 (x, b, c) where type Y (x, b, c) = b
