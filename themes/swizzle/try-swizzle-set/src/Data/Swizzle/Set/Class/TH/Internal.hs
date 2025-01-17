@@ -17,6 +17,11 @@ classSwizzle i = sequence $ (bool id (instanceGswizzle1K1 :) $ i == 1) [
 	instanceGswizzleProdProd i,
 	classSwizzleClass i ]
 
+instanceSwizzleTuple :: Int -> DecsQ
+instanceSwizzleTuple n = (++)
+	<$> (`instanceSwizzleTuple_` n) `mapM` [1 .. min n 26]
+	<*> deriveGeneric n
+
 classGswizzle :: Int -> Q Dec
 classGswizzle i = newName "a" >>= \a -> classD (cxt [])
 	(nameGswizzle i) [plainTV $ mkName "f"] [] [typeGx i, sigGx i a]
@@ -260,3 +265,27 @@ infixr 7 `comE`
 
 comE :: ExpQ -> ExpQ -> ExpQ
 e1 `comE` e2 = infixE (Just e1) (varE '(.)) (Just e2)
+
+instanceSwizzleTuple_ :: Int -> Int -> Q Dec
+instanceSwizzleTuple_ i n = mapM (newName . (vars !!)) [0 .. n - 1] >>= \ns ->
+	instanceD (cxt []) (conT (nameSwizzle i) `appT` tupT ns) [typeXFromTuple i ns]
+
+vars :: [String]
+vars = ((: "") <$> ['a' .. 'z']) ++ [ cs ++ [c] | cs <- vars, c <- ['a' .. 'z'] ]
+
+typeXFromTuple :: Int -> [Name] -> Q Dec
+typeXFromTuple i ns = tySynInstD $ tySynEqn Nothing (conT (nameXU i) `appT` tupT ns) (varT $ ns !! (i - 1))
+
+tupT :: [Name] -> TypeQ
+tupT ns = foldl appT (tupleT $ length ns) $ varT <$> ns
+
+deriveGeneric :: Int -> DecsQ
+deriveGeneric i = do
+	t <- tupT =<< newNameAbc i
+	isInstance ''Generic [t] >>= bool
+		((: []) <$> standaloneDerivD (cxt [])
+			(conT ''Generic `appT` pure t))
+		(pure [])
+
+newNameAbc :: Int -> Q [Name]
+newNameAbc i = newName `mapM` take i vars

@@ -3,13 +3,12 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE StandaloneDeriving, DeriveGeneric #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module TrySwizzleSet where
+module Data.Swizzle.Set.Class.Base where
 
 import Data.Swizzle.Set.Class.TH.Internal
 
 concat <$> classSwizzle `mapM` [1 .. 26]
-
-instance SwizzleSet1 (x, b, c) where type X (x, b, c) = x
-instance SwizzleSet2 (x, b, c) where type Y (x, b, c) = b
+concat <$> instanceSwizzleTuple `mapM` [1 .. 26]

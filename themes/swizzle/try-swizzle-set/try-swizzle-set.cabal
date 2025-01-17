@@ -25,9 +25,13 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Swizzle.Set
+      Data.Swizzle.Set.Class.Base
+      Data.Swizzle.Set.Class.Pkg
       Data.Swizzle.Set.Class.TH.Internal
+      Data.Swizzle.Set.TH
       Lib
-      TrySwizzleSet
+      TryXy
   other-modules:
       Paths_try_swizzle_set
   autogen-modules:
