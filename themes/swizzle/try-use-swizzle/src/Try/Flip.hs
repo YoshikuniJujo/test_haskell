@@ -8,7 +8,7 @@ import Data.List
 import Data.Curry
 import Data.Swizzle.TH
 
-concat <$> swizzle `mapM` permutations "xyz"
+concat <$> swizzle "" `mapM` permutations "xyz"
 
 flip13 :: (a -> b -> c -> r) -> c -> b -> a -> r
 flip13 f = crr3 $ unc3 f . zyx

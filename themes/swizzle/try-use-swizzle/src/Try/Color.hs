@@ -12,7 +12,7 @@ import qualified Data.Swizzle.Class as S
 import Data.Swizzle.TH
 import Data.Curry
 
-swizzle "yzwx"
+swizzle "" "yzwx"
 
 newtype Red = Red Double deriving Show
 newtype Green = Green Double deriving Show

@@ -3,7 +3,18 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: fbe34d27a487230560bbeef5278262b72b1caa6a
+    git: https://github.com/YoshikuniJujo/swizzle
+    name: swizzle
+    pantry-tree:
+      sha256: 6de795cd16217f8b2fed209a08e0c68749279d511c9c67f98259c29a282179f7
+      size: 1622
+    version: 0.1.0.3
+  original:
+    commit: fbe34d27a487230560bbeef5278262b72b1caa6a
+    git: https://github.com/YoshikuniJujo/swizzle
 snapshots:
 - completed:
     sha256: a7ceba64970d8efabd56c5be91450344bf06c3b63bcf04327af64abe03db6698
