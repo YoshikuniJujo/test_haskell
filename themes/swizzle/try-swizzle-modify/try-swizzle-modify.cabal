@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Try.SwizzleModifyBase
   other-modules:
       Paths_try_swizzle_modify
   autogen-modules:
