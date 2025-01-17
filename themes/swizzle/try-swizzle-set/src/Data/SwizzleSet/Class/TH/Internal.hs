@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Swizzle.Set.Class.TH.Internal where
+module Data.SwizzleSet.Class.TH.Internal where
 
 import GHC.Generics
 import Language.Haskell.TH

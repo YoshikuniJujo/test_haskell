@@ -25,14 +25,20 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Swizzle.Set
-      Data.Swizzle.Set.Class.Base
-      Data.Swizzle.Set.Class.Pkg
-      Data.Swizzle.Set.Class.TH.Internal
-      Data.Swizzle.Set.TH
-      Lib
-      TryXy
+      Data.SwizzleSet
+      Data.SwizzleSet.Class
+      Data.SwizzleSet.TH
   other-modules:
+      Data.SwizzleSet.Class.Base
+      Data.SwizzleSet.Class.Pkg
+      Data.SwizzleSet.Class.TH.Internal
+      Data.SwizzleSet.Instance.Tuple58OrMore
+      Data.SwizzleSet.Instance.TupleBetween27And30
+      Data.SwizzleSet.Instance.TupleBetween31And40
+      Data.SwizzleSet.Instance.TupleBetween41And46
+      Data.SwizzleSet.Instance.TupleBetween47And52
+      Data.SwizzleSet.Instance.TupleBetween53And57
+      Lib
       Paths_try_swizzle_set
   autogen-modules:
       Paths_try_swizzle_set
@@ -42,21 +48,6 @@ library
   build-depends:
       base >=4.7 && <5
     , template-haskell
-  default-language: Haskell2010
-
-executable try-swizzle-set-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_try_swizzle_set
-  autogen-modules:
-      Paths_try_swizzle_set
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , template-haskell
-    , try-swizzle-set
   default-language: Haskell2010
 
 test-suite try-swizzle-set-test

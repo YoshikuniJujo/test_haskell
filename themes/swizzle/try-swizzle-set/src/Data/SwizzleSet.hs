@@ -1,9 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Swizzle.Set where
+module Data.SwizzleSet where
 
-import Data.Swizzle.Set.TH
+import Data.SwizzleSet.TH
 
 concat <$> swizzleSet `mapM` tail [
 	concat [a', b', c', d', e'] |
