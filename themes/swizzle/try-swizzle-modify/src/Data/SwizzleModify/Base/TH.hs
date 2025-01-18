@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Try.SwizzleModifyBase where
+module Data.SwizzleModify.Base.TH (mkBase) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
@@ -42,24 +42,24 @@ tdec0 = [d|
 swzSwizzleN :: Char -> TypeQ
 swzSwizzleN c = case alphToN c of
 	Nothing -> error "bad"
-	Just n -> conT . mkNameG_tc swizzlePkg "Data.Swizzle.Class" . ("Swizzle" ++) $ show n
+	Just n -> conT . mkNameG_tc swizzlePkg "Data.Swizzle.Class.Base" . ("Swizzle" ++) $ show n
 
 swzsSwizzleSetN :: Char -> TypeQ
 swzsSwizzleSetN c = case alphToN c of
 	Nothing -> error "bad"
-	Just n -> conT . mkNameG_tc swizzleSetPkg "Data.SwizzleSet.Class" . ("SwizzleSet" ++) $ show n
+	Just n -> conT . mkNameG_tc swizzleSetPkg "Data.SwizzleSet.Class.Base" . ("SwizzleSet" ++) $ show n
 
 swzXT :: Char -> TypeQ
-swzXT c = conT . mkNameG_tc swizzlePkg "Data.Swizzle.Class" . (: "") $ toUpper c
+swzXT c = conT . mkNameG_tc swizzlePkg "Data.Swizzle.Class.Base" . (: "") $ toUpper c
 
 swzsXT :: Char -> TypeQ
-swzsXT c = conT . mkNameG_tc swizzleSetPkg "Data.SwizzleSet.Class" . (: "") $ toUpper c
+swzsXT c = conT . mkNameG_tc swizzleSetPkg "Data.SwizzleSet.Class.Base" . (: "") $ toUpper c
 
 swzXF :: Char -> ExpQ
-swzXF = varE . mkNameG_v swizzlePkg "Data.Swizzle.Class" . (: "")
+swzXF = varE . mkNameG_v swizzlePkg "Data.Swizzle.Class.Base" . (: "")
 
 swzsXF :: Char -> ExpQ
-swzsXF = varE . mkNameG_v swizzleSetPkg "Data.SwizzleSet.Class" . (: "")
+swzsXF = varE . mkNameG_v swizzleSetPkg "Data.SwizzleSet.Class.Base" . (: "")
 
 mkBase :: Char -> DecsQ
 mkBase c = sequence [tdec c, fun c]
@@ -83,8 +83,8 @@ fun c = newName "f" >>= \f -> newName "a" >>= \a ->
 	funD (mkName $ c : "") [
 		clause [varP f, varP a] (normalB
 			$ swzsXF c `appE`
-				(varE f `appE` (swzXF c `appE` varE a) `appE`
-				varE a ))
+				(varE f `appE` (swzXF c `appE` varE a)) `appE`
+				varE a)
 			[]
 		]
 

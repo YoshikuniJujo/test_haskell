@@ -25,6 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      Data.SwizzleModify.Base
+      Data.SwizzleModify.Base.TH
+      Data.SwizzleModify.Pkg
+      Data.SwizzleModify.Pkgs
       Lib
       Try.SwizzleModifyBase
   other-modules:
@@ -37,6 +41,7 @@ library
   build-depends:
       base >=4.7 && <5
     , swizzle
+    , template-haskell
     , try-swizzle-set
   default-language: Haskell2010
 
@@ -52,6 +57,7 @@ executable try-swizzle-modify-exe
   build-depends:
       base >=4.7 && <5
     , swizzle
+    , template-haskell
     , try-swizzle-modify
     , try-swizzle-set
   default-language: Haskell2010
@@ -69,6 +75,7 @@ test-suite try-swizzle-modify-test
   build-depends:
       base >=4.7 && <5
     , swizzle
+    , template-haskell
     , try-swizzle-modify
     , try-swizzle-set
   default-language: Haskell2010
