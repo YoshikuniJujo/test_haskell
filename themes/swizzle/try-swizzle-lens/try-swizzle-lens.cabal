@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Data.SwizzleLens
+      Data.SwizzleLens.Pkgs
+      Data.SwizzleLens.TH
   other-modules:
       Paths_try_swizzle_lens
   autogen-modules:
