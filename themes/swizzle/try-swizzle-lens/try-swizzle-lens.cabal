@@ -28,6 +28,7 @@ library
       Data.SwizzleLens
       Data.SwizzleLens.Pkgs
       Data.SwizzleLens.TH
+      Try
   other-modules:
       Paths_try_swizzle_lens
   autogen-modules:

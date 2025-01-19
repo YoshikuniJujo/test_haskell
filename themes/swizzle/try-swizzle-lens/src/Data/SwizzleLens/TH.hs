@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -73,10 +74,10 @@ fun nm = newName "f" >>= \f -> newName "a" >>= \a -> newName "s" >>= \s ->
 	(newName . (: "")) `mapM` nm >>= \xy ->
 	funD (mkName nm) [
 		clause [varP f, varP a] (normalB $
-			varE s `fmapE` varE f `appE` (tupE $ (`appE` varE a) . swzXF <$> nm)
+			varE s `fmapE` varE f `appE` (tupE' $ (`appE` varE a) . swzXF <$> nm)
 			) [
 			funD s [
-				clause [tupP $ varP <$> xy] (normalB $
+				clause [tupP' $ varP <$> xy] (normalB $
 					(	foldr1 comE $ zipWith ((. varE) . appE . swzsXF) nm xy
 						)
 					`appE` varE a
@@ -109,7 +110,13 @@ arrT :: TypeQ -> TypeQ -> TypeQ
 t1 `arrT ` t2 = arrowT `appT` t1 `appT` t2
 
 tupT :: [TypeQ] -> TypeQ
-tupT ts = foldl appT (tupleT $ length ts) ts
+tupT = \case [t] -> t; ts -> foldl appT (tupleT $ length ts) ts
+
+tupP' :: [PatQ] -> PatQ
+tupP' = \case [p] -> p; ps -> tupP ps
+
+tupE' :: [ExpQ] -> ExpQ
+tupE' = \case [e] -> e; es -> tupE es
 
 infixr 6 `eqT`
 
