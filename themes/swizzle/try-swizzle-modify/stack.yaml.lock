@@ -19,7 +19,7 @@ packages:
     subdir: themes/swizzle/try-swizzle-set
 snapshots:
 - completed:
-    sha256: 4a200d54cdf4e8af189ffe64c0618cba44f1a2b9d42ed88b62d575ab93a041ea
-    size: 629580
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/16.yaml
-  original: nightly-2025-01-16
+    sha256: 9e3b79a4474c68c77786c77ed0e09069af5a7de539595df0ba9e33ae80296cfc
+    size: 631308
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/19.yaml
+  original: nightly-2025-01-19
