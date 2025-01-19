@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Try.SwizzleModifyBase where
+module Data.SwizzleModify.TH (swizzleModify) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
@@ -62,7 +62,7 @@ swzSwizzleN n =
 
 swzsSwizzleSetN :: Int -> TypeQ
 swzsSwizzleSetN n =
-	conT . mkNameG_tc swizzlePkg "Data.SwizzleSet.Class.Base" . ("SwizzleSet" ++) $ show n
+	conT . mkNameG_tc swizzleSetPkg "Data.SwizzleSet.Class.Base" . ("SwizzleSet" ++) $ show n
 
 swzXT :: Char -> TypeQ
 swzXT = conT . mkNameG_tc swizzlePkg "Data.Swizzle.Class.Base" . (: "") . toUpper
