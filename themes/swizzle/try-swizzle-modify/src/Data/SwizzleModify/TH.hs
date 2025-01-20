@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -47,7 +48,7 @@ tdep nm = newName "a" >>= \a ->
 fun :: String -> DecQ
 fun nm = newName `mapM` (('f' :) . (: "") <$> nm) >>= \fs ->
 	funD (mkName nm) [
-		clause [tupP $ varP <$> fs] (normalB
+		clause [tupP' $ varP <$> fs] (normalB
 			$ foldr1 comE (uncurry f1 <$> zip nm fs)
 			) []
 		]
@@ -74,7 +75,10 @@ swzmXF :: Char -> ExpQ
 swzmXF = varE . mkNameG_v swizzleModifyPkg "Data.SwizzleModify.Base" . (: "")
 
 tupT :: [TypeQ] -> TypeQ
-tupT ts = foldl appT (tupleT $ length ts) ts
+tupT = \case [t] -> t; ts -> foldl appT (tupleT $ length ts) ts
+
+tupP' :: [PatQ] -> PatQ
+tupP' = \case [p] -> p; ps -> tupP ps
 
 infixr 6 `arrT`
 
