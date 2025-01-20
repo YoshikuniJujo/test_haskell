@@ -38,6 +38,9 @@ ghc-options:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - Data.SwizzleLens
+    - Data.SwizzleLens.TH
 
 executables:
   try-swizzle-lens-exe:
