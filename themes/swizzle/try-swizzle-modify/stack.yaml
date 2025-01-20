@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-01-19
+snapshot: nightly-2025-01-20
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -48,10 +48,7 @@ packages:
 # Extra package databases containing global packages
 
 extra-deps:
-- git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f7c5c49608b9ac8d3315e6b76d803b258256149a
-  subdirs:
-  - themes/swizzle/try-swizzle-set
+  - swizzle-set-0.1.0.0
 
 # Control whether we use the GHC we find on the path
 # system-ghc: true

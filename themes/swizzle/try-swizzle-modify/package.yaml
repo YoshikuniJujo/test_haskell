@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - template-haskell
 - swizzle
-- try-swizzle-set
+- swizzle-set
 
 ghc-options:
 - -Wall
