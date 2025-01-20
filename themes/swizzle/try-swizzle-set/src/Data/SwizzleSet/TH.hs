@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskellQuotes #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.SwizzleSet.TH (swizzleSet) where
@@ -13,12 +13,12 @@ import Data.Char
 
 import Data.SwizzleSet.Class.Pkg
 
-swizzleSet :: String -> DecsQ
-swizzleSet nm = sequence [mkSwizzleSig i nm, mkSwizzleFun nm]
+swizzleSet :: String -> String -> DecsQ
+swizzleSet pfx nm = sequence [mkSwizzleSig i pfx nm, mkSwizzleFun pfx nm]
 	where i = maximum $ unalphabet <$> nm
 
-mkSwizzleSig :: Int -> String -> Q Dec
-mkSwizzleSig i nm = sigD (mkName nm) . forallT [] (mkSwizzleSigContext i) $
+mkSwizzleSig :: Int -> String -> String -> Q Dec
+mkSwizzleSig i pfx nm = sigD (mkFunName pfx nm) . forallT [] (mkSwizzleSigContext i) $
 	mkSwizzleSigTup nm (mkName "a")
 	`arrT`
 	varT (mkName "a")
@@ -41,7 +41,10 @@ typX :: Char -> TypeQ
 typX = conT . mkNameG_tc swizzleClassPkg "Data.SwizzleSet.Class.Base" . (: "") . toUpper
 
 tupT :: [TypeQ] -> TypeQ
-tupT ts = foldl appT (tupleT $ length ts) ts
+tupT = \case [t] -> t; ts -> foldl appT (tupleT $ length ts) ts
+
+tupP' :: [PatQ] -> PatQ
+tupP' = \case [p] -> p; ps -> tupP ps
 
 unalphabet :: Char -> Int
 unalphabet c = fromJust (L.elemIndex c $ ("xyz" ++ reverse ['a' .. 'w'])) + 1
@@ -51,11 +54,11 @@ infixr 7 `arrT`
 arrT :: TypeQ -> TypeQ -> TypeQ
 t1 `arrT` t2 = arrowT `appT` t1 `appT` t2
 
-mkSwizzleFun :: String -> Q Dec
-mkSwizzleFun nm =
+mkSwizzleFun :: String -> String -> Q Dec
+mkSwizzleFun pfx nm =
 	((newName . (: "")) `mapM` nm) >>= \vs ->
-	funD (mkName nm) [
-	clause [tupP $ varP <$> vs] (normalB $ mkSwizzleFunTup nm vs) []
+	funD (mkFunName pfx nm) [
+	clause [tupP' $ varP <$> vs] (normalB $ mkSwizzleFunTup nm vs) []
 	]
 
 mkSwizzleFunTup :: String -> [Name] -> ExpQ
@@ -65,3 +68,8 @@ infixr 7 `comE`
 
 comE :: ExpQ -> ExpQ -> ExpQ
 e1 `comE` e2 = infixE (Just e1) (varE '(.)) (Just e2)
+
+mkFunName :: String -> String -> Name
+mkFunName pfx nm = mkName case pfx of
+	"" -> nm;
+	_ -> case nm of h : t -> pfx ++ toUpper h : t; _ -> pfx

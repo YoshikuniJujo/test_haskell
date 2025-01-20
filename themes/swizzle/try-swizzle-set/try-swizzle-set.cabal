@@ -38,7 +38,6 @@ library
       Data.SwizzleSet.Instance.TupleBetween41And46
       Data.SwizzleSet.Instance.TupleBetween47And52
       Data.SwizzleSet.Instance.TupleBetween53And57
-      Lib
       Paths_try_swizzle_set
   autogen-modules:
       Paths_try_swizzle_set
