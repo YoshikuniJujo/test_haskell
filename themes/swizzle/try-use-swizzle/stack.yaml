@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-01-13
+snapshot: nightly-2025-01-19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,7 +43,7 @@ packages:
 
 extra-deps:
     - git: https://github.com/YoshikuniJujo/swizzle
-      commit: fbe34d27a487230560bbeef5278262b72b1caa6a
+      commit: fdc4ecee1aea518a4a9920283fb7779a69706f32
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

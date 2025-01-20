@@ -5,19 +5,19 @@
 
 packages:
 - completed:
-    commit: fbe34d27a487230560bbeef5278262b72b1caa6a
+    commit: fdc4ecee1aea518a4a9920283fb7779a69706f32
     git: https://github.com/YoshikuniJujo/swizzle
     name: swizzle
     pantry-tree:
-      sha256: 6de795cd16217f8b2fed209a08e0c68749279d511c9c67f98259c29a282179f7
+      sha256: 199327e9e7f893c1b52ebbff4772e8e0ac15db55a45842a7e48a08e118c1a993
       size: 1622
     version: 0.1.0.3
   original:
-    commit: fbe34d27a487230560bbeef5278262b72b1caa6a
+    commit: fdc4ecee1aea518a4a9920283fb7779a69706f32
     git: https://github.com/YoshikuniJujo/swizzle
 snapshots:
 - completed:
-    sha256: a7ceba64970d8efabd56c5be91450344bf06c3b63bcf04327af64abe03db6698
-    size: 629581
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/13.yaml
-  original: nightly-2025-01-13
+    sha256: 9e3b79a4474c68c77786c77ed0e09069af5a7de539595df0ba9e33ae80296cfc
+    size: 631308
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/19.yaml
+  original: nightly-2025-01-19

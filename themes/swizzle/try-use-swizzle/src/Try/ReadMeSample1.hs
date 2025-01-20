@@ -13,7 +13,7 @@ nums = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 foo :: (Int, Int, Int, Int)
 foo = Swz.zyxw nums -- (3, 2, 1, 0)
 
-foo2, foo3, foo4, foo5, foo9 :: Solo Int
+foo2, foo3, foo4, foo5, foo9 :: Int
 foo2 = Swz.z nums -- 2
 foo3 = Swz.w nums -- 3
 foo4 = Swz.v nums -- 4

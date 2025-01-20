@@ -25,7 +25,7 @@ instance Swizzle4 Argb where type W Argb = Blue
 sample :: Argb
 sample = Argb (Alpha 0.5) (Red 0.9) (Green 0.3) (Blue 0.2)
 
-red :: Solo Red
+red :: Red
 red = Swz.y sample
 
 alphaGreen :: (Alpha, Green)
