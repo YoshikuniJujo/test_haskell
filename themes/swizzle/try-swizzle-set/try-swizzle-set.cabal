@@ -40,6 +40,7 @@ library
       Data.SwizzleSet.Instance.TupleBetween47And52
       Data.SwizzleSet.Instance.TupleBetween53And57
       Try.SwizzleSetClass.TH
+      Try.SwizzleSetClass2
       Paths_try_swizzle_set
   autogen-modules:
       Paths_try_swizzle_set
