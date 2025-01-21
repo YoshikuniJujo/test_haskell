@@ -12,23 +12,8 @@ import Language.Haskell.TH.Syntax
 import Data.List qualified as L
 import Data.Maybe
 import Data.Char
-import Data.Swizzle.Class qualified as Swz
-import Data.SwizzleSet.Class qualified as SwzS
-import Data.SwizzleModify.Base qualified as B
 import Data.SwizzleModify.Pkg
 import Data.SwizzleModify.Pkgs
-
-xy :: ( Swz.Swizzle2 a, SwzS.SwizzleSet2 a,
-	Swz.X a ~ SwzS.X a, Swz.Y a ~ SwzS.Y a ) =>
-	(Swz.X a -> Swz.X a, Swz.Y a -> Swz.Y a) -> a -> a
-xy (fx, fy) = B.x fx . B.y fy
-
-tdep0 :: DecsQ
-tdep0 = [d|
-	xy :: ( Swz.Swizzle2 a, SwzS.SwizzleSet2 a,
-		Swz.X a ~ SwzS.X a, Swz.Y a ~ SwzS.Y a ) =>
-		(Swz.X a -> Swz.X a, Swz.Y a -> Swz.Y a) -> a -> a
-	xy = undefined |]
 
 swizzleModify :: String -> DecsQ
 swizzleModify nm = sequence [tdep nm, fun nm]
@@ -53,9 +38,6 @@ fun nm = newName `mapM` (('f' :) . (: "") <$> nm) >>= \fs ->
 			) []
 		]
 	where f1 c f = swzmXF c `appE` varE f
-
-fun0 :: DecsQ
-fun0 = [d| xy (fx, fy) = B.x fx . B.y fy |]
 
 swzSwizzleN :: Int -> TypeQ
 swzSwizzleN n =
