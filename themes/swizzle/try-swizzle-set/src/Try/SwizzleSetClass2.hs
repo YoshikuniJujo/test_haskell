@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -9,36 +11,25 @@
 module Try.SwizzleSetClass2 where
 
 import GHC.Generics
+import Language.Haskell.TH hiding (Type)
 import Data.Kind
 
-class GSwizzleSet1 s b where
-	type GX s b :: k -> Type
-	gx :: s a -> b -> GX s b a
+import Template.Tools
 
-instance GSwizzleSet1 (K1 i a) b where
-	type GX (K1 i a) b = K1 i b
-	gx (K1 _) v = K1 v
+import Try.SwizzleSetClass2.TH
 
-instance GSwizzleSet1 a b => GSwizzleSet1 (M1 i c a) b where
-	type GX (M1 i c a) b = M1 i c (GX a b)
-	gx (M1 s) v = M1 $ gx s v
+(: []) <$> classGswizzle 1
+(: []) <$> instanceGswizzle1K1
+(: []) <$> instanceGswizzleM1 1
+(: []) <$> instanceGswizzleProd 1
 
-instance GSwizzleSet1 a b => GSwizzleSet1 (M1 i c a :*: g)  b where
-	type GX (M1 i c a :*: g) b = M1 i c (GX a b) :*: g
-	gx (s :*: t) v = gx s v :*: t
+(: []) <$> classGswizzle 2
+(: []) <$> instanceGswizzleM1 2
+(: []) <$> instanceGswizzleProd 2
 
-type family F s where
-	F (a :*: (b :*: c)) = (a :*: b) :*: c
-
-instance (
-	GSwizzleSet1 (a :*: (b :*: c)) v,
-	GX (a :*: (b :*: c)) v ~ GX a v :*: (b :*: c)
-	) =>
-	GSwizzleSet1 ((a :*: b) :*: c) v where
-	type GX ((a :*: b) :*: c) v = F (GX (a :*: (b :*: c)) v)
-	gx ((x :*: y) :*: z) v = let
-		(x' :*: (y' :*: z')) = gx (x :*: (y :*: z)) v in
-		((x' :*: y') :*: z')
+(: []) <$> tff
+(: []) <$> instanceGswizzleProdProd 1
+(: []) <$> instanceGswizzleProdProd 2
 
 class SwizzleSet1 s b where
 	type X s b

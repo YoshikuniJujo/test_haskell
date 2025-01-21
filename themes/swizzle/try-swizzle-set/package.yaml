@@ -41,6 +41,7 @@ library:
     - Data.SwizzleSet.Class
     - Data.SwizzleSet.TH
     - Try.SwizzleSetClass
+    - Try.SwizzleSetClass2
 
 tests:
   try-swizzle-set-test:

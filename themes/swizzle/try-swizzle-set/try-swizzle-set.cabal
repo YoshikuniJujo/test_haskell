@@ -29,6 +29,7 @@ library
       Data.SwizzleSet.Class
       Data.SwizzleSet.TH
       Try.SwizzleSetClass
+      Try.SwizzleSetClass2
   other-modules:
       Data.SwizzleSet.Class.Base
       Data.SwizzleSet.Class.Pkg
@@ -39,8 +40,9 @@ library
       Data.SwizzleSet.Instance.TupleBetween41And46
       Data.SwizzleSet.Instance.TupleBetween47And52
       Data.SwizzleSet.Instance.TupleBetween53And57
+      Template.Tools
       Try.SwizzleSetClass.TH
-      Try.SwizzleSetClass2
+      Try.SwizzleSetClass2.TH
       Paths_try_swizzle_set
   autogen-modules:
       Paths_try_swizzle_set
