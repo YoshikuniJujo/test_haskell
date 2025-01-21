@@ -10,10 +10,12 @@
 module Try.SwizzleSetClass.TH (
 	classGswizzle,
 	instanceGswizzle1K1, instanceGswizzleM1,
-	instanceGswizzleProd, instanceGswizzleProdProd, classSwizzleClass ) where
+	instanceGswizzleProd, instanceGswizzleProdProd, classSwizzleClass,
+	instanceSwizzleTuple ) where
 
 import GHC.Generics
 import Language.Haskell.TH
+import Data.Bool
 import Data.Char
 
 classGswizzle :: Int -> Q Dec
@@ -242,6 +244,44 @@ classSwizzleContext n a b = case n of
 	_ -> cxt []
 --	1 -> cxt []
 	_ -> cxt [conT (nameSwizzle $ n - 1) `appT` varT a `appT` varT b]
+
+instanceSwizzleTuple :: Int -> DecsQ
+instanceSwizzleTuple n = (++)
+	<$> (`instanceSwizzleTuple_` n) `mapM` [1 .. min n 26]
+	<*> deriveGeneric n
+
+instanceSwizzleTuple_ :: Int -> Int -> Q Dec
+instanceSwizzleTuple_ i n =
+	mapM (newName . (vars !!)) [0 .. n - 1] >>= \ns -> newName "x" >>= \a ->
+	let	ns' = setX ns (i - 1) a in
+	instanceD (cxt [])
+		(conT (nameSwizzle i) `appT` tupT ns `appT` tupT ns')
+		[typeXFromTuple i ns']
+
+setX :: [a] -> Int -> a -> [a]
+setX [] _ _ = []
+setX (_ : xs) 0 y = y : xs
+setX (x : xs) i y = x : setX xs (i - 1) y
+
+deriveGeneric :: Int -> DecsQ
+deriveGeneric i = do
+	t <- tupT =<< newNameAbc i
+	isInstance ''Generic [t] >>= bool
+		((: []) <$> standaloneDerivD (cxt [])
+			(conT ''Generic `appT` pure t))
+		(pure [])
+
+newNameAbc :: Int -> Q [Name]
+newNameAbc i = newName `mapM` take i vars
+
+vars :: [String]
+vars = ((: "") <$> ['a' .. 'z']) ++ [ cs ++ [c] | cs <- vars, c <- ['a' .. 'z'] ]
+
+tupT :: [Name] -> TypeQ
+tupT ns = foldl appT (tupleT $ length ns) $ varT <$> ns
+
+typeXFromTuple :: Int -> [Name] -> Q Dec
+typeXFromTuple i ns = tySynInstD $ tySynEqn Nothing (conT (nameXU i) `appT` tupT ns) (varT $ ns !! (i - 1))
 
 nameGswizzle :: Int -> Name
 nameGswizzle = mkName . ("GSwizzleSet" ++) . show

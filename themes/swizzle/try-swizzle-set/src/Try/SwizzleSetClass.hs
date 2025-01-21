@@ -24,5 +24,12 @@ import Try.SwizzleSetClass.TH
 (: []) <$> instanceGswizzleProdProd 2
 (: []) <$> classSwizzleClass 2
 
-instance SwizzleSet1 (a, b, c) (a', b, c) where type X (a', b, c) = a'
-instance SwizzleSet2 (a, b, c) (a, b', c) where type Y (a, b', c) = b'
+(: []) <$> classGswizzle 3
+(: []) <$> instanceGswizzleM1 3
+(: []) <$> instanceGswizzleProd 3
+(: []) <$> instanceGswizzleProdProd 3
+(: []) <$> classSwizzleClass 3
+
+instanceSwizzleTuple 1
+instanceSwizzleTuple 2
+instanceSwizzleTuple 3
