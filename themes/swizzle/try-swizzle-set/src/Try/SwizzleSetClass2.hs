@@ -10,12 +10,6 @@
 
 module Try.SwizzleSetClass2 where
 
-import GHC.Generics
-import Language.Haskell.TH hiding (Type)
-import Data.Kind
-
-import Template.Tools
-
 import Try.SwizzleSetClass2.TH
 
 (: []) <$> classGswizzle 1
@@ -31,15 +25,8 @@ import Try.SwizzleSetClass2.TH
 (: []) <$> instanceGswizzleProdProd 1
 (: []) <$> instanceGswizzleProdProd 2
 
-class SwizzleSet1 s b where
-	type X s b
-	x :: s -> b -> X s b
-
-	default x :: (
-		Generic s, Generic (X s b),
-		GSwizzleSet1 (Rep s) b,
-		Rep (X s b) ~ GX (Rep s) b ) =>
-		s -> b -> X s b
-	x s b = to (gx (from s) b)
+(: []) <$> classSwizzleClass 1
+(: []) <$> classSwizzleClass 2
 
 instance SwizzleSet1 (a, b, c) d where type X (a, b, c) d = (d, b, c)
+instance SwizzleSet2 (a, b, c) d where type Y (a, b, c) d = (a, d, c)

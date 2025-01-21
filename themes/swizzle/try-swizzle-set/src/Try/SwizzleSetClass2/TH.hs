@@ -10,12 +10,14 @@
 
 module Try.SwizzleSetClass2.TH (
 	classGswizzle, instanceGswizzle1K1,
-	instanceGswizzleM1, instanceGswizzleProd, instanceGswizzleProdProd, tff
+	instanceGswizzleM1, instanceGswizzleProd, instanceGswizzleProdProd, tff,
+	classSwizzleClass
 	) where
 
 import GHC.Generics
 import Language.Haskell.TH hiding (Type)
 import Data.Kind
+import Data.Char
 
 import Template.Tools
 
@@ -236,6 +238,69 @@ e1 `prodE` e2 = conE '(:*:) `appE` e1 `appE` e2
 
 prodP :: PatQ -> PatQ -> PatQ
 p1 `prodP` p2 = infixP p1 '(:*:) p2
+
+classSwizzleClass :: Int -> Q Dec
+classSwizzleClass n =
+	newName "s" >>= \ta -> newName "b" >>= \b ->
+	newName "s" >>= \fs -> newName "v" >>= \v ->
+	classD (classSwizzleContext n ta b) (nameSwizzle n) [plainTV ta, plainTV b] [] [
+		typeX n ta b,
+		sigX n ta b,
+		defaultX n ta b,
+		defaultFunX n fs v ]
+
+classSwizzleContext :: Int -> Name -> Name -> CxtQ
+classSwizzleContext n a b = case n of
+	_ -> cxt []
+--	1 -> cxt []
+	_ -> cxt [conT (nameSwizzle $ n - 1) `appT` varT a `appT` varT b]
+
+nameSwizzle :: Int -> Name
+nameSwizzle = mkName . ("SwizzleSet" ++) . show
+
+typeX :: Int -> Name -> Name -> Q Dec
+typeX i s b = openTypeFamilyD (nameXU i) [plainTV s, plainTV b] noSig Nothing
+
+nameXU :: Int -> Name
+nameXU = mkName . (: "") . toUpper . alphabet
+
+sigX :: Int -> Name -> Name -> Q Dec
+sigX i a b = sigD (nameXL i) $
+	varT a `arrT` varT b `arrT` (conT (nameXU i) `appT` varT a `appT` varT b)
+
+nameXL :: Int -> Name
+nameXL = mkName . (: "") . alphabet
+
+defaultX :: Int -> Name -> Name -> Q Dec
+defaultX i a b = defaultSigD (nameXL i) . forallT [] (defaultXContext i a b) $
+	varT a `arrT` varT b `arrT` (conT (nameXU i) `appT` varT a `appT` varT b)
+
+defaultXContext :: Int -> Name -> Name -> CxtQ
+defaultXContext i a b = cxt [
+	conT ''Generic `appT` varT a,
+	conT ''Generic `appT` (conT (nameXU i) `appT` varT a `appT` varT b),
+	conT (nameGswizzle i)
+		`appT` (conT ''Rep `appT` varT a)
+		`appT` varT b,
+	conT ''Rep `appT` (conT (nameXU i) `appT` varT a `appT` varT b) `eqT`
+		(conT (nameGxU i) `appT` (conT ''Rep `appT` varT a) `appT` varT b)
+	]
+
+defaultFunX :: Int -> Name -> Name -> Q Dec
+defaultFunX i s v = funD (nameXL i) [clause [varP s, varP v]
+--	(normalB $ varE 'to `comE` (varE (nameGxL i) `appE` varE v) `comE` varE 'from) []]
+	(normalB $
+		varE 'to `appE` (varE (nameGxL i)
+			`appE` (varE 'from `appE` varE s)
+			`appE` varE v
+			))
+	[]]
+--	[]
+--	$ infixE (Just . varE $ nameGxL i) (varE '(.)) (Just $ varE 'from)) []
+
+alphabet :: Int -> Char
+alphabet i | i > 26 = error $ "no such alphabet: " ++ show i
+alphabet i = (("xyz" ++ reverse ['a' .. 'w']) !!) $ subtract 1 i
 
 instance GSwizzleSet1 (K1 i a) b where
 	type GX (K1 i a) b = K1 i b
