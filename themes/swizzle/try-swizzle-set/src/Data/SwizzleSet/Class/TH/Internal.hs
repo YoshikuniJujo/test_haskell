@@ -37,8 +37,6 @@ sigGx i a = sigD (nameGxL i) $
 	`arrT`
 	(varT (mkName "f") `appT` varT a)
 
-infixr 7 `arrT`
-
 instanceGswizzle1K1 :: Q Dec
 instanceGswizzle1K1 = newName "a" >>= \a ->
 	instanceD (cxt []) (conT (mkName "GSwizzleSet1") `appT` k1ia a) [
@@ -167,6 +165,8 @@ p1 `prodP` p2 = infixP p1 '(:*:) p2
 typeGxProd :: Int -> Name -> Name -> Name -> Q Dec
 typeGxProd i a b c = tySynInstD
 	$ tySynEqn Nothing (conT (nameGxU i) `appT` aProdB a b c) (conT (nameGxxyU i) `appT` varT (nameAOrB i a b))
+
+infixr 7 `arrT`
 
 arrT :: TypeQ -> TypeQ -> TypeQ
 t1 `arrT` t2 = arrowT `appT` t1 `appT` t2
