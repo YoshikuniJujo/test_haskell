@@ -30,3 +30,6 @@ import Try.SwizzleSetClass2.TH
 
 instance SwizzleSet1 (a, b, c) d where type X (a, b, c) d = (d, b, c)
 instance SwizzleSet2 (a, b, c) d where type Y (a, b, c) d = (a, d, c)
+
+xy :: (SwizzleSet2 s v, SwizzleSet1 (Y s v) w) => s -> (w, v) -> X (Y s v) w
+xy s (w, v) = x (y s v) w
