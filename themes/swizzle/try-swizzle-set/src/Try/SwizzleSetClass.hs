@@ -31,9 +31,16 @@ import Try.SwizzleSetClass.TH
 (: []) <$> instanceGswizzleProdProd 3
 (: []) <$> classSwizzleClass 3
 
+(: []) <$> classGswizzle 4
+(: []) <$> instanceGswizzleM1 4
+(: []) <$> instanceGswizzleProd 4
+(: []) <$> instanceGswizzleProdProd 4
+(: []) <$> classSwizzleClass 4
+
 instanceSwizzleTuple 1
 instanceSwizzleTuple 2
 instanceSwizzleTuple 3
+instanceSwizzleTuple 4
 
 xyz :: forall s t u v . (SwizzleSet1 u v, SwizzleSet2 t u, SwizzleSet3 s t) =>
 	s -> (X v, Y u, Z t) -> v

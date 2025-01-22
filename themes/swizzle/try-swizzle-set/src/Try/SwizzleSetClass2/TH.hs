@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskellQuotes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -9,23 +10,29 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Try.SwizzleSetClass2.TH (
-	classSwizzle, instanceSwizzleTuple
+	classSwizzle, instanceSwizzleTuple, xyzt,
+
+	instanceSwizzleTuple_, instanceGswizzleM1, instanceGswizzleProd, instanceGswizzleProdProd,
+
+	F
 	) where
 
 import GHC.Generics
 import Language.Haskell.TH hiding (Type)
 import Data.Kind
+import Data.List qualified as L
+import Data.Maybe
 import Data.Bool
 import Data.Char
 
 import Template.Tools
 
 classSwizzle :: Int -> DecsQ
-classSwizzle n = sequence $ bool id (instanceGswizzle1K1 :) (n == 1) [
+classSwizzle n = sequence $ bool id (\x -> (instanceGswizzle1K1 : instanceGswizzleProdProd 1 : x)) (n == 1) [
 	classGswizzle n,
 	instanceGswizzleM1 n,
 	instanceGswizzleProd n,
-	instanceGswizzleProdProd n,
+--	instanceGswizzleProdProd n,
 	classSwizzleClass n ]
 
 classGswizzle :: Int -> Q Dec
@@ -175,7 +182,9 @@ cxtGswizzleProdProd :: Int -> Name -> Name -> Name -> Name -> CxtQ
 cxtGswizzleProdProd n a b c v = cxt [
 	conT (nameGswizzle n) `appT` aProdBProdCT a b c `appT` varT v,
 	conT (nameGxU n) `appT` aProdBProdCT a b c `appT` varT v `eqT`
-	taProdBProdCT (conT (nameGxU n) `appT` varT a `appT` varT v) b c
+	bool
+	(taProdBProdCT (conT (nameGxU n) `appT` varT a `appT` varT v) b c)
+	(conT (nameGxU n) `appT` aProdBProdCT' a b c `appT` varT v) False -- (n > 1)
 	]
 
 typeGxProdProd :: Int -> Name -> Name -> Name -> Name -> Q Dec
@@ -318,3 +327,34 @@ alphabet i = (("xyz" ++ reverse ['a' .. 'w']) !!) $ subtract 1 i
 
 type family F s where
 	F (a :*: (b :*: c)) = (a :*: b) :*: c
+
+xyzt :: String -> DecsQ
+xyzt nm = sequence [xyzttd nm, xyztfn nm]
+
+xyzttd :: String -> DecQ
+xyzttd nm = newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
+	sigD (mkName nm) $
+		forallT []
+			(cxt (zipWith appT (zipWith appT
+				(conT . nameSwizzleXyz <$> nm) (tail $ scanr go (varT s) $ pairs uvw)) (varT <$> uvw)))
+			(varT s `arrT` tupT uvw `arrT`
+				foldr go (varT s) (pairs uvw))
+	where
+	go (xu, ul) = (`appT` ul) . (xu `appT`)
+	pairs uvw = zip (conT . mkName <$> ((: "") . toUpper <$> nm)) (varT <$> uvw)
+	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm
+
+crrPos :: Eq a => [a] -> [b] -> a -> b
+crrPos xs ys x = ys !! fromJust (x `L.elemIndex` xs)
+
+xyztfn :: String -> DecQ
+xyztfn nm =
+	newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
+	funD (mkName nm) [
+		clause [varP s, tupP $ varP <$> uvw] (normalB $
+			foldr (\(xl, ul) -> (`appE` ul) . (xl `appE`)) (varE s) $
+				zip (varE . mkName <$> ((: "") <$> nm)) (varE <$> uvw)
+--			varE (mkName "xyz")
+			) [] ]
+	where
+	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm

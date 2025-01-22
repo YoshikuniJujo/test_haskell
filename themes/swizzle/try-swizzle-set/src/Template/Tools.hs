@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskellQuotes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -16,13 +17,15 @@ module Template.Tools (
 
 	noSig, plainTV, cxt,
 
-	nameSwizzle,
+	nameSwizzle, nameSwizzleXyz,
 	nameGswizzle, nameGxU, nameGxL, nameXU
 
 	) where
 
 import GHC.Generics
 import Language.Haskell.TH
+import Data.Maybe
+import Data.List qualified as L
 import Data.Bool
 import Data.Char
 
@@ -201,6 +204,10 @@ classSwizzleClass n =
 		sigX n a b,
 		defaultX n a b,
 		defaultFunX n s v ]
+
+nameSwizzleXyz :: Char -> Name
+nameSwizzleXyz = nameSwizzle
+	. (+ 1) . fromJust . (`L.elemIndex` ("xyz" ++ reverse ['a' .. 'w']))
 
 nameSwizzle :: Int -> Name
 nameSwizzle = mkName . ("SwizzleSet" ++) . show

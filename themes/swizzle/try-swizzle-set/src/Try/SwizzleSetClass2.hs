@@ -1,5 +1,7 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -17,10 +19,42 @@ import Language.Haskell.TH
 import Data.Bool
 import Template.Tools
 
-concat <$> classSwizzle `mapM` [1 .. 3]
+import Data.List qualified as L
+import Data.Maybe
+import Data.Char
 
-concat <$> instanceSwizzleTuple `mapM` [1 .. 3]
+concat <$> classSwizzle `mapM` [1 .. 4]
 
+instance (
+	GSwizzleSet2 (a :*: (b :*: c)) v, Foo (GY (a :*: (b :*: c)) v)
+	) => GSwizzleSet2 ((a :*: b) :*: c) v where
+	type GY ((a :*: b) :*: c) v = F' (GY (a :*: (b :*: c)) v)
+	gy ((x :*: y) :*: z) v = f (gy @_ @v (x :*: (y :*: z)) v)
+
+class Foo x where
+	type F' x :: k -> *
+	f :: x a -> F' x a
+
+instance Foo (a :*: (b :*: c)) where
+	type F' (a :*: (b :*: c)) = (a :*: b) :*: c
+	f (x :*: (y :*: z)) = (x :*: y) :*: z
+
+concat <$> instanceSwizzleTuple `mapM` [1 .. 2]
+
+instance SwizzleSet2 (a, b, c) x where type Y (a, b, c) x = (a, x, c)
+
+instance SwizzleSet1 (a, b, c, d) x where
+	type X (a, b, c, d) x = (x, b, c, d)
+
+instance SwizzleSet2 (a, b, c, d) x where
+	type Y (a, b, c, d) x = (a, x, c, d)
+--	y (x, y, z, w) a = (x, a, z, w)
+
+-- xyzt "x"
+xyzt "xy"
+xyzt "xyz"
+
+{-
 xy :: (SwizzleSet2 s v, SwizzleSet1 (Y s v) w) => s -> (w, v) -> X (Y s v) w
 xy s (w, v) = x (y s v) w
 
@@ -44,9 +78,34 @@ xyzt0 = [d|
 	xyz s (u, v, w) = x (y (z s w) v) u
 	|]
 
-xyzttd :: DecQ
-xyzttd = newName "s" >>= \s -> newName `mapM` ["u", "v", "w"] >>= \[u, v, w] ->
-	sigD (mkName "xyz")
-		(varT s `arrT` tupT [u, v, w] `arrT`
-			foldr (\(xu, ul) -> (`appT` ul) . (xu `appT`)) (varT s)
-				(zip (conT . mkName <$> ["X", "Y", "Z"]) (varT <$> [u, v, w])))
+xyzt :: String -> DecsQ
+xyzt nm = sequence [xyzttd nm, xyztfn nm]
+
+xyzttd :: String -> DecQ
+xyzttd nm = newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
+	sigD (mkName nm) $
+		forallT []
+			(cxt (zipWith appT (zipWith appT
+				(conT . nameSwizzleXyz <$> nm) (tail $ scanr go (varT s) $ pairs uvw)) (varT <$> uvw)))
+			(varT s `arrT` tupT uvw `arrT`
+				foldr go (varT s) (pairs uvw))
+	where
+	go (xu, ul) = (`appT` ul) . (xu `appT`)
+	pairs uvw = zip (conT . mkName <$> ((: "") . toUpper <$> nm)) (varT <$> uvw)
+	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm
+
+crrPos :: Eq a => [a] -> [b] -> a -> b
+crrPos xs ys x = ys !! fromJust (x `L.elemIndex` xs)
+
+xyztfn :: String -> DecQ
+xyztfn nm =
+	newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
+	funD (mkName nm) [
+		clause [varP s, tupP $ varP <$> uvw] (normalB $
+			foldr (\(xl, ul) -> (`appE` ul) . (xl `appE`)) (varE s) $
+				zip (varE . mkName <$> ((: "") <$> nm)) (varE <$> uvw)
+--			varE (mkName "xyz")
+			) [] ]
+	where
+	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm
+	-}
