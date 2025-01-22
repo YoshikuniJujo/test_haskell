@@ -28,10 +28,13 @@ import Data.Char
 import Template.Tools
 
 classSwizzle :: Int -> DecsQ
-classSwizzle n = sequence $ bool id (\x -> (instanceGswizzle1K1 : instanceGswizzleProdProd 1 : x)) (n == 1) [
+classSwizzle n =
+	sequence $ bool id (\x -> (instanceGswizzle1K1 : x)) (n == 1) [
+--	sequence $ bool id (\x -> (instanceGswizzle1K1 : instanceGswizzleProdProd 1 : x)) (n == 1) [
 	classGswizzle n,
 	instanceGswizzleM1 n,
 	instanceGswizzleProd n,
+	prodProd n,
 --	instanceGswizzleProdProd n,
 	classSwizzleClass n ]
 
@@ -347,3 +350,43 @@ xyztfn nm =
 			) [] ]
 	where
 	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm
+
+prodProd :: Int -> DecQ
+prodProd n = newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
+	newName "v" >>= \v ->
+	newName "x" >>= \x -> newName "y" >>= \y -> newName "z" >>= \z ->
+	newName "v" >>= \vf ->
+	instanceD
+		(cxt [
+			conT (nameGswizzle n) `appT`
+				(varT a `prodT`
+					(varT b `prodT` varT c)) `appT` varT v,
+			conT ''Push `appT`
+				(conT (nameGxU n) `appT`
+					(varT a `prodT` (varT b `prodT` varT c))
+						`appT` varT v)
+			])
+		(	conT (nameGswizzle n) `appT` ((varT a `prodT` varT b) `prodT` varT c) `appT` varT v
+			)
+		[
+			tySynInstD (tySynEqn Nothing
+				(conT (nameGxU n) `appT`
+					((varT a `prodT` varT b) `prodT` varT c) `appT`
+					varT v)
+				(conT ''P `appT`
+					(conT (nameGxU n) `appT` (varT a `prodT` (varT b `prodT` varT c)) `appT` varT v))),
+			funD (nameGxL n) [clause
+				[	(varP x `prodP` varP y) `prodP` varP z,
+					varP vf
+					]
+				(normalB $ varE 'push `appE`
+					(varE (nameGxL n) `appE` (varE x `prodE` (varE y `prodE` varE z)) `appE` varE vf)
+					)
+				[]]
+			]
+
+class Push x where type P x :: k -> *; push :: x a -> P x a
+
+instance Push (a :*: (b :*: c)) where
+	type P (a :*: (b :*: c)) = (a :*: b) :*: c
+	push (x :*: (y :*: z)) = (x :*: y) :*: z
