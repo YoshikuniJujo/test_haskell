@@ -10,13 +10,15 @@
 module Template.Tools (
 	Q, Dec, Name, newName,
 
-	conT, varT, appT, arrT, arrK, eqT,
+	conT, varT, appT, arrT, arrK, eqT, tupT,
 
 	sigD, classD, openTypeFamilyD,
 
 	noSig, plainTV, cxt,
 
-	nameGswizzle, nameGxU, nameGxL
+	nameSwizzle,
+	nameGswizzle, nameGxU, nameGxL, nameXU
+
 	) where
 
 import GHC.Generics

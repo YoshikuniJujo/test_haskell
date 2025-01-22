@@ -9,21 +9,24 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Try.SwizzleSetClass2.TH (
-	classGswizzle, instanceGswizzle1K1,
-	instanceGswizzleM1, instanceGswizzleProd, instanceGswizzleProdProd, tff,
-	classSwizzleClass
+	classSwizzle, instanceSwizzleTuple
 	) where
 
 import GHC.Generics
 import Language.Haskell.TH hiding (Type)
 import Data.Kind
+import Data.Bool
 import Data.Char
 
 import Template.Tools
 
-class GSwizzleSet1 s b where
-	type GX s b :: k -> Type
-	gx :: s a -> b -> GX s b a
+classSwizzle :: Int -> DecsQ
+classSwizzle n = sequence $ bool id (instanceGswizzle1K1 :) (n == 1) [
+	classGswizzle n,
+	instanceGswizzleM1 n,
+	instanceGswizzleProd n,
+	instanceGswizzleProdProd n,
+	classSwizzleClass n ]
 
 classGswizzle :: Int -> Q Dec
 classGswizzle n =
@@ -65,7 +68,7 @@ funGxK1 v = funD (mkName "gx") [
 instanceGswizzleM1 :: Int -> Q Dec
 instanceGswizzleM1 n =
 	newName "i" >>= \i -> newName "c" >>= \c -> newName "a" >>= \a ->
-	newName "i'" >>= \i' -> newName "c'" >>= \c' -> newName "b" >>= \b ->
+	newName "b" >>= \b ->
 	newName "s" >>= \s -> newName "v" >>= \v ->
 	instanceD (cxtGswizzleM1 n a b)
 		(conT (nameGswizzle n) `appT` m1ica i c a `appT` varT b)
@@ -95,12 +98,11 @@ funGxM1 i s v = funD (nameGxL i) [clause
 instanceGswizzleProd :: Int -> Q Dec
 instanceGswizzleProd n =
 	newName "i" >>= \i -> newName "c" >>= \c -> newName "a" >>= \a ->
-	newName "i'" >>= \i' -> newName "c'" >>= \c' -> newName "b" >>= \b ->
-	newName "g" >>= \g -> newName "g'" >>= \g' ->
+	newName "b" >>= \b -> newName "g" >>= \g ->
 	newName "s" >>= \s -> newName "t" >>= \t -> newName "v" >>= \v ->
 	instanceD (cxtGswizzleProd n a g b)
 		(instanceHeadProd n i c a g b)
-		[typeGxProd n i c a g i' c' b g', funGxProd n v s t]
+		[typeGxProd n i c a g b, funGxProd n v s t]
 
 cxtGswizzleProd :: Int -> Name -> Name -> Name -> CxtQ
 cxtGswizzleProd n a g b = case n of
@@ -113,9 +115,8 @@ instanceHeadProd n i c a g b = case n of
 	1 -> conT (nameGswizzle n) `appT` aProdG i c a g `appT` varT b
 	_ -> conT (nameGswizzle n) `appT` aProdG i c a g `appT` varT b
 
-typeGxProd :: Int ->
-	Name -> Name -> Name -> Name -> Name -> Name -> Name -> Name -> Q Dec
-typeGxProd n i c a g i' c' b g' = tySynInstD $ tySynEqn Nothing
+typeGxProd :: Int -> Name -> Name -> Name -> Name -> Name -> Q Dec
+typeGxProd n i c a g b = tySynInstD $ tySynEqn Nothing
 	(conT (nameGxU n) `appT` aProdG i c a g `appT` varT b)
 	(case n of
 		1 -> aProdGT
@@ -159,29 +160,19 @@ nameGOrA i a b = case i of 1 -> b; _ -> a
 nameGxxyL :: Int -> Name
 nameGxxyL = \case 1 -> nameGxL 1; i -> nameGxL $ i - 1
 
-tff :: DecQ
-tff = newName "s" >>= \s ->
-	newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
-	closedTypeFamilyD (mkName "F") [plainTV s] noSig Nothing [
-		tySynEqn Nothing
-			(conT (mkName "F") `appT` (varT a `prodT` (varT b `prodT` varT c)))
-			((varT a `prodT` varT b) `prodT` varT c) ]
-
 instanceGswizzleProdProd :: Int -> Q Dec
 instanceGswizzleProdProd n =
 	newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
 	newName "v" >>= \vt ->
-	newName "a'" >>= \a' -> newName "b'" >>= \b' -> newName "c'" >>= \c' ->
 	newName "x" >>= \x -> newName "y" >>= \y -> newName "z" >>= \z ->
 	newName "v" >>= \vf ->
-	instanceD (cxtGswizzleProdProd n a b c vt b' c')
+	instanceD (cxtGswizzleProdProd n a b c vt)
 		(conT (nameGswizzle n)
 			`appT` aProdBProdCT' a b c `appT` varT vt)
 		[typeGxProdProd n a b c vt, funGxProdProd n vf x y z]
 
-cxtGswizzleProdProd :: Int ->
-	Name -> Name -> Name -> Name -> Name -> Name -> CxtQ
-cxtGswizzleProdProd n a b c v b' c' = cxt [
+cxtGswizzleProdProd :: Int -> Name -> Name -> Name -> Name -> CxtQ
+cxtGswizzleProdProd n a b c v = cxt [
 	conT (nameGswizzle n) `appT` aProdBProdCT a b c `appT` varT v,
 	conT (nameGxU n) `appT` aProdBProdCT a b c `appT` varT v `eqT`
 	taProdBProdCT (conT (nameGxU n) `appT` varT a `appT` varT v) b c
@@ -190,7 +181,7 @@ cxtGswizzleProdProd n a b c v b' c' = cxt [
 typeGxProdProd :: Int -> Name -> Name -> Name -> Name -> Q Dec
 typeGxProdProd i a b c v = tySynInstD $ tySynEqn Nothing
 	(conT (nameGxU i) `appT` aProdBProdCT' a b c `appT` varT v)
-	(conT (mkName "F") `appT` (conT (nameGxU i) `appT` aProdBProdCT a b c `appT` varT v))
+	(conT ''F `appT` (conT (nameGxU i) `appT` aProdBProdCT a b c `appT` varT v))
 
 funGxProdProd :: Int -> Name -> Name -> Name -> Name -> Q Dec
 funGxProdProd i v a b c = funD (nameGxL i) [clause
@@ -243,30 +234,56 @@ classSwizzleClass :: Int -> Q Dec
 classSwizzleClass n =
 	newName "s" >>= \ta -> newName "b" >>= \b ->
 	newName "s" >>= \fs -> newName "v" >>= \v ->
-	classD (classSwizzleContext n ta b) (nameSwizzle n) [plainTV ta, plainTV b] [] [
+	classD (cxt []) (nameSwizzle n) [plainTV ta, plainTV b] [] [
 		typeX n ta b,
 		sigX n ta b,
 		defaultX n ta b,
 		defaultFunX n fs v ]
 
-classSwizzleContext :: Int -> Name -> Name -> CxtQ
-classSwizzleContext n a b = case n of
-	_ -> cxt []
---	1 -> cxt []
-	_ -> cxt [conT (nameSwizzle $ n - 1) `appT` varT a `appT` varT b]
-
-nameSwizzle :: Int -> Name
-nameSwizzle = mkName . ("SwizzleSet" ++) . show
-
 typeX :: Int -> Name -> Name -> Q Dec
 typeX i s b = openTypeFamilyD (nameXU i) [plainTV s, plainTV b] noSig Nothing
-
-nameXU :: Int -> Name
-nameXU = mkName . (: "") . toUpper . alphabet
 
 sigX :: Int -> Name -> Name -> Q Dec
 sigX i a b = sigD (nameXL i) $
 	varT a `arrT` varT b `arrT` (conT (nameXU i) `appT` varT a `appT` varT b)
+
+instanceSwizzleTuple :: Int -> DecsQ
+instanceSwizzleTuple n = (++)
+	<$> (`instanceSwizzleTuple_` n) `mapM` [1 .. min n 26]
+	<*> deriveGeneric n
+
+instanceSwizzleTuple_ :: Int -> Int -> Q Dec
+instanceSwizzleTuple_ i n =
+	mapM (newName . (vars !!)) [0 .. n - 1] >>= \ns -> newName "x" >>= \x ->
+	let	ns' = setX ns (i - 1) x in
+	instanceD (cxt [])
+		(conT (nameSwizzle i) `appT` tupT ns `appT` varT x)
+		[typeXFromTuple i ns x]
+
+typeXFromTuple :: Int -> [Name] -> Name -> Q Dec
+typeXFromTuple i ns x =
+	let	ns' = setX ns (i - 1) x in
+	tySynInstD $
+		tySynEqn Nothing (conT (nameXU i) `appT` tupT ns `appT` varT x) (tupT ns')
+
+setX :: [a] -> Int -> a -> [a]
+setX [] _ _ = []
+setX (_ : xs) 0 y = y : xs
+setX (x : xs) i y = x : setX xs (i - 1) y
+
+deriveGeneric :: Int -> DecsQ
+deriveGeneric i = do
+	t <- tupT =<< newNameAbc i
+	isInstance ''Generic [t] >>= bool
+		((: []) <$> standaloneDerivD (cxt [])
+			(conT ''Generic `appT` pure t))
+		(pure [])
+
+newNameAbc :: Int -> Q [Name]
+newNameAbc i = newName `mapM` take i vars
+
+vars :: [String]
+vars = ((: "") <$> ['a' .. 'z']) ++ [ cs ++ [c] | cs <- vars, c <- ['a' .. 'z'] ]
 
 nameXL :: Int -> Name
 nameXL = mkName . (: "") . alphabet
@@ -288,54 +305,16 @@ defaultXContext i a b = cxt [
 
 defaultFunX :: Int -> Name -> Name -> Q Dec
 defaultFunX i s v = funD (nameXL i) [clause [varP s, varP v]
---	(normalB $ varE 'to `comE` (varE (nameGxL i) `appE` varE v) `comE` varE 'from) []]
 	(normalB $
 		varE 'to `appE` (varE (nameGxL i)
 			`appE` (varE 'from `appE` varE s)
 			`appE` varE v
 			))
 	[]]
---	[]
---	$ infixE (Just . varE $ nameGxL i) (varE '(.)) (Just $ varE 'from)) []
 
 alphabet :: Int -> Char
 alphabet i | i > 26 = error $ "no such alphabet: " ++ show i
 alphabet i = (("xyz" ++ reverse ['a' .. 'w']) !!) $ subtract 1 i
 
-instance GSwizzleSet1 (K1 i a) b where
-	type GX (K1 i a) b = K1 i b
-	gx (K1 _) v = K1 v
-
-instance GSwizzleSet1 a b => GSwizzleSet1 (M1 i c a) b where
-	type GX (M1 i c a) b = M1 i c (GX a b)
-	gx (M1 s) v = M1 $ gx s v
-
-instance GSwizzleSet1 a b => GSwizzleSet1 (M1 i c a :*: g)  b where
-	type GX (M1 i c a :*: g) b = M1 i c (GX a b) :*: g
-	gx (s :*: t) v = gx s v :*: t
-
 type family F s where
 	F (a :*: (b :*: c)) = (a :*: b) :*: c
-
-instance (
-	GSwizzleSet1 (a :*: (b :*: c)) v,
-	GX (a :*: (b :*: c)) v ~ GX a v :*: (b :*: c)
-	) =>
-	GSwizzleSet1 ((a :*: b) :*: c) v where
-	type GX ((a :*: b) :*: c) v = F (GX (a :*: (b :*: c)) v)
-	gx ((x :*: y) :*: z) v = let
-		(x' :*: (y' :*: z')) = gx (x :*: (y :*: z)) v in
-		((x' :*: y') :*: z')
-
-class SwizzleSet1 s b where
-	type X s b
-	x :: s -> b -> X s b
-
-	default x :: (
-		Generic s, Generic (X s b),
-		GSwizzleSet1 (Rep s) b,
-		Rep (X s b) ~ GX (Rep s) b ) =>
-		s -> b -> X s b
-	x s b = to (gx (from s) b)
-
-instance SwizzleSet1 (a, b, c) d where type X (a, b, c) d = (d, b, c)

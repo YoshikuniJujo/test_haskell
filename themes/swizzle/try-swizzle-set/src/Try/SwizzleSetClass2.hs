@@ -12,24 +12,23 @@ module Try.SwizzleSetClass2 where
 
 import Try.SwizzleSetClass2.TH
 
-(: []) <$> classGswizzle 1
-(: []) <$> instanceGswizzle1K1
-(: []) <$> instanceGswizzleM1 1
-(: []) <$> instanceGswizzleProd 1
+import GHC.Generics
+import Language.Haskell.TH
+import Data.Bool
+import Template.Tools
 
-(: []) <$> classGswizzle 2
-(: []) <$> instanceGswizzleM1 2
-(: []) <$> instanceGswizzleProd 2
+concat <$> classSwizzle `mapM` [1 .. 3]
 
-(: []) <$> tff
-(: []) <$> instanceGswizzleProdProd 1
-(: []) <$> instanceGswizzleProdProd 2
-
-(: []) <$> classSwizzleClass 1
-(: []) <$> classSwizzleClass 2
-
-instance SwizzleSet1 (a, b, c) d where type X (a, b, c) d = (d, b, c)
-instance SwizzleSet2 (a, b, c) d where type Y (a, b, c) d = (a, d, c)
+concat <$> instanceSwizzleTuple `mapM` [1 .. 3]
 
 xy :: (SwizzleSet2 s v, SwizzleSet1 (Y s v) w) => s -> (w, v) -> X (Y s v) w
 xy s (w, v) = x (y s v) w
+
+xyz :: (SwizzleSet1 (Y (Z s w) v) u, SwizzleSet2 (Z s w) v, SwizzleSet3 s w) =>
+	s -> (u, v, w) -> X (Y (Z s w) v) u
+xyz s (u, v, w) = x (y (z s w) v) u
+
+foo :: (Show a, Show b, Show c) => [a] -> [b] -> c -> String
+foo [] _ c = show c
+foo _ [] c = show c
+foo (x : xs) (y : ys) c = show x ++ " (" ++ foo xs ys c ++ ") " ++ show y
