@@ -228,17 +228,6 @@ aProdBProdCP a b c = varP a `prodP` (varP b `prodP` varP c)
 aProdBProdCP' :: Name -> Name -> Name -> PatQ
 aProdBProdCP' a b c = (varP a `prodP` varP b) `prodP` varP c
 
-infixr 9 `prodT`, `prodE`, `prodP`
-
-prodT :: TypeQ -> TypeQ -> TypeQ
-t1 `prodT` t2 = conT ''(:*:) `appT` t1 `appT` t2
-
-prodE :: ExpQ -> ExpQ -> ExpQ
-e1 `prodE` e2 = conE '(:*:) `appE` e1 `appE` e2
-
-prodP :: PatQ -> PatQ -> PatQ
-p1 `prodP` p2 = infixP p1 '(:*:) p2
-
 classSwizzleClass :: Int -> Q Dec
 classSwizzleClass n =
 	newName "s" >>= \ta -> newName "b" >>= \b ->

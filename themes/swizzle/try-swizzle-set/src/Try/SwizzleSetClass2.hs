@@ -25,19 +25,58 @@ import Data.Char
 
 concat <$> classSwizzle `mapM` [1 .. 4]
 
-instance (
-	GSwizzleSet2 (a :*: (b :*: c)) v, Foo (GY (a :*: (b :*: c)) v)
-	) => GSwizzleSet2 ((a :*: b) :*: c) v where
-	type GY ((a :*: b) :*: c) v = F' (GY (a :*: (b :*: c)) v)
-	gy ((x :*: y) :*: z) v = f (gy @_ @v (x :*: (y :*: z)) v)
+instance (GSwizzleSet2 (a :*: (b :*: c)) v, Push (GY (a :*: (b :*: c)) v)) =>
+	GSwizzleSet2 ((a :*: b) :*: c) v where
+	type GY ((a :*: b) :*: c) v = P (GY (a :*: (b :*: c)) v)
+	gy ((x :*: y) :*: z) v = push (gy (x :*: (y :*: z)) v)
 
-class Foo x where
-	type F' x :: k -> *
-	f :: x a -> F' x a
+prodProd0 :: DecsQ
+prodProd0 = [d|
+	instance (GSwizzleSet2 (a :*: (b :*: c)) v, Push (GY (a :*: (b :*: c)) v)) =>
+		GSwizzleSet2 ((a :*: b) :*: c) v where
+		type GY ((a :*: b) :*: c) v = P (GY (a :*: (b :*: c)) v)
+		gy ((x :*: y) :*: z) v = push (gy (x :*: (y :*: z)) v)
+	|]
 
-instance Foo (a :*: (b :*: c)) where
-	type F' (a :*: (b :*: c)) = (a :*: b) :*: c
-	f (x :*: (y :*: z)) = (x :*: y) :*: z
+prodProd :: DecQ
+prodProd = newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
+	newName "v" >>= \v ->
+	newName "x" >>= \x -> newName "y" >>= \y -> newName "z" >>= \z ->
+	newName "v" >>= \vf ->
+	instanceD
+		(cxt [
+			conT (nameGswizzle 2) `appT`
+				(varT a `prodT`
+					(varT b `prodT` varT c)) `appT` varT v,
+			conT ''Push `appT`
+				(conT (nameGxU 2) `appT`
+					(varT a `prodT` (varT b `prodT` varT c))
+						`appT` varT v)
+			])
+		(	conT (nameGswizzle 2) `appT` ((varT a `prodT` varT b) `prodT` varT c) `appT` varT v
+			)
+		[
+			tySynInstD (tySynEqn Nothing
+				(conT (nameGxU 2) `appT`
+					((varT a `prodT` varT b) `prodT` varT c) `appT`
+					varT v)
+				(conT ''P `appT`
+					(conT (nameGxU 2) `appT` (varT a `prodT` (varT b `appT` varT c)) `appT` varT v))),
+			funD (nameGxL 2) [clause
+				[	(varP x `prodP` varP y) `prodP` varP z,
+					varP vf
+					]
+				(normalB $ varE 'push `appE`
+					(varE (nameGxL 2) `appE` (varE x `prodE` (varE y `prodE` varE z)))
+					)
+				[]]
+			]
+
+class Push x where type P x :: k -> *; push :: x a -> P x a
+
+instance Push (a :*: (b :*: c)) where
+	type P (a :*: (b :*: c)) = (a :*: b) :*: c
+	push (x :*: (y :*: z)) = (x :*: y) :*: z
 
 concat <$> instanceSwizzleTuple `mapM` [1 .. 2]
 

@@ -18,7 +18,9 @@ module Template.Tools (
 	noSig, plainTV, cxt,
 
 	nameSwizzle, nameSwizzleXyz,
-	nameGswizzle, nameGxU, nameGxL, nameXU
+	nameGswizzle, nameGxU, nameGxL, nameXU,
+
+	prodT, prodP, prodE
 
 	) where
 
