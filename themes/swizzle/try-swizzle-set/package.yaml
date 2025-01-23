@@ -38,11 +38,8 @@ library:
   source-dirs: src
   exposed-modules:
     - Data.SwizzleSet
+    - Data.SwizzleSet.TH
     - Data.SwizzleSet.Class
-    - Data.SwizzleSet.Class.TH
-    - Data2.SwizzleSet
-    - Data2.SwizzleSet.Class
-    - Data2.SwizzleSet.TH
 
 tests:
   try-swizzle-set-test:

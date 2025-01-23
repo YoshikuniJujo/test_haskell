@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 
-module Data.SwizzleSet.TH where
+module Data.SwizzleSet.TH (swizzleSet) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
@@ -11,12 +12,12 @@ import Data.Char
 import Data.SwizzleSet.Class.Pkg
 import Template.Tools
 
-xyzt :: String -> DecsQ
-xyzt nm = sequence [xyzttd nm, xyztfn nm]
+swizzleSet :: String -> String -> DecsQ
+swizzleSet pfx nm = sequence [xyzttd pfx nm, xyztfn pfx nm]
 
-xyzttd :: String -> DecQ
-xyzttd nm = newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
-	sigD (mkName nm) $
+xyzttd :: String -> String -> DecQ
+xyzttd pfx nm = newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
+	sigD (mkFunName pfx nm) $
 		forallT []
 			(cxt (zipWith appT (zipWith appT
 				(clsSwizzleXyz <$> nm) (tail $ scanr go (varT s) $ pairs uvw)) (varT <$> uvw)))
@@ -43,10 +44,10 @@ typX = conT . mkNameG_tc swizzleClassPkg "Data.SwizzleSet.Class.Base" . (: "") .
 crrPos :: Eq a => [a] -> [b] -> a -> b
 crrPos xs ys x = ys !! fromJust (x `L.elemIndex` xs)
 
-xyztfn :: String -> DecQ
-xyztfn nm =
+xyztfn :: String -> String -> DecQ
+xyztfn pfx nm =
 	newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
-	funD (mkName nm) [
+	funD (mkFunName pfx nm) [
 		clause [varP s, tupP $ varP <$> uvw] (normalB $
 			foldr (\(xl, ul) -> (`appE` ul) . (xl `appE`)) (varE s) $
 				zip (funX <$> nm) (varE <$> uvw)
@@ -54,3 +55,8 @@ xyztfn nm =
 			) [] ]
 	where
 	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm
+
+mkFunName :: String -> String -> Name
+mkFunName pfx nm = mkName case pfx of
+	"" -> nm;
+	_ -> case nm of h : t -> pfx ++ toUpper h : t; _ -> pfx

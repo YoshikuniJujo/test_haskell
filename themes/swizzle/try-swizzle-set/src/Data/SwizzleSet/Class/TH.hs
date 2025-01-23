@@ -16,10 +16,7 @@ module Data.SwizzleSet.Class.TH (
 import GHC.Generics
 import Language.Haskell.TH hiding (Type)
 import Data.Kind
-import Data.List qualified as L
-import Data.Maybe
 import Data.Bool
-import Data.Char
 
 import Template.Tools
 
@@ -166,67 +163,6 @@ nameGOrA i a b = case i of 1 -> b; _ -> a
 nameGxxyL :: Int -> Name
 nameGxxyL = \case 1 -> nameGxL 1; i -> nameGxL $ i - 1
 
-instanceGswizzleProdProd :: Int -> Q Dec
-instanceGswizzleProdProd n =
-	newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
-	newName "v" >>= \vt ->
-	newName "x" >>= \x -> newName "y" >>= \y -> newName "z" >>= \z ->
-	newName "v" >>= \vf ->
-	instanceD (cxtGswizzleProdProd n a b c vt)
-		(conT (nameGswizzle n)
-			`appT` aProdBProdCT' a b c `appT` varT vt)
-		[typeGxProdProd n a b c vt, funGxProdProd n vf x y z]
-
-cxtGswizzleProdProd :: Int -> Name -> Name -> Name -> Name -> CxtQ
-cxtGswizzleProdProd n a b c v = cxt [
-	conT (nameGswizzle n) `appT` aProdBProdCT a b c `appT` varT v,
-	conT (nameGxU n) `appT` aProdBProdCT a b c `appT` varT v `eqT`
-	bool
-	(taProdBProdCT (conT (nameGxU n) `appT` varT a `appT` varT v) b c)
-	(conT (nameGxU n) `appT` aProdBProdCT' a b c `appT` varT v) False -- (n > 1)
-	]
-
-typeGxProdProd :: Int -> Name -> Name -> Name -> Name -> Q Dec
-typeGxProdProd i a b c v = tySynInstD $ tySynEqn Nothing
-	(conT (nameGxU i) `appT` aProdBProdCT' a b c `appT` varT v)
-	(conT ''F `appT` (conT (nameGxU i) `appT` aProdBProdCT a b c `appT` varT v))
-
-funGxProdProd :: Int -> Name -> Name -> Name -> Name -> Q Dec
-funGxProdProd i v a b c = funD (nameGxL i) [clause
-	[	
-		aProdBProdCP' a b c,
-		varP v
-		]
-	(normalB $ letProdProd i v a b c) []]
-
-letProdProd :: Int -> Name -> Name -> Name -> Name -> ExpQ
-letProdProd i v a b c = newName "x" >>= \x -> newName "y" >>= \y -> newName "z" >>= \z ->
-	letE [valD (aProdBProdCP x y z) (normalB $
-			varE (nameGxL i)
-				`appE` aProdBProdCE a b c
-				`appE` varE v
-			) []]
-		(aProdBProdCE2 x y z)
-
-aProdBProdCT, aProdBProdCT' :: Name -> Name -> Name -> TypeQ
-aProdBProdCT a b c = varT a `prodT` varT b `prodT` varT c
-aProdBProdCT' a b c = (varT a `prodT` varT b) `prodT` varT c
-
-taProdBProdCT :: TypeQ -> Name -> Name -> TypeQ
-taProdBProdCT a b c = a `prodT` varT b `prodT` varT c
-
-aProdBProdCE2 :: Name -> Name -> Name -> ExpQ
-aProdBProdCE2 a b c = (varE a `prodE` varE b) `prodE` varE c
-
-aProdBProdCE :: Name -> Name -> Name -> ExpQ
-aProdBProdCE a b c = varE a `prodE` varE b `prodE` varE c
-
-aProdBProdCP :: Name -> Name -> Name -> PatQ
-aProdBProdCP a b c = varP a `prodP` (varP b `prodP` varP c)
-
-aProdBProdCP' :: Name -> Name -> Name -> PatQ
-aProdBProdCP' a b c = (varP a `prodP` varP b) `prodP` varP c
-
 classSwizzleClass :: Int -> Q Dec
 classSwizzleClass n =
 	newName "s" >>= \ta -> newName "b" >>= \b ->
@@ -252,7 +188,6 @@ instanceSwizzleTuple n = (++)
 instanceSwizzleTuple_ :: Int -> Int -> Q Dec
 instanceSwizzleTuple_ i n =
 	mapM (newName . (vars !!)) [0 .. n - 1] >>= \ns -> newName "x" >>= \x ->
-	let	ns' = setX ns (i - 1) x in
 	instanceD (cxt [])
 		(conT (nameSwizzle i) `appT` tupT ns `appT` varT x)
 		[typeXFromTuple i ns x]
@@ -313,9 +248,6 @@ alphabet :: Int -> Char
 alphabet i | i > 26 = error $ "no such alphabet: " ++ show i
 alphabet i = (("xyz" ++ reverse ['a' .. 'w']) !!) $ subtract 1 i
 
-type family F s where
-	F (a :*: (b :*: c)) = (a :*: b) :*: c
-
 prodProd :: Int -> DecQ
 prodProd n = newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
 	newName "v" >>= \v ->
@@ -350,7 +282,7 @@ prodProd n = newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
 				[]]
 			]
 
-class Push x where type P x :: k -> *; push :: x a -> P x a
+class Push x where type P x :: k -> Data.Kind.Type; push :: x a -> P x a
 
 instance Push (a :*: (b :*: c)) where
 	type P (a :*: (b :*: c)) = (a :*: b) :*: c
