@@ -22,7 +22,7 @@ xyzttd pfx nm = newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw 
 		forallT []
 			(cxt (zipWith appT (zipWith appT
 				(clsSwizzleXyz <$> nm) (tail $ scanr go (varT s) $ pairs uvw)) (varT <$> uvw)))
-			(varT s `arrT` tupT uvw `arrT`
+			(varT s `arrT` tupT' (varT <$> uvw) `arrT`
 				foldr go (varT s) (pairs uvw))
 	where
 	go (xu, ul) = (`appT` ul) . (xu `appT`)
@@ -49,7 +49,7 @@ xyztfn :: String -> String -> DecQ
 xyztfn pfx nm =
 	newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
 	funD (mkFunName pfx nm) [
-		clause [varP s, tupP $ varP <$> uvw] (normalB $
+		clause [varP s, tupP' $ varP <$> uvw] (normalB $
 			foldr (\(xl, ul) -> (`appE` ul) . (xl `appE`)) (varE s) $
 				zip (funX <$> nm) (varE <$> uvw)
 --				zip (varE . mkName <$> ((: "") <$> nm)) (varE <$> uvw)

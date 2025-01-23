@@ -12,6 +12,7 @@ module Template.Tools (
 	Q, Dec, Name, newName,
 
 	conT, varT, appT, arrT, arrK, eqT, tupT,
+	tupT', tupP', tupE',
 
 	sigD, classD, openTypeFamilyD,
 
@@ -45,6 +46,15 @@ t1 `eqT` t2 = equalityT `appT` t1 `appT` t2
 
 tupT :: [Name] -> TypeQ
 tupT ns = foldl appT (tupleT $ length ns) $ varT <$> ns
+
+tupT' :: [TypeQ] -> TypeQ
+tupT' = \case [n] -> n; ns -> foldl appT (tupleT $ length ns) ns
+
+tupP' :: [PatQ] -> PatQ
+tupP' = \case [p] -> p; ps -> tupP ps
+
+tupE' :: [ExpQ] -> ExpQ
+tupE' = \case [e] -> e; es -> tupE es
 
 nameGswizzle :: Int -> Name
 nameGswizzle = mkName . ("GSwizzleSet" ++) . show
