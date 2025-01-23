@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
@@ -13,15 +14,15 @@ nums :: TupInt10
 nums = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
 
-foo :: TupInt10
-foo = SwzS.ywv (100, 200, 300) nums -- (0, 100, 2, 200, 300, 5, 6, 7, 8)
+foo :: (Int, Int, Int, String, Int, Int, Int, Int, Int, Int)
+foo = SwzS.ywv nums (100, "hello", 300) -- (0, 100, 2, 200, 300, 5, 6, 7, 8)
 
 foo2, foo3, foo4 :: TupInt10
-foo2 = SwzS.z 123 nums -- (0, 1, 123, 3, 4, 5, 6, 7, 8, 9)
-foo3 = SwzS.u 321 nums -- (0, 1, 2, 3, 4, 321, 6, 7, 8, 9)
-foo4 = SwzS.q 333 nums -- (0, 1, 2, 3, 4, 5, 6, 7, 8, 333)
+foo2 = SwzS.z nums 123 -- (0, 1, 123, 3, 4, 5, 6, 7, 8, 9)
+foo3 = SwzS.u nums 321 -- (0, 1, 2, 3, 4, 321, 6, 7, 8, 9)
+foo4 = SwzS.q nums 333 -- (0, 1, 2, 3, 4, 5, 6, 7, 8, 333)
 
 swizzleSet "" "zvusq"
 
 bar :: TupInt10
-bar = zvusq (100, 200, 300, 400, 500) nums -- (0, 1, 100, 3, 200, 300, 6, 400, 8, 500)
+bar = zvusq nums (100, 200, 300, 400, 500) -- (0, 1, 100, 3, 200, 300, 6, 400, 8, 500)

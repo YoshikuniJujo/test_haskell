@@ -5,15 +5,21 @@
 
 packages:
 - completed:
-    hackage: swizzle-set-0.1.0.0@sha256:0b02a951f85401cb4c8396c1f832ddf00baacdff6f537214ae02b8e02f04e0b3,2243
+    commit: 90468c89f06e06c97cf3ba945da6e42a67b7f790
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-swizzle-set
     pantry-tree:
-      sha256: 7c5455f930b82c504beac9d971cf48bfe522e6cc12f7335ef44b32f48d85aa03
-      size: 1269
+      sha256: e845d918400f8245390ac4c4c947a2c68f4fb6dd6204abc8773a4f00c3080b64
+      size: 1622
+    subdir: themes/swizzle/try-swizzle-set
+    version: 0.2.0.0
   original:
-    hackage: swizzle-set-0.1.0.0
+    commit: 90468c89f06e06c97cf3ba945da6e42a67b7f790
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/swizzle/try-swizzle-set
 snapshots:
 - completed:
-    sha256: 3ce900e74d0890ae59692705e21c0dc1312acae79850f64a3b9e339e14612854
-    size: 631308
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/20.yaml
-  original: nightly-2025-01-20
+    sha256: dd421f7a9f444e0c96f381d28fc0adbbd71a1280c9bdc94ebab0be3ce5458bb1
+    size: 631516
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/21.yaml
+  original: nightly-2025-01-21

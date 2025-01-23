@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-01-20
+snapshot: nightly-2025-01-21
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,7 +41,11 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - swizzle-set-0.1.0.0
+  #  - swizzle-set-0.1.0.0
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 90468c89f06e06c97cf3ba945da6e42a67b7f790
+    subdirs:
+    - themes/swizzle/try-swizzle-set
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
