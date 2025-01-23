@@ -18,6 +18,8 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+data-files:
+    shader/interpolate.comp
 
 source-repository head
   type: git
@@ -34,7 +36,17 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , data-default
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , shaderc
+    , tools-yj
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 executable zenn-vulkan-nearest-linear0-exe
@@ -47,7 +59,17 @@ executable zenn-vulkan-nearest-linear0-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , data-default
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , shaderc
+    , tools-yj
+    , typelevel-tools-yj
     , zenn-vulkan-nearest-linear0
   default-language: Haskell2010
 
@@ -62,6 +84,16 @@ test-suite zenn-vulkan-nearest-linear0-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , data-default
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , shaderc
+    , tools-yj
+    , typelevel-tools-yj
     , zenn-vulkan-nearest-linear0
   default-language: Haskell2010
