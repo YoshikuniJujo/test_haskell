@@ -9,6 +9,7 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Char
 
+import Data.SwizzleSet.Class ()
 import Data.SwizzleSet.Class.Pkg
 import Template.Tools
 
