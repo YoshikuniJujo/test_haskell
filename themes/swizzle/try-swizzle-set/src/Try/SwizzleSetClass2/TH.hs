@@ -10,11 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Try.SwizzleSetClass2.TH (
-	classSwizzle, instanceSwizzleTuple, xyzt,
-
-	instanceSwizzleTuple_, instanceGswizzleM1, instanceGswizzleProd, instanceGswizzleProdProd,
-
-	F
+	classSwizzle, instanceSwizzleTuple, xyzt
 	) where
 
 import GHC.Generics
