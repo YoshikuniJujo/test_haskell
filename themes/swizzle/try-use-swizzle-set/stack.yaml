@@ -42,10 +42,8 @@ packages:
 
 extra-deps:
   #  - swizzle-set-0.1.0.0
-  - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 90468c89f06e06c97cf3ba945da6e42a67b7f790
-    subdirs:
-    - themes/swizzle/try-swizzle-set
+  - git: https://github.com/YoshikuniJujo/swizzle-set
+    commit: 91bf251f207fe25fd10ab18a898d6e97d9d34288
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
