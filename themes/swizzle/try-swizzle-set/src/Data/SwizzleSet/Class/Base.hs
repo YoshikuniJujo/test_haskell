@@ -10,13 +10,10 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Try.SwizzleSetClass2 where
+module Data.SwizzleSet.Class.Base where
 
-import Try.SwizzleSetClass2.TH
+import Data.SwizzleSet.Class.TH
 
 concat <$> classSwizzle `mapM` [1 .. 4]
 
 concat <$> instanceSwizzleTuple `mapM` [1 .. 4]
-
-xyzt "xy"
-xyzt "xyz"

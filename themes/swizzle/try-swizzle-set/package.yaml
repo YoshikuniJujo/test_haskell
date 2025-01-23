@@ -1,5 +1,5 @@
 name:                try-swizzle-set
-version:             0.1.0.0
+version:             0.2.0.0
 github:              "YoshikuniJujo/try-swizzle-set"
 license:             BSD-3-Clause
 author:              "Yoshikuni Jujo"
@@ -37,11 +37,12 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+    - Data.SwizzleSet
+    - Data.SwizzleSet.Class.Base
+    - Data.SwizzleSet.Class.TH
     - Data2.SwizzleSet
     - Data2.SwizzleSet.Class
     - Data2.SwizzleSet.TH
-    - Try.SwizzleSetClass
-    - Try.SwizzleSetClass2
 
 tests:
   try-swizzle-set-test:

@@ -9,8 +9,8 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Try.SwizzleSetClass2.TH (
-	classSwizzle, instanceSwizzleTuple, xyzt
+module Data.SwizzleSet.Class.TH (
+	classSwizzle, instanceSwizzleTuple
 	) where
 
 import GHC.Generics

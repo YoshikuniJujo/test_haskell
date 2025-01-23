@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-swizzle-set
-version:        0.1.0.0
+version:        0.2.0.0
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-swizzle-set#readme>
 homepage:       https://github.com/YoshikuniJujo/try-swizzle-set#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-swizzle-set/issues
@@ -25,12 +25,15 @@ source-repository head
 
 library
   exposed-modules:
+      Data.SwizzleSet
+      Data.SwizzleSet.Class.Base
+      Data.SwizzleSet.Class.TH
       Data2.SwizzleSet
       Data2.SwizzleSet.Class
       Data2.SwizzleSet.TH
-      Try.SwizzleSetClass
-      Try.SwizzleSetClass2
   other-modules:
+      Data.SwizzleSet.Class.Pkg
+      Data.SwizzleSet.TH
       Data2.SwizzleSet.Class.Base
       Data2.SwizzleSet.Class.Pkg
       Data2.SwizzleSet.Class.TH.Internal
@@ -41,8 +44,6 @@ library
       Data2.SwizzleSet.Instance.TupleBetween47And52
       Data2.SwizzleSet.Instance.TupleBetween53And57
       Template.Tools
-      Try.SwizzleSetClass.TH
-      Try.SwizzleSetClass2.TH
       Paths_try_swizzle_set
   autogen-modules:
       Paths_try_swizzle_set
