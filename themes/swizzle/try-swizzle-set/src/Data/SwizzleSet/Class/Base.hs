@@ -14,6 +14,4 @@ module Data.SwizzleSet.Class.Base where
 
 import Data.SwizzleSet.Class.TH
 
-concat <$> classSwizzle `mapM` [1 .. 4]
-
-concat <$> instanceSwizzleTuple `mapM` [1 .. 4]
+concat <$> classSwizzle `mapM` [1 .. 26]

@@ -316,37 +316,6 @@ alphabet i = (("xyz" ++ reverse ['a' .. 'w']) !!) $ subtract 1 i
 type family F s where
 	F (a :*: (b :*: c)) = (a :*: b) :*: c
 
-xyzt :: String -> DecsQ
-xyzt nm = sequence [xyzttd nm, xyztfn nm]
-
-xyzttd :: String -> DecQ
-xyzttd nm = newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
-	sigD (mkName nm) $
-		forallT []
-			(cxt (zipWith appT (zipWith appT
-				(conT . nameSwizzleXyz <$> nm) (tail $ scanr go (varT s) $ pairs uvw)) (varT <$> uvw)))
-			(varT s `arrT` tupT uvw `arrT`
-				foldr go (varT s) (pairs uvw))
-	where
-	go (xu, ul) = (`appT` ul) . (xu `appT`)
-	pairs uvw = zip (conT . mkName <$> ((: "") . toUpper <$> nm)) (varT <$> uvw)
-	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm
-
-crrPos :: Eq a => [a] -> [b] -> a -> b
-crrPos xs ys x = ys !! fromJust (x `L.elemIndex` xs)
-
-xyztfn :: String -> DecQ
-xyztfn nm =
-	newName "s" >>= \s -> newName `mapM` ((: "") <$> uvws) >>= \uvw ->
-	funD (mkName nm) [
-		clause [varP s, tupP $ varP <$> uvw] (normalB $
-			foldr (\(xl, ul) -> (`appE` ul) . (xl `appE`)) (varE s) $
-				zip (varE . mkName <$> ((: "") <$> nm)) (varE <$> uvw)
---			varE (mkName "xyz")
-			) [] ]
-	where
-	uvws = crrPos ("xyz" ++ reverse ['a' .. 'w']) ("uvwxyz" ++ reverse ['a' .. 't']) <$> nm
-
 prodProd :: Int -> DecQ
 prodProd n = newName "a" >>= \a -> newName "b" >>= \b -> newName "c" >>= \c ->
 	newName "v" >>= \v ->

@@ -38,7 +38,7 @@ library:
   source-dirs: src
   exposed-modules:
     - Data.SwizzleSet
-    - Data.SwizzleSet.Class.Base
+    - Data.SwizzleSet.Class
     - Data.SwizzleSet.Class.TH
     - Data2.SwizzleSet
     - Data2.SwizzleSet.Class
