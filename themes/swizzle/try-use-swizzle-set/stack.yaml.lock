@@ -5,16 +5,12 @@
 
 packages:
 - completed:
-    commit: 91bf251f207fe25fd10ab18a898d6e97d9d34288
-    git: https://github.com/YoshikuniJujo/swizzle-set
-    name: swizzle-set
+    hackage: swizzle-set-0.2.0.0@sha256:5fe7be6695d589de962d79146f1e17b0737d379ef5a3b5a27cf2656f741f73f2,2305
     pantry-tree:
-      sha256: ca57d09c46fdd68794a0d0c77de59ebd9f898e7e3783f4400859a34f8f6881e8
-      size: 1620
-    version: 0.2.0.0
+      sha256: da00b8e66c00596b1589bb8813e7a65afe36c3980d83198a5137942f6dc442b1
+      size: 1412
   original:
-    commit: 91bf251f207fe25fd10ab18a898d6e97d9d34288
-    git: https://github.com/YoshikuniJujo/swizzle-set
+    hackage: swizzle-set-0.2.0.0
 snapshots:
 - completed:
     sha256: dd421f7a9f444e0c96f381d28fc0adbbd71a1280c9bdc94ebab0be3ce5458bb1
