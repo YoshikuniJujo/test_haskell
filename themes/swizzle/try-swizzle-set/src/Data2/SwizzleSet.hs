@@ -1,9 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.SwizzleSet where
+module Data2.SwizzleSet where
 
-import Data.SwizzleSet.TH
+import Data2.SwizzleSet.TH
 
 concat <$> (swizzleSet "" . (: "")) `mapM` ("xyz" ++ reverse ['a' .. 'w'])
 

@@ -37,9 +37,9 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-    - Data.SwizzleSet
-    - Data.SwizzleSet.Class
-    - Data.SwizzleSet.TH
+    - Data2.SwizzleSet
+    - Data2.SwizzleSet.Class
+    - Data2.SwizzleSet.TH
     - Try.SwizzleSetClass
     - Try.SwizzleSetClass2
 

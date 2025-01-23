@@ -25,21 +25,21 @@ source-repository head
 
 library
   exposed-modules:
-      Data.SwizzleSet
-      Data.SwizzleSet.Class
-      Data.SwizzleSet.TH
+      Data2.SwizzleSet
+      Data2.SwizzleSet.Class
+      Data2.SwizzleSet.TH
       Try.SwizzleSetClass
       Try.SwizzleSetClass2
   other-modules:
-      Data.SwizzleSet.Class.Base
-      Data.SwizzleSet.Class.Pkg
-      Data.SwizzleSet.Class.TH.Internal
-      Data.SwizzleSet.Instance.Tuple58OrMore
-      Data.SwizzleSet.Instance.TupleBetween27And30
-      Data.SwizzleSet.Instance.TupleBetween31And40
-      Data.SwizzleSet.Instance.TupleBetween41And46
-      Data.SwizzleSet.Instance.TupleBetween47And52
-      Data.SwizzleSet.Instance.TupleBetween53And57
+      Data2.SwizzleSet.Class.Base
+      Data2.SwizzleSet.Class.Pkg
+      Data2.SwizzleSet.Class.TH.Internal
+      Data2.SwizzleSet.Instance.Tuple58OrMore
+      Data2.SwizzleSet.Instance.TupleBetween27And30
+      Data2.SwizzleSet.Instance.TupleBetween31And40
+      Data2.SwizzleSet.Instance.TupleBetween41And46
+      Data2.SwizzleSet.Instance.TupleBetween47And52
+      Data2.SwizzleSet.Instance.TupleBetween53And57
       Template.Tools
       Try.SwizzleSetClass.TH
       Try.SwizzleSetClass2.TH

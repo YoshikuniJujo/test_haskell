@@ -3,7 +3,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.SwizzleSet.TH (swizzleSet) where
+module Data2.SwizzleSet.TH (swizzleSet) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
@@ -11,7 +11,7 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Char
 
-import Data.SwizzleSet.Class.Pkg
+import Data2.SwizzleSet.Class.Pkg
 
 swizzleSet :: String -> String -> DecsQ
 swizzleSet pfx nm = sequence [mkSwizzleSig i pfx nm, mkSwizzleFun pfx nm]
@@ -32,13 +32,13 @@ mkSwizzleSigTup :: String -> Name -> TypeQ
 mkSwizzleSigTup cs a = tupT $ (<$> cs) \c -> typX c `appT` varT a
 
 clsSwizzle :: Int -> TypeQ
-clsSwizzle = conT . mkNameG_tc swizzleClassPkg "Data.SwizzleSet.Class.Base" . ("SwizzleSet" ++) . show
+clsSwizzle = conT . mkNameG_tc swizzleClassPkg "Data2.SwizzleSet.Class.Base" . ("SwizzleSet" ++) . show
 
 funX :: Char -> ExpQ
-funX = varE . mkNameG_v swizzleClassPkg "Data.SwizzleSet.Class.Base" . (: "")
+funX = varE . mkNameG_v swizzleClassPkg "Data2.SwizzleSet.Class.Base" . (: "")
 
 typX :: Char -> TypeQ
-typX = conT . mkNameG_tc swizzleClassPkg "Data.SwizzleSet.Class.Base" . (: "") . toUpper
+typX = conT . mkNameG_tc swizzleClassPkg "Data2.SwizzleSet.Class.Base" . (: "") . toUpper
 
 tupT :: [TypeQ] -> TypeQ
 tupT = \case [t] -> t; ts -> foldl appT (tupleT $ length ts) ts
