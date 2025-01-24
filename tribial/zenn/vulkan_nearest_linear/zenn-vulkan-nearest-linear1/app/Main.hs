@@ -170,10 +170,16 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoFlags = zeroBits,
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
+type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
+
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Int32 -> Int32 -> IO img
 body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
+	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
+	prepareImg @ShaderFormat pd dv std w h \imgs' ->
+	Vk.ImgVw.create @_ @ShaderFormat dv (imgVwInfo imgd') nil \imgvwd' ->
+	Vk.ImgVw.create @_ @ShaderFormat dv (imgVwInfo imgs') nil \imgvws' ->
 	prepareImg pd dv trsd w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
@@ -192,10 +198,27 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	copyImgToBffr cb imgd rb
 	where
 	trsd = Vk.Img.UsageTransferSrcBit .|. Vk.Img.UsageTransferDstBit
+	sts = Vk.Img.UsageStorageBit .|. Vk.Img.UsageTransferSrcBit
+	std = Vk.Img.UsageStorageBit .|. Vk.Img.UsageTransferDstBit
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
 	tr = transitionImgLyt
+
+imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
+imgVwInfo i = Vk.ImgVw.CreateInfo {
+	Vk.ImgVw.createInfoNext = TMaybe.N,
+	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoImage = i,
+	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponents = def,
+	Vk.ImgVw.createInfoSubresourceRange = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers } }
 
 -- BUFFER
 
