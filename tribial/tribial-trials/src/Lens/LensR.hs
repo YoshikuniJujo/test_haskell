@@ -10,7 +10,7 @@ type LensR s t a b = forall r . (a -> (r, Maybe b)) -> s -> (r, Maybe t)
 type LensT s t a b = (s -> a, s -> b -> t)
 
 type Foo s t a b = forall r . (a -> (r, ())) -> s -> (r, ())
-type Bar s t a b = forall r . (a -> (r, b)) -> s -> (r, b)
+type Bar s t a b = forall r . (a -> (r, b)) -> s -> (r, t)
 
 lensFtoR :: Lens s t a b -> LensR s t a b
 lensFtoR l f = runMyF . l (myF . f)
