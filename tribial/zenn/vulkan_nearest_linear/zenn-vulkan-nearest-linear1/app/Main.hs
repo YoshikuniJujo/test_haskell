@@ -440,3 +440,20 @@ createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
 		Vk.DscStLyt.createInfoNext = TMaybe.N,
 		Vk.DscStLyt.createInfoFlags = zeroBits,
 		Vk.DscStLyt.createInfoBindings = bds }
+
+createPplLyt :: forall pctps pcrng sd a bds . (
+	Vk.DscStLyt.BindingListToMiddle bds,
+	Vk.PshCnst.RangeListToMiddle pctps '[pcrng] ) =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
+		Vk.DscStLyt.D sdsl bds ->
+		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
+createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
+	Vk.PplLyt.create dv (info dsl) nil $ f dsl
+	where
+	info :: Vk.DscStLyt.D sdsl bds ->
+		Vk.PplLyt.CreateInfo 'Nothing
+			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps '[pcrng])
+	info dsl = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
