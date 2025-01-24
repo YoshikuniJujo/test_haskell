@@ -112,12 +112,15 @@ main = getArgs >>= \case
 		writePng ofp img'
 	_ -> error "Invalid command line arguments"
 
-getFilter :: String -> Maybe Vk.Filter
+getFilter :: String -> Maybe Filter
 getFilter = \case
-	"nearest" -> Just Vk.FilterNearest; "linear" -> Just Vk.FilterLinear
-	_ -> Nothing
+	"nearest" -> Just Nearest; "linear" -> Just Linear; _ -> Nothing
 
-realMain :: ImageRgba8 -> Vk.Filter -> Int32 -> Int32 -> IO ImageRgba8
+newtype Filter = Filter Word32 deriving (Show, Storable)
+pattern Nearest, Linear :: Filter
+pattern Nearest = Filter 0; pattern Linear = Filter 1
+
+realMain :: ImageRgba8 -> Filter -> Int32 -> Int32 -> IO ImageRgba8
 realMain img flt n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
 	createCmdPl qfi dv \cp -> body pd dv gq cp img flt n i
@@ -168,7 +171,7 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Vk.Filter -> Int32 -> Int32 -> IO img
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Int32 -> Int32 -> IO img
 body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
 	prepareImg pd dv w h \imgs ->
@@ -181,7 +184,9 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	tr cb imgs
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg cb imgs imgd w h flt n i
+	copyImgToImg cb imgs imgd w h (case flt of
+		Nearest -> Vk.FilterNearest; Linear -> Vk.FilterLinear
+		_ -> error "bad") n i
 	tr cb imgd
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToBffr cb imgd rb
