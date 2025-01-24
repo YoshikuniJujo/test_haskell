@@ -431,3 +431,12 @@ resultBffr pd dv w h f = head
 	<$> createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
 	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
+
+createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
+	(forall sdsl . Vk.DscStLyt.D sdsl bts -> IO a) -> IO a
+createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
+	where info = Vk.DscStLyt.CreateInfo {
+		Vk.DscStLyt.createInfoNext = TMaybe.N,
+		Vk.DscStLyt.createInfoFlags = zeroBits,
+		Vk.DscStLyt.createInfoBindings = bds }
