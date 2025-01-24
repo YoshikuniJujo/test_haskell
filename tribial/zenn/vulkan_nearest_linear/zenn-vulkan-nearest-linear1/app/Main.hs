@@ -457,3 +457,40 @@ createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
+createCmpPpl :: forall sd bds pctps pcrng a . (
+	Vk.PshCnst.RangeListToMiddle pctps '[pcrng],
+	Vk.DscStLyt.BindingListToMiddle bds ) =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds ->
+	SpirV.S GlslComputeShader -> (forall sds scppl spl .
+		Vk.DscStLyt.D sds bds ->
+		Vk.PplLyt.P spl '[ '(sds, bds)] pctps ->
+		Vk.Ppl.Cp.C scppl '(spl, '[ '(sds, bds)], pctps) -> IO a) ->
+	IO a
+createCmpPpl d bds shdr f =
+	createPplLyt @pctps @pcrng d bds \dsl pl ->
+	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
+		\(HPList.Singleton p) -> f dsl pl p
+	where
+	info :: Vk.PplLyt.P sl sbtss pcw -> Vk.Ppl.Cp.CreateInfo 'Nothing
+		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
+		'(sl, sbtss, pcw) bpha
+	info pl = Vk.Ppl.Cp.CreateInfo {
+		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
+		Vk.Ppl.Cp.createInfoFlags = zeroBits,
+		Vk.Ppl.Cp.createInfoStage = U5 shdrst,
+		Vk.Ppl.Cp.createInfoLayout = U3 pl,
+		Vk.Ppl.Cp.createInfoBasePipelineHandleOrIndex = Nothing }
+	shdrst :: Vk.Ppl.ShdrSt.CreateInfo
+		'Nothing 'Nothing 'GlslComputeShader 'Nothing '[]
+	shdrst = Vk.Ppl.ShdrSt.CreateInfo {
+		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
+		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageComputeBit,
+		Vk.Ppl.ShdrSt.createInfoModule = (shdrmd, nil),
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
+	shdrmd = Vk.ShdrMd.CreateInfo {
+		Vk.ShdrMd.createInfoNext = TMaybe.N,
+		Vk.ShdrMd.createInfoFlags = zeroBits,
+		Vk.ShdrMd.createInfoCode = shdr }
