@@ -184,15 +184,36 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
+
+	compileShader "shader/interpolate.comp" >>= \shdr ->
+	createCmpPpl @PshCnsts
+		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts)
+		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
+		\dsl pl ppl ->
+	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
+
 	runCmds dv gq cp \cb -> do
 	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 	copyBffrToImg cb b imgs
 	tr cb imgs
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+
+	tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	copyImgToImg cb imgs imgs' w h Vk.FilterNearest 1 0
+	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
+	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
+
+	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+		Vk.Cmd.bindDescriptorSetsCompute
+			ccb pl (HPList.Singleton $ U2 ds) def
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			ccb pl (flt :* n' :* ix :* iy :* HPList.Nil)
+		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+
+	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+
 	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg cb imgs imgd w h (case flt of
-		Nearest -> Vk.FilterNearest; Linear -> Vk.FilterLinear
-		_ -> error "bad") n i
+	copyImgToImg cb imgd' imgd w h Vk.FilterNearest 1 0
 	tr cb imgd
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToBffr cb imgd rb
@@ -204,6 +225,18 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
 	tr = transitionImgLyt
+	n', ix, iy :: Word32
+	n' = fromIntegral n
+	ix = fromIntegral $ i `mod` n
+	iy = fromIntegral $ i `div` n
+	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
+
+type PshCnsts = '[Filter, Word32, Word32, Word32]
+
+strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
+strImgBinding = Vk.DscStLyt.BindingImage {
+	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
+	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
 
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
@@ -458,7 +491,7 @@ createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
-createCmpPpl :: forall sd bds pctps pcrng a . (
+createCmpPpl :: forall pctps pcrng sd bds a . (
 	Vk.PshCnst.RangeListToMiddle pctps '[pcrng],
 	Vk.DscStLyt.BindingListToMiddle bds ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds ->
@@ -538,3 +571,8 @@ dscWrite ds v = Vk.DscSt.Write {
 			Vk.Dsc.imageInfoImageLayout = Vk.Img.LayoutGeneral,
 			Vk.Dsc.imageInfoImageView = v,
 			Vk.Dsc.imageInfoSampler = Vk.Smplr.Null } }
+
+compileShader :: FilePath -> IO (SpirV.S GlslComputeShader)
+compileShader fp = do
+	cd <- BS.readFile =<< getDataFileName fp
+	Shaderc.compile @() cd (BSC.pack fp) "main" def
