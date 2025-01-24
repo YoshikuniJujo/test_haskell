@@ -173,8 +173,8 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Int32 -> Int32 -> IO img
 body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
-	prepareImg @(Vk.ObjB.ImageFormat img) pd dv w h \imgd ->
-	prepareImg pd dv w h \imgs ->
+	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
+	prepareImg pd dv trsd w h \imgs ->
 	createBffrImg @img pd dv Vk.Bffr.UsageTransferSrcBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
@@ -191,6 +191,7 @@ body pd dv gq cp img flt n i = resultBffr @img pd dv w h \rb ->
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 	copyImgToBffr cb imgd rb
 	where
+	trsd = Vk.Img.UsageTransferSrcBit .|. Vk.Img.UsageTransferDstBit
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
@@ -248,9 +249,9 @@ createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.UsageFlags -> Word32 -> Word32 ->
 	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
-prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
@@ -267,9 +268,7 @@ prepareImg pd dv w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Img.createInfoArrayLayers = 1,
 		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
 		Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
-		Vk.Img.createInfoUsage =
-			Vk.Img.UsageTransferSrcBit .|.
-			Vk.Img.UsageTransferDstBit,
+		Vk.Img.createInfoUsage = usg,
 		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Img.createInfoQueueFamilyIndices = [],
 		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
