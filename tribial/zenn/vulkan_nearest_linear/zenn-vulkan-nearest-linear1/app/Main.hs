@@ -494,3 +494,15 @@ createCmpPpl d bds shdr f =
 		Vk.ShdrMd.createInfoNext = TMaybe.N,
 		Vk.ShdrMd.createInfoFlags = zeroBits,
 		Vk.ShdrMd.createInfoCode = shdr }
+
+createDscPl :: Vk.Dvc.D sd -> (forall sdp . Vk.DscPl.P sdp -> IO a) -> IO a
+createDscPl dv = Vk.DscPl.create dv info nil
+	where
+	info = Vk.DscPl.CreateInfo {
+		Vk.DscPl.createInfoNext = TMaybe.N,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+		Vk.DscPl.createInfoMaxSets = 1,
+		Vk.DscPl.createInfoPoolSizes = [sz] }
+	sz = Vk.DscPl.Size {
+		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageImage,
+		Vk.DscPl.sizeDescriptorCount = 2 }
