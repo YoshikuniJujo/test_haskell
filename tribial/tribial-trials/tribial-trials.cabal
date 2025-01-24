@@ -38,6 +38,7 @@ library
       Foldl
       Foldr
       Foreign.Ptr.Safe
+      Functor.Unit
       Gadt
       GeneralFoldable
       Generics.TypeList
