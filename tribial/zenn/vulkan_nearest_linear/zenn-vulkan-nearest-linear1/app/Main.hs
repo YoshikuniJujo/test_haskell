@@ -506,3 +506,35 @@ createDscPl dv = Vk.DscPl.create dv info nil
 	sz = Vk.DscPl.Size {
 		Vk.DscPl.sizeType = Vk.Dsc.TypeStorageImage,
 		Vk.DscPl.sizeDescriptorCount = 2 }
+
+createDscSt ::
+	Vk.Dvc.D sd -> Vk.DscPl.P sdp ->
+	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
+	Vk.ImgVw.I "destination_image" ShaderFormat sivd ->
+	Vk.DscStLyt.D sdsl '[SrcImg, DstImg] ->
+	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> IO a) -> IO a
+createDscSt dv dp svw dvw dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
+		$ Vk.DscSt.updateDs dv
+			(U5 (dscWrite ds svw) :** U5 (dscWrite ds dvw) :**
+				HPList.Nil)
+			HPList.Nil
+	where info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
+
+type SrcImg = 'Vk.DscStLyt.Image '[ '("source_image", ShaderFormat)]
+type DstImg = 'Vk.DscStLyt.Image '[ '("destination_image", ShaderFormat)]
+
+dscWrite :: Vk.DscSt.D sds slbts -> Vk.ImgVw.I nm fmt si ->
+	Vk.DscSt.Write 'Nothing sds slbts
+		('Vk.DscSt.WriteSourcesArgImage '[ '(ss, nm, fmt, si)]) 0
+dscWrite ds v = Vk.DscSt.Write {
+	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
+	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageImage,
+	Vk.DscSt.writeSources =
+		Vk.DscSt.ImageInfos . HPList.Singleton $ U4 Vk.Dsc.ImageInfo {
+			Vk.Dsc.imageInfoImageLayout = Vk.Img.LayoutGeneral,
+			Vk.Dsc.imageInfoImageView = v,
+			Vk.Dsc.imageInfoSampler = Vk.Smplr.Null } }
