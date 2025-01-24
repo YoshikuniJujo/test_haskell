@@ -1,10 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -23,14 +25,20 @@ import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
 import Data.List.ToolsYj
-import Data.HeteroParList (pattern (:*.))
+import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
 import Data.Array
 import Data.Word
 import Data.Int
+import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC
 import Text.Read
 import System.Environment
 import Codec.Picture
+
+import Language.SpirV qualified as SpirV
+import Language.SpirV.ShaderKind
+import Language.SpirV.Shaderc qualified as Shaderc
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -45,11 +53,26 @@ import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
 import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Sample qualified as Vk.Sample
+import Gpu.Vulkan.Sampler qualified as Vk.Smplr
+
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.DescriptorSet qualified as Vk.DscSt
+import Gpu.Vulkan.DescriptorSetLayout qualified as Vk.DscStLyt
+import Gpu.Vulkan.ShaderModule qualified as Vk.ShdrMd
+
+import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cp
+import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
+import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
+import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
+
+import Paths_zenn_vulkan_nearest_linear1
 
 -- DATA TYPE IMAGE RGBA8
 
