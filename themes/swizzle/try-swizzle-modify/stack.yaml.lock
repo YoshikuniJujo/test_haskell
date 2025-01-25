@@ -13,7 +13,7 @@ packages:
     hackage: swizzle-set-0.1.0.0
 snapshots:
 - completed:
-    sha256: 3ce900e74d0890ae59692705e21c0dc1312acae79850f64a3b9e339e14612854
-    size: 631308
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/20.yaml
-  original: nightly-2025-01-20
+    sha256: 3aacf13abf5e3169dcf40bc610d514089cfc2db9c6ea9840a7f7499536c325a1
+    size: 631518
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/1/23.yaml
+  original: nightly-2025-01-23
