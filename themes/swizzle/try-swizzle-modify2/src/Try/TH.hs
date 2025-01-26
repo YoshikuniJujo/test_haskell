@@ -2,6 +2,4 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
-
-import Try.TH
+module Try.TH where
