@@ -11,6 +11,7 @@ import Data.Char
 import Data.Swizzle.Class qualified as Swz
 import Data.SwizzleSet.Class qualified as SwzS
 import Data.SwizzleModify.Base.Pkg qualified as Pkg
+import Template.Tools
 
 mkX0 :: DecsQ
 mkX0 = [d|
@@ -43,36 +44,3 @@ fnX c = newName "m" >>= \m -> newName "s" >>= \s ->
 				varE s `appE`
 				(varE m `appE` (funX c `appE` varE s)))
 		[]]
-
-clsSwizzle :: Int -> TypeQ
-clsSwizzle = conT
-	. mkNameG_tc Pkg.swizzleClassPkg "Data.Swizzle.Class.Base"
-	. ("Swizzle" ++) . show
-
-typX :: Char -> TypeQ
-typX = conT
-	. mkNameG_tc Pkg.swizzleClassPkg "Data.Swizzle.Class.Base"
-	. (: "") . toUpper
-
-funX :: Char -> ExpQ
-funX = varE . mkNameG_v Pkg.swizzleClassPkg "Data.Swizzle.Class.Base" . (: "")
-
-clsSwizzleSet :: Int -> TypeQ
-clsSwizzleSet = conT
-	. mkNameG_tc Pkg.swizzleSetClassPkg "Data.SwizzleSet.Class.Base"
-	. ("SwizzleSet" ++) . show
-
-typSetX :: Char -> TypeQ
-typSetX = conT
-	. mkNameG_tc Pkg.swizzleSetClassPkg "Data.SwizzleSet.Class.Base"
-	. (: "") . toUpper
-
-funSetX :: Char -> ExpQ
-funSetX = varE
-	. mkNameG_v Pkg.swizzleSetClassPkg "Data.SwizzleSet.Class.Base"
-	. (: "")
-
-infixr 7 `arrT`
-
-arrT :: TypeQ -> TypeQ -> TypeQ
-t1 `arrT` t2 = arrowT `appT` t1 `appT` t2

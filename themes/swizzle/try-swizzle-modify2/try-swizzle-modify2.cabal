@@ -28,7 +28,9 @@ library
       Data.SwizzleModify.Base
       Data.SwizzleModify.Base.Pkg
       Data.SwizzleModify.Base.TH
+      Data.SwizzleModify.Pkg
       Lib
+      Template.Tools
       Try.TH
   other-modules:
       Paths_try_swizzle_modify2
