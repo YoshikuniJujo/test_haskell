@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - swizzle
 - swizzle-set
-- try-swizzle-modify2
+- swizzle-modify
 
 ghc-options:
 - -Wall

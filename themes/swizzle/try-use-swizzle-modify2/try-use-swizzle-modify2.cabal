@@ -38,8 +38,8 @@ library
   build-depends:
       base >=4.7 && <5
     , swizzle
+    , swizzle-modify
     , swizzle-set
-    , try-swizzle-modify2
   default-language: Haskell2010
 
 executable try-use-swizzle-modify2-exe
@@ -54,8 +54,8 @@ executable try-use-swizzle-modify2-exe
   build-depends:
       base >=4.7 && <5
     , swizzle
+    , swizzle-modify
     , swizzle-set
-    , try-swizzle-modify2
     , try-use-swizzle-modify2
   default-language: Haskell2010
 
@@ -72,7 +72,7 @@ test-suite try-use-swizzle-modify2-test
   build-depends:
       base >=4.7 && <5
     , swizzle
+    , swizzle-modify
     , swizzle-set
-    , try-swizzle-modify2
     , try-use-swizzle-modify2
   default-language: Haskell2010
