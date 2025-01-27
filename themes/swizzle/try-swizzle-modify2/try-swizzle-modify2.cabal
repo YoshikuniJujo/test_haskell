@@ -25,14 +25,14 @@ source-repository head
 
 library
   exposed-modules:
+      Data.SwizzleModify
+      Data.SwizzleModify.TH
+  other-modules:
       Data.SwizzleModify.Base
       Data.SwizzleModify.Base.Pkg
       Data.SwizzleModify.Base.TH
       Data.SwizzleModify.Pkg
-      Lib
       Template.Tools
-      Try.TH
-  other-modules:
       Paths_try_swizzle_modify2
   autogen-modules:
       Paths_try_swizzle_modify2

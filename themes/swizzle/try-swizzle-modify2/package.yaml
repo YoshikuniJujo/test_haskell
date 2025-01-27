@@ -38,6 +38,9 @@ ghc-options:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - Data.SwizzleModify
+    - Data.SwizzleModify.TH
 
 executables:
   try-swizzle-modify2-exe:

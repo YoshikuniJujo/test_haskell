@@ -2,23 +2,29 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Try.TH where
+module Data.SwizzleModify.TH (swizzleModify) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 import Data.Maybe
 import Data.List qualified as L
+import Data.Char
 
 import Data.SwizzleModify.Pkg qualified as Pkg
 import Template.Tools
 
-mkXy :: String -> DecsQ
-mkXy nm = sequence [tdXy nm, fnXy nm]
+swizzleModify :: String -> String -> DecsQ
+swizzleModify pfx nm = sequence [tdXy pfx nm, fnXy pfx nm]
 
-tdXy :: String -> DecQ
-tdXy nm = newName "s" >>= \s -> (newName . (: "")) `mapM` xyab nm >>= \ab ->
+mkFunName :: String -> String -> Name
+mkFunName "" nm = mkName nm
+mkFunName pfx (c : cs) = mkName $ pfx ++ toUpper c : cs
+mkFunName _ "" = error "bad"
+
+tdXy :: String -> String -> DecQ
+tdXy pfx nm = newName "s" >>= \s -> (newName . (: "")) `mapM` xyab nm >>= \ab ->
 	let	xsa : ysbs = swzsList s nm ab in
-	sigD (mkName nm)
+	sigD (mkFunName pfx nm)
 		. forallT [] (cxt (
 			zipWith appT (clsSwizzle <$> (idx <$> nm)) ysbs ++
 			map (\(cs, (ysb', a')) -> cs `appT` ysb' `appT` varT a')
@@ -38,9 +44,9 @@ swzsList :: Name -> String -> [Name] -> [TypeQ]
 swzsList s xyz abc = scanr
 	(\(x, a) t -> typSetX x `appT` t `appT` varT a) (varT s) (zip xyz abc)
 
-fnXy :: String -> DecQ
-fnXy nm = (newName . ('m' :) . (: "")) `mapM` nm >>= \ms ->
-	funD (mkName nm) [
+fnXy :: String -> String -> DecQ
+fnXy pfx nm = (newName . ('m' :) . (: "")) `mapM` nm >>= \ms ->
+	funD (mkFunName pfx nm) [
 		clause [tupP' $ varP <$> ms]
 			(normalB . foldr1 comE $ zipWith (\x m -> funBX x `appE` varE m) nm ms) [] ]
 

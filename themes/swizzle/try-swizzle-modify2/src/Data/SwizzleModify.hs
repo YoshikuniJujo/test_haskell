@@ -3,11 +3,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module Data.SwizzleModify where
 
-import Try.TH
+import Data.SwizzleModify.TH
 
-concat <$> mkXy `mapM` (filter ((> 0) . length) [
+concat <$> (swizzleModify "" . (: "")) `mapM` ("xyz" ++ reverse ['a' .. 'w'])
+
+concat <$> swizzleModify "" `mapM` (filter ((> 1) . length) [
 	concat [x', y', z', w', v'] |
 	x' <- ["", "x"], y' <- ["", "y"],
 	z' <- ["", "z"], w' <- ["", "w"], v' <- ["", "v"] ])
