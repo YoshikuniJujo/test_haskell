@@ -5,18 +5,12 @@
 
 packages:
 - completed:
-    commit: b955faee6ba3602c7e0bd128a25318d556baa2dd
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-swizzle-lens2
+    hackage: swizzle-lens-0.1.0.0@sha256:7c00ab4bcabfb359d27ec62d3a981bf9bd42016f6033acc6b6b678d36d21860d,1948
     pantry-tree:
-      sha256: cccf81cef6824bc92b93a8ac03d407c1511e84c9e39a2d4ed648a1b21c95c487
-      size: 827
-    subdir: themes/swizzle/try-swizzle-lens2
-    version: 0.1.0.0
+      sha256: c7f874cd333c8a772f304035f97d26ab775fe797abb19a58f261a1764b873c75
+      size: 566
   original:
-    commit: b955faee6ba3602c7e0bd128a25318d556baa2dd
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/swizzle/try-swizzle-lens2
+    hackage: swizzle-lens-0.1.0.0
 snapshots:
 - completed:
     sha256: 09a902cd4a00ef9b3ad70451572ef099c1d4a5536c8b7d4aa8aa66e06f02cea6

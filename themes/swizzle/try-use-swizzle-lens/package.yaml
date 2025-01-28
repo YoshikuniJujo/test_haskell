@@ -24,7 +24,7 @@ dependencies:
 - lens
 - swizzle
 - swizzle-set
-- try-swizzle-lens2
+- swizzle-lens
 
 ghc-options:
 - -Wall
