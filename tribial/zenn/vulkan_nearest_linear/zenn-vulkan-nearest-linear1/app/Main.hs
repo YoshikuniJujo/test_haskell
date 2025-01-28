@@ -415,8 +415,7 @@ transitionImgLyt cb i ol nl =
 			Vk.Img.LayoutTransferSrcOptimal) -> (
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit,
 			Vk.AccessTransferWriteBit, Vk.AccessTransferReadBit )
-		(Vk.Img.LayoutTransferDstOptimal,
-			Vk.Img.LayoutGeneral) -> (
+		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutGeneral) -> (
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageComputeShaderBit,
 			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit )
 		(Vk.Img.LayoutGeneral, Vk.Img.LayoutTransferSrcOptimal) -> (
