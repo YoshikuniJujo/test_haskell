@@ -14,6 +14,7 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Control.Arrow
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -117,7 +118,6 @@ getFilter = \case
 	"cubic" -> Just Cubic; _ -> Nothing
 
 newtype Filter = Filter Word32 deriving (Show, Storable)
-
 pattern Nearest, Linear, Cubic :: Filter
 pattern Nearest = Filter 0; pattern Linear = Filter 1; pattern Cubic = Filter 2
 
@@ -198,10 +198,10 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		dv (HPList.Singleton strImgBinding) exhs \hdsl hpl hppl ->
 	createDscPl dv \hdp -> createDscStSrc dv hdp imgvws' hdsl \hds ->
 
-	compileShader "shader/interpolate.comp" >>= \ips ->
+	compileShader "shader/interpolate.comp" >>= \shdr ->
 	createCmpPpl @PshCnsts
 		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts)
-		dv (strImgBinding :** strImgBinding :** HPList.Nil) ips
+		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
 		\dsl pl ppl ->
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
 
@@ -258,6 +258,11 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
+strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
+strImgBinding = Vk.DscStLyt.BindingImage {
+	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
+	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
+
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
 imgVwInfo i = Vk.ImgVw.CreateInfo {
@@ -272,11 +277,6 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers } }
-
-strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
-strImgBinding = Vk.DscStLyt.BindingImage {
-	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
-	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
 
 -- BUFFER
 
@@ -503,6 +503,32 @@ resultBffr pd dv w h f = head
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
 	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
 
+createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
+	(forall sdsl . Vk.DscStLyt.D sdsl bts -> IO a) -> IO a
+createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
+	where info = Vk.DscStLyt.CreateInfo {
+		Vk.DscStLyt.createInfoNext = TMaybe.N,
+		Vk.DscStLyt.createInfoFlags = zeroBits,
+		Vk.DscStLyt.createInfoBindings = bds }
+
+createPplLyt :: forall pctps pcrng sd a bds . (
+	Vk.DscStLyt.BindingListToMiddle bds,
+	Vk.PshCnst.RangeListToMiddle pctps '[pcrng] ) =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
+		Vk.DscStLyt.D sdsl bds ->
+		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
+createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
+	Vk.PplLyt.create dv (info dsl) nil $ f dsl
+	where
+	info :: Vk.DscStLyt.D sdsl bds ->
+		Vk.PplLyt.CreateInfo 'Nothing
+			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps '[pcrng])
+	info dsl = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
 createCmpPpl :: forall pctps pcrng sd bds a . (
 	Vk.PshCnst.RangeListToMiddle pctps '[pcrng],
 	Vk.DscStLyt.BindingListToMiddle bds ) =>
@@ -510,7 +536,7 @@ createCmpPpl :: forall pctps pcrng sd bds a . (
 	SpirV.S GlslComputeShader -> (forall sds scppl spl .
 		Vk.DscStLyt.D sds bds ->
 		Vk.PplLyt.P spl '[ '(sds, bds)] pctps ->
-		Vk.Ppl.Cp.C scppl '(spl, '[ '( sds, bds)], pctps) -> IO a) ->
+		Vk.Ppl.Cp.C scppl '(spl, '[ '(sds, bds)], pctps) -> IO a) ->
 	IO a
 createCmpPpl d bds shdr f =
 	createPplLyt @pctps @pcrng d bds \dsl pl ->
@@ -540,33 +566,7 @@ createCmpPpl d bds shdr f =
 		Vk.ShdrMd.createInfoFlags = zeroBits,
 		Vk.ShdrMd.createInfoCode = shdr }
 
-createPplLyt :: forall pctps pcrng sd a bds . (
-	Vk.DscStLyt.BindingListToMiddle bds,
-	Vk.PshCnst.RangeListToMiddle pctps '[pcrng] ) =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
-		Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
-createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
-	Vk.PplLyt.create dv (info dsl) nil $ f dsl
-	where
-	info :: Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.CreateInfo 'Nothing
-			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps '[pcrng])
-	info dsl = Vk.PplLyt.CreateInfo {
-		Vk.PplLyt.createInfoNext = TMaybe.N,
-		Vk.PplLyt.createInfoFlags = zeroBits,
-		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
-
-createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
-	(forall sdsl . Vk.DscStLyt.D sdsl bts -> IO a) -> IO a
-createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
-	where info = Vk.DscStLyt.CreateInfo {
-		Vk.DscStLyt.createInfoNext = TMaybe.N,
-		Vk.DscStLyt.createInfoFlags = zeroBits,
-		Vk.DscStLyt.createInfoBindings = bds }
-
-createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDscPl :: Vk.Dvc.D sd -> (forall sdp . Vk.DscPl.P sdp -> IO a) -> IO a
 createDscPl dv = Vk.DscPl.create dv info nil
 	where
 	info = Vk.DscPl.CreateInfo {
@@ -592,16 +592,17 @@ createDscStSrc dv dp svw dl a =
 		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
 createDscSt ::
-	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.Dvc.D sd -> Vk.DscPl.P sdp ->
 	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
 	Vk.ImgVw.I "destination_image" ShaderFormat sivd ->
 	Vk.DscStLyt.D sdsl '[SrcImg, DstImg] ->
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> IO a) -> IO a
 createDscSt dv dp svw dvw dl a =
 	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
-	$ Vk.DscSt.updateDs dv
-		(U5 (dscWrite ds svw) :** U5 (dscWrite ds dvw) :** HPList.Nil)
-		HPList.Nil
+		$ Vk.DscSt.updateDs dv
+			(U5 (dscWrite ds svw) :** U5 (dscWrite ds dvw) :**
+				HPList.Nil)
+			HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
@@ -612,7 +613,7 @@ type DstImg = 'Vk.DscStLyt.Image '[ '("destination_image", ShaderFormat)]
 
 dscWrite :: Vk.DscSt.D sds slbts -> Vk.ImgVw.I nm fmt si ->
 	Vk.DscSt.Write 'Nothing sds slbts
-		('Vk.DscSt.WriteSourcesArgImage '[ '(ss, nm, fmt, si) ]) 0
+		('Vk.DscSt.WriteSourcesArgImage '[ '(ss, nm, fmt, si)]) 0
 dscWrite ds v = Vk.DscSt.Write {
 	Vk.DscSt.writeNext = TMaybe.N, Vk.DscSt.writeDstSet = ds,
 	Vk.DscSt.writeDescriptorType = Vk.Dsc.TypeStorageImage,
