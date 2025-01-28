@@ -25,11 +25,11 @@ source-repository head
 
 library
   exposed-modules:
-      Data.SwizzleLens.Pkg
-      Lib
-      Template.Tools
-      Try.TH
+      Data.SwizzleLens
+      Data.SwizzleLens.TH
   other-modules:
+      Data.SwizzleLens.Pkg
+      Template.Tools
       Paths_try_swizzle_lens2
   autogen-modules:
       Paths_try_swizzle_lens2
