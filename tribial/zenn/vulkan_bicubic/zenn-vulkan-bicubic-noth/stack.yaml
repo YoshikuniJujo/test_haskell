@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-01-15
+snapshot: nightly-2025-01-27
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,8 +41,8 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - gpu-vulkan-0.1.0.166
-  - gpu-vulkan-middle-0.1.0.72
+  - gpu-vulkan-0.1.0.167
+  - gpu-vulkan-middle-0.1.0.73
   - gpu-vulkan-core-0.1.0.20
   - shaderc-0.1.0.6
   - language-spir-v-0.1.0.3
