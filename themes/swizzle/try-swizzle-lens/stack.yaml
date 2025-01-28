@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-01-19
+snapshot: nightly-2025-01-27
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,7 +39,7 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
+
 extra-deps:
   - swizzle-set-0.1.0.0
 
