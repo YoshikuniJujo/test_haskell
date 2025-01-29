@@ -187,20 +187,18 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
 
 	compileShader "shader/expandWidth.comp" >>= \exws ->
-	createCmpPpl @'[Word32]
-		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
+	createCmpPpl @'[] @'[]
 		dv (HPList.Singleton strImgBinding) exws \wdsl wpl wppl ->
 	createDscPl dv \wdp -> createDscStSrc dv wdp imgvws' wdsl \wds ->
 
 	compileShader "shader/expandHeight.comp" >>= \exhs ->
-	createCmpPpl @'[Word32]
-		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] '[Word32])
+	createCmpPpl @'[] @'[]
 		dv (HPList.Singleton strImgBinding) exhs \hdsl hpl hppl ->
 	createDscPl dv \hdp -> createDscStSrc dv hdp imgvws' hdsl \hds ->
 
 	compileShader "shader/interpolate.comp" >>= \shdr ->
 	createCmpPpl @PshCnsts
-		@('Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts)
+		@'[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts]
 		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
 		\dsl pl ppl ->
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
@@ -514,7 +512,7 @@ createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
 
 createPplLyt :: forall pctps pcrng sd a bds . (
 	Vk.DscStLyt.BindingListToMiddle bds,
-	Vk.PshCnst.RangeListToMiddle pctps '[pcrng] ) =>
+	Vk.PshCnst.RangeListToMiddle pctps pcrng ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
 		Vk.DscStLyt.D sdsl bds ->
 		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
@@ -523,14 +521,14 @@ createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
 	where
 	info :: Vk.DscStLyt.D sdsl bds ->
 		Vk.PplLyt.CreateInfo 'Nothing
-			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps '[pcrng])
+			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps pcrng)
 	info dsl = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
 		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
 
 createCmpPpl :: forall pctps pcrng sd bds a . (
-	Vk.PshCnst.RangeListToMiddle pctps '[pcrng],
+	Vk.PshCnst.RangeListToMiddle pctps pcrng,
 	Vk.DscStLyt.BindingListToMiddle bds ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds ->
 	SpirV.S GlslComputeShader -> (forall sds scppl spl .
