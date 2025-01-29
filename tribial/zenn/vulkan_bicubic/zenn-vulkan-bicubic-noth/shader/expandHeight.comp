@@ -3,16 +3,17 @@
 layout (local_size_x = 16, local_size_y = 1) in;
 
 layout(rgba16f,set = 0, binding = 0) uniform image2D simg;
-layout(push_constant) uniform P { uint h; } p;
 
 void
 main()
 {
+	ivec2 size = imageSize(simg);
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-	vec4 c1 = imageLoad(simg, ivec2(coord.x, 1));
-	vec4 c2 = imageLoad(simg, ivec2(coord.x, 2));
-	vec4 ch = imageLoad(simg, ivec2(coord.x, p.h));
-	vec4 ch1 = imageLoad(simg, ivec2(coord.x, p.h - 1));
-	imageStore(simg, coord, 2 * c1 - c2);
-	imageStore(simg, ivec2(coord.x, p.h + 1), 2 * ch - ch1);
+	if (coord.x < size.x) {
+		vec4 c1 = imageLoad(simg, ivec2(coord.x, 1));
+		vec4 c2 = imageLoad(simg, ivec2(coord.x, 2));
+		vec4 ch3 = imageLoad(simg, ivec2(coord.x, size.y - 3));
+		vec4 ch2 = imageLoad(simg, ivec2(coord.x, size.y - 2));
+		imageStore(simg, coord, 2 * c1 - c2);
+		imageStore(simg, ivec2(coord.x, size.y - 1), 2 * ch2 - ch3); }
 }
