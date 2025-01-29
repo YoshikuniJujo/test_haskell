@@ -218,14 +218,10 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 			ccb wpl (HPList.Singleton $ U2 wds) def
 		Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
 
-	Vk.Q.waitIdle gq
-
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute hppl \ccb -> do
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb hpl (HPList.Singleton $ U2 hds) def
 		Vk.Cmd.dispatch ccb ((w + 2) `div` 16) 1 1
-
-	Vk.Q.waitIdle gq
 
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 		Vk.Cmd.bindDescriptorSetsCompute
