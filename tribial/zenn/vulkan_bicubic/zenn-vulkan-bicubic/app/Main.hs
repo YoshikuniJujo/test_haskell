@@ -186,6 +186,16 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) bm ->
 	Vk.Mm.write @nm @o @0 dv bm zeroBits [img] >>
 
+	compileShader "shader/expandWidth.comp" >>= \exws ->
+	createCmpPpl @'[] @'[]
+		dv (HPList.Singleton strImgBinding) exws \wdsl wpl wppl ->
+	createDscPl dv \wdp -> createDscStSrc dv wdp imgvws' wdsl \wds ->
+
+	compileShader "shader/expandHeight.comp" >>= \exhs ->
+	createCmpPpl @'[] @'[]
+		dv (HPList.Singleton strImgBinding) exhs \hdsl hpl hppl ->
+	createDscPl dv \hdp -> createDscStSrc dv hdp imgvws' hdsl \hds ->
+
 	compileShader "shader/interpolate.comp" >>= \shdr ->
 	createCmpPpl @PshCnsts
 		@'[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts]
@@ -204,11 +214,21 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
 	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 
+	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
+		Vk.Cmd.bindDescriptorSetsCompute
+			ccb wpl (HPList.Singleton $ U2 wds) def
+		Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
+
+	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute hppl \ccb -> do
+		Vk.Cmd.bindDescriptorSetsCompute
+			ccb hpl (HPList.Singleton $ U2 hds) def
+		Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
+
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb pl (HPList.Singleton $ U2 ds) def
 		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-			ccb pl (flt :* n' :* ix :* iy :* HPList.Nil)
+			ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
 		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
 
 	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
@@ -232,7 +252,7 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	iy = fromIntegral $ i `div` n
 	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
 
-type PshCnsts = '[Filter, Word32, Word32, Word32]
+type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
 strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
 strImgBinding = Vk.DscStLyt.BindingImage {
@@ -589,3 +609,17 @@ copyImgToImg' cb si di w h = Vk.Cmd.blitImage cb
 		Vk.Img.blitDstSubresource = colorLayer0,
 		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 1 1 0,
 		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + 1) (h + 1) 1 }
+
+createDscStSrc ::
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
+	Vk.DscStLyt.D sdsl '[SrcImg] ->
+	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg]) -> IO a) -> IO a
+createDscStSrc dv dp svw dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds) $
+	Vk.DscSt.updateDs
+		dv (HPList.Singleton . U5 $ dscWrite ds svw) HPList.Nil
+	where info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
