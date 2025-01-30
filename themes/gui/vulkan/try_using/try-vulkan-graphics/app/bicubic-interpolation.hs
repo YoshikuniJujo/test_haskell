@@ -284,6 +284,7 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 				GlfwG.waitEvents
 				wsc <- GlfwG.Win.shouldClose win
 				qp <- readIORef q
+				Vk.Q.waitIdle gq
 				if (wsc || qp) then pure () else act
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
