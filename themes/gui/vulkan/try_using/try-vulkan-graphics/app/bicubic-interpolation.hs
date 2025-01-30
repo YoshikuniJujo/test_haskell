@@ -94,6 +94,8 @@ import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 import Gpu.Vulkan.Fence qualified as Vk.Fnc
 import Gpu.Vulkan.Semaphore qualified as Vk.Smph
 
+import Control.Concurrent.STM
+
 import Paths_try_vulkan_graphics
 
 -- DATA TYPE IMAGE RGBA8
@@ -203,7 +205,7 @@ type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
 body :: forall si sd sc img . Vk.ObjB.IsImage img => Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
-body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
+body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
 	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
 	prepareImg @ShaderFormat pd dv std (w + 2) (h + 2) \imgs' ->
@@ -252,6 +254,9 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
 	q <- newIORef False
+	fi <- atomically newTChan
+	aa <- atomically $ newTVar a0
+	ai <- atomically newTChan
 	withWindow w h \win ->
 		Vk.Smph.create @'Nothing dv def nil \scs ->
 		Vk.Smph.create @'Nothing dv def nil \rs ->
@@ -262,8 +267,28 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		Vk.Khr.Swpch.getImages dv sc >>= \scis -> do
 			GlfwG.Win.setKeyCallback win $ Just \_ k _ ks _ -> case (k, ks) of
 				(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeIORef q True
+				(GlfwG.Key.Key'N, GlfwG.Key.KeyState'Pressed) ->
+					atomically $ writeTChan fi Nearest
+				(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) ->
+					atomically $ writeTChan fi Linear
+				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) -> atomically do
+					modifyTVar aa (subtract 0.01)
+					writeTChan fi Cubic
+					writeTChan ai =<< readTVar aa
+				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Repeating) -> atomically do
+					modifyTVar aa (subtract 0.01)
+					writeTChan fi Cubic
+					writeTChan ai =<< readTVar aa
+				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) -> atomically do
+					modifyTVar aa (+ 0.01)
+					writeTChan fi Cubic
+					writeTChan ai =<< readTVar aa
+				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Repeating) -> atomically do
+					modifyTVar aa (+ 0.01)
+					writeTChan fi Cubic
+					writeTChan ai =<< readTVar aa
 				_ -> pure ()
-			fix \act -> do
+			($ a0) . ($ flt0) $ fix \act flt a -> do
 				ii <- Vk.Khr.Swpch.acquireNextImageResult
 					[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just scs) Nothing
 				runCmds dv gq cp
@@ -285,7 +310,12 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 				wsc <- GlfwG.Win.shouldClose win
 				qp <- readIORef q
 				Vk.Q.waitIdle gq
-				if (wsc || qp) then pure () else act
+				mflt <- atomically $ tryReadTChan fi
+				ma <- atomically $ tryReadTChan ai
+				let	flt' = fromMaybe flt mflt
+					a' = fromMaybe a ma
+				maybe (pure ()) print ma
+				if (wsc || qp) then pure () else act flt' a'
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
