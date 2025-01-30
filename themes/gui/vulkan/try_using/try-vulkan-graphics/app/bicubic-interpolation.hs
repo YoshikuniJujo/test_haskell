@@ -20,6 +20,7 @@ import Control.Concurrent
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
+import Data.Ord.ToolsYj
 import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Default
@@ -30,8 +31,10 @@ import Data.List qualified as L
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
+import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Array
+import Data.Bool.ToolsYj
 import Data.Word
 import Data.Int
 import Data.ByteString qualified as BS
@@ -174,7 +177,7 @@ createLgDvc pd qfi = Vk.Dvc.create pd info nil
 		Vk.Dvc.createInfoFlags = zeroBits,
 		Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
 		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
-		Vk.Dvc.createInfoEnabledExtensionNames = [],
+		Vk.Dvc.createInfoEnabledExtensionNames = [Vk.Khr.Swpch.extensionName],
 		Vk.Dvc.createInfoEnabledFeatures = Just def }
 	qinfo = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
@@ -246,8 +249,8 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	q <- newIORef False
 	withWindow w h \win ->
 		Vk.Khr.Sfc.Glfw.Win.create ist win nil \sfc ->
-		querySwpchSupport pd sfc \ssd -> do
-			print ssd
+		createSwpch win sfc pd dv \sc ex ->
+		Vk.Khr.Swpch.getImages dv sc >>= \scis -> do
 			GlfwG.Win.setKeyCallback win $ Just \_ k _ ks _ -> case (k, ks) of
 				(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeIORef q True
 				_ -> pure ()
@@ -259,6 +262,8 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 						Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
 							ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
 						Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+--				ii <- Vk.Khr.acquireNextImageResult
+--					[Vk.Success, Vk.SuboptimalKhr]
 				GlfwG.waitEvents
 				wsc <- GlfwG.Win.shouldClose win
 				qp <- readIORef q
@@ -687,3 +692,65 @@ querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
 		<$> Vk.Khr.Sfc.Phd.getCapabilities pd sfc
 		<*> ((, fmts) <$> Vk.Khr.Sfc.Phd.getFormatsFiltered pd sfc)
 		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
+
+createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
+	Vk.Dvc.D sd -> (forall ss scfmt . Vk.T.FormatToValue scfmt =>
+		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
+createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
+	ex <- swapExtent win $ capabilities ss
+	let	cps = capabilities ss
+		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
+			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModes ss
+	chooseSwpSfcFmt (formats ss)
+		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
+		Vk.Khr.Swpch.create @_ @fmt dv
+			(swpchInfo sfc cps sc pm ex) nil (`f` ex)
+
+swpchInfo :: forall fmt ss .
+	Vk.Khr.Sfc.S ss -> Vk.Khr.Sfc.Capabilities ->
+	Vk.Khr.Sfc.ColorSpace -> Vk.Khr.Sfc.PresentMode -> Vk.Extent2d ->
+	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfo sfc cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
+	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
+	Vk.Khr.Swpch.createInfoFlags = zeroBits,
+	Vk.Khr.Swpch.createInfoSurface = sfc,
+	Vk.Khr.Swpch.createInfoMinImageCount = imgc,
+	Vk.Khr.Swpch.createInfoImageColorSpace = cs,
+	Vk.Khr.Swpch.createInfoImageExtent = ex,
+	Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
+	Vk.Khr.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
+	Vk.Khr.Swpch.createInfoImageSharingMode = ism,
+	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
+	Vk.Khr.Swpch.createInfoPreTransform =
+		Vk.Khr.Sfc.capabilitiesCurrentTransform cps,
+	Vk.Khr.Swpch.createInfoCompositeAlpha =
+		Vk.Khr.Sfc.CompositeAlphaOpaqueBit,
+	Vk.Khr.Swpch.createInfoPresentMode = pm,
+	Vk.Khr.Swpch.createInfoClipped = True,
+	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
+	where
+	imgc = clamp 0 imgcx (Vk.Khr.Sfc.capabilitiesMinImageCount cps + 1)
+	imgcx = fromMaybe maxBound
+		. onlyIf (> 0) $ Vk.Khr.Sfc.capabilitiesMaxImageCount cps
+	(ism, qfis) = (Vk.SharingModeExclusive, [])
+
+swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+swapExtent win cps
+	| Vk.extent2dWidth cur /= maxBound = pure cur
+	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
+		\(fromIntegral -> w, fromIntegral -> h) ->
+		Vk.Extent2d
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
+			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
+	where
+	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
+	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
+	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
+
+chooseSwpSfcFmt :: (
+	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+	HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) ->
+	(forall fmt . Vk.T.FormatToValue fmt => Vk.Khr.Sfc.Format fmt -> a) -> a
+chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
+	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
+chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
