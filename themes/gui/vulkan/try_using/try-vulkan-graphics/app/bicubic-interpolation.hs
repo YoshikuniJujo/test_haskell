@@ -17,6 +17,7 @@ import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Fix
 import Control.Concurrent
+import Control.Exception
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -28,6 +29,7 @@ import Data.Tuple.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
+import Data.List.NonEmpty qualified as NE
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
@@ -50,6 +52,7 @@ import Language.SpirV.Shaderc qualified as Shaderc
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Object qualified as Vk.Obj
 import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
@@ -88,6 +91,8 @@ import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
+import Gpu.Vulkan.Fence qualified as Vk.Fnc
+import Gpu.Vulkan.Semaphore qualified as Vk.Smph
 
 import Paths_try_vulkan_graphics
 
@@ -225,7 +230,7 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		\dsl pl ppl ->
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds -> do
 
-	runCmds dv gq cp \cb -> do
+	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyBffrToImg cb b imgs
 		tr cb imgs
@@ -234,7 +239,6 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImgToImg' cb imgs imgs' w h
 		tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
-		tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute
@@ -248,6 +252,10 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 
 	q <- newIORef False
 	withWindow w h \win ->
+		Vk.Smph.create @'Nothing dv def nil \scs ->
+		Vk.Smph.create @'Nothing dv def nil \rs ->
+		Vk.Fnc.create @'Nothing dv def {
+			Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit } nil \rfs ->
 		Vk.Khr.Sfc.Glfw.Win.create ist win nil \sfc ->
 		createSwpch win sfc pd dv \sc ex ->
 		Vk.Khr.Swpch.getImages dv sc >>= \scis -> do
@@ -255,22 +263,29 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 				(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeIORef q True
 				_ -> pure ()
 			fix \act -> do
-				runCmds dv gq cp \cb -> do
+				ii <- Vk.Khr.Swpch.acquireNextImageResult
+					[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just scs) Nothing
+				runCmds dv gq cp
+					(HPList.Singleton $ Vk.SemaphorePipelineStageFlags scs Vk.Ppl.StageColorAttachmentOutputBit)
+					(HPList.Singleton rs) \cb -> do
+					tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 					Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 						Vk.Cmd.bindDescriptorSetsCompute
 							ccb pl (HPList.Singleton $ U2 ds) def
 						Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
 							ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
 						Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
---				ii <- Vk.Khr.acquireNextImageResult
---					[Vk.Success, Vk.SuboptimalKhr]
+					tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+					copyImgToImg cb imgd' (scis !! fromIntegral ii) w h Vk.FilterNearest 1 0
+					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
+				catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing gq $ pinfo sc ii rs)
 				GlfwG.waitEvents
 				wsc <- GlfwG.Win.shouldClose win
 				qp <- readIORef q
 				if (wsc || qp) then pure () else act
 
-	runCmds dv gq cp \cb -> do
-		tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImgToImg cb imgd' imgd w h Vk.FilterNearest 1 0
 		tr cb imgd
@@ -289,6 +304,12 @@ body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	ix = fromIntegral $ i `mod` n
 	iy = fromIntegral $ i `div` n
 	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
+	pinfo :: forall scfmt ccs s . Vk.Khr.Swpch.S scfmt ccs -> Word32 -> Vk.Smph.S s -> Vk.Khr.Swpch.PresentInfo 'Nothing '[s] scfmt '[ccs]
+	pinfo sc ii rs = Vk.Khr.Swpch.PresentInfo {
+		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rs,
+		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
+			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
@@ -316,7 +337,7 @@ withWindow :: Int -> Int -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
 withWindow w h a = do
 	GlfwG.Win.hint noApi
 	GlfwG.Win.hint notResizable
-	GlfwG.Win.create w h "Bicubic Interpolation" Nothing Nothing a
+	GlfwG.Win.create (w + 2) (h + 2) "Bicubic Interpolation" Nothing Nothing a
 	where
 	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 	notResizable = GlfwG.Win.WindowHint'Resizable False
@@ -402,9 +423,10 @@ prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 
 -- COMMANDS
 
-runCmds :: forall sd sc a . Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> (forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-runCmds dv gq cp cmds =
+runCmds :: forall sd sc wss sss a . Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> HPList.PL Vk.SemaphorePipelineStageFlags wss -> HPList.PL Vk.Smph.S sss ->
+	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
+runCmds dv gq cp wss sss cmds =
 	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
 	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
@@ -419,11 +441,14 @@ runCmds dv gq cp cmds =
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
+	sinfo :: Vk.CBffr.C scb -> Vk.SubmitInfo 'Nothing wss '[scb] sss
 	sinfo cb = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+--		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = wss,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Nil }
+--		Vk.submitInfoSignalSemaphores = HPList.Nil }
+		Vk.submitInfoSignalSemaphores = sss }
 
 copyBffrToImg :: forall scb smb sbb bnm img imgnm smi si inm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
@@ -487,6 +512,9 @@ transitionImgLyt cb i ol nl =
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageComputeShaderBit,
 			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit )
 		(Vk.Img.LayoutGeneral, Vk.Img.LayoutTransferSrcOptimal) -> (
+			Vk.Ppl.StageComputeShaderBit, Vk.Ppl.StageTransferBit,
+			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
+		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutPresentSrcKhr) -> (
 			Vk.Ppl.StageComputeShaderBit, Vk.Ppl.StageTransferBit,
 			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
 		_ -> error "unsupported layout transition!"
@@ -754,3 +782,7 @@ chooseSwpSfcFmt :: (
 chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
 	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
