@@ -569,7 +569,7 @@ cmpShaderStages = cinfo
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(minfo glslComputeShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 
 type GlslComputeShaderArgs = '(
 	'Nothing, 'Nothing,
@@ -784,7 +784,7 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(minfo glslVertexShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 	finfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
@@ -792,7 +792,7 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(minfo glslFragmentShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 
 minfo :: SpirV.S sknd -> Vk.ShaderModule.CreateInfo 'Nothing sknd
 minfo code = Vk.ShaderModule.CreateInfo {

@@ -814,7 +814,7 @@ createCmpPpl d f = createCmpPplLyt d \dsl pl ->
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(shdrMdInfo glslComputeShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 
 shdrMdInfo :: SpirV.S sknd -> Vk.ShdrMd.CreateInfo 'Nothing sknd
 shdrMdInfo cd = Vk.ShdrMd.CreateInfo {
@@ -951,7 +951,7 @@ shdrSt = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(shdrMdInfo glslVertexShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 	finfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlags = zeroBits,
@@ -959,7 +959,7 @@ shdrSt = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(shdrMdInfo glslFragmentShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 
 type GlslVertexShaderArgs = '(
 	'Nothing, 'Nothing,

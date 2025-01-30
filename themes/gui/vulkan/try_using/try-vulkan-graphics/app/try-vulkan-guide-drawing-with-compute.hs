@@ -807,7 +807,7 @@ createCmpPpl d f = createPplLyt d \dsl pl ->
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(shdrMdInfo glslComputeShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 
 shdrMdInfo :: SpirV.S sknd -> Vk.ShdrMd.CreateInfo 'Nothing sknd
 shdrMdInfo cd = Vk.ShdrMd.CreateInfo {
