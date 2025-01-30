@@ -1,12 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -15,23 +15,28 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Arrow
+import Control.Monad.Fix
+import Control.Concurrent
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Default
+import Data.Tuple.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
+import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Array
 import Data.Word
 import Data.Int
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
+import Data.IORef
 import Text.Read
 import System.Environment
 import Codec.Picture
@@ -71,6 +76,15 @@ import Gpu.Vulkan.Pipeline.Compute qualified as Vk.Ppl.Cp
 import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
+
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Key qualified as GlfwG.Key
+
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
 
 import Paths_try_vulkan_graphics
 
@@ -122,15 +136,20 @@ pattern Nearest, Linear, Cubic :: Filter
 pattern Nearest = Filter 0; pattern Linear = Filter 1; pattern Cubic = Filter 2
 
 realMain :: ImageRgba8 -> Filter -> Float -> Int32 -> Int32 -> IO ImageRgba8
-realMain img flt a n i = createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
+realMain img flt a n i = GlfwG.init error $
+	createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
-	createCmdPl qfi dv \cp -> body pd dv gq cp img flt a n i
+	createCmdPl qfi dv \cp -> body ist pd dv gq cp img flt a n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
-createIst = Vk.Ist.create info nil
+createIst a = do
+	es <- (Vk.Ist.ExtensionName <$>) <$> GlfwG.getRequiredInstanceExtensions
+	Vk.Ist.create (info es) nil a
 	where
-	info :: Vk.Ist.CreateInfo 'Nothing 'Nothing
-	info = def { Vk.Ist.createInfoEnabledLayerNames = vldLayers }
+	info :: [Vk.Ist.ExtensionName] -> Vk.Ist.CreateInfo 'Nothing 'Nothing
+	info es = def {
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
+		Vk.Ist.createInfoEnabledExtensionNames = es }
 
 vldLayers :: [Vk.LayerName]
 vldLayers = [Vk.layerKhronosValidation]
@@ -173,9 +192,9 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 
 type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
-body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
+body :: forall si sd sc img . Vk.ObjB.IsImage img => Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
-body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
+body ist pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
 	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
 	prepareImg @ShaderFormat pd dv std (w + 2) (h + 2) \imgs' ->
@@ -201,43 +220,57 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 		@'[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts]
 		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
 		\dsl pl ppl ->
-	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
+	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds -> do
 
 	runCmds dv gq cp \cb -> do
-	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyBffrToImg cb b imgs
-	tr cb imgs
-		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+		tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyBffrToImg cb b imgs
+		tr cb imgs
+			Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 
-	tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg' cb imgs imgs' w h
-	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
-	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
+		tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyImgToImg' cb imgs imgs' w h
+		tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
+		tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 
-	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb wpl (HPList.Singleton $ U2 wds) def
-		Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute
+				ccb wpl (HPList.Singleton $ U2 wds) def
+			Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
 
-	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute hppl \ccb -> do
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb hpl (HPList.Singleton $ U2 hds) def
-		Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute hppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute
+				ccb hpl (HPList.Singleton $ U2 hds) def
+			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
-	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb pl (HPList.Singleton $ U2 ds) def
-		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-			ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
-		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+	q <- newIORef False
+	withWindow w h \win ->
+		Vk.Khr.Sfc.Glfw.Win.create ist win nil \sfc ->
+		querySwpchSupport pd sfc \ssd -> do
+			print ssd
+			GlfwG.Win.setKeyCallback win $ Just \_ k _ ks _ -> case (k, ks) of
+				(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeIORef q True
+				_ -> pure ()
+			fix \act -> do
+				runCmds dv gq cp \cb -> do
+					Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+						Vk.Cmd.bindDescriptorSetsCompute
+							ccb pl (HPList.Singleton $ U2 ds) def
+						Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+							ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
+						Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+				GlfwG.waitEvents
+				wsc <- GlfwG.Win.shouldClose win
+				qp <- readIORef q
+				if (wsc || qp) then pure () else act
 
-	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
-
-	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg cb imgd' imgd w h Vk.FilterNearest 1 0
-	tr cb imgd
-		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
-	copyImgToBffr cb imgd rb
+	runCmds dv gq cp \cb -> do
+		tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyImgToImg cb imgd' imgd w h Vk.FilterNearest 1 0
+		tr cb imgd
+			Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+		copyImgToBffr cb imgd rb
 	where
 	trsd = Vk.Img.UsageTransferSrcBit .|. Vk.Img.UsageTransferDstBit
 	sts = Vk.Img.UsageStorageBit .|. Vk.Img.UsageTransferSrcBit
@@ -273,6 +306,15 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers } }
+
+withWindow :: Int -> Int -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
+withWindow w h a = do
+	GlfwG.Win.hint noApi
+	GlfwG.Win.hint notResizable
+	GlfwG.Win.create w h "Bicubic Interpolation" Nothing Nothing a
+	where
+	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+	notResizable = GlfwG.Win.WindowHint'Resizable False
 
 -- BUFFER
 
@@ -623,3 +665,25 @@ createDscStSrc dv dp svw dl a =
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
 		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
+
+-- SWAP CHAIN
+
+data SwpchSupportDetails fmts = SwpchSupportDetails {
+	capabilities :: Vk.Khr.Sfc.Capabilities,
+	formats :: (
+		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
+	presentModes :: [Vk.Khr.Sfc.PresentMode] }
+
+deriving instance
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+	Show (SwpchSupportDetails fmts)
+
+querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+	SwpchSupportDetails fmts -> IO a) -> IO a
+querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
+	f =<< SwpchSupportDetails
+		<$> Vk.Khr.Sfc.Phd.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Khr.Sfc.Phd.getFormatsFiltered pd sfc)
+		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
