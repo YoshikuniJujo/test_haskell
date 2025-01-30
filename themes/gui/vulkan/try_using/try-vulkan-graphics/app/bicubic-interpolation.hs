@@ -103,7 +103,8 @@ newtype PixelRgba8 = PixelRgba8 PixelRGBA8 deriving Show
 
 instance Vk.ObjB.IsImage ImageRgba8 where
 	type ImagePixel ImageRgba8 = PixelRgba8
-	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Unorm
+--	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Unorm
+	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
 	imageRow = Vk.ObjB.imageWidth
 	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
 	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
