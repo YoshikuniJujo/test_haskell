@@ -272,19 +272,19 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 				(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) ->
 					atomically $ writeTChan fi Linear
 				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) -> atomically do
-					modifyTVar aa (subtract 0.01)
+					modifyTVar aa (sub (- 1) 0.01)
 					writeTChan fi Cubic
 					writeTChan ai =<< readTVar aa
 				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Repeating) -> atomically do
-					modifyTVar aa (subtract 0.01)
+					modifyTVar aa (sub (- 1) 0.01)
 					writeTChan fi Cubic
 					writeTChan ai =<< readTVar aa
 				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) -> atomically do
-					modifyTVar aa (+ 0.01)
+					modifyTVar aa (add 0 0.01)
 					writeTChan fi Cubic
 					writeTChan ai =<< readTVar aa
 				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Repeating) -> atomically do
-					modifyTVar aa (+ 0.01)
+					modifyTVar aa (add 0 0.01)
 					writeTChan fi Cubic
 					writeTChan ai =<< readTVar aa
 				_ -> pure ()
@@ -342,6 +342,10 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rs,
 		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+
+sub, add :: (Ord n, Num n) => n -> n -> n -> n
+sub mn d x | x > mn = x - d | otherwise = x
+add mx d x | x < mx = x + d | otherwise = x
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
