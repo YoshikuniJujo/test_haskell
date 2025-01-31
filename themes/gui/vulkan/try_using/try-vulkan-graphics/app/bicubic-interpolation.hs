@@ -37,6 +37,7 @@ import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Array
+import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Word
 import Data.Int
@@ -258,6 +259,9 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 	fi <- atomically newTChan
 	aa <- atomically $ newTVar a0
 	ai <- atomically newTChan
+	lft <- atomically newTChan
+	dwn <- atomically newTChan
+	hm <- atomically newTChan
 	withWindow w h \win ->
 		Vk.Smph.create @'Nothing dv def nil \scs ->
 		Vk.Smph.create @'Nothing dv def nil \rs ->
@@ -270,9 +274,9 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 				(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeIORef q True
 				(GlfwG.Key.Key'N, GlfwG.Key.KeyState'Pressed) ->
 					atomically $ writeTChan fi Nearest
-				(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) ->
+				(GlfwG.Key.Key'Semicolon, GlfwG.Key.KeyState'Pressed) ->
 					atomically $ writeTChan fi Linear
-				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) -> atomically do
+				(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Pressed) -> atomically do
 --					modifyTVar aa (sub (- 1) 0.01)
 					a <- readTVar aa
 					let	a' = a - 0.01
@@ -281,7 +285,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 					when (a /= a'') do
 						writeTVar aa a''
 						writeTChan ai a''
-				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Repeating) -> atomically do
+				(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Repeating) -> atomically do
 --					modifyTVar aa (sub (- 1) 0.01)
 					a <- readTVar aa
 					let	a' = a - 0.01
@@ -291,7 +295,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 					when (a /= a'') do
 						writeTVar aa a''
 						writeTChan ai a''
-				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) -> atomically do
+				(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Pressed) -> atomically do
 --					modifyTVar aa (add (- 0.25) 0.01)
 					a <- readTVar aa
 					let	a' = a + 0.01
@@ -300,7 +304,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 					when (a /= a'') do
 						writeTVar aa a''
 						writeTChan ai a''
-				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Repeating) -> atomically do
+				(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Repeating) -> atomically do
 --					modifyTVar aa (add (- 0.25) 0.01)
 					a <- readTVar aa
 					let	a' = a + 0.01
@@ -310,20 +314,30 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 					when (a /= a'') do
 						writeTVar aa a''
 						writeTChan ai a''
-				(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Pressed) -> atomically do
+				(GlfwG.Key.Key'M, GlfwG.Key.KeyState'Pressed) -> atomically do
 					writeTChan fi Cubic
 					a <- readTVar aa
 					when (a /= (- 0.75)) do
 						writeTVar aa (- 0.75)
 						writeTChan ai (- 0.75)
-				(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Pressed) -> atomically do
+				(GlfwG.Key.Key'Comma, GlfwG.Key.KeyState'Pressed) -> atomically do
 					writeTChan fi Cubic
 					a <- readTVar aa
 					when (a /= (- 0.5)) do
 						writeTVar aa (- 0.5)
 						writeTChan ai (- 0.5)
+				(GlfwG.Key.Key'H, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan lft (- 1)
+				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan dwn 1
+				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan dwn (- 1)
+				(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan lft 1
+				(GlfwG.Key.Key'Space, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan hm ()
 				_ -> pure ()
-			($ a0) . ($ flt0) $ fix \act flt a -> do
+			($ iy0) . ($ ix0) . ($ a0) . ($ flt0) $ fix \act flt a ix iy -> do
 				ii <- Vk.Khr.Swpch.acquireNextImageResult
 					[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just scs) Nothing
 				runCmds dv gq cp
@@ -351,7 +365,11 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 					a' = fromMaybe a ma
 				maybe (pure ()) print ma
 				maybe (pure ()) (putStrLn . bar) ma
-				if (wsc || qp) then pure () else act flt' a'
+				l <- atomically $ fromMaybe 0 <$> tryReadTChan lft
+				d <- atomically $ fromMaybe 0 <$> tryReadTChan dwn
+				h <- atomically $ maybe False (const True) <$> tryReadTChan hm
+				if (wsc || qp) then pure () else
+					act flt' a' (bool (ix + l) ix0 h) (bool (iy + d) iy0 h)
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
@@ -367,10 +385,10 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
 	tr = transitionImgLyt
-	n', ix, iy :: Word32
+	n', ix0, iy0 :: Word32
 	n' = fromIntegral n
-	ix = fromIntegral $ i `mod` n
-	iy = fromIntegral $ i `div` n
+	ix0 = fromIntegral $ i `mod` n
+	iy0 = fromIntegral $ i `div` n
 	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
 	pinfo :: forall scfmt ccs s . Vk.Khr.Swpch.S scfmt ccs -> Word32 -> Vk.Smph.S s -> Vk.Khr.Swpch.PresentInfo 'Nothing '[s] scfmt '[ccs]
 	pinfo sc ii rs = Vk.Khr.Swpch.PresentInfo {
