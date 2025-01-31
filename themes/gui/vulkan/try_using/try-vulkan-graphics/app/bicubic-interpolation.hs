@@ -242,7 +242,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 			Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 
 		tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-		copyImgToImg' cb imgs imgs' w h
+		copyImgToImg cb imgs imgs' w h 1 1
 		tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
 
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
@@ -357,7 +357,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 						Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
 					tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
 					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-					copyImgToImg cb imgd' (scis !! fromIntegral ii) w h Vk.FilterNearest 1 0
+					copyImgToImg cb imgd' (scis !! fromIntegral ii) w h 0 0
 					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
 				catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing gq $ pinfo sc ii rs)
 				GlfwG.waitEvents
@@ -379,7 +379,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-		copyImgToImg cb imgd' imgd w h Vk.FilterNearest 1 0
+		copyImgToImg cb imgd' imgd w h 0 0
 		tr cb imgd
 			Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 		copyImgToBffr cb imgd rb
@@ -627,21 +627,18 @@ transitionImgLyt cb i ol nl =
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
-	Int32 -> Int32 -> Vk.Filter -> Int32 -> Int32 -> IO ()
-copyImgToImg cb si di w h flt n i = Vk.Cmd.blitImage cb
+	Int32 -> Int32 -> Int32 -> Int32 -> IO ()
+copyImgToImg cb si di w h dl dt = Vk.Cmd.blitImage cb
 	si Vk.Img.LayoutTransferSrcOptimal
-	di Vk.Img.LayoutTransferDstOptimal [blt] flt
+	di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
 	where
 	blt = Vk.Img.Blit {
 		Vk.Img.blitSrcSubresource = colorLayer0,
-		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d l t 0,
-		Vk.Img.blitSrcOffsetTo = Vk.Offset3d r b 1,
+		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
 		Vk.Img.blitDstSubresource = colorLayer0,
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 0 0 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d w h 1 }
-	(l, r, t, b) = (
-		w * (i `mod` n) `div` n, w * (i `mod` n + 1) `div` n,
-		h * (i `div` n) `div` n, h * (i `div` n + 1) `div` n )
+		Vk.Img.blitDstOffsetFrom = Vk.Offset3d dl dt 0,
+		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + dl) (h + dt) 1 }
 
 copyImgToBffr :: forall scb img smi si inm smb sbb bnm imgnm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
@@ -777,19 +774,6 @@ compileShader :: FilePath -> IO (SpirV.S GlslComputeShader)
 compileShader fp = do
 	cd <- BS.readFile =<< getDataFileName fp
 	Shaderc.compile @() cd (BSC.pack fp) "main" def
-
-copyImgToImg' :: Vk.CBffr.C scb -> Vk.Img.Binded sms sis nms fmts ->
-	Vk.Img.Binded smd sid nmd fmtd -> Int32 -> Int32 -> IO ()
-copyImgToImg' cb si di w h = Vk.Cmd.blitImage cb
-	si Vk.Img.LayoutTransferSrcOptimal
-	di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
-	where blt = Vk.Img.Blit {
-		Vk.Img.blitSrcSubresource = colorLayer0,
-		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
-		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
-		Vk.Img.blitDstSubresource = colorLayer0,
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 1 1 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + 1) (h + 1) 1 }
 
 createDscStSrc ::
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
