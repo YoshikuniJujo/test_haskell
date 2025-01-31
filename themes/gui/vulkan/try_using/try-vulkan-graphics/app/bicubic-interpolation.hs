@@ -368,7 +368,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 				l <- atomically $ fromMaybe 0 <$> tryReadTChan lft
 				d <- atomically $ fromMaybe 0 <$> tryReadTChan dwn
 				h <- atomically $ maybe False (const True) <$> tryReadTChan hm
-				if (wsc || qp) then pure () else
+				if (wsc || qp) then print (ix, iy) else
 					act flt' a' (bool (ix + l) ix0 h) (bool (iy + d) iy0 h)
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
