@@ -262,6 +262,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 	lft <- atomically newTChan
 	dwn <- atomically newTChan
 	hm <- atomically newTChan
+	nn <- atomically newTChan
 	withWindow w h \win ->
 		Vk.Smph.create @'Nothing dv def nil \scs ->
 		Vk.Smph.create @'Nothing dv def nil \rs ->
@@ -336,8 +337,12 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 					writeTChan lft 1
 				(GlfwG.Key.Key'Space, GlfwG.Key.KeyState'Pressed) -> atomically do
 					writeTChan hm ()
+				(GlfwG.Key.Key'F, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan nn 1
+				(GlfwG.Key.Key'D, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan nn (- 1)
 				_ -> pure ()
-			($ iy0) . ($ ix0) . ($ a0) . ($ flt0) $ fix \act flt a ix iy -> do
+			($ n0) . ($ iy0) . ($ ix0) . ($ a0) . ($ flt0) $ fix \act flt a ix iy n' -> do
 				ii <- Vk.Khr.Swpch.acquireNextImageResult
 					[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just scs) Nothing
 				runCmds dv gq cp
@@ -368,8 +373,9 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 				l <- atomically $ fromMaybe 0 <$> tryReadTChan lft
 				d <- atomically $ fromMaybe 0 <$> tryReadTChan dwn
 				h <- atomically $ maybe False (const True) <$> tryReadTChan hm
+				dn <- atomically $ fromMaybe 0 <$> tryReadTChan nn
 				if (wsc || qp) then print (ix, iy) else
-					act flt' a' (bool (ix + l) ix0 h) (bool (iy + d) iy0 h)
+					act flt' a' (bool (ix + l) ix0 h) (bool (iy + d) iy0 h) (bool (n' + dn) n0 h)
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
@@ -385,8 +391,8 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
 	tr = transitionImgLyt
-	n', ix0, iy0 :: Word32
-	n' = fromIntegral n
+	n0, ix0, iy0 :: Word32
+	n0 = fromIntegral n
 	ix0 = fromIntegral $ i `mod` n
 	iy0 = fromIntegral $ i `div` n
 	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
