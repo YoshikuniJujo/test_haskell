@@ -15,6 +15,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Arrow
+import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent
 import Control.Exception
@@ -272,21 +273,55 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 				(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) ->
 					atomically $ writeTChan fi Linear
 				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) -> atomically do
-					modifyTVar aa (sub (- 1) 0.01)
+--					modifyTVar aa (sub (- 1) 0.01)
+					a <- readTVar aa
+					let	a' = a - 0.01
+						a'' = if a' > - 1 then a' else a
 					writeTChan fi Cubic
-					writeTChan ai =<< readTVar aa
+					when (a /= a'') do
+						writeTVar aa a''
+						writeTChan ai a''
 				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Repeating) -> atomically do
-					modifyTVar aa (sub (- 1) 0.01)
+--					modifyTVar aa (sub (- 1) 0.01)
+					a <- readTVar aa
+					let	a' = a - 0.01
+						a'' = if a' <= - 1 || a' < - 0.75 && - 0.75 <= a
+							then a else a'
 					writeTChan fi Cubic
-					writeTChan ai =<< readTVar aa
+					when (a /= a'') do
+						writeTVar aa a''
+						writeTChan ai a''
 				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) -> atomically do
-					modifyTVar aa (add 0 0.01)
+--					modifyTVar aa (add (- 0.25) 0.01)
+					a <- readTVar aa
+					let	a' = a + 0.01
+						a'' = if a' < - 0.25 then a' else a
 					writeTChan fi Cubic
-					writeTChan ai =<< readTVar aa
+					when (a /= a'') do
+						writeTVar aa a''
+						writeTChan ai a''
 				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Repeating) -> atomically do
-					modifyTVar aa (add 0 0.01)
+--					modifyTVar aa (add (- 0.25) 0.01)
+					a <- readTVar aa
+					let	a' = a + 0.01
+						a'' = if a' >= - 0.25 || a <= - 0.5 && - 0.5 < a'
+							then a else a'
 					writeTChan fi Cubic
-					writeTChan ai =<< readTVar aa
+					when (a /= a'') do
+						writeTVar aa a''
+						writeTChan ai a''
+				(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan fi Cubic
+					a <- readTVar aa
+					when (a /= (- 0.75)) do
+						writeTVar aa (- 0.75)
+						writeTChan ai (- 0.75)
+				(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Pressed) -> atomically do
+					writeTChan fi Cubic
+					a <- readTVar aa
+					when (a /= (- 0.5)) do
+						writeTVar aa (- 0.5)
+						writeTChan ai (- 0.5)
 				_ -> pure ()
 			($ a0) . ($ flt0) $ fix \act flt a -> do
 				ii <- Vk.Khr.Swpch.acquireNextImageResult
@@ -315,6 +350,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 				let	flt' = fromMaybe flt mflt
 					a' = fromMaybe a ma
 				maybe (pure ()) print ma
+				maybe (pure ()) (putStrLn . bar) ma
 				if (wsc || qp) then pure () else act flt' a'
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
@@ -346,6 +382,16 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 sub, add :: (Ord n, Num n) => n -> n -> n -> n
 sub mn d x | x > mn = x - d | otherwise = x
 add mx d x | x < mx = x + d | otherwise = x
+
+bar :: Float -> String
+bar a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
+	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++ replicate v ' ' ++ "|"
+	where
+	x = round $ 71 + 70 * a
+	y = 72 - x
+	z = round $ 71 + 70 * (- 0.75)
+	w = round (71 + 70 * (- 0.5)) - z - 2
+	v = round (71 + 70 * (- 0.25)) - w - z - 4
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
