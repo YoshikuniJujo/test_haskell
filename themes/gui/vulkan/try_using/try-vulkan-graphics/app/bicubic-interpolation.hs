@@ -62,6 +62,7 @@ import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFm
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
@@ -69,6 +70,7 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Sample qualified as Vk.Sample
@@ -161,8 +163,18 @@ createIst a = do
 	where
 	info :: [Vk.Ist.ExtensionName] -> Vk.Ist.CreateInfo 'Nothing 'Nothing
 	info es = def {
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
 		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
-		Vk.Ist.createInfoEnabledExtensionNames = es }
+		Vk.Ist.createInfoEnabledExtensionNames = es
+		}
+	ainfo = Vk.ApplicationInfo {
+		Vk.applicationInfoNext = TMaybe.N,
+		Vk.applicationInfoApplicationName = "Example Vulkan Application",
+		Vk.applicationInfoApplicationVersion =
+			Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoEngineName = "No Engine",
+		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_3 }
 
 vldLayers :: [Vk.LayerName]
 vldLayers = [Vk.layerKhronosValidation]
@@ -394,7 +406,8 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
-	tr = transitionImgLyt
+--	tr = transitionImgLyt
+	tr = transitionImage
 	n0, ix0, iy0 :: Word32
 	n0 = fromIntegral n
 	ix0 = fromIntegral $ i `mod` n
@@ -629,12 +642,49 @@ transitionImgLyt cb i ol nl =
 			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
 		_ -> error "unsupported layout transition!"
 
+transitionImage :: Vk.CmdBffr.C scb -> Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
+	where
+	depInfo = Vk.DependencyInfo {
+		Vk.dependencyInfoNext = TMaybe.N,
+		Vk.dependencyInfoDependencyFlags = zeroBits,
+		Vk.dependencyInfoMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoBufferMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoImageMemoryBarriers = HPList.Singleton $ U5 imgBarrier }
+	imgBarrier = Vk.Img.MemoryBarrier2 {
+		Vk.Img.memoryBarrier2Next = TMaybe.N,
+		Vk.Img.memoryBarrier2SrcStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2SrcAccessMask = Vk.Access2MemoryWriteBit,
+		Vk.Img.memoryBarrier2DstStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2DstAccessMask =
+			Vk.Access2MemoryWriteBit .|. Vk.Access2MemoryReadBit,
+		Vk.Img.memoryBarrier2OldLayout = cl,
+		Vk.Img.memoryBarrier2NewLayout = nl,
+		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
+		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
+		Vk.Img.memoryBarrier2Image = img,
+		Vk.Img.memoryBarrier2SubresourceRange =
+			imageSubresourceRange case nl of
+				Vk.Img.LayoutDepthAttachmentOptimal ->
+					Vk.Img.AspectDepthBit
+				_ -> Vk.Img.AspectColorBit }
+
+imageSubresourceRange :: Vk.Img.AspectFlags -> Vk.Img.SubresourceRange
+imageSubresourceRange am = Vk.Img.SubresourceRange {
+	Vk.Img.subresourceRangeAspectMask = am,
+	Vk.Img.subresourceRangeBaseMipLevel = 0,
+	Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
+	Vk.Img.subresourceRangeBaseArrayLayer = 0,
+	Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers }
+
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
 	Int32 -> Int32 -> Int32 -> Int32 -> IO ()
-copyImgToImg cb si di w h dl dt =
---	Vk.Cmd.blitImage2 cb $ blitInfo si di w h dl dt
+copyImgToImg cb si di w h dl dt = do
+	print (w, h, dl, dt)
+	Vk.Cmd.blitImage2 cb $ blitInfo si di w h dl dt
 
+{-
 	Vk.Cmd.blitImage cb
 		si Vk.Img.LayoutTransferSrcOptimal
 		di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
@@ -646,6 +696,7 @@ copyImgToImg cb si di w h dl dt =
 		Vk.Img.blitDstSubresource = colorLayer0,
 		Vk.Img.blitDstOffsetFrom = Vk.Offset3d dl dt 0,
 		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + dl) (h + dt) 1 }
+		-}
 
 blitInfo ::
 	Vk.Img.Binded sms sis nms fmts ->
