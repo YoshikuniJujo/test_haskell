@@ -607,7 +607,6 @@ transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
 				Vk.Img.LayoutDepthAttachmentOptimal ->
 					Vk.Img.AspectDepthBit
 				_ -> Vk.Img.AspectColorBit }
-				
 
 imageSubresourceRange :: Vk.Img.AspectFlags -> Vk.Img.SubresourceRange
 imageSubresourceRange am = Vk.Img.SubresourceRange {
