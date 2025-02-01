@@ -372,10 +372,14 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 				maybe (pure ()) (putStrLn . bar) ma
 				l <- atomically $ fromMaybe 0 <$> tryReadTChan lft
 				d <- atomically $ fromMaybe 0 <$> tryReadTChan dwn
-				h <- atomically $ maybe False (const True) <$> tryReadTChan hm
+				qhm <- atomically $ maybe False (const True) <$> tryReadTChan hm
 				dn <- atomically $ fromMaybe 0 <$> tryReadTChan nn
+				let	n'' = clamp 1 (max w h) $ bool (n' + dn) n0 qhm
 				if (wsc || qp) then print (n', n' * iy + ix) else
-					act flt' a' (bool (ix + l) ix0 h) (bool (iy + d) iy0 h) (bool (n' + dn) n0 h)
+					act flt' a'
+						(clamp 0 (n'' - 1) (bool (ix + l) ix0 qhm))
+						(clamp 0 (n'' - 1) (bool (iy + d) iy0 qhm))
+						n''
 
 	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
