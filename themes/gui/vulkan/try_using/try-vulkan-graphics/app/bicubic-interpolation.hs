@@ -575,6 +575,22 @@ runCmds dv gq cp wss sss cmds =
 --		Vk.submitInfoSignalSemaphores = HPList.Nil }
 		Vk.submitInfoSignalSemaphores = sss }
 
+submitInfo ::
+	Vk.CBffr.C scb ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) wsas -> HPList.PL (U2 Vk.Smph.SubmitInfo) ssas ->
+	Vk.SubmitInfo2 'Nothing wsas '[ '( 'Nothing, scb)] ssas
+submitInfo cb wsis ssis = Vk.SubmitInfo2 {
+	Vk.submitInfo2Next = TMaybe.N,
+	Vk.submitInfo2Flags = zeroBits,
+	Vk.submitInfo2WaitSemaphoreInfos = wsis,
+	Vk.submitInfo2CommandBufferInfos = HPList.Singleton $ U2 cbi,
+	Vk.submitInfo2SignalSemaphoreInfos = ssis }
+	where
+	cbi = Vk.CBffr.SubmitInfo {
+		Vk.CBffr.submitInfoNext = TMaybe.N,
+		Vk.CBffr.submitInfoCommandBuffer = cb,
+		Vk.CmdBffr.submitInfoDeviceMask = 0 }
+
 copyBffrToImg :: forall scb smb sbb bnm img imgnm smi si inm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
 	Vk.Bffr.Binded smb sbb bnm '[Vk.ObjNA.Image img imgnm] ->
