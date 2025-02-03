@@ -14,19 +14,19 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Control.Arrow
+import Foreign.Storable.PeekPoke
 import Control.Monad
 import Control.Monad.Fix
-import Control.Concurrent
 import Control.Exception
+import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.MapIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Ord.ToolsYj
 import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Default
-import Data.Tuple.ToolsYj
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
@@ -248,8 +248,7 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
 		\dsl pl ppl ->
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds -> do
-
-	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
+	runCmds2 dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyBffrToImg cb b imgs
 		tr cb imgs
@@ -342,26 +341,27 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 						writeTVar aa (- 0.5)
 						writeTChan ai (- 0.5)
 				(GlfwG.Key.Key'H, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan lft (- 1)
+					writeTChan lft (subtract 1)
 				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan dwn 1
+					writeTChan dwn (+ 1)
 				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan dwn (- 1)
+					writeTChan dwn (subtract 1)
 				(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan lft 1
+					writeTChan lft (+ 1)
 				(GlfwG.Key.Key'Space, GlfwG.Key.KeyState'Pressed) -> atomically do
 					writeTChan hm ()
 				(GlfwG.Key.Key'F, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan nn 1
+					writeTChan nn (+ 1)
 				(GlfwG.Key.Key'D, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan nn (- 1)
+					writeTChan nn (subtract 1)
 				_ -> pure ()
 			($ n0) . ($ iy0) . ($ ix0) . ($ a0) . ($ flt0) $ fix \act flt a ix iy n' -> do
 				ii <- Vk.Khr.Swpch.acquireNextImageResult
 					[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just scs) Nothing
-				runCmds dv gq cp
-					(HPList.Singleton $ Vk.SemaphorePipelineStageFlags scs Vk.Ppl.StageColorAttachmentOutputBit)
-					(HPList.Singleton rs) \cb -> do
+
+				let	wi = HPList.Singleton . U2 $ smphSubmitInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
+					si = HPList.Singleton . U2 $ smphSubmitInfo rs Vk.Ppl.Stage2AllGraphicsBit
+				runCmds2 dv gq cp wi si \cb -> do
 					tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 					Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 						Vk.Cmd.bindDescriptorSetsCompute
@@ -384,18 +384,18 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 					a' = fromMaybe a ma
 				maybe (pure ()) print ma
 				maybe (pure ()) (putStrLn . bar) ma
-				l <- atomically $ fromMaybe 0 <$> tryReadTChan lft
-				d <- atomically $ fromMaybe 0 <$> tryReadTChan dwn
+				l <- atomically $ fromMaybe id <$> tryReadTChan lft
+				d <- atomically $ fromMaybe id <$> tryReadTChan dwn
 				qhm <- atomically $ maybe False (const True) <$> tryReadTChan hm
-				dn <- atomically $ fromMaybe 0 <$> tryReadTChan nn
-				let	n'' = clamp 1 (max w h) $ bool (n' + dn) n0 qhm
+				dn <- atomically $ fromMaybe id <$> tryReadTChan nn
+				let	n'' = clamp 1 (max w h) $ bool (dn n') n0 qhm
 				if (wsc || qp) then print (n', n' * iy + ix) else
 					act flt' a'
-						(clamp 0 (n'' - 1) (bool (ix + l) ix0 qhm))
-						(clamp 0 (n'' - 1) (bool (iy + d) iy0 qhm))
+						(clamp 0 (n'' - 1) (bool (l ix) ix0 qhm))
+						(clamp 0 (n'' - 1) (bool (d iy ) iy0 qhm))
 						n''
 
-	runCmds dv gq cp HPList.Nil HPList.Nil \cb -> do
+	runCmds2 dv gq cp HPList.Nil HPList.Nil \cb -> do
 		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImgToImg cb imgd' imgd w h 0 0
 		tr cb imgd
@@ -422,19 +422,15 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
 			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
 
-sub, add :: (Ord n, Num n) => n -> n -> n -> n
-sub mn d x | x > mn = x - d | otherwise = x
-add mx d x | x < mx = x + d | otherwise = x
-
 bar :: Float -> String
 bar a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
 	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++ replicate v ' ' ++ "|"
 	where
 	x = round $ 71 + 70 * a
 	y = 72 - x
-	z = round $ 71 + 70 * (- 0.75)
-	w = round (71 + 70 * (- 0.5)) - z - 2
-	v = round (71 + 70 * (- 0.25)) - w - z - 4
+	z = round @Double $ 71 + 70 * (- 0.75)
+	w = round @Double (71 + 70 * (- 0.5)) - z - 2
+	v = round @Double (71 + 70 * (- 0.25)) - w - z - 4
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
@@ -548,13 +544,21 @@ prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 
 -- COMMANDS
 
-runCmds :: forall sd sc wss sss a . Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> HPList.PL Vk.SemaphorePipelineStageFlags wss -> HPList.PL Vk.Smph.S sss ->
+runCmds2 :: forall sd sc wss sss a . (
+	Length (M0_2 wss), Length (M0_2 sss),
+	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
+	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
+	Vk.Smph.SubmitInfoListToMiddle wss,
+	Vk.Smph.SubmitInfoListToMiddle sss ) =>
+	Vk.Dvc.D sd ->
+	Vk.Q.Q -> Vk.CmdPl.C sc ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) wss ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) sss ->
 	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-runCmds dv gq cp wss sss cmds =
+runCmds2 dv gq cp wss sss cmds =
 	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) ->
 	Vk.CBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
-	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
+	Vk.Q.submit2 gq (HPList.Singleton . U4 $ submitInfo cb wss sss) Nothing
 	Vk.Q.waitIdle gq
 	where
 	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing sc '[ '()]
@@ -566,14 +570,6 @@ runCmds dv gq cp wss sss cmds =
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
-	sinfo :: Vk.CBffr.C scb -> Vk.SubmitInfo 'Nothing wss '[scb] sss
-	sinfo cb = Vk.SubmitInfo {
-		Vk.submitInfoNext = TMaybe.N,
---		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = wss,
-		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
---		Vk.submitInfoSignalSemaphores = HPList.Nil }
-		Vk.submitInfoSignalSemaphores = sss }
 
 submitInfo ::
 	Vk.CBffr.C scb ->
@@ -590,6 +586,16 @@ submitInfo cb wsis ssis = Vk.SubmitInfo2 {
 		Vk.CBffr.submitInfoNext = TMaybe.N,
 		Vk.CBffr.submitInfoCommandBuffer = cb,
 		Vk.CmdBffr.submitInfoDeviceMask = def }
+
+smphSubmitInfo ::
+	Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
+	Vk.Smph.SubmitInfo 'Nothing ss
+smphSubmitInfo smph sm = Vk.Smph.SubmitInfo {
+	Vk.Smph.submitInfoNext = TMaybe.N,
+	Vk.Smph.submitInfoSemaphore = smph,
+	Vk.Smph.submitInfoValue = 0,
+	Vk.Smph.submitInfoStageMask = sm,
+	Vk.Smph.submitInfoDeviceIndex = 0 }
 
 copyBffrToImg :: forall scb smb sbb bnm img imgnm smi si inm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
@@ -615,50 +621,6 @@ bffrImgExtent :: forall sm sb bnm img nm .
 bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ _ =
 		Vk.Obj.lengthOf @(Vk.ObjNA.Image img nm) ln
-
-transitionImgLyt :: Vk.CBffr.C scb ->
-	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImgLyt cb i ol nl =
-	Vk.Cmd.pipelineBarrier cb srcst dstst zeroBits
-		HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
-	where
-	brrr = Vk.Img.MemoryBarrier {
-		Vk.Img.memoryBarrierNext = TMaybe.N,
-		Vk.Img.memoryBarrierOldLayout = ol,
-		Vk.Img.memoryBarrierNewLayout = nl,
-		Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFam.Ignored,
-		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
-		Vk.Img.memoryBarrierImage = i,
-		Vk.Img.memoryBarrierSubresourceRange = srr,
-		Vk.Img.memoryBarrierSrcAccessMask = srcam,
-		Vk.Img.memoryBarrierDstAccessMask = dstam }
-	srr = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
-		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
-		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
-	(srcst, dstst, srcam, dstam) = case (ol, nl) of
-		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
-			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit,
-			zeroBits, Vk.AccessTransferWriteBit )
-		(Vk.Img.LayoutUndefined, Vk.Img.LayoutGeneral) -> (
-			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageComputeShaderBit,
-			zeroBits, Vk.AccessShaderWriteBit )
-		(Vk.Img.LayoutTransferDstOptimal,
-			Vk.Img.LayoutTransferSrcOptimal) -> (
-			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit,
-			Vk.AccessTransferWriteBit, Vk.AccessTransferReadBit )
-		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutGeneral) -> (
-			Vk.Ppl.StageTransferBit, Vk.Ppl.StageComputeShaderBit,
-			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit )
-		(Vk.Img.LayoutGeneral, Vk.Img.LayoutTransferSrcOptimal) -> (
-			Vk.Ppl.StageComputeShaderBit, Vk.Ppl.StageTransferBit,
-			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
-		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutPresentSrcKhr) -> (
-			Vk.Ppl.StageComputeShaderBit, Vk.Ppl.StageTransferBit,
-			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
-		_ -> error "unsupported layout transition!"
 
 transitionImage :: Vk.CmdBffr.C scb -> Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
 transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
@@ -698,34 +660,19 @@ imageSubresourceRange am = Vk.Img.SubresourceRange {
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
 	Int32 -> Int32 -> Int32 -> Int32 -> IO ()
-copyImgToImg cb si di w h dl dt = do
---	print (w, h, dl, dt)
+copyImgToImg cb si di w h dl dt =
 	Vk.Cmd.blitImage2 cb $ blitInfo si di w h dl dt
-
-{-
-	Vk.Cmd.blitImage cb
-		si Vk.Img.LayoutTransferSrcOptimal
-		di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
-	where
-	blt = Vk.Img.Blit {
-		Vk.Img.blitSrcSubresource = colorLayer0,
-		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
-		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
-		Vk.Img.blitDstSubresource = colorLayer0,
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d dl dt 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + dl) (h + dt) 1 }
-		-}
 
 blitInfo ::
 	Vk.Img.Binded sms sis nms fmts ->
 	Vk.Img.Binded smd sid nmd fmtd ->
 	Int32 -> Int32 -> Int32 -> Int32 ->
 	Vk.BlitImageInfo2 'Nothing sms sis nms fmts smd sid nmd fmtd '[ 'Nothing]
-blitInfo is id w h dl dt = Vk.BlitImageInfo2 {
+blitInfo is idst w h dl dt = Vk.BlitImageInfo2 {
 	Vk.blitImageInfo2Next = TMaybe.N,
 	Vk.blitImageInfo2SrcImage = is,
 	Vk.blitImageInfo2SrcImageLayout = Vk.Img.LayoutTransferSrcOptimal,
-	Vk.blitImageInfo2DstImage = id,
+	Vk.blitImageInfo2DstImage = idst,
 	Vk.blitImageInfo2DstImageLayout = Vk.Img.LayoutTransferDstOptimal,
 	Vk.blitImageInfo2Regions = HPList.Singleton blt,
 	Vk.blitImageInfo2Filter = Vk.FilterNearest }
