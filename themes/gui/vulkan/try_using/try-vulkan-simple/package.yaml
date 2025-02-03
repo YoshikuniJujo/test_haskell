@@ -1,0 +1,76 @@
+name:                try-vulkan-simple
+version:             0.1.0.0
+github:              "YoshikuniJujo/try-vulkan-simple"
+license:             BSD-3-Clause
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "(c) 2025 Yoshikuni Jujo"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-vulkan-simple#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- data-default
+- gpu-vulkan
+- shaderc
+- language-spir-v
+- hetero-parameter-list
+- tools-yj
+- typelevel-tools-yj
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  try-vulkan-simple-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-simple
+  try-device-group:
+    main:                try-device-group.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-simple
+
+tests:
+  try-vulkan-simple-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-simple
