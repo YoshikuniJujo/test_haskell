@@ -195,14 +195,15 @@ createLgDvc ::
 createLgDvc pd qfi = Vk.Dvc.create pd info nil
 	where
 	info = Vk.Dvc.CreateInfo {
---		Vk.Dvc.createInfoNext = TMaybe.N,
-		Vk.Dvc.createInfoNext = TMaybe.J features,
+		Vk.Dvc.createInfoNext =
+			TMaybe.J (Vk.Phd.vulkan13FeaturesZero TMaybe.N) {
+				Vk.Phd.vulkan13FeaturesSynchronization2 = True
+				},
 		Vk.Dvc.createInfoFlags = zeroBits,
 		Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
 		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
 		Vk.Dvc.createInfoEnabledExtensionNames = [Vk.Khr.Swpch.extensionName],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
---		Vk.Dvc.createInfoEnabledFeatures = Just def }
 	qinfo = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
@@ -922,23 +923,3 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
-
-features :: Vk.Phd.Features2 (
-	'Just (Vk.Phd.Vulkan12Features (
-	'Just (Vk.Phd.Vulkan13Features 'Nothing) )) )
-features = Vk.Phd.Features2 {
-	Vk.Phd.features2Next = TMaybe.J features12,
-	Vk.Phd.features2Features = def }
-
-features12 :: Vk.Phd.Vulkan12Features ('Just (Vk.Phd.Vulkan13Features 'Nothing))
-features12 = (Vk.Phd.vulkan12FeaturesZero $ TMaybe.J features13) {
---	Vk.Phd.vulkan12FeaturesBufferDeviceAddress = True,
---	Vk.Phd.vulkan12FeaturesDescriptorIndexing = True }
-	Vk.Phd.vulkan12FeaturesBufferDeviceAddress = False,
-	Vk.Phd.vulkan12FeaturesDescriptorIndexing = False }
-
-features13 :: Vk.Phd.Vulkan13Features 'Nothing
-features13 = (Vk.Phd.vulkan13FeaturesZero TMaybe.N) {
---	Vk.Phd.vulkan13FeaturesDynamicRendering = True,
-	Vk.Phd.vulkan13FeaturesDynamicRendering = False,
-	Vk.Phd.vulkan13FeaturesSynchronization2 = True }
