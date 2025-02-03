@@ -575,7 +575,7 @@ commandBufferSubmitInfo ::
 commandBufferSubmitInfo cb = Vk.CmdBffr.SubmitInfo {
 	Vk.CmdBffr.submitInfoNext = TMaybe.N,
 	Vk.CmdBffr.submitInfoCommandBuffer = cb,
-	Vk.CmdBffr.submitInfoDeviceMask = 0 }
+	Vk.CmdBffr.submitInfoDeviceMask = def }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =

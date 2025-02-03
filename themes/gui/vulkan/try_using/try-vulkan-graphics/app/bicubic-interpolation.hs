@@ -589,7 +589,7 @@ submitInfo cb wsis ssis = Vk.SubmitInfo2 {
 	cbi = Vk.CBffr.SubmitInfo {
 		Vk.CBffr.submitInfoNext = TMaybe.N,
 		Vk.CBffr.submitInfoCommandBuffer = cb,
-		Vk.CmdBffr.submitInfoDeviceMask = 0 }
+		Vk.CmdBffr.submitInfoDeviceMask = def }
 
 copyBffrToImg :: forall scb smb sbb bnm img imgnm smi si inm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
