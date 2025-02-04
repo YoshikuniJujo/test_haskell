@@ -30,10 +30,10 @@
 	+ [x] createCmdPl
 	+ [x] type ShaderFormat
 	+ [x] body
-	+ [ ] resultBffr
-	+ [ ] imgVwInfo
-	+ [ ] type PshCnsts
-	+ [ ] strImgBinding
+	+ [x] resultBffr
+	+ [x] imgVwInfo
+	+ [x] type PshCnsts
+	+ [x] strgImgBinding
 	+ [ ] withWindow
 	+ [ ] keyCallback
 	+ [ ] draw

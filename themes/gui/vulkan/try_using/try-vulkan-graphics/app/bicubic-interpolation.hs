@@ -245,18 +245,18 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 
 	compileShader "shader/expandWidth.comp" >>= \exws ->
 	createCmpPpl @'[] @'[]
-		dv (HPList.Singleton strImgBinding) exws \wdsl wpl wppl ->
+		dv (HPList.Singleton strgImgBinding) exws \wdsl wpl wppl ->
 	createDscPl dv \wdp -> createDscStSrc dv wdp imgvws' wdsl \wds ->
 
 	compileShader "shader/expandHeight.comp" >>= \exhs ->
 	createCmpPpl @'[] @'[]
-		dv (HPList.Singleton strImgBinding) exhs \hdsl hpl hppl ->
+		dv (HPList.Singleton strgImgBinding) exhs \hdsl hpl hppl ->
 	createDscPl dv \hdp -> createDscStSrc dv hdp imgvws' hdsl \hds ->
 
 	compileShader "shader/interpolate.comp" >>= \shdr ->
 	createCmpPpl @PshCnsts
 		@'[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts]
-		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
+		dv (strgImgBinding :** strgImgBinding :** HPList.Nil) shdr
 		\dsl pl ppl ->
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
 
@@ -343,16 +343,15 @@ resultBffr :: Vk.ObjB.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.Image img nmi] -> IO a) ->
 	IO img
-resultBffr pd dv w h f = head
-	<$> createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
+resultBffr pd dv w h f = head <$>
+	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
 	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
 
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
-	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
 imgVwInfo i = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = TMaybe.N,
-	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoNext = TMaybe.N, Vk.ImgVw.createInfoFlags = zeroBits,
 	Vk.ImgVw.createInfoImage = i,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
 	Vk.ImgVw.createInfoComponents = def,
@@ -365,8 +364,8 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
-strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
-strImgBinding = Vk.DscStLyt.BindingImage {
+strgImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
+strgImgBinding = Vk.DscStLyt.BindingImage {
 	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
 	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
 
