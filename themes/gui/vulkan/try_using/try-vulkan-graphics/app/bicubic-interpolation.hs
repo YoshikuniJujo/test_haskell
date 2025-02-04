@@ -373,7 +373,11 @@ withWindow :: Int -> Int -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
 withWindow w h a = do
 	GlfwG.Win.hint noApi
 	GlfwG.Win.hint notResizable
-	GlfwG.Win.create (w + 2) (h + 2) "Bicubic Interpolation" Nothing Nothing a
+	GlfwG.Win.create (w + 2) (h + 2) "Bicubic Interpolation" Nothing Nothing \win -> do
+		print =<< GlfwG.Win.getSize win
+		print =<< GlfwG.Win.getFrameSize win
+		print =<< GlfwG.Win.getFramebufferSize win
+		a win
 	where
 	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 	notResizable = GlfwG.Win.WindowHint'Resizable False
