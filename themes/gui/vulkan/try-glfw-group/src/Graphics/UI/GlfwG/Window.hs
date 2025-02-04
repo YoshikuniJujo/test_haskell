@@ -19,6 +19,7 @@ module Graphics.UI.GlfwG.Window (
 
 	-- * PARAMETER
 
+	getFrameSize,
 	getFramebufferSize,
 
 	-- * CALLBACK
@@ -102,6 +103,9 @@ lookup (Group _sem ws) k = atomically $ M.lookup k <$> readTVar ws
 
 setFramebufferSizeCallback :: W s -> Maybe B.FramebufferSizeCallback -> IO ()
 setFramebufferSizeCallback (W w) = B.setFramebufferSizeCallback w
+
+getFrameSize :: W sw -> IO (Int, Int, Int, Int)
+getFrameSize (W w) = B.getWindowFrameSize w
 
 getFramebufferSize :: W sw -> IO (Int, Int)
 getFramebufferSize (W w) = B.getFramebufferSize w
