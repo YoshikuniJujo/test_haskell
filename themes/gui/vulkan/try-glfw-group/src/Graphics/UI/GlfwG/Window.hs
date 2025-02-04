@@ -19,7 +19,7 @@ module Graphics.UI.GlfwG.Window (
 
 	-- * PARAMETER
 
-	getSize,
+	getSize, setSize,
 	getFrameSize,
 	getFramebufferSize,
 
@@ -107,6 +107,9 @@ setFramebufferSizeCallback (W w) = B.setFramebufferSizeCallback w
 
 getSize :: W sw -> IO (Int, Int)
 getSize (W w) = B.getWindowSize w
+
+setSize :: W sw -> Int -> Int -> IO ()
+setSize (W w) = B.setWindowSize w
 
 getFrameSize :: W sw -> IO (Int, Int, Int, Int)
 getFrameSize (W w) = B.getWindowFrameSize w
