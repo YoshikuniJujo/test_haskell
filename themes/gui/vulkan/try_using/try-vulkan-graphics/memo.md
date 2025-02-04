@@ -15,4 +15,33 @@
 * Vk.Cmd.pipelineBarrier -> Vk.Cmd.pipelineBarrier2
 * Vk.Q.submit -> Vk.Q.submit2
 
+##### refactoring
+
+* [x] DATA TYPE IMAGE RGBA8
+* [ ] MAIN
+	+ [x] main
+	+ [x] getFilter
+	+ [x] newtype Filter
+	+ [x] realMain
+	+ [x] createIst
+	+ [x] vldLayers
+	+ [x] pickPhd
+	+ [x] createLgDvc
+	+ [x] createCmdPl
+	+ [x] type ShaderFormat
+	+ [x] body
+	+ [ ] resultBffr
+	+ [ ] imgVwInfo
+	+ [ ] type PshCnsts
+	+ [ ] strImgBinding
+	+ [ ] withWindow
+	+ [ ] keyCallback
+	+ [ ] draw
+	+ [ ] update
+	+ [ ] bar
+* [ ] BUFFER AND IMAGE
+* [ ] COMMANDS
+* [ ] RESULT BUFFER
+* [ ] SWAP CHAIN
+
 ### src

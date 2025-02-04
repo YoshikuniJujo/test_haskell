@@ -15,7 +15,6 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
 import Data.TypeLevel.List
@@ -43,7 +42,6 @@ import Data.Word
 import Data.Int
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
-import Data.IORef
 import Text.Read
 import System.Environment
 import Codec.Picture
@@ -91,16 +89,28 @@ import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
 import Graphics.UI.GlfwG.Key qualified as GlfwG.Key
 
-import Gpu.Vulkan.Khr.Surface qualified as Vk.Khr.Sfc
-import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Khr.Sfc.Phd
-import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Khr.Sfc.Glfw.Win
-import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Khr.Swpch
-import Gpu.Vulkan.Fence qualified as Vk.Fnc
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Sfc.Phd
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Sfc.Glfw.Win
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Semaphore qualified as Vk.Smph
 
 import Control.Concurrent.STM
 
 import Paths_try_vulkan_graphics
+
+---------------------------------------------------------------------------
+--
+-- * DATA TYPE IMAGE RGBA8
+-- * MAIN
+-- * BUFFER AND IMAGE
+-- * COMMAND BUFFER
+-- * COMMANDS
+-- * PIPELINE
+-- * SWAP CHAIN
+-- * TOOLS
+--
+---------------------------------------------------------------------------
 
 -- DATA TYPE IMAGE RGBA8
 
@@ -164,11 +174,10 @@ createIst a = do
 	info es = def {
 		Vk.Ist.createInfoApplicationInfo = Just ainfo,
 		Vk.Ist.createInfoEnabledLayerNames = vldLayers,
-		Vk.Ist.createInfoEnabledExtensionNames = es
-		}
+		Vk.Ist.createInfoEnabledExtensionNames = es }
 	ainfo = Vk.ApplicationInfo {
 		Vk.applicationInfoNext = TMaybe.N,
-		Vk.applicationInfoApplicationName = "Example Vulkan Application",
+		Vk.applicationInfoApplicationName = "BICUBIC INTERPOLATION",
 		Vk.applicationInfoApplicationVersion =
 			Vk.makeApiVersion 0 1 0 0,
 		Vk.applicationInfoEngineName = "No Engine",
@@ -191,8 +200,7 @@ pickPhd ist = Vk.Phd.enumerate ist >>= \case
 
 createLgDvc ::
 	Vk.Phd.P -> Vk.QFam.Index -> (forall sd . Vk.Dvc.D sd -> IO a) -> IO a
-createLgDvc pd qfi = Vk.Dvc.create pd info nil
-	where
+createLgDvc pd qfi = Vk.Dvc.create pd info nil where
 	info = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext =
 			TMaybe.J (Vk.Phd.vulkan13FeaturesZero TMaybe.N) {
@@ -201,7 +209,8 @@ createLgDvc pd qfi = Vk.Dvc.create pd info nil
 		Vk.Dvc.createInfoFlags = zeroBits,
 		Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
 		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
-		Vk.Dvc.createInfoEnabledExtensionNames = [Vk.Khr.Swpch.extensionName],
+		Vk.Dvc.createInfoEnabledExtensionNames =
+			[Vk.Swpch.extensionName],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	qinfo = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
@@ -214,14 +223,16 @@ createCmdPl :: Vk.QFam.Index ->
 createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 	where info = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
-		Vk.CmdPl.createInfoFlags = zeroBits,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
 
 type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
-body :: forall si sd sc img . Vk.ObjB.IsImage img => Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
-body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
+body :: forall si sd scp img . Vk.ObjB.IsImage img =>
+	Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.CmdPl.C scp -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
+body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
+	resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
 	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
 	prepareImg @ShaderFormat pd dv std (w + 2) (h + 2) \imgs' ->
@@ -247,159 +258,66 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 		@'[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts]
 		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
 		\dsl pl ppl ->
-	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds -> do
-	runCmds2 dv gq cp HPList.Nil HPList.Nil \cb -> do
-		tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
+
+	allocateCmdBffr dv cp \cb -> do
+	runCmds gq cb HPList.Nil HPList.Nil do
+		tr cb imgs
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyBffrToImg cb b imgs
 		tr cb imgs
-			Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
-
-		tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutTransferSrcOptimal
+		tr cb imgs'
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImgToImg cb imgs imgs' w h 1 1
 		tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
-
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
+		Vk.Cmd.bindPipelineCompute
+				cb Vk.Ppl.BindPointCompute wppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute
 				ccb wpl (HPList.Singleton $ U2 wds) def
 			Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
-
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute hppl \ccb -> do
+		Vk.Cmd.bindPipelineCompute
+				cb Vk.Ppl.BindPointCompute hppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute
 				ccb hpl (HPList.Singleton $ U2 hds) def
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
-	q <- newIORef False
-	fi <- atomically newTChan
-	aa <- atomically $ newTVar a0
-	ai <- atomically newTChan
-	lft <- atomically newTChan
-	dwn <- atomically newTChan
-	hm <- atomically newTChan
-	nn <- atomically newTChan
-	withWindow w h \win ->
-		Vk.Smph.create @'Nothing dv def nil \scs ->
-		Vk.Smph.create @'Nothing dv def nil \rs ->
-		Vk.Fnc.create @'Nothing dv def {
-			Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit } nil \rfs ->
-		Vk.Khr.Sfc.Glfw.Win.create ist win nil \sfc ->
-		createSwpch win sfc pd dv \sc ex ->
-		Vk.Khr.Swpch.getImages dv sc >>= \scis -> do
-			GlfwG.Win.setKeyCallback win $ Just \_ k _ ks _ -> case (k, ks) of
-				(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeIORef q True
-				(GlfwG.Key.Key'N, GlfwG.Key.KeyState'Pressed) ->
-					atomically $ writeTChan fi Nearest
-				(GlfwG.Key.Key'Semicolon, GlfwG.Key.KeyState'Pressed) ->
-					atomically $ writeTChan fi Linear
-				(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Pressed) -> atomically do
---					modifyTVar aa (sub (- 1) 0.01)
-					a <- readTVar aa
-					let	a' = a - 0.01
-						a'' = if a' > - 1 then a' else a
-					writeTChan fi Cubic
-					when (a /= a'') do
-						writeTVar aa a''
-						writeTChan ai a''
-				(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Repeating) -> atomically do
---					modifyTVar aa (sub (- 1) 0.01)
-					a <- readTVar aa
-					let	a' = a - 0.01
-						a'' = if a' <= - 1 || a' < - 0.75 && - 0.75 <= a
-							then a else a'
-					writeTChan fi Cubic
-					when (a /= a'') do
-						writeTVar aa a''
-						writeTChan ai a''
-				(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Pressed) -> atomically do
---					modifyTVar aa (add (- 0.25) 0.01)
-					a <- readTVar aa
-					let	a' = a + 0.01
-						a'' = if a' < - 0.25 then a' else a
-					writeTChan fi Cubic
-					when (a /= a'') do
-						writeTVar aa a''
-						writeTChan ai a''
-				(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Repeating) -> atomically do
---					modifyTVar aa (add (- 0.25) 0.01)
-					a <- readTVar aa
-					let	a' = a + 0.01
-						a'' = if a' >= - 0.25 || a <= - 0.5 && - 0.5 < a'
-							then a else a'
-					writeTChan fi Cubic
-					when (a /= a'') do
-						writeTVar aa a''
-						writeTChan ai a''
-				(GlfwG.Key.Key'M, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan fi Cubic
-					a <- readTVar aa
-					when (a /= (- 0.75)) do
-						writeTVar aa (- 0.75)
-						writeTChan ai (- 0.75)
-				(GlfwG.Key.Key'Comma, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan fi Cubic
-					a <- readTVar aa
-					when (a /= (- 0.5)) do
-						writeTVar aa (- 0.5)
-						writeTChan ai (- 0.5)
-				(GlfwG.Key.Key'H, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan lft (subtract 1)
-				(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan dwn (+ 1)
-				(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan dwn (subtract 1)
-				(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan lft (+ 1)
-				(GlfwG.Key.Key'Space, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan hm ()
-				(GlfwG.Key.Key'F, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan nn (+ 1)
-				(GlfwG.Key.Key'D, GlfwG.Key.KeyState'Pressed) -> atomically do
-					writeTChan nn (subtract 1)
-				_ -> pure ()
-			($ n0) . ($ iy0) . ($ ix0) . ($ a0) . ($ flt0) $ fix \act flt a ix iy n' -> do
-				ii <- Vk.Khr.Swpch.acquireNextImageResult
-					[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just scs) Nothing
+	(q, fa@(cf, ca), ps@(cn, cl, cd, chm)) <- atomically $ (,,)
+		<$> newTChan <*> ((,) <$> newTChan <*> newTChan)
+		<*> ((,,,) <$> newTChan <*> newTChan <*> newTChan <*> newTChan)
+	Vk.Smph.create @'Nothing dv def nil \scs ->
+		Vk.Smph.create @'Nothing dv def nil \drs ->
+		let	wi = smphInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
+			si = smphInfo drs Vk.Ppl.Stage2AllGraphicsBit in
+		withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
+		createSwpch win sf pd dv \sc ->
+		Vk.Swpch.getImages dv sc >>= \scis -> do
+		GlfwG.Win.setKeyCallback win . Just $ keyCallback w h q fa ps
+		($ (f0, a0, n0, x0, y0)) . uncurry5 $ fix \act f a n ix iy -> do
+			ii <- Vk.Swpch.acquireNextImage
+				dv sc Nothing (Just scs) Nothing
+			draw gq cb wi si ppl pl ds scis imgd' w h ii f a n ix iy
+			catchAndSerialize $ Vk.Swpch.queuePresent
+				@'Nothing gq $ pinfo sc ii drs
+			Vk.Q.waitIdle gq
+			GlfwG.waitEvents
+			wsc <- (||) <$> GlfwG.Win.shouldClose win
+				<*> atomically (maybeToBool <$> tryReadTChan q)
+			(ma, args) <- atomically
+				$ update n0 x0 y0 cf ca cn cl cd chm f a n ix iy
+			if wsc then print (n, n * iy + ix) else do
+				flip (maybe $ pure ()) ma \a' -> do
+					putStrLn ""; putStrLn (bar a'); print a'
+				uncurry5 act args
 
-				let	wi = HPList.Singleton . U2 $ smphSubmitInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
-					si = HPList.Singleton . U2 $ smphSubmitInfo rs Vk.Ppl.Stage2AllGraphicsBit
-				runCmds2 dv gq cp wi si \cb -> do
-					tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
-					Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-						Vk.Cmd.bindDescriptorSetsCompute
-							ccb pl (HPList.Singleton $ U2 ds) def
-						Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-							ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
-						Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
-					tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
-					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-					copyImgToImg cb imgd' (scis !! fromIntegral ii) w h 0 0
-					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
-				catchAndSerialize (Vk.Khr.Swpch.queuePresent @'Nothing gq $ pinfo sc ii rs)
-				GlfwG.waitEvents
-				wsc <- GlfwG.Win.shouldClose win
-				qp <- readIORef q
-				Vk.Q.waitIdle gq
-				mflt <- atomically $ tryReadTChan fi
-				ma <- atomically $ tryReadTChan ai
-				let	flt' = fromMaybe flt mflt
-					a' = fromMaybe a ma
-				maybe (pure ()) print ma
-				maybe (pure ()) (putStrLn . bar) ma
-				l <- atomically $ fromMaybe id <$> tryReadTChan lft
-				d <- atomically $ fromMaybe id <$> tryReadTChan dwn
-				qhm <- atomically $ maybe False (const True) <$> tryReadTChan hm
-				dn <- atomically $ fromMaybe id <$> tryReadTChan nn
-				let	n'' = clamp 1 (max w h) $ bool (dn n') n0 qhm
-				if (wsc || qp) then print (n', n' * iy + ix) else
-					act flt' a'
-						(clamp 0 (n'' - 1) (bool (l ix) ix0 qhm))
-						(clamp 0 (n'' - 1) (bool (d iy ) iy0 qhm))
-						n''
-
-	runCmds2 dv gq cp HPList.Nil HPList.Nil \cb -> do
-		tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	runCmds gq cb HPList.Nil HPList.Nil do
+		tr cb imgd
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImgToImg cb imgd' imgd w h 0 0
 		tr cb imgd
-			Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutTransferSrcOptimal
 		copyImgToBffr cb imgd rb
 	where
 	trsd = Vk.Img.UsageTransferSrcBit .|. Vk.Img.UsageTransferDstBit
@@ -408,36 +326,27 @@ body ist pd dv gq cp img flt0 a0 n i = resultBffr @img pd dv w h \rb ->
 	w, h :: Integral n => n
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
---	tr = transitionImgLyt
-	tr = transitionImage
-	n0, ix0, iy0 :: Word32
-	n0 = fromIntegral n
-	ix0 = fromIntegral $ i `mod` n
-	iy0 = fromIntegral $ i `div` n
-	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
-	pinfo :: forall scfmt ccs s . Vk.Khr.Swpch.S scfmt ccs -> Word32 -> Vk.Smph.S s -> Vk.Khr.Swpch.PresentInfo 'Nothing '[s] scfmt '[ccs]
-	pinfo sc ii rs = Vk.Khr.Swpch.PresentInfo {
-		Vk.Khr.Swpch.presentInfoNext = TMaybe.N,
-		Vk.Khr.Swpch.presentInfoWaitSemaphores = HPList.Singleton rs,
-		Vk.Khr.Swpch.presentInfoSwapchainImageIndices =
-			HPList.Singleton $ Vk.Khr.Swpch.SwapchainImageIndex sc ii }
+	tr = transitionImgLyt
+	x0, y0 :: Word32
+	x0 = fromIntegral i `mod` n0
+	y0 = fromIntegral i `div` n0
+	pinfo :: forall scfmt ccs s .
+		Vk.Swpch.S scfmt ccs -> Word32 -> Vk.Smph.S s ->
+		Vk.Swpch.PresentInfo 'Nothing '[s] scfmt '[ccs]
+	pinfo sc ii drs = Vk.Swpch.PresentInfo {
+		Vk.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Swpch.presentInfoWaitSemaphores = HPList.Singleton drs,
+		Vk.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
+			$ Vk.Swpch.SwapchainImageIndex sc ii }
 
-bar :: Float -> String
-bar a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
-	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++ replicate v ' ' ++ "|"
-	where
-	x = round $ 71 + 70 * a
-	y = 72 - x
-	z = round @Double $ 71 + 70 * (- 0.75)
-	w = round @Double (71 + 70 * (- 0.5)) - z - 2
-	v = round @Double (71 + 70 * (- 0.25)) - w - z - 4
-
-type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
-
-strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
-strImgBinding = Vk.DscStLyt.BindingImage {
-	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
-	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
+resultBffr :: Vk.ObjB.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.Image img nmi] -> IO a) ->
+	IO img
+resultBffr pd dv w h f = head
+	<$> createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
+		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
+	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
 
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
@@ -454,6 +363,13 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers } }
 
+type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
+
+strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
+strImgBinding = Vk.DscStLyt.BindingImage {
+	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
+	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
+
 withWindow :: Int -> Int -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
 withWindow w h a = do
 	GlfwG.Win.hint noApi
@@ -463,7 +379,116 @@ withWindow w h a = do
 	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
 	notResizable = GlfwG.Win.WindowHint'Resizable False
 
--- BUFFER
+keyCallback :: Word32 -> Word32 -> TChan () ->
+	(TChan Filter, TChan (Float -> Float)) ->
+	(	TChan (Word32 -> Word32), TChan (Word32 -> Word32),
+		TChan (Word32 -> Word32), TChan () ) ->
+	a -> GlfwG.Key.Key -> b -> GlfwG.Key.KeyState -> c -> IO ()
+keyCallback w h q (fi, aaa) (nn, lft, dwn, hm) _ k _ ks _ =  atomically case (k, ks) of
+	(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeTChan q ()
+	(GlfwG.Key.Key'N, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan fi Nearest
+	(GlfwG.Key.Key'Semicolon, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan fi Linear
+	(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Pressed) -> do
+		writeTChan fi Cubic
+		writeTChan aaa go
+		where go a = let a' = a - 0.01 in if a' > - 1 then a' else a
+	(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Repeating) -> do
+		writeTChan fi Cubic
+		writeTChan aaa go
+		where
+		go a = let a' = a - 0.01 in
+			if a' <= - 1 || a' < - 0.75 && - 0.75 <= a then a else a'
+	(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Pressed) -> do
+		writeTChan fi Cubic
+		writeTChan aaa go
+		where go a = let a' = a + 0.01 in if a' < - 0.25 then a' else a
+	(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Repeating) -> do
+		writeTChan fi Cubic
+		writeTChan aaa go
+		where
+		go a = let a' = a + 0.01 in
+			if a' >= - 0.25 || a <= - 0.5 && - 0.5 < a' then a else a'
+	(GlfwG.Key.Key'M, GlfwG.Key.KeyState'Pressed) -> do
+		writeTChan fi Cubic
+		writeTChan aaa . const $ - 0.75
+	(GlfwG.Key.Key'Comma, GlfwG.Key.KeyState'Pressed) -> do
+		writeTChan fi Cubic
+		writeTChan aaa . const $ - 0.5
+	(GlfwG.Key.Key'H, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan lft (subtract 1)
+	(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan dwn (+ 1)
+	(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan dwn (subtract 1)
+	(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan lft (+ 1)
+	(GlfwG.Key.Key'Space, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan hm ()
+	(GlfwG.Key.Key'F, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan nn (\n -> clamp 1 (max w h) $ n + 1)
+	(GlfwG.Key.Key'D, GlfwG.Key.KeyState'Pressed) ->
+		writeTChan nn (\n -> clamp 1 (max w h) $ n - 1)
+	_ -> pure ()
+
+draw :: (
+	Length (M0_2 wss), Length (M0_2 sss),
+	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
+	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
+	Vk.Smph.SubmitInfoListToMiddle wss, Vk.Smph.SubmitInfoListToMiddle sss
+	) =>
+	Vk.Q.Q -> Vk.CmdBffr.C scb ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) wss -> HPList.PL (U2 Vk.Smph.SubmitInfo) sss ->
+	Vk.Ppl.Cp.C scp '(sl, '[ '(sdsl, '[SrcImg, DstImg])], PshCnsts) -> Vk.PplLyt.P sl '[ '(sdsl, '[SrcImg, DstImg])] PshCnsts ->
+	Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> [Vk.Img.Binded sm si inm fmt] ->
+	Vk.Img.Binded sms sis nms fmts -> (forall n . Integral n => n) -> (forall n . Integral n => n) ->
+	Word32 -> Filter -> Float -> Word32 -> Word32 -> Word32 -> IO ()
+draw gq cb wi si ppl pl ds scis imgd' w h ii flt a n' ix iy =
+	runCmds gq cb wi si do
+					tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
+					Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+						Vk.Cmd.bindDescriptorSetsCompute
+							ccb pl (HPList.Singleton $ U2 ds) def
+						Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+							ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
+						Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+					tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+					copyImgToImg cb imgd' (scis !! fromIntegral ii) w h 0 0
+					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
+	where tr = transitionImgLyt
+
+update :: Word32 -> Word32 -> Word32 ->
+	TChan Filter -> TChan (Float -> Float) ->
+	TChan (Word32 -> Word32) ->
+	TChan (Word32 -> Word32) -> TChan (Word32 -> Word32) ->
+	TChan () -> Filter -> Float -> Word32 -> Word32 -> Word32 ->
+	STM (Maybe Float, (Filter, Float, Word32, Word32, Word32))
+update n0 x0 y0 cf ca cn cl cd chm f a n ix iy = do
+			(f', a') <- (,)
+				<$> (fromMaybe f <$> tryReadTChan cf)
+				<*> (($ a) . (fromMaybe id) <$> tryReadTChan ca)
+			(dn, dl, dd, hm) <- (,,,)
+				<$> (fromMaybe id <$> tryReadTChan cn)
+				<*> (fromMaybe id <$> tryReadTChan cl)
+				<*> (fromMaybe id <$> tryReadTChan cd)
+				<*> (maybeToBool <$> tryReadTChan chm)
+			let	n' = bool (dn n) n0 hm
+			pure (	bool Nothing (Just a') (a' /= a),
+				(f', a', n', clamp 0 (n' - 1) (bool (dl ix) x0 hm), clamp 0 (n' - 1) (bool (dd iy) y0 hm)))
+
+bar :: Float -> String
+bar a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
+	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++ replicate v ' ' ++ "|"
+	where
+	x = round $ 71 + 70 * a
+	y = 72 - x
+	z = round @Double $ 71 + 70 * (- 0.75)
+	w = round @Double (71 + 70 * (- 0.5)) - z - 2
+	v = round @Double (71 + 70 * (- 0.25)) - w - z - 4
+
+-- BUFFER AND IMAGE
 
 bffrInfo :: Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
@@ -542,30 +567,33 @@ prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
--- COMMANDS
+-- COMMAND BUFFER
 
-runCmds2 :: forall sd sc wss sss a . (
+allocateCmdBffr :: forall sd scp a .
+	Vk.Dvc.D sd -> Vk.CmdPl.C scp -> (forall scb . Vk.CBffr.C scb -> IO a) -> IO a
+allocateCmdBffr dv cp f =
+	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) -> f cb
+	where
+	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
+	cbinfo = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cp,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+
+runCmds :: forall scb wss sss a . (
 	Length (M0_2 wss), Length (M0_2 sss),
 	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
 	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
 	Vk.Smph.SubmitInfoListToMiddle wss,
 	Vk.Smph.SubmitInfoListToMiddle sss ) =>
-	Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Q.Q -> Vk.CmdBffr.C scb ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) wss ->
-	HPList.PL (U2 Vk.Smph.SubmitInfo) sss ->
-	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-runCmds2 dv gq cp wss sss cmds =
-	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) ->
-	Vk.CBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
+	HPList.PL (U2 Vk.Smph.SubmitInfo) sss -> IO a -> IO a
+runCmds gq cb wss sss cmds =
+	Vk.CBffr.begin @_ @'Nothing cb binfo cmds <* do
 	Vk.Q.submit2 gq (HPList.Singleton . U4 $ submitInfo cb wss sss) Nothing
 	Vk.Q.waitIdle gq
 	where
-	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing sc '[ '()]
-	cbinfo = Vk.CBffr.AllocateInfo {
-		Vk.CBffr.allocateInfoNext = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPool = cp,
-		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 	binfo = Vk.CBffr.BeginInfo {
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
@@ -587,15 +615,17 @@ submitInfo cb wsis ssis = Vk.SubmitInfo2 {
 		Vk.CBffr.submitInfoCommandBuffer = cb,
 		Vk.CmdBffr.submitInfoDeviceMask = def }
 
-smphSubmitInfo ::
+smphInfo ::
 	Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
-	Vk.Smph.SubmitInfo 'Nothing ss
-smphSubmitInfo smph sm = Vk.Smph.SubmitInfo {
+	HPList.PL (U2 Vk.Smph.SubmitInfo) '[ '( 'Nothing, ss)]
+smphInfo smph sm = HPList.Singleton $ U2 Vk.Smph.SubmitInfo {
 	Vk.Smph.submitInfoNext = TMaybe.N,
 	Vk.Smph.submitInfoSemaphore = smph,
 	Vk.Smph.submitInfoValue = 0,
 	Vk.Smph.submitInfoStageMask = sm,
 	Vk.Smph.submitInfoDeviceIndex = 0 }
+
+-- COMMANDS
 
 copyBffrToImg :: forall scb smb sbb bnm img imgnm smi si inm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
@@ -622,8 +652,8 @@ bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ _ =
 		Vk.Obj.lengthOf @(Vk.ObjNA.Image img nm) ln
 
-transitionImage :: Vk.CmdBffr.C scb -> Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImage cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
+transitionImgLyt :: Vk.CmdBffr.C scb -> Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImgLyt cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
 	where
 	depInfo = Vk.DependencyInfo {
 		Vk.dependencyInfoNext = TMaybe.N,
@@ -698,16 +728,7 @@ copyImgToBffr cb i b@(bffrImgExtent -> (w, h)) =
 			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
 			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
 
--- RESULT BUFFER
-
-resultBffr :: Vk.ObjB.IsImage img =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.Image img nmi] -> IO a) ->
-	IO img
-resultBffr pd dv w h f = head
-	<$> createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
-		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
-	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
+-- PIPELINE
 
 createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
@@ -838,67 +859,67 @@ createDscStSrc dv dp svw dl a =
 -- SWAP CHAIN
 
 data SwpchSupportDetails fmts = SwpchSupportDetails {
-	capabilities :: Vk.Khr.Sfc.Capabilities,
+	capabilities :: Vk.Sfc.Capabilities,
 	formats :: (
-		[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-		HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ),
-	presentModes :: [Vk.Khr.Sfc.PresentMode] }
+		[Vk.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+		HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts ),
+	presentModes :: [Vk.Sfc.PresentMode] }
 
 deriving instance
-	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
 	Show (SwpchSupportDetails fmts)
 
-querySwpchSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> (forall fmts .
-	Show (HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts) =>
+querySwpchSupport :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmts .
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
 	SwpchSupportDetails fmts -> IO a) -> IO a
-querySwpchSupport pd sfc f = Vk.Khr.Sfc.Phd.getFormats pd sfc \fmts ->
+querySwpchSupport pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \fmts ->
 	f =<< SwpchSupportDetails
-		<$> Vk.Khr.Sfc.Phd.getCapabilities pd sfc
-		<*> ((, fmts) <$> Vk.Khr.Sfc.Phd.getFormatsFiltered pd sfc)
-		<*> Vk.Khr.Sfc.Phd.getPresentModes pd sfc
+		<$> Vk.Sfc.Phd.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Sfc.Phd.getFormatsFiltered pd sfc)
+		<*> Vk.Sfc.Phd.getPresentModes pd sfc
 
-createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
-	Vk.Dvc.D sd -> (forall ss scfmt . Vk.T.FormatToValue scfmt =>
-		Vk.Khr.Swpch.S scfmt ss -> Vk.Extent2d -> IO a) -> IO a
+createSwpch :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P -> Vk.Dvc.D sd ->
+	(forall ss scfmt .
+		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) ->
+	IO a
 createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
 	ex <- swapExtent win $ capabilities ss
 	let	cps = capabilities ss
-		pm = findDefault Vk.Khr.Sfc.PresentModeFifo
-			(== Vk.Khr.Sfc.PresentModeMailbox) $ presentModes ss
+		pm = findDefault Vk.Sfc.PresentModeFifo
+			(== Vk.Sfc.PresentModeMailbox) $ presentModes ss
 	chooseSwpSfcFmt (formats ss)
-		\(Vk.Khr.Sfc.Format sc :: Vk.Khr.Sfc.Format fmt) ->
-		Vk.Khr.Swpch.create @_ @fmt dv
-			(swpchInfo sfc cps sc pm ex) nil (`f` ex)
+		\(Vk.Sfc.Format sc :: Vk.Sfc.Format fmt) ->
+		Vk.Swpch.create @_ @fmt dv (swpchInfo sfc cps sc pm ex) nil f
 
 swpchInfo :: forall fmt ss .
-	Vk.Khr.Sfc.S ss -> Vk.Khr.Sfc.Capabilities ->
-	Vk.Khr.Sfc.ColorSpace -> Vk.Khr.Sfc.PresentMode -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
-swpchInfo sfc cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
-	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
-	Vk.Khr.Swpch.createInfoFlags = zeroBits,
-	Vk.Khr.Swpch.createInfoSurface = sfc,
-	Vk.Khr.Swpch.createInfoMinImageCount = imgc,
-	Vk.Khr.Swpch.createInfoImageColorSpace = cs,
-	Vk.Khr.Swpch.createInfoImageExtent = ex,
-	Vk.Khr.Swpch.createInfoImageArrayLayers = 1,
-	Vk.Khr.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
-	Vk.Khr.Swpch.createInfoImageSharingMode = ism,
-	Vk.Khr.Swpch.createInfoQueueFamilyIndices = qfis,
-	Vk.Khr.Swpch.createInfoPreTransform =
-		Vk.Khr.Sfc.capabilitiesCurrentTransform cps,
-	Vk.Khr.Swpch.createInfoCompositeAlpha =
-		Vk.Khr.Sfc.CompositeAlphaOpaqueBit,
-	Vk.Khr.Swpch.createInfoPresentMode = pm,
-	Vk.Khr.Swpch.createInfoClipped = True,
-	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
+	Vk.Sfc.S ss -> Vk.Sfc.Capabilities ->
+	Vk.Sfc.ColorSpace -> Vk.Sfc.PresentMode -> Vk.Extent2d ->
+	Vk.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
+	Vk.Swpch.createInfoNext = TMaybe.N,
+	Vk.Swpch.createInfoFlags = zeroBits,
+	Vk.Swpch.createInfoSurface = sfc,
+	Vk.Swpch.createInfoMinImageCount = imgc,
+	Vk.Swpch.createInfoImageColorSpace = cs,
+	Vk.Swpch.createInfoImageExtent = ex,
+	Vk.Swpch.createInfoImageArrayLayers = 1,
+	Vk.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
+	Vk.Swpch.createInfoImageSharingMode = ism,
+	Vk.Swpch.createInfoQueueFamilyIndices = qfis,
+	Vk.Swpch.createInfoPreTransform =
+		Vk.Sfc.capabilitiesCurrentTransform cps,
+	Vk.Swpch.createInfoCompositeAlpha =
+		Vk.Sfc.CompositeAlphaOpaqueBit,
+	Vk.Swpch.createInfoPresentMode = pm,
+	Vk.Swpch.createInfoClipped = True,
+	Vk.Swpch.createInfoOldSwapchain = Nothing }
 	where
-	imgc = clamp 0 imgcx (Vk.Khr.Sfc.capabilitiesMinImageCount cps + 1)
+	imgc = clamp 0 imgcx (Vk.Sfc.capabilitiesMinImageCount cps + 1)
 	imgcx = fromMaybe maxBound
-		. onlyIf (> 0) $ Vk.Khr.Sfc.capabilitiesMaxImageCount cps
+		. onlyIf (> 0) $ Vk.Sfc.capabilitiesMaxImageCount cps
 	(ism, qfis) = (Vk.SharingModeExclusive, [])
 
-swapExtent :: GlfwG.Win.W sw -> Vk.Khr.Sfc.Capabilities -> IO Vk.Extent2d
+swapExtent :: GlfwG.Win.W sw -> Vk.Sfc.Capabilities -> IO Vk.Extent2d
 swapExtent win cps
 	| Vk.extent2dWidth cur /= maxBound = pure cur
 	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
@@ -907,18 +928,29 @@ swapExtent win cps
 			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
 			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
 	where
-	cur = Vk.Khr.Sfc.capabilitiesCurrentExtent cps
-	n = Vk.Khr.Sfc.capabilitiesMinImageExtent cps
-	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent cps
+	cur = Vk.Sfc.capabilitiesCurrentExtent cps
+	n = Vk.Sfc.capabilitiesMinImageExtent cps
+	x = Vk.Sfc.capabilitiesMaxImageExtent cps
 
 chooseSwpSfcFmt :: (
-	[Vk.Khr.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-	HPListC.PL Vk.T.FormatToValue Vk.Khr.Sfc.Format fmts ) ->
-	(forall fmt . Vk.T.FormatToValue fmt => Vk.Khr.Sfc.Format fmt -> a) -> a
+	[Vk.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+	HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts ) ->
+	(forall fmt . Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> a) -> a
 chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
-	$ (== Vk.Khr.Sfc.ColorSpaceSrgbNonlinear) . Vk.Khr.Sfc.formatColorSpace
+	$ (== Vk.Sfc.ColorSpaceSrgbNonlinear) . Vk.Sfc.formatColorSpace
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
+
+-- TOOLS
+
+maybeToBool :: Maybe a -> Bool
+maybeToBool = maybe False $ const True
+
+uncurry5 :: (a -> b -> c -> d -> e -> r) -> (a, b, c, d, e) -> r
+uncurry5 f (x, y, z, v, u) = f x y z v u
+
+div' :: Integral n => n -> n -> n
+x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
