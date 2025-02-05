@@ -107,7 +107,7 @@ import Paths_try_vulkan_graphics
 -- * BUFFER AND IMAGE
 -- * COMMAND BUFFER
 -- * COMMANDS
--- * PIPELINE
+-- * PIPELINE AND DESCRIPTOR SET
 -- * SWAP CHAIN
 -- * TOOLS
 --
@@ -635,62 +635,56 @@ bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ _ =
 		Vk.Obj.lengthOf @(Vk.ObjNA.Image img nm) ln
 
-transitionImgLyt :: Vk.CmdBffr.C scb -> Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImgLyt cb img cl nl = Vk.Cmd.pipelineBarrier2 cb depInfo
+transitionImgLyt :: Vk.CmdBffr.C scb ->
+	Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImgLyt cb img ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
 	where
-	depInfo = Vk.DependencyInfo {
+	dinfo = Vk.DependencyInfo {
 		Vk.dependencyInfoNext = TMaybe.N,
 		Vk.dependencyInfoDependencyFlags = zeroBits,
 		Vk.dependencyInfoMemoryBarriers = HPList.Nil,
 		Vk.dependencyInfoBufferMemoryBarriers = HPList.Nil,
-		Vk.dependencyInfoImageMemoryBarriers = HPList.Singleton $ U5 imgBarrier }
-	imgBarrier = Vk.Img.MemoryBarrier2 {
+		Vk.dependencyInfoImageMemoryBarriers =
+			HPList.Singleton $ U5 ibrrr }
+	ibrrr = Vk.Img.MemoryBarrier2 {
 		Vk.Img.memoryBarrier2Next = TMaybe.N,
 		Vk.Img.memoryBarrier2SrcStageMask = Vk.Ppl.Stage2AllCommandsBit,
 		Vk.Img.memoryBarrier2SrcAccessMask = Vk.Access2MemoryWriteBit,
 		Vk.Img.memoryBarrier2DstStageMask = Vk.Ppl.Stage2AllCommandsBit,
 		Vk.Img.memoryBarrier2DstAccessMask =
 			Vk.Access2MemoryWriteBit .|. Vk.Access2MemoryReadBit,
-		Vk.Img.memoryBarrier2OldLayout = cl,
+		Vk.Img.memoryBarrier2OldLayout = ol,
 		Vk.Img.memoryBarrier2NewLayout = nl,
 		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
 		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
 		Vk.Img.memoryBarrier2Image = img,
-		Vk.Img.memoryBarrier2SubresourceRange =
-			imageSubresourceRange case nl of
-				Vk.Img.LayoutDepthAttachmentOptimal ->
-					Vk.Img.AspectDepthBit
-				_ -> Vk.Img.AspectColorBit }
-
-imageSubresourceRange :: Vk.Img.AspectFlags -> Vk.Img.SubresourceRange
-imageSubresourceRange am = Vk.Img.SubresourceRange {
-	Vk.Img.subresourceRangeAspectMask = am,
-	Vk.Img.subresourceRangeBaseMipLevel = 0,
-	Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
-	Vk.Img.subresourceRangeBaseArrayLayer = 0,
-	Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers }
+		Vk.Img.memoryBarrier2SubresourceRange = isr case nl of
+			Vk.Img.LayoutDepthAttachmentOptimal ->
+				Vk.Img.AspectDepthBit
+			_ -> Vk.Img.AspectColorBit }
+	isr am = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = am,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers }
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
 	Int32 -> Int32 -> Int32 -> Int32 -> IO ()
-copyImgToImg cb si di w h dl dt =
-	Vk.Cmd.blitImage2 cb $ blitInfo si di w h dl dt
-
-blitInfo ::
-	Vk.Img.Binded sms sis nms fmts ->
-	Vk.Img.Binded smd sid nmd fmtd ->
-	Int32 -> Int32 -> Int32 -> Int32 ->
-	Vk.BlitImageInfo2 'Nothing sms sis nms fmts smd sid nmd fmtd '[ 'Nothing]
-blitInfo is idst w h dl dt = Vk.BlitImageInfo2 {
-	Vk.blitImageInfo2Next = TMaybe.N,
-	Vk.blitImageInfo2SrcImage = is,
-	Vk.blitImageInfo2SrcImageLayout = Vk.Img.LayoutTransferSrcOptimal,
-	Vk.blitImageInfo2DstImage = idst,
-	Vk.blitImageInfo2DstImageLayout = Vk.Img.LayoutTransferDstOptimal,
-	Vk.blitImageInfo2Regions = HPList.Singleton blt,
-	Vk.blitImageInfo2Filter = Vk.FilterNearest }
+copyImgToImg cb si di w h dl dt = Vk.Cmd.blitImage2 cb info
 	where
-	blt = Vk.Img.Blit2 {
+	info = Vk.BlitImageInfo2 {
+		Vk.blitImageInfo2Next = TMaybe.N,
+		Vk.blitImageInfo2SrcImage = si,
+		Vk.blitImageInfo2SrcImageLayout =
+			Vk.Img.LayoutTransferSrcOptimal,
+		Vk.blitImageInfo2DstImage = di,
+		Vk.blitImageInfo2DstImageLayout =
+			Vk.Img.LayoutTransferDstOptimal,
+		Vk.blitImageInfo2Regions = blt,
+		Vk.blitImageInfo2Filter = Vk.FilterNearest }
+	blt = HPList.Singleton Vk.Img.Blit2 {
 		Vk.Img.blit2Next = TMaybe.N,
 		Vk.Img.blit2SrcSubresource = colorLayer0,
 		Vk.Img.blit2SrcOffsetFrom = Vk.Offset3d 0 0 0,
@@ -704,40 +698,14 @@ copyImgToBffr :: forall scb img smi si inm smb sbb bnm imgnm .
 	Vk.Img.Binded smi si inm (Vk.ObjB.ImageFormat img) ->
 	Vk.Bffr.Binded smb sbb bnm '[Vk.ObjNA.Image img imgnm] -> IO ()
 copyImgToBffr cb i b@(bffrImgExtent -> (w, h)) =
-	Vk.Cmd.copyImageToBuffer @1 @img @'[imgnm] cb i
-		Vk.Img.LayoutTransferSrcOptimal b
+	Vk.Cmd.copyImageToBuffer
+		@1 @img @'[imgnm] cb i Vk.Img.LayoutTransferSrcOptimal b
 		$ HPList.Singleton Vk.Bffr.ImageCopy {
 			Vk.Bffr.imageCopyImageSubresource = colorLayer0,
 			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
 			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d w h 1 }
 
--- PIPELINE
-
-createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
-	(forall sdsl . Vk.DscStLyt.D sdsl bts -> IO a) -> IO a
-createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
-	where info = Vk.DscStLyt.CreateInfo {
-		Vk.DscStLyt.createInfoNext = TMaybe.N,
-		Vk.DscStLyt.createInfoFlags = zeroBits,
-		Vk.DscStLyt.createInfoBindings = bds }
-
-createPplLyt :: forall pctps pcrng sd a bds . (
-	Vk.DscStLyt.BindingListToMiddle bds,
-	Vk.PshCnst.RangeListToMiddle pctps pcrng ) =>
-	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
-		Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
-createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
-	Vk.PplLyt.create dv (info dsl) nil $ f dsl
-	where
-	info :: Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.CreateInfo 'Nothing
-			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps pcrng)
-	info dsl = Vk.PplLyt.CreateInfo {
-		Vk.PplLyt.createInfoNext = TMaybe.N,
-		Vk.PplLyt.createInfoFlags = zeroBits,
-		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+-- PIPELINE AND DESCRIPTOR SET
 
 createCmpPpl :: forall pctps pcrng sd bds a . (
 	Vk.PshCnst.RangeListToMiddle pctps pcrng,
@@ -776,6 +744,32 @@ createCmpPpl d bds shdr f =
 		Vk.ShdrMd.createInfoFlags = zeroBits,
 		Vk.ShdrMd.createInfoCode = shdr }
 
+createPplLyt :: forall pctps pcrng sd a bds . (
+	Vk.DscStLyt.BindingListToMiddle bds,
+	Vk.PshCnst.RangeListToMiddle pctps pcrng ) =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
+		Vk.DscStLyt.D sdsl bds ->
+		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
+createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
+	Vk.PplLyt.create dv (info dsl) nil $ f dsl
+	where
+	info :: Vk.DscStLyt.D sdsl bds ->
+		Vk.PplLyt.CreateInfo 'Nothing
+			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps pcrng)
+	info dsl = Vk.PplLyt.CreateInfo {
+		Vk.PplLyt.createInfoNext = TMaybe.N,
+		Vk.PplLyt.createInfoFlags = zeroBits,
+		Vk.PplLyt.createInfoSetLayouts = HPList.Singleton $ U2 dsl }
+
+createDscStLyt :: Vk.DscStLyt.BindingListToMiddle bts =>
+	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bts ->
+	(forall sdsl . Vk.DscStLyt.D sdsl bts -> IO a) -> IO a
+createDscStLyt dv bds = Vk.DscStLyt.create dv info nil
+	where info = Vk.DscStLyt.CreateInfo {
+		Vk.DscStLyt.createInfoNext = TMaybe.N,
+		Vk.DscStLyt.createInfoFlags = zeroBits,
+		Vk.DscStLyt.createInfoBindings = bds }
+
 createDscPl :: Vk.Dvc.D sd -> (forall sdp . Vk.DscPl.P sdp -> IO a) -> IO a
 createDscPl dv = Vk.DscPl.create dv info nil
 	where
@@ -805,6 +799,20 @@ createDscSt dv dp svw dvw dl a =
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
 		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
+createDscStSrc ::
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
+	Vk.DscStLyt.D sdsl '[SrcImg] ->
+	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg]) -> IO a) -> IO a
+createDscStSrc dv dp svw dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds) $
+	Vk.DscSt.updateDs
+		dv (HPList.Singleton . U5 $ dscWrite ds svw) HPList.Nil
+	where info = Vk.DscSt.AllocateInfo {
+		Vk.DscSt.allocateInfoNext = TMaybe.N,
+		Vk.DscSt.allocateInfoDescriptorPool = dp,
+		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
+
 type SrcImg = 'Vk.DscStLyt.Image '[ '("source_image", ShaderFormat)]
 type DstImg = 'Vk.DscStLyt.Image '[ '("destination_image", ShaderFormat)]
 
@@ -824,20 +832,6 @@ compileShader :: FilePath -> IO (SpirV.S GlslComputeShader)
 compileShader fp = do
 	cd <- BS.readFile =<< getDataFileName fp
 	Shaderc.compile @() cd (BSC.pack fp) "main" def
-
-createDscStSrc ::
-	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
-	Vk.DscStLyt.D sdsl '[SrcImg] ->
-	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg]) -> IO a) -> IO a
-createDscStSrc dv dp svw dl a =
-	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds) $
-	Vk.DscSt.updateDs
-		dv (HPList.Singleton . U5 $ dscWrite ds svw) HPList.Nil
-	where info = Vk.DscSt.AllocateInfo {
-		Vk.DscSt.allocateInfoNext = TMaybe.N,
-		Vk.DscSt.allocateInfoDescriptorPool = dp,
-		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
 -- SWAP CHAIN
 

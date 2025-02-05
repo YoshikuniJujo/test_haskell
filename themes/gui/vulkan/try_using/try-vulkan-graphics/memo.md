@@ -53,16 +53,24 @@
 	+ [x] runCmds
 	+ [x] submitINfo
 	+ [x] smphInfo
-* [ ] COMMANDS
-	+ [ ] copyBffrToImg
-	+ [ ] colorLayer0
-	+ [ ] bffrImgExtent
-	+ [ ] transitionImgLyt
-	+ [ ] imageSubresourceRange
-	+ [ ] copyImgToImg
-	+ [ ] blitInfo
-	+ [ ] copyImgToBffr
-* [ ] PIPELINE
+* [x] COMMANDS
+	+ [x] copyBffrToImg
+	+ [x] colorLayer0
+	+ [x] bffrImgExtent
+	+ [x] transitionImgLyt
+	+ [x] copyImgToImg
+	+ [x] copyImgToBffr
+* [ ] PIPELINE AND DESCRIPTOR SET
+	+ [ ] createCmpPpl
+	+ [ ] createPplLyt
+	+ [ ] createDscStLyt
+	+ [ ] createDscPl
+	+ [ ] createDscSt
+	+ [ ] createDscStSrc
+	+ [ ] type SrcImg
+	+ [ ] type DstImg
+	+ [ ] dscWrite
+	+ [ ] compileShader
 * [ ] SWAP CHAIN
 * [ ] TOOLS
 
