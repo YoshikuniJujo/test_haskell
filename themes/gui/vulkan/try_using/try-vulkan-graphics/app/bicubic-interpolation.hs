@@ -835,15 +835,13 @@ compileShader fp = do
 
 createSwpch :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall ss scfmt .
-		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) ->
-	IO a
+		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) -> IO a
 createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
 	ex <- swpchExtent win $ capabilities ss
 	let	cps = capabilities ss
 		pm = findDefault Vk.Sfc.PresentModeFifo
 			(== Vk.Sfc.PresentModeMailbox) $ presentModes ss
-	chooseSwpSfcFmt (formats ss)
-		\(Vk.Sfc.Format sc :: Vk.Sfc.Format fmt) ->
+	chooseSwpSfcFmt (formats ss) \(Vk.Sfc.Format sc :: Vk.Sfc.Format fmt) ->
 		Vk.Swpch.create @_ @fmt dv (swpchInfo sfc cps sc pm ex) nil f
 
 querySwpchSupport :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmts .
@@ -889,23 +887,21 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 swpchInfo :: forall fmt ss .
 	Vk.Sfc.S ss -> Vk.Sfc.Capabilities ->
-	Vk.Sfc.ColorSpace -> Vk.Sfc.PresentMode -> Vk.Extent2d ->
-	Vk.Swpch.CreateInfo 'Nothing ss fmt
+	Vk.Sfc.ColorSpace -> Vk.Sfc.PresentMode ->
+	Vk.Extent2d -> Vk.Swpch.CreateInfo 'Nothing ss fmt
 swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
-	Vk.Swpch.createInfoNext = TMaybe.N,
-	Vk.Swpch.createInfoFlags = zeroBits,
+	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
 	Vk.Swpch.createInfoSurface = sfc,
 	Vk.Swpch.createInfoMinImageCount = imgc,
 	Vk.Swpch.createInfoImageColorSpace = cs,
 	Vk.Swpch.createInfoImageExtent = ex,
 	Vk.Swpch.createInfoImageArrayLayers = 1,
 	Vk.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
-	Vk.Swpch.createInfoImageSharingMode = ism,
-	Vk.Swpch.createInfoQueueFamilyIndices = qfis,
+	Vk.Swpch.createInfoImageSharingMode = Vk.SharingModeExclusive,
+	Vk.Swpch.createInfoQueueFamilyIndices = [],
 	Vk.Swpch.createInfoPreTransform =
 		Vk.Sfc.capabilitiesCurrentTransform cps,
-	Vk.Swpch.createInfoCompositeAlpha =
-		Vk.Sfc.CompositeAlphaOpaqueBit,
+	Vk.Swpch.createInfoCompositeAlpha = Vk.Sfc.CompositeAlphaOpaqueBit,
 	Vk.Swpch.createInfoPresentMode = pm,
 	Vk.Swpch.createInfoClipped = True,
 	Vk.Swpch.createInfoOldSwapchain = Nothing }
@@ -913,7 +909,6 @@ swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 	imgc = clamp 0 imgcx (Vk.Sfc.capabilitiesMinImageCount cps + 1)
 	imgcx = fromMaybe maxBound
 		. onlyIf (> 0) $ Vk.Sfc.capabilitiesMaxImageCount cps
-	(ism, qfis) = (Vk.SharingModeExclusive, [])
 
 -- TOOLS
 

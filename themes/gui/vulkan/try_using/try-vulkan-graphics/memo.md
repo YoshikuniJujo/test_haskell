@@ -18,7 +18,7 @@
 ##### refactoring
 
 * [x] DATA TYPE IMAGE RGBA8
-* [ ] MAIN
+* [x] MAIN
 	+ [x] main
 	+ [x] getFilter
 	+ [x] newtype Filter
@@ -38,9 +38,9 @@
 	+ [x] waitFramebufferSize
 	+ [x] kCllbck
 	+ [x] draw
-	+ [ ] catchAndSerialize
 		- [x] type declaration
 		- [x] function definition
+	+ [x] catchAndSerialize
 	+ [x] update
 	+ [x] bar
 * [x] BUFFER AND IMAGE
@@ -78,13 +78,15 @@
 	+ [x] type DstImg
 	+ [x] dscWrite
 	+ [x] compileShader
-* [ ] SWAP CHAIN
-	+ [ ] createSwpch
-	+ [ ] querySwpchSupport
-	+ [ ] data SwpchSupportDetails
-	+ [ ] swpchExtent
-	+ [ ] chooseSwpSfcFmt
-	+ [ ] swpchInfo
-* [ ] TOOLS
+* [x] SWAP CHAIN
+	+ [x] createSwpch
+		- [x] type declaration
+		- [x] function definition
+	+ [x] querySwpchSupport
+	+ [x] data SwpchSupportDetails
+	+ [x] swpchExtent
+	+ [x] chooseSwpSfcFmt
+	+ [x] swpchInfo
+* [x] TOOLS
 
 ### src
