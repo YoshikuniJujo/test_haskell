@@ -387,10 +387,11 @@ waitFramebufferSize win p = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (not $ p sz) $ fix \go -> (`when` go) . not . p =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 
-keyCallback :: Word32 -> Word32 -> TChan () ->
-	(TChan Filter, TChan (Float -> Float)) ->
-	(	TChan (Word32 -> Word32), TChan (Word32 -> Word32),
-		TChan (Word32 -> Word32), TChan () ) ->
+type F a = a -> a
+
+keyCallback :: Word32 -> Word32 ->
+	TChan () -> (TChan Filter, TChan (F Float)) ->
+	(TChan (F Word32), TChan (F Word32), TChan (F Word32), TChan ()) ->
 	a -> GlfwG.Key.Key -> b -> GlfwG.Key.KeyState -> c -> IO ()
 keyCallback w h q (fi, aaa) (nn, lft, dwn, hm) _ k _ ks _ =  atomically case (k, ks) of
 	(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeTChan q ()
