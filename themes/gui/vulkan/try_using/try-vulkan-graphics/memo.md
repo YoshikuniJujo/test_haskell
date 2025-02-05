@@ -18,7 +18,7 @@
 ##### refactoring
 
 * [x] DATA TYPE IMAGE RGBA8
-* [x] MAIN
+* [ ] MAIN
 	+ [x] main
 	+ [x] getFilter
 	+ [x] newtype Filter
@@ -38,6 +38,7 @@
 	+ [x] waitFramebufferSize
 	+ [x] kCllbck
 	+ [x] draw
+	+ [ ] catchAndSerialize
 		- [x] type declaration
 		- [x] function definition
 	+ [x] update
@@ -60,18 +61,30 @@
 	+ [x] transitionImgLyt
 	+ [x] copyImgToImg
 	+ [x] copyImgToBffr
-* [ ] PIPELINE AND DESCRIPTOR SET
-	+ [ ] createCmpPpl
-	+ [ ] createPplLyt
-	+ [ ] createDscStLyt
-	+ [ ] createDscPl
-	+ [ ] createDscSt
-	+ [ ] createDscStSrc
-	+ [ ] type SrcImg
-	+ [ ] type DstImg
-	+ [ ] dscWrite
-	+ [ ] compileShader
+* [x] PIPELINE AND DESCRIPTOR SET
+	+ [x] createCmpPpl
+		- [x] type declaration
+		- [x] function definition
+	+ [x] createPplLyt
+		- [x] type declaration
+		- [x] function definition
+	+ [x] createDscStLyt
+		- [x] type declaration
+		- [x] function definition
+	+ [x] createDscPl
+	+ [x] createDscSt
+	+ [x] createDscStSrc
+	+ [x] type SrcImg
+	+ [x] type DstImg
+	+ [x] dscWrite
+	+ [x] compileShader
 * [ ] SWAP CHAIN
+	+ [ ] createSwpch
+	+ [ ] querySwpchSupport
+	+ [ ] data SwpchSupportDetails
+	+ [ ] swpchExtent
+	+ [ ] chooseSwpSfcFmt
+	+ [ ] swpchInfo
 * [ ] TOOLS
 
 ### src

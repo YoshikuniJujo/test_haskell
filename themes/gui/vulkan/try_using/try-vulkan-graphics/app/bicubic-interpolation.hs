@@ -449,6 +449,10 @@ draw gq cb wi si ppl pl ds w h im scis ii flt a n ix iy = runCmds gq cb wi si do
 	tr cb sci Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
 	where tr = transitionImgLyt; sci = scis !! fromIntegral ii
 
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
+
 update :: Word32 -> Word32 -> Word32 ->
 	(TChan Filter, TChan (F Float)) ->
 	(TChan (F Word32), TChan (F Word32), TChan (F Word32), TChan ()) ->
@@ -707,23 +711,18 @@ copyImgToBffr cb i b@(bffrImgExtent -> (w, h)) =
 
 -- PIPELINE AND DESCRIPTOR SET
 
-createCmpPpl :: forall pctps pcrng sd bds a . (
-	Vk.PshCnst.RangeListToMiddle pctps pcrng,
+createCmpPpl :: forall pcts pcrng sd bds a . (
+	Vk.PshCnst.RangeListToMiddle pcts pcrng,
 	Vk.DscStLyt.BindingListToMiddle bds ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds ->
 	SpirV.S GlslComputeShader -> (forall sds scppl spl .
-		Vk.DscStLyt.D sds bds ->
-		Vk.PplLyt.P spl '[ '(sds, bds)] pctps ->
-		Vk.Ppl.Cp.C scppl '(spl, '[ '(sds, bds)], pctps) -> IO a) ->
-	IO a
+		Vk.DscStLyt.D sds bds -> Vk.PplLyt.P spl '[ '(sds, bds)] pcts ->
+		Vk.Ppl.Cp.C scppl '(spl, '[ '(sds, bds)], pcts) -> IO a) -> IO a
 createCmpPpl d bds shdr f =
-	createPplLyt @pctps @pcrng d bds \dsl pl ->
+	createPplLyt @pcts @pcrng d bds \dsl pl ->
 	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
 		\(HPList.Singleton p) -> f dsl pl p
 	where
-	info :: Vk.PplLyt.P sl sbtss pcw -> Vk.Ppl.Cp.CreateInfo 'Nothing
-		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
-		'(sl, sbtss, pcw) bpha
 	info pl = Vk.Ppl.Cp.CreateInfo {
 		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
 		Vk.Ppl.Cp.createInfoFlags = zeroBits,
@@ -744,18 +743,17 @@ createCmpPpl d bds shdr f =
 		Vk.ShdrMd.createInfoFlags = zeroBits,
 		Vk.ShdrMd.createInfoCode = shdr }
 
-createPplLyt :: forall pctps pcrng sd a bds . (
+createPplLyt :: forall pcts pcrng sd a bds . (
 	Vk.DscStLyt.BindingListToMiddle bds,
-	Vk.PshCnst.RangeListToMiddle pctps pcrng ) =>
+	Vk.PshCnst.RangeListToMiddle pcts pcrng ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
 		Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
+		Vk.PplLyt.P sl '[ '(sdsl, bds)] pcts -> IO a) -> IO a
 createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
 	Vk.PplLyt.create dv (info dsl) nil $ f dsl
 	where
-	info :: Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.CreateInfo 'Nothing
-			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps pcrng)
+	info :: Vk.DscStLyt.D sdsl bds -> Vk.PplLyt.CreateInfo 'Nothing
+		'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pcts pcrng)
 	info dsl = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
@@ -784,16 +782,15 @@ createDscPl dv = Vk.DscPl.create dv info nil
 
 createDscSt ::
 	Vk.Dvc.D sd -> Vk.DscPl.P sdp ->
-	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
-	Vk.ImgVw.I "destination_image" ShaderFormat sivd ->
+	Vk.ImgVw.I SrcImgNm ShaderFormat sivs ->
+	Vk.ImgVw.I DstImgNm ShaderFormat sivd ->
 	Vk.DscStLyt.D sdsl '[SrcImg, DstImg] ->
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> IO a) -> IO a
-createDscSt dv dp svw dvw dl a =
-	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
-		$ Vk.DscSt.updateDs dv
-			(U5 (dscWrite ds svw) :** U5 (dscWrite ds dvw) :**
-				HPList.Nil)
-			HPList.Nil
+createDscSt dv dp vs vd dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) ->
+	(>> a ds) $ Vk.DscSt.updateDs dv
+		(U5 (dscWrite ds vs) :** U5 (dscWrite ds vd) :** HPList.Nil)
+		HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
@@ -801,20 +798,21 @@ createDscSt dv dp svw dvw dl a =
 
 createDscStSrc ::
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
+	Vk.ImgVw.I SrcImgNm ShaderFormat sivs ->
 	Vk.DscStLyt.D sdsl '[SrcImg] ->
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg]) -> IO a) -> IO a
-createDscStSrc dv dp svw dl a =
-	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds) $
-	Vk.DscSt.updateDs
-		dv (HPList.Singleton . U5 $ dscWrite ds svw) HPList.Nil
+createDscStSrc dv dp vs dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) ->
+	(>> a ds) $ Vk.DscSt.updateDs
+		dv (HPList.Singleton . U5 $ dscWrite ds vs) HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
 		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
-type SrcImg = 'Vk.DscStLyt.Image '[ '("source_image", ShaderFormat)]
-type DstImg = 'Vk.DscStLyt.Image '[ '("destination_image", ShaderFormat)]
+type SrcImg = 'Vk.DscStLyt.Image '[ '(SrcImgNm, ShaderFormat)]
+type DstImg = 'Vk.DscStLyt.Image '[ '(DstImgNm, ShaderFormat)]
+type SrcImgNm = "source_image"; type DstImgNm = "destination_image"
 
 dscWrite :: Vk.DscSt.D sds slbts -> Vk.ImgVw.I nm fmt si ->
 	Vk.DscSt.Write 'Nothing sds slbts
@@ -835,6 +833,28 @@ compileShader fp = do
 
 -- SWAP CHAIN
 
+createSwpch :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P -> Vk.Dvc.D sd ->
+	(forall ss scfmt .
+		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) ->
+	IO a
+createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
+	ex <- swpchExtent win $ capabilities ss
+	let	cps = capabilities ss
+		pm = findDefault Vk.Sfc.PresentModeFifo
+			(== Vk.Sfc.PresentModeMailbox) $ presentModes ss
+	chooseSwpSfcFmt (formats ss)
+		\(Vk.Sfc.Format sc :: Vk.Sfc.Format fmt) ->
+		Vk.Swpch.create @_ @fmt dv (swpchInfo sfc cps sc pm ex) nil f
+
+querySwpchSupport :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmts .
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
+	SwpchSupportDetails fmts -> IO a) -> IO a
+querySwpchSupport pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \fmts ->
+	f =<< SwpchSupportDetails
+		<$> Vk.Sfc.Phd.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Sfc.Phd.getFormatsFiltered pd sfc)
+		<*> Vk.Sfc.Phd.getPresentModes pd sfc
+
 data SwpchSupportDetails fmts = SwpchSupportDetails {
 	capabilities :: Vk.Sfc.Capabilities,
 	formats :: (
@@ -846,27 +866,26 @@ deriving instance
 	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
 	Show (SwpchSupportDetails fmts)
 
-querySwpchSupport :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmts .
-	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
-	SwpchSupportDetails fmts -> IO a) -> IO a
-querySwpchSupport pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \fmts ->
-	f =<< SwpchSupportDetails
-		<$> Vk.Sfc.Phd.getCapabilities pd sfc
-		<*> ((, fmts) <$> Vk.Sfc.Phd.getFormatsFiltered pd sfc)
-		<*> Vk.Sfc.Phd.getPresentModes pd sfc
+swpchExtent :: GlfwG.Win.W sw -> Vk.Sfc.Capabilities -> IO Vk.Extent2d
+swpchExtent win cps
+	| Vk.extent2dWidth cur /= maxBound = pure cur
+	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
+		\(fromIntegral -> w, fromIntegral -> h) ->
+		Vk.Extent2d
+			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
+			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
+	where
+	cur = Vk.Sfc.capabilitiesCurrentExtent cps
+	n = Vk.Sfc.capabilitiesMinImageExtent cps
+	x = Vk.Sfc.capabilitiesMaxImageExtent cps
 
-createSwpch :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall ss scfmt .
-		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) ->
-	IO a
-createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
-	ex <- swapExtent win $ capabilities ss
-	let	cps = capabilities ss
-		pm = findDefault Vk.Sfc.PresentModeFifo
-			(== Vk.Sfc.PresentModeMailbox) $ presentModes ss
-	chooseSwpSfcFmt (formats ss)
-		\(Vk.Sfc.Format sc :: Vk.Sfc.Format fmt) ->
-		Vk.Swpch.create @_ @fmt dv (swpchInfo sfc cps sc pm ex) nil f
+chooseSwpSfcFmt :: (
+	[Vk.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+	HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts ) ->
+	(forall fmt . Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> a) -> a
+chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
+	$ (== Vk.Sfc.ColorSpaceSrgbNonlinear) . Vk.Sfc.formatColorSpace
+chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 swpchInfo :: forall fmt ss .
 	Vk.Sfc.S ss -> Vk.Sfc.Capabilities ->
@@ -895,31 +914,6 @@ swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 	imgcx = fromMaybe maxBound
 		. onlyIf (> 0) $ Vk.Sfc.capabilitiesMaxImageCount cps
 	(ism, qfis) = (Vk.SharingModeExclusive, [])
-
-swapExtent :: GlfwG.Win.W sw -> Vk.Sfc.Capabilities -> IO Vk.Extent2d
-swapExtent win cps
-	| Vk.extent2dWidth cur /= maxBound = pure cur
-	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
-		\(fromIntegral -> w, fromIntegral -> h) ->
-		Vk.Extent2d
-			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
-			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
-	where
-	cur = Vk.Sfc.capabilitiesCurrentExtent cps
-	n = Vk.Sfc.capabilitiesMinImageExtent cps
-	x = Vk.Sfc.capabilitiesMaxImageExtent cps
-
-chooseSwpSfcFmt :: (
-	[Vk.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-	HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts ) ->
-	(forall fmt . Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> a) -> a
-chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
-	$ (== Vk.Sfc.ColorSpaceSrgbNonlinear) . Vk.Sfc.formatColorSpace
-chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
-
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 -- TOOLS
 
