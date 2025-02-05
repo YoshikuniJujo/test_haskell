@@ -88,7 +88,7 @@ import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
 
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Key qualified as GlfwG.Key
+import Graphics.UI.GlfwG.Key qualified as GlfwG.K
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Sfc.Phd
@@ -294,7 +294,7 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 		withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
 		createSwpch win sf pd dv \sc ->
 		Vk.Swpch.getImages dv sc >>= \scis -> do
-		GlfwG.Win.setKeyCallback win . Just $ keyCallback w h q fa ps
+		GlfwG.Win.setKeyCallback win . Just $ kCllBck w h q fa ps
 		($ (f0, a0, n0, x0, y0)) . uncurry5 $ fix \act f a n ix iy -> do
 			ii <- Vk.Swpch.acquireNextImage
 				dv sc Nothing (Just scs) Nothing
@@ -387,59 +387,39 @@ waitFramebufferSize win p = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (not $ p sz) $ fix \go -> (`when` go) . not . p =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 
-type F a = a -> a
-
-keyCallback :: Word32 -> Word32 ->
+kCllBck :: Word32 -> Word32 ->
 	TChan () -> (TChan Filter, TChan (F Float)) ->
 	(TChan (F Word32), TChan (F Word32), TChan (F Word32), TChan ()) ->
-	a -> GlfwG.Key.Key -> b -> GlfwG.Key.KeyState -> c -> IO ()
-keyCallback w h q (fi, aaa) (nn, lft, dwn, hm) _ k _ ks _ =  atomically case (k, ks) of
-	(GlfwG.Key.Key'Q, GlfwG.Key.KeyState'Pressed) -> writeTChan q ()
-	(GlfwG.Key.Key'N, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan fi Nearest
-	(GlfwG.Key.Key'Semicolon, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan fi Linear
-	(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Pressed) -> do
-		writeTChan fi Cubic
-		writeTChan aaa go
-		where go a = let a' = a - 0.01 in if a' > - 1 then a' else a
-	(GlfwG.Key.Key'U, GlfwG.Key.KeyState'Repeating) -> do
-		writeTChan fi Cubic
-		writeTChan aaa go
-		where
-		go a = let a' = a - 0.01 in
-			if a' <= - 1 || a' < - 0.75 && - 0.75 <= a then a else a'
-	(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Pressed) -> do
-		writeTChan fi Cubic
-		writeTChan aaa go
-		where go a = let a' = a + 0.01 in if a' < - 0.25 then a' else a
-	(GlfwG.Key.Key'I, GlfwG.Key.KeyState'Repeating) -> do
-		writeTChan fi Cubic
-		writeTChan aaa go
-		where
-		go a = let a' = a + 0.01 in
-			if a' >= - 0.25 || a <= - 0.5 && - 0.5 < a' then a else a'
-	(GlfwG.Key.Key'M, GlfwG.Key.KeyState'Pressed) -> do
-		writeTChan fi Cubic
-		writeTChan aaa . const $ - 0.75
-	(GlfwG.Key.Key'Comma, GlfwG.Key.KeyState'Pressed) -> do
-		writeTChan fi Cubic
-		writeTChan aaa . const $ - 0.5
-	(GlfwG.Key.Key'H, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan lft (subtract 1)
-	(GlfwG.Key.Key'J, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan dwn (+ 1)
-	(GlfwG.Key.Key'K, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan dwn (subtract 1)
-	(GlfwG.Key.Key'L, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan lft (+ 1)
-	(GlfwG.Key.Key'Space, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan hm ()
-	(GlfwG.Key.Key'F, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan nn (\n -> clamp 1 (max w h) $ n + 1)
-	(GlfwG.Key.Key'D, GlfwG.Key.KeyState'Pressed) ->
-		writeTChan nn (\n -> clamp 1 (max w h) $ n - 1)
+	GlfwG.Win.KeyCallback sw
+kCllBck w h q (cf, ca) (cn, cl, cd, ch) _ k _ ks _ =  atomically case (k, ks) of
+	(GlfwG.K.Key'Q, KPrss) -> writeTChan q ()
+	(GlfwG.K.Key'N, KPrss) -> writeTChan cf Nearest
+	(GlfwG.K.Key'Semicolon, KPrss) -> writeTChan cf Linear
+	(GlfwG.K.Key'M, KPrss) -> cbc >> writeTChan ca (const $ - 0.75)
+	(GlfwG.K.Key'Comma, KPrss) -> cbc>> writeTChan ca (const $ - 0.5)
+	(GlfwG.K.Key'U, KPrss) ->
+		cbc >> writeTChan ca (clamp (- 1) (- 0.25) . subtract 0.01)
+	(GlfwG.K.Key'U, KRpt) -> cbc >> writeTChan ca \a -> let a' = a - 0.01 in
+		bool (clamp (- 1) (- 0.25) a') a (a' <= - 0.75 && - 0.75 < a)
+	(GlfwG.K.Key'I, KPrss) ->
+		cbc >> writeTChan ca (clamp (- 1) (- 0.25) . (+ 0.01))
+	(GlfwG.K.Key'I, KRpt) -> cbc >> writeTChan ca \a -> let a' = a + 0.01 in
+		bool (clamp (- 1) (- 0.25) a') a (a <= - 0.5 && - 0.5 < a')
+	(GlfwG.K.Key'H, KPrss) -> writeTChan cl (subtract 1)
+	(GlfwG.K.Key'J, KPrss) -> writeTChan cd (+ 1)
+	(GlfwG.K.Key'K, KPrss) -> writeTChan cd (subtract 1)
+	(GlfwG.K.Key'L, KPrss) -> writeTChan cl (+ 1)
+	(GlfwG.K.Key'Space, KPrss) -> writeTChan ch ()
+	(GlfwG.K.Key'F, KPrss) -> writeTChan cn (clamp 1 (max w h) . (+ 1))
+	(GlfwG.K.Key'D, KPrss) -> writeTChan cn (clamp 1 (max w h) . subtract 1)
 	_ -> pure ()
+	where cbc = writeTChan cf Cubic
+
+type F a = a -> a
+
+pattern KPrss, KRpt :: GlfwG.K.KeyState
+pattern KPrss = GlfwG.K.KeyState'Pressed
+pattern KRpt = GlfwG.K.KeyState'Repeating
 
 draw :: (
 	Length (M0_2 wss), Length (M0_2 sss),
@@ -495,7 +475,7 @@ bar a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
 	y = 72 - x
 	z = round @Double $ 71 + 70 * (- 0.75)
 	w = round @Double (71 + 70 * (- 0.5)) - z - 2
-	v = round @Double (71 + 70 * (- 0.25)) - w - z - 4
+	v = round @Double (71 + 70 * (- 0.25)) - w - z - 3
 
 -- BUFFER AND IMAGE
 

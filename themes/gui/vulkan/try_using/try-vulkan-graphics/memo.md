@@ -36,7 +36,7 @@
 	+ [x] strgImgBinding
 	+ [x] withWindow
 	+ [x] waitFramebufferSize
-	+ [ ] keyCallback
+	+ [x] keyCallback
 	+ [ ] draw
 	+ [ ] update
 	+ [ ] bar
