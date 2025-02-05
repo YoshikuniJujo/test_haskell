@@ -18,7 +18,7 @@
 ##### refactoring
 
 * [x] DATA TYPE IMAGE RGBA8
-* [ ] MAIN
+* [x] MAIN
 	+ [x] main
 	+ [x] getFilter
 	+ [x] newtype Filter
@@ -36,11 +36,18 @@
 	+ [x] strgImgBinding
 	+ [x] withWindow
 	+ [x] waitFramebufferSize
-	+ [x] keyCallback
-	+ [ ] draw
-	+ [ ] update
-	+ [ ] bar
+	+ [x] kCllbck
+	+ [x] draw
+		- [x] type declaration
+		- [x] function definition
+	+ [x] update
+	+ [x] bar
 * [ ] BUFFER AND IMAGE
+	+ [ ] createBffrImg
+	+ [ ] createBffr
+	+ [ ] findMmType
+	+ [ ] bffrInfo
+	+ [ ] repareImg
 * [ ] COMMANDS
 * [ ] RESULT BUFFER
 * [ ] SWAP CHAIN

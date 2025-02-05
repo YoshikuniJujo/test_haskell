@@ -284,8 +284,8 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 				ccb hpl (HPList.Singleton $ U2 hds) def
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
-	(q, fa@(cf, ca), ps@(cn, cl, cd, chm)) <- atomically $ (,,)
-		<$> newTChan <*> ((,) <$> newTChan <*> newTChan)
+	(q, fa, ps) <- atomically $ (,,) <$> newTChan
+		<*> ((,) <$> newTChan <*> newTChan)
 		<*> ((,,,) <$> newTChan <*> newTChan <*> newTChan <*> newTChan)
 	Vk.Smph.create @'Nothing dv def nil \scs ->
 		Vk.Smph.create @'Nothing dv def nil \drs ->
@@ -294,19 +294,19 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 		withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
 		createSwpch win sf pd dv \sc ->
 		Vk.Swpch.getImages dv sc >>= \scis -> do
-		GlfwG.Win.setKeyCallback win . Just $ kCllBck w h q fa ps
+		GlfwG.Win.setKeyCallback win . Just $ kCllbck w h q fa ps
 		($ (f0, a0, n0, x0, y0)) . uncurry5 $ fix \act f a n ix iy -> do
 			ii <- Vk.Swpch.acquireNextImage
 				dv sc Nothing (Just scs) Nothing
-			draw gq cb wi si ppl pl ds scis imgd' w h ii f a n ix iy
+			draw gq cb wi si ppl pl ds w h imgd' scis ii f a n ix iy
 			catchAndSerialize $ Vk.Swpch.queuePresent
 				@'Nothing gq $ pinfo sc ii drs
 			Vk.Q.waitIdle gq
 			GlfwG.waitEvents
 			wsc <- (||) <$> GlfwG.Win.shouldClose win
 				<*> atomically (maybeToBool <$> tryReadTChan q)
-			(ma, args) <- atomically
-				$ update n0 x0 y0 cf ca cn cl cd chm f a n ix iy
+			(ma, args) <-
+				atomically $ update n0 x0 y0 fa ps f a n ix iy
 			if wsc then print (n, n * iy + ix) else do
 				flip (maybe $ pure ()) ma \a' -> do
 					putStrLn ""; putStrLn (bar a'); print a'
@@ -387,11 +387,11 @@ waitFramebufferSize win p = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (not $ p sz) $ fix \go -> (`when` go) . not . p =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 
-kCllBck :: Word32 -> Word32 ->
+kCllbck :: Word32 -> Word32 ->
 	TChan () -> (TChan Filter, TChan (F Float)) ->
 	(TChan (F Word32), TChan (F Word32), TChan (F Word32), TChan ()) ->
 	GlfwG.Win.KeyCallback sw
-kCllBck w h q (cf, ca) (cn, cl, cd, ch) _ k _ ks _ =  atomically case (k, ks) of
+kCllbck w h q (cf, ca) (cn, cl, cd, ch) _ k _ ks _ =  atomically case (k, ks) of
 	(GlfwG.K.Key'Q, KPrss) -> writeTChan q ()
 	(GlfwG.K.Key'N, KPrss) -> writeTChan cf Nearest
 	(GlfwG.K.Key'Semicolon, KPrss) -> writeTChan cf Linear
@@ -425,80 +425,71 @@ draw :: (
 	Length (M0_2 wss), Length (M0_2 sss),
 	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
 	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
-	Vk.Smph.SubmitInfoListToMiddle wss, Vk.Smph.SubmitInfoListToMiddle sss
-	) =>
-	Vk.Q.Q -> Vk.CmdBffr.C scb ->
-	HPList.PL (U2 Vk.Smph.SubmitInfo) wss -> HPList.PL (U2 Vk.Smph.SubmitInfo) sss ->
-	Vk.Ppl.Cp.C scp '(sl, '[ '(sdsl, '[SrcImg, DstImg])], PshCnsts) -> Vk.PplLyt.P sl '[ '(sdsl, '[SrcImg, DstImg])] PshCnsts ->
-	Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> [Vk.Img.Binded sm si inm fmt] ->
-	Vk.Img.Binded sms sis nms fmts -> (forall n . Integral n => n) -> (forall n . Integral n => n) ->
+	Vk.Smph.SubmitInfoListToMiddle wss,
+	Vk.Smph.SubmitInfoListToMiddle sss ) => Vk.Q.Q -> Vk.CmdBffr.C scb ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) wss ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) sss ->
+	Vk.Ppl.Cp.C scp '(sl, '[ '(sdsl, '[SrcImg, DstImg])], PshCnsts) ->
+	Vk.PplLyt.P sl '[ '(sdsl, '[SrcImg, DstImg])] PshCnsts ->
+	Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) ->
+	(forall n . Integral n => n) -> (forall n . Integral n => n) ->
+	Vk.Img.Binded smd sid nmd fmtd -> [Vk.Img.Binded sm si inm fmt] ->
 	Word32 -> Filter -> Float -> Word32 -> Word32 -> Word32 -> IO ()
-draw gq cb wi si ppl pl ds scis imgd' w h ii flt a n' ix iy =
-	runCmds gq cb wi si do
-					tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
-					Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-						Vk.Cmd.bindDescriptorSetsCompute
-							ccb pl (HPList.Singleton $ U2 ds) def
-						Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-							ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
-						Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
-					tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
-					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-					copyImgToImg cb imgd' (scis !! fromIntegral ii) w h 0 0
-					tr cb (scis !! fromIntegral ii) Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
-	where tr = transitionImgLyt
+draw gq cb wi si ppl pl ds w h im scis ii flt a n ix iy = runCmds gq cb wi si do
+	tr cb im Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
+	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+		Vk.Cmd.bindDescriptorSetsCompute
+			ccb pl (HPList.Singleton $ U2 ds) def
+		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			ccb pl (flt :* a :* n :* ix :* iy :* HPList.Nil)
+		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+	tr cb im Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+	tr cb sci Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+	copyImgToImg cb im sci w h 0 0
+	tr cb sci Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
+	where tr = transitionImgLyt; sci = scis !! fromIntegral ii
 
 update :: Word32 -> Word32 -> Word32 ->
-	TChan Filter -> TChan (Float -> Float) ->
-	TChan (Word32 -> Word32) ->
-	TChan (Word32 -> Word32) -> TChan (Word32 -> Word32) ->
-	TChan () -> Filter -> Float -> Word32 -> Word32 -> Word32 ->
+	(TChan Filter, TChan (F Float)) ->
+	(TChan (F Word32), TChan (F Word32), TChan (F Word32), TChan ()) ->
+	Filter -> Float -> Word32 -> Word32 -> Word32 ->
 	STM (Maybe Float, (Filter, Float, Word32, Word32, Word32))
-update n0 x0 y0 cf ca cn cl cd chm f a n ix iy = do
-			(f', a') <- (,)
-				<$> (fromMaybe f <$> tryReadTChan cf)
-				<*> (($ a) . (fromMaybe id) <$> tryReadTChan ca)
-			(dn, dl, dd, hm) <- (,,,)
-				<$> (fromMaybe id <$> tryReadTChan cn)
-				<*> (fromMaybe id <$> tryReadTChan cl)
-				<*> (fromMaybe id <$> tryReadTChan cd)
-				<*> (maybeToBool <$> tryReadTChan chm)
-			let	n' = bool (dn n) n0 hm
-			pure (	bool Nothing (Just a') (a' /= a),
-				(f', a', n', clamp 0 (n' - 1) (bool (dl ix) x0 hm), clamp 0 (n' - 1) (bool (dd iy) y0 hm)))
+update n0 x0 y0 (cf, ca) (cn, cl, cd, chm) f a n ix iy = do
+	(f', a') <- (,)
+		<$> (fromMaybe f <$> tryReadTChan cf)
+		<*> (($ a) . (fromMaybe id) <$> tryReadTChan ca)
+	(dn, dl, dd, hm) <- (,,,)
+		<$> readFn cn <*> readFn cl <*> readFn cd
+		<*> (maybeToBool <$> tryReadTChan chm)
+	let	n' = bool (dn n) n0 hm
+	pure (	bool Nothing (Just a') (a' /= a),
+		(f', a', n',
+			clamp 0 (n' - 1) (bool (dl ix) x0 hm),
+			clamp 0 (n' - 1) (bool (dd iy) y0 hm)) )
+	where readFn = (fromMaybe id <$>) . tryReadTChan
 
 bar :: Float -> String
 bar a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
-	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++ replicate v ' ' ++ "|"
+	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++
+	replicate v ' ' ++ "|"
 	where
-	x = round $ 71 + 70 * a
-	y = 72 - x
+	x = round $ 71 + 70 * a; y = 72 - x
 	z = round @Double $ 71 + 70 * (- 0.75)
 	w = round @Double (71 + 70 * (- 0.5)) - z - 2
 	v = round @Double (71 + 70 * (- 0.25)) - w - z - 3
 
 -- BUFFER AND IMAGE
 
-bffrInfo :: Vk.Obj.Length o ->
-	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
-bffrInfo ln us = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N,
-	Vk.Bffr.createInfoFlags = zeroBits,
-	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
-	Vk.Bffr.createInfoUsage = us,
-	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
-	Vk.Bffr.createInfoQueueFamilyIndices = [] }
-
-findMmType ::
-	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
-findMmType pd tbs prs =
-	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
-	where
-	msg = "failed to find suitable memory type!"
-	suit p = fst <$> L.find ((&&)
-		<$> (`Vk.Mm.elemTypeIndex` tbs) . fst
-		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
-			(Vk.Phd.memoryPropertiesMemoryTypes p)
+createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags ->
+	Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
+		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] ->
+		Vk.Mm.M sm '[ '(
+			sb,
+			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
+		IO a) -> IO a
+createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
+	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
 
 createBffr :: forall sd bnm o a . Vk.Obj.SizeAlignment o =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Obj.Length o ->
@@ -517,16 +508,26 @@ createBffr pd dv ln us prs f = Vk.Bffr.create dv binfo nil \b -> do
 		Vk.Mm.allocateInfoNext = TMaybe.N,
 		Vk.Mm.allocateInfoMemoryTypeIndex = mt }
 
-createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Bffr.UsageFlags ->
-	Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
-		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] ->
-		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
-		IO a) -> IO a
-createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
-	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+findMmType ::
+	Vk.Phd.P -> Vk.Mm.TypeBits -> Vk.Mm.PropertyFlags -> IO Vk.Mm.TypeIndex
+findMmType pd tbs prs =
+	fromMaybe (error msg) . suit <$> Vk.Phd.getMemoryProperties pd
+	where
+	msg = "failed to find suitable memory type!"
+	suit p = fst <$> L.find ((&&)
+		<$> (`Vk.Mm.elemTypeIndex` tbs) . fst
+		<*> checkBits prs . Vk.Mm.mTypePropertyFlags . snd)
+			(Vk.Phd.memoryPropertiesMemoryTypes p)
+
+bffrInfo :: Vk.Obj.Length o ->
+	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
+bffrInfo ln us = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = TMaybe.N,
+	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
+	Vk.Bffr.createInfoUsage = us,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.UsageFlags -> Word32 -> Word32 ->
