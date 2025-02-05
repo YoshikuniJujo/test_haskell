@@ -485,8 +485,7 @@ createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
 	Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
 		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] ->
 		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
+			sb, 'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
 		IO a) -> IO a
 createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
@@ -522,8 +521,7 @@ findMmType pd tbs prs =
 bffrInfo :: Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
 bffrInfo ln us = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N,
-	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
 	Vk.Bffr.createInfoUsage = us,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
@@ -531,8 +529,8 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.UsageFlags -> Word32 -> Word32 ->
-	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
-prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+	(forall sm si . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
+prepareImg pd dv us w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
@@ -549,7 +547,7 @@ prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Img.createInfoArrayLayers = 1,
 		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
 		Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
-		Vk.Img.createInfoUsage = usg,
+		Vk.Img.createInfoUsage = us,
 		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Img.createInfoQueueFamilyIndices = [],
 		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }

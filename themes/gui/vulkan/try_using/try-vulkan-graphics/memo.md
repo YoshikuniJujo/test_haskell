@@ -42,14 +42,20 @@
 		- [x] function definition
 	+ [x] update
 	+ [x] bar
-* [ ] BUFFER AND IMAGE
-	+ [ ] createBffrImg
-	+ [ ] createBffr
-	+ [ ] findMmType
-	+ [ ] bffrInfo
-	+ [ ] repareImg
+* [x] BUFFER AND IMAGE
+	+ [x] createBffrImg
+	+ [x] createBffr
+	+ [x] findMmType
+	+ [x] bffrInfo
+	+ [x] prepareImg
+* [ ] COMMAND BUFFER
+	+ [ ] allocateCmdBffr
+	+ [ ] runCmds
+	+ [ ] submitINfo
+	+ [ ] smphInfo
 * [ ] COMMANDS
-* [ ] RESULT BUFFER
+* [ ] PIPELINE
 * [ ] SWAP CHAIN
+* [ ] TOOLS
 
 ### src
