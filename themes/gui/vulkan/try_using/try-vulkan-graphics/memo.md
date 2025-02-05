@@ -48,12 +48,20 @@
 	+ [x] findMmType
 	+ [x] bffrInfo
 	+ [x] prepareImg
-* [ ] COMMAND BUFFER
-	+ [ ] allocateCmdBffr
-	+ [ ] runCmds
-	+ [ ] submitINfo
-	+ [ ] smphInfo
+* [x] COMMAND BUFFER
+	+ [x] allocateCmdBffr
+	+ [x] runCmds
+	+ [x] submitINfo
+	+ [x] smphInfo
 * [ ] COMMANDS
+	+ [ ] copyBffrToImg
+	+ [ ] colorLayer0
+	+ [ ] bffrImgExtent
+	+ [ ] transitionImgLyt
+	+ [ ] imageSubresourceRange
+	+ [ ] copyImgToImg
+	+ [ ] blitInfo
+	+ [ ] copyImgToBffr
 * [ ] PIPELINE
 * [ ] SWAP CHAIN
 * [ ] TOOLS

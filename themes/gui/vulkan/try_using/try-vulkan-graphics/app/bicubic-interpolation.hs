@@ -558,12 +558,12 @@ prepareImg pd dv us w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 -- COMMAND BUFFER
 
 allocateCmdBffr :: forall sd scp a .
-	Vk.Dvc.D sd -> Vk.CmdPl.C scp -> (forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-allocateCmdBffr dv cp f =
-	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) -> f cb
+	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
+	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
+allocateCmdBffr dv cp f = Vk.CBffr.allocateCs dv info \(b :*. HPList.Nil) -> f b
 	where
-	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
-	cbinfo = Vk.CBffr.AllocateInfo {
+	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
+	info = Vk.CBffr.AllocateInfo {
 		Vk.CBffr.allocateInfoNext = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPool = cp,
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
@@ -581,24 +581,21 @@ runCmds gq cb wss sss cmds =
 	Vk.CBffr.begin @_ @'Nothing cb binfo cmds <* do
 	Vk.Q.submit2 gq (HPList.Singleton . U4 $ submitInfo cb wss sss) Nothing
 	Vk.Q.waitIdle gq
-	where
-	binfo = Vk.CBffr.BeginInfo {
+	where binfo = Vk.CBffr.BeginInfo {
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 
-submitInfo ::
-	Vk.CBffr.C scb ->
-	HPList.PL (U2 Vk.Smph.SubmitInfo) wsas -> HPList.PL (U2 Vk.Smph.SubmitInfo) ssas ->
+submitInfo :: Vk.CBffr.C scb ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) wsas ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) ssas ->
 	Vk.SubmitInfo2 'Nothing wsas '[ '( 'Nothing, scb)] ssas
 submitInfo cb wsis ssis = Vk.SubmitInfo2 {
-	Vk.submitInfo2Next = TMaybe.N,
-	Vk.submitInfo2Flags = zeroBits,
+	Vk.submitInfo2Next = TMaybe.N, Vk.submitInfo2Flags = zeroBits,
 	Vk.submitInfo2WaitSemaphoreInfos = wsis,
 	Vk.submitInfo2CommandBufferInfos = HPList.Singleton $ U2 cbi,
 	Vk.submitInfo2SignalSemaphoreInfos = ssis }
-	where
-	cbi = Vk.CBffr.SubmitInfo {
+	where cbi = Vk.CBffr.SubmitInfo {
 		Vk.CBffr.submitInfoNext = TMaybe.N,
 		Vk.CBffr.submitInfoCommandBuffer = cb,
 		Vk.CmdBffr.submitInfoDeviceMask = def }
@@ -608,10 +605,8 @@ smphInfo ::
 	HPList.PL (U2 Vk.Smph.SubmitInfo) '[ '( 'Nothing, ss)]
 smphInfo smph sm = HPList.Singleton $ U2 Vk.Smph.SubmitInfo {
 	Vk.Smph.submitInfoNext = TMaybe.N,
-	Vk.Smph.submitInfoSemaphore = smph,
-	Vk.Smph.submitInfoValue = 0,
-	Vk.Smph.submitInfoStageMask = sm,
-	Vk.Smph.submitInfoDeviceIndex = 0 }
+	Vk.Smph.submitInfoSemaphore = smph, Vk.Smph.submitInfoValue = 0,
+	Vk.Smph.submitInfoStageMask = sm, Vk.Smph.submitInfoDeviceIndex = 0 }
 
 -- COMMANDS
 
