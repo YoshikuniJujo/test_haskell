@@ -34,7 +34,8 @@
 	+ [x] imgVwInfo
 	+ [x] type PshCnsts
 	+ [x] strgImgBinding
-	+ [ ] withWindow
+	+ [x] withWindow
+	+ [x] waitFramebufferSize
 	+ [ ] keyCallback
 	+ [ ] draw
 	+ [ ] update

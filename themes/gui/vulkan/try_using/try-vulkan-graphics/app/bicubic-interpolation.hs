@@ -15,6 +15,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
 import Data.TypeLevel.List
@@ -371,16 +372,20 @@ strgImgBinding = Vk.DscStLyt.BindingImage {
 
 withWindow :: Int -> Int -> (forall s . GlfwG.Win.W s -> IO a) -> IO a
 withWindow w h a = do
-	GlfwG.Win.hint noApi
-	GlfwG.Win.hint notResizable
-	GlfwG.Win.create (w + 2) (h + 2) "Bicubic Interpolation" Nothing Nothing \win -> do
-		print =<< GlfwG.Win.getSize win
-		print =<< GlfwG.Win.getFrameSize win
-		print =<< GlfwG.Win.getFramebufferSize win
+	GlfwG.Win.hint `mapM_` [
+		GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI,
+		GlfwG.Win.WindowHint'Resizable False ]
+	GlfwG.Win.create w h "Bicubic Interpolation" Nothing Nothing \win -> do
+		(ww, hw) <- GlfwG.Win.getSize win
+		(wf, hf) <- GlfwG.Win.getFramebufferSize win
+		GlfwG.Win.setSize win (w * ww `div` wf) (h * hw `div` hf)
+		waitFramebufferSize win (== (w, h))
 		a win
-	where
-	noApi = GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
-	notResizable = GlfwG.Win.WindowHint'Resizable False
+
+waitFramebufferSize :: GlfwG.Win.W sw -> ((Int, Int) -> Bool) -> IO ()
+waitFramebufferSize win p = GlfwG.Win.getFramebufferSize win >>= \sz ->
+	when (not $ p sz) $ fix \go -> (`when` go) . not . p =<<
+		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 
 keyCallback :: Word32 -> Word32 -> TChan () ->
 	(TChan Filter, TChan (Float -> Float)) ->
