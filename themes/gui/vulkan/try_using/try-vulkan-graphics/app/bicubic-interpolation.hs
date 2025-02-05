@@ -70,7 +70,6 @@ import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer qualified as Vk.CBffr
-import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Cmd qualified as Vk.Cmd
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.Sample qualified as Vk.Sample
@@ -425,7 +424,7 @@ draw :: (
 	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
 	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
 	Vk.Smph.SubmitInfoListToMiddle wss,
-	Vk.Smph.SubmitInfoListToMiddle sss ) => Vk.Q.Q -> Vk.CmdBffr.C scb ->
+	Vk.Smph.SubmitInfoListToMiddle sss ) => Vk.Q.Q -> Vk.CBffr.C scb ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) wss ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) sss ->
 	Vk.Ppl.Cp.C scp '(sl, '[ '(sdsl, '[SrcImg, DstImg])], PshCnsts) ->
@@ -577,7 +576,7 @@ runCmds :: forall scb wss sss a . (
 	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
 	Vk.Smph.SubmitInfoListToMiddle wss,
 	Vk.Smph.SubmitInfoListToMiddle sss ) =>
-	Vk.Q.Q -> Vk.CmdBffr.C scb ->
+	Vk.Q.Q -> Vk.CBffr.C scb ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) wss ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) sss -> IO a -> IO a
 runCmds gq cb wss sss cmds =
@@ -601,7 +600,7 @@ submitInfo cb wsis ssis = Vk.SubmitInfo2 {
 	where cbi = Vk.CBffr.SubmitInfo {
 		Vk.CBffr.submitInfoNext = TMaybe.N,
 		Vk.CBffr.submitInfoCommandBuffer = cb,
-		Vk.CmdBffr.submitInfoDeviceMask = def }
+		Vk.CBffr.submitInfoDeviceMask = def }
 
 smphInfo ::
 	Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
@@ -638,9 +637,9 @@ bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 	where Vk.Obj.LengthImage _ (fromIntegral -> w) (fromIntegral -> h) _ _ =
 		Vk.Obj.lengthOf @(Vk.ObjNA.Image img nm) ln
 
-transitionImgLyt :: Vk.CmdBffr.C scb ->
-	Vk.Img.Binded sm si inm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImgLyt cb img ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
+transitionImgLyt :: Vk.CBffr.C scb ->
+	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
 	where
 	dinfo = Vk.DependencyInfo {
 		Vk.dependencyInfoNext = TMaybe.N,
@@ -660,7 +659,7 @@ transitionImgLyt cb img ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
 		Vk.Img.memoryBarrier2NewLayout = nl,
 		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
 		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
-		Vk.Img.memoryBarrier2Image = img,
+		Vk.Img.memoryBarrier2Image = i,
 		Vk.Img.memoryBarrier2SubresourceRange = isr case nl of
 			Vk.Img.LayoutDepthAttachmentOptimal ->
 				Vk.Img.AspectDepthBit
