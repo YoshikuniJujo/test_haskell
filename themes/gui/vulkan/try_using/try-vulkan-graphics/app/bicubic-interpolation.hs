@@ -17,6 +17,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
 import Control.Monad.Fix
+import Control.Concurrent.STM
 import Control.Exception
 import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
@@ -95,8 +96,6 @@ import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Sfc.Glfw.Win
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Semaphore qualified as Vk.Smph
-
-import Control.Concurrent.STM
 
 import Paths_try_vulkan_graphics
 
