@@ -232,22 +232,19 @@ body pd dv gq cp img flt a (fromIntegral -> n) i =
 			Vk.Cmd.bindDescriptorSetsCompute
 				ccb wpl (HPList.Singleton $ U2 wds) def
 			Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
-
 		Vk.Cmd.bindPipelineCompute
 				cb Vk.Ppl.BindPointCompute hppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute
 				ccb hpl (HPList.Singleton $ U2 hds) def
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
-
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+		Vk.Cmd.bindPipelineCompute
+				cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute
 				ccb pl (HPList.Singleton $ U2 ds) def
 			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
 				ccb pl (flt :* a :* n :* ix :* iy :* HPList.Nil)
 			Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
-
 		tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
-
 		tr cb imgd
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImgToImg cb imgd' imgd w h 0 0
@@ -387,8 +384,7 @@ allocateCmdBffr dv cp f = Vk.CBffr.allocateCs dv info \(b :*. HPList.Nil) -> f b
 		Vk.CBffr.allocateInfoCommandPool = cp,
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-runCmds :: forall scb a .
-	Vk.Q.Q -> Vk.CBffr.C scb -> IO a -> IO a
+runCmds :: forall scb a . Vk.Q.Q -> Vk.CBffr.C scb -> IO a -> IO a
 runCmds gq cb cmds =
 	Vk.CBffr.begin @_ @'Nothing cb binfo cmds <* do
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) Nothing
@@ -478,8 +474,7 @@ copyImgToImg :: Vk.CBffr.C scb ->
 copyImgToImg cb si di w h dl dt = Vk.Cmd.blitImage cb
 	si Vk.Img.LayoutTransferSrcOptimal
 	di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
-	where
-	blt = Vk.Img.Blit {
+	where blt = Vk.Img.Blit {
 		Vk.Img.blitSrcSubresource = colorLayer0,
 		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
 		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
