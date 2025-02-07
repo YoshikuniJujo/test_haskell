@@ -488,12 +488,9 @@ transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
 		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
 		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
 		Vk.Img.memoryBarrier2Image = i,
-		Vk.Img.memoryBarrier2SubresourceRange = isr case nl of
-			Vk.Img.LayoutDepthAttachmentOptimal ->
-				Vk.Img.AspectDepthBit
-			_ -> Vk.Img.AspectColorBit }
-	isr am = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = am,
+		Vk.Img.memoryBarrier2SubresourceRange = isr }
+	isr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
