@@ -573,8 +573,8 @@ createDscSt ::
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> IO a) -> IO a
 createDscSt dv dp vs vd dl a =
 	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) ->
-	(>> a ds) $ Vk.DscSt.updateDs dv
-		(U5 (dscWrite ds vs) :** U5 (dscWrite ds vd) :** HPList.Nil)
+	(>> a ds) $ Vk.DscSt.updateDs
+		dv (U5 (dscWrite ds vs) :** U5 (dscWrite ds vd) :** HPList.Nil)
 		HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
