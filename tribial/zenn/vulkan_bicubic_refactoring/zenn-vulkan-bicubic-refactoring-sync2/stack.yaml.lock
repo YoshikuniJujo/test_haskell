@@ -5,12 +5,16 @@
 
 packages:
 - completed:
-    hackage: gpu-vulkan-0.1.0.168@sha256:d930671fb5b638720231f5183f1e58fc7d291bedf3ab53d981ce8994e1799cb6,8054
+    commit: afb7edf60ec60758eb602edf856d4158f51565fb
+    git: https://github.com/YoshikuniJujo/gpu-vulkan.git
+    name: gpu-vulkan
     pantry-tree:
-      sha256: 915d9bb72d7ec461e9a86cc0731096354477e3d2ddd9995b03fb55b0ac1e06b7
-      size: 12064
+      sha256: e675a876da88cfb03b9bd9a100ed6eb2e3b725fb986c55623192cf29849ec757
+      size: 12746
+    version: 0.1.0.168
   original:
-    hackage: gpu-vulkan-0.1.0.168
+    commit: afb7edf60ec60758eb602edf856d4158f51565fb
+    git: https://github.com/YoshikuniJujo/gpu-vulkan.git
 - completed:
     hackage: gpu-vulkan-middle-0.1.0.74@sha256:ef19ae89eb542e2905395b47cad930156faf010cb83739a856543b9c958bf750,9124
     pantry-tree:

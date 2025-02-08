@@ -14,10 +14,7 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
-import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Tuple.MapIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Bits
@@ -407,9 +404,6 @@ allocateCmdBffr dv cp f = Vk.CBffr.allocateCs dv info \(b :*. HPList.Nil) -> f b
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 runCmds :: forall scb wss sss a . (
-	Length (M0_2 wss), Length (M0_2 sss),
-	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
-	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
 	Vk.Smph.SubmitInfoListToMiddle wss,
 	Vk.Smph.SubmitInfoListToMiddle sss ) =>
 	Vk.Q.Q -> Vk.CBffr.C scb ->
