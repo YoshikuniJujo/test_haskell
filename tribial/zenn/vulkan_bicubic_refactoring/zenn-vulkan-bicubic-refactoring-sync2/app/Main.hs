@@ -48,7 +48,6 @@ import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
-import Gpu.Vulkan.QueueFamily qualified as Vk.QFm
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
@@ -479,8 +478,8 @@ transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
 			Vk.Access2MemoryWriteBit .|. Vk.Access2MemoryReadBit,
 		Vk.Img.memoryBarrier2OldLayout = ol,
 		Vk.Img.memoryBarrier2NewLayout = nl,
-		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
-		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
+		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFam.Ignored,
 		Vk.Img.memoryBarrier2Image = i,
 		Vk.Img.memoryBarrier2SubresourceRange = isr }
 	isr = Vk.Img.SubresourceRange {
