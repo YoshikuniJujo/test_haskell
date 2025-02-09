@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2025-01-30
+resolver: nightly-2025-02-09
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -66,7 +66,7 @@ extra-deps:
   # commit: b9db7f489709cbf4638cd3f443b44441d2303621
   # - git: https://github.com/YoshikuniJujo/gpu-vulkan-core.git
   # commit: bf6219f56a7a99678f1bca7bbdb485737186abcf
-- gpu-vulkan-0.1.0.168
+- gpu-vulkan-0.1.0.169
 - gpu-vulkan-middle-0.1.0.74
 - gpu-vulkan-core-0.1.0.21
 - language-spir-v-0.1.0.3

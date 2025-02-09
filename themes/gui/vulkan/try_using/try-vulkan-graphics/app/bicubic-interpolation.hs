@@ -14,14 +14,11 @@ module Main (main) where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
 import Control.Monad
 import Control.Monad.Fix
 import Control.Concurrent.STM
 import Control.Exception
-import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
-import Data.TypeLevel.Tuple.MapIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Ord.ToolsYj
@@ -62,7 +59,6 @@ import Gpu.Vulkan.Instance qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
-import Gpu.Vulkan.QueueFamily qualified as Vk.QFm
 import Gpu.Vulkan.Device qualified as Vk.Dvc
 import Gpu.Vulkan.Memory qualified as Vk.Mm
 import Gpu.Vulkan.Buffer qualified as Vk.Bffr
@@ -210,7 +206,7 @@ createLgDvc pd qfi = Vk.Dvc.create pd info nil where
 		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
 		Vk.Dvc.createInfoEnabledExtensionNames =
 			[Vk.Swpch.extensionName],
-		Vk.Dvc.createInfoEnabledFeatures = Nothing }
+		Vk.Dvc.createInfoEnabledFeatures = Just def }
 	qinfo = Vk.Dvc.QueueCreateInfo {
 		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
@@ -282,9 +278,7 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 				ccb hpl (HPList.Singleton $ U2 hds) def
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
-	(q, fa, ps) <- atomically $ (,,) <$> newTChan
-		<*> ((,) <$> newTChan <*> newTChan)
-		<*> ((,,,) <$> newTChan <*> newTChan <*> newTChan <*> newTChan)
+	ck <- atomically newTChan
 	Vk.Smph.create @'Nothing dv def nil \scs ->
 		Vk.Smph.create @'Nothing dv def nil \drs ->
 		let	wi = smphInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
@@ -292,7 +286,7 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 		withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
 		createSwpch win sf pd dv \sc ->
 		Vk.Swpch.getImages dv sc >>= \scis -> do
-		GlfwG.Win.setKeyCallback win . Just $ kCllbck w h q fa ps
+		GlfwG.Win.setKeyCallback win . Just $ kCllbck ck
 		($ (f0, a0, n0, x0, y0)) . uncurry5 $ fix \act f a n ix iy -> do
 			ii <- Vk.Swpch.acquireNextImage
 				dv sc Nothing (Just scs) Nothing
@@ -301,14 +295,17 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 				@'Nothing gq $ pinfo sc ii drs
 			Vk.Q.waitIdle gq
 			GlfwG.waitEvents
-			wsc <- (||) <$> GlfwG.Win.shouldClose win
-				<*> atomically (maybeToBool <$> tryReadTChan q)
-			(ma, args) <-
-				atomically $ update n0 x0 y0 fa ps f a n ix iy
-			if wsc then print (n, n * iy + ix) else do
-				flip (maybe $ pure ()) ma \a' -> do
-					putStrLn ""; putStrLn (bar a'); print a'
-				uncurry5 act args
+			wsc <- GlfwG.Win.shouldClose win
+			mk <- atomically $ tryReadTChan ck
+			case (wsc, mk) of
+				(True, _) -> end n ix iy
+				(_, Nothing) -> act f a n ix iy
+				(_, Just (k, ks)) ->
+					case processKey w h k ks f a n ix iy of
+						Nothing -> end n ix iy
+						Just args@(_, a', _, _, _) -> do
+							when (a /= a') $ bar a'
+							uncurry5 act args
 
 	runCmds gq cb HPList.Nil HPList.Nil do
 		tr cb imgd
@@ -337,6 +334,8 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 		Vk.Swpch.presentInfoWaitSemaphores = HPList.Singleton drs,
 		Vk.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
 			$ Vk.Swpch.SwapchainImageIndex sc ii }
+	bar a' = do putStrLn ""; putStrLn (barString a'); print a'
+	end n ix iy = print (n, n * iy + ix)
 
 resultBffr :: Vk.ObjB.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
@@ -385,44 +384,32 @@ waitFramebufferSize win p = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (not $ p sz) $ fix \go -> (`when` go) . not . p =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 
-kCllbck :: Word32 -> Word32 ->
-	TChan () -> (TChan Filter, TChan (F Float)) ->
-	(TChan (F Word32), TChan (F Word32), TChan (F Word32), TChan ()) ->
-	GlfwG.Win.KeyCallback sw
-kCllbck w h q (cf, ca) (cn, cl, cd, ch) _ k _ ks _ =  atomically case (k, ks) of
-	(GlfwG.K.Key'Q, KPrss) -> writeTChan q ()
-	(GlfwG.K.Key'N, KPrss) -> writeTChan cf Nearest
-	(GlfwG.K.Key'Semicolon, KPrss) -> writeTChan cf Linear
-	(GlfwG.K.Key'M, KPrss) -> cbc >> writeTChan ca (const $ - 0.75)
-	(GlfwG.K.Key'Comma, KPrss) -> cbc>> writeTChan ca (const $ - 0.5)
-	(GlfwG.K.Key'U, KPrss) ->
-		cbc >> writeTChan ca (clamp (- 1) (- 0.25) . subtract 0.01)
-	(GlfwG.K.Key'U, KRpt) -> cbc >> writeTChan ca \a -> let a' = a - 0.01 in
-		bool (clamp (- 1) (- 0.25) a') a (a' <= - 0.75 && - 0.75 < a)
-	(GlfwG.K.Key'I, KPrss) ->
-		cbc >> writeTChan ca (clamp (- 1) (- 0.25) . (+ 0.01))
-	(GlfwG.K.Key'I, KRpt) -> cbc >> writeTChan ca \a -> let a' = a + 0.01 in
-		bool (clamp (- 1) (- 0.25) a') a (a <= - 0.5 && - 0.5 < a')
-	(GlfwG.K.Key'H, KPrss) -> writeTChan cl (subtract 1)
-	(GlfwG.K.Key'J, KPrss) -> writeTChan cd (+ 1)
-	(GlfwG.K.Key'K, KPrss) -> writeTChan cd (subtract 1)
-	(GlfwG.K.Key'L, KPrss) -> writeTChan cl (+ 1)
-	(GlfwG.K.Key'Space, KPrss) -> writeTChan ch ()
-	(GlfwG.K.Key'F, KPrss) -> writeTChan cn (clamp 1 (max w h) . (+ 1))
-	(GlfwG.K.Key'D, KPrss) -> writeTChan cn (clamp 1 (max w h) . subtract 1)
-	_ -> pure ()
-	where cbc = writeTChan cf Cubic
+data K = Q | N | Semicolon | H | J | K | L | U | I | M | Comma | D | F
+	deriving Show
 
-type F a = a -> a
+keyToK :: GlfwG.K.Key -> Maybe K
+keyToK = \case
+	GlfwG.K.Key'Q -> Just Q
+	GlfwG.K.Key'N -> Just N; GlfwG.K.Key'Semicolon -> Just Semicolon
+	GlfwG.K.Key'H -> Just H; GlfwG.K.Key'J -> Just J
+	GlfwG.K.Key'K -> Just K; GlfwG.K.Key'L -> Just L
+	GlfwG.K.Key'U -> Just U; GlfwG.K.Key'I -> Just I
+	GlfwG.K.Key'M -> Just M; GlfwG.K.Key'Comma -> Just Comma
+	GlfwG.K.Key'D -> Just D; GlfwG.K.Key'F -> Just F; _ -> Nothing
 
-pattern KPrss, KRpt :: GlfwG.K.KeyState
-pattern KPrss = GlfwG.K.KeyState'Pressed
-pattern KRpt = GlfwG.K.KeyState'Repeating
+data PR = Pr | Rp deriving Show
+
+keyStateToPR :: GlfwG.K.KeyState -> Maybe PR
+keyStateToPR = \case
+	GlfwG.K.KeyState'Pressed -> Just Pr
+	GlfwG.K.KeyState'Repeating -> Just Rp
+	_ -> Nothing
+
+kCllbck :: TChan (K, PR) -> GlfwG.Win.KeyCallback sw
+kCllbck ck _ ky _ ks _ = atomically case (keyToK ky, keyStateToPR ks) of
+	(Just k, Just pr) -> writeTChan ck (k, pr); _ -> pure ()
 
 draw :: (
-	Length (M0_2 wss), Length (M0_2 sss),
-	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
-	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
 	Vk.Smph.SubmitInfoListToMiddle wss,
 	Vk.Smph.SubmitInfoListToMiddle sss ) => Vk.Q.Q -> Vk.CBffr.C scb ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) wss ->
@@ -447,31 +434,44 @@ draw gq cb wi si ppl pl ds w h im scis ii flt a n ix iy = runCmds gq cb wi si do
 	tr cb sci Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
 	where tr = transitionImgLyt; sci = scis !! fromIntegral ii
 
+processKey ::
+	Word32 -> Word32 -> K -> PR ->
+	Filter -> Float -> Word32 -> Word32 -> Word32 ->
+	Maybe (Filter, Float, Word32, Word32, Word32)
+processKey _ _ Q _ _ _ _ _ _ = Nothing
+processKey _ _ N _ _ a n ix iy = Just (Nearest, a, n, ix, iy)
+processKey _ _ Semicolon _ _ a n ix iy = Just (Linear, a, n, ix, iy)
+processKey _ _ M _ _ _ n ix iy = Just (Cubic, - 0.75, n, ix, iy)
+processKey _ _ Comma _ _ _ n ix iy = Just (Cubic, - 0.5, n, ix, iy)
+processKey _ _ U Pr _ a n ix iy =
+	Just (Cubic, clamp (- 1) (- 0.25) $ a - 0.01, n, ix, iy)
+processKey _ _ U Rp _ a@(subtract 0.01 -> a') n ix iy = Just (
+	Cubic,
+	bool (clamp (- 1) (- 0.25) a') a (a' < - 0.75 && - 0.75 <= a),
+	n, ix, iy)
+processKey _ _ I Pr _ a n ix iy =
+	Just (Cubic, clamp (- 1) (- 0.25) $ a + 0.01, n, ix, iy)
+processKey _ _ I Rp _ a@((+ 0.01) -> a') n ix iy = Just (
+	Cubic,
+	bool (clamp (- 1) (- 0.25) a') a (a <= - 0.5 && - 0.5 < a'), n, ix, iy)
+processKey _ _ H _ f a n ix iy = Just (f, a, n, clamp 0 (n - 1) $ ix `sub'` 1, iy)
+processKey _ _ J _ f a n ix iy = Just (f, a, n, ix, clamp 0 (n - 1) $ iy + 1)
+processKey _ _ K _ f a n ix iy = Just (f, a, n, ix, clamp 0 (n - 1) $ iy `sub'` 1)
+processKey _ _ L _ f a n ix iy = Just (f, a, n, clamp 0 (n - 1) $ ix + 1, iy)
+processKey w h D _ f a (clamp 1 (max w h) . subtract 1  -> n) ix iy =
+	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
+processKey w h F _ f a (clamp 1 (max w h) . (+ 1) -> n) ix iy =
+	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
+
+sub' :: (Ord n, Num n) => n -> n -> n
+x `sub'` y | x >= y = x - y | otherwise = 0
+
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-update :: Word32 -> Word32 -> Word32 ->
-	(TChan Filter, TChan (F Float)) ->
-	(TChan (F Word32), TChan (F Word32), TChan (F Word32), TChan ()) ->
-	Filter -> Float -> Word32 -> Word32 -> Word32 ->
-	STM (Maybe Float, (Filter, Float, Word32, Word32, Word32))
-update n0 x0 y0 (cf, ca) (cn, cl, cd, chm) f a n ix iy = do
-	(f', a') <- (,)
-		<$> (fromMaybe f <$> tryReadTChan cf)
-		<*> (($ a) . (fromMaybe id) <$> tryReadTChan ca)
-	(dn, dl, dd, hm) <- (,,,)
-		<$> readFn cn <*> readFn cl <*> readFn cd
-		<*> (maybeToBool <$> tryReadTChan chm)
-	let	n' = bool (dn n) n0 hm
-	pure (	bool Nothing (Just a') (a' /= a),
-		(f', a', n',
-			clamp 0 (n' - 1) (bool (dl ix) x0 hm),
-			clamp 0 (n' - 1) (bool (dd iy) y0 hm)) )
-	where readFn = (fromMaybe id <$>) . tryReadTChan
-
-bar :: Float -> String
-bar a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
+barString :: Float -> String
+barString a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
 	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++
 	replicate v ' ' ++ "|"
 	where
@@ -571,9 +571,6 @@ allocateCmdBffr dv cp f = Vk.CBffr.allocateCs dv info \(b :*. HPList.Nil) -> f b
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 runCmds :: forall scb wss sss a . (
-	Length (M0_2 wss), Length (M0_2 sss),
-	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 wss),
-	HPList.ToListWithCCpsM' WithPoked TMaybe.M (M0_2 sss),
 	Vk.Smph.SubmitInfoListToMiddle wss,
 	Vk.Smph.SubmitInfoListToMiddle sss ) =>
 	Vk.Q.Q -> Vk.CBffr.C scb ->
@@ -657,15 +654,12 @@ transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
 			Vk.Access2MemoryWriteBit .|. Vk.Access2MemoryReadBit,
 		Vk.Img.memoryBarrier2OldLayout = ol,
 		Vk.Img.memoryBarrier2NewLayout = nl,
-		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFm.Ignored,
-		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFm.Ignored,
+		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFam.Ignored,
 		Vk.Img.memoryBarrier2Image = i,
-		Vk.Img.memoryBarrier2SubresourceRange = isr case nl of
-			Vk.Img.LayoutDepthAttachmentOptimal ->
-				Vk.Img.AspectDepthBit
-			_ -> Vk.Img.AspectColorBit }
-	isr am = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = am,
+		Vk.Img.memoryBarrier2SubresourceRange = isr }
+	isr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
@@ -786,8 +780,8 @@ createDscSt ::
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> IO a) -> IO a
 createDscSt dv dp vs vd dl a =
 	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) ->
-	(>> a ds) $ Vk.DscSt.updateDs dv
-		(U5 (dscWrite ds vs) :** U5 (dscWrite ds vd) :** HPList.Nil)
+	(>> a ds) $ Vk.DscSt.updateDs
+		dv (U5 (dscWrite ds vs) :** U5 (dscWrite ds vd) :** HPList.Nil)
 		HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
@@ -909,9 +903,6 @@ swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 		. onlyIf (> 0) $ Vk.Sfc.capabilitiesMaxImageCount cps
 
 -- TOOLS
-
-maybeToBool :: Maybe a -> Bool
-maybeToBool = maybe False $ const True
 
 uncurry5 :: (a -> b -> c -> d -> e -> r) -> (a, b, c, d, e) -> r
 uncurry5 f (x, y, z, v, u) = f x y z v u
