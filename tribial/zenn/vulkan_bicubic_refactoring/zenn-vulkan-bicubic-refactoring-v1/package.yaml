@@ -1,0 +1,74 @@
+name:                zenn-vulkan-bicubic-refactoring-v1
+version:             0.1.0.0
+github:              "YoshikuniJujo/zenn-vulkan-bicubic-refactoring-v1"
+license:             BSD-3-Clause
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "(c) 2025 Yoshikuni Jujo"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/zenn-vulkan-bicubic-refactoring-v1#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- array
+- bytestring
+- data-default
+- JuicyPixels
+- gpu-vulkan
+- shaderc
+- language-spir-v
+- hetero-parameter-list
+- tools-yj
+- typelevel-tools-yj
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+data-files:
+  - shader/expandWidth.comp
+  - shader/expandHeight.comp
+  - shader/interpolate.comp
+
+executables:
+  zenn-vulkan-bicubic-refactoring-v1-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - zenn-vulkan-bicubic-refactoring-v1
+
+tests:
+  zenn-vulkan-bicubic-refactoring-v1-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - zenn-vulkan-bicubic-refactoring-v1
