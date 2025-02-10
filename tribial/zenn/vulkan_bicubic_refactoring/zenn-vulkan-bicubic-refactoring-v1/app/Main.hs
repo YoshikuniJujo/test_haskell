@@ -170,7 +170,10 @@ createLgDvc ::
 	Vk.Phd.P -> Vk.QFam.Index -> (forall sd . Vk.Dvc.D sd -> IO a) -> IO a
 createLgDvc pd qfi = Vk.Dvc.create pd info nil where
 	info = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoNext =
+			TMaybe.J (Vk.Phd.vulkan13FeaturesZero TMaybe.N) {
+				Vk.Phd.vulkan13FeaturesSynchronization2 = True
+				},
 		Vk.Dvc.createInfoFlags = zeroBits,
 		Vk.Dvc.createInfoQueueCreateInfos = HPList.Singleton qinfo,
 		Vk.Dvc.createInfoEnabledLayerNames = vldLayers,
@@ -440,44 +443,34 @@ bffrImgExtent (Vk.Bffr.lengthBinded -> ln) = (w, h)
 
 transitionImgLyt :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImgLyt cb i ol nl =
-	Vk.Cmd.pipelineBarrier cb srcst dstst zeroBits
-		HPList.Nil HPList.Nil . HPList.Singleton $ U5 brrr
+transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
 	where
-	brrr = Vk.Img.MemoryBarrier {
-		Vk.Img.memoryBarrierNext = TMaybe.N,
-		Vk.Img.memoryBarrierOldLayout = ol,
-		Vk.Img.memoryBarrierNewLayout = nl,
-		Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFam.Ignored,
-		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFam.Ignored,
-		Vk.Img.memoryBarrierImage = i,
-		Vk.Img.memoryBarrierSubresourceRange = srr,
-		Vk.Img.memoryBarrierSrcAccessMask = srcam,
-		Vk.Img.memoryBarrierDstAccessMask = dstam }
-	srr = Vk.Img.SubresourceRange {
+	dinfo = Vk.DependencyInfo {
+		Vk.dependencyInfoNext = TMaybe.N,
+		Vk.dependencyInfoDependencyFlags = zeroBits,
+		Vk.dependencyInfoMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoBufferMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoImageMemoryBarriers =
+			HPList.Singleton $ U5 ibrrr }
+	ibrrr = Vk.Img.MemoryBarrier2 {
+		Vk.Img.memoryBarrier2Next = TMaybe.N,
+		Vk.Img.memoryBarrier2SrcStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2SrcAccessMask = Vk.Access2MemoryWriteBit,
+		Vk.Img.memoryBarrier2DstStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2DstAccessMask =
+			Vk.Access2MemoryWriteBit .|. Vk.Access2MemoryReadBit,
+		Vk.Img.memoryBarrier2OldLayout = ol,
+		Vk.Img.memoryBarrier2NewLayout = nl,
+		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrier2Image = i,
+		Vk.Img.memoryBarrier2SubresourceRange = isr }
+	isr = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers }
-	(srcst, dstst, srcam, dstam) = case (ol, nl) of
-		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
-			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit,
-			zeroBits, Vk.AccessTransferWriteBit )
-		(Vk.Img.LayoutUndefined, Vk.Img.LayoutGeneral) -> (
-			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageComputeShaderBit,
-			zeroBits, Vk.AccessShaderWriteBit )
-		(Vk.Img.LayoutTransferDstOptimal,
-			Vk.Img.LayoutTransferSrcOptimal) -> (
-			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit,
-			Vk.AccessTransferWriteBit, Vk.AccessTransferReadBit )
-		(Vk.Img.LayoutTransferDstOptimal, Vk.Img.LayoutGeneral) -> (
-			Vk.Ppl.StageTransferBit, Vk.Ppl.StageComputeShaderBit,
-			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit )
-		(Vk.Img.LayoutGeneral, Vk.Img.LayoutTransferSrcOptimal) -> (
-			Vk.Ppl.StageComputeShaderBit, Vk.Ppl.StageTransferBit,
-			Vk.AccessShaderWriteBit, Vk.AccessTransferReadBit )
-		_ -> error "unsupported layout transition!"
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
