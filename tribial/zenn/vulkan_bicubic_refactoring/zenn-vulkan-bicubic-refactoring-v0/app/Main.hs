@@ -158,8 +158,7 @@ pickPhd ist = Vk.Phd.enumerate ist >>= \case
 
 createLgDvc ::
 	Vk.Phd.P -> Vk.QFam.Index -> (forall sd . Vk.Dvc.D sd -> IO a) -> IO a
-createLgDvc pd qfi = Vk.Dvc.create pd info nil
-	where
+createLgDvc pd qfi = Vk.Dvc.create pd info nil where
 	info = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,
 		Vk.Dvc.createInfoFlags = zeroBits,
@@ -184,8 +183,10 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
 body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
-body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
+	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 ->
+	IO img
+body pd dv gq cp img flt a (fromIntegral -> n) i =
+	resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
 	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
 	prepareImg @ShaderFormat pd dv std (w + 2) (h + 2) \imgs' ->
@@ -198,56 +199,60 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 
 	compileShader "shader/expandWidth.comp" >>= \exws ->
 	createCmpPpl @'[] @'[]
-		dv (HPList.Singleton strImgBinding) exws \wdsl wpl wppl ->
+		dv (HPList.Singleton strgImgBinding) exws \wdsl wpl wppl ->
 	createDscPl dv \wdp -> createDscStSrc dv wdp imgvws' wdsl \wds ->
 
 	compileShader "shader/expandHeight.comp" >>= \exhs ->
 	createCmpPpl @'[] @'[]
-		dv (HPList.Singleton strImgBinding) exhs \hdsl hpl hppl ->
+		dv (HPList.Singleton strgImgBinding) exhs \hdsl hpl hppl ->
 	createDscPl dv \hdp -> createDscStSrc dv hdp imgvws' hdsl \hds ->
 
 	compileShader "shader/interpolate.comp" >>= \shdr ->
 	createCmpPpl @PshCnsts
 		@'[ 'Vk.PshCnst.Range '[ 'Vk.T.ShaderStageComputeBit] PshCnsts]
-		dv (strImgBinding :** strImgBinding :** HPList.Nil) shdr
+		dv (strgImgBinding :** strgImgBinding :** HPList.Nil) shdr
 		\dsl pl ppl ->
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
 
-	runCmds dv gq cp \cb -> do
-	tr cb imgs Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyBffrToImg cb b imgs
-	tr cb imgs
-		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
-
-	tr cb imgs' Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg' cb imgs imgs' w h
-	tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
-	tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
-
-	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute wppl \ccb -> do
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb wpl (HPList.Singleton $ U2 wds) def
-		Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
-
-	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute hppl \ccb -> do
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb hpl (HPList.Singleton $ U2 hds) def
-		Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
-
-	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb pl (HPList.Singleton $ U2 ds) def
-		Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
-			ccb pl (flt :* a :* n' :* ix :* iy :* HPList.Nil)
-		Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
-
-	tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
-
-	tr cb imgd Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
-	copyImgToImg cb imgd' imgd w h Vk.FilterNearest 1 0
-	tr cb imgd
-		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
-	copyImgToBffr cb imgd rb
+	allocateCmdBffr dv cp \cb ->
+	runCmds gq cb do
+		tr cb imgs
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyBffrToImg cb b imgs
+		tr cb imgs
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutTransferSrcOptimal
+		tr cb imgs'
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyImgToImg cb imgs imgs' w h 1 1
+		tr cb imgs' Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutGeneral
+		tr cb imgd' Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
+		Vk.Cmd.bindPipelineCompute
+				cb Vk.Ppl.BindPointCompute wppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute
+				ccb wpl (HPList.Singleton $ U2 wds) def
+			Vk.Cmd.dispatch ccb 1 ((h + 2) `div'` 16) 1
+		Vk.Cmd.bindPipelineCompute
+				cb Vk.Ppl.BindPointCompute hppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute
+				ccb hpl (HPList.Singleton $ U2 hds) def
+			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
+		Vk.Cmd.bindPipelineCompute
+				cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute
+				ccb pl (HPList.Singleton $ U2 ds) def
+			Vk.Cmd.pushConstantsCompute
+				@'[ 'Vk.T.ShaderStageComputeBit]
+				ccb pl (flt :* a :* n :* ix :* iy :* HPList.Nil)
+			Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+		tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
+		tr cb imgd
+			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
+		copyImgToImg cb imgd' imgd w h 0 0
+		tr cb imgd
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutTransferSrcOptimal
+		copyImgToBffr cb imgd rb
 	where
 	trsd = Vk.Img.UsageTransferSrcBit .|. Vk.Img.UsageTransferDstBit
 	sts = Vk.Img.UsageStorageBit .|. Vk.Img.UsageTransferSrcBit
@@ -256,26 +261,23 @@ body pd dv gq cp img flt a n i = resultBffr @img pd dv w h \rb ->
 	w = fromIntegral $ Vk.ObjB.imageWidth img
 	h = fromIntegral $ Vk.ObjB.imageHeight img
 	tr = transitionImgLyt
-	n', ix, iy :: Word32
-	n' = fromIntegral n
-	ix = fromIntegral $ i `mod` n
-	iy = fromIntegral $ i `div` n
-	x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
+	ix, iy :: Word32
+	ix = fromIntegral i `mod` n
+	iy = fromIntegral i `div` n
 
 resultBffr :: Vk.ObjB.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[Vk.ObjNA.Image img nmi] -> IO a) ->
 	IO img
-resultBffr pd dv w h f = head
-	<$> createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
+resultBffr pd dv w h f = head <$>
+	createBffrImg pd dv Vk.Bffr.UsageTransferDstBit w h
 		\(b :: Vk.Bffr.Binded sm sb nm '[o]) m ->
 	f b >> Vk.Mm.read @nm @o @0 dv m zeroBits
 
 imgVwInfo :: Vk.Img.Binded sm si nm ifmt ->
-	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt ivfmt
+	Vk.ImgVw.CreateInfo 'Nothing sm si nm ifmt vfmt
 imgVwInfo i = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = TMaybe.N,
-	Vk.ImgVw.createInfoFlags = zeroBits,
+	Vk.ImgVw.createInfoNext = TMaybe.N, Vk.ImgVw.createInfoFlags = zeroBits,
 	Vk.ImgVw.createInfoImage = i,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
 	Vk.ImgVw.createInfoComponents = def,
@@ -288,8 +290,8 @@ imgVwInfo i = Vk.ImgVw.CreateInfo {
 
 type PshCnsts = '[Filter, Float, Word32, Word32, Word32]
 
-strImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
-strImgBinding = Vk.DscStLyt.BindingImage {
+strgImgBinding :: Vk.DscStLyt.Binding ('Vk.DscStLyt.Image iargs)
+strgImgBinding = Vk.DscStLyt.BindingImage {
 	Vk.DscStLyt.bindingImageDescriptorType = Vk.Dsc.TypeStorageImage,
 	Vk.DscStLyt.bindingImageStageFlags = Vk.ShaderStageComputeBit }
 
@@ -300,8 +302,7 @@ createBffrImg :: forall img sd bnm nm a . Vk.ObjB.IsImage img =>
 	Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
 		Vk.Bffr.Binded sm sb bnm '[Vk.ObjNA.Image img nm] ->
 		Vk.Mm.M sm '[ '(
-			sb,
-			'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
+			sb, 'Vk.Mm.BufferArg bnm '[Vk.ObjNA.Image img nm] )] ->
 		IO a) -> IO a
 createBffrImg pd dv us w h = createBffr pd dv (Vk.Obj.LengthImage w w h 1 1) us
 	(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
@@ -337,8 +338,7 @@ findMmType pd tbs prs =
 bffrInfo :: Vk.Obj.Length o ->
 	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing '[o]
 bffrInfo ln us = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = TMaybe.N,
-	Vk.Bffr.createInfoFlags = zeroBits,
+	Vk.Bffr.createInfoNext = TMaybe.N, Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths = HPList.Singleton ln,
 	Vk.Bffr.createInfoUsage = us,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
@@ -346,8 +346,8 @@ bffrInfo ln us = Vk.Bffr.CreateInfo {
 
 prepareImg :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Img.UsageFlags -> Word32 -> Word32 ->
-	(forall si sm . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
-prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
+	(forall sm si . Vk.Img.Binded sm si nm fmt -> IO a) -> IO a
+prepareImg pd dv us w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 	rqs <- Vk.Img.getMemoryRequirements dv i
 	mt <- findMmType pd (Vk.Mm.requirementsMemoryTypeBits rqs) zeroBits
 	Vk.Mm.allocateBind dv (HPList.Singleton . U2 $ Vk.Mm.Image i) (minfo mt)
@@ -364,7 +364,7 @@ prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 		Vk.Img.createInfoArrayLayers = 1,
 		Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
 		Vk.Img.createInfoTiling = Vk.Img.TilingOptimal,
-		Vk.Img.createInfoUsage = usg,
+		Vk.Img.createInfoUsage = us,
 		Vk.Img.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Img.createInfoQueueFamilyIndices = [],
 		Vk.Img.createInfoInitialLayout = Vk.Img.LayoutUndefined }
@@ -374,24 +374,28 @@ prepareImg pd dv usg w h f = Vk.Img.create @'Nothing dv iinfo nil \i -> do
 
 -- COMMAND BUFFER
 
-runCmds :: forall sd sc a . Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> (forall scb . Vk.CBffr.C scb -> IO a) -> IO a
-runCmds dv gq cp cmds =
-	Vk.CBffr.allocateCs dv cbinfo \(cb :*. HPList.Nil) ->
-	Vk.CBffr.begin @_ @'Nothing cb binfo (cmds cb) <* do
-	Vk.Q.submit gq (HPList.Singleton . U4 $ sinfo cb) Nothing
-	Vk.Q.waitIdle gq
+allocateCmdBffr :: forall sd scp a .
+	Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
+	(forall scb . Vk.CBffr.C scb -> IO a) -> IO a
+allocateCmdBffr dv cp f = Vk.CBffr.allocateCs dv info \(b :*. HPList.Nil) -> f b
 	where
-	cbinfo :: Vk.CBffr.AllocateInfo 'Nothing sc '[ '()]
-	cbinfo = Vk.CBffr.AllocateInfo {
+	info :: Vk.CBffr.AllocateInfo 'Nothing scp '[ '()]
+	info = Vk.CBffr.AllocateInfo {
 		Vk.CBffr.allocateInfoNext = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPool = cp,
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
+
+runCmds :: forall scb a . Vk.Q.Q -> Vk.CBffr.C scb -> IO a -> IO a
+runCmds gq cb cmds =
+	Vk.CBffr.begin @_ @'Nothing cb binfo cmds <* do
+	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) Nothing
+	Vk.Q.waitIdle gq
+	where
 	binfo = Vk.CBffr.BeginInfo {
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
-	sinfo cb = Vk.SubmitInfo {
+	sinfo = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
 		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
@@ -443,9 +447,9 @@ transitionImgLyt cb i ol nl =
 	srr = Vk.Img.SubresourceRange {
 		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
 		Vk.Img.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
 		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
+		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers }
 	(srcst, dstst, srcam, dstam) = case (ol, nl) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit,
@@ -467,29 +471,25 @@ transitionImgLyt cb i ol nl =
 
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
-	Int32 -> Int32 -> Vk.Filter -> Int32 -> Int32 -> IO ()
-copyImgToImg cb si di w h flt n i = Vk.Cmd.blitImage cb
+	Int32 -> Int32 -> Int32 -> Int32 -> IO ()
+copyImgToImg cb si di w h dl dt = Vk.Cmd.blitImage cb
 	si Vk.Img.LayoutTransferSrcOptimal
-	di Vk.Img.LayoutTransferDstOptimal [blt] flt
-	where
-	blt = Vk.Img.Blit {
+	di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
+	where blt = Vk.Img.Blit {
 		Vk.Img.blitSrcSubresource = colorLayer0,
-		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d l t 0,
-		Vk.Img.blitSrcOffsetTo = Vk.Offset3d r b 1,
+		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
 		Vk.Img.blitDstSubresource = colorLayer0,
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 0 0 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d w h 1 }
-	(l, r, t, b) = (
-		w * (i `mod` n) `div` n, w * (i `mod` n + 1) `div` n,
-		h * (i `div` n) `div` n, h * (i `div` n + 1) `div` n )
+		Vk.Img.blitDstOffsetFrom = Vk.Offset3d dl dt 0,
+		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + dl) (h + dt) 1 }
 
 copyImgToBffr :: forall scb img smi si inm smb sbb bnm imgnm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
 	Vk.Img.Binded smi si inm (Vk.ObjB.ImageFormat img) ->
 	Vk.Bffr.Binded smb sbb bnm '[Vk.ObjNA.Image img imgnm] -> IO ()
 copyImgToBffr cb i b@(bffrImgExtent -> (w, h)) =
-	Vk.Cmd.copyImageToBuffer @1 @img @'[imgnm] cb i
-		Vk.Img.LayoutTransferSrcOptimal b
+	Vk.Cmd.copyImageToBuffer
+		@1 @img @'[imgnm] cb i Vk.Img.LayoutTransferSrcOptimal b
 		$ HPList.Singleton Vk.Bffr.ImageCopy {
 			Vk.Bffr.imageCopyImageSubresource = colorLayer0,
 			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
@@ -497,23 +497,18 @@ copyImgToBffr cb i b@(bffrImgExtent -> (w, h)) =
 
 -- PIPELINE AND DESCRIPTOR SET
 
-createCmpPpl :: forall pctps pcrng sd bds a . (
-	Vk.PshCnst.RangeListToMiddle pctps pcrng,
+createCmpPpl :: forall pcts pcrng sd bds a . (
+	Vk.PshCnst.RangeListToMiddle pcts pcrng,
 	Vk.DscStLyt.BindingListToMiddle bds ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds ->
 	SpirV.S GlslComputeShader -> (forall sds scppl spl .
-		Vk.DscStLyt.D sds bds ->
-		Vk.PplLyt.P spl '[ '(sds, bds)] pctps ->
-		Vk.Ppl.Cp.C scppl '(spl, '[ '(sds, bds)], pctps) -> IO a) ->
-	IO a
+		Vk.DscStLyt.D sds bds -> Vk.PplLyt.P spl '[ '(sds, bds)] pcts ->
+		Vk.Ppl.Cp.C scppl '(spl, '[ '(sds, bds)], pcts) -> IO a) -> IO a
 createCmpPpl d bds shdr f =
-	createPplLyt @pctps @pcrng d bds \dsl pl ->
+	createPplLyt @pcts @pcrng d bds \dsl pl ->
 	Vk.Ppl.Cp.createCs d Nothing (HPList.Singleton . U4 $ info pl) nil
 		\(HPList.Singleton p) -> f dsl pl p
 	where
-	info :: Vk.PplLyt.P sl sbtss pcw -> Vk.Ppl.Cp.CreateInfo 'Nothing
-		'( 'Nothing, 'Nothing, 'GlslComputeShader, 'Nothing, '[])
-		'(sl, sbtss, pcw) bpha
 	info pl = Vk.Ppl.Cp.CreateInfo {
 		Vk.Ppl.Cp.createInfoNext = TMaybe.N,
 		Vk.Ppl.Cp.createInfoFlags = zeroBits,
@@ -534,18 +529,17 @@ createCmpPpl d bds shdr f =
 		Vk.ShdrMd.createInfoFlags = zeroBits,
 		Vk.ShdrMd.createInfoCode = shdr }
 
-createPplLyt :: forall pctps pcrng sd a bds . (
+createPplLyt :: forall pcts pcrng sd a bds . (
 	Vk.DscStLyt.BindingListToMiddle bds,
-	Vk.PshCnst.RangeListToMiddle pctps pcrng ) =>
+	Vk.PshCnst.RangeListToMiddle pcts pcrng ) =>
 	Vk.Dvc.D sd -> HPList.PL Vk.DscStLyt.Binding bds -> (forall sl sdsl .
 		Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.P sl '[ '(sdsl, bds)] pctps -> IO a) -> IO a
+		Vk.PplLyt.P sl '[ '(sdsl, bds)] pcts -> IO a) -> IO a
 createPplLyt dv bds f = createDscStLyt dv bds \dsl ->
 	Vk.PplLyt.create dv (info dsl) nil $ f dsl
 	where
-	info :: Vk.DscStLyt.D sdsl bds ->
-		Vk.PplLyt.CreateInfo 'Nothing
-			'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pctps pcrng)
+	info :: Vk.DscStLyt.D sdsl bds -> Vk.PplLyt.CreateInfo 'Nothing
+		'[ '(sdsl, bds)] ('Vk.PshCnst.Layout pcts pcrng)
 	info dsl = Vk.PplLyt.CreateInfo {
 		Vk.PplLyt.createInfoNext = TMaybe.N,
 		Vk.PplLyt.createInfoFlags = zeroBits,
@@ -574,16 +568,15 @@ createDscPl dv = Vk.DscPl.create dv info nil
 
 createDscSt ::
 	Vk.Dvc.D sd -> Vk.DscPl.P sdp ->
-	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
-	Vk.ImgVw.I "destination_image" ShaderFormat sivd ->
+	Vk.ImgVw.I SrcImgNm ShaderFormat sivs ->
+	Vk.ImgVw.I DstImgNm ShaderFormat sivd ->
 	Vk.DscStLyt.D sdsl '[SrcImg, DstImg] ->
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) -> IO a) -> IO a
-createDscSt dv dp svw dvw dl a =
-	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds)
-		$ Vk.DscSt.updateDs dv
-			(U5 (dscWrite ds svw) :** U5 (dscWrite ds dvw) :**
-				HPList.Nil)
-			HPList.Nil
+createDscSt dv dp vs vd dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) ->
+	(>> a ds) $ Vk.DscSt.updateDs
+		dv (U5 (dscWrite ds vs) :** U5 (dscWrite ds vd) :** HPList.Nil)
+		HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
@@ -591,20 +584,21 @@ createDscSt dv dp svw dvw dl a =
 
 createDscStSrc ::
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.ImgVw.I "source_image" ShaderFormat sivs ->
+	Vk.ImgVw.I SrcImgNm ShaderFormat sivs ->
 	Vk.DscStLyt.D sdsl '[SrcImg] ->
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg]) -> IO a) -> IO a
-createDscStSrc dv dp svw dl a =
-	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) -> (>> a ds) $
-	Vk.DscSt.updateDs
-		dv (HPList.Singleton . U5 $ dscWrite ds svw) HPList.Nil
+createDscStSrc dv dp vs dl a =
+	Vk.DscSt.allocateDs dv info \(HPList.Singleton ds) ->
+	(>> a ds) $ Vk.DscSt.updateDs
+		dv (HPList.Singleton . U5 $ dscWrite ds vs) HPList.Nil
 	where info = Vk.DscSt.AllocateInfo {
 		Vk.DscSt.allocateInfoNext = TMaybe.N,
 		Vk.DscSt.allocateInfoDescriptorPool = dp,
 		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
-type SrcImg = 'Vk.DscStLyt.Image '[ '("source_image", ShaderFormat)]
-type DstImg = 'Vk.DscStLyt.Image '[ '("destination_image", ShaderFormat)]
+type SrcImg = 'Vk.DscStLyt.Image '[ '(SrcImgNm, ShaderFormat)]
+type DstImg = 'Vk.DscStLyt.Image '[ '(DstImgNm, ShaderFormat)]
+type SrcImgNm = "source_image"; type DstImgNm = "destination_image"
 
 dscWrite :: Vk.DscSt.D sds slbts -> Vk.ImgVw.I nm fmt si ->
 	Vk.DscSt.Write 'Nothing sds slbts
@@ -623,15 +617,7 @@ compileShader fp = do
 	cd <- BS.readFile =<< getDataFileName fp
 	Shaderc.compile @() cd (BSC.pack fp) "main" def
 
-copyImgToImg' :: Vk.CBffr.C scb -> Vk.Img.Binded sms sis nms fmts ->
-	Vk.Img.Binded smd sid nmd fmtd -> Int32 -> Int32 -> IO ()
-copyImgToImg' cb si di w h = Vk.Cmd.blitImage cb
-	si Vk.Img.LayoutTransferSrcOptimal
-	di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
-	where blt = Vk.Img.Blit {
-		Vk.Img.blitSrcSubresource = colorLayer0,
-		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
-		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
-		Vk.Img.blitDstSubresource = colorLayer0,
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d 1 1 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + 1) (h + 1) 1 }
+-- TOOLS
+
+div' :: Integral n => n -> n -> n
+x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1

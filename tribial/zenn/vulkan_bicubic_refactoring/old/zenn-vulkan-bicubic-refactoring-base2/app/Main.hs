@@ -241,7 +241,8 @@ body pd dv gq cp img flt a (fromIntegral -> n) i =
 				cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute
 				ccb pl (HPList.Singleton $ U2 ds) def
-			Vk.Cmd.pushConstantsCompute @'[ 'Vk.T.ShaderStageComputeBit]
+			Vk.Cmd.pushConstantsCompute
+				@'[ 'Vk.T.ShaderStageComputeBit]
 				ccb pl (flt :* a :* n :* ix :* iy :* HPList.Nil)
 			Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
 		tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
