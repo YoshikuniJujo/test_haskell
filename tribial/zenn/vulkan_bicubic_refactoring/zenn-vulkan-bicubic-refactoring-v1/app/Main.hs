@@ -71,6 +71,8 @@ import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
 
+import Gpu.Vulkan.Semaphore qualified as Vk.Smph
+
 import Paths_zenn_vulkan_bicubic_refactoring_v1
 
 ---------------------------------------------------------------------------
@@ -228,7 +230,7 @@ body pd dv gq cp img flt a (fromIntegral -> n) i =
 	createDscPl dv \dp -> createDscSt dv dp imgvws' imgvwd' dsl \ds ->
 
 	allocateCmdBffr dv cp \cb ->
-	runCmds gq cb do
+	runCmds gq cb HPList.Nil HPList.Nil do
 		tr cb imgs
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyBffrToImg cb b imgs
@@ -398,21 +400,34 @@ allocateCmdBffr dv cp f = Vk.CBffr.allocateCs dv info \(b :*. HPList.Nil) -> f b
 		Vk.CBffr.allocateInfoCommandPool = cp,
 		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
-runCmds :: forall scb a . Vk.Q.Q -> Vk.CBffr.C scb -> IO a -> IO a
-runCmds gq cb cmds =
+runCmds :: forall scb wss sss a . (
+	Vk.Smph.SubmitInfoListToMiddle wss,
+	Vk.Smph.SubmitInfoListToMiddle sss ) =>
+	Vk.Q.Q -> Vk.CBffr.C scb ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) wss ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) sss -> IO a -> IO a
+runCmds gq cb wss sss cmds =
 	Vk.CBffr.begin @_ @'Nothing cb binfo cmds <* do
-	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) Nothing
+	Vk.Q.submit2 gq (HPList.Singleton . U4 $ submitInfo cb wss sss) Nothing
 	Vk.Q.waitIdle gq
-	where
-	binfo = Vk.CBffr.BeginInfo {
+	where binfo = Vk.CBffr.BeginInfo {
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
-	sinfo = Vk.SubmitInfo {
-		Vk.submitInfoNext = TMaybe.N,
-		Vk.submitInfoWaitSemaphoreDstStageMasks = HPList.Nil,
-		Vk.submitInfoCommandBuffers = HPList.Singleton cb,
-		Vk.submitInfoSignalSemaphores = HPList.Nil }
+
+submitInfo :: Vk.CBffr.C scb ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) wsas ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) ssas ->
+	Vk.SubmitInfo2 'Nothing wsas '[ '( 'Nothing, scb)] ssas
+submitInfo cb wsis ssis = Vk.SubmitInfo2 {
+	Vk.submitInfo2Next = TMaybe.N, Vk.submitInfo2Flags = zeroBits,
+	Vk.submitInfo2WaitSemaphoreInfos = wsis,
+	Vk.submitInfo2CommandBufferInfos = HPList.Singleton $ U2 cbi,
+	Vk.submitInfo2SignalSemaphoreInfos = ssis }
+	where cbi = Vk.CBffr.SubmitInfo {
+		Vk.CBffr.submitInfoNext = TMaybe.N,
+		Vk.CBffr.submitInfoCommandBuffer = cb,
+		Vk.CBffr.submitInfoDeviceMask = def }
 
 -- COMMANDS
 
