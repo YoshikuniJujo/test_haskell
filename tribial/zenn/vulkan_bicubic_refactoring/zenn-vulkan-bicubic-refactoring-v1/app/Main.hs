@@ -140,7 +140,17 @@ createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst = Vk.Ist.create info nil
 	where
 	info :: Vk.Ist.CreateInfo 'Nothing 'Nothing
-	info = def { Vk.Ist.createInfoEnabledLayerNames = vldLayers }
+	info = def {
+		Vk.Ist.createInfoApplicationInfo = Just ainfo,
+		Vk.Ist.createInfoEnabledLayerNames = vldLayers }
+	ainfo = Vk.ApplicationInfo {
+		Vk.applicationInfoNext = TMaybe.N,
+		Vk.applicationInfoApplicationName = "BICUBIC INTERPOLATION",
+		Vk.applicationInfoApplicationVersion =
+			Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoEngineName = "No Engine",
+		Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+		Vk.applicationInfoApiVersion = Vk.apiVersion_1_3 }
 
 vldLayers :: [Vk.LayerName]
 vldLayers = [Vk.layerKhronosValidation]
@@ -472,16 +482,26 @@ transitionImgLyt cb i ol nl =
 copyImgToImg :: Vk.CBffr.C scb ->
 	Vk.Img.Binded sms sis nms fmts -> Vk.Img.Binded smd sid nmd fmtd ->
 	Int32 -> Int32 -> Int32 -> Int32 -> IO ()
-copyImgToImg cb si di w h dl dt = Vk.Cmd.blitImage cb
-	si Vk.Img.LayoutTransferSrcOptimal
-	di Vk.Img.LayoutTransferDstOptimal [blt] Vk.FilterNearest
-	where blt = Vk.Img.Blit {
-		Vk.Img.blitSrcSubresource = colorLayer0,
-		Vk.Img.blitSrcOffsetFrom = Vk.Offset3d 0 0 0,
-		Vk.Img.blitSrcOffsetTo = Vk.Offset3d w h 1,
-		Vk.Img.blitDstSubresource = colorLayer0,
-		Vk.Img.blitDstOffsetFrom = Vk.Offset3d dl dt 0,
-		Vk.Img.blitDstOffsetTo = Vk.Offset3d (w + dl) (h + dt) 1 }
+copyImgToImg cb si di w h dl dt = Vk.Cmd.blitImage2 cb info
+	where
+	info = Vk.BlitImageInfo2 {
+		Vk.blitImageInfo2Next = TMaybe.N,
+		Vk.blitImageInfo2SrcImage = si,
+		Vk.blitImageInfo2SrcImageLayout =
+			Vk.Img.LayoutTransferSrcOptimal,
+		Vk.blitImageInfo2DstImage = di,
+		Vk.blitImageInfo2DstImageLayout =
+			Vk.Img.LayoutTransferDstOptimal,
+		Vk.blitImageInfo2Regions = blt,
+		Vk.blitImageInfo2Filter = Vk.FilterNearest }
+	blt = HPList.Singleton Vk.Img.Blit2 {
+		Vk.Img.blit2Next = TMaybe.N,
+		Vk.Img.blit2SrcSubresource = colorLayer0,
+		Vk.Img.blit2SrcOffsetFrom = Vk.Offset3d 0 0 0,
+		Vk.Img.blit2SrcOffsetTo = Vk.Offset3d w h 1,
+		Vk.Img.blit2DstSubresource = colorLayer0,
+		Vk.Img.blit2DstOffsetFrom = Vk.Offset3d dl dt 0,
+		Vk.Img.blit2DstOffsetTo = Vk.Offset3d (w + dl) (h + dt) 1 }
 
 copyImgToBffr :: forall scb img smi si inm smb sbb bnm imgnm .
 	Storable (Vk.ObjB.ImagePixel img) => Vk.CBffr.C scb ->
