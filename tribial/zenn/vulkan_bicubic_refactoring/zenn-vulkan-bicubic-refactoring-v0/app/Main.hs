@@ -583,8 +583,7 @@ createDscSt dv dp vs vd dl a =
 		Vk.DscSt.allocateInfoSetLayouts = HPList.Singleton $ U2 dl }
 
 createDscStSrc ::
-	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
-	Vk.ImgVw.I SrcImgNm ShaderFormat sivs ->
+	Vk.Dvc.D sd -> Vk.DscPl.P sp -> Vk.ImgVw.I SrcImgNm ShaderFormat sivs ->
 	Vk.DscStLyt.D sdsl '[SrcImg] ->
 	(forall sds . Vk.DscSt.D sds '(sdsl, '[SrcImg]) -> IO a) -> IO a
 createDscStSrc dv dp vs dl a =
