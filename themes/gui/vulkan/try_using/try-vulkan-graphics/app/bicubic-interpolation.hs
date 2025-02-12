@@ -98,6 +98,7 @@ import Paths_try_vulkan_graphics
 --
 -- * DATA TYPE IMAGE RGBA8
 -- * MAIN
+-- * KEY EVENTS
 -- * BUFFER AND IMAGE
 -- * COMMAND BUFFER
 -- * COMMANDS
@@ -278,16 +279,16 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 				ccb hpl (HPList.Singleton $ U2 hds) def
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
-	ck <- atomically newTChan
-	Vk.Smph.create @'Nothing dv def nil \scs ->
-		Vk.Smph.create @'Nothing dv def nil \drs ->
-		let	wi = smphInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
-			si = smphInfo drs Vk.Ppl.Stage2AllGraphicsBit in
-		withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
+	withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
 		createSwpch win sf pd dv \sc ->
-		Vk.Swpch.getImages dv sc >>= \scis -> do
+		Vk.Smph.create @'Nothing dv def nil \scs ->
+		Vk.Smph.create @'Nothing dv def nil \drs -> do
+		let	wi = smphInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
+			si = smphInfo drs Vk.Ppl.Stage2AllGraphicsBit
+		ck <- atomically newTChan
 		GlfwG.Win.setKeyCallback win . Just $ kCllbck ck
-		($ (f0, a0, n0, x0, y0)) . uncurry5 $ fix \act f a n ix iy -> do
+		scis <- Vk.Swpch.getImages dv sc
+		($ (f0, a0, n0, x0, y0)) . unc5 $ fix \act f a n ix iy -> do
 			ii <- Vk.Swpch.acquireNextImage
 				dv sc Nothing (Just scs) Nothing
 			draw gq cb wi si ppl pl ds w h imgd' scis ii f a n ix iy
@@ -297,15 +298,12 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 			GlfwG.waitEvents
 			wsc <- GlfwG.Win.shouldClose win
 			mk <- atomically $ tryReadTChan ck
-			case (wsc, mk) of
+			case (wsc, uncurry (procKey w h f a n ix iy) <$> mk) of
 				(True, _) -> end n ix iy
 				(_, Nothing) -> act f a n ix iy
-				(_, Just (k, ks)) ->
-					case processKey w h k ks f a n ix iy of
-						Nothing -> end n ix iy
-						Just args@(_, a', _, _, _) -> do
-							when (a /= a') $ bar a'
-							uncurry5 act args
+				(_, Just Nothing) -> end n ix iy
+				(_, Just (Just args@(_, a', _, _, _))) ->
+					when (a /= a') (bar a') >> unc5 act args
 
 	runCmds gq cb HPList.Nil HPList.Nil do
 		tr cb imgd
@@ -326,9 +324,6 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 	x0, y0 :: Word32
 	x0 = fromIntegral i `mod` n0
 	y0 = fromIntegral i `div` n0
-	pinfo :: forall scfmt ccs s .
-		Vk.Swpch.S scfmt ccs -> Word32 -> Vk.Smph.S s ->
-		Vk.Swpch.PresentInfo 'Nothing '[s] scfmt '[ccs]
 	pinfo sc ii drs = Vk.Swpch.PresentInfo {
 		Vk.Swpch.presentInfoNext = TMaybe.N,
 		Vk.Swpch.presentInfoWaitSemaphores = HPList.Singleton drs,
@@ -384,31 +379,6 @@ waitFramebufferSize win p = GlfwG.Win.getFramebufferSize win >>= \sz ->
 	when (not $ p sz) $ fix \go -> (`when` go) . not . p =<<
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize win
 
-data K = Q | N | Semicolon | H | J | K | L | U | I | M | Comma | D | F
-	deriving Show
-
-keyToK :: GlfwG.K.Key -> Maybe K
-keyToK = \case
-	GlfwG.K.Key'Q -> Just Q
-	GlfwG.K.Key'N -> Just N; GlfwG.K.Key'Semicolon -> Just Semicolon
-	GlfwG.K.Key'H -> Just H; GlfwG.K.Key'J -> Just J
-	GlfwG.K.Key'K -> Just K; GlfwG.K.Key'L -> Just L
-	GlfwG.K.Key'U -> Just U; GlfwG.K.Key'I -> Just I
-	GlfwG.K.Key'M -> Just M; GlfwG.K.Key'Comma -> Just Comma
-	GlfwG.K.Key'D -> Just D; GlfwG.K.Key'F -> Just F; _ -> Nothing
-
-data PR = Pr | Rp deriving Show
-
-keyStateToPR :: GlfwG.K.KeyState -> Maybe PR
-keyStateToPR = \case
-	GlfwG.K.KeyState'Pressed -> Just Pr
-	GlfwG.K.KeyState'Repeating -> Just Rp
-	_ -> Nothing
-
-kCllbck :: TChan (K, PR) -> GlfwG.Win.KeyCallback sw
-kCllbck ck _ ky _ ks _ = atomically case (keyToK ky, keyStateToPR ks) of
-	(Just k, Just pr) -> writeTChan ck (k, pr); _ -> pure ()
-
 draw :: (
 	Vk.Smph.SubmitInfoListToMiddle wss,
 	Vk.Smph.SubmitInfoListToMiddle sss ) => Vk.Q.Q -> Vk.CBffr.C scb ->
@@ -434,38 +404,6 @@ draw gq cb wi si ppl pl ds w h im scis ii flt a n ix iy = runCmds gq cb wi si do
 	tr cb sci Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
 	where tr = transitionImgLyt; sci = scis !! fromIntegral ii
 
-processKey ::
-	Word32 -> Word32 -> K -> PR ->
-	Filter -> Float -> Word32 -> Word32 -> Word32 ->
-	Maybe (Filter, Float, Word32, Word32, Word32)
-processKey _ _ Q _ _ _ _ _ _ = Nothing
-processKey _ _ N _ _ a n ix iy = Just (Nearest, a, n, ix, iy)
-processKey _ _ Semicolon _ _ a n ix iy = Just (Linear, a, n, ix, iy)
-processKey _ _ M _ _ _ n ix iy = Just (Cubic, - 0.75, n, ix, iy)
-processKey _ _ Comma _ _ _ n ix iy = Just (Cubic, - 0.5, n, ix, iy)
-processKey _ _ U Pr _ a n ix iy =
-	Just (Cubic, clamp (- 1) (- 0.25) $ a - 0.01, n, ix, iy)
-processKey _ _ U Rp _ a@(subtract 0.01 -> a') n ix iy = Just (
-	Cubic,
-	bool (clamp (- 1) (- 0.25) a') a (a' < - 0.75 && - 0.75 <= a),
-	n, ix, iy)
-processKey _ _ I Pr _ a n ix iy =
-	Just (Cubic, clamp (- 1) (- 0.25) $ a + 0.01, n, ix, iy)
-processKey _ _ I Rp _ a@((+ 0.01) -> a') n ix iy = Just (
-	Cubic,
-	bool (clamp (- 1) (- 0.25) a') a (a <= - 0.5 && - 0.5 < a'), n, ix, iy)
-processKey _ _ H _ f a n ix iy = Just (f, a, n, clamp 0 (n - 1) $ ix `sub'` 1, iy)
-processKey _ _ J _ f a n ix iy = Just (f, a, n, ix, clamp 0 (n - 1) $ iy + 1)
-processKey _ _ K _ f a n ix iy = Just (f, a, n, ix, clamp 0 (n - 1) $ iy `sub'` 1)
-processKey _ _ L _ f a n ix iy = Just (f, a, n, clamp 0 (n - 1) $ ix + 1, iy)
-processKey w h D _ f a (clamp 1 (max w h) . subtract 1  -> n) ix iy =
-	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
-processKey w h F _ f a (clamp 1 (max w h) . (+ 1) -> n) ix iy =
-	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
-
-sub' :: (Ord n, Num n) => n -> n -> n
-x `sub'` y | x >= y = x - y | otherwise = 0
-
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
@@ -479,6 +417,60 @@ barString a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
 	z = round @Double $ 71 + 70 * (- 0.75)
 	w = round @Double (71 + 70 * (- 0.5)) - z - 2
 	v = round @Double (71 + 70 * (- 0.25)) - w - z - 3
+
+-- KEY EVENTS
+
+kCllbck :: TChan (K, PR) -> GlfwG.Win.KeyCallback sw
+kCllbck ck _ ky _ ks _ = atomically case (keyToK ky, keyStateToPR ks) of
+	(Just k, Just pr) -> writeTChan ck (k, pr); _ -> pure ()
+
+data K = Q | N | Semicolon | H | J | K | L | U | I | M | Comma | D | F
+	deriving Show
+
+keyToK :: GlfwG.K.Key -> Maybe K
+keyToK = \case
+	GlfwG.K.Key'Q -> Just Q
+	GlfwG.K.Key'N -> Just N; GlfwG.K.Key'Semicolon -> Just Semicolon
+	GlfwG.K.Key'H -> Just H; GlfwG.K.Key'J -> Just J
+	GlfwG.K.Key'K -> Just K; GlfwG.K.Key'L -> Just L
+	GlfwG.K.Key'U -> Just U; GlfwG.K.Key'I -> Just I
+	GlfwG.K.Key'M -> Just M; GlfwG.K.Key'Comma -> Just Comma
+	GlfwG.K.Key'D -> Just D; GlfwG.K.Key'F -> Just F; _ -> Nothing
+
+data PR = Pr | Rp deriving Show
+
+keyStateToPR :: GlfwG.K.KeyState -> Maybe PR
+keyStateToPR = \case
+	GlfwG.K.KeyState'Pressed -> Just Pr
+	GlfwG.K.KeyState'Repeating -> Just Rp
+	_ -> Nothing
+
+procKey :: Word32 -> Word32 -> Filter -> Float -> Word32 -> Word32 -> Word32 ->
+	K -> PR -> Maybe (Filter, Float, Word32, Word32, Word32)
+procKey _ _ _ _ _ _ _ Q _ = Nothing
+procKey _ _ _ a n ix iy N _ = Just (Nearest, a, n, ix, iy)
+procKey _ _ _ a n ix iy Semicolon _ = Just (Linear, a, n, ix, iy)
+procKey _ _ _ _ n ix iy M _ = Just (Cubic, - 0.75, n, ix, iy)
+procKey _ _ _ _ n ix iy Comma _ = Just (Cubic, - 0.5, n, ix, iy)
+procKey _ _ _ a n ix iy U Pr =
+	Just (Cubic, clamp (- 1) (- 0.25) $ a - 0.01, n, ix, iy)
+procKey _ _ _ a@(subtract 0.01 -> a') n ix iy U Rp = Just (
+	Cubic,
+	bool (clamp (- 1) (- 0.25) a') a (a' < - 0.75 && - 0.75 <= a),
+	n, ix, iy)
+procKey _ _ _ a n ix iy I Pr =
+	Just (Cubic, clamp (- 1) (- 0.25) $ a + 0.01, n, ix, iy)
+procKey _ _ _ a@((+ 0.01) -> a') n ix iy I Rp = Just (
+	Cubic,
+	bool (clamp (- 1) (- 0.25) a') a (a <= - 0.5 && - 0.5 < a'), n, ix, iy)
+procKey _ _ f a n ix iy H _ = Just (f, a, n, clamp 0 (n - 1) $ ix `sub'` 1, iy)
+procKey _ _ f a n ix iy J _ = Just (f, a, n, ix, clamp 0 (n - 1) $ iy + 1)
+procKey _ _ f a n ix iy K _ = Just (f, a, n, ix, clamp 0 (n - 1) $ iy `sub'` 1)
+procKey _ _ f a n ix iy L _ = Just (f, a, n, clamp 0 (n - 1) $ ix + 1, iy)
+procKey w h f a (clamp 1 (max w h) . subtract 1  -> n) ix iy D _ =
+	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
+procKey w h f a (clamp 1 (max w h) . (+ 1) -> n) ix iy F _ =
+	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
 
 -- BUFFER AND IMAGE
 
@@ -904,8 +896,11 @@ swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 
 -- TOOLS
 
-uncurry5 :: (a -> b -> c -> d -> e -> r) -> (a, b, c, d, e) -> r
-uncurry5 f (x, y, z, v, u) = f x y z v u
+unc5 :: (a -> b -> c -> d -> e -> r) -> (a, b, c, d, e) -> r
+unc5 f (x, y, z, v, u) = f x y z v u
+
+sub' :: (Ord n, Num n) => n -> n -> n
+x `sub'` y | x >= y = x - y | otherwise = 0
 
 div' :: Integral n => n -> n -> n
 x `div'` y = case x `divMod` y of (d, 0) -> d; (d, _) -> d + 1
