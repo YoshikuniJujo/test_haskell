@@ -371,8 +371,7 @@ withWindow w h a = do
 		(ww, hw) <- GlfwG.Win.getSize win
 		(wf, hf) <- GlfwG.Win.getFramebufferSize win
 		GlfwG.Win.setSize win (w * ww `div` wf) (h * hw `div` hf)
-		waitFramebufferSize win (== (w, h))
-		a win
+		waitFramebufferSize win (== (w, h)) >> a win
 
 waitFramebufferSize :: GlfwG.Win.W sw -> ((Int, Int) -> Bool) -> IO ()
 waitFramebufferSize win p = GlfwG.Win.getFramebufferSize win >>= \sz ->
@@ -409,14 +408,15 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 barString :: Float -> String
-barString a = "-1 |" ++ replicate x '*' ++ replicate y ' ' ++ "| 0\n" ++
+barString a = "-1 " ++ take x ('|' : repeat '*') ++ "*" ++
+	replicate y ' ' ++ "| 0\n" ++
 	"   |" ++ replicate z ' ' ++ "|" ++ replicate w ' ' ++ "|" ++
 	replicate v ' ' ++ "|"
 	where
-	x = round $ 71 + 70 * a; y = 72 - x
-	z = round @Double $ 71 + 70 * (- 0.75)
-	w = round @Double (71 + 70 * (- 0.5)) - z - 2
-	v = round @Double (71 + 70 * (- 0.25)) - w - z - 3
+	ln :: Num n => n; ln = 70
+	x = tr a; y = ln - x
+	z = tr (- 0.75) - 1; w = tr (- 0.5) - z - 2; v = tr (- 0.25) - w - z - 3
+	tr = round . (ln +) . (ln *)
 
 -- KEY EVENTS
 
@@ -442,8 +442,7 @@ data PR = Pr | Rp deriving Show
 keyStateToPR :: GlfwG.K.KeyState -> Maybe PR
 keyStateToPR = \case
 	GlfwG.K.KeyState'Pressed -> Just Pr
-	GlfwG.K.KeyState'Repeating -> Just Rp
-	_ -> Nothing
+	GlfwG.K.KeyState'Repeating -> Just Rp; _ -> Nothing
 
 procKey :: Word32 -> Word32 -> Filter -> Float -> Word32 -> Word32 -> Word32 ->
 	K -> PR -> Maybe (Filter, Float, Word32, Word32, Word32)
@@ -452,25 +451,22 @@ procKey _ _ _ a n ix iy N _ = Just (Nearest, a, n, ix, iy)
 procKey _ _ _ a n ix iy Semicolon _ = Just (Linear, a, n, ix, iy)
 procKey _ _ _ _ n ix iy M _ = Just (Cubic, - 0.75, n, ix, iy)
 procKey _ _ _ _ n ix iy Comma _ = Just (Cubic, - 0.5, n, ix, iy)
-procKey _ _ _ a n ix iy U Pr =
-	Just (Cubic, clamp (- 1) (- 0.25) $ a - 0.01, n, ix, iy)
-procKey _ _ _ a@(subtract 0.01 -> a') n ix iy U Rp = Just (
-	Cubic,
-	bool (clamp (- 1) (- 0.25) a') a (a' < - 0.75 && - 0.75 <= a),
-	n, ix, iy)
-procKey _ _ _ a n ix iy I Pr =
-	Just (Cubic, clamp (- 1) (- 0.25) $ a + 0.01, n, ix, iy)
-procKey _ _ _ a@((+ 0.01) -> a') n ix iy I Rp = Just (
-	Cubic,
-	bool (clamp (- 1) (- 0.25) a') a (a <= - 0.5 && - 0.5 < a'), n, ix, iy)
+procKey _ _ _ (clamp (- 1) (- 0.25) . subtract 0.01 -> a') n ix iy U Pr =
+	Just (Cubic, a', n, ix, iy)
+procKey _ _ _ a@(clamp (- 1) (- 0.25) . subtract 0.01 -> a') n ix iy U Rp =
+	Just (Cubic, bool a' (- 0.75) (a' < - 0.75 && - 0.75 <= a), n, ix, iy)
+procKey _ _ _ (clamp (- 1) (- 0.25) . (+ 0.01) -> a') n ix iy I Pr =
+	Just (Cubic, a', n, ix, iy)
+procKey _ _ _ a@(clamp (- 1) (- 0.25) . (+ 0.01) -> a') n ix iy I Rp =
+	Just (Cubic, bool a' (- 0.5) (a <= - 0.5 && - 0.5 < a'), n, ix, iy)
 procKey _ _ f a n ix iy H _ = Just (f, a, n, clamp 0 (n - 1) $ ix `sub'` 1, iy)
 procKey _ _ f a n ix iy J _ = Just (f, a, n, ix, clamp 0 (n - 1) $ iy + 1)
 procKey _ _ f a n ix iy K _ = Just (f, a, n, ix, clamp 0 (n - 1) $ iy `sub'` 1)
 procKey _ _ f a n ix iy L _ = Just (f, a, n, clamp 0 (n - 1) $ ix + 1, iy)
 procKey w h f a (clamp 1 (max w h) . subtract 1  -> n) ix iy D _ =
-	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
+	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n - 1) iy)
 procKey w h f a (clamp 1 (max w h) . (+ 1) -> n) ix iy F _ =
-	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n `sub'` 1) iy)
+	Just (f, a, n, ix, iy)
 
 -- BUFFER AND IMAGE
 

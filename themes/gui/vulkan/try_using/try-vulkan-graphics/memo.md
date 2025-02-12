@@ -1,13 +1,5 @@
 ### app
 
-* [ ] bicubic-interpolation.hs
-	+ [ ] runCmds
-		- [ ] separate command buffer allocation
-			* [ ] reset command buffer
-	+ [ ] use Vk.Q.submit2
-	+ [ ] use Vk.Cmd.blitImage2
-	+ [ ] use Vk.Cmd.pipelineBarrier2
-
 #### bicubic-interpolation.hs
 
 * unorm -> srgb
@@ -17,76 +9,20 @@
 
 ##### refactoring
 
-* [x] DATA TYPE IMAGE RGBA8
-* [x] MAIN
-	+ [x] main
-	+ [x] getFilter
-	+ [x] newtype Filter
-	+ [x] realMain
-	+ [x] createIst
-	+ [x] vldLayers
-	+ [x] pickPhd
-	+ [x] createLgDvc
-	+ [x] createCmdPl
-	+ [x] type ShaderFormat
-	+ [x] body
-	+ [x] resultBffr
-	+ [x] imgVwInfo
-	+ [x] type PshCnsts
-	+ [x] strgImgBinding
-	+ [x] withWindow
-	+ [x] waitFramebufferSize
+* [ ] KEY EVENTS
 	+ [x] kCllbck
-	+ [x] draw
-		- [x] type declaration
-		- [x] function definition
-	+ [x] catchAndSerialize
-	+ [x] update
-	+ [x] bar
-* [x] BUFFER AND IMAGE
-	+ [x] createBffrImg
-	+ [x] createBffr
-	+ [x] findMmType
-	+ [x] bffrInfo
-	+ [x] prepareImg
-* [x] COMMAND BUFFER
-	+ [x] allocateCmdBffr
-	+ [x] runCmds
-	+ [x] submitINfo
-	+ [x] smphInfo
-* [x] COMMANDS
-	+ [x] copyBffrToImg
-	+ [x] colorLayer0
-	+ [x] bffrImgExtent
-	+ [x] transitionImgLyt
-	+ [x] copyImgToImg
-	+ [x] copyImgToBffr
-* [x] PIPELINE AND DESCRIPTOR SET
-	+ [x] createCmpPpl
-		- [x] type declaration
-		- [x] function definition
-	+ [x] createPplLyt
-		- [x] type declaration
-		- [x] function definition
-	+ [x] createDscStLyt
-		- [x] type declaration
-		- [x] function definition
-	+ [x] createDscPl
-	+ [x] createDscSt
-	+ [x] createDscStSrc
-	+ [x] type SrcImg
-	+ [x] type DstImg
-	+ [x] dscWrite
-	+ [x] compileShader
-* [x] SWAP CHAIN
-	+ [x] createSwpch
-		- [x] type declaration
-		- [x] function definition
-	+ [x] querySwpchSupport
-	+ [x] data SwpchSupportDetails
-	+ [x] swpchExtent
-	+ [x] chooseSwpSfcFmt
-	+ [x] swpchInfo
-* [x] TOOLS
+	+ [x] data K
+	+ [x] keyToK
+	+ [x] data PR
+	+ [x] keyStateToPR
+	+ [ ] procKey
+* [ ] SWAP CHAIN
+	+ [ ] createSwpch
+	+ [ ] querySwpchSupport
+	+ [ ] data SwpchSupportDetails
+	+ [ ] deriving instance Show (SwpchSupportDetails fmts)
+	+ [ ] swpchExtent
+	+ [ ] chooseSwpSfcFmt
+	+ [ ] swpchInfo
 
 ### src
