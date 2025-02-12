@@ -219,16 +219,9 @@ packages:
       size: 1402
   original:
     hackage: shaderc-0.1.0.7
-- completed:
-    hackage: fixed-generic-0.1.0.2@sha256:5dc353b0a45105cc62a85112b3d961f6ef65af18fc792eb79ca1ac839dc455cb,1847
-    pantry-tree:
-      sha256: a38217c02894cdc01c4c9c717403d7fa47f2a7b9b62c4bd93ebaa958900c60ea
-      size: 373
-  original:
-    hackage: fixed-generic-0.1.0.2
 snapshots:
 - completed:
-    sha256: 6a2ad7906e1cbbd2e827d5218a5b2fb2d7a5a08366f4575ca992123ef0cd9fe1
-    size: 653401
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/9.yaml
-  original: nightly-2025-02-09
+    sha256: f642400c7097d84dd15c30401c05a21317d914077ecc700dc834644e555e9f62
+    size: 653396
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/12.yaml
+  original: nightly-2025-02-12
