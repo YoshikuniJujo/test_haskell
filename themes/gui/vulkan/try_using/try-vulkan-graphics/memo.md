@@ -9,20 +9,20 @@
 
 ##### refactoring
 
-* [ ] KEY EVENTS
+* [x] KEY EVENTS
 	+ [x] kCllbck
 	+ [x] data K
 	+ [x] keyToK
 	+ [x] data PR
 	+ [x] keyStateToPR
-	+ [ ] procKey
-* [ ] SWAP CHAIN
-	+ [ ] createSwpch
-	+ [ ] querySwpchSupport
-	+ [ ] data SwpchSupportDetails
-	+ [ ] deriving instance Show (SwpchSupportDetails fmts)
-	+ [ ] swpchExtent
-	+ [ ] chooseSwpSfcFmt
-	+ [ ] swpchInfo
+	+ [x] procKey
+* [x] SWAP CHAIN
+	+ [x] createSwpch
+	+ [x] querySwpchSupport
+	+ [x] data SwpchSupportDetails
+	+ [x] deriving instance Show (SwpchSupportDetails fmts)
+	+ [x] swpchExtent
+	+ [x] chooseSwpSfcFmt
+	+ [x] swpchInfo
 
 ### src

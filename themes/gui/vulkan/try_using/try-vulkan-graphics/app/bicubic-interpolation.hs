@@ -459,11 +459,11 @@ procKey _ _ _ (clamp (- 1) (- 0.25) . (+ 0.01) -> a') n ix iy I Pr =
 	Just (Cubic, a', n, ix, iy)
 procKey _ _ _ a@(clamp (- 1) (- 0.25) . (+ 0.01) -> a') n ix iy I Rp =
 	Just (Cubic, bool a' (- 0.5) (a <= - 0.5 && - 0.5 < a'), n, ix, iy)
-procKey _ _ f a n ix iy H _ = Just (f, a, n, clamp 0 (n - 1) $ ix `sub'` 1, iy)
+procKey _ _ f a n ix iy H _ = Just (f, a, n, ix `sub'` 1, iy)
 procKey _ _ f a n ix iy J _ = Just (f, a, n, ix, clamp 0 (n - 1) $ iy + 1)
-procKey _ _ f a n ix iy K _ = Just (f, a, n, ix, clamp 0 (n - 1) $ iy `sub'` 1)
+procKey _ _ f a n ix iy K _ = Just (f, a, n, ix, iy `sub'` 1)
 procKey _ _ f a n ix iy L _ = Just (f, a, n, clamp 0 (n - 1) $ ix + 1, iy)
-procKey w h f a (clamp 1 (max w h) . subtract 1  -> n) ix iy D _ =
+procKey w h f a (clamp 1 (max w h) . (`sub'` 1)  -> n) ix iy D _ =
 	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n - 1) iy)
 procKey w h f a (clamp 1 (max w h) . (+ 1) -> n) ix iy F _ =
 	Just (f, a, n, ix, iy)
@@ -866,9 +866,9 @@ chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
 chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 
 swpchInfo :: forall fmt ss .
-	Vk.Sfc.S ss -> Vk.Sfc.Capabilities ->
-	Vk.Sfc.ColorSpace -> Vk.Sfc.PresentMode ->
-	Vk.Extent2d -> Vk.Swpch.CreateInfo 'Nothing ss fmt
+	Vk.Sfc.S ss -> Vk.Sfc.Capabilities -> Vk.Sfc.ColorSpace ->
+	Vk.Sfc.PresentMode -> Vk.Extent2d ->
+	Vk.Swpch.CreateInfo 'Nothing ss fmt
 swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
 	Vk.Swpch.createInfoSurface = sfc,
@@ -893,7 +893,7 @@ swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 -- TOOLS
 
 unc5 :: (a -> b -> c -> d -> e -> r) -> (a, b, c, d, e) -> r
-unc5 f (x, y, z, v, u) = f x y z v u
+unc5 f (x, y, z, w, v) = f x y z w v
 
 sub' :: (Ord n, Num n) => n -> n -> n
 x `sub'` y | x >= y = x - y | otherwise = 0
