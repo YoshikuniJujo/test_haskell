@@ -90,6 +90,7 @@ data-files:
   - shader/expandWidth.comp
   - shader/expandHeight.comp
   - shader/interpolate.comp
+  - shader/interpolate_float_bug.comp
 
 executables:
   try-triangle-single:
@@ -184,6 +185,15 @@ executables:
     - try-vulkan-graphics
   bicubic-interpolation:
     main:                bicubic-interpolation.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-graphics
+  bicubic-interpolation-float-bug:
+    main:                bicubic-interpolation-float-bug.hs
     source-dirs:         app
     ghc-options:
     - -threaded

@@ -24,6 +24,7 @@ data-files:
     shader/expandWidth.comp
     shader/expandHeight.comp
     shader/interpolate.comp
+    shader/interpolate_float_bug.comp
 
 source-repository head
   type: git
@@ -90,6 +91,51 @@ library
 
 executable bicubic-interpolation
   main-is: bicubic-interpolation.hs
+  other-modules:
+      Paths_try_vulkan_graphics
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , extra-data-yj
+    , gpu-vulkan
+    , hetero-parameter-list
+    , language-spir-v
+    , mono-traversable
+    , mtl
+    , optparse-declarative
+    , random
+    , ranged-list
+    , shaderc
+    , stm
+    , storable-generic
+    , storable-peek-poke
+    , template-haskell
+    , temporary
+    , text
+    , time
+    , tools-yj
+    , try-glfw-group
+    , try-gpu-vulkan-cglm
+    , try-gpu-vulkan-ext-debug-utils
+    , try-gpu-vulkan-khr-surface
+    , try-gpu-vulkan-khr-surface-glfw
+    , try-gpu-vulkan-khr-swapchain
+    , try-vulkan-graphics
+    , typelevel-tools-yj
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+executable bicubic-interpolation-float-bug
+  main-is: bicubic-interpolation-float-bug.hs
   other-modules:
       Paths_try_vulkan_graphics
   hs-source-dirs:
