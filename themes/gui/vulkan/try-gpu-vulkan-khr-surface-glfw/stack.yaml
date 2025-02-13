@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2023-01-01.yaml
 
-resolver: nightly-2024-10-31
+resolver: nightly-2025-02-13
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,25 +42,18 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: ed1d8b2551c8c095f2b01d803ff346bd4f3aed79
+  commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
-  - themes/gui/vulkan/try-glfw-group
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
-- gpu-vulkan-0.1.0.137
-- gpu-vulkan-middle-0.1.0.54
-- gpu-vulkan-core-0.1.0.8
-- language-spir-v-0.1.0.1
-- storable-hetero-list-0.1.0.4
-- storable-peek-poke-0.1.0.1
-- hetero-parameter-list-with-typelevel-tools-0.1.0.1
-- hetero-parameter-list-0.1.0.18
-- mtl-misc-yj-0.1.0.2
-- text-misc-yj-0.1.0.1
-- typelevel-tools-yj-0.1.0.6
-- tools-yj-0.1.0.19
+- git: https://github.com/YoshikuniJujo/glfw-group
+  commit: f621b1d5bf7e1c86434fe3b95d77ba0f040b143a
+- gpu-vulkan-0.1.0.169
+- gpu-vulkan-middle-0.1.0.74
+- gpu-vulkan-core-0.1.0.21
+- language-spir-v-0.1.0.3
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
