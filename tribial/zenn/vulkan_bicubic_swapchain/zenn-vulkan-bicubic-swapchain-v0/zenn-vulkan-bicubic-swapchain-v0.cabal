@@ -43,13 +43,13 @@ library
     , base >=4.7 && <5
     , bytestring
     , data-default
+    , glfw-group
     , gpu-vulkan
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
@@ -71,13 +71,13 @@ executable zenn-vulkan-bicubic-swapchain-v0-exe
     , base >=4.7 && <5
     , bytestring
     , data-default
+    , glfw-group
     , gpu-vulkan
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
@@ -101,13 +101,13 @@ test-suite zenn-vulkan-bicubic-swapchain-v0-test
     , base >=4.7 && <5
     , bytestring
     , data-default
+    , glfw-group
     , gpu-vulkan
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain

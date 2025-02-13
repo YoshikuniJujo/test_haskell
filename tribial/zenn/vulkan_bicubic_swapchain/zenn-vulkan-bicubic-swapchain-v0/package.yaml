@@ -32,7 +32,7 @@ dependencies:
 - try-gpu-vulkan-khr-surface-glfw
 - shaderc
 - language-spir-v
-- try-glfw-group
+- glfw-group
 - hetero-parameter-list
 - tools-yj
 - typelevel-tools-yj
