@@ -41,9 +41,9 @@ library
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-middle-khr-surface
+    , gpu-vulkan-middle-khr-surface-glfw
     , stm
     , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-middle-khr-surface-glfw
     , typelevel-tools-yj
   default-language: Haskell2010
 
@@ -64,9 +64,9 @@ test-suite try-gpu-vulkan-khr-surface-glfw-test
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-middle-khr-surface
+    , gpu-vulkan-middle-khr-surface-glfw
     , stm
     , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-middle-khr-surface-glfw
     , typelevel-tools-yj
   default-language: Haskell2010

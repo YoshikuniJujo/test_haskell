@@ -27,7 +27,7 @@ dependencies:
 - gpu-vulkan
 - try-gpu-vulkan-khr-surface
 - gpu-vulkan-middle-khr-surface
-- try-gpu-vulkan-middle-khr-surface-glfw
+- gpu-vulkan-middle-khr-surface-glfw
 - glfw-group
 - typelevel-tools-yj
 
