@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-swapchain
     pantry-tree:
@@ -14,72 +14,59 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
 - completed:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface
     pantry-tree:
-      sha256: 1bd3145fccd22a5b5708a109dbb831a8b6442ced8a534760ba9f0f262f1d62a9
+      sha256: 698a9ed26796305bb2b7bda58678d62709dfe426ab4c78c4a8867f55d4ec7f24
       size: 910
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
     version: 0.1.0.2
   original:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
 - completed:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface-glfw
     pantry-tree:
-      sha256: 93a3a729e6a8b7814a1f4b0ec951878fa338e51f841b0637ec8df9fbb71e4378
+      sha256: a8ca285743787cac1f13169c7e0767e27a64085e3a6d404def7e02ff4f31f5f8
       size: 691
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
     version: 0.1.0.1
   original:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
 - completed:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-swapchain
     pantry-tree:
-      sha256: 0c440633850449edf2ed6407f33d136bc2335c94a0d227d617972e03a960e985
-      size: 783
+      sha256: 057b2b227b086c0f54208e2356bdbd71f4c04b41dbf8b295f803c7b3c6732282
+      size: 970
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
 - completed:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-gpu-vulkan-middle-khr-surface
-    pantry-tree:
-      sha256: 9f1bb04d821d387badc3b4f48b0cc9ce390bdf5ae5641a1d6b0ff8b453d93078
-      size: 866
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-    version: 0.1.0.0
-  original:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-- completed:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-surface-glfw
     pantry-tree:
-      sha256: 181607f25c5aead7c0028e9e243d77d88bd2afd7751d2dcbb7cc6f6f053ec718
+      sha256: 9ba35b6b2bc68028b44ca7db19ed274698d4ae7aed536cf8188497c8ae2716be
       size: 622
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
     version: 0.1.0.0
   original:
-    commit: 5eba82fd21ff624f6071b5d7b94bca7c3cc239ed
+    commit: 02bbeab2ea4ea153b8d06be37e87548cdae5d2d1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
 - completed:
@@ -103,6 +90,13 @@ packages:
       size: 5235
   original:
     hackage: gpu-vulkan-core-0.1.0.21
+- completed:
+    hackage: gpu-vulkan-middle-khr-surface-0.1.0.0@sha256:872ba2b7b1fb437a7dfd301e95089f5896b7a76e95960cda9d71140b1fa437bc,2480
+    pantry-tree:
+      sha256: 79b1e9d345dae7b8924c5aaee92edfce2e90a8f915180282fe4aa8c130b70205
+      size: 653
+  original:
+    hackage: gpu-vulkan-middle-khr-surface-0.1.0.0
 - completed:
     hackage: gpu-vulkan-core-khr-swapchain-0.1.0.0@sha256:c13766a52c18385b9d26550e44ed95818bef72f5dd8c5b88f0973e11182eb45c,2144
     pantry-tree:
