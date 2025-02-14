@@ -44,6 +44,8 @@ ghc-options:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - Gpu.Vulkan.Khr.Swapchain
 
 tests:
   try-gpu-vulkan-khr-swapchain-test:

@@ -26,8 +26,8 @@ source-repository head
 library
   exposed-modules:
       Gpu.Vulkan.Khr.Swapchain
-      Gpu.Vulkan.Khr.Swapchain.Type
   other-modules:
+      Gpu.Vulkan.Khr.Swapchain.Type
       Paths_try_gpu_vulkan_khr_swapchain
   autogen-modules:
       Paths_try_gpu_vulkan_khr_swapchain

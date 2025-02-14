@@ -51,7 +51,8 @@ import Data.Word
 import Data.Fixed.Generic qualified as FixedG
 
 import Gpu.Vulkan
-import Gpu.Vulkan.Khr.Surface.Enum
+import Gpu.Vulkan.Khr.Surface (
+	PresentMode, ColorSpace, TransformFlagBits, CompositeAlphaFlagBits )
 import Gpu.Vulkan.Khr.Swapchain.Type
 import Gpu.Vulkan.Khr.Swapchain.Enum
 
@@ -64,7 +65,7 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 
 import qualified Gpu.Vulkan.Image as Image
 import qualified Gpu.Vulkan.QueueFamily as QueueFamily
-import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
+import qualified Gpu.Vulkan.Khr.Surface.Internal as Surface
 
 import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 
