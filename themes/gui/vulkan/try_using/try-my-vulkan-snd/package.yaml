@@ -42,7 +42,7 @@ dependencies:
 - vector
 - GLFW-b
 - gpu-vulkan
-- try-gpu-vulkan-khr-swapchain
+- gpu-vulkan-khr-swapchain
 - gpu-vulkan-khr-surface
 - try-gpu-vulkan-ext-debug-utils
 - ranged-list
