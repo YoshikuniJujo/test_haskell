@@ -5,29 +5,16 @@
 
 packages:
 - completed:
-    commit: 6dfeb4bfdae736dada61d15ff96ef0a82526afbf
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-gpu-vulkan-middle-khr-surface
+    commit: 924228f8f321487010b60118a905d98c023e797c
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
+    name: gpu-vulkan-middle-khr-surface
     pantry-tree:
-      sha256: 9f1bb04d821d387badc3b4f48b0cc9ce390bdf5ae5641a1d6b0ff8b453d93078
-      size: 866
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+      sha256: 11c93a1efef33b324dd6cf3440419430b39618f19695942536ae425289e38735
+      size: 1047
     version: 0.1.0.0
   original:
-    commit: 6dfeb4bfdae736dada61d15ff96ef0a82526afbf
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-- completed:
-    commit: 04f6da97e7abfd30b5e3b89c4b0f351344a983f6
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-core-khr-swapchain
-    name: gpu-vulkan-core-khr-swapchain
-    pantry-tree:
-      sha256: 4732155602cb9d01de3214483bd8001b382e7d34c5feb6fbab31f66a8c82bc52
-      size: 610
-    version: 0.1.0.0
-  original:
-    commit: 04f6da97e7abfd30b5e3b89c4b0f351344a983f6
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-core-khr-swapchain
+    commit: 924228f8f321487010b60118a905d98c023e797c
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
 - completed:
     hackage: gpu-vulkan-middle-0.1.0.74@sha256:ef19ae89eb542e2905395b47cad930156faf010cb83739a856543b9c958bf750,9124
     pantry-tree:
@@ -42,6 +29,13 @@ packages:
       size: 5235
   original:
     hackage: gpu-vulkan-core-0.1.0.21
+- completed:
+    hackage: gpu-vulkan-core-khr-swapchain-0.1.0.0@sha256:c13766a52c18385b9d26550e44ed95818bef72f5dd8c5b88f0973e11182eb45c,2144
+    pantry-tree:
+      sha256: 1554b984498653af9d07d8733aeb6105a70670de0996801753b466431ac04332
+      size: 401
+  original:
+    hackage: gpu-vulkan-core-khr-swapchain-0.1.0.0
 - completed:
     hackage: gpu-vulkan-core-khr-surface-0.1.0.0@sha256:2cabbd97eb7749e44ff7ec874fd9a7c8aa9160803a97aad6aeb8e7848eacfac0,2093
     pantry-tree:

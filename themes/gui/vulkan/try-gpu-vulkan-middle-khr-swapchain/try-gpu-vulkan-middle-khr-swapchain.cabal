@@ -42,9 +42,9 @@ library
     , gpu-vulkan-core
     , gpu-vulkan-core-khr-swapchain
     , gpu-vulkan-middle
+    , gpu-vulkan-middle-khr-surface
     , storable-peek-poke
     , text
-    , try-gpu-vulkan-middle-khr-surface
     , typelevel-tools-yj
   default-language: Haskell2010
 
@@ -65,9 +65,9 @@ test-suite try-gpu-vulkan-middle-khr-swapchain-test
     , gpu-vulkan-core
     , gpu-vulkan-core-khr-swapchain
     , gpu-vulkan-middle
+    , gpu-vulkan-middle-khr-surface
     , storable-peek-poke
     , text
-    , try-gpu-vulkan-middle-khr-surface
     , try-gpu-vulkan-middle-khr-swapchain
     , typelevel-tools-yj
   default-language: Haskell2010

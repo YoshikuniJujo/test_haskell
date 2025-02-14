@@ -24,7 +24,7 @@ dependencies:
 - text
 - gpu-vulkan-middle
 - gpu-vulkan-core
-- try-gpu-vulkan-middle-khr-surface
+- gpu-vulkan-middle-khr-surface
 - gpu-vulkan-core-khr-swapchain
 - data-default
 - c-enum
