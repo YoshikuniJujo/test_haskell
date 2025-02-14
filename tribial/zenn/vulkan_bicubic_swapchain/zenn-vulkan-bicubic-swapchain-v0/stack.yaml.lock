@@ -144,12 +144,12 @@ packages:
   original:
     hackage: language-spir-v-0.1.0.3
 - completed:
-    hackage: glfw-group-0.1.0.0@sha256:c2ea5075041fc73d79f726de520b00b5c39dc75754a82eafa44b7a9a5bd72cdc,2611
+    hackage: glfw-group-0.1.0.2@sha256:54bd1c4786ec5337268e26001ac3a6fb98b06410af462dc20d6fbebdef160c46,2073
     pantry-tree:
-      sha256: 5a8b8131569585dc3cf9a15d6d86e69aa49d8a770325972dbd9b745feef60fd1
-      size: 899
+      sha256: 035833e64352327ba6f8e1a1f0d47a26ce8051432fa3c3b22e2a16fe36688cce
+      size: 800
   original:
-    hackage: glfw-group-0.1.0.0
+    hackage: glfw-group-0.1.0.2
 snapshots:
 - completed:
     sha256: 0045719743bc3f7e7d7f01733865cf1b6ec1d021be96553570ffb4b68db013d4

@@ -59,7 +59,7 @@ extra-deps:
   - gpu-vulkan-core-0.1.0.21
   - shaderc-0.1.0.7
   - language-spir-v-0.1.0.3
-  - glfw-group-0.1.0.0
+  - glfw-group-0.1.0.2
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
