@@ -25,7 +25,7 @@ dependencies:
 - gpu-vulkan-middle
 - gpu-vulkan-core
 - try-gpu-vulkan-middle-khr-surface
-- try-gpu-vulkan-core-khr-swapchain
+- gpu-vulkan-core-khr-swapchain
 - data-default
 - c-enum
 - typelevel-tools-yj
