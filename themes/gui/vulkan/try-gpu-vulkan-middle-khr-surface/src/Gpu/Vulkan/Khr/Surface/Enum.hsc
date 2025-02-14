@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-missing-export-lists -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface.Enum where
 
@@ -13,11 +13,13 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Data.Bits
 import Data.Word
+import Data.Default
 
 #include <vulkan/vulkan.h>
 
 enum "TransformFlagBits" ''#{type VkSurfaceTransformFlagBitsKHR}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("TransformFlagsZero", 0),
 	("TransformIdentityBit",
 		#{const VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR}),
 	("TransformRotate90Bit",
@@ -39,8 +41,12 @@ enum "TransformFlagBits" ''#{type VkSurfaceTransformFlagBitsKHR}
 	("TransformFlagBitsMaxEnum",
 		#{const VK_SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR}) ]
 
+instance Default TransformFlagBits where
+	def = TransformFlagsZero
+
 enum "CompositeAlphaFlagBits" ''#{type VkCompositeAlphaFlagBitsKHR}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("CompositeAlphaFlagsZero", 0),
 	("CompositeAlphaOpaqueBit",
 		#{const VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR}),
 	("CompositeAlphaPreMultipliedBit",
@@ -51,6 +57,9 @@ enum "CompositeAlphaFlagBits" ''#{type VkCompositeAlphaFlagBitsKHR}
 		#{const VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR}),
 	("CompositeAlphaFlagBitsMaxEnum",
 		#{const VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR}) ]
+
+instance Default CompositeAlphaFlagBits where
+	def = CompositeAlphaFlagsZero
 
 enum "ColorSpace" ''#{type VkColorSpaceKHR}
 		[''Show, ''Eq, ''Storable] [
@@ -98,7 +107,6 @@ enum "PresentMode" ''#{type VkPresentModeKHR}
 	("PresentModeSharedContinuousRefresh",
 		#{const VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR}),
 	("PresentModeMaxEnum", #{const VK_PRESENT_MODE_MAX_ENUM_KHR}) ]
-
 
 type TransformFlags = TransformFlagBits
 type CompositeAlphaFlags = CompositeAlphaFlagBits
