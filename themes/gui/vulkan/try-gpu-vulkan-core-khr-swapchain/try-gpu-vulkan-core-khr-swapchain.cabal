@@ -37,7 +37,7 @@ library
       base >=4.7 && <5
     , c-struct
     , gpu-vulkan-core
-    , try-gpu-vulkan-core-khr-surface
+    , gpu-vulkan-core-khr-surface
   default-language: Haskell2010
 
 test-suite try-gpu-vulkan-core-khr-swapchain-test
@@ -54,6 +54,6 @@ test-suite try-gpu-vulkan-core-khr-swapchain-test
       base >=4.7 && <5
     , c-struct
     , gpu-vulkan-core
-    , try-gpu-vulkan-core-khr-surface
+    , gpu-vulkan-core-khr-surface
     , try-gpu-vulkan-core-khr-swapchain
   default-language: Haskell2010

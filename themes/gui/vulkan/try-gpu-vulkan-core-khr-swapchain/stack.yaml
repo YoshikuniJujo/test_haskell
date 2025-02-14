@@ -17,7 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2023-01-01.yaml
-resolver: nightly-2024-10-30
+
+resolver: nightly-2025-02-13
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,11 +41,9 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-- git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 12c1ad38569f8479793c02c15bc60ff2ed2d5c06
-  subdirs:
-  - themes/gui/vulkan/gpu-vulkan-core
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
+  - git: https://github.com/YoshikuniJujo/gpu-vulkan-core-khr-surface
+    commit: 28714b8a48de980cafb806c8a0dc714a7761615c
+  - gpu-vulkan-core-0.1.0.21
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
