@@ -61,9 +61,9 @@ dependencies:
 - typelevel-tools-yj
 - try-codec-wavefront-obj
 - try-gpu-vulkan-khr-surface-glfw
-- try-gpu-vulkan-middle-khr-surface-glfw
+- gpu-vulkan-middle-khr-surface-glfw
 - try-gpu-vulkan-cglm
-- try-glfw-group
+- glfw-group
 
 - directory
 - temporary
