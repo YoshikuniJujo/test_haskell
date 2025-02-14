@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - GLFW-b
 - gpu-vulkan-middle
-- try-gpu-vulkan-middle-khr-surface
+- gpu-vulkan-middle-khr-surface
 - typelevel-tools-yj
 
 ghc-options:
