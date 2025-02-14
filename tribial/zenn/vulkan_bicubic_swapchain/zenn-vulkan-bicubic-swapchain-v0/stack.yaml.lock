@@ -5,20 +5,20 @@
 
 packages:
 - completed:
-    commit: 7458164ebac9d1106a0817a5936e03a12d8cf6b0
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-swapchain
     pantry-tree:
-      sha256: 4e46996e567dfb836bec6ce97bdff53648391578d22c6185854b7df4094acec3
+      sha256: 55ef03116085b4eac7450f2513cd76e7cd797f9aa6dd624fded19be588ce5ce8
       size: 679
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: 7458164ebac9d1106a0817a5936e03a12d8cf6b0
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
 - completed:
-    commit: 7458164ebac9d1106a0817a5936e03a12d8cf6b0
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
     version: 0.1.0.2
   original:
-    commit: 7458164ebac9d1106a0817a5936e03a12d8cf6b0
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
 - completed:
-    commit: 7458164ebac9d1106a0817a5936e03a12d8cf6b0
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface-glfw
     pantry-tree:
@@ -40,7 +40,7 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
     version: 0.1.0.1
   original:
-    commit: 7458164ebac9d1106a0817a5936e03a12d8cf6b0
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
 - completed:
