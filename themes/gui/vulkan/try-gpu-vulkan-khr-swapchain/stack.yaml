@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2023-01-01.yaml
 
-resolver: nightly-2024-12-15
+resolver: nightly-2025-02-13
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,20 +42,18 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 23fe63f6d6432d1b772d7d671c3318294506b0f9
+  commit: f21471f5fed41e9c227b2440ff27c2943860dc22
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
-- git: https://github.com/YoshikuniJujo/gpu-vulkan
-  commit: ee00cb894b0d75865fa4571525372c2ced67e4a6
-  # - gpu-vulkan-0.1.0.159
-- gpu-vulkan-middle-0.1.0.70
-- gpu-vulkan-core-0.1.0.20
-- language-spir-v-0.1.0.1
-- fixed-generic-0.1.0.2
+- git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-swapchain
+  commit: 764fe133d24f87777db6e59beb66401986e190e5
+- gpu-vulkan-0.1.0.169
+- gpu-vulkan-middle-0.1.0.74
+- gpu-vulkan-middle-khr-surface-0.1.0.0
+- gpu-vulkan-core-0.1.0.21
+- gpu-vulkan-core-khr-swapchain-0.1.0.0
+- gpu-vulkan-core-khr-surface-0.1.0.0
+- language-spir-v-0.1.0.3
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
