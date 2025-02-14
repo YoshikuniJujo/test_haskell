@@ -11,8 +11,8 @@ extra-source-files:
 - CHANGELOG.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis:            VK_KHR_surface extension of the Vulkan API
+category:            GPU
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
@@ -41,6 +41,10 @@ ghc-options:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - Gpu.Vulkan.Khr.Surface
+    - Gpu.Vulkan.Khr.Surface.Internal
+    - Gpu.Vulkan.Khr.Surface.PhysicalDevice
 
 tests:
   try-gpu-vulkan-khr-surface-test:

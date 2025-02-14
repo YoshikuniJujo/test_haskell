@@ -6,7 +6,9 @@ cabal-version: 2.2
 
 name:           try-gpu-vulkan-khr-surface
 version:        0.1.0.2
+synopsis:       VK_KHR_surface extension of the Vulkan API
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan-khr-surface#readme>
+category:       GPU
 homepage:       https://github.com/githubuser/try-gpu-vulkan-khr-surface#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan-khr-surface/issues
 author:         Author name here
@@ -26,11 +28,11 @@ source-repository head
 library
   exposed-modules:
       Gpu.Vulkan.Khr.Surface
-      Gpu.Vulkan.Khr.Surface.Enum
       Gpu.Vulkan.Khr.Surface.Internal
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
-      Gpu.Vulkan.Khr.Surface.Type
   other-modules:
+      Gpu.Vulkan.Khr.Surface.Enum
+      Gpu.Vulkan.Khr.Surface.Type
       Paths_try_gpu_vulkan_khr_surface
   autogen-modules:
       Paths_try_gpu_vulkan_khr_surface
