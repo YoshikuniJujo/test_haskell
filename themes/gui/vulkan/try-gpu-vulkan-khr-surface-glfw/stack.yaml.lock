@@ -5,68 +5,42 @@
 
 packages:
 - completed:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
+    commit: ee0c9fdefa0638c5e94fa1c8412903e0bdf30506
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface
     pantry-tree:
-      sha256: 1bd3145fccd22a5b5708a109dbb831a8b6442ced8a534760ba9f0f262f1d62a9
+      sha256: 698a9ed26796305bb2b7bda58678d62709dfe426ab4c78c4a8867f55d4ec7f24
       size: 910
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
     version: 0.1.0.2
   original:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
+    commit: ee0c9fdefa0638c5e94fa1c8412903e0bdf30506
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
 - completed:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-gpu-vulkan-middle-khr-surface
-    pantry-tree:
-      sha256: 989a83667d9ac8287271c4abaf11259fabf4539cc6081c798f40da92c3bf55f8
-      size: 866
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-    version: 0.1.0.0
-  original:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-- completed:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
+    commit: ee0c9fdefa0638c5e94fa1c8412903e0bdf30506
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-middle-khr-surface-glfw
     pantry-tree:
-      sha256: 181607f25c5aead7c0028e9e243d77d88bd2afd7751d2dcbb7cc6f6f053ec718
+      sha256: 9ba35b6b2bc68028b44ca7db19ed274698d4ae7aed536cf8188497c8ae2716be
       size: 622
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
     version: 0.1.0.0
   original:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
+    commit: ee0c9fdefa0638c5e94fa1c8412903e0bdf30506
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
 - completed:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-gpu-vulkan-core-khr-surface
+    commit: 924228f8f321487010b60118a905d98c023e797c
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
+    name: gpu-vulkan-middle-khr-surface
     pantry-tree:
-      sha256: 532b59278492d1a26a25c8250e4507c9c1d9f712ef61f8d33f3d0c4f34772fb6
-      size: 700
-    subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
+      sha256: 11c93a1efef33b324dd6cf3440419430b39618f19695942536ae425289e38735
+      size: 1047
     version: 0.1.0.0
   original:
-    commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
-- completed:
-    commit: f621b1d5bf7e1c86434fe3b95d77ba0f040b143a
-    git: https://github.com/YoshikuniJujo/glfw-group
-    name: glfw-group
-    pantry-tree:
-      sha256: 4b10f6a797be616688573f55c39a70e39a96e49fb287e94bc114d7912610794b
-      size: 1107
-    version: 0.1.0.0
-  original:
-    commit: f621b1d5bf7e1c86434fe3b95d77ba0f040b143a
-    git: https://github.com/YoshikuniJujo/glfw-group
+    commit: 924228f8f321487010b60118a905d98c023e797c
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
 - completed:
     hackage: gpu-vulkan-0.1.0.169@sha256:ea38002d03b78499cb3b93ae45db3e2eaec0874f30786e10a3ad77c8b9ec6e87,8054
     pantry-tree:
@@ -89,12 +63,26 @@ packages:
   original:
     hackage: gpu-vulkan-core-0.1.0.21
 - completed:
+    hackage: gpu-vulkan-core-khr-surface-0.1.0.0@sha256:2cabbd97eb7749e44ff7ec874fd9a7c8aa9160803a97aad6aeb8e7848eacfac0,2093
+    pantry-tree:
+      sha256: 265d61fdbf68037c5c1063821699d496dcbd8e62c64695a51e6a26426bb4b2cf
+      size: 488
+  original:
+    hackage: gpu-vulkan-core-khr-surface-0.1.0.0
+- completed:
     hackage: language-spir-v-0.1.0.3@sha256:c07d92777e2b0e4ac9bd3ef0902e50c046d42edf1a1a98d17e78d039d60d1351,2079
     pantry-tree:
       sha256: 070eec1689892418ff45135d972b3464fc884e102bbbbbf43f99e934d77db5e8
       size: 650
   original:
     hackage: language-spir-v-0.1.0.3
+- completed:
+    hackage: glfw-group-0.1.0.2@sha256:54bd1c4786ec5337268e26001ac3a6fb98b06410af462dc20d6fbebdef160c46,2073
+    pantry-tree:
+      sha256: 035833e64352327ba6f8e1a1f0d47a26ce8051432fa3c3b22e2a16fe36688cce
+      size: 800
+  original:
+    hackage: glfw-group-0.1.0.2
 snapshots:
 - completed:
     sha256: 0045719743bc3f7e7d7f01733865cf1b6ec1d021be96553570ffb4b68db013d4

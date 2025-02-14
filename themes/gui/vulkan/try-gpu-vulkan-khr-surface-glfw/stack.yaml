@@ -42,18 +42,18 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f29acd9898bdca278bfebef7ee00939f0f6e5639
+  commit: ee0c9fdefa0638c5e94fa1c8412903e0bdf30506
   subdirs:
   - themes/gui/vulkan/try-gpu-vulkan-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
   - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
-- git: https://github.com/YoshikuniJujo/glfw-group
-  commit: f621b1d5bf7e1c86434fe3b95d77ba0f040b143a
+- git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
+  commit: 924228f8f321487010b60118a905d98c023e797c
 - gpu-vulkan-0.1.0.169
 - gpu-vulkan-middle-0.1.0.74
 - gpu-vulkan-core-0.1.0.21
+- gpu-vulkan-core-khr-surface-0.1.0.0
 - language-spir-v-0.1.0.3
+- glfw-group-0.1.0.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
