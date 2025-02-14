@@ -52,8 +52,6 @@ extra-deps:
     - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
     - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
     - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
-    # - git: https://github.com/YoshikuniJujo/glfw-group
-    # commit: f621b1d5bf7e1c86434fe3b95d77ba0f040b143a
   - gpu-vulkan-0.1.0.169
   - gpu-vulkan-middle-0.1.0.74
   - gpu-vulkan-core-0.1.0.21
