@@ -5,16 +5,16 @@
 
 packages:
 - completed:
-    commit: ee0c9fdefa0638c5e94fa1c8412903e0bdf30506
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface
     pantry-tree:
-      sha256: 698a9ed26796305bb2b7bda58678d62709dfe426ab4c78c4a8867f55d4ec7f24
+      sha256: 02792d9b3179fe36313a407ff40e0206935386fc34c1893221d162e9ac40ed69
       size: 910
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
     version: 0.1.0.2
   original:
-    commit: ee0c9fdefa0638c5e94fa1c8412903e0bdf30506
+    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
 - completed:

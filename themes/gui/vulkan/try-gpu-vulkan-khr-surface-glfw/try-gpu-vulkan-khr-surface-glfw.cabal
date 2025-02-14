@@ -25,9 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Gpu.Vulkan.Khr.Surface.Glfw
       Gpu.Vulkan.Khr.Surface.Glfw.Window
   other-modules:
+      Gpu.Vulkan.Khr.Surface.Glfw
       Paths_try_gpu_vulkan_khr_surface_glfw
   autogen-modules:
       Paths_try_gpu_vulkan_khr_surface_glfw

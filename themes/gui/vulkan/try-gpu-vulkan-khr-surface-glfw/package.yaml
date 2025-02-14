@@ -44,6 +44,8 @@ ghc-options:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - Gpu.Vulkan.Khr.Surface.Glfw.Window
 
 tests:
   try-gpu-vulkan-khr-surface-glfw-test:
