@@ -6,7 +6,9 @@ cabal-version: 2.2
 
 name:           try-gpu-vulkan-core-khr-surface
 version:        0.1.0.0
+synopsis:       Thin wrapper for VK_KHR_surface extension of the Vulkan API
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan-core-khr-surface#readme>
+category:       GPU
 homepage:       https://github.com/githubuser/try-gpu-vulkan-core-khr-surface#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan-core-khr-surface/issues
 author:         Author name here

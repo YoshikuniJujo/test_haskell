@@ -5,21 +5,15 @@
 
 packages:
 - completed:
-    commit: 7744ce336fdc9ec06b5d80d439dc8a36da0268f9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: gpu-vulkan-core
+    hackage: gpu-vulkan-core-0.1.0.21@sha256:347fcc9b982033e2162d1106e891f6d57ee251a79bdd8f9398f5ca918f3c9e91,3516
     pantry-tree:
-      sha256: a0a4eb359e74c381304a372a321d0f381c53131e59e3c2d3ed50baa956dfde39
-      size: 5179
-    subdir: themes/gui/vulkan/gpu-vulkan-core
-    version: 0.1.0.7
+      sha256: 65e73d0f6ffe0bfbd8545b31671d21ef2fa69553644474d181917fef1a4a0625
+      size: 5235
   original:
-    commit: 7744ce336fdc9ec06b5d80d439dc8a36da0268f9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/gpu-vulkan-core
+    hackage: gpu-vulkan-core-0.1.0.21
 snapshots:
 - completed:
-    sha256: 0c65cc459d037697e6238a11dc0bbdc958a82ac9eb24907f486e33626117ae5e
-    size: 672822
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/10/30.yaml
-  original: nightly-2024-10-30
+    sha256: 0045719743bc3f7e7d7f01733865cf1b6ec1d021be96553570ffb4b68db013d4
+    size: 653396
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/13.yaml
+  original: nightly-2025-02-13
