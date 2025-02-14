@@ -6,7 +6,9 @@ cabal-version: 2.2
 
 name:           try-gpu-vulkan-khr-swapchain
 version:        0.1.0.0
+synopsis:       VK_KHR_swapchain extension of the Vulkan API
 description:    Please see the README on GitHub at <https://github.com/githubuser/try-gpu-vulkan-khr-swapchain#readme>
+category:       GPU
 homepage:       https://github.com/githubuser/try-gpu-vulkan-khr-swapchain#readme
 bug-reports:    https://github.com/githubuser/try-gpu-vulkan-khr-swapchain/issues
 author:         Author name here
