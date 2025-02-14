@@ -27,7 +27,7 @@ dependencies:
 - data-default
 - JuicyPixels
 - gpu-vulkan
-- try-gpu-vulkan-khr-swapchain
+- gpu-vulkan-khr-swapchain
 - gpu-vulkan-khr-surface
 - try-gpu-vulkan-khr-surface-glfw
 - shaderc
