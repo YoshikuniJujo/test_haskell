@@ -28,7 +28,7 @@ dependencies:
 - JuicyPixels
 - gpu-vulkan
 - try-gpu-vulkan-khr-swapchain
-- try-gpu-vulkan-khr-surface
+- gpu-vulkan-khr-surface
 - try-gpu-vulkan-khr-surface-glfw
 - shaderc
 - language-spir-v

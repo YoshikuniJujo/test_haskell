@@ -42,12 +42,12 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
+    commit: dfe2577653f44e7f9022d57f8b4132099e283394
     subdirs:
     - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
-    - themes/gui/vulkan/try-gpu-vulkan-khr-surface
     - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - gpu-vulkan-0.1.0.169
+  - gpu-vulkan-khr-surface-0.1.0.0
   - gpu-vulkan-middle-0.1.0.74
   - gpu-vulkan-core-0.1.0.21
   - gpu-vulkan-middle-khr-swapchain-0.1.0.0

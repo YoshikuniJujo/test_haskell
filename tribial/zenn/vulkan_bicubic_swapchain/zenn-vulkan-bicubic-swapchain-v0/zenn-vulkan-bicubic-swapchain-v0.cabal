@@ -45,12 +45,12 @@ library
     , data-default
     , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , typelevel-tools-yj
@@ -73,12 +73,12 @@ executable zenn-vulkan-bicubic-swapchain-v0-exe
     , data-default
     , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , typelevel-tools-yj
@@ -103,12 +103,12 @@ test-suite zenn-vulkan-bicubic-swapchain-v0-test
     , data-default
     , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-gpu-vulkan-khr-surface
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , typelevel-tools-yj

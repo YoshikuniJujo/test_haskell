@@ -5,42 +5,29 @@
 
 packages:
 - completed:
-    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
+    commit: dfe2577653f44e7f9022d57f8b4132099e283394
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-swapchain
     pantry-tree:
-      sha256: 55ef03116085b4eac7450f2513cd76e7cd797f9aa6dd624fded19be588ce5ce8
+      sha256: b5b3c5700411070121e5f68de878902cc302ecf1678787de2dc38fe0c874d617
       size: 679
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
     version: 0.1.0.0
   original:
-    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
+    commit: dfe2577653f44e7f9022d57f8b4132099e283394
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
 - completed:
-    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-gpu-vulkan-khr-surface
-    pantry-tree:
-      sha256: 02792d9b3179fe36313a407ff40e0206935386fc34c1893221d162e9ac40ed69
-      size: 910
-    subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
-    version: 0.1.0.2
-  original:
-    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface
-- completed:
-    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
+    commit: dfe2577653f44e7f9022d57f8b4132099e283394
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-khr-surface-glfw
     pantry-tree:
-      sha256: c6fff23a8496c23dadb53768aa6465f8e040e789a4a8bc2e8d638021a50eff3d
+      sha256: b0ad71b88a026daa1dec6376497a734fd57e9f69cc85bc59ad5702559cb17dda
       size: 691
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
     version: 0.1.0.1
   original:
-    commit: dfe41f3ec9c5f20dcefcc2fce0110340c870a5a1
+    commit: dfe2577653f44e7f9022d57f8b4132099e283394
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
 - completed:
@@ -50,6 +37,13 @@ packages:
       size: 12064
   original:
     hackage: gpu-vulkan-0.1.0.169
+- completed:
+    hackage: gpu-vulkan-khr-surface-0.1.0.0@sha256:789237cd35f877c94be45b163624106f4df4d62a0577da211daaa880fd98515d,2333
+    pantry-tree:
+      sha256: e6ec9329b1672a354617209e05eae540cd0072991992b48ed9112cbb89b51636
+      size: 697
+  original:
+    hackage: gpu-vulkan-khr-surface-0.1.0.0
 - completed:
     hackage: gpu-vulkan-middle-0.1.0.74@sha256:ef19ae89eb542e2905395b47cad930156faf010cb83739a856543b9c958bf750,9124
     pantry-tree:
