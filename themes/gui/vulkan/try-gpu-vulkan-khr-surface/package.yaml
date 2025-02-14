@@ -24,7 +24,7 @@ dependencies:
 - stm
 - containers
 - gpu-vulkan
-- try-gpu-vulkan-middle-khr-surface
+- gpu-vulkan-middle-khr-surface
 - hetero-parameter-list
 - typelevel-tools-yj
 

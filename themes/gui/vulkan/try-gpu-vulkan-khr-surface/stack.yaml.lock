@@ -5,118 +5,54 @@
 
 packages:
 - completed:
-    commit: f36b96a13ebe441f68d598b6fe7ab2bd82ce2dd9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-gpu-vulkan-middle-khr-surface
+    commit: 924228f8f321487010b60118a905d98c023e797c
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
+    name: gpu-vulkan-middle-khr-surface
     pantry-tree:
-      sha256: 989a83667d9ac8287271c4abaf11259fabf4539cc6081c798f40da92c3bf55f8
-      size: 866
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+      sha256: 11c93a1efef33b324dd6cf3440419430b39618f19695942536ae425289e38735
+      size: 1047
     version: 0.1.0.0
   original:
-    commit: f36b96a13ebe441f68d598b6fe7ab2bd82ce2dd9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
+    commit: 924228f8f321487010b60118a905d98c023e797c
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
 - completed:
-    commit: f36b96a13ebe441f68d598b6fe7ab2bd82ce2dd9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-gpu-vulkan-core-khr-surface
+    hackage: gpu-vulkan-0.1.0.169@sha256:ea38002d03b78499cb3b93ae45db3e2eaec0874f30786e10a3ad77c8b9ec6e87,8054
     pantry-tree:
-      sha256: 532b59278492d1a26a25c8250e4507c9c1d9f712ef61f8d33f3d0c4f34772fb6
-      size: 700
-    subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
-    version: 0.1.0.0
+      sha256: fdf7ea235e9a189c56a47e810d190bc03a6093e9811e2cc5f23bbdb7e77ade2a
+      size: 12064
   original:
-    commit: f36b96a13ebe441f68d598b6fe7ab2bd82ce2dd9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
+    hackage: gpu-vulkan-0.1.0.169
 - completed:
-    hackage: gpu-vulkan-0.1.0.137@sha256:444bd732e58a0ab884efad7719d320036949f5f7a20c05dab76dbaabbb281433,7633
+    hackage: gpu-vulkan-middle-0.1.0.74@sha256:ef19ae89eb542e2905395b47cad930156faf010cb83739a856543b9c958bf750,9124
     pantry-tree:
-      sha256: d817f542724ea282d212e04af9f79d004953f9326d3a983e5633a417e957fbfb
-      size: 11164
+      sha256: 40a266489b01c5a75cb98320961383fbdbf6b0bc0e901c95ba4fff4253c3cb31
+      size: 13576
   original:
-    hackage: gpu-vulkan-0.1.0.137
+    hackage: gpu-vulkan-middle-0.1.0.74
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.54@sha256:824a10d7968f1ac6ad968bfe6e2eb01dbfead3e13104091cbaab84792f936697,8441
+    hackage: gpu-vulkan-core-0.1.0.21@sha256:347fcc9b982033e2162d1106e891f6d57ee251a79bdd8f9398f5ca918f3c9e91,3516
     pantry-tree:
-      sha256: 483e9566833f94d214f6f561029af5c2fc2606183d030f5e24d15748156081ed
-      size: 12409
+      sha256: 65e73d0f6ffe0bfbd8545b31671d21ef2fa69553644474d181917fef1a4a0625
+      size: 5235
   original:
-    hackage: gpu-vulkan-middle-0.1.0.54
+    hackage: gpu-vulkan-core-0.1.0.21
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.8@sha256:a4dcd94ed86133a1d7b991fb2f3547f3838e05a0dfdb6a308a61e44a0828baa5,3369
+    hackage: gpu-vulkan-core-khr-surface-0.1.0.0@sha256:2cabbd97eb7749e44ff7ec874fd9a7c8aa9160803a97aad6aeb8e7848eacfac0,2093
     pantry-tree:
-      sha256: d28722b391dba8c9bdce82266895b63a714c6a7300f29d530a17577164a47b71
-      size: 4777
+      sha256: 265d61fdbf68037c5c1063821699d496dcbd8e62c64695a51e6a26426bb4b2cf
+      size: 488
   original:
-    hackage: gpu-vulkan-core-0.1.0.8
+    hackage: gpu-vulkan-core-khr-surface-0.1.0.0
 - completed:
-    hackage: language-spir-v-0.1.0.1@sha256:856ab0219ee0c2b5ae759ba7c5c8a7421bdc6a8a62f5a6bf05a9171fcfa9c8d0,1991
+    hackage: language-spir-v-0.1.0.3@sha256:c07d92777e2b0e4ac9bd3ef0902e50c046d42edf1a1a98d17e78d039d60d1351,2079
     pantry-tree:
-      sha256: abce419a94c3bceaa50e2a211c1e9de63d47e7b33a2ff8017b04904defd6dcdd
+      sha256: 070eec1689892418ff45135d972b3464fc884e102bbbbbf43f99e934d77db5e8
       size: 650
   original:
-    hackage: language-spir-v-0.1.0.1
-- completed:
-    hackage: storable-hetero-list-0.1.0.4@sha256:90b29b61329b0b837cacf49a8d7066133b988addadf4d43d04593aa071d1cca5,1868
-    pantry-tree:
-      sha256: 1fc9939a059c3e67a496f9e9bc68f96607f301f06965368797d126b29a12fd73
-      size: 389
-  original:
-    hackage: storable-hetero-list-0.1.0.4
-- completed:
-    hackage: storable-peek-poke-0.1.0.1@sha256:995498db57fa66006de1c2a44ba901575b1e7b8ee89d9348d2a416307df69da2,1893
-    pantry-tree:
-      sha256: 9111a8034821e5fa12ba52033b10b8d340181f1fc333602325f6c2b928166e3a
-      size: 466
-  original:
-    hackage: storable-peek-poke-0.1.0.1
-- completed:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1@sha256:4e19d4a42e83cfc3735d49ed735d84bb8a2200be35bc92adc2cfc5a97fcc71c6,2150
-    pantry-tree:
-      sha256: 9bffd57b8d57bb72d8d49a70d501cfbc9b86d2c8e4b925b58eb385c5976e4a9f
-      size: 482
-  original:
-    hackage: hetero-parameter-list-with-typelevel-tools-0.1.0.1
-- completed:
-    hackage: mtl-misc-yj-0.1.0.2@sha256:a7cefb8b63b5406d6ab29dddd2c3913d73e83f3cb902fad931dd59f948192aaf,1768
-    pantry-tree:
-      sha256: cde0b60f446a4f36bf32642deee33927d57eb35d8323d35723de824093b3dc5a
-      size: 377
-  original:
-    hackage: mtl-misc-yj-0.1.0.2
-- completed:
-    hackage: text-misc-yj-0.1.0.1@sha256:753f14d0a7a9e343a420b6621b6b14ee46a576af1b9e81774d6395552d45c42c,1757
-    pantry-tree:
-      sha256: 2320eafbf3e506d2a37652b4d4db400af2486b89838e0744ac3e388aeea38103
-      size: 379
-  original:
-    hackage: text-misc-yj-0.1.0.1
-- completed:
-    hackage: typelevel-tools-yj-0.1.0.6@sha256:33f336a1cea83dda17d6e1be1b184d7696c988fe7ee056b3b7e0be33a416eefe,2187
-    pantry-tree:
-      sha256: faccce94148b87b2b39a1d5e8c24c41356e48fac6fceda56075967f66e9a182f
-      size: 1395
-  original:
-    hackage: typelevel-tools-yj-0.1.0.6
-- completed:
-    hackage: hetero-parameter-list-0.1.0.18@sha256:0aa3a237315e4517fef8ade4810f26285992f2bc1de0efc73b97bb5410fc6e68,1884
-    pantry-tree:
-      sha256: 29724eeba90461de9c0d07470a33a94e6d392e4a1a6cd7110784a694fea87045
-      size: 459
-  original:
-    hackage: hetero-parameter-list-0.1.0.18
-- completed:
-    hackage: tools-yj-0.1.0.19@sha256:f68285bdf1655779dfd9c88e5639750b6667e2943164b56acdd67b4447f08d88,2186
-    pantry-tree:
-      sha256: d40da9da2f85d7097980003b3a52bde22668ed1829e143aa065b085bf8036ad0
-      size: 1098
-  original:
-    hackage: tools-yj-0.1.0.19
+    hackage: language-spir-v-0.1.0.3
 snapshots:
 - completed:
-    sha256: 0c65cc459d037697e6238a11dc0bbdc958a82ac9eb24907f486e33626117ae5e
-    size: 672822
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2024/10/30.yaml
-  original: nightly-2024-10-30
+    sha256: 0045719743bc3f7e7d7f01733865cf1b6ec1d021be96553570ffb4b68db013d4
+    size: 653396
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/13.yaml
+  original: nightly-2025-02-13
