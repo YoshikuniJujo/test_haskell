@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - gpu-vulkan-middle
 - gpu-vulkan-core
-- try-gpu-vulkan-core-khr-surface
+- gpu-vulkan-core-khr-surface
 - storable-peek-poke
 - c-enum
 - typelevel-tools-yj

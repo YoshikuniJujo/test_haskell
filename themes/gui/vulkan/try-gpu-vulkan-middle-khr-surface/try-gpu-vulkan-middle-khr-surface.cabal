@@ -40,9 +40,9 @@ library
       base >=4.7 && <5
     , c-enum
     , gpu-vulkan-core
+    , gpu-vulkan-core-khr-surface
     , gpu-vulkan-middle
     , storable-peek-poke
-    , try-gpu-vulkan-core-khr-surface
     , typelevel-tools-yj
   default-language: Haskell2010
 
@@ -60,9 +60,9 @@ test-suite try-gpu-vulkan-middle-khr-surface-test
       base >=4.7 && <5
     , c-enum
     , gpu-vulkan-core
+    , gpu-vulkan-core-khr-surface
     , gpu-vulkan-middle
     , storable-peek-poke
-    , try-gpu-vulkan-core-khr-surface
     , try-gpu-vulkan-middle-khr-surface
     , typelevel-tools-yj
   default-language: Haskell2010
