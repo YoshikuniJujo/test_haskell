@@ -109,17 +109,6 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
 - completed:
-    commit: f621b1d5bf7e1c86434fe3b95d77ba0f040b143a
-    git: https://github.com/YoshikuniJujo/glfw-group
-    name: glfw-group
-    pantry-tree:
-      sha256: 4b10f6a797be616688573f55c39a70e39a96e49fb287e94bc114d7912610794b
-      size: 1107
-    version: 0.1.0.0
-  original:
-    commit: f621b1d5bf7e1c86434fe3b95d77ba0f040b143a
-    git: https://github.com/YoshikuniJujo/glfw-group
-- completed:
     hackage: gpu-vulkan-0.1.0.169@sha256:ea38002d03b78499cb3b93ae45db3e2eaec0874f30786e10a3ad77c8b9ec6e87,8054
     pantry-tree:
       sha256: fdf7ea235e9a189c56a47e810d190bc03a6093e9811e2cc5f23bbdb7e77ade2a
@@ -154,6 +143,13 @@ packages:
       size: 650
   original:
     hackage: language-spir-v-0.1.0.3
+- completed:
+    hackage: glfw-group-0.1.0.0@sha256:c2ea5075041fc73d79f726de520b00b5c39dc75754a82eafa44b7a9a5bd72cdc,2611
+    pantry-tree:
+      sha256: 5a8b8131569585dc3cf9a15d6d86e69aa49d8a770325972dbd9b745feef60fd1
+      size: 899
+  original:
+    hackage: glfw-group-0.1.0.0
 snapshots:
 - completed:
     sha256: 0045719743bc3f7e7d7f01733865cf1b6ec1d021be96553570ffb4b68db013d4
