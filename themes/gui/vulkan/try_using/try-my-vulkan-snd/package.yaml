@@ -60,7 +60,7 @@ dependencies:
 - storable-hetero-list
 - typelevel-tools-yj
 - try-codec-wavefront-obj
-- try-gpu-vulkan-khr-surface-glfw
+- gpu-vulkan-khr-surface-glfw
 - gpu-vulkan-middle-khr-surface-glfw
 - try-gpu-vulkan-cglm
 - glfw-group

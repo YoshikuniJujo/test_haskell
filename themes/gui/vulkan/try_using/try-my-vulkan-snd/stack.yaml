@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2025-02-14
+resolver: nightly-2025-02-15
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -47,7 +47,6 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-  - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-cglm
   - themes/codec/try-codec-wavefront-obj
 - git: https://github.com/tanakh/optparse-declarative
@@ -55,6 +54,7 @@ extra-deps:
 - gpu-vulkan-0.1.0.169
 - gpu-vulkan-khr-swapchain-0.1.0.0
 - gpu-vulkan-khr-surface-0.1.0.0
+- gpu-vulkan-khr-surface-glfw-0.1.0.0
 - gpu-vulkan-middle-0.1.0.74
 - gpu-vulkan-middle-khr-swapchain-0.1.0.0
 - gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
@@ -64,7 +64,6 @@ extra-deps:
 - gpu-vulkan-core-khr-surface-0.1.0.0
 - shaderc-0.1.0.7
 - language-spir-v-0.1.0.3
-- glfw-group-0.1.0.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
