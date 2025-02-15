@@ -43,12 +43,12 @@ dependencies:
 - GLFW-b
 - optparse-declarative
 - gpu-vulkan
-- try-gpu-vulkan-khr-swapchain
-- try-gpu-vulkan-khr-surface
-- try-gpu-vulkan-khr-surface-glfw
+- gpu-vulkan-khr-swapchain
+- gpu-vulkan-khr-surface
+- gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
-- try-glfw-group
+- glfw-group
 - language-spir-v
 - shaderc
 - hetero-parameter-list

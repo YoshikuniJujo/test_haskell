@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2025-02-13
+resolver: nightly-2025-02-15
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,34 +43,27 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: a9471f8119d9861b7963c533c58b5b584136f913
+  commit: e6793db9527885bc3dfa309ea079968cacb7abf0
   subdirs:
-  - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
-  - themes/gui/vulkan/try-gpu-vulkan-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
-  - themes/gui/vulkan/try-gpu-vulkan-cglm
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-  - themes/gui/vulkan/try-glfw-group
+  - themes/gui/vulkan/try-gpu-vulkan-cglm
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-  # - git: https://github.com/YoshikuniJujo/gpu-vulkan
-  # commit: c2ed073f8f2f9ed98a687a85cdd04e912e57bbbd
-  # - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
-  # commit: b9db7f489709cbf4638cd3f443b44441d2303621
-  # - git: https://github.com/YoshikuniJujo/gpu-vulkan-core.git
-  # commit: bf6219f56a7a99678f1bca7bbdb485737186abcf
 - gpu-vulkan-0.1.0.169
+- gpu-vulkan-khr-swapchain-0.1.0.0
+- gpu-vulkan-khr-surface-0.1.0.0
+- gpu-vulkan-khr-surface-glfw-0.1.0.0
 - gpu-vulkan-middle-0.1.0.74
+- gpu-vulkan-middle-khr-swapchain-0.1.0.0
+- gpu-vulkan-middle-khr-surface-0.1.0.0
+- gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
 - gpu-vulkan-core-0.1.0.21
-- language-spir-v-0.1.0.3
+- gpu-vulkan-core-khr-swapchain-0.1.0.0
+- gpu-vulkan-core-khr-surface-0.1.0.0
 - shaderc-0.1.0.7
+- language-spir-v-0.1.0.3
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

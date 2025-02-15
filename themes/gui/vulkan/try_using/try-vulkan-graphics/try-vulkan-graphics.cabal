@@ -51,7 +51,11 @@ library
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -68,12 +72,8 @@ library
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , typelevel-tools-yj
     , union-color
     , vector
@@ -105,7 +105,11 @@ executable bicubic-interpolation
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -122,12 +126,8 @@ executable bicubic-interpolation
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -150,7 +150,11 @@ executable bicubic-interpolation-float-bug
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -167,12 +171,8 @@ executable bicubic-interpolation-float-bug
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -195,7 +195,11 @@ executable try-compute
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -212,12 +216,8 @@ executable try-compute
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -240,7 +240,11 @@ executable try-cube-single
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -257,12 +261,8 @@ executable try-cube-single
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -285,7 +285,11 @@ executable try-depth-buffering-single
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -302,12 +306,8 @@ executable try-depth-buffering-single
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -330,7 +330,11 @@ executable try-gamepad-button
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -347,12 +351,8 @@ executable try-gamepad-button
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -375,7 +375,11 @@ executable try-multiple-windows
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -392,12 +396,8 @@ executable try-multiple-windows
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -420,7 +420,11 @@ executable try-point-rectangle-single
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -437,12 +441,8 @@ executable try-point-rectangle-single
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -465,7 +465,11 @@ executable try-rectangle-single
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -482,12 +486,8 @@ executable try-rectangle-single
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -510,7 +510,11 @@ executable try-triangle-single
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -527,12 +531,8 @@ executable try-triangle-single
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -555,7 +555,11 @@ executable try-vulkan-guide-drawing-with-compute
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -572,12 +576,8 @@ executable try-vulkan-guide-drawing-with-compute
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -600,7 +600,11 @@ executable try-vulkan-guide-initializing
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -617,12 +621,8 @@ executable try-vulkan-guide-initializing
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
@@ -646,7 +646,11 @@ test-suite try-vulkan-graphics-test
     , containers
     , data-default
     , extra-data-yj
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
@@ -663,12 +667,8 @@ test-suite try-vulkan-graphics-test
     , text
     , time
     , tools-yj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
     , try-vulkan-graphics
     , typelevel-tools-yj
     , union-color
