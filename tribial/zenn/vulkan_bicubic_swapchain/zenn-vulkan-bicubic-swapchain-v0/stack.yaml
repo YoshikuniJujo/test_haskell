@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-02-14
+snapshot: nightly-2025-02-15
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,13 +41,10 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
-    subdirs:
-    - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - gpu-vulkan-0.1.0.169
   - gpu-vulkan-khr-swapchain-0.1.0.0
   - gpu-vulkan-khr-surface-0.1.0.0
+  - gpu-vulkan-khr-surface-glfw-0.1.0.0
   - gpu-vulkan-middle-0.1.0.74
   - gpu-vulkan-core-0.1.0.21
   - gpu-vulkan-middle-khr-swapchain-0.1.0.0
@@ -57,7 +54,6 @@ extra-deps:
   - gpu-vulkan-core-khr-surface-0.1.0.0
   - shaderc-0.1.0.7
   - language-spir-v-0.1.0.3
-  - glfw-group-0.1.0.2
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

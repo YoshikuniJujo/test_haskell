@@ -29,7 +29,7 @@ dependencies:
 - gpu-vulkan
 - gpu-vulkan-khr-swapchain
 - gpu-vulkan-khr-surface
-- try-gpu-vulkan-khr-surface-glfw
+- gpu-vulkan-khr-surface-glfw
 - shaderc
 - language-spir-v
 - glfw-group

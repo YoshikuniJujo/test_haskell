@@ -46,13 +46,13 @@ library
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-gpu-vulkan-khr-surface-glfw
     , typelevel-tools-yj
   default-language: Haskell2010
 
@@ -74,13 +74,13 @@ executable zenn-vulkan-bicubic-swapchain-v0-exe
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-gpu-vulkan-khr-surface-glfw
     , typelevel-tools-yj
     , zenn-vulkan-bicubic-swapchain-v0
   default-language: Haskell2010
@@ -104,13 +104,13 @@ test-suite zenn-vulkan-bicubic-swapchain-v0-test
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , shaderc
     , stm
     , tools-yj
-    , try-gpu-vulkan-khr-surface-glfw
     , typelevel-tools-yj
     , zenn-vulkan-bicubic-swapchain-v0
   default-language: Haskell2010
