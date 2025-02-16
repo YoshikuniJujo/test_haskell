@@ -6,7 +6,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -82,15 +82,16 @@ import Gpu.Vulkan.Pipeline.ShaderStage qualified as Vk.Ppl.ShdrSt
 import Gpu.Vulkan.PipelineLayout qualified as Vk.PplLyt
 import Gpu.Vulkan.PushConstant qualified as Vk.PshCnst
 
-import Graphics.UI.GlfwG qualified as GlfwG
-import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Key qualified as GlfwG.K
+import Gpu.Vulkan.Semaphore qualified as Vk.Smph
 
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Sfc.Glfw.Win
-import Gpu.Vulkan.Semaphore qualified as Vk.Smph
+
+import Graphics.UI.GlfwG qualified as GlfwG
+import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
+import Graphics.UI.GlfwG.Key qualified as GlfwG.K
 
 import Paths_zenn_vulkan_bicubic_swapchain_v0
 
@@ -285,8 +286,8 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 		Vk.Smph.create @'Nothing dv def nil \drs -> do
 		let	wi = smphInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
 			si = smphInfo drs Vk.Ppl.Stage2AllGraphicsBit
-		ck <- atomically newTChan
-		GlfwG.Win.setKeyCallback win . Just $ kCllbck ck
+		cky <- atomically newTChan
+		GlfwG.Win.setKeyCallback win . Just $ kCllbck cky
 		scis <- Vk.Swpch.getImages dv sc
 		($ (f0, a0, n0, x0, y0)) . unc5 $ fix \act f a n ix iy -> do
 			ii <- Vk.Swpch.acquireNextImage
@@ -297,7 +298,7 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 			Vk.Q.waitIdle gq
 			GlfwG.waitEvents
 			wsc <- GlfwG.Win.shouldClose win
-			mk <- atomically $ tryReadTChan ck
+			mk <- atomically $ tryReadTChan cky
 			case (wsc, uncurry (procKey w h f a n ix iy) <$> mk) of
 				(True, _) -> end n ix iy
 				(_, Nothing) -> act f a n ix iy
@@ -421,8 +422,8 @@ barString a = "-1 " ++ take x ('|' : repeat '*') ++ "*" ++
 -- KEY EVENTS
 
 kCllbck :: TChan (K, PR) -> GlfwG.Win.KeyCallback sw
-kCllbck ck _ ky _ ks _ = atomically case (keyToK ky, keyStateToPR ks) of
-	(Just k, Just pr) -> writeTChan ck (k, pr); _ -> pure ()
+kCllbck cky _ ky _ ks _ = atomically case (keyToK ky, keyStateToPR ks) of
+	(Just k, Just pr) -> writeTChan cky (k, pr); _ -> pure ()
 
 data K = Q | N | Semicolon | H | J | K | L | U | I | M | Comma | D | F
 	deriving Show
