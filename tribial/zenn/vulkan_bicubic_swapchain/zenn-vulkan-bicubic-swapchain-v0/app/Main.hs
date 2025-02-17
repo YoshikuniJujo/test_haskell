@@ -225,9 +225,9 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 
 type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
-body :: forall si sd scp img . Vk.ObjB.IsImage img =>
+body :: forall si sd sc img . Vk.ObjB.IsImage img =>
 	Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	Vk.CmdPl.C scp -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
+	Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
 body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 	resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
