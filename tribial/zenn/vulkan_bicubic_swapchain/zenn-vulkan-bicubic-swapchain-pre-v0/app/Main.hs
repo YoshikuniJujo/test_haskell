@@ -16,6 +16,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Monad
 import Control.Monad.Fix
+import Control.Exception
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -26,6 +27,7 @@ import Data.Default
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
+import Data.List.NonEmpty qualified as NE
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
@@ -47,6 +49,7 @@ import Language.SpirV.Shaderc qualified as Shaderc
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
+import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Object qualified as Vk.Obj
 import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
@@ -109,7 +112,7 @@ newtype PixelRgba8 = PixelRgba8 PixelRGBA8 deriving Show
 
 instance Vk.ObjB.IsImage ImageRgba8 where
 	type ImagePixel ImageRgba8 = PixelRgba8
-	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Unorm
+	type ImageFormat ImageRgba8 = 'Vk.T.FormatR8g8b8a8Srgb
 	imageRow = Vk.ObjB.imageWidth
 	imageWidth (ImageRgba8 i) = fromIntegral $ imageWidth i
 	imageHeight (ImageRgba8 i) = fromIntegral $ imageHeight i
@@ -153,7 +156,7 @@ realMain :: ImageRgba8 -> Filter -> Float -> Int32 -> Int32 -> IO ImageRgba8
 realMain img flt a n i = GlfwG.init error $
 	createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
-	createCmdPl qfi dv \cp -> body pd dv gq cp img flt a n i
+	createCmdPl qfi dv \cp -> body ist pd dv gq cp img flt a n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst a = do
@@ -218,10 +221,10 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 
 type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
-body :: forall sd sc img . Vk.ObjB.IsImage img => Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Q.Q -> Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 ->
-	IO img
-body pd dv gq cp img flt a (fromIntegral -> n) i =
+body :: forall si sd sc img . Vk.ObjB.IsImage img =>
+	Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
+body ist pd dv gq cp img flt a (fromIntegral -> n) i =
 	resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
 	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
@@ -273,21 +276,27 @@ body pd dv gq cp img flt a (fromIntegral -> n) i =
 				ccb hpl (HPList.Singleton $ U2 hds) def
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
-	withWindow w h \win ->
-		runCmds gq cb HPList.Nil HPList.Nil $
-			tr cb imgd'
-				Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral >>
-			Vk.Cmd.bindPipelineCompute cb
-					Vk.Ppl.BindPointCompute ppl \ccb -> do
-			Vk.Cmd.bindDescriptorSetsCompute
-				ccb pl (HPList.Singleton $ U2 ds) def
-			Vk.Cmd.pushConstantsCompute
-				@'[ 'Vk.T.ShaderStageComputeBit]
-				ccb pl (flt :* a :* n :* ix :* iy :* HPList.Nil)
-			Vk.Cmd.dispatch ccb (w `div'` 16) (h `div'` 16) 1
+	withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
+		createSwpch win sf pd dv \sc ->
+		Vk.Smph.create @'Nothing dv def nil \ias ->
+		Vk.Smph.create @'Nothing dv def nil \rfs -> do
+		let	wi = smphInfo ias Vk.Ppl.Stage2ColorAttachmentOutputBit
+			si = smphInfo rfs Vk.Ppl.Stage2AllGraphicsBit
+		scis <- Vk.Swpch.getImages dv sc
+		fix \act -> do
+			ii <- Vk.Swpch.acquireNextImage
+				dv sc Nothing (Just ias) Nothing
+			draw gq cb wi si ppl pl ds w h imgd' scis ii flt a n ix iy
+			catchAndSerialize $ Vk.Swpch.queuePresent
+				@'Nothing gq $ pinfo sc ii rfs
+			Vk.Q.waitIdle gq
+			GlfwG.waitEvents
+			wsc <- GlfwG.Win.shouldClose win
+			case wsc of
+				True -> pure ()
+				_ -> act
 
 	runCmds gq cb HPList.Nil HPList.Nil do
-		tr cb imgd' Vk.Img.LayoutGeneral Vk.Img.LayoutTransferSrcOptimal
 		tr cb imgd
 			Vk.Img.LayoutUndefined Vk.Img.LayoutTransferDstOptimal
 		copyImgToImg cb imgd' imgd w h 0 0
@@ -306,6 +315,11 @@ body pd dv gq cp img flt a (fromIntegral -> n) i =
 	ix, iy :: Word32
 	ix = fromIntegral i `mod` n
 	iy = fromIntegral i `div` n
+	pinfo sc ii drs = Vk.Swpch.PresentInfo {
+		Vk.Swpch.presentInfoNext = TMaybe.N,
+		Vk.Swpch.presentInfoWaitSemaphores = HPList.Singleton drs,
+		Vk.Swpch.presentInfoSwapchainImageIndices = HPList.Singleton
+			$ Vk.Swpch.SwapchainImageIndex sc ii }
 
 resultBffr :: Vk.ObjB.IsImage img =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Dvc.Size -> Vk.Dvc.Size -> (forall sm sb .
@@ -377,6 +391,10 @@ draw gq cb wi si ppl pl ds w h im scis ii flt a n ix iy = runCmds gq cb wi si do
 	copyImgToImg cb im sci w h 0 0
 	tr cb sci Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
 	where tr = transitionImgLyt; sci = scis !! fromIntegral ii
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 -- BUFFER AND IMAGE
 
@@ -496,6 +514,14 @@ submitInfo cb wsis ssis = Vk.SubmitInfo2 {
 		Vk.CBffr.submitInfoNext = TMaybe.N,
 		Vk.CBffr.submitInfoCommandBuffer = cb,
 		Vk.CBffr.submitInfoDeviceMask = def }
+
+smphInfo ::
+	Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
+	HPList.PL (U2 Vk.Smph.SubmitInfo) '[ '( 'Nothing, ss)]
+smphInfo smph sm = HPList.Singleton $ U2 Vk.Smph.SubmitInfo {
+	Vk.Smph.submitInfoNext = TMaybe.N,
+	Vk.Smph.submitInfoSemaphore = smph, Vk.Smph.submitInfoValue = 0,
+	Vk.Smph.submitInfoStageMask = sm, Vk.Smph.submitInfoDeviceIndex = 0 }
 
 -- COMMANDS
 
