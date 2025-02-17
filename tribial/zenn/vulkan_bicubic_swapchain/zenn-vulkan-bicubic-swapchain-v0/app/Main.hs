@@ -282,19 +282,19 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 
 	withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
 		createSwpch win sf pd dv \sc ->
-		Vk.Smph.create @'Nothing dv def nil \scs ->
-		Vk.Smph.create @'Nothing dv def nil \drs -> do
-		let	wi = smphInfo scs Vk.Ppl.Stage2ColorAttachmentOutputBit
-			si = smphInfo drs Vk.Ppl.Stage2AllGraphicsBit
+		Vk.Smph.create @'Nothing dv def nil \ias ->
+		Vk.Smph.create @'Nothing dv def nil \rfs -> do
+		let	wi = smphInfo ias Vk.Ppl.Stage2ColorAttachmentOutputBit
+			si = smphInfo rfs Vk.Ppl.Stage2AllGraphicsBit
 		cky <- atomically newTChan
 		GlfwG.Win.setKeyCallback win . Just $ kCllbck cky
 		scis <- Vk.Swpch.getImages dv sc
 		($ (f0, a0, n0, x0, y0)) . unc5 $ fix \act f a n ix iy -> do
 			ii <- Vk.Swpch.acquireNextImage
-				dv sc Nothing (Just scs) Nothing
+				dv sc Nothing (Just ias) Nothing
 			draw gq cb wi si ppl pl ds w h imgd' scis ii f a n ix iy
 			catchAndSerialize $ Vk.Swpch.queuePresent
-				@'Nothing gq $ pinfo sc ii drs
+				@'Nothing gq $ pinfo sc ii rfs
 			Vk.Q.waitIdle gq
 			GlfwG.waitEvents
 			wsc <- GlfwG.Win.shouldClose win
