@@ -745,6 +745,7 @@ createSwpch :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall ss scfmt .
 		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) -> IO a
 createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
+	print ss
 	ex <- swpchExtent win $ capabilities ss
 	let	cps = capabilities ss
 		pm = findDefault Vk.Sfc.PresentModeFifo
