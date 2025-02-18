@@ -273,7 +273,8 @@ body ist pd dv gq cp img flt a (fromIntegral -> n) i =
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
 	withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
-		createSwpch win sf pd dv \sc ->
+		createSwpchSettings win sf pd \(stts :: SwpchSettings scfmt) ->
+		createSwpch' @scfmt sf dv stts \sc ->
 		Vk.Smph.create @'Nothing dv def nil \ias ->
 		Vk.Smph.create @'Nothing dv def nil \rfs -> do
 		let	wi = smphInfo ias Vk.Ppl.Stage2ColorAttachmentOutputBit
@@ -732,17 +733,39 @@ compileShader fp = do
 
 -- SWAP CHAIN
 
-createSwpch :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall ss scfmt .
-		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) -> IO a
-createSwpch win sfc pd dv f = swpchFmt pd sfc \(fmt :: Vk.Sfc.Format fmt) -> do
+createSwpch' :: forall scfmt ssfc sd a . Vk.T.FormatToValue scfmt =>
+	Vk.Sfc.S ssfc -> Vk.Dvc.D sd -> SwpchSettings scfmt ->
+	(forall ss . Vk.Swpch.S scfmt ss -> IO a) -> IO a
+createSwpch' sf dv stts = Vk.Swpch.create @_ @scfmt dv (swpchInfo sf stts) nil
+
+swpchInfo :: forall fmt ss .
+	Vk.Sfc.S ss -> SwpchSettings fmt -> Vk.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfo sfc stts = Vk.Swpch.CreateInfo {
+	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
+	Vk.Swpch.createInfoSurface = sfc,
+	Vk.Swpch.createInfoMinImageCount = swpchSettingsMinImageCount stts,
+	Vk.Swpch.createInfoImageColorSpace =
+		Vk.Sfc.formatColorSpace $ swpchSettingsFormat stts,
+	Vk.Swpch.createInfoImageExtent = swpchSettingsImageExtent stts,
+	Vk.Swpch.createInfoImageArrayLayers = 1,
+	Vk.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
+	Vk.Swpch.createInfoImageSharingMode = Vk.SharingModeExclusive,
+	Vk.Swpch.createInfoQueueFamilyIndices = [],
+	Vk.Swpch.createInfoPreTransform = swpchSettingsTransform stts,
+	Vk.Swpch.createInfoCompositeAlpha = Vk.Sfc.CompositeAlphaOpaqueBit,
+	Vk.Swpch.createInfoPresentMode = swpchSettingsPresentMode stts,
+	Vk.Swpch.createInfoClipped = True,
+	Vk.Swpch.createInfoOldSwapchain = Nothing }
+
+createSwpchSettings :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P ->
+	(forall scfmt .
+		Vk.T.FormatToValue scfmt => SwpchSettings scfmt -> IO a) -> IO a
+createSwpchSettings win sf pd f = swpchFmt pd sf \(fmt :: Vk.Sfc.Format fmt) -> do
 	pm <- findDefault Vk.Sfc.PresentModeFifo (== Vk.Sfc.PresentModeMailbox)
-		<$> Vk.Sfc.Phd.getPresentModes pd sfc
-	cps <- Vk.Sfc.Phd.getCapabilities pd sfc
+		<$> Vk.Sfc.Phd.getPresentModes pd sf
+	cps <- Vk.Sfc.Phd.getCapabilities pd sf
 	ex <- swpchExtent win cps
-	let	stts = swpchSettings cps fmt pm ex
-	print stts
-	Vk.Swpch.create @_ @fmt dv (swpchInfo sfc stts) nil f
+	f $ swpchSettings cps fmt pm ex
 
 swpchFmt :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmt .
 	Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> IO a) -> IO a
@@ -765,25 +788,6 @@ swpchExtent win cps
 	cr = Vk.Sfc.capabilitiesCurrentExtent cps
 	n = Vk.Sfc.capabilitiesMinImageExtent cps
 	x = Vk.Sfc.capabilitiesMaxImageExtent cps
-
-swpchInfo :: forall fmt ss .
-	Vk.Sfc.S ss -> SwpchSettings fmt -> Vk.Swpch.CreateInfo 'Nothing ss fmt
-swpchInfo sfc stts = Vk.Swpch.CreateInfo {
-	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
-	Vk.Swpch.createInfoSurface = sfc,
-	Vk.Swpch.createInfoMinImageCount = swpchSettingsMinImageCount stts,
-	Vk.Swpch.createInfoImageColorSpace =
-		Vk.Sfc.formatColorSpace $ swpchSettingsFormat stts,
-	Vk.Swpch.createInfoImageExtent = swpchSettingsImageExtent stts,
-	Vk.Swpch.createInfoImageArrayLayers = 1,
-	Vk.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
-	Vk.Swpch.createInfoImageSharingMode = Vk.SharingModeExclusive,
-	Vk.Swpch.createInfoQueueFamilyIndices = [],
-	Vk.Swpch.createInfoPreTransform = swpchSettingsTransform stts,
-	Vk.Swpch.createInfoCompositeAlpha = Vk.Sfc.CompositeAlphaOpaqueBit,
-	Vk.Swpch.createInfoPresentMode = swpchSettingsPresentMode stts,
-	Vk.Swpch.createInfoClipped = True,
-	Vk.Swpch.createInfoOldSwapchain = Nothing }
 
 swpchSettings :: Vk.Sfc.Capabilities -> Vk.Sfc.Format fmt ->
 	Vk.Sfc.PresentMode -> Vk.Extent2d -> SwpchSettings fmt
