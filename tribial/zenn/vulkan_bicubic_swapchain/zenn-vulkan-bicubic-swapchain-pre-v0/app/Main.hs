@@ -32,7 +32,6 @@ import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained (pattern (:^*))
-import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Array
 import Data.Bool.ToolsYj
 import Data.Word
@@ -744,80 +743,76 @@ compileShader fp = do
 createSwpch :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P -> Vk.Dvc.D sd ->
 	(forall ss scfmt .
 		Vk.T.FormatToValue scfmt => Vk.Swpch.S scfmt ss -> IO a) -> IO a
-createSwpch win sfc pd dv f = querySwpchSupport pd sfc \ss -> do
-	print ss
-	ex <- swpchExtent win $ capabilities ss
-	let	cps = capabilities ss
-		pm = findDefault Vk.Sfc.PresentModeFifo
-			(== Vk.Sfc.PresentModeMailbox) $ presentModes ss
-	chooseSwpSfcFmt (formats ss) \(Vk.Sfc.Format sc :: Vk.Sfc.Format fmt) ->
-		Vk.Swpch.create @_ @fmt dv (swpchInfo sfc cps sc pm ex) nil f
+createSwpch win sfc pd dv f = swpchFmt pd sfc \(fmt :: Vk.Sfc.Format fmt) -> do
+	pm <- findDefault Vk.Sfc.PresentModeFifo (== Vk.Sfc.PresentModeMailbox)
+		<$> Vk.Sfc.Phd.getPresentModes pd sfc
+	cps <- Vk.Sfc.Phd.getCapabilities pd sfc
+	ex <- swpchExtent win cps
+	let	stts = swpchSettings cps fmt pm ex
+	print stts
+	Vk.Swpch.create @_ @fmt dv (swpchInfo sfc stts) nil f
 
-querySwpchSupport :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmts .
-	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
-	SwpchSupportDetails fmts -> IO a) -> IO a
-querySwpchSupport pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \fmts ->
-	f =<< SwpchSupportDetails
-		<$> Vk.Sfc.Phd.getCapabilities pd sfc
-		<*> ((, fmts) <$> Vk.Sfc.Phd.getFormatsFiltered pd sfc)
-		<*> Vk.Sfc.Phd.getPresentModes pd sfc
-
-data SwpchSupportDetails fmts = SwpchSupportDetails {
-	capabilities :: Vk.Sfc.Capabilities,
-	formats :: (
-		[Vk.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-		HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts ),
-	presentModes :: [Vk.Sfc.PresentMode] }
-
-deriving instance
-	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
-	Show (SwpchSupportDetails fmts)
+swpchFmt :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmt .
+	Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> IO a) -> IO a
+swpchFmt pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \case
+	(fmt0 :^* _) -> maybe (f fmt0) f . L.find ckcs =<< prffmts pd sfc
+	_ -> error "swpchFormat: no Formats"
+	where
+	prffmts = Vk.Sfc.Phd.getFormatsFiltered @Vk.T.FormatB8g8r8a8Srgb
+	ckcs = (== Vk.Sfc.ColorSpaceSrgbNonlinear) . Vk.Sfc.formatColorSpace
 
 swpchExtent :: GlfwG.Win.W sw -> Vk.Sfc.Capabilities -> IO Vk.Extent2d
 swpchExtent win cps
-	| Vk.extent2dWidth cur /= maxBound = pure cur
+	| Vk.extent2dWidth cr /= maxBound = pure cr
 	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
 		\(fromIntegral -> w, fromIntegral -> h) ->
 		Vk.Extent2d
 			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
 			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
 	where
-	cur = Vk.Sfc.capabilitiesCurrentExtent cps
+	cr = Vk.Sfc.capabilitiesCurrentExtent cps
 	n = Vk.Sfc.capabilitiesMinImageExtent cps
 	x = Vk.Sfc.capabilitiesMaxImageExtent cps
 
-chooseSwpSfcFmt :: (
-	[Vk.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
-	HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts ) ->
-	(forall fmt . Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> a) -> a
-chooseSwpSfcFmt (fmts, (fmt0 :^* _)) f = maybe (f fmt0) f $ (`L.find` fmts)
-	$ (== Vk.Sfc.ColorSpaceSrgbNonlinear) . Vk.Sfc.formatColorSpace
-chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
-
 swpchInfo :: forall fmt ss .
-	Vk.Sfc.S ss -> Vk.Sfc.Capabilities -> Vk.Sfc.ColorSpace ->
-	Vk.Sfc.PresentMode -> Vk.Extent2d ->
-	Vk.Swpch.CreateInfo 'Nothing ss fmt
-swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
+	Vk.Sfc.S ss -> SwpchSettings fmt -> Vk.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfo sfc stts = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
 	Vk.Swpch.createInfoSurface = sfc,
-	Vk.Swpch.createInfoMinImageCount = imgc,
-	Vk.Swpch.createInfoImageColorSpace = cs,
-	Vk.Swpch.createInfoImageExtent = ex,
+	Vk.Swpch.createInfoMinImageCount = swpchSettingsMinImageCount stts,
+	Vk.Swpch.createInfoImageColorSpace =
+		Vk.Sfc.formatColorSpace $ swpchSettingsFormat stts,
+	Vk.Swpch.createInfoImageExtent = swpchSettingsImageExtent stts,
 	Vk.Swpch.createInfoImageArrayLayers = 1,
 	Vk.Swpch.createInfoImageUsage = Vk.Img.UsageTransferDstBit,
 	Vk.Swpch.createInfoImageSharingMode = Vk.SharingModeExclusive,
 	Vk.Swpch.createInfoQueueFamilyIndices = [],
-	Vk.Swpch.createInfoPreTransform =
-		Vk.Sfc.capabilitiesCurrentTransform cps,
+	Vk.Swpch.createInfoPreTransform = swpchSettingsTransform stts,
 	Vk.Swpch.createInfoCompositeAlpha = Vk.Sfc.CompositeAlphaOpaqueBit,
-	Vk.Swpch.createInfoPresentMode = pm,
+	Vk.Swpch.createInfoPresentMode = swpchSettingsPresentMode stts,
 	Vk.Swpch.createInfoClipped = True,
 	Vk.Swpch.createInfoOldSwapchain = Nothing }
+
+swpchSettings :: Vk.Sfc.Capabilities -> Vk.Sfc.Format fmt ->
+	Vk.Sfc.PresentMode -> Vk.Extent2d -> SwpchSettings fmt
+swpchSettings cps fmt pm ex = SwpchSettings {
+	swpchSettingsFormat = fmt,
+	swpchSettingsPresentMode = pm,
+	swpchSettingsMinImageCount = imgc,
+	swpchSettingsTransform = Vk.Sfc.capabilitiesCurrentTransform cps,
+	swpchSettingsImageExtent = ex }
 	where
 	imgc = clamp 0 imgcx (Vk.Sfc.capabilitiesMinImageCount cps + 1)
 	imgcx = fromMaybe maxBound
 		. onlyIf (> 0) $ Vk.Sfc.capabilitiesMaxImageCount cps
+
+data SwpchSettings fmt = SwpchSettings {
+	swpchSettingsFormat :: Vk.Sfc.Format fmt,
+	swpchSettingsPresentMode :: Vk.Sfc.PresentMode,
+	swpchSettingsMinImageCount :: Word32,
+	swpchSettingsTransform :: Vk.Sfc.TransformFlagBits,
+	swpchSettingsImageExtent :: Vk.Extent2d }
+	deriving Show
 
 -- TOOLS
 
