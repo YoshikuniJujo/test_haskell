@@ -16,7 +16,6 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Monad
 import Control.Monad.Fix
-import Control.Exception
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -27,7 +26,6 @@ import Data.Default
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
-import Data.List.NonEmpty qualified as NE
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**), pattern (:*), pattern (:*.))
 import Data.HeteroParList qualified as HPList
@@ -48,7 +46,6 @@ import Language.SpirV.Shaderc qualified as Shaderc
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Exception qualified as Vk
 import Gpu.Vulkan.Object qualified as Vk.Obj
 import Gpu.Vulkan.Object.NoAlignment qualified as Vk.ObjNA
 import Gpu.Vulkan.Object.Base qualified as Vk.ObjB
@@ -286,8 +283,7 @@ body ist pd dv gq cp img flt a (fromIntegral -> n) i =
 			ii <- Vk.Swpch.acquireNextImage
 				dv sc Nothing (Just ias) Nothing
 			draw gq cb wi si ppl pl ds w h imgd' scis ii flt a n ix iy
-			catchAndSerialize $ Vk.Swpch.queuePresent
-				@'Nothing gq $ pinfo sc ii rfs
+			Vk.Swpch.queuePresent @'Nothing gq $ pinfo sc ii rfs
 			Vk.Q.waitIdle gq
 			GlfwG.waitEvents
 			wsc <- GlfwG.Win.shouldClose win
@@ -390,10 +386,6 @@ draw gq cb wi si ppl pl ds w h im scis ii flt a n ix iy = runCmds gq cb wi si do
 	copyImgToImg cb im sci w h 0 0
 	tr cb sci Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutPresentSrcKhr
 	where tr = transitionImgLyt; sci = scis !! fromIntegral ii
-
-catchAndSerialize :: IO () -> IO ()
-catchAndSerialize =
-	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 -- BUFFER AND IMAGE
 
