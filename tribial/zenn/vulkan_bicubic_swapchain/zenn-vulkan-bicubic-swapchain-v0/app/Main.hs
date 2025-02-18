@@ -278,7 +278,7 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 
 	withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
 		createSwpchSettings win sf pd \(stts :: SwpchSettings scfmt) ->
-		createSwpch' @scfmt sf dv stts \sc ->
+		createSwpch @scfmt sf dv stts \sc ->
 		Vk.Smph.create @'Nothing dv def nil \ias ->
 		Vk.Smph.create @'Nothing dv def nil \rfs -> do
 		let	wi = smphInfo ias Vk.Ppl.Stage2ColorAttachmentOutputBit
@@ -806,10 +806,10 @@ compileShader fp = do
 
 -- SWAP CHAIN
 
-createSwpch' :: forall scfmt ssfc sd a . Vk.T.FormatToValue scfmt =>
+createSwpch :: forall scfmt ssfc sd a . Vk.T.FormatToValue scfmt =>
 	Vk.Sfc.S ssfc -> Vk.Dvc.D sd -> SwpchSettings scfmt ->
 	(forall ss . Vk.Swpch.S scfmt ss -> IO a) -> IO a
-createSwpch' sf dv stts = Vk.Swpch.create @_ @scfmt dv (swpchInfo sf stts) nil
+createSwpch sf dv stts = Vk.Swpch.create @_ @scfmt dv (swpchInfo sf stts) nil
 
 swpchInfo :: forall fmt ss .
 	Vk.Sfc.S ss -> SwpchSettings fmt -> Vk.Swpch.CreateInfo 'Nothing ss fmt
