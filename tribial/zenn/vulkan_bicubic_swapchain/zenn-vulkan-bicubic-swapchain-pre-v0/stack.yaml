@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-02-17
+snapshot: nightly-2025-02-19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - gpu-vulkan-0.1.0.170
-  - gpu-vulkan-khr-swapchain-0.1.0.0
+  - gpu-vulkan-khr-swapchain-0.1.0.1
   - gpu-vulkan-khr-surface-glfw-0.1.0.0
   - gpu-vulkan-khr-surface-0.1.0.0
   - gpu-vulkan-middle-0.1.0.75

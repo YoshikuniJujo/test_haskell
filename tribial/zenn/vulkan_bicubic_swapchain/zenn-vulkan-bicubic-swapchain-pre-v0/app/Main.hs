@@ -18,6 +18,7 @@ import Control.Monad
 import Control.Monad.Fix
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Ord.ToolsYj
 import Data.Bits
@@ -738,8 +739,8 @@ createSwpch :: forall scfmt ssf sd a . Vk.T.FormatToValue scfmt =>
 	(forall ss . Vk.Swpch.S scfmt ss -> IO a) -> IO a
 createSwpch sf dv stts = Vk.Swpch.create @_ @scfmt dv (swpchInfo sf stts) nil
 
-swpchInfo :: forall fmt ss .
-	Vk.Sfc.S ss -> SwpchSettings fmt -> Vk.Swpch.CreateInfo 'Nothing ss fmt
+swpchInfo :: forall fmt ss . Vk.Sfc.S ss ->
+	SwpchSettings fmt -> Vk.Swpch.CreateInfo 'Nothing ss fmt 'Nothing
 swpchInfo sf stts = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
 	Vk.Swpch.createInfoSurface = sf,
@@ -755,7 +756,7 @@ swpchInfo sf stts = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoCompositeAlpha = Vk.Sfc.CompositeAlphaOpaqueBit,
 	Vk.Swpch.createInfoPresentMode = swpchSettingsPresentMode stts,
 	Vk.Swpch.createInfoClipped = True,
-	Vk.Swpch.createInfoOldSwapchain = Nothing }
+	Vk.Swpch.createInfoOldSwapchain = TPMaybe.N }
 
 createSwpchSettings :: GlfwG.Win.W sw -> Vk.Sfc.S ssf -> Vk.Phd.P ->
 	(forall scfmt .
