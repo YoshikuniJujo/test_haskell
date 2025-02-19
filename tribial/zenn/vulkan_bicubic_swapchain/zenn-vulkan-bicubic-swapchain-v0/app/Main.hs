@@ -843,7 +843,7 @@ createSwpchSettings win sf pd f = swpchFmt pd sf \(fmt :: Vk.Sfc.Format fmt) -> 
 swpchFmt :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmt .
 	Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> IO a) -> IO a
 swpchFmt pd sf f = Vk.Sfc.Phd.getFormats pd sf \case
-	(fmt0 :^* _) -> maybe (f fmt0) f . L.find ckcs =<< prffmts pd sf
+	fmt0 :^* _ -> maybe (f fmt0) f . L.find ckcs =<< prffmts pd sf
 	_ -> error "swpchFormat: no Formats"
 	where
 	prffmts = Vk.Sfc.Phd.getFormatsFiltered @Vk.T.FormatB8g8r8a8Srgb
