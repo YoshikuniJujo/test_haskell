@@ -806,16 +806,16 @@ compileShader fp = do
 
 -- SWAP CHAIN
 
-createSwpch :: forall scfmt ssfc sd a . Vk.T.FormatToValue scfmt =>
-	Vk.Sfc.S ssfc -> Vk.Dvc.D sd -> SwpchSettings scfmt ->
+createSwpch :: forall scfmt ssf sd a . Vk.T.FormatToValue scfmt =>
+	Vk.Sfc.S ssf -> Vk.Dvc.D sd -> SwpchSettings scfmt ->
 	(forall ss . Vk.Swpch.S scfmt ss -> IO a) -> IO a
 createSwpch sf dv stts = Vk.Swpch.create @_ @scfmt dv (swpchInfo sf stts) nil
 
 swpchInfo :: forall fmt ss .
 	Vk.Sfc.S ss -> SwpchSettings fmt -> Vk.Swpch.CreateInfo 'Nothing ss fmt
-swpchInfo sfc stts = Vk.Swpch.CreateInfo {
+swpchInfo sf stts = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
-	Vk.Swpch.createInfoSurface = sfc,
+	Vk.Swpch.createInfoSurface = sf,
 	Vk.Swpch.createInfoMinImageCount = swpchSettingsMinImageCount stts,
 	Vk.Swpch.createInfoImageColorSpace =
 		Vk.Sfc.formatColorSpace $ swpchSettingsFormat stts,
@@ -830,7 +830,7 @@ swpchInfo sfc stts = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoClipped = True,
 	Vk.Swpch.createInfoOldSwapchain = Nothing }
 
-createSwpchSettings :: GlfwG.Win.W sw -> Vk.Sfc.S ssfc -> Vk.Phd.P ->
+createSwpchSettings :: GlfwG.Win.W sw -> Vk.Sfc.S ssf -> Vk.Phd.P ->
 	(forall scfmt .
 		Vk.T.FormatToValue scfmt => SwpchSettings scfmt -> IO a) -> IO a
 createSwpchSettings win sf pd f = swpchFmt pd sf \(fmt :: Vk.Sfc.Format fmt) -> do
@@ -842,8 +842,8 @@ createSwpchSettings win sf pd f = swpchFmt pd sf \(fmt :: Vk.Sfc.Format fmt) -> 
 
 swpchFmt :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmt .
 	Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> IO a) -> IO a
-swpchFmt pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \case
-	(fmt0 :^* _) -> maybe (f fmt0) f . L.find ckcs =<< prffmts pd sfc
+swpchFmt pd sf f = Vk.Sfc.Phd.getFormats pd sf \case
+	(fmt0 :^* _) -> maybe (f fmt0) f . L.find ckcs =<< prffmts pd sf
 	_ -> error "swpchFormat: no Formats"
 	where
 	prffmts = Vk.Sfc.Phd.getFormatsFiltered @Vk.T.FormatB8g8r8a8Srgb
