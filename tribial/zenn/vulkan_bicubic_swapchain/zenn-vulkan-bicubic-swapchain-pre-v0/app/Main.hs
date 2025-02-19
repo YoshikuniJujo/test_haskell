@@ -18,7 +18,6 @@ import Control.Monad
 import Control.Monad.Fix
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Ord.ToolsYj
 import Data.Bits
@@ -756,7 +755,7 @@ swpchInfo sf stts = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoCompositeAlpha = Vk.Sfc.CompositeAlphaOpaqueBit,
 	Vk.Swpch.createInfoPresentMode = swpchSettingsPresentMode stts,
 	Vk.Swpch.createInfoClipped = True,
-	Vk.Swpch.createInfoOldSwapchain = TPMaybe.N }
+	Vk.Swpch.createInfoOldSwapchain = nil }
 
 createSwpchSettings :: GlfwG.Win.W sw -> Vk.Sfc.S ssf -> Vk.Phd.P ->
 	(forall scfmt .
