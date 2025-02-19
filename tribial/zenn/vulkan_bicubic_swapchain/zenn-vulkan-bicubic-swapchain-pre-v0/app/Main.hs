@@ -767,6 +767,19 @@ createSwpchSettings win sf pd f = swpchFmt pd sf \(fmt :: Vk.Sfc.Format fmt) -> 
 	ex <- swpchExtent win cps
 	f $ swpchSettings cps fmt pm ex
 
+swpchSettings :: Vk.Sfc.Capabilities -> Vk.Sfc.Format fmt ->
+	Vk.Sfc.PresentMode -> Vk.Extent2d -> SwpchSettings fmt
+swpchSettings cps fmt pm ex = SwpchSettings {
+	swpchSettingsFormat = fmt,
+	swpchSettingsPresentMode = pm,
+	swpchSettingsMinImageCount = imgc,
+	swpchSettingsTransform = Vk.Sfc.capabilitiesCurrentTransform cps,
+	swpchSettingsImageExtent = ex }
+	where
+	imgc = clamp 0 imgcx (Vk.Sfc.capabilitiesMinImageCount cps + 1)
+	imgcx = fromMaybe maxBound
+		. onlyIf (> 0) $ Vk.Sfc.capabilitiesMaxImageCount cps
+
 swpchFmt :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmt .
 	Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> IO a) -> IO a
 swpchFmt pd sf f = Vk.Sfc.Phd.getFormats pd sf \case
@@ -788,19 +801,6 @@ swpchExtent win cps
 	cr = Vk.Sfc.capabilitiesCurrentExtent cps
 	n = Vk.Sfc.capabilitiesMinImageExtent cps
 	x = Vk.Sfc.capabilitiesMaxImageExtent cps
-
-swpchSettings :: Vk.Sfc.Capabilities -> Vk.Sfc.Format fmt ->
-	Vk.Sfc.PresentMode -> Vk.Extent2d -> SwpchSettings fmt
-swpchSettings cps fmt pm ex = SwpchSettings {
-	swpchSettingsFormat = fmt,
-	swpchSettingsPresentMode = pm,
-	swpchSettingsMinImageCount = imgc,
-	swpchSettingsTransform = Vk.Sfc.capabilitiesCurrentTransform cps,
-	swpchSettingsImageExtent = ex }
-	where
-	imgc = clamp 0 imgcx (Vk.Sfc.capabilitiesMinImageCount cps + 1)
-	imgcx = fromMaybe maxBound
-		. onlyIf (> 0) $ Vk.Sfc.capabilitiesMaxImageCount cps
 
 data SwpchSettings fmt = SwpchSettings {
 	swpchSettingsFormat :: Vk.Sfc.Format fmt,
