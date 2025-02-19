@@ -853,7 +853,7 @@ swpchExtent :: GlfwG.Win.W sw -> Vk.Sfc.Capabilities -> IO Vk.Extent2d
 swpchExtent win cps
 	| Vk.extent2dWidth cr /= maxBound = pure cr
 	| otherwise = (<$> GlfwG.Win.getFramebufferSize win)
-		\(fromIntegral -> w, fromIntegral -> h) ->
+			\(fromIntegral -> w, fromIntegral -> h) ->
 		Vk.Extent2d
 			(clamp (Vk.extent2dWidth n) (Vk.extent2dWidth x) w)
 			(clamp (Vk.extent2dHeight n) (Vk.extent2dHeight x) h)
