@@ -833,7 +833,7 @@ swpchInfo sf stts = Vk.Swpch.CreateInfo {
 createSwpchSettings :: GlfwG.Win.W sw -> Vk.Sfc.S ssf -> Vk.Phd.P ->
 	(forall scfmt .
 		Vk.T.FormatToValue scfmt => SwpchSettings scfmt -> IO a) -> IO a
-createSwpchSettings win sf pd f = swpchFmt pd sf \(fmt :: Vk.Sfc.Format fmt) -> do
+createSwpchSettings win sf pd f = swpchFmt pd sf \fmt -> do
 	pm <- findDefault Vk.Sfc.PresentModeFifo (== Vk.Sfc.PresentModeMailbox)
 		<$> Vk.Sfc.Phd.getPresentModes pd sf
 	cps <- Vk.Sfc.Phd.getCapabilities pd sf
