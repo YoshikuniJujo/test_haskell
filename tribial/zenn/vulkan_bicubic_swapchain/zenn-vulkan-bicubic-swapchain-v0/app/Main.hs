@@ -277,8 +277,8 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
 	withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
-		createSwpchSettings win sf pd \(stts :: SwpchSettings scfmt) ->
-		createSwpch @scfmt sf dv stts \sc ->
+		createSwpchSettings win sf pd \stts ->
+		createSwpch sf dv stts \sc ->
 		Vk.Smph.create @'Nothing dv def nil \ias ->
 		Vk.Smph.create @'Nothing dv def nil \rfs -> do
 		let	wi = smphInfo ias Vk.Ppl.Stage2ColorAttachmentOutputBit
