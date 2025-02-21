@@ -156,7 +156,7 @@ realMain :: ImageRgba8 -> Filter -> Float -> Int32 -> Int32 -> IO ImageRgba8
 realMain img flt a n i = GlfwG.init error $
 	createIst \ist -> pickPhd ist >>= \(pd, qfi) ->
 	createLgDvc pd qfi \dv -> Vk.Dvc.getQueue dv qfi 0 >>= \gq ->
-	createCmdPl qfi dv \cp -> body ist pd dv gq cp img flt a n i
+	createCmdPl qfi dv \cp -> body ist pd qfi dv gq cp img flt a n i
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst a = do
@@ -222,9 +222,9 @@ createCmdPl qfi dv = Vk.CmdPl.create dv info nil
 type ShaderFormat = Vk.T.FormatR16g16b16a16Sfloat
 
 body :: forall si sd sc img . Vk.ObjB.IsImage img =>
-	Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q ->
 	Vk.CmdPl.C sc -> img -> Filter -> Float -> Int32 -> Int32 -> IO img
-body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
+body ist pd qfi dv gq cp img f0 a0 (fromIntegral -> n0) i =
 	resultBffr @img pd dv w h \rb ->
 	prepareImg @(Vk.ObjB.ImageFormat img) pd dv trsd w h \imgd ->
 	prepareImg @ShaderFormat pd dv sts w h \imgd' ->
@@ -277,6 +277,8 @@ body ist pd dv gq cp img f0 a0 (fromIntegral -> n0) i =
 			Vk.Cmd.dispatch ccb ((w + 2) `div'` 16) 1 1
 
 	withWindow w h \win -> Vk.Sfc.Glfw.Win.create ist win nil \sf ->
+		Vk.Sfc.Phd.getSupport pd qfi sf >>= \ps ->
+		when (not ps) (error "Presentation is not supported!") >>
 		createSwpchSettings win sf pd \stts ->
 		createSwpch sf dv stts \sc ->
 		Vk.Smph.create @'Nothing dv def nil \ias ->
