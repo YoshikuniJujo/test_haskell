@@ -28,8 +28,8 @@ dependencies:
 - JuicyPixels
 - gpu-vulkan
 - gpu-vulkan-khr-swapchain
-- gpu-vulkan-khr-surface
 - gpu-vulkan-khr-surface-glfw
+- gpu-vulkan-khr-surface
 - shaderc
 - language-spir-v
 - glfw-group
