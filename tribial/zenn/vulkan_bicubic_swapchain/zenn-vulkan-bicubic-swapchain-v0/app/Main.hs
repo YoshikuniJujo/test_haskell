@@ -582,8 +582,7 @@ submitInfo cb wsis ssis = Vk.SubmitInfo2 {
 		Vk.CBffr.submitInfoCommandBuffer = cb,
 		Vk.CBffr.submitInfoDeviceMask = def }
 
-smphInfo ::
-	Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
+smphInfo :: Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) '[ '( 'Nothing, ss)]
 smphInfo smph sm = HPList.Singleton $ U2 Vk.Smph.SubmitInfo {
 	Vk.Smph.submitInfoNext = TMaybe.N,
