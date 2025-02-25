@@ -285,7 +285,8 @@ body ist pd qfi dv gq cp img flt a (fromIntegral -> n) i =
 		fix \act -> do
 			ii <- Vk.Swpch.acquireNextImage
 				dv sc Nothing (Just ias) Nothing
-			draw gq cb wi si ppl pl ds w h imgd' scis ii flt a n ix iy
+			draw gq cb wi si
+				ppl pl ds w h imgd' scis ii flt a n ix iy
 			Vk.Swpch.queuePresent @'Nothing gq $ pinfo sc ii rfs
 			Vk.Q.waitIdle gq
 			GlfwG.waitEvents
@@ -510,8 +511,7 @@ submitInfo cb wsis ssis = Vk.SubmitInfo2 {
 		Vk.CBffr.submitInfoCommandBuffer = cb,
 		Vk.CBffr.submitInfoDeviceMask = def }
 
-smphInfo ::
-	Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
+smphInfo :: Vk.Smph.S ss -> Vk.Ppl.StageFlags2 ->
 	HPList.PL (U2 Vk.Smph.SubmitInfo) '[ '( 'Nothing, ss)]
 smphInfo smph sm = HPList.Singleton $ U2 Vk.Smph.SubmitInfo {
 	Vk.Smph.submitInfoNext = TMaybe.N,
