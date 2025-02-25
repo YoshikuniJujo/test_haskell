@@ -459,7 +459,7 @@ procKey _ _ f a n ix iy H _ = Just (f, a, n, ix `sub'` 1, iy)
 procKey _ _ f a n ix iy J _ = Just (f, a, n, ix, clamp 0 (n - 1) $ iy + 1)
 procKey _ _ f a n ix iy K _ = Just (f, a, n, ix, iy `sub'` 1)
 procKey _ _ f a n ix iy L _ = Just (f, a, n, clamp 0 (n - 1) $ ix + 1, iy)
-procKey w h f a (clamp 1 (max w h) . (`sub'` 1)  -> n) ix iy D _ =
+procKey w h f a (clamp 1 (max w h) . (`sub'` 1) -> n) ix iy D _ =
 	Just (f, a, n, clamp 0 (n - 1) ix, clamp 0 (n - 1) iy)
 procKey w h f a (clamp 1 (max w h) . (+ 1) -> n) ix iy F _ =
 	Just (f, a, n, ix, iy)
