@@ -386,8 +386,9 @@ draw :: (
 	Vk.PplLyt.P sl '[ '(sdsl, '[SrcImg, DstImg])] PshCnsts ->
 	Vk.DscSt.D sds '(sdsl, '[SrcImg, DstImg]) ->
 	(forall n . Integral n => n) -> (forall n . Integral n => n) ->
-	Vk.Img.Binded smd sid nmd fmtd -> [Vk.Img.Binded sm si inm fmt] ->
-	Word32 -> Filter -> Float -> Word32 -> Word32 -> Word32 -> IO ()
+	Vk.Img.Binded smd sid nmd fmtd ->
+	[Vk.Img.Binded sm si inm fmt] -> Word32 ->
+	Filter -> Float -> Word32 -> Word32 -> Word32 -> IO ()
 draw gq cb wi si ppl pl ds w h im scis ii flt a n ix iy = runCmds gq cb wi si do
 	tr cb im Vk.Img.LayoutUndefined Vk.Img.LayoutGeneral
 	Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
