@@ -21,7 +21,8 @@ main = Vk.Ist.create @'Nothing @'Nothing def nil \ist -> do
 	print . filter (("VK_KHR_dy" `T.isPrefixOf`) . fst)
 		. (nameAndVersion <$>) =<< Vk.Phd.enumerateExtensionProperties pd0 Nothing
 	print =<< Vk.Phd.getFeatures pd0
-	print =<< Vk.Phd.getFeatures2 @'Nothing pd0
+	print =<< Vk.Phd.getFeatures2
+		@('Just (Vk.Phd.Vulkan13Features 'Nothing))  pd0
 
 nameAndVersion :: Vk.Phd.ExtensionProperties -> (T.Text, Vk.ApiVersion)
 nameAndVersion =
