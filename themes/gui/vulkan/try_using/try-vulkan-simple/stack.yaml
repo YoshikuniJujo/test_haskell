@@ -42,7 +42,8 @@ packages:
 #
 extra-deps:
   - gpu-vulkan-0.1.0.170
-  - gpu-vulkan-middle-0.1.0.75
+  - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
+    commit: 84141653bc72cb21a91597a07a9fcae8d72f2ef2
   - gpu-vulkan-core-0.1.0.21
   - shaderc-0.1.0.7
   - language-spir-v-0.1.0.3
