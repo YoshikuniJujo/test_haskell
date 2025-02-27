@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- text
 - data-default
 - gpu-vulkan
 - shaderc
@@ -55,6 +56,16 @@ executables:
     - try-vulkan-simple
   try-device-group:
     main:                try-device-group.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-simple
+  try-query:
+    main:                try-query.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
