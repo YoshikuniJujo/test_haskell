@@ -68,19 +68,19 @@ packages:
     commit: d3193db7979f391f1a307849236b870fd8933709
     git: https://github.com/tanakh/optparse-declarative
 - completed:
-    hackage: gpu-vulkan-0.1.0.169@sha256:ea38002d03b78499cb3b93ae45db3e2eaec0874f30786e10a3ad77c8b9ec6e87,8054
+    hackage: gpu-vulkan-0.1.0.170@sha256:06d3b19697ee5d29c10c4c1901ad8ab6b9a09e2dce992ba31238cad95dc069cf,8054
     pantry-tree:
-      sha256: fdf7ea235e9a189c56a47e810d190bc03a6093e9811e2cc5f23bbdb7e77ade2a
+      sha256: 1368e69ac8a679f6c427354df79671f3fbf7423391cf252de442de80addff65d
       size: 12064
   original:
-    hackage: gpu-vulkan-0.1.0.169
+    hackage: gpu-vulkan-0.1.0.170
 - completed:
-    hackage: gpu-vulkan-khr-swapchain-0.1.0.0@sha256:41fe38c926b853231ae3159d564f1dfe7b159b6548eb1fe400f1ccafa4658424,2425
+    hackage: gpu-vulkan-khr-swapchain-0.1.0.1@sha256:35aee842273436d0cc121c67f5bbddf824f72fc12111e05918951b9e55dce7c4,2425
     pantry-tree:
-      sha256: 81b512223c8785489beb4689f8af6f2ead588b1d92919cdf21270584b70d26ef
+      sha256: 71dc2832d704821a0d24ae144b909ec9bf4ca0feecf82bc3a31f994dad0b2c33
       size: 466
   original:
-    hackage: gpu-vulkan-khr-swapchain-0.1.0.0
+    hackage: gpu-vulkan-khr-swapchain-0.1.0.1
 - completed:
     hackage: gpu-vulkan-khr-surface-0.1.0.0@sha256:789237cd35f877c94be45b163624106f4df4d62a0577da211daaa880fd98515d,2333
     pantry-tree:
@@ -96,12 +96,12 @@ packages:
   original:
     hackage: gpu-vulkan-khr-surface-glfw-0.1.0.0
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.74@sha256:ef19ae89eb542e2905395b47cad930156faf010cb83739a856543b9c958bf750,9124
+    hackage: gpu-vulkan-middle-0.1.0.75@sha256:eea5220f6696b9d35a74a0959cd7987d6879dc558a7697af888236f979df2231,9124
     pantry-tree:
-      sha256: 40a266489b01c5a75cb98320961383fbdbf6b0bc0e901c95ba4fff4253c3cb31
+      sha256: 5b163da48b756a822a132b550a204f8a37f65b96b003e98c2e3a1017e523f50d
       size: 13576
   original:
-    hackage: gpu-vulkan-middle-0.1.0.74
+    hackage: gpu-vulkan-middle-0.1.0.75
 - completed:
     hackage: gpu-vulkan-middle-khr-swapchain-0.1.0.0@sha256:a15bb45401cfe86eda6d6c9086dbc7aa65c1049a4c32ab7cbf340f2a74db8a8f,2569
     pantry-tree:
@@ -160,7 +160,7 @@ packages:
     hackage: language-spir-v-0.1.0.3
 snapshots:
 - completed:
-    sha256: 28105fd76386569f72c84978edbf017e006f5ee3957bb578f79bcd40db1376b9
-    size: 653612
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/15.yaml
-  original: nightly-2025-02-15
+    sha256: 7ec0e288e359b586f3e98bfdc35152922d9b7f2f97346a2e7b4c1b85833e4521
+    size: 654479
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/27.yaml
+  original: nightly-2025-02-27

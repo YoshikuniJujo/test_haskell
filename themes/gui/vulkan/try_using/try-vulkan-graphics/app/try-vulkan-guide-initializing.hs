@@ -329,7 +329,7 @@ swapExtent win cps
 swpchInfo :: forall fmt ss .
 	Vk.Khr.Sfc.S ss -> Vk.Khr.Sfc.Capabilities ->
 	Vk.Khr.Sfc.ColorSpace -> Vk.Khr.Sfc.PresentMode -> Vk.Extent2d ->
-	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt
+	Vk.Khr.Swpch.CreateInfo 'Nothing ss fmt 'Nothing
 swpchInfo sfc cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 	Vk.Khr.Swpch.createInfoNext = TMaybe.N,
 	Vk.Khr.Swpch.createInfoFlags = zeroBits,
@@ -347,7 +347,7 @@ swpchInfo sfc cps cs pm ex = Vk.Khr.Swpch.CreateInfo {
 		Vk.Khr.Sfc.CompositeAlphaOpaqueBit,
 	Vk.Khr.Swpch.createInfoPresentMode = pm,
 	Vk.Khr.Swpch.createInfoClipped = True,
-	Vk.Khr.Swpch.createInfoOldSwapchain = Nothing }
+	Vk.Khr.Swpch.createInfoOldSwapchain = nil }
 	where
 	imgc = clamp 0 imgcx (Vk.Khr.Sfc.capabilitiesMinImageCount cps + 1)
 	imgcx = fromMaybe maxBound

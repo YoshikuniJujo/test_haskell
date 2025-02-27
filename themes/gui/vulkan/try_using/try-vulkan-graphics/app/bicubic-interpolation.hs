@@ -868,7 +868,7 @@ chooseSwpSfcFmt (_, HPListC.Nil) _ = error "no available swap surface formats"
 swpchInfo :: forall fmt ss .
 	Vk.Sfc.S ss -> Vk.Sfc.Capabilities -> Vk.Sfc.ColorSpace ->
 	Vk.Sfc.PresentMode -> Vk.Extent2d ->
-	Vk.Swpch.CreateInfo 'Nothing ss fmt
+	Vk.Swpch.CreateInfo 'Nothing ss fmt 'Nothing
 swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoNext = TMaybe.N, Vk.Swpch.createInfoFlags = zeroBits,
 	Vk.Swpch.createInfoSurface = sfc,
@@ -884,7 +884,7 @@ swpchInfo sfc cps cs pm ex = Vk.Swpch.CreateInfo {
 	Vk.Swpch.createInfoCompositeAlpha = Vk.Sfc.CompositeAlphaOpaqueBit,
 	Vk.Swpch.createInfoPresentMode = pm,
 	Vk.Swpch.createInfoClipped = True,
-	Vk.Swpch.createInfoOldSwapchain = Nothing }
+	Vk.Swpch.createInfoOldSwapchain = nil }
 	where
 	imgc = clamp 0 imgcx (Vk.Sfc.capabilitiesMinImageCount cps + 1)
 	imgcx = fromMaybe maxBound
