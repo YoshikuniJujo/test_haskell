@@ -51,19 +51,27 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-cglm
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
-- gpu-vulkan-0.1.0.170
+- git: https://github.com/YoshikuniJujo/gpu-vulkan
+  commit: c209d0fb8b03234c6730cfbcd7ae9e9ae47ad95c
+- git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
+  commit: 6794255a4fd65c04fbeac16d5e278e8c975140a9
+- git: https://github.com/YoshikuniJujo/gpu-vulkan-core
+  commit: b83a9103056ff9ade87a09337273b56570bc63a7
+# - gpu-vulkan-0.1.0.170
 - gpu-vulkan-khr-swapchain-0.1.0.1
 - gpu-vulkan-khr-surface-0.1.0.0
 - gpu-vulkan-khr-surface-glfw-0.1.0.0
-- gpu-vulkan-middle-0.1.0.75
+# - gpu-vulkan-middle-0.1.0.75
 - gpu-vulkan-middle-khr-swapchain-0.1.0.0
 - gpu-vulkan-middle-khr-surface-0.1.0.0
 - gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
-- gpu-vulkan-core-0.1.0.21
+# - gpu-vulkan-core-0.1.0.21
 - gpu-vulkan-core-khr-swapchain-0.1.0.0
 - gpu-vulkan-core-khr-surface-0.1.0.0
 - shaderc-0.1.0.7
 - language-spir-v-0.1.0.3
+- hetero-parameter-list-0.1.0.21
+- typelevel-tools-yj-0.1.0.8
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
