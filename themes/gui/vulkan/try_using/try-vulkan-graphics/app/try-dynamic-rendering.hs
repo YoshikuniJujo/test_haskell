@@ -121,6 +121,7 @@ initWindow :: FramebufferResized -> GlfwG.Win.Group s () -> IO (GlfwG.Win.W s)
 initWindow fr g = do
 	Right w <- do
 		GlfwG.Win.hint noApi
+		GlfwG.Win.hint (GlfwG.Win.WindowHint'Resizable False)
 		uncurryDup (GlfwG.Win.create' g ()) sizeName Nothing Nothing
 	w <$ GlfwG.Win.setFramebufferSizeCallback
 		w (Just . const3 . atomically $ writeTVar fr True)
@@ -196,7 +197,7 @@ body fr w ist =
 	createImgVws dv scis \scvs ->
 	createFrmbffrs dv ex rp scvs \fbs ->
 	createVtxBffr pd dv gq cp \vb -> createSyncObjs dv \sos ->
-	mainloop fr w sfc pd qfis dv gq pq sc ex scvs rp pl gp fbs vb cb sos
+	mainloop fr w sfc pd qfis dv gq pq sc ex scis scvs rp pl gp fbs vb cb sos
 
 pickPhd :: Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
 pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
@@ -256,6 +257,7 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 
 features13 :: Vk.Phd.Vulkan13Features 'Nothing
 features13 = (Vk.Phd.vulkan13FeaturesZero TMaybe.N) {
+	Vk.Phd.vulkan13FeaturesSynchronization2 = True,
 	Vk.Phd.vulkan13FeaturesDynamicRendering = True }
 
 createSwpch :: GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
@@ -528,6 +530,7 @@ grPplInfo ex rp pl = Vk.Ppl.Gr.CreateInfo {
 	Vk.Ppl.Gr.createInfoDynamicState = Nothing,
 	Vk.Ppl.Gr.createInfoLayout = U3 pl,
 	Vk.Ppl.Gr.createInfoRenderPass = Vk.RndrPss.null,
+--	Vk.Ppl.Gr.createInfoRenderPass = rp,
 	Vk.Ppl.Gr.createInfoSubpass = 0,
 	Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1,
@@ -804,6 +807,7 @@ mainloop :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat alv) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
+	[Vk.Img.Binded si si inm fmt] ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -811,16 +815,17 @@ mainloop :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat alv) =>
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> IO ()
-mainloop fr w sfc pd qfis dv gq pq sc ex0 vs rp pl gp fbs vb cb sos = do
+mainloop fr w sfc pd qfis dv gq pq sc ex0 is vs rp pl gp fbs vb cb sos = do
 	($ ex0) $ fix \go ex ->
 		GlfwG.pollEvents >>
-		run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb cb sos go
+		run fr w sfc pd qfis dv gq pq sc ex is vs rp pl gp fbs vb cb sos go
 	Vk.Dvc.waitIdle dv
 
 run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat alv) =>
 	FramebufferResized -> GlfwG.Win.W sw -> Vk.Khr.Sfc.S ssfc ->
 	Vk.Phd.P -> QFamIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.S fmt ssc -> Vk.Extent2d ->
+	[Vk.Img.Binded si si inm fmt] ->
 	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.RndrPss.R sr -> Vk.PplLyt.P sl '[] '[] -> Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
@@ -828,9 +833,9 @@ run :: (RecreateFrmbffrs svs sfs, Vk.T.FormatToValue fmt, KnownNat alv) =>
 	HPList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> (Vk.Extent2d -> IO ()) -> IO ()
-run fr w sfc pd qfis dv gq pq sc ex vs rp pl gp fbs vb cb sos go = do
+run fr w sfc pd qfis dv gq pq sc ex is vs rp pl gp fbs vb cb sos go = do
 	catchAndRecreate w sfc pd qfis dv sc vs rp pl gp fbs go
-		$ draw dv gq pq sc ex rp gp fbs vs vb cb sos
+		$ draw dv gq pq sc ex rp gp fbs is vs vb cb sos
 	(,) <$> GlfwG.Win.shouldClose w <*> atomically (checkFlag fr) >>= \case
 		(True, _) -> pure ()
 		(_, False) -> go ex
@@ -872,22 +877,28 @@ waitFramebufferSize w = GlfwG.Win.getFramebufferSize w >>= \sz ->
 		GlfwG.waitEvents *> GlfwG.Win.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-draw :: forall sd fmt ssc sr sl sg sfs inm svs smv sbv bnmv alv nmv scb ssos .
+draw :: forall sd fmt ssc sr sl sg sfs inm si svs smv sbv bnmv alv nmv scb ssos .
 	KnownNat alv =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> Vk.Khr.Swpch.S fmt ssc ->
 	Vk.Extent2d -> Vk.RndrPss.R sr -> Vk.Ppl.Gr.G sg
 		'[ '(WVertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[], '[]) ->
-	HPList.PL Vk.Frmbffr.F sfs -> HPList.PL (Vk.ImgVw.I inm fmt) svs ->
+	HPList.PL Vk.Frmbffr.F sfs ->
+	[Vk.Img.Binded si si inm fmt] ->
+	HPList.PL (Vk.ImgVw.I inm fmt) svs ->
 	Vk.Bffr.Binded smv sbv bnmv '[VObj.List alv WVertex nmv] ->
 	Vk.CBffr.C scb -> SyncObjs ssos -> IO ()
-draw dv gq pq sc ex rp gp fbs vs vb cb (SyncObjs ias rfs iff) = do
+draw dv gq pq sc ex rp gp fbs is vs vb cb (SyncObjs ias rfs iff) = do
 	Vk.Fence.waitForFs dv siff True Nothing >> Vk.Fence.resetFs dv siff
 	ii <- Vk.Khr.Swpch.acquireNextImageResult
 		[Vk.Success, Vk.SuboptimalKhr] dv sc Nothing (Just ias) Nothing
 	Vk.CBffr.reset cb def
-	HPList.index fbs ii \fb -> HPList.index vs ii \vs -> recordCmdBffr cb ex rp gp fb vs vb
+	HPList.index fbs ii \fb -> HPList.index vs ii \v -> recordCmdBffr cb ex rp gp fb v vb
 	Vk.Q.submit gq (HPList.Singleton $ U4 sinfo) $ Just iff
+	Vk.Q.waitIdle gq
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
+		transitionImgLyt cb (is !! fromIntegral ii) Vk.Img.LayoutUndefined Vk.Img.LayoutPresentSrcKhr
+	Vk.Q.waitIdle gq
 	catchAndSerialize . Vk.Khr.Swpch.queuePresent @'Nothing pq $ pinfo ii
 	where
 	siff = HPList.Singleton iff
@@ -954,6 +965,37 @@ vertices = Foreign.Storable.Generic.W <$> [
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
+
+transitionImgLyt :: Vk.CBffr.C scb ->
+	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+transitionImgLyt cb i ol nl = Vk.Cmd.pipelineBarrier2 cb dinfo
+	where
+	dinfo = Vk.DependencyInfo {
+		Vk.dependencyInfoNext = TMaybe.N,
+		Vk.dependencyInfoDependencyFlags = zeroBits,
+		Vk.dependencyInfoMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoBufferMemoryBarriers = HPList.Nil,
+		Vk.dependencyInfoImageMemoryBarriers =
+			HPList.Singleton $ U5 ibrrr }
+	ibrrr = Vk.Img.MemoryBarrier2 {
+		Vk.Img.memoryBarrier2Next = TMaybe.N,
+		Vk.Img.memoryBarrier2SrcStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2SrcAccessMask = Vk.Access2MemoryWriteBit,
+		Vk.Img.memoryBarrier2DstStageMask = Vk.Ppl.Stage2AllCommandsBit,
+		Vk.Img.memoryBarrier2DstAccessMask =
+			Vk.Access2MemoryWriteBit .|. Vk.Access2MemoryReadBit,
+		Vk.Img.memoryBarrier2OldLayout = ol,
+		Vk.Img.memoryBarrier2NewLayout = nl,
+		Vk.Img.memoryBarrier2SrcQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrier2DstQueueFamilyIndex = Vk.QFam.Ignored,
+		Vk.Img.memoryBarrier2Image = i,
+		Vk.Img.memoryBarrier2SubresourceRange = isr }
+	isr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = Vk.remainingMipLevels,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = Vk.remainingArrayLayers }
 
 [glslVertexShader|
 
