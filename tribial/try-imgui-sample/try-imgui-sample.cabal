@@ -1,0 +1,108 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-imgui-sample
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-imgui-sample#readme>
+homepage:       https://github.com/YoshikuniJujo/try-imgui-sample#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-imgui-sample/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      (c) 2025 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-imgui-sample
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_try_imgui_sample
+  autogen-modules:
+      Paths_try_imgui_sample
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  include-dirs:
+      include/
+      include/backends
+  cxx-sources:
+      cxxsrc/main.cpp
+      cxxsrc/imgui.cpp
+      cxxsrc/imgui_draw.cpp
+      cxxsrc/imgui_widgets.cpp
+      cxxsrc/imgui_tables.cpp
+      cxxsrc/imgui_demo.cpp
+      cxxsrc/backends/imgui_impl_glfw.cpp
+      cxxsrc/backends/imgui_impl_vulkan.cpp
+  extra-libraries:
+      stdc++
+  pkgconfig-depends:
+      vulkan
+    , glfw3
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable try-imgui-sample-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_imgui_sample
+  autogen-modules:
+      Paths_try_imgui_sample
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  include-dirs:
+      include/
+      include/backends
+  cxx-sources:
+      cxxsrc/main.cpp
+      cxxsrc/imgui.cpp
+      cxxsrc/imgui_draw.cpp
+      cxxsrc/imgui_widgets.cpp
+      cxxsrc/imgui_tables.cpp
+      cxxsrc/imgui_demo.cpp
+      cxxsrc/backends/imgui_impl_glfw.cpp
+      cxxsrc/backends/imgui_impl_vulkan.cpp
+  build-depends:
+      base >=4.7 && <5
+    , try-imgui-sample
+  default-language: Haskell2010
+
+test-suite try-imgui-sample-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_imgui_sample
+  autogen-modules:
+      Paths_try_imgui_sample
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  include-dirs:
+      include/
+      include/backends
+  cxx-sources:
+      cxxsrc/main.cpp
+      cxxsrc/imgui.cpp
+      cxxsrc/imgui_draw.cpp
+      cxxsrc/imgui_widgets.cpp
+      cxxsrc/imgui_tables.cpp
+      cxxsrc/imgui_demo.cpp
+      cxxsrc/backends/imgui_impl_glfw.cpp
+      cxxsrc/backends/imgui_impl_vulkan.cpp
+  build-depends:
+      base >=4.7 && <5
+    , try-imgui-sample
+  default-language: Haskell2010
