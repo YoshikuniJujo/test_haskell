@@ -6,9 +6,19 @@ author:              "Yoshikuni Jujo"
 maintainer:          "yoshikuni.jujo@gmail.com"
 copyright:           "(c) 2025 Yoshikuni Jujo"
 
-extra-source-files:
+extra-doc-files:
 - README.md
 - CHANGELOG.md
+
+extra-source-files:
+- include/imgui.h
+- include/imconfig.h
+- include/imgui_internal.h
+- include/imstb_rectpack.h
+- include/imstb_textedit.h
+- include/imstb_truetype.h
+- include/backends/imgui_impl_glfw.h
+- include/backends/imgui_impl_vulkan.h
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
