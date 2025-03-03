@@ -1,0 +1,79 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-ffi-cxx-beginner
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-ffi-cxx-beginner#readme>
+homepage:       https://github.com/YoshikuniJujo/try-ffi-cxx-beginner#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-ffi-cxx-beginner/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      Copyright (c) 2023 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-ffi-cxx-beginner
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_try_ffi_cxx_beginner
+  autogen-modules:
+      Paths_try_ffi_cxx_beginner
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  include-dirs:
+      include/
+  cxx-sources:
+      csrc/vile.cpp
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable try-ffi-cxx-beginner-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_ffi_cxx_beginner
+  autogen-modules:
+      Paths_try_ffi_cxx_beginner
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  include-dirs:
+      include/
+  cxx-sources:
+      csrc/vile.cpp
+  build-depends:
+      base >=4.7 && <5
+    , try-ffi-cxx-beginner
+  default-language: Haskell2010
+
+test-suite try-ffi-cxx-beginner-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_ffi_cxx_beginner
+  autogen-modules:
+      Paths_try_ffi_cxx_beginner
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  include-dirs:
+      include/
+  cxx-sources:
+      csrc/vile.cpp
+  build-depends:
+      base >=4.7 && <5
+    , try-ffi-cxx-beginner
+  default-language: Haskell2010
