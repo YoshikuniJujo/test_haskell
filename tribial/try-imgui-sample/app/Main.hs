@@ -20,10 +20,15 @@ import System.IO
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
+import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
+import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Sfc.Win
+
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Gpu.Vulkan.Instance.Middle.Internal qualified as Vk.Ist.M
+import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc.M
+
 import Gpu.Vulkan.Instance.Core qualified as Vk.Ist.C
 
 import Graphics.UI.GlfwG qualified as GlfwG
@@ -48,9 +53,9 @@ main = GlfwG.setErrorCallback (Just glfwErrorCallback) >>
 		when (not vs) $ error "GLFW: Vulkan Not Supported"
 		print =<< Vk.Ist.enumerateExtensionProperties Nothing
 		print Vk.DbgUtls.extensionName
-		createIst \ist -> do
+		createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc -> do
 			setupVulkan ist
-			mainCxx win ist
+			mainCxx win ist sfc
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
@@ -58,14 +63,14 @@ glfwErrorCallback err dsc =
 
 foreign import ccall "SetupVulkan" cxx_SetupVulkan :: Vk.Ist.C.I -> IO ()
 foreign import ccall "main_cxx" cxx_main_cxx ::
-	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.C.I -> IO ()
+	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.C.I -> Vk.Sfc.S ss -> IO ()
 
 setupVulkan :: Vk.Ist.I si -> IO ()
 setupVulkan (Vk.Ist.I (Vk.Ist.M.I i)) = cxx_SetupVulkan i
 
-mainCxx :: GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
-mainCxx (GlfwG.Win.W win) (Vk.Ist.I (Vk.Ist.M.I ist)) =
-	cxx_main_cxx (GlfwC.toC win) ist
+mainCxx :: GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> IO ()
+mainCxx (GlfwG.Win.W win) (Vk.Ist.I (Vk.Ist.M.I ist)) sfc =
+	cxx_main_cxx (GlfwC.toC win) ist sfc
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do

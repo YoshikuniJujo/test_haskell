@@ -50,6 +50,11 @@ extra-deps:
   - gpu-vulkan-0.1.0.170
   - gpu-vulkan-middle-0.1.0.75
   - gpu-vulkan-core-0.1.0.21
+  - gpu-vulkan-khr-surface-glfw-0.1.0.0
+  - gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
+  - gpu-vulkan-khr-surface-0.1.0.0
+  - gpu-vulkan-middle-khr-surface-0.1.0.0
+  - gpu-vulkan-core-khr-surface-0.1.0.0
   - language-spir-v-0.1.0.3
   - glfw-group-0.1.0.5
 

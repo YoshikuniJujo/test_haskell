@@ -65,6 +65,41 @@ packages:
   original:
     hackage: gpu-vulkan-core-0.1.0.21
 - completed:
+    hackage: gpu-vulkan-khr-surface-glfw-0.1.0.0@sha256:d65ec83bf851581dae363c1dfed5029529fd3143f97cf43e35f8dfd04d35e574,2371
+    pantry-tree:
+      sha256: b3f297fe1bf9d2a859d2249920c68a2df3f2d10b6701352c1d1bca41b303b955
+      size: 403
+  original:
+    hackage: gpu-vulkan-khr-surface-glfw-0.1.0.0
+- completed:
+    hackage: gpu-vulkan-middle-khr-surface-glfw-0.1.0.1@sha256:b6c7949b9e81df033e427a665527851b4a871404143f1378f688f44510d122b1,2253
+    pantry-tree:
+      sha256: da7853c774f298089337c9b8691e111752b2bdd1d4131ffa813bc886aac72b13
+      size: 409
+  original:
+    hackage: gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
+- completed:
+    hackage: gpu-vulkan-khr-surface-0.1.0.0@sha256:789237cd35f877c94be45b163624106f4df4d62a0577da211daaa880fd98515d,2333
+    pantry-tree:
+      sha256: e6ec9329b1672a354617209e05eae540cd0072991992b48ed9112cbb89b51636
+      size: 697
+  original:
+    hackage: gpu-vulkan-khr-surface-0.1.0.0
+- completed:
+    hackage: gpu-vulkan-middle-khr-surface-0.1.0.0@sha256:872ba2b7b1fb437a7dfd301e95089f5896b7a76e95960cda9d71140b1fa437bc,2480
+    pantry-tree:
+      sha256: 79b1e9d345dae7b8924c5aaee92edfce2e90a8f915180282fe4aa8c130b70205
+      size: 653
+  original:
+    hackage: gpu-vulkan-middle-khr-surface-0.1.0.0
+- completed:
+    hackage: gpu-vulkan-core-khr-surface-0.1.0.0@sha256:2cabbd97eb7749e44ff7ec874fd9a7c8aa9160803a97aad6aeb8e7848eacfac0,2093
+    pantry-tree:
+      sha256: 265d61fdbf68037c5c1063821699d496dcbd8e62c64695a51e6a26426bb4b2cf
+      size: 488
+  original:
+    hackage: gpu-vulkan-core-khr-surface-0.1.0.0
+- completed:
     hackage: language-spir-v-0.1.0.3@sha256:c07d92777e2b0e4ac9bd3ef0902e50c046d42edf1a1a98d17e78d039d60d1351,2079
     pantry-tree:
       sha256: 070eec1689892418ff45135d972b3464fc884e102bbbbbf43f99e934d77db5e8

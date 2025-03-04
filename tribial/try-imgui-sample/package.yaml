@@ -33,8 +33,11 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - gpu-vulkan
+- gpu-vulkan-khr-surface
+- gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - gpu-vulkan-middle
+- gpu-vulkan-middle-khr-surface
 - gpu-vulkan-core
 - glfw-group
 - GLFW-b

@@ -66,7 +66,10 @@ library
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-middle
+    , gpu-vulkan-middle-khr-surface
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
@@ -101,7 +104,10 @@ executable try-imgui-sample-exe
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-middle
+    , gpu-vulkan-middle-khr-surface
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
@@ -138,7 +144,10 @@ test-suite try-imgui-sample-test
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-middle
+    , gpu-vulkan-middle-khr-surface
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
