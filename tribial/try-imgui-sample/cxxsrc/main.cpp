@@ -43,7 +43,6 @@
 // Data
 static VkAllocationCallbacks*   g_Allocator = nullptr;
 static VkDevice                 g_Device = VK_NULL_HANDLE;
-static uint32_t                 g_QueueFamily = (uint32_t)-1;
 static VkQueue                  g_Queue = VK_NULL_HANDLE;
 static VkPipelineCache          g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool         g_DescriptorPool = VK_NULL_HANDLE;
@@ -52,10 +51,6 @@ static ImGui_ImplVulkanH_Window g_MainWindowData;
 static uint32_t                 g_MinImageCount = 2;
 static bool                     g_SwapChainRebuild = false;
 
-static void glfw_error_callback(int error, const char* description)
-{
-    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
 static void check_vk_result(VkResult err)
 {
     if (err == VK_SUCCESS)
@@ -82,18 +77,14 @@ static bool IsExtensionAvailable(const ImVector<VkExtensionProperties>& properti
     return false;
 }
 
-extern "C" void SetupVulkan(VkInstance, VkPhysicalDevice);
+extern "C" void SetupVulkan(VkInstance, VkPhysicalDevice, uint32_t);
 
-void SetupVulkan(VkInstance ist, VkPhysicalDevice phd)
+void SetupVulkan(VkInstance ist, VkPhysicalDevice phd, uint32_t qfm)
 {
     VkResult err;
 #ifdef IMGUI_IMPL_VULKAN_USE_VOLK
     volkInitialize();
 #endif
-
-    // Select graphics queue family
-    g_QueueFamily = ImGui_ImplVulkanH_SelectQueueFamilyIndex(phd);
-    IM_ASSERT(g_QueueFamily != (uint32_t)-1);
 
     // Create Logical Device (with 1 queue)
     {
@@ -114,7 +105,7 @@ void SetupVulkan(VkInstance ist, VkPhysicalDevice phd)
         const float queue_priority[] = { 1.0f };
         VkDeviceQueueCreateInfo queue_info[1] = {};
         queue_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queue_info[0].queueFamilyIndex = g_QueueFamily;
+        queue_info[0].queueFamilyIndex = qfm;
         queue_info[0].queueCount = 1;
         queue_info[0].pQueuePriorities = queue_priority;
         VkDeviceCreateInfo create_info = {};
@@ -125,7 +116,7 @@ void SetupVulkan(VkInstance ist, VkPhysicalDevice phd)
         create_info.ppEnabledExtensionNames = device_extensions.Data;
         err = vkCreateDevice(phd, &create_info, g_Allocator, &g_Device);
         check_vk_result(err);
-        vkGetDeviceQueue(g_Device, g_QueueFamily, 0, &g_Queue);
+        vkGetDeviceQueue(g_Device, qfm, 0, &g_Queue);
     }
 
     // Create Descriptor Pool
@@ -152,14 +143,14 @@ void SetupVulkan(VkInstance ist, VkPhysicalDevice phd)
 // Your real engine/app may not use them.
 static void SetupVulkanWindow(
 	ImGui_ImplVulkanH_Window* wd, VkInstance ist,
-	VkSurfaceKHR surface, VkPhysicalDevice phd,
+	VkSurfaceKHR surface, VkPhysicalDevice phd, uint32_t qfi,
 	int width, int height )
 {
     wd->Surface = surface;
 
     // Check for WSI support
     VkBool32 res;
-    vkGetPhysicalDeviceSurfaceSupportKHR(phd, g_QueueFamily, wd->Surface, &res);
+    vkGetPhysicalDeviceSurfaceSupportKHR(phd, qfi, wd->Surface, &res);
     if (res != VK_TRUE)
     {
         fprintf(stderr, "Error no WSI support on physical device 0\n");
@@ -182,7 +173,7 @@ static void SetupVulkanWindow(
 
     // Create SwapChain, RenderPass, Framebuffer, etc.
     IM_ASSERT(g_MinImageCount >= 2);
-    ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, g_Device, wd, g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
+    ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, g_Device, wd, qfi, g_Allocator, width, height, g_MinImageCount);
 }
 
 static void CleanupVulkan(VkInstance ist)
@@ -284,13 +275,14 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" int main_cxx(GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice);
+extern "C" int main_cxx(
+	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t );
 
 // Main code
 
 int main_cxx(
 	GLFWwindow* window, VkInstance ist,
-	VkSurfaceKHR sfc, VkPhysicalDevice phd )
+	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi )
 {
 	VkResult err;
 
@@ -298,7 +290,7 @@ int main_cxx(
     int w, h;
     glfwGetFramebufferSize(window, &w, &h);
     ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
-    SetupVulkanWindow(wd, ist, sfc, phd, w, h);
+    SetupVulkanWindow(wd, ist, sfc, phd, qfi, w, h);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -318,7 +310,7 @@ int main_cxx(
     init_info.Instance = ist;
     init_info.PhysicalDevice = phd;
     init_info.Device = g_Device;
-    init_info.QueueFamily = g_QueueFamily;
+    init_info.QueueFamily = qfi;
     init_info.Queue = g_Queue;
     init_info.PipelineCache = g_PipelineCache;
     init_info.DescriptorPool = g_DescriptorPool;
@@ -368,7 +360,7 @@ int main_cxx(
         if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || g_MainWindowData.Width != fb_width || g_MainWindowData.Height != fb_height))
         {
             ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-            ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, fb_width, fb_height, g_MinImageCount);
+            ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, g_Device, &g_MainWindowData, qfi, g_Allocator, fb_width, fb_height, g_MinImageCount);
             g_MainWindowData.FrameIndex = 0;
             g_SwapChainRebuild = false;
         }

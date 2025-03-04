@@ -43,6 +43,7 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Gpu.Vulkan.Instance.Middle.Internal qualified as Vk.Ist.M
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd.M
+import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam.M
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc.M
 
 import Graphics.UI.GlfwG qualified as GlfwG
@@ -69,24 +70,26 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	print Vk.DbgUtls.extensionName
 	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc -> do
 		(phd, qfm) <- pickPhd ist sfc
-		setupVulkan ist phd
-		mainCxx win ist sfc phd
+		setupVulkan ist phd (grFam qfm)
+		mainCxx win ist sfc phd (grFam qfm)
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
 foreign import ccall "SetupVulkan" cxx_SetupVulkan ::
-	Vk.Ist.I si -> Vk.Phd.P -> IO ()
+	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> IO ()
 foreign import ccall "main_cxx" cxx_main_cxx ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	IO ()
+	Vk.QFam.Index -> IO ()
 
-setupVulkan :: Vk.Ist.I si -> Vk.Phd.P -> IO ()
+setupVulkan :: Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> IO ()
 setupVulkan = cxx_SetupVulkan
 
-mainCxx :: GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P -> IO ()
-mainCxx (GlfwG.Win.W win) ist sfc phd = cxx_main_cxx (GlfwC.toC win) ist sfc phd
+mainCxx ::
+	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
+	Vk.QFam.Index -> IO ()
+mainCxx (GlfwG.Win.W win) ist sfc phd qfi = cxx_main_cxx (GlfwC.toC win) ist sfc phd qfi
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
