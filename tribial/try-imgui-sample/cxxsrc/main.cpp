@@ -350,8 +350,15 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 
 extern "C" int main_cxx(int, char**);
 
+int main_cxx_inner(int, char**);
+
+int main_cxx(int argc, char** argv)
+{
+	return main_cxx_inner(argc, argv);
+}
+
 // Main code
-int main_cxx(int, char**)
+int main_cxx_inner(int, char**)
 {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
