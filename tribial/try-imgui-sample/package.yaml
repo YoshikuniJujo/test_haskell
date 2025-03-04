@@ -80,6 +80,7 @@ cxx-sources:
 include-dirs:
   - include/
   - include/backends
+  - include/helper
 
 executables:
   try-imgui-sample-exe:

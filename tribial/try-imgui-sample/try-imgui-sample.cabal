@@ -34,6 +34,7 @@ source-repository head
 
 library
   exposed-modules:
+      Gpu.Vulkan.ImGui.Helper.Core
       Lib
   other-modules:
       Paths_try_imgui_sample
@@ -45,6 +46,7 @@ library
   include-dirs:
       include/
       include/backends
+      include/helper
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
@@ -92,6 +94,7 @@ executable try-imgui-sample-exe
   include-dirs:
       include/
       include/backends
+      include/helper
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
@@ -136,6 +139,7 @@ test-suite try-imgui-sample-test
   include-dirs:
       include/
       include/backends
+      include/helper
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
