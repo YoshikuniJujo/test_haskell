@@ -63,6 +63,7 @@ library
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , data-default
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
@@ -72,6 +73,7 @@ library
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
     , hetero-parameter-list
+    , storable-peek-poke
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
@@ -103,6 +105,7 @@ executable try-imgui-sample-exe
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , data-default
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
@@ -112,6 +115,7 @@ executable try-imgui-sample-exe
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
     , hetero-parameter-list
+    , storable-peek-poke
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
@@ -145,6 +149,7 @@ test-suite try-imgui-sample-test
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , data-default
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
@@ -154,6 +159,7 @@ test-suite try-imgui-sample-test
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
     , hetero-parameter-list
+    , storable-peek-poke
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils

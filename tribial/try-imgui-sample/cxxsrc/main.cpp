@@ -42,8 +42,6 @@
 
 // Data
 static VkAllocationCallbacks*   g_Allocator = nullptr;
-static VkDevice                 g_Device = VK_NULL_HANDLE;
-static VkQueue                  g_Queue = VK_NULL_HANDLE;
 static VkPipelineCache          g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool         g_DescriptorPool = VK_NULL_HANDLE;
 
@@ -77,47 +75,17 @@ static bool IsExtensionAvailable(const ImVector<VkExtensionProperties>& properti
     return false;
 }
 
-extern "C" void SetupVulkan(VkInstance, VkPhysicalDevice, uint32_t);
+extern "C" void SetupVulkan(
+	VkInstance, VkPhysicalDevice, uint32_t, VkDevice, VkQueue );
 
-void SetupVulkan(VkInstance ist, VkPhysicalDevice phd, uint32_t qfm)
+void SetupVulkan(
+	VkInstance ist, VkPhysicalDevice phd, uint32_t qfm,
+	VkDevice dvc, VkQueue gq )
 {
     VkResult err;
 #ifdef IMGUI_IMPL_VULKAN_USE_VOLK
     volkInitialize();
 #endif
-
-    // Create Logical Device (with 1 queue)
-    {
-        ImVector<const char*> device_extensions;
-        device_extensions.push_back("VK_KHR_swapchain");
-
-        // Enumerate physical device extension
-        uint32_t properties_count;
-        ImVector<VkExtensionProperties> properties;
-        vkEnumerateDeviceExtensionProperties(phd, nullptr, &properties_count, nullptr);
-        properties.resize(properties_count);
-        vkEnumerateDeviceExtensionProperties(phd, nullptr, &properties_count, properties.Data);
-#ifdef VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
-        if (IsExtensionAvailable(properties, VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME))
-            device_extensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
-#endif
-
-        const float queue_priority[] = { 1.0f };
-        VkDeviceQueueCreateInfo queue_info[1] = {};
-        queue_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queue_info[0].queueFamilyIndex = qfm;
-        queue_info[0].queueCount = 1;
-        queue_info[0].pQueuePriorities = queue_priority;
-        VkDeviceCreateInfo create_info = {};
-        create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        create_info.queueCreateInfoCount = sizeof(queue_info) / sizeof(queue_info[0]);
-        create_info.pQueueCreateInfos = queue_info;
-        create_info.enabledExtensionCount = (uint32_t)device_extensions.Size;
-        create_info.ppEnabledExtensionNames = device_extensions.Data;
-        err = vkCreateDevice(phd, &create_info, g_Allocator, &g_Device);
-        check_vk_result(err);
-        vkGetDeviceQueue(g_Device, qfm, 0, &g_Queue);
-    }
 
     // Create Descriptor Pool
     // If you wish to load e.g. additional textures you may need to alter pools sizes and maxSets.
@@ -134,7 +102,7 @@ void SetupVulkan(VkInstance ist, VkPhysicalDevice phd, uint32_t qfm)
             pool_info.maxSets += pool_size.descriptorCount;
         pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
         pool_info.pPoolSizes = pool_sizes;
-        err = vkCreateDescriptorPool(g_Device, &pool_info, g_Allocator, &g_DescriptorPool);
+        err = vkCreateDescriptorPool(dvc, &pool_info, g_Allocator, &g_DescriptorPool);
         check_vk_result(err);
     }
 }
@@ -143,7 +111,7 @@ void SetupVulkan(VkInstance ist, VkPhysicalDevice phd, uint32_t qfm)
 // Your real engine/app may not use them.
 static void SetupVulkanWindow(
 	ImGui_ImplVulkanH_Window* wd, VkInstance ist,
-	VkSurfaceKHR surface, VkPhysicalDevice phd, uint32_t qfi,
+	VkSurfaceKHR surface, VkPhysicalDevice phd, uint32_t qfi, VkDevice dvc,
 	int width, int height )
 {
     wd->Surface = surface;
@@ -173,26 +141,24 @@ static void SetupVulkanWindow(
 
     // Create SwapChain, RenderPass, Framebuffer, etc.
     IM_ASSERT(g_MinImageCount >= 2);
-    ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, g_Device, wd, qfi, g_Allocator, width, height, g_MinImageCount);
+    ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, width, height, g_MinImageCount);
 }
 
-static void CleanupVulkan(VkInstance ist)
+static void CleanupVulkan(VkInstance ist, VkDevice dvc)
 {
-    vkDestroyDescriptorPool(g_Device, g_DescriptorPool, g_Allocator);
-
-    vkDestroyDevice(g_Device, g_Allocator);
+    vkDestroyDescriptorPool(dvc, g_DescriptorPool, g_Allocator);
 }
 
-static void CleanupVulkanWindow(VkInstance ist)
+static void CleanupVulkanWindow(VkInstance ist, VkDevice dvc)
 {
-    ImGui_ImplVulkanH_DestroyWindow(ist, g_Device, &g_MainWindowData, g_Allocator);
+    ImGui_ImplVulkanH_DestroyWindow(ist, dvc, &g_MainWindowData, g_Allocator);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
+static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, ImDrawData* draw_data)
 {
     VkSemaphore image_acquired_semaphore  = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
-    VkResult err = vkAcquireNextImageKHR(g_Device, wd->Swapchain, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
+    VkResult err = vkAcquireNextImageKHR(dvc, wd->Swapchain, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
         g_SwapChainRebuild = true;
     if (err == VK_ERROR_OUT_OF_DATE_KHR)
@@ -202,14 +168,14 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
 
     ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
     {
-        err = vkWaitForFences(g_Device, 1, &fd->Fence, VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
+        err = vkWaitForFences(dvc, 1, &fd->Fence, VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
         check_vk_result(err);
 
-        err = vkResetFences(g_Device, 1, &fd->Fence);
+        err = vkResetFences(dvc, 1, &fd->Fence);
         check_vk_result(err);
     }
     {
-        err = vkResetCommandPool(g_Device, fd->CommandPool, 0);
+        err = vkResetCommandPool(dvc, fd->CommandPool, 0);
         check_vk_result(err);
         VkCommandBufferBeginInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -248,12 +214,12 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
 
         err = vkEndCommandBuffer(fd->CommandBuffer);
         check_vk_result(err);
-        err = vkQueueSubmit(g_Queue, 1, &info, fd->Fence);
+        err = vkQueueSubmit(gq, 1, &info, fd->Fence);
         check_vk_result(err);
     }
 }
 
-static void FramePresent(ImGui_ImplVulkanH_Window* wd)
+static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
 {
     if (g_SwapChainRebuild)
         return;
@@ -265,7 +231,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
     info.swapchainCount = 1;
     info.pSwapchains = &wd->Swapchain;
     info.pImageIndices = &wd->FrameIndex;
-    VkResult err = vkQueuePresentKHR(g_Queue, &info);
+    VkResult err = vkQueuePresentKHR(gq, &info);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
         g_SwapChainRebuild = true;
     if (err == VK_ERROR_OUT_OF_DATE_KHR)
@@ -276,13 +242,15 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 }
 
 extern "C" int main_cxx(
-	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t );
+	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
+	VkDevice, VkQueue );
 
 // Main code
 
 int main_cxx(
 	GLFWwindow* window, VkInstance ist,
-	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi )
+	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq )
 {
 	VkResult err;
 
@@ -290,7 +258,7 @@ int main_cxx(
     int w, h;
     glfwGetFramebufferSize(window, &w, &h);
     ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
-    SetupVulkanWindow(wd, ist, sfc, phd, qfi, w, h);
+    SetupVulkanWindow(wd, ist, sfc, phd, qfi, dvc, w, h);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -309,9 +277,9 @@ int main_cxx(
     //init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
     init_info.Instance = ist;
     init_info.PhysicalDevice = phd;
-    init_info.Device = g_Device;
+    init_info.Device = dvc;
     init_info.QueueFamily = qfi;
-    init_info.Queue = g_Queue;
+    init_info.Queue = gq;
     init_info.PipelineCache = g_PipelineCache;
     init_info.DescriptorPool = g_DescriptorPool;
     init_info.RenderPass = wd->RenderPass;
@@ -360,7 +328,7 @@ int main_cxx(
         if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || g_MainWindowData.Width != fb_width || g_MainWindowData.Height != fb_height))
         {
             ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-            ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, g_Device, &g_MainWindowData, qfi, g_Allocator, fb_width, fb_height, g_MinImageCount);
+            ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, &g_MainWindowData, qfi, g_Allocator, fb_width, fb_height, g_MinImageCount);
             g_MainWindowData.FrameIndex = 0;
             g_SwapChainRebuild = false;
         }
@@ -422,20 +390,20 @@ int main_cxx(
             wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
             wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
             wd->ClearValue.color.float32[3] = clear_color.w;
-            FrameRender(wd, draw_data);
-            FramePresent(wd);
+            FrameRender(wd, dvc, gq, draw_data);
+            FramePresent(wd, gq);
         }
     }
 
     // Cleanup
-    err = vkDeviceWaitIdle(g_Device);
+    err = vkDeviceWaitIdle(dvc);
     check_vk_result(err);
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    CleanupVulkanWindow(ist);
-    CleanupVulkan(ist);
+    CleanupVulkanWindow(ist, dvc);
+    CleanupVulkan(ist, dvc);
 
     return 0;
 }

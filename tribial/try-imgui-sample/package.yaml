@@ -32,6 +32,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - text
+- data-default
 - gpu-vulkan
 - gpu-vulkan-khr-swapchain
 - gpu-vulkan-khr-surface
@@ -44,6 +45,7 @@ dependencies:
 - GLFW-b
 - bindings-GLFW
 - hetero-parameter-list
+- storable-peek-poke
 - tools-yj
 - typelevel-tools-yj
 

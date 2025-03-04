@@ -3,22 +3,26 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
 import Foreign.Ptr
+import Foreign.Storable.PeekPoke
 import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Bits
 import Data.Bits.ToolsYj
+import Data.Default
 import Data.Maybe
 import Data.Maybe.ToolsYj
 import Data.List qualified as L
 import Data.List.ToolsYj
+import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
@@ -31,6 +35,7 @@ import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
@@ -43,7 +48,9 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Gpu.Vulkan.Instance.Middle.Internal qualified as Vk.Ist.M
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd.M
+import Gpu.Vulkan.Queue.Middle.Internal qualified as Vk.Q.M
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam.M
+import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc.M
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc.M
 
 import Graphics.UI.GlfwG qualified as GlfwG
@@ -68,28 +75,33 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
 	print =<< Vk.Ist.enumerateExtensionProperties Nothing
 	print Vk.DbgUtls.extensionName
-	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc -> do
-		(phd, qfm) <- pickPhd ist sfc
-		setupVulkan ist phd (grFam qfm)
-		mainCxx win ist sfc phd (grFam qfm)
+	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
+		pickPhd ist sfc >>= \(phd, qfm) ->
+		createLgDvc phd qfm \dvc gq _ ->
+		setupVulkan ist phd (grFam qfm) dvc gq >>
+		mainCxx win ist sfc phd (grFam qfm) dvc gq
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
 foreign import ccall "SetupVulkan" cxx_SetupVulkan ::
-	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> IO ()
+	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	IO ()
 foreign import ccall "main_cxx" cxx_main_cxx ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> IO ()
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> IO ()
 
-setupVulkan :: Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> IO ()
+setupVulkan ::
+	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	IO ()
 setupVulkan = cxx_SetupVulkan
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> IO ()
-mainCxx (GlfwG.Win.W win) ist sfc phd qfi = cxx_main_cxx (GlfwC.toC win) ist sfc phd qfi
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> IO ()
+mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc =
+	cxx_main_cxx (GlfwC.toC win) ist sfc phd qfi dvc
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
@@ -194,3 +206,29 @@ querySwpchSupport pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \fmts ->
 		<$> Vk.Sfc.Phd.getCapabilities pd sfc
 		<*> ((, fmts) <$> Vk.Sfc.Phd.getFormatsFiltered pd sfc)
 		<*> Vk.Sfc.Phd.getPresentModes pd sfc
+
+createLgDvc :: Vk.Phd.P -> QFamIndices ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
+createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
+	Vk.Dvc.create pd (info qs) nil \dv -> join $ act dv
+		<$> Vk.Dvc.getQueue dv (grFam qfis) 0
+		<*> Vk.Dvc.getQueue dv (prFam qfis) 0
+	where
+	hetero :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] -> (forall ss .
+		HPList.ToListWithCM' WithPoked TMaybe.M ss =>
+		HPList.PL t ss -> b) -> b
+	hetero _k [] f = f HPList.Nil
+	hetero k (x : xs) f = hetero k xs \xs' -> f (k x :** xs')
+	uniqueQFams = L.nub [grFam qfis, prFam qfis]
+	info qs = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = TMaybe.N,
+		Vk.Dvc.createInfoFlags = zeroBits,
+		Vk.Dvc.createInfoQueueCreateInfos = qs,
+		Vk.Dvc.createInfoEnabledLayerNames = bool [] vldLayers debug,
+		Vk.Dvc.createInfoEnabledExtensionNames = dvcExtensions,
+		Vk.Dvc.createInfoEnabledFeatures = Just def }
+	qinfo qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
