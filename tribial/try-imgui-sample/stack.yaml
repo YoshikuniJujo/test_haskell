@@ -47,9 +47,15 @@ extra-deps:
     - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
     - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-  - gpu-vulkan-0.1.0.170
-  - gpu-vulkan-middle-0.1.0.75
-  - gpu-vulkan-core-0.1.0.21
+    # - gpu-vulkan-0.1.0.170
+    # - gpu-vulkan-middle-0.1.0.75
+    # - gpu-vulkan-core-0.1.0.21
+  - git: https://github.com/YoshikuniJujo/gpu-vulkan
+    commit: 505aec29131161cac78eb4524e24c3c2132b1949
+  - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
+    commit: 7cfa255be11514fba866f5ea2da72336996b1f56
+  - git: https://github.com/YoshikuniJujo/gpu-vulkan-core
+    commit: 56ecd08161569ac267bb8ce5f1582285974ea783
   - gpu-vulkan-khr-swapchain-0.1.0.1
   - gpu-vulkan-khr-surface-glfw-0.1.0.0
   - gpu-vulkan-middle-khr-swapchain-0.1.0.0

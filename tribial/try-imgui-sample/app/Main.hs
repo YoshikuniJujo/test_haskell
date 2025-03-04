@@ -36,6 +36,9 @@ import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
+import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
+import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
+import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
 
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
@@ -51,6 +54,7 @@ import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd.M
 import Gpu.Vulkan.Queue.Middle.Internal qualified as Vk.Q.M
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam.M
 import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc.M
+import Gpu.Vulkan.DescriptorPool.Middle.Internal qualified as Vk.DscPl.M
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc.M
 
 import Graphics.UI.GlfwG qualified as GlfwG
@@ -78,30 +82,22 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
 		pickPhd ist sfc >>= \(phd, qfm) ->
 		createLgDvc phd qfm \dvc gq _ ->
-		setupVulkan ist phd (grFam qfm) dvc gq >>
-		mainCxx win ist sfc phd (grFam qfm) dvc gq
+		createDscPl dvc \dp ->
+		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "SetupVulkan" cxx_SetupVulkan ::
-	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	IO ()
 foreign import ccall "main_cxx" cxx_main_cxx ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> IO ()
-
-setupVulkan ::
-	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q ->
-	IO ()
-setupVulkan = cxx_SetupVulkan
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> IO ()
-mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc =
-	cxx_main_cxx (GlfwC.toC win) ist sfc phd qfi dvc
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
+mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp =
+	cxx_main_cxx (GlfwC.toC win) ist sfc phd qfi dvc gq dp
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
@@ -232,3 +228,15 @@ createLgDvc pd qfis act = hetero qinfo uniqueQFams \qs ->
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
+
+createDscPl :: Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDscPl dv = Vk.DscPl.create dv info nil
+	where info = Vk.DscPl.CreateInfo {
+		Vk.DscPl.createInfoNext = TMaybe.N,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
+		Vk.DscPl.createInfoMaxSets = 1,
+		Vk.DscPl.createInfoPoolSizes = (: []) Vk.DscPl.Size {
+			Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
+			Vk.DscPl.sizeDescriptorCount = 1 } }
+
+-- imguiImplVulkanMinimumImageSamplerPoolSize = 1

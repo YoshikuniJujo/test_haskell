@@ -43,7 +43,6 @@
 // Data
 static VkAllocationCallbacks*   g_Allocator = nullptr;
 static VkPipelineCache          g_PipelineCache = VK_NULL_HANDLE;
-static VkDescriptorPool         g_DescriptorPool = VK_NULL_HANDLE;
 
 static ImGui_ImplVulkanH_Window g_MainWindowData;
 static uint32_t                 g_MinImageCount = 2;
@@ -73,38 +72,6 @@ static bool IsExtensionAvailable(const ImVector<VkExtensionProperties>& properti
         if (strcmp(p.extensionName, extension) == 0)
             return true;
     return false;
-}
-
-extern "C" void SetupVulkan(
-	VkInstance, VkPhysicalDevice, uint32_t, VkDevice, VkQueue );
-
-void SetupVulkan(
-	VkInstance ist, VkPhysicalDevice phd, uint32_t qfm,
-	VkDevice dvc, VkQueue gq )
-{
-    VkResult err;
-#ifdef IMGUI_IMPL_VULKAN_USE_VOLK
-    volkInitialize();
-#endif
-
-    // Create Descriptor Pool
-    // If you wish to load e.g. additional textures you may need to alter pools sizes and maxSets.
-    {
-        VkDescriptorPoolSize pool_sizes[] =
-        {
-            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE },
-        };
-        VkDescriptorPoolCreateInfo pool_info = {};
-        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.maxSets = 0;
-        for (VkDescriptorPoolSize& pool_size : pool_sizes)
-            pool_info.maxSets += pool_size.descriptorCount;
-        pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
-        pool_info.pPoolSizes = pool_sizes;
-        err = vkCreateDescriptorPool(dvc, &pool_info, g_Allocator, &g_DescriptorPool);
-        check_vk_result(err);
-    }
 }
 
 // All the ImGui_ImplVulkanH_XXX structures/functions are optional helpers used by the demo.
@@ -142,11 +109,6 @@ static void SetupVulkanWindow(
     // Create SwapChain, RenderPass, Framebuffer, etc.
     IM_ASSERT(g_MinImageCount >= 2);
     ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, width, height, g_MinImageCount);
-}
-
-static void CleanupVulkan(VkInstance ist, VkDevice dvc)
-{
-    vkDestroyDescriptorPool(dvc, g_DescriptorPool, g_Allocator);
 }
 
 static void CleanupVulkanWindow(VkInstance ist, VkDevice dvc)
@@ -243,14 +205,14 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
 
 extern "C" int main_cxx(
 	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
-	VkDevice, VkQueue );
+	VkDevice, VkQueue, VkDescriptorPool );
 
 // Main code
 
 int main_cxx(
 	GLFWwindow* window, VkInstance ist,
 	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq )
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp )
 {
 	VkResult err;
 
@@ -281,7 +243,7 @@ int main_cxx(
     init_info.QueueFamily = qfi;
     init_info.Queue = gq;
     init_info.PipelineCache = g_PipelineCache;
-    init_info.DescriptorPool = g_DescriptorPool;
+    init_info.DescriptorPool = dp;
     init_info.RenderPass = wd->RenderPass;
     init_info.Subpass = 0;
     init_info.MinImageCount = g_MinImageCount;
@@ -403,7 +365,6 @@ int main_cxx(
     ImGui::DestroyContext();
 
     CleanupVulkanWindow(ist, dvc);
-    CleanupVulkan(ist, dvc);
 
     return 0;
 }

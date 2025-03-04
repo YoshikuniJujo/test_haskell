@@ -44,26 +44,38 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    hackage: gpu-vulkan-0.1.0.170@sha256:06d3b19697ee5d29c10c4c1901ad8ab6b9a09e2dce992ba31238cad95dc069cf,8054
+    commit: 505aec29131161cac78eb4524e24c3c2132b1949
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
+    name: gpu-vulkan
     pantry-tree:
-      sha256: 1368e69ac8a679f6c427354df79671f3fbf7423391cf252de442de80addff65d
-      size: 12064
+      sha256: e1ec37c32fbe26fb9dd946ecd9c3fd02e890aec92fa3277c15ebf092e85aab48
+      size: 12890
+    version: 0.1.0.170
   original:
-    hackage: gpu-vulkan-0.1.0.170
+    commit: 505aec29131161cac78eb4524e24c3c2132b1949
+    git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.75@sha256:eea5220f6696b9d35a74a0959cd7987d6879dc558a7697af888236f979df2231,9124
+    commit: 7cfa255be11514fba866f5ea2da72336996b1f56
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
+    name: gpu-vulkan-middle
     pantry-tree:
-      sha256: 5b163da48b756a822a132b550a204f8a37f65b96b003e98c2e3a1017e523f50d
-      size: 13576
+      sha256: a47d2910c1e232d9eb1b2fc10f6c66352bca314da8d821eef80d2ed4698a2847
+      size: 16297
+    version: 0.1.0.75
   original:
-    hackage: gpu-vulkan-middle-0.1.0.75
+    commit: 7cfa255be11514fba866f5ea2da72336996b1f56
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
 - completed:
-    hackage: gpu-vulkan-core-0.1.0.21@sha256:347fcc9b982033e2162d1106e891f6d57ee251a79bdd8f9398f5ca918f3c9e91,3516
+    commit: 56ecd08161569ac267bb8ce5f1582285974ea783
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-core
+    name: gpu-vulkan-core
     pantry-tree:
-      sha256: 65e73d0f6ffe0bfbd8545b31671d21ef2fa69553644474d181917fef1a4a0625
-      size: 5235
+      sha256: d027df77506fd892f9ce99e3ed1597dcf4f137627cbb50bcaee505b62d2e8c85
+      size: 5711
+    version: 0.1.0.22
   original:
-    hackage: gpu-vulkan-core-0.1.0.21
+    commit: 56ecd08161569ac267bb8ce5f1582285974ea783
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-core
 - completed:
     hackage: gpu-vulkan-khr-swapchain-0.1.0.1@sha256:35aee842273436d0cc121c67f5bbddf824f72fc12111e05918951b9e55dce7c4,2425
     pantry-tree:
