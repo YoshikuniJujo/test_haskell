@@ -61,12 +61,12 @@ glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "SetupVulkan" cxx_SetupVulkan :: Vk.Ist.C.I -> IO ()
+foreign import ccall "SetupVulkan" cxx_SetupVulkan :: Vk.Ist.I si -> IO ()
 foreign import ccall "main_cxx" cxx_main_cxx ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.C.I -> Vk.Sfc.S ss -> IO ()
 
 setupVulkan :: Vk.Ist.I si -> IO ()
-setupVulkan (Vk.Ist.I (Vk.Ist.M.I i)) = cxx_SetupVulkan i
+setupVulkan = cxx_SetupVulkan
 
 mainCxx :: GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> IO ()
 mainCxx (GlfwG.Win.W win) (Vk.Ist.I (Vk.Ist.M.I ist)) sfc =
