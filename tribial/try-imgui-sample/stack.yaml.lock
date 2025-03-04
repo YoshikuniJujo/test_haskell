@@ -5,6 +5,73 @@
 
 packages:
 - completed:
+    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-gpu-vulkan-ext-debug-utils
+    pantry-tree:
+      sha256: 8fb59e4915b7e87c5602ea9ecbba9ddf9bcbe403e1e38ec92b21464dd9cc8bc9
+      size: 765
+    subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
+    version: 0.1.0.8
+  original:
+    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
+- completed:
+    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-vulkan-middle-ext-debug-utils
+    pantry-tree:
+      sha256: 9614116cb5ca9bdb90efabd246d82472b7b32c912370f5df5c0560cb2395f773
+      size: 1068
+    subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
+    version: 0.1.0.4
+  original:
+    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
+- completed:
+    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-vulkan-core-ext-debug-utils
+    pantry-tree:
+      sha256: a7fcfb1a738c70886255b19d03ea79a026994c349e0a7e1e48835fa5301d0915
+      size: 751
+    subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
+    version: 0.1.0.0
+  original:
+    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
+- completed:
+    hackage: gpu-vulkan-0.1.0.170@sha256:06d3b19697ee5d29c10c4c1901ad8ab6b9a09e2dce992ba31238cad95dc069cf,8054
+    pantry-tree:
+      sha256: 1368e69ac8a679f6c427354df79671f3fbf7423391cf252de442de80addff65d
+      size: 12064
+  original:
+    hackage: gpu-vulkan-0.1.0.170
+- completed:
+    hackage: gpu-vulkan-middle-0.1.0.75@sha256:eea5220f6696b9d35a74a0959cd7987d6879dc558a7697af888236f979df2231,9124
+    pantry-tree:
+      sha256: 5b163da48b756a822a132b550a204f8a37f65b96b003e98c2e3a1017e523f50d
+      size: 13576
+  original:
+    hackage: gpu-vulkan-middle-0.1.0.75
+- completed:
+    hackage: gpu-vulkan-core-0.1.0.21@sha256:347fcc9b982033e2162d1106e891f6d57ee251a79bdd8f9398f5ca918f3c9e91,3516
+    pantry-tree:
+      sha256: 65e73d0f6ffe0bfbd8545b31671d21ef2fa69553644474d181917fef1a4a0625
+      size: 5235
+  original:
+    hackage: gpu-vulkan-core-0.1.0.21
+- completed:
+    hackage: language-spir-v-0.1.0.3@sha256:c07d92777e2b0e4ac9bd3ef0902e50c046d42edf1a1a98d17e78d039d60d1351,2079
+    pantry-tree:
+      sha256: 070eec1689892418ff45135d972b3464fc884e102bbbbbf43f99e934d77db5e8
+      size: 650
+  original:
+    hackage: language-spir-v-0.1.0.3
+- completed:
     hackage: glfw-group-0.1.0.5@sha256:cd7dcffbc1e78e304fd5c5af55b587d9b17d4dc014645718c4c257a0c34981d2,2073
     pantry-tree:
       sha256: 62aa8c8e041441bcc40eede027730bc4ff741296bdc61bd11e76a250b142ad2f

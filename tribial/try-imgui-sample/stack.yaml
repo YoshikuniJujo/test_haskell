@@ -41,6 +41,16 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    subdirs:
+    - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
+    - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
+    - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
+  - gpu-vulkan-0.1.0.170
+  - gpu-vulkan-middle-0.1.0.75
+  - gpu-vulkan-core-0.1.0.21
+  - language-spir-v-0.1.0.3
   - glfw-group-0.1.0.5
 
 # Override default flag values for project packages and extra-deps

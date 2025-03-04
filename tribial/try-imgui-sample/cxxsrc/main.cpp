@@ -348,19 +348,25 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
+extern "C" void init_vulkan();
 extern "C" int main_cxx(GLFWwindow* window);
 
 // Main code
 
-int main_cxx(GLFWwindow* window)
+void
+init_vulkan()
 {
-
     ImVector<const char*> extensions;
     uint32_t extensions_count = 0;
     const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
     for (uint32_t i = 0; i < extensions_count; i++)
         extensions.push_back(glfw_extensions[i]);
+
     SetupVulkan(extensions);
+}
+
+int main_cxx(GLFWwindow* window)
+{
 
     // Create Window Surface
     VkSurfaceKHR surface;
