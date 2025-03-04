@@ -33,6 +33,7 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - gpu-vulkan
+- gpu-vulkan-khr-swapchain
 - gpu-vulkan-khr-surface
 - gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
@@ -42,6 +43,7 @@ dependencies:
 - glfw-group
 - GLFW-b
 - bindings-GLFW
+- hetero-parameter-list
 - tools-yj
 - typelevel-tools-yj
 

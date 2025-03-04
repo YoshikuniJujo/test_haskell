@@ -1,8 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -12,24 +14,36 @@ import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Bits
+import Data.Bits.ToolsYj
+import Data.Maybe
+import Data.Maybe.ToolsYj
+import Data.List qualified as L
 import Data.List.ToolsYj
+import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Text.IO qualified as Txt
 import System.IO
 
 import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
+import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
+import Gpu.Vulkan.Queue qualified as Vk.Q
+import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+
+import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
+import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
+import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Sfc.Win
 
 import Gpu.Vulkan.Ext.DebugUtils qualified as Vk.DbgUtls
 import Gpu.Vulkan.Ext.DebugUtils.Messenger qualified as Vk.DbgUtls.Msngr
 
 import Gpu.Vulkan.Instance.Middle.Internal qualified as Vk.Ist.M
+import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd.M
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc.M
-
-import Gpu.Vulkan.Instance.Core qualified as Vk.Ist.C
 
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
@@ -43,34 +57,36 @@ debug :: Bool
 debug = True
 
 main :: IO ()
-main = GlfwG.setErrorCallback (Just glfwErrorCallback) >>
-	GlfwG.init error do
+main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
+	GlfwG.init error $
 	GlfwG.Win.hint
-		$ GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI
+		(GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
 	GlfwG.Win.create 1280 720
 		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
-		vs <- GlfwG.vulkanSupported
-		when (not vs) $ error "GLFW: Vulkan Not Supported"
-		print =<< Vk.Ist.enumerateExtensionProperties Nothing
-		print Vk.DbgUtls.extensionName
-		createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc -> do
-			setupVulkan ist
-			mainCxx win ist sfc
+	vs <- GlfwG.vulkanSupported
+	when (not vs) $ error "GLFW: Vulkan Not Supported"
+	print =<< Vk.Ist.enumerateExtensionProperties Nothing
+	print Vk.DbgUtls.extensionName
+	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc -> do
+		(phd, qfm) <- pickPhd ist sfc
+		setupVulkan ist phd
+		mainCxx win ist sfc phd
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "SetupVulkan" cxx_SetupVulkan :: Vk.Ist.I si -> IO ()
+foreign import ccall "SetupVulkan" cxx_SetupVulkan ::
+	Vk.Ist.I si -> Vk.Phd.P -> IO ()
 foreign import ccall "main_cxx" cxx_main_cxx ::
-	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.C.I -> Vk.Sfc.S ss -> IO ()
+	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
+	IO ()
 
-setupVulkan :: Vk.Ist.I si -> IO ()
+setupVulkan :: Vk.Ist.I si -> Vk.Phd.P -> IO ()
 setupVulkan = cxx_SetupVulkan
 
-mainCxx :: GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> IO ()
-mainCxx (GlfwG.Win.W win) (Vk.Ist.I (Vk.Ist.M.I ist)) sfc =
-	cxx_main_cxx (GlfwC.toC win) ist sfc
+mainCxx :: GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P -> IO ()
+mainCxx (GlfwG.Win.W win) ist sfc phd = cxx_main_cxx (GlfwC.toC win) ist sfc phd
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
@@ -125,3 +141,53 @@ dbgMsngrInfo = Vk.DbgUtls.Msngr.CreateInfo {
 	where dbgCallback _svr _tp cbdt _ud = False <$ Txt.putStrLn (
 		"validation layer: " <>
 		Vk.DbgUtls.Msngr.callbackDataMessage cbdt )
+
+pickPhd :: Vk.Ist.I si -> Vk.Sfc.S ss -> IO (Vk.Phd.P, QFamIndices)
+pickPhd ist sfc = Vk.Phd.enumerate ist >>= \case
+	[] -> error "failed to find GPUs with Gpu.Vulkan support!"
+	pds -> findMaybeM suit pds >>= \case
+		Nothing -> error "failed to find a suitable GPU!"
+		Just pdqfi -> pure pdqfi
+	where
+	suit pd = espt pd >>= bool (pure Nothing) do
+		qfis <- findQFams pd sfc
+		querySwpchSupport pd sfc \ss -> pure . bool qfis Nothing
+			$	HPListC.null (snd $ formats ss) ||
+				null (presentModes ss)
+	espt pd = elemAll dvcExtensions
+		. (Vk.Phd.extensionPropertiesExtensionName <$>)
+		<$> Vk.Phd.enumerateExtensionProperties pd Nothing
+
+dvcExtensions :: [Vk.Phd.ExtensionName]
+dvcExtensions = [Vk.Swpch.extensionName]
+
+data QFamIndices =
+	QFamIndices { grFam :: Vk.QFam.Index, prFam :: Vk.QFam.Index }
+
+findQFams :: Vk.Phd.P -> Vk.Sfc.S ss -> IO (Maybe QFamIndices)
+findQFams pd sfc = do
+	prps@((fst <$>) -> is) <- Vk.Phd.getQueueFamilyProperties pd
+	mp <- listToMaybe
+		<$> filterM (flip (Vk.Sfc.Phd.getSupport pd) sfc) is
+	pure $ QFamIndices <$> (fst <$> L.find (grbit . snd) prps) <*> mp
+	where grbit = checkBits Vk.Q.GraphicsBit . Vk.QFam.propertiesQueueFlags
+
+data SwpchSupportDetails fmts = SwpchSupportDetails {
+	capabilities :: Vk.Sfc.Capabilities,
+	formats :: (
+		[Vk.Sfc.Format Vk.T.FormatB8g8r8a8Srgb],
+		HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts ),
+	presentModes :: [Vk.Sfc.PresentMode] }
+
+deriving instance
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
+	Show (SwpchSupportDetails fmts)
+
+querySwpchSupport :: Vk.Phd.P -> Vk.Sfc.S ss -> (forall fmts .
+	Show (HPListC.PL Vk.T.FormatToValue Vk.Sfc.Format fmts) =>
+	SwpchSupportDetails fmts -> IO a) -> IO a
+querySwpchSupport pd sfc f = Vk.Sfc.Phd.getFormats pd sfc \fmts ->
+	f =<< SwpchSupportDetails
+		<$> Vk.Sfc.Phd.getCapabilities pd sfc
+		<*> ((, fmts) <$> Vk.Sfc.Phd.getFormatsFiltered pd sfc)
+		<*> Vk.Sfc.Phd.getPresentModes pd sfc

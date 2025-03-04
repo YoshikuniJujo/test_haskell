@@ -68,8 +68,10 @@ library
     , gpu-vulkan-core
     , gpu-vulkan-khr-surface
     , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
+    , hetero-parameter-list
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
@@ -106,8 +108,10 @@ executable try-imgui-sample-exe
     , gpu-vulkan-core
     , gpu-vulkan-khr-surface
     , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
+    , hetero-parameter-list
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
@@ -146,8 +150,10 @@ test-suite try-imgui-sample-test
     , gpu-vulkan-core
     , gpu-vulkan-khr-surface
     , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
+    , hetero-parameter-list
     , text
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
