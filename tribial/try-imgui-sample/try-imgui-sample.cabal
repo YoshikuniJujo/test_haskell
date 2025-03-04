@@ -60,7 +60,10 @@ library
       vulkan
     , glfw3
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , base >=4.7 && <5
+    , bindings-GLFW
+    , glfw-group
   default-language: Haskell2010
 
 executable try-imgui-sample-exe
@@ -85,7 +88,10 @@ executable try-imgui-sample-exe
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , base >=4.7 && <5
+    , bindings-GLFW
+    , glfw-group
     , try-imgui-sample
   default-language: Haskell2010
 
@@ -112,6 +118,9 @@ test-suite try-imgui-sample-test
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
   build-depends:
-      base >=4.7 && <5
+      GLFW-b
+    , base >=4.7 && <5
+    , bindings-GLFW
+    , glfw-group
     , try-imgui-sample
   default-language: Haskell2010

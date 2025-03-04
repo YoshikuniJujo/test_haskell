@@ -348,30 +348,12 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" int main_cxx(int, char**);
-
-int main_cxx_inner(int, char**);
-
-int main_cxx(int argc, char** argv)
-{
-	return main_cxx_inner(argc, argv);
-}
+extern "C" int main_cxx(GLFWwindow* window);
 
 // Main code
-int main_cxx_inner(int, char**)
-{
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
 
-    // Create window with Vulkan context
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example", nullptr, nullptr);
-    if (!glfwVulkanSupported())
-    {
-        printf("GLFW: Vulkan Not Supported\n");
-        return 1;
-    }
+int main_cxx(GLFWwindow* window)
+{
 
     ImVector<const char*> extensions;
     uint32_t extensions_count = 0;
@@ -535,9 +517,6 @@ int main_cxx_inner(int, char**)
 
     CleanupVulkanWindow();
     CleanupVulkan();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
 
     return 0;
 }
