@@ -50,20 +50,22 @@ main = GlfwG.setErrorCallback (Just glfwErrorCallback) >>
 		print Vk.DbgUtls.extensionName
 		createIst \ist -> do
 			setupVulkan ist
-			mainCxx win
+			mainCxx win ist
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
 foreign import ccall "SetupVulkan" cxx_SetupVulkan :: Vk.Ist.C.I -> IO ()
-foreign import ccall "main_cxx" cxx_main_cxx :: Ptr GlfwBase.C'GLFWwindow  -> IO ()
+foreign import ccall "main_cxx" cxx_main_cxx ::
+	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.C.I -> IO ()
 
 setupVulkan :: Vk.Ist.I si -> IO ()
 setupVulkan (Vk.Ist.I (Vk.Ist.M.I i)) = cxx_SetupVulkan i
 
-mainCxx :: GlfwG.Win.W sw -> IO ()
-mainCxx (GlfwG.Win.W win) = cxx_main_cxx (GlfwC.toC win)
+mainCxx :: GlfwG.Win.W sw -> Vk.Ist.I si -> IO ()
+mainCxx (GlfwG.Win.W win) (Vk.Ist.I (Vk.Ist.M.I ist)) =
+	cxx_main_cxx (GlfwC.toC win) ist
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
