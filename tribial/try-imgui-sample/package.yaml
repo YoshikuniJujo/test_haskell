@@ -31,11 +31,16 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- text
 - gpu-vulkan
 - try-gpu-vulkan-ext-debug-utils
+- gpu-vulkan-middle
+- gpu-vulkan-core
 - glfw-group
 - GLFW-b
 - bindings-GLFW
+- tools-yj
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall

@@ -65,7 +65,12 @@ library
     , bindings-GLFW
     , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-core
+    , gpu-vulkan-middle
+    , text
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 executable try-imgui-sample-exe
@@ -95,8 +100,13 @@ executable try-imgui-sample-exe
     , bindings-GLFW
     , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-core
+    , gpu-vulkan-middle
+    , text
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-imgui-sample
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-imgui-sample-test
@@ -127,6 +137,11 @@ test-suite try-imgui-sample-test
     , bindings-GLFW
     , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-core
+    , gpu-vulkan-middle
+    , text
+    , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , try-imgui-sample
+    , typelevel-tools-yj
   default-language: Haskell2010

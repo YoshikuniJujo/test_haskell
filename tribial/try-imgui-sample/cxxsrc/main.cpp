@@ -85,7 +85,9 @@ static bool IsExtensionAvailable(const ImVector<VkExtensionProperties>& properti
     return false;
 }
 
-static void SetupVulkan(ImVector<const char*> instance_extensions)
+extern "C" void SetupVulkan(VkInstance);
+
+void SetupVulkan(VkInstance ist)
 {
     VkResult err;
 #ifdef IMGUI_IMPL_VULKAN_USE_VOLK
@@ -94,44 +96,8 @@ static void SetupVulkan(ImVector<const char*> instance_extensions)
 
     // Create Vulkan Instance
     {
-        VkInstanceCreateInfo create_info = {};
-        create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
-        // Enumerate available extensions
-        uint32_t properties_count;
-        ImVector<VkExtensionProperties> properties;
-        vkEnumerateInstanceExtensionProperties(nullptr, &properties_count, nullptr);
-        properties.resize(properties_count);
-        err = vkEnumerateInstanceExtensionProperties(nullptr, &properties_count, properties.Data);
-        check_vk_result(err);
-
-        // Enable required extensions
-        if (IsExtensionAvailable(properties, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME))
-            instance_extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-#ifdef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
-        if (IsExtensionAvailable(properties, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME))
-        {
-            instance_extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-            create_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-        }
-#endif
-
-        // Enabling validation layers
-#ifdef APP_USE_VULKAN_DEBUG_REPORT
-        const char* layers[] = { "VK_LAYER_KHRONOS_validation" };
-        create_info.enabledLayerCount = 1;
-        create_info.ppEnabledLayerNames = layers;
-        instance_extensions.push_back("VK_EXT_debug_report");
-#endif
-
-        // Create Vulkan Instance
-        create_info.enabledExtensionCount = (uint32_t)instance_extensions.Size;
-        create_info.ppEnabledExtensionNames = instance_extensions.Data;
-        err = vkCreateInstance(&create_info, g_Allocator, &g_Instance);
-        check_vk_result(err);
-#ifdef IMGUI_IMPL_VULKAN_USE_VOLK
-        volkLoadInstance(g_Instance);
-#endif
+	g_Instance = ist;
 
         // Setup the debug report callback
 #ifdef APP_USE_VULKAN_DEBUG_REPORT
@@ -253,7 +219,7 @@ static void CleanupVulkan()
 #endif // APP_USE_VULKAN_DEBUG_REPORT
 
     vkDestroyDevice(g_Device, g_Allocator);
-    vkDestroyInstance(g_Instance, g_Allocator);
+//    vkDestroyInstance(g_Instance, g_Allocator);
 }
 
 static void CleanupVulkanWindow()
@@ -348,22 +314,9 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" void init_vulkan();
 extern "C" int main_cxx(GLFWwindow* window);
 
 // Main code
-
-void
-init_vulkan()
-{
-    ImVector<const char*> extensions;
-    uint32_t extensions_count = 0;
-    const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
-    for (uint32_t i = 0; i < extensions_count; i++)
-        extensions.push_back(glfw_extensions[i]);
-
-    SetupVulkan(extensions);
-}
 
 int main_cxx(GLFWwindow* window)
 {
