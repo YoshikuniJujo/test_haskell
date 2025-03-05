@@ -34,8 +34,8 @@ source-repository head
 
 library
   exposed-modules:
-      Gpu.Vulkan.ImGui.Helper.Core
-      Lib
+      Gpu.Vulkan.ImGui.Helper.Frame
+      Gpu.Vulkan.ImGui.Helper.Frame.Core
   other-modules:
       Paths_try_imgui_sample
   autogen-modules:
@@ -77,6 +77,7 @@ library
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
     , hetero-parameter-list
+    , primitive
     , storable-peek-poke
     , text
     , tools-yj
@@ -122,6 +123,7 @@ executable try-imgui-sample-exe
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
     , hetero-parameter-list
+    , primitive
     , storable-peek-poke
     , text
     , tools-yj
@@ -164,6 +166,7 @@ executable trySome
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
     , hetero-parameter-list
+    , primitive
     , storable-peek-poke
     , text
     , tools-yj
@@ -211,6 +214,7 @@ test-suite try-imgui-sample-test
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
     , hetero-parameter-list
+    , primitive
     , storable-peek-poke
     , text
     , tools-yj

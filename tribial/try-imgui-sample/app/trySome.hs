@@ -2,9 +2,7 @@
 
 module Main (main) where
 
-import Gpu.Vulkan.ImGui.Helper.Core
+import Gpu.Vulkan.ImGui.Helper.Frame.Core
 
 main :: IO ()
-main = do
-	print cxx_sizeOfImguiImplVulkanHFrame
-	print cxx_alignOfImguiImplVulkanHFrame
+main = putStrLn "Slozsoft"
