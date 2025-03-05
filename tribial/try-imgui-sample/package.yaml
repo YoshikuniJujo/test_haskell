@@ -19,6 +19,7 @@ extra-source-files:
 - include/imstb_truetype.h
 - include/backends/imgui_impl_glfw.h
 - include/backends/imgui_impl_vulkan.h
+- include/helper/imgui_impl_vulkan_helper_c.h
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -78,7 +79,8 @@ cxx-sources:
   - cxxsrc/imgui_demo.cpp
   - cxxsrc/backends/imgui_impl_glfw.cpp
   - cxxsrc/backends/imgui_impl_vulkan.cpp
-  - cxxsrc/trans/helper/trans_struct_c_cxx.cpp
+  - cxxsrc/trans/helper/imgui_implvulkanh_frame.cpp
+  - cxxsrc/trans/helper/imgui_implvulkanh_framesemaphores.cpp
 
 include-dirs:
   - include/
