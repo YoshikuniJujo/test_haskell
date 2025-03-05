@@ -33,6 +33,7 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - data-default
+- c-struct
 - gpu-vulkan
 - gpu-vulkan-khr-swapchain
 - gpu-vulkan-khr-surface
@@ -76,6 +77,7 @@ cxx-sources:
   - cxxsrc/imgui_demo.cpp
   - cxxsrc/backends/imgui_impl_glfw.cpp
   - cxxsrc/backends/imgui_impl_vulkan.cpp
+  - cxxsrc/trans/helper/trans_struct_c_cxx.cpp
 
 include-dirs:
   - include/
@@ -85,6 +87,16 @@ include-dirs:
 executables:
   try-imgui-sample-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-imgui-sample
+  trySome:
+    main:                trySome.hs
+    other-modules:       []
     source-dirs:         app
     ghc-options:
     - -threaded

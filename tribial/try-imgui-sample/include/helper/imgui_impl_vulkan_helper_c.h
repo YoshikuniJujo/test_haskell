@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <vulkan/vulkan.h>
 
-struct ImGui_ImplVulkanH_Frame
+typedef struct
 {
     VkCommandPool       CommandPool;
     VkCommandBuffer     CommandBuffer;
@@ -9,15 +9,15 @@ struct ImGui_ImplVulkanH_Frame
     VkImage             Backbuffer;
     VkImageView         BackbufferView;
     VkFramebuffer       Framebuffer;
-};
+} ImGui_ImplVulkanH_Frame_C;
 
-struct ImGui_ImplVulkanH_FrameSemaphores
+typedef struct
 {
     VkSemaphore         ImageAcquiredSemaphore;
     VkSemaphore         RenderCompleteSemaphore;
-};
+} ImGui_ImplVulkanH_FrameSemaphores_C;
 
-struct ImGui_ImplVulkanH_Window_C
+typedef struct
 {
     int                 Width;
     int                 Height;
@@ -41,4 +41,4 @@ struct ImGui_ImplVulkanH_Window_C
 
 //    ImVector<ImGui_ImplVulkanH_Frame>           Frames;
 //    ImVector<ImGui_ImplVulkanH_FrameSemaphores> FrameSemaphores;
-};
+} ImGui_ImplVulkanH_Window_C;
