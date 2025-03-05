@@ -38,6 +38,7 @@ library
       Gpu.Vulkan.ImGui.Helper.Frame
       Gpu.Vulkan.ImGui.Helper.Frame.Core
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core
+      Gpu.Vulkan.ImGui.Helper.Window.Core
   other-modules:
       Paths_try_imgui_sample
   autogen-modules:
