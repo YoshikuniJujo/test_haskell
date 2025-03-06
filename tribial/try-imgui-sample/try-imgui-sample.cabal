@@ -75,6 +75,8 @@ library
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
+    , gpu-vulkan-core-khr-surface
+    , gpu-vulkan-core-khr-swapchain
     , gpu-vulkan-khr-surface
     , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-khr-swapchain
@@ -122,6 +124,8 @@ executable try-imgui-sample-exe
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
+    , gpu-vulkan-core-khr-surface
+    , gpu-vulkan-core-khr-swapchain
     , gpu-vulkan-khr-surface
     , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-khr-swapchain
@@ -166,6 +170,8 @@ executable trySome
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
+    , gpu-vulkan-core-khr-surface
+    , gpu-vulkan-core-khr-swapchain
     , gpu-vulkan-khr-surface
     , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-khr-swapchain
@@ -215,6 +221,8 @@ test-suite try-imgui-sample-test
     , glfw-group
     , gpu-vulkan
     , gpu-vulkan-core
+    , gpu-vulkan-core-khr-surface
+    , gpu-vulkan-core-khr-swapchain
     , gpu-vulkan-khr-surface
     , gpu-vulkan-khr-surface-glfw
     , gpu-vulkan-khr-swapchain

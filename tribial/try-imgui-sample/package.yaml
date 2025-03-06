@@ -44,6 +44,8 @@ dependencies:
 - gpu-vulkan-middle
 - gpu-vulkan-middle-khr-surface
 - gpu-vulkan-core
+- gpu-vulkan-core-khr-swapchain
+- gpu-vulkan-core-khr-surface
 - glfw-group
 - GLFW-b
 - bindings-GLFW
