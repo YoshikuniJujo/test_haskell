@@ -37,7 +37,7 @@ typedef struct
 	int						Framec;
 	struct ImGui_ImplVulkanH_Frame*			pFrames;
 	int						FrameSemaphorec;
-	struct ImGui_ImplVulkanH_FrameSemaphores*	pFrameSemapores;
+	struct ImGui_ImplVulkanH_FrameSemaphores*	pFrameSemaphores;
 
 //    ImVector<ImGui_ImplVulkanH_Frame>           Frames;
 //    ImVector<ImGui_ImplVulkanH_FrameSemaphores> FrameSemaphores;

@@ -8,7 +8,7 @@ module Gpu.Vulkan.ImGui.Helper.Frame.Core (
 
 	-- * DATA TYPE
 
-	FC, pattern FC,
+	FC, PtrFC, pattern FC,
 	fCCommandPool, fCCommandBuffer, fCFence,
 	fCBackbuffer, fCBackbufferView, fCFramebuffer,
 
@@ -62,6 +62,8 @@ struct "FC" #{size ImGui_ImplVulkanH_Frame_C}
 		[| #{peek ImGui_ImplVulkanH_Frame_C, Framebuffer} |],
 		[| #{poke ImGui_ImplVulkanH_Frame_C, Framebuffer} |]) ]
 	[''Show, ''Storable]
+
+type PtrFC = Ptr FC
 
 foreign import ccall "copyImguiImplVulkanHFrameC"
 	cxx_copyImguiImplVulkanHFrameC :: Ptr FC -> IO (Ptr FC)

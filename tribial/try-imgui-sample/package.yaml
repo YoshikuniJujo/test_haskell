@@ -81,6 +81,7 @@ cxx-sources:
   - cxxsrc/imgui_demo.cpp
   - cxxsrc/backends/imgui_impl_glfw.cpp
   - cxxsrc/backends/imgui_impl_vulkan.cpp
+  - cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
   - cxxsrc/trans/helper/imgui_implvulkanh_frame.cpp
   - cxxsrc/trans/helper/imgui_implvulkanh_framesemaphores.cpp
 

@@ -8,7 +8,7 @@ module Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core (
 
 	-- * DATA TYPE
 
-	FC, pattern FC,
+	FC, PtrFC, pattern FC,
 	fCImageAcquiredSemaphore, fCRenderCompleteSemaphore,
 
 	-- * MUTABLE
@@ -50,6 +50,8 @@ struct "FC" #{size ImGui_ImplVulkanH_FrameSemaphores_C}
 			RenderCompleteSemaphore} |])
 	]
 	[''Show, ''Storable]
+
+type PtrFC = Ptr FC
 
 foreign import ccall "copyImguiImplVulkanHFramesemaphoresC"
 	cxx_copyImguiImplVulkanHFramesemaphoresC :: Ptr FC -> IO (Ptr FC)
