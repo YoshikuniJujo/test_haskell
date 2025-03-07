@@ -53,7 +53,7 @@ extra-deps:
   - git: https://github.com/YoshikuniJujo/gpu-vulkan
     commit: 505aec29131161cac78eb4524e24c3c2132b1949
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
-    commit: 7cfa255be11514fba866f5ea2da72336996b1f56
+    commit: 0acb1d68b86bbac3909e2a123d1d56f136a77e93
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-core
     commit: 56ecd08161569ac267bb8ce5f1582285974ea783
   - gpu-vulkan-khr-swapchain-0.1.0.1
@@ -66,6 +66,7 @@ extra-deps:
   - gpu-vulkan-core-khr-surface-0.1.0.0
   - language-spir-v-0.1.0.3
   - glfw-group-0.1.0.5
+  - tools-yj-0.1.0.23
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

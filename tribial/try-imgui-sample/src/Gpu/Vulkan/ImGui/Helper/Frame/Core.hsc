@@ -38,6 +38,7 @@ import Data.Word
 import Gpu.Vulkan.CommandPool.Core qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer.Core qualified as Vk.CmdBffr
 import Gpu.Vulkan.Image.Core qualified as Vk.Img
+import Gpu.Vulkan.ImageView.Core qualified as Vk.ImgVw
 import Gpu.Vulkan.Fence.Core qualified as Vk.Fnc
 import Gpu.Vulkan.Framebuffer.Core qualified as Vk.Frmbffr
 
@@ -55,7 +56,7 @@ struct "FC" #{size ImGui_ImplVulkanH_Frame_C}
 	("Backbuffer", ''Vk.Img.I,
 		[| #{peek ImGui_ImplVulkanH_Frame_C, Backbuffer} |],
 		[| #{poke ImGui_ImplVulkanH_Frame_C, Backbuffer} |]),
-	("BackbufferView", ''Vk.Img.I,
+	("BackbufferView", ''Vk.ImgVw.I,
 		[| #{peek ImGui_ImplVulkanH_Frame_C, BackbufferView} |],
 		[| #{poke ImGui_ImplVulkanH_Frame_C, BackbufferView} |]),
 	("Framebuffer", ''Vk.Frmbffr.F,
