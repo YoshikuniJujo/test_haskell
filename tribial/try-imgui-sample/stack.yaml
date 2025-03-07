@@ -53,15 +53,19 @@ extra-deps:
   - git: https://github.com/YoshikuniJujo/gpu-vulkan
     commit: 505aec29131161cac78eb4524e24c3c2132b1949
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
-    commit: 0acb1d68b86bbac3909e2a123d1d56f136a77e93
+    commit: 37d365401abe82ce4c4ad49dcdf19080f9ae5a75
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-core
     commit: 56ecd08161569ac267bb8ce5f1582285974ea783
   - gpu-vulkan-khr-swapchain-0.1.0.1
   - gpu-vulkan-khr-surface-glfw-0.1.0.0
-  - gpu-vulkan-middle-khr-swapchain-0.1.0.0
+  - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-swapchain
+    commit: c6da04afa5380b986c8ad92d1671d7d21631cc31
+  # - gpu-vulkan-middle-khr-swapchain-0.1.0.0
   - gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
+  - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
+    commit: 0f1806026dc6271faaf473a377ab9b68c61ac5a3
   - gpu-vulkan-khr-surface-0.1.0.0
-  - gpu-vulkan-middle-khr-surface-0.1.0.0
+  # - gpu-vulkan-middle-khr-surface-0.1.0.0
   - gpu-vulkan-core-khr-swapchain-0.1.0.0
   - gpu-vulkan-core-khr-surface-0.1.0.0
   - language-spir-v-0.1.0.3

@@ -43,6 +43,10 @@ static ImGui_ImplVulkanH_Window g_MainWindowData;
 static uint32_t                 g_MinImageCount = 2;
 static bool                     g_SwapChainRebuild = false;
 
+extern "C" ImGui_ImplVulkanH_Window* get_g_MainWindowData ();
+
+ImGui_ImplVulkanH_Window* get_g_MainWindowData () { return &g_MainWindowData; }
+
 static void check_vk_result(VkResult err)
 {
     if (err == VK_SUCCESS)

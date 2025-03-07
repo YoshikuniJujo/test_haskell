@@ -9,12 +9,12 @@ extern "C" void imguiImplVulkanHWindowToC(
 	struct ImGui_ImplVulkanH_Window*, ImGui_ImplVulkanH_Window_C* );
 
 extern "C" size_t sizeofImguiImplVulkanHWindow();
-extern "C" size_t alignofImguiImplVulkanWindow();
+extern "C" size_t alignofImguiImplVulkanHWindow();
 
 extern "C" ImGui_ImplVulkanH_Window_C*
 	copyImguiImplVulkanHWindowC(ImGui_ImplVulkanH_Window_C*);
 
-extern "C" void freeImguiImplVulkanWindowC(ImGui_ImplVulkanH_Window_C*);
+extern "C" void freeImguiImplVulkanHWindowC(ImGui_ImplVulkanH_Window_C*);
 
 void imguiImplVulkanHWindowFromC(
 	ImGui_ImplVulkanH_Window_C *c, struct ImGui_ImplVulkanH_Window *cxx )

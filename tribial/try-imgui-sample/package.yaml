@@ -42,6 +42,7 @@ dependencies:
 - gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - gpu-vulkan-middle
+- gpu-vulkan-middle-khr-swapchain
 - gpu-vulkan-middle-khr-surface
 - gpu-vulkan-core
 - gpu-vulkan-core-khr-swapchain

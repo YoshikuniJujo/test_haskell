@@ -52,10 +52,10 @@ import Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core
 
 struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 	#{alignment ImGui_ImplVulkanH_Window_C} [
-	("Width", ''Int,
+	("Width", ''#{type int},
 		[| #{peek ImGui_ImplVulkanH_Window_C, Width} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, Width} |]),
-	("Height", ''Int,
+	("Height", ''#{type int},
 		[| #{peek ImGui_ImplVulkanH_Window_C, Height} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, Height} |]),
 	("Swapchain", ''Vk.Swpch.S,
@@ -105,10 +105,10 @@ struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 		[| #{poke ImGui_ImplVulkanH_Window_C, pFrameSemaphores} |]) ]
 	[''Show, ''Storable]
 
-foreign import ccall "copyImguImplVulkanHWindowC"
+foreign import ccall "copyImguiImplVulkanHWindowC"
 	cxx_copyImguiImplVulkanHWindowC :: Ptr WC -> IO (Ptr WC)
 
-foreign import ccall "freeImguiImplVulkaHnWindowC"
+foreign import ccall "freeImguiImplVulkanHWindowC"
 	cxx_freeImguiImplVulkanHWindowC :: Ptr WC -> IO ()
 
 structPrim "WC"
@@ -116,7 +116,11 @@ structPrim "WC"
 	'cxx_freeImguiImplVulkanHWindowC [''Show]
 
 toC :: PrimMonad m => W -> m (WCPrim (PrimState m))
-toC (W pw) = unsafeIOToPrim $ alloca \pwc -> do
+-- toC (W pw) = unsafeIOToPrim $ alloca \pwc -> do
+toC (W pw) = unsafeIOToPrim $ allocaBytes 64 \pwc -> do
+-- toC (W pw) = unsafeIOToPrim $ allocaBytes 112 \pwc -> do
+	print (sizeOf (undefined :: WC))
+	print (alignment (undefined :: WC))
 	cxx_imguiImplVulkanHWindowToC pw pwc
 	WCPrim <$> newForeignPtr pwc (free pwc)
 

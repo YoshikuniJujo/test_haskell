@@ -13,7 +13,11 @@ module Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Middle (
 
 	-- * CXX TO/FROM MUTABLE
 
-	C.F(..), C.FTag, fromCxx, toCxx
+	C.F(..), C.FTag, fromCxx, toCxx,
+
+	-- * INTERNAL
+
+	fCToCore, fCFromCore
 
 	) where
 

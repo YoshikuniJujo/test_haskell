@@ -65,6 +65,9 @@ import Graphics.UI.GLFW.C qualified as GlfwC
 
 import Bindings.GLFW qualified as GlfwBase
 
+import Gpu.Vulkan.ImGui.Helper.Window.Middle qualified as Vk.ImGui.Win.M
+import Gpu.Vulkan.ImGui.Helper.Window.Core qualified as Vk.ImGui.Win.C
+
 debug :: Bool
 debug = True
 
@@ -75,10 +78,12 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		(GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
 	GlfwG.Win.create 1280 720
 		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
+	print =<< getGMainWindowDataMiddle
+--	print =<< cxx_get_g_MainWindowData
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
-	print =<< Vk.Ist.enumerateExtensionProperties Nothing
-	print Vk.DbgUtls.extensionName
+--	print =<< Vk.Ist.enumerateExtensionProperties Nothing
+--	print Vk.DbgUtls.extensionName
 	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
 		pickPhd ist sfc >>= \(phd, qfm) ->
 		createLgDvc phd qfm \dvc gq _ ->
@@ -92,6 +97,11 @@ glfwErrorCallback err dsc =
 foreign import ccall "main_cxx" cxx_main_cxx ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
+
+foreign import ccall "get_g_MainWindowData" cxx_get_g_MainWindowData :: IO Vk.ImGui.Win.C.W
+
+getGMainWindowDataMiddle :: IO Vk.ImGui.Win.M.WCIO
+getGMainWindowDataMiddle = Vk.ImGui.Win.M.fromCxx =<< cxx_get_g_MainWindowData
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->

@@ -41,6 +41,7 @@ library
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Middle
       Gpu.Vulkan.ImGui.Helper.Window.Core
+      Gpu.Vulkan.ImGui.Helper.Window.Middle
   other-modules:
       Paths_try_imgui_sample
   autogen-modules:
@@ -85,6 +86,7 @@ library
     , gpu-vulkan-khr-swapchain
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
+    , gpu-vulkan-middle-khr-swapchain
     , hetero-parameter-list
     , primitive
     , storable-peek-poke
@@ -135,6 +137,7 @@ executable try-imgui-sample-exe
     , gpu-vulkan-khr-swapchain
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
+    , gpu-vulkan-middle-khr-swapchain
     , hetero-parameter-list
     , primitive
     , storable-peek-poke
@@ -182,6 +185,7 @@ executable trySome
     , gpu-vulkan-khr-swapchain
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
+    , gpu-vulkan-middle-khr-swapchain
     , hetero-parameter-list
     , primitive
     , storable-peek-poke
@@ -234,6 +238,7 @@ test-suite try-imgui-sample-test
     , gpu-vulkan-khr-swapchain
     , gpu-vulkan-middle
     , gpu-vulkan-middle-khr-surface
+    , gpu-vulkan-middle-khr-swapchain
     , hetero-parameter-list
     , primitive
     , storable-peek-poke

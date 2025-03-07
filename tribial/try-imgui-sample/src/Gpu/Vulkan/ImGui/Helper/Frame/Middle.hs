@@ -13,7 +13,11 @@ module Gpu.Vulkan.ImGui.Helper.Frame.Middle (
 
 	-- * CXX TO/FROM MUTABLE
 
-	C.F(..), C.FTag, fromCxx, toCxx
+	C.F(..), C.FTag, fromCxx, toCxx,
+
+	-- * INTERNAL
+
+	fcToCore, fcFromCore
 	
 	) where
 

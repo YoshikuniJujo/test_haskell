@@ -55,15 +55,15 @@ packages:
     commit: 505aec29131161cac78eb4524e24c3c2132b1949
     git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
-    commit: 0acb1d68b86bbac3909e2a123d1d56f136a77e93
+    commit: 37d365401abe82ce4c4ad49dcdf19080f9ae5a75
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
     name: gpu-vulkan-middle
     pantry-tree:
-      sha256: 6efeff7d610bf7715cb8dc52230e6b10732cb666bacb24ae1383cdb252b72096
+      sha256: 92716313c4f06146ec5ee8158cdd120e9fc95a2b190770443867091bbb9852af
       size: 16297
     version: 0.1.0.75
   original:
-    commit: 0acb1d68b86bbac3909e2a123d1d56f136a77e93
+    commit: 37d365401abe82ce4c4ad49dcdf19080f9ae5a75
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
 - completed:
     commit: 56ecd08161569ac267bb8ce5f1582285974ea783
@@ -91,12 +91,16 @@ packages:
   original:
     hackage: gpu-vulkan-khr-surface-glfw-0.1.0.0
 - completed:
-    hackage: gpu-vulkan-middle-khr-swapchain-0.1.0.0@sha256:a15bb45401cfe86eda6d6c9086dbc7aa65c1049a4c32ab7cbf340f2a74db8a8f,2569
+    commit: c6da04afa5380b986c8ad92d1671d7d21631cc31
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-swapchain
+    name: gpu-vulkan-middle-khr-swapchain
     pantry-tree:
-      sha256: 59bdb510afc819826a71b162be91e1dd1c6dc3193dc6837648e859b1540f2ddf
-      size: 570
+      sha256: 1162c52427a3a383f4f0c3fa433c279a0b705e3ff72017fdbda3ed28d3608c5a
+      size: 966
+    version: 0.1.0.0
   original:
-    hackage: gpu-vulkan-middle-khr-swapchain-0.1.0.0
+    commit: c6da04afa5380b986c8ad92d1671d7d21631cc31
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-swapchain
 - completed:
     hackage: gpu-vulkan-middle-khr-surface-glfw-0.1.0.1@sha256:b6c7949b9e81df033e427a665527851b4a871404143f1378f688f44510d122b1,2253
     pantry-tree:
@@ -105,19 +109,23 @@ packages:
   original:
     hackage: gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
 - completed:
+    commit: 0f1806026dc6271faaf473a377ab9b68c61ac5a3
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
+    name: gpu-vulkan-middle-khr-surface
+    pantry-tree:
+      sha256: 81772f24031c831e2ad2571d20426cf4b581aa3b63f86c4fbdd0aeb6090e1cc9
+      size: 1047
+    version: 0.1.0.0
+  original:
+    commit: 0f1806026dc6271faaf473a377ab9b68c61ac5a3
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
+- completed:
     hackage: gpu-vulkan-khr-surface-0.1.0.0@sha256:789237cd35f877c94be45b163624106f4df4d62a0577da211daaa880fd98515d,2333
     pantry-tree:
       sha256: e6ec9329b1672a354617209e05eae540cd0072991992b48ed9112cbb89b51636
       size: 697
   original:
     hackage: gpu-vulkan-khr-surface-0.1.0.0
-- completed:
-    hackage: gpu-vulkan-middle-khr-surface-0.1.0.0@sha256:872ba2b7b1fb437a7dfd301e95089f5896b7a76e95960cda9d71140b1fa437bc,2480
-    pantry-tree:
-      sha256: 79b1e9d345dae7b8924c5aaee92edfce2e90a8f915180282fe4aa8c130b70205
-      size: 653
-  original:
-    hackage: gpu-vulkan-middle-khr-surface-0.1.0.0
 - completed:
     hackage: gpu-vulkan-core-khr-swapchain-0.1.0.0@sha256:c13766a52c18385b9d26550e44ed95818bef72f5dd8c5b88f0973e11182eb45c,2144
     pantry-tree:
