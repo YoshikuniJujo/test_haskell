@@ -2,10 +2,10 @@
 #include "imgui_impl_vulkan.h"
 #include "imgui_impl_vulkan_helper_c.h"
 
-extern "C" void imguiImplVulkanFrameFromC(
+extern "C" void imguiImplVulkanHFrameFromC(
 	ImGui_ImplVulkanH_Frame_C*, struct ImGui_ImplVulkanH_Frame*);
 
-extern "C" void imguiImplVulkanFrameToC(
+extern "C" void imguiImplVulkanHFrameToC(
 	struct ImGui_ImplVulkanH_Frame*, ImGui_ImplVulkanH_Frame_C*);
 
 extern "C" size_t sizeOfImguiImplVulkanHFrame();

@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeApplications, RankNTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -27,6 +27,7 @@ import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Text.IO qualified as Txt
+import Text.Show.ToolsYj
 import System.IO
 
 import Gpu.Vulkan qualified as Vk
@@ -68,6 +69,8 @@ import Bindings.GLFW qualified as GlfwBase
 import Gpu.Vulkan.ImGui.Helper.Window.Middle qualified as Vk.ImGui.Win.M
 import Gpu.Vulkan.ImGui.Helper.Window.Core qualified as Vk.ImGui.Win.C
 
+import Gpu.Vulkan.Middle qualified as Vk.M
+
 debug :: Bool
 debug = True
 
@@ -78,7 +81,10 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		(GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
 	GlfwG.Win.create 1280 720
 		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
+	print =<< cxx_get_g_MainWindowData
 	print =<< getGMainWindowDataMiddle
+	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
+	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
 --	print =<< cxx_get_g_MainWindowData
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
@@ -87,14 +93,25 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
 		pickPhd ist sfc >>= \(phd, qfm) ->
 		createLgDvc phd qfm \dvc gq _ ->
-		createDscPl dvc \dp ->
+		createDscPl dvc \dp -> do
 		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
+		print =<< cxx_get_g_MainWindowData
+		print =<< getGMainWindowDataMiddle
+		printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
 foreign import ccall "main_cxx" cxx_main_cxx ::
+	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
+
+foreign import ccall "main_cxx1" cxx_main_cxx1 ::
+	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
+	Vk.QFam.Index -> Vk.Dvc.D sd -> IO ()
+
+foreign import ccall "main_cxx2" cxx_main_cxx2 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
 
@@ -106,8 +123,11 @@ getGMainWindowDataMiddle = Vk.ImGui.Win.M.fromCxx =<< cxx_get_g_MainWindowData
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
-mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp =
-	cxx_main_cxx (GlfwC.toC win) ist sfc phd qfi dvc gq dp
+mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp = do
+	cxx_main_cxx1 (GlfwC.toC win) ist sfc phd qfi dvc
+	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
+	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
+	cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do

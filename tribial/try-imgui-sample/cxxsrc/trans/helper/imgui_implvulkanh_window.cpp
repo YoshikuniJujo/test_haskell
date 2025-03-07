@@ -2,6 +2,9 @@
 #include "imgui_impl_vulkan.h"
 #include "imgui_impl_vulkan_helper_c.h"
 
+#include <bits/stdc++.h>
+using namespace std;
+
 extern "C" void imguiImplVulkanHWindowFromC(
 	ImGui_ImplVulkanH_Window_C*, struct ImGui_ImplVulkanH_Window* );
 
@@ -41,6 +44,8 @@ void imguiImplVulkanHWindowFromC(
 void imguiImplVulkanHWindowToC(
 	struct ImGui_ImplVulkanH_Window *cxx, ImGui_ImplVulkanH_Window_C *c )
 {
+	cout << "imguiImplVulkanHWindowToC" << endl;
+	cout << cxx->Width << endl;
 	c->Width = cxx->Width; c->Height = cxx->Height;
 	c->Swapchain = cxx->Swapchain;
 	c->Surface = cxx->Surface; c->SurfaceFormat = cxx->SurfaceFormat;
@@ -74,6 +79,7 @@ copyImguiImplVulkanHWindowC(ImGui_ImplVulkanH_Window_C* c)
 	ImGui_ImplVulkanH_Window_C *p =
 		(ImGui_ImplVulkanH_Window_C *)malloc(
 			sizeof(ImGui_ImplVulkanH_Window_C));
+	memcpy(p, c, sizeof(ImGui_ImplVulkanH_Window_C));
 	return p;
 }
 

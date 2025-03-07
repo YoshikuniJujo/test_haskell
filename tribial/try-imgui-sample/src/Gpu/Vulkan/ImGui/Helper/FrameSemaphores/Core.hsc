@@ -89,5 +89,5 @@ foreign import ccall "alignofImguiImplVulkanHFramesemaphores"
 foreign import ccall "imguiImplVulkanHFramesemaphoresFromC"
 	cxx_imguiImplVulkanHFramesemaphoresFromC :: Ptr FC -> Ptr FTag -> IO ()
 
-foreign import ccall "imguiImplVulkanFramesemaphoresToC"
+foreign import ccall "imguiImplVulkanHFramesemaphoresToC"
 	cxx_imguiImplVulkanHFramesemaphoresToC :: Ptr FTag -> Ptr FC -> IO ()

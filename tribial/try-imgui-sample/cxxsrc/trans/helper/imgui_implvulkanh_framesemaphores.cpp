@@ -10,14 +10,14 @@ extern "C" void imguiImplVulkanHFramesemaphoresToC(
 	struct ImGui_ImplVulkanH_FrameSemaphores*,
 	ImGui_ImplVulkanH_FrameSemaphores_C* );
 
-extern "C" size_t sizeofImguiImplVulkanHFramesemaphroes();
-extern "C" size_t alignofImguiImplVulkanHFramesemaphroes();
+extern "C" size_t sizeofImguiImplVulkanHFramesemaphores();
+extern "C" size_t alignofImguiImplVulkanHFramesemaphores();
 
 extern "C" ImGui_ImplVulkanH_FrameSemaphores_C*
-	copyImguiImplVulkanHFrameSemaphoresC(
+	copyImguiImplVulkanHFramesemaphoresC(
 		ImGui_ImplVulkanH_FrameSemaphores_C* );
 
-extern "C" void freeImguiImplVulkanHFrameSemaphoresC(
+extern "C" void freeImguiImplVulkanHFramesemaphoresC(
 	ImGui_ImplVulkanH_FrameSemaphores_C* );
 
 void
@@ -51,7 +51,7 @@ alignofImguiImplVulkanHFramesemaphores()
 }
 
 ImGui_ImplVulkanH_FrameSemaphores_C*
-copyImguiImplVulkahHFramesemaphoresC(ImGui_ImplVulkanH_FrameSemaphores_C* c)
+copyImguiImplVulkanHFramesemaphoresC(ImGui_ImplVulkanH_FrameSemaphores_C* c)
 {
 	ImGui_ImplVulkanH_FrameSemaphores_C *p =
 		(ImGui_ImplVulkanH_FrameSemaphores_C *)malloc(

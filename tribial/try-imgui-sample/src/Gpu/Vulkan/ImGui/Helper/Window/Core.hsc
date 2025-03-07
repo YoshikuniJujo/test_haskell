@@ -23,7 +23,7 @@ module Gpu.Vulkan.ImGui.Helper.Window.Core (
 
 	-- * CXX TO/FROM C
 
-	W(..), WTag, toC, fromC
+	W(..), WTag, toC, toC', fromC
 
 	) where
 
@@ -116,13 +116,16 @@ structPrim "WC"
 	'cxx_freeImguiImplVulkanHWindowC [''Show]
 
 toC :: PrimMonad m => W -> m (WCPrim (PrimState m))
--- toC (W pw) = unsafeIOToPrim $ alloca \pwc -> do
-toC (W pw) = unsafeIOToPrim $ allocaBytes 64 \pwc -> do
--- toC (W pw) = unsafeIOToPrim $ allocaBytes 112 \pwc -> do
-	print (sizeOf (undefined :: WC))
-	print (alignment (undefined :: WC))
+toC (W pw) = unsafeIOToPrim do
+	pwc <- malloc
 	cxx_imguiImplVulkanHWindowToC pw pwc
 	WCPrim <$> newForeignPtr pwc (free pwc)
+
+toC' :: W -> IO WC
+toC' (W pw) = do
+	pwc <- malloc
+	cxx_imguiImplVulkanHWindowToC pw pwc
+	WC_ <$> newForeignPtr pwc (free pwc)
 
 fromC :: WCPrim s -> (W -> IO a) -> IO a
 fromC (WCPrim fwc) a =

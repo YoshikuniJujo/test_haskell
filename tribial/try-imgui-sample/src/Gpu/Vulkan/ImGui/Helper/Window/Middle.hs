@@ -16,7 +16,9 @@ module Gpu.Vulkan.ImGui.Helper.Window.Middle (
 
 	-- * CXX TO/FROM MUTABLE
 
-	C.W(..), C.WTag, fromCxx, toCxx
+	C.W(..), C.WTag, fromCxx, toCxx,
+
+	fromCxx', wCFromCore
 
 	) where
 
@@ -132,11 +134,16 @@ wCFromCore C.WC {
 	C.wCPFrames = pfs,
 	C.wCFrameSemaphorec = fsc,
 	C.wCPFrameSemaphores = pfss } = do
+	putStrLn "HERE"
+	print w
 	rsc <- newIORef (Vk.Extent2d 0 0, sc)
 	rppl <- newIORef ppl
+	print fc
+	print fsc
 	fs <- mapM Frame.fcFromCore =<< peekArray (fromIntegral fc) pfs
 	fss <- (FrameSemaphores.fCFromCore <$>)
 		<$> peekArray (fromIntegral fsc) pfss
+	putStrLn "AFTER"
 	pure WC {
 		wCWidth = w, wCHeight = h,
 		wCSwapchain = Vk.Swpch.S rsc,
@@ -155,6 +162,9 @@ wCFromCore C.WC {
 
 wCFreeze :: Default (Vk.ClearValue ct) => C.WCIO -> IO (WC ct)
 wCFreeze = wCFromCore <=< C.wCFreeze
+
+fromCxx' :: C.W -> IO C.WC
+fromCxx' = C.toC'
 
 wCThaw :: Vk.ClearValueToCore ct => WC ct -> (C.WCIO -> IO a) -> IO a
 wCThaw w a = wCToCore w $ a <=< C.wCThaw

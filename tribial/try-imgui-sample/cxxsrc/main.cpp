@@ -189,20 +189,35 @@ extern "C" int main_cxx(
 	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
 	VkDevice, VkQueue, VkDescriptorPool );
 
+extern "C" void main_cxx1(
+	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
+	VkDevice );
+
+extern "C" int main_cxx2(
+	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
+	VkDevice, VkQueue, VkDescriptorPool );
+
 // Main code
 
-int main_cxx(
+void main_cxx1(
 	GLFWwindow* window, VkInstance ist,
 	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp )
+	VkDevice dvc )
 {
-	VkResult err;
-
     // Create Framebuffers
     int w, h;
     glfwGetFramebufferSize(window, &w, &h);
     ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
     SetupVulkanWindow(wd, ist, sfc, phd, qfi, dvc, w, h);
+}
+
+int main_cxx2(
+	GLFWwindow* window, VkInstance ist,
+	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp )
+{
+	VkResult err;
+    ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -349,4 +364,14 @@ int main_cxx(
     CleanupVulkanWindow(ist, dvc);
 
     return 0;
+}
+
+int main_cxx(
+	GLFWwindow* window, VkInstance ist,
+	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp )
+{
+	main_cxx1(window, ist, sfc, phd, qfi, dvc);
+	int ret = main_cxx2(window, ist, sfc, phd, qfi, dvc, gq, dp);
+	return ret;
 }
