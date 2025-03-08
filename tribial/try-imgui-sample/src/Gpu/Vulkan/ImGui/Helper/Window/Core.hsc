@@ -76,7 +76,7 @@ struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 	("Pipeline", ''Vk.Ppl.P,
 		[| #{peek ImGui_ImplVulkanH_Window_C, Pipeline} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, Pipeline} |]),
-	("UseDynamicRendering", ''Bool,
+	("UseDynamicRendering", ''#{type bool},
 		[| #{peek ImGui_ImplVulkanH_Window_C, UseDynamicRendering} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, UseDynamicRendering} |]),
 	("ClearEnable", ''Bool,

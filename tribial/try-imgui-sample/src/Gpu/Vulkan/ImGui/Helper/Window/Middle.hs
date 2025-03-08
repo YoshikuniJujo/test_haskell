@@ -120,7 +120,7 @@ wCToCore WC {
 		C.wCPresentMode = pm,
 		C.wCRenderPass = rp,
 		C.wCPipeline = ppl,
-		C.wCUseDynamicRendering = udr,
+		C.wCUseDynamicRendering = if udr then 1 else 0,
 		C.wCClearEnable = ce, C.wCClearValue = ccv,
 		C.wCFrameIndex = fi, C.wCImageCount = ic,
 		C.wCSemaphoreCount = scc, C.wCSemaphoreIndex = si,
@@ -148,8 +148,9 @@ wCFromCore C.WC {
 	C.wCPFrames = pfs,
 	C.wCFrameSemaphorec = fsc,
 	C.wCPFrameSemaphores = pfss } = do
-	putStrLn "HERE"
+	putStrLn "wCFromCore"
 	print w
+	print udr
 	rsc <- newIORef (Vk.Extent2d 0 0, sc)
 	rppl <- newIORef ppl
 	print fc
@@ -166,7 +167,7 @@ wCFromCore C.WC {
 		wCPresentMode = Vk.Sfc.PresentMode pm,
 		wCRenderPass = Vk.RndrPss.R rp,
 		wCPipeline = Vk.Ppl.Gr.G rppl,
-		wCUseDynamicRendering = udr,
+		wCUseDynamicRendering = udr /= 0,
 		wCClearEnable = ce,
 		wCClearValue = def,
 		wCFrameIndex = fi,

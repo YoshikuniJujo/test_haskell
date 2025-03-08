@@ -46,6 +46,7 @@ void imguiImplVulkanHWindowToC(
 {
 	cout << "imguiImplVulkanHWindowToC" << endl;
 	cout << cxx->Width << endl;
+	cout << cxx->UseDynamicRendering << endl;
 	c->Width = cxx->Width; c->Height = cxx->Height;
 	c->Swapchain = cxx->Swapchain;
 	c->Surface = cxx->Surface; c->SurfaceFormat = cxx->SurfaceFormat;

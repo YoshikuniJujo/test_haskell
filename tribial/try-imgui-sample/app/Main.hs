@@ -134,8 +134,8 @@ mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp = do
 	wdcxx <- cxx_get_g_MainWindowData
 	wd <- Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx
 	printIO wd
---	Vk.ImGui.Win.M.wCCopyToCxx wd wdcxx $
-	do
+	Vk.ImGui.Win.M.wCCopyToCxx wd wdcxx $
+--	do
 		cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
