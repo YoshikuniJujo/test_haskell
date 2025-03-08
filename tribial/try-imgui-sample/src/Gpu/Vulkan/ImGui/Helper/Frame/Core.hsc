@@ -76,7 +76,8 @@ structPrim "FC"
 	'cxx_copyImguiImplVulkanHFrameC 'cxx_freeImguiImplVulkanHFrameC [''Show]
 
 toC :: PrimMonad m => F -> m (FCPrim (PrimState m))
-toC (F pf) = unsafeIOToPrim $ alloca \pfc -> do
+toC (F pf) = unsafeIOToPrim do
+	pfc <- malloc
 	cxx_imguiImplVulkanHFrameToC pf pfc
 	FCPrim <$> newForeignPtr pfc (free pfc)
 

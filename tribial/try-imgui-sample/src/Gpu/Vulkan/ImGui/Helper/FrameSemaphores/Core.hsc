@@ -64,7 +64,8 @@ structPrim "FC"
 	'cxx_freeImguiImplVulkanHFramesemaphoresC [''Show]
 
 toC :: PrimMonad m => F -> m (FCPrim (PrimState m))
-toC (F pf) = unsafeIOToPrim $ alloca \pfc -> do
+toC (F pf) = unsafeIOToPrim do
+	pfc <- malloc
 	cxx_imguiImplVulkanHFramesemaphoresToC pf pfc
 	FCPrim <$> newForeignPtr pfc (free pfc)
 

@@ -2,6 +2,9 @@
 #include "imgui_impl_vulkan.h"
 #include "imgui_impl_vulkan_helper_c.h"
 
+#include <iostream>
+using namespace std;
+
 extern "C" void imguiImplVulkanHFrameFromC(
 	ImGui_ImplVulkanH_Frame_C*, struct ImGui_ImplVulkanH_Frame*);
 
@@ -57,5 +60,6 @@ copyImguiImplVulkanHFrameC(ImGui_ImplVulkanH_Frame_C* c)
 void
 freeImguiImplVulkanHFrameC(ImGui_ImplVulkanH_Frame_C* c)
 {
+	cout << "freeImguiImplVulkanHFrameC" << endl;
 	free(c);
 }

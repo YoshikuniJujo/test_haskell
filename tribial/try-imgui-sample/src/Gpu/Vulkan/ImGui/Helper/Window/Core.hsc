@@ -12,7 +12,7 @@ module Gpu.Vulkan.ImGui.Helper.Window.Core (
 	wCWidth, wCHeight,
 	wCSwapchain, wCSurface, wCSurfaceFormat, wCPresentMode, wCRenderPass,
 	wCPipeline, wCUseDynamicRendering, wCClearEnable, wCClearValue,
-	wCFrameIndex, wCImageCount,
+	wCFrameIndex, wCImageCount, wCSemaphoreCount, wCSemaphoreIndex,
 	wCFramec, wCPFrames, wCFrameSemaphorec, wCPFrameSemaphores,
 
 	-- * MUTABLE
@@ -23,7 +23,7 @@ module Gpu.Vulkan.ImGui.Helper.Window.Core (
 
 	-- * CXX TO/FROM C
 
-	W(..), WTag, toC, toC', fromC
+	W(..), WTag, toC, toC', fromC, copyFromC
 
 	) where
 
@@ -91,6 +91,12 @@ struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 	("ImageCount", ''#{type uint32_t},
 		[| #{peek ImGui_ImplVulkanH_Window_C, ImageCount} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, ImageCount} |]),
+	("SemaphoreCount", ''#{type uint32_t},
+		[| #{peek ImGui_ImplVulkanH_Window_C, SemaphoreCount} |],
+		[| #{poke ImGui_ImplVulkanH_Window_C, SemaphoreCount} |]),
+	("SemaphoreIndex", ''#{type uint32_t},
+		[| #{peek ImGui_ImplVulkanH_Window_C, SemaphoreIndex} |],
+		[| #{poke ImGui_ImplVulkanH_Window_C, SemaphoreIndex} |]),
 	("Framec", ''#{type int},
 		[| #{peek ImGui_ImplVulkanH_Window_C, Framec} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, Framec} |]),
@@ -135,6 +141,10 @@ fromC (WCPrim fwc) a =
 	withForeignPtr fwc \pwc -> do
 	cxx_imguiImplVulkanHWindowFromC pwc pw
 	a $ W pw
+
+copyFromC :: WC -> W -> IO ()
+copyFromC (WC_ fwc) (W pw) = withForeignPtr fwc \pwc ->
+	cxx_imguiImplVulkanHWindowFromC pwc pw
 
 newtype W = W (Ptr WTag) deriving Show
 data WTag

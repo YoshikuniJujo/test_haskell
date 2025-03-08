@@ -16,9 +16,13 @@ module Gpu.Vulkan.ImGui.Helper.Window.Middle (
 
 	-- * CXX TO/FROM MUTABLE
 
-	C.W(..), C.WTag, fromCxx, toCxx,
+	C.W(..), C.WTag, fromCxx, toCxx, copyToCxx,
 
-	fromCxx', wCFromCore
+	fromCxx', wCFromCore,
+
+	-- *
+
+	wCFromCxx, wCCopyToCxx
 
 	) where
 
@@ -58,6 +62,8 @@ data WC ct = WC {
 	wCClearValue :: Vk.ClearValue ct,
 	wCFrameIndex :: Word32,
 	wCImageCount :: Word32,
+	wCSemaphoreCount :: Word32,
+	wCSemaphoreIndex :: Word32,
 	wCFrames :: [Frame.FC],
 	wCFrameSemaphores :: [FrameSemaphores.FC] }
 
@@ -80,6 +86,8 @@ instance ShowIO (WC ct) where
 			", wCClearValue = " ++ show (wCClearValue w) ++
 			", wCFrameIndex = " ++ show (wCFrameIndex w) ++
 			", wCImageCount = " ++ show (wCImageCount w) ++
+			", wCSemaphoreCount = " ++ show (wCSemaphoreCount w) ++
+			", wCSemaphoreIndex = " ++ show (wCSemaphoreIndex w) ++
 			", wCFrames = [" ++ L.intercalate ", " sfs ++ "]" ++
 			", wCFrameSemaphores = [" ++ L.intercalate ", " sfss ++ "] }"
 
@@ -94,10 +102,13 @@ wCToCore WC {
 	wCUseDynamicRendering = udr,
 	wCClearEnable = ce, wCClearValue = cv,
 	wCFrameIndex = fi, wCImageCount = ic,
+	wCSemaphoreCount = scc, wCSemaphoreIndex = si,
 	wCFrames = length &&& id -> (fc, fs),
 	wCFrameSemaphores = length &&& id -> (fsc, fss)
-	} a = Vk.clearValueToCore cv \ccv ->
-	allocaArray fc \pfs -> allocaArray fsc \pfss -> do
+	} a = Vk.clearValueToCore cv \ccv -> do
+	pfs <- mallocArray fc
+	pfss <- mallocArray fsc
+--	allocaArray fc \pfs -> allocaArray fsc \pfss -> do
 	(_, sc) <- readIORef rsc
 	ppl <- readIORef rppl
 	pokeArray pfs =<< Frame.fcToCore `mapM` fs
@@ -112,6 +123,7 @@ wCToCore WC {
 		C.wCUseDynamicRendering = udr,
 		C.wCClearEnable = ce, C.wCClearValue = ccv,
 		C.wCFrameIndex = fi, C.wCImageCount = ic,
+		C.wCSemaphoreCount = scc, C.wCSemaphoreIndex = si,
 		C.wCFramec = fromIntegral fc,
 		C.wCPFrames = pfs,
 		C.wCFrameSemaphorec = fromIntegral fsc,
@@ -130,6 +142,8 @@ wCFromCore C.WC {
 	C.wCClearValue = cv,
 	C.wCFrameIndex = fi,
 	C.wCImageCount = ic,
+	C.wCSemaphoreCount = scc,
+	C.wCSemaphoreIndex = si,
 	C.wCFramec = fc,
 	C.wCPFrames = pfs,
 	C.wCFrameSemaphorec = fsc,
@@ -157,8 +171,16 @@ wCFromCore C.WC {
 		wCClearValue = def,
 		wCFrameIndex = fi,
 		wCImageCount = ic,
+		wCSemaphoreCount = scc,
+		wCSemaphoreIndex = si,
 		wCFrames = fs,
 		wCFrameSemaphores = fss }
+
+wCCopyToCxx :: Vk.ClearValueToCore ct => WC ct -> C.W -> IO a -> IO a
+wCCopyToCxx wc w a = wCToCore wc \cwc -> copyToCxx cwc w >> a
+
+wCFromCxx :: Default (Vk.ClearValue ct) => C.W -> IO (WC ct)
+wCFromCxx = wCFromCore <=< fromCxx'
 
 wCFreeze :: Default (Vk.ClearValue ct) => C.WCIO -> IO (WC ct)
 wCFreeze = wCFromCore <=< C.wCFreeze
@@ -174,3 +196,6 @@ fromCxx = C.toC
 
 toCxx :: C.WCIO -> (C.W -> IO a) -> IO a
 toCxx = C.fromC
+
+copyToCxx :: C.WC -> C.W -> IO ()
+copyToCxx = C.copyFromC

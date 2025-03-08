@@ -286,10 +286,14 @@ int main_cxx2(
         glfwGetFramebufferSize(window, &fb_width, &fb_height);
         if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || g_MainWindowData.Width != fb_width || g_MainWindowData.Height != fb_height))
         {
+		printf("Main loop: resize process begin\n");
             ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
+		printf("Main loop: resize process: before create or resize window\n");
             ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, &g_MainWindowData, qfi, g_Allocator, fb_width, fb_height, g_MinImageCount);
+		printf("Main loop: resize process: after create or resize window\n");
             g_MainWindowData.FrameIndex = 0;
             g_SwapChainRebuild = false;
+		printf("Main loop: resize process end\n");
         }
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
@@ -354,6 +358,8 @@ int main_cxx2(
         }
     }
 
+    printf("BEFORE CLEANUP\n");
+
     // Cleanup
     err = vkDeviceWaitIdle(dvc);
     check_vk_result(err);
@@ -361,7 +367,11 @@ int main_cxx2(
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
+    printf("BEFORE CLEANUP VULKAN WINDOW\n");
+
     CleanupVulkanWindow(ist, dvc);
+
+    printf("AFTER CLEANUP VULKAN WINDOW\n");
 
     return 0;
 }

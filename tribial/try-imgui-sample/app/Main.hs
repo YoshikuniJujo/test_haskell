@@ -81,11 +81,13 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		(GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
 	GlfwG.Win.create 1280 720
 		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
-	print =<< cxx_get_g_MainWindowData
-	print =<< getGMainWindowDataMiddle
-	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
-	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
 --	print =<< cxx_get_g_MainWindowData
+--	print =<< getGMainWindowDataMiddle
+--	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
+--	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
+--	print =<< cxx_get_g_MainWindowData
+	printIO =<< Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
+		=<< cxx_get_g_MainWindowData
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
 --	print =<< Vk.Ist.enumerateExtensionProperties Nothing
@@ -95,9 +97,11 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		createLgDvc phd qfm \dvc gq _ ->
 		createDscPl dvc \dp -> do
 		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
-		print =<< cxx_get_g_MainWindowData
-		print =<< getGMainWindowDataMiddle
-		printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
+--		print =<< cxx_get_g_MainWindowData
+--		print =<< getGMainWindowDataMiddle
+--		printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
+		printIO =<< Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
+			=<< cxx_get_g_MainWindowData
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
@@ -125,9 +129,14 @@ mainCxx ::
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
 mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp = do
 	cxx_main_cxx1 (GlfwC.toC win) ist sfc phd qfi dvc
-	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
-	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
-	cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp
+--	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
+--	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
+	wdcxx <- cxx_get_g_MainWindowData
+	wd <- Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx
+	printIO wd
+--	Vk.ImGui.Win.M.wCCopyToCxx wd wdcxx $
+	do
+		cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
