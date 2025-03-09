@@ -1639,13 +1639,10 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
 // Create or resize window
 void ImGui_ImplVulkanH_CreateOrResizeWindow(VkInstance instance, VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, int width, int height, uint32_t min_image_count)
 {
-	printf("ImGui_ImplVulkanH_CreateOrResizeWindow: BEGIN\n");
     IM_ASSERT(g_FunctionsLoaded && "Need to call ImGui_ImplVulkan_LoadFunctions() if IMGUI_IMPL_VULKAN_NO_PROTOTYPES or VK_NO_PROTOTYPES are set!");
     (void)instance;
     ImGui_ImplVulkanH_CreateWindowSwapChain(physical_device, device, wd, allocator, width, height, min_image_count);
-	printf("ImGui_ImplVulkanH_CreateOrResizeWindow: AFTER CreateWindowSwapChain\n");
     ImGui_ImplVulkanH_CreateWindowCommandBuffers(physical_device, device, wd, queue_family, allocator);
-	printf("ImGui_ImplVulkanH_CreateOrResizeWindow: END\n");
 }
 
 void ImGui_ImplVulkanH_DestroyWindow(VkInstance instance, VkDevice device, ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator)
@@ -1659,16 +1656,13 @@ void ImGui_ImplVulkanH_DestroyWindow(VkInstance instance, VkDevice device, ImGui
         ImGui_ImplVulkanH_DestroyFrameSemaphores(device, &wd->FrameSemaphores[i], allocator);
     wd->Frames.clear();
     wd->FrameSemaphores.clear();
-	printf("ImGui_ImplVulkanH_DestroyWindow: BEFORE DESTROY\n");
     vkDestroyPipeline(device, wd->Pipeline, allocator);
     vkDestroyRenderPass(device, wd->RenderPass, allocator);
     vkDestroySwapchainKHR(device, wd->Swapchain, allocator);
 //    vkDestroySurfaceKHR(instance, wd->Surface, allocator);
-	printf("ImGui_ImplVulkanH_DestroyWindow: AFTER DESTROY\n");
 
     *wd = ImGui_ImplVulkanH_Window();
 
-	printf("ImGui_ImplVulkanH_DestroyWindow: END OF FUNCTION\n");
 }
 
 void ImGui_ImplVulkanH_DestroyFrame(VkDevice device, ImGui_ImplVulkanH_Frame* fd, const VkAllocationCallbacks* allocator)

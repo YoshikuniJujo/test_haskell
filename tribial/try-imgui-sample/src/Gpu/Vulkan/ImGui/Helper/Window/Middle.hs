@@ -148,17 +148,11 @@ wCFromCore C.WC {
 	C.wCPFrames = pfs,
 	C.wCFrameSemaphorec = fsc,
 	C.wCPFrameSemaphores = pfss } = do
-	putStrLn "wCFromCore"
-	print w
-	print udr
 	rsc <- newIORef (Vk.Extent2d 0 0, sc)
 	rppl <- newIORef ppl
-	print fc
-	print fsc
 	fs <- mapM Frame.fcFromCore =<< peekArray (fromIntegral fc) pfs
 	fss <- (FrameSemaphores.fCFromCore <$>)
 		<$> peekArray (fromIntegral fsc) pfss
-	putStrLn "AFTER"
 	pure WC {
 		wCWidth = w, wCHeight = h,
 		wCSwapchain = Vk.Swpch.S rsc,
