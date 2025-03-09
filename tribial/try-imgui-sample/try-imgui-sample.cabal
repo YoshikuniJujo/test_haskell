@@ -63,7 +63,6 @@ library
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
-      cxxsrc/trans/helper/imgui_implvulkanh_frame.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_framesemaphores.cpp
   extra-libraries:
       stdc++
@@ -119,7 +118,6 @@ executable try-imgui-sample-exe
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
-      cxxsrc/trans/helper/imgui_implvulkanh_frame.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_framesemaphores.cpp
   build-depends:
       GLFW-b
@@ -167,7 +165,6 @@ executable trySome
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
-      cxxsrc/trans/helper/imgui_implvulkanh_frame.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_framesemaphores.cpp
   build-depends:
       GLFW-b
@@ -220,7 +217,6 @@ test-suite try-imgui-sample-test
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
-      cxxsrc/trans/helper/imgui_implvulkanh_frame.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_framesemaphores.cpp
   build-depends:
       GLFW-b

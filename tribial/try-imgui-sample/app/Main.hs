@@ -82,9 +82,7 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	GlfwG.Win.create 1280 720
 		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
 --	print =<< cxx_get_g_MainWindowData
---	print =<< getGMainWindowDataMiddle
 --	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
---	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
 --	print =<< cxx_get_g_MainWindowData
 	printIO =<< Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
 		=<< cxx_get_g_MainWindowData
@@ -98,18 +96,12 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		createDscPl dvc \dp -> do
 		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
 --		print =<< cxx_get_g_MainWindowData
---		print =<< getGMainWindowDataMiddle
---		printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
 		printIO =<< Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
 			=<< cxx_get_g_MainWindowData
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
-
-foreign import ccall "main_cxx" cxx_main_cxx ::
-	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
 
 foreign import ccall "main_cxx1" cxx_main_cxx1 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
@@ -121,16 +113,12 @@ foreign import ccall "main_cxx2" cxx_main_cxx2 ::
 
 foreign import ccall "get_g_MainWindowData" cxx_get_g_MainWindowData :: IO Vk.ImGui.Win.C.W
 
-getGMainWindowDataMiddle :: IO Vk.ImGui.Win.M.WCIO
-getGMainWindowDataMiddle = Vk.ImGui.Win.M.fromCxx =<< cxx_get_g_MainWindowData
-
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
 mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp = do
 	cxx_main_cxx1 (GlfwC.toC win) ist sfc phd qfi dvc
 --	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
---	printIO =<< Vk.ImGui.Win.M.wCFreeze @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< getGMainWindowDataMiddle
 	wdcxx <- cxx_get_g_MainWindowData
 	wd <- Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx
 	printIO wd

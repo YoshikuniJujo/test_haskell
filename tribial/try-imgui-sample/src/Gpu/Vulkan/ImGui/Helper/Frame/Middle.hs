@@ -7,22 +7,13 @@ module Gpu.Vulkan.ImGui.Helper.Frame.Middle (
 
 	FC(..),
 
-	-- * MUTABLE
-
-	C.FCIO, fCFreeze, fCThaw,
-
-	-- * CXX TO/FROM MUTABLE
-
-	C.F(..), C.FTag, fromCxx, toCxx,
-
-	-- * INTERNAL
+	-- * TO/FROM CORE
 
 	fcToCore, fcFromCore
 	
 	) where
 
 import Foreign.Ptr
-import Control.Monad
 import Data.IORef
 import Text.Show.ToolsYj
 
@@ -95,15 +86,3 @@ fcFromCore C.FC {
 		fCBackbuffer = Vk.Img.I rbb,
 		fCBackbufferView = Vk.ImgVw.I rbbv,
 		fCFramebuffer = Vk.Frmbffr.F rfb }
-
-fCFreeze :: C.FCIO -> IO FC
-fCFreeze = fcFromCore <=< C.fCFreeze
-
-fCThaw :: FC -> IO C.FCIO
-fCThaw = C.fCThaw <=< fcToCore
-
-fromCxx :: C.F -> IO C.FCIO
-fromCxx = C.toC
-
-toCxx :: C.FCIO -> (C.F -> IO a) -> IO a
-toCxx = C.fromC
