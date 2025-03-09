@@ -47,12 +47,13 @@ data FC = FC {
 instance ShowIO FC where
 	showIO fc = do
 		sb <- showIO $ fCBackbuffer fc
+		sbv <- showIO $ fCBackbufferView fc
 		sf <- showIO $ fCFramebuffer fc
 		pure $	"FC { fCCommandPool = " ++ show (fCCommandPool fc) ++
 			", fCCommandBuffer = " ++ show (fCCommandBuffer fc) ++
 			", fCFence = " ++ show (fCFence fc) ++
 			", fCBackbuffer = " ++ sb ++
-			", fCBackbufferView = " ++ show (fCBackbufferView fc) ++
+			", fCBackbufferView = " ++ sbv ++
 			", fCFramebuffer = " ++ sf ++ " }"
 
 fcToCore :: FC -> IO C.FC
