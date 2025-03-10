@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.Helper.Frame where
+module Gpu.Vulkan.ImGui.Helper.Frame (FC(..), fcToMiddle, fcFromMiddle) where
 
 import Text.Show.ToolsYj
 
@@ -56,3 +56,18 @@ fcToMiddle FC {
 	M.fCBackbuffer = bb,
 	M.fCBackbufferView = bbv,
 	M.fCFramebuffer = fb }
+
+fcFromMiddle :: M.FC -> FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb
+fcFromMiddle M.FC {
+	M.fCCommandPool = cp,
+	M.fCCommandBuffer = cb,
+	M.fCFence = fnc,
+	M.fCBackbuffer = bb,
+	M.fCBackbufferView = bbv,
+	M.fCFramebuffer = fb } = FC {
+	fCCommandPool = Vk.CmdPl.C cp,
+	fCCommandBuffer = Vk.CmdBffr.C cb,
+	fCFence = Vk.Fnc.F fnc,
+	fCBackbuffer = Vk.Img.Binded bb,
+	fCBackbufferView = Vk.ImgVw.I bbv,
+	fCFramebuffer = Vk.Frmbffr.F fb }
