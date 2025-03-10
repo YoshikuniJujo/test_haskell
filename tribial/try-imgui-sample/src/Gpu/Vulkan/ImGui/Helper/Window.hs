@@ -24,6 +24,8 @@ import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
 import Gpu.Vulkan.ImGui.Helper.Frame qualified as Frame
 import Gpu.Vulkan.ImGui.Helper.FrameSemaphores qualified as FrameSemaphores
 
+import Gpu.Vulkan.ImGui.Helper.Window.Middle qualified as M
+
 data WC scfmt ssc ssfc srp sppl vibs vias lyta ct
 		bnm bfmt bvnm bvfmt fras frsmas = WC {
 	wCWidth :: Int32, wCHeight :: Int32,
@@ -74,3 +76,9 @@ instance Vk.T.FormatToValue scfmt => ShowIO
 				L.intercalate " :** " sfrs ++ "HPList.Nil, " ++
 			"wCFrameSemaphores = " ++
 				L.intercalate " :** " sfrsms ++ "HPList.Nil }"
+
+wCToMiddle :: WC scfmt ssc ssfc srp sppl vibs vias lyta ct
+		bnm bfmt bvnm bvfmt fras frsmas -> M.WC ct
+wCToMiddle WC {
+	} = M.WC {
+	}
