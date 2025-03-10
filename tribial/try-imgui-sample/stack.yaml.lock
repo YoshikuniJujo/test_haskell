@@ -44,15 +44,15 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    commit: 91ff068458e21a45fa7dcfd5d66e8d58f525e689
+    commit: 6edc0d72982e4a0198f6a14960f4e65460a4c461
     git: https://github.com/YoshikuniJujo/gpu-vulkan
     name: gpu-vulkan
     pantry-tree:
-      sha256: cdfa25dfe252721256229e69aa094c3bd555f22d2b06f8dfca3cc7fc649429b7
+      sha256: 4e6753639fff901dae48022fab91aece1db5ece094ec6440deb1a477f56e1a78
       size: 12890
     version: 0.1.0.170
   original:
-    commit: 91ff068458e21a45fa7dcfd5d66e8d58f525e689
+    commit: 6edc0d72982e4a0198f6a14960f4e65460a4c461
     git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
     commit: 51e88352ee7c891506d96115337199a2b8bbf384
@@ -77,12 +77,16 @@ packages:
     commit: 56ecd08161569ac267bb8ce5f1582285974ea783
     git: https://github.com/YoshikuniJujo/gpu-vulkan-core
 - completed:
-    hackage: gpu-vulkan-khr-swapchain-0.1.0.1@sha256:35aee842273436d0cc121c67f5bbddf824f72fc12111e05918951b9e55dce7c4,2425
+    commit: 150bd5a285da6df3c059a78aa75957366cded0bc
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-khr-swapchain
+    name: gpu-vulkan-khr-swapchain
     pantry-tree:
-      sha256: 71dc2832d704821a0d24ae144b909ec9bf4ca0feecf82bc3a31f994dad0b2c33
-      size: 466
+      sha256: 2b3e1e5358044f8fb0706f2e5d4f2ad4b3d9ce06665b1162686c5b1d75632ccf
+      size: 675
+    version: 0.1.0.1
   original:
-    hackage: gpu-vulkan-khr-swapchain-0.1.0.1
+    commit: 150bd5a285da6df3c059a78aa75957366cded0bc
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-khr-swapchain
 - completed:
     hackage: gpu-vulkan-khr-surface-glfw-0.1.0.0@sha256:d65ec83bf851581dae363c1dfed5029529fd3143f97cf43e35f8dfd04d35e574,2371
     pantry-tree:

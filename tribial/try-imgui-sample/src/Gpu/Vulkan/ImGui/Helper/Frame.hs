@@ -14,7 +14,7 @@ import Gpu.Vulkan.Framebuffer.Type qualified as Vk.Frmbffr
 
 import Gpu.Vulkan.ImGui.Helper.Frame.Middle qualified as M
 
-data FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb = FC {
+data FC bnm bfmt bvnm bvfmt scp scb sf sbm sbi sbvi sfb = FC {
 	fCCommandPool :: Vk.CmdPl.C scp,
 	fCCommandBuffer :: Vk.CmdBffr.C scb,
 	fCFence :: Vk.Fnc.F sf,
@@ -22,7 +22,7 @@ data FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb = FC {
 	fCBackbufferView :: Vk.ImgVw.I bvnm bvfmt sbvi,
 	fCFramebuffer :: Vk.Frmbffr.F sfb }
 
-instance ShowIO (FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb) where
+instance ShowIO (FC bnm bfmt bvnm bvfmt scp scb sf sbm sbi sbvi sfb) where
 	showIO FC {
 		fCCommandPool = cp,
 		fCCommandBuffer = cb,
@@ -42,7 +42,7 @@ instance ShowIO (FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb) where
 			"fCBackbufferView = " ++ sbbv ++ ", " ++
 			"fCFramebuffer = " ++ sfb ++ " }"
 
-fcToMiddle :: FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb -> M.FC
+fcToMiddle :: FC bnm bfmt bvnm bvfmt scp scb sf sbm sbi sbvi sfb -> M.FC
 fcToMiddle FC {
 	fCCommandPool = Vk.CmdPl.C cp,
 	fCCommandBuffer = Vk.CmdBffr.C cb,
@@ -57,7 +57,7 @@ fcToMiddle FC {
 	M.fCBackbufferView = bbv,
 	M.fCFramebuffer = fb }
 
-fcFromMiddle :: M.FC -> FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb
+fcFromMiddle :: M.FC -> FC bnm bfmt bvnm bvfmt scp scb sf sbm sbi sbvi sfb
 fcFromMiddle M.FC {
 	M.fCCommandPool = cp,
 	M.fCCommandBuffer = cb,

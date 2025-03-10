@@ -41,8 +41,10 @@ library
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Middle
+      Gpu.Vulkan.ImGui.Helper.Window
       Gpu.Vulkan.ImGui.Helper.Window.Core
       Gpu.Vulkan.ImGui.Helper.Window.Middle
+      Try.TypeList
   other-modules:
       Paths_try_imgui_sample
   autogen-modules:

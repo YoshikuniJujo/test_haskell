@@ -79,7 +79,7 @@ struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 	("UseDynamicRendering", ''#{type bool},
 		[| #{peek ImGui_ImplVulkanH_Window_C, UseDynamicRendering} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, UseDynamicRendering} |]),
-	("ClearEnable", ''Bool,
+	("ClearEnable", ''#{type bool},
 		[| #{peek ImGui_ImplVulkanH_Window_C, ClearEnable} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, ClearEnable} |]),
 	("ClearValue", ''Vk.PtrClearValue,
