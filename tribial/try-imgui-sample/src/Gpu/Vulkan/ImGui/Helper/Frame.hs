@@ -12,6 +12,8 @@ import Gpu.Vulkan.Image.Internal qualified as Vk.Img
 import Gpu.Vulkan.ImageView.Type qualified as Vk.ImgVw
 import Gpu.Vulkan.Framebuffer.Type qualified as Vk.Frmbffr
 
+import Gpu.Vulkan.ImGui.Helper.Frame.Middle qualified as M
+
 data FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb = FC {
 	fCCommandPool :: Vk.CmdPl.C scp,
 	fCCommandBuffer :: Vk.CmdBffr.C scb,
@@ -39,3 +41,18 @@ instance ShowIO (FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb) where
 			"fCBackbuffer = " ++ sbb ++ ", " ++
 			"fCBackbufferView = " ++ sbbv ++ ", " ++
 			"fCFramebuffer = " ++ sfb ++ " }"
+
+fcToMiddle :: FC scp scb sf sbm sbi bnm bfmt bvnm bvfmt sbvi sfb -> M.FC
+fcToMiddle FC {
+	fCCommandPool = Vk.CmdPl.C cp,
+	fCCommandBuffer = Vk.CmdBffr.C cb,
+	fCFence = Vk.Fnc.F fnc,
+	fCBackbuffer = Vk.Img.Binded bb,
+	fCBackbufferView = Vk.ImgVw.I bbv,
+	fCFramebuffer = Vk.Frmbffr.F fb } = M.FC {
+	M.fCCommandPool = cp,
+	M.fCCommandBuffer = cb,
+	M.fCFence = fnc,
+	M.fCBackbuffer = bb,
+	M.fCBackbufferView = bbv,
+	M.fCFramebuffer = fb }
