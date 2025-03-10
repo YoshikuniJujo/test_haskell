@@ -7,15 +7,7 @@ module Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Middle (
 
 	FC(..),
 
-	-- * MUTABLE
-
-	C.FCIO, fCFreeze, fCThaw,
-
-	-- * CXX TO/FROM MUTABLE
-
-	C.F(..), C.FTag, fromCxx, toCxx,
-
-	-- * INTERNAL
+	-- * TO/FROM CORE
 
 	fCToCore, fCFromCore
 
@@ -43,15 +35,3 @@ fCFromCore C.FC {
 	C.fCRenderCompleteSemaphore = rcs } = FC {
 	fCImageAcquiredSemaphore = Vk.Smph.S ias,
 	fCRenderCompleteSemaphore = Vk.Smph.S rcs }
-
-fCFreeze :: C.FCIO -> IO FC
-fCFreeze = (fCFromCore <$>) . C.fCFreeze
-
-fCThaw :: FC -> IO C.FCIO
-fCThaw = C.fCThaw . fCToCore
-
-fromCxx :: C.F -> IO C.FCIO
-fromCxx = C.toC
-
-toCxx :: C.FCIO -> (C.F -> IO a) -> IO a
-toCxx = C.fromC

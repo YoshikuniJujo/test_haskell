@@ -83,7 +83,6 @@ cxx-sources:
   - cxxsrc/backends/imgui_impl_glfw.cpp
   - cxxsrc/backends/imgui_impl_vulkan.cpp
   - cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
-  - cxxsrc/trans/helper/imgui_implvulkanh_framesemaphores.cpp
 
 include-dirs:
   - include/
