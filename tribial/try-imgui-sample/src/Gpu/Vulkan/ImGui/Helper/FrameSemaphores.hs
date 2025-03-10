@@ -1,8 +1,13 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Helper.FrameSemaphores (
 	FC(..), fCToMiddle, fCFromMiddle ) where
+
+import Data.TypeLevel.Tuple.Uncurry
+import Text.Show.ToolsYj
 
 import Gpu.Vulkan.Semaphore.Internal qualified as Vk.Smph
 
@@ -26,3 +31,8 @@ fCFromMiddle M.FC {
 	M.fCRenderCompleteSemaphore = rcs } = FC {
 	fCImageAcquiredSemaphore = Vk.Smph.S ias,
 	fCRenderCompleteSemaphore = Vk.Smph.S rcs }
+
+instance ShowIO (U2 FC frsmas) where
+	showIO (U2 f) = do
+		sf <- showIO f
+		pure $ "(U2 " ++ sf ++ ")"

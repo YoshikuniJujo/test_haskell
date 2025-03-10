@@ -1,8 +1,11 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Helper.Frame (FC(..), fcToMiddle, fcFromMiddle) where
 
+import Data.TypeLevel.Tuple.Uncurry
 import Text.Show.ToolsYj
 
 import Gpu.Vulkan.CommandPool.Type qualified as Vk.CmdPl
@@ -71,3 +74,8 @@ fcFromMiddle M.FC {
 	fCBackbuffer = Vk.Img.Binded bb,
 	fCBackbufferView = Vk.ImgVw.I bbv,
 	fCFramebuffer = Vk.Frmbffr.F fb }
+
+instance ShowIO (U7 (FC bnm bfmt bvnm bvfmt) fras) where
+	showIO (U7 f) = do
+		sf <- showIO f
+		pure $ "(U7 " ++ sf ++ ")"
