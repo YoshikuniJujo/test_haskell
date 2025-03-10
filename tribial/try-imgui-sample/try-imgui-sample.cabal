@@ -38,6 +38,7 @@ library
       Gpu.Vulkan.ImGui.Helper.Frame
       Gpu.Vulkan.ImGui.Helper.Frame.Core
       Gpu.Vulkan.ImGui.Helper.Frame.Middle
+      Gpu.Vulkan.ImGui.Helper.FrameSemaphores
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Middle
       Gpu.Vulkan.ImGui.Helper.Window.Core
