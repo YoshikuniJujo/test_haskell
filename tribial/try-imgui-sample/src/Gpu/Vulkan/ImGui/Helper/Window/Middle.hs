@@ -5,26 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Helper.Window.Middle (
-
-	-- * DATA TYPE
-
-	WC(..),
-
-	-- * MUTABLE
-
-	C.WCIO, wCFreeze, wCThaw,
-
-	-- * CXX TO/FROM MUTABLE
-
-	C.W(..), C.WTag, fromCxx, toCxx, copyToCxx,
-
-	fromCxx', wCFromCore,
-
-	-- *
-
-	wCFromCxx, wCCopyToCxx
-
-	) where
+	WC(..), wCFromCxx, wCCopyToCxx ) where
 
 import Foreign.Marshal.Array
 import Control.Arrow
@@ -178,20 +159,8 @@ wCCopyToCxx wc w a = wCToCore wc \cwc -> copyToCxx cwc w >> a
 wCFromCxx :: Default (Vk.ClearValue ct) => C.W -> IO (WC ct)
 wCFromCxx = wCFromCore <=< fromCxx'
 
-wCFreeze :: Default (Vk.ClearValue ct) => C.WCIO -> IO (WC ct)
-wCFreeze = wCFromCore <=< C.wCFreeze
-
 fromCxx' :: C.W -> IO C.WC
-fromCxx' = C.toC'
-
-wCThaw :: Vk.ClearValueToCore ct => WC ct -> (C.WCIO -> IO a) -> IO a
-wCThaw w a = wCToCore w $ a <=< C.wCThaw
-
-fromCxx :: C.W -> IO C.WCIO
-fromCxx = C.toC
-
-toCxx :: C.WCIO -> (C.W -> IO a) -> IO a
-toCxx = C.fromC
+fromCxx' = C.toC
 
 copyToCxx :: C.WC -> C.W -> IO ()
 copyToCxx = C.copyFromC

@@ -14,11 +14,6 @@ extern "C" void imguiImplVulkanHWindowToC(
 extern "C" size_t sizeofImguiImplVulkanHWindow();
 extern "C" size_t alignofImguiImplVulkanHWindow();
 
-extern "C" ImGui_ImplVulkanH_Window_C*
-	copyImguiImplVulkanHWindowC(ImGui_ImplVulkanH_Window_C*);
-
-extern "C" void freeImguiImplVulkanHWindowC(ImGui_ImplVulkanH_Window_C*);
-
 void imguiImplVulkanHWindowFromC(
 	ImGui_ImplVulkanH_Window_C *c, struct ImGui_ImplVulkanH_Window *cxx )
 {
@@ -69,20 +64,4 @@ size_t sizeofImguiImplVulkanHWindow()
 size_t alignofImguiImplVulkanHWindow()
 {
 	return alignof(struct ImGui_ImplVulkanH_Window);
-}
-
-ImGui_ImplVulkanH_Window_C*
-copyImguiImplVulkanHWindowC(ImGui_ImplVulkanH_Window_C* c)
-{
-	ImGui_ImplVulkanH_Window_C *p =
-		(ImGui_ImplVulkanH_Window_C *)malloc(
-			sizeof(ImGui_ImplVulkanH_Window_C));
-	memcpy(p, c, sizeof(ImGui_ImplVulkanH_Window_C));
-	return p;
-}
-
-void
-freeImguiImplVulkanHWindowC(ImGui_ImplVulkanH_Window_C* c)
-{
-	free(c);
 }

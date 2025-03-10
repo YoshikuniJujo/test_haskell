@@ -15,15 +15,9 @@ module Gpu.Vulkan.ImGui.Helper.Window.Core (
 	wCFrameIndex, wCImageCount, wCSemaphoreCount, wCSemaphoreIndex,
 	wCFramec, wCPFrames, wCFrameSemaphorec, wCPFrameSemaphores,
 
-	-- * MUTABLE
-
-	WCPrim, WCST, WCIO,
-
-	wCFreeze, wCThaw, wCCopy,
-
 	-- * CXX TO/FROM C
 
-	W(..), WTag, toC, toC', fromC, copyFromC
+	W(..), WTag, toC, copyFromC, sizeOfW, alignOfW
 
 	) where
 
@@ -31,9 +25,8 @@ import Foreign.Ptr
 import Foreign.ForeignPtr (withForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal.Alloc
-import Foreign.Storable
+import Foreign.Storable (Storable(..))
 import Foreign.C.Struct
-import Control.Monad.Primitive
 import Data.Word
 import Data.Int
 
@@ -111,36 +104,11 @@ struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 		[| #{poke ImGui_ImplVulkanH_Window_C, pFrameSemaphores} |]) ]
 	[''Show, ''Storable]
 
-foreign import ccall "copyImguiImplVulkanHWindowC"
-	cxx_copyImguiImplVulkanHWindowC :: Ptr WC -> IO (Ptr WC)
-
-foreign import ccall "freeImguiImplVulkanHWindowC"
-	cxx_freeImguiImplVulkanHWindowC :: Ptr WC -> IO ()
-
-structPrim "WC"
-	'cxx_copyImguiImplVulkanHWindowC
-	'cxx_freeImguiImplVulkanHWindowC [''Show]
-
-toC :: PrimMonad m => W -> m (WCPrim (PrimState m))
-toC (W pw) = unsafeIOToPrim do
-	pwc <- malloc
-	cxx_imguiImplVulkanHWindowToC pw pwc
-	WCPrim <$> newForeignPtr pwc (free pwc)
-
-toC' :: W -> IO WC
-toC' (W pw) = do
+toC :: W -> IO WC
+toC (W pw) = do
 	pwc <- malloc
 	cxx_imguiImplVulkanHWindowToC pw pwc
 	WC_ <$> newForeignPtr pwc (free pwc)
-
-fromC :: WCPrim s -> (W -> IO a) -> IO a
-fromC (WCPrim fwc) a =
-	allocaBytesAligned
-		(fromIntegral cxx_sizeofImguiImplVulkanHWindow)
-		(fromIntegral cxx_alignofImguiImplVulkanHWindow) \pw ->
-	withForeignPtr fwc \pwc -> do
-	cxx_imguiImplVulkanHWindowFromC pwc pw
-	a $ W pw
 
 copyFromC :: WC -> W -> IO ()
 copyFromC (WC_ fwc) (W pw) = withForeignPtr fwc \pwc ->
@@ -148,6 +116,10 @@ copyFromC (WC_ fwc) (W pw) = withForeignPtr fwc \pwc ->
 
 newtype W = W (Ptr WTag) deriving Show
 data WTag
+
+sizeOfW, alignOfW :: Integral n => n
+sizeOfW = fromIntegral cxx_sizeofImguiImplVulkanHWindow
+alignOfW = fromIntegral cxx_alignofImguiImplVulkanHWindow
 
 foreign import ccall "sizeofImguiImplVulkanHWindow"
 	cxx_sizeofImguiImplVulkanHWindow :: #{type size_t}
