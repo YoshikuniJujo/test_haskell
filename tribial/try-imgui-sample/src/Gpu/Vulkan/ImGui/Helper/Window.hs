@@ -77,8 +77,15 @@ instance Vk.T.FormatToValue scfmt => ShowIO
 			"wCFrameSemaphores = " ++
 				L.intercalate " :** " sfrsms ++ "HPList.Nil }"
 
-wCToMiddle :: WC scfmt ssc ssfc srp sppl vibs vias lyta ct
+wCToMiddle :: Vk.T.FormatToValue scfmt =>
+	WC scfmt ssc ssfc srp sppl vibs vias lyta ct
 		bnm bfmt bvnm bvfmt fras frsmas -> M.WC ct
 wCToMiddle WC {
+	wCWidth = wdt, wCHeight = hgt,
+	wCSwapchain = Vk.Swpch.S sc,
+	wCSurface = Vk.Sfc.S sfc, wCSurfaceFormat = fmt
 	} = M.WC {
+	M.wCWidth = wdt, M.wCHeight = hgt,
+	M.wCSwapchain = sc,
+	M.wCSurface = sfc , M.wCSurfaceFormat = Vk.Sfc.formatToMiddle fmt
 	}
