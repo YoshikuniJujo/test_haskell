@@ -1,7 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.Helper.FrameSemaphores where
+module Gpu.Vulkan.ImGui.Helper.FrameSemaphores (
+	FC(..), fCToMiddle, fCFromMiddle ) where
 
 import Gpu.Vulkan.Semaphore.Internal qualified as Vk.Smph
 
@@ -18,3 +19,10 @@ fCToMiddle FC {
 	fCRenderCompleteSemaphore = Vk.Smph.S rcs } = M.FC {
 	M.fCImageAcquiredSemaphore = ias,
 	M.fCRenderCompleteSemaphore = rcs }
+
+fCFromMiddle :: M.FC -> FC sias srcs
+fCFromMiddle M.FC {
+	M.fCImageAcquiredSemaphore = ias,
+	M.fCRenderCompleteSemaphore = rcs } = FC {
+	fCImageAcquiredSemaphore = Vk.Smph.S ias,
+	fCRenderCompleteSemaphore = Vk.Smph.S rcs }
