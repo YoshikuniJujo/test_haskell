@@ -35,12 +35,15 @@ source-repository head
 
 library
   exposed-modules:
+      Gpu.Vulkan.ImGui.Helper
+      Gpu.Vulkan.ImGui.Helper.Core
       Gpu.Vulkan.ImGui.Helper.Frame
       Gpu.Vulkan.ImGui.Helper.Frame.Core
       Gpu.Vulkan.ImGui.Helper.Frame.Middle
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core
       Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Middle
+      Gpu.Vulkan.ImGui.Helper.Middle
       Gpu.Vulkan.ImGui.Helper.Window
       Gpu.Vulkan.ImGui.Helper.Window.Core
       Gpu.Vulkan.ImGui.Helper.Window.Middle

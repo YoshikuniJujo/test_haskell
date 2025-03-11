@@ -8,7 +8,7 @@ module Gpu.Vulkan.ImGui.Helper.Window.Core (
 
 	-- * DATA TYPE
 
-	WC, pattern WC,
+	WC, wCZero, pattern WC,
 	wCWidth, wCHeight,
 	wCSwapchain, wCSurface, wCSurfaceFormat, wCPresentMode, wCRenderPass,
 	wCPipeline, wCUseDynamicRendering, wCClearEnable, wCClearValue,
@@ -17,7 +17,7 @@ module Gpu.Vulkan.ImGui.Helper.Window.Core (
 
 	-- * CXX TO/FROM C
 
-	W(..), WTag, toC, copyFromC, sizeOfW, alignOfW
+	W(..), WTag, toC, copyFromC, allocaW
 
 	) where
 
@@ -29,6 +29,7 @@ import Foreign.Storable (Storable(..))
 import Foreign.C.Struct
 import Data.Word
 import Data.Int
+import System.IO.Unsafe
 
 import Gpu.Vulkan.Core qualified as Vk
 import Gpu.Vulkan.Pipeline.Core qualified as Vk.Ppl
@@ -104,6 +105,11 @@ struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 		[| #{poke ImGui_ImplVulkanH_Window_C, pFrameSemaphores} |]) ]
 	[''Show, ''Storable]
 
+wCZero :: WC
+wCZero = unsafePerformIO do
+	p <- calloc
+	WC_ <$> newForeignPtr p (free p)
+
 toC :: W -> IO WC
 toC (W pw) = do
 	pwc <- malloc
@@ -116,6 +122,13 @@ copyFromC (WC_ fwc) (W pw) = withForeignPtr fwc \pwc ->
 
 newtype W = W (Ptr WTag) deriving Show
 data WTag
+
+allocaW :: (W -> IO a) -> IO a
+allocaW a = allocaBytesAligned sizeOfW alignOfW \p ->do
+	let	w = W p
+		z = wCZero
+	copyFromC z { wCClearEnable = 1 } w
+	a w
 
 sizeOfW, alignOfW :: Integral n => n
 sizeOfW = fromIntegral cxx_sizeofImguiImplVulkanHWindow

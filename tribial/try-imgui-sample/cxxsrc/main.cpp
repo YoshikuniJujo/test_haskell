@@ -39,13 +39,8 @@
 static VkAllocationCallbacks*   g_Allocator = nullptr;
 static VkPipelineCache          g_PipelineCache = VK_NULL_HANDLE;
 
-static ImGui_ImplVulkanH_Window g_MainWindowData;
 static uint32_t                 g_MinImageCount = 2;
 static bool                     g_SwapChainRebuild = false;
-
-extern "C" ImGui_ImplVulkanH_Window* get_g_MainWindowData ();
-
-ImGui_ImplVulkanH_Window* get_g_MainWindowData () { return &g_MainWindowData; }
 
 static void check_vk_result(VkResult err)
 {
@@ -56,28 +51,18 @@ static void check_vk_result(VkResult err)
         abort();
 }
 
+extern "C" void SetupVulkanWindow(
+	ImGui_ImplVulkanH_Window*,
+	VkInstance, VkPhysicalDevice, uint32_t, VkDevice,
+	int, int);
+
 // All the ImGui_ImplVulkanH_XXX structures/functions are optional helpers used by the demo.
 // Your real engine/app may not use them.
-static void SetupVulkanWindow(
+void SetupVulkanWindow(
 	ImGui_ImplVulkanH_Window* wd, VkInstance ist,
-	VkSurfaceKHR surface, VkPhysicalDevice phd, uint32_t qfi, VkDevice dvc,
+	VkPhysicalDevice phd, uint32_t qfi, VkDevice dvc,
 	int width, int height )
 {
-    wd->Surface = surface;
-
-    // Check for WSI support
-    VkBool32 res;
-    vkGetPhysicalDeviceSurfaceSupportKHR(phd, qfi, wd->Surface, &res);
-    if (res != VK_TRUE)
-    {
-        fprintf(stderr, "Error no WSI support on physical device 0\n");
-        exit(-1);
-    }
-
-    // Select Surface Format
-    const VkFormat requestSurfaceImageFormat[] = { VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
-    const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-    wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(phd, wd->Surface, requestSurfaceImageFormat, (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
 
     // Select Present Mode
 #ifdef APP_USE_UNLIMITED_FRAME_RATE
@@ -189,35 +174,18 @@ extern "C" int main_cxx(
 	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
 	VkDevice, VkQueue, VkDescriptorPool );
 
-extern "C" void main_cxx1(
-	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
-	VkDevice );
-
 extern "C" int main_cxx2(
 	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
-	VkDevice, VkQueue, VkDescriptorPool );
+	VkDevice, VkQueue, VkDescriptorPool, ImGui_ImplVulkanH_Window* );
 
 // Main code
-
-void main_cxx1(
-	GLFWwindow* window, VkInstance ist,
-	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc )
-{
-    // Create Framebuffers
-    int w, h;
-    glfwGetFramebufferSize(window, &w, &h);
-    ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
-    SetupVulkanWindow(wd, ist, sfc, phd, qfi, dvc, w, h);
-}
 
 int main_cxx2(
 	GLFWwindow* window, VkInstance ist,
 	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp )
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd )
 {
 	VkResult err;
-    ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -364,14 +332,4 @@ int main_cxx2(
     CleanupVulkanWindow(ist, dvc, wd);
 
     return 0;
-}
-
-int main_cxx(
-	GLFWwindow* window, VkInstance ist,
-	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp )
-{
-	main_cxx1(window, ist, sfc, phd, qfi, dvc);
-	int ret = main_cxx2(window, ist, sfc, phd, qfi, dvc, gq, dp);
-	return ret;
 }

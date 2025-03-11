@@ -142,12 +142,16 @@ packages:
   original:
     hackage: gpu-vulkan-core-khr-swapchain-0.1.0.0
 - completed:
-    hackage: gpu-vulkan-core-khr-surface-0.1.0.0@sha256:2cabbd97eb7749e44ff7ec874fd9a7c8aa9160803a97aad6aeb8e7848eacfac0,2093
+    commit: 6fc6b4389c8bcad98d4623b4b2f767f9af556b88
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-core-khr-surface
+    name: gpu-vulkan-core-khr-surface
     pantry-tree:
-      sha256: 265d61fdbf68037c5c1063821699d496dcbd8e62c64695a51e6a26426bb4b2cf
-      size: 488
+      sha256: 117bb401ad0888f9e83ed1fefeb2bff71d3f76647ae26b302b2d44d68f482610
+      size: 696
+    version: 0.1.0.0
   original:
-    hackage: gpu-vulkan-core-khr-surface-0.1.0.0
+    commit: 6fc6b4389c8bcad98d4623b4b2f767f9af556b88
+    git: https://github.com/YoshikuniJujo/gpu-vulkan-core-khr-surface
 - completed:
     hackage: language-spir-v-0.1.0.3@sha256:c07d92777e2b0e4ac9bd3ef0902e50c046d42edf1a1a98d17e78d039d60d1351,2079
     pantry-tree:

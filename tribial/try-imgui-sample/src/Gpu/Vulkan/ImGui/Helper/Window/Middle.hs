@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Helper.Window.Middle (
-	WC(..), C.W(..), wCFromCxx, wCCopyToCxx ) where
+	WC(..), wCZero, C.W(..), wCFromCxx, wCCopyToCxx, C.allocaW ) where
 
 import Foreign.Marshal.Array
 import Control.Arrow
@@ -110,6 +110,9 @@ wCToCore WC {
 		C.wCPFrames = pfs,
 		C.wCFrameSemaphorec = fromIntegral fsc,
 		C.wCPFrameSemaphores = pfss }
+
+wCZero :: Default (Vk.ClearValue ct) => IO (WC ct)
+wCZero = wCFromCore C.wCZero
 
 wCFromCore :: Default (Vk.ClearValue ct) => C.WC -> IO (WC ct)
 wCFromCore C.WC {

@@ -26,6 +26,7 @@ import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
+import Data.Int
 import Data.Text.IO qualified as Txt
 import Text.Show.ToolsYj
 import System.IO
@@ -66,6 +67,7 @@ import Graphics.UI.GLFW.C qualified as GlfwC
 
 import Bindings.GLFW qualified as GlfwBase
 
+import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 
 import Gpu.Vulkan.Middle qualified as Vk.M
@@ -79,43 +81,56 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	GlfwG.Win.hint
 		(GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
 	GlfwG.Win.create 1280 720
-		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
-	w <- cxx_get_g_MainWindowData
+		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win ->
+	Vk.ImGui.Win.allocaW \w ->
 	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
-		w printIO
+		w printIO >> do
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
 	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
 		pickPhd ist sfc >>= \(phd, qfm) ->
 		createLgDvc phd qfm \dvc gq _ ->
-		createDscPl dvc \dp -> do
-		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
+		createDscPl dvc \dp ->
+		Vk.Sfc.Phd.getSupport phd (grFam qfm) sfc >>= \res ->
+		when (not res) (error "Error no WSI support on physicalDevice 0") >> do
+		mainCxx win ist sfc phd (grFam qfm) dvc gq dp w
 		Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) w printIO
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "main_cxx1" cxx_main_cxx1 ::
-	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> IO ()
-
 foreign import ccall "main_cxx2" cxx_main_cxx2 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W -> IO ()
 
-foreign import ccall "get_g_MainWindowData" cxx_get_g_MainWindowData :: IO Vk.ImGui.Win.W
+foreign import ccall "SetupVulkanWindow" cxx_SetupVulkanWindow ::
+	Vk.ImGui.Win.W ->
+	Vk.Ist.I si -> Vk.Phd.P ->
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp ->
+	Int32 -> Int32 -> IO ()
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
-mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp =
-	cxx_main_cxx1 (GlfwC.toC win) ist sfc phd qfi dvc >>
-	cxx_get_g_MainWindowData >>= \wdcxx ->
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W -> IO ()
+mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
+	let	rqSfcImgFmt = [
+			Vk.FormatB8g8r8a8Unorm, Vk.FormatR8g8b8a8Unorm,
+			Vk.FormatB8g8r8Unorm, Vk.FormatR8g8b8Unorm ] in
+	Vk.ImGui.H.imGuiImplVulkanHSelectSurfaceFormat phd sfc rqSfcImgFmt Vk.Sfc.ColorSpaceSrgbNonlinear \sfmt ->
+	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
+	let z' = z {
+		Vk.ImGui.Win.wCSurface = sfc,
+		Vk.ImGui.Win.wCSurfaceFormat = sfmt,
+		Vk.ImGui.Win.wCClearEnable = True
+		} in
+	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
+	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
+	cxx_SetupVulkanWindow wdcxx ist phd qfi dvc gq dp wdt hgt >>
 	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
 	printIO wd >>
 	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
-		(cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp)
+		(cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp wdcxx)
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do

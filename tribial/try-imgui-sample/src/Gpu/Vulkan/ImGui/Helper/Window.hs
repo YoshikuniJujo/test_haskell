@@ -6,7 +6,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Helper.Window (
-	WC(..), M.W(..), wCFromCxx, wCFromCxx', wCCopyToCxx ) where
+	WC(..), wCZero, wCZero', M.W(..),
+	wCFromCxx, wCFromCxx', wCCopyToCxx, M.allocaW ) where
 
 import Data.TypeLevel.Tuple.Uncurry
 import Data.Default
@@ -23,6 +24,7 @@ import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
 
 import Gpu.Vulkan.Khr.Swapchain.Type qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
+import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc.M
 import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
 
 import Gpu.Vulkan.Middle.Internal qualified as Vk.M
@@ -160,6 +162,19 @@ wCCopyToCxx ::
 	IO a -> IO a
 wCCopyToCxx = M.wCCopyToCxx . wCToMiddle
 
+wCZero :: Default (Vk.M.ClearValue ct) => (forall scfmt fras frsmas . Vk.T.FormatToValue scfmt =>
+		WC scfmt ssc ssfc srp
+			sppl vibs vias lyta ct bnm bfmt bvnm bvfmt fras frsmas -> IO a) -> IO a
+wCZero f = (`wCFromMiddle'` f) =<< M.wCZero
+
+wCZero' :: (
+	Vk.T.FormatToValue scfmt,
+	Default (Vk.M.ClearValue ct)
+	) => (forall fras frsmas . Vk.T.FormatToValue scfmt =>
+		WC scfmt ssc ssfc srp
+			sppl vibs vias lyta ct bnm bfmt bvnm bvfmt fras frsmas -> IO a) -> IO a
+wCZero' f = (`wCFromMiddle''` f) =<< M.wCZero
+
 wCFromMiddle' ::
 	forall ssc ssfc srp
 		sppl vibs vias lyta ct bnm bfmt bvnm bvfmt a .
@@ -185,6 +200,40 @@ wCFromMiddle' M.WC {
 		wCWidth = wdt, wCHeight = hgt,
 		wCSwapchain = Vk.Swpch.S sc,
 		wCSurface = Vk.Sfc.S sfc, wCSurfaceFormat = fmt,
+		wCPresentMode = pm,
+		wCRenderPass = Vk.RndrPss.R rp,
+		wCPipeline = Vk.Ppl.Gr.G ppl,
+		wCUseDynamicRendering = udr,
+		wCClearEnable = ce, wCClearValue = cv,
+		wCFrameIndex = fi, wCImageCount = ic,
+		wCSemaphoreCount = smc, wCSemaphoreIndex = smi,
+		wCFrames = fs', wCFrameSemaphores = fss' }
+
+wCFromMiddle'' ::
+	forall scfmt ssc ssfc srp
+		sppl vibs vias lyta ct bnm bfmt bvnm bvfmt a .
+	Vk.T.FormatToValue scfmt =>
+	M.WC ct -> (forall fras frsmas . Vk.T.FormatToValue scfmt =>
+		WC scfmt ssc ssfc srp
+			sppl vibs vias lyta ct bnm bfmt bvnm bvfmt fras frsmas -> a) -> a
+wCFromMiddle'' M.WC {
+	M.wCWidth = wdt, M.wCHeight = hgt,
+	M.wCSwapchain = sc,
+	M.wCSurface = sfc, M.wCSurfaceFormat = Vk.Sfc.M.Format _ cs,
+	M.wCPresentMode = pm,
+	M.wCRenderPass = rp,
+	M.wCPipeline = ppl,
+	M.wCUseDynamicRendering = udr,
+	M.wCClearEnable = ce, M.wCClearValue = cv,
+	M.wCFrameIndex = fi, M.wCImageCount = ic,
+	M.wCSemaphoreCount = smc, M.wCSemaphoreIndex = smi,
+	M.wCFrames = fs, M.wCFrameSemaphores = fss } f =
+	Frame.fCListFromMiddle' fs \fs' ->
+	FrameSemaphores.fCListFromMiddle' fss \fss' ->
+	f WC {
+		wCWidth = wdt, wCHeight = hgt,
+		wCSwapchain = Vk.Swpch.S sc,
+		wCSurface = Vk.Sfc.S sfc, wCSurfaceFormat = Vk.Sfc.Format cs,
 		wCPresentMode = pm,
 		wCRenderPass = Vk.RndrPss.R rp,
 		wCPipeline = Vk.Ppl.Gr.G ppl,
