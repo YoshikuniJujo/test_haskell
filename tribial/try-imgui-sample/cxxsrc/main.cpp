@@ -93,9 +93,9 @@ static void SetupVulkanWindow(
     ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, width, height, g_MinImageCount);
 }
 
-static void CleanupVulkanWindow(VkInstance ist, VkDevice dvc)
+static void CleanupVulkanWindow(VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_Window* wd)
 {
-    ImGui_ImplVulkanH_DestroyWindow(ist, dvc, &g_MainWindowData, g_Allocator);
+    ImGui_ImplVulkanH_DestroyWindow(ist, dvc, wd, g_Allocator);
 }
 
 static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, ImDrawData* draw_data)
@@ -284,11 +284,11 @@ int main_cxx2(
         // Resize swap chain?
         int fb_width, fb_height;
         glfwGetFramebufferSize(window, &fb_width, &fb_height);
-        if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || g_MainWindowData.Width != fb_width || g_MainWindowData.Height != fb_height))
+        if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || wd->Width != fb_width || wd->Height != fb_height))
         {
             ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-            ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, &g_MainWindowData, qfi, g_Allocator, fb_width, fb_height, g_MinImageCount);
-            g_MainWindowData.FrameIndex = 0;
+            ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, fb_width, fb_height, g_MinImageCount);
+            wd->FrameIndex = 0;
             g_SwapChainRebuild = false;
         }
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
@@ -361,7 +361,7 @@ int main_cxx2(
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    CleanupVulkanWindow(ist, dvc);
+    CleanupVulkanWindow(ist, dvc, wd);
 
     return 0;
 }

@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Helper.Window.Middle (
-	WC(..), wCFromCxx, wCCopyToCxx ) where
+	WC(..), C.W(..), wCFromCxx, wCCopyToCxx ) where
 
 import Foreign.Marshal.Array
 import Control.Arrow

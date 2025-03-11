@@ -66,8 +66,7 @@ import Graphics.UI.GLFW.C qualified as GlfwC
 
 import Bindings.GLFW qualified as GlfwBase
 
-import Gpu.Vulkan.ImGui.Helper.Window.Middle qualified as Vk.ImGui.Win.M
-import Gpu.Vulkan.ImGui.Helper.Window.Core qualified as Vk.ImGui.Win.C
+import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 
 import Gpu.Vulkan.Middle qualified as Vk.M
 
@@ -81,23 +80,17 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		(GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
 	GlfwG.Win.create 1280 720
 		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
---	print =<< cxx_get_g_MainWindowData
---	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
---	print =<< cxx_get_g_MainWindowData
-	printIO =<< Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
-		=<< cxx_get_g_MainWindowData
+	w <- cxx_get_g_MainWindowData
+	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
+		w printIO
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
---	print =<< Vk.Ist.enumerateExtensionProperties Nothing
---	print Vk.DbgUtls.extensionName
 	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
 		pickPhd ist sfc >>= \(phd, qfm) ->
 		createLgDvc phd qfm \dvc gq _ ->
 		createDscPl dvc \dp -> do
 		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
---		print =<< cxx_get_g_MainWindowData
-		printIO =<< Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
-			=<< cxx_get_g_MainWindowData
+		Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) w printIO
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
@@ -111,20 +104,18 @@ foreign import ccall "main_cxx2" cxx_main_cxx2 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
 
-foreign import ccall "get_g_MainWindowData" cxx_get_g_MainWindowData :: IO Vk.ImGui.Win.C.W
+foreign import ccall "get_g_MainWindowData" cxx_get_g_MainWindowData :: IO Vk.ImGui.Win.W
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
-mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp = do
-	cxx_main_cxx1 (GlfwC.toC win) ist sfc phd qfi dvc
---	printIO =<< Vk.ImGui.Win.M.wCFromCore @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) =<< Vk.ImGui.Win.M.fromCxx' =<< cxx_get_g_MainWindowData
-	wdcxx <- cxx_get_g_MainWindowData
-	wd <- Vk.ImGui.Win.M.wCFromCxx @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx
-	printIO wd
-	Vk.ImGui.Win.M.wCCopyToCxx wd wdcxx $
---	do
-		cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp
+mainCxx (GlfwG.Win.W win) ist sfc phd qfi dvc gq dp =
+	cxx_main_cxx1 (GlfwC.toC win) ist sfc phd qfi dvc >>
+	cxx_get_g_MainWindowData >>= \wdcxx ->
+	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
+	printIO wd >>
+	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
+		(cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp)
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
@@ -265,5 +256,3 @@ createDscPl dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.createInfoPoolSizes = (: []) Vk.DscPl.Size {
 			Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 			Vk.DscPl.sizeDescriptorCount = 1 } }
-
--- imguiImplVulkanMinimumImageSamplerPoolSize = 1
