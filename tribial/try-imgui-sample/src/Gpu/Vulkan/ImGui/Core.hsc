@@ -15,6 +15,7 @@ import Foreign.C.Struct
 import Data.Word
 
 import Gpu.Vulkan.Instance.Core qualified as Vk.Ist
+import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
 
 #include "imgui_c.h"
 
@@ -37,6 +38,9 @@ struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 		[| #{poke struct ImGui_ImplVulkan_InitInfo, ApiVersion} |]),
 	("Instance", ''Vk.Ist.I,
 		[| #{peek struct ImGui_ImplVulkan_InitInfo, Instance} |],
-		[| #{poke struct ImGui_ImplVulkan_InitInfo, Instance} |])
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, Instance} |]),
+	("PhysicalDevice", ''Vk.Phd.P,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, PhysicalDevice} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, PhysicalDevice} |])
 	]
 	[''Show, ''Storable]
