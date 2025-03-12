@@ -20,6 +20,8 @@ extra-source-files:
 - include/backends/imgui_impl_glfw.h
 - include/backends/imgui_impl_vulkan.h
 - include/helper/imgui_impl_vulkan_helper_c.h
+- flags/appUseUnlimitedFrameRate/AppUseUnlimitedFrameRate.hs
+- flags/noAppUseUnlimitedFrameRate/AppUseUnlimitedFrameRate.hs
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -29,6 +31,14 @@ extra-source-files:
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-imgui-sample#readme>
+
+flags:
+  debug:
+    manual: true
+    default: true
+  appUseUnlimitedFrameRate:
+    manual: true
+    default: false
 
 dependencies:
 - base >= 4.7 && < 5
@@ -68,6 +78,21 @@ ghc-options:
 
 library:
   source-dirs: src
+  when:
+    - condition: flag(debug)
+      then:
+        source-dirs: flags/debug
+        exposed-modules: Debug
+      else:
+        source-dirs: flags/nodebug
+        exposed-modules: Debug
+    - condition: flag(appUseUnlimitedFrameRate)
+      then:
+        source-dirs: flags/appUseUnlimitedFrameRate
+        exposed-modules: AppUseUnlimitedFrameRate
+      else:
+        source-dirs: flags/noAppUseUnlimitedFrameRate
+        exposed-modules: AppUseUnlimitedFrameRate
   extra-libraries: stdc++
   pkg-config-dependencies:
     - vulkan

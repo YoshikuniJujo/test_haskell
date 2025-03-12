@@ -25,6 +25,8 @@ extra-source-files:
     include/backends/imgui_impl_glfw.h
     include/backends/imgui_impl_vulkan.h
     include/helper/imgui_impl_vulkan_helper_c.h
+    flags/appUseUnlimitedFrameRate/AppUseUnlimitedFrameRate.hs
+    flags/noAppUseUnlimitedFrameRate/AppUseUnlimitedFrameRate.hs
 extra-doc-files:
     README.md
     CHANGELOG.md
@@ -32,6 +34,14 @@ extra-doc-files:
 source-repository head
   type: git
   location: https://github.com/YoshikuniJujo/try-imgui-sample
+
+flag appUseUnlimitedFrameRate
+  manual: True
+  default: False
+
+flag debug
+  manual: True
+  default: True
 
 library
   exposed-modules:
@@ -99,6 +109,26 @@ library
     , try-gpu-vulkan-ext-debug-utils
     , typelevel-tools-yj
   default-language: Haskell2010
+  if flag(debug)
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        flags/debug
+  else
+    exposed-modules:
+        Debug
+    hs-source-dirs:
+        flags/nodebug
+  if flag(appUseUnlimitedFrameRate)
+    exposed-modules:
+        AppUseUnlimitedFrameRate
+    hs-source-dirs:
+        flags/appUseUnlimitedFrameRate
+  else
+    exposed-modules:
+        AppUseUnlimitedFrameRate
+    hs-source-dirs:
+        flags/noAppUseUnlimitedFrameRate
 
 executable try-imgui-sample-exe
   main-is: Main.hs
