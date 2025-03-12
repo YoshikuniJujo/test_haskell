@@ -26,7 +26,6 @@ import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
-import Data.Int
 import Data.Text.IO qualified as Txt
 import Text.Show.ToolsYj
 import System.IO
@@ -112,12 +111,6 @@ foreign import ccall "main_cxx2" cxx_main_cxx2 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W -> IO ()
 
-foreign import ccall "SetupVulkanWindow" cxx_SetupVulkanWindow ::
-	Vk.ImGui.Win.W ->
-	Vk.Ist.I si -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp ->
-	Int32 -> Int32 -> IO ()
-
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W -> IO ()
@@ -143,7 +136,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		} in
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
-	cxx_SetupVulkanWindow wdcxx ist phd qfi dvc gq dp wdt hgt >>
+	Vk.ImGui.H.imGuiImplVulkanHCreateOrResizeWindow ist phd dvc wdcxx qfi nil wdt hgt 2 >>
 	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
 	when oldLog (printIO wd) >>
 	Vk.ImGui.Win.wCCopyToCxx wd wdcxx

@@ -51,23 +51,6 @@ static void check_vk_result(VkResult err)
         abort();
 }
 
-extern "C" void SetupVulkanWindow(
-	ImGui_ImplVulkanH_Window*,
-	VkInstance, VkPhysicalDevice, uint32_t, VkDevice,
-	int, int);
-
-// All the ImGui_ImplVulkanH_XXX structures/functions are optional helpers used by the demo.
-// Your real engine/app may not use them.
-void SetupVulkanWindow(
-	ImGui_ImplVulkanH_Window* wd, VkInstance ist,
-	VkPhysicalDevice phd, uint32_t qfi, VkDevice dvc,
-	int width, int height )
-{
-    // Create SwapChain, RenderPass, Framebuffer, etc.
-    IM_ASSERT(g_MinImageCount >= 2);
-    ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, width, height, g_MinImageCount);
-}
-
 static void CleanupVulkanWindow(VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_Window* wd)
 {
     ImGui_ImplVulkanH_DestroyWindow(ist, dvc, wd, g_Allocator);

@@ -7,17 +7,28 @@
 module Gpu.Vulkan.ImGui.Helper.Middle (
 
 	imGuiImplVulkanHSelectSurfaceFormat,
-	imGuiImplVulkanHSelectPresentMode
+	imGuiImplVulkanHSelectPresentMode,
+	imGuiImplVulkanHCreateOrResizeWindow
 
 	) where
 
 import Foreign.Marshal.Array
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.List qualified as L
+import Data.Word
+import Data.Int
 
 import Gpu.Vulkan.Enum qualified as Vk
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal qualified as Vk.AllocCallbacks
+import Gpu.Vulkan.Instance.Middle.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd
+import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc
+import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
+
 import Gpu.Vulkan.Khr.Surface.Enum qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc
+
+import Gpu.Vulkan.ImGui.Helper.Window.Middle qualified as Vk.ImGui.H.Win
 
 import Gpu.Vulkan.ImGui.Helper.Core qualified as C
 
@@ -41,3 +52,12 @@ imGuiImplVulkanHSelectPresentMode (Vk.Phd.P pd) (Vk.Sfc.S sfc) pms a =
 	a . Vk.Sfc.PresentMode
 		=<< C.imGuiImplVulkanHSelectPresentMode pd sfc ppms pmc
 	where pmc :: Integral n => n; pmc = L.genericLength pms
+
+imGuiImplVulkanHCreateOrResizeWindow ::
+	Vk.Ist.I -> Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 -> IO ()
+imGuiImplVulkanHCreateOrResizeWindow
+	(Vk.Ist.I ist) (Vk.Phd.P phd) (Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs wdt hgt mic =
+	Vk.AllocCallbacks.mToCore macs \pacs ->
+	C.imGuiImplVulkanHCreateOrResizeWindow
+		ist phd dvc wd qfi pacs wdt hgt mic
