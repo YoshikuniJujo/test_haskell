@@ -69,6 +69,7 @@ import Bindings.GLFW qualified as GlfwBase
 import Gpu.Vulkan.ImGui qualified as Vk.ImGui
 import Gpu.Vulkan.ImGui.Io qualified as Vk.ImGui.Io
 import Gpu.Vulkan.ImGui.Style.Colors qualified as Vk.ImGui.Style.Colors
+import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 
@@ -153,6 +154,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	Vk.ImGui.Style.Colors.darkNoArg >>
 --	Vk.ImGui.Style.Colors.lightNoArg >>
 --	Vk.ImGui.Style.Colors.classicNoArg >>
+	Vk.ImGui.Glfw.init w True >>
 	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
 		(cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp wdcxx io)
 

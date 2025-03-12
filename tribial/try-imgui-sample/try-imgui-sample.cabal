@@ -53,6 +53,9 @@ library
       Gpu.Vulkan.ImGui
       Gpu.Vulkan.ImGui.Core
       Gpu.Vulkan.ImGui.Enum
+      Gpu.Vulkan.ImGui.Glfw
+      Gpu.Vulkan.ImGui.Glfw.Core
+      Gpu.Vulkan.ImGui.Glfw.Middle
       Gpu.Vulkan.ImGui.Helper
       Gpu.Vulkan.ImGui.Helper.Core
       Gpu.Vulkan.ImGui.Helper.Frame
