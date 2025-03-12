@@ -5,6 +5,9 @@ extern "C" ImGuiContext* create_context_no_arg();
 extern "C" ImGuiIO* get_io();
 extern "C" ImGuiConfigFlags get_io_config_flags(ImGuiIO&);
 extern "C" void set_io_config_flags(ImGuiIO&, ImGuiConfigFlags);
+extern "C" void style_colors_dark_no_arg();
+extern "C" void style_colors_light_no_arg();
+extern "C" void style_colors_classic_no_arg();
 
 void
 imgui_check_version()
@@ -40,4 +43,22 @@ void
 set_io_config_flags(ImGuiIO& io, ImGuiConfigFlags fs)
 {
 	io.ConfigFlags = fs;
+}
+
+void
+style_colors_dark_no_arg()
+{
+	ImGui::StyleColorsDark();
+}
+
+void
+style_colors_light_no_arg()
+{
+	ImGui::StyleColorsLight();
+}
+
+void
+style_colors_classic_no_arg()
+{
+	ImGui::StyleColorsClassic();
 }

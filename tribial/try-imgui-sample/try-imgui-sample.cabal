@@ -69,6 +69,9 @@ library
       Gpu.Vulkan.ImGui.Io.Core
       Gpu.Vulkan.ImGui.Io.Middle
       Gpu.Vulkan.ImGui.Middle
+      Gpu.Vulkan.ImGui.Style.Colors
+      Gpu.Vulkan.ImGui.Style.Colors.Core
+      Gpu.Vulkan.ImGui.Style.Colors.Middle
       Try.TypeList
   other-modules:
       Paths_try_imgui_sample
