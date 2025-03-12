@@ -73,10 +73,12 @@ import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 import Gpu.Vulkan.Middle qualified as Vk.M
 
 import Debug qualified
+import OldLog qualified
 import AppUseUnlimitedFrameRate qualified
 
-debug :: Bool
+debug, oldLog :: Bool
 debug = Debug.flag
+oldLog = OldLog.flag
 
 main :: IO ()
 main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
@@ -86,12 +88,12 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	GlfwG.Win.create 1280 720
 		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win ->
 	Vk.ImGui.Win.allocaW \w ->
-	when debug (Vk.ImGui.Win.wCFromCxx'
+	when oldLog (Vk.ImGui.Win.wCFromCxx'
 		@(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
 		w printIO ) >> do
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
-	when debug $ print AppUseUnlimitedFrameRate.flag
+	when oldLog $ print AppUseUnlimitedFrameRate.flag
 	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
 		pickPhd ist sfc >>= \(phd, qfm) ->
 		createLgDvc phd qfm \dvc gq _ ->
@@ -99,7 +101,7 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		Vk.Sfc.Phd.getSupport phd (grFam qfm) sfc >>= \res ->
 		when (not res) (error "Error no WSI support on physicalDevice 0") >> do
 		mainCxx win ist sfc phd (grFam qfm) dvc gq dp w
-		when debug $ Vk.ImGui.Win.wCFromCxx'
+		when oldLog $ Vk.ImGui.Win.wCFromCxx'
 			@(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) w printIO
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
@@ -143,7 +145,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
 	cxx_SetupVulkanWindow wdcxx ist phd qfi dvc gq dp wdt hgt >>
 	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
-	when debug (printIO wd) >>
+	when oldLog (printIO wd) >>
 	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
 		(cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp wdcxx)
 

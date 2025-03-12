@@ -36,6 +36,9 @@ flags:
   debug:
     manual: true
     default: true
+  oldLog:
+    manual: true
+    default: false
   appUseUnlimitedFrameRate:
     manual: true
     default: false
@@ -86,6 +89,13 @@ library:
       else:
         source-dirs: flags/nodebug
         exposed-modules: Debug
+    - condition: flag(oldLog)
+      then:
+        source-dirs: flags/oldLog
+        exposed-modules: OldLog
+      else:
+        source-dirs: flags/noOldLog
+        exposed-modules: OldLog
     - condition: flag(appUseUnlimitedFrameRate)
       then:
         source-dirs: flags/appUseUnlimitedFrameRate

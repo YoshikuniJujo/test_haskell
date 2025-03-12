@@ -43,6 +43,10 @@ flag debug
   manual: True
   default: True
 
+flag oldLog
+  manual: True
+  default: False
+
 library
   exposed-modules:
       Gpu.Vulkan.ImGui.Helper
@@ -119,6 +123,16 @@ library
         Debug
     hs-source-dirs:
         flags/nodebug
+  if flag(oldLog)
+    exposed-modules:
+        OldLog
+    hs-source-dirs:
+        flags/oldLog
+  else
+    exposed-modules:
+        OldLog
+    hs-source-dirs:
+        flags/noOldLog
   if flag(appUseUnlimitedFrameRate)
     exposed-modules:
         AppUseUnlimitedFrameRate
