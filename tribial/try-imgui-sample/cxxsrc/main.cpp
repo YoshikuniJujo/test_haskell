@@ -63,18 +63,6 @@ void SetupVulkanWindow(
 	VkPhysicalDevice phd, uint32_t qfi, VkDevice dvc,
 	int width, int height )
 {
-
-    // Select Present Mode
-#ifdef APP_USE_UNLIMITED_FRAME_RATE
-    VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
-    printf("APP_USE_UNLIMITED_FRAME_RATE defined\n");
-#else
-    VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_FIFO_KHR };
-    printf("APP_USE_UNLIMITED_FRAME_RATE not defined\n");
-#endif
-    wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(phd, wd->Surface, &present_modes[0], IM_ARRAYSIZE(present_modes));
-    //printf("[vulkan] Selected PresentMode = %d\n", wd->PresentMode);
-
     // Create SwapChain, RenderPass, Framebuffer, etc.
     IM_ASSERT(g_MinImageCount >= 2);
     ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, width, height, g_MinImageCount);

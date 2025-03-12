@@ -3,7 +3,12 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.Helper (imGuiImplVulkanHSelectSurfaceFormat) where
+module Gpu.Vulkan.ImGui.Helper (
+
+	imGuiImplVulkanHSelectSurfaceFormat,
+	imGuiImplVulkanHSelectPresentMode
+
+	) where
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
@@ -20,3 +25,9 @@ imGuiImplVulkanHSelectSurfaceFormat ::
 imGuiImplVulkanHSelectSurfaceFormat pd (Vk.Sfc.S sfc) fmts cs a =
 	M.imGuiImplVulkanHSelectSurfaceFormat pd sfc fmts cs \sfmt ->
 	Vk.Sfc.formatFromMiddle sfmt a
+
+imGuiImplVulkanHSelectPresentMode ::
+	Vk.Phd.P -> Vk.Sfc.S ssfc -> [Vk.Sfc.PresentMode] ->
+	(Vk.Sfc.PresentMode -> IO a) -> IO a
+imGuiImplVulkanHSelectPresentMode pd (Vk.Sfc.S sfc) =
+	M.imGuiImplVulkanHSelectPresentMode pd sfc

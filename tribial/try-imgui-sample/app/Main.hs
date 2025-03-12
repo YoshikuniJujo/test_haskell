@@ -124,11 +124,20 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 			Vk.FormatB8g8r8a8Unorm, Vk.FormatR8g8b8a8Unorm,
 			Vk.FormatB8g8r8Unorm, Vk.FormatR8g8b8Unorm ] in
 	Vk.ImGui.H.imGuiImplVulkanHSelectSurfaceFormat phd sfc rqSfcImgFmt Vk.Sfc.ColorSpaceSrgbNonlinear \sfmt ->
+	let	pms = bool
+			[Vk.Sfc.PresentModeFifo]
+			[	Vk.Sfc.PresentModeMailbox,
+				Vk.Sfc.PresentModeImmediate,
+				Vk.Sfc.PresentModeFifo ]
+			AppUseUnlimitedFrameRate.flag in
+	Vk.ImGui.H.imGuiImplVulkanHSelectPresentMode phd sfc pms \pm ->
+	print pm >>
 	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
 	let z' = z {
 		Vk.ImGui.Win.wCSurface = sfc,
 		Vk.ImGui.Win.wCSurfaceFormat = sfmt,
-		Vk.ImGui.Win.wCClearEnable = True
+		Vk.ImGui.Win.wCClearEnable = True,
+		Vk.ImGui.Win.wCPresentMode = pm
 		} in
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
