@@ -66,6 +66,7 @@ import Graphics.UI.GLFW.C qualified as GlfwC
 
 import Bindings.GLFW qualified as GlfwBase
 
+import Gpu.Vulkan.ImGui qualified as Vk.ImGui
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 
@@ -126,7 +127,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 				Vk.Sfc.PresentModeFifo ]
 			AppUseUnlimitedFrameRate.flag in
 	Vk.ImGui.H.imGuiImplVulkanHSelectPresentMode phd sfc pms \pm ->
-	print pm >>
+	when oldLog (print pm) >>
 	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
 	let z' = z {
 		Vk.ImGui.Win.wCSurface = sfc,
@@ -139,6 +140,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	Vk.ImGui.H.imGuiImplVulkanHCreateOrResizeWindow ist phd dvc wdcxx qfi nil wdt hgt 2 >>
 	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
 	when oldLog (printIO wd) >>
+	Vk.ImGui.checkVersion >>
 	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
 		(cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp wdcxx)
 

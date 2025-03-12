@@ -143,10 +143,6 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" int main_cxx(
-	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
-	VkDevice, VkQueue, VkDescriptorPool );
-
 extern "C" int main_cxx2(
 	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
 	VkDevice, VkQueue, VkDescriptorPool, ImGui_ImplVulkanH_Window* );
@@ -161,7 +157,6 @@ int main_cxx2(
 	VkResult err;
 
     // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls

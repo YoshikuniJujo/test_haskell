@@ -111,6 +111,7 @@ library:
 cxx-sources:
   - cxxsrc/main.cpp
   - cxxsrc/imgui.cpp
+  - cxxsrc/imgui_macros.cpp
   - cxxsrc/imgui_draw.cpp
   - cxxsrc/imgui_widgets.cpp
   - cxxsrc/imgui_tables.cpp

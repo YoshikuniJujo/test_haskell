@@ -49,6 +49,8 @@ flag oldLog
 
 library
   exposed-modules:
+      Gpu.Vulkan.ImGui
+      Gpu.Vulkan.ImGui.Core
       Gpu.Vulkan.ImGui.Helper
       Gpu.Vulkan.ImGui.Helper.Core
       Gpu.Vulkan.ImGui.Helper.Frame
@@ -61,6 +63,7 @@ library
       Gpu.Vulkan.ImGui.Helper.Window
       Gpu.Vulkan.ImGui.Helper.Window.Core
       Gpu.Vulkan.ImGui.Helper.Window.Middle
+      Gpu.Vulkan.ImGui.Middle
       Try.TypeList
   other-modules:
       Paths_try_imgui_sample
@@ -76,6 +79,7 @@ library
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
+      cxxsrc/imgui_macros.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
@@ -160,6 +164,7 @@ executable try-imgui-sample-exe
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
+      cxxsrc/imgui_macros.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
@@ -206,6 +211,7 @@ executable trySome
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
+      cxxsrc/imgui_macros.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
@@ -257,6 +263,7 @@ test-suite try-imgui-sample-test
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
+      cxxsrc/imgui_macros.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
