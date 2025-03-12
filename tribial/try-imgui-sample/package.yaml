@@ -12,6 +12,7 @@ extra-doc-files:
 
 extra-source-files:
 - include/imgui.h
+- include/imgui_c.h
 - include/imconfig.h
 - include/imgui_internal.h
 - include/imstb_rectpack.h
@@ -49,6 +50,7 @@ dependencies:
 - text
 - data-default
 - c-struct
+- c-enum
 - gpu-vulkan
 - gpu-vulkan-khr-swapchain
 - gpu-vulkan-khr-surface
@@ -111,7 +113,7 @@ library:
 cxx-sources:
   - cxxsrc/main.cpp
   - cxxsrc/imgui.cpp
-  - cxxsrc/imgui_macros.cpp
+  - cxxsrc/imgui_extern_c.cpp
   - cxxsrc/imgui_draw.cpp
   - cxxsrc/imgui_widgets.cpp
   - cxxsrc/imgui_tables.cpp

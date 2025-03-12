@@ -145,22 +145,19 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
 
 extern "C" int main_cxx2(
 	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
-	VkDevice, VkQueue, VkDescriptorPool, ImGui_ImplVulkanH_Window* );
+	VkDevice, VkQueue, VkDescriptorPool, ImGui_ImplVulkanH_Window*, ImGuiIO* );
 
 // Main code
 
 int main_cxx2(
 	GLFWwindow* window, VkInstance ist,
 	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd )
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
+	ImGuiIO* pio )
 {
 	VkResult err;
 
-    // Setup Dear ImGui context
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	ImGuiIO& io = *pio;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();

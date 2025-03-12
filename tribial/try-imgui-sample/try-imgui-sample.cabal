@@ -17,6 +17,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     include/imgui.h
+    include/imgui_c.h
     include/imconfig.h
     include/imgui_internal.h
     include/imstb_rectpack.h
@@ -51,6 +52,7 @@ library
   exposed-modules:
       Gpu.Vulkan.ImGui
       Gpu.Vulkan.ImGui.Core
+      Gpu.Vulkan.ImGui.Enum
       Gpu.Vulkan.ImGui.Helper
       Gpu.Vulkan.ImGui.Helper.Core
       Gpu.Vulkan.ImGui.Helper.Frame
@@ -63,6 +65,9 @@ library
       Gpu.Vulkan.ImGui.Helper.Window
       Gpu.Vulkan.ImGui.Helper.Window.Core
       Gpu.Vulkan.ImGui.Helper.Window.Middle
+      Gpu.Vulkan.ImGui.Io
+      Gpu.Vulkan.ImGui.Io.Core
+      Gpu.Vulkan.ImGui.Io.Middle
       Gpu.Vulkan.ImGui.Middle
       Try.TypeList
   other-modules:
@@ -79,7 +84,7 @@ library
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
-      cxxsrc/imgui_macros.cpp
+      cxxsrc/imgui_extern_c.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
@@ -96,6 +101,7 @@ library
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , c-enum
     , c-struct
     , data-default
     , glfw-group
@@ -164,7 +170,7 @@ executable try-imgui-sample-exe
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
-      cxxsrc/imgui_macros.cpp
+      cxxsrc/imgui_extern_c.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
@@ -176,6 +182,7 @@ executable try-imgui-sample-exe
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , c-enum
     , c-struct
     , data-default
     , glfw-group
@@ -211,7 +218,7 @@ executable trySome
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
-      cxxsrc/imgui_macros.cpp
+      cxxsrc/imgui_extern_c.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
@@ -223,6 +230,7 @@ executable trySome
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , c-enum
     , c-struct
     , data-default
     , glfw-group
@@ -263,7 +271,7 @@ test-suite try-imgui-sample-test
   cxx-sources:
       cxxsrc/main.cpp
       cxxsrc/imgui.cpp
-      cxxsrc/imgui_macros.cpp
+      cxxsrc/imgui_extern_c.cpp
       cxxsrc/imgui_draw.cpp
       cxxsrc/imgui_widgets.cpp
       cxxsrc/imgui_tables.cpp
@@ -275,6 +283,7 @@ test-suite try-imgui-sample-test
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , c-enum
     , c-struct
     , data-default
     , glfw-group
