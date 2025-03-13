@@ -13,6 +13,7 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.Instance.Core qualified as Vk.Ist
@@ -38,6 +39,7 @@ foreign import ccall "imgui_check_version" cxx_imgui_check_version :: IO ()
 foreign import ccall "create_context_no_arg" cxx_create_context_no_arg :: IO Context
 
 type PtrA = Ptr Vk.AllocCallbacks.A
+type PtrCheckVkResultFn = FunPtr (#{type VkResult} -> IO ())
 
 struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 	#{alignment struct ImGui_ImplVulkan_InitInfo} [
@@ -93,6 +95,15 @@ struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 	-- PipelineRenderingCreateInfo
 	("Allocator", ''PtrA,
 		[| #{peek struct ImGui_ImplVulkan_InitInfo, Allocator} |],
-		[| #{poke struct ImGui_ImplVulkan_InitInfo, Allocator} |])
-	]
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, Allocator} |]),
+	("CheckVkResultFn", ''PtrCheckVkResultFn,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo,
+			CheckVkResultFn} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo,
+			CheckVkResultFn} |]),
+	("MinAllocationSize", ''#{type VkDeviceSize},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo,
+			MinAllocationSize} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo,
+			MinAllocationSize} |]) ]
 	[''Show, ''Storable]
