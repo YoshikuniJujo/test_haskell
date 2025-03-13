@@ -53,9 +53,9 @@ extra-deps:
   - git: https://github.com/YoshikuniJujo/gpu-vulkan
     commit: 09a6dd8361adaea5f53e929c354ecffa670004b2
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
-    commit: 768c9265a071eba79ef3943ec03d55ecf89eae5f
+    commit: 34d4baa4a7cd10810f89e828558acc170d94c406
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-core
-    commit: 56ecd08161569ac267bb8ce5f1582285974ea783
+    commit: d97d935fbe567b86d2caff28e19c3dc1544f4467
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-khr-swapchain
     commit: 150bd5a285da6df3c059a78aa75957366cded0bc
     #- gpu-vulkan-khr-swapchain-0.1.0.1

@@ -7,6 +7,7 @@ module Gpu.Vulkan.ImGui.Middle (
 	InitInfo(..)
 	) where
 
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Word
 
 import Gpu.Vulkan.Middle.Internal qualified as Vk
@@ -42,6 +43,45 @@ data InitInfo ac = InitInfo {
 	initInfoSubpass :: Vk.Sbpss.S,
 	initInfoDescriptorPoolSize :: Word32,
 	initInfoUseDynamicRendering :: Bool,
-	initInfoAllocator :: Vk.AllocCallbacks.A ac,
+	initInfoAllocator :: TPMaybe.M Vk.AllocCallbacks.A ac,
 	initInfoCheckVkResultFn :: Vk.Result -> IO (),
 	initInfoMinAllocationSize :: Vk.Dvc.Size }
+
+initInfoFromCore ::
+	Vk.AllocCallbacks.MFromCore ac => C.InitInfo -> IO (InitInfo ac)
+initInfoFromCore C.InitInfo {
+	C.initInfoApiVersion = av,
+	C.initInfoInstance = ist,
+	C.initInfoPhysicalDevice = phd,
+	C.initInfoDevice = dvc,
+	C.initInfoQueueFamily = qfi,
+	C.initInfoQueue = q,
+	C.initInfoDescriptorPool = dpl,
+	C.initInfoRenderPass = rp,
+	C.initInfoMinImageCount = mic,
+	C.initInfoImageCount = ic,
+	C.initInfoMSAASamples = mss,
+	C.initInfoPipelineCache = pc,
+	C.initInfoSubpass = sp,
+	C.initInfoDescriptorPoolSize = dps,
+	C.initInfoUseDynamicRendering = udr,
+	C.initInfoAllocator = ac } = do
+	acm <- Vk.AllocCallbacks.mFromCore ac
+	pure InitInfo {
+		initInfoApiVersion = Vk.ApiVersion av,
+		initInfoInstance = Vk.Ist.I ist,
+		initInfoPhysicalDevice = Vk.Phd.P phd,
+		initInfoDevice = Vk.Dvc.D dvc,
+		initInfoQueueFamily = Vk.QFam.Index qfi,
+		initInfoQueue = Vk.Q.Q q,
+		initInfoDescriptorPool = Vk.DscPl.D dpl,
+		initInfoRenderPass = Vk.RndrPss.R rp,
+		initInfoMinImageCount = mic,
+		initInfoImageCount = ic,
+		initInfoMSAASamples = Vk.Smpl.CountFlagBits mss,
+		initInfoPipelineCache = Vk.PplCch.P pc,
+		initInfoSubpass = Vk.Sbpss.S sp,
+		initInfoDescriptorPoolSize = dps,
+		initInfoUseDynamicRendering = udr /= 0,
+		initInfoAllocator = acm
+		}
