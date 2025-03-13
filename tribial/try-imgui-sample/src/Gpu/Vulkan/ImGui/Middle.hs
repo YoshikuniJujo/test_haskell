@@ -85,3 +85,5 @@ initInfoFromCore C.InitInfo {
 		initInfoUseDynamicRendering = udr /= 0,
 		initInfoAllocator = acm
 		}
+
+-- foreign import ccall "dynamic" mkCheckResultFn :: FunPtr

@@ -15,7 +15,9 @@ module Gpu.Vulkan.ImGui.Core (
 	initInfoImageCount, initInfoMSAASamples, initInfoPipelineCache,
 	initInfoSubpass, initInfoDescriptorPoolSize,
 	initInfoUseDynamicRendering, initInfoAllocator, initInfoCheckVkResultFn,
-	initInfoMinAllocationSize
+	initInfoMinAllocationSize,
+
+	PtrA, PtrCheckVkResultFn, CheckVkResultFn
 	) where
 
 import Foreign.Ptr
@@ -48,7 +50,8 @@ foreign import ccall "imgui_check_version" cxx_imgui_check_version :: IO ()
 foreign import ccall "create_context_no_arg" cxx_create_context_no_arg :: IO Context
 
 type PtrA = Ptr Vk.AllocCallbacks.A
-type PtrCheckVkResultFn = FunPtr (#{type VkResult} -> IO ())
+type CheckVkResultFn = #{type VkResult} -> IO ()
+type PtrCheckVkResultFn = FunPtr CheckVkResultFn
 
 struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 	#{alignment struct ImGui_ImplVulkan_InitInfo} [
