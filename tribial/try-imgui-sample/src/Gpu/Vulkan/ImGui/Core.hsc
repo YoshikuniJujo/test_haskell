@@ -14,8 +14,14 @@ import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
+import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.Instance.Core qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
+import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
+import Gpu.Vulkan.Queue.Core qualified as Vk.Q
+import Gpu.Vulkan.DescriptorPool.Core qualified as Vk.DscPl
+import Gpu.Vulkan.RenderPass.Core qualified as Vk.RndrPss
+import Gpu.Vulkan.PipelineCache.Core qualified as Vk.PplCch
 
 #include "imgui_c.h"
 
@@ -31,6 +37,8 @@ data ContextTag
 foreign import ccall "imgui_check_version" cxx_imgui_check_version :: IO ()
 foreign import ccall "create_context_no_arg" cxx_create_context_no_arg :: IO Context
 
+type PtrA = Ptr Vk.AllocCallbacks.A
+
 struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 	#{alignment struct ImGui_ImplVulkan_InitInfo} [
 	("ApiVersion", ''#{type uint32_t},
@@ -41,6 +49,50 @@ struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 		[| #{poke struct ImGui_ImplVulkan_InitInfo, Instance} |]),
 	("PhysicalDevice", ''Vk.Phd.P,
 		[| #{peek struct ImGui_ImplVulkan_InitInfo, PhysicalDevice} |],
-		[| #{poke struct ImGui_ImplVulkan_InitInfo, PhysicalDevice} |])
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, PhysicalDevice} |]),
+	("Device", ''Vk.Dvc.D,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, Device} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, Device} |]),
+	("QueueFamily", ''#{type uint32_t},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, QueueFamily} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, QueueFamily} |]),
+	("Queue", ''Vk.Q.Q,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, Queue} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, Queue} |]),
+	("DescriptorPool", ''Vk.DscPl.D,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, DescriptorPool} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, DescriptorPool} |]),
+	("RenderPass", ''Vk.RndrPss.R,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, RenderPass} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, RenderPass} |]),
+	("MinImageCount", ''#{type uint32_t},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, MinImageCount} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, MinImageCount} |]),
+	("ImageCount", ''#{type uint32_t},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, ImageCount} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, ImageCount} |]),
+	("MSAASamples", ''#{type VkSampleCountFlagBits},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, MSAASamples} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, MSAASamples} |]),
+	("PIpelineCache", ''Vk.PplCch.P,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, PipelineCache} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, PipelineCache} |]),
+	("Subpass", ''#{type uint32_t},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, Subpass} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, Subpass} |]),
+	("DescriptorPoolSize", ''#{type uint32_t},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo,
+			DescriptorPoolSize} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo,
+			DescriptorPoolSize} |]),
+	("UseDynamicRendering", ''#{type bool},
+		[| #{peek struct ImGui_ImplVulkan_InitInfo,
+			UseDynamicRendering} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo,
+			UseDynamicRendering} |]),
+	-- PipelineRenderingCreateInfo
+	("Allocator", ''PtrA,
+		[| #{peek struct ImGui_ImplVulkan_InitInfo, Allocator} |],
+		[| #{poke struct ImGui_ImplVulkan_InitInfo, Allocator} |])
 	]
 	[''Show, ''Storable]
