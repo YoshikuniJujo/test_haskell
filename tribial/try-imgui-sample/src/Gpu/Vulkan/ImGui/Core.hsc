@@ -7,6 +7,15 @@
 module Gpu.Vulkan.ImGui.Core (
 	checkVersion,
 	createContextNoArg, Context,
+
+	InitInfo, pattern InitInfo,
+	initInfoApiVersion, initInfoInstance, initInfoPhysicalDevice,
+	initInfoDevice, initInfoQueueFamily, initInfoQueue,
+	initInfoDescriptorPool, initInfoRenderPass, initInfoMinImageCount,
+	initInfoImageCount, initInfoMSAASamples, initInfoPipelineCache,
+	initInfoSubpass, initInfoDescriptorPoolSize,
+	initInfoUseDynamicRendering, initInfoAllocator, initInfoCheckVkResultFn,
+	initInfoMinAllocationSize
 	) where
 
 import Foreign.Ptr
@@ -76,7 +85,7 @@ struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 	("MSAASamples", ''#{type VkSampleCountFlagBits},
 		[| #{peek struct ImGui_ImplVulkan_InitInfo, MSAASamples} |],
 		[| #{poke struct ImGui_ImplVulkan_InitInfo, MSAASamples} |]),
-	("PIpelineCache", ''Vk.PplCch.P,
+	("PipelineCache", ''Vk.PplCch.P,
 		[| #{peek struct ImGui_ImplVulkan_InitInfo, PipelineCache} |],
 		[| #{poke struct ImGui_ImplVulkan_InitInfo, PipelineCache} |]),
 	("Subpass", ''#{type uint32_t},

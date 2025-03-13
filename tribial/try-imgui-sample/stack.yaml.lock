@@ -55,15 +55,15 @@ packages:
     commit: 09a6dd8361adaea5f53e929c354ecffa670004b2
     git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
-    commit: 51e88352ee7c891506d96115337199a2b8bbf384
+    commit: 768c9265a071eba79ef3943ec03d55ecf89eae5f
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
     name: gpu-vulkan-middle
     pantry-tree:
-      sha256: cd4a1cd80e5535895b682d2f3fe99bbc4748ccfc3f449ace33ea10373ac1a45b
+      sha256: 4dcec7573c3758410032ed0691370ec382ebc38dd2dd61e671138a15b722e08e
       size: 16297
     version: 0.1.0.75
   original:
-    commit: 51e88352ee7c891506d96115337199a2b8bbf384
+    commit: 768c9265a071eba79ef3943ec03d55ecf89eae5f
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
 - completed:
     commit: 56ecd08161569ac267bb8ce5f1582285974ea783
@@ -175,7 +175,7 @@ packages:
     hackage: tools-yj-0.1.0.23
 snapshots:
 - completed:
-    sha256: 1e92ad93196c13fe3ccc3b5770f7f678816b92340a578b8ca927cb46604e6e2f
+    sha256: daa5917e1e6ded1c5712023469083c25a71af66bc23069db3dc77764f9d3b052
     size: 658339
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/3/7.yaml
-  original: nightly-2025-03-07
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/3/11.yaml
+  original: nightly-2025-03-11
