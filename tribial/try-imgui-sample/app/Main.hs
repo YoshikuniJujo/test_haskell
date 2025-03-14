@@ -65,6 +65,7 @@ import Graphics.UI.GLFW.C qualified as GlfwC
 import Bindings.GLFW qualified as GlfwBase
 
 import Gpu.Vulkan.ImGui qualified as Vk.ImGui
+import Gpu.Vulkan.ImGui.NoVulkan qualified as ImGui
 import Gpu.Vulkan.ImGui.NoVulkan.Io qualified as ImGui.Io
 import Gpu.Vulkan.ImGui.Style.Colors qualified as Vk.ImGui.Style.Colors
 import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
@@ -160,9 +161,9 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	Vk.ImGui.createContextNoArg >>
 	ImGui.Io.get >>= \io ->
 	ImGui.Io.modifyConfigFlags io
-		(.|. Vk.ImGui.ConfigFlagsNavEnableKeyboard) >>
+		(.|. ImGui.ConfigFlagsNavEnableKeyboard) >>
 	ImGui.Io.modifyConfigFlags io
-		(.|. Vk.ImGui.ConfigFlagsNavEnableGamepad) >>
+		(.|. ImGui.ConfigFlagsNavEnableGamepad) >>
 	Vk.ImGui.Style.Colors.darkNoArg >>
 --	Vk.ImGui.Style.Colors.lightNoArg >>
 --	Vk.ImGui.Style.Colors.classicNoArg >>

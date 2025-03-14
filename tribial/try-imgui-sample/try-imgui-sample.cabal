@@ -52,7 +52,6 @@ library
   exposed-modules:
       Gpu.Vulkan.ImGui
       Gpu.Vulkan.ImGui.Core
-      Gpu.Vulkan.ImGui.Enum
       Gpu.Vulkan.ImGui.Glfw
       Gpu.Vulkan.ImGui.Glfw.Core
       Gpu.Vulkan.ImGui.Glfw.Middle
@@ -69,6 +68,8 @@ library
       Gpu.Vulkan.ImGui.Helper.Window.Core
       Gpu.Vulkan.ImGui.Helper.Window.Middle
       Gpu.Vulkan.ImGui.Middle
+      Gpu.Vulkan.ImGui.NoVulkan
+      Gpu.Vulkan.ImGui.NoVulkan.Enum
       Gpu.Vulkan.ImGui.NoVulkan.Io
       Gpu.Vulkan.ImGui.NoVulkan.Io.Core
       Gpu.Vulkan.ImGui.NoVulkan.Io.Middle

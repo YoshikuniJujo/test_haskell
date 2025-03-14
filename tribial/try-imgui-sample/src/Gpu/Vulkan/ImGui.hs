@@ -15,10 +15,6 @@ module Gpu.Vulkan.ImGui (
 
 	M.InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx,
 
-	-- * ENUMS
-
-	module Gpu.Vulkan.ImGui.Enum
-
 	) where
 
 import Data.TypeLevel.Tuple.Uncurry
@@ -43,7 +39,6 @@ import Gpu.Vulkan.Subpass qualified as Vk.Sbpss
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as Vk.AllocCallbacks.M
 
-import Gpu.Vulkan.ImGui.Enum
 import Gpu.Vulkan.ImGui.Middle qualified as M
 
 data InitInfo si sd sdp srp spc mac = InitInfo {

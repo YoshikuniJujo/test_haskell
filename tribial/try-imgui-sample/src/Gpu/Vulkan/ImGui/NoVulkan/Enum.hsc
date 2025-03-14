@@ -3,7 +3,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.Enum where
+module Gpu.Vulkan.ImGui.NoVulkan.Enum where
 
 import Foreign.C.Enum
 import Data.Bits
