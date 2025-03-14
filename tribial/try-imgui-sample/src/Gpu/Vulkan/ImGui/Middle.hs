@@ -6,10 +6,14 @@
 module Gpu.Vulkan.ImGui.Middle (
 	C.checkVersion,
 	C.createContextNoArg, C.Context,
-	InitInfo(..), initInfoFromCore, initInfoToCore
+	InitInfo(..), initInfoFromCore, initInfoToCore,
+
+	C.InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx
+
 	) where
 
 import Foreign.Ptr
+import Control.Monad
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Bool
 import Data.Word
@@ -92,6 +96,10 @@ instance Show (TPMaybe.M Vk.AllocCallbacks.A ac) => ShowIO (InitInfo ac) where
 			"initInfoMinAllocationSize = " ++
 				show (initInfoMinAllocationSize ii) ++ " }"
 
+initInfoFromCxx ::
+	Vk.AllocCallbacks.MFromCore ac =>  C.InitInfoCxx -> IO (InitInfo ac)
+initInfoFromCxx = initInfoFromCore <=< C.initInfoFromCxx
+
 initInfoFromCore ::
 	Vk.AllocCallbacks.MFromCore ac => C.InitInfo -> IO (InitInfo ac)
 initInfoFromCore C.InitInfo {
@@ -139,6 +147,10 @@ initInfoFromCore C.InitInfo {
 
 foreign import ccall "dynamic" mkCheckResultFn ::
 	FunPtr C.CheckVkResultFn -> C.CheckVkResultFn
+
+copyInitInfoToCxx :: InitInfo mac -> C.InitInfoCxx -> IO ()
+copyInitInfoToCxx ii iicxx =
+	initInfoToCore ii \iic -> C.copyInitInfoToCxx iic iicxx
 
 initInfoToCore :: InitInfo mac -> (C.InitInfo -> IO a) -> IO ()
 initInfoToCore InitInfo {

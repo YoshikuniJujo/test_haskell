@@ -13,6 +13,8 @@ module Gpu.Vulkan.ImGui (
 
 	InitInfo(..), initInfoFromMiddle, initInfoToMiddle,
 
+	M.InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx,
+
 	-- * ENUMS
 
 	module Gpu.Vulkan.ImGui.Enum
@@ -37,6 +39,9 @@ import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
 import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
 import Gpu.Vulkan.Sample qualified as Vk.Smpl
 import Gpu.Vulkan.Subpass qualified as Vk.Sbpss
+
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as Vk.AllocCallbacks.M
 
 import Gpu.Vulkan.ImGui.Enum
 import Gpu.Vulkan.ImGui.Middle qualified as M
@@ -102,6 +107,12 @@ instance Show (TPMaybe.M (U2 Vk.AllocCallbacks.A) mac) =>
 			"initInfoMinAllocationSize = " ++
 				show (initInfoMinAllocationSize ii) ++ " }"
 
+initInfoFromCxx :: (
+	Vk.AllocCallbacks.ToMiddle mac,
+	Vk.AllocCallbacks.M.MFromCore (Vk.AllocCallbacks.Snd mac) ) =>
+	M.InitInfoCxx -> IO (InitInfo si sd sdp srp spc mac)
+initInfoFromCxx iicxx = initInfoFromMiddle <$> M.initInfoFromCxx iicxx
+
 initInfoFromMiddle :: Vk.AllocCallbacks.ToMiddle mac =>
 	M.InitInfo (Vk.AllocCallbacks.Snd mac) -> InitInfo si sd sdp srp spc mac
 initInfoFromMiddle M.InitInfo {
@@ -141,6 +152,10 @@ initInfoFromMiddle M.InitInfo {
 	initInfoAllocator = Vk.AllocCallbacks.fromMiddle ac,
 	initInfoCheckVkResultFn = crfn,
 	initInfoMinAllocationSize = mas }
+
+copyInitInfoToCxx :: Vk.AllocCallbacks.ToMiddle mac =>
+	InitInfo si sd sdp srp spc mac -> M.InitInfoCxx -> IO ()
+copyInitInfoToCxx ii = M.copyInitInfoToCxx (initInfoToMiddle ii)
 
 initInfoToMiddle :: Vk.AllocCallbacks.ToMiddle mac =>
 	InitInfo si sd sdp srp spc mac -> M.InitInfo (Vk.AllocCallbacks.Snd mac)

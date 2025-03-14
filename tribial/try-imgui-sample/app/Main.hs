@@ -10,7 +10,6 @@
 module Main (main) where
 
 import Foreign.Ptr
-import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -72,9 +71,6 @@ import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 
-import Gpu.Vulkan.ImGui.Middle qualified as Vk.ImGui.M
-import Gpu.Vulkan.ImGui.Core qualified as Vk.ImGui.Core
-
 import Gpu.Vulkan.Middle qualified as Vk.M
 
 import Debug qualified
@@ -116,18 +112,18 @@ glfwErrorCallback err dsc =
 foreign import ccall "main_cxx4" cxx_main_cxx4 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W ->
-	Vk.ImGui.Io.I -> Ptr Vk.ImGui.Core.InitInfo -> IO ()
+	Vk.ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> IO ()
 
 foreign import ccall "new_ImGui_ImplVulkan_InitInfo"
-	cxx_new_ImGui_ImplVulkan_InitInfo :: IO (Ptr Vk.ImGui.Core.InitInfo)
+	cxx_new_ImGui_ImplVulkan_InitInfo :: IO Vk.ImGui.InitInfoCxx
 
 foreign import ccall "free_ImGui_ImplVulkan_InitInfo"
 	cxx_free_ImGui_ImplVulkan_InitInfo ::
-	Ptr Vk.ImGui.Core.InitInfo -> IO ()
+	Vk.ImGui.InitInfoCxx -> IO ()
 
 foreign import ccall "initialize_ImGui_ImplVulkan_InitInfo"
 	cxx_initialize_ImGui_ImplVulkan_InitInfo ::
-	Ptr Vk.ImGui.Core.InitInfo -> Vk.Ist.I si -> Vk.Phd.P ->
+	Vk.ImGui.InitInfoCxx -> Vk.Ist.I si -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp ->
 	Vk.ImGui.Win.W -> IO ()
 
@@ -170,20 +166,15 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 --	Vk.ImGui.Style.Colors.lightNoArg >>
 --	Vk.ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >>
-	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
-	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo ->
+	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
+	pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
-		pInitInfo ist phd qfi dvc gq dp wdcxx >>
-	peek pInitInfo >>= \initInfoC ->
-	Vk.ImGui.M.initInfoFromCore @'Nothing initInfoC >>= \initInfoM ->
-	let	initInfo = Vk.ImGui.initInfoFromMiddle @'Nothing initInfoM in
-	printIO initInfo >>
-	Vk.ImGui.M.initInfoToCore
-		(Vk.ImGui.initInfoToMiddle initInfo) \initInfo' -> do
-		poke pInitInfo initInfo'
-		cxx_main_cxx4 (GlfwC.toC win)
-			ist phd qfi dvc gq dp wdcxx io pInitInfo
-		cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
+		pInitInfo ist phd qfi dvc gq dp wdcxx
+	initInfo <- Vk.ImGui.initInfoFromCxx @'Nothing pInitInfo
+	printIO initInfo
+	Vk.ImGui.copyInitInfoToCxx initInfo pInitInfo
+	cxx_main_cxx4 (GlfwC.toC win) ist phd qfi dvc gq dp wdcxx io pInitInfo
+	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do

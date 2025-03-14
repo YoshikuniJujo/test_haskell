@@ -17,7 +17,10 @@ module Gpu.Vulkan.ImGui.Core (
 	initInfoUseDynamicRendering, initInfoAllocator, initInfoCheckVkResultFn,
 	initInfoMinAllocationSize,
 
-	PtrA, PtrCheckVkResultFn, CheckVkResultFn
+	PtrA, PtrCheckVkResultFn, CheckVkResultFn,
+
+	InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx
+
 	) where
 
 import Foreign.Ptr
@@ -119,3 +122,11 @@ struct "InitInfo" #{size struct ImGui_ImplVulkan_InitInfo}
 		[| #{poke struct ImGui_ImplVulkan_InitInfo,
 			MinAllocationSize} |]) ]
 	[''Show, ''Storable]
+
+type InitInfoCxx = Ptr InitInfo
+
+initInfoFromCxx :: InitInfoCxx -> IO InitInfo
+initInfoFromCxx = peek
+
+copyInitInfoToCxx :: InitInfo -> InitInfoCxx -> IO ()
+copyInitInfoToCxx = flip poke
