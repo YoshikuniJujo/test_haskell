@@ -114,8 +114,8 @@ glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "main_cxx3" cxx_main_cxx3 ::
-	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
+foreign import ccall "main_cxx4" cxx_main_cxx4 ::
+	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W ->
 	Vk.ImGui.Io.I -> Ptr Vk.ImGui.Core.InitInfo -> IO ()
 
@@ -125,6 +125,12 @@ foreign import ccall "new_ImGui_ImplVulkan_InitInfo"
 foreign import ccall "free_ImGui_ImplVulkan_InitInfo"
 	cxx_free_ImGui_ImplVulkan_InitInfo ::
 	Ptr Vk.ImGui.Core.InitInfo -> IO ()
+
+foreign import ccall "initialize_ImGui_ImplVulkan_InitInfo"
+	cxx_initialize_ImGui_ImplVulkan_InitInfo ::
+	Ptr Vk.ImGui.Core.InitInfo -> Vk.Ist.I si -> Vk.Phd.P ->
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp ->
+	Vk.ImGui.Win.W -> IO ()
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
@@ -167,9 +173,11 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	Vk.ImGui.Glfw.init w True >>
 	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
 		pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
+		cxx_initialize_ImGui_ImplVulkan_InitInfo
+			pInitInfo ist phd qfi dvc gq dp wdcxx
 		print =<< peek pInitInfo
-		cxx_main_cxx3 (GlfwC.toC win)
-			ist sfc phd qfi dvc gq dp wdcxx io pInitInfo
+		cxx_main_cxx4 (GlfwC.toC win)
+			ist phd qfi dvc gq dp wdcxx io pInitInfo
 		cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a

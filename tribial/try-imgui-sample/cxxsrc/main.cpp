@@ -143,15 +143,20 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" int main_cxx3(
+extern "C" int main_cxx4(
 	GLFWwindow* window, VkInstance ist,
-	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
+	VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
 	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info );
 
 extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
 
 extern "C" void free_ImGui_ImplVulkan_InitInfo(ImGui_ImplVulkan_InitInfo* p);
+
+extern "C" void initialize_ImGui_ImplVulkan_InitInfo(
+	ImGui_ImplVulkan_InitInfo* p_init_info,
+	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd );
 
 // Main code
 
@@ -168,10 +173,33 @@ free_ImGui_ImplVulkan_InitInfo(ImGui_ImplVulkan_InitInfo* p)
 	free(p);
 }
 
+void
+initialize_ImGui_ImplVulkan_InitInfo(
+	ImGui_ImplVulkan_InitInfo* p_init_info,
+	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd )
+{
+	p_init_info->ApiVersion = VK_API_VERSION_1_3;
+	p_init_info->Instance = ist;
+	p_init_info->PhysicalDevice = phd;
+	p_init_info->Device = dvc;
+	p_init_info->QueueFamily = qfi;
+	p_init_info->Queue = gq;
+	p_init_info->PipelineCache = g_PipelineCache;
+	p_init_info->DescriptorPool = dp;
+	p_init_info->RenderPass = wd->RenderPass;
+	p_init_info->Subpass = 0;
+	p_init_info->MinImageCount = g_MinImageCount;
+	p_init_info->ImageCount = wd->ImageCount;
+	p_init_info->MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+	p_init_info->Allocator = g_Allocator;
+	p_init_info->CheckVkResultFn = check_vk_result;
+}
+
 int
-main_cxx3(
+main_cxx4(
 	GLFWwindow* window, VkInstance ist,
-	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
+	VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
 	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info )
 {
@@ -179,23 +207,7 @@ main_cxx3(
 
 	ImGuiIO& io = *pio;
 
-    ImGui_ImplVulkan_InitInfo init_info = *p_init_info;
-    init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
-    init_info.Instance = ist;
-    init_info.PhysicalDevice = phd;
-    init_info.Device = dvc;
-    init_info.QueueFamily = qfi;
-    init_info.Queue = gq;
-    init_info.PipelineCache = g_PipelineCache;
-    init_info.DescriptorPool = dp;
-    init_info.RenderPass = wd->RenderPass;
-    init_info.Subpass = 0;
-    init_info.MinImageCount = g_MinImageCount;
-    init_info.ImageCount = wd->ImageCount;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-    init_info.Allocator = g_Allocator;
-    init_info.CheckVkResultFn = check_vk_result;
-    ImGui_ImplVulkan_Init(&init_info);
+    ImGui_ImplVulkan_Init(p_init_info);
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
