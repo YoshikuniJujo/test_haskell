@@ -143,26 +143,43 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" int main_cxx2(
-	GLFWwindow*, VkInstance, VkSurfaceKHR, VkPhysicalDevice, uint32_t,
-	VkDevice, VkQueue, VkDescriptorPool, ImGui_ImplVulkanH_Window*, ImGuiIO* );
-
-// Main code
-
-int main_cxx2(
+extern "C" int main_cxx3(
 	GLFWwindow* window, VkInstance ist,
 	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
-	ImGuiIO* pio )
+	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info );
+
+extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
+
+extern "C" void free_ImGui_ImplVulkan_InitInfo(ImGui_ImplVulkan_InitInfo* p);
+
+// Main code
+
+ImGui_ImplVulkan_InitInfo*
+new_ImGui_ImplVulkan_InitInfo()
+{
+	return (ImGui_ImplVulkan_InitInfo*)
+		malloc(sizeof(ImGui_ImplVulkan_InitInfo));
+}
+
+void
+free_ImGui_ImplVulkan_InitInfo(ImGui_ImplVulkan_InitInfo* p)
+{
+	free(p);
+}
+
+int
+main_cxx3(
+	GLFWwindow* window, VkInstance ist,
+	VkSurfaceKHR sfc, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
+	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info )
 {
 	VkResult err;
 
 	ImGuiIO& io = *pio;
 
-    // Setup Platform/Renderer backends
-//    ImGui_ImplGlfw_InitForVulkan(window, true);
-
-    ImGui_ImplVulkan_InitInfo init_info = {};
+    ImGui_ImplVulkan_InitInfo init_info = *p_init_info;
     init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
     init_info.Instance = ist;
     init_info.PhysicalDevice = phd;

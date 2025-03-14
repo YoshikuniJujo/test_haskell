@@ -10,6 +10,7 @@
 module Main (main) where
 
 import Foreign.Ptr
+import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -73,6 +74,8 @@ import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 
+import Gpu.Vulkan.ImGui.Core qualified as Vk.ImGui.Core
+
 import Gpu.Vulkan.Middle qualified as Vk.M
 
 import Debug qualified
@@ -111,10 +114,17 @@ glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "main_cxx2" cxx_main_cxx2 ::
+foreign import ccall "main_cxx3" cxx_main_cxx3 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W ->
-	Vk.ImGui.Io.I -> IO ()
+	Vk.ImGui.Io.I -> Ptr Vk.ImGui.Core.InitInfo -> IO ()
+
+foreign import ccall "new_ImGui_ImplVulkan_InitInfo"
+	cxx_new_ImGui_ImplVulkan_InitInfo :: IO (Ptr Vk.ImGui.Core.InitInfo)
+
+foreign import ccall "free_ImGui_ImplVulkan_InitInfo"
+	cxx_free_ImGui_ImplVulkan_InitInfo ::
+	Ptr Vk.ImGui.Core.InitInfo -> IO ()
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
@@ -155,8 +165,12 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 --	Vk.ImGui.Style.Colors.lightNoArg >>
 --	Vk.ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >>
-	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
-		(cxx_main_cxx2 (GlfwC.toC win) ist sfc phd qfi dvc gq dp wdcxx io)
+	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
+		pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
+		print =<< peek pInitInfo
+		cxx_main_cxx3 (GlfwC.toC win)
+			ist sfc phd qfi dvc gq dp wdcxx io pInitInfo
+		cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
