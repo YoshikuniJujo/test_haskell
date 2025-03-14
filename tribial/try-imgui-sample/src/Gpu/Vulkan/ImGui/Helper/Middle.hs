@@ -6,7 +6,7 @@
 
 module Gpu.Vulkan.ImGui.Helper.Middle (
 
-	imGuiImplVulkanHSelectSurfaceFormat,
+	selectSurfaceFormat,
 	imGuiImplVulkanHSelectPresentMode,
 	imGuiImplVulkanHCreateOrResizeWindow
 
@@ -32,14 +32,14 @@ import Gpu.Vulkan.ImGui.Helper.Window.Middle qualified as Vk.ImGui.H.Win
 
 import Gpu.Vulkan.ImGui.Helper.Core qualified as C
 
-imGuiImplVulkanHSelectSurfaceFormat ::
+selectSurfaceFormat ::
 	Vk.Phd.P -> Vk.Sfc.S -> [Vk.Format] -> Vk.Sfc.ColorSpace ->
 	(Vk.Sfc.Format -> IO a) -> IO a
-imGuiImplVulkanHSelectSurfaceFormat
+selectSurfaceFormat
 	(Vk.Phd.P pd) (Vk.Sfc.S sfc) fmts (Vk.Sfc.ColorSpace cs) a =
 	allocaArray fmtc \pfmts -> do
 	pokeArray pfmts $ (\(Vk.Format f) -> f) <$> fmts
-	a . Vk.Sfc.formatFromCore =<< C.imGuiImplVulkanHSelectSurfaceFormat
+	a . Vk.Sfc.formatFromCore =<< C.selectSurfaceFormat
 		pd sfc pfmts fmtc cs
 	where fmtc :: Integral n => n; fmtc = L.genericLength fmts
 

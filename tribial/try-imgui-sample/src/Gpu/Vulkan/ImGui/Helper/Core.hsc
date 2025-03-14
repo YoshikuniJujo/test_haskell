@@ -4,7 +4,7 @@
 
 module Gpu.Vulkan.ImGui.Helper.Core (
 
-	imGuiImplVulkanHSelectSurfaceFormat,
+	selectSurfaceFormat,
 	imGuiImplVulkanHSelectPresentMode,
 	imGuiImplVulkanHCreateOrResizeWindow
 
@@ -26,10 +26,10 @@ import Gpu.Vulkan.ImGui.Helper.Window.Core qualified as Vk.ImGui.H.Win
 
 #include <vulkan/vulkan.h>
 
-imGuiImplVulkanHSelectSurfaceFormat ::
+selectSurfaceFormat ::
 	Vk.Phd.P -> Vk.Sfc.S -> Ptr #{type VkFormat} -> #{type int} ->
 	#{type VkColorSpaceKHR} -> IO Vk.Sfc.Format
-imGuiImplVulkanHSelectSurfaceFormat pd sfc pfmts fmtc cs = do
+selectSurfaceFormat pd sfc pfmts fmtc cs = do
 	psfmt <- cxx_ImGui_ImplVulkanH_SelectSurfaceFormat pd sfc pfmts fmtc cs
 	Vk.Sfc.Format_ <$> newForeignPtr psfmt (pure ())
 

@@ -5,7 +5,7 @@
 
 module Gpu.Vulkan.ImGui.Helper (
 
-	imGuiImplVulkanHSelectSurfaceFormat,
+	selectSurfaceFormat,
 	imGuiImplVulkanHSelectPresentMode,
 	imGuiImplVulkanHCreateOrResizeWindow
 
@@ -31,11 +31,11 @@ import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.H.Win
 
 import Gpu.Vulkan.ImGui.Helper.Middle qualified as M
 
-imGuiImplVulkanHSelectSurfaceFormat ::
+selectSurfaceFormat ::
 	Vk.Phd.P -> Vk.Sfc.S ssfc -> [Vk.Format] -> Vk.Sfc.ColorSpace ->
 	(forall fmt . Vk.T.FormatToValue fmt => Vk.Sfc.Format fmt -> IO a) -> IO a
-imGuiImplVulkanHSelectSurfaceFormat pd (Vk.Sfc.S sfc) fmts cs a =
-	M.imGuiImplVulkanHSelectSurfaceFormat pd sfc fmts cs \sfmt ->
+selectSurfaceFormat pd (Vk.Sfc.S sfc) fmts cs a =
+	M.selectSurfaceFormat pd sfc fmts cs \sfmt ->
 	Vk.Sfc.formatFromMiddle sfmt a
 
 imGuiImplVulkanHSelectPresentMode ::

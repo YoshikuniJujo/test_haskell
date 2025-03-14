@@ -136,7 +136,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	let	rqSfcImgFmt = [
 			Vk.FormatB8g8r8a8Unorm, Vk.FormatR8g8b8a8Unorm,
 			Vk.FormatB8g8r8Unorm, Vk.FormatR8g8b8Unorm ] in
-	Vk.ImGui.H.imGuiImplVulkanHSelectSurfaceFormat phd sfc rqSfcImgFmt Vk.Sfc.ColorSpaceSrgbNonlinear \sfmt ->
+	Vk.ImGui.H.selectSurfaceFormat phd sfc rqSfcImgFmt Vk.Sfc.ColorSpaceSrgbNonlinear \sfmt ->
 	let	pms = bool
 			[Vk.Sfc.PresentModeFifo]
 			[	Vk.Sfc.PresentModeMailbox,
