@@ -203,11 +203,8 @@ main_cxx4(
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
 	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info )
 {
-	VkResult err;
 
 	ImGuiIO& io = *pio;
-
-    ImGui_ImplVulkan_Init(p_init_info);
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -314,6 +311,7 @@ main_cxx4(
     }
 
     // Cleanup
+	VkResult err;
     err = vkDeviceWaitIdle(dvc);
     check_vk_result(err);
     ImGui_ImplVulkan_Shutdown();

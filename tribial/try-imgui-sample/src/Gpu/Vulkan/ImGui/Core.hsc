@@ -19,7 +19,9 @@ module Gpu.Vulkan.ImGui.Core (
 
 	PtrA, PtrCheckVkResultFn, CheckVkResultFn,
 
-	InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx
+	InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx,
+
+	cxx_imgui_impl_vulkan_init
 
 	) where
 
@@ -130,3 +132,6 @@ initInfoFromCxx = peek
 
 copyInitInfoToCxx :: InitInfo -> InitInfoCxx -> IO ()
 copyInitInfoToCxx = flip poke
+
+foreign import ccall "imgui_impl_vulkan_init" cxx_imgui_impl_vulkan_init ::
+	InitInfoCxx -> IO #{type bool}

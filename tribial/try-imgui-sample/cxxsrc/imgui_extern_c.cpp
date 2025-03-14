@@ -1,4 +1,5 @@
 #include "imgui.h"
+#include "imgui_impl_vulkan.h"
 #include "imgui_impl_glfw.h"
 
 struct GLFWwindow;
@@ -12,6 +13,7 @@ extern "C" void style_colors_dark_no_arg();
 extern "C" void style_colors_light_no_arg();
 extern "C" void style_colors_classic_no_arg();
 extern "C" bool imgui_impl_glfw_init_for_vulkan(GLFWwindow*, bool);
+extern "C" bool imgui_impl_vulkan_init(ImGui_ImplVulkan_InitInfo*);
 
 void
 imgui_check_version()
@@ -71,4 +73,10 @@ bool
 imgui_impl_glfw_init_for_vulkan(GLFWwindow* win, bool ics)
 {
 	return ImGui_ImplGlfw_InitForVulkan(win, ics);
+}
+
+bool
+imgui_impl_vulkan_init(ImGui_ImplVulkan_InitInfo* info)
+{
+	return ImGui_ImplVulkan_Init(info);
 }
