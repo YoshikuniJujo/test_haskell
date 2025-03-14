@@ -10,7 +10,7 @@ module Gpu.Vulkan.ImGui.Io.Middle (
 	) where
 
 import Gpu.Vulkan.ImGui.Enum qualified as E
-import Gpu.Vulkan.ImGui.Io.Core qualified as C
+import Gpu.Vulkan.ImGui.NoVulkan.Io.Core qualified as C
 
 getConfigFlags :: C.I -> IO E.ConfigFlags
 getConfigFlags i = E.ConfigFlags <$> C.getConfigFlags i

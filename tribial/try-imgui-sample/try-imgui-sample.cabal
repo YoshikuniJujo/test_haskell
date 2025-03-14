@@ -69,9 +69,9 @@ library
       Gpu.Vulkan.ImGui.Helper.Window.Core
       Gpu.Vulkan.ImGui.Helper.Window.Middle
       Gpu.Vulkan.ImGui.Io
-      Gpu.Vulkan.ImGui.Io.Core
       Gpu.Vulkan.ImGui.Io.Middle
       Gpu.Vulkan.ImGui.Middle
+      Gpu.Vulkan.ImGui.NoVulkan.Io.Core
       Gpu.Vulkan.ImGui.Style.Colors
       Gpu.Vulkan.ImGui.Style.Colors.Core
       Gpu.Vulkan.ImGui.Style.Colors.Middle

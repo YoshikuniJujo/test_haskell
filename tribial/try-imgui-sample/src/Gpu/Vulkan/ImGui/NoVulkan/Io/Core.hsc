@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.Io.Core (
+module Gpu.Vulkan.ImGui.NoVulkan.Io.Core (
 
 	get, I(..),
 
