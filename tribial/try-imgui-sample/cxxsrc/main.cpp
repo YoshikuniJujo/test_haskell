@@ -222,6 +222,8 @@ main_cxx4(
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
+	io.Fonts->AddFontFromFileTTF("/usr/share/fonts/sazanami/sazanami-gothic.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
@@ -269,7 +271,7 @@ main_cxx4(
 
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Text("This is some useful text. 日本語でおk");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
 
