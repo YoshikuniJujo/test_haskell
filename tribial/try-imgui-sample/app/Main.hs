@@ -143,7 +143,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 				Vk.Sfc.PresentModeImmediate,
 				Vk.Sfc.PresentModeFifo ]
 			AppUseUnlimitedFrameRate.flag in
-	Vk.ImGui.H.imGuiImplVulkanHSelectPresentMode phd sfc pms \pm ->
+	Vk.ImGui.H.selectPresentMode phd sfc pms \pm ->
 	when oldLog (print pm) >>
 	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
 	let z' = z {
@@ -154,7 +154,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		} in
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
-	Vk.ImGui.H.imGuiImplVulkanHCreateOrResizeWindow ist phd dvc wdcxx qfi nil wdt hgt 2 >>
+	Vk.ImGui.H.createOrResizeWindow ist phd dvc wdcxx qfi nil wdt hgt 2 >>
 	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
 	when oldLog (printIO wd) >>
 	Vk.ImGui.checkVersion >>

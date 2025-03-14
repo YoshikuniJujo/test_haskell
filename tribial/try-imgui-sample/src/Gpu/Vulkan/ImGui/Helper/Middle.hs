@@ -7,8 +7,8 @@
 module Gpu.Vulkan.ImGui.Helper.Middle (
 
 	selectSurfaceFormat,
-	imGuiImplVulkanHSelectPresentMode,
-	imGuiImplVulkanHCreateOrResizeWindow
+	selectPresentMode,
+	createOrResizeWindow
 
 	) where
 
@@ -43,21 +43,21 @@ selectSurfaceFormat
 		pd sfc pfmts fmtc cs
 	where fmtc :: Integral n => n; fmtc = L.genericLength fmts
 
-imGuiImplVulkanHSelectPresentMode ::
+selectPresentMode ::
 	Vk.Phd.P -> Vk.Sfc.S -> [Vk.Sfc.PresentMode] ->
 	(Vk.Sfc.PresentMode -> IO a) -> IO a
-imGuiImplVulkanHSelectPresentMode (Vk.Phd.P pd) (Vk.Sfc.S sfc) pms a =
+selectPresentMode (Vk.Phd.P pd) (Vk.Sfc.S sfc) pms a =
 	allocaArray pmc \ppms -> do
 	pokeArray ppms $ (\(Vk.Sfc.PresentMode pm) -> pm) <$> pms
 	a . Vk.Sfc.PresentMode
-		=<< C.imGuiImplVulkanHSelectPresentMode pd sfc ppms pmc
+		=<< C.selectPresentMode pd sfc ppms pmc
 	where pmc :: Integral n => n; pmc = L.genericLength pms
 
-imGuiImplVulkanHCreateOrResizeWindow ::
+createOrResizeWindow ::
 	Vk.Ist.I -> Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 -> IO ()
-imGuiImplVulkanHCreateOrResizeWindow
+createOrResizeWindow
 	(Vk.Ist.I ist) (Vk.Phd.P phd) (Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs wdt hgt mic =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
-	C.imGuiImplVulkanHCreateOrResizeWindow
+	C.createOrResizeWindow
 		ist phd dvc wd qfi pacs wdt hgt mic

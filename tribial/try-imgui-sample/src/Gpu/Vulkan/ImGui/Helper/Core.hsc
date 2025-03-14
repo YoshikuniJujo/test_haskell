@@ -5,8 +5,8 @@
 module Gpu.Vulkan.ImGui.Helper.Core (
 
 	selectSurfaceFormat,
-	imGuiImplVulkanHSelectPresentMode,
-	imGuiImplVulkanHCreateOrResizeWindow
+	selectPresentMode,
+	createOrResizeWindow
 
 	) where
 
@@ -38,21 +38,21 @@ foreign import ccall "ImGui_ImplVulkanH_SelectSurfaceFormat2"
 	Vk.Phd.P -> Vk.Sfc.S -> Ptr #{type VkFormat} -> #{type int} ->
 	#{type VkColorSpaceKHR} -> IO (Ptr Vk.Sfc.Format)
 
-imGuiImplVulkanHSelectPresentMode ::
+selectPresentMode ::
 	Vk.Phd.P -> Vk.Sfc.S -> Ptr #{type VkPresentModeKHR} -> #{type int} ->
 	IO #{type VkPresentModeKHR}
-imGuiImplVulkanHSelectPresentMode = cxx_ImGui_ImplVulkanH_SelectPresentMode
+selectPresentMode = cxx_ImGui_ImplVulkanH_SelectPresentMode
 
 foreign import ccall "ImGui_ImplVulkanH_SelectPresentMode"
 	cxx_ImGui_ImplVulkanH_SelectPresentMode ::
 	Vk.Phd.P -> Vk.Sfc.S -> Ptr #{type VkPresentModeKHR} -> #{type int} ->
 	IO #{type VkPresentModeKHR}
 
-imGuiImplVulkanHCreateOrResizeWindow ::
+createOrResizeWindow ::
 	Vk.Ist.I -> Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	#{type uint32_t} -> Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> IO ()
-imGuiImplVulkanHCreateOrResizeWindow =
+createOrResizeWindow =
 	cxx_ImGui_ImplVulkanH_CreateOrResizeWindow
 
 foreign import ccall "ImGui_ImplVulkanH_CreateOrResizeWindow"

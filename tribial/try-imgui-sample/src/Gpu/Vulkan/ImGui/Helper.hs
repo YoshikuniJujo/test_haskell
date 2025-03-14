@@ -6,8 +6,8 @@
 module Gpu.Vulkan.ImGui.Helper (
 
 	selectSurfaceFormat,
-	imGuiImplVulkanHSelectPresentMode,
-	imGuiImplVulkanHCreateOrResizeWindow
+	selectPresentMode,
+	createOrResizeWindow
 
 	) where
 
@@ -38,16 +38,16 @@ selectSurfaceFormat pd (Vk.Sfc.S sfc) fmts cs a =
 	M.selectSurfaceFormat pd sfc fmts cs \sfmt ->
 	Vk.Sfc.formatFromMiddle sfmt a
 
-imGuiImplVulkanHSelectPresentMode ::
+selectPresentMode ::
 	Vk.Phd.P -> Vk.Sfc.S ssfc -> [Vk.Sfc.PresentMode] ->
 	(Vk.Sfc.PresentMode -> IO a) -> IO a
-imGuiImplVulkanHSelectPresentMode pd (Vk.Sfc.S sfc) =
-	M.imGuiImplVulkanHSelectPresentMode pd sfc
+selectPresentMode pd (Vk.Sfc.S sfc) =
+	M.selectPresentMode pd sfc
 
-imGuiImplVulkanHCreateOrResizeWindow :: Vk.AllocCallbacks.ToMiddle mac =>
+createOrResizeWindow :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int32 -> Int32 -> Word32 -> IO ()
-imGuiImplVulkanHCreateOrResizeWindow
+createOrResizeWindow
 	(Vk.Ist.I ist) phd (Vk.Dvc.D dvc) wd qfi mac wdt hgt mic =
-	M.imGuiImplVulkanHCreateOrResizeWindow
+	M.createOrResizeWindow
 		ist phd dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic
