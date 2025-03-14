@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Middle (
@@ -9,7 +10,9 @@ module Gpu.Vulkan.ImGui.Middle (
 
 import Foreign.Ptr
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.Bool
 import Data.Word
+import Text.Show.ToolsYj
 
 import Gpu.Vulkan.Middle.Internal qualified as Vk
 import Gpu.Vulkan.Exception.Enum qualified as Vk
@@ -28,7 +31,7 @@ import Gpu.Vulkan.Subpass.Middle.Internal qualified as Vk.Sbpss
 
 import Gpu.Vulkan.ImGui.Core qualified as C
 
-data InitInfo ac = InitInfo {
+data InitInfo mac = InitInfo {
 	initInfoApiVersion :: Vk.ApiVersion,
 	initInfoInstance :: Vk.Ist.I,
 	initInfoPhysicalDevice :: Vk.Phd.P,
@@ -44,9 +47,49 @@ data InitInfo ac = InitInfo {
 	initInfoSubpass :: Vk.Sbpss.S,
 	initInfoDescriptorPoolSize :: Word32,
 	initInfoUseDynamicRendering :: Bool,
-	initInfoAllocator :: TPMaybe.M Vk.AllocCallbacks.A ac,
-	initInfoCheckVkResultFn :: Vk.Result -> IO (),
+	initInfoAllocator :: TPMaybe.M Vk.AllocCallbacks.A mac,
+	initInfoCheckVkResultFn :: Maybe (Vk.Result -> IO ()),
 	initInfoMinAllocationSize :: Vk.Dvc.Size }
+
+instance Show (TPMaybe.M Vk.AllocCallbacks.A ac) => ShowIO (InitInfo ac) where
+	showIO ii = do
+		pure $ "InitInfo { " ++
+			"initInfoApiVersion = " ++
+				show (initInfoApiVersion ii) ++ ", " ++
+			"initInfoInstance = " ++
+				show (initInfoInstance ii) ++ ", " ++
+			"initInfoPhysicalDevice = " ++
+				show (initInfoPhysicalDevice ii) ++ ", " ++
+			"initInfoDevice = " ++
+				show (initInfoDevice ii) ++ ", " ++
+			"initInfoQueueFamily = " ++
+				show (initInfoQueueFamily ii) ++ ", " ++
+			"initInfoQueue = " ++ show (initInfoQueue ii) ++ ", " ++
+			"initInfoDescriptorPool = " ++
+				show (initInfoDescriptorPool ii) ++ ", " ++
+			"initInfoRenderPass = " ++
+				show (initInfoRenderPass ii) ++ ", " ++
+			"initInfoMinImageCount = " ++
+				show (initInfoMinImageCount ii) ++ ", " ++
+			"initInfoImageCount = " ++
+				show (initInfoImageCount ii) ++ ", " ++
+			"initInfoMSAASamples = " ++
+				show (initInfoMSAASamples ii) ++ ", " ++
+			"initInfoPipelineCache = " ++
+				show (initInfoPipelineCache ii) ++ ", " ++
+			"initInfoSubpass = " ++
+				show (initInfoSubpass ii) ++ ", " ++
+			"initInfoDescriptorPoolSize = " ++
+				show (initInfoDescriptorPoolSize ii) ++ ", " ++
+			"initInfoUseDynamicRendering = " ++
+				show (initInfoUseDynamicRendering ii) ++ ", " ++
+			"initInfoAllocator = " ++
+				show (initInfoAllocator ii) ++ ", " ++
+			"initInfoCheckVkResultFn = " ++ maybe "Nothing"
+				(const "Just <function>")
+				(initInfoCheckVkResultFn ii) ++ ", " ++
+			"initInfoMinAllocationSize = " ++
+				show (initInfoMinAllocationSize ii) ++ " }"
 
 initInfoFromCore ::
 	Vk.AllocCallbacks.MFromCore ac => C.InitInfo -> IO (InitInfo ac)
@@ -87,8 +130,10 @@ initInfoFromCore C.InitInfo {
 		initInfoDescriptorPoolSize = dps,
 		initInfoUseDynamicRendering = udr /= 0,
 		initInfoAllocator = acm,
-		initInfoCheckVkResultFn =
-			mkCheckResultFn crf . (\(Vk.Result r) -> r),
+		initInfoCheckVkResultFn = bool
+			Nothing
+			(Just $ mkCheckResultFn crf . (\(Vk.Result r) -> r))
+			(crf /= nullFunPtr),
 		initInfoMinAllocationSize = Vk.Dvc.Size mas }
 
 foreign import ccall "dynamic" mkCheckResultFn ::

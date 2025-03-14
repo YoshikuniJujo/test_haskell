@@ -74,6 +74,7 @@ import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
 
+import Gpu.Vulkan.ImGui.Middle qualified as Vk.ImGui.M
 import Gpu.Vulkan.ImGui.Core qualified as Vk.ImGui.Core
 
 import Gpu.Vulkan.Middle qualified as Vk.M
@@ -175,7 +176,10 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
 		cxx_initialize_ImGui_ImplVulkan_InitInfo
 			pInitInfo ist phd qfi dvc gq dp wdcxx
-		print =<< peek pInitInfo
+		initInfo <- peek pInitInfo
+		print initInfo
+		printIO =<< Vk.ImGui.M.initInfoFromCore @'Nothing initInfo
+		poke pInitInfo initInfo
 		cxx_main_cxx4 (GlfwC.toC win)
 			ist phd qfi dvc gq dp wdcxx io pInitInfo
 		cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
