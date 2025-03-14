@@ -44,7 +44,6 @@ import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
 
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
-import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Sfc.Phd
 import Gpu.Vulkan.Khr.Surface.Glfw.Window qualified as Vk.Sfc.Win
 
@@ -57,7 +56,6 @@ import Gpu.Vulkan.Queue.Middle.Internal qualified as Vk.Q.M
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam.M
 import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc.M
 import Gpu.Vulkan.DescriptorPool.Middle.Internal qualified as Vk.DscPl.M
-import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc.M
 
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
