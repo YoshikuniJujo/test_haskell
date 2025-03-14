@@ -10,7 +10,7 @@ module Gpu.Vulkan.ImGui (
 
 	-- * INITIALIZATION
 
-	InitInfo(..),
+	InitInfo(..), initInfoFromMiddle,
 
 	-- * ENUMS
 
@@ -58,3 +58,43 @@ data InitInfo si sd sdp srp spc mac = InitInfo {
 	initInfoAllocator :: TPMaybe.M (U2 Vk.AllocCallbacks.A) mac,
 	initInfoCheckVkResultFn :: Maybe (Vk.Result -> IO ()),
 	initInfoMinAllocationSize :: Vk.Dvc.Size }
+
+initInfoFromMiddle :: Vk.AllocCallbacks.ToMiddle mac =>
+	M.InitInfo (Vk.AllocCallbacks.Snd mac) -> InitInfo si sd sdp srp spc mac
+initInfoFromMiddle M.InitInfo {
+	M.initInfoApiVersion = av,
+	M.initInfoInstance = ist,
+	M.initInfoPhysicalDevice = phd,
+	M.initInfoDevice = dvc,
+	M.initInfoQueueFamily = qfi,
+	M.initInfoQueue = gq,
+	M.initInfoDescriptorPool = dpl,
+	M.initInfoRenderPass = rp,
+	M.initInfoMinImageCount = mic,
+	M.initInfoImageCount = ic,
+	M.initInfoMSAASamples = mss,
+	M.initInfoPipelineCache = pc,
+	M.initInfoSubpass = sp,
+	M.initInfoDescriptorPoolSize = dps,
+	M.initInfoUseDynamicRendering = udr,
+	M.initInfoAllocator = ac,
+	M.initInfoCheckVkResultFn = crfn,
+	M.initInfoMinAllocationSize = mas } = InitInfo {
+	initInfoApiVersion = av,
+	initInfoInstance = Vk.Ist.I ist,
+	initInfoPhysicalDevice = phd,
+	initInfoDevice = Vk.Dvc.D dvc,
+	initInfoQueueFamily = qfi,
+	initInfoQueue = gq,
+	initInfoDescriptorPool = Vk.DscPl.P dpl,
+	initInfoRenderPass = Vk.RndrPss.R rp,
+	initInfoMinImageCount = mic,
+	initInfoImageCount = ic,
+	initInfoMSAASamples = mss,
+	initInfoPipelineCache = Vk.PplCch.P pc,
+	initInfoSubpass = sp,
+	initInfoDescriptorPoolSize = dps,
+	initInfoUseDynamicRendering = udr,
+	initInfoAllocator = Vk.AllocCallbacks.fromMiddle ac,
+	initInfoCheckVkResultFn = crfn,
+	initInfoMinAllocationSize = mas }

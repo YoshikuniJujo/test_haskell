@@ -44,15 +44,15 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    commit: a92caa8f3b56352a8b82cb704e7abdbdc3e79d37
+    commit: 32affd6638d38728720b8f6654ea92950d9c46dc
     git: https://github.com/YoshikuniJujo/gpu-vulkan
     name: gpu-vulkan
     pantry-tree:
-      sha256: 2f645805a64579c514efd6ecb81dc0011676c5cf3ebdacba419a04fb00a1af8f
+      sha256: f1db68be3e6e484b668b8a9be11469f4cecd37c6670cb3388c4e46d2822954eb
       size: 12890
-    version: 0.1.0.170
+    version: 0.1.0.171
   original:
-    commit: a92caa8f3b56352a8b82cb704e7abdbdc3e79d37
+    commit: 32affd6638d38728720b8f6654ea92950d9c46dc
     git: https://github.com/YoshikuniJujo/gpu-vulkan
 - completed:
     commit: 34d4baa4a7cd10810f89e828558acc170d94c406

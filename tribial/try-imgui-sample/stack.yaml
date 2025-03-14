@@ -51,7 +51,7 @@ extra-deps:
     # - gpu-vulkan-middle-0.1.0.75
     # - gpu-vulkan-core-0.1.0.21
   - git: https://github.com/YoshikuniJujo/gpu-vulkan
-    commit: a92caa8f3b56352a8b82cb704e7abdbdc3e79d37
+    commit: 32affd6638d38728720b8f6654ea92950d9c46dc
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
     commit: 34d4baa4a7cd10810f89e828558acc170d94c406
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-core
