@@ -174,10 +174,12 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo ->
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
 		pInitInfo ist phd qfi dvc gq dp wdcxx >>
-	peek pInitInfo >>= \initInfo ->
-	Vk.ImGui.M.initInfoFromCore @'Nothing initInfo >>= \initInfoM ->
-	printIO (Vk.ImGui.initInfoFromMiddle @'Nothing initInfoM) >>
-	Vk.ImGui.M.initInfoToCore initInfoM \initInfo' -> do
+	peek pInitInfo >>= \initInfoC ->
+	Vk.ImGui.M.initInfoFromCore @'Nothing initInfoC >>= \initInfoM ->
+	let	initInfo = Vk.ImGui.initInfoFromMiddle @'Nothing initInfoM in
+	printIO initInfo >>
+	Vk.ImGui.M.initInfoToCore
+		(Vk.ImGui.initInfoToMiddle initInfo) \initInfo' -> do
 		poke pInitInfo initInfo'
 		cxx_main_cxx4 (GlfwC.toC win)
 			ist phd qfi dvc gq dp wdcxx io pInitInfo
