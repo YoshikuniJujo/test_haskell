@@ -4,9 +4,10 @@
 module Gpu.Vulkan.ImGui.Middle (
 	C.checkVersion,
 	C.createContextNoArg, C.Context,
-	InitInfo(..)
+	InitInfo(..), initInfoFromCore
 	) where
 
+import Foreign.Ptr
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Word
 
@@ -65,7 +66,9 @@ initInfoFromCore C.InitInfo {
 	C.initInfoSubpass = sp,
 	C.initInfoDescriptorPoolSize = dps,
 	C.initInfoUseDynamicRendering = udr,
-	C.initInfoAllocator = ac } = do
+	C.initInfoAllocator = ac,
+	C.initInfoCheckVkResultFn = crf,
+	C.initInfoMinAllocationSize = mas } = do
 	acm <- Vk.AllocCallbacks.mFromCore ac
 	pure InitInfo {
 		initInfoApiVersion = Vk.ApiVersion av,
@@ -83,7 +86,10 @@ initInfoFromCore C.InitInfo {
 		initInfoSubpass = Vk.Sbpss.S sp,
 		initInfoDescriptorPoolSize = dps,
 		initInfoUseDynamicRendering = udr /= 0,
-		initInfoAllocator = acm
-		}
+		initInfoAllocator = acm,
+		initInfoCheckVkResultFn =
+			mkCheckResultFn crf . (\(Vk.Result r) -> r),
+		initInfoMinAllocationSize = Vk.Dvc.Size mas }
 
--- foreign import ccall "dynamic" mkCheckResultFn :: FunPtr
+foreign import ccall "dynamic" mkCheckResultFn ::
+	FunPtr C.CheckVkResultFn -> C.CheckVkResultFn
