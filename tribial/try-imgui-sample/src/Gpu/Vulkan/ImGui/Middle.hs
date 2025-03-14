@@ -1,11 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Middle (
 	C.checkVersion,
 	C.createContextNoArg, C.Context,
-	InitInfo(..), initInfoFromCore
+	InitInfo(..), initInfoFromCore, initInfoToCore
 	) where
 
 import Foreign.Ptr
@@ -138,3 +139,53 @@ initInfoFromCore C.InitInfo {
 
 foreign import ccall "dynamic" mkCheckResultFn ::
 	FunPtr C.CheckVkResultFn -> C.CheckVkResultFn
+
+initInfoToCore :: InitInfo mac -> (C.InitInfo -> IO a) -> IO ()
+initInfoToCore InitInfo {
+	initInfoApiVersion = Vk.ApiVersion av,
+	initInfoInstance = Vk.Ist.I ist,
+	initInfoPhysicalDevice = Vk.Phd.P phd,
+	initInfoDevice = Vk.Dvc.D dvc,
+	initInfoQueueFamily = Vk.QFam.Index qfi,
+	initInfoQueue = Vk.Q.Q q,
+	initInfoDescriptorPool = Vk.DscPl.D dpl,
+	initInfoRenderPass = Vk.RndrPss.R rp,
+	initInfoMinImageCount = mic,
+	initInfoImageCount = ic,
+	initInfoMSAASamples = Vk.Smpl.CountFlagBits mss,
+	initInfoPipelineCache = Vk.PplCch.P pc,
+	initInfoSubpass = Vk.Sbpss.S sp,
+	initInfoDescriptorPoolSize = dps,
+	initInfoUseDynamicRendering = udr,
+	initInfoAllocator = acm,
+	initInfoCheckVkResultFn = mcrf,
+	initInfoMinAllocationSize = Vk.Dvc.Size mas } a =
+	Vk.AllocCallbacks.mToCore acm \acc -> do
+	crfc <- maybeCheckResultFnToCore mcrf
+	a C.InitInfo {
+		C.initInfoApiVersion = av,
+		C.initInfoInstance = ist,
+		C.initInfoPhysicalDevice = phd,
+		C.initInfoDevice = dvc,
+		C.initInfoQueueFamily = qfi,
+		C.initInfoQueue = q,
+		C.initInfoDescriptorPool = dpl,
+		C.initInfoRenderPass = rp,
+		C.initInfoMinImageCount = mic,
+		C.initInfoImageCount = ic,
+		C.initInfoMSAASamples = mss,
+		C.initInfoPipelineCache = pc,
+		C.initInfoSubpass = sp,
+		C.initInfoDescriptorPoolSize = dps,
+		C.initInfoUseDynamicRendering = bool 0 1 udr,
+		C.initInfoAllocator = acc,
+		C.initInfoCheckVkResultFn = crfc,
+		C.initInfoMinAllocationSize = mas }
+
+maybeCheckResultFnToCore :: Maybe (Vk.Result -> IO ()) -> IO (FunPtr C.CheckVkResultFn)
+maybeCheckResultFnToCore = \case
+	Nothing -> pure nullFunPtr
+	Just cr -> wrapCheckResultFn $ cr . Vk.Result
+
+foreign import ccall "wrapper" wrapCheckResultFn ::
+	C.CheckVkResultFn -> IO (FunPtr C.CheckVkResultFn)

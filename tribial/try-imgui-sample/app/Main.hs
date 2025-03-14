@@ -172,14 +172,15 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 --	Vk.ImGui.Style.Colors.lightNoArg >>
 --	Vk.ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >>
-	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
-		pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
-		cxx_initialize_ImGui_ImplVulkan_InitInfo
-			pInitInfo ist phd qfi dvc gq dp wdcxx
-		initInfo <- peek pInitInfo
-		print initInfo
-		printIO =<< Vk.ImGui.M.initInfoFromCore @'Nothing initInfo
-		poke pInitInfo initInfo
+	Vk.ImGui.Win.wCCopyToCxx wd wdcxx
+	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo ->
+	cxx_initialize_ImGui_ImplVulkan_InitInfo
+		pInitInfo ist phd qfi dvc gq dp wdcxx >>
+	peek pInitInfo >>= \initInfo ->
+	Vk.ImGui.M.initInfoFromCore @'Nothing initInfo >>= \initInfoM ->
+	printIO initInfoM >>
+	Vk.ImGui.M.initInfoToCore initInfoM \initInfo' -> do
+		poke pInitInfo initInfo'
 		cxx_main_cxx4 (GlfwC.toC win)
 			ist phd qfi dvc gq dp wdcxx io pInitInfo
 		cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
