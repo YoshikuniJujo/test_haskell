@@ -176,7 +176,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		pInitInfo ist phd qfi dvc gq dp wdcxx >>
 	peek pInitInfo >>= \initInfo ->
 	Vk.ImGui.M.initInfoFromCore @'Nothing initInfo >>= \initInfoM ->
-	printIO initInfoM >>
+	printIO (Vk.ImGui.initInfoFromMiddle @'Nothing initInfoM) >>
 	Vk.ImGui.M.initInfoToCore initInfoM \initInfo' -> do
 		poke pInitInfo initInfo'
 		cxx_main_cxx4 (GlfwC.toC win)

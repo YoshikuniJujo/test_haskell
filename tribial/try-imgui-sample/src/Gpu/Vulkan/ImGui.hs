@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui (
@@ -21,6 +22,7 @@ module Gpu.Vulkan.ImGui (
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Word
+import Text.Show.ToolsYj
 
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.Exception qualified as Vk
@@ -58,6 +60,47 @@ data InitInfo si sd sdp srp spc mac = InitInfo {
 	initInfoAllocator :: TPMaybe.M (U2 Vk.AllocCallbacks.A) mac,
 	initInfoCheckVkResultFn :: Maybe (Vk.Result -> IO ()),
 	initInfoMinAllocationSize :: Vk.Dvc.Size }
+
+instance Show (TPMaybe.M (U2 Vk.AllocCallbacks.A) mac) =>
+	ShowIO (InitInfo si sd sdp srp spc mac) where
+	showIO ii = do
+		pure $ "InitInfo { " ++
+			"initInfoApiVersion = " ++
+				show (initInfoApiVersion ii) ++ ", " ++
+			"initInfoInstance = " ++
+				show (initInfoInstance ii) ++ ", " ++
+			"initInfoPhysicalDevice = " ++
+				show (initInfoPhysicalDevice ii) ++ ", " ++
+			"initInfoDevice = " ++
+				show (initInfoDevice ii) ++ ", " ++
+			"initInfoQueueFamily = " ++
+				show (initInfoQueueFamily ii) ++ ", " ++
+			"initInfoQueue = " ++ show (initInfoQueue ii) ++ ", " ++
+			"initInfoDescriptorPool = " ++
+				show (initInfoDescriptorPool ii) ++ ", " ++
+			"initInfoRenderPass = " ++
+				show (initInfoRenderPass ii) ++ ", " ++
+			"initInfoMinImageCount = " ++
+				show (initInfoMinImageCount ii) ++ ", " ++
+			"initInfoImageCount = " ++
+				show (initInfoImageCount ii) ++ ", " ++
+			"initInfoMSAASamples = " ++
+				show (initInfoMSAASamples ii) ++ ", " ++
+			"initInfoPipelineCache = " ++
+				show (initInfoPipelineCache ii) ++ ", " ++
+			"initInfoSubpass = " ++
+				show (initInfoSubpass ii) ++ ", " ++
+			"initInfoDescriptroPoolSize = " ++
+				show (initInfoDescriptorPoolSize ii) ++ ", " ++
+			"initInfoUseDynamicRendering = " ++
+				show (initInfoUseDynamicRendering ii) ++ ", " ++
+			"initInfoAllocator = " ++
+				show (initInfoAllocator ii) ++ ", " ++
+			"initInfoCheckVkResultFn = " ++ maybe
+				"Nothing" (const "Just <function>")
+				(initInfoCheckVkResultFn ii) ++ ", " ++
+			"initInfoMinAllocationSize = " ++
+				show (initInfoMinAllocationSize ii) ++ " }"
 
 initInfoFromMiddle :: Vk.AllocCallbacks.ToMiddle mac =>
 	M.InitInfo (Vk.AllocCallbacks.Snd mac) -> InitInfo si sd sdp srp spc mac
