@@ -67,7 +67,7 @@ import Bindings.GLFW qualified as GlfwBase
 import Gpu.Vulkan.ImGui qualified as Vk.ImGui
 import Gpu.Vulkan.ImGui.NoVulkan qualified as ImGui
 import Gpu.Vulkan.ImGui.NoVulkan.Io qualified as ImGui.Io
-import Gpu.Vulkan.ImGui.Style.Colors qualified as Vk.ImGui.Style.Colors
+import Gpu.Vulkan.ImGui.NoVulkan.Style.Colors qualified as ImGui.Style.Colors
 import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
@@ -164,9 +164,9 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		(.|. ImGui.ConfigFlagsNavEnableKeyboard) >>
 	ImGui.Io.modifyConfigFlags io
 		(.|. ImGui.ConfigFlagsNavEnableGamepad) >>
-	Vk.ImGui.Style.Colors.darkNoArg >>
---	Vk.ImGui.Style.Colors.lightNoArg >>
---	Vk.ImGui.Style.Colors.classicNoArg >>
+	ImGui.Style.Colors.darkNoArg >>
+--	ImGui.Style.Colors.lightNoArg >>
+--	ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >>
 	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
 	pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo

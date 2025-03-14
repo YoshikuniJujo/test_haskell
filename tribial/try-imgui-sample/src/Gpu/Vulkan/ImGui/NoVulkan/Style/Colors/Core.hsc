@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.Style.Colors.Core (
+module Gpu.Vulkan.ImGui.NoVulkan.Style.Colors.Core (
 
 	darkNoArg, lightNoArg, classicNoArg
 
