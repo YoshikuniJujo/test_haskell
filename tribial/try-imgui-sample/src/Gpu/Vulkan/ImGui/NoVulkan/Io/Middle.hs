@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.Io.Middle (
+module Gpu.Vulkan.ImGui.NoVulkan.Io.Middle (
 
 	C.get, C.I(..),
 

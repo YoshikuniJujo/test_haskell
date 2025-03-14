@@ -65,7 +65,7 @@ import Graphics.UI.GLFW.C qualified as GlfwC
 import Bindings.GLFW qualified as GlfwBase
 
 import Gpu.Vulkan.ImGui qualified as Vk.ImGui
-import Gpu.Vulkan.ImGui.Io qualified as Vk.ImGui.Io
+import Gpu.Vulkan.ImGui.NoVulkan.Io qualified as ImGui.Io
 import Gpu.Vulkan.ImGui.Style.Colors qualified as Vk.ImGui.Style.Colors
 import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
@@ -113,7 +113,7 @@ glfwErrorCallback err dsc =
 foreign import ccall "main_cxx4" cxx_main_cxx4 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W ->
-	Vk.ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> IO ()
+	ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> IO ()
 
 foreign import ccall "new_ImGui_ImplVulkan_InitInfo"
 	cxx_new_ImGui_ImplVulkan_InitInfo :: IO Vk.ImGui.InitInfoCxx
@@ -158,10 +158,10 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	when oldLog (printIO wd) >>
 	Vk.ImGui.checkVersion >>
 	Vk.ImGui.createContextNoArg >>
-	Vk.ImGui.Io.get >>= \io ->
-	Vk.ImGui.Io.modifyConfigFlags io
+	ImGui.Io.get >>= \io ->
+	ImGui.Io.modifyConfigFlags io
 		(.|. Vk.ImGui.ConfigFlagsNavEnableKeyboard) >>
-	Vk.ImGui.Io.modifyConfigFlags io
+	ImGui.Io.modifyConfigFlags io
 		(.|. Vk.ImGui.ConfigFlagsNavEnableGamepad) >>
 	Vk.ImGui.Style.Colors.darkNoArg >>
 --	Vk.ImGui.Style.Colors.lightNoArg >>
