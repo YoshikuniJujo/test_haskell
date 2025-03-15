@@ -5,11 +5,15 @@ module Gpu.Vulkan.ImGui.NoVulkan.Io.Middle (
 
 	C.get, C.I(..),
 
-	getConfigFlags, setConfigFlags, modifyConfigFlags
+	getConfigFlags, setConfigFlags, modifyConfigFlags,
+
+	fonts
 
 	) where
 
 import Gpu.Vulkan.ImGui.NoVulkan.Enum qualified as E
+import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas.Middle qualified as FontAtlas
+
 import Gpu.Vulkan.ImGui.NoVulkan.Io.Core qualified as C
 
 getConfigFlags :: C.I -> IO E.ConfigFlags
@@ -20,3 +24,6 @@ setConfigFlags i (E.ConfigFlags fs) = C.setConfigFlags i fs
 
 modifyConfigFlags :: C.I -> (E.ConfigFlags -> E.ConfigFlags) -> IO ()
 modifyConfigFlags i f = setConfigFlags i . f =<< getConfigFlags i
+
+fonts :: C.I -> FontAtlas.F
+fonts = FontAtlas.F . C.fonts

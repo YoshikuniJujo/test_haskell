@@ -68,6 +68,7 @@ import Gpu.Vulkan.ImGui qualified as Vk.ImGui
 import Gpu.Vulkan.ImGui.NoVulkan qualified as ImGui
 import Gpu.Vulkan.ImGui.NoVulkan.Io qualified as ImGui.Io
 import Gpu.Vulkan.ImGui.NoVulkan.Style.Colors qualified as ImGui.Style.Colors
+import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas qualified as ImGui.FontAtlas
 import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
@@ -176,6 +177,10 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	printIO initInfo
 	Vk.ImGui.copyInitInfoToCxx initInfo pInitInfo
 	print =<< Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo
+	let	fa = ImGui.Io.fonts io
+		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa
+	print grsj
+	print $ length grsj
 	cxx_main_cxx4 (GlfwC.toC win) ist phd qfi dvc gq dp wdcxx io pInitInfo
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 

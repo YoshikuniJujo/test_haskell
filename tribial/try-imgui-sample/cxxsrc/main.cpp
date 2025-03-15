@@ -222,7 +222,8 @@ main_cxx4(
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
-	io.Fonts->AddFontFromFileTTF("/usr/share/fonts/sazanami/sazanami-gothic.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+//	io.Fonts->AddFontFromFileTTF("/usr/share/fonts/sazanami/sazanami-gothic.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+	io.Fonts->AddFontFromFileTTF("/usr/share/fonts/mikachan-font-ttf/mikachan.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
     // Our state
     bool show_demo_window = true;

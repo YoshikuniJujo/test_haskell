@@ -7,6 +7,8 @@ module Gpu.Vulkan.ImGui.NoVulkan.Io (
 
 	M.getConfigFlags, M.setConfigFlags, M.modifyConfigFlags,
 
+	M.fonts
+
 	) where
 
 import Gpu.Vulkan.ImGui.NoVulkan.Io.Middle qualified as M

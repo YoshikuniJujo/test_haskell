@@ -3,6 +3,9 @@
 #include <stdbool.h>
 #include <vulkan/vulkan.h>
 
+typedef unsigned int ImWChar32;
+typedef unsigned short ImWChar16;
+
 typedef int ImGuiConfigFlags;
 
 enum ImGuiConfigFlags_
