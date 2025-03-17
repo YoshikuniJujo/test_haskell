@@ -20,6 +20,7 @@ data FTag
 type F = Ptr FTag
 
 type PtrCChar = Ptr CChar
+type PtrUShort = Ptr #{type unsigned short}
 
 struct "FC" #{size ImFontConfig_C} #{alignment ImFontConfig_C} [
 	("FontData", ''PtrCChar,
@@ -45,7 +46,40 @@ struct "FC" #{size ImFontConfig_C} #{alignment ImFontConfig_C} [
 		[| #{poke ImFontConfig_C, OversampleH} |]),
 	("OversampleV", ''#{type int},
 		[| #{peek ImFontConfig_C, OversampleV} |],
-		[| #{poke ImFontConfig_C, OversampleV} |])
+		[| #{poke ImFontConfig_C, OversampleV} |]),
+	("SizePixels", ''#{type float},
+		[| #{peek ImFontConfig_C, SizePixels} |],
+		[| #{poke ImFontConfig_C, SizePixels} |]),
+	("GlyphOffsetX", ''#{type float},
+		[| #{peek ImFontConfig_C, GlyphOffsetX} |],
+		[| #{poke ImFontConfig_C, GlyphOffsetX} |]),
+	("GlyphOffsetY", ''#{type float},
+		[| #{peek ImFontConfig_C, GlyphOffsetY} |],
+		[| #{poke ImFontConfig_C, GlyphOffsetY} |]),
+	("GlyphRange", ''PtrUShort,
+		[| #{peek ImFontConfig_C, GlyphRanges} |],
+		[| #{poke ImFontConfig_C, GlyphRanges} |]),
+	("GlyphMinAdvanceX", ''#{type float},
+		[| #{peek ImFontConfig_C, GlyphMinAdvanceX} |],
+		[| #{poke ImFontConfig_C, GlyphMinAdvanceX} |]),
+	("GlyphMaxAdvanceX", ''#{type float},
+		[| #{peek ImFontConfig_C, GlyphMaxAdvanceX} |],
+		[| #{poke ImFontConfig_C, GlyphMaxAdvanceX} |]),
+	("GlyphExtraAdvanceX", ''#{type float},
+		[| #{peek ImFontConfig_C, GlyphExtraAdvanceX} |],
+		[| #{poke ImFontConfig_C, GlyphExtraAdvanceX} |]),
+	("FontBuilderFlags", ''#{type unsigned int},
+		[| #{peek ImFontConfig_C, FontBuilderFlags} |],
+		[| #{poke ImFontConfig_C, FontBuilderFlags} |]),
+	("RasterizerMultiply", ''#{type float},
+		[| #{peek ImFontConfig_C, RasterizerMultiply} |],
+		[| #{poke ImFontConfig_C, RasterizerMultiply} |]),
+	("RasterizerDensity", ''#{type float},
+		[| #{peek ImFontConfig_C, RasterizerDensity} |],
+		[| #{poke ImFontConfig_C, RasterizerDensity} |]),
+	("EllipsisChar", ''#{type unsigned short},
+		[| #{peek ImFontConfig_C, EllipsisChar} |],
+		[| #{poke ImFontConfig_C, EllipsisChar} |])
 	]
 	[''Show, ''Storable]
 
