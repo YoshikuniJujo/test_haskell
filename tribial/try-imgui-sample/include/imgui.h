@@ -3288,6 +3288,7 @@ struct ImFontConfig
     ImFont*         DstFont;
 
     IMGUI_API ImFontConfig();
+    ~ImFontConfig();
 };
 
 // Hold rendering data for one glyph.

@@ -158,6 +158,8 @@ extern "C" void initialize_ImGui_ImplVulkan_InitInfo(
 	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd );
 
+extern "C" void set_mikachan_font(ImGuiIO* pio, ImFontConfig* pcf);
+
 // Main code
 
 ImGui_ImplVulkan_InitInfo*
@@ -196,6 +198,13 @@ initialize_ImGui_ImplVulkan_InitInfo(
 	p_init_info->CheckVkResultFn = check_vk_result;
 }
 
+void
+set_mikachan_font(ImGuiIO* pio, ImFontConfig* pfc)
+{
+	pio->Fonts->AddFontFromFileTTF("/usr/share/fonts/mikachan-font-ttf/mikachan.ttf", 18.0f, nullptr, pio->Fonts->GetGlyphRangesJapanese());
+	*pfc = pio->Fonts->Sources.Data[0];
+}
+
 int
 main_cxx4(
 	GLFWwindow* window, VkInstance ist,
@@ -223,7 +232,7 @@ main_cxx4(
     //IM_ASSERT(font != nullptr);
 
 //	io.Fonts->AddFontFromFileTTF("/usr/share/fonts/sazanami/sazanami-gothic.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-	io.Fonts->AddFontFromFileTTF("/usr/share/fonts/mikachan-font-ttf/mikachan.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+//	io.Fonts->AddFontFromFileTTF("/usr/share/fonts/mikachan-font-ttf/mikachan.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
     // Our state
     bool show_demo_window = true;

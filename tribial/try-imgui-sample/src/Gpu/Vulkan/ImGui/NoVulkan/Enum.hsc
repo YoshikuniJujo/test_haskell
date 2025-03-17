@@ -12,14 +12,14 @@ import Data.Int
 #include "imgui_c.h"
 
 enum "ConfigFlags" ''#{type ImGuiConfigFlags} [''Show, ''Read, ''Eq, ''Bits] [
-	("ConfigFlagsNone", #{const ImGuiConfigFlags_None}),
+	("ConfigFlagsNone", #{const ImGuiConfigFlags_None_C}),
 	("ConfigFlagsNavEnableKeyboard",
-		#{const ImGuiConfigFlags_NavEnableKeyboard}),
+		#{const ImGuiConfigFlags_NavEnableKeyboard_C}),
 	("ConfigFlagsNavEnableGamepad",
-		#{const ImGuiConfigFlags_NavEnableGamepad}),
-	("ConfigFlagsNoMouse", #{const ImGuiConfigFlags_NoMouse}),
+		#{const ImGuiConfigFlags_NavEnableGamepad_C}),
+	("ConfigFlagsNoMouse", #{const ImGuiConfigFlags_NoMouse_C}),
 	("ConfigFlagsNoMouseCursorChange",
-		#{const ImGuiConfigFlags_NoMouseCursorChange}),
-	("ConfigFlagsNoKeyboard", #{const ImGuiConfigFlags_NoKeyboard}),
-	("ConfigFlagsIsSrgb", #{const ImGuiConfigFlags_IsSRGB}),
-	("ConfigFlagsIsTouchScreen", #{const ImGuiConfigFlags_IsTouchScreen}) ]
+		#{const ImGuiConfigFlags_NoMouseCursorChange_C}),
+	("ConfigFlagsNoKeyboard", #{const ImGuiConfigFlags_NoKeyboard_C}),
+	("ConfigFlagsIsSrgb", #{const ImGuiConfigFlags_IsSRGB_C}),
+	("ConfigFlagsIsTouchScreen", #{const ImGuiConfigFlags_IsTouchScreen_C}) ]

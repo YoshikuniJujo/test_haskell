@@ -2383,6 +2383,11 @@ ImFontConfig::ImFontConfig()
     EllipsisChar = 0;
 }
 
+ImFontConfig::~ImFontConfig()
+{
+	printf("ImFontConfig (%p) is destructed\n", this);
+}
+
 //-----------------------------------------------------------------------------
 // [SECTION] ImFontAtlas
 //-----------------------------------------------------------------------------

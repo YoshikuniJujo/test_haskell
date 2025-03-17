@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 #include "imgui_impl_glfw.h"
+#include "imgui_c.h"
 
 struct GLFWwindow;
 
@@ -18,6 +19,10 @@ extern "C" bool imgui_impl_vulkan_init(ImGui_ImplVulkan_InitInfo*);
 extern "C" ImFontAtlas* imgui_io_fonts(ImGuiIO*);
 extern "C" const ImWchar* im_font_atlas_get_glyph_ranges_japanese(ImFontAtlas*);
 extern "C" void check_im_wchar();
+extern "C" ImFontConfig* im_font_atlas_sources(ImFontAtlas *fa, int *sz);
+extern "C" int im_font_config_c_size();
+extern "C" int im_font_config_size();
+extern "C" void im_font_config_to_c(ImFontConfig *cxx, struct ImFontConfig_C *c);
 
 void
 imgui_check_version()
@@ -105,4 +110,58 @@ void check_im_wchar()
 #else
 	printf("IMGUI_USE_WCHAR32 not defined\n");
 #endif
+}
+
+ImFontConfig*
+im_font_atlas_sources(ImFontAtlas *fa, int *sz)
+{
+	ImVector<ImFontConfig> vfc = fa->Sources;
+	*sz = vfc.Size;
+	return vfc.Data;
+}
+
+int
+im_font_config_c_size()
+{
+	return sizeof(struct ImFontConfig_C);
+}
+
+int
+im_font_config_size()
+{
+	return sizeof(struct ImFontConfig);
+}
+
+void
+im_font_config_to_c(ImFontConfig *cxx, struct ImFontConfig_C *c)
+{
+	c->FontData = cxx->FontData;
+	c->FontDataSize = cxx->FontDataSize;
+	c->FontDataOwnedByAtlas = cxx->FontDataOwnedByAtlas;
+	c->MergeMode = cxx->MergeMode;
+	c->PixelSnapH = cxx->PixelSnapH;
+	c->FontNo = cxx->FontNo;
+	c->OversampleH = cxx->OversampleH;
+	c->OversampleV = cxx->OversampleV;
+	c->SizePixels = cxx->SizePixels;
+	c->GlyphOffsetX = cxx->GlyphOffset.x;
+	c->GlyphOffsetY = cxx->GlyphOffset.y;
+	c->GlyphRanges = cxx->GlyphRanges;
+	c->GlyphMinAdvanceX = cxx->GlyphMinAdvanceX;
+	c->GlyphMaxAdvanceX = cxx->GlyphMaxAdvanceX;
+	c->GlyphExtraAdvanceX = cxx->GlyphExtraAdvanceX;
+	c->FontBuilderFlags = cxx->FontBuilderFlags;
+	c->RasterizerMultiply = cxx->RasterizerMultiply;
+	c->RasterizerDensity = cxx->RasterizerDensity;
+	c->EllipsisChar = cxx->EllipsisChar;
+	strncpy(c->Name, cxx->Name, 40);
+	c->DstFont = cxx->DstFont;
+
+	printf("%d\n", c->FontDataSize);
+	printf("%d\n", c->FontDataOwnedByAtlas);
+	printf("%d\n", c->MergeMode);
+	printf("%lf\n", c->SizePixels);
+	printf("c->GlyphOffsetX = %lf\n", c->GlyphOffsetX);
+	printf("c->GlyphOffsetY = %lf\n", c->GlyphOffsetY);
+	printf("%s\n", c->Name);
 }

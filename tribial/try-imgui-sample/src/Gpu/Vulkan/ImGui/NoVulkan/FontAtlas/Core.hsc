@@ -1,9 +1,13 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.NoVulkan.FontAtlas.Core where
 
 import Foreign.Ptr
 import Data.Word
+import Data.Int
+
+import Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Core qualified as FontConfig
 
 #include "imgui_c.h"
 
@@ -21,3 +25,6 @@ getGlyphRangesJapanese = cxx_im_font_atlas_get_glyph_ranges_japanese
 
 foreign import ccall "im_font_atlas_get_glyph_ranges_japanese"
 	cxx_im_font_atlas_get_glyph_ranges_japanese :: F -> Ptr ImWChar
+
+foreign import ccall "im_font_atlas_sources"
+	cxx_im_font_atlas_sources :: F -> Ptr #{type int} -> IO FontConfig.F

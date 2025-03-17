@@ -10,6 +10,8 @@
 module Main (main) where
 
 import Foreign.Ptr
+import Foreign.Marshal.Alloc
+import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -26,6 +28,7 @@ import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
+import Data.Int
 import Data.Text.IO qualified as Txt
 import Text.Show.ToolsYj
 import System.IO
@@ -80,6 +83,10 @@ import Debug qualified
 import OldLog qualified
 import AppUseUnlimitedFrameRate qualified
 
+import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas.Middle qualified as ImGui.FontAtlas.M
+import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas.Core qualified as ImGui.FontAtlas.C
+import Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Core qualified as ImGui.FontConfig.C
+
 debug, oldLog :: Bool
 debug = Debug.flag
 oldLog = OldLog.flag
@@ -111,6 +118,9 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
+
+foreign import ccall "set_mikachan_font" cxx_set_mikachan_font ::
+	ImGui.Io.I -> Ptr ImGui.FontConfig.C.FTag -> IO ()
 
 foreign import ccall "main_cxx4" cxx_main_cxx4 ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Phd.P ->
@@ -177,10 +187,19 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	printIO initInfo
 	Vk.ImGui.copyInitInfoToCxx initInfo pInitInfo
 	print =<< Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo
-	let	fa = ImGui.Io.fonts io
+	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
 		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa
 	print grsj
 	print $ length grsj
+	alloca \pn -> do
+		print =<< ImGui.FontAtlas.C.cxx_im_font_atlas_sources pfa pn
+		print =<< peek pn
+	fcsz <- fromIntegral <$> cxx_im_font_config_size
+	allocaBytes fcsz \pfc' -> do -- alloca \pn -> do
+		cxx_set_mikachan_font io pfc'
+		-- pfc <- ImGui.FontAtlas.C.cxx_im_font_atlas_sources pfa pn
+		-- print =<< peek pn
+		print =<< ImGui.FontConfig.C.toC pfc'
 	cxx_main_cxx4 (GlfwC.toC win) ist phd qfi dvc gq dp wdcxx io pInitInfo
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 
@@ -323,3 +342,9 @@ createDscPl dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.createInfoPoolSizes = (: []) Vk.DscPl.Size {
 			Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 			Vk.DscPl.sizeDescriptorCount = 1 } }
+
+-- foreign import ccall "im_font_config_c_size" cxx_im_font_config_c_size ::
+--	IO Int32
+
+foreign import ccall "im_font_config_size" cxx_im_font_config_size ::
+	IO Int32
