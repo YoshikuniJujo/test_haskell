@@ -112,6 +112,7 @@ library
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , bytestring
     , c-enum
     , c-struct
     , data-default
@@ -193,6 +194,7 @@ executable try-imgui-sample-exe
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , bytestring
     , c-enum
     , c-struct
     , data-default
@@ -241,6 +243,7 @@ executable trySome
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , bytestring
     , c-enum
     , c-struct
     , data-default
@@ -294,6 +297,7 @@ test-suite try-imgui-sample-test
       GLFW-b
     , base >=4.7 && <5
     , bindings-GLFW
+    , bytestring
     , c-enum
     , c-struct
     , data-default

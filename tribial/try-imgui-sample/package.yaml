@@ -47,6 +47,7 @@ flags:
 dependencies:
 - base >= 4.7 && < 5
 - primitive
+- bytestring
 - text
 - data-default
 - c-struct

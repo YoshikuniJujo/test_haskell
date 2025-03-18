@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -7,12 +8,14 @@ module Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Core where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Struct
 import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
+import Data.ByteString qualified as BS
 
 #include "imgui_c.h"
 
@@ -79,8 +82,14 @@ struct "FC" #{size ImFontConfig_C} #{alignment ImFontConfig_C} [
 		[| #{poke ImFontConfig_C, RasterizerDensity} |]),
 	("EllipsisChar", ''#{type unsigned short},
 		[| #{peek ImFontConfig_C, EllipsisChar} |],
-		[| #{poke ImFontConfig_C, EllipsisChar} |])
-	]
+		[| #{poke ImFontConfig_C, EllipsisChar} |]),
+	("Name", ''BS.ByteString,
+		[| \p -> peekByteString (#{ptr ImFontConfig_C, Name} p) 40 |],
+		[| \p bs ->
+			pokeByteString (#{ptr ImFontConfig_C, Name} p) 40 bs |]),
+	("DstFont", ''PtrVoid,
+		[| #{peek ImFontConfig_C, DstFont} |],
+		[| #{poke ImFontConfig_C, DstFont} |]) ]
 	[''Show, ''Storable]
 
 toC :: F -> IO FC
@@ -88,3 +97,10 @@ toC f = alloca \pfc -> cxx_im_font_config_to_c f pfc >> peek pfc
 
 foreign import ccall "im_font_config_to_c" cxx_im_font_config_to_c ::
 	F -> Ptr FC -> IO ()
+
+peekByteString :: Ptr CChar -> Int -> IO BS.ByteString
+peekByteString = curry BS.packCStringLen
+
+pokeByteString :: Ptr CChar -> Int -> BS.ByteString -> IO ()
+pokeByteString p n bs =
+	BS.useAsCStringLen bs \(p', n') -> copyBytes p p' (min n n')
