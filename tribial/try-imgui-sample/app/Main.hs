@@ -11,8 +11,10 @@ module Main (main) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Control.Arrow
 import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
@@ -85,6 +87,7 @@ import AppUseUnlimitedFrameRate qualified
 
 import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas.Middle qualified as ImGui.FontAtlas.M
 import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas.Core qualified as ImGui.FontAtlas.C
+import Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Middle qualified as ImGui.FontConfig.M
 import Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Core qualified as ImGui.FontConfig.C
 
 debug, oldLog :: Bool
@@ -189,7 +192,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	print =<< Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo
 	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
 		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa
-	print grsj
+--	print grsj
 	print $ length grsj
 	alloca \pn -> do
 		print =<< ImGui.FontAtlas.C.cxx_im_font_atlas_sources pfa pn
@@ -199,7 +202,18 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		cxx_set_mikachan_font io pfc'
 		-- pfc <- ImGui.FontAtlas.C.cxx_im_font_atlas_sources pfa pn
 		-- print =<< peek pn
-		print =<< ImGui.FontConfig.C.toC pfc'
+		fcc <- ImGui.FontConfig.C.toC pfc'
+		putStrLn
+			. (\(s1, s2) -> s1 ++ " ... " ++ s2) . (take 350 &&& drop 26350)
+			. (\(s1, s2) -> s1 ++ " ... " ++ s2) . (take 100 &&& drop 7189900) . show =<< ImGui.FontConfig.M.fcFromCore fcc
+		grs <- peekArray0 0 (ImGui.FontConfig.C.fCGlyphRanges fcc)
+		grs' <- ImGui.FontConfig.M.glyphRanges <$> peekArray0 0 (ImGui.FontConfig.C.fCGlyphRanges fcc)
+--		print grs
+--		print grs'
+		print $ length grs
+		print $ length grs'
+		print . length $ show grs
+		print . length $ show grs'
 	cxx_main_cxx4 (GlfwC.toC win) ist phd qfi dvc gq dp wdcxx io pInitInfo
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 

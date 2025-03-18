@@ -12,10 +12,11 @@ import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Struct
-import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 import Data.ByteString qualified as BS
+
+import Gpu.Vulkan.ImGui.NoVulkan.Font.Core qualified as Font
 
 #include "imgui_c.h"
 
@@ -59,7 +60,7 @@ struct "FC" #{size ImFontConfig_C} #{alignment ImFontConfig_C} [
 	("GlyphOffsetY", ''#{type float},
 		[| #{peek ImFontConfig_C, GlyphOffsetY} |],
 		[| #{poke ImFontConfig_C, GlyphOffsetY} |]),
-	("GlyphRange", ''PtrUShort,
+	("GlyphRanges", ''PtrUShort,
 		[| #{peek ImFontConfig_C, GlyphRanges} |],
 		[| #{poke ImFontConfig_C, GlyphRanges} |]),
 	("GlyphMinAdvanceX", ''#{type float},
@@ -87,7 +88,7 @@ struct "FC" #{size ImFontConfig_C} #{alignment ImFontConfig_C} [
 		[| \p -> peekByteString (#{ptr ImFontConfig_C, Name} p) 40 |],
 		[| \p bs ->
 			pokeByteString (#{ptr ImFontConfig_C, Name} p) 40 bs |]),
-	("DstFont", ''PtrVoid,
+	("DstFont", ''Font.F,
 		[| #{peek ImFontConfig_C, DstFont} |],
 		[| #{poke ImFontConfig_C, DstFont} |]) ]
 	[''Show, ''Storable]
