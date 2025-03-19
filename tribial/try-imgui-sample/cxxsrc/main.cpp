@@ -56,13 +56,13 @@ static void CleanupVulkanWindow(VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_
     ImGui_ImplVulkanH_DestroyWindow(ist, dvc, wd, g_Allocator);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, ImDrawData* draw_data)
+static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, ImDrawData* draw_data, bool* scr)
 {
     VkSemaphore image_acquired_semaphore  = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
     VkResult err = vkAcquireNextImageKHR(dvc, wd->Swapchain, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
-        g_SwapChainRebuild = true;
+        *scr = true;
     if (err == VK_ERROR_OUT_OF_DATE_KHR)
         return;
     if (err != VK_SUBOPTIMAL_KHR)
@@ -121,9 +121,9 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, 
     }
 }
 
-static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
+static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq, bool* scr)
 {
-    if (g_SwapChainRebuild)
+    if (*scr)
         return;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
     VkPresentInfoKHR info = {};
@@ -135,7 +135,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
     info.pImageIndices = &wd->FrameIndex;
     VkResult err = vkQueuePresentKHR(gq, &info);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
-        g_SwapChainRebuild = true;
+        *scr = true;
     if (err == VK_ERROR_OUT_OF_DATE_KHR)
         return;
     if (err != VK_SUBOPTIMAL_KHR)
@@ -149,7 +149,11 @@ extern "C" void step(
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
 	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
 	bool* p_show_demo_window, bool* p_show_another_window,
-	float* p_clear_color );
+	float* p_clear_color, bool* pscr );
+extern "C" void resizeSwapchain(
+	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, ImGui_ImplVulkanH_Window* wd,
+	bool* pscr, int fbwdt, int fbhgt );
 
 extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
 
@@ -215,30 +219,25 @@ cleanup (VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_Window* wd)
 }
 
 void
+resizeSwapchain(
+	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, ImGui_ImplVulkanH_Window* wd,
+	bool* pscr, int fbwdt, int fbhgt )
+{
+	ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
+	ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, fbwdt, fbhgt, g_MinImageCount);
+	wd->FrameIndex = 0;
+	*pscr = false;
+}
+
+void
 step(	GLFWwindow* window, VkInstance ist,
 	VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
 	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
 	bool* p_show_demo_window, bool* p_show_another_window,
-	float* p_clear_color )
+	float* p_clear_color, bool* pscr )
 {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-        glfwPollEvents();
-
-        // Resize swap chain?
-        int fb_width, fb_height;
-        glfwGetFramebufferSize(window, &fb_width, &fb_height);
-        if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || wd->Width != fb_width || wd->Height != fb_height))
-        {
-            ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-            ImGui_ImplVulkanH_CreateOrResizeWindow(ist, phd, dvc, wd, qfi, g_Allocator, fb_width, fb_height, g_MinImageCount);
-            wd->FrameIndex = 0;
-            g_SwapChainRebuild = false;
-        }
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
             ImGui_ImplGlfw_Sleep(10);
@@ -297,7 +296,7 @@ step(	GLFWwindow* window, VkInstance ist,
             wd->ClearValue.color.float32[1] = p_clear_color[1] * p_clear_color[3];
             wd->ClearValue.color.float32[2] = p_clear_color[2] * p_clear_color[3];
             wd->ClearValue.color.float32[3] = p_clear_color[3];
-            FrameRender(wd, dvc, gq, draw_data);
-            FramePresent(wd, gq);
+            FrameRender(wd, dvc, gq, draw_data, pscr);
+            FramePresent(wd, gq, pscr);
         }
 }

@@ -30,6 +30,7 @@ import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
 import Data.Word
+import Data.Int
 import Data.Text.IO qualified as Txt
 import Text.Show.ToolsYj
 import System.IO
@@ -122,7 +123,12 @@ glfwErrorCallback err dsc =
 foreign import ccall "step" cxx_step ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W ->
-	ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> IO ()
+	ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> Ptr Word8 ->
+	IO ()
+
+foreign import ccall "resizeSwapchain" cxx_resizeSwapchain ::
+	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.ImGui.Win.W ->
+	Ptr Word8 -> Int32 -> Int32 -> IO ()
 
 foreign import ccall "cleanup" cxx_cleanup ::
 	Vk.Ist.I si -> Vk.Dvc.D sd -> Vk.ImGui.Win.W -> IO ()
@@ -196,12 +202,26 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		print =<< peek pn
 	mfont <- ImGui.FontAtlas.addFontFromFileTtf fa "/usr/share/fonts/mikachan-font-ttf/mikachan.ttf" 18.0 Nothing
 		(Just $ ImGui.FontAtlas.getGlyphRangesJapanese fa)
-	alloca \psdw -> alloca \psow -> allocaArray 4 \pcc -> do
+	alloca \psdw -> alloca \psow -> allocaArray 4 \pcc -> alloca \pscr -> do
 		poke psdw 1
 		poke psow 0
 		pokeArray pcc [0.45, 0.55, 0.60, 1.00]
-		untilClose w $
-			cxx_step (GlfwC.toC win) ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc
+		poke pscr 0
+		untilClose w do
+			GlfwG.pollEvents
+			Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd -> do
+				(fromIntegral -> fbwdt, fromIntegral -> fbhgt) <- GlfwG.Win.getFramebufferSize w
+				scr <- peek pscr
+				when (	fbwdt > 0 && fbhgt > 0 &&
+					(scr /= 0 || Vk.ImGui.Win.wCWidth wd /= fbwdt || Vk.ImGui.Win.wCHeight wd /= fbhgt) ) do
+					print $ Vk.ImGui.Win.wCWidth wd
+					print $ Vk.ImGui.Win.wCHeight wd
+					print fbwdt
+					print fbhgt
+					putStrLn ""
+					cxx_resizeSwapchain ist phd qfi dvc wdcxx pscr fbwdt fbhgt
+				cxx_step (GlfwC.toC win)
+					ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
 	cxx_cleanup ist dvc wdcxx
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 
