@@ -238,11 +238,6 @@ step(	GLFWwindow* window, VkInstance ist,
 	bool* p_show_demo_window, bool* p_show_another_window,
 	float* p_clear_color, bool* pscr )
 {
-        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
-        {
-            ImGui_ImplGlfw_Sleep(10);
-            return;
-        }
 
         // Start the Dear ImGui frame
         ImGui_ImplVulkan_NewFrame();

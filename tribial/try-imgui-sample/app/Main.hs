@@ -15,6 +15,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
+import Control.Concurrent
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
 import Data.Bits
@@ -220,8 +221,10 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 					print fbhgt
 					putStrLn ""
 					cxx_resizeSwapchain ist phd qfi dvc wdcxx pscr fbwdt fbhgt
-				cxx_step (GlfwC.toC win)
-					ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
+				icnd <- GlfwG.Win.getIconified w
+				if icnd then threadDelay 10000 else
+					cxx_step (GlfwC.toC win)
+						ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
 	cxx_cleanup ist dvc wdcxx
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 
