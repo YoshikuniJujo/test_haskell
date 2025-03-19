@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -28,3 +28,6 @@ instance Show SomeChunk where
 instance Chunk SomeChunk where
 	chunkName (SomeChunk c) = chunkName c
 --	chunkFromByteString 
+
+fromSomeChunk :: SomeChunk -> (forall c . Chunk c => c -> a) -> a
+fromSomeChunk (SomeChunk c) f = f c
