@@ -1,0 +1,68 @@
+name:                try-png-file
+version:             0.1.0.0
+github:              "YoshikuniJujo/try-png-file"
+license:             BSD-3-Clause
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "(c) 2025 Yoshikuni Jujo"
+
+extra-doc-files:
+- README.md
+- CHANGELOG.md
+
+extra-source-files:
+  - include/chunks.h
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-png-file#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- mtl
+- array
+- bytestring
+- c-struct
+- c-enum
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+  include-dirs: include
+
+executables:
+  try-png-file-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-png-file
+
+tests:
+  try-png-file-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-png-file

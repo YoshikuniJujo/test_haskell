@@ -1,0 +1,87 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-png-file
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-png-file#readme>
+homepage:       https://github.com/YoshikuniJujo/try-png-file#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-png-file/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      (c) 2025 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    include/chunks.h
+extra-doc-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-png-file
+
+library
+  exposed-modules:
+      Chunks.Core
+      Lib
+  other-modules:
+      Paths_try_png_file
+  autogen-modules:
+      Paths_try_png_file
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  include-dirs:
+      include
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , c-struct
+    , mtl
+  default-language: Haskell2010
+
+executable try-png-file-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_png_file
+  autogen-modules:
+      Paths_try_png_file
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , c-struct
+    , mtl
+    , try-png-file
+  default-language: Haskell2010
+
+test-suite try-png-file-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_png_file
+  autogen-modules:
+      Paths_try_png_file
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , c-struct
+    , mtl
+    , try-png-file
+  default-language: Haskell2010
