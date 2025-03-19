@@ -143,11 +143,13 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" int main_cxx4(
+extern "C" void step(
 	GLFWwindow* window, VkInstance ist,
 	VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
-	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info );
+	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
+	bool* p_show_demo_window, bool* p_show_another_window,
+	float* p_clear_color );
 
 extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
 
@@ -157,6 +159,8 @@ extern "C" void initialize_ImGui_ImplVulkan_InitInfo(
 	ImGui_ImplVulkan_InitInfo* p_init_info,
 	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd );
+
+extern "C" void cleanup (VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_Window* wd);
 
 // Main code
 
@@ -196,24 +200,28 @@ initialize_ImGui_ImplVulkan_InitInfo(
 	p_init_info->CheckVkResultFn = check_vk_result;
 }
 
-int
-main_cxx4(
-	GLFWwindow* window, VkInstance ist,
+void
+cleanup (VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_Window* wd)
+{
+    // Cleanup
+	VkResult err;
+    err = vkDeviceWaitIdle(dvc);
+    check_vk_result(err);
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    CleanupVulkanWindow(ist, dvc, wd);
+}
+
+void
+step(	GLFWwindow* window, VkInstance ist,
 	VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
-	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info )
+	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
+	bool* p_show_demo_window, bool* p_show_another_window,
+	float* p_clear_color )
 {
-
-	ImGuiIO& io = *pio;
-
-    // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    // Main loop
-    while (!glfwWindowShouldClose(window))
-    {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
@@ -234,7 +242,7 @@ main_cxx4(
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
             ImGui_ImplGlfw_Sleep(10);
-            continue;
+            return;
         }
 
         // Start the Dear ImGui frame
@@ -243,8 +251,8 @@ main_cxx4(
         ImGui::NewFrame();
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        if (*p_show_demo_window)
+            ImGui::ShowDemoWindow(p_show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
@@ -254,28 +262,28 @@ main_cxx4(
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
             ImGui::Text("This is some useful text. 日本語でおk");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+            ImGui::Checkbox("Demo Window", p_show_demo_window);      // Edit bools storing our window open/close state
+            ImGui::Checkbox("Another Window", p_show_another_window);
 
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            ImGui::ColorEdit3("clear color", p_clear_color); // Edit 3 floats representing a color
 
             if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
                 counter++;
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / pio->Framerate, pio->Framerate);
             ImGui::End();
         }
 
         // 3. Show another simple window.
-        if (show_another_window)
+        if (*p_show_another_window)
         {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Begin("Another Window", p_show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
             if (ImGui::Button("Close Me"))
-                show_another_window = false;
+                *p_show_another_window = false;
             ImGui::End();
         }
 
@@ -285,24 +293,11 @@ main_cxx4(
         const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
         if (!is_minimized)
         {
-            wd->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
-            wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
-            wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
-            wd->ClearValue.color.float32[3] = clear_color.w;
+            wd->ClearValue.color.float32[0] = p_clear_color[0] * p_clear_color[3];
+            wd->ClearValue.color.float32[1] = p_clear_color[1] * p_clear_color[3];
+            wd->ClearValue.color.float32[2] = p_clear_color[2] * p_clear_color[3];
+            wd->ClearValue.color.float32[3] = p_clear_color[3];
             FrameRender(wd, dvc, gq, draw_data);
             FramePresent(wd, gq);
         }
-    }
-
-    // Cleanup
-	VkResult err;
-    err = vkDeviceWaitIdle(dvc);
-    check_vk_result(err);
-    ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    CleanupVulkanWindow(ist, dvc, wd);
-
-    return 0;
 }

@@ -11,6 +11,7 @@ module Main (main) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
@@ -28,6 +29,7 @@ import Data.HeteroParList qualified as HPList
 import Data.HeteroParList.Constrained qualified as HPListC
 import Data.Bool
 import Data.Bool.ToolsYj
+import Data.Word
 import Data.Text.IO qualified as Txt
 import Text.Show.ToolsYj
 import System.IO
@@ -117,10 +119,13 @@ glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "main_cxx4" cxx_main_cxx4 ::
+foreign import ccall "step" cxx_step ::
 	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W ->
-	ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> IO ()
+	ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> IO ()
+
+foreign import ccall "cleanup" cxx_cleanup ::
+	Vk.Ist.I si -> Vk.Dvc.D sd -> Vk.ImGui.Win.W -> IO ()
 
 foreign import ccall "new_ImGui_ImplVulkan_InitInfo"
 	cxx_new_ImGui_ImplVulkan_InitInfo :: IO Vk.ImGui.InitInfoCxx
@@ -191,8 +196,18 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		print =<< peek pn
 	mfont <- ImGui.FontAtlas.addFontFromFileTtf fa "/usr/share/fonts/mikachan-font-ttf/mikachan.ttf" 18.0 Nothing
 		(Just $ ImGui.FontAtlas.getGlyphRangesJapanese fa)
-	cxx_main_cxx4 (GlfwC.toC win) ist phd qfi dvc gq dp wdcxx io pInitInfo
+	alloca \psdw -> alloca \psow -> allocaArray 4 \pcc -> do
+		poke psdw 1
+		poke psow 0
+		pokeArray pcc [0.45, 0.55, 0.60, 1.00]
+		untilClose w $
+			cxx_step (GlfwC.toC win) ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc
+	cxx_cleanup ist dvc wdcxx
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
+
+untilClose :: GlfwG.Win.W sw -> IO a -> IO ()
+untilClose w a = bool (a >> untilClose w a) (pure ())
+	=<< GlfwG.Win.shouldClose w
 
 createIst :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createIst f = do
