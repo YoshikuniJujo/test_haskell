@@ -70,6 +70,7 @@ library
       Gpu.Vulkan.ImGui.Middle
       Gpu.Vulkan.ImGui.NoVulkan
       Gpu.Vulkan.ImGui.NoVulkan.Enum
+      Gpu.Vulkan.ImGui.NoVulkan.Font
       Gpu.Vulkan.ImGui.NoVulkan.Font.Core
       Gpu.Vulkan.ImGui.NoVulkan.Font.Middle
       Gpu.Vulkan.ImGui.NoVulkan.FontAtlas
@@ -77,6 +78,8 @@ library
       Gpu.Vulkan.ImGui.NoVulkan.FontAtlas.Middle
       Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Core
       Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Middle
+      Gpu.Vulkan.ImGui.NoVulkan.FontConfigNew.Core
+      Gpu.Vulkan.ImGui.NoVulkan.FontConfigNew.Middle
       Gpu.Vulkan.ImGui.NoVulkan.Io
       Gpu.Vulkan.ImGui.NoVulkan.Io.Core
       Gpu.Vulkan.ImGui.NoVulkan.Io.Middle

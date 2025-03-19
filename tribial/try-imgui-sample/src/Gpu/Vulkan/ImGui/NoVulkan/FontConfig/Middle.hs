@@ -115,3 +115,13 @@ glyphRangesFromList (GlyphList gs) (w0 : ws)
 	| last gs + 1 == w0 =
 		GlyphList (init gs) : glyphRangesFromList (GlyphRange (last gs) w0) ws
 	| otherwise = glyphRangesFromList (GlyphList $ gs ++ [w0]) ws
+
+pokeGlyphRanges :: Ptr Word16 -> GlyphRanges -> IO ()
+pokeGlyphRanges p grs = pokeArray0 0 p $ glyphRangesToWords grs
+
+glyphRangesToWords :: GlyphRanges -> [Word16]
+glyphRangesToWords = concatMap glyphRangeToWords
+
+glyphRangeToWords :: GlyphRange -> [Word16]
+glyphRangeToWords (GlyphRange w1 w2) = [w1, w2]
+glyphRangeToWords (GlyphList ws) = concatMap (\w -> [w, w]) ws

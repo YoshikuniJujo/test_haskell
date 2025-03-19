@@ -23,6 +23,11 @@ extern "C" ImFontConfig* im_font_atlas_sources(ImFontAtlas *fa, int *sz);
 extern "C" int im_font_config_c_size();
 extern "C" int im_font_config_size();
 extern "C" void im_font_config_to_c(ImFontConfig *cxx, struct ImFontConfig_C *c);
+extern "C" void im_font_atlas_clear_fonts(ImFontAtlas*);
+extern "C" ImFont* im_font_atlas_add_font(ImFontAtlas* fa, const ImFontConfig* font_cfg);
+extern "C" ImFontConfig* im_font_config_new();
+extern "C" ImFont* im_font_atlas_add_font_from_file_ttf(
+	ImFontAtlas*, const char*, float, const ImFontConfig*, const ImWchar* );
 
 void
 imgui_check_version()
@@ -164,4 +169,31 @@ im_font_config_to_c(ImFontConfig *cxx, struct ImFontConfig_C *c)
 	printf("c->GlyphOffsetX = %lf\n", c->GlyphOffsetX);
 	printf("c->GlyphOffsetY = %lf\n", c->GlyphOffsetY);
 	printf("%s\n", c->Name);
+}
+
+void
+im_font_atlas_clear_fonts(ImFontAtlas* fa)
+{
+	fa->ClearFonts();
+}
+
+ImFont*
+im_font_atlas_add_font(ImFontAtlas* fa, const ImFontConfig* font_cfg)
+{
+	return fa->AddFont(font_cfg);
+}
+
+ImFontConfig*
+im_font_config_new()
+{
+	return new ImFontConfig();
+}
+
+ImFont*
+im_font_atlas_add_font_from_file_ttf(
+	ImFontAtlas* fa,
+	const char* filename, float size_pixels,
+	const ImFontConfig* font_cfg, const ImWchar* glyph_ranges )
+{
+	return fa->AddFontFromFileTTF(filename, size_pixels, font_cfg, glyph_ranges);
 }

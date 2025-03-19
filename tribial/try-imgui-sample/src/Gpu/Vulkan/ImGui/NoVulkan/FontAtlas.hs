@@ -3,7 +3,7 @@
 
 module Gpu.Vulkan.ImGui.NoVulkan.FontAtlas (
 
-	M.F, M.getGlyphRangesJapanese
+	M.F, M.getGlyphRangesJapanese, M.addFontFromFileTtf
 
 	) where
 
