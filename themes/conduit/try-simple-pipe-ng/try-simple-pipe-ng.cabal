@@ -1,0 +1,74 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-simple-pipe-ng
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-simple-pipe-ng#readme>
+homepage:       https://github.com/YoshikuniJujo/try-simple-pipe-ng#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-simple-pipe-ng/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      Copyright (c) 2023 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-simple-pipe-ng
+
+library
+  exposed-modules:
+      Data.Pipe
+      Data.Pipe.ByteString
+      Data.Pipe.Core
+      Data.Pipe.Flow
+      Data.Pipe.IO
+      Data.Pipe.Lazy
+      Data.Pipe.List
+      Data.Pipe.TChan
+  other-modules:
+      Paths_try_simple_pipe_ng
+  autogen-modules:
+      Paths_try_simple_pipe_ng
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , lifted-base
+    , monad-control
+    , monads-tf
+    , stm
+    , transformers
+    , transformers-base
+  default-language: Haskell2010
+
+test-suite try-simple-pipe-ng-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_simple_pipe_ng
+  autogen-modules:
+      Paths_try_simple_pipe_ng
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , lifted-base
+    , monad-control
+    , monads-tf
+    , stm
+    , transformers
+    , transformers-base
+    , try-simple-pipe-ng
+  default-language: Haskell2010
