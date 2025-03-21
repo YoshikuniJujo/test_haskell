@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleContexts, ScopedTypeVariables, PackageImports #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.IO (fromHandle, toHandle, fromFile, toFile, debug) where
 
-import Control.Applicative
 import "monads-tf" Control.Monad.Trans
 import Control.Monad.Trans.Control
 import Control.Monad.Base

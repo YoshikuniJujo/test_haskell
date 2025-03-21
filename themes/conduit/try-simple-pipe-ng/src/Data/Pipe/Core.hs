@@ -1,11 +1,11 @@
 {-# LANGUAGE TupleSections, TypeFamilies, FlexibleContexts, RankNTypes,
 	PackageImports #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.Core (
 	PipeClass(..), PipeChoice(..), (=@=), runPipe_, convert,
 	Pipe(..), finally, bracket ) where
 
-import Control.Applicative
 import Control.Monad
 import Control.Exception.Lifted (onException)
 import Control.Monad.Trans.Control
@@ -164,14 +164,13 @@ instance Monad m => Monad (Pipe i o m) where
 --	Done f r >>= k = Make (return ()) $ f >> return (k r)
 	Done _ r >>= k = k r
 	Make f m >>= k = Make f $ (>>= k) `liftM` m
-	return = Done (return ())
 
 instance Monad m => Functor (Pipe i o m) where
 	fmap = (=<<) . (return .)
 
 instance Monad m => Applicative (Pipe i o m) where
-	pure = return
 	(<*>) = ap
+	pure = Done (return ())
 
 instance MonadTrans (Pipe i o) where
 	lift = liftP
@@ -208,14 +207,14 @@ passResult :: (PipeClass p, Monad m, Monad (p i (Either a r) m)) =>
 	p i a m r -> p i (Either a r) m ()
 passResult s = mapOut Left s >>= yield . Right
 
-recvResult :: (PipeClass p, PipeChoice p, Monad m,
-	Monad (p a o m), Monad (p r o m), Monad (p (Either a r) o m)) =>
+recvResult :: (PipeChoice p, Monad m, Monad (p a o m), Monad (p r o m) ) =>
 	p a o m r' -> p (Either a r) o m r
 recvResult p =
 	(p >> return undefined) |||| (await >>= maybe (return undefined) return)
 
 
-(=@=) :: (PipeClass p, PipeChoice p, Monad m, Monad (p i (Either a r) m),
-	Monad (p a o m), Monad (p r o m), Monad (p (Either a r) o m)) =>
+(=@=) :: (
+	PipeChoice p, Monad m,
+	Monad (p i (Either a r) m), Monad (p a o m), Monad (p r o m)) =>
 	p i a m r -> p a o m r' -> p i o m r
 p1 =@= p2 = passResult p1 =$= recvResult p2

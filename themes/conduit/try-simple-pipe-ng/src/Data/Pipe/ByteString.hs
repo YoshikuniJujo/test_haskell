@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleContexts, ScopedTypeVariables, PackageImports #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.ByteString (
 	fromHandle, toHandle, fromFile, toFile,
 	fromHandleLn, toHandleLn, fromFileLn, toFileLn,
 	toLazy) where
 
-import Control.Applicative
 import "monads-tf" Control.Monad.Trans
 import Control.Monad.Trans.Control
 import Control.Monad.Base
@@ -47,7 +47,6 @@ fromFileLn fp =
 
 toFileLn :: (PipeClass p, MonadBaseControl IO m,
 	MonadTrans (p BSC.ByteString o), Monad (p BSC.ByteString o m)) =>
---	MonadIO (p BSC.ByteString o m)) =>
 	FilePath -> p BSC.ByteString o m ()
 toFileLn fp = bracket
 	(liftBase $ openFile fp WriteMode)
@@ -82,6 +81,6 @@ toFile fp = bracket
 	(liftBase $ openFile fp WriteMode)
 	(liftBase . hClose) toHandle
 
-toLazy :: (PipeClass p, L.PipeLazy p, MonadBaseControl IO m) =>
+toLazy :: (L.PipeLazy p, MonadBaseControl IO m) =>
 	p i BSC.ByteString m r -> m LBS.ByteString
 toLazy = (LBS.fromChunks <$>) . L.toLazy

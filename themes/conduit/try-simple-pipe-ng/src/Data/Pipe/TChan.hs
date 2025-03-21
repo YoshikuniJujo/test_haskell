@@ -1,14 +1,15 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TupleSections, FlexibleContexts, PackageImports #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.TChan (
 	fromTChan, toTChan, fromTChans, toTChans, toTChansM) where
 
-import Control.Applicative
 import Control.Arrow
 import "monads-tf" Control.Monad.Trans
 import Control.Monad.Base
 import Control.Concurrent.STM
-import Data.List
+import Data.List qualified as L
 import Data.Pipe
 
 fromTChan :: (PipeClass p, MonadBase IO m,
@@ -40,7 +41,7 @@ toTChans :: (PipeClass p, MonadBase IO m,
 	MonadTrans (p (a, b) x), Monad (p (a, b) x m)) =>
 	[(a -> Bool, TChan b)] -> p (a, b) x m ()
 toTChans cs = (await >>=) . maybe (return ()) $ \(t, x) -> (>> toTChans cs) $
-	case find (($ t) . fst) cs of
+	case L.find (($ t) . fst) cs of
 		Just (_, c)-> lift . liftBase . atomically $ writeTChan c x
 		_ -> return ()
 
@@ -49,6 +50,6 @@ toTChansM :: (PipeClass p, MonadBase IO m,
 	m [(a -> Bool, TChan b)] -> p (a, b) x m ()
 toTChansM mcs = (await >>=) . maybe (return ()) $ \(t, x) -> (>> toTChansM mcs) $ do
 	cs <- lift mcs
-	case find (($ t) . fst) cs of
+	case L.find (($ t) . fst) cs of
 		Just (_, c)-> lift . liftBase . atomically $ writeTChan c x
 		_ -> return ()

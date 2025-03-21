@@ -1,0 +1,7 @@
+Data.Pipe.Core
+Data.Pipe
+Data.Pipe.IO
+Data.Pipe.Lazy
+Data.Pipe.ByteString
+Data.Pipe.List
+Data.Pipe.TChan
