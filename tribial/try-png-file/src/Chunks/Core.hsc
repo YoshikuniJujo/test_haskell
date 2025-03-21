@@ -1,5 +1,6 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -8,12 +9,21 @@
 module Chunks.Core where
 
 import Foreign.Ptr
+import Foreign.Concurrent
+import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Marshal.Array
+import Foreign.Marshal.Alloc
+import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C.Struct
 import Foreign.C.Enum
 import Data.Bits
 import Data.Word
+import System.IO.Unsafe
+
+import Chunks.SomeChunk
+
+import Data.ByteString qualified as BS
 
 #include "chunks.h"
 
@@ -75,3 +85,12 @@ struct "Ihdr" #{size chunk_ihdr} #{alignment chunk_ihdr} [
 		[| #{poke chunk_ihdr, interlace} |])
 	]
 	[''Show, ''Storable]
+
+instance Chunk Ihdr where
+	chunkName _ = "IHDR"
+	chunkFromByteString _ bs = unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
+		p <- malloc
+		copyBytes (castPtr p) pbs (min pln $ sizeOf (undefined :: Ihdr))
+		Ihdr_ <$> newForeignPtr p (free p)
+	chunkToByteString (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
+		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))

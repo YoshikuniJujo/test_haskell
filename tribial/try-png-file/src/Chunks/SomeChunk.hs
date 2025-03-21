@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
@@ -31,3 +32,12 @@ instance Chunk SomeChunk where
 
 fromSomeChunk :: SomeChunk -> (forall c . Chunk c => c -> a) -> a
 fromSomeChunk (SomeChunk c) f = f c
+
+data OtherChunk = OtherChunk {
+	otherChunkName :: BS.ByteString,
+	otherChunkData :: BS.ByteString } deriving (Show, Typeable)
+
+instance Chunk OtherChunk where
+	chunkName OtherChunk { otherChunkName = nm } = nm
+	chunkFromByteString nm dt = OtherChunk nm dt
+	chunkToByteString OtherChunk { otherChunkData = dt } = dt
