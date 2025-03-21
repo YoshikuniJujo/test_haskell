@@ -25,10 +25,12 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - mtl
+- monads-tf
 - array
 - bytestring
 - c-struct
 - c-enum
+- try-simple-pipe-ng
 
 ghc-options:
 - -Wall

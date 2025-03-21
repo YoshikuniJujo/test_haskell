@@ -1,12 +1,12 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module ReadPng where
 
 import Control.Monad
-import Control.Monad.Except
-import Control.Monad.State
+import "mtl" Control.Monad.Except
+import "mtl" Control.Monad.State
 import Data.Bits
 import Data.ByteString qualified as BS
 
@@ -29,6 +29,9 @@ magic = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
 dataLength :: ReadPng Int
 dataLength = bsToNum32 <$> pop 4
 
+getChunkName :: ReadPng BS.ByteString
+getChunkName = pop 4
+
 bsToNum32 :: (Bits n, Integral n) => BS.ByteString -> n
 bsToNum32 bs
 	| BS.length bs == 4 = bigEndian 0 . (fromIntegral <$>) $ BS.unpack bs
@@ -37,6 +40,3 @@ bsToNum32 bs
 bigEndian :: Bits n => n -> [n] -> n
 bigEndian s [] = s
 bigEndian s (n : ns) = bigEndian (s `shiftL` 8 .|. n) ns
-
-getChunkName :: ReadPng BS.ByteString
-getChunkName = pop 4

@@ -39,8 +39,12 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
-# extra-deps: []
+
+extra-deps:
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 9b7eba8a3b2cab122cd49f1650e0b64656b04042
+    subdirs:
+      - themes/conduit/try-simple-pipe-ng
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

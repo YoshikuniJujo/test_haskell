@@ -29,6 +29,7 @@ library
   exposed-modules:
       Chunks
       Chunks.Core
+      Chunks.Pipe
       Chunks.SomeChunk
       Crc
       Lib
@@ -49,7 +50,9 @@ library
     , bytestring
     , c-enum
     , c-struct
+    , monads-tf
     , mtl
+    , try-simple-pipe-ng
   default-language: Haskell2010
 
 executable try-png-file-exe
@@ -67,8 +70,10 @@ executable try-png-file-exe
     , bytestring
     , c-enum
     , c-struct
+    , monads-tf
     , mtl
     , try-png-file
+    , try-simple-pipe-ng
   default-language: Haskell2010
 
 executable try-png-file2
@@ -82,8 +87,10 @@ executable try-png-file2
     , bytestring
     , c-enum
     , c-struct
+    , monads-tf
     , mtl
     , try-png-file
+    , try-simple-pipe-ng
   default-language: Haskell2010
 
 test-suite try-png-file-test
@@ -102,6 +109,8 @@ test-suite try-png-file-test
     , bytestring
     , c-enum
     , c-struct
+    , monads-tf
     , mtl
     , try-png-file
+    , try-simple-pipe-ng
   default-language: Haskell2010

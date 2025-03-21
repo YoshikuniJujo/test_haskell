@@ -3,7 +3,20 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: 9b7eba8a3b2cab122cd49f1650e0b64656b04042
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-simple-pipe-ng
+    pantry-tree:
+      sha256: 871336aa9d8839ff7963e1beb2249a308455da3a88b7c09e6bd09a17744e466a
+      size: 1069
+    subdir: themes/conduit/try-simple-pipe-ng
+    version: 0.1.0.0
+  original:
+    commit: 9b7eba8a3b2cab122cd49f1650e0b64656b04042
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/conduit/try-simple-pipe-ng
 snapshots:
 - completed:
     sha256: 4c543aa065f9fb7cb493ff13ab066339fb23b5a89cf2e9bea52b3040e1909bd0

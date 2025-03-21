@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
@@ -13,7 +13,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Utils
 import Foreign.Storable
 import Control.Monad
-import Control.Monad.Except
+import "mtl" Control.Monad.Except
 import Data.Typeable
 import Data.ByteString qualified as BS
 import System.IO.Unsafe
