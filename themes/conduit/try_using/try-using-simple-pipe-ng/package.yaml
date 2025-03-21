@@ -22,6 +22,9 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - monads-tf
+- monad-control
+- transformers-base
+- bytestring
 - try-simple-pipe-ng
 
 ghc-options:
@@ -41,6 +44,16 @@ library:
 executables:
   try-using-simple-pipe-ng-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-using-simple-pipe-ng
+  try-state:
+    main:                try-state.hs
+    other-modules:       []
     source-dirs:         app
     ghc-options:
     - -threaded

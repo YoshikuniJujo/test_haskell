@@ -35,8 +35,26 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , monad-control
     , monads-tf
+    , transformers-base
     , try-simple-pipe-ng
+  default-language: Haskell2010
+
+executable try-state
+  main-is: try-state.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , monad-control
+    , monads-tf
+    , transformers-base
+    , try-simple-pipe-ng
+    , try-using-simple-pipe-ng
   default-language: Haskell2010
 
 executable try-using-simple-pipe-ng-exe
@@ -50,7 +68,10 @@ executable try-using-simple-pipe-ng-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , monad-control
     , monads-tf
+    , transformers-base
     , try-simple-pipe-ng
     , try-using-simple-pipe-ng
   default-language: Haskell2010
@@ -67,7 +88,10 @@ test-suite try-using-simple-pipe-ng-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , monad-control
     , monads-tf
+    , transformers-base
     , try-simple-pipe-ng
     , try-using-simple-pipe-ng
   default-language: Haskell2010
