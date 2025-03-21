@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TupleSections, FlexibleContexts, PackageImports #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -19,8 +20,8 @@ fromTChan c = lift (liftBase . atomically $ readTChan c) >>= yield >> fromTChan 
 fromTChans :: (PipeClass p, MonadBase IO m,
 	MonadTrans (p x a), Monad (p x a m)) => [TChan a] -> p x a m ()
 fromTChans cs = do
-	(cs', x) <- lift . liftBase . atomically $ do
-		readTChans cs >>= maybe retry return
+	(cs', x) <- lift . liftBase . atomically
+		$ readTChans cs >>= maybe retry return
 	yield x
 	fromTChans $ uncurry (flip (++)) cs'
 
@@ -40,7 +41,7 @@ toTChan c = await >>= maybe (return ())
 toTChans :: (PipeClass p, MonadBase IO m,
 	MonadTrans (p (a, b) x), Monad (p (a, b) x m)) =>
 	[(a -> Bool, TChan b)] -> p (a, b) x m ()
-toTChans cs = (await >>=) . maybe (return ()) $ \(t, x) -> (>> toTChans cs) $
+toTChans cs = await >>= maybe (return ()) \(t, x) -> (>> toTChans cs)
 	case L.find (($ t) . fst) cs of
 		Just (_, c)-> lift . liftBase . atomically $ writeTChan c x
 		_ -> return ()
@@ -48,7 +49,7 @@ toTChans cs = (await >>=) . maybe (return ()) $ \(t, x) -> (>> toTChans cs) $
 toTChansM :: (PipeClass p, MonadBase IO m,
 	MonadTrans (p (a, b) x), Monad (p (a, b) x m)) =>
 	m [(a -> Bool, TChan b)] -> p (a, b) x m ()
-toTChansM mcs = (await >>=) . maybe (return ()) $ \(t, x) -> (>> toTChansM mcs) $ do
+toTChansM mcs = await >>= maybe (return ()) \(t, x) -> (>> toTChansM mcs) do
 	cs <- lift mcs
 	case L.find (($ t) . fst) cs of
 		Just (_, c)-> lift . liftBase . atomically $ writeTChan c x

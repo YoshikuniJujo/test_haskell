@@ -1,9 +1,23 @@
-{-# LANGUAGE TupleSections, TypeFamilies, FlexibleContexts, RankNTypes,
-	PackageImports #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe (
-	PipeClass(..), PipeChoice(..), (=@=), runPipe_, convert,
-	Pipe, finally, bracket ) where
+
+	-- * DATA PIPE
+
+	Pipe,
+
+	-- * PIPE CLASSES
+
+	PipeClass(..), PipeChoice(..),
+
+	-- * TOOLS
+
+	runPipe_, (=@=), convert, bracket, finally
+
+	) where
 
 import Data.Pipe.Core

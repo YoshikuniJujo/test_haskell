@@ -2,9 +2,20 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.ByteString (
+
+	-- * READ EVERY 65536 BYTE BLOCK
+
 	fromHandle, toHandle, fromFile, toFile,
+
+	-- * READ EVERY LINE
+
 	fromHandleLn, toHandleLn, fromFileLn, toFileLn,
-	toLazy) where
+
+	-- * TO LAZY BYTE STRING
+
+	toLazy
+
+	) where
 
 import "monads-tf" Control.Monad.Trans
 import Control.Monad.Trans.Control

@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Data.Pipe.Flow (before, until, filter) where
 
 import Prelude hiding (until, filter)

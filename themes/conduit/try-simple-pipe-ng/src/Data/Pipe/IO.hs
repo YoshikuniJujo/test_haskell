@@ -1,7 +1,17 @@
 {-# LANGUAGE FlexibleContexts, ScopedTypeVariables, PackageImports #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Pipe.IO (fromHandle, toHandle, fromFile, toFile, debug) where
+module Data.Pipe.IO (
+
+-- * READ AND WRITE CHAR
+
+fromHandleChar, toHandleChar, fromFileChar, toFileChar,
+
+-- * PRINT FLOWING DATA TO DEBUG
+
+debug
+
+) where
 
 import "monads-tf" Control.Monad.Trans
 import Control.Monad.Trans.Control
@@ -11,28 +21,28 @@ import Data.Pipe
 import System.IO
 import GHC.IO.Exception
 
-fromHandle :: (PipeClass p, MonadBase IO m,
+fromHandleChar :: (PipeClass p, MonadBase IO m,
 	MonadTrans (p i Char), Monad (p i Char m)) => Handle -> p i Char m ()
-fromHandle h = do
+fromHandleChar h = do
 	mc <- lift . liftBase $ (Just <$> hGetChar h) `catch` \(e :: IOException) ->
 		case ioe_type e of
 			EOF -> return Nothing
 			_ -> ioException e
-	maybe (return ()) ((>> fromHandle h) . yield) mc
+	maybe (return ()) ((>> fromHandleChar h) . yield) mc
 
-toHandle :: (PipeClass p, MonadBase IO m,
+toHandleChar :: (PipeClass p, MonadBase IO m,
 	MonadTrans (p Char o), Monad (p Char o m)) => Handle -> p Char o m ()
-toHandle h = await >>= maybe (return ())
-	((>> toHandle h) . lift . liftBase . hPutChar h)
+toHandleChar h = await >>= maybe (return ())
+	((>> toHandleChar h) . lift . liftBase . hPutChar h)
 
-fromFile :: (PipeClass p, MonadBaseControl IO m,
+fromFileChar :: (PipeClass p, MonadBaseControl IO m,
 	MonadTrans (p i Char), Monad (p i Char m)) => FilePath -> p i Char m ()
-fromFile fp =
-	bracket (liftBase $ openFile fp ReadMode) (liftBase . hClose) fromHandle
+fromFileChar fp =
+	bracket (liftBase $ openFile fp ReadMode) (liftBase . hClose) fromHandleChar
 
-toFile :: (PipeClass p, MonadBaseControl IO m,
+toFileChar :: (PipeClass p, MonadBaseControl IO m,
 	MonadTrans (p Char o), Monad (p Char o m)) => FilePath -> p Char o m ()
-toFile fp = bracket (liftBase $ openFile fp WriteMode) (liftBase . hClose) toHandle
+toFileChar fp = bracket (liftBase $ openFile fp WriteMode) (liftBase . hClose) toHandleChar
 
 debug :: (PipeClass p, MonadBase IO m,
 	MonadTrans (p a a), Monad (p a a m), Show a) => p a a m ()

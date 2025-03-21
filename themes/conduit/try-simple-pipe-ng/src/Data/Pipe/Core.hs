@@ -3,8 +3,20 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.Core (
-	PipeClass(..), PipeChoice(..), (=@=), runPipe_, convert,
-	Pipe(..), finally, bracket ) where
+
+	-- * DATA PIPE
+
+	Pipe(..),
+
+	-- * PIPE CLASSES
+
+	PipeClass(..), PipeChoice(..),
+
+	-- * TOOLS
+
+	runPipe_, (=@=), convert, bracket, finally
+
+	) where
 
 import Control.Monad
 import Control.Exception.Lifted (onException)
@@ -133,10 +145,10 @@ instance PipeClass Pipe where
 	onBreak (Done f0 r) _ = Done f0 r
 	onBreak (Make f0 m) f = Make (f0 >> f >> return ()) $ flip onBreak f `liftM` m
 
-	onDone (Ready f0 o p) f = Ready (voidM f0) o $ finalize p f
-	onDone (Need f0 n) f = Need (voidM f0) $ \i -> finalize (n i) f
+	onDone (Ready f0 o p) f = Ready (void f0) o $ finalize p f
+	onDone (Need f0 n) f = Need (void f0) $ \i -> finalize (n i) f
 	onDone (Done f0 r) f = Done (f0 >> f >> return ()) r
-	onDone (Make f0 m) f = Make (voidM f0) $ flip finalize f `liftM` m
+	onDone (Make f0 m) f = Make (void f0) $ flip finalize f `liftM` m
 
 	finalize (Ready f0 o p) f = Ready (f0 >> f >> return ()) o $ finalize p f
 	finalize (Need f0 n) f = Need (f0 >> f >> return ()) $ \i -> finalize (n i) f
@@ -200,21 +212,12 @@ bracket o c p = do
 finally :: (MonadBaseControl IO m, PipeClass p) => p i o m r -> m b -> p i o m r
 finally p f = finalize (mapMonad (`onException` f) p) f
 
-voidM :: Monad m => m a -> m ()
-voidM = (>> return ())
-
-passResult :: (PipeClass p, Monad m, Monad (p i (Either a r) m)) =>
-	p i a m r -> p i (Either a r) m ()
-passResult s = mapOut Left s >>= yield . Right
-
-recvResult :: (PipeChoice p, Monad m, Monad (p a o m), Monad (p r o m) ) =>
-	p a o m r' -> p (Either a r) o m r
-recvResult p =
-	(p >> return undefined) |||| (await >>= maybe (return undefined) return)
-
-
 (=@=) :: (
 	PipeChoice p, Monad m,
 	Monad (p i (Either a r) m), Monad (p a o m), Monad (p r o m)) =>
 	p i a m r -> p a o m r' -> p i o m r
-p1 =@= p2 = passResult p1 =$= recvResult p2
+p1 =@= p2 = pss p1 =$= recv p2
+	where
+	pss s = mapOut Left s >>= yield . Right
+	recv p = (p >> return undefined) ||||
+		(await >>= maybe (return undefined) return)
