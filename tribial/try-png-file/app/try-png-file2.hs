@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ImpredicativeTypes #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
@@ -20,12 +21,12 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	png <- BS.readFile fp
-	let	c = fst $ (checkMagic >> (,,) <$> chunkOther <*> chunkOther <*> chunkOther) `runReadPng` png
-	print $ fst' <$> c
-	putStrLn . take 100 . show $ snd' <$> c
-	print $ third <$> c
-	print $ chunkName . snd' <$> c
-	case c of
+	let	ck = fst $ (checkMagic >> (,,) <$> chunkOther <*> chunkOther <*> chunkOther) `runReadPng` png
+	print $ fst' <$> ck
+	putStrLn . take 100 . show $ snd' <$> ck
+	print $ third <$> ck
+--	print $ chunkName . snd' <$> ck
+	case ck of
 		Left err -> putStrLn err
 		Right r -> do
 			fromSomeChunk (fst' r) \c -> print $ typeOf c

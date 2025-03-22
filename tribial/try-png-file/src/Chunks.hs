@@ -25,6 +25,6 @@ chunk f = do
 	pure $ f nm dt
 
 chunkOther :: ReadPng SomeChunk
-chunkOther = chunk (\case
-	"IHDR" -> toChunk . chunkFromByteString @C.Ihdr "IHDR"
-	nm -> toChunk . chunkFromByteString @OtherChunk nm)
+chunkOther = chunk \case
+	"IHDR" -> toChunk . decodeChunk @C.Ihdr
+	nm -> toChunk . OtherChunk nm

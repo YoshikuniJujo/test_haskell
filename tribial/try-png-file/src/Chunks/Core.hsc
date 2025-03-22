@@ -86,11 +86,13 @@ struct "Ihdr" #{size chunk_ihdr} #{alignment chunk_ihdr} [
 	]
 	[''Show, ''Storable]
 
-instance Chunk Ihdr where
-	chunkName _ = "IHDR"
-	chunkFromByteString _ bs = unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
+instance CodecChunk Ihdr where
+	chunkName = "IHDR"
+	decodeChunk bs = unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
 		p <- malloc
 		copyBytes (castPtr p) pbs (min pln $ sizeOf (undefined :: Ihdr))
 		Ihdr_ <$> newForeignPtr p (free p)
-	chunkToByteString (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
+	encodeChunk (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
 		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))
+
+instance Chunk Ihdr

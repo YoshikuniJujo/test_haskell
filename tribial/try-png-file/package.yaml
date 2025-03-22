@@ -26,6 +26,7 @@ dependencies:
 - base >= 4.7 && < 5
 - mtl
 - monads-tf
+- transformers-base
 - array
 - bytestring
 - c-struct
@@ -59,6 +60,16 @@ executables:
     - try-png-file
   try-png-file2:
     main:                try-png-file2.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-png-file
+  try-png-pipe:
+    main:                try-png-pipe.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
