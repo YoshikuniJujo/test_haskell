@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost, PackageImports #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -10,11 +10,14 @@ module Chunks.Pipe where
 
 import Data.Kind
 import "monads-tf" Control.Monad.State
-import Data.Pipe
+import "monads-tf" Control.Monad.Except
 import Data.Bits
+import Data.Pipe
+import Data.Maybe
 import Data.ByteString qualified as BS
 
 import Chunks.SomeChunk
+import Crc
 
 takeByteString :: (MonadState m, StateType m ~ BS.ByteString) =>
 	Int -> Pipe BS.ByteString a m BS.ByteString
@@ -47,7 +50,26 @@ chunk f = do
 			chunk f
 		Nothing -> pure ()
 
-chunk' :: forall (cs :: [Type]) -> (DecodeChunks cs, MonadState m, StateType m ~ BS.ByteString) =>
+chunks :: forall (cs :: [Type]) -> (
+	MonadState m, StateType m ~ BS.ByteString,
+	MonadError m, ErrorType m ~ String, DecodeChunks cs ) =>
+	Pipe BS.ByteString SomeChunk m ()
+chunks cs = checkMagic >> chunk' cs
+
+magic :: BS.ByteString
+magic = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
+
+checkMagic :: (
+	MonadState m, StateType m ~ BS.ByteString,
+	MonadError m, ErrorType m ~ String ) =>
+	Pipe BS.ByteString SomeChunk m ()
+checkMagic = do
+	mg <- takeByteString 8
+	when (mg /= magic) $ throwError "bad magic"
+
+chunk' :: forall (cs :: [Type]) -> (
+	MonadState m, StateType m ~ BS.ByteString,
+	MonadError m, ErrorType m ~ String, DecodeChunks cs ) =>
 	Pipe BS.ByteString SomeChunk m ()
 chunk' cs = do
 	mln <- dataLength
@@ -55,7 +77,8 @@ chunk' cs = do
 		Just ln -> do
 			nm <- takeByteString 4
 			bs <- takeByteString ln
-			_ <- takeByteString 4
+			c <- takeByteString 4
+			when (not . check (nm `BS.append` bs) . fromJust $ bsToNum32 c) $ throwError "bad CRC"
 			yield $ decodeChunks @cs nm bs
 			chunk' cs
 		Nothing -> pure ()
@@ -72,3 +95,11 @@ bsToNum32 bs
 bigEndian :: Bits n => n -> [n] -> n
 bigEndian s [] = s
 bigEndian s (n : ns) = bigEndian (s `shiftL` 8 .|. n) ns
+
+data End = End deriving Show
+
+instance CodecChunk End where
+	chunkName = "IEND"
+	decodeChunk = \case "" -> End; _ -> error "bad end"
+
+instance Chunk End
