@@ -19,8 +19,10 @@ import Data.ByteString qualified as BS
 import Chunks.SomeChunk
 import Crc
 
-takeByteString :: (MonadState m, StateType m ~ BS.ByteString) =>
-	Int -> Pipe BS.ByteString a m BS.ByteString
+takeByteString :: (
+	PipeClass p, MonadState (p BS.ByteString a m),
+	StateType (p BS.ByteString a m) ~ BS.ByteString, Monad m ) =>
+	Int -> p BS.ByteString a m BS.ByteString
 takeByteString n = do
 	obs <- get
 	let	ln = BS.length obs
@@ -83,8 +85,12 @@ chunk' cs = do
 			chunk' cs
 		Nothing -> pure ()
 
-dataLength :: (MonadState m, StateType m ~ BS.ByteString) =>
-	Pipe BS.ByteString a m (Maybe Int)
+dataLength :: (
+	PipeClass p,
+	MonadState (p BS.ByteString a m), StateType (p BS.ByteString a m) ~ BS.ByteString,
+	Monad m
+	) =>
+	p BS.ByteString a m (Maybe Int)
 dataLength = bsToNum32 <$> takeByteString 4
 
 bsToNum32 :: (Bits n, Integral n) => BS.ByteString -> Maybe n
