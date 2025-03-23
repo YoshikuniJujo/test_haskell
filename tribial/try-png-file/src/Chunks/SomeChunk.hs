@@ -6,6 +6,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Chunks.SomeChunk where
@@ -15,6 +16,8 @@ import Data.Kind
 import Data.Typeable
 import Data.ByteString qualified as BS
 
+import Control.MonadClasses.Except qualified as MC
+
 data SomeChunk = forall c . Chunk c => SomeChunk c deriving Typeable
 
 class Chunk c => CodecChunk c where
@@ -22,6 +25,12 @@ class Chunk c => CodecChunk c where
 	decodeChunk :: forall m . (MonadError m, ErrorType m ~ String) =>
 		BS.ByteString -> m c
 	encodeChunk :: c -> BS.ByteString
+
+class Chunk c => CodecChunk' c where
+	chunkName' :: BS.ByteString
+	decodeChunk' :: forall m . (MC.MonadError String m) =>
+		BS.ByteString -> m c
+	encodeChunk' :: c -> BS.ByteString
 
 class (Typeable c, Show c) => Chunk c where
 

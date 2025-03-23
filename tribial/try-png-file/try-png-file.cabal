@@ -30,6 +30,7 @@ library
       Chunks
       Chunks.Core
       Chunks.Pipe
+      Chunks.PipeNew
       Chunks.SomeChunk
       Crc
       Lib
