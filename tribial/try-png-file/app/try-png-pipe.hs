@@ -20,7 +20,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	(print . fst =<<) . (`runStateT` "") . runExceptT . runPipe $
-		fromFile @Pipe fp =$= chunks [type Ihdr, type End] =$= printAll 15
+		fromFile @Pipe fp =$= chunks [type Ihdr, type Iend] =$= printAll 15
 
 printAll :: (Show a, MonadBase IO m) => Int -> Pipe a b m ()
 printAll 0 = pure ()

@@ -1,6 +1,7 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -9,6 +10,7 @@
 
 module Chunks.SomeChunk where
 
+import "monads-tf" Control.Monad.Except
 import Data.Kind
 import Data.Typeable
 import Data.ByteString qualified as BS
@@ -17,7 +19,8 @@ data SomeChunk = forall c . Chunk c => SomeChunk c deriving Typeable
 
 class Chunk c => CodecChunk c where
 	chunkName :: BS.ByteString
-	decodeChunk :: BS.ByteString -> c
+	decodeChunk :: forall m . (MonadError m, ErrorType m ~ String) =>
+		BS.ByteString -> m c
 	encodeChunk :: c -> BS.ByteString
 
 class (Typeable c, Show c) => Chunk c where
@@ -43,11 +46,14 @@ data OtherChunk = OtherChunk {
 instance Chunk OtherChunk where
 
 class DecodeChunks (cs :: [Type]) where
-	decodeChunks :: BS.ByteString -> BS.ByteString -> SomeChunk
+	decodeChunks :: (MonadError m, ErrorType m ~ String) =>
+		BS.ByteString -> BS.ByteString -> m SomeChunk
 
-instance DecodeChunks '[] where decodeChunks nm = SomeChunk . OtherChunk nm
+instance DecodeChunks '[] where decodeChunks nm = pure . SomeChunk . OtherChunk nm
 
 instance (CodecChunk c, DecodeChunks cs) => DecodeChunks (c ': cs) where
+	decodeChunks :: forall m . (MonadError m, ErrorType m ~ String) =>
+		BS.ByteString -> BS.ByteString -> m SomeChunk
 	decodeChunks nm dt
-		| nm == chunkName @c = SomeChunk $ decodeChunk @c dt
+		| nm == chunkName @c = SomeChunk <$> decodeChunk @c @m dt
 		| otherwise = decodeChunks @cs nm dt

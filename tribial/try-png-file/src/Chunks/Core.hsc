@@ -88,7 +88,7 @@ struct "Ihdr" #{size chunk_ihdr} #{alignment chunk_ihdr} [
 
 instance CodecChunk Ihdr where
 	chunkName = "IHDR"
-	decodeChunk bs = unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
+	decodeChunk bs = pure . unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
 		p <- malloc
 		copyBytes (castPtr p) pbs (min pln $ sizeOf (undefined :: Ihdr))
 		Ihdr_ <$> newForeignPtr p (free p)

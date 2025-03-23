@@ -79,7 +79,7 @@ chunk' cs = do
 			bs <- takeByteString ln
 			c <- takeByteString 4
 			when (not . check (nm `BS.append` bs) . fromJust $ bsToNum32 c) $ throwError "bad CRC"
-			yield $ decodeChunks @cs nm bs
+			yield =<< decodeChunks @cs nm bs
 			chunk' cs
 		Nothing -> pure ()
 
@@ -96,10 +96,11 @@ bigEndian :: Bits n => n -> [n] -> n
 bigEndian s [] = s
 bigEndian s (n : ns) = bigEndian (s `shiftL` 8 .|. n) ns
 
-data End = End deriving Show
+data Iend = Iend deriving Show
 
-instance CodecChunk End where
+instance CodecChunk Iend where
 	chunkName = "IEND"
-	decodeChunk = \case "" -> End; _ -> error "bad end"
+	decodeChunk = \case "" -> pure Iend; _ -> throwError "bad end"
+	encodeChunk Iend = ""
 
-instance Chunk End
+instance Chunk Iend

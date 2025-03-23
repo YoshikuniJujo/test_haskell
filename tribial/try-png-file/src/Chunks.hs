@@ -26,5 +26,5 @@ chunk f = do
 
 chunkOther :: ReadPng SomeChunk
 chunkOther = chunk \case
-	"IHDR" -> toChunk . decodeChunk @C.Ihdr
+--	"IHDR" -> toChunk . decodeChunk @C.Ihdr
 	nm -> toChunk . OtherChunk nm
