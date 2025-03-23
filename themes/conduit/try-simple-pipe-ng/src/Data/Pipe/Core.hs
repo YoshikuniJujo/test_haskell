@@ -1,5 +1,9 @@
-{-# LANGUAGE TupleSections, TypeFamilies, FlexibleContexts, RankNTypes,
-	PackageImports #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.Core (
@@ -26,6 +30,9 @@ import "monads-tf" Control.Monad.Except
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Reader
 import "monads-tf" Control.Monad.Writer
+
+import Control.MonadClasses.State qualified as MC
+import Control.MonadClasses.Except qualified as MC
 
 infixr 2 =@=
 infixr 3 =$=
@@ -116,6 +123,14 @@ instance MonadError m => MonadError (Pipe i o m) where
 	Make f p `catchError` c =
 		Make f . ((`catchError` c) `liftM`) $ p `catchError` (return . c)
 
+instance MC.MonadError e m => MC.MonadError e (Pipe i o m) where
+	throwError e = Make (return ()) $ MC.throwError e
+	Ready f o p `catchError` c = Ready f o $ p `MC.catchError` c
+	Need f p `catchError` c = Need f $ \mi -> p mi `MC.catchError` c
+	Done f r `catchError` _ = Done f r
+	Make f p `catchError` c =
+		Make f . ((`MC.catchError` c) `liftM`) $ p `MC.catchError` (return . c)
+
 finalizer :: Pipe i o m r -> m ()
 finalizer (Ready f _ _) = f
 finalizer (Need f _) = f
@@ -194,6 +209,10 @@ instance MonadState m => MonadState (Pipe i o m) where
 	type StateType (Pipe i o m) = StateType m
 	get = lift get
 	put = lift . put
+
+instance MC.MonadState s m => MC.MonadState s (Pipe i o m) where
+	get = lift MC.get
+	put = lift . MC.put
 
 instance MonadReader m => MonadReader (Pipe i o m) where
 	type EnvType (Pipe i o m) = EnvType m

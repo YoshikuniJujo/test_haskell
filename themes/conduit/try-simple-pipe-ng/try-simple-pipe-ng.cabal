@@ -25,6 +25,8 @@ source-repository head
 
 library
   exposed-modules:
+      Control.MonadClasses.Except
+      Control.MonadClasses.State
       Data.Pipe
       Data.Pipe.ByteString
       Data.Pipe.Core
