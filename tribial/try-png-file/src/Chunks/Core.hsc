@@ -96,3 +96,12 @@ instance CodecChunk Ihdr where
 		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))
 
 instance Chunk Ihdr
+
+instance CodecChunk' Ihdr where
+	chunkName' = "IHDR"
+	decodeChunk' bs = pure . unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
+		p <- malloc
+		copyBytes (castPtr p) pbs (min pln $ sizeOf (undefined :: Ihdr))
+		Ihdr_ <$> newForeignPtr p (free p)
+	encodeChunk' (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
+		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))

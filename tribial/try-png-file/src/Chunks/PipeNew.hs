@@ -41,6 +41,14 @@ takeByteString n = do
 magic :: BS.ByteString
 magic = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
 
+chunks :: forall (cs :: [Type]) -> (
+	PipeClass p,
+	MonadState BS.ByteString (p BS.ByteString SomeChunk m),
+	MonadError String (p BS.ByteString SomeChunk m),
+	Monad m, DecodeChunks' cs ) =>
+	p BS.ByteString SomeChunk m ()
+chunks cs = checkMagic >> chunk cs
+
 checkMagic :: (
 	PipeClass p,
 	MonadState BS.ByteString (p BS.ByteString a m),
@@ -51,13 +59,12 @@ checkMagic = do
 	mg <- takeByteString 8
 	when (mg /= magic) $ throwError ("bad magic" :: String)
 
-{-
 chunk :: forall (cs :: [Type]) -> (
 	PipeClass p,
-	MonadState BS.ByteString (p BS.ByteString a m),
-	MonadError String (p BS.ByteString a m),
-	Monad m ) =>
-	Pipe BS.ByteString SomeChunk m ()
+	MonadState BS.ByteString (p BS.ByteString SomeChunk m),
+	MonadError String (p BS.ByteString SomeChunk m),
+	Monad m, DecodeChunks' cs ) =>
+	p BS.ByteString SomeChunk m ()
 chunk cs = do
 	mln <- dataLength
 	case mln of
@@ -66,10 +73,11 @@ chunk cs = do
 			bs <- takeByteString ln
 			c <- takeByteString 4
 			when (not . check (nm `BS.append` bs)
-				. fromJust $ bsToNum32 c) $ throwError "bad CRC"
-			yield =<< decodeChunks @cs nm bs
+				. fromJust $ bsToNum32 c) $
+				throwError @String "bad CRC"
+			yield =<< decodeChunks' @cs nm bs
 			chunk cs
-			-}
+		Nothing -> pure ()
 
 dataLength :: (
 	PipeClass p,
@@ -85,3 +93,12 @@ bsToNum32 bs
 bigEndian :: Bits n => n -> [n] -> n
 bigEndian s [] = s
 bigEndian s (n : ns) = bigEndian (s `shiftL` 8 .|. n) ns
+
+data Iend = Iend deriving Show
+
+instance CodecChunk' Iend where
+	chunkName' = "IEND"
+	decodeChunk' = \case "" -> pure Iend; _ -> throwError @String "bad end"
+	encodeChunk' Iend = ""
+
+instance Chunk Iend

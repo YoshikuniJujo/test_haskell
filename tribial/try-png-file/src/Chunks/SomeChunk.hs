@@ -66,3 +66,16 @@ instance (CodecChunk c, DecodeChunks cs) => DecodeChunks (c ': cs) where
 	decodeChunks nm dt
 		| nm == chunkName @c = SomeChunk <$> decodeChunk @c @m dt
 		| otherwise = decodeChunks @cs nm dt
+
+class DecodeChunks' (cs :: [Type]) where
+	decodeChunks' :: MC.MonadError String m =>
+		BS.ByteString -> BS.ByteString -> m SomeChunk
+
+instance DecodeChunks' '[] where decodeChunks' nm = pure . SomeChunk . OtherChunk nm
+
+instance (CodecChunk' c, DecodeChunks' cs) => DecodeChunks' (c ': cs) where
+	decodeChunks' :: forall m . MC.MonadError String m =>
+		BS.ByteString -> BS.ByteString -> m SomeChunk
+	decodeChunks' nm dt
+		| nm == chunkName' @c = SomeChunk <$> decodeChunk' @c @m dt
+		| otherwise = decodeChunks' @cs nm dt
