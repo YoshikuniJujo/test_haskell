@@ -35,7 +35,9 @@ main = do
 --	(print =<<)
 		. (`runStateT` ())
 		. (`runStateT` ("" :: BS.ByteString)) . runExceptT . runPipe
-		$ fromFile @Pipe fp =$= chunks [type Ihdr, type Iend] =$= printAll 18
+		$ fromFile @Pipe fp
+			=$= chunks [type Ihdr, type Idat, type Iend]
+			=$= printAll 18
 
 printAll :: (Show a, MonadBase IO m) => Int -> Pipe a b m ()
 printAll 0 = pure ()

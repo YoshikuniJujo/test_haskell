@@ -29,6 +29,7 @@ dependencies:
 - transformers-base
 - array
 - bytestring
+- zlib
 - c-struct
 - c-enum
 - try-simple-pipe-ng

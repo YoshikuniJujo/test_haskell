@@ -24,6 +24,9 @@ import System.IO.Unsafe
 import Chunks.SomeChunk
 
 import Data.ByteString qualified as BS
+import Data.ByteString.Lazy qualified as LBS
+
+import Codec.Compression.Zlib qualified as Zlib
 
 #include "chunks.h"
 
@@ -105,3 +108,13 @@ instance CodecChunk' Ihdr where
 		Ihdr_ <$> newForeignPtr p (free p)
 	encodeChunk' (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
 		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))
+
+data Idat = Idat BS.ByteString deriving Show
+
+instance CodecChunk' Idat where
+	chunkName' = "IDAT"
+	decodeChunk' =
+		pure . Idat . LBS.toStrict . Zlib.decompress . LBS.fromStrict
+	encodeChunk' (Idat bs) = LBS.toStrict . Zlib.compress $ LBS.fromStrict bs
+
+instance Chunk Idat
