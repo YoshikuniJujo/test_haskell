@@ -34,6 +34,10 @@ sampleIdat3 :: Idat
 sampleIdat3 = Idat $ BS.cons 3 (BS.concat ("\x08\x08\x08\xff" : replicate 15 "\x08\x08\x08\x80")) :
 	replicate 15 (BS.cons 3 . BS.concat $ "\x08\x08\x08\x80" : replicate 15 "\x08\x08\x08\x0")
 
+sampleIdat4 :: Idat
+sampleIdat4 = Idat $ BS.cons 4 (BS.concat (replicate 16 "\x08\x08\x08\xff")) :
+	replicate 15 (BS.cons 4 . BS.concat $ replicate 16 "\x08\x08\x08\x0")
+
 sampleIend :: Iend
 sampleIend = Iend
 
@@ -49,11 +53,15 @@ samplePng3 :: BS.ByteString
 samplePng3 = BS.concat [
 	magic, makeChunk sampleIhdr, makeChunk sampleIdat3, makeChunk sampleIend ]
 
-makeChunk :: forall c . CodecChunk' c => c -> BS.ByteString
+samplePng4 :: BS.ByteString
+samplePng4 = BS.concat [
+	magic, makeChunk sampleIhdr, makeChunk sampleIdat4, makeChunk sampleIend ]
+
+makeChunk :: forall c . CodecChunkOld c => c -> BS.ByteString
 makeChunk c = BS.concat [
 	num32ToBs $ BS.length bs,
-	chunkName' @c,
+	chunkNameOld @c,
 	bs,
-	num32ToBs . crc $ chunkName' @c `BS.append` bs ]
+	num32ToBs . crc $ chunkNameOld @c `BS.append` bs ]
 	where
-	bs = encodeChunk' c
+	bs = encodeChunkOld c

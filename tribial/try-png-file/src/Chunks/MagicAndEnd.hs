@@ -23,3 +23,9 @@ instance CodecChunk' Iend where
 	encodeChunk' Iend = ""
 
 instance Chunk Iend
+
+instance CodecChunkOld Iend where
+	type CodecChunkArgOld Iend = ()
+	chunkNameOld = "IEND"
+	decodeChunkOld a = \case "" -> pure Iend; _ -> throwError @String "bad end"
+	encodeChunkOld Iend = ""

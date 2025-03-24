@@ -34,6 +34,13 @@ class Chunk c => CodecChunk' c where
 		CodecChunkArg c -> BS.ByteString -> m c
 	encodeChunk' :: c -> BS.ByteString
 
+class Chunk c => CodecChunkOld c where
+	type CodecChunkArgOld c
+	chunkNameOld :: BS.ByteString
+	decodeChunkOld :: forall m . (MC.MonadError String m) =>
+		CodecChunkArg c -> BS.ByteString -> m c
+	encodeChunkOld :: c -> BS.ByteString
+
 class (Typeable c, Show c) => Chunk c where
 
 	toChunk :: c -> SomeChunk

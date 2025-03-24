@@ -113,6 +113,16 @@ instance CodecChunk' Ihdr where
 	encodeChunk' (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
 		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))
 
+instance CodecChunkOld Ihdr where
+	type CodecChunkArgOld Ihdr = ()
+	chunkNameOld = "IHDR"
+	decodeChunkOld a bs = pure . unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
+		p <- malloc
+		copyBytes (castPtr p) pbs (min pln $ sizeOf (undefined :: Ihdr))
+		Ihdr_ <$> newForeignPtr p (free p)
+	encodeChunkOld (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
+		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))
+
 data Idat = Idat [BS.ByteString] deriving Show
 
 instance CodecChunk' Idat where
@@ -122,9 +132,18 @@ instance CodecChunk' Idat where
 		Nothing -> MC.throwError ("No IHDR" :: String)
 		Just i -> pure . Idat
 			. devide (fromIntegral (ihdrWidth i) * fromIntegral (ihdrDepth i) * 4 `div` 8 + 1)
-
 			. LBS.toStrict . Zlib.decompress $ LBS.fromStrict bs
 	encodeChunk' (Idat bs) = LBS.toStrict . Zlib.compress . LBS.fromStrict $ BS.concat bs
+
+instance CodecChunkOld Idat where
+	type CodecChunkArgOld Idat = Maybe Ihdr
+	chunkNameOld = "IDAT"
+	decodeChunkOld mi bs = case mi of
+		Nothing -> MC.throwError ("No IHDR" :: String)
+		Just i -> pure . Idat
+			. devide (fromIntegral (ihdrWidth i) * fromIntegral (ihdrDepth i) * 4 `div` 8 + 1)
+			. LBS.toStrict . Zlib.decompress $ LBS.fromStrict bs
+	encodeChunkOld (Idat bs) = LBS.toStrict . Zlib.compress . LBS.fromStrict $ BS.concat bs
 
 instance Chunk Idat
 
