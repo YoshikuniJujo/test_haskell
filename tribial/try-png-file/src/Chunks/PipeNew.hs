@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications, RequiredTypeArguments #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -45,7 +46,7 @@ chunks :: forall (cs :: [Type]) -> (
 	PipeClass p,
 	MonadState BS.ByteString (p BS.ByteString SomeChunk m),
 	MonadError String (p BS.ByteString SomeChunk m),
-	Monad m, DecodeChunks' cs ) =>
+	Monad m, DecodeChunks' (p BS.ByteString SomeChunk m) cs ) =>
 	p BS.ByteString SomeChunk m ()
 chunks cs = checkMagic >> chunk cs
 
@@ -63,7 +64,7 @@ chunk :: forall (cs :: [Type]) -> (
 	PipeClass p,
 	MonadState BS.ByteString (p BS.ByteString SomeChunk m),
 	MonadError String (p BS.ByteString SomeChunk m),
-	Monad m, DecodeChunks' cs ) =>
+	Monad m, DecodeChunks' (p BS.ByteString SomeChunk m) cs ) =>
 	p BS.ByteString SomeChunk m ()
 chunk cs = do
 	mln <- dataLength
@@ -75,7 +76,7 @@ chunk cs = do
 			when (not . check (nm `BS.append` bs)
 				. fromJust $ bsToNum32 c) $
 				throwError @String "bad CRC"
-			yield =<< decodeChunks' @cs nm bs
+			yield =<< decodeChunks' @_ @cs nm bs
 			chunk cs
 		Nothing -> pure ()
 
@@ -97,6 +98,7 @@ bigEndian s (n : ns) = bigEndian (s `shiftL` 8 .|. n) ns
 data Iend = Iend deriving Show
 
 instance CodecChunk' Iend where
+	type CodecChunkArg Iend = ()
 	chunkName' = "IEND"
 	decodeChunk' = \case "" -> pure Iend; _ -> throwError @String "bad end"
 	encodeChunk' Iend = ""

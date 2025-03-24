@@ -27,6 +27,7 @@ dependencies:
 - mtl
 - monads-tf
 - transformers-base
+- monad-control
 - array
 - bytestring
 - zlib

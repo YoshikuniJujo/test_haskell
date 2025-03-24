@@ -1,12 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
+{-# LANGUAGE ExistentialQuantification, TypeFamilies #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Chunks.SomeChunk where
@@ -16,6 +16,7 @@ import Data.Kind
 import Data.Typeable
 import Data.ByteString qualified as BS
 
+import Control.MonadClasses.State qualified as MC
 import Control.MonadClasses.Except qualified as MC
 
 data SomeChunk = forall c . Chunk c => SomeChunk c deriving Typeable
@@ -27,6 +28,7 @@ class Chunk c => CodecChunk c where
 	encodeChunk :: c -> BS.ByteString
 
 class Chunk c => CodecChunk' c where
+	type CodecChunkArg c
 	chunkName' :: BS.ByteString
 	decodeChunk' :: forall m . (MC.MonadError String m) =>
 		BS.ByteString -> m c
@@ -67,15 +69,16 @@ instance (CodecChunk c, DecodeChunks cs) => DecodeChunks (c ': cs) where
 		| nm == chunkName @c = SomeChunk <$> decodeChunk @c @m dt
 		| otherwise = decodeChunks @cs nm dt
 
-class DecodeChunks' (cs :: [Type]) where
+class DecodeChunks' m (cs :: [Type]) where
 	decodeChunks' :: MC.MonadError String m =>
 		BS.ByteString -> BS.ByteString -> m SomeChunk
 
-instance DecodeChunks' '[] where decodeChunks' nm = pure . SomeChunk . OtherChunk nm
+instance DecodeChunks' m '[] where decodeChunks' nm = pure . SomeChunk . OtherChunk nm
 
-instance (CodecChunk' c, DecodeChunks' cs) => DecodeChunks' (c ': cs) where
-	decodeChunks' :: forall m . MC.MonadError String m =>
+instance (CodecChunk' c, MC.MonadState (CodecChunkArg c) m, DecodeChunks' m cs) => DecodeChunks' m (c ': cs) where
+-- instance (CodecChunk' c, DecodeChunks' m cs) => DecodeChunks' m (c ': cs) where
+	decodeChunks' :: MC.MonadError String m =>
 		BS.ByteString -> BS.ByteString -> m SomeChunk
 	decodeChunks' nm dt
 		| nm == chunkName' @c = SomeChunk <$> decodeChunk' @c @m dt
-		| otherwise = decodeChunks' @cs nm dt
+		| otherwise = decodeChunks' @m @cs nm dt

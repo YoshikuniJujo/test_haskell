@@ -3,7 +3,8 @@
 {-# LANGUAGE TypeApplications, ExplicitNamespaces #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -11,6 +12,7 @@ module Main where
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Except
 import Control.Monad.Base
+import Control.Monad.Trans.Control
 import Data.Pipe
 import Data.Pipe.ByteString
 import Data.ByteString qualified as BS
@@ -22,19 +24,40 @@ import Chunks.Core
 import Control.MonadClasses.State qualified as MC
 import Control.MonadClasses.Except qualified as MC
 
+{-
 instance (MonadState m, StateType m ~ s) => MC.MonadState s m where
 	get = get; put = put
 
 instance (MonadError m, ErrorType m ~ e) => MC.MonadError e m where
 	throwError = throwError; catchError = catchError
+	-}
+
+newtype MyMonad a = MyMonad (ExceptT String (StateT BS.ByteString (StateT () IO)) a)
+	deriving (Functor, Applicative, Monad, MonadBase IO, MonadBaseControl IO)
+
+runMyMonad (MyMonad m) = (`runStateT` ()) . (`runStateT` ("" :: BS.ByteString)) $ runExceptT m
+
+instance MC.MonadState BS.ByteString MyMonad where
+	get = MyMonad get; put = MyMonad . put
+
+instance MC.MonadState () MyMonad where
+	get = MyMonad . lift $ lift get
+	put = MyMonad . lift . lift . put
+
+instance MC.MonadError String MyMonad where
+	throwError = MyMonad . throwError
+	catchError (MyMonad m) h = MyMonad $ catchError m (\e -> let MyMonad m' = h e in m')
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	(print . fst . fst =<<)
 --	(print =<<)
-		. (`runStateT` ())
-		. (`runStateT` ("" :: BS.ByteString)) . runExceptT . runPipe
+--		. (`runStateT` ())
+--		. (`runStateT` ("" :: BS.ByteString))
+--		. runExceptT
+		. runMyMonad
+		. runPipe
 		$ fromFile @Pipe fp
 			=$= chunks [type Ihdr, type Idat, type Iend]
 			=$= printAll 18

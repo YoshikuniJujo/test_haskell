@@ -2,6 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -101,6 +102,7 @@ instance CodecChunk Ihdr where
 instance Chunk Ihdr
 
 instance CodecChunk' Ihdr where
+	type CodecChunkArg Ihdr = ()
 	chunkName' = "IHDR"
 	decodeChunk' bs = pure . unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
 		p <- malloc
@@ -112,6 +114,8 @@ instance CodecChunk' Ihdr where
 data Idat = Idat BS.ByteString deriving Show
 
 instance CodecChunk' Idat where
+	type CodecChunkArg Idat = ()
+--	type CodecChunkArg Idat = BS.ByteString
 	chunkName' = "IDAT"
 	decodeChunk' =
 		pure . Idat . LBS.toStrict . Zlib.decompress . LBS.fromStrict

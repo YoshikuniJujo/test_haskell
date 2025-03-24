@@ -51,6 +51,7 @@ library
     , bytestring
     , c-enum
     , c-struct
+    , monad-control
     , monads-tf
     , mtl
     , transformers-base
@@ -73,6 +74,7 @@ executable try-png-file-exe
     , bytestring
     , c-enum
     , c-struct
+    , monad-control
     , monads-tf
     , mtl
     , transformers-base
@@ -92,6 +94,7 @@ executable try-png-file2
     , bytestring
     , c-enum
     , c-struct
+    , monad-control
     , monads-tf
     , mtl
     , transformers-base
@@ -111,6 +114,7 @@ executable try-png-pipe
     , bytestring
     , c-enum
     , c-struct
+    , monad-control
     , monads-tf
     , mtl
     , transformers-base
@@ -130,6 +134,7 @@ executable try-png-pipe-new
     , bytestring
     , c-enum
     , c-struct
+    , monad-control
     , monads-tf
     , mtl
     , transformers-base
@@ -154,6 +159,7 @@ test-suite try-png-file-test
     , bytestring
     , c-enum
     , c-struct
+    , monad-control
     , monads-tf
     , mtl
     , transformers-base
