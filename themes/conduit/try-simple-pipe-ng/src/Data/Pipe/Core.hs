@@ -123,7 +123,7 @@ instance MonadError m => MonadError (Pipe i o m) where
 	Make f p `catchError` c =
 		Make f . ((`catchError` c) `liftM`) $ p `catchError` (return . c)
 
-instance MC.MonadError e m => MC.MonadError e (Pipe i o m) where
+instance {-# OVERLAPPING #-} MC.MonadError e m => MC.MonadError e (Pipe i o m) where
 	throwError e = Make (return ()) $ MC.throwError e
 	Ready f o p `catchError` c = Ready f o $ p `MC.catchError` c
 	Need f p `catchError` c = Need f $ \mi -> p mi `MC.catchError` c
@@ -210,7 +210,7 @@ instance MonadState m => MonadState (Pipe i o m) where
 	get = lift get
 	put = lift . put
 
-instance MC.MonadState s m => MC.MonadState s (Pipe i o m) where
+instance {-# OVERLAPPING #-} MC.MonadState s m => MC.MonadState s (Pipe i o m) where
 	get = lift MC.get
 	put = lift . MC.put
 
