@@ -22,17 +22,20 @@ import Chunks.Core
 import Control.MonadClasses.State qualified as MC
 import Control.MonadClasses.Except qualified as MC
 
-instance {-# OVERLAPPABLE #-} (MonadState m, StateType m ~ s) => MC.MonadState s m where
+instance (MonadState m, StateType m ~ s) => MC.MonadState s m where
 	get = get; put = put
 
-instance {-# OVERLAPPABLE #-} (MonadError m, ErrorType m ~ e) => MC.MonadError e m where
+instance (MonadError m, ErrorType m ~ e) => MC.MonadError e m where
 	throwError = throwError; catchError = catchError
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
-	(print . fst =<<) . (`runStateT` ("" :: BS.ByteString)) . runExceptT . runPipe $
-		fromFile @Pipe fp =$= chunks [type Ihdr, type Iend] =$= printAll 15
+	(print . fst . fst =<<)
+--	(print =<<)
+		. (`runStateT` ())
+		. (`runStateT` ("" :: BS.ByteString)) . runExceptT . runPipe
+		$ fromFile @Pipe fp =$= chunks [type Ihdr, type Iend] =$= printAll 18
 
 printAll :: (Show a, MonadBase IO m) => Int -> Pipe a b m ()
 printAll 0 = pure ()
