@@ -19,6 +19,7 @@ import Data.Maybe
 import Data.ByteString qualified as BS
 
 import Chunks.SomeChunk
+import Chunks.MagicAndEnd
 import Crc
 
 takeByteString :: (
@@ -38,9 +39,6 @@ takeByteString n = do
 			else obs `BS.append` BS.take (n - ln) nbs
 				<$ put (BS.drop (n - ln) nbs)
 		Nothing -> pure obs
-
-magic :: BS.ByteString
-magic = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
 
 chunks :: forall (cs :: [Type]) -> (
 	PipeClass p,
@@ -94,13 +92,3 @@ bsToNum32 bs
 bigEndian :: Bits n => n -> [n] -> n
 bigEndian s [] = s
 bigEndian s (n : ns) = bigEndian (s `shiftL` 8 .|. n) ns
-
-data Iend = Iend deriving Show
-
-instance CodecChunk' Iend where
-	type CodecChunkArg Iend = ()
-	chunkName' = "IEND"
-	decodeChunk' = \case "" -> pure Iend; _ -> throwError @String "bad end"
-	encodeChunk' Iend = ""
-
-instance Chunk Iend

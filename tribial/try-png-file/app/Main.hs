@@ -13,7 +13,6 @@ import Foreign.Marshal.Utils
 import Foreign.Storable
 import Control.Monad
 import "mtl" Control.Monad.Except
-import Data.Bits
 import Data.ByteString qualified as BS
 import System.IO.Unsafe
 import System.Environment
@@ -59,13 +58,6 @@ instance Chunkable Chunks.Ihdr where
 		Chunks.Ihdr_ <$> newForeignPtr p (free p)
 	toByteString (Chunks.Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
 		BS.packCStringLen (castPtr p, sizeOf (undefined :: Chunks.Ihdr))
-
-num32ToBs :: (Bits n, Integral n) => n -> BS.ByteString
-num32ToBs num = BS.pack $ fromIntegral <$> [
-	num `shiftR` 24,
-	num `shiftR` 16 .&. 0xff,
-	num `shiftR` 8 .&. 0xff,
-	num .&. 0xff ]
 
 chunk :: Chunkable a => ReadPng (Chunk a)
 chunk = do

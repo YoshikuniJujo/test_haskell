@@ -29,6 +29,8 @@ library
   exposed-modules:
       Chunks
       Chunks.Core
+      Chunks.MagicAndEnd
+      Chunks.Make
       Chunks.Pipe
       Chunks.PipeNew
       Chunks.SomeChunk

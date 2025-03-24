@@ -31,7 +31,7 @@ class Chunk c => CodecChunk' c where
 	type CodecChunkArg c
 	chunkName' :: BS.ByteString
 	decodeChunk' :: forall m . (MC.MonadError String m) =>
-		BS.ByteString -> m c
+		CodecChunkArg c -> BS.ByteString -> m c
 	encodeChunk' :: c -> BS.ByteString
 
 class (Typeable c, Show c) => Chunk c where
@@ -80,5 +80,7 @@ instance (CodecChunk' c, MC.MonadState (CodecChunkArg c) m, DecodeChunks' m cs) 
 	decodeChunks' :: MC.MonadError String m =>
 		BS.ByteString -> BS.ByteString -> m SomeChunk
 	decodeChunks' nm dt
-		| nm == chunkName' @c = SomeChunk <$> decodeChunk' @c @m dt
+		| nm == chunkName' @c = do
+			a <- MC.get
+			SomeChunk <$> decodeChunk' @c @m a dt
 		| otherwise = decodeChunks' @m @cs nm dt

@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -29,6 +29,8 @@ import Data.ByteString.Lazy qualified as LBS
 
 import Codec.Compression.Zlib qualified as Zlib
 
+import Control.MonadClasses.Except qualified as MC
+
 #include "chunks.h"
 
 newtype Word32BE = Word32BE Word32
@@ -50,10 +52,10 @@ bigEndianEncode :: (Bits n, Integral n) => [Word8] -> n -> [Word8]
 bigEndianEncode r 0 = r
 bigEndianEncode r n = bigEndianEncode ((fromIntegral n .&. 0xff) : r) (n `shiftR` 8)
 
-enum "ColorType" ''#{type uint8_t} [''Show, ''Read, ''Eq, ''Storable] [
-	("Pallet", #{const Pallet}),
-	("Color", #{const Color}),
-	("Alpha", #{const Alpha}) ]
+enum "ColorType" ''#{type uint8_t} [''Show, ''Read, ''Eq, ''Storable, ''Bits] [
+	("ColorTypePallet", #{const Pallet}),
+	("ColorTypeColor", #{const Color}),
+	("ColorTypeAlpha", #{const Alpha}) ]
 
 enum "CompressionMethod" ''#{type uint8_t} [''Show, ''Read, ''Eq, ''Storable] [
 	("DeflateInflate32", #{const DeflateInflate32}) ]
@@ -104,21 +106,29 @@ instance Chunk Ihdr
 instance CodecChunk' Ihdr where
 	type CodecChunkArg Ihdr = ()
 	chunkName' = "IHDR"
-	decodeChunk' bs = pure . unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
+	decodeChunk' a bs = pure . unsafePerformIO $ BS.useAsCStringLen bs \(pbs, pln) -> do
 		p <- malloc
 		copyBytes (castPtr p) pbs (min pln $ sizeOf (undefined :: Ihdr))
 		Ihdr_ <$> newForeignPtr p (free p)
 	encodeChunk' (Ihdr_ fp) = unsafePerformIO $ withForeignPtr fp \p ->
 		BS.packCStringLen (castPtr p, sizeOf (undefined :: Ihdr))
 
-data Idat = Idat BS.ByteString deriving Show
+data Idat = Idat [BS.ByteString] deriving Show
 
 instance CodecChunk' Idat where
-	type CodecChunkArg Idat = ()
---	type CodecChunkArg Idat = BS.ByteString
+	type CodecChunkArg Idat = Maybe Ihdr
 	chunkName' = "IDAT"
-	decodeChunk' =
-		pure . Idat . LBS.toStrict . Zlib.decompress . LBS.fromStrict
-	encodeChunk' (Idat bs) = LBS.toStrict . Zlib.compress $ LBS.fromStrict bs
+	decodeChunk' mi bs = case mi of
+		Nothing -> MC.throwError ("No IHDR" :: String)
+		Just i -> pure . Idat
+			. devide (fromIntegral (ihdrWidth i) * fromIntegral (ihdrDepth i) * 4 `div` 8 + 1)
+
+			. LBS.toStrict . Zlib.decompress $ LBS.fromStrict bs
+	encodeChunk' (Idat bs) = LBS.toStrict . Zlib.compress . LBS.fromStrict $ BS.concat bs
 
 instance Chunk Idat
+
+devide :: Int -> BS.ByteString -> [BS.ByteString]
+devide n bs
+	| BS.null bs = []
+	| otherwise = BS.take n bs : devide n (BS.drop n bs)
