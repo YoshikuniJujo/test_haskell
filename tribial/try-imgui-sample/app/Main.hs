@@ -221,6 +221,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 				if icnd then threadDelay 10000 else do
 					Vk.ImGui.newFrame
 					ImGui.Glfw.newFrame
+					ImGui.newFrame
 					cxx_step (GlfwC.toC win)
 						ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
 	cxx_cleanup ist dvc wdcxx

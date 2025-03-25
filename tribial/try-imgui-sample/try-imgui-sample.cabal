@@ -69,6 +69,7 @@ library
       Gpu.Vulkan.ImGui.Helper.Window.Middle
       Gpu.Vulkan.ImGui.Middle
       Gpu.Vulkan.ImGui.NoVulkan
+      Gpu.Vulkan.ImGui.NoVulkan.Core
       Gpu.Vulkan.ImGui.NoVulkan.Enum
       Gpu.Vulkan.ImGui.NoVulkan.Font
       Gpu.Vulkan.ImGui.NoVulkan.Font.Core
@@ -86,6 +87,7 @@ library
       Gpu.Vulkan.ImGui.NoVulkan.Io
       Gpu.Vulkan.ImGui.NoVulkan.Io.Core
       Gpu.Vulkan.ImGui.NoVulkan.Io.Middle
+      Gpu.Vulkan.ImGui.NoVulkan.Middle
       Gpu.Vulkan.ImGui.NoVulkan.Style.Colors
       Gpu.Vulkan.ImGui.NoVulkan.Style.Colors.Core
       Gpu.Vulkan.ImGui.NoVulkan.Style.Colors.Middle
