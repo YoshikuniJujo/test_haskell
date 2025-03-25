@@ -70,6 +70,9 @@ library
       Gpu.Vulkan.ImGui.Middle
       Gpu.Vulkan.ImGui.NoVulkan
       Gpu.Vulkan.ImGui.NoVulkan.Core
+      Gpu.Vulkan.ImGui.NoVulkan.Demo
+      Gpu.Vulkan.ImGui.NoVulkan.Demo.Core
+      Gpu.Vulkan.ImGui.NoVulkan.Demo.Middle
       Gpu.Vulkan.ImGui.NoVulkan.Enum
       Gpu.Vulkan.ImGui.NoVulkan.Font
       Gpu.Vulkan.ImGui.NoVulkan.Font.Core

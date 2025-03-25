@@ -31,6 +31,7 @@ extern "C" ImFont* im_font_atlas_add_font_from_file_ttf(
 extern "C" void im_gui_impl_vulkan_new_frame();
 extern "C" void im_gui_impl_glfw_new_frame();
 extern "C" void im_gui_new_frame();
+extern "C" void im_gui_show_demo_window(bool*);
 
 void
 imgui_check_version()
@@ -217,4 +218,10 @@ void
 im_gui_new_frame()
 {
 	ImGui::NewFrame();
+}
+
+void
+im_gui_show_demo_window(bool *p_open)
+{
+	ImGui::ShowDemoWindow(p_open);
 }

@@ -239,10 +239,6 @@ step(	GLFWwindow* window, VkInstance ist,
 	float* p_clear_color, bool* pscr )
 {
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (*p_show_demo_window)
-            ImGui::ShowDemoWindow(p_show_demo_window);
-
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
             static float f = 0.0f;

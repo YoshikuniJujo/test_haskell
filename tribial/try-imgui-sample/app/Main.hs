@@ -76,6 +76,7 @@ import Gpu.Vulkan.ImGui.NoVulkan.Io qualified as ImGui.Io
 import Gpu.Vulkan.ImGui.NoVulkan.Style.Colors qualified as ImGui.Style.Colors
 import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas qualified as ImGui.FontAtlas
 import Gpu.Vulkan.ImGui.NoVulkan.Glfw qualified as ImGui.Glfw
+import Gpu.Vulkan.ImGui.NoVulkan.Demo qualified as ImGui.Demo
 import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
@@ -222,6 +223,10 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 					Vk.ImGui.newFrame
 					ImGui.Glfw.newFrame
 					ImGui.newFrame
+					sdw <- (/= 0) <$> peek psdw
+					when sdw do
+						sdw' <- ImGui.Demo.showWindow sdw
+						poke psdw $ bool 0 1 sdw'
 					cxx_step (GlfwC.toC win)
 						ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
 	cxx_cleanup ist dvc wdcxx
