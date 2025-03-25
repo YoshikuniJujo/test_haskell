@@ -28,6 +28,9 @@ popByte n = (fromIntegral n, n `shiftR` 8)
 step :: Word32 -> Word8 -> Word32
 step n b = uncurry xor . (first $ (table !) . (`xor` b)) $ popByte n
 
+step' :: Word32 -> BS.ByteString -> Word32
+step' n = BS.foldl' step n
+
 crc :: BS.ByteString -> Word32
 crc = complement . BS.foldl' step 0xffffffff
 
