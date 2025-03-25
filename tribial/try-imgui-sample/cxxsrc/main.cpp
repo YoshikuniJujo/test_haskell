@@ -240,7 +240,6 @@ step(	GLFWwindow* window, VkInstance ist,
 {
 
         // Start the Dear ImGui frame
-        ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 

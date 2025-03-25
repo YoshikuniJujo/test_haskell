@@ -8,7 +8,9 @@ module Gpu.Vulkan.ImGui.Middle (
 	C.createContextNoArg, C.Context,
 	InitInfo(..), initInfoFromCore, initInfoToCore,
 
-	C.InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx
+	C.InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx,
+
+	C.newFrame
 
 	) where
 

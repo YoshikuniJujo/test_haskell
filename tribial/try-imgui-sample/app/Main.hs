@@ -222,7 +222,8 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 					putStrLn ""
 					cxx_resizeSwapchain ist phd qfi dvc wdcxx pscr fbwdt fbhgt
 				icnd <- GlfwG.Win.getIconified w
-				if icnd then threadDelay 10000 else
+				if icnd then threadDelay 10000 else do
+					Vk.ImGui.newFrame
 					cxx_step (GlfwC.toC win)
 						ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
 	cxx_cleanup ist dvc wdcxx

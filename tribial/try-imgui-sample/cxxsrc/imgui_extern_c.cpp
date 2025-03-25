@@ -28,6 +28,7 @@ extern "C" ImFont* im_font_atlas_add_font(ImFontAtlas* fa, const ImFontConfig* f
 extern "C" ImFontConfig* im_font_config_new();
 extern "C" ImFont* im_font_atlas_add_font_from_file_ttf(
 	ImFontAtlas*, const char*, float, const ImFontConfig*, const ImWchar* );
+extern "C" void im_gui_impl_vulkan_new_frame();
 
 void
 imgui_check_version()
@@ -196,4 +197,10 @@ im_font_atlas_add_font_from_file_ttf(
 	const ImFontConfig* font_cfg, const ImWchar* glyph_ranges )
 {
 	return fa->AddFontFromFileTTF(filename, size_pixels, font_cfg, glyph_ranges);
+}
+
+void
+im_gui_impl_vulkan_new_frame()
+{
+	ImGui_ImplVulkan_NewFrame();
 }

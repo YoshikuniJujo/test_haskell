@@ -15,6 +15,10 @@ module Gpu.Vulkan.ImGui (
 
 	M.InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx,
 
+	-- * FRAME
+
+	M.newFrame
+
 	) where
 
 import Data.TypeLevel.Tuple.Uncurry

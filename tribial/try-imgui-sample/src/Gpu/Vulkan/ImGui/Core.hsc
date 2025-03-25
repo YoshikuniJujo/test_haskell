@@ -21,7 +21,9 @@ module Gpu.Vulkan.ImGui.Core (
 
 	InitInfoCxx, initInfoFromCxx, copyInitInfoToCxx,
 
-	cxx_imgui_impl_vulkan_init
+	cxx_imgui_impl_vulkan_init,
+
+	newFrame
 
 	) where
 
@@ -135,3 +137,9 @@ copyInitInfoToCxx = flip poke
 
 foreign import ccall "imgui_impl_vulkan_init" cxx_imgui_impl_vulkan_init ::
 	InitInfoCxx -> IO #{type bool}
+
+newFrame :: IO ()
+newFrame = cxx_im_gui_impl_vulkan_new_frame
+
+foreign import ccall "im_gui_impl_vulkan_new_frame"
+	cxx_im_gui_impl_vulkan_new_frame :: IO ()
