@@ -24,9 +24,9 @@ enum "ConfigFlags" ''#{type ImGuiConfigFlags} [''Show, ''Read, ''Eq, ''Bits] [
 	("ConfigFlagsIsSrgb", #{const ImGuiConfigFlags_IsSRGB_C}),
 	("ConfigFlagsIsTouchScreen", #{const ImGuiConfigFlags_IsTouchScreen_C}) ]
 
-enum "ImGuiWindowFlags" ''#{type ImGuiWindowFlags}
+enum "WindowFlags" ''#{type ImGuiWindowFlags}
 		[''Show, ''Read, ''Eq, ''Bits] [
-	("ImGuiWindowFlagsNone", #{const ImGuiWindowFlags_None_C}),
-	("ImGuiWindowFlagsNoTitleBar", #{const ImGuiWindowFlags_NoTitleBar_C}),
-	("ImGuiwindowFlagsNoResize", #{const ImGuiWindowFlags_NoResize_C})
+	("WindowFlagsNone", #{const ImGuiWindowFlags_None_C}),
+	("WindowFlagsNoTitleBar", #{const ImGuiWindowFlags_NoTitleBar_C}),
+	("WindowFlagsNoResize", #{const ImGuiWindowFlags_NoResize_C})
 	]
