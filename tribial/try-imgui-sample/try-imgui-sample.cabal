@@ -80,6 +80,9 @@ library
       Gpu.Vulkan.ImGui.NoVulkan.FontConfig.Middle
       Gpu.Vulkan.ImGui.NoVulkan.FontConfigNew.Core
       Gpu.Vulkan.ImGui.NoVulkan.FontConfigNew.Middle
+      Gpu.Vulkan.ImGui.NoVulkan.Glfw
+      Gpu.Vulkan.ImGui.NoVulkan.Glfw.Core
+      Gpu.Vulkan.ImGui.NoVulkan.Glfw.Middle
       Gpu.Vulkan.ImGui.NoVulkan.Io
       Gpu.Vulkan.ImGui.NoVulkan.Io.Core
       Gpu.Vulkan.ImGui.NoVulkan.Io.Middle

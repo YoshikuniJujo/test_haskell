@@ -75,6 +75,7 @@ import Gpu.Vulkan.ImGui.NoVulkan qualified as ImGui
 import Gpu.Vulkan.ImGui.NoVulkan.Io qualified as ImGui.Io
 import Gpu.Vulkan.ImGui.NoVulkan.Style.Colors qualified as ImGui.Style.Colors
 import Gpu.Vulkan.ImGui.NoVulkan.FontAtlas qualified as ImGui.FontAtlas
+import Gpu.Vulkan.ImGui.NoVulkan.Glfw qualified as ImGui.Glfw
 import Gpu.Vulkan.ImGui.Glfw qualified as Vk.ImGui.Glfw
 import Gpu.Vulkan.ImGui.Helper qualified as Vk.ImGui.H
 import Gpu.Vulkan.ImGui.Helper.Window qualified as Vk.ImGui.Win
@@ -215,15 +216,11 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 				scr <- peek pscr
 				when (	fbwdt > 0 && fbhgt > 0 &&
 					(scr /= 0 || Vk.ImGui.Win.wCWidth wd /= fbwdt || Vk.ImGui.Win.wCHeight wd /= fbhgt) ) do
-					print $ Vk.ImGui.Win.wCWidth wd
-					print $ Vk.ImGui.Win.wCHeight wd
-					print fbwdt
-					print fbhgt
-					putStrLn ""
 					cxx_resizeSwapchain ist phd qfi dvc wdcxx pscr fbwdt fbhgt
 				icnd <- GlfwG.Win.getIconified w
 				if icnd then threadDelay 10000 else do
 					Vk.ImGui.newFrame
+					ImGui.Glfw.newFrame
 					cxx_step (GlfwC.toC win)
 						ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
 	cxx_cleanup ist dvc wdcxx
