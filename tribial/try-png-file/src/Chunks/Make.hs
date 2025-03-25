@@ -22,6 +22,10 @@ sampleIhdr = Ihdr {
 	ihdrCompression = DeflateInflate32, ihdrFilter = FilterMethod0,
 	ihdrInterlace = NoInterlace }
 
+sampleIdat0 :: Idat
+sampleIdat0 = Idat . replicate 16 . BS.cons 0 . BS.concat $
+	replicate 16 "\x30\x70\x30\xff"
+
 sampleIdat1 :: Idat
 sampleIdat1 = Idat . replicate 16 . BS.cons 1 . BS.concat $
 	"\x10\x10\x10\xff" : replicate 15 "\x10\x10\x10\x0"
@@ -40,6 +44,10 @@ sampleIdat4 = Idat $ BS.cons 4 (BS.concat (replicate 16 "\x08\x08\x08\xff")) :
 
 sampleIend :: Iend
 sampleIend = Iend
+
+samplePng0 :: BS.ByteString
+samplePng0 = BS.concat [
+	magic, makeChunk sampleIhdr, makeChunk sampleIdat0, makeChunk sampleIend ]
 
 samplePng1 :: BS.ByteString
 samplePng1 = BS.concat [

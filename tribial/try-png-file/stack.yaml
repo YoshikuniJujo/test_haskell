@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-03-17
+snapshot: nightly-2025-03-24
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,9 +42,10 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: ee995089050aa12e50934dbff3cd9f2ef01e878a
+    commit: c48e99181075031ab6e3230c1e722e205613b660
     subdirs:
       - themes/conduit/try-simple-pipe-ng
+      - themes/gui/gtk/try-stopgap-gtk3
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

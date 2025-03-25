@@ -58,6 +58,7 @@ library
     , mtl
     , transformers-base
     , try-simple-pipe-ng
+    , try-stopgap-gtk3
     , zlib
   default-language: Haskell2010
 
@@ -82,6 +83,7 @@ executable try-png-file-exe
     , transformers-base
     , try-png-file
     , try-simple-pipe-ng
+    , try-stopgap-gtk3
     , zlib
   default-language: Haskell2010
 
@@ -102,6 +104,7 @@ executable try-png-file2
     , transformers-base
     , try-png-file
     , try-simple-pipe-ng
+    , try-stopgap-gtk3
     , zlib
   default-language: Haskell2010
 
@@ -122,6 +125,7 @@ executable try-png-pipe
     , transformers-base
     , try-png-file
     , try-simple-pipe-ng
+    , try-stopgap-gtk3
     , zlib
   default-language: Haskell2010
 
@@ -142,6 +146,28 @@ executable try-png-pipe-new
     , transformers-base
     , try-png-file
     , try-simple-pipe-ng
+    , try-stopgap-gtk3
+    , zlib
+  default-language: Haskell2010
+
+executable try-showing
+  main-is: try-showing.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , c-struct
+    , monad-control
+    , monads-tf
+    , mtl
+    , transformers-base
+    , try-png-file
+    , try-simple-pipe-ng
+    , try-stopgap-gtk3
     , zlib
   default-language: Haskell2010
 
@@ -167,5 +193,6 @@ test-suite try-png-file-test
     , transformers-base
     , try-png-file
     , try-simple-pipe-ng
+    , try-stopgap-gtk3
     , zlib
   default-language: Haskell2010

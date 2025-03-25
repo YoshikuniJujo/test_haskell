@@ -131,9 +131,11 @@ instance CodecChunk' Idat where
 	decodeChunk' mi bs = case mi of
 		Nothing -> MC.throwError ("No IHDR" :: String)
 		Just i -> pure . Idat
+			. unfilter 4 (BS.replicate (fromIntegral $ ihdrWidth i * 4) 0)
 			. devide (fromIntegral (ihdrWidth i) * fromIntegral (ihdrDepth i) * 4 `div` 8 + 1)
 			. LBS.toStrict . Zlib.decompress $ LBS.fromStrict bs
-	encodeChunk' (Idat bs) = LBS.toStrict . Zlib.compress . LBS.fromStrict $ BS.concat bs
+	encodeChunk' (Idat bs) = LBS.toStrict . Zlib.compress . LBS.fromStrict
+		. BS.concat $ dofilter 4 (BS.replicate (BS.length $ bs !! 0) 0) bs
 
 instance CodecChunkOld Idat where
 	type CodecChunkArgOld Idat = Maybe Ihdr
@@ -143,7 +145,8 @@ instance CodecChunkOld Idat where
 		Just i -> pure . Idat
 			. devide (fromIntegral (ihdrWidth i) * fromIntegral (ihdrDepth i) * 4 `div` 8 + 1)
 			. LBS.toStrict . Zlib.decompress $ LBS.fromStrict bs
-	encodeChunkOld (Idat bs) = LBS.toStrict . Zlib.compress . LBS.fromStrict $ BS.concat bs
+	encodeChunkOld (Idat bs) = LBS.toStrict . Zlib.compress . LBS.fromStrict
+		$ BS.concat bs
 
 instance Chunk Idat
 
@@ -151,3 +154,13 @@ devide :: Int -> BS.ByteString -> [BS.ByteString]
 devide n bs
 	| BS.null bs = []
 	| otherwise = BS.take n bs : devide n (BS.drop n bs)
+
+unfilter :: Int -> BS.ByteString -> [BS.ByteString] -> [BS.ByteString]
+unfilter _ _ [] = []
+unfilter bpp pr (fl : ls) = case BS.uncons fl of
+	Just (0, l) -> l : unfilter bpp l ls
+	_ -> error "unsupported yet"
+
+dofilter :: Int -> BS.ByteString -> [BS.ByteString] -> [BS.ByteString]
+dofilter _ _ [] = []
+dofilter bpp pr (l : ls) = BS.cons 0 l : dofilter bpp pr ls
