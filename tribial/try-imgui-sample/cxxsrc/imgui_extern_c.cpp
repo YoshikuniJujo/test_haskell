@@ -32,6 +32,8 @@ extern "C" void im_gui_impl_vulkan_new_frame();
 extern "C" void im_gui_impl_glfw_new_frame();
 extern "C" void im_gui_new_frame();
 extern "C" void im_gui_show_demo_window(bool*);
+extern "C" void im_gui_begin(const char* name, bool* p_open, ImGuiWindowFlags flags);
+extern "C" void im_gui_end();
 
 void
 imgui_check_version()
@@ -224,4 +226,16 @@ void
 im_gui_show_demo_window(bool *p_open)
 {
 	ImGui::ShowDemoWindow(p_open);
+}
+
+void
+im_gui_begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
+{
+	ImGui::Begin(name, p_open, flags);
+}
+
+void
+im_gui_end()
+{
+	ImGui::End();
 }

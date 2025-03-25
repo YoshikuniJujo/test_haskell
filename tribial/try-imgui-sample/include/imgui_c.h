@@ -7,6 +7,7 @@ typedef unsigned int ImWChar32;
 typedef unsigned short ImWChar16;
 
 typedef int ImGuiConfigFlags;
+typedef int ImGuiWindowFlags;
 
 enum ImGuiConfigFlags_C
 {
@@ -24,6 +25,48 @@ enum ImGuiConfigFlags_C
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     ImGuiConfigFlags_NavEnableSetMousePos_C   = 1 << 2,   // [moved/renamed in 1.91.4] -> use bool io.ConfigNavMoveSetMousePos
     ImGuiConfigFlags_NavNoCaptureKeyboard_C   = 1 << 3,   // [moved/renamed in 1.91.4] -> use bool io.ConfigNavCaptureKeyboard
+#endif
+};
+
+// Flags for ImGui::Begin()
+// (Those are per-window flags. There are shared flags in ImGuiIO: io.ConfigWindowsResizeFromEdges and io.ConfigWindowsMoveFromTitleBarOnly)
+enum ImGuiWindowFlags_C
+{
+    ImGuiWindowFlags_None_C                   = 0,
+    ImGuiWindowFlags_NoTitleBar_C             = 1 << 0,   // Disable title-bar
+    ImGuiWindowFlags_NoResize_C               = 1 << 1,   // Disable user resizing with the lower-right grip
+    ImGuiWindowFlags_NoMove_C                 = 1 << 2,   // Disable user moving the window
+    ImGuiWindowFlags_NoScrollbar_C            = 1 << 3,   // Disable scrollbars (window can still scroll with mouse or programmatically)
+    ImGuiWindowFlags_NoScrollWithMouse_C      = 1 << 4,   // Disable user vertically scrolling with mouse wheel. On child window, mouse wheel will be forwarded to the parent unless NoScrollbar is also set.
+    ImGuiWindowFlags_NoCollapse_C             = 1 << 5,   // Disable user collapsing window by double-clicking on it. Also referred to as Window Menu Button (e.g. within a docking node).
+    ImGuiWindowFlags_AlwaysAutoResize_C       = 1 << 6,   // Resize every window to its content every frame
+    ImGuiWindowFlags_NoBackground_C           = 1 << 7,   // Disable drawing background color (WindowBg, etc.) and outside border. Similar as using SetNextWindowBgAlpha(0.0f).
+    ImGuiWindowFlags_NoSavedSettings_C        = 1 << 8,   // Never load/save settings in .ini file
+    ImGuiWindowFlags_NoMouseInputs_C          = 1 << 9,   // Disable catching mouse, hovering test with pass through.
+    ImGuiWindowFlags_MenuBar_C                = 1 << 10,  // Has a menu-bar
+    ImGuiWindowFlags_HorizontalScrollbar_C    = 1 << 11,  // Allow horizontal scrollbar to appear (off by default). You may use SetNextWindowContentSize(ImVec2(width,0.0f)); prior to calling Begin() to specify width. Read code in imgui_demo in the "Horizontal Scrolling" section.
+    ImGuiWindowFlags_NoFocusOnAppearing_C     = 1 << 12,  // Disable taking focus when transitioning from hidden to visible state
+    ImGuiWindowFlags_NoBringToFrontOnFocus_C  = 1 << 13,  // Disable bringing window to front when taking focus (e.g. clicking on it or programmatically giving it focus)
+    ImGuiWindowFlags_AlwaysVerticalScrollbar_C= 1 << 14,  // Always show vertical scrollbar (even if ContentSize.y < Size.y)
+    ImGuiWindowFlags_AlwaysHorizontalScrollbar_C=1<< 15,  // Always show horizontal scrollbar (even if ContentSize.x < Size.x)
+    ImGuiWindowFlags_NoNavInputs_C            = 1 << 16,  // No keyboard/gamepad navigation within the window
+    ImGuiWindowFlags_NoNavFocus_C             = 1 << 17,  // No focusing toward this window with keyboard/gamepad navigation (e.g. skipped by CTRL+TAB)
+    ImGuiWindowFlags_UnsavedDocument_C        = 1 << 18,  // Display a dot next to the title. When used in a tab/docking context, tab is selected when clicking the X + closure is not assumed (will wait for user to stop submitting the tab). Otherwise closure is assumed when pressing the X, so if you keep submitting the tab may reappear at end of tab bar.
+    ImGuiWindowFlags_NoNav_C                  = ImGuiWindowFlags_NoNavInputs_C | ImGuiWindowFlags_NoNavFocus_C,
+    ImGuiWindowFlags_NoDecoration_C           = ImGuiWindowFlags_NoTitleBar_C | ImGuiWindowFlags_NoResize_C | ImGuiWindowFlags_NoScrollbar_C | ImGuiWindowFlags_NoCollapse_C,
+    ImGuiWindowFlags_NoInputs_C               = ImGuiWindowFlags_NoMouseInputs_C | ImGuiWindowFlags_NoNavInputs_C | ImGuiWindowFlags_NoNavFocus_C,
+
+    // [Internal]
+    ImGuiWindowFlags_ChildWindow_C            = 1 << 24,  // Don't use! For internal use by BeginChild()
+    ImGuiWindowFlags_Tooltip_C                = 1 << 25,  // Don't use! For internal use by BeginTooltip()
+    ImGuiWindowFlags_Popup_C                  = 1 << 26,  // Don't use! For internal use by BeginPopup()
+    ImGuiWindowFlags_Modal_C                  = 1 << 27,  // Don't use! For internal use by BeginPopupModal()
+    ImGuiWindowFlags_ChildMenu_C              = 1 << 28,  // Don't use! For internal use by BeginMenu()
+
+    // Obsolete names
+#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+    ImGuiWindowFlags_NavFlattened_C           = 1 << 29,  // Obsoleted in 1.90.9: Use ImGuiChildFlags_NavFlattened in BeginChild() call.
+    ImGuiWindowFlags_AlwaysUseWindowPadding_C = 1 << 30,  // Obsoleted in 1.90.0: Use ImGuiChildFlags_AlwaysUseWindowPadding in BeginChild() call.
 #endif
 };
 
