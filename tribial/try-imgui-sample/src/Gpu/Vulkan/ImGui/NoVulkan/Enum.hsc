@@ -28,5 +28,10 @@ enum "WindowFlags" ''#{type ImGuiWindowFlags}
 		[''Show, ''Read, ''Eq, ''Bits] [
 	("WindowFlagsNone", #{const ImGuiWindowFlags_None_C}),
 	("WindowFlagsNoTitleBar", #{const ImGuiWindowFlags_NoTitleBar_C}),
-	("WindowFlagsNoResize", #{const ImGuiWindowFlags_NoResize_C})
+	("WindowFlagsNoResize", #{const ImGuiWindowFlags_NoResize_C}),
+	("WindowFlagsNoMove", #{const ImGuiWindowFlags_NoMove_C}),
+	("WindowFlagsNoScrollbar", #{const ImGuiWindowFlags_NoScrollbar_C}),
+	("WindowFlagsNoScrollWithMouse",
+		#{const ImGuiWindowFlags_NoScrollWithMouse_C}),
+	("WindowFlagsNoCollapse", #{const ImGuiWindowFlags_NoCollapse_C})
 	]
