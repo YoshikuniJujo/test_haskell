@@ -150,10 +150,15 @@ extern "C" void step(
 	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
 	bool* p_show_demo_window, bool* p_show_another_window,
 	float* p_clear_color, bool* pscr );
+
 extern "C" void resizeSwapchain(
 	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, ImGui_ImplVulkanH_Window* wd,
 	bool* pscr, int fbwdt, int fbhgt );
+
+extern "C" void simpleWindowBody (
+	ImGuiIO* pio, bool* p_show_demo_window, bool* p_show_another_window,
+	float* p_clear_color );
 
 extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
 
@@ -231,20 +236,12 @@ resizeSwapchain(
 }
 
 void
-step(	GLFWwindow* window, VkInstance ist,
-	VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
-	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
-	bool* p_show_demo_window, bool* p_show_another_window,
-	float* p_clear_color, bool* pscr )
+simpleWindowBody (
+	ImGuiIO* pio, bool* p_show_demo_window, bool* p_show_another_window,
+	float* p_clear_color )
 {
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
             static float f = 0.0f;
             static int counter = 0;
-
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
             ImGui::Text("This is some useful text. 日本語でおk");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", p_show_demo_window);      // Edit bools storing our window open/close state
@@ -259,8 +256,16 @@ step(	GLFWwindow* window, VkInstance ist,
             ImGui::Text("counter = %d", counter);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / pio->Framerate, pio->Framerate);
-            ImGui::End();
-        }
+}
+
+void
+step(	GLFWwindow* window, VkInstance ist,
+	VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
+	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
+	bool* p_show_demo_window, bool* p_show_another_window,
+	float* p_clear_color, bool* pscr )
+{
 
         // 3. Show another simple window.
         if (*p_show_another_window)

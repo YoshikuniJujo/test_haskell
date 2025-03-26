@@ -129,6 +129,9 @@ foreign import ccall "step" cxx_step ::
 	ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> Ptr Word8 ->
 	IO ()
 
+foreign import ccall "simpleWindowBody" cxx_simpleWindowBody ::
+	ImGui.Io.I -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> IO ()
+
 foreign import ccall "resizeSwapchain" cxx_resizeSwapchain ::
 	Vk.Ist.I si -> Vk.Phd.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.ImGui.Win.W ->
 	Ptr Word8 -> Int32 -> Int32 -> IO ()
@@ -227,6 +230,8 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 					when sdw do
 						sdw' <- ImGui.Demo.showWindow sdw
 						poke psdw $ bool 0 1 sdw'
+					ImGui.begin "Hello, Haskell world!" () ImGui.windowFlagsZero
+						\_ -> cxx_simpleWindowBody io psdw psow pcc
 					cxx_step (GlfwC.toC win)
 						ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
 	cxx_cleanup ist dvc wdcxx
