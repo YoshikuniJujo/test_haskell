@@ -160,6 +160,8 @@ extern "C" void simpleWindowBody (
 	ImGuiIO* pio, bool* p_show_demo_window, bool* p_show_another_window,
 	float* p_clear_color );
 
+extern "C" void anotherWindow(bool* p_show_another_window);
+
 extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
 
 extern "C" void free_ImGui_ImplVulkan_InitInfo(ImGui_ImplVulkan_InitInfo* p);
@@ -259,16 +261,7 @@ simpleWindowBody (
 }
 
 void
-step(	GLFWwindow* window, VkInstance ist,
-	VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
-	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
-	bool* p_show_demo_window, bool* p_show_another_window,
-	float* p_clear_color, bool* pscr )
-{
-
-        // 3. Show another simple window.
-        if (*p_show_another_window)
+anotherWindow(bool* p_show_another_window)
         {
             ImGui::Begin("Another Window", p_show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
@@ -277,8 +270,16 @@ step(	GLFWwindow* window, VkInstance ist,
             ImGui::End();
         }
 
+void
+step(	GLFWwindow* window, VkInstance ist,
+	VkPhysicalDevice phd, uint32_t qfi,
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
+	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
+	bool* p_show_demo_window, bool* p_show_another_window,
+	float* p_clear_color, bool* pscr )
+{
+
         // Rendering
-        ImGui::Render();
         ImDrawData* draw_data = ImGui::GetDrawData();
         const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
         if (!is_minimized)

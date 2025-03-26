@@ -34,6 +34,7 @@ extern "C" void im_gui_new_frame();
 extern "C" void im_gui_show_demo_window(bool*);
 extern "C" void im_gui_begin(const char* name, bool* p_open, ImGuiWindowFlags flags);
 extern "C" void im_gui_end();
+extern "C" void im_gui_render();
 
 void
 imgui_check_version()
@@ -238,4 +239,10 @@ void
 im_gui_end()
 {
 	ImGui::End();
+}
+
+void
+im_gui_render()
+{
+	ImGui::Render();
 }

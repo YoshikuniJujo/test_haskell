@@ -3,7 +3,7 @@
 
 module Gpu.Vulkan.ImGui.NoVulkan (
 
-	M.newFrame, M.begin,
+	M.newFrame, M.begin, M.render,
 
 	module Gpu.Vulkan.ImGui.NoVulkan.Enum
 

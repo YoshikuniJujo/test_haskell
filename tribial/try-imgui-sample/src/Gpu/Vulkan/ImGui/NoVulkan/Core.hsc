@@ -26,3 +26,8 @@ end :: IO ()
 end = cxx_im_gui_end
 
 foreign import ccall "im_gui_end" cxx_im_gui_end :: IO ()
+
+render :: IO ()
+render = cxx_im_gui_render
+
+foreign import ccall "im_gui_render" cxx_im_gui_render :: IO ()

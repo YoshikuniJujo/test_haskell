@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.NoVulkan.Middle (C.newFrame, begin) where
+module Gpu.Vulkan.ImGui.NoVulkan.Middle (C.newFrame, begin, C.render) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
