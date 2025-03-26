@@ -4,6 +4,7 @@
 module Gpu.Vulkan.ImGui.NoVulkan (
 
 	M.newFrame, M.begin, M.render,
+	M.getDrawData, M.DrawData(..), M.drawDataDisplaySize,
 
 	module Gpu.Vulkan.ImGui.NoVulkan.Enum
 

@@ -5,6 +5,7 @@
 #include "imgui_c.h"
 
 struct GLFWwindow;
+struct ImDrawData;
 
 extern "C" void imgui_check_version();
 extern "C" ImGuiContext* create_context_no_arg();
@@ -35,6 +36,9 @@ extern "C" void im_gui_show_demo_window(bool*);
 extern "C" void im_gui_begin(const char* name, bool* p_open, ImGuiWindowFlags flags);
 extern "C" void im_gui_end();
 extern "C" void im_gui_render();
+extern "C" ImDrawData* im_gui_get_draw_data();
+extern "C" float im_draw_data_display_size_x(ImDrawData* dd);
+extern "C" float im_draw_data_display_size_y(ImDrawData* dd);
 
 void
 imgui_check_version()
@@ -245,4 +249,22 @@ void
 im_gui_render()
 {
 	ImGui::Render();
+}
+
+ImDrawData*
+im_gui_get_draw_data()
+{
+	return ImGui::GetDrawData();
+}
+
+float
+im_draw_data_display_size_x(ImDrawData* dd)
+{
+	return dd->DisplaySize.x;
+}
+
+float
+im_draw_data_display_size_y(ImDrawData* dd)
+{
+	return dd->DisplaySize.y;
 }

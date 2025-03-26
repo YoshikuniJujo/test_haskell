@@ -2,7 +2,10 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImGui.NoVulkan.Middle (C.newFrame, begin, C.render) where
+module Gpu.Vulkan.ImGui.NoVulkan.Middle (
+	C.newFrame, begin, C.render,
+
+	getDrawData, DrawData(..), drawDataDisplaySize ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
@@ -28,3 +31,11 @@ instance MaybeBool () where maybeBool () f = (, ()) <$> f nullPtr
 instance MaybeBool Bool where
 	maybeBool b f = alloca \pb ->
 		poke pb (bool 0 1 b) >> (,) <$> f pb <*> ((/= 0) <$> peek pb)
+
+newtype DrawData = DrawData C.DrawData deriving Show
+
+getDrawData :: IO DrawData
+getDrawData = DrawData <$> C.getDrawData
+
+drawDataDisplaySize :: DrawData -> (Float, Float)
+drawDataDisplaySize (DrawData dd) = C.drawDataDisplaySize dd

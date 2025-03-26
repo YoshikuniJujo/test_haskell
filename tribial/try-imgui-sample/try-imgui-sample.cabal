@@ -148,6 +148,7 @@ library
     , tools-yj
     , try-gpu-vulkan-ext-debug-utils
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
   if flag(debug)
     exposed-modules:
@@ -231,6 +232,7 @@ executable try-imgui-sample-exe
     , try-gpu-vulkan-ext-debug-utils
     , try-imgui-sample
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 executable trySome
@@ -280,6 +282,7 @@ executable trySome
     , try-gpu-vulkan-ext-debug-utils
     , try-imgui-sample
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 test-suite try-imgui-sample-test
@@ -334,4 +337,5 @@ test-suite try-imgui-sample-test
     , try-gpu-vulkan-ext-debug-utils
     , try-imgui-sample
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010

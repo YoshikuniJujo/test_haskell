@@ -70,6 +70,7 @@ dependencies:
 - storable-peek-poke
 - tools-yj
 - typelevel-tools-yj
+- union-color
 
 ghc-options:
 - -Wall

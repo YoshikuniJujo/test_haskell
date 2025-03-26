@@ -33,6 +33,7 @@ import Data.Bool.ToolsYj
 import Data.Word
 import Data.Int
 import Data.Text.IO qualified as Txt
+import Data.Color
 import Text.Show.ToolsYj
 import System.IO
 
@@ -123,11 +124,15 @@ glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
 	hPutStrLn stderr $ "GLFW Error " ++ show err ++ ": " ++ dsc
 
-foreign import ccall "step" cxx_step ::
-	Ptr GlfwBase.C'GLFWwindow -> Vk.Ist.I si -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W ->
-	ImGui.Io.I -> Vk.ImGui.InitInfoCxx -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> Ptr Word8 ->
-	IO ()
+foreign import ccall "FrameRender" cxx_FrameRender ::
+	Vk.ImGui.Win.W -> Vk.Dvc.D sd -> Vk.Q.Q ->
+	ImGui.DrawData -> Ptr Word8 -> IO ()
+
+foreign import ccall "FramePresent" cxx_FramePresent ::
+	Vk.ImGui.Win.W -> Vk.Q.Q -> Ptr Word8 -> IO ()
+
+foreign import ccall "setClearValue" cxx_setClearValue ::
+	Vk.ImGui.Win.W -> Ptr Float -> IO ()
 
 foreign import ccall "simpleWindowBody" cxx_simpleWindowBody ::
 	ImGui.Io.I -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> IO ()
@@ -238,8 +243,20 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 					sow <- (/= 0) <$> peek psow
 					when sow $ cxx_anotherWindow psow
 					ImGui.render
-					cxx_step (GlfwC.toC win)
-						ist phd qfi dvc gq dp wdcxx io pInitInfo psdw psow pcc pscr
+					dd <- ImGui.getDrawData
+					let	(w, h) = ImGui.drawDataDisplaySize dd
+						isMinimized = w <= 0 || h <= 0
+					Vk.ImGui.Win.wCFromCxx'
+						@(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
+						when (not isMinimized) do
+							[r, g, b, a] <- peekArray 4 pcc
+							let	wd' = wd {
+									Vk.ImGui.Win.wCClearValue =
+										Vk.ClearValueColor . fromJust $ rgbaDouble r g b a :: Vk.ClearValue (Vk.ClearTypeColor Vk.ClearColorTypeFloat32) }
+							Vk.ImGui.Win.wCCopyToCxx wd' wdcxx do
+								cxx_setClearValue wdcxx pcc
+								cxx_FrameRender wdcxx dvc gq dd pscr
+								cxx_FramePresent wdcxx gq pscr
 	cxx_cleanup ist dvc wdcxx
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
 

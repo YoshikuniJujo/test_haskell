@@ -56,7 +56,14 @@ static void CleanupVulkanWindow(VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_
     ImGui_ImplVulkanH_DestroyWindow(ist, dvc, wd, g_Allocator);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, ImDrawData* draw_data, bool* scr)
+extern "C" void FrameRender(
+	ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq,
+	ImDrawData* draw_data, bool* scr );
+
+extern "C" void FramePresent(
+	ImGui_ImplVulkanH_Window* wd, VkQueue gq, bool* scr );
+
+void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, ImDrawData* draw_data, bool* scr)
 {
     VkSemaphore image_acquired_semaphore  = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
@@ -121,7 +128,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, 
     }
 }
 
-static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq, bool* scr)
+void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq, bool* scr)
 {
     if (*scr)
         return;
@@ -143,14 +150,6 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq, bool* scr)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-extern "C" void step(
-	GLFWwindow* window, VkInstance ist,
-	VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
-	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
-	bool* p_show_demo_window, bool* p_show_another_window,
-	float* p_clear_color, bool* pscr );
-
 extern "C" void resizeSwapchain(
 	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
 	VkDevice dvc, ImGui_ImplVulkanH_Window* wd,
@@ -161,6 +160,8 @@ extern "C" void simpleWindowBody (
 	float* p_clear_color );
 
 extern "C" void anotherWindow(bool* p_show_another_window);
+
+extern "C" void setClearValue(ImGui_ImplVulkanH_Window* wd, float* p_clear_color);
 
 extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
 
@@ -271,24 +272,10 @@ anotherWindow(bool* p_show_another_window)
         }
 
 void
-step(	GLFWwindow* window, VkInstance ist,
-	VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd,
-	ImGuiIO* pio, ImGui_ImplVulkan_InitInfo* p_init_info,
-	bool* p_show_demo_window, bool* p_show_another_window,
-	float* p_clear_color, bool* pscr )
+setClearValue(ImGui_ImplVulkanH_Window* wd, float* p_clear_color)
 {
-
-        // Rendering
-        ImDrawData* draw_data = ImGui::GetDrawData();
-        const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
-        if (!is_minimized)
-        {
             wd->ClearValue.color.float32[0] = p_clear_color[0] * p_clear_color[3];
             wd->ClearValue.color.float32[1] = p_clear_color[1] * p_clear_color[3];
             wd->ClearValue.color.float32[2] = p_clear_color[2] * p_clear_color[3];
             wd->ClearValue.color.float32[3] = p_clear_color[3];
-            FrameRender(wd, dvc, gq, draw_data, pscr);
-            FramePresent(wd, gq, pscr);
-        }
 }
