@@ -7,6 +7,7 @@
 module Gpu.Vulkan.ImGui.Helper.Window.Middle (
 	WC(..), wCZero, C.W(..), wCFromCxx, wCCopyToCxx, C.allocaW ) where
 
+import Foreign.Ptr
 import Foreign.Marshal.Array
 import Control.Arrow
 import Control.Monad
@@ -94,6 +95,7 @@ wCToCore WC {
 	ppl <- readIORef rppl
 	pokeArray pfs =<< Frame.fcToCore `mapM` fs
 	pokeArray pfss $ FrameSemaphores.fCToCore <$> fss
+	cva <- peekArray 4 $ castPtr ccv
 	a C.WC {
 		C.wCWidth = w, C.wCHeight = h,
 		C.wCSwapchain = sc,
@@ -103,7 +105,7 @@ wCToCore WC {
 		C.wCPipeline = ppl,
 		C.wCUseDynamicRendering = if udr then 1 else 0,
 		C.wCClearEnable = if ce then 1 else 0,
-		C.wCClearValue = ccv,
+		C.wCClearValue = cva,
 		C.wCFrameIndex = fi, C.wCImageCount = ic,
 		C.wCSemaphoreCount = scc, C.wCSemaphoreIndex = si,
 		C.wCFramec = fromIntegral fc,

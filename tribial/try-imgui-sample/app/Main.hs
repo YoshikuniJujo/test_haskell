@@ -131,9 +131,6 @@ foreign import ccall "FrameRender" cxx_FrameRender ::
 foreign import ccall "FramePresent" cxx_FramePresent ::
 	Vk.ImGui.Win.W -> Vk.Q.Q -> Ptr Word8 -> IO ()
 
-foreign import ccall "setClearValue" cxx_setClearValue ::
-	Vk.ImGui.Win.W -> Ptr Float -> IO ()
-
 foreign import ccall "simpleWindowBody" cxx_simpleWindowBody ::
 	ImGui.Io.I -> Ptr Word8 -> Ptr Word8 -> Ptr Float -> IO ()
 
@@ -252,9 +249,9 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 							[r, g, b, a] <- peekArray 4 pcc
 							let	wd' = wd {
 									Vk.ImGui.Win.wCClearValue =
-										Vk.ClearValueColor . fromJust $ rgbaDouble r g b a :: Vk.ClearValue (Vk.ClearTypeColor Vk.ClearColorTypeFloat32) }
+										Vk.ClearValueColor . fromJust
+											$ rgbaDouble (r * a) (g * a) (b * a) a :: Vk.ClearValue (Vk.ClearTypeColor Vk.ClearColorTypeFloat32) }
 							Vk.ImGui.Win.wCCopyToCxx wd' wdcxx do
-								cxx_setClearValue wdcxx pcc
 								cxx_FrameRender wdcxx dvc gq dd pscr
 								cxx_FramePresent wdcxx gq pscr
 	cxx_cleanup ist dvc wdcxx

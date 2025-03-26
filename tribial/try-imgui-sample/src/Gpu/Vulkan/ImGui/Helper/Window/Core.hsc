@@ -25,6 +25,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr (withForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
 import Foreign.Storable (Storable(..))
 import Foreign.C.Struct
 import Data.Word
@@ -43,6 +44,8 @@ import Gpu.Vulkan.ImGui.Helper.FrameSemaphores.Core
 	qualified as Vk.ImGui.HFrameSemaphores
 
 #include "imgui_impl_vulkan_helper_c.h"
+
+type ListWord32 = [Word32]
 
 struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 	#{alignment ImGui_ImplVulkanH_Window_C} [
@@ -76,9 +79,9 @@ struct "WC" #{size ImGui_ImplVulkanH_Window_C}
 	("ClearEnable", ''#{type bool},
 		[| #{peek ImGui_ImplVulkanH_Window_C, ClearEnable} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, ClearEnable} |]),
-	("ClearValue", ''Vk.PtrClearValue,
-		[| #{peek ImGui_ImplVulkanH_Window_C, ClearValue} |],
-		[| #{poke ImGui_ImplVulkanH_Window_C, ClearValue} |]),
+	("ClearValue", ''ListWord32,
+		[| peekArray 4 . #{ptr ImGui_ImplVulkanH_Window_C, ClearValue} |],
+		[| \p -> pokeArray (#{ptr ImGui_ImplVulkanH_Window_C, ClearValue} p) . take 4 |]),
 	("FrameIndex", ''#{type uint32_t},
 		[| #{peek ImGui_ImplVulkanH_Window_C, FrameIndex} |],
 		[| #{poke ImGui_ImplVulkanH_Window_C, FrameIndex} |]),

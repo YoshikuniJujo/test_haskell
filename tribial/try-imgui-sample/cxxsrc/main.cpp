@@ -161,8 +161,6 @@ extern "C" void simpleWindowBody (
 
 extern "C" void anotherWindow(bool* p_show_another_window);
 
-extern "C" void setClearValue(ImGui_ImplVulkanH_Window* wd, float* p_clear_color);
-
 extern "C" ImGui_ImplVulkan_InitInfo* new_ImGui_ImplVulkan_InitInfo();
 
 extern "C" void free_ImGui_ImplVulkan_InitInfo(ImGui_ImplVulkan_InitInfo* p);
@@ -270,12 +268,3 @@ anotherWindow(bool* p_show_another_window)
                 *p_show_another_window = false;
             ImGui::End();
         }
-
-void
-setClearValue(ImGui_ImplVulkanH_Window* wd, float* p_clear_color)
-{
-            wd->ClearValue.color.float32[0] = p_clear_color[0] * p_clear_color[3];
-            wd->ClearValue.color.float32[1] = p_clear_color[1] * p_clear_color[3];
-            wd->ClearValue.color.float32[2] = p_clear_color[2] * p_clear_color[3];
-            wd->ClearValue.color.float32[3] = p_clear_color[3];
-}
