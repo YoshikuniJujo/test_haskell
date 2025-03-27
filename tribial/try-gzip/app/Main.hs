@@ -34,3 +34,4 @@ main = do
 			gzipOperatingSystem = os,
 			gzipFileName = fn }
 		print' . bits =<< pop
+		print' . bits =<< pop
