@@ -6,7 +6,7 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 
 	selectSurfaceFormat,
 	selectPresentMode,
-	createOrResizeWindow
+	createWindowSwapChain, createWindowCommandBuffers
 
 	) where
 
@@ -15,7 +15,6 @@ import Foreign.Concurrent
 import Data.Word
 import Data.Int
 
-import Gpu.Vulkan.Instance.Core qualified as Vk.Ist
 import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
 import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
@@ -48,15 +47,25 @@ foreign import ccall "ImGui_ImplVulkanH_SelectPresentMode"
 	Vk.Phd.P -> Vk.Sfc.S -> Ptr #{type VkPresentModeKHR} -> #{type int} ->
 	IO #{type VkPresentModeKHR}
 
-createOrResizeWindow ::
-	Vk.Ist.I -> Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
-	#{type uint32_t} -> Ptr Vk.AllocCallbacks.A ->
+createWindowSwapChain ::
+	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
+	Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> IO ()
-createOrResizeWindow =
-	cxx_ImGui_ImplVulkanH_CreateOrResizeWindow
+createWindowSwapChain = cxx_im_gui_impl_vulkan_h_create_window_swap_chain
 
-foreign import ccall "ImGui_ImplVulkanH_CreateOrResizeWindow"
-	cxx_ImGui_ImplVulkanH_CreateOrResizeWindow ::
-	Vk.Ist.I -> Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
-	#{type uint32_t} -> Ptr Vk.AllocCallbacks.A ->
+foreign import ccall "im_gui_impl_vulkan_h_create_window_swap_chain"
+	cxx_im_gui_impl_vulkan_h_create_window_swap_chain ::
+	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
+	Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> IO ()
+
+createWindowCommandBuffers ::
+	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> IO ()
+createWindowCommandBuffers =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers ::
+	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> IO ()

@@ -7,7 +7,7 @@ module Gpu.Vulkan.ImGui.Helper (
 
 	selectSurfaceFormat,
 	selectPresentMode,
-	createOrResizeWindow
+	createWindowSwapChain, createWindowCommandBuffers
 
 	) where
 
@@ -19,7 +19,6 @@ import Data.Int
 import Gpu.Vulkan qualified as Vk
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.AllocationCallbacks.Internal qualified as Vk.AllocCallbacks
-import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
@@ -44,10 +43,17 @@ selectPresentMode ::
 selectPresentMode pd (Vk.Sfc.S sfc) =
 	M.selectPresentMode pd sfc
 
-createOrResizeWindow :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Ist.I si -> Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int32 -> Int32 -> Word32 -> IO ()
-createOrResizeWindow
-	(Vk.Ist.I ist) phd (Vk.Dvc.D dvc) wd qfi mac wdt hgt mic =
-	M.createOrResizeWindow
-		ist phd dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic
+createWindowSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac ->
+	Int32 -> Int32 -> Word32 -> IO ()
+createWindowSwapChain phd (Vk.Dvc.D dvc) wd mac wdt hgt mic =
+	M.createWindowSwapChain
+		phd dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic
+
+createWindowCommandBuffers :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
+createWindowCommandBuffers phd (Vk.Dvc.D dvc) wd qfi mac =
+	M.createWindowCommandBuffers
+		phd dvc wd qfi (Vk.AllocCallbacks.toMiddle mac)

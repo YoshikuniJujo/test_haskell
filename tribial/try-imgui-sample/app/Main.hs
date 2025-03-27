@@ -173,7 +173,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	(putStrLn "HERE" >> printIO z' >> putStrLn "HERE EEND" >>) .
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
-	Vk.ImGui.H.createOrResizeWindow ist phd dvc wdcxx qfi nil wdt hgt 2 >>
+	Vk.ImGui.H.createWindowSwapChain phd dvc wdcxx nil wdt hgt 2 >>
+	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
 	Vk.ImGui.checkVersion >>
 	Vk.ImGui.createContextNoArg >>
 	ImGui.Io.get >>= \io ->

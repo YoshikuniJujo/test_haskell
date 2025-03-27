@@ -116,6 +116,7 @@ library
       cxxsrc/imgui_demo.cpp
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
+      cxxsrc/backends/imgui_impl_vulkan/helper_extern_c.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
   extra-libraries:
       stdc++
@@ -204,6 +205,7 @@ executable try-imgui-sample-exe
       cxxsrc/imgui_demo.cpp
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
+      cxxsrc/backends/imgui_impl_vulkan/helper_extern_c.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
   build-depends:
       GLFW-b
@@ -254,6 +256,7 @@ executable trySome
       cxxsrc/imgui_demo.cpp
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
+      cxxsrc/backends/imgui_impl_vulkan/helper_extern_c.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
   build-depends:
       GLFW-b
@@ -309,6 +312,7 @@ test-suite try-imgui-sample-test
       cxxsrc/imgui_demo.cpp
       cxxsrc/backends/imgui_impl_glfw.cpp
       cxxsrc/backends/imgui_impl_vulkan.cpp
+      cxxsrc/backends/imgui_impl_vulkan/helper_extern_c.cpp
       cxxsrc/trans/helper/imgui_implvulkanh_window.cpp
   build-depends:
       GLFW-b
