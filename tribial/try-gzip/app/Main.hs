@@ -6,6 +6,7 @@ module Main (main) where
 
 import Control.Monad.Except
 import Data.ByteString qualified as BS
+import System.Environment
 
 import Gzip
 
@@ -14,7 +15,8 @@ sample0 = "samples/abcd.txt.gz"
 
 main :: IO ()
 main = do
-	cnt <- BS.readFile sample0
+	fp : _ <- getArgs
+	cnt <- BS.readFile fp
 	print =<< runMyMonad cnt do
 		ids <- takeBytes 2
 		print' $ ids == ids0
