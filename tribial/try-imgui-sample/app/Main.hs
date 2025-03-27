@@ -235,7 +235,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 					when sdw do
 						sdw' <- ImGui.Demo.showWindow sdw
 						poke psdw $ bool 0 1 sdw'
-					ImGui.begin "Hello, Haskell world!" () ImGui.windowFlagsZero
+					ImGui.begin @() "Hello, Haskell world!" ImGui.windowFlagsZero
 						\_ -> cxx_simpleWindowBody io psdw psow pcc
 					sow <- (/= 0) <$> peek psow
 					when sow $ cxx_anotherWindow psow
