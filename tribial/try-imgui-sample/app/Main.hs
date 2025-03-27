@@ -65,11 +65,6 @@ import Gpu.Vulkan.DescriptorPool.Middle.Internal qualified as Vk.DscPl.M
 
 import Graphics.UI.GlfwG qualified as GlfwG
 import Graphics.UI.GlfwG.Window qualified as GlfwG.Win
-import Graphics.UI.GlfwG.Window.Type qualified as GlfwG.Win
-
-import Graphics.UI.GLFW.C qualified as GlfwC
-
-import Bindings.GLFW qualified as GlfwBase
 
 import Gpu.Vulkan.ImGui qualified as Vk.ImGui
 import Gpu.Vulkan.ImGui.NoVulkan qualified as ImGui
@@ -102,11 +97,7 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	GlfwG.Win.hint
 		(GlfwG.Win.WindowHint'ClientAPI GlfwG.Win.ClientAPI'NoAPI) >>
 	GlfwG.Win.create 1280 720
-		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win ->
-	Vk.ImGui.Win.allocaW \w ->
-	when oldLog (Vk.ImGui.Win.wCFromCxx'
-		@(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32)
-		w printIO ) >> do
+		"Dear ImGui GLFW+Vulkan example" Nothing Nothing \win -> do
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
 	when oldLog $ print AppUseUnlimitedFrameRate.flag
@@ -116,9 +107,7 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 		createDscPl dvc \dp ->
 		Vk.Sfc.Phd.getSupport phd (grFam qfm) sfc >>= \res ->
 		when (not res) (error "Error no WSI support on physicalDevice 0") >> do
-		mainCxx win ist sfc phd (grFam qfm) dvc gq dp w
-		when oldLog $ Vk.ImGui.Win.wCFromCxx'
-			@(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) w printIO
+		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
@@ -159,8 +148,9 @@ foreign import ccall "initialize_ImGui_ImplVulkan_InitInfo"
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
-	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> Vk.ImGui.Win.W -> IO ()
-mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
+	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
+mainCxx w ist sfc phd qfi dvc gq dp =
+	Vk.ImGui.Win.allocaW \wdcxx ->
 	let	rqSfcImgFmt = [
 			Vk.FormatB8g8r8a8Unorm, Vk.FormatR8g8b8a8Unorm,
 			Vk.FormatB8g8r8Unorm, Vk.FormatR8g8b8Unorm ] in
@@ -180,11 +170,10 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		Vk.ImGui.Win.wCClearEnable = True,
 		Vk.ImGui.Win.wCPresentMode = pm
 		} in
+	(putStrLn "HERE" >> printIO z' >> putStrLn "HERE EEND" >>) .
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
 	Vk.ImGui.H.createOrResizeWindow ist phd dvc wdcxx qfi nil wdt hgt 2 >>
-	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
-	when oldLog (printIO wd) >>
 	Vk.ImGui.checkVersion >>
 	Vk.ImGui.createContextNoArg >>
 	ImGui.Io.get >>= \io ->
@@ -195,8 +184,8 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 	ImGui.Style.Colors.darkNoArg >>
 --	ImGui.Style.Colors.lightNoArg >>
 --	ImGui.Style.Colors.classicNoArg >>
-	Vk.ImGui.Glfw.init w True >>
-	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
+	Vk.ImGui.Glfw.init w True >> do
+--	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
 	pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
 		pInitInfo ist phd qfi dvc gq dp wdcxx
@@ -218,6 +207,7 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 		poke psow 0
 		pokeArray pcc [0.45, 0.55, 0.60, 1.00]
 		poke pscr 0
+		Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx printIO
 		untilClose w do
 			GlfwG.pollEvents
 			Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd -> do
@@ -235,23 +225,23 @@ mainCxx w@(GlfwG.Win.W win) ist sfc phd qfi dvc gq dp wdcxx =
 					when sdw do
 						sdw' <- ImGui.Demo.showWindow sdw
 						poke psdw $ bool 0 1 sdw'
-					ImGui.begin @() "Hello, Haskell world!" ImGui.windowFlagsZero
+					_ <- ImGui.begin @() "Hello, Haskell world!" ImGui.windowFlagsZero
 						\_ -> cxx_simpleWindowBody io psdw psow pcc
 					sow <- (/= 0) <$> peek psow
 					when sow $ cxx_anotherWindow psow
 					ImGui.render
 					dd <- ImGui.getDrawData
-					let	(w, h) = ImGui.drawDataDisplaySize dd
-						isMinimized = w <= 0 || h <= 0
+					let	(wdtds, hgtds) = ImGui.drawDataDisplaySize dd
+						isMinimized = wdtds <= 0 || hgtds <= 0
 					Vk.ImGui.Win.wCFromCxx'
-						@(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd ->
+						@(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd' ->
 						when (not isMinimized) do
 							[r, g, b, a] <- peekArray 4 pcc
-							let	wd' = wd {
+							let	wd'' = wd' {
 									Vk.ImGui.Win.wCClearValue =
 										Vk.ClearValueColor . fromJust
 											$ rgbaDouble (r * a) (g * a) (b * a) a :: Vk.ClearValue (Vk.ClearTypeColor Vk.ClearColorTypeFloat32) }
-							Vk.ImGui.Win.wCCopyToCxx wd' wdcxx do
+							Vk.ImGui.Win.wCCopyToCxx wd'' wdcxx do
 								cxx_FrameRender wdcxx dvc gq dd pscr
 								cxx_FramePresent wdcxx gq pscr
 	cxx_cleanup ist dvc wdcxx
