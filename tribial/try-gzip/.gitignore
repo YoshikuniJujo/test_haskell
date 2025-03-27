@@ -1,0 +1,4 @@
+.stack-work/
+*~
+samples/foo.txt
+samples/foo.txt.gz
