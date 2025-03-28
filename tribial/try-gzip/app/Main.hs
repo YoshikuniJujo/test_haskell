@@ -1,27 +1,36 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
-import Control.Monad.Except
 import Data.ByteString qualified as BS
 import System.Environment
 
 import Gzip
+import MyMonad
+import MonadByteString
 
-sample0 :: FilePath
-sample0 = "samples/abcd.txt.gz"
+import Control.Monad.Base
+import Control.MonadClasses.State qualified as MC
+import Control.MonadClasses.Except qualified as MC
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	cnt <- BS.readFile fp
-	print =<< runMyMonad cnt do
+	putStrLn . take 100 . show =<< runMyMonad cnt tryReadGzip
+
+tryReadGzip :: (
+	MC.MonadError String m,
+	MonadBase IO m, MC.MonadState BS.ByteString m ) => m ()
+tryReadGzip = do
 		ids <- takeBytes 2
 		print' $ ids == ids0
 		cm <- pop
-		fs <- maybe (throwError "bad flags") pure . readFlags =<< pop
+		fs <- maybe (MC.throwError @String "bad flags") pure . readFlags =<< pop
 		mt <- takeWord32
 		efs <- pop
 		os <- pop
