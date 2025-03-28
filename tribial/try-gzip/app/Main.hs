@@ -10,8 +10,9 @@ import Data.ByteString qualified as BS
 import System.Environment
 
 import Gzip
-import MyMonad
+import MyMonadNew
 import MonadByteString
+import BitArray
 
 import Control.Monad.Base
 import Control.MonadClasses.State qualified as MC
@@ -21,7 +22,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	cnt <- BS.readFile fp
-	putStrLn . take 100 . show =<< runMyMonad cnt tryReadGzip
+	putStrLn . take 200 . show =<< runMyMonad (bsToBitArray cnt) tryReadGzip
 
 tryReadGzip :: (
 	MC.MonadError String m,
