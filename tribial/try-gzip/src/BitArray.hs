@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module BitArray where
@@ -7,6 +7,7 @@ module BitArray where
 import Prelude hiding (splitAt)
 import Data.Bits
 import Data.List qualified as L
+import Data.Word
 import Data.ByteString qualified as BS
 
 data BitArray =
@@ -23,6 +24,15 @@ bitArrayToBs = \case
 		| ln `mod` 8 == 0 -> Right $ BS.take (ln `div` 8) bs
 		| otherwise -> Left "not at byte boundary"
 	_ -> Left "not at byte boundary"
+
+bitArrayToWord8 :: BitArray -> Either String Word8
+bitArrayToWord8 BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
+	| ln + i <= 8 = Right $
+		BS.head bs `shiftR` i .&. foldl setBit zeroBits [0 .. ln - 1]
+	| ln <= 8 = Right let b0 = BS.head bs; b1 = BS.head $ BS.tail bs in
+		b0 `shiftR` i .|.
+		b1 `shiftL` i .&. foldl setBit zeroBits [0 .. ln - 1]
+	| otherwise = Left "too long"
 
 splitAt :: Int -> BitArray -> Either String (BitArray, BitArray)
 splitAt n BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }

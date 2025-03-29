@@ -33,6 +33,10 @@ instance MC.MonadState BS.ByteString MyMonad where
 		either throwError pure $ bitArrayToBs ba
 	put = MyMonad . put . bsToBitArray
 
+instance MC.MonadState BitArray MyMonad where
+	get = MyMonad get
+	put = MyMonad . put
+
 instance MonadBase IO MyMonad where liftBase = MyMonad . liftBase
 
 runMyMonad ::

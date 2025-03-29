@@ -11,8 +11,9 @@ import System.Environment
 
 import Gzip
 import MyMonadNew
-import MonadByteString
+import MonadByteString qualified as BS
 import BitArray
+import MonadBitArray qualified as BA
 
 import Control.Monad.Base
 import Control.MonadClasses.State qualified as MC
@@ -26,22 +27,26 @@ main = do
 
 tryReadGzip :: (
 	MC.MonadError String m,
-	MonadBase IO m, MC.MonadState BS.ByteString m ) => m ()
+	MonadBase IO m,
+	MC.MonadState BS.ByteString m, MC.MonadState BitArray m ) => m ()
 tryReadGzip = do
-		ids <- takeBytes 2
-		print' $ ids == ids0
-		cm <- pop
-		fs <- maybe (MC.throwError @String "bad flags") pure . readFlags =<< pop
-		mt <- takeWord32
-		efs <- pop
-		os <- pop
-		fn <- takeString
-		print' $ GzipHeader {
+		ids <- BS.takeBytes 2
+		BS.print' $ ids == ids0
+		cm <- BS.pop
+		fs <- maybe (MC.throwError @String "bad flags") pure . readFlags =<< BS.pop
+		mt <- BS.takeWord32
+		efs <- BS.pop
+		os <- BS.pop
+		fn <- BS.takeString
+		BS.print' $ GzipHeader {
 			gzipHeaderCompressionMethod = cm,
 			gzipHeaderFlags = fs,
 			gzipHeaderModificationTime = mt,
 			gzipExtraFlags = efs,
 			gzipOperatingSystem = os,
 			gzipFileName = fn }
-		print' . bits =<< pop
-		print' . bits =<< pop
+		BS.print' =<< BA.pop
+		BS.print' =<< BA.takeBit8 2
+		BS.print' =<< BA.byteBoundary
+		BS.print' . BS.bits =<< BS.pop
+		BS.print' . BS.bits =<< BS.pop
