@@ -19,8 +19,12 @@ import Data.ByteString qualified as BS
 
 import BitArray
 
+import HuffmanTree
+
 newtype MyMonad a = MyMonad {
-	unMyMonad :: StateT BitArray (ExceptT String IO) a }
+	unMyMonad :: StateT BitArray
+		(StateT (BinTree Int, BinTree Int)
+		(ExceptT String IO)) a }
 	deriving (Functor, Applicative, Monad, MonadIO)
 
 instance MC.MonadError String MyMonad where
@@ -37,8 +41,13 @@ instance MC.MonadState BitArray MyMonad where
 	get = MyMonad get
 	put = MyMonad . put
 
+instance MC.MonadState (BinTree Int, BinTree Int) MyMonad where
+	get = MyMonad $ lift get
+	put = MyMonad . lift . put
+
 instance MonadBase IO MyMonad where liftBase = MyMonad . liftBase
 
 runMyMonad ::
-	BitArray -> MyMonad a -> IO (Either String (a, BitArray))
-runMyMonad bs = runExceptT . (`runStateT` bs) . unMyMonad
+	(BinTree Int, BinTree Int) ->
+	BitArray -> MyMonad a -> IO (Either String ((a, BitArray), (BinTree Int, BinTree Int)))
+runMyMonad ht bs = runExceptT . (`runStateT` ht) . (`runStateT` bs) . unMyMonad

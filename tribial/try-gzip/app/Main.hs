@@ -19,16 +19,20 @@ import Control.Monad.Base
 import Control.MonadClasses.State qualified as MC
 import Control.MonadClasses.Except qualified as MC
 
+import HuffmanTree
+import MonadHuffman
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	cnt <- BS.readFile fp
-	putStrLn . take 200 . show =<< runMyMonad (bsToBitArray cnt) tryReadGzip
+	putStrLn . take 200 . show =<< runMyMonad (fixedTable, fixedTable) (bsToBitArray cnt) tryReadGzip
 
 tryReadGzip :: (
 	MC.MonadError String m,
 	MonadBase IO m,
-	MC.MonadState BS.ByteString m, MC.MonadState BitArray m ) => m ()
+	MC.MonadState BS.ByteString m, MC.MonadState BitArray m,
+	MC.MonadState (BinTree Int, BinTree Int) m ) => m ()
 tryReadGzip = do
 		ids <- BS.takeBytes 2
 		BS.print' $ ids == ids0
@@ -47,6 +51,18 @@ tryReadGzip = do
 			gzipFileName = fn }
 		BS.print' =<< BA.pop
 		BS.print' =<< BA.takeBit8 2
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+		BS.print' =<< huffmanStep =<< BA.pop'
+
+{-
 		BS.print' =<< BA.byteBoundary
 		BS.print' . BS.bits =<< BS.pop
 		BS.print' . BS.bits =<< BS.pop
+		-}

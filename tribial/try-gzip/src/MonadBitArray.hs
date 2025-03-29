@@ -9,10 +9,16 @@ import Control.MonadClasses.Except
 import Data.Word
 
 import BitArray qualified as BA
+import HuffmanTree
 
 pop :: (MonadState BA.BitArray m, MonadError String m) => m Bool
 pop = do
 	(b, ba) <- liftEither =<< gets BA.uncons
+	b <$ put ba
+
+pop' :: (MonadState BA.BitArray m, MonadError String m) => m Bit
+pop' = do
+	(b, ba) <- liftEither =<< gets BA.uncons'
 	b <$ put ba
 
 byteBoundary ::

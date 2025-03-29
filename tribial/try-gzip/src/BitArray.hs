@@ -7,8 +7,11 @@ module BitArray where
 import Prelude hiding (splitAt)
 import Data.Bits
 import Data.List qualified as L
+import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
+
+import HuffmanTree
 
 data BitArray =
 	BitArray { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
@@ -50,6 +53,16 @@ uncons = \case
 		BitArray { bit0 = 0, bitsLen = ln - 1, bitsBody = BS.tail bs } )
 	BitArray { bit0 = i, bitsLen = ln, bitsBody = bs } -> Right (
 		testBit (BS.head bs) i,
+		BitArray { bit0 = i + 1, bitsLen = ln - 1, bitsBody = bs } )
+
+uncons' :: BitArray -> Either String (Bit, BitArray)
+uncons' = \case
+	BitArray { bitsLen = 0 } -> Left "empty"
+	BitArray { bit0 = 7, bitsLen = ln, bitsBody = bs } -> Right (
+		bool O I $ testBit (BS.head bs) 7,
+		BitArray { bit0 = 0, bitsLen = ln - 1, bitsBody = BS.tail bs } )
+	BitArray { bit0 = i, bitsLen = ln, bitsBody = bs } -> Right (
+		bool O I $ testBit (BS.head bs) i,
 		BitArray { bit0 = i + 1, bitsLen = ln - 1, bitsBody = bs } )
 
 bitArrayToBools :: BitArray -> [Bool]

@@ -31,6 +31,9 @@ bitListNextRv [] = []
 bitListNextRv (O : bs) = (I : bs)
 bitListNextRv (I : bs) = (O : bitListNextRv bs)
 
+fixedTable :: BinTree Int
+fixedTable = fromList fixedTableList
+
 fixedTableList :: [([Bit], Int)]
 fixedTableList = L.sort . (`zip` [0 ..]) $
 	bitListFromTo [O, O, I, I, O, O, O, O] [I, O, I, I, I, I, I, I] ++
@@ -43,3 +46,8 @@ decode _ (Leaf x) [] = [x]
 decode t0 (Node l _) (O : bs) = decode t0 l bs
 decode t0 (Node _ r) (I : bs) = decode t0 r bs
 decode t0 (Leaf x) bs = x : decode t0 t0 bs
+
+decode1 :: BinTree a -> BinTree a -> Bit -> (Maybe a, BinTree a)
+decode1 t0 (Leaf x) b = const (Just x) `first` decode1 t0 t0 b
+decode1 _ (Node l _) O = (Nothing, l)
+decode1 _ (Node _ r) I = (Nothing, r)
