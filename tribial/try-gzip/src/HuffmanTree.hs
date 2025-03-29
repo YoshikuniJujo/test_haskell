@@ -1,0 +1,45 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module HuffmanTree where
+
+import Control.Arrow
+import Data.List qualified as L
+
+data Bit = O | I deriving (Show, Eq, Ord)
+
+data BinTree a = Node (BinTree a) (BinTree a) | Leaf a deriving Show
+
+fromList :: [([Bit], a)] -> BinTree a
+fromList [([], x)] = Leaf x
+fromList t = Node (fromList t1) (fromList t2)
+	where
+	[t1, t2] =
+		(first tail <$>) <$>
+		L.groupBy (curry (uncurry (==) . ((head . fst) *** (head . fst)))) t
+
+bitListFromTo :: [Bit] -> [Bit] -> [[Bit]]
+bitListFromTo b e = reverse <$> bitListFromToRv (reverse b) (reverse e)
+
+bitListFromToRv :: [Bit] -> [Bit] -> [[Bit]]
+bitListFromToRv b e
+	| b == e = [b]
+	| otherwise = b : bitListFromToRv (bitListNextRv b) e
+
+bitListNextRv :: [Bit] -> [Bit]
+bitListNextRv [] = []
+bitListNextRv (O : bs) = (I : bs)
+bitListNextRv (I : bs) = (O : bitListNextRv bs)
+
+fixedTableList :: [([Bit], Int)]
+fixedTableList = L.sort . (`zip` [0 ..]) $
+	bitListFromTo [O, O, I, I, O, O, O, O] [I, O, I, I, I, I, I, I] ++
+	bitListFromTo [I, I, O, O, I, O, O, O, O] [I, I, I, I, I, I, I, I, I] ++
+	bitListFromTo [O, O, O, O, O, O, O] [O, O, I, O, I, I, I] ++
+	bitListFromTo [I, I, O, O, O, O, O, O] [I, I, O, O, O, I, I, I]
+
+decode :: BinTree a -> BinTree a -> [Bit] -> [a]
+decode _ (Leaf x) [] = [x]
+decode t0 (Node l _) (O : bs) = decode t0 l bs
+decode t0 (Node _ r) (I : bs) = decode t0 r bs
+decode t0 (Leaf x) bs = x : decode t0 t0 bs
