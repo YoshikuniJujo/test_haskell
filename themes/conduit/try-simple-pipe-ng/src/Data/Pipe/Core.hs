@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Pipe.Core (
@@ -23,6 +23,7 @@ module Data.Pipe.Core (
 	) where
 
 import Control.Monad
+import Control.Monad.Base
 import Control.Exception.Lifted (onException)
 import Control.Monad.Trans.Control
 import "monads-tf" Control.Monad.Trans
@@ -218,6 +219,9 @@ instance MonadReader m => MonadReader (Pipe i o m) where
 	type EnvType (Pipe i o m) = EnvType m
 	ask = lift ask
 	local = mapPipeM . local
+
+instance MonadBase io m => MonadBase io (Pipe i o m) where
+	liftBase = lift . liftBase
 
 liftP :: Monad m => m a -> Pipe i o m a
 liftP m = Make (return ()) $ Done (return ()) `liftM` m
