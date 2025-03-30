@@ -25,6 +25,7 @@ dependencies:
 - mtl
 - array
 - bytestring
+- try-simple-pipe-ng
 
 ghc-options:
 - -Wall

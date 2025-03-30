@@ -27,8 +27,6 @@ library
   exposed-modules:
       BitArray
       ByteStringNum
-      Control.MonadClasses.Except
-      Control.MonadClasses.State
       Crc
       Gzip
       HuffmanTree
@@ -50,6 +48,7 @@ library
     , bytestring
     , mtl
     , transformers-base
+    , try-simple-pipe-ng
   default-language: Haskell2010
 
 executable try-gzip-exe
@@ -68,6 +67,7 @@ executable try-gzip-exe
     , mtl
     , transformers-base
     , try-gzip
+    , try-simple-pipe-ng
   default-language: Haskell2010
 
 executable try-make-gzip
@@ -82,6 +82,7 @@ executable try-make-gzip
     , mtl
     , transformers-base
     , try-gzip
+    , try-simple-pipe-ng
   default-language: Haskell2010
 
 test-suite try-gzip-test
@@ -101,4 +102,5 @@ test-suite try-gzip-test
     , mtl
     , transformers-base
     , try-gzip
+    , try-simple-pipe-ng
   default-language: Haskell2010
