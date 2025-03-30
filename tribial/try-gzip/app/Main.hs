@@ -6,6 +6,7 @@
 
 module Main (main) where
 
+import Data.Pipe
 import Data.ByteString qualified as BS
 import System.Environment
 
@@ -26,7 +27,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	cnt <- BS.readFile fp
-	putStrLn . take 200 . show =<< runMyMonad (fixedTable, fixedTable) (bsToBitArray cnt) tryReadGzip
+	putStrLn . take 200 . show =<< runMyPipe (fixedTable, fixedTable) (bsToBitArray cnt) tryReadGzip
 
 tryReadGzip :: (
 	MC.MonadError String m,
@@ -51,15 +52,16 @@ tryReadGzip = do
 			gzipFileName = fn }
 		BS.print' =<< BA.pop
 		BS.print' =<< BA.takeBit8 2
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
-		BS.print' =<< huffmanStep =<< BA.pop'
+--		BA.bits =$= huffmanPipe =$= (BS.print' =<< await)
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
+		BS.print' =<< huffStep =<< BA.pop'
 
 {-
 		BS.print' =<< BA.byteBoundary

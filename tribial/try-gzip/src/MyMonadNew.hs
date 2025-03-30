@@ -15,11 +15,19 @@ import Control.Monad.Except
 import Control.MonadClasses.State qualified as MC
 import Control.MonadClasses.Except qualified as MC
 
+import Data.Pipe
 import Data.ByteString qualified as BS
 
 import BitArray
 
 import HuffmanTree
+
+type MyPipe i o = Pipe i o MyMonad
+
+runMyPipe ::
+	(BinTree Int, BinTree Int) ->
+	BitArray -> MyPipe i o a -> IO (Either String ((Maybe a, BitArray), (BinTree Int, BinTree Int)))
+runMyPipe ht bs = runExceptT . (`runStateT` ht) . (`runStateT` bs) . unMyMonad . runPipe
 
 newtype MyMonad a = MyMonad {
 	unMyMonad :: StateT BitArray

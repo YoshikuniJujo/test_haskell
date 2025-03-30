@@ -17,6 +17,9 @@ data BitArray =
 	BitArray { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
 	deriving Show
 
+null :: BitArray -> Bool
+null BitArray { bitsLen = ln } = ln == 0
+
 bsToBitArray :: BS.ByteString -> BitArray
 bsToBitArray bs =
 	BitArray { bit0 = 0, bitsLen = 8 * BS.length bs, bitsBody = bs }
