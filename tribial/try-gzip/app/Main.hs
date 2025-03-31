@@ -53,23 +53,34 @@ main = do
 			MC.put (clcls, clcls)
 			huffmanPipe ) =$= do
 				lct <- fromList . pairToCodes
-					. L.sort
-					. filter ((/= 0) . fst)
+					. L.sort . filter ((/= 0) . fst)
 					. (`zip` [0 ..]) <$> getCodeTable 282
 				BS.print' lct
 
 				BS.putStrLn' ""
 				BS.putStrLn' "== DIST =="
 
+				dct <- fromList . pairToCodes
+					. L.sort . filter ((/= 0) . fst)
+					. (`zip` [0 ..]) <$> getCodeTable 23
+				BS.print' dct
+
+{-
 				BS.print' =<< await
 				MC.put $ ExtraBits 3
 				BS.print' =<< await
 				replicateM_ 18 $ BS.print' =<< await
+				-}
 
 				BS.putStrLn' ""
 				MC.put (lct, lct :: BinTree Int)
 				printWhileLiteral
 				MC.put $ ExtraBits 1
+				BS.print' =<< await
+
+				MC.put (dct, dct :: BinTree Int)
+				BS.print' =<< await
+				MC.put $ ExtraBits 4
 				BS.print' =<< await
 		)
 
