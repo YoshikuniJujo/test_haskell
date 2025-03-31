@@ -12,7 +12,6 @@ import Data.Pipe
 import Data.Maybe
 import Data.List qualified as L
 import Data.Word
-import Data.Char
 import Data.ByteString qualified as BS
 import System.Environment
 
@@ -52,42 +51,11 @@ main = do
 			BS.print' @_ @(BinTree Int) clcls
 			MC.put (clcls, clcls)
 			huffmanPipe ) =$= do
-				BS.print' =<< getCodeTable 282
-			{-
-				BS.print' =<< await
-				MC.put $ ExtraBits 3
-				BS.print' =<< await
-
-				BS.print' @_ @Int 9
-
-				BS.print' =<< printWhile 9 \case
-					Left x -> 0 <= x && x <= 15
-					Right _ -> False
-				MC.put $ ExtraBits 7
-				BS.print' =<< await
-
-				BS.print' =<< printWhile 32 \case
-					Left x -> 0 <= x && x <= 15
-					Right _ -> False
-				MC.put $ ExtraBits 3
-				BS.print' =<< await
-
-				BS.print' =<< printWhile 55 \case
-					Left x -> 0 <= x && x <= 15
-					Right _ -> False
-				MC.put $ ExtraBits 3
-				BS.print' =<< await
-
-				BS.print' =<< printWhile 91 \case
-					Left x -> 0 <= x && x <= 15
-					Right _ -> False
-				MC.put $ ExtraBits 7
-				BS.print' =<< await
-
-				BS.print' =<< printWhile 256 \case
-					Left x -> 0 <= x && x <= 15
-					Right _ -> False
-					-}
+				lct <- fromList . pairToCodes
+					. L.sort
+					. filter ((/= 0) . fst)
+					. (`zip` [0 ..]) <$> getCodeTable 282
+				BS.print' lct
 
 				BS.putStrLn' ""
 				BS.putStrLn' "== DIST =="
@@ -96,10 +64,17 @@ main = do
 				MC.put $ ExtraBits 3
 				BS.print' =<< await
 				replicateM_ 18 $ BS.print' =<< await
+
+				BS.putStrLn' ""
+				MC.put (lct, lct :: BinTree Int)
+				BS.print' =<< await
+				BS.print' =<< await
+				BS.print' =<< await
+				BS.print' =<< await
 		)
 
 getCodeTable :: (
-	PipeClass p, Monad (p (Either Int Word16) o m),
+	PipeClass p,
 	MC.MonadState ExtraBits (p (Either Int Word16) o m),
 	MonadFail (p (Either Int Word16) o m),
 	Monad m
@@ -119,19 +94,8 @@ getCodeTable n = await >>= \case
 			MC.put $ ExtraBits 7
 			Just (Right eb) <- await
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable (n - fromIntegral eb - 11)
-	Just (Right eb) -> error "bad"
-
-printWhile :: (
-	Show a,
-	PipeClass p, MonadBase IO (p a o m),
-	Monad m ) => Int ->
-	(a -> Bool) -> p a o m Int
-printWhile i p = await >>= \case
-	Nothing -> pure i
-	Just x	| p x -> do
-			BS.print' (if i < 256 then Left $ chr i else Right i, x)
-			printWhile (i + 1) p
-		| otherwise -> i <$ BS.print' x
+		| otherwise -> error "yet"
+	Just (Right _) -> error "bad"
 
 readHeader :: (
 	PipeClass p,
