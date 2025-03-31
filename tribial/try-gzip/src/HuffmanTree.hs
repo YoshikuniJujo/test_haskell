@@ -48,6 +48,13 @@ decode t0 (Node _ r) (I : bs) = decode t0 r bs
 decode t0 (Leaf x) bs = x : decode t0 t0 bs
 
 decode1 :: BinTree a -> BinTree a -> Bit -> (Maybe a, BinTree a)
-decode1 t0 (Leaf x) b = const (Just x) `first` decode1 t0 t0 b
+decode1 t0 (Node (Leaf x) _) O = (Just x, t0)
+decode1 t0 (Node _ (Leaf x)) I = (Just x, t0)
 decode1 _ (Node l _) O = (Nothing, l)
 decode1 _ (Node _ r) I = (Nothing, r)
+
+fixedDstTable :: BinTree Int
+fixedDstTable = fromList fixedDstTableList
+
+fixedDstTableList :: [([Bit], Int)]
+fixedDstTableList = bitListFromTo [O, O, O, O, O] [I, I, I, I, I] `zip` [0 ..]

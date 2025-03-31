@@ -3,8 +3,12 @@
 
 module MonadHuffman where
 
+import Control.Monad
 import Control.MonadClasses.State
+import Data.Bits
 import Data.Pipe
+import Data.Maybe
+import Data.Word
 
 import HuffmanTree
 
@@ -15,10 +19,25 @@ huffStep b = do
 	put (t0, nt)
 	pure mr
 
+newtype ExtraBits = ExtraBits Int deriving Show
+
 huffmanPipe :: (
 	PipeClass p, Monad m,
-	MonadState (BinTree Int, BinTree Int) (p Bit Int m)) =>
-	p Bit Int m ()
+	MonadState (BinTree Int, BinTree Int) (p Bit (Either Int Word16) m),
+	MonadState ExtraBits (p Bit (Either Int Word16) m)
+	) =>
+	p Bit (Either Int Word16) m ()
 huffmanPipe = do
-	maybe (pure ()) (\b -> maybe (pure ()) yield =<< huffStep b) =<< await
+	eb <- get
+	case eb of
+		ExtraBits 0 ->
+			maybe (pure ()) (\b -> maybe (pure ()) (yield . Left) =<< huffStep b) =<< await
+		ExtraBits n -> do
+			yield . Right =<< takeBits16 n
+			put $ ExtraBits 0
 	huffmanPipe
+
+takeBits16 n = bitsToWord16 <$> replicateM n (fromJust <$> await)
+
+bitsToWord16 :: [Bit] -> Word16
+bitsToWord16 = foldl (\w b -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0

@@ -8,6 +8,7 @@
 
 module MyMonadNew where
 
+import Control.Arrow
 import Control.Monad.Base
 import Control.Monad.State
 import Control.Monad.Except
@@ -21,17 +22,18 @@ import Data.ByteString qualified as BS
 import BitArray
 
 import HuffmanTree
+import MonadHuffman
 
 type MyPipe i o = Pipe i o MyMonad
 
 runMyPipe ::
-	(BinTree Int, BinTree Int) ->
-	BitArray -> MyPipe i o a -> IO (Either String ((Maybe a, BitArray), (BinTree Int, BinTree Int)))
+	((BinTree Int, BinTree Int), ExtraBits) ->
+	BitArray -> MyPipe i o a -> IO (Either String ((Maybe a, BitArray), ((BinTree Int, BinTree Int), ExtraBits)))
 runMyPipe ht bs = runExceptT . (`runStateT` ht) . (`runStateT` bs) . unMyMonad . runPipe
 
 newtype MyMonad a = MyMonad {
 	unMyMonad :: StateT BitArray
-		(StateT (BinTree Int, BinTree Int)
+		(StateT ((BinTree Int, BinTree Int), ExtraBits)
 		(ExceptT String IO)) a }
 	deriving (Functor, Applicative, Monad, MonadIO)
 
@@ -53,12 +55,16 @@ instance MC.MonadState BitArray MyMonad where
 	put = MyMonad . put
 
 instance MC.MonadState (BinTree Int, BinTree Int) MyMonad where
-	get = MyMonad $ lift get
-	put = MyMonad . lift . put
+	get = MyMonad . lift $ gets fst
+	put s = MyMonad . lift . modify $ first (const s)
+
+instance MC.MonadState ExtraBits MyMonad where
+	get = MyMonad . lift $ gets snd
+	put s = MyMonad . lift . modify $ second (const s)
 
 instance MonadBase IO MyMonad where liftBase = MyMonad . liftBase
 
 runMyMonad ::
-	(BinTree Int, BinTree Int) ->
-	BitArray -> MyMonad a -> IO (Either String ((a, BitArray), (BinTree Int, BinTree Int)))
+	((BinTree Int, BinTree Int), ExtraBits) ->
+	BitArray -> MyMonad a -> IO (Either String ((a, BitArray), ((BinTree Int, BinTree Int), ExtraBits)))
 runMyMonad ht bs = runExceptT . (`runStateT` ht) . (`runStateT` bs) . unMyMonad
