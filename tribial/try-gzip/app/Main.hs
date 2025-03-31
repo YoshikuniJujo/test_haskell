@@ -52,6 +52,8 @@ main = do
 			BS.print' @_ @(BinTree Int) clcls
 			MC.put (clcls, clcls)
 			huffmanPipe ) =$= do
+				BS.print' =<< getCodeTable 282
+			{-
 				BS.print' =<< await
 				MC.put $ ExtraBits 3
 				BS.print' =<< await
@@ -85,14 +87,39 @@ main = do
 				BS.print' =<< printWhile 256 \case
 					Left x -> 0 <= x && x <= 15
 					Right _ -> False
-				MC.put $ ExtraBits 3
-				BS.print' =<< await
+					-}
 
 				BS.putStrLn' ""
 				BS.putStrLn' "== DIST =="
 
+				BS.print' =<< await
+				MC.put $ ExtraBits 3
+				BS.print' =<< await
 				replicateM_ 18 $ BS.print' =<< await
 		)
+
+getCodeTable :: (
+	PipeClass p, Monad (p (Either Int Word16) o m),
+	MC.MonadState ExtraBits (p (Either Int Word16) o m),
+	MonadFail (p (Either Int Word16) o m),
+	Monad m
+	) =>
+	Int -> p (Either Int Word16) o m [Word8]
+getCodeTable 0 = pure []
+getCodeTable n = await >>= \case
+	Nothing -> pure []
+	Just (Left ln)
+		| 0 <= ln && ln <= 15 -> (fromIntegral ln :) <$> getCodeTable (n - 1)
+		| ln == 16 -> error "yet"
+		| ln == 17 -> do
+			MC.put $ ExtraBits 3
+			Just (Right eb) <- await
+			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable (n - fromIntegral eb - 3)
+		| ln == 18 -> do
+			MC.put $ ExtraBits 7
+			Just (Right eb) <- await
+			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable (n - fromIntegral eb - 11)
+	Just (Right eb) -> error "bad"
 
 printWhile :: (
 	Show a,
