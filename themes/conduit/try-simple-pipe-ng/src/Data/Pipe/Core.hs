@@ -223,6 +223,9 @@ instance MonadReader m => MonadReader (Pipe i o m) where
 instance MonadBase io m => MonadBase io (Pipe i o m) where
 	liftBase = lift . liftBase
 
+instance MonadFail m => MonadFail (Pipe i o m) where
+	fail = lift . fail
+
 liftP :: Monad m => m a -> Pipe i o m a
 liftP m = Make (return ()) $ Done (return ()) `liftM` m
 
