@@ -19,5 +19,6 @@ huffmanPipe :: (
 	PipeClass p, Monad m,
 	MonadState (BinTree Int, BinTree Int) (p Bit Int m)) =>
 	p Bit Int m ()
-huffmanPipe =
+huffmanPipe = do
 	maybe (pure ()) (\b -> maybe (pure ()) yield =<< huffStep b) =<< await
+	huffmanPipe

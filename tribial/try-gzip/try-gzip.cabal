@@ -35,6 +35,7 @@ library
       MonadHuffman
       MyMonad
       MyMonadNew
+      PipeByteString
   other-modules:
       Paths_try_gzip
   autogen-modules:

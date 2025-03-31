@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 1d9298fed3e21c723d5992fd6afe83711e9c3037
+    commit: d2fb5a84e94adc07476d89b96657698fb31ea65f
     subdirs:
       - themes/conduit/try-simple-pipe-ng
 

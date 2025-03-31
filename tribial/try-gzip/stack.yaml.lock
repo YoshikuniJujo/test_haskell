@@ -5,16 +5,16 @@
 
 packages:
 - completed:
-    commit: 1d9298fed3e21c723d5992fd6afe83711e9c3037
+    commit: d2fb5a84e94adc07476d89b96657698fb31ea65f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-simple-pipe-ng
     pantry-tree:
-      sha256: ad0db25323614c1754447715a9e0a35b5d569b3efbfc7c5816b0645f763e279a
+      sha256: c935ea56f273e42a206fc638e260e985c31f08b3f0df29be35c90cc8071d082a
       size: 1216
     subdir: themes/conduit/try-simple-pipe-ng
     version: 0.1.0.0
   original:
-    commit: 1d9298fed3e21c723d5992fd6afe83711e9c3037
+    commit: d2fb5a84e94adc07476d89b96657698fb31ea65f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/conduit/try-simple-pipe-ng
 snapshots:

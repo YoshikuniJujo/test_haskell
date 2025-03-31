@@ -39,6 +39,9 @@ instance MC.MonadError String MyMonad where
 	throwError = MyMonad . throwError
 	catchError x = MyMonad . catchError (unMyMonad x) . (unMyMonad .)
 
+instance MonadFail MyMonad where
+	fail = MC.throwError
+
 instance MC.MonadState BS.ByteString MyMonad where
 	get = MyMonad do
 		ba <- get

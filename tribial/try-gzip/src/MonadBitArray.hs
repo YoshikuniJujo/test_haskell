@@ -61,4 +61,5 @@ bits = do
 				Just bs -> do
 					put $ BA.bsToBitArray bs
 					yield . fromJust =<< pop''
-		Just b -> yield b
+					bits
+		Just b -> yield b >> bits

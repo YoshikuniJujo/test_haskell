@@ -21,6 +21,8 @@ import Data.ByteString qualified as BS
 import Control.MonadClasses.State qualified as MC
 import Control.MonadClasses.Except qualified as MC
 
+import ByteStringNum
+
 pop :: (MC.MonadError String m, MC.MonadState BS.ByteString m) => m Word8
 pop = do
 	bs <- MC.get
@@ -51,9 +53,6 @@ print' = liftBase . print
 
 putStrLn' :: MonadBase IO m => String -> m ()
 putStrLn' = liftBase . putStrLn
-
-bsToNum :: (Bits n, Integral n) => BS.ByteString -> n
-bsToNum = foldr (\b s -> fromIntegral b .|. s `shiftL` 8) 0 . BS.unpack
 
 bits :: Word8 -> [Bool]
 bits b = (b `testBit`) <$> [0 .. 7]
