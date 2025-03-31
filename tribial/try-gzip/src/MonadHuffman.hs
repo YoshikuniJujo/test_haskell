@@ -33,11 +33,15 @@ huffmanPipe = do
 		ExtraBits 0 ->
 			maybe (pure ()) (\b -> maybe (pure ()) (yield . Left) =<< huffStep b) =<< await
 		ExtraBits n -> do
-			yield . Right =<< takeBits16 n
+			yield . Right =<< takeBits16' n
 			put $ ExtraBits 0
 	huffmanPipe
 
 takeBits16 n = bitsToWord16 <$> replicateM n (fromJust <$> await)
+takeBits16' n = bitsToWord16' <$> replicateM n (fromJust <$> await)
 
 bitsToWord16 :: [Bit] -> Word16
 bitsToWord16 = foldl (\w b -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0
+
+bitsToWord16' :: [Bit] -> Word16
+bitsToWord16' = foldr (\b w -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0

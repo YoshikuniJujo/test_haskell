@@ -1,15 +1,18 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
 import Control.Monad
+import Data.Bits
 import Data.Pipe
 import Data.Maybe
+import Data.List qualified as L
 import Data.Word
+import Data.Char
 import Data.ByteString qualified as BS
 import System.Environment
 
@@ -34,8 +37,74 @@ main = do
 	cnt <- BS.readFile fp
 	putStrLn . take 200 . show =<< runMyPipe ((fixedTable, fixedTable), ExtraBits 0) (bsToBitArray "") (yield cnt =$= do
 		BS.print' =<< readHeader
-		BS.print' =<< BA.takeBit8 3
-		BA.bits =$= huffmanPipe =$= putDecoded)
+		BS.print' =<< BA.takeBit8 1
+		bt <- BA.takeBit8 2
+		BS.print' bt
+		if bt == 1
+		then BA.bits =$= huffmanPipe =$= putDecoded
+		else BA.bits =$= (do
+			(BS.print' @_ @Word16 . (+ 257) . bitListToNumLE . catMaybes =<< replicateM 5 await)
+			(BS.print' @_ @Word8 . (+ 1) . bitListToNumLE . catMaybes =<< replicateM 5 await)
+			(BS.print' @_ @Word8 . (+ 4) .  bitListToNumLE . catMaybes =<< replicateM 4 await)
+			clcls <- fromList . pairToCodes @Word8 . L.sort . filter ((/= 0) . fst)
+				. (`zip` [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12,3, 13, 2, 14, 1, 15])
+				<$> replicateM 14 (bitListToNumLE . catMaybes <$> replicateM 3 await)
+			BS.print' @_ @(BinTree Int) clcls
+			MC.put (clcls, clcls)
+			huffmanPipe ) =$= do
+				BS.print' =<< await
+				MC.put $ ExtraBits 3
+				BS.print' =<< await
+
+				BS.print' @_ @Int 9
+
+				BS.print' =<< printWhile 9 \case
+					Left x -> 0 <= x && x <= 15
+					Right _ -> False
+				MC.put $ ExtraBits 7
+				BS.print' =<< await
+
+				BS.print' =<< printWhile 32 \case
+					Left x -> 0 <= x && x <= 15
+					Right _ -> False
+				MC.put $ ExtraBits 3
+				BS.print' =<< await
+
+				BS.print' =<< printWhile 55 \case
+					Left x -> 0 <= x && x <= 15
+					Right _ -> False
+				MC.put $ ExtraBits 3
+				BS.print' =<< await
+
+				BS.print' =<< printWhile 91 \case
+					Left x -> 0 <= x && x <= 15
+					Right _ -> False
+				MC.put $ ExtraBits 7
+				BS.print' =<< await
+
+				BS.print' =<< printWhile 256 \case
+					Left x -> 0 <= x && x <= 15
+					Right _ -> False
+				MC.put $ ExtraBits 3
+				BS.print' =<< await
+
+				BS.putStrLn' ""
+				BS.putStrLn' "== DIST =="
+
+				replicateM_ 18 $ BS.print' =<< await
+		)
+
+printWhile :: (
+	Show a,
+	PipeClass p, MonadBase IO (p a o m),
+	Monad m ) => Int ->
+	(a -> Bool) -> p a o m Int
+printWhile i p = await >>= \case
+	Nothing -> pure i
+	Just x	| p x -> do
+			BS.print' (if i < 256 then Left $ chr i else Right i, x)
+			printWhile (i + 1) p
+		| otherwise -> i <$ BS.print' x
 
 readHeader :: (
 	PipeClass p,
@@ -82,7 +151,7 @@ putDecoded = do
 				MC.put $ ExtraBits 1
 				putDecoded
 			| otherwise -> error "putDecoded: yet"
-		Just (Right eb) -> do
+		Just (Right _) -> do
 			MC.put (fixedDstTable, fixedDstTable)
 			putDist
 		Nothing -> pure ()
@@ -105,6 +174,10 @@ putDist = do
 				MC.put $ ExtraBits 1
 				putDist
 			| otherwise -> error "putDist: yet"
-		Just (Right eb) -> do
+		Just (Right _) -> do
 			MC.put (fixedTable, fixedTable)
 			putDecoded
+		Nothing -> error "end"
+
+bitListToNumLE :: (Num n, Bits n) => [Bit] -> n
+bitListToNumLE = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0

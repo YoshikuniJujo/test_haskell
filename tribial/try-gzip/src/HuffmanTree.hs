@@ -58,3 +58,15 @@ fixedDstTable = fromList fixedDstTableList
 
 fixedDstTableList :: [([Bit], Int)]
 fixedDstTableList = bitListFromTo [O, O, O, O, O] [I, I, I, I, I] `zip` [0 ..]
+
+lenListToCodes :: Integral n => [Bit] -> [n] -> [[Bit]]
+lenListToCodes _ [] = []
+lenListToCodes bs (n : ns) = bs' : lenListToCodes (bitListNext bs') ns
+	where
+	bs' = bs ++ replicate (fromIntegral n - length bs) O
+
+bitListNext :: [Bit] -> [Bit]
+bitListNext = reverse . bitListNextRv . reverse
+
+pairToCodes :: Integral n => [(n, a)] -> [([Bit], a)]
+pairToCodes = uncurry zip . (lenListToCodes [O] `first`) . unzip
