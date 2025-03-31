@@ -65,13 +65,6 @@ main = do
 					. (`zip` [0 ..]) <$> getCodeTable 23
 				BS.print' dct
 
-{-
-				BS.print' =<< await
-				MC.put $ ExtraBits 3
-				BS.print' =<< await
-				replicateM_ 18 $ BS.print' =<< await
-				-}
-
 				BS.putStrLn' ""
 				MC.put (lct, lct :: BinTree Int)
 				printWhileLiteral
