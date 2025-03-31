@@ -12,6 +12,7 @@ import Data.Pipe
 import Data.Maybe
 import Data.List qualified as L
 import Data.Word
+import Data.Char
 import Data.ByteString qualified as BS
 import System.Environment
 
@@ -67,11 +68,23 @@ main = do
 
 				BS.putStrLn' ""
 				MC.put (lct, lct :: BinTree Int)
-				BS.print' =<< await
-				BS.print' =<< await
-				BS.print' =<< await
+				printWhileLiteral
+				MC.put $ ExtraBits 1
 				BS.print' =<< await
 		)
+
+printWhileLiteral :: (
+	PipeClass p,
+	MonadBase IO (p (Either Int Word16) o m),
+	Monad m
+	) =>
+	p (Either Int Word16) o m ()
+printWhileLiteral = await >>= \case
+	Just (Left i)
+		| 0 <= i && i <= 255 -> do
+			BS.print' $ chr i
+			printWhileLiteral
+	mi -> BS.print' mi
 
 getCodeTable :: (
 	PipeClass p,
@@ -106,21 +119,21 @@ readHeader :: (
 	Monad m ) =>
 	p BS.ByteString o m GzipHeader
 readHeader = do
-		Just ids <- PBS.takeBytes 2
-		BS.print' $ ids == ids0
-		Just cm <- PBS.popByte
-		fs <- maybe (MC.throwError @String "bad flags") pure . readFlags . fromJust =<< PBS.popByte
-		Just mt <- PBS.takeWord32
-		Just efs <- PBS.popByte
-		Just os <- PBS.popByte
-		Just fn <- PBS.takeString
-		pure GzipHeader {
-			gzipHeaderCompressionMethod = cm,
-			gzipHeaderFlags = fs,
-			gzipHeaderModificationTime = mt,
-			gzipExtraFlags = efs,
-			gzipOperatingSystem = os,
-			gzipFileName = fn }
+	Just ids <- PBS.takeBytes 2
+	BS.print' $ ids == ids0
+	Just cm <- PBS.popByte
+	fs <- maybe (MC.throwError @String "bad flags") pure . readFlags . fromJust =<< PBS.popByte
+	Just mt <- PBS.takeWord32
+	Just efs <- PBS.popByte
+	Just os <- PBS.popByte
+	Just fn <- PBS.takeString
+	pure GzipHeader {
+		gzipHeaderCompressionMethod = cm,
+		gzipHeaderFlags = fs,
+		gzipHeaderModificationTime = mt,
+		gzipExtraFlags = efs,
+		gzipOperatingSystem = os,
+		gzipFileName = fn }
 
 putDecoded :: (
 	PipeClass p,
