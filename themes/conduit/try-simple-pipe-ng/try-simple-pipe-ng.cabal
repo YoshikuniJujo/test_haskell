@@ -26,10 +26,13 @@ source-repository head
 library
   exposed-modules:
       Control.MonadClasses.Except
+      Control.MonadClasses.Reader
       Control.MonadClasses.State
+      Control.MonadClasses.Writer
       Data.Pipe
       Data.Pipe.ByteString
       Data.Pipe.Core
+      Data.Pipe.CoreNew
       Data.Pipe.Flow
       Data.Pipe.IO
       Data.Pipe.Lazy

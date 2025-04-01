@@ -91,7 +91,7 @@ instance PipeChoice Pipe where
 		Just (Right i) -> yield (Right i) >> appLeft (Need f p)
 		_ -> appLeft $ p Nothing
 	appLeft (Done f r) = Done f r
-	appLeft (Make f p) = Make f $ appLeft `liftM` p
+	appLeft (Make f p) = Make f $ appLeft <$> p
 
 instance MonadWriter m => MonadWriter (Pipe i o m) where
 	type WriterType (Pipe i o m) = WriterType m
@@ -101,19 +101,19 @@ instance MonadWriter m => MonadWriter (Pipe i o m) where
 	listen (Done f r) = Done f (r, mempty)
 	listen (Make f p) = Make f $ do
 		(p', l) <- listen p
-		return $ (, l) `liftM` p'
+		return $ (, l) <$> p'
 	pass (Ready f o p) = Ready f o $ pass p
 	pass (Need f p) = Need f $ \mi -> pass $ p mi
 	pass (Done f (r, _)) = Done f r
 	pass (Make f p) = Make f $ do
-		pass `liftM` p
+		pass <$> p
 
 mapPipeM :: Monad m =>
 	(m (Pipe i o m a) -> m (Pipe i o m a)) -> Pipe i o m a -> Pipe i o m a
 mapPipeM m (Ready f o p) = Ready f o $ mapPipeM m p
 mapPipeM m (Need f p) = Need f $ \mi -> mapPipeM m $ p mi
 mapPipeM _ (Done f r) = Done f r
-mapPipeM m (Make f p) = Make f $ mapPipeM m `liftM` m p
+mapPipeM m (Make f p) = Make f $ mapPipeM m <$> m p
 
 instance MonadError m => MonadError (Pipe i o m) where
 	type ErrorType (Pipe i o m) = ErrorType m
@@ -122,7 +122,7 @@ instance MonadError m => MonadError (Pipe i o m) where
 	Need f p `catchError` c = Need f $ \mi -> p mi `catchError` c
 	Done f r `catchError` _ = Done f r
 	Make f p `catchError` c =
-		Make f . ((`catchError` c) `liftM`) $ p `catchError` (return . c)
+		Make f . ((`catchError` c) <$>) $ p `catchError` (return . c)
 
 instance {-# OVERLAPPING #-} MC.MonadError e m => MC.MonadError e (Pipe i o m) where
 	throwError e = Make (return ()) $ MC.throwError e
@@ -130,7 +130,7 @@ instance {-# OVERLAPPING #-} MC.MonadError e m => MC.MonadError e (Pipe i o m) w
 	Need f p `catchError` c = Need f $ \mi -> p mi `MC.catchError` c
 	Done f r `catchError` _ = Done f r
 	Make f p `catchError` c =
-		Make f . ((`MC.catchError` c) `liftM`) $ p `MC.catchError` (return . c)
+		Make f . ((`MC.catchError` c) <$>) $ p `MC.catchError` (return . c)
 
 finalizer :: Pipe i o m r -> m ()
 finalizer (Ready f _ _) = f
@@ -144,14 +144,14 @@ instance PipeClass Pipe where
 	runPipe (Make _ m) = runPipe =<< m
 	runPipe _ = return Nothing
 
-	p =$= Make f m = Make f $ (p =$=) `liftM` m
+	p =$= Make f m = Make f $ (p =$=) <$> m
 	p =$= Done f r = Done (finalizer p >> f) r
 	p =$= Ready f o p' = Ready f o $ p =$= p'
 	Need f n =$= p = Need f $ \i -> n i =$= p
 	Ready _ o p =$= Need _ n = p =$= n (Just o)
 	Done f r =$= Need f' n =
 		Done (return ()) r =$= Make f' (f >> return (n Nothing))
-	Make f m =$= p = Make f $ (=$= p) `liftM` m
+	Make f m =$= p = Make f $ (=$= p) <$> m
 
 	yield x = Ready (return ()) x (return ())
 	await = Need (return ()) return
@@ -159,39 +159,39 @@ instance PipeClass Pipe where
 	onBreak (Ready f0 o p) f = Ready (f0 >> f >> return ()) o $ onBreak p f
 	onBreak (Need f0 n) f = Need (f0 >> f >> return ()) $ \i -> onBreak (n i) f
 	onBreak (Done f0 r) _ = Done f0 r
-	onBreak (Make f0 m) f = Make (f0 >> f >> return ()) $ flip onBreak f `liftM` m
+	onBreak (Make f0 m) f = Make (f0 >> f >> return ()) $ flip onBreak f <$> m
 
 	onDone (Ready f0 o p) f = Ready (void f0) o $ finalize p f
 	onDone (Need f0 n) f = Need (void f0) $ \i -> finalize (n i) f
 	onDone (Done f0 r) f = Done (f0 >> f >> return ()) r
-	onDone (Make f0 m) f = Make (void f0) $ flip finalize f `liftM` m
+	onDone (Make f0 m) f = Make (void f0) $ flip finalize f <$> m
 
 	finalize (Ready f0 o p) f = Ready (f0 >> f >> return ()) o $ finalize p f
 	finalize (Need f0 n) f = Need (f0 >> f >> return ()) $ \i -> finalize (n i) f
 	finalize (Done f0 r) f = Done (f0 >> f >> return ()) r
-	finalize (Make f0 m) f = Make (f0 >> f >> return ()) $ flip finalize f `liftM` m
+	finalize (Make f0 m) f = Make (f0 >> f >> return ()) $ flip finalize f <$> m
 
 	mapMonad k (Ready f o p) = Ready f o $ mapMonad k p
 	mapMonad k (Need f n) = Need f $ \i -> mapMonad k $ n i
 	mapMonad _ (Done f r) = Done f r
-	mapMonad k (Make f m) = Make f . k $ mapMonad k `liftM` m
+	mapMonad k (Make f m) = Make f . k $ mapMonad k <$> m
 
 	mapOut c (Ready f o p) = Ready f (c o) $ mapOut c p
 	mapOut c (Need f p) = Need f $ \i -> mapOut c (p i)
 	mapOut _ (Done f r) = Done f r
-	mapOut c (Make f m) = Make f $ mapOut c `liftM` m
+	mapOut c (Make f m) = Make f $ mapOut c <$> m
 
 	mapIn c (Ready f o p) = Ready f o $ mapIn c p
 	mapIn c (Need f p) = Need f $ \i -> mapIn c (p $ c <$> i)
 	mapIn _ (Done f r) = Done f r
-	mapIn c (Make f m) = Make f $ mapIn c `liftM` m
+	mapIn c (Make f m) = Make f $ mapIn c <$> m
 
 instance Monad m => Monad (Pipe i o m) where
 	Ready f o p >>= k = Ready f o $ p >>= k
 	Need f n >>= k = Need f $ n >=> k
 --	Done f r >>= k = Make (return ()) $ f >> return (k r)
 	Done _ r >>= k = k r
-	Make f m >>= k = Make f $ (>>= k) `liftM` m
+	Make f m >>= k = Make f $ (>>= k) <$> m
 
 instance Monad m => Functor (Pipe i o m) where
 	fmap = (=<<) . (return .)
@@ -227,7 +227,7 @@ instance MonadFail m => MonadFail (Pipe i o m) where
 	fail = lift . fail
 
 liftP :: Monad m => m a -> Pipe i o m a
-liftP m = Make (return ()) $ Done (return ()) `liftM` m
+liftP m = Make (return ()) $ Done (return ()) <$> m
 
 bracket :: (MonadBaseControl IO m, PipeClass p, MonadTrans (p i o), Monad (p i o m)) =>
 	m a -> (a -> m b) -> (a -> p i o m r) -> p i o m r
