@@ -65,7 +65,7 @@ extra-deps:
   # - gpu-vulkan-middle-khr-swapchain-0.1.0.0
   - gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
-    commit: 0f1806026dc6271faaf473a377ab9b68c61ac5a3
+    commit: 854588f78c1aeb73ec9a0aee9e9c37d70836d263
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-khr-surface
     commit: 4744ac4826258cc38dcc81609aee79a90257de49
     # - gpu-vulkan-khr-surface-0.1.0.0

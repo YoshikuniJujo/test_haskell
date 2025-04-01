@@ -113,15 +113,15 @@ packages:
   original:
     hackage: gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
 - completed:
-    commit: 0f1806026dc6271faaf473a377ab9b68c61ac5a3
+    commit: 854588f78c1aeb73ec9a0aee9e9c37d70836d263
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
     name: gpu-vulkan-middle-khr-surface
     pantry-tree:
-      sha256: 81772f24031c831e2ad2571d20426cf4b581aa3b63f86c4fbdd0aeb6090e1cc9
+      sha256: 519a517cf5a3576f6c9c53c0a93611e633b21cf48c7a71d4dd87f976be3e2a8f
       size: 1047
     version: 0.1.0.0
   original:
-    commit: 0f1806026dc6271faaf473a377ab9b68c61ac5a3
+    commit: 854588f78c1aeb73ec9a0aee9e9c37d70836d263
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface
 - completed:
     commit: 4744ac4826258cc38dcc81609aee79a90257de49

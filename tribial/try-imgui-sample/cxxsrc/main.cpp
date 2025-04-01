@@ -234,7 +234,9 @@ resizeSwapchain(
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(dvc, wd, g_Allocator);
 	VkSwapchainKHR old_swapchain = wd->Swapchain;
 	wd->Swapchain = VK_NULL_HANDLE;
-	ImGui_ImplVulkanH_CreateSwapChain(phd, dvc, wd, g_Allocator, fbwdt, fbhgt, g_MinImageCount, old_swapchain);
+	VkSurfaceCapabilitiesKHR cap;
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(phd, wd->Surface, &cap);
+	ImGui_ImplVulkanH_CreateSwapChain(phd, dvc, wd, g_Allocator, fbwdt, fbhgt, g_MinImageCount, old_swapchain, &cap);
 	ImGui_ImplVulkanH_CreateOrResizeWindow(
 		ist, phd, dvc, wd, qfi, g_Allocator, fbwdt, fbhgt, g_MinImageCount, old_swapchain);
 	wd->FrameIndex = 0;

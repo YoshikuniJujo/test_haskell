@@ -21,7 +21,7 @@ extern "C" void im_gui_impl_vulkan_h_create_swap_chain(
 	const VkAllocationCallbacks* allocator,
 	int w, int h,
 	uint32_t min_image_count,
-	VkSwapchainKHR old_swapchain );
+	VkSwapchainKHR old_swapchain, VkSurfaceCapabilitiesKHR* );
 
 void
 im_gui_impl_vulkan_h_create_window_swap_chain(
@@ -59,8 +59,9 @@ im_gui_impl_vulkan_h_create_swap_chain(
 	const VkAllocationCallbacks* allocator,
 	int w, int h,
 	uint32_t min_image_count,
-	VkSwapchainKHR old_swapchain )
+	VkSwapchainKHR old_swapchain,
+	VkSurfaceCapabilitiesKHR* cap )
 {
 	ImGui_ImplVulkanH_CreateSwapChain(
-		physical_device, device, wd, allocator, w, h, min_image_count, old_swapchain );
+		physical_device, device, wd, allocator, w, h, min_image_count, old_swapchain, cap );
 }

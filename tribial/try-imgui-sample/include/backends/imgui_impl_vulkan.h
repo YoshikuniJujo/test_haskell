@@ -183,7 +183,7 @@ void ImGui_ImplVulkanH_CreateSwapChain(
 	const VkAllocationCallbacks* allocator,
 	int w, int h,
 	uint32_t min_image_count,
-	VkSwapchainKHR old_swapchain );
+	VkSwapchainKHR old_swapchain, VkSurfaceCapabilitiesKHR* );
 void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	VkPhysicalDevice physical_device, VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,

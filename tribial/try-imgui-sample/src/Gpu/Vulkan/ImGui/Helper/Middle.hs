@@ -10,11 +10,14 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 	selectPresentMode,
 	createWindowSwapChain, createWindowCommandBuffers,
 
-	destroyBeforeCreateSwapChain, createSwapChain
+	destroyBeforeCreateSwapChain,
+	createSwapChain
 
 	) where
 
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.List qualified as L
 import Data.Word
@@ -81,8 +84,10 @@ createWindowCommandBuffers
 createSwapChain ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 ->
-	Vk.Swpch.S -> IO ()
+	Vk.Swpch.S -> Vk.Sfc.Capabilities -> IO ()
 createSwapChain
-	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd macs wdt hgt mic sc =
-	Vk.AllocCallbacks.mToCore macs \pacs ->
-	C.createSwapChain phd dvc wd pacs wdt hgt mic =<< Vk.Swpch.sToCore sc
+	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd macs wdt hgt mic sc cap =
+	Vk.AllocCallbacks.mToCore macs \pacs -> alloca \pcap -> do
+	poke pcap $ Vk.Sfc.capabilitiesToCore cap
+	csc <- Vk.Swpch.sToCore sc
+	C.createSwapChain phd dvc wd pacs wdt hgt mic csc pcap

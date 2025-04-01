@@ -1505,7 +1505,6 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
         vkDestroyPipeline(device, wd->Pipeline, allocator);
 }
 
-
     // Create Swapchain
 void ImGui_ImplVulkanH_CreateSwapChain(
 	VkPhysicalDevice physical_device,
@@ -1514,13 +1513,13 @@ void ImGui_ImplVulkanH_CreateSwapChain(
 	const VkAllocationCallbacks* allocator,
 	int w, int h,
 	uint32_t min_image_count,
-	VkSwapchainKHR old_swapchain
+	VkSwapchainKHR old_swapchain,
+	VkSurfaceCapabilitiesKHR *pcap
 	)
     {
+
     VkResult err;
-        VkSurfaceCapabilitiesKHR cap;
-        err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, wd->Surface, &cap);
-        check_vk_result(err);
+    VkSurfaceCapabilitiesKHR cap = *pcap;
 
         VkSwapchainCreateInfoKHR info = {};
         info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -1552,6 +1551,7 @@ void ImGui_ImplVulkanH_CreateSwapChain(
         }
         err = vkCreateSwapchainKHR(device, &info, allocator, &wd->Swapchain);
         check_vk_result(err);
+
         err = vkGetSwapchainImagesKHR(device, wd->Swapchain, &wd->ImageCount, nullptr);
         check_vk_result(err);
         VkImage backbuffers[16] = {};
