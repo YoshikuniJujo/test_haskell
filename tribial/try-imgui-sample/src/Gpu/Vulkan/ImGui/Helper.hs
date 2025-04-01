@@ -48,12 +48,12 @@ selectPresentMode pd (Vk.Sfc.S sfc) =
 	M.selectPresentMode pd sfc
 
 createWindowSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac ->
 	Int32 -> Int32 -> Word32 -> Vk.Swpch.S fmt ssc -> IO ()
-createWindowSwapChain phd (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) =
+createWindowSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) =
 	M.createWindowSwapChain
-		phd dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc
+		dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc
 
 destroyBeforeCreateSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
@@ -69,8 +69,8 @@ createWindowCommandBuffers phd (Vk.Dvc.D dvc) wd qfi mac =
 		phd dvc wd qfi (Vk.AllocCallbacks.toMiddle mac)
 
 createSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int32 -> Int32 -> Word32 ->
 	Vk.Swpch.S fmt ssc -> Vk.Sfc.Capabilities -> IO ()
-createSwapChain phd (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) cap =
-	M.createSwapChain phd dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc cap
+createSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) cap =
+	M.createSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc cap

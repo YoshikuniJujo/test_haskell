@@ -107,7 +107,7 @@ void ImGui_ImplVulkan_DestroyWindowRenderBuffers(VkDevice device, ImGui_ImplVulk
 void ImGui_ImplVulkanH_DestroyFrame(VkDevice device, ImGui_ImplVulkanH_Frame* fd, const VkAllocationCallbacks* allocator);
 void ImGui_ImplVulkanH_DestroyFrameSemaphores(VkDevice device, ImGui_ImplVulkanH_FrameSemaphores* fsd, const VkAllocationCallbacks* allocator);
 void ImGui_ImplVulkanH_CreateWindowSwapChain(
-	VkPhysicalDevice physical_device, VkDevice device,
+	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
 	int w, int h, uint32_t min_image_count, VkSwapchainKHR);
 void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator);
@@ -1507,7 +1507,6 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
 
     // Create Swapchain
 void ImGui_ImplVulkanH_CreateSwapChain(
-	VkPhysicalDevice physical_device,
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator,
@@ -1521,9 +1520,11 @@ void ImGui_ImplVulkanH_CreateSwapChain(
     VkResult err;
     VkSurfaceCapabilitiesKHR cap = *pcap;
 
+    VkSurfaceKHR sfc = wd->Surface;
+
         VkSwapchainCreateInfoKHR info = {};
         info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        info.surface = wd->Surface;
+        info.surface = sfc;
         info.minImageCount = min_image_count;
         info.imageFormat = wd->SurfaceFormat.format;
         info.imageColorSpace = wd->SurfaceFormat.colorSpace;
@@ -1571,7 +1572,6 @@ void ImGui_ImplVulkanH_CreateSwapChain(
 
 // Also destroy old swap chain and in-flight frames data, if any.
 void ImGui_ImplVulkanH_CreateWindowSwapChain(
-	VkPhysicalDevice physical_device,
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator,
@@ -1684,7 +1684,7 @@ void ImGui_ImplVulkanH_CreateOrResizeWindow(
     IM_ASSERT(g_FunctionsLoaded && "Need to call ImGui_ImplVulkan_LoadFunctions() if IMGUI_IMPL_VULKAN_NO_PROTOTYPES or VK_NO_PROTOTYPES are set!");
     (void)instance;
     ImGui_ImplVulkanH_CreateWindowSwapChain(
-		physical_device, device, wd, allocator,
+		device, wd, allocator,
 		width, height, min_image_count, old_swapchain);
     ImGui_ImplVulkanH_CreateWindowCommandBuffers(physical_device, device, wd, queue_family, allocator);
 }

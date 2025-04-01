@@ -59,13 +59,13 @@ selectPresentMode (Vk.Phd.P pd) (Vk.Sfc.S sfc) pms a =
 	where pmc :: Integral n => n; pmc = L.genericLength pms
 
 createWindowSwapChain ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 ->
 	Vk.Swpch.S -> IO ()
 createWindowSwapChain
-	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd macs wdt hgt mic sc =
+	(Vk.Dvc.D dvc) wd macs wdt hgt mic sc =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
-	C.createWindowSwapChain phd dvc wd pacs wdt hgt mic =<< Vk.Swpch.sToCore sc
+	C.createWindowSwapChain dvc wd pacs wdt hgt mic =<< Vk.Swpch.sToCore sc
 
 destroyBeforeCreateSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()
@@ -82,12 +82,12 @@ createWindowCommandBuffers
 	C.createWindowCommandBuffers phd dvc wd qfi pacs
 
 createSwapChain ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 ->
 	Vk.Swpch.S -> Vk.Sfc.Capabilities -> IO ()
 createSwapChain
-	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd macs wdt hgt mic sc cap =
+	(Vk.Dvc.D dvc) wd macs wdt hgt mic sc cap =
 	Vk.AllocCallbacks.mToCore macs \pacs -> alloca \pcap -> do
 	poke pcap $ Vk.Sfc.capabilitiesToCore cap
 	csc <- Vk.Swpch.sToCore sc
-	C.createSwapChain phd dvc wd pacs wdt hgt mic csc pcap
+	C.createSwapChain dvc wd pacs wdt hgt mic csc pcap

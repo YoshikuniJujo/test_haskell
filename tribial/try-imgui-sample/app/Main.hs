@@ -174,8 +174,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	Vk.Sfc.Phd.getCapabilities phd sfc >>= \cap ->
-	Vk.ImGui.H.createSwapChain phd dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') cap >>
-	Vk.ImGui.H.createWindowSwapChain phd dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') >>
+	Vk.ImGui.H.createSwapChain dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') cap >>
+	Vk.ImGui.H.createWindowSwapChain dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
 	Vk.ImGui.checkVersion >>
 	Vk.ImGui.createContextNoArg >>

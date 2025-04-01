@@ -53,14 +53,14 @@ foreign import ccall "ImGui_ImplVulkanH_SelectPresentMode"
 	IO #{type VkPresentModeKHR}
 
 createWindowSwapChain ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S -> IO ()
 createWindowSwapChain = cxx_im_gui_impl_vulkan_h_create_window_swap_chain
 
 foreign import ccall "im_gui_impl_vulkan_h_create_window_swap_chain"
 	cxx_im_gui_impl_vulkan_h_create_window_swap_chain ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S -> IO ()
 
@@ -85,13 +85,13 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers"
 	Ptr Vk.AllocCallbacks.A -> IO ()
 
 createSwapChain ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
 	Ptr Vk.Sfc.Capabilities -> IO ()
 createSwapChain = cxx_im_gui_impl_vulkan_h_create_swap_chain
 
 foreign import ccall "im_gui_impl_vulkan_h_create_swap_chain"
 	cxx_im_gui_impl_vulkan_h_create_swap_chain ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
 	Ptr Vk.Sfc.Capabilities -> IO ()
