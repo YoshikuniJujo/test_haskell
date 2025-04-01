@@ -67,7 +67,7 @@ void FrameRender(ImGui_ImplVulkanH_Window* wd, VkDevice dvc, VkQueue gq, ImDrawD
 {
     VkSemaphore image_acquired_semaphore  = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
-    VkResult err = vkAcquireNextImageKHR(dvc, wd->Swapchain, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
+    VkResult err = vkAcquireNextImageKHR(dvc, wd->SwapchainPupupu, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
         *scr = true;
     if (err == VK_ERROR_OUT_OF_DATE_KHR)
@@ -138,7 +138,7 @@ void FramePresent(ImGui_ImplVulkanH_Window* wd, VkQueue gq, bool* scr)
     info.waitSemaphoreCount = 1;
     info.pWaitSemaphores = &render_complete_semaphore;
     info.swapchainCount = 1;
-    info.pSwapchains = &wd->Swapchain;
+    info.pSwapchains = &wd->SwapchainPupupu;
     info.pImageIndices = &wd->FrameIndex;
     VkResult err = vkQueuePresentKHR(gq, &info);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
@@ -232,8 +232,8 @@ resizeSwapchain(
 {
 	ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(dvc, wd, g_Allocator);
-	VkSwapchainKHR old_swapchain = wd->Swapchain;
-	wd->Swapchain = VK_NULL_HANDLE;
+	VkSwapchainKHR old_swapchain = wd->SwapchainPupupu;
+	wd->SwapchainPupupu = VK_NULL_HANDLE;
 	VkSurfaceCapabilitiesKHR cap;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(phd, wd->Surface, &cap);
 	ImGui_ImplVulkanH_OnlyCreateSwapChain(dvc, wd, g_Allocator, fbwdt, fbhgt, g_MinImageCount, old_swapchain, &cap);

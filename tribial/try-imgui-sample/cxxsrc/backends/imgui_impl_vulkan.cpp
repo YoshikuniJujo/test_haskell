@@ -1535,7 +1535,7 @@ void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	VkPresentModeKHR pm = wd->PresentMode;
 	int wdt = wd->Width;
 	int hgt = wd->Height;
-	VkSwapchainKHR *psc = &wd->Swapchain;
+	VkSwapchainKHR *psc = &wd->SwapchainPupupu;
 
 	VkResult err;
 	VkSurfaceCapabilitiesKHR cap = *pcap;
@@ -1575,12 +1575,12 @@ void ImGui_ImplVulkanH_CreateSwapChain(
 
     VkResult err;
 
-        err = vkGetSwapchainImagesKHR(device, wd->Swapchain, &wd->ImageCount, nullptr);
+        err = vkGetSwapchainImagesKHR(device, wd->SwapchainPupupu, &wd->ImageCount, nullptr);
         check_vk_result(err);
         VkImage backbuffers[16] = {};
         IM_ASSERT(wd->ImageCount >= min_image_count);
         IM_ASSERT(wd->ImageCount < IM_ARRAYSIZE(backbuffers));
-        err = vkGetSwapchainImagesKHR(device, wd->Swapchain, &wd->ImageCount, backbuffers);
+        err = vkGetSwapchainImagesKHR(device, wd->SwapchainPupupu, &wd->ImageCount, backbuffers);
         check_vk_result(err);
 
         wd->SemaphoreCount = wd->ImageCount + 1;
@@ -1724,7 +1724,7 @@ void ImGui_ImplVulkanH_DestroyWindow(VkInstance instance, VkDevice device, ImGui
     wd->FrameSemaphores.clear();
     vkDestroyPipeline(device, wd->Pipeline, allocator);
     vkDestroyRenderPass(device, wd->RenderPass, allocator);
-    vkDestroySwapchainKHR(device, wd->Swapchain, allocator);
+    vkDestroySwapchainKHR(device, wd->SwapchainPupupu, allocator);
 //    vkDestroySurfaceKHR(instance, wd->Surface, allocator);
 
     *wd = ImGui_ImplVulkanH_Window();

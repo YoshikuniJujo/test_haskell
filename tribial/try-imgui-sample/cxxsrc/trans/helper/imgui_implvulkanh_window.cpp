@@ -18,7 +18,7 @@ void imguiImplVulkanHWindowFromC(
 	ImGui_ImplVulkanH_Window_C *c, struct ImGui_ImplVulkanH_Window *cxx )
 {
 	cxx->Width = c->Width; cxx->Height = c->Height;
-	cxx->Swapchain = c->Swapchain;
+	cxx->SwapchainPupupu = c->Swapchain;
 	cxx->Surface = c->Surface; cxx->SurfaceFormat = c->SurfaceFormat;
 	cxx->PresentMode = c->PresentMode;
 	cxx->RenderPass = c->RenderPass;
@@ -40,7 +40,7 @@ void imguiImplVulkanHWindowToC(
 	struct ImGui_ImplVulkanH_Window *cxx, ImGui_ImplVulkanH_Window_C *c )
 {
 	c->Width = cxx->Width; c->Height = cxx->Height;
-	c->Swapchain = cxx->Swapchain;
+	c->Swapchain = cxx->SwapchainPupupu;
 	c->Surface = cxx->Surface; c->SurfaceFormat = cxx->SurfaceFormat;
 	c->PresentMode = cxx->PresentMode;
 	c->RenderPass = cxx->RenderPass;

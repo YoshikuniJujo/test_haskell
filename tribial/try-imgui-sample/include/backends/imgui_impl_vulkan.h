@@ -219,7 +219,7 @@ struct ImGui_ImplVulkanH_Window
 {
     int                 Width;
     int                 Height;
-    VkSwapchainKHR      Swapchain;
+    VkSwapchainKHR      SwapchainPupupu;
     VkSurfaceKHR        Surface;
     VkSurfaceFormatKHR  SurfaceFormat;
     VkPresentModeKHR    PresentMode;
