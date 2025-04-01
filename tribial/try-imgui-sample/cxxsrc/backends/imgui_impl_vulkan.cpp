@@ -1505,8 +1505,19 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
         vkDestroyPipeline(device, wd->Pipeline, allocator);
 }
 
-    // Create Swapchain
-void ImGui_ImplVulkanH_CreateSwapChain(
+void ImGui_ImplVulkanH_SetSize(
+	ImGui_ImplVulkanH_Window* wd,
+	int w, int h,
+	VkSurfaceCapabilitiesKHR *pcap )
+{
+	if (pcap->currentExtent.width == 0xffffffff) {
+		wd->Width = w; wd->Height = h;
+	} else {
+		wd->Width = pcap->currentExtent.width;
+		wd->Height = pcap->currentExtent.height; }
+}
+
+void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator,
@@ -1517,41 +1528,56 @@ void ImGui_ImplVulkanH_CreateSwapChain(
 	)
     {
 
-    VkResult err;
-    VkSurfaceCapabilitiesKHR cap = *pcap;
+	ImGui_ImplVulkanH_SetSize(wd, w, h, pcap);
 
-    VkSurfaceKHR sfc = wd->Surface;
+	VkSurfaceKHR sfc = wd->Surface;
+	VkSurfaceFormatKHR sfmt = wd->SurfaceFormat;
+	VkPresentModeKHR pm = wd->PresentMode;
+	int wdt = wd->Width;
+	int hgt = wd->Height;
+	VkSwapchainKHR *psc = &wd->Swapchain;
+
+	VkResult err;
+	VkSurfaceCapabilitiesKHR cap = *pcap;
 
         VkSwapchainCreateInfoKHR info = {};
         info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         info.surface = sfc;
         info.minImageCount = min_image_count;
-        info.imageFormat = wd->SurfaceFormat.format;
-        info.imageColorSpace = wd->SurfaceFormat.colorSpace;
+        info.imageFormat = sfmt.format;
+        info.imageColorSpace = sfmt.colorSpace;
         info.imageArrayLayers = 1;
         info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;           // Assume that graphics family == present family
         info.preTransform = (cap.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR : cap.currentTransform;
         info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        info.presentMode = wd->PresentMode;
+        info.presentMode = pm;
         info.clipped = VK_TRUE;
         info.oldSwapchain = old_swapchain;
         if (info.minImageCount < cap.minImageCount)
             info.minImageCount = cap.minImageCount;
         else if (cap.maxImageCount != 0 && info.minImageCount > cap.maxImageCount)
             info.minImageCount = cap.maxImageCount;
-        if (cap.currentExtent.width == 0xffffffff)
-        {
-            info.imageExtent.width = wd->Width = w;
-            info.imageExtent.height = wd->Height = h;
-        }
-        else
-        {
-            info.imageExtent.width = wd->Width = cap.currentExtent.width;
-            info.imageExtent.height = wd->Height = cap.currentExtent.height;
-        }
-        err = vkCreateSwapchainKHR(device, &info, allocator, &wd->Swapchain);
+	info.imageExtent.width = wdt;
+	info.imageExtent.height = hgt;
+        err = vkCreateSwapchainKHR(device, &info, allocator, psc);
         check_vk_result(err);
+    }
+
+
+    // Create Swapchain
+void ImGui_ImplVulkanH_CreateSwapChain(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator,
+	int w, int h,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain,
+	VkSurfaceCapabilitiesKHR *pcap
+	)
+{
+
+    VkResult err;
 
         err = vkGetSwapchainImagesKHR(device, wd->Swapchain, &wd->ImageCount, nullptr);
         check_vk_result(err);
@@ -1568,7 +1594,7 @@ void ImGui_ImplVulkanH_CreateSwapChain(
         memset(wd->FrameSemaphores.Data, 0, wd->FrameSemaphores.size_in_bytes());
         for (uint32_t i = 0; i < wd->ImageCount; i++)
             wd->Frames[i].Backbuffer = backbuffers[i];
-    }
+}
 
 // Also destroy old swap chain and in-flight frames data, if any.
 void ImGui_ImplVulkanH_CreateWindowSwapChain(

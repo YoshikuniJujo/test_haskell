@@ -10,7 +10,7 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 
 	destroyBeforeCreateSwapChain,
 
-	createSwapChain
+	createSwapChain, onlyCreateSwapChain
 
 	) where
 
@@ -92,6 +92,18 @@ createSwapChain = cxx_im_gui_impl_vulkan_h_create_swap_chain
 
 foreign import ccall "im_gui_impl_vulkan_h_create_swap_chain"
 	cxx_im_gui_impl_vulkan_h_create_swap_chain ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
+	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
+	Ptr Vk.Sfc.Capabilities -> IO ()
+
+onlyCreateSwapChain ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
+	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
+	Ptr Vk.Sfc.Capabilities -> IO ()
+onlyCreateSwapChain = cxx_im_gui_impl_vulkan_h_only_create_swap_chain
+
+foreign import ccall "im_gui_impl_vulkan_h_only_create_swap_chain"
+	cxx_im_gui_impl_vulkan_h_only_create_swap_chain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
 	Ptr Vk.Sfc.Capabilities -> IO ()

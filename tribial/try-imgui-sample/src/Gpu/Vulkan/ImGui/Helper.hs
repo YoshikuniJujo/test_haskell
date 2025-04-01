@@ -10,7 +10,7 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowSwapChain, createWindowCommandBuffers,
 
 	destroyBeforeCreateSwapChain,
-	createSwapChain
+	createSwapChain, onlyCreateSwapChain
 
 	) where
 
@@ -74,3 +74,10 @@ createSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Swpch.S fmt ssc -> Vk.Sfc.Capabilities -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) cap =
 	M.createSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc cap
+
+onlyCreateSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int32 -> Int32 -> Word32 ->
+	Vk.Swpch.S fmt ssc -> Vk.Sfc.Capabilities -> IO ()
+onlyCreateSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) cap =
+	M.onlyCreateSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc cap
