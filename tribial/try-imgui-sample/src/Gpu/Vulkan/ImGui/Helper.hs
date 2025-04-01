@@ -68,12 +68,8 @@ createWindowCommandBuffers phd (Vk.Dvc.D dvc) wd qfi mac =
 	M.createWindowCommandBuffers
 		phd dvc wd qfi (Vk.AllocCallbacks.toMiddle mac)
 
-createSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int32 -> Int32 -> Word32 ->
-	Vk.Swpch.S fmt ssc -> Vk.Sfc.Capabilities -> IO ()
-createSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) cap =
-	M.createSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc cap
+createSwapChain :: Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
+createSwapChain (Vk.Dvc.D dvc) wd mic = M.createSwapChain dvc wd mic
 
 onlyCreateSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->

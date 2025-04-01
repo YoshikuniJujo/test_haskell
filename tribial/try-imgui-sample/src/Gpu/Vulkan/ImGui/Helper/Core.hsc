@@ -85,16 +85,12 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers"
 	Ptr Vk.AllocCallbacks.A -> IO ()
 
 createSwapChain ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
-	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
-	Ptr Vk.Sfc.Capabilities -> IO ()
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} -> IO ()
 createSwapChain = cxx_im_gui_impl_vulkan_h_create_swap_chain
 
 foreign import ccall "im_gui_impl_vulkan_h_create_swap_chain"
 	cxx_im_gui_impl_vulkan_h_create_swap_chain ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
-	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
-	Ptr Vk.Sfc.Capabilities -> IO ()
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} -> IO ()
 
 onlyCreateSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->

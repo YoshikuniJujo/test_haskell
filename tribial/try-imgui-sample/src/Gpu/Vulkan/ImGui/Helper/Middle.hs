@@ -81,16 +81,8 @@ createWindowCommandBuffers
 	Vk.AllocCallbacks.mToCore macs \pacs ->
 	C.createWindowCommandBuffers phd dvc wd qfi pacs
 
-createSwapChain ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 ->
-	Vk.Swpch.S -> Vk.Sfc.Capabilities -> IO ()
-createSwapChain
-	(Vk.Dvc.D dvc) wd macs wdt hgt mic sc cap =
-	Vk.AllocCallbacks.mToCore macs \pacs -> alloca \pcap -> do
-	poke pcap $ Vk.Sfc.capabilitiesToCore cap
-	csc <- Vk.Swpch.sToCore sc
-	C.createSwapChain dvc wd pacs wdt hgt mic csc pcap
+createSwapChain :: Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
+createSwapChain (Vk.Dvc.D dvc) wd mic = C.createSwapChain dvc wd mic
 
 onlyCreateSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
