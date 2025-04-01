@@ -49,6 +49,14 @@ data Pipe i o m r
 	= Ready (m ()) o (Pipe i o m r) | Need (m ()) (Maybe i -> Pipe i o m r)
 	| Done (m ()) r | Make (m ()) (m (Pipe i o m r))
 
+{-
+data Pipe i o m r
+	= Ready o (Pipe i o m r)
+	| Need (Maybe i -> Pipe i o m r)
+	| Done r
+	| Make (m (Pipe i o m r))
+	-}
+
 finalizer :: Pipe i o m r -> m ()
 finalizer = \case Ready f _ _ -> f; Need f _ -> f; Done f _ -> f; Make f _ -> f
 

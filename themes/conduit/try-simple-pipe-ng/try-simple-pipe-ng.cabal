@@ -34,6 +34,7 @@ library
       Data.Pipe.Core
       Data.Pipe.CoreNew
       Data.Pipe.Flow
+      Data.Pipe.Freer
       Data.Pipe.IO
       Data.Pipe.Lazy
       Data.Pipe.List
