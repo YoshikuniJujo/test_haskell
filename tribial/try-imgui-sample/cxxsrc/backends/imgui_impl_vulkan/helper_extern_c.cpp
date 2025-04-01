@@ -6,20 +6,31 @@
 extern "C" void im_gui_impl_vulkan_h_create_window_swap_chain(
 	VkPhysicalDevice physical_device, VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
-	int w, int h, uint32_t min_image_count);
+	int w, int h, uint32_t min_image_count, VkSwapchainKHR );
 extern "C" void im_gui_impl_vulkan_h_create_window_command_buffers(
 	VkPhysicalDevice physical_device, VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, uint32_t queue_family,
-	const VkAllocationCallbacks* allocator);
+	const VkAllocationCallbacks* allocator );
+extern "C" void im_gui_impl_vulkan_h_destroy_before_create_swap_chain(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
+extern "C" void im_gui_impl_vulkan_h_create_swap_chain(
+	VkPhysicalDevice physical_device,
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator,
+	int w, int h,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain );
 
 void
 im_gui_impl_vulkan_h_create_window_swap_chain(
 	VkPhysicalDevice physical_device, VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
-	int w, int h, uint32_t min_image_count)
+	int w, int h, uint32_t min_image_count, VkSwapchainKHR old_swapchain)
 {
 	ImGui_ImplVulkanH_CreateWindowSwapChain(
-		physical_device, device, wd, allocator, w, h, min_image_count );
+		physical_device, device, wd, allocator, w, h, min_image_count, old_swapchain );
 }
 
 void
@@ -30,4 +41,26 @@ im_gui_impl_vulkan_h_create_window_command_buffers(
 {
 	ImGui_ImplVulkanH_CreateWindowCommandBuffers(
 		physical_device, device, wd, queue_family, allocator );
+}
+
+void
+im_gui_impl_vulkan_h_destroy_before_create_swap_chain(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator )
+{
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(device, wd, allocator);
+}
+
+void
+im_gui_impl_vulkan_h_create_swap_chain(
+	VkPhysicalDevice physical_device,
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator,
+	int w, int h,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain )
+{
+	ImGui_ImplVulkanH_CreateSwapChain(
+		physical_device, device, wd, allocator, w, h, min_image_count, old_swapchain );
 }

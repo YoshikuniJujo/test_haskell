@@ -163,7 +163,7 @@ struct ImGui_ImplVulkanH_Window;
 
 // Helpers
 // IMGUI_IMPL_API void                 ImGui_ImplVulkanH_CreateOrResizeWindow(VkInstance instance, VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wnd, uint32_t queue_family, const VkAllocationCallbacks* allocator, int w, int h, uint32_t min_image_count);
-extern "C" IMGUI_IMPL_API void                 ImGui_ImplVulkanH_CreateOrResizeWindow(VkInstance instance, VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wnd, uint32_t queue_family, const VkAllocationCallbacks* allocator, int w, int h, uint32_t min_image_count);
+extern "C" IMGUI_IMPL_API void                 ImGui_ImplVulkanH_CreateOrResizeWindow(VkInstance instance, VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wnd, uint32_t queue_family, const VkAllocationCallbacks* allocator, int w, int h, uint32_t min_image_count, VkSwapchainKHR);
 IMGUI_IMPL_API void                 ImGui_ImplVulkanH_DestroyWindow(VkInstance instance, VkDevice device, ImGui_ImplVulkanH_Window* wnd, const VkAllocationCallbacks* allocator);
 IMGUI_IMPL_API VkSurfaceFormatKHR   ImGui_ImplVulkanH_SelectSurfaceFormat(VkPhysicalDevice physical_device, VkSurfaceKHR surface, const VkFormat* request_formats, int request_formats_count, VkColorSpaceKHR request_color_space);
 extern "C" VkSurfaceFormatKHR*   ImGui_ImplVulkanH_SelectSurfaceFormat2(VkPhysicalDevice physical_device, VkSurfaceKHR surface, const VkFormat* request_formats, int request_formats_count, VkColorSpaceKHR request_color_space);
@@ -173,7 +173,21 @@ IMGUI_IMPL_API VkPhysicalDevice     ImGui_ImplVulkanH_SelectPhysicalDevice(VkIns
 IMGUI_IMPL_API uint32_t             ImGui_ImplVulkanH_SelectQueueFamilyIndex(VkPhysicalDevice physical_device);
 IMGUI_IMPL_API int                  ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(VkPresentModeKHR present_mode);
 
-void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator, int w, int h, uint32_t min_image_count);
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_CreateSwapChain(
+	VkPhysicalDevice physical_device,
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator,
+	int w, int h,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain );
+void ImGui_ImplVulkanH_CreateWindowSwapChain(
+	VkPhysicalDevice physical_device, VkDevice device,
+	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
+	int w, int h, uint32_t min_image_count, VkSwapchainKHR);
 void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator);
 
 // Helper structure to hold the data needed by one rendering frame

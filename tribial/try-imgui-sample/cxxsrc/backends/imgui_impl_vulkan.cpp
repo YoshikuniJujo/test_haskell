@@ -106,7 +106,10 @@ void ImGui_ImplVulkan_DestroyFrameRenderBuffers(VkDevice device, ImGui_ImplVulka
 void ImGui_ImplVulkan_DestroyWindowRenderBuffers(VkDevice device, ImGui_ImplVulkan_WindowRenderBuffers* buffers, const VkAllocationCallbacks* allocator);
 void ImGui_ImplVulkanH_DestroyFrame(VkDevice device, ImGui_ImplVulkanH_Frame* fd, const VkAllocationCallbacks* allocator);
 void ImGui_ImplVulkanH_DestroyFrameSemaphores(VkDevice device, ImGui_ImplVulkanH_FrameSemaphores* fsd, const VkAllocationCallbacks* allocator);
-void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator, int w, int h, uint32_t min_image_count);
+void ImGui_ImplVulkanH_CreateWindowSwapChain(
+	VkPhysicalDevice physical_device, VkDevice device,
+	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
+	int w, int h, uint32_t min_image_count, VkSwapchainKHR);
 void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator);
 
 // Vulkan prototypes for use with custom loaders
@@ -1476,12 +1479,14 @@ int ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(VkPresentModeKHR present_m
     return 1;
 }
 
-// Also destroy old swap chain and in-flight frames data, if any.
-void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator, int w, int h, uint32_t min_image_count)
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
 {
     VkResult err;
-    VkSwapchainKHR old_swapchain = wd->Swapchain;
-    wd->Swapchain = VK_NULL_HANDLE;
+
     err = vkDeviceWaitIdle(device);
     check_vk_result(err);
 
@@ -1498,13 +1503,21 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
         vkDestroyRenderPass(device, wd->RenderPass, allocator);
     if (wd->Pipeline)
         vkDestroyPipeline(device, wd->Pipeline, allocator);
+}
 
-    // If min image count was not specified, request different count of images dependent on selected present mode
-    if (min_image_count == 0)
-        min_image_count = ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(wd->PresentMode);
 
     // Create Swapchain
+void ImGui_ImplVulkanH_CreateSwapChain(
+	VkPhysicalDevice physical_device,
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator,
+	int w, int h,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain
+	)
     {
+    VkResult err;
         VkSurfaceCapabilitiesKHR cap;
         err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, wd->Surface, &cap);
         check_vk_result(err);
@@ -1555,6 +1568,24 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
         for (uint32_t i = 0; i < wd->ImageCount; i++)
             wd->Frames[i].Backbuffer = backbuffers[i];
     }
+
+// Also destroy old swap chain and in-flight frames data, if any.
+void ImGui_ImplVulkanH_CreateWindowSwapChain(
+	VkPhysicalDevice physical_device,
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator,
+	int w, int h,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain
+	)
+{
+    VkResult err;
+
+    // If min image count was not specified, request different count of images dependent on selected present mode
+    if (min_image_count == 0)
+        min_image_count = ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(wd->PresentMode);
+
     if (old_swapchain)
         vkDestroySwapchainKHR(device, old_swapchain, allocator);
 
@@ -1644,11 +1675,17 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(VkPhysicalDevice physical_device, V
 }
 
 // Create or resize window
-void ImGui_ImplVulkanH_CreateOrResizeWindow(VkInstance instance, VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, int width, int height, uint32_t min_image_count)
+void ImGui_ImplVulkanH_CreateOrResizeWindow(
+	VkInstance instance, VkPhysicalDevice physical_device, VkDevice device,
+	ImGui_ImplVulkanH_Window* wd, uint32_t queue_family,
+	const VkAllocationCallbacks* allocator, int width, int height,
+	uint32_t min_image_count, VkSwapchainKHR old_swapchain)
 {
     IM_ASSERT(g_FunctionsLoaded && "Need to call ImGui_ImplVulkan_LoadFunctions() if IMGUI_IMPL_VULKAN_NO_PROTOTYPES or VK_NO_PROTOTYPES are set!");
     (void)instance;
-    ImGui_ImplVulkanH_CreateWindowSwapChain(physical_device, device, wd, allocator, width, height, min_image_count);
+    ImGui_ImplVulkanH_CreateWindowSwapChain(
+		physical_device, device, wd, allocator,
+		width, height, min_image_count, old_swapchain);
     ImGui_ImplVulkanH_CreateWindowCommandBuffers(physical_device, device, wd, queue_family, allocator);
 }
 

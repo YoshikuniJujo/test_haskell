@@ -150,7 +150,6 @@ mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp -> IO ()
 mainCxx w ist sfc phd qfi dvc gq dp =
-	Vk.ImGui.Win.allocaW \wdcxx ->
 	let	rqSfcImgFmt = [
 			Vk.FormatB8g8r8a8Unorm, Vk.FormatR8g8b8a8Unorm,
 			Vk.FormatB8g8r8Unorm, Vk.FormatR8g8b8Unorm ] in
@@ -163,6 +162,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 			AppUseUnlimitedFrameRate.flag in
 	Vk.ImGui.H.selectPresentMode phd sfc pms \pm ->
 	when oldLog (print pm) >>
+	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
 	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
 	let z' = z {
 		Vk.ImGui.Win.wCSurface = sfc,
@@ -170,10 +170,11 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		Vk.ImGui.Win.wCClearEnable = True,
 		Vk.ImGui.Win.wCPresentMode = pm
 		} in
-	(putStrLn "HERE" >> printIO z' >> putStrLn "HERE EEND" >>) .
+	putStrLn "HERE" >> print pm >> printIO z' >> putStrLn "HERE EEND" >>
+	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
-	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
-	Vk.ImGui.H.createWindowSwapChain phd dvc wdcxx nil wdt hgt 2 >>
+	Vk.ImGui.H.createSwapChain phd dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') >>
+	Vk.ImGui.H.createWindowSwapChain phd dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
 	Vk.ImGui.checkVersion >>
 	Vk.ImGui.createContextNoArg >>
@@ -186,7 +187,6 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 --	ImGui.Style.Colors.lightNoArg >>
 --	ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >> do
---	Vk.ImGui.Win.wCCopyToCxx wd wdcxx do
 	pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
 		pInitInfo ist phd qfi dvc gq dp wdcxx
@@ -391,3 +391,11 @@ createDscPl dv = Vk.DscPl.create dv info nil
 		Vk.DscPl.createInfoPoolSizes = (: []) Vk.DscPl.Size {
 			Vk.DscPl.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 			Vk.DscPl.sizeDescriptorCount = 1 } }
+
+getMinImageCountFromPresentMode :: Vk.Sfc.PresentMode -> Int
+getMinImageCountFromPresentMode = \case
+	Vk.Sfc.PresentModeMailbox -> 3
+	Vk.Sfc.PresentModeFifo -> 2
+	Vk.Sfc.PresentModeFifoRelaxed -> 2
+	Vk.Sfc.PresentModeImmediate -> 1
+	_ -> error "bad"

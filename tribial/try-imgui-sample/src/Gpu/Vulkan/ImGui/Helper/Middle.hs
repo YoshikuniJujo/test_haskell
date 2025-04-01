@@ -8,7 +8,9 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 
 	selectSurfaceFormat,
 	selectPresentMode,
-	createWindowSwapChain, createWindowCommandBuffers
+	createWindowSwapChain, createWindowCommandBuffers,
+
+	destroyBeforeCreateSwapChain, createSwapChain
 
 	) where
 
@@ -26,6 +28,7 @@ import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
 
 import Gpu.Vulkan.Khr.Surface.Enum qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc
+import Gpu.Vulkan.Khr.Swapchain.Middle.Internal qualified as Vk.Swpch
 
 import Gpu.Vulkan.ImGui.Helper.Window.Middle qualified as Vk.ImGui.H.Win
 
@@ -54,11 +57,18 @@ selectPresentMode (Vk.Phd.P pd) (Vk.Sfc.S sfc) pms a =
 
 createWindowSwapChain ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 -> IO ()
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 ->
+	Vk.Swpch.S -> IO ()
 createWindowSwapChain
-	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd macs wdt hgt mic =
+	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd macs wdt hgt mic sc =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
-	C.createWindowSwapChain phd dvc wd pacs wdt hgt mic
+	C.createWindowSwapChain phd dvc wd pacs wdt hgt mic =<< Vk.Swpch.sToCore sc
+
+destroyBeforeCreateSwapChain ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()
+destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd macs =
+	Vk.AllocCallbacks.mToCore macs \pacs ->
+	C.destroyBeforeCreateSwapChain dvc wd pacs
 
 createWindowCommandBuffers ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
@@ -67,3 +77,12 @@ createWindowCommandBuffers
 	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
 	C.createWindowCommandBuffers phd dvc wd qfi pacs
+
+createSwapChain ::
+	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 ->
+	Vk.Swpch.S -> IO ()
+createSwapChain
+	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd macs wdt hgt mic sc =
+	Vk.AllocCallbacks.mToCore macs \pacs ->
+	C.createSwapChain phd dvc wd pacs wdt hgt mic =<< Vk.Swpch.sToCore sc
