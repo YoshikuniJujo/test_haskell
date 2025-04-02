@@ -44,6 +44,7 @@ library
       OpenUnion
       OpenUnionUnsafe
       OpenUnionValue
+      Pipe
       ReaderWriter
       RegularPolyhedronFamily
       RegularPolyhedronGadts

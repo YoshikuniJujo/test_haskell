@@ -39,3 +39,6 @@ decomp (Union i tx) = Left $ Union (i - 1) tx
 
 extract :: Union '[t] a -> t a
 extract (Union _ tx) = unsafeCoerce tx
+
+weaken :: Union r a -> Union (any ': r) a
+weaken (Union n a) = Union (n + 1) a

@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Eff (Eff, Freer(..), Member, run, runM, inj, prj, decomp) where
+module Eff (Eff, Freer(..), Member, run, runM, inj, prj, decomp, weaken) where
 
 import Freer (Freer(..))
-import OpenUnion (Union, Member, inj, prj, decomp, extract)
+import OpenUnion (Union, Member, inj, prj, decomp, extract, weaken)
 
 type Eff effs = Freer (Union effs)
 
