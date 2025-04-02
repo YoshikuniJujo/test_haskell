@@ -31,13 +31,21 @@ runPipe m = case m of
 	Eff (Pipe i o ': effs) r'
 _ =$= Pure r = Pure r
 p@(u `Bind` k) =$= p'@(v `Bind` l) = case (decomp u, decomp v) of
+	(_, Left v') -> weaken v' `Bind` \x -> p =$= l x
 	(_, Right (Yield o)) -> inj (Yield @_ @i o) `Bind` \x -> p =$= l x
 	(Right Await, _) -> inj (Await @_ @o) `Bind` \i -> k i =$= p'
 	(Right (Yield o), Right Await) -> k () =$= l (Just o)
 	(Left u', Right Await) -> weaken u' `Bind` \x -> k x =$= p'
-	(Right (Yield _), Left v') -> weaken v' `Bind` \x -> p =$= l x
-	(Left u', Left _) -> weaken u' `Bind` \x -> k x =$= p'
-p@(Pure r) =$= (v `Bind` l) = case decomp v of
-	Right Await -> Pure r =$= l Nothing
-	Right (Yield o) -> inj (Yield @_ @i o) `Bind` \x -> p =$= l x
+p@(Pure _) =$= (v `Bind` l) = case decomp v of
 	Left v' -> weaken v' `Bind` \x -> p =$= l x
+	Right Await -> p =$= l Nothing
+	Right (Yield o) -> inj (Yield @_ @i o) `Bind` \x -> p =$= l x
+
+print' :: (Member IO effs, Show a) => a -> Eff effs ()
+print' = (`Bind` Pure) . inj . print
+
+foo :: Eff (Pipe () Integer ': effs) ()
+foo = yield @() 123
+
+bar :: Member IO effs => Eff (Pipe Integer () ': effs) ()
+bar = print' =<< await @Integer @()
