@@ -1,0 +1,16 @@
+パッケージの構造
+
+
+		yafe-rwset       yafe-others         yafe-conduit
+		    |               |                    |
+		    +--------+------+--------------------+
+		             |
+			    yafe
+			     |
+		+------------+-----------+
+		|                        |
+	    freer-monad             control-open-union
+	        |                        |
+	+-------+-----------+  +---------+
+	|                   |  |
+     ftcqueue              non-detable
