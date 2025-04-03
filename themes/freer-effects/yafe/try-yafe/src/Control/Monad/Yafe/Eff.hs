@@ -1,0 +1,48 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Control.Monad.Yafe.Eff (
+	E, eff, run, runM, handleRelay, interpose
+	) where
+
+import Control.Monad.Fix
+import Control.Monad.Freer qualified as Freer
+import Control.OpenUnion qualified as Union
+import Data.FTCQueue qualified as FTCQueue
+
+type E effs = Freer.F (Union.U effs)
+
+run :: E '[] a -> a
+run (Freer.Pure x) = x
+run _ = error "Eff.run: This function can run only Pure"
+
+runM :: Monad m => E '[m] a -> m a
+runM (Freer.Pure x) = pure x
+runM (u `Freer.Bind` q) = runM . (q `Freer.app`) =<< Union.extract u
+
+eff :: Union.Member t effs => t a -> E effs a
+eff = (`Freer.Bind` FTCQueue.singleton Freer.Pure) . Union.inj
+
+handleRelay ::
+	(a -> E effs b) ->
+	(forall v . eff v -> (v -> E effs b) -> E effs b) ->
+	E (eff ': effs) a -> E effs b
+handleRelay ret h = fix \go -> \case
+	Freer.Pure x -> ret x
+	u `Freer.Bind` q -> case Union.decomp u of
+		Left u' -> u' `Freer.Bind` FTCQueue.singleton (go `Freer.comp` q)
+		Right x -> h x (go `Freer.comp` q)
+
+interpose :: Union.Member eff effs =>
+	(a -> E effs b) ->
+	(forall v . eff v -> (v -> E effs b) -> E effs b) ->
+	E effs a -> E effs b
+interpose ret h = fix \go -> \case
+	Freer.Pure x -> ret x
+	u `Freer.Bind` q -> case Union.prj u of
+		Just x -> h x (go `Freer.comp` q)
+		_ -> u `Freer.Bind` FTCQueue.singleton (go `Freer.comp` q)
