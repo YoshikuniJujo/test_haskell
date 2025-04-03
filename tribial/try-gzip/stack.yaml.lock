@@ -19,7 +19,7 @@ packages:
     subdir: themes/conduit/try-simple-pipe-ng
 snapshots:
 - completed:
-    sha256: a9a9d480fc9019c6c5338c7101c645e886613af85dc5b562aa28f987f0405277
-    size: 668539
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/3/27.yaml
-  original: nightly-2025-03-27
+    sha256: 47a4c110af9a5c55e3135bbf7cec3a6e5451ba3bfa50a06f0443012a2642fbc0
+    size: 674536
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/3.yaml
+  original: nightly-2025-04-03
