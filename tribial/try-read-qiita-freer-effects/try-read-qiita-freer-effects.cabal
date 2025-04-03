@@ -53,6 +53,10 @@ library
       Samples
       ShowProgress
       Strict
+      UseFTCQueue.BasicMonads
+      UseFTCQueue.Eff
+      UseFTCQueue.Freer
+      UseFTCQueue.FTCQueue
       WithType
   other-modules:
       Paths_try_read_qiita_freer_effects
