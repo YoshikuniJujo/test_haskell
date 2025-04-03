@@ -5,8 +5,12 @@
 
 module Samples where
 
+import Control.Applicative
+import Control.Monad
+
 import Eff
 import Monads
+import NonDet
 
 readerSample :: Eff '[Reader Integer] Integer
 readerSample = do
@@ -41,3 +45,26 @@ runMSample :: (Member (State Integer) effs, Member IO effs) => Eff effs ()
 runMSample = do
 	(a :: Integer) <- get
 	inj (print a) `Bind` Pure
+
+ifte :: Member NonDet r => Eff r a -> (a -> Eff r b) -> Eff r b -> Eff r b
+ifte t th el = (t >>= th) <|> el
+
+testIfte :: Member NonDet r => Eff r Int
+testIfte = do
+	n <- gen
+	ifte	(do	d <- gen
+			guard $ d < n && n `mod` d == 0)
+		(const mzero)
+		(pure n)
+	where gen = msum . fmap pure $ [2 .. 30]
+
+piyo :: Member NonDet r => Eff r (Int, Int)
+piyo = do
+	n <- gen
+	m <- gen
+	guard (n `mod` m == 0)
+	pure (n, m)
+	where gen = msum . fmap pure $ [2 .. 30]
+
+testIfteRun :: [Int]
+testIfteRun = run . makeChoiceA $ testIfte

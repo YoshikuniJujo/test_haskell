@@ -4,7 +4,10 @@
 
 module Freer where
 
-import Control.Monad ((>=>))
+import Control.Applicative
+import Control.Monad ((>=>), MonadPlus(..))
+
+import NonDetable
 
 data Freer t a
 	= Pure a
@@ -27,3 +30,10 @@ instance Monad (Freer t) where
 
 freer :: t a -> Freer t a
 freer = (`Bind` Pure)
+
+instance NonDetable t => Alternative (Freer t) where
+	empty = mzero; (<|>) = mplus
+
+instance NonDetable t => MonadPlus (Freer t) where
+	mzero = mz `Bind` Pure
+	m1 `mplus` m2 = mp `Bind` \x -> if x then m1 else m2

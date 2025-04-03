@@ -1,9 +1,9 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ExistentialQuantification, GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,6 +11,8 @@ module OpenUnion where
 
 import Data.Kind
 import Unsafe.Coerce (unsafeCoerce)
+
+import NonDetable
 
 type T = Type -> Type
 
@@ -42,3 +44,11 @@ extract (Union _ tx) = unsafeCoerce tx
 
 weaken :: Union r a -> Union (any ': r) a
 weaken (Union n a) = Union (n + 1) a
+
+-- instance (NonDetable nd, Member nd effs) => NonDetable (Union effs) where
+instance Member NonDet effs => NonDetable (Union effs) where
+	mz = inj (mz @NonDet); mp = inj (mp @NonDet)
+
+data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
+
+instance NonDetable NonDet where mz = MZero; mp = MPlus

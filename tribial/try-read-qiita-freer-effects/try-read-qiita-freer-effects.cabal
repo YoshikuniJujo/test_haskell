@@ -40,6 +40,8 @@ library
       FunList
       Lib
       Monads
+      NonDet
+      NonDetable
       OpenShape
       OpenUnion
       OpenUnionUnsafe
