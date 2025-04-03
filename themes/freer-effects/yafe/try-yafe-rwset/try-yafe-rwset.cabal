@@ -1,0 +1,63 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-yafe-rwset
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yafe-rwset#readme>
+homepage:       https://github.com/YoshikuniJujo/try-yafe-rwset#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-yafe-rwset/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      (c) 2025 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-yafe-rwset
+
+library
+  exposed-modules:
+      Control.Monad.Yafe.Except
+      Control.Monad.Yafe.Reader
+      Control.Monad.Yafe.State
+      Control.Monad.Yafe.Trace
+      Control.Monad.Yafe.Writer
+  other-modules:
+      Paths_try_yafe_rwset
+  autogen-modules:
+      Paths_try_yafe_rwset
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , freer-monad
+    , try-control-open-union
+    , try-yafe
+  default-language: Haskell2010
+
+test-suite try-yafe-rwset-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_yafe_rwset
+  autogen-modules:
+      Paths_try_yafe_rwset
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , freer-monad
+    , try-control-open-union
+    , try-yafe
+    , try-yafe-rwset
+  default-language: Haskell2010
