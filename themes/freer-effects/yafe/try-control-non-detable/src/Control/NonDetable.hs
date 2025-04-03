@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.NonDetable (NonDetable(..)) where
+module Control.NonDetable (N(..)) where
 
-class NonDetable t where mz :: t a; mp :: t Bool
+class N t where mz :: t a; mp :: t Bool
