@@ -10,8 +10,8 @@ import Control.Monad
 import Control.Monad.Yafe.Eff qualified as Eff
 import Control.Monad.Yafe.State
 import Control.Monad.Yafe.Pipe
+import Control.Monad.Yafe.Fail
 import Control.OpenUnion qualified as Union
-import Data.Maybe
 import Data.Bits
 import Data.Word
 
@@ -31,7 +31,8 @@ newtype ExtraBits = ExtraBits Int deriving Show
 huffmanPipe :: (
 	Union.Member (State ExtraBits) effs,
 	Union.Member (State (BinTree Int, BinTree Int)) effs,
-	Union.Member (Pipe Bit (Either Int Word16)) effs
+	Union.Member (Pipe Bit (Either Int Word16)) effs,
+	Union.Member Fail effs
 	) =>
 	Eff.E effs ()
 huffmanPipe = do
@@ -47,11 +48,12 @@ huffmanPipe = do
 			huffmanPipe
 
 takeBits16, takeBits16' :: forall o effs . (
-	Union.Member (Pipe Bit o) effs
+	Union.Member (Pipe Bit o) effs,
+	Union.Member Fail effs
 	) =>
 	Int -> Eff.E effs Word16
-takeBits16 n = bitsToWord16 <$> replicateM n (fromJust <$> await @_ @o)
-takeBits16' n = bitsToWord16' <$> replicateM n (fromJust <$> await @_ @o)
+takeBits16 n = bitsToWord16 <$> replicateM n (maybe (fail "bad") pure =<< await @_ @o)
+takeBits16' n = bitsToWord16' <$> replicateM n (maybe (fail "bad") pure =<< await @_ @o)
 
 bitsToWord16 :: [Bit] -> Word16
 bitsToWord16 = foldl (\w b -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0

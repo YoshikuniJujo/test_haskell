@@ -15,6 +15,7 @@ import Control.Monad.Yafe.Eff qualified as Eff
 import Control.Monad.Yafe.State
 import Control.Monad.Yafe.Except
 import Control.Monad.Yafe.Pipe
+import Control.Monad.Yafe.Fail
 import Control.OpenUnion qualified as Union
 import Data.Bits
 import Data.Maybe
@@ -40,7 +41,7 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 --	h <- openFile "../../../../../tribial/try-gzip/samples/abcd.txt.gz" ReadMode
-	(putStrLn . take 100 . show =<<) . Eff.runM
+	(putStrLn . take 100 . show =<<) . Eff.runM . runFail
 		. (`runState` (fixedTable, fixedTable))
 		. (`runState` ExtraBits 0)
 		. (runBitArray "") . runError @String . runPipe @() @() $
@@ -56,12 +57,14 @@ main = do
 				State BitInfo,
 				State ExtraBits,
 				State (BinTree Int, BinTree Int),
+				Fail,
 				IO] =$= huffmanPipe
 					@'[Pipe Bit (Either Int Word16),
 						Exc String,
 						State BS.ByteString, State BitInfo,
 						State ExtraBits,
 						State (BinTree Int, BinTree Int),
+						Fail,
 						IO] =$= putDecoded {- do
 							printAll @(Either Int Word16)
 								@'[Pipe (Either Int Word16) (),
@@ -69,6 +72,7 @@ main = do
 									State BS.ByteString, State BitInfo,
 									State ExtraBits,
 									State (BinTree Int, BinTree Int),
+									Fail,
 									IO]
 									-}
 			else do	print' @_ @(Maybe Int) =<< ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
@@ -80,6 +84,7 @@ main = do
 					State BitInfo,
 					State ExtraBits,
 					State (BinTree Int, BinTree Int),
+					Fail,
 					IO] =$= do
 					clcls <- fromList . pairToCodes @Word8 . L.sort . filter ((/= 0) . fst)
 						. (`zip` [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15])
@@ -92,6 +97,7 @@ main = do
 							State BS.ByteString, State BitInfo,
 							State ExtraBits,
 							State (BinTree Int, BinTree Int),
+							Fail,
 							IO] =$= do
 								lct <- fromList . pairToCodes
 									. L.sort . filter ((/= 0) . fst)
@@ -134,26 +140,28 @@ readHeader :: (
 	Union.Member (State BS.ByteString) effs,
 	Union.Member (State BitInfo) effs,
 	Union.Member (Pipe BS.ByteString ()) effs,
-	Union.Member (Exc String) effs, Union.Member IO effs ) =>
+	Union.Member (Exc String) effs,
+	Union.Member Fail effs,
+	Union.Member IO effs ) =>
 	Eff.E effs GzipHeader
 readHeader = do
 	mids <- takeBytes @() 2
 	case mids of
 		Just ids | ids == "\US\139" -> putStrLn' "good magic"
 		_ -> throwError ("bad magic" :: String)
-	mcm <- popByte @()
-	fs <- maybe (throwError @String "bad flags") pure . readFlags . fromJust =<< popByte @()
-	mmt <- takeWord32 @()
-	mefs <- popByte @()
-	mos <- popByte @()
-	mfn <- takeString
+	Just cm <- popByte @()
+	fs <- maybe (throwError @String "bad flags") pure . (readFlags =<<) =<< popByte @()
+	Just mt <- takeWord32 @()
+	Just efs <- popByte @()
+	Just os <- popByte @()
+	Just fn <- takeString
 	pure GzipHeader {
-		gzipHeaderCompressionMethod = fromJust mcm,
+		gzipHeaderCompressionMethod = cm,
 		gzipHeaderFlags = fs,
-		gzipHeaderModificationTime = fromJust mmt,
-		gzipExtraFlags = fromJust mefs,
-		gzipOperatingSystem = fromJust mos,
-		gzipFileName = fromJust mfn }
+		gzipHeaderModificationTime = mt,
+		gzipExtraFlags = efs,
+		gzipOperatingSystem = os,
+		gzipFileName = fn }
 
 takeWord32 :: forall o effs . (
 	Union.Member (State BS.ByteString) effs,
@@ -232,24 +240,23 @@ bitListToNumLE = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
 
 getCodeTable :: (
 	Union.Member (State ExtraBits) effs,
-	Union.Member (Pipe (Either Int Word16) ()) effs
+	Union.Member (Pipe (Either Int Word16) ()) effs,
+	Union.Member Fail effs
 	) =>
 	Int -> Eff.E effs [Int]
 getCodeTable 0 = pure []
 getCodeTable n = await @(Either Int Word16) @() >>= \case
 	Nothing -> pure []
 	Just (Left ln)
-		| 0 <= ln && ln <= 15 -> (fromIntegral ln :) <$> getCodeTable (n - 1)
+		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable (n - 1)
 		| ln == 16 -> error "yet"
 		| ln == 17 -> do
 			put $ ExtraBits 3
-			meb <- await @(Either Int Word16) @()
-			let	Just (Right eb) = meb
+			Just (Right eb) <- await @(Either Int Word16) @()
 			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable (n - fromIntegral eb - 3)
 		| ln == 18 -> do
 			put $ ExtraBits 7
-			meb <- await @(Either Int Word16) @()
-			let	Just (Right eb) = meb
+			Just (Right eb) <- await @(Either Int Word16) @()
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable (n - fromIntegral eb - 11)
 		| otherwise -> error "yet"
 	Just (Right _) -> error "bad"

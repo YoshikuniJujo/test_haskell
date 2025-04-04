@@ -42,14 +42,14 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 183833560d28317590a4ac8e7e8ce6a6aa74640c
+    commit: 56e02889f525ed6b4fbf6f60b7f2382af86e5602
     subdirs:
       - themes/freer-effects/yafe/try-yafe-conduit
       - themes/freer-effects/yafe/try-yafe-rwset
       - themes/freer-effects/yafe/try-yafe
       - themes/freer-effects/yafe/freer-monad
       - themes/freer-effects/yafe/try-control-open-union
-      - themes/freer-effects/yafe/try-control-non-detable
+      - themes/freer-effects/yafe/try-freer-base-classes
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
