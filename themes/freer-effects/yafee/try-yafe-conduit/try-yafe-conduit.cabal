@@ -37,7 +37,7 @@ library
       base >=4.7 && <5
     , freer-monad
     , try-control-open-union
-    , try-yafe
+    , try-yafee
   default-language: Haskell2010
 
 test-suite try-yafe-conduit-test
@@ -54,6 +54,6 @@ test-suite try-yafe-conduit-test
       base >=4.7 && <5
     , freer-monad
     , try-control-open-union
-    , try-yafe
     , try-yafe-conduit
+    , try-yafee
   default-language: Haskell2010

@@ -10,7 +10,7 @@
 module Control.Monad.Yafe.Pipe where
 
 import Control.Monad
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Freer qualified as Freer
 import Control.OpenUnion qualified as Union
 import Data.FTCQueue qualified as FTCQueue
