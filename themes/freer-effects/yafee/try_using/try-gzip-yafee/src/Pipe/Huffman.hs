@@ -7,7 +7,7 @@
 module Pipe.Huffman where
 
 import Control.Monad
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.State
 import Control.Monad.Yafe.Pipe
 import Control.Monad.Yafee.Fail qualified as Fail

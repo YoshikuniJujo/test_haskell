@@ -23,8 +23,8 @@ dependencies:
 - base >= 4.7 && < 5
 - array
 - bytestring
-- try-yafe
-- try-yafe-rwset
+- try-yafee
+- try-yafee-rwseft
 - try-yafe-conduit
 - try-control-open-union
 

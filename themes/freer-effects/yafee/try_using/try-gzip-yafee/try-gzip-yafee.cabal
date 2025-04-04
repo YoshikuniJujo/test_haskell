@@ -46,9 +46,9 @@ library
     , base >=4.7 && <5
     , bytestring
     , try-control-open-union
-    , try-yafe
     , try-yafe-conduit
-    , try-yafe-rwset
+    , try-yafee
+    , try-yafee-rwseft
   default-language: Haskell2010
 
 executable try-gzip-yafee-exe
@@ -66,9 +66,9 @@ executable try-gzip-yafee-exe
     , bytestring
     , try-control-open-union
     , try-gzip-yafee
-    , try-yafe
     , try-yafe-conduit
-    , try-yafe-rwset
+    , try-yafee
+    , try-yafee-rwseft
   default-language: Haskell2010
 
 test-suite try-gzip-yafee-test
@@ -87,7 +87,7 @@ test-suite try-gzip-yafee-test
     , bytestring
     , try-control-open-union
     , try-gzip-yafee
-    , try-yafe
     , try-yafe-conduit
-    , try-yafe-rwset
+    , try-yafee
+    , try-yafee-rwseft
   default-language: Haskell2010

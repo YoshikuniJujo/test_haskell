@@ -7,7 +7,7 @@
 module Pipe.ByteString.IO where
 
 import Data.ByteString qualified as BS
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafe.Pipe
 import Control.OpenUnion qualified as Union
 import System.IO

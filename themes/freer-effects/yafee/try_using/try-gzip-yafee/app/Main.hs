@@ -11,7 +11,7 @@ module Main (main) where
 
 import Control.Arrow
 import Control.Monad
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.Monad.Yafe.Pipe
