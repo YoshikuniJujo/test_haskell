@@ -9,10 +9,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.OpenUnion (
-	U, Member, T, inj, prj, decomp, extract, weaken, NonDet(..)
+	U, Member, T, inj, prj, decomp, extract, weaken, NonDet(..), Fail(..)
 	) where
 
-import Control.NonDetable qualified as NonDetable
+import Control.Monad.Freer.NonDetable qualified as NonDetable
+import Control.Monad.Freer.Failable qualified as Failable
 import Data.Kind
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -54,3 +55,7 @@ instance Member NonDet effs => NonDetable.N (U effs) where
 data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
 
 instance NonDetable.N NonDet where mz = MZero; mp = MPlus
+
+data Fail a = Fail String deriving Show
+
+instance Member Fail effs => Failable.F (U effs) where fail = inj . Fail
