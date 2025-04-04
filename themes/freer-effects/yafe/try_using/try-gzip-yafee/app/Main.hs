@@ -40,7 +40,6 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
---	h <- openFile "../../../../../tribial/try-gzip/samples/abcd.txt.gz" ReadMode
 	(putStrLn . take 100 . show =<<) . Eff.runM . runFail
 		. (`runState` (fixedTable, fixedTable))
 		. (`runState` ExtraBits 0)
@@ -125,16 +124,6 @@ main = do
 
 putStrLn' :: Union.Member IO effs => String -> Eff.E effs ()
 putStrLn' = Eff.eff . putStrLn
-
-printAll :: forall i effs .
-	(Union.Member (Pipe i ()) effs, Union.Member IO effs, Show i) =>
-	Int -> Eff.E effs ()
-printAll 0 = pure ()
-printAll n = do
-	mx <- await @i @()
-	case mx of
-		Nothing -> pure ()
-		Just x -> Eff.eff (print x) >> printAll @i (n - 1)
 
 readHeader :: (
 	Union.Member (State BS.ByteString) effs,
@@ -272,9 +261,6 @@ printWhileLiteral = await @(Either Int Word16) @() >>= \case
 			putChar' $ chr i
 			printWhileLiteral
 	mi -> putStrLn' "" >> print' mi
-
-putStr' :: Union.Member IO effs => String -> Eff.E effs ()
-putStr' = Eff.eff . putStr
 
 putChar' :: Union.Member IO effs => Char -> Eff.E effs ()
 putChar' = Eff.eff . putChar

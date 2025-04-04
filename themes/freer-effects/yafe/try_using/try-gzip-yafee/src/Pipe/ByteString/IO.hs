@@ -15,11 +15,6 @@ import System.IO
 bufferSize :: Int
 bufferSize = 100
 
-{-
-fromHandle ::
-	forall i -> Union.Member IO effs =>
-	Handle -> Eff.E (Pipe i BS.ByteString ': effs) ()
--}
 fromHandle ::
 	forall i ->
 	(Union.Member (Pipe i BS.ByteString) effs, Union.Member IO effs) =>
