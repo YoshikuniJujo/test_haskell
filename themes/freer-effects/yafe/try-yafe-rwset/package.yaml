@@ -24,6 +24,7 @@ dependencies:
 - try-yafe
 - freer-monad
 - try-control-open-union
+- try-freer-base-classes
 
 ghc-options:
 - -Wall
