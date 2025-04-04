@@ -5,57 +5,57 @@
 
 packages:
 - completed:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yafe
     pantry-tree:
-      sha256: ec3ace21dbee7b123ba050515bcb25f9a3e1f7652403f4181bc01a4fee972637
+      sha256: 3bda86c24515475da94b8afd3cc13d37bc0938ac3a6162b69acdbab59a62be93
       size: 581
     subdir: themes/freer-effects/yafe/try-yafe
     version: 0.1.0.0
   original:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/try-yafe
 - completed:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: freer-monad
     pantry-tree:
-      sha256: a09d7eee97fbda49f7b80c53f9069f4711b675b800cbf93e6ade6ef7008d1869
-      size: 641
+      sha256: 9331adf196acf1fddf0167946ca62df7f307d9b56056e96f4c1b0e7a187979ff
+      size: 640
     subdir: themes/freer-effects/yafe/freer-monad
     version: 0.1.0.0
   original:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/freer-monad
 - completed:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-control-open-union
     pantry-tree:
-      sha256: f41519c9ce86bc20626bf595cf2ad14b47c0d0aa1c266016183d73fcb649e820
-      size: 590
+      sha256: c12080cf040eb5b85aa3a651c58b8f5eeafb1ca60befb2c7044a0e4fb5d29dd8
+      size: 589
     subdir: themes/freer-effects/yafe/try-control-open-union
     version: 0.1.0.0
   original:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/try-control-open-union
 - completed:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-control-non-detable
+    name: try-freer-base-classes
     pantry-tree:
-      sha256: 61c4a2146282c7a4a6a09ae99cfdc52bbc8df2cc35cc3e9977bf379c4a878d03
-      size: 590
-    subdir: themes/freer-effects/yafe/try-control-non-detable
+      sha256: e3449b00a7cf3e4fbc29847e7b184041810e1031f861cfff5ff96c1679ecb797
+      size: 774
+    subdir: themes/freer-effects/yafe/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 8b2efbcd6658b71eec73fa3576d5ba62dfb95994
+    commit: e8d8e4c765551b45cc1fc26da25e7cc5e8b7bde3
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yafe/try-control-non-detable
+    subdir: themes/freer-effects/yafe/try-freer-base-classes
 snapshots:
 - completed:
     sha256: 47a4c110af9a5c55e3135bbf7cec3a6e5451ba3bfa50a06f0443012a2642fbc0
