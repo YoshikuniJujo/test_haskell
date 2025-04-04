@@ -8,7 +8,8 @@ module Control.Monad.Freer (F(..), app, comp) where
 import Control.Applicative
 import Control.Monad
 import Data.FTCQueue
-import Control.NonDetable qualified as NonDetable
+import Control.Monad.Freer.NonDetable qualified as NonDetable
+import Control.Monad.Freer.Failable qualified as Failable
 
 data F t a = Pure a | forall x . Bind (t x) (Q (F t) x a)
 
@@ -42,3 +43,6 @@ instance NonDetable.N t => MonadPlus (F t) where
 	mzero = NonDetable.mz `Bind` singleton Pure
 	m1 `mplus` m2 =
 		NonDetable.mp `Bind` singleton \x -> if x then m1 else m2
+
+instance Failable.F t => MonadFail (F t) where
+	fail msg = Failable.fail msg `Bind` singleton Pure

@@ -5,18 +5,18 @@
 
 packages:
 - completed:
-    commit: 05e7b1d0b4b465c0e4317d92620f934b404190f3
+    commit: a963db22cb853411ac8a12bf5b9201a3887a87cc
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-control-non-detable
+    name: try-freer-base-classes
     pantry-tree:
-      sha256: 61c4a2146282c7a4a6a09ae99cfdc52bbc8df2cc35cc3e9977bf379c4a878d03
-      size: 590
-    subdir: themes/freer-effects/yafe/try-control-non-detable
+      sha256: e3449b00a7cf3e4fbc29847e7b184041810e1031f861cfff5ff96c1679ecb797
+      size: 774
+    subdir: themes/freer-effects/yafe/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 05e7b1d0b4b465c0e4317d92620f934b404190f3
+    commit: a963db22cb853411ac8a12bf5b9201a3887a87cc
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yafe/try-control-non-detable
+    subdir: themes/freer-effects/yafe/try-freer-base-classes
 snapshots:
 - completed:
     sha256: 47a4c110af9a5c55e3135bbf7cec3a6e5451ba3bfa50a06f0443012a2642fbc0
