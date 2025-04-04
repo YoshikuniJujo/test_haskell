@@ -5,21 +5,21 @@
 
 packages:
 - completed:
-    commit: 5906342b47206309032003f75961f68e5dc47770
+    commit: 17a84ddd69c4b0328d45714b943fcce4d9a6da7c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-base-classes
     pantry-tree:
-      sha256: e3449b00a7cf3e4fbc29847e7b184041810e1031f861cfff5ff96c1679ecb797
+      sha256: fd94dff762dac4f139a9a176d9c4db2c7a519592391df06eec8ec4ce3fef0490
       size: 774
-    subdir: themes/freer-effects/yafe/try-freer-base-classes
+    subdir: themes/freer-effects/yafee/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 5906342b47206309032003f75961f68e5dc47770
+    commit: 17a84ddd69c4b0328d45714b943fcce4d9a6da7c
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yafe/try-freer-base-classes
+    subdir: themes/freer-effects/yafee/try-freer-base-classes
 snapshots:
 - completed:
-    sha256: 47a4c110af9a5c55e3135bbf7cec3a6e5451ba3bfa50a06f0443012a2642fbc0
-    size: 674536
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/3.yaml
-  original: nightly-2025-04-03
+    sha256: d011ff7706c1dab9ac0357249eca31a081cfadd4f735623b3b08caea1c732672
+    size: 674748
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/4.yaml
+  original: nightly-2025-04-04
