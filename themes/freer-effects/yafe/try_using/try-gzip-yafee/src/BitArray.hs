@@ -11,7 +11,7 @@ module BitArray where
 import Prelude hiding (splitAt)
 
 import Control.Monad.Yafe.Eff qualified as Eff
-import Control.Monad.Yafe.State
+import Control.Monad.Yafee.State
 import Control.Monad.Yafe.Pipe
 import Control.OpenUnion qualified as Union
 import Data.Bits
@@ -52,6 +52,7 @@ pop = do
 		_ -> do	b <- (`testBit` i) . head' (show ln) <$> get
 			Just (bool O I b) <$ put BitInfo { bit0 = i + 1, bitsLen = ln - 1 }
 
+head' :: String -> BS.ByteString -> Word8
 head' i bs = if BS.null bs then error ("head': bad " ++ i) else BS.head bs
 
 takeBitArray :: forall o effs . (

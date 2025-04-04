@@ -8,9 +8,9 @@ module Pipe.Huffman where
 
 import Control.Monad
 import Control.Monad.Yafe.Eff qualified as Eff
-import Control.Monad.Yafe.State
+import Control.Monad.Yafee.State
 import Control.Monad.Yafe.Pipe
-import Control.Monad.Yafe.Fail
+import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
 import Data.Bits
 import Data.Word
@@ -32,7 +32,7 @@ huffmanPipe :: (
 	Union.Member (State ExtraBits) effs,
 	Union.Member (State (BinTree Int, BinTree Int)) effs,
 	Union.Member (Pipe Bit (Either Int Word16)) effs,
-	Union.Member Fail effs
+	Union.Member Fail.F effs
 	) =>
 	Eff.E effs ()
 huffmanPipe = do
@@ -49,7 +49,7 @@ huffmanPipe = do
 
 takeBits16, takeBits16' :: forall o effs . (
 	Union.Member (Pipe Bit o) effs,
-	Union.Member Fail effs
+	Union.Member Fail.F effs
 	) =>
 	Int -> Eff.E effs Word16
 takeBits16 n = bitsToWord16 <$> replicateM n (maybe (fail "bad") pure =<< await @_ @o)

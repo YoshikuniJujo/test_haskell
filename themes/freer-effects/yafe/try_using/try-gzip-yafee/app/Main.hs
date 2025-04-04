@@ -12,10 +12,10 @@ module Main (main) where
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Yafe.Eff qualified as Eff
-import Control.Monad.Yafe.State
-import Control.Monad.Yafe.Except
+import Control.Monad.Yafee.State
+import Control.Monad.Yafee.Except qualified as Except
 import Control.Monad.Yafe.Pipe
-import Control.Monad.Yafe.Fail
+import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
 import Data.Bits
 import Data.Maybe
@@ -40,10 +40,10 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	(putStrLn . take 100 . show =<<) . Eff.runM . runFail
+	(putStrLn . take 100 . show =<<) . Eff.runM . Fail.run
 		. (`runState` (fixedTable, fixedTable))
 		. (`runState` ExtraBits 0)
-		. (runBitArray "") . runError @String . runPipe @() @() $
+		. (runBitArray "") . Except.run @String . runPipe @() @() $
 		fromHandle (type ()) h =$= do
 			print' =<< readHeader
 			print' =<< takeBit8 @() 1
@@ -51,39 +51,39 @@ main = do
 			let	bt = maybe 3 id mbt
 			if bt == 1
 			then bits @'[Pipe BS.ByteString Bit,
-				Exc String,
+				Except.E String,
 				State BS.ByteString,
 				State BitInfo,
 				State ExtraBits,
 				State (BinTree Int, BinTree Int),
-				Fail,
+				Fail.F,
 				IO] =$= huffmanPipe
 					@'[Pipe Bit (Either Int Word16),
-						Exc String,
+						Except.E String,
 						State BS.ByteString, State BitInfo,
 						State ExtraBits,
 						State (BinTree Int, BinTree Int),
-						Fail,
+						Fail.F,
 						IO] =$= putDecoded {- do
 							printAll @(Either Int Word16)
 								@'[Pipe (Either Int Word16) (),
-									Exc String,
+									Except.E String,
 									State BS.ByteString, State BitInfo,
 									State ExtraBits,
 									State (BinTree Int, BinTree Int),
-									Fail,
+									Fail.F,
 									IO]
 									-}
 			else do	print' @_ @(Maybe Int) =<< ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
 				print' @_ @(Maybe Int) =<< ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
 				print' @_ @(Maybe Int) =<< ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
 				bits @'[Pipe BS.ByteString Bit,
-					Exc String,
+					Except.E String,
 					State BS.ByteString,
 					State BitInfo,
 					State ExtraBits,
 					State (BinTree Int, BinTree Int),
-					Fail,
+					Fail.F,
 					IO] =$= do
 					clcls <- fromList . pairToCodes @Word8 . L.sort . filter ((/= 0) . fst)
 						. (`zip` [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15])
@@ -92,11 +92,11 @@ main = do
 					put (clcls, clcls)
 					huffmanPipe
 						@'[Pipe Bit (Either Int Word16),
-							Exc String,
+							Except.E String,
 							State BS.ByteString, State BitInfo,
 							State ExtraBits,
 							State (BinTree Int, BinTree Int),
-							Fail,
+							Fail.F,
 							IO] =$= do
 								lct <- fromList . pairToCodes
 									. L.sort . filter ((/= 0) . fst)
@@ -129,17 +129,17 @@ readHeader :: (
 	Union.Member (State BS.ByteString) effs,
 	Union.Member (State BitInfo) effs,
 	Union.Member (Pipe BS.ByteString ()) effs,
-	Union.Member (Exc String) effs,
-	Union.Member Fail effs,
+	Union.Member (Except.E String) effs,
+	Union.Member Fail.F effs,
 	Union.Member IO effs ) =>
 	Eff.E effs GzipHeader
 readHeader = do
 	mids <- takeBytes @() 2
 	case mids of
 		Just ids | ids == "\US\139" -> putStrLn' "good magic"
-		_ -> throwError ("bad magic" :: String)
+		_ -> Except.throw ("bad magic" :: String)
 	Just cm <- popByte @()
-	fs <- maybe (throwError @String "bad flags") pure . (readFlags =<<) =<< popByte @()
+	fs <- maybe (Except.throw @String "bad flags") pure . (readFlags =<<) =<< popByte @()
 	Just mt <- takeWord32 @()
 	Just efs <- popByte @()
 	Just os <- popByte @()
@@ -230,7 +230,7 @@ bitListToNumLE = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
 getCodeTable :: (
 	Union.Member (State ExtraBits) effs,
 	Union.Member (Pipe (Either Int Word16) ()) effs,
-	Union.Member Fail effs
+	Union.Member Fail.F effs
 	) =>
 	Int -> Eff.E effs [Int]
 getCodeTable 0 = pure []
