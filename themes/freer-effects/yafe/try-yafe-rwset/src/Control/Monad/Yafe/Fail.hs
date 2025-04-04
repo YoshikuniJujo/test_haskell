@@ -3,8 +3,10 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yafe.Fail where
+module Control.Monad.Yafe.Fail (
+	Union.Fail(..), runFail, runFailIO, runFailExc, catchFail ) where
 
 import Control.Monad.Yafe.Eff qualified as Eff
 import Control.Monad.Yafe.Except qualified as Except
@@ -21,9 +23,6 @@ runFailIO =
 runFailExc :: Union.Member (Except.Exc String) effs => Eff.E (Union.Fail ': effs) a -> Eff.E effs a
 runFailExc = Eff.handleRelay pure \(Union.Fail msg) -> const $ Except.throwError msg
 
-tryFail :: (
-	Union.Member Union.Fail effs,
-	Union.Member IO effs ) => Eff.E effs ()
-tryFail = do
-	c : cs <- Eff.eff getLine
-	Eff.eff $ print c
+catchFail :: Union.Member Union.Fail effs =>
+	Eff.E effs a -> (String -> Eff.E effs a) -> Eff.E effs a
+m `catchFail` h = Eff.interpose pure (\(Union.Fail msg) -> const $ h msg) m
