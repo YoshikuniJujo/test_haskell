@@ -8,7 +8,7 @@
 
 module Control.Monad.Yafee.Fail (F, pattern F, run, runIO, runExc, catch) where
 
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Except qualified as Except
 import Control.OpenUnion qualified as Union
 

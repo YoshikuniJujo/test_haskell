@@ -6,7 +6,7 @@
 
 module Control.Monad.Yafee.Except (E(..), throw, run, catch) where
 
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.OpenUnion qualified as Union
 
 data E e a = Throw e deriving Show

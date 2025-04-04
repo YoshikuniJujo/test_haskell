@@ -7,7 +7,7 @@
 
 module Control.Monad.Yafee.Trace where
 
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Freer qualified as Freer
 import Control.OpenUnion qualified as Union
 

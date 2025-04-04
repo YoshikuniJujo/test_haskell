@@ -7,7 +7,7 @@
 
 module Control.Monad.Yafee.Reader where
 
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.OpenUnion qualified as Union
 
 data Reader e a where Ask :: Reader e e

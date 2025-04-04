@@ -8,7 +8,7 @@
 module Control.Monad.Yafee.Writer where
 
 import Control.Arrow
-import Control.Monad.Yafe.Eff qualified as Eff
+import Control.Monad.Yafee.Eff qualified as Eff
 import Control.OpenUnion qualified as Union
 
 data Writer w a where Tell :: w -> Writer w ()

@@ -1,6 +1,6 @@
-name:                try-yafe-rwset
+name:                try-yafee-rwseft
 version:             0.1.0.0
-github:              "YoshikuniJujo/try-yafe-rwset"
+github:              "YoshikuniJujo/try-yafee-rwseft"
 license:             BSD-3-Clause
 author:              "Yoshikuni Jujo"
 maintainer:          "yoshikuni.jujo@gmail.com"
@@ -11,17 +11,17 @@ extra-source-files:
 - CHANGELOG.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis:            Yafee Functions. Reader, Writer, State, Except, Fail and Trace.
+category:            Control
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yafe-rwset#readme>
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yafee-rwseft#readme>
 
 dependencies:
 - base >= 4.7 && < 5
-- try-yafe
+- try-yafee
 - freer-monad
 - try-control-open-union
 - try-freer-base-classes
@@ -41,7 +41,7 @@ library:
   source-dirs: src
 
 tests:
-  try-yafe-rwset-test:
+  try-yafee-rwseft-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -49,4 +49,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-yafe-rwset
+    - try-yafee-rwseft
