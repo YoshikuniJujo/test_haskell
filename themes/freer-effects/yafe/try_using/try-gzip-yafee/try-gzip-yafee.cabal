@@ -1,0 +1,93 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-gzip-yafee
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-gzip-yafee#readme>
+homepage:       https://github.com/YoshikuniJujo/try-gzip-yafee#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-gzip-yafee/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      (c) 2025 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-gzip-yafee
+
+library
+  exposed-modules:
+      BitArray
+      ByteStringNum
+      Crc
+      Gzip
+      HuffmanTree
+      Lib
+      Pipe.ByteString
+      Pipe.ByteString.IO
+      Pipe.Huffman
+  other-modules:
+      Paths_try_gzip_yafee
+  autogen-modules:
+      Paths_try_gzip_yafee
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , try-control-open-union
+    , try-yafe
+    , try-yafe-conduit
+    , try-yafe-rwset
+  default-language: Haskell2010
+
+executable try-gzip-yafee-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_gzip_yafee
+  autogen-modules:
+      Paths_try_gzip_yafee
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , try-control-open-union
+    , try-gzip-yafee
+    , try-yafe
+    , try-yafe-conduit
+    , try-yafe-rwset
+  default-language: Haskell2010
+
+test-suite try-gzip-yafee-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_gzip_yafee
+  autogen-modules:
+      Paths_try_gzip_yafee
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , try-control-open-union
+    , try-gzip-yafee
+    , try-yafe
+    , try-yafe-conduit
+    , try-yafe-rwset
+  default-language: Haskell2010
