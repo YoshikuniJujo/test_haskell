@@ -19,5 +19,5 @@ trace = Eff.eff . Trace
 runTrace :: Eff.E '[Trace] a -> IO a
 runTrace = \case
 	Freer.Pure x -> pure x
-	u `Freer.Bind` q -> case Union.extract u of
+	u Freer.:>>= q -> case Union.extract u of
 		Trace s -> putStrLn s >> runTrace (q `Freer.app` ())

@@ -5,33 +5,33 @@
 
 packages:
 - completed:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yafe
     pantry-tree:
-      sha256: 3bda86c24515475da94b8afd3cc13d37bc0938ac3a6162b69acdbab59a62be93
+      sha256: fb212910cc9cf31f8969ad40a3f03667ba6c9fe515451360dd0992ac113e7036
       size: 581
     subdir: themes/freer-effects/yafe/try-yafe
     version: 0.1.0.0
   original:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/try-yafe
 - completed:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: freer-monad
     pantry-tree:
-      sha256: 9331adf196acf1fddf0167946ca62df7f307d9b56056e96f4c1b0e7a187979ff
+      sha256: e653359cf5b546f349f30f225c594905c84c32c58c36926573778801d06f79e5
       size: 640
     subdir: themes/freer-effects/yafe/freer-monad
     version: 0.1.0.0
   original:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/freer-monad
 - completed:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-control-open-union
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/freer-effects/yafe/try-control-open-union
     version: 0.1.0.0
   original:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/try-control-open-union
 - completed:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-base-classes
     pantry-tree:
@@ -53,7 +53,7 @@ packages:
     subdir: themes/freer-effects/yafe/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 26ba6aa91aaf09cd6430aae2f1a5d6093445947e
+    commit: bba6cf37ed63c6100191a57c50c264e30a57801c
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/try-freer-base-classes
 snapshots:

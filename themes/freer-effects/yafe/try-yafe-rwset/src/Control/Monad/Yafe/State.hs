@@ -31,8 +31,8 @@ modify f = put . f =<< get
 
 runState :: Eff.E (State s ': effs) a -> s -> Eff.E effs (a, s)
 Freer.Pure x `runState` s = pure (x, s)
-(u `Freer.Bind` q) `runState` s = case Union.decomp u of
-	Left u' -> u' `Freer.Bind`
+(u Freer.:>>= q) `runState` s = case Union.decomp u of
+	Left u' -> u' Freer.:>>=
 		FTCQueue.singleton ((`runState` s) `Freer.comp` q)
 	Right Get -> q `Freer.app` s `runState` s
 	Right (Put s') -> q `Freer.app` () `runState` s'
@@ -43,8 +43,8 @@ transactionState m = do
 	(s0 :: s) <- get
 	($ m) . ($ s0) $ fix \go s -> \case
 		Freer.Pure x -> put s >> pure x
-		u `Freer.Bind` q -> case Union.prj @(State s) u of
-			Nothing -> u `Freer.Bind`
+		u Freer.:>>= q -> case Union.prj @(State s) u of
+			Nothing -> u Freer.:>>=
 				FTCQueue.singleton (go s `Freer.comp` q)
 			Just Get -> go s $ q `Freer.app` s
 			Just (Put s') -> go s' $ q `Freer.app` ()
