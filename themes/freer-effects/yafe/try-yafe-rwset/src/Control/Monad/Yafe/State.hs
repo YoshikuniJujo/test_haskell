@@ -20,7 +20,7 @@ data State s a where Get :: State s s; Put :: !s -> State s ()
 get :: Union.Member (State s) effs => Eff.E effs s
 get = Eff.eff Get
 
-gets :: Union.Member (State s) effs => (s -> s) -> Eff.E effs s
+gets :: Union.Member (State s) effs => (s -> t) -> Eff.E effs t
 gets f = f <$> get
 
 put :: Union.Member (State s) effs => s -> Eff.E effs ()
