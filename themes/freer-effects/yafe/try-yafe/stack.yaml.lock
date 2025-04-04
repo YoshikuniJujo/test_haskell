@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: c0f55f4e3d11f817f2ab01b019a629ef6458dafe
+    commit: 2f75e5306de0c12395262439bad332b6315f91de
     git: https://github.com/YoshikuniJujo/test_haskell
     name: freer-monad
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/freer-effects/yafe/freer-monad
     version: 0.1.0.0
   original:
-    commit: c0f55f4e3d11f817f2ab01b019a629ef6458dafe
+    commit: 2f75e5306de0c12395262439bad332b6315f91de
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/freer-monad
 - completed:
-    commit: c0f55f4e3d11f817f2ab01b019a629ef6458dafe
+    commit: 2f75e5306de0c12395262439bad332b6315f91de
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-control-open-union
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/freer-effects/yafe/try-control-open-union
     version: 0.1.0.0
   original:
-    commit: c0f55f4e3d11f817f2ab01b019a629ef6458dafe
+    commit: 2f75e5306de0c12395262439bad332b6315f91de
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/try-control-open-union
 - completed:
-    commit: c0f55f4e3d11f817f2ab01b019a629ef6458dafe
+    commit: 2f75e5306de0c12395262439bad332b6315f91de
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-control-non-detable
     pantry-tree:
@@ -40,7 +40,7 @@ packages:
     subdir: themes/freer-effects/yafe/try-control-non-detable
     version: 0.1.0.0
   original:
-    commit: c0f55f4e3d11f817f2ab01b019a629ef6458dafe
+    commit: 2f75e5306de0c12395262439bad332b6315f91de
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafe/try-control-non-detable
 snapshots:
