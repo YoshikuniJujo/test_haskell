@@ -30,34 +30,34 @@ yield = Eff.eff . Yield @i
 runPipe :: Eff.E (Pipe i o ': effs) a -> Eff.E effs (Maybe a)
 runPipe = \case
 	Freer.Pure x -> Freer.Pure $ Just x
-	u `Freer.Bind` k -> case Union.decomp u of
-		Left u' -> u' `Freer.Bind` FTCQueue.singleton (runPipe `Freer.comp` k)
+	u Freer.:>>= k -> case Union.decomp u of
+		Left u' -> u' Freer.:>>= FTCQueue.singleton (runPipe `Freer.comp` k)
 		Right _ -> Freer.Pure Nothing
 
 (=$=) :: forall i a o effs r r' .
 	Eff.E (Pipe i a ': effs) r -> Eff.E (Pipe a o ': effs) r' ->
 	Eff.E (Pipe i o ': effs) r'
 _ =$= Freer.Pure r = Freer.Pure r
-p@(u `Freer.Bind` k) =$= p'@(v `Freer.Bind` l) = case (Union.decomp u, Union.decomp v) of
+p@(u Freer.:>>= k) =$= p'@(v Freer.:>>= l) = case (Union.decomp u, Union.decomp v) of
 	(_, Left v') ->
-		Union.weaken v' `Freer.Bind`
+		Union.weaken v' Freer.:>>=
 		FTCQueue.singleton \x -> p =$= (l `Freer.app` x)
 	(_, Right (Yield o)) ->
-		Union.inj (Yield @i o) `Freer.Bind`
+		Union.inj (Yield @i o) Freer.:>>=
 		FTCQueue.singleton \x -> p =$= (l `Freer.app` x)
 	(Right Await, _) ->
-		Union.inj (Await @_ @o) `Freer.Bind`
+		Union.inj (Await @_ @o) Freer.:>>=
 		FTCQueue.singleton \i -> (k `Freer.app` i) =$= p'
 	(Right (Yield o), Right Await) ->
 		(k `Freer.app` ()) =$= (l `Freer.app` Just o)
 	(Left u', Right Await) ->
-		Union.weaken u' `Freer.Bind`
+		Union.weaken u' Freer.:>>=
 		FTCQueue.singleton \x -> (k `Freer.app` x) =$= p'
-p@(Freer.Pure _) =$= (v `Freer.Bind` l) = case Union.decomp v of
-	Left v' -> Union.weaken v' `Freer.Bind`
+p@(Freer.Pure _) =$= (v Freer.:>>= l) = case Union.decomp v of
+	Left v' -> Union.weaken v' Freer.:>>=
 		FTCQueue.singleton \x -> p =$= (l `Freer.app` x)
 	Right Await -> p =$= (l `Freer.app` Nothing)
-	Right (Yield o) -> Union.inj (Yield @i o) `Freer.Bind`
+	Right (Yield o) -> Union.inj (Yield @i o) Freer.:>>=
 		FTCQueue.singleton \x -> p =$= (l `Freer.app` x)
 
 print' :: (Union.Member IO effs, Show a) => a -> Eff.E effs ()
