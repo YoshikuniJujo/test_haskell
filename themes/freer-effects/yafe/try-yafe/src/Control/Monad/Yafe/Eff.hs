@@ -22,10 +22,10 @@ run _ = error "Eff.run: This function can run only Pure"
 
 runM :: Monad m => E '[m] a -> m a
 runM (Freer.Pure x) = pure x
-runM (u `Freer.Bind` q) = runM . (q `Freer.app`) =<< Union.extract u
+runM (u Freer.:>>= q) = runM . (q `Freer.app`) =<< Union.extract u
 
 eff :: Union.Member t effs => t a -> E effs a
-eff = (`Freer.Bind` FTCQueue.singleton Freer.Pure) . Union.inj
+eff = (Freer.:>>= FTCQueue.singleton Freer.Pure) . Union.inj
 
 handleRelay ::
 	(a -> E effs b) ->
@@ -33,8 +33,8 @@ handleRelay ::
 	E (eff ': effs) a -> E effs b
 handleRelay ret h = fix \go -> \case
 	Freer.Pure x -> ret x
-	u `Freer.Bind` q -> case Union.decomp u of
-		Left u' -> u' `Freer.Bind` FTCQueue.singleton (go `Freer.comp` q)
+	u Freer.:>>= q -> case Union.decomp u of
+		Left u' -> u' Freer.:>>= FTCQueue.singleton (go `Freer.comp` q)
 		Right x -> h x (go `Freer.comp` q)
 
 interpose :: Union.Member eff effs =>
@@ -43,6 +43,6 @@ interpose :: Union.Member eff effs =>
 	E effs a -> E effs b
 interpose ret h = fix \go -> \case
 	Freer.Pure x -> ret x
-	u `Freer.Bind` q -> case Union.prj u of
+	u Freer.:>>= q -> case Union.prj u of
 		Just x -> h x (go `Freer.comp` q)
-		_ -> u `Freer.Bind` FTCQueue.singleton (go `Freer.comp` q)
+		_ -> u Freer.:>>= FTCQueue.singleton (go `Freer.comp` q)
