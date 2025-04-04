@@ -1,6 +1,6 @@
-name:                try-yafe
+name:                try-yafee
 version:             0.1.0.0
-github:              "YoshikuniJujo/try-yafe"
+github:              "YoshikuniJujo/try-yafee"
 license:             BSD-3-Clause
 author:              "Yoshikuni Jujo"
 maintainer:          "yoshikuni.jujo@gmail.com"
@@ -11,13 +11,13 @@ extra-source-files:
 - CHANGELOG.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis:            Yet Another Freer Extensible Effects
+category:            Control
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yafe#readme>
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yafee#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -39,7 +39,7 @@ library:
   source-dirs: src
 
 tests:
-  try-yafe-test:
+  try-yafee-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -47,4 +47,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-yafe
+    - try-yafee

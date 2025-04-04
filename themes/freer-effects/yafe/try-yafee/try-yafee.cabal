@@ -4,11 +4,13 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           try-yafe
+name:           try-yafee
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yafe#readme>
-homepage:       https://github.com/YoshikuniJujo/try-yafe#readme
-bug-reports:    https://github.com/YoshikuniJujo/try-yafe/issues
+synopsis:       Yet Another Freer Extensible Effects
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yafee#readme>
+category:       Control
+homepage:       https://github.com/YoshikuniJujo/try-yafee#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-yafee/issues
 author:         Yoshikuni Jujo
 maintainer:     yoshikuni.jujo@gmail.com
 copyright:      (c) 2025 Yoshikuni Jujo
@@ -21,15 +23,15 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/YoshikuniJujo/try-yafe
+  location: https://github.com/YoshikuniJujo/try-yafee
 
 library
   exposed-modules:
-      Control.Monad.Yafe.Eff
+      Control.Monad.Yafee.Eff
   other-modules:
-      Paths_try_yafe
+      Paths_try_yafee
   autogen-modules:
-      Paths_try_yafe
+      Paths_try_yafee
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -39,13 +41,13 @@ library
     , try-control-open-union
   default-language: Haskell2010
 
-test-suite try-yafe-test
+test-suite try-yafee-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_try_yafe
+      Paths_try_yafee
   autogen-modules:
-      Paths_try_yafe
+      Paths_try_yafee
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -53,5 +55,5 @@ test-suite try-yafe-test
       base >=4.7 && <5
     , freer-monad
     , try-control-open-union
-    , try-yafe
+    , try-yafee
   default-language: Haskell2010

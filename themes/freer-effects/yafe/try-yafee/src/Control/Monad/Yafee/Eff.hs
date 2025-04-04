@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yafe.Eff (
+module Control.Monad.Yafee.Eff (
 	E, eff, run, runM, handleRelay, interpose
 	) where
 
