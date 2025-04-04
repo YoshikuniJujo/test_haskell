@@ -113,7 +113,7 @@ bitArrayToWord8 (BitArray (BitInfo i ln) bs)
 		BS.head bs `shiftR` i .&. foldl setBit zeroBits [0 .. ln - 1]
 	| ln <= 8 = Just let b0 = BS.head bs; b1 = BS.head $ BS.tail bs in
 		b0 `shiftR` i .|.
-		b1 `shiftL` i .&. foldl setBit zeroBits [0 .. ln - 1]
+		b1 `shiftL` (8 - i) .&. foldl setBit zeroBits [0 .. ln - 1]
 	| otherwise = Nothing
 
 takeBit8 :: forall o effs . (

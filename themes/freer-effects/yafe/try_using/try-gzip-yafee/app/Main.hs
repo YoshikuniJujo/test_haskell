@@ -10,13 +10,17 @@
 module Main (main) where
 
 import Control.Arrow
+import Control.Monad
 import Control.Monad.Yafe.Eff qualified as Eff
 import Control.Monad.Yafe.State
 import Control.Monad.Yafe.Except
 import Control.Monad.Yafe.Pipe
 import Control.OpenUnion qualified as Union
+import Data.Bits
 import Data.Maybe
+import Data.List qualified as L
 import Data.Word
+import Data.Char
 import Data.ByteString qualified as BS
 import System.IO
 import System.Environment
@@ -43,8 +47,10 @@ main = do
 		fromHandle (type ()) h =$= do
 			print' =<< readHeader
 			print' =<< takeBit8 @() 1
-			print' =<< takeBit8 @() 2
-			bits @'[Pipe BS.ByteString Bit,
+			mbt <- takeBit8 @() 2
+			let	bt = maybe 3 id mbt
+			if bt == 1
+			then bits @'[Pipe BS.ByteString Bit,
 				Exc String,
 				State BS.ByteString,
 				State BitInfo,
@@ -65,18 +71,64 @@ main = do
 									State (BinTree Int, BinTree Int),
 									IO]
 									-}
+			else do	print' @_ @(Maybe Int) =<< ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
+				print' @_ @(Maybe Int) =<< ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
+				print' @_ @(Maybe Int) =<< ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
+				bits @'[Pipe BS.ByteString Bit,
+					Exc String,
+					State BS.ByteString,
+					State BitInfo,
+					State ExtraBits,
+					State (BinTree Int, BinTree Int),
+					IO] =$= do
+					clcls <- fromList . pairToCodes @Word8 . L.sort . filter ((/= 0) . fst)
+						. (`zip` [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15])
+						<$> replicateM 14 (bitListToNumLE . catMaybes <$> replicateM 3 (await @_ @()))
+					print' (clcls :: BinTree Int)
+					put (clcls, clcls)
+					huffmanPipe
+						@'[Pipe Bit (Either Int Word16),
+							Exc String,
+							State BS.ByteString, State BitInfo,
+							State ExtraBits,
+							State (BinTree Int, BinTree Int),
+							IO] =$= do
+								lct <- fromList . pairToCodes
+									. L.sort . filter ((/= 0) . fst)
+									. (`zip` [0 ..]) <$> getCodeTable 282
+								print' lct
+
+								dct <- fromList . pairToCodes
+									. L.sort . filter ((/= 0) . fst)
+									. (`zip` [0 ..]) <$> getCodeTable 23
+								print' dct
+
+								put (lct, lct :: BinTree Int)
+								-- print' =<< await @(Either Int Word16) @()
+								printWhileLiteral
+								put $ ExtraBits 1
+								print' =<< await @(Either Int Word16) @()
+								
+								put (dct, dct :: BinTree Int)
+								print' =<< await @(Either Int Word16) @()
+								put $ ExtraBits 4
+								print' =<< await @(Either Int Word16) @()
+
+								put (lct, lct :: BinTree Int)
+								printWhileLiteral
 
 putStrLn' :: Union.Member IO effs => String -> Eff.E effs ()
 putStrLn' = Eff.eff . putStrLn
 
 printAll :: forall i effs .
 	(Union.Member (Pipe i ()) effs, Union.Member IO effs, Show i) =>
-	Eff.E effs ()
-printAll = do
+	Int -> Eff.E effs ()
+printAll 0 = pure ()
+printAll n = do
 	mx <- await @i @()
 	case mx of
 		Nothing -> pure ()
-		Just x -> Eff.eff (print x) >> printAll @i
+		Just x -> Eff.eff (print x) >> printAll @i (n - 1)
 
 readHeader :: (
 	Union.Member (State BS.ByteString) effs,
@@ -173,3 +225,49 @@ putDist = do
 			put (fixedTable, fixedTable)
 			putDecoded
 		_ -> error "putDist: yet"
+
+
+bitListToNumLE :: (Num n, Bits n) => [Bit] -> n
+bitListToNumLE = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
+
+getCodeTable :: (
+	Union.Member (State ExtraBits) effs,
+	Union.Member (Pipe (Either Int Word16) ()) effs
+	) =>
+	Int -> Eff.E effs [Int]
+getCodeTable 0 = pure []
+getCodeTable n = await @(Either Int Word16) @() >>= \case
+	Nothing -> pure []
+	Just (Left ln)
+		| 0 <= ln && ln <= 15 -> (fromIntegral ln :) <$> getCodeTable (n - 1)
+		| ln == 16 -> error "yet"
+		| ln == 17 -> do
+			put $ ExtraBits 3
+			meb <- await @(Either Int Word16) @()
+			let	Just (Right eb) = meb
+			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable (n - fromIntegral eb - 3)
+		| ln == 18 -> do
+			put $ ExtraBits 7
+			meb <- await @(Either Int Word16) @()
+			let	Just (Right eb) = meb
+			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable (n - fromIntegral eb - 11)
+		| otherwise -> error "yet"
+	Just (Right _) -> error "bad"
+
+printWhileLiteral :: (
+	Union.Member (Pipe (Either Int Word16) ()) effs,
+	Union.Member IO effs
+	) =>
+	Eff.E effs ()
+printWhileLiteral = await @(Either Int Word16) @() >>= \case
+	Just (Left i)
+		| 0 <= i && i <= 255 -> do
+			putChar' $ chr i
+			printWhileLiteral
+	mi -> putStrLn' "" >> print' mi
+
+putStr' :: Union.Member IO effs => String -> Eff.E effs ()
+putStr' = Eff.eff . putStr
+
+putChar' :: Union.Member IO effs => Char -> Eff.E effs ()
+putChar' = Eff.eff . putChar
