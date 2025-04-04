@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yafe.Trace where
+module Control.Monad.Yafee.Trace where
 
 import Control.Monad.Yafe.Eff qualified as Eff
 import Control.Monad.Freer qualified as Freer

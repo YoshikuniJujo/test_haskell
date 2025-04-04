@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yafe.Writer where
+module Control.Monad.Yafee.Writer where
 
 import Control.Arrow
 import Control.Monad.Yafe.Eff qualified as Eff

@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yafe.Reader where
+module Control.Monad.Yafee.Reader where
 
 import Control.Monad.Yafe.Eff qualified as Eff
 import Control.OpenUnion qualified as Union

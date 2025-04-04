@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yafe.State where
+module Control.Monad.Yafee.State where
 
 import Control.Monad.Fix
 import Control.Monad.Yafe.Eff qualified as Eff

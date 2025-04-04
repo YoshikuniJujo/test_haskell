@@ -25,12 +25,12 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Monad.Yafe.Except
-      Control.Monad.Yafe.Fail
-      Control.Monad.Yafe.Reader
-      Control.Monad.Yafe.State
-      Control.Monad.Yafe.Trace
-      Control.Monad.Yafe.Writer
+      Control.Monad.Yafee.Except
+      Control.Monad.Yafee.Fail
+      Control.Monad.Yafee.Reader
+      Control.Monad.Yafee.State
+      Control.Monad.Yafee.Trace
+      Control.Monad.Yafee.Writer
   other-modules:
       Paths_try_yafe_rwset
   autogen-modules:
