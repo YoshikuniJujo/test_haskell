@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gzip where
@@ -16,13 +17,23 @@ ids0 :: BS.ByteString
 ids0 = "\x1f\x8b"
 
 data GzipHeader = GzipHeader {
-	gzipHeaderCompressionMethod :: Word8,
+	gzipHeaderCompressionMethod :: CompressionMethod,
 	gzipHeaderFlags :: Flags,
 	gzipHeaderModificationTime :: Word32,
 	gzipExtraFlags :: Word8,
 	gzipOperatingSystem :: Word8,
 	gzipFileName :: BS.ByteString }
 	deriving Show
+
+newtype CompressionMethod = CompressionMethod {
+	unCompressionMethod :: Word8 }
+
+pattern CompressionMethodDeflate :: CompressionMethod
+pattern CompressionMethodDeflate = CompressionMethod 8
+
+instance Show CompressionMethod where
+	show (CompressionMethod 8) = "CompressionMethodDeflate"
+	show cm = "(CompressionMethod " ++ show cm ++ ")"
 
 readFlags :: Word8 -> Maybe Flags
 readFlags w = if or $ (w `testBit`) <$> [5 .. 7]
@@ -50,7 +61,7 @@ data Flags = Flags {
 
 encodeGzipHeader :: GzipHeader -> BS.ByteString
 encodeGzipHeader hdr = ids0 `BS.append`
-	(gzipHeaderCompressionMethod hdr `BS.cons`
+	(unCompressionMethod (gzipHeaderCompressionMethod hdr) `BS.cons`
 		encodeFlags (gzipHeaderFlags hdr) `BS.cons`
 		numToBs (gzipHeaderModificationTime hdr)) `BS.append`
 	(gzipExtraFlags hdr `BS.cons`
@@ -60,7 +71,7 @@ encodeGzipHeader hdr = ids0 `BS.append`
 
 sampleGzipHeader :: GzipHeader
 sampleGzipHeader = GzipHeader {
-	gzipHeaderCompressionMethod = 8,
+	gzipHeaderCompressionMethod = CompressionMethodDeflate,
 	gzipHeaderFlags = Flags {
 		flagsText = False,
 		flagsHcrc = False,

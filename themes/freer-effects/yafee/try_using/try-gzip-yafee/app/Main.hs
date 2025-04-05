@@ -145,7 +145,7 @@ readHeader = do
 	Just os <- popByte @()
 	Just fn <- takeString
 	pure GzipHeader {
-		gzipHeaderCompressionMethod = cm,
+		gzipHeaderCompressionMethod = CompressionMethod cm,
 		gzipHeaderFlags = fs,
 		gzipHeaderModificationTime = mt,
 		gzipExtraFlags = efs,
