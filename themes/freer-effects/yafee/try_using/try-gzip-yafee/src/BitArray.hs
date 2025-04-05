@@ -136,3 +136,17 @@ bits = do
 	case mb of
 		Nothing -> pure ()
 		Just b -> Pipe.yield @BS.ByteString b >> bits
+
+splitAtByteBoundary :: BitArray -> Maybe (BitArray, BitArray)
+splitAtByteBoundary bs@BitArray { bitInfo = BitInfo { bit0 = i } } =
+	splitAt (8 - ((i - 1) `mod` 8 + 1)) bs
+
+takeByteBoundary :: forall o effs . (
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (Pipe.P BS.ByteString o) effs
+	) =>
+	Eff.E effs (Maybe BitArray)
+takeByteBoundary = do
+	BitInfo { bit0 = i } <- State.get
+	takeBitArray @o (8 - ((i - 1) `mod` 8 + 1))

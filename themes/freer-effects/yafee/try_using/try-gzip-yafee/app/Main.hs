@@ -74,7 +74,8 @@ main = do
 									Fail.F,
 									IO]
 									-}
-			else do	Pipe.print' @_ @(Maybe Int) =<< ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
+			else if bt == 2 then do
+				Pipe.print' @_ @(Maybe Int) =<< ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
 				Pipe.print' @_ @(Maybe Int) =<< ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
 				Pipe.print' @_ @(Maybe Int) =<< ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
 				bits @'[Pipe.P BS.ByteString Bit,
@@ -121,6 +122,11 @@ main = do
 
 								State.put (lct, lct :: BinTree Int)
 								printWhileLiteral
+			else do
+				Pipe.print' =<< takeByteBoundary @()
+				Pipe.print' =<< takeBytes @() 2
+				Pipe.print' =<< takeBytes @() 2
+				putStrLn' "foobar"
 
 putStrLn' :: Union.Member IO effs => String -> Eff.E effs ()
 putStrLn' = Eff.eff . putStrLn
@@ -147,9 +153,9 @@ readHeader = do
 	pure GzipHeader {
 		gzipHeaderCompressionMethod = CompressionMethod cm,
 		gzipHeaderFlags = fs,
-		gzipHeaderModificationTime = mt,
+		gzipHeaderModificationTime = word32ToCTime mt,
 		gzipExtraFlags = efs,
-		gzipOperatingSystem = os,
+		gzipOperatingSystem = OS os,
 		gzipFileName = fn }
 
 takeWord32 :: forall o effs . (
