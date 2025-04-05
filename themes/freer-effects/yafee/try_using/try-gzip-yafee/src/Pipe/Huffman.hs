@@ -8,7 +8,7 @@ module Pipe.Huffman where
 
 import Control.Monad
 import Control.Monad.Yafee.Eff qualified as Eff
-import Control.Monad.Yafee.State
+import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
@@ -18,25 +18,25 @@ import Data.Word
 import HuffmanTree
 import BitArray
 
-huffStep :: (Union.Member (State (BinTree a, BinTree a)) effs) =>
+huffStep :: (Union.Member (State.S (BinTree a, BinTree a)) effs) =>
 	Bit -> Eff.E effs (Maybe a)
 huffStep b = do
-	(t0, t) <- get
+	(t0, t) <- State.get
 	let	(mr, nt) = decode1 t0 t b
-	put (t0, nt)
+	State.put (t0, nt)
 	pure mr
 
 newtype ExtraBits = ExtraBits Int deriving Show
 
 huffmanPipe :: (
-	Union.Member (State ExtraBits) effs,
-	Union.Member (State (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (Pipe.P Bit (Either Int Word16)) effs,
 	Union.Member Fail.F effs
 	) =>
 	Eff.E effs ()
 huffmanPipe = do
-	eb <- get
+	eb <- State.get
 	case eb of
 		ExtraBits 0 ->
 			maybe (pure ())
@@ -44,7 +44,7 @@ huffmanPipe = do
 				=<< Pipe.await @Bit @(Either Int Word16)
 		ExtraBits n -> do
 			Pipe.yield @Bit @(Either Int Word16) . Right =<< takeBits16' @(Either Int Word16) n
-			put $ ExtraBits 0
+			State.put $ ExtraBits 0
 			huffmanPipe
 
 takeBits16, takeBits16' :: forall o effs . (

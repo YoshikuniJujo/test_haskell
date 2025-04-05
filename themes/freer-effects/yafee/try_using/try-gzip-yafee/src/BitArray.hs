@@ -11,7 +11,7 @@ module BitArray where
 import Prelude hiding (splitAt)
 
 import Control.Monad.Yafee.Eff qualified as Eff
-import Control.Monad.Yafee.State
+import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.OpenUnion qualified as Union
 import Data.Bits
@@ -22,9 +22,9 @@ import Data.ByteString qualified as BS
 data Bit = O | I deriving (Show, Eq, Ord)
 
 runBitArray :: BS.ByteString ->
-	Eff.E (State BS.ByteString ': State BitInfo ': effs) a ->
+	Eff.E (State.S BS.ByteString ': State.S BitInfo ': effs) a ->
 	Eff.E effs ((a, BS.ByteString), BitInfo)
-runBitArray bs = (`runState` BitInfo 0 (BS.length bs * 8)) . (`runState` bs)
+runBitArray bs = (`State.run` BitInfo 0 (BS.length bs * 8)) . (`State.run` bs)
 
 data BitInfo = BitInfo { bit0 :: Int, bitsLen :: Int } deriving Show
 
@@ -33,42 +33,42 @@ data BitArray = BitArray { bitInfo :: BitInfo, bitsBody :: BS.ByteString }
 
 pop :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs,
-	Union.Member (State BS.ByteString) effs,
-	Union.Member (State BitInfo) effs
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs
 	) =>
 	Eff.E effs (Maybe Bit)
 pop = do
-	BitInfo { bit0 = i, bitsLen = ln } <- get
+	BitInfo { bit0 = i, bitsLen = ln } <- State.get
 	case (i, ln) of
 		(_, 0) -> do
 			b <- readMore @o
 			if b then pop @o else pure Nothing
-		(7, _) -> gets BS.uncons >>= \case
+		(7, _) -> State.gets BS.uncons >>= \case
 			Just (b, bs) -> do
-				put bs
+				State.put bs
 				Just (bool O I (testBit b 7))
-					<$ put BitInfo { bit0 = 0, bitsLen = ln - 1 }
+					<$ State.put BitInfo { bit0 = 0, bitsLen = ln - 1 }
 			Nothing -> error "bad"
-		_ -> do	b <- (`testBit` i) . head' (show ln) <$> get
-			Just (bool O I b) <$ put BitInfo { bit0 = i + 1, bitsLen = ln - 1 }
+		_ -> do	b <- (`testBit` i) . head' (show ln) <$> State.get
+			Just (bool O I b) <$ State.put BitInfo { bit0 = i + 1, bitsLen = ln - 1 }
 
 head' :: String -> BS.ByteString -> Word8
 head' i bs = if BS.null bs then error ("head': bad " ++ i) else BS.head bs
 
 takeBitArray :: forall o effs . (
-	Union.Member (State BitInfo) effs,
-	Union.Member (State BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs
 	) =>
 	Int -> Eff.E effs (Maybe BitArray)
 takeBitArray n = do
-	info <- get
-	bs <- get
+	info <- State.get
+	bs <- State.get
 	case splitAt n $ BitArray info bs of
 		Nothing -> do
 			b <- readMore @o
 			if b then takeBitArray @o n else pure Nothing
-		Just (t, BitArray info' bs') -> Just t <$ (put info' >> put bs')
+		Just (t, BitArray info' bs') -> Just t <$ (State.put info' >> State.put bs')
 {-
 	BitInfo { bit0 = i, bitsLen = ln } <- get
 	if ln < n
@@ -77,7 +77,7 @@ takeBitArray n = do
 	else do	info <- get
 		bs <- get
 
-		put BitInfo { bit0 = (i + n) `mod` 8, bitsLen = ln - n }
+		State.put BitInfo { bit0 = (i + n) `mod` 8, bitsLen = ln - n }
 		BitArray (BitInfo i n) (BS.take 
 		-}
 
@@ -89,15 +89,15 @@ splitAt n (BitArray (BitInfo i ln) bs)
 		normalize $ BitArray (BitInfo (i + n) (ln - n)) bs )
 
 readMore :: forall o effs . (
-	Union.Member (State BS.ByteString) effs,
-	Union.Member (State BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Eff.E effs Bool
 readMore = Pipe.await @_ @o >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ do
-		modify (`BS.append` bs)
-		modify \(BitInfo i ln) -> BitInfo i (ln + BS.length bs * 8)
+		State.modify (`BS.append` bs)
+		State.modify \(BitInfo i ln) -> BitInfo i (ln + BS.length bs * 8)
 
 normalize :: BitArray -> BitArray
 normalize (BitArray (BitInfo i ln) bs)
@@ -118,16 +118,16 @@ bitArrayToWord8 (BitArray (BitInfo i ln) bs)
 	| otherwise = Nothing
 
 takeBit8 :: forall o effs . (
-	Union.Member (State BitInfo) effs,
-	Union.Member (State BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs
 	) =>
 	Int -> Eff.E effs (Maybe Word8)
 takeBit8 n = (bitArrayToWord8 =<<) <$> takeBitArray @o n
 
 bits :: (
-	Union.Member (State BitInfo) effs,
-	Union.Member (State BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (Pipe.P BS.ByteString Bit) effs
 	) =>
 	Eff.E effs ()

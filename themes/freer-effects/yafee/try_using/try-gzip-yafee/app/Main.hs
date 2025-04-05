@@ -12,7 +12,7 @@ module Main (main) where
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Yafee.Eff qualified as Eff
-import Control.Monad.Yafee.State
+import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.Fail qualified as Fail
@@ -41,8 +41,8 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	(putStrLn . take 100 . show =<<) . Eff.runM . Fail.run
-		. (`runState` (fixedTable, fixedTable))
-		. (`runState` ExtraBits 0)
+		. (`State.run` (fixedTable, fixedTable))
+		. (`State.run` ExtraBits 0)
 		. (runBitArray "") . Except.run @String . Pipe.run @() @() $
 		fromHandle (type ()) h Pipe.=$= do
 			Pipe.print' =<< readHeader
@@ -52,25 +52,25 @@ main = do
 			if bt == 1
 			then bits @'[Pipe.P BS.ByteString Bit,
 				Except.E String,
-				State BS.ByteString,
-				State BitInfo,
-				State ExtraBits,
-				State (BinTree Int, BinTree Int),
+				State.S BS.ByteString,
+				State.S BitInfo,
+				State.S ExtraBits,
+				State.S (BinTree Int, BinTree Int),
 				Fail.F,
 				IO] Pipe.=$= huffmanPipe
 					@'[Pipe.P Bit (Either Int Word16),
 						Except.E String,
-						State BS.ByteString, State BitInfo,
-						State ExtraBits,
-						State (BinTree Int, BinTree Int),
+						State.S BS.ByteString, State.S BitInfo,
+						State.S ExtraBits,
+						State.S (BinTree Int, BinTree Int),
 						Fail.F,
 						IO] Pipe.=$= putDecoded {- do
 							printAll @(Either Int Word16)
 								@'[Pipe.P (Either Int Word16) (),
 									Except.E String,
-									State BS.ByteString, State BitInfo,
-									State ExtraBits,
-									State (BinTree Int, BinTree Int),
+									State.S BS.ByteString, State.S BitInfo,
+									State.S ExtraBits,
+									State.S (BinTree Int, BinTree Int),
 									Fail.F,
 									IO]
 									-}
@@ -79,23 +79,23 @@ main = do
 				Pipe.print' @_ @(Maybe Int) =<< ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
 				bits @'[Pipe.P BS.ByteString Bit,
 					Except.E String,
-					State BS.ByteString,
-					State BitInfo,
-					State ExtraBits,
-					State (BinTree Int, BinTree Int),
+					State.S BS.ByteString,
+					State.S BitInfo,
+					State.S ExtraBits,
+					State.S (BinTree Int, BinTree Int),
 					Fail.F,
 					IO] Pipe.=$= do
 					clcls <- fromList . pairToCodes @Word8 . L.sort . filter ((/= 0) . fst)
 						. (`zip` [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15])
 						<$> replicateM 14 (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await @_ @()))
 					Pipe.print' (clcls :: BinTree Int)
-					put (clcls, clcls)
+					State.put (clcls, clcls)
 					huffmanPipe
 						@'[Pipe.P Bit (Either Int Word16),
 							Except.E String,
-							State BS.ByteString, State BitInfo,
-							State ExtraBits,
-							State (BinTree Int, BinTree Int),
+							State.S BS.ByteString, State.S BitInfo,
+							State.S ExtraBits,
+							State.S (BinTree Int, BinTree Int),
 							Fail.F,
 							IO] Pipe.=$= do
 								lct <- fromList . pairToCodes
@@ -108,26 +108,26 @@ main = do
 									. (`zip` [0 ..]) <$> getCodeTable 23
 								Pipe.print' dct
 
-								put (lct, lct :: BinTree Int)
+								State.put (lct, lct :: BinTree Int)
 								-- Pipe.print' =<< Pipe.await @(Either Int Word16) @()
 								printWhileLiteral
-								put $ ExtraBits 1
+								State.put $ ExtraBits 1
 								Pipe.print' =<< Pipe.await @(Either Int Word16) @()
 								
-								put (dct, dct :: BinTree Int)
+								State.put (dct, dct :: BinTree Int)
 								Pipe.print' =<< Pipe.await @(Either Int Word16) @()
-								put $ ExtraBits 4
+								State.put $ ExtraBits 4
 								Pipe.print' =<< Pipe.await @(Either Int Word16) @()
 
-								put (lct, lct :: BinTree Int)
+								State.put (lct, lct :: BinTree Int)
 								printWhileLiteral
 
 putStrLn' :: Union.Member IO effs => String -> Eff.E effs ()
 putStrLn' = Eff.eff . putStrLn
 
 readHeader :: (
-	Union.Member (State BS.ByteString) effs,
-	Union.Member (State BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString ()) effs,
 	Union.Member (Except.E String) effs,
 	Union.Member Fail.F effs,
@@ -153,8 +153,8 @@ readHeader = do
 		gzipFileName = fn }
 
 takeWord32 :: forall o effs . (
-	Union.Member (State BS.ByteString) effs,
-	Union.Member (State BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word32)
 takeWord32 = (bsToNum <$>) <$> takeBytes @o 4
 
@@ -166,22 +166,22 @@ spanUntil b0 bs = case BS.uncons bs of
 		| otherwise -> ((b `BS.cons`) `first`) <$> spanUntil b0 bs'
 
 takeString :: (
-	Union.Member (State BS.ByteString) effs,
-	Union.Member (State BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString ()) effs
 	) =>
 	Eff.E effs (Maybe BS.ByteString)
-takeString = gets (spanUntil 0) >>= \case
+takeString = State.gets (spanUntil 0) >>= \case
 	Nothing -> do
 		b <- readMore @()
 		if b then takeString else pure Nothing
-	Just (t, d) -> Just t <$ (put d >> put (BitInfo 0 (BS.length d * 8)))
+	Just (t, d) -> Just t <$ (State.put d >> State.put (BitInfo 0 (BS.length d * 8)))
 
 putDecoded :: (
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,
 	Union.Member IO effs,
-	Union.Member (State (BinTree Int, BinTree Int)) effs,
-	Union.Member (State ExtraBits) effs
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs
 	) =>
 	Eff.E effs ()
 putDecoded = do
@@ -191,21 +191,21 @@ putDecoded = do
 		Just (Left 256) -> pure ()
 		Just (Left i)
 			| 0 <= i && i <= 255 -> putDecoded
-			| 257 <= i && i <= 264 -> put (fixedDstTable, fixedDstTable) >> putDist
+			| 257 <= i && i <= 264 -> State.put (fixedDstTable, fixedDstTable) >> putDist
 			| 265 <= i && i <= 268 -> do
-				put $ ExtraBits 1
+				State.put $ ExtraBits 1
 				putDecoded
 			| otherwise -> error "putDecoded: yet"
 		Just (Right _) -> do
-			put (fixedDstTable, fixedDstTable)
+			State.put (fixedDstTable, fixedDstTable)
 			putDist
 		Nothing -> pure ()
 
 putDist :: (
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,
 	Union.Member IO effs,
-	Union.Member (State (BinTree Int, BinTree Int)) effs,
-	Union.Member (State ExtraBits) effs
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs
 	) =>
 	Eff.E effs ()
 putDist = do
@@ -213,13 +213,13 @@ putDist = do
 	Pipe.print' mi
 	case mi of
 		Just (Left i)
-			| 0 <= i && i <= 3 -> put (fixedTable, fixedTable) >> putDecoded
+			| 0 <= i && i <= 3 -> State.put (fixedTable, fixedTable) >> putDecoded
 			| 4 <= i && i <= 5 -> do
-				put $ ExtraBits 1
+				State.put $ ExtraBits 1
 				putDist
 			| otherwise -> error "putDist: yet"
 		Just (Right _) -> do
-			put (fixedTable, fixedTable)
+			State.put (fixedTable, fixedTable)
 			putDecoded
 		_ -> error "putDist: yet"
 
@@ -228,7 +228,7 @@ bitListToNumLE :: (Num n, Bits n) => [Bit] -> n
 bitListToNumLE = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
 
 getCodeTable :: (
-	Union.Member (State ExtraBits) effs,
+	Union.Member (State.S ExtraBits) effs,
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,
 	Union.Member Fail.F effs
 	) =>
@@ -240,11 +240,11 @@ getCodeTable n = Pipe.await @(Either Int Word16) @() >>= \case
 		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable (n - 1)
 		| ln == 16 -> error "yet"
 		| ln == 17 -> do
-			put $ ExtraBits 3
+			State.put $ ExtraBits 3
 			Just (Right eb) <- Pipe.await @(Either Int Word16) @()
 			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable (n - fromIntegral eb - 3)
 		| ln == 18 -> do
-			put $ ExtraBits 7
+			State.put $ ExtraBits 7
 			Just (Right eb) <- Pipe.await @(Either Int Word16) @()
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable (n - fromIntegral eb - 11)
 		| otherwise -> error "yet"
