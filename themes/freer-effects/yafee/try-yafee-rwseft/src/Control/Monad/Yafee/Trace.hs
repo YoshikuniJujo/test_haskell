@@ -5,19 +5,19 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yafee.Trace where
+module Control.Monad.Yafee.Trace (T(..), trace, run) where
 
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Freer qualified as Freer
 import Control.OpenUnion qualified as Union
 
-data Trace a where Trace :: String -> Trace ()
+data T a where T :: String -> T ()
 
-trace :: Union.Member Trace effs => String -> Eff.E effs ()
-trace = Eff.eff . Trace
+trace :: Union.Member T effs => String -> Eff.E effs ()
+trace = Eff.eff . T
 
-runTrace :: Eff.E '[Trace] a -> IO a
-runTrace = \case
+run :: Eff.E '[T] a -> IO a
+run = \case
 	Freer.Pure x -> pure x
 	u Freer.:>>= q -> case Union.extract u of
-		Trace s -> putStrLn s >> runTrace (q `Freer.app` ())
+		T s -> putStrLn s >> run (q `Freer.app` ())
