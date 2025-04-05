@@ -9,7 +9,7 @@ module Pipe.Huffman where
 import Control.Monad
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.State
-import Control.Monad.Yafe.Pipe
+import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
 import Data.Bits
@@ -31,7 +31,7 @@ newtype ExtraBits = ExtraBits Int deriving Show
 huffmanPipe :: (
 	Union.Member (State ExtraBits) effs,
 	Union.Member (State (BinTree Int, BinTree Int)) effs,
-	Union.Member (Pipe Bit (Either Int Word16)) effs,
+	Union.Member (Pipe.P Bit (Either Int Word16)) effs,
 	Union.Member Fail.F effs
 	) =>
 	Eff.E effs ()
@@ -40,20 +40,20 @@ huffmanPipe = do
 	case eb of
 		ExtraBits 0 ->
 			maybe (pure ())
-				(\b -> (maybe (pure ()) (yield @Bit @(Either Int Word16) . Left) =<< huffStep b) >> huffmanPipe)
-				=<< await @Bit @(Either Int Word16)
+				(\b -> (maybe (pure ()) (Pipe.yield @Bit @(Either Int Word16) . Left) =<< huffStep b) >> huffmanPipe)
+				=<< Pipe.await @Bit @(Either Int Word16)
 		ExtraBits n -> do
-			yield @Bit @(Either Int Word16) . Right =<< takeBits16' @(Either Int Word16) n
+			Pipe.yield @Bit @(Either Int Word16) . Right =<< takeBits16' @(Either Int Word16) n
 			put $ ExtraBits 0
 			huffmanPipe
 
 takeBits16, takeBits16' :: forall o effs . (
-	Union.Member (Pipe Bit o) effs,
+	Union.Member (Pipe.P Bit o) effs,
 	Union.Member Fail.F effs
 	) =>
 	Int -> Eff.E effs Word16
-takeBits16 n = bitsToWord16 <$> replicateM n (maybe (fail "bad") pure =<< await @_ @o)
-takeBits16' n = bitsToWord16' <$> replicateM n (maybe (fail "bad") pure =<< await @_ @o)
+takeBits16 n = bitsToWord16 <$> replicateM n (maybe (fail "bad") pure =<< Pipe.await @_ @o)
+takeBits16' n = bitsToWord16' <$> replicateM n (maybe (fail "bad") pure =<< Pipe.await @_ @o)
 
 bitsToWord16 :: [Bit] -> Word16
 bitsToWord16 = foldl (\w b -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0

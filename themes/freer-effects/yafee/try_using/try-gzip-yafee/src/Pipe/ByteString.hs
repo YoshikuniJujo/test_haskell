@@ -9,7 +9,7 @@ module Pipe.ByteString where
 
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.State
-import Control.Monad.Yafe.Pipe
+import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.OpenUnion qualified as Union
 import Data.Word
 import Data.ByteString qualified as BS
@@ -19,10 +19,10 @@ import BitArray
 popByte :: forall o effs . (
 	Union.Member (State BS.ByteString) effs,
 	Union.Member (State BitInfo) effs,
-	Union.Member (Pipe BS.ByteString o) effs ) =>
+	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Eff.E effs (Maybe Word8)
 popByte = gets BS.uncons >>= \case
-	Nothing -> await @_ @o >>= \case
+	Nothing -> Pipe.await @_ @o >>= \case
 		Nothing -> pure Nothing
 		Just bs -> case BS.uncons bs of
 			Nothing -> popByte @o
@@ -36,7 +36,7 @@ popByte = gets BS.uncons >>= \case
 takeBytes :: forall o effs . (
 	Union.Member (State BS.ByteString) effs,
 	Union.Member (State BitInfo) effs,
-	Union.Member (Pipe BS.ByteString o) effs ) =>
+	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Int -> Eff.E effs (Maybe BS.ByteString)
 takeBytes n = gets (splitAt' n) >>= \case
 	Nothing -> do

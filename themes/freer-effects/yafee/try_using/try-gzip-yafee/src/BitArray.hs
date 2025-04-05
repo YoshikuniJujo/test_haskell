@@ -12,7 +12,7 @@ import Prelude hiding (splitAt)
 
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.State
-import Control.Monad.Yafe.Pipe
+import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.OpenUnion qualified as Union
 import Data.Bits
 import Data.Bool
@@ -32,7 +32,7 @@ data BitArray = BitArray { bitInfo :: BitInfo, bitsBody :: BS.ByteString }
 	deriving Show
 
 pop :: forall o effs . (
-	Union.Member (Pipe BS.ByteString o) effs,
+	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member (State BS.ByteString) effs,
 	Union.Member (State BitInfo) effs
 	) =>
@@ -58,7 +58,7 @@ head' i bs = if BS.null bs then error ("head': bad " ++ i) else BS.head bs
 takeBitArray :: forall o effs . (
 	Union.Member (State BitInfo) effs,
 	Union.Member (State BS.ByteString) effs,
-	Union.Member (Pipe BS.ByteString o) effs
+	Union.Member (Pipe.P BS.ByteString o) effs
 	) =>
 	Int -> Eff.E effs (Maybe BitArray)
 takeBitArray n = do
@@ -91,9 +91,9 @@ splitAt n (BitArray (BitInfo i ln) bs)
 readMore :: forall o effs . (
 	Union.Member (State BS.ByteString) effs,
 	Union.Member (State BitInfo) effs,
-	Union.Member (Pipe BS.ByteString o) effs ) =>
+	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Eff.E effs Bool
-readMore = await @_ @o >>= \case
+readMore = Pipe.await @_ @o >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ do
 		modify (`BS.append` bs)
@@ -120,7 +120,7 @@ bitArrayToWord8 (BitArray (BitInfo i ln) bs)
 takeBit8 :: forall o effs . (
 	Union.Member (State BitInfo) effs,
 	Union.Member (State BS.ByteString) effs,
-	Union.Member (Pipe BS.ByteString o) effs
+	Union.Member (Pipe.P BS.ByteString o) effs
 	) =>
 	Int -> Eff.E effs (Maybe Word8)
 takeBit8 n = (bitArrayToWord8 =<<) <$> takeBitArray @o n
@@ -128,11 +128,11 @@ takeBit8 n = (bitArrayToWord8 =<<) <$> takeBitArray @o n
 bits :: (
 	Union.Member (State BitInfo) effs,
 	Union.Member (State BS.ByteString) effs,
-	Union.Member (Pipe BS.ByteString Bit) effs
+	Union.Member (Pipe.P BS.ByteString Bit) effs
 	) =>
 	Eff.E effs ()
 bits = do
 	mb <- pop @Bit
 	case mb of
 		Nothing -> pure ()
-		Just b -> yield @BS.ByteString b >> bits
+		Just b -> Pipe.yield @BS.ByteString b >> bits
