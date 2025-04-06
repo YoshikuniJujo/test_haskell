@@ -6,6 +6,7 @@
 module Gzip where
 
 import Foreign.C.Types
+import Control.Arrow
 import Data.Bits
 import Data.Maybe
 import Data.Word
@@ -25,7 +26,10 @@ data GzipHeaderRaw = GzipHeaderRaw {
 --	gzipHeaderRawModificationTime :: Word32,
 	gzipHeaderRawExtraFlags :: Word8,
 	gzipHeaderRawOperatingSystem :: OS,
-	gzipHeaderRawFileName :: Maybe BS.ByteString }
+	gzipHeaderRawExtraField :: [ExtraField],
+	gzipHeaderRawFileName :: Maybe BS.ByteString,
+	gzipHeaderRawComment :: Maybe BS.ByteString
+	}
 	deriving Show
 
 data GzipHeader = GzipHeader {
@@ -34,7 +38,9 @@ data GzipHeader = GzipHeader {
 	gzipHeaderModificationTime :: CTime, -- Word32,
 	gzipHeaderExtraFlags :: Word8,
 	gzipHeaderOperatingSystem :: OS,
-	gzipHeaderFileName :: Maybe BS.ByteString }
+	gzipHeaderExtraField :: [ExtraField],
+	gzipHeaderFileName :: Maybe BS.ByteString,
+	gzipHeaderComment :: Maybe BS.ByteString }
 	deriving Show
 
 gzipHeaderFromRaw :: GzipHeaderRaw -> GzipHeader
@@ -44,13 +50,17 @@ gzipHeaderFromRaw GzipHeaderRaw {
 	gzipHeaderRawModificationTime = ct,
 	gzipHeaderRawExtraFlags = efs,
 	gzipHeaderRawOperatingSystem = os,
-	gzipHeaderRawFileName = fn } = GzipHeader {
+	gzipHeaderRawExtraField = eflds,
+	gzipHeaderRawFileName = mfn,
+	gzipHeaderRawComment = mcmmt } = GzipHeader {
 	gzipHeaderCompressionMethod = cm,
 	gzipHeaderFlags = flagsFromRaw fs,
 	gzipHeaderModificationTime = ct,
 	gzipHeaderExtraFlags = efs,
 	gzipHeaderOperatingSystem = os,
-	gzipHeaderFileName = fn }
+	gzipHeaderExtraField = eflds,
+	gzipHeaderFileName = mfn,
+	gzipHeaderComment = mcmmt }
 
 gzipHeaderToRaw :: GzipHeader -> GzipHeaderRaw
 gzipHeaderToRaw GzipHeader {
@@ -59,14 +69,19 @@ gzipHeaderToRaw GzipHeader {
 	gzipHeaderModificationTime = ct,
 	gzipHeaderExtraFlags = efs,
 	gzipHeaderOperatingSystem = os,
-	gzipHeaderFileName = fn
+	gzipHeaderExtraField = eflds,
+	gzipHeaderFileName = mfn,
+	gzipHeaderComment = mcmmt
 	} = GzipHeaderRaw {
 	gzipHeaderRawCompressionMethod = cm,
-	gzipHeaderRawFlags = flagsToRaw (isJust fn) fs,
+	gzipHeaderRawFlags =
+		flagsToRaw (isJust mfn) (isJust mcmmt) (not $ null eflds) fs,
 	gzipHeaderRawModificationTime = ct,
 	gzipHeaderRawExtraFlags = efs,
 	gzipHeaderRawOperatingSystem = os,
-	gzipHeaderRawFileName = fn }
+	gzipHeaderRawExtraField = eflds,
+	gzipHeaderRawFileName = mfn,
+	gzipHeaderRawComment = mcmmt }
 
 
 word32ToCTime :: Word32 -> CTime
@@ -120,32 +135,25 @@ data FlagsRaw = FlagsRaw {
 
 data Flags = Flags {
 	flagsText :: Bool,
-	flagsHcrc :: Bool,
-	flagsExtra :: Bool,
-	flagsComment :: Bool }
+	flagsHcrc :: Bool }
 	deriving Show
 
+flagsFromRaw :: FlagsRaw -> Flags
 flagsFromRaw FlagsRaw {
 	flagsRawText = t,
-	flagsRawHcrc = h,
-	flagsRawExtra = e,
-	flagsRawComment = c } = Flags {
+	flagsRawHcrc = h } = Flags {
 	flagsText = t,
-	flagsHcrc = h,
-	flagsExtra = e,
-	flagsComment = c }
+	flagsHcrc = h }
 
-flagsToRaw fn Flags {
+flagsToRaw :: Bool -> Bool -> Bool -> Flags -> FlagsRaw
+flagsToRaw fn cmmt eflds Flags {
 	flagsText = t,
-	flagsHcrc = h,
-	flagsExtra = e,
-	flagsComment = c
-	} = FlagsRaw {
+	flagsHcrc = h } = FlagsRaw {
 	flagsRawText = t,
 	flagsRawHcrc = h,
-	flagsRawExtra = e,
+	flagsRawExtra = eflds,
 	flagsRawName = fn,
-	flagsRawComment = c }
+	flagsRawComment = cmmt }
 
 encodeGzipHeader :: GzipHeaderRaw -> BS.ByteString
 encodeGzipHeader hdr = ids0 `BS.append`
@@ -154,20 +162,67 @@ encodeGzipHeader hdr = ids0 `BS.append`
 		numToBs (cTimeToWord32 $ gzipHeaderRawModificationTime hdr)) `BS.append`
 	(gzipHeaderRawExtraFlags hdr `BS.cons`
 		unOS (gzipHeaderRawOperatingSystem hdr) `BS.cons` "") `BS.append`
-		maybe "" (`BS.snoc` 0) (gzipHeaderRawFileName hdr)
+		if (null efs) then "" else (word16ToBs lnefs `BS.append` efsbs) `BS.append`
+		maybe "" (`BS.snoc` 0) (gzipHeaderRawFileName hdr) `BS.append`
+		maybe "" (`BS.snoc` 0) (gzipHeaderRawComment hdr)
+	where
+	efs = gzipHeaderRawExtraField hdr
+	efsbs = encodeExtraFields efs
+	lnefs = fromIntegral $ BS.length efsbs
 
 sampleGzipHeader :: GzipHeader
 sampleGzipHeader = GzipHeader {
 	gzipHeaderCompressionMethod = CompressionMethodDeflate,
 	gzipHeaderFlags = Flags {
 		flagsText = False,
-		flagsHcrc = False,
-		flagsExtra = False,
-		flagsComment = False },
+		flagsHcrc = False },
 	gzipHeaderModificationTime = 1743055415,
 	gzipHeaderExtraFlags = 0,
 	gzipHeaderOperatingSystem = OSUnix,
-	gzipHeaderFileName = Just "abcd.txt" }
+	gzipHeaderExtraField = [],
+	gzipHeaderFileName = Just "abcd.txt",
+	gzipHeaderComment = Nothing }
 
 crc' :: BS.ByteString -> BS.ByteString
 crc' = numToBs . crc
+
+data ExtraField = ExtraField {
+	extraFieldSi1 :: Word8,
+	extraFieldSi2 :: Word8,
+	extraFieldData :: BS.ByteString }
+	deriving Show
+
+encodeExtraFields :: [ExtraField] -> BS.ByteString
+encodeExtraFields = BS.concat . (encodeExtraField <$>)
+
+encodeExtraField :: ExtraField -> BS.ByteString
+encodeExtraField ExtraField {
+	extraFieldSi1 = si1,
+	extraFieldSi2 = si2,
+	extraFieldData = dt } =
+		BS.pack [si1, si2] `BS.append`
+		word16ToBs (fromIntegral $ BS.length dt) `BS.append` dt
+
+decodeExtraFields :: BS.ByteString -> [ExtraField]
+decodeExtraFields "" = []
+decodeExtraFields bs = let
+	(ef, bs') = decodeExtraField bs in
+	ef : decodeExtraFields bs'
+
+decodeExtraField :: BS.ByteString -> (ExtraField, BS.ByteString)
+decodeExtraField bs = let
+	([si1, si2], bs') = BS.unpack `first` BS.splitAt 2 bs
+	(ln, bs'') = (fromIntegral . bsToWord16) `first` BS.splitAt 2 bs'
+	(dt, bs''') = BS.splitAt ln bs'' in (
+		ExtraField {
+			extraFieldSi1 = si1,
+			extraFieldSi2 = si2,
+			extraFieldData = dt },
+		bs''' )
+
+word16ToBs :: Word16 -> BS.ByteString
+word16ToBs w = BS.pack $ fromIntegral <$> [w .&. 0xff, w `shiftR` 8]
+
+bsToWord16 :: BS.ByteString -> Word16
+bsToWord16 bs = w0 .|. w1 `shiftL` 8
+	where [w0, w1] = fromIntegral <$> BS.unpack bs

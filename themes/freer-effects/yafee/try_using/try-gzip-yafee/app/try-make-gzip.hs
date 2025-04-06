@@ -6,7 +6,9 @@
 module Main where
 
 import Data.Bits
+import Data.Maybe
 import Data.Word
+import Data.Char
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Gzip
@@ -22,15 +24,24 @@ main = run_ realMain
 
 realMain ::
 	Flag "n" '["file-name"] "STRING" "source file name" (Maybe String) ->
-	Arg "Output file" String -> Arg "Contents" String ->
+	Flag "c" '["comment"] "STRING" "comment" (Maybe String) ->
+	Flag "e" '["extra-field"] "STRING" "extra field" (Maybe String) ->
+	Arg "Output-File" String -> Arg "Contents" String ->
 	Cmd "Make gzip file" ()
-realMain mfn fp cont = liftIO do
-	BS.writeFile (get fp) . mkNonCompressed (get mfn) $ BSC.pack (get cont ++ "\n")
+realMain mfn mcmmt mefld fp cont = liftIO $
+	BS.writeFile (get fp)
+		. mkNonCompressed (get mfn) (get mcmmt) (get mefld)
+		$ BSC.pack (get cont ++ "\n")
 
-mkNonCompressed :: Maybe String -> BS.ByteString -> BS.ByteString
-mkNonCompressed mfn cont =
+mkNonCompressed ::
+	Maybe String -> Maybe String -> Maybe String -> BS.ByteString -> BS.ByteString
+mkNonCompressed mfn mcmmt mfld cont =
 	(encodeGzipHeader
-		(gzipHeaderToRaw sampleGzipHeader { gzipHeaderFileName = BSC.pack <$> mfn }) `BS.snoc` 0x01) `BS.append`
+		(gzipHeaderToRaw sampleGzipHeader {
+			gzipHeaderExtraField = catMaybes [readExtraField =<< mfld],
+			gzipHeaderFileName = BSC.pack <$> mfn,
+			gzipHeaderComment = BSC.pack <$> mcmmt
+			}) `BS.snoc` 0x01) `BS.append`
 	word16ToByteStringPair (fromIntegral $ BS.length cont) `BS.append`
 	cont `BS.append`
 	crc' cont `BS.append`
@@ -51,3 +62,10 @@ word16ToByteStringPair w = BS.pack $ fromIntegral <$> [b0, b1, b2, b3]
 	b1 = w `shiftR` 8
 	b2 = complement b0
 	b3 = complement b1
+
+readExtraField :: String -> Maybe ExtraField
+readExtraField (si1 : si2 : dt) = Just ExtraField {
+	extraFieldSi1 = fromIntegral $ ord si1,
+	extraFieldSi2 = fromIntegral $ ord si2,
+	extraFieldData = BSC.pack dt }
+readExtraField _ = Nothing

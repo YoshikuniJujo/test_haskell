@@ -149,20 +149,34 @@ readHeader = do
 	Just mt <- takeWord32 @()
 	Just efs <- popByte @()
 	Just os <- popByte @()
+	bs' <- if (flagsRawExtra fs)
+	then do	Just xln <- (fromIntegral <$>) <$> takeWord16 @()
+		Just bs <- takeBytes @() xln
+		pure bs
+	else pure ""
 	fn <- if (flagsRawName fs) then takeString else pure Nothing
+	mcmmt <- if (flagsRawComment fs) then takeString else pure Nothing
 	pure GzipHeaderRaw {
 		gzipHeaderRawCompressionMethod = CompressionMethod cm,
 		gzipHeaderRawFlags = fs,
 		gzipHeaderRawModificationTime = word32ToCTime mt,
 		gzipHeaderRawExtraFlags = efs,
 		gzipHeaderRawOperatingSystem = OS os,
-		gzipHeaderRawFileName = fn }
+		gzipHeaderRawExtraField = decodeExtraFields bs',
+		gzipHeaderRawFileName = fn,
+		gzipHeaderRawComment = mcmmt }
 
 takeWord32 :: forall o effs . (
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word32)
 takeWord32 = (bsToNum <$>) <$> takeBytes @o 4
+
+takeWord16 :: forall o effs . (
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word16)
+takeWord16 = (bsToNum <$>) <$> takeBytes @o 2
 
 spanUntil :: Word8 -> BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
 spanUntil b0 bs = case BS.uncons bs of
