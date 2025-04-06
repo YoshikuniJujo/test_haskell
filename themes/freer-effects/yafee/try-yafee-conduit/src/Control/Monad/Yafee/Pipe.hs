@@ -59,6 +59,33 @@ p@(Freer.Pure _) =$= (v Freer.:>>= l) = case Union.decomp v of
 	Right (Yield o) -> Union.inj (Yield @i o) Freer.:>>=
 		FTCQueue.singleton ((p =$=) . (l `Freer.app`))
 
+(=@=) :: forall i a o effs r r' .
+	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
+	Eff.E (P i o ': effs) r
+Freer.Pure r =@= _ = Freer.Pure r
+p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
+	case (Union.decomp u, Union.decomp v) of
+		(Left u', _) ->
+			Union.weaken u' Freer.:>>=
+			FTCQueue.singleton ((=@= p') . (k `Freer.app`))
+		(_, Right (Yield o)) ->
+			Union.inj (Yield @i o) Freer.:>>=
+			FTCQueue.singleton ((p =@=) . (l `Freer.app`))
+		(Right Await, _) ->
+			Union.inj (Await @_ @o) Freer.:>>=
+			FTCQueue.singleton ((=@= p') . (k `Freer.app`))
+		(Right (Yield o), Right Await) ->
+			(k `Freer.app` ()) =@= (l `Freer.app` Just o)
+		(Right (Yield _o), Left v') ->
+			Union.weaken v' Freer.:>>=
+			FTCQueue.singleton ((p =@=) . (l `Freer.app`))
+(u Freer.:>>= k) =@= p'@(Freer.Pure _) = case Union.decomp u of
+	Left u' -> Union.weaken u' Freer.:>>=
+		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
+	Right Await -> Union.inj (Await @i @o) Freer.:>>=
+		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
+	Right (Yield _o) -> (k `Freer.app` ()) =@= p'
+
 convert :: forall a b effs . (a -> b) -> Eff.E (P a b ': effs) ()
 convert f = await @a @b >>= maybe (pure ()) ((>> convert f) . yield @a @b . f)
 
