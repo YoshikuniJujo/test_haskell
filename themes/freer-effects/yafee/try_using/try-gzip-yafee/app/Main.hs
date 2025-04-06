@@ -149,14 +149,14 @@ readHeader = do
 	Just mt <- takeWord32 @()
 	Just efs <- popByte @()
 	Just os <- popByte @()
-	Just fn <- takeString
+	fn <- if (flagsRawName fs) then takeString else pure Nothing
 	pure GzipHeaderRaw {
 		gzipHeaderRawCompressionMethod = CompressionMethod cm,
 		gzipHeaderRawFlags = fs,
 		gzipHeaderRawModificationTime = word32ToCTime mt,
 		gzipHeaderRawExtraFlags = efs,
 		gzipHeaderRawOperatingSystem = OS os,
-		gzipHeaderRawFileName = Just fn }
+		gzipHeaderRawFileName = fn }
 
 takeWord32 :: forall o effs . (
 	Union.Member (State.S BS.ByteString) effs,

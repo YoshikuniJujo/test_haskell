@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -20,18 +20,21 @@ sample0 = "samples/abcd.txt.gz"
 main :: IO ()
 main = run_ realMain
 
-realMain :: Arg "Output file" String -> Arg "Contents" String ->
+realMain ::
+	Flag "n" '["file-name"] "STRING" "source file name" (Maybe String) ->
+	Arg "Output file" String -> Arg "Contents" String ->
 	Cmd "Make gzip file" ()
-realMain fp cont = liftIO
-	$ BS.writeFile (get fp) . mkNonCompressed $ BSC.pack (get cont ++ "\n")
+realMain mfn fp cont = liftIO do
+	BS.writeFile (get fp) . mkNonCompressed (get mfn) $ BSC.pack (get cont ++ "\n")
 
-mkNonCompressed :: BS.ByteString -> BS.ByteString
-mkNonCompressed cont = do
-	(encodeGzipHeader (gzipHeaderToRaw sampleGzipHeader) `BS.snoc` 0x01) `BS.append`
-		word16ToByteStringPair (fromIntegral $ BS.length cont) `BS.append`
-		cont `BS.append`
-		crc' cont `BS.append`
-		word32ToByteString (fromIntegral $ BS.length cont)
+mkNonCompressed :: Maybe String -> BS.ByteString -> BS.ByteString
+mkNonCompressed mfn cont =
+	(encodeGzipHeader
+		(gzipHeaderToRaw sampleGzipHeader { gzipHeaderFileName = BSC.pack <$> mfn }) `BS.snoc` 0x01) `BS.append`
+	word16ToByteStringPair (fromIntegral $ BS.length cont) `BS.append`
+	cont `BS.append`
+	crc' cont `BS.append`
+	word32ToByteString (fromIntegral $ BS.length cont)
 
 word32ToByteString :: Word32 -> BS.ByteString
 word32ToByteString w = BS.pack $ fromIntegral <$> [b0, b1, b2, b3]
