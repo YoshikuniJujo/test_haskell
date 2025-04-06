@@ -45,7 +45,7 @@ main = do
 		. (`State.run` ExtraBits 0)
 		. (runBitArray "") . Except.run @String . Pipe.run @() @() $
 		fromHandle (type ()) h Pipe.=$= do
-			Pipe.print' =<< readHeader
+			Pipe.print' . gzipHeaderFromRaw =<< readHeader
 			Pipe.print' =<< takeBit8 @() 1
 			mbt <- takeBit8 @() 2
 			let	bt = maybe 3 id mbt
@@ -138,7 +138,7 @@ readHeader :: (
 	Union.Member (Except.E String) effs,
 	Union.Member Fail.F effs,
 	Union.Member IO effs ) =>
-	Eff.E effs GzipHeader
+	Eff.E effs GzipHeaderRaw
 readHeader = do
 	mids <- takeBytes @() 2
 	case mids of
@@ -150,13 +150,13 @@ readHeader = do
 	Just efs <- popByte @()
 	Just os <- popByte @()
 	Just fn <- takeString
-	pure GzipHeader {
-		gzipHeaderCompressionMethod = CompressionMethod cm,
-		gzipHeaderFlags = fs,
-		gzipHeaderModificationTime = word32ToCTime mt,
-		gzipExtraFlags = efs,
-		gzipOperatingSystem = OS os,
-		gzipFileName = fn }
+	pure GzipHeaderRaw {
+		gzipHeaderRawCompressionMethod = CompressionMethod cm,
+		gzipHeaderRawFlags = fs,
+		gzipHeaderRawModificationTime = word32ToCTime mt,
+		gzipHeaderRawExtraFlags = efs,
+		gzipHeaderRawOperatingSystem = OS os,
+		gzipHeaderRawFileName = Just fn }
 
 takeWord32 :: forall o effs . (
 	Union.Member (State.S BS.ByteString) effs,

@@ -23,10 +23,12 @@ dependencies:
 - base >= 4.7 && < 5
 - array
 - bytestring
+- optparse-declarative
 - try-yafee
 - try-yafee-rwseft
 - try-yafee-conduit
 - try-control-open-union
+- transformers
 
 ghc-options:
 - -Wall
@@ -54,6 +56,16 @@ executables:
     - try-gzip-yafee
   try-make-gzip:
     main:                try-make-gzip.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yafee
+  try-optparse:
+    main:                try-optparse.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:

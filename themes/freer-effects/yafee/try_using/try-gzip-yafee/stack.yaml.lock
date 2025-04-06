@@ -82,6 +82,17 @@ packages:
     commit: 44e49fe4e4e5865c6708c4f3a8fc6221c93cc953
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-freer-base-classes
+- completed:
+    commit: d3193db7979f391f1a307849236b870fd8933709
+    git: https://github.com/tanakh/optparse-declarative
+    name: optparse-declarative
+    pantry-tree:
+      sha256: fb9e8378d1025a1615f77e3411c098253031b0381cc8ff04c71eb595bcb79ec0
+      size: 1291
+    version: 0.4.2
+  original:
+    commit: d3193db7979f391f1a307849236b870fd8933709
+    git: https://github.com/tanakh/optparse-declarative
 snapshots:
 - completed:
     sha256: 47a4c110af9a5c55e3135bbf7cec3a6e5451ba3bfa50a06f0443012a2642fbc0

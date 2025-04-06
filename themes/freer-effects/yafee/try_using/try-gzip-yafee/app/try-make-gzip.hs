@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -9,19 +10,24 @@ import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Gzip
-import System.Environment
+
+import Control.Monad.IO.Class
+import Options.Declarative
 
 sample0 :: FilePath
 sample0 = "samples/abcd.txt.gz"
 
 main :: IO ()
-main = do
-	fp : cont : _ <- getArgs
-	BS.writeFile fp . mkNonCompressed $ BSC.pack (cont ++ "\n")
+main = run_ realMain
+
+realMain :: Arg "Output file" String -> Arg "Contents" String ->
+	Cmd "Make gzip file" ()
+realMain fp cont = liftIO
+	$ BS.writeFile (get fp) . mkNonCompressed $ BSC.pack (get cont ++ "\n")
 
 mkNonCompressed :: BS.ByteString -> BS.ByteString
 mkNonCompressed cont = do
-	(encodeGzipHeader sampleGzipHeader `BS.snoc` 0x01) `BS.append`
+	(encodeGzipHeader (gzipHeaderToRaw sampleGzipHeader) `BS.snoc` 0x01) `BS.append`
 		word16ToByteStringPair (fromIntegral $ BS.length cont) `BS.append`
 		cont `BS.append`
 		crc' cont `BS.append`
