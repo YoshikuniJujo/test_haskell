@@ -43,7 +43,7 @@ main = do
 	(putStrLn . take 100 . show =<<) . Eff.runM . Fail.run
 		. (`State.run` (fixedTable, fixedTable))
 		. (`State.run` ExtraBits 0)
-		. (runBitArray "") . Except.run @String . Pipe.run @() @() $
+		. (runBitArray "") . (`State.run` Crc 0xffffffff) . Except.run @String . Pipe.run @() @() $
 		fromHandle (type ()) h Pipe.=$= do
 			Pipe.print' . gzipHeaderFromRaw =<< readHeader
 			Pipe.print' =<< takeBit8 @() 1
@@ -52,6 +52,7 @@ main = do
 			if bt == 1
 			then bits @'[Pipe.P BS.ByteString Bit,
 				Except.E String,
+				State.S Crc,
 				State.S BS.ByteString,
 				State.S BitInfo,
 				State.S ExtraBits,
@@ -60,6 +61,7 @@ main = do
 				IO] Pipe.=$= huffmanPipe
 					@'[Pipe.P Bit (Either Int Word16),
 						Except.E String,
+						State.S Crc,
 						State.S BS.ByteString, State.S BitInfo,
 						State.S ExtraBits,
 						State.S (BinTree Int, BinTree Int),
@@ -68,6 +70,7 @@ main = do
 							printAll @(Either Int Word16)
 								@'[Pipe.P (Either Int Word16) (),
 									Except.E String,
+									State.S Crc,
 									State.S BS.ByteString, State.S BitInfo,
 									State.S ExtraBits,
 									State.S (BinTree Int, BinTree Int),
@@ -80,6 +83,7 @@ main = do
 				Pipe.print' @_ @(Maybe Int) =<< ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
 				bits @'[Pipe.P BS.ByteString Bit,
 					Except.E String,
+					State.S Crc,
 					State.S BS.ByteString,
 					State.S BitInfo,
 					State.S ExtraBits,
@@ -94,6 +98,7 @@ main = do
 					huffmanPipe
 						@'[Pipe.P Bit (Either Int Word16),
 							Except.E String,
+							State.S Crc,
 							State.S BS.ByteString, State.S BitInfo,
 							State.S ExtraBits,
 							State.S (BinTree Int, BinTree Int),
@@ -134,6 +139,7 @@ putStrLn' = Eff.eff . putStrLn
 readHeader :: (
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S Crc) effs,
 	Union.Member (Pipe.P BS.ByteString ()) effs,
 	Union.Member (Except.E String) effs,
 	Union.Member Fail.F effs,
@@ -144,18 +150,18 @@ readHeader = do
 	case mids of
 		Just ids | ids == "\US\139" -> putStrLn' "good magic"
 		_ -> Except.throw ("bad magic" :: String)
-	Just cm <- popByte @()
-	fs <- maybe (Except.throw @String "bad flags") pure . (readFlags =<<) =<< popByte @()
-	Just mt <- takeWord32 @()
-	Just efs <- popByte @()
-	Just os <- popByte @()
+	Just cm <- popByte' @()
+	fs <- maybe (Except.throw @String "bad flags") pure . (readFlags =<<) =<< popByte' @()
+	Just mt <- takeWord32' @()
+	Just efs <- popByte' @()
+	Just os <- popByte' @()
 	bs' <- if (flagsRawExtra fs)
-	then do	Just xln <- (fromIntegral <$>) <$> takeWord16 @()
-		Just bs <- takeBytes @() xln
+	then do	Just xln <- (fromIntegral <$>) <$> takeWord16' @()
+		Just bs <- takeBytes' @() xln
 		pure bs
 	else pure ""
-	fn <- if (flagsRawName fs) then takeString else pure Nothing
-	mcmmt <- if (flagsRawComment fs) then takeString else pure Nothing
+	fn <- if (flagsRawName fs) then takeString' else pure Nothing
+	mcmmt <- if (flagsRawComment fs) then takeString' else pure Nothing
 	pure GzipHeaderRaw {
 		gzipHeaderRawCompressionMethod = CompressionMethod cm,
 		gzipHeaderRawFlags = fs,
@@ -166,17 +172,19 @@ readHeader = do
 		gzipHeaderRawFileName = fn,
 		gzipHeaderRawComment = mcmmt }
 
-takeWord32 :: forall o effs . (
+takeWord32' :: forall o effs . (
+	Union.Member (State.S Crc) effs,
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word32)
-takeWord32 = (bsToNum <$>) <$> takeBytes @o 4
+takeWord32' = (bsToNum <$>) <$> takeBytes' @o 4
 
-takeWord16 :: forall o effs . (
+takeWord16' :: forall o effs . (
+	Union.Member (State.S Crc) effs,
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word16)
-takeWord16 = (bsToNum <$>) <$> takeBytes @o 2
+takeWord16' = (bsToNum <$>) <$> takeBytes' @o 2
 
 spanUntil :: Word8 -> BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
 spanUntil b0 bs = case BS.uncons bs of
@@ -185,17 +193,20 @@ spanUntil b0 bs = case BS.uncons bs of
 		| b == b0 -> Just ("", bs')
 		| otherwise -> ((b `BS.cons`) `first`) <$> spanUntil b0 bs'
 
-takeString :: (
+takeString' :: (
+	Union.Member (State.S Crc) effs,
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString ()) effs
 	) =>
 	Eff.E effs (Maybe BS.ByteString)
-takeString = State.gets (spanUntil 0) >>= \case
+takeString' = State.gets (spanUntil 0) >>= \case
 	Nothing -> do
 		b <- readMore @()
-		if b then takeString else pure Nothing
-	Just (t, d) -> Just t <$ (State.put d >> State.put (BitInfo 0 (BS.length d * 8)))
+		if b then takeString' else pure Nothing
+	Just (t, d) -> Just t <$ (
+		State.put d >> State.put (BitInfo 0 (BS.length d * 8)) >> calcCrc' (t `BS.snoc` 0)
+		)
 
 putDecoded :: (
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,

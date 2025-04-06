@@ -26,18 +26,20 @@ realMain ::
 	Flag "n" '["file-name"] "STRING" "source file name" (Maybe String) ->
 	Flag "c" '["comment"] "STRING" "comment" (Maybe String) ->
 	Flag "e" '["extra-field"] "STRING" "extra field" (Maybe String) ->
+	Flag "h" '["hcrc"] "" "Header CRC" Bool ->
 	Arg "Output-File" String -> Arg "Contents" String ->
 	Cmd "Make gzip file" ()
-realMain mfn mcmmt mefld fp cont = liftIO $
+realMain mfn mcmmt mefld hcrc fp cont = liftIO $
 	BS.writeFile (get fp)
-		. mkNonCompressed (get mfn) (get mcmmt) (get mefld)
+		. mkNonCompressed (get mfn) (get mcmmt) (get mefld) (get hcrc)
 		$ BSC.pack (get cont ++ "\n")
 
 mkNonCompressed ::
-	Maybe String -> Maybe String -> Maybe String -> BS.ByteString -> BS.ByteString
-mkNonCompressed mfn mcmmt mfld cont =
+	Maybe String -> Maybe String -> Maybe String -> Bool -> BS.ByteString -> BS.ByteString
+mkNonCompressed mfn mcmmt mfld hcrc cont =
 	(encodeGzipHeader
 		(gzipHeaderToRaw sampleGzipHeader {
+			gzipHeaderFlags = (gzipHeaderFlags sampleGzipHeader) { flagsHcrc = hcrc },
 			gzipHeaderExtraField = catMaybes [readExtraField =<< mfld],
 			gzipHeaderFileName = BSC.pack <$> mfn,
 			gzipHeaderComment = BSC.pack <$> mcmmt

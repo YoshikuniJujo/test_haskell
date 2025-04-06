@@ -156,15 +156,17 @@ flagsToRaw fn cmmt eflds Flags {
 	flagsRawComment = cmmt }
 
 encodeGzipHeader :: GzipHeaderRaw -> BS.ByteString
-encodeGzipHeader hdr = ids0 `BS.append`
-	(unCompressionMethod (gzipHeaderRawCompressionMethod hdr) `BS.cons`
-		encodeFlags (gzipHeaderRawFlags hdr) `BS.cons`
-		numToBs (cTimeToWord32 $ gzipHeaderRawModificationTime hdr)) `BS.append`
-	(gzipHeaderRawExtraFlags hdr `BS.cons`
-		unOS (gzipHeaderRawOperatingSystem hdr) `BS.cons` "") `BS.append`
-		if (null efs) then "" else (word16ToBs lnefs `BS.append` efsbs) `BS.append`
-		maybe "" (`BS.snoc` 0) (gzipHeaderRawFileName hdr) `BS.append`
-		maybe "" (`BS.snoc` 0) (gzipHeaderRawComment hdr)
+encodeGzipHeader hdr = let
+	rslt = ids0 `BS.append`
+		(unCompressionMethod (gzipHeaderRawCompressionMethod hdr) `BS.cons`
+			encodeFlags (gzipHeaderRawFlags hdr) `BS.cons`
+			numToBs (cTimeToWord32 $ gzipHeaderRawModificationTime hdr)) `BS.append`
+		(gzipHeaderRawExtraFlags hdr `BS.cons`
+			unOS (gzipHeaderRawOperatingSystem hdr) `BS.cons` "") `BS.append`
+			if (null efs) then "" else (word16ToBs lnefs `BS.append` efsbs) `BS.append`
+			maybe "" (`BS.snoc` 0) (gzipHeaderRawFileName hdr) `BS.append`
+			maybe "" (`BS.snoc` 0) (gzipHeaderRawComment hdr) in
+	rslt <> if (flagsRawHcrc $ gzipHeaderRawFlags hdr) then crc16 rslt else ""
 	where
 	efs = gzipHeaderRawExtraField hdr
 	efsbs = encodeExtraFields efs
@@ -185,6 +187,9 @@ sampleGzipHeader = GzipHeader {
 
 crc' :: BS.ByteString -> BS.ByteString
 crc' = numToBs . crc
+
+crc16 :: BS.ByteString -> BS.ByteString
+crc16 = BS.take 2 . crc'
 
 data ExtraField = ExtraField {
 	extraFieldSi1 :: Word8,

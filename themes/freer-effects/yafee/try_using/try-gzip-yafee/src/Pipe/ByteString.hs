@@ -16,6 +16,8 @@ import Data.ByteString qualified as BS
 
 import BitArray
 
+import Crc qualified as Crc
+
 popByte :: forall o effs . (
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
@@ -33,6 +35,15 @@ popByte = State.gets BS.uncons >>= \case
 		State.put bs
 		State.put $ BitInfo 0 (BS.length bs * 8)
 
+popByte' :: forall o effs . (
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S Crc) effs,
+	Union.Member (Pipe.P BS.ByteString o) effs
+	) =>
+	Eff.E effs (Maybe Word8)
+popByte' = popByte @o >>= \mw -> mw <$ maybe (pure ()) calcCrc mw
+
 takeBytes :: forall o effs . (
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
@@ -46,7 +57,33 @@ takeBytes n = State.gets (splitAt' n) >>= \case
 		State.put d
 		State.put $ BitInfo 0 (BS.length d * 8)
 
+takeBytes' :: forall o effs . (
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S Crc) effs,
+	Union.Member (Pipe.P BS.ByteString o) effs
+	) =>
+	Int -> Eff.E effs (Maybe BS.ByteString)
+takeBytes' n = takeBytes @o n >>= \mw -> mw <$ maybe (pure ()) calcCrc' mw
+
 splitAt' :: Int -> BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
 splitAt' n bs
 	| BS.length bs < n = Nothing
 	| otherwise = Just $ BS.splitAt n bs
+
+newtype Crc = Crc Word32 deriving Show
+
+step :: Word8 -> Crc -> Crc
+step w (Crc c) = Crc $ Crc.step c w
+
+calcCrc :: forall effs .
+	(Union.Member (State.S Crc) effs ) => Word8 -> Eff.E effs ()
+calcCrc = State.modify . step
+
+step' :: BS.ByteString -> Crc -> Crc
+step' bs (Crc c) = Crc $ Crc.step' c bs
+
+calcCrc' :: forall effs . (
+	Union.Member (State.S Crc) effs ) =>
+	BS.ByteString -> Eff.E effs ()
+calcCrc' bs = State.modify $ step' bs

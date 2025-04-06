@@ -69,17 +69,6 @@ takeBitArray n = do
 			b <- readMore @o
 			if b then takeBitArray @o n else pure Nothing
 		Just (t, BitArray info' bs') -> Just t <$ (State.put info' >> State.put bs')
-{-
-	BitInfo { bit0 = i, bitsLen = ln } <- get
-	if ln < n
-	then do	b <- readMore
-		if b then takeBitArray n else pure Nothing
-	else do	info <- get
-		bs <- get
-
-		State.put BitInfo { bit0 = (i + n) `mod` 8, bitsLen = ln - n }
-		BitArray (BitInfo i n) (BS.take 
-		-}
 
 splitAt :: Int -> BitArray -> Maybe (BitArray, BitArray)
 splitAt n (BitArray (BitInfo i ln) bs)
