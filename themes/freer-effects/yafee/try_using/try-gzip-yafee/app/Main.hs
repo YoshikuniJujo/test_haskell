@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -19,7 +19,6 @@ import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
 import Data.Bits
 import Data.Maybe
-import Data.List qualified as L
 import Data.Word
 import Data.Char
 import Data.ByteString qualified as BS
@@ -36,193 +35,74 @@ import HuffmanTree
 import Pipe.Huffman
 import ByteStringNum
 
-import Numeric
+import Pipe.Gzip
+import Pipe.IO
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	(putStrLn . take 100 . show =<<) . Eff.runM . Fail.run
-		. (`State.run` (fixedTable, fixedTable))
-		. (`State.run` ExtraBits 0)
-		. (runBitArray "") . (`State.run` Crc 0xffffffff) . Except.run @String . Pipe.run @() @() $
-		fromHandle (type ()) h Pipe.=$= do
-			Pipe.print' . gzipHeaderFromRaw =<< readHeader
-			Pipe.print' @_ @Crc =<< State.get
-			Pipe.print' =<< takeBit8 @() 1
-			mbt <- takeBit8 @() 2
-			let	bt = maybe 3 id mbt
-			if bt == 1
-			then bits @'[Pipe.P BS.ByteString Bit,
-				Except.E String,
-				State.S Crc,
-				State.S BS.ByteString,
-				State.S BitInfo,
-				State.S ExtraBits,
-				State.S (BinTree Int, BinTree Int),
-				Fail.F,
-				IO] Pipe.=$= huffmanPipe
-					@'[Pipe.P Bit (Either Int Word16),
-						Except.E String,
-						State.S Crc,
-						State.S BS.ByteString, State.S BitInfo,
-						State.S ExtraBits,
-						State.S (BinTree Int, BinTree Int),
-						Fail.F,
-						IO] Pipe.=$= putDecoded {- do
-							printAll @(Either Int Word16)
-								@'[Pipe.P (Either Int Word16) (),
-									Except.E String,
-									State.S Crc,
-									State.S BS.ByteString, State.S BitInfo,
-									State.S ExtraBits,
-									State.S (BinTree Int, BinTree Int),
-									Fail.F,
-									IO]
-									-}
-			else if bt == 2 then do
-				Pipe.print' @_ @(Maybe Int) =<< ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
-				Pipe.print' @_ @(Maybe Int) =<< ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
-				Pipe.print' @_ @(Maybe Int) =<< ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
-				bits @'[Pipe.P BS.ByteString Bit,
-					Except.E String,
-					State.S Crc,
-					State.S BS.ByteString,
-					State.S BitInfo,
-					State.S ExtraBits,
-					State.S (BinTree Int, BinTree Int),
-					Fail.F,
-					IO] Pipe.=$= do
-					clcls <- fromList . pairToCodes @Word8 . L.sort . filter ((/= 0) . fst)
-						. (`zip` [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15])
-						<$> replicateM 14 (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await @_ @()))
-					Pipe.print' (clcls :: BinTree Int)
-					State.put (clcls, clcls)
-					huffmanPipe
-						@'[Pipe.P Bit (Either Int Word16),
-							Except.E String,
-							State.S Crc,
-							State.S BS.ByteString, State.S BitInfo,
-							State.S ExtraBits,
-							State.S (BinTree Int, BinTree Int),
-							Fail.F,
-							IO] Pipe.=$= do
-								lct <- fromList . pairToCodes
-									. L.sort . filter ((/= 0) . fst)
-									. (`zip` [0 ..]) <$> getCodeTable 282
-								Pipe.print' lct
+	(putStrLn . take 100 . show =<<)
+		. run $ fromHandle (type ()) h Pipe.=$= do
+			(Pipe.print' . gzipHeaderFromRaw =<< readHeader)
+			mainPipe 10
 
-								dct <- fromList . pairToCodes
-									. L.sort . filter ((/= 0) . fst)
-									. (`zip` [0 ..]) <$> getCodeTable 23
-								Pipe.print' dct
+run :: Eff.E (Pipe () () '[
+	Except.E String, State.S Crc, State.S BS.ByteString,
+	State.S BitInfo, State.S ExtraBits, State.S (BinTree Int, BinTree Int),
+	Fail.F, IO ]) () ->
+	IO (Either String (
+		((((Either String (Maybe ()), Crc), BS.ByteString), BitInfo),
+			ExtraBits), (BinTree Int, BinTree Int)) )
+run = Eff.runM . Fail.run
+	. (`State.run` (fixedTable, fixedTable)) . (`State.run` ExtraBits 0)
+	. runBitArray "" . (`State.run` Crc 0xffffffff)
+	. Except.run @String . Pipe.run @() @()
 
-								State.put (lct, lct :: BinTree Int)
-								-- Pipe.print' =<< Pipe.await @(Either Int Word16) @()
-								printWhileLiteral
-								State.put $ ExtraBits 1
-								Pipe.print' =<< Pipe.await @(Either Int Word16) @()
-								
-								State.put (dct, dct :: BinTree Int)
-								Pipe.print' =<< Pipe.await @(Either Int Word16) @()
-								State.put $ ExtraBits 4
-								Pipe.print' =<< Pipe.await @(Either Int Word16) @()
+type Pipe i o effs = (Pipe.P i o ': effs)
 
-								State.put (lct, lct :: BinTree Int)
-								printWhileLiteral
-			else do
-				Pipe.print' =<< takeByteBoundary @()
-				Pipe.print' =<< takeBytes @() 2
-				Pipe.print' =<< takeBytes @() 2
-				putStrLn' "foobar"
-
-putStrLn' :: Union.Member IO effs => String -> Eff.E effs ()
-putStrLn' = Eff.eff . putStrLn
-
-readHeader :: (
-	Union.Member (State.S BS.ByteString) effs,
+mainPipe :: forall effs . (
 	Union.Member (State.S BitInfo) effs,
-	Union.Member (State.S Crc) effs,
-	Union.Member (Pipe.P BS.ByteString ()) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
 	Union.Member (Except.E String) effs,
-	Union.Member Fail.F effs,
-	Union.Member IO effs ) =>
-	Eff.E effs GzipHeaderRaw
-readHeader = do
-	mids <- takeBytes' @() 2
-	case mids of
-		Just ids | ids == "\US\139" -> putStrLn' "good magic"
-		_ -> Except.throw ("bad magic" :: String)
-	Just cm <- popByte' @()
-	fs <- maybe (Except.throw @String "bad flags") pure . (readFlags =<<) =<< popByte' @()
-	Just mt <- takeWord32' @()
-	Just efs <- popByte' @()
-	Just os <- popByte' @()
-	bs' <- if (flagsRawExtra fs)
-	then do	Just xln <- (fromIntegral <$>) <$> takeWord16' @()
-		Just bs <- takeBytes' @() xln
-		pure bs
-	else pure ""
-	fn <- if (flagsRawName fs) then takeString' else pure Nothing
-	mcmmt <- if (flagsRawComment fs) then takeString' else pure Nothing
-	mcrc16 <- if (flagsRawHcrc fs) then takeBytes @() 2 else pure Nothing
-	maybeCheckHcrc mcrc16
-	pure GzipHeaderRaw {
-		gzipHeaderRawCompressionMethod = CompressionMethod cm,
-		gzipHeaderRawFlags = fs,
-		gzipHeaderRawModificationTime = word32ToCTime mt,
-		gzipHeaderRawExtraFlags = efs,
-		gzipHeaderRawOperatingSystem = OS os,
-		gzipHeaderRawExtraField = decodeExtraFields bs',
-		gzipHeaderRawFileName = fn,
-		gzipHeaderRawComment = mcmmt }
+	Union.Member Union.Fail effs, Union.Member IO effs ) =>
+	Int -> Eff.E (Pipe BS.ByteString () effs) ()
+mainPipe bffsz = do
+	Pipe.print' =<< takeBit8 @() 1
+	mbt <- takeBit8 @() 2
+	let	bt = maybe 3 id mbt
+	if bt == 0
+	then readNonCompressed @() bffsz
+	else if bt == 1 then bits Pipe.=$=
+		huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$=
+		putDecoded
+	else if bt == 2 then do
+		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
+		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
+		Just hclen <- ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
+		bits Pipe.=$= do
+			clcls <- mkTree @Word8 [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+				<$> replicateM hclen (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await @_ @()))
+			State.put (clcls :: BinTree Int, clcls)
+			huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$= do
+				(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
+					Prelude.splitAt hlit <$> getCodeTable (hlit + hdist)
 
-maybeCheckHcrc :: (
-	Union.Member (State.S Crc) effs,
-	Union.Member (Except.E String) effs ) =>
-	Maybe BS.ByteString -> Eff.E effs ()
-maybeCheckHcrc = \case
-	Nothing -> pure ()
-	Just crc16' -> do
-		Crc crc32 <- State.get
-		when (bsToNum @Word16 crc16' /= fromIntegral (complement crc32)) . Except.throw
-			$ "bad: " ++ showHex @Word16 (bsToNum crc16') "" ++ " " ++ showHex @Word32 crc32 ""
+				State.put (lct, lct :: BinTree Int)
+				printWhileLiteral
+				State.put $ ExtraBits 1
+				Pipe.print' =<< Pipe.await @(Either Int Word16) @()
+				
+				State.put (dct, dct :: BinTree Int)
+				Pipe.print' =<< Pipe.await @(Either Int Word16) @()
+				State.put $ ExtraBits 4
+				Pipe.print' =<< Pipe.await @(Either Int Word16) @()
 
-takeWord32' :: forall o effs . (
-	Union.Member (State.S Crc) effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
-	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word32)
-takeWord32' = (bsToNum <$>) <$> takeBytes' @o 4
-
-takeWord16' :: forall o effs . (
-	Union.Member (State.S Crc) effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
-	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word16)
-takeWord16' = (bsToNum <$>) <$> takeBytes' @o 2
-
-spanUntil :: Word8 -> BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
-spanUntil b0 bs = case BS.uncons bs of
-	Nothing -> Nothing
-	Just (b, bs')
-		| b == b0 -> Just ("", bs')
-		| otherwise -> ((b `BS.cons`) `first`) <$> spanUntil b0 bs'
-
-takeString' :: (
-	Union.Member (State.S Crc) effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
-	Union.Member (Pipe.P BS.ByteString ()) effs
-	) =>
-	Eff.E effs (Maybe BS.ByteString)
-takeString' = State.gets (spanUntil 0) >>= \case
-	Nothing -> do
-		b <- readMore @()
-		if b then takeString' else pure Nothing
-	Just (t, d) -> Just t <$ (
-		State.put d >> State.put (BitInfo 0 (BS.length d * 8)) >> calcCrc' (t `BS.snoc` 0)
-		)
+				State.put (lct, lct :: BinTree Int)
+				printWhileLiteral
+	else error "not implemented"
 
 putDecoded :: (
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,
@@ -270,10 +150,6 @@ putDist = do
 			putDecoded
 		_ -> error "putDist: yet"
 
-
-bitListToNumLE :: (Num n, Bits n) => [Bit] -> n
-bitListToNumLE = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
-
 getCodeTable :: (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,
@@ -308,6 +184,27 @@ printWhileLiteral = Pipe.await @(Either Int Word16) @() >>= \case
 			putChar' $ chr i
 			printWhileLiteral
 	mi -> putStrLn' "" >> Pipe.print' mi
+	where putChar' = Eff.eff . putChar
 
-putChar' :: Union.Member IO effs => Char -> Eff.E effs ()
-putChar' = Eff.eff . putChar
+readNonCompressed :: forall o effs . (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (Except.E String) effs,
+	Union.Member Fail.F effs,
+	Union.Member IO effs ) =>
+	Int -> Eff.E effs ()
+readNonCompressed bffsz = do
+	Pipe.print' =<< takeByteBoundary @o
+	ln <- takeWord16FromPair
+	forM_ (separate bffsz ln) \ln' -> Pipe.print' =<< takeBytes @o ln'
+	where
+	takeWord16FromPair = do
+		Just ln <- (bsToNum <$>) <$> takeBytes @o 2
+		Just nln <- (bsToNum <$>) <$> takeBytes @o 2
+		when ((ln `xor` complement nln) .&. 0xffff /= 0)
+			$ Except.throw @String "bad boo"
+		pure ln
+	separate bs ln
+		| ln == 0 = [] | ln <= bs = [ln]
+		| otherwise = bs : separate bs (ln - bs)

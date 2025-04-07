@@ -33,7 +33,9 @@ library
       Lib
       Pipe.ByteString
       Pipe.ByteString.IO
+      Pipe.Gzip
       Pipe.Huffman
+      Pipe.IO
   other-modules:
       Paths_try_gzip_yafee
   autogen-modules:

@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module HuffmanTree where
@@ -70,3 +71,6 @@ bitListNext = reverse . bitListNextRv . reverse
 
 pairToCodes :: Integral n => [(n, a)] -> [([Bit], a)]
 pairToCodes = uncurry zip . (lenListToCodes [O] `first`) . unzip
+
+mkTree :: forall n a . (Integral n, Ord a) => [a] -> [n] -> BinTree a
+mkTree xs = fromList . pairToCodes @n . L.sort . filter ((/= 0) . fst) . (`zip` xs)
