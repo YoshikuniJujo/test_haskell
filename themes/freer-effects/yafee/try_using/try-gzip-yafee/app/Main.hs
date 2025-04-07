@@ -165,10 +165,8 @@ readHeader = do
 	else pure ""
 	fn <- if (flagsRawName fs) then takeString' else pure Nothing
 	mcmmt <- if (flagsRawComment fs) then takeString' else pure Nothing
-	Just crc16 <- if (flagsRawHcrc fs) then takeBytes @() 2 else pure Nothing
-	Crc crc32 <- State.get
-	when (bsToNum @Word16 crc16 /= fromIntegral (complement crc32)) . Except.throw
-		$ "bad: " ++ showHex @Word16 (bsToNum crc16) "" ++ " " ++ showHex @Word32 (fromIntegral crc32) ""
+	mcrc16 <- if (flagsRawHcrc fs) then takeBytes @() 2 else pure Nothing
+	maybeCheckHcrc mcrc16
 	pure GzipHeaderRaw {
 		gzipHeaderRawCompressionMethod = CompressionMethod cm,
 		gzipHeaderRawFlags = fs,
@@ -178,6 +176,17 @@ readHeader = do
 		gzipHeaderRawExtraField = decodeExtraFields bs',
 		gzipHeaderRawFileName = fn,
 		gzipHeaderRawComment = mcmmt }
+
+maybeCheckHcrc :: (
+	Union.Member (State.S Crc) effs,
+	Union.Member (Except.E String) effs ) =>
+	Maybe BS.ByteString -> Eff.E effs ()
+maybeCheckHcrc = \case
+	Nothing -> pure ()
+	Just crc16' -> do
+		Crc crc32 <- State.get
+		when (bsToNum @Word16 crc16' /= fromIntegral (complement crc32)) . Except.throw
+			$ "bad: " ++ showHex @Word16 (bsToNum crc16') "" ++ " " ++ showHex @Word32 crc32 ""
 
 takeWord32' :: forall o effs . (
 	Union.Member (State.S Crc) effs,

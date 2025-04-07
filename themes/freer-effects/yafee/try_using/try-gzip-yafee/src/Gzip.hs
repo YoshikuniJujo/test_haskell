@@ -161,7 +161,7 @@ encodeGzipHeader hdr = let
 			numToBs (cTimeToWord32 $ gzipHeaderRawModificationTime hdr)) `BS.append`
 		(gzipHeaderRawExtraFlags hdr `BS.cons`
 			unOS (gzipHeaderRawOperatingSystem hdr) `BS.cons` "") `BS.append`
-			if (null efs) then "" else (word16ToBs lnefs `BS.append` efsbs) `BS.append`
+			(if (null efs) then "" else (word16ToBs lnefs `BS.append` efsbs)) `BS.append`
 			maybe "" (`BS.snoc` 0) (gzipHeaderRawFileName hdr) `BS.append`
 			maybe "" (`BS.snoc` 0) (gzipHeaderRawComment hdr) in
 	rslt <> if (flagsRawHcrc $ gzipHeaderRawFlags hdr) then crc16 rslt else ""
