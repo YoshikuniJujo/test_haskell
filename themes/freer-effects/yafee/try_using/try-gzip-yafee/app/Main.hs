@@ -20,7 +20,6 @@ import Control.OpenUnion qualified as Union
 import Data.Bits
 import Data.Maybe
 import Data.Word
-import Data.Char
 import Data.ByteString qualified as BS
 import System.IO
 import System.Environment
@@ -77,7 +76,7 @@ mainPipe bffsz = do
 	then readNonCompressed @() bffsz
 	else if bt == 1 then bits Pipe.=$=
 		huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$=
-		putDecoded fixedTable fixedDstTable
+		putDecoded fixedTable fixedDstTable 0 Pipe.=$= printPipe @RunLength @() @(Pipe RunLength () effs)
 	else if bt == 2 then do
 		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
 		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
@@ -90,65 +89,8 @@ mainPipe bffsz = do
 				(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
 					Prelude.splitAt hlit <$> getCodeTable (hlit + hdist)
 				State.put (lct, lct :: BinTree Int)
-				putDecoded lct dct
+				putDecoded lct dct 0 Pipe.=$= printPipe @RunLength @() @(Pipe RunLength () effs)
 	else error "not implemented"
-
-printNoLiteral :: (
-	Show a, Show b, Ord a, Num a,
-	Union.Member IO effs ) =>
-	Either a b -> Eff.E effs ()
-printNoLiteral (Right i) = putStrLn' $ "Right " ++ show i
-printNoLiteral (Left i)
-	| 0 <= i && i <= 255 = pure ()
-	| otherwise = putStrLn' $ "Left " ++ show i
-
-putDecoded :: (
-	Union.Member (Pipe.P (Either Int Word16) ()) effs,
-	Union.Member IO effs,
-	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
-	Union.Member (State.S ExtraBits) effs
-	) =>
-	BinTree Int -> BinTree Int -> Eff.E effs ()
-putDecoded t dt = do
-	mi <- Pipe.await @(Either Int Word16) @()
-	maybe (pure ()) printNoLiteral mi
-	case mi of
-		Just (Left 256) -> pure ()
-		Just (Left i)
-			| 0 <= i && i <= 255 -> putChar' (chr i) >> putDecoded t dt
-			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt
-			| 265 <= i && i <= 284 -> do
-				State.put . ExtraBits $ (i - 261) `div` 4
-				putDecoded t dt
-			| i == 285 -> State.put (dt, dt) >> putDist t dt
-			| otherwise -> error $ "putDecoded: yet " ++ show i
-		Just (Right _) -> do
-			State.put (dt, dt)
-			putDist t dt
-		Nothing -> pure ()
-	where putChar' = Eff.eff . putChar
-
-putDist :: (
-	Union.Member (Pipe.P (Either Int Word16) ()) effs,
-	Union.Member IO effs,
-	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
-	Union.Member (State.S ExtraBits) effs
-	) =>
-	BinTree Int -> BinTree Int -> Eff.E effs ()
-putDist t dt = do
-	mi <- Pipe.await @(Either Int Word16) @()
-	Pipe.print' mi
-	case mi of
-		Just (Left i)
-			| 0 <= i && i <= 3 -> State.put (t, t) >> putDecoded t dt
-			| 4 <= i && i <= 29 -> do
-				State.put . ExtraBits $ (i - 2) `div` 2
-				putDist t dt
-			| otherwise -> error $ "putDist: yet " ++ show i
-		Just (Right _) -> do
-			State.put (t, t)
-			putDecoded t dt
-		_ -> error $ "putDist: yet"
 
 getCodeTable :: (
 	Union.Member (State.S ExtraBits) effs,
@@ -173,6 +115,78 @@ getCodeTable n = Pipe.await @(Either Int Word16) @() >>= \case
 		| otherwise -> error "yet"
 	Just (Right _) -> error "bad"
 
+putDecoded :: (
+	Union.Member (Pipe.P (Either Int Word16) RunLength) effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs
+	) =>
+	BinTree Int -> BinTree Int -> Int -> Eff.E effs ()
+putDecoded t dt pri = do
+	mi <- Pipe.await @(Either Int Word16) @RunLength
+--	maybe (pure ()) printNoLiteral mi
+	case mi of
+		Just (Left 256) -> pure ()
+		Just (Left i)
+			| 0 <= i && i <= 255 -> do
+--				putChar' (chr i)
+				Pipe.yield @(Either Int Word16) (RunLengthLiteral $ fromIntegral i)
+				putDecoded t dt 0
+			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt (RunLengthLength i 0) 0
+			| 265 <= i && i <= 284 -> do
+				State.put . ExtraBits $ (i - 261) `div` 4
+				putDecoded t dt i
+			| i == 285 -> State.put (dt, dt) >> putDist t dt (RunLengthLength i 0) 0
+			| otherwise -> error $ "putDecoded: yet " ++ show i
+		Just (Right eb) -> do
+			State.put (dt, dt)
+			putDist t dt (RunLengthLength pri eb) 0
+		Nothing -> pure ()
+--	where putChar' = Eff.eff . putChar
+
+printNoLiteral :: (
+	Show a, Show b, Ord a, Num a,
+	Union.Member IO effs ) =>
+	Either a b -> Eff.E effs ()
+printNoLiteral (Right i) = putStrLn' $ "Right " ++ show i
+printNoLiteral (Left i)
+	| 0 <= i && i <= 255 = pure ()
+	| otherwise = putStrLn' $ "Left " ++ show i
+
+putDist :: (
+	Union.Member (Pipe.P (Either Int Word16) RunLength) effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs
+	) =>
+	BinTree Int -> BinTree Int -> RunLengthLength -> Int -> Eff.E effs ()
+putDist t dt ln pri = do
+	mi <- Pipe.await @(Either Int Word16) @RunLength
+--	Pipe.print' mi
+	case mi of
+		Just (Left i)
+			| 0 <= i && i <= 3 -> do
+				Pipe.yield @(Either Int Word16) (RunLengthRaw ln (RunLengthDist i 0))
+				State.put (t, t)
+				putDecoded t dt 0
+			| 4 <= i && i <= 29 -> do
+				State.put . ExtraBits $ (i - 2) `div` 2
+				putDist t dt ln i
+			| otherwise -> error $ "putDist: yet " ++ show i
+		Just (Right eb) -> do
+			Pipe.yield @(Either Int Word16) (RunLengthRaw ln (RunLengthDist pri eb))
+			State.put (t, t)
+			putDecoded t dt 0
+		_ -> error $ "putDist: yet"
+
+printPipe :: forall i o effs . (
+	Show i,
+	Union.Member (Pipe.P i o) effs,
+	Union.Member IO effs
+	) =>
+	Eff.E effs ()
+printPipe = do
+	mx <- Pipe.await @i @o
+	maybe (pure ()) (\x -> Pipe.print' x >> printPipe @i @o) mx
+
 readNonCompressed :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member (State.S BitInfo) effs,
@@ -195,3 +209,11 @@ readNonCompressed bffsz = do
 	separate bs ln
 		| ln == 0 = [] | ln <= bs = [ln]
 		| otherwise = bs : separate bs (ln - bs)
+
+data RunLength = RunLengthLiteral Word8 | RunLengthRaw RunLengthLength RunLengthDist deriving Show
+
+data RunLengthLength = RunLengthLength Int Word16 deriving Show
+
+data RunLengthDist = RunLengthDist Int Word16 deriving Show
+
+runLengthDummy = RunLengthRaw (RunLengthLength 123 456) (RunLengthDist 789 321)
