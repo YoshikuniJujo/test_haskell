@@ -77,7 +77,7 @@ mainPipe bffsz = do
 	then readNonCompressed @() bffsz
 	else if bt == 1 then bits Pipe.=$=
 		huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$=
-		putDecoded
+		putDecoded fixedTable fixedDstTable
 	else if bt == 2 then do
 		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
 		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
@@ -89,20 +89,18 @@ mainPipe bffsz = do
 			huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$= do
 				(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
 					Prelude.splitAt hlit <$> getCodeTable (hlit + hdist)
-
 				State.put (lct, lct :: BinTree Int)
-				printWhileLiteral
-				State.put $ ExtraBits 1
-				Pipe.print' =<< Pipe.await @(Either Int Word16) @()
-				
-				State.put (dct, dct :: BinTree Int)
-				Pipe.print' =<< Pipe.await @(Either Int Word16) @()
-				State.put $ ExtraBits 4
-				Pipe.print' =<< Pipe.await @(Either Int Word16) @()
-
-				State.put (lct, lct :: BinTree Int)
-				printWhileLiteral
+				putDecoded lct dct
 	else error "not implemented"
+
+printNoLiteral :: (
+	Show a, Show b, Ord a, Num a,
+	Union.Member IO effs ) =>
+	Either a b -> Eff.E effs ()
+printNoLiteral (Right i) = putStrLn' $ "Right " ++ show i
+printNoLiteral (Left i)
+	| 0 <= i && i <= 255 = pure ()
+	| otherwise = putStrLn' $ "Left " ++ show i
 
 putDecoded :: (
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,
@@ -110,23 +108,25 @@ putDecoded :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs
 	) =>
-	Eff.E effs ()
-putDecoded = do
+	BinTree Int -> BinTree Int -> Eff.E effs ()
+putDecoded t dt = do
 	mi <- Pipe.await @(Either Int Word16) @()
-	maybe (pure ()) Pipe.print' mi
+	maybe (pure ()) printNoLiteral mi
 	case mi of
 		Just (Left 256) -> pure ()
 		Just (Left i)
-			| 0 <= i && i <= 255 -> putDecoded
-			| 257 <= i && i <= 264 -> State.put (fixedDstTable, fixedDstTable) >> putDist
-			| 265 <= i && i <= 268 -> do
-				State.put $ ExtraBits 1
-				putDecoded
-			| otherwise -> error "putDecoded: yet"
+			| 0 <= i && i <= 255 -> putChar' (chr i) >> putDecoded t dt
+			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt
+			| 265 <= i && i <= 284 -> do
+				State.put . ExtraBits $ (i - 261) `div` 4
+				putDecoded t dt
+			| i == 285 -> State.put (dt, dt) >> putDist t dt
+			| otherwise -> error $ "putDecoded: yet " ++ show i
 		Just (Right _) -> do
-			State.put (fixedDstTable, fixedDstTable)
-			putDist
+			State.put (dt, dt)
+			putDist t dt
 		Nothing -> pure ()
+	where putChar' = Eff.eff . putChar
 
 putDist :: (
 	Union.Member (Pipe.P (Either Int Word16) ()) effs,
@@ -134,21 +134,21 @@ putDist :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs
 	) =>
-	Eff.E effs ()
-putDist = do
+	BinTree Int -> BinTree Int -> Eff.E effs ()
+putDist t dt = do
 	mi <- Pipe.await @(Either Int Word16) @()
 	Pipe.print' mi
 	case mi of
 		Just (Left i)
-			| 0 <= i && i <= 3 -> State.put (fixedTable, fixedTable) >> putDecoded
-			| 4 <= i && i <= 5 -> do
-				State.put $ ExtraBits 1
-				putDist
-			| otherwise -> error "putDist: yet"
+			| 0 <= i && i <= 3 -> State.put (t, t) >> putDecoded t dt
+			| 4 <= i && i <= 29 -> do
+				State.put . ExtraBits $ (i - 2) `div` 2
+				putDist t dt
+			| otherwise -> error $ "putDist: yet " ++ show i
 		Just (Right _) -> do
-			State.put (fixedTable, fixedTable)
-			putDecoded
-		_ -> error "putDist: yet"
+			State.put (t, t)
+			putDecoded t dt
+		_ -> error $ "putDist: yet"
 
 getCodeTable :: (
 	Union.Member (State.S ExtraBits) effs,
@@ -172,19 +172,6 @@ getCodeTable n = Pipe.await @(Either Int Word16) @() >>= \case
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable (n - fromIntegral eb - 11)
 		| otherwise -> error "yet"
 	Just (Right _) -> error "bad"
-
-printWhileLiteral :: (
-	Union.Member (Pipe.P (Either Int Word16) ()) effs,
-	Union.Member IO effs
-	) =>
-	Eff.E effs ()
-printWhileLiteral = Pipe.await @(Either Int Word16) @() >>= \case
-	Just (Left i)
-		| 0 <= i && i <= 255 -> do
-			putChar' $ chr i
-			printWhileLiteral
-	mi -> putStrLn' "" >> Pipe.print' mi
-	where putChar' = Eff.eff . putChar
 
 readNonCompressed :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs,
