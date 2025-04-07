@@ -18,6 +18,8 @@ import BitArray
 
 import Crc qualified as Crc
 
+import Numeric
+
 popByte :: forall o effs . (
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
@@ -71,7 +73,10 @@ splitAt' n bs
 	| BS.length bs < n = Nothing
 	| otherwise = Just $ BS.splitAt n bs
 
-newtype Crc = Crc Word32 deriving Show
+newtype Crc = Crc Word32
+
+instance Show Crc where
+	show (Crc w) = "(Crc " ++ showHex w "" ++ ")"
 
 step :: Word8 -> Crc -> Crc
 step w (Crc c) = Crc $ Crc.step c w

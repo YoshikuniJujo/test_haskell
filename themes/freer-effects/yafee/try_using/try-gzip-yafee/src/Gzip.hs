@@ -71,8 +71,7 @@ gzipHeaderToRaw GzipHeader {
 	gzipHeaderOperatingSystem = os,
 	gzipHeaderExtraField = eflds,
 	gzipHeaderFileName = mfn,
-	gzipHeaderComment = mcmmt
-	} = GzipHeaderRaw {
+	gzipHeaderComment = mcmmt } = GzipHeaderRaw {
 	gzipHeaderRawCompressionMethod = cm,
 	gzipHeaderRawFlags =
 		flagsToRaw (isJust mfn) (isJust mcmmt) (not $ null eflds) fs,
@@ -82,7 +81,6 @@ gzipHeaderToRaw GzipHeader {
 	gzipHeaderRawExtraField = eflds,
 	gzipHeaderRawFileName = mfn,
 	gzipHeaderRawComment = mcmmt }
-
 
 word32ToCTime :: Word32 -> CTime
 word32ToCTime = CTime . fromIntegral

@@ -36,6 +36,8 @@ import HuffmanTree
 import Pipe.Huffman
 import ByteStringNum
 
+import Numeric
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -46,6 +48,7 @@ main = do
 		. (runBitArray "") . (`State.run` Crc 0xffffffff) . Except.run @String . Pipe.run @() @() $
 		fromHandle (type ()) h Pipe.=$= do
 			Pipe.print' . gzipHeaderFromRaw =<< readHeader
+			Pipe.print' @_ @Crc =<< State.get
 			Pipe.print' =<< takeBit8 @() 1
 			mbt <- takeBit8 @() 2
 			let	bt = maybe 3 id mbt
@@ -146,7 +149,7 @@ readHeader :: (
 	Union.Member IO effs ) =>
 	Eff.E effs GzipHeaderRaw
 readHeader = do
-	mids <- takeBytes @() 2
+	mids <- takeBytes' @() 2
 	case mids of
 		Just ids | ids == "\US\139" -> putStrLn' "good magic"
 		_ -> Except.throw ("bad magic" :: String)
@@ -162,6 +165,10 @@ readHeader = do
 	else pure ""
 	fn <- if (flagsRawName fs) then takeString' else pure Nothing
 	mcmmt <- if (flagsRawComment fs) then takeString' else pure Nothing
+	Just crc16 <- if (flagsRawHcrc fs) then takeBytes @() 2 else pure Nothing
+	Crc crc32 <- State.get
+	when (bsToNum @Word16 crc16 /= fromIntegral (complement crc32)) . Except.throw
+		$ "bad: " ++ showHex @Word16 (bsToNum crc16) "" ++ " " ++ showHex @Word32 (fromIntegral crc32) ""
 	pure GzipHeaderRaw {
 		gzipHeaderRawCompressionMethod = CompressionMethod cm,
 		gzipHeaderRawFlags = fs,
