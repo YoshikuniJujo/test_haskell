@@ -27,7 +27,9 @@ library
   exposed-modules:
       BitArray
       ByteStringNum
+      Calc
       Crc
+      Dict
       Gzip
       HuffmanTree
       Lib
@@ -53,6 +55,7 @@ library
     , try-yafee
     , try-yafee-conduit
     , try-yafee-rwseft
+    , vector
   default-language: Haskell2010
 
 executable try-gzip-yafee-exe
@@ -75,6 +78,7 @@ executable try-gzip-yafee-exe
     , try-yafee
     , try-yafee-conduit
     , try-yafee-rwseft
+    , vector
   default-language: Haskell2010
 
 executable try-make-gzip
@@ -93,6 +97,7 @@ executable try-make-gzip
     , try-yafee
     , try-yafee-conduit
     , try-yafee-rwseft
+    , vector
   default-language: Haskell2010
 
 executable try-optparse
@@ -111,6 +116,7 @@ executable try-optparse
     , try-yafee
     , try-yafee-conduit
     , try-yafee-rwseft
+    , vector
   default-language: Haskell2010
 
 test-suite try-gzip-yafee-test
@@ -134,4 +140,5 @@ test-suite try-gzip-yafee-test
     , try-yafee
     , try-yafee-conduit
     , try-yafee-rwseft
+    , vector
   default-language: Haskell2010

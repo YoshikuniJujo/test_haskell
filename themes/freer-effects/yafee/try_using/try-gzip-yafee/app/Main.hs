@@ -37,6 +37,8 @@ import ByteStringNum
 import Pipe.Gzip
 import Pipe.IO
 
+import Calc
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -131,15 +133,15 @@ putDecoded t dt pri = do
 --				putChar' (chr i)
 				Pipe.yield @(Either Int Word16) (RunLengthLiteral $ fromIntegral i)
 				putDecoded t dt 0
-			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt (RunLengthLength i 0) 0
+			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt (runLengthLength i 0) 0
 			| 265 <= i && i <= 284 -> do
 				State.put . ExtraBits $ (i - 261) `div` 4
 				putDecoded t dt i
-			| i == 285 -> State.put (dt, dt) >> putDist t dt (RunLengthLength i 0) 0
+			| i == 285 -> State.put (dt, dt) >> putDist t dt (runLengthLength i 0) 0
 			| otherwise -> error $ "putDecoded: yet " ++ show i
 		Just (Right eb) -> do
 			State.put (dt, dt)
-			putDist t dt (RunLengthLength pri eb) 0
+			putDist t dt (runLengthLength pri eb) 0
 		Nothing -> pure ()
 --	where putChar' = Eff.eff . putChar
 
@@ -164,7 +166,7 @@ putDist t dt ln pri = do
 	case mi of
 		Just (Left i)
 			| 0 <= i && i <= 3 -> do
-				Pipe.yield @(Either Int Word16) (RunLengthRaw ln (RunLengthDist i 0))
+				Pipe.yield @(Either Int Word16) (RunLengthRaw ln (runLengthDist i 0))
 				State.put (t, t)
 				putDecoded t dt 0
 			| 4 <= i && i <= 29 -> do
@@ -172,7 +174,7 @@ putDist t dt ln pri = do
 				putDist t dt ln i
 			| otherwise -> error $ "putDist: yet " ++ show i
 		Just (Right eb) -> do
-			Pipe.yield @(Either Int Word16) (RunLengthRaw ln (RunLengthDist pri eb))
+			Pipe.yield @(Either Int Word16) (RunLengthRaw ln (runLengthDist pri eb))
 			State.put (t, t)
 			putDecoded t dt 0
 		_ -> error $ "putDist: yet"
@@ -212,8 +214,12 @@ readNonCompressed bffsz = do
 
 data RunLength = RunLengthLiteral Word8 | RunLengthRaw RunLengthLength RunLengthDist deriving Show
 
-data RunLengthLength = RunLengthLength Int Word16 deriving Show
+data RunLengthLength = RunLengthLength Int deriving Show
 
-data RunLengthDist = RunLengthDist Int Word16 deriving Show
+data RunLengthDist = RunLengthDist Int deriving Show
 
-runLengthDummy = RunLengthRaw (RunLengthLength 123 456) (RunLengthDist 789 321)
+runLengthLength i eb = RunLengthLength $ calcLength i eb
+
+runLengthDist i eb = RunLengthDist $ calcDist i eb
+
+runLengthDummy = RunLengthRaw (RunLengthLength 123) (RunLengthDist 789)
