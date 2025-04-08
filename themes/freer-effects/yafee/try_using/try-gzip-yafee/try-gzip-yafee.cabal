@@ -38,6 +38,7 @@ library
       Pipe.Gzip
       Pipe.Huffman
       Pipe.IO
+      TryNamed
       TryPrimMonad
   other-modules:
       Paths_try_gzip_yafee
