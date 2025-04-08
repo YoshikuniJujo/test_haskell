@@ -49,7 +49,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	(putStrLn . take 100 . show =<<)
+	(putStrLn . take 1000 . show =<<)
 		. run $ fromHandle (type ()) h Pipe.=$= do
 			(Pipe.print' . gzipHeaderFromRaw =<< readHeader)
 			mainPipe formatSize
@@ -66,13 +66,6 @@ run :: Eff.E (Pipe () () '[
 					(BinTree Int, BinTree Int)),
 				Seq.Seq Word8),
 			BS.ByteString))
-	{-
-	IO (Either String
-		((((((Either String ((), [()]), Crc), BS.ByteString), BitInfo),
-			ExtraBits),
-			(BinTree Int, BinTree Int)),
-		Seq.Seq Word8))
-		-}
 run = Eff.runM . Fail.run
 	. (`State.runNamed` "")
 	. (`State.run` Seq.empty)
@@ -90,7 +83,8 @@ mainPipe :: forall effs . (
 	Union.Member (Except.E String) effs,
 	Union.Member Union.Fail effs, Union.Member IO effs,
 	Union.Member (State.S (Seq.Seq Word8)) effs,
-	Union.Member (State.Named "format" BS.ByteString) effs
+	Union.Member (State.Named "format" BS.ByteString) effs,
+	Union.Member (State.S Crc) effs
 	) =>
 	Int -> Eff.E (Pipe BS.ByteString () effs) ()
 mainPipe bffsz = do
@@ -104,7 +98,7 @@ mainPipe bffsz = do
 		putDecoded fixedTable fixedDstTable 0 Pipe.=$=
 			runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
 			format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
-			printPipe @BS.ByteString @() @(Pipe BS.ByteString () effs)
+			printPipe @() @(Pipe BS.ByteString () effs)
 	else if bt == 2 then do
 		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
 		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
@@ -120,7 +114,7 @@ mainPipe bffsz = do
 				putDecoded lct dct 0 Pipe.=$=
 					runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
 					format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
-					printPipe @BS.ByteString @() @(Pipe BS.ByteString () effs)
+					printPipe @() @(Pipe BS.ByteString () effs)
 	else error "not implemented"
 
 getCodeTable :: (
@@ -208,15 +202,30 @@ putDist t dt ln pri = do
 			putDecoded t dt 0
 		_ -> error $ "putDist: yet"
 
-printPipe :: forall i o effs . (
-	Show i,
-	Union.Member (Pipe.P i o) effs,
-	Union.Member IO effs
+printPipe :: forall o effs . (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member IO effs,
+	Union.Member (State.S Crc) effs
 	) =>
 	Eff.E effs ()
 printPipe = do
-	mx <- Pipe.await @i @o
-	maybe (pure ()) (\x -> Pipe.print' x >> printPipe @i @o) mx
+	State.put $ Crc 0xffffffff
+	printPipe' @o
+	State.modify compCrc
+
+printPipe' :: forall o effs . (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member IO effs,
+	Union.Member (State.S Crc) effs
+	) =>
+	Eff.E effs ()
+printPipe' = do
+	mx <- Pipe.await @_ @o
+	maybe (pure ())
+		(\x -> do
+			calcCrc' x
+			Pipe.print' (x :: BS.ByteString)
+			printPipe' @o) mx
 
 readNonCompressed :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs,

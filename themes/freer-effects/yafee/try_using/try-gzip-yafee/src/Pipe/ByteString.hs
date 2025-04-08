@@ -11,6 +11,7 @@ import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.OpenUnion qualified as Union
+import Data.Bits
 import Data.Word
 import Data.ByteString qualified as BS
 
@@ -77,6 +78,9 @@ newtype Crc = Crc Word32
 
 instance Show Crc where
 	show (Crc w) = "(Crc " ++ showHex w "" ++ ")"
+
+compCrc :: Crc -> Crc
+compCrc (Crc c) = Crc $ complement c
 
 step :: Word8 -> Crc -> Crc
 step w (Crc c) = Crc $ Crc.step c w
