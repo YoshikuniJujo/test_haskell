@@ -31,7 +31,7 @@ extern "C" VkSwapchainKHR* im_gui_impl_vulkan_h_only_create_swap_chain_no_wd(
 	uint32_t min_image_count, VkSwapchainKHR old_swapchain,
 	VkSurfaceCapabilitiesKHR* cap,
 	VkSurfaceKHR sfc,
-	VkSurfaceFormatKHR sfmt, VkPresentModeKHR pm, int wdt, int hgt );
+	VkSurfaceFormatKHR* sfmt, VkPresentModeKHR pm, int wdt, int hgt );
 extern "C" void im_gui_impl_vulkan_h_copy_swap_chain_to_wd(
 	ImGui_ImplVulkanH_Window* wd, VkSwapchainKHR* pscsrc );
 extern "C" void im_gui_impl_vulkan_h_set_size(
@@ -99,7 +99,7 @@ im_gui_impl_vulkan_h_only_create_swap_chain_no_wd(
 	VkSurfaceCapabilitiesKHR* cap,
 
 	VkSurfaceKHR sfc,
-	VkSurfaceFormatKHR sfmt,
+	VkSurfaceFormatKHR* sfmt,
 	VkPresentModeKHR pm,
 	int wdt, int hgt )
 {

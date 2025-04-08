@@ -1528,7 +1528,7 @@ ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
 	VkSurfaceCapabilitiesKHR *pcap,
 
 	VkSurfaceKHR sfc,
-	VkSurfaceFormatKHR sfmt,
+	VkSurfaceFormatKHR* sfmt,
 	VkPresentModeKHR pm,
 	int wdt,
 	int hgt
@@ -1553,8 +1553,8 @@ ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
         info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         info.surface = sfc;
         info.minImageCount = min_image_count_new;
-        info.imageFormat = sfmt.format;
-        info.imageColorSpace = sfmt.colorSpace;
+        info.imageFormat = sfmt->format;
+        info.imageColorSpace = sfmt->colorSpace;
         info.imageArrayLayers = 1;
         info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;           // Assume that graphics family == present family
@@ -1601,7 +1601,7 @@ void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	VkSwapchainKHR* pscsrc;
 	pscsrc = ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
 		device, allocator, min_image_count, old_swapchain, pcap,
-		sfc, sfmt, pm, wdt, hgt );
+		sfc, &sfmt, pm, wdt, hgt );
 
 	ImGui_ImplVulkanH_CopySwapchainToWd(wd, pscsrc);
     }

@@ -188,7 +188,7 @@ VkSwapchainKHR* ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
 	VkSurfaceCapabilitiesKHR *pcap,
 
 	VkSurfaceKHR sfc,
-	VkSurfaceFormatKHR sfmt,
+	VkSurfaceFormatKHR* sfmt,
 	VkPresentModeKHR pm,
 	int wdt,
 	int hgt );

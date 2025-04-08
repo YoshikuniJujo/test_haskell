@@ -176,6 +176,10 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.Sfc.Phd.getCapabilities phd sfc >>= \cap ->
 
 	Vk.ImGui.H.setSize wdcxx wdt hgt cap >>
+	putStrLn "OOOOOPS" >> print cap >>
+
+	print (Vk.Sfc.capabilitiesMinImageCount cap) >>
+	print (Vk.Sfc.capabilitiesMaxImageCount cap) >>
 
 	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd' ->
 	putStrLn "OOPS" >> printIO wd' >>
@@ -186,9 +190,13 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	print (Vk.ImGui.Win.wCWidth wd') >>
 	print (Vk.ImGui.Win.wCHeight wd') >>
 
-	Vk.ImGui.H.onlyCreateSwapChain dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') cap >>
+	let	minImageCount = 2
+		swpchInfo = Vk.Swpch.CreateInfo {
+			Vk.Swpch.createInfoNext = TMaybe.N,
+			Vk.Swpch.createInfoFlags = zeroBits,
+			Vk.Swpch.createInfoSurface = Vk.ImGui.Win.wCSurface wd'
+			} in
 
-	{-
 	Vk.ImGui.H.onlyCreateSwapChainNoWd dvc nil 2 (Vk.ImGui.Win.wCSwapchain z')
 		cap
 		(Vk.ImGui.Win.wCSurface wd')
@@ -197,7 +205,6 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		(Vk.ImGui.Win.wCWidth wd')
 		(Vk.ImGui.Win.wCHeight wd') >>= \sc ->
 	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
-	-}
 
 	Vk.ImGui.H.createSwapChain dvc wdcxx 2 >>
 	Vk.ImGui.H.createWindowSwapChain dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') >>
