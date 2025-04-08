@@ -29,7 +29,7 @@ import Data.FTCQueue qualified as FTCQueue
 
 type S = Named ""
 
-data Named (nm :: Symbol) s a where Get :: Named nm s s; Put' :: forall nm s . !s -> Named nm s ()
+data Named (nm :: Symbol) s a where Get :: Named nm s s; Put :: forall nm s . !s -> Named nm s ()
 
 get :: Union.Member (S s) effs => Eff.E effs s
 get = getN @""
@@ -50,18 +50,14 @@ getN :: forall nm s effs . Union.Member (Named nm s) effs => Eff.E effs s
 getN = Eff.eff (Get @nm)
 
 putN :: forall nm s effs . Union.Member (Named nm s) effs => s -> Eff.E effs ()
-putN = Eff.eff . (Put' @nm)
+putN = Eff.eff . (Put @nm)
 
 modifyN :: forall nm s effs . Union.Member (Named nm s) effs => (s -> s) -> Eff.E effs ()
 modifyN f = putN @nm . f =<< getN @nm
 
 runNamed :: Eff.E (Named nm s ': effs) a -> s -> Eff.E effs (a, s)
-Freer.Pure x `runNamed` s = pure (x, s)
-(u Freer.:>>= q) `runNamed` s = case Union.decomp u of
-	Left u' -> u' Freer.:>>=
-		FTCQueue.singleton ((`runNamed` s) `Freer.comp` q)
-	Right Get -> q `Freer.app` s `runNamed` s
-	Right (Put' s') -> q `Freer.app` () `runNamed` s'
+runNamed = Eff.handleRelayS
+	(curry pure) \u k s -> case u of Get -> k s s; Put s' -> k () s'
 
 transaction :: forall s effs a .
 	Union.Member (S s) effs => Eff.E effs a -> Eff.E effs a
@@ -73,4 +69,4 @@ transaction m = do
 			Nothing -> u Freer.:>>=
 				FTCQueue.singleton (go s `Freer.comp` q)
 			Just Get -> go s $ q `Freer.app` s
-			Just (Put' s') -> go s' $ q `Freer.app` ()
+			Just (Put s') -> go s' $ q `Freer.app` ()
