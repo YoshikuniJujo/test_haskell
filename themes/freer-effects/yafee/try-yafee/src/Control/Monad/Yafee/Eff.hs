@@ -41,14 +41,14 @@ handleRelay ret h = fix \go -> \case
 		Right x -> h x (go `Freer.comp` q)
 
 handleRelayS ::
-	(s -> a -> E effs b) ->
-	(forall v . s -> eff v -> (s -> v -> E effs b) -> E effs b) ->
+	(a -> s -> E effs b) ->
+	(forall v . eff v -> (v -> s -> E effs b) -> s -> E effs b) ->
 	E (eff ': effs) a -> s -> E effs b
 handleRelayS ret h = flip $ fix \go s -> \case
-	Freer.Pure x -> ret s x
+	Freer.Pure x -> ret x s
 	u Freer.:>>= q -> case Union.decomp u of
 		Left u' -> u' Freer.:>>= FTCQueue.singleton (go s `Freer.comp` q)
-		Right x -> h s x (\s' -> go s' `Freer.comp` q)
+		Right x -> h x (flip \s' -> go s' `Freer.comp` q) s
 
 interpose :: Union.Member eff effs =>
 	(a -> E effs b) ->
