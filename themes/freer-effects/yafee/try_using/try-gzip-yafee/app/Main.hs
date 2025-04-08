@@ -238,6 +238,8 @@ printPipe' = do
 			printPipe' @o) mx
 
 readNonCompressed :: forall o effs . (
+	Union.Member (State.S Crc) effs,
+	Union.Member (State.Named "file-length" Int) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (State.S BS.ByteString) effs,
@@ -246,9 +248,15 @@ readNonCompressed :: forall o effs . (
 	Union.Member IO effs ) =>
 	Int -> Eff.E effs ()
 readNonCompressed bffsz = do
+	State.put $ Crc 0xffffffff
 	Pipe.print' =<< takeByteBoundary @o
 	ln <- takeWord16FromPair
-	forM_ (separate bffsz ln) \ln' -> Pipe.print' =<< takeBytes @o ln'
+	forM_ (separate bffsz ln) \ln' -> do
+		bs <- takeBytes @o ln'
+		State.modifyN @"file-length" (+ ln')
+		maybe (pure ()) calcCrc' bs
+		Pipe.print' bs
+	State.modify compCrc
 	where
 	takeWord16FromPair = do
 		Just ln <- (bsToNum <$>) <$> takeBytes @o 2
