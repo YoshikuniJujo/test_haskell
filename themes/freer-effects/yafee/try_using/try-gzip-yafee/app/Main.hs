@@ -42,6 +42,8 @@ import Pipe.IO
 
 import Calc
 
+import Numeric
+
 formatSize :: Int
 formatSize = 100
 
@@ -53,6 +55,9 @@ main = do
 		. run $ fromHandle (type ()) h Pipe.=$= do
 			(Pipe.print' . gzipHeaderFromRaw =<< readHeader)
 			mainPipe formatSize
+			Pipe.print' =<< takeByteBoundary @()
+			Pipe.print' . ((`showHex` "") . bsToNum @Word32 <$>) =<< takeBytes @() 4
+			Pipe.print' . (bsToNum @Word32 <$>) =<< takeBytes @() 4
 
 run :: Eff.E (Pipe () () '[
 	Except.E String, State.Named "file-length" Int,
