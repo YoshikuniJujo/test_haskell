@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main (main) where
+module Main (main, takeRep) where
 
 import Control.Arrow
 import Control.Monad
@@ -17,8 +17,11 @@ import Control.Monad.Yafee.Except qualified as Except
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
+import Data.Foldable
 import Data.Bits
 import Data.Maybe
+import Data.Sequence qualified as Seq
+import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 import System.IO
@@ -39,6 +42,9 @@ import Pipe.IO
 
 import Calc
 
+formatSize :: Int
+formatSize = 100
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -46,16 +52,30 @@ main = do
 	(putStrLn . take 100 . show =<<)
 		. run $ fromHandle (type ()) h Pipe.=$= do
 			(Pipe.print' . gzipHeaderFromRaw =<< readHeader)
-			mainPipe 10
+			mainPipe formatSize
 
 run :: Eff.E (Pipe () () '[
 	Except.E String, State.S Crc, State.S BS.ByteString,
 	State.S BitInfo, State.S ExtraBits, State.S (BinTree Int, BinTree Int),
+	State.S (Seq.Seq Word8),
+	State.Named "format" BS.ByteString,
 	Fail.F, IO ]) () ->
-	IO (Either String (
-		((((Either String ((), [()]), Crc), BS.ByteString), BitInfo),
-			ExtraBits), (BinTree Int, BinTree Int)) )
+	IO (Either String
+		(((((((Either String ((), [()]), Crc), BS.ByteString), BitInfo),
+						ExtraBits),
+					(BinTree Int, BinTree Int)),
+				Seq.Seq Word8),
+			BS.ByteString))
+	{-
+	IO (Either String
+		((((((Either String ((), [()]), Crc), BS.ByteString), BitInfo),
+			ExtraBits),
+			(BinTree Int, BinTree Int)),
+		Seq.Seq Word8))
+		-}
 run = Eff.runM . Fail.run
+	. (`State.runNamed` "")
+	. (`State.run` Seq.empty)
 	. (`State.run` (fixedTable, fixedTable)) . (`State.run` ExtraBits 0)
 	. runBitArray "" . (`State.run` Crc 0xffffffff)
 	. Except.run @String . Pipe.run @() @()
@@ -68,7 +88,10 @@ mainPipe :: forall effs . (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member (Except.E String) effs,
-	Union.Member Union.Fail effs, Union.Member IO effs ) =>
+	Union.Member Union.Fail effs, Union.Member IO effs,
+	Union.Member (State.S (Seq.Seq Word8)) effs,
+	Union.Member (State.Named "format" BS.ByteString) effs
+	) =>
 	Int -> Eff.E (Pipe BS.ByteString () effs) ()
 mainPipe bffsz = do
 	Pipe.print' =<< takeBit8 @() 1
@@ -78,7 +101,10 @@ mainPipe bffsz = do
 	then readNonCompressed @() bffsz
 	else if bt == 1 then bits Pipe.=$=
 		huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$=
-		putDecoded fixedTable fixedDstTable 0 Pipe.=$= printPipe @RunLength @() @(Pipe RunLength () effs)
+		putDecoded fixedTable fixedDstTable 0 Pipe.=$=
+			runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
+			format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
+			printPipe @BS.ByteString @() @(Pipe BS.ByteString () effs)
 	else if bt == 2 then do
 		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
 		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
@@ -91,7 +117,10 @@ mainPipe bffsz = do
 				(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
 					Prelude.splitAt hlit <$> getCodeTable (hlit + hdist)
 				State.put (lct, lct :: BinTree Int)
-				putDecoded lct dct 0 Pipe.=$= printPipe @RunLength @() @(Pipe RunLength () effs)
+				putDecoded lct dct 0 Pipe.=$=
+					runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
+					format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
+					printPipe @BS.ByteString @() @(Pipe BS.ByteString () effs)
 	else error "not implemented"
 
 getCodeTable :: (
@@ -166,7 +195,7 @@ putDist t dt ln pri = do
 	case mi of
 		Just (Left i)
 			| 0 <= i && i <= 3 -> do
-				Pipe.yield @(Either Int Word16) (RunLengthRaw ln (runLengthDist i 0))
+				Pipe.yield @(Either Int Word16) (RunLengthLenDist ln (runLengthDist i 0))
 				State.put (t, t)
 				putDecoded t dt 0
 			| 4 <= i && i <= 29 -> do
@@ -174,7 +203,7 @@ putDist t dt ln pri = do
 				putDist t dt ln i
 			| otherwise -> error $ "putDist: yet " ++ show i
 		Just (Right eb) -> do
-			Pipe.yield @(Either Int Word16) (RunLengthRaw ln (runLengthDist pri eb))
+			Pipe.yield @(Either Int Word16) (RunLengthLenDist ln (runLengthDist pri eb))
 			State.put (t, t)
 			putDecoded t dt 0
 		_ -> error $ "putDist: yet"
@@ -212,7 +241,7 @@ readNonCompressed bffsz = do
 		| ln == 0 = [] | ln <= bs = [ln]
 		| otherwise = bs : separate bs (ln - bs)
 
-data RunLength = RunLengthLiteral Word8 | RunLengthRaw RunLengthLength RunLengthDist deriving Show
+data RunLength = RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist deriving Show
 
 data RunLengthLength = RunLengthLength Int deriving Show
 
@@ -222,4 +251,90 @@ runLengthLength i eb = RunLengthLength $ calcLength i eb
 
 runLengthDist i eb = RunLengthDist $ calcDist i eb
 
-runLengthDummy = RunLengthRaw (RunLengthLength 123) (RunLengthDist 789)
+runLengthDummy = RunLengthLenDist (RunLengthLength 123) (RunLengthDist 789)
+
+runLength :: (
+	Union.Member (Pipe.P RunLength (Either Word8 BS.ByteString)) effs,
+	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
+	Eff.E effs ()
+runLength = Pipe.await @_ @(Either Word8 BS.ByteString) >>= \case
+	Nothing -> pure ()
+	Just rl -> runLengthRun @RunLength rl >> runLength
+
+runLengthRun :: forall i effs . (
+	Union.Member (Pipe.P i (Either Word8 BS.ByteString)) effs,
+	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
+	RunLength -> Eff.E effs ()
+runLengthRun = \case
+	RunLengthLiteral w -> do
+		State.modify (`snoc` w)
+		Pipe.yield @i @(Either Word8 BS.ByteString) $ Left w
+	RunLengthLenDist (RunLengthLength ln) (RunLengthDist d) -> do
+		ws' <- State.gets \ws -> repetition ws ln d
+		State.modify (`appendR` ws')
+		Pipe.yield @i @(Either Word8 BS.ByteString) . Right $ BS.pack ws'
+
+snoc :: Seq.Seq Word8 -> Word8 -> Seq.Seq Word8
+snoc s w = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	s' Seq.|> w
+	where ln = Seq.length s
+
+appendR :: Seq.Seq Word8 -> [Word8] -> Seq.Seq Word8
+appendR s ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	foldl (Seq.|>) s' ws
+	where ln = Seq.length s
+
+repetition :: Seq.Seq Word8 -> Int -> Int -> [Word8]
+repetition ws r d = takeRep r ws' ws'
+	where ws' = toList . Seq.take r $ takeR d ws
+
+takeRep :: Int -> [a] -> [a] -> [a]
+takeRep 0 _ _ = []
+takeRep n xs0 (x : xs) = x : takeRep (n - 1) xs0 xs
+takeRep n xs0 [] = takeRep n xs0 xs0
+
+takeR :: Int -> Seq.Seq Word8 -> Seq.Seq Word8
+takeR n xs = Seq.drop (Seq.length xs - n) xs
+
+format :: (
+	Union.Member (Pipe.P (Either Word8 BS.ByteString) BS.ByteString) effs,
+	Union.Member (State.Named "format" BS.ByteString) effs
+	) =>
+	Int -> Eff.E effs ()
+format n = do
+	b <- checkLength n
+	if b
+	then yieldLen @(Either Word8 BS.ByteString) n >> format n
+	else readMore' >>= bool
+		(Pipe.yield @(Either Word8 BS.ByteString) =<<
+			State.getN @"format" @BS.ByteString)
+--		(pure ())
+		(format n)
+
+readMore' :: (
+	Union.Member (State.Named "format" BS.ByteString) effs,
+	Union.Member (Pipe.P (Either Word8 BS.ByteString) BS.ByteString) effs
+	) =>
+	Eff.E effs Bool
+readMore' = Pipe.await @_ @BS.ByteString >>= \case
+	Nothing -> pure False
+	Just (Left w) -> True <$ State.modifyN @"format" (`BS.snoc` w)
+	Just (Right bs) -> True <$ State.modifyN @"format" (`BS.append` bs)
+
+checkLength :: (
+	Union.Member (State.Named "format" BS.ByteString) effs
+	) =>
+	Int -> Eff.E effs Bool
+checkLength n = do
+	bs <- State.getN @"format"
+	pure $ BS.length bs >= n
+
+yieldLen :: forall i effs . (
+	Union.Member (State.Named "format" BS.ByteString) effs,
+	Union.Member (Pipe.P i BS.ByteString) effs ) =>
+	Int -> Eff.E effs ()
+yieldLen n = do
+	bs <- State.getN @"format"
+	let	(r, bs') = BS.splitAt n bs
+	State.putN @"format" bs'
+	Pipe.yield @i r

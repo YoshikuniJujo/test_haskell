@@ -24,6 +24,7 @@ dependencies:
 - primitive
 - array
 - vector
+- containers
 - bytestring
 - optparse-declarative
 - try-yafee
