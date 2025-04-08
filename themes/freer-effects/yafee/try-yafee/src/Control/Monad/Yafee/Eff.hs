@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yafee.Eff (
-	E, eff, effBase, run, runM, handleRelay, interpose
+	E, eff, effBase, run, runM, handleRelay, handleRelayS, interpose
 	) where
 
 import Control.Monad.Fix
@@ -31,11 +31,21 @@ effBase :: Union.Base t effs => t a -> E effs a
 effBase = (Freer.:>>= FTCQueue.singleton Freer.Pure) . Union.injBase
 
 handleRelay ::
+	(a -> E effs b) ->
+	(forall v . eff v -> (v -> E effs b) -> E effs b) ->
+	E (eff ': effs) a -> E effs b
+handleRelay ret h = fix \go -> \case
+	Freer.Pure x -> ret x
+	u Freer.:>>= q -> case Union.decomp u of
+		Left u' -> u' Freer.:>>= FTCQueue.singleton (go `Freer.comp` q)
+		Right x -> h x (go `Freer.comp` q)
+
+handleRelayS ::
 	s ->
 	(s -> a -> E effs b) ->
 	(forall v . s -> eff v -> (s -> v -> E effs b) -> E effs b) ->
 	E (eff ': effs) a -> E effs b
-handleRelay s0 ret h = ($ s0) $ fix \go s -> \case
+handleRelayS s0 ret h = ($ s0) $ fix \go s -> \case
 	Freer.Pure x -> ret s x
 	u Freer.:>>= q -> case Union.decomp u of
 		Left u' -> u' Freer.:>>= FTCQueue.singleton (go s `Freer.comp` q)
