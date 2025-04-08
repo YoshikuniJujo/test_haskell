@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-04-04
+snapshot: nightly-2025-04-07
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 141bbbeee447da42396a623ebad6b39f25533866
+    commit: ade0ec4b869c0be246f0964b61fa7a0d86656a53
     subdirs:
       - themes/freer-effects/yafee/try-freer-base-classes
 
