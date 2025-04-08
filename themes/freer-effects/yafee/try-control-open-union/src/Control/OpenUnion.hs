@@ -34,8 +34,8 @@ class Base (t :: T) (ts :: [T]) where elemNoBase :: P t ts
 
 instance Base t '[t] where elemNoBase = P 0
 
-instance Base t ts => Base t (_u ': _v ': ts) where
-	elemNoBase = P $ 1 + unP (elemNoBase :: P t ts)
+instance Base t (v ': ts) => Base t (_u ': v ': ts) where
+	elemNoBase = P $ 1 + unP (elemNoBase :: P t (v ': ts))
 
 inj :: forall t ts a . Member t ts => t a -> U ts a
 inj = U $ unP (elemNo :: P t ts)
