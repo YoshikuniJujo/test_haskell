@@ -9,8 +9,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yafee.State (
+
+	-- * NORMAL
+
 	S, get, gets, put, modify, run, transaction,
-	Named(..), getN, putN, runNamed
+
+	-- * NAMED
+
+	Named(..), getN, putN, modifyN, runNamed
+
 	) where
 
 import GHC.TypeLits
@@ -27,23 +34,26 @@ data Named (nm :: Symbol) s a where Get :: Named nm s s; Put' :: forall nm s . !
 get :: Union.Member (S s) effs => Eff.E effs s
 get = getN @""
 
-getN :: forall nm s effs . Union.Member (Named nm s) effs => Eff.E effs s
-getN = Eff.eff (Get @nm)
-
 gets :: Union.Member (S s) effs => (s -> t) -> Eff.E effs t
 gets f = f <$> get
 
 put :: Union.Member (S s) effs => s -> Eff.E effs ()
 put = putN @""
 
-putN :: forall nm s effs . Union.Member (Named nm s) effs => s -> Eff.E effs ()
-putN = Eff.eff . (Put' @nm)
-
 modify :: Union.Member (S s) effs => (s -> s) -> Eff.E effs ()
-modify f = put . f =<< get
+modify = modifyN @""
 
 run :: Eff.E (S s ': effs) a -> s -> Eff.E effs (a, s)
 run = runNamed @""
+
+getN :: forall nm s effs . Union.Member (Named nm s) effs => Eff.E effs s
+getN = Eff.eff (Get @nm)
+
+putN :: forall nm s effs . Union.Member (Named nm s) effs => s -> Eff.E effs ()
+putN = Eff.eff . (Put' @nm)
+
+modifyN :: forall nm s effs . Union.Member (Named nm s) effs => (s -> s) -> Eff.E effs ()
+modifyN f = putN @nm . f =<< getN @nm
 
 runNamed :: Eff.E (Named nm s ': effs) a -> s -> Eff.E effs (a, s)
 Freer.Pure x `runNamed` s = pure (x, s)
