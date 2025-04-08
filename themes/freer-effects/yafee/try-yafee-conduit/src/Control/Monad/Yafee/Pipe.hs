@@ -63,8 +63,8 @@ p@(Freer.Pure _) =$= (v Freer.:>>= l) = case Union.decomp v of
 
 (=@=) :: forall i a o effs r r' .
 	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
-	Eff.E (P i o ': effs) r
-Freer.Pure r =@= _ = Freer.Pure r
+	Eff.E (P i o ': effs) (r, [a])
+Freer.Pure r =@= _ = Freer.Pure (r, [])
 p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
 	case (Union.decomp u, Union.decomp v) of
 		(Left u', _) ->
@@ -86,7 +86,7 @@ p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
 		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
 	Right Await -> Union.inj (Await @i @o) Freer.:>>=
 		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
-	Right (Yield _o) -> (k `Freer.app` ()) =@= p'
+	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@= p')
 
 convert :: forall a b effs . (a -> b) -> Eff.E (P a b ': effs) ()
 convert f = await @a @b >>= maybe (pure ()) ((>> convert f) . yield @a @b . f)
