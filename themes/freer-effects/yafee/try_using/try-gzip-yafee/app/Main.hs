@@ -55,13 +55,14 @@ main = do
 			mainPipe formatSize
 
 run :: Eff.E (Pipe () () '[
-	Except.E String, State.S Crc, State.S BS.ByteString,
+	Except.E String, State.Named "file-length" Int,
+	State.S Crc, State.S BS.ByteString,
 	State.S BitInfo, State.S ExtraBits, State.S (BinTree Int, BinTree Int),
 	State.S (Seq.Seq Word8),
 	State.Named "format" BS.ByteString,
 	Fail.F, IO ]) () ->
 	IO (Either String
-		(((((((Either String ((), [()]), Crc), BS.ByteString), BitInfo),
+		((((((((Either String ((), [()]), Int), Crc), BS.ByteString), BitInfo),
 						ExtraBits),
 					(BinTree Int, BinTree Int)),
 				Seq.Seq Word8),
@@ -70,7 +71,7 @@ run = Eff.runM . Fail.run
 	. (`State.runNamed` "")
 	. (`State.run` Seq.empty)
 	. (`State.run` (fixedTable, fixedTable)) . (`State.run` ExtraBits 0)
-	. runBitArray "" . (`State.run` Crc 0xffffffff)
+	. runBitArray "" . (`State.run` Crc 0xffffffff) . (flip (State.runNamed @"file-length") 0)
 	. Except.run @String . Pipe.run @() @()
 
 type Pipe i o effs = (Pipe.P i o ': effs)
@@ -84,7 +85,8 @@ mainPipe :: forall effs . (
 	Union.Member Union.Fail effs, Union.Member IO effs,
 	Union.Member (State.S (Seq.Seq Word8)) effs,
 	Union.Member (State.Named "format" BS.ByteString) effs,
-	Union.Member (State.S Crc) effs
+	Union.Member (State.S Crc) effs,
+	Union.Member (State.Named "file-length" Int) effs
 	) =>
 	Int -> Eff.E (Pipe BS.ByteString () effs) ()
 mainPipe bffsz = do
@@ -205,7 +207,8 @@ putDist t dt ln pri = do
 printPipe :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member IO effs,
-	Union.Member (State.S Crc) effs
+	Union.Member (State.S Crc) effs,
+	Union.Member (State.Named "file-length" Int) effs
 	) =>
 	Eff.E effs ()
 printPipe = do
@@ -216,7 +219,8 @@ printPipe = do
 printPipe' :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member IO effs,
-	Union.Member (State.S Crc) effs
+	Union.Member (State.S Crc) effs,
+	Union.Member (State.Named "file-length" Int) effs
 	) =>
 	Eff.E effs ()
 printPipe' = do
@@ -224,6 +228,7 @@ printPipe' = do
 	maybe (pure ())
 		(\x -> do
 			calcCrc' x
+			State.modifyN @"file-length" (+ BS.length x)
 			Pipe.print' (x :: BS.ByteString)
 			printPipe' @o) mx
 
