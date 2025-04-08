@@ -9,6 +9,7 @@
 
 module Control.Monad.Yafee.Pipe where
 
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Freer qualified as Freer
@@ -25,12 +26,13 @@ await = Eff.eff (Await @_ @o)
 yield :: forall i o effs . Union.Member (P i o) effs => o -> Eff.E effs ()
 yield = Eff.eff . Yield @i
 
-run :: Eff.E (P i o ': effs) a -> Eff.E effs (Maybe a)
+run :: Eff.E (P i o ': effs) a -> Eff.E effs (a, [o])
 run = \case
-	Freer.Pure x -> Freer.Pure $ Just x
+	Freer.Pure x -> Freer.Pure $ (x, [])
 	u Freer.:>>= k -> case Union.decomp u of
 		Left u' -> u' Freer.:>>= FTCQueue.singleton (run `Freer.comp` k)
-		Right _ -> Freer.Pure Nothing
+		Right Await -> run $ k `Freer.app` Nothing
+		Right (Yield o) -> ((o :) `second`) <$> run (k `Freer.app` ())
 
 (=$=) :: forall i a o effs r r' .
 	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
