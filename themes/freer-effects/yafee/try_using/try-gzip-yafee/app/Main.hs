@@ -53,7 +53,7 @@ run :: Eff.E (Pipe () () '[
 	State.S BitInfo, State.S ExtraBits, State.S (BinTree Int, BinTree Int),
 	Fail.F, IO ]) () ->
 	IO (Either String (
-		((((Either String (Maybe ()), Crc), BS.ByteString), BitInfo),
+		((((Either String ((), [()]), Crc), BS.ByteString), BitInfo),
 			ExtraBits), (BinTree Int, BinTree Int)) )
 run = Eff.runM . Fail.run
 	. (`State.run` (fixedTable, fixedTable)) . (`State.run` ExtraBits 0)

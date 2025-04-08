@@ -13,7 +13,6 @@ import Control.Monad.ST
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.OpenUnion qualified as Union
-import Data.Maybe
 import Data.Vector.Mutable qualified as Vector
 
 foo :: PrimMonad m => m Int
@@ -45,11 +44,11 @@ bar = do
 		put @m @(Pipe.P Int () ': effs) v
 	pure v
 
-barRunned' :: forall m . PrimMonad m => m (Maybe (Vector.MVector (PrimState m) (Maybe Int)))
-barRunned' = Eff.runM $ Pipe.run (bar @m :: Eff.E '[(Pipe.P () ()), m] (Vector.MVector (PrimState m) (Maybe Int)))
+barRunned' :: forall m . PrimMonad m => m ((Vector.MVector (PrimState m) (Maybe Int)), [()])
+barRunned' = Eff.runM $ Pipe.run (bar @m)
 
 tryIO :: IO (Maybe Int)
-tryIO = barRunned' >>= (`Vector.read` 3) . fromJust
+tryIO = barRunned' >>= (`Vector.read` 3) . fst
 
 tryST :: Maybe Int
-tryST = runST $ barRunned' >>= (`Vector.read` 3) . fromJust
+tryST = runST $ barRunned' >>= (`Vector.read` 3) . fst

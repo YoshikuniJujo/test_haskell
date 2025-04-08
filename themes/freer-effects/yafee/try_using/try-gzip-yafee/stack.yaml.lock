@@ -5,59 +5,59 @@
 
 packages:
 - completed:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yafee-conduit
     pantry-tree:
-      sha256: ae08bbc21d15a5cdd39f6782071b40152256aa8797c861cf999767cd8b7daa47
+      sha256: e97d57d5fc070012d9adaa14f6aa7a38b7ee083e621eea2fd5cb8e3092dad232
       size: 592
     subdir: themes/freer-effects/yafee/try-yafee-conduit
     version: 0.1.0.0
   original:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-yafee-conduit
 - completed:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yafee-rwseft
     pantry-tree:
-      sha256: ee3030859484d362775423be22c781d7b40b371dd96b46b915581cb73fefda99
+      sha256: fb8d47fcc2d36c4acef705c0d8133401095a7e290ac59a12b632f98cf0357784
       size: 956
     subdir: themes/freer-effects/yafee/try-yafee-rwseft
     version: 0.1.0.0
   original:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-yafee-rwseft
 - completed:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yafee
     pantry-tree:
-      sha256: 35ec429eb0a8d4d4a99b189497dd3aeb3e2524c9dda7c6c81b53a618212d2eca
+      sha256: c06b9959c388fdb0c50ae0bcd73fa62cd3aaccad50769fb2133f80acad2acf24
       size: 583
     subdir: themes/freer-effects/yafee/try-yafee
     version: 0.1.0.0
   original:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-yafee
 - completed:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     name: freer-monad
     pantry-tree:
-      sha256: 5863e03f3b29b8fffae74f5a9dc487a9ac528191448a84e4bb74ef3cb3884fc9
+      sha256: 8aca93776af95381e97cb197c84cd63f1ce0b2d9df161723c249ce2352ec3bcb
       size: 641
     subdir: themes/freer-effects/yafee/freer-monad
     version: 0.1.0.0
   original:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/freer-monad
 - completed:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-control-open-union
     pantry-tree:
@@ -66,11 +66,11 @@ packages:
     subdir: themes/freer-effects/yafee/try-control-open-union
     version: 0.1.0.0
   original:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-control-open-union
 - completed:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-base-classes
     pantry-tree:
@@ -79,7 +79,7 @@ packages:
     subdir: themes/freer-effects/yafee/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 00791348f1c8089705e4f30890accd0f58c0233e
+    commit: 0ac3e43253f9d3654e692db747f004c025f98796
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-freer-base-classes
 - completed:
@@ -95,7 +95,7 @@ packages:
     git: https://github.com/tanakh/optparse-declarative
 snapshots:
 - completed:
-    sha256: 47a4c110af9a5c55e3135bbf7cec3a6e5451ba3bfa50a06f0443012a2642fbc0
-    size: 674536
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/3.yaml
-  original: nightly-2025-04-03
+    sha256: 16d403d21e50c2d295f40ef52f50e41c34d0c5a36faa164ee8941bf5427d781f
+    size: 676259
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/7.yaml
+  original: nightly-2025-04-07
