@@ -10,7 +10,9 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 
 	destroyBeforeCreateSwapChain,
 
-	createSwapChain, onlyCreateSwapChain
+	createSwapChain, onlyCreateSwapChain,
+
+	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize
 
 	) where
 
@@ -102,4 +104,38 @@ foreign import ccall "im_gui_impl_vulkan_h_only_create_swap_chain"
 	cxx_im_gui_impl_vulkan_h_only_create_swap_chain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S ->
+	Ptr Vk.Sfc.Capabilities -> IO ()
+
+onlyCreateSwapChainNoWd ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A ->
+	#{type uint32_t} -> Vk.Swpch.S ->
+	Ptr Vk.Sfc.Capabilities ->
+	Vk.Sfc.S -> Ptr Vk.Sfc.Format -> #{type VkPresentModeKHR} ->
+	#{type int} -> #{type int} -> IO (Ptr Vk.Swpch.S)
+onlyCreateSwapChainNoWd =
+	cxx_im_gui_impl_vulkan_h_only_create_swap_chain_no_wd
+
+foreign import ccall "im_gui_impl_vulkan_h_only_create_swap_chain_no_wd"
+	cxx_im_gui_impl_vulkan_h_only_create_swap_chain_no_wd ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A ->
+	#{type uint32_t} -> Vk.Swpch.S ->
+	Ptr Vk.Sfc.Capabilities ->
+	Vk.Sfc.S -> Ptr Vk.Sfc.Format -> #{type VkPresentModeKHR} ->
+	#{type int} -> #{type int} -> IO (Ptr Vk.Swpch.S)
+
+copySwapChainToWd :: Vk.ImGui.H.Win.W -> Ptr Vk.Swpch.S -> IO ()
+copySwapChainToWd =
+	cxx_im_gui_impl_vulkan_h_copy_swapchain_to_wd
+
+foreign import ccall "im_gui_impl_vulkan_h_copy_swap_chain_to_wd"
+	cxx_im_gui_impl_vulkan_h_copy_swapchain_to_wd ::
+	Vk.ImGui.H.Win.W -> Ptr Vk.Swpch.S -> IO ()
+
+setSize :: Vk.ImGui.H.Win.W -> #{type int} -> #{type int} ->
+	Ptr Vk.Sfc.Capabilities -> IO ()
+setSize = cxx_im_gui_impl_vulkan_h_set_size
+
+foreign import ccall "im_gui_impl_vulkan_h_set_size"
+	cxx_im_gui_impl_vulkan_h_set_size ::
+	Vk.ImGui.H.Win.W -> #{type int} -> #{type int} ->
 	Ptr Vk.Sfc.Capabilities -> IO ()

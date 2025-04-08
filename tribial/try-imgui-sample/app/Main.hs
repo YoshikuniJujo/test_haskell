@@ -174,7 +174,31 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	Vk.Sfc.Phd.getCapabilities phd sfc >>= \cap ->
+
+	Vk.ImGui.H.setSize wdcxx wdt hgt cap >>
+
+	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd' ->
+	putStrLn "OOPS" >> printIO wd' >>
+
+	print (Vk.ImGui.Win.wCSurface wd') >>
+	print (Vk.ImGui.Win.wCSurfaceFormat wd') >>
+	print (Vk.ImGui.Win.wCPresentMode wd') >>
+	print (Vk.ImGui.Win.wCWidth wd') >>
+	print (Vk.ImGui.Win.wCHeight wd') >>
+
 	Vk.ImGui.H.onlyCreateSwapChain dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') cap >>
+
+	{-
+	Vk.ImGui.H.onlyCreateSwapChainNoWd dvc nil 2 (Vk.ImGui.Win.wCSwapchain z')
+		cap
+		(Vk.ImGui.Win.wCSurface wd')
+		(Vk.ImGui.Win.wCSurfaceFormat wd')
+		(Vk.ImGui.Win.wCPresentMode wd')
+		(Vk.ImGui.Win.wCWidth wd')
+		(Vk.ImGui.Win.wCHeight wd') >>= \sc ->
+	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
+	-}
+
 	Vk.ImGui.H.createSwapChain dvc wdcxx 2 >>
 	Vk.ImGui.H.createWindowSwapChain dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>

@@ -92,6 +92,8 @@
 #define IM_MAX(A, B)    (((A) >= (B)) ? (A) : (B))
 #endif
 
+#include <cstdlib>
+
 // Visual Studio warnings
 #ifdef _MSC_VER
 #pragma warning (disable: 4127) // condition expression is constant
@@ -1517,6 +1519,66 @@ void ImGui_ImplVulkanH_SetSize(
 		wd->Height = pcap->currentExtent.height; }
 }
 
+VkSwapchainKHR*
+ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain,
+	VkSurfaceCapabilitiesKHR *pcap,
+
+	VkSurfaceKHR sfc,
+	VkSurfaceFormatKHR sfmt,
+	VkPresentModeKHR pm,
+	int wdt,
+	int hgt
+
+	)
+    {
+
+	VkSwapchainKHR *pscsrc = (VkSwapchainKHR*)malloc(sizeof(VkSwapchainKHR));
+
+	VkResult err;
+	VkSurfaceCapabilitiesKHR cap = *pcap;
+
+	uint32_t min_image_count_new;
+
+        if (min_image_count < cap.minImageCount)
+            min_image_count_new = cap.minImageCount;
+        else if (cap.maxImageCount != 0 && min_image_count > cap.maxImageCount)
+            min_image_count_new = cap.maxImageCount;
+	else min_image_count_new = min_image_count;
+
+        VkSwapchainCreateInfoKHR info = {};
+        info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        info.surface = sfc;
+        info.minImageCount = min_image_count_new;
+        info.imageFormat = sfmt.format;
+        info.imageColorSpace = sfmt.colorSpace;
+        info.imageArrayLayers = 1;
+        info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;           // Assume that graphics family == present family
+        info.preTransform = (cap.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR : cap.currentTransform;
+        info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        info.presentMode = pm;
+        info.clipped = VK_TRUE;
+        info.oldSwapchain = old_swapchain;
+	info.imageExtent.width = wdt;
+	info.imageExtent.height = hgt;
+        err = vkCreateSwapchainKHR(device, &info, allocator, pscsrc);
+        check_vk_result(err);
+
+	return pscsrc;
+    }
+
+void ImGui_ImplVulkanH_CopySwapchainToWd(
+	ImGui_ImplVulkanH_Window* wd,
+	VkSwapchainKHR* pscsrc )
+{
+	VkSwapchainKHR *psc = &wd->SwapchainPupupu;
+	*psc = *pscsrc;
+}
+
 void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
@@ -1535,33 +1597,13 @@ void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	VkPresentModeKHR pm = wd->PresentMode;
 	int wdt = wd->Width;
 	int hgt = wd->Height;
-	VkSwapchainKHR *psc = &wd->SwapchainPupupu;
 
-	VkResult err;
-	VkSurfaceCapabilitiesKHR cap = *pcap;
+	VkSwapchainKHR* pscsrc;
+	pscsrc = ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
+		device, allocator, min_image_count, old_swapchain, pcap,
+		sfc, sfmt, pm, wdt, hgt );
 
-        VkSwapchainCreateInfoKHR info = {};
-        info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        info.surface = sfc;
-        info.minImageCount = min_image_count;
-        info.imageFormat = sfmt.format;
-        info.imageColorSpace = sfmt.colorSpace;
-        info.imageArrayLayers = 1;
-        info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;           // Assume that graphics family == present family
-        info.preTransform = (cap.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR : cap.currentTransform;
-        info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        info.presentMode = pm;
-        info.clipped = VK_TRUE;
-        info.oldSwapchain = old_swapchain;
-        if (info.minImageCount < cap.minImageCount)
-            info.minImageCount = cap.minImageCount;
-        else if (cap.maxImageCount != 0 && info.minImageCount > cap.maxImageCount)
-            info.minImageCount = cap.maxImageCount;
-	info.imageExtent.width = wdt;
-	info.imageExtent.height = hgt;
-        err = vkCreateSwapchainKHR(device, &info, allocator, psc);
-        check_vk_result(err);
+	ImGui_ImplVulkanH_CopySwapchainToWd(wd, pscsrc);
     }
 
 

@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-03-24
+snapshot: nightly-2025-04-07
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
     subdirs:
     - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
@@ -61,7 +61,7 @@ extra-deps:
     #- gpu-vulkan-khr-swapchain-0.1.0.1
   - gpu-vulkan-khr-surface-glfw-0.1.0.0
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-swapchain
-    commit: c6da04afa5380b986c8ad92d1671d7d21631cc31
+    commit: 3eda570729116c2ac1514f84b77c80be24b91e82
   # - gpu-vulkan-middle-khr-swapchain-0.1.0.0
   - gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-surface

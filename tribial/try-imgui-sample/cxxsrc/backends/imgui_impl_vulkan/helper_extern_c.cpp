@@ -26,6 +26,17 @@ extern "C" void im_gui_impl_vulkan_h_only_create_swap_chain(
 	uint32_t min_image_count,
 	VkSwapchainKHR old_swapchain,
 	VkSurfaceCapabilitiesKHR* cap );
+extern "C" VkSwapchainKHR* im_gui_impl_vulkan_h_only_create_swap_chain_no_wd(
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	uint32_t min_image_count, VkSwapchainKHR old_swapchain,
+	VkSurfaceCapabilitiesKHR* cap,
+	VkSurfaceKHR sfc,
+	VkSurfaceFormatKHR sfmt, VkPresentModeKHR pm, int wdt, int hgt );
+extern "C" void im_gui_impl_vulkan_h_copy_swap_chain_to_wd(
+	ImGui_ImplVulkanH_Window* wd, VkSwapchainKHR* pscsrc );
+extern "C" void im_gui_impl_vulkan_h_set_size(
+	ImGui_ImplVulkanH_Window* wd,
+	int w, int h, VkSurfaceCapabilitiesKHR *pcap );
 
 void
 im_gui_impl_vulkan_h_create_window_swap_chain(
@@ -77,4 +88,37 @@ im_gui_impl_vulkan_h_only_create_swap_chain(
 {
 	ImGui_ImplVulkanH_OnlyCreateSwapChain(
 		device, wd, allocator, w, h, min_image_count, old_swapchain, cap );
+}
+
+VkSwapchainKHR*
+im_gui_impl_vulkan_h_only_create_swap_chain_no_wd(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain,
+	VkSurfaceCapabilitiesKHR* cap,
+
+	VkSurfaceKHR sfc,
+	VkSurfaceFormatKHR sfmt,
+	VkPresentModeKHR pm,
+	int wdt, int hgt )
+{
+	return ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
+		device, allocator, min_image_count, old_swapchain, cap,
+		sfc, sfmt, pm, wdt, hgt );
+}
+
+void
+im_gui_impl_vulkan_h_copy_swap_chain_to_wd(
+	ImGui_ImplVulkanH_Window* wd, VkSwapchainKHR* pscsrc )
+{
+	ImGui_ImplVulkanH_CopySwapchainToWd(wd, pscsrc);
+}
+
+void
+im_gui_impl_vulkan_h_set_size(
+	ImGui_ImplVulkanH_Window* wd,
+	int w, int h, VkSurfaceCapabilitiesKHR *pcap )
+{
+	ImGui_ImplVulkanH_SetSize(wd, w, h, pcap);
 }

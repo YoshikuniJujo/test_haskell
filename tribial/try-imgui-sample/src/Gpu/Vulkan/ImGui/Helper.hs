@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImGui.Helper (
@@ -10,7 +11,9 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowSwapChain, createWindowCommandBuffers,
 
 	destroyBeforeCreateSwapChain,
-	createSwapChain, onlyCreateSwapChain
+	createSwapChain, onlyCreateSwapChain,
+
+	onlyCreateSwapChainNoWd, copySwapChainToWd, M.setSize
 
 	) where
 
@@ -77,3 +80,17 @@ onlyCreateSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Swpch.S fmt ssc -> Vk.Sfc.Capabilities -> IO ()
 onlyCreateSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) cap =
 	M.onlyCreateSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc cap
+
+onlyCreateSwapChainNoWd :: (
+	Vk.AllocCallbacks.ToMiddle mac, Vk.T.FormatToValue fmt, Vk.T.FormatToValue fmt' ) =>
+	Vk.Dvc.D sd ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 ->
+	Vk.Swpch.S fmt ssc -> Vk.Sfc.Capabilities -> Vk.Sfc.S ssfc -> Vk.Sfc.Format fmt' ->
+	Vk.Sfc.PresentMode -> Int32 -> Int32 -> IO (Vk.Swpch.S fmt ssc)
+onlyCreateSwapChainNoWd (Vk.Dvc.D dvc)
+	macs mic (Vk.Swpch.S sc) cap (Vk.Sfc.S sfc) (Vk.Sfc.formatToMiddle -> sfmt) pm wdt hgt =
+	Vk.Swpch.S <$> M.onlyCreateSwapChainNoWd dvc
+		(Vk.AllocCallbacks.toMiddle macs) mic sc cap sfc sfmt pm wdt hgt
+
+copySwapChainToWd :: Vk.ImGui.H.Win.W -> Vk.Swpch.S fmt ssc -> IO ()
+copySwapChainToWd wd (Vk.Swpch.S sc) = M.copySwapChainToWd wd sc

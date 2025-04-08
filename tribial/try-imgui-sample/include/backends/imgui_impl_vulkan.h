@@ -176,6 +176,24 @@ IMGUI_IMPL_API int                  ImGui_ImplVulkanH_GetMinImageCountFromPresen
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_SetSize(
+	ImGui_ImplVulkanH_Window* wd,
+	int w, int h,
+	VkSurfaceCapabilitiesKHR *pcap );
+VkSwapchainKHR* ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain,
+	VkSurfaceCapabilitiesKHR *pcap,
+
+	VkSurfaceKHR sfc,
+	VkSurfaceFormatKHR sfmt,
+	VkPresentModeKHR pm,
+	int wdt,
+	int hgt );
+void ImGui_ImplVulkanH_CopySwapchainToWd(
+	ImGui_ImplVulkanH_Window* wd, VkSwapchainKHR* pscsrc );
 void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,

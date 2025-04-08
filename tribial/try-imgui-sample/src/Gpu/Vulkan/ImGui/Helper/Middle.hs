@@ -11,7 +11,9 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 	createWindowSwapChain, createWindowCommandBuffers,
 
 	destroyBeforeCreateSwapChain,
-	createSwapChain, onlyCreateSwapChain
+	createSwapChain, onlyCreateSwapChain,
+
+	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize
 
 	) where
 
@@ -23,6 +25,7 @@ import Data.List qualified as L
 import Data.Word
 import Data.Int
 
+import Gpu.Vulkan.Middle qualified as Vk
 import Gpu.Vulkan.Enum qualified as Vk
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd
@@ -94,3 +97,30 @@ onlyCreateSwapChain
 	poke pcap $ Vk.Sfc.capabilitiesToCore cap
 	csc <- Vk.Swpch.sToCore sc
 	C.onlyCreateSwapChain dvc wd pacs wdt hgt mic csc pcap
+
+onlyCreateSwapChainNoWd ::
+	Vk.Dvc.D -> TPMaybe.M Vk.AllocCallbacks.A mud -> Word32 ->
+	Vk.Swpch.S -> Vk.Sfc.Capabilities -> Vk.Sfc.S -> Vk.Sfc.Format ->
+	Vk.Sfc.PresentMode -> Int32 -> Int32 -> IO Vk.Swpch.S
+onlyCreateSwapChainNoWd
+	(Vk.Dvc.D dvc) macs mic sc cap (Vk.Sfc.S sfc) sfmt (Vk.Sfc.PresentMode pm) wdt hgt =
+	alloca \psc' -> do
+	Vk.AllocCallbacks.mToCore macs \pacs -> alloca \pcap -> alloca \psfmt -> do
+		poke pcap $ Vk.Sfc.capabilitiesToCore cap
+		csc <- Vk.Swpch.sToCore sc
+		poke psfmt $ Vk.Sfc.formatToCore sfmt
+		psc <- C.onlyCreateSwapChainNoWd dvc pacs mic csc pcap sfc psfmt pm wdt hgt
+		poke psc' =<< peek psc
+	Vk.Swpch.sFromCore (Vk.Extent2d (fromIntegral wdt) (fromIntegral hgt))
+		=<< peek psc'
+
+copySwapChainToWd :: Vk.ImGui.H.Win.W -> Vk.Swpch.S -> IO ()
+copySwapChainToWd wd sc = alloca \psc -> do
+	csc <- Vk.Swpch.sToCore sc
+	poke psc csc
+	C.copySwapChainToWd wd psc
+
+setSize :: Vk.ImGui.H.Win.W -> Int32 -> Int32 -> Vk.Sfc.Capabilities -> IO ()
+setSize wd w h cap = alloca \pcap -> do
+	poke pcap $ Vk.Sfc.capabilitiesToCore cap
+	C.setSize wd w h pcap

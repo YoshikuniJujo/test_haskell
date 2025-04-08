@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-ext-debug-utils
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     version: 0.1.0.8
   original:
-    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
 - completed:
-    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle-ext-debug-utils
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
     version: 0.1.0.4
   original:
-    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
 - completed:
-    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-ext-debug-utils
     pantry-tree:
@@ -40,7 +40,7 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
     version: 0.1.0.0
   original:
-    commit: 768fb5ad66268f4c92c568ade2dd164e22bdb930
+    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
@@ -95,15 +95,15 @@ packages:
   original:
     hackage: gpu-vulkan-khr-surface-glfw-0.1.0.0
 - completed:
-    commit: c6da04afa5380b986c8ad92d1671d7d21631cc31
+    commit: 3eda570729116c2ac1514f84b77c80be24b91e82
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-swapchain
     name: gpu-vulkan-middle-khr-swapchain
     pantry-tree:
-      sha256: 1162c52427a3a383f4f0c3fa433c279a0b705e3ff72017fdbda3ed28d3608c5a
+      sha256: 92ff0b15af94d56b6e7f0800866f4f27e4911853a6d2bbc40c9f52be2243c285
       size: 966
     version: 0.1.0.0
   original:
-    commit: c6da04afa5380b986c8ad92d1671d7d21631cc31
+    commit: 3eda570729116c2ac1514f84b77c80be24b91e82
     git: https://github.com/YoshikuniJujo/gpu-vulkan-middle-khr-swapchain
 - completed:
     hackage: gpu-vulkan-middle-khr-surface-glfw-0.1.0.1@sha256:b6c7949b9e81df033e427a665527851b4a871404143f1378f688f44510d122b1,2253
@@ -175,7 +175,7 @@ packages:
     hackage: tools-yj-0.1.0.23
 snapshots:
 - completed:
-    sha256: a243ece07ce62348f5018c471d84e7056b537c69c309a0cfa997ccdde6ec3b9c
-    size: 666182
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/3/24.yaml
-  original: nightly-2025-03-24
+    sha256: 16d403d21e50c2d295f40ef52f50e41c34d0c5a36faa164ee8941bf5427d781f
+    size: 676259
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/7.yaml
+  original: nightly-2025-04-07
