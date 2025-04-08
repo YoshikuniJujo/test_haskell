@@ -9,7 +9,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.OpenUnion (
-	U, Member, T, inj, prj, decomp, extract, weaken, NonDet(..), Fail(..)
+	U, Member, Base, T, inj, injBase, prj, decomp, extract, weaken, NonDet(..), Fail(..)
 	) where
 
 import Control.Monad.Freer.NonDetable qualified as NonDetable
@@ -30,8 +30,18 @@ instance Member t (t ': ts) where elemNo = P 0
 instance {-# OVERLAPPABLE #-} Member t ts => Member t (_t' ': ts) where
 	elemNo = P $ 1 + unP (elemNo :: P t ts)
 
+class Base (t :: T) (ts :: [T]) where elemNoBase :: P t ts
+
+instance Base t '[t] where elemNoBase = P 0
+
+instance Base t ts => Base t (_t' ': ts) where
+	elemNoBase = P $ 1 + unP (elemNoBase :: P t ts)
+
 inj :: forall t ts a . Member t ts => t a -> U ts a
 inj = U $ unP (elemNo :: P t ts)
+
+injBase :: forall t ts a . Base t ts => t a -> U ts a
+injBase = U $ unP (elemNoBase :: P t ts)
 
 prj :: forall t ts a . Member t ts => U ts a -> Maybe (t a)
 prj (U i x)
