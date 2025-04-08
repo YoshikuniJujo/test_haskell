@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 30ef8045c85dbc1eedf1904118958d60dcbc73ae
+    commit: 6347d9d2220c4d7af0fd35bf65f421cf8cc826df
     git: https://github.com/YoshikuniJujo/test_haskell
     name: freer-monad
     pantry-tree:
@@ -14,24 +14,24 @@ packages:
     subdir: themes/freer-effects/yafee/freer-monad
     version: 0.1.0.0
   original:
-    commit: 30ef8045c85dbc1eedf1904118958d60dcbc73ae
+    commit: 6347d9d2220c4d7af0fd35bf65f421cf8cc826df
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/freer-monad
 - completed:
-    commit: 30ef8045c85dbc1eedf1904118958d60dcbc73ae
+    commit: 6347d9d2220c4d7af0fd35bf65f421cf8cc826df
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-control-open-union
     pantry-tree:
-      sha256: 6d0e262f84f9cfe858d8b33cca17502521fe60282f71c50b3d565b790230d19d
+      sha256: d5dfab9520b73dee95afd85348010abbce9f31b1072fe2186b2354edee8cba48
       size: 590
     subdir: themes/freer-effects/yafee/try-control-open-union
     version: 0.1.0.0
   original:
-    commit: 30ef8045c85dbc1eedf1904118958d60dcbc73ae
+    commit: 6347d9d2220c4d7af0fd35bf65f421cf8cc826df
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-control-open-union
 - completed:
-    commit: 30ef8045c85dbc1eedf1904118958d60dcbc73ae
+    commit: 6347d9d2220c4d7af0fd35bf65f421cf8cc826df
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-base-classes
     pantry-tree:
@@ -40,12 +40,12 @@ packages:
     subdir: themes/freer-effects/yafee/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 30ef8045c85dbc1eedf1904118958d60dcbc73ae
+    commit: 6347d9d2220c4d7af0fd35bf65f421cf8cc826df
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yafee/try-freer-base-classes
 snapshots:
 - completed:
-    sha256: 47a4c110af9a5c55e3135bbf7cec3a6e5451ba3bfa50a06f0443012a2642fbc0
-    size: 674536
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/3.yaml
-  original: nightly-2025-04-03
+    sha256: 16d403d21e50c2d295f40ef52f50e41c34d0c5a36faa164ee8941bf5427d781f
+    size: 676259
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/7.yaml
+  original: nightly-2025-04-07

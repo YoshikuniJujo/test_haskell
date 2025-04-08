@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yafee.Eff (
-	E, eff, run, runM, handleRelay, interpose
+	E, eff, effBase, run, runM, handleRelay, interpose
 	) where
 
 import Control.Monad.Fix
@@ -26,6 +26,9 @@ runM (u Freer.:>>= q) = runM . (q `Freer.app`) =<< Union.extract u
 
 eff :: Union.Member t effs => t a -> E effs a
 eff = (Freer.:>>= FTCQueue.singleton Freer.Pure) . Union.inj
+
+effBase :: Union.Base t effs => t a -> E effs a
+effBase = (Freer.:>>= FTCQueue.singleton Freer.Pure) . Union.injBase
 
 handleRelay ::
 	(a -> E effs b) ->
