@@ -12,7 +12,11 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 
 	createSwapChain, onlyCreateSwapChain,
 
-	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize
+	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize,
+
+	createSwapChainModifyWd,
+
+	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer
 
 	) where
 
@@ -24,6 +28,7 @@ import Data.Int
 import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
 import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
+import Gpu.Vulkan.Image.Core qualified as Vk.Img
 
 import Gpu.Vulkan.Khr.Swapchain.Core qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface.Core qualified as Vk.Sfc
@@ -139,3 +144,29 @@ foreign import ccall "im_gui_impl_vulkan_h_set_size"
 	cxx_im_gui_impl_vulkan_h_set_size ::
 	Vk.ImGui.H.Win.W -> #{type int} -> #{type int} ->
 	Ptr Vk.Sfc.Capabilities -> IO ()
+
+createSwapChainModifyWd :: Vk.ImGui.H.Win.W -> Ptr Vk.Img.I -> #{type int} -> IO ()
+createSwapChainModifyWd =
+	cxx_im_gui_impl_vulkan_h_create_swap_chain_modify_wd
+
+foreign import ccall "im_gui_impl_vulkan_h_create_swap_chain_modify_wd"
+	cxx_im_gui_impl_vulkan_h_create_swap_chain_modify_wd ::
+	Vk.ImGui.H.Win.W -> Ptr Vk.Img.I -> #{type int} -> IO ()
+
+createWindowRenderPass = cxx_im_gui_impl_vulkan_h_create_window_render_pass
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_render_pass"
+	cxx_im_gui_impl_vulkan_h_create_window_render_pass ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
+
+createWindowImageViews = cxx_im_gui_impl_vulkan_h_create_window_image_views
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_image_views"
+	cxx_im_gui_impl_vulkan_h_create_window_image_views ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
+
+createWindowFramebuffer = cxx_im_gui_impl_vulkan_h_create_window_framebuffer
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_framebuffer"
+	cxx_im_gui_impl_vulkan_h_create_window_framebuffer ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()

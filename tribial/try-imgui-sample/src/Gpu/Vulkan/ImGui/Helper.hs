@@ -13,7 +13,11 @@ module Gpu.Vulkan.ImGui.Helper (
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
 
-	onlyCreateSwapChainNoWd, copySwapChainToWd, M.setSize
+	onlyCreateSwapChainNoWd, copySwapChainToWd, M.setSize,
+
+	createSwapChainModifyWd,
+
+	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer
 
 	) where
 
@@ -28,6 +32,7 @@ import Gpu.Vulkan.AllocationCallbacks.Internal qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.Image.Internal qualified as Vk.Img
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
@@ -95,3 +100,25 @@ onlyCreateSwapChainNoWd (Vk.Dvc.D dvc)
 
 copySwapChainToWd :: Vk.ImGui.H.Win.W -> Vk.Swpch.S fmt ssc -> IO ()
 copySwapChainToWd wd (Vk.Swpch.S sc) = M.copySwapChainToWd wd sc
+
+createSwapChainModifyWd :: Vk.ImGui.H.Win.W -> [Vk.Img.Binded sm si nm fmt] -> IO a -> IO a
+createSwapChainModifyWd wd is a = let mis = (\(Vk.Img.Binded i) -> i) <$> is in
+	M.createSwapChainModifyWd wd mis a
+
+createWindowRenderPass :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
+createWindowRenderPass (Vk.Dvc.D dvc) wd mac =
+	M.createWindowRenderPass dvc wd (Vk.AllocCallbacks.toMiddle mac)
+
+createWindowImageViews :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
+createWindowImageViews (Vk.Dvc.D dvc) wd mac =
+	M.createWindowImageViews dvc wd (Vk.AllocCallbacks.toMiddle mac)
+
+createWindowFramebuffer :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
+createWindowFramebuffer (Vk.Dvc.D dvc) wd mac =
+	M.createWindowFramebuffer dvc wd (Vk.AllocCallbacks.toMiddle mac)

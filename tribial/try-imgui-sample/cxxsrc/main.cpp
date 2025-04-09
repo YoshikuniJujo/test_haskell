@@ -178,7 +178,7 @@ ImGui_ImplVulkan_InitInfo*
 new_ImGui_ImplVulkan_InitInfo()
 {
 	return (ImGui_ImplVulkan_InitInfo*)
-		malloc(sizeof(ImGui_ImplVulkan_InitInfo));
+		calloc(1, sizeof(ImGui_ImplVulkan_InitInfo));
 }
 
 void

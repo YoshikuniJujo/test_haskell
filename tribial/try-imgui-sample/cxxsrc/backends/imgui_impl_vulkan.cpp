@@ -1606,6 +1606,20 @@ void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	ImGui_ImplVulkanH_CopySwapchainToWd(wd, pscsrc);
     }
 
+void ImGui_ImplVulkanH_CreateSwapChainModifyWd(
+	ImGui_ImplVulkanH_Window* wd,
+	VkImage* backbuffers, int ic )
+{
+	wd->ImageCount = ic;
+        wd->SemaphoreCount = wd->ImageCount + 1;
+        wd->Frames.resize(wd->ImageCount);
+        wd->FrameSemaphores.resize(wd->SemaphoreCount);
+        memset(wd->Frames.Data, 0, wd->Frames.size_in_bytes());
+        memset(wd->FrameSemaphores.Data, 0, wd->FrameSemaphores.size_in_bytes());
+        for (uint32_t i = 0; i < wd->ImageCount; i++)
+            wd->Frames[i].Backbuffer = backbuffers[i];
+}
+
 
     // Create Swapchain
 void ImGui_ImplVulkanH_CreateSwapChain(
@@ -1625,33 +1639,15 @@ void ImGui_ImplVulkanH_CreateSwapChain(
         err = vkGetSwapchainImagesKHR(device, wd->SwapchainPupupu, &wd->ImageCount, backbuffers);
         check_vk_result(err);
 
-        wd->SemaphoreCount = wd->ImageCount + 1;
-        wd->Frames.resize(wd->ImageCount);
-        wd->FrameSemaphores.resize(wd->SemaphoreCount);
-        memset(wd->Frames.Data, 0, wd->Frames.size_in_bytes());
-        memset(wd->FrameSemaphores.Data, 0, wd->FrameSemaphores.size_in_bytes());
-        for (uint32_t i = 0; i < wd->ImageCount; i++)
-            wd->Frames[i].Backbuffer = backbuffers[i];
+	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers, wd->ImageCount);
 }
 
-// Also destroy old swap chain and in-flight frames data, if any.
-void ImGui_ImplVulkanH_CreateWindowSwapChain(
+void ImGui_ImplVulkanH_CreateWindowRenderPass(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator,
-	int w, int h,
-	uint32_t min_image_count,
-	VkSwapchainKHR old_swapchain
-	)
+	const VkAllocationCallbacks* allocator )
 {
     VkResult err;
-
-    // If min image count was not specified, request different count of images dependent on selected present mode
-    if (min_image_count == 0)
-        min_image_count = ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(wd->PresentMode);
-
-    if (old_swapchain)
-        vkDestroySwapchainKHR(device, old_swapchain, allocator);
 
     // Create the Render Pass
     if (wd->UseDynamicRendering == false)
@@ -1694,9 +1690,16 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
         // but secondary viewport in multi-viewport mode may want to create one with:
         //ImGui_ImplVulkan_CreatePipeline(device, allocator, VK_NULL_HANDLE, wd->RenderPass, VK_SAMPLE_COUNT_1_BIT, &wd->Pipeline, v->Subpass);
     }
+}
 
+void ImGui_ImplVulkanH_CreateWindowImageViews(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
     // Create The Image Views
     {
+    VkResult err;
         VkImageViewCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         info.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -1715,6 +1718,14 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
             check_vk_result(err);
         }
     }
+
+void ImGui_ImplVulkanH_CreateWindowFramebuffer(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
+{
+    VkResult err;
 
     // Create Framebuffer
     if (wd->UseDynamicRendering == false)
@@ -1736,6 +1747,28 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
             check_vk_result(err);
         }
     }
+}
+
+// Also destroy old swap chain and in-flight frames data, if any.
+void ImGui_ImplVulkanH_CreateWindowSwapChain(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator,
+	int w, int h,
+	uint32_t min_image_count,
+	VkSwapchainKHR old_swapchain
+	)
+{
+    // If min image count was not specified, request different count of images dependent on selected present mode
+
+    if (old_swapchain)
+        vkDestroySwapchainKHR(device, old_swapchain, allocator);
+
+    ImGui_ImplVulkanH_CreateWindowRenderPass(device, wd, allocator);
+
+    ImGui_ImplVulkanH_CreateWindowImageViews(device, wd, allocator);
+
+    ImGui_ImplVulkanH_CreateWindowFramebuffer(device, wd, allocator);
 }
 
 // Create or resize window

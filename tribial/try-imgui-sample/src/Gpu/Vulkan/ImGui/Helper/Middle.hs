@@ -13,7 +13,11 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
 
-	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize
+	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize,
+
+	createSwapChainModifyWd,
+
+	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer
 
 	) where
 
@@ -25,6 +29,7 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.List qualified as L
 import Data.Word
 import Data.Int
+import Data.IORef
 
 import Gpu.Vulkan.Middle qualified as Vk
 import Gpu.Vulkan.Enum qualified as Vk
@@ -32,6 +37,8 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal qualified as Vk.AllocCallb
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd
 import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
+
+import Gpu.Vulkan.Image.Middle.Internal qualified as Vk.Img
 
 import Gpu.Vulkan.Khr.Surface.Enum qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc
@@ -125,3 +132,32 @@ setSize :: Vk.ImGui.H.Win.W -> Int32 -> Int32 -> Vk.Sfc.Capabilities -> IO ()
 setSize wd w h cap = alloca \pcap -> do
 	poke pcap $ Vk.Sfc.capabilitiesToCore cap
 	C.setSize wd w h pcap
+
+createSwapChainModifyWd :: Vk.ImGui.H.Win.W -> [Vk.Img.I] -> IO a -> IO a
+createSwapChainModifyWd wd is a = do
+	cis <- ((snd <$>) . readIORef . (\(Vk.Img.I i) -> i)) `mapM` is
+	allocaArray (length is) \pis -> do
+		pokeArray pis cis
+		C.createSwapChainModifyWd wd pis (fromIntegral $ length is)
+		a
+
+createWindowRenderPass ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> TPMaybe.M Vk.AllocCallbacks.A mud ->
+	IO ()
+createWindowRenderPass (Vk.Dvc.D dvc) wd macs =
+	Vk.AllocCallbacks.mToCore macs \pacs ->
+	C.createWindowRenderPass dvc wd pacs
+
+createWindowImageViews ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> TPMaybe.M Vk.AllocCallbacks.A mud ->
+	IO ()
+createWindowImageViews (Vk.Dvc.D dvc) wd macs =
+	Vk.AllocCallbacks.mToCore macs \pacs ->
+	C.createWindowImageViews dvc wd pacs
+
+createWindowFramebuffer ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> TPMaybe.M Vk.AllocCallbacks.A mud ->
+	IO ()
+createWindowFramebuffer (Vk.Dvc.D dvc) wd macs =
+	Vk.AllocCallbacks.mToCore macs \pacs ->
+	C.createWindowFramebuffer dvc wd pacs

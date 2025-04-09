@@ -206,6 +206,18 @@ void ImGui_ImplVulkanH_CreateSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	uint32_t min_image_count );
+void ImGui_ImplVulkanH_CreateSwapChainModifyWd(
+	ImGui_ImplVulkanH_Window* wd,
+	VkImage* backbuffers, int i );
+void ImGui_ImplVulkanH_CreateWindowRenderPass(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_CreateWindowImageViews(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_CreateWindowFramebuffer(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
 void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,

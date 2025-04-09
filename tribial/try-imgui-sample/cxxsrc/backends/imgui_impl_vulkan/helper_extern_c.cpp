@@ -37,6 +37,17 @@ extern "C" void im_gui_impl_vulkan_h_copy_swap_chain_to_wd(
 extern "C" void im_gui_impl_vulkan_h_set_size(
 	ImGui_ImplVulkanH_Window* wd,
 	int w, int h, VkSurfaceCapabilitiesKHR *pcap );
+extern "C" void im_gui_impl_vulkan_h_create_swap_chain_modify_wd(
+	ImGui_ImplVulkanH_Window* wd, VkImage* backbuffers, int i );
+extern "C" void im_gui_impl_vulkan_h_create_window_render_pass(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
+extern "C" void im_gui_impl_vulkan_h_create_window_image_views(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
+extern "C" void im_gui_impl_vulkan_h_create_window_framebuffer(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
 
 void
 im_gui_impl_vulkan_h_create_window_swap_chain(
@@ -121,4 +132,33 @@ im_gui_impl_vulkan_h_set_size(
 	int w, int h, VkSurfaceCapabilitiesKHR *pcap )
 {
 	ImGui_ImplVulkanH_SetSize(wd, w, h, pcap);
+}
+
+void
+im_gui_impl_vulkan_h_create_swap_chain_modify_wd(
+	ImGui_ImplVulkanH_Window* wd,
+	VkImage* backbuffers, int i )
+{
+	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers, i);
+}
+
+void im_gui_impl_vulkan_h_create_window_render_pass(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator )
+{
+	ImGui_ImplVulkanH_CreateWindowRenderPass(device, wd, allocator);
+}
+
+void im_gui_impl_vulkan_h_create_window_image_views(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator)
+{
+	ImGui_ImplVulkanH_CreateWindowImageViews(device, wd, allocator);
+}
+
+void im_gui_impl_vulkan_h_create_window_framebuffer(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator )
+{
+	ImGui_ImplVulkanH_CreateWindowFramebuffer(device, wd, allocator);
 }

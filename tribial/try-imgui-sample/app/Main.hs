@@ -234,12 +234,16 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 --	ImGui.Style.Colors.lightNoArg >>
 --	ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >>
+	Vk.Swpch.getImages dvc sc >>= \scis ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
-	Vk.ImGui.H.createSwapChain dvc wdcxx 2 >>
-	Vk.ImGui.H.createWindowSwapChain dvc wdcxx nil wdt hgt 2 Nothing >>
+	pure () >>= \() ->
+	Vk.ImGui.H.createSwapChainModifyWd wdcxx scis $
+	Vk.ImGui.H.createWindowRenderPass dvc wdcxx nil >>
+	Vk.ImGui.H.createWindowImageViews dvc wdcxx nil >>
+	Vk.ImGui.H.createWindowFramebuffer dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
 
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do
