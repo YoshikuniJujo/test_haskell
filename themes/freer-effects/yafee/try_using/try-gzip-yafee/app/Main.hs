@@ -11,6 +11,7 @@ module Main (main, takeRep) where
 
 import Control.Arrow
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
@@ -81,6 +82,14 @@ run = Eff.runM . Fail.run
 
 type Pipe i o effs = (Pipe.P i o ': effs)
 
+toRunLength :: (
+	Union.Member (Pipe.P BS.ByteString RunLength) effs
+	) =>
+	Eff.E effs ()
+toRunLength = Pipe.await @_ @RunLength >>= \case
+	Nothing -> pure ()
+	Just bs -> for_ (BS.unpack bs) $ Pipe.yield @BS.ByteString . RunLengthLiteral
+
 mainPipe :: forall effs . (
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (State.S BS.ByteString) effs,
@@ -94,56 +103,71 @@ mainPipe :: forall effs . (
 	Union.Member (State.Named "file-length" Int) effs
 	) =>
 	Int -> Eff.E (Pipe BS.ByteString () effs) ()
-mainPipe bffsz = do
-	Pipe.print' =<< takeBit8 @() 1
-	mbt <- takeBit8 @() 2
+mainPipe bffsz =
+	fix (\go -> readBlock bffsz >>= bool (pure ()) go) Pipe.=$=
+	runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
+	format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
+	printPipe @() @(Pipe BS.ByteString () effs)
+
+readBlock :: forall effs . (
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
+	Union.Member (Except.E String) effs,
+	Union.Member Union.Fail effs, Union.Member IO effs,
+	Union.Member (State.S (Seq.Seq Word8)) effs,
+	Union.Member (State.Named "format" BS.ByteString) effs,
+	Union.Member (State.S Crc) effs,
+	Union.Member (State.Named "file-length" Int) effs
+	) =>
+	Int -> Eff.E (Pipe BS.ByteString RunLength effs) Bool
+readBlock bffsz = do
+	Just f <- takeBit8 @RunLength 1
+	mbt <- takeBit8 @RunLength 2
 	let	bt = maybe 3 id mbt
 	if bt == 0
-	then readNonCompressed @() bffsz
+	then readNonCompressed bffsz Pipe.=$=
+		toRunLength @(Pipe BS.ByteString RunLength effs)
 	else if bt == 1 then bits Pipe.=$=
 		huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$=
-		putDecoded fixedTable fixedDstTable 0 Pipe.=$=
-			runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
-			format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
-			printPipe @() @(Pipe BS.ByteString () effs)
+		putDecoded fixedTable fixedDstTable 0
 	else if bt == 2 then do
-		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @() 5
-		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @() 5
-		Just hclen <- ((+ 4) . fromIntegral <$>) <$> takeBit8 @() 4
+		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @RunLength 5
+		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @RunLength 5
+		Just hclen <- ((+ 4) . fromIntegral <$>) <$> takeBit8 @RunLength 4
 		bits Pipe.=$= do
 			clcls <- mkTree @Word8 [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
-				<$> replicateM hclen (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await @_ @()))
+				<$> replicateM hclen (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await @_ @RunLength))
 			State.put (clcls :: BinTree Int, clcls)
 			huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$= do
 				(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
-					Prelude.splitAt hlit <$> getCodeTable (hlit + hdist)
+					Prelude.splitAt hlit <$> getCodeTable @RunLength (hlit + hdist)
 				State.put (lct, lct :: BinTree Int)
-				putDecoded lct dct 0 Pipe.=$=
-					runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
-					format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
-					printPipe @() @(Pipe BS.ByteString () effs)
+				putDecoded lct dct 0
 	else error "not implemented"
+	pure $ f /= 1
 
-getCodeTable :: (
+getCodeTable :: forall o effs . (
 	Union.Member (State.S ExtraBits) effs,
-	Union.Member (Pipe.P (Either Int Word16) ()) effs,
+	Union.Member (Pipe.P (Either Int Word16) o) effs,
 	Union.Member Fail.F effs
 	) =>
 	Int -> Eff.E effs [Int]
 getCodeTable 0 = pure []
-getCodeTable n = Pipe.await @(Either Int Word16) @() >>= \case
+getCodeTable n = Pipe.await @(Either Int Word16) @o >>= \case
 	Nothing -> pure []
 	Just (Left ln)
-		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable (n - 1)
+		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable @o (n - 1)
 		| ln == 16 -> error "yet"
 		| ln == 17 -> do
 			State.put $ ExtraBits 3
-			Just (Right eb) <- Pipe.await @(Either Int Word16) @()
-			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable (n - fromIntegral eb - 3)
+			Just (Right eb) <- Pipe.await @(Either Int Word16) @o
+			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable @o (n - fromIntegral eb - 3)
 		| ln == 18 -> do
 			State.put $ ExtraBits 7
-			Just (Right eb) <- Pipe.await @(Either Int Word16) @()
-			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable (n - fromIntegral eb - 11)
+			Just (Right eb) <- Pipe.await @(Either Int Word16) @o
+			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable @o (n - fromIntegral eb - 11)
 		| otherwise -> error "yet"
 	Just (Right _) -> error "bad"
 
@@ -237,10 +261,10 @@ printPipe' = do
 			Pipe.print' (x :: BS.ByteString)
 			printPipe' @o) mx
 
-readNonCompressed :: forall o effs . (
+readNonCompressed :: forall effs . (
 	Union.Member (State.S Crc) effs,
 	Union.Member (State.Named "file-length" Int) effs,
-	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member (Pipe.P BS.ByteString BS.ByteString) effs,
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (Except.E String) effs,
@@ -249,18 +273,19 @@ readNonCompressed :: forall o effs . (
 	Int -> Eff.E effs ()
 readNonCompressed bffsz = do
 	State.put $ Crc 0xffffffff
-	Pipe.print' =<< takeByteBoundary @o
+	Pipe.print' =<< takeByteBoundary @BS.ByteString
 	ln <- takeWord16FromPair
 	forM_ (separate bffsz ln) \ln' -> do
-		bs <- takeBytes @o ln'
+		bs <- takeBytes @BS.ByteString ln'
 		State.modifyN @"file-length" (+ ln')
-		maybe (pure ()) calcCrc' bs
+--		maybe (pure ()) calcCrc' bs
+		maybe (pure ()) (Pipe.yield @BS.ByteString) bs
 		Pipe.print' bs
 	State.modify compCrc
 	where
 	takeWord16FromPair = do
-		Just ln <- (bsToNum <$>) <$> takeBytes @o 2
-		Just nln <- (bsToNum <$>) <$> takeBytes @o 2
+		Just ln <- (bsToNum <$>) <$> takeBytes @BS.ByteString 2
+		Just nln <- (bsToNum <$>) <$> takeBytes @BS.ByteString 2
 		when ((ln `xor` complement nln) .&. 0xffff /= 0)
 			$ Except.throw @String "bad boo"
 		pure ln
