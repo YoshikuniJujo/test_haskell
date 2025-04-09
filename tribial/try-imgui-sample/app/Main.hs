@@ -157,7 +157,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	let	rqSfcImgFmt = [
 			Vk.FormatB8g8r8a8Unorm, Vk.FormatR8g8b8a8Unorm,
 			Vk.FormatB8g8r8Unorm, Vk.FormatR8g8b8Unorm ] in
-	Vk.ImGui.H.selectSurfaceFormat phd sfc rqSfcImgFmt Vk.Sfc.ColorSpaceSrgbNonlinear \sfmt ->
+	Vk.ImGui.H.selectSurfaceFormat phd sfc rqSfcImgFmt Vk.Sfc.ColorSpaceSrgbNonlinear \(sfmt :: Vk.Sfc.Format fmt2) ->
 	let	pms = bool
 			[Vk.Sfc.PresentModeFifo]
 			[	Vk.Sfc.PresentModeMailbox,
@@ -165,37 +165,24 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 				Vk.Sfc.PresentModeFifo ]
 			AppUseUnlimitedFrameRate.flag in
 	Vk.ImGui.H.selectPresentMode phd sfc pms \pm ->
-	when oldLog (print pm) >>
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
-	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
-	let z' = z {
-		Vk.ImGui.Win.wCSurface = sfc,
-		Vk.ImGui.Win.wCSurfaceFormat = sfmt,
-		Vk.ImGui.Win.wCClearEnable = True,
-		Vk.ImGui.Win.wCPresentMode = pm
-		} in
-	putStrLn "HERE" >> print pm >> printIO z' >> putStrLn "HERE EEND" >>
-	Vk.ImGui.Win.allocaW \wdcxx ->
-	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	Vk.Sfc.Phd.getCapabilities phd sfc >>= \cap ->
 
-	Vk.ImGui.H.setSize wdcxx wdt hgt cap >>
-	putStrLn "OOOOOPS" >> print cap >>
+	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
+	let	extnt = Vk.Sfc.capabilitiesCurrentExtent cap
+		(wdt', hgt') = if Vk.extent2dWidth extnt == 0xffffffff
+			then (wdt, hgt)
+			else (fromIntegral $ Vk.extent2dWidth extnt, fromIntegral $ Vk.extent2dHeight extnt)
+		z' = z {
+			Vk.ImGui.Win.wCWidth = wdt',
+			Vk.ImGui.Win.wCHeight = hgt',
+			Vk.ImGui.Win.wCSurface = sfc,
+			Vk.ImGui.Win.wCSurfaceFormat = sfmt,
+			Vk.ImGui.Win.wCClearEnable = True,
+			Vk.ImGui.Win.wCPresentMode = pm
+			} in
 
-	print (Vk.Sfc.capabilitiesMinImageCount cap) >>
-	print (Vk.Sfc.capabilitiesMaxImageCount cap) >>
-	print (Vk.Sfc.capabilitiesSupportedTransforms cap) >>
-	print (Vk.Sfc.capabilitiesCurrentTransform cap) >>
-
-	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx
-		\(wd' :: Vk.ImGui.Win.WC fmt2 _ _ _ _ _ _ _ _ _ _ _ _ _ _) ->
-	putStrLn "OOPS" >> printIO wd' >>
-
-	print (Vk.ImGui.Win.wCSurface wd') >>
-	print (Vk.ImGui.Win.wCSurfaceFormat wd') >>
-	print (Vk.ImGui.Win.wCPresentMode wd') >>
-	print (Vk.ImGui.Win.wCWidth wd') >>
-	print (Vk.ImGui.Win.wCHeight wd') >>
+	putStrLn "OOOOOPS" >>
 
 	let	minImageCount = 2
 		minImageCountNew =
@@ -210,14 +197,14 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		swpchInfo = Vk.Swpch.CreateInfo {
 			Vk.Swpch.createInfoNext = TMaybe.N,
 			Vk.Swpch.createInfoFlags = zeroBits,
-			Vk.Swpch.createInfoSurface = Vk.ImGui.Win.wCSurface wd',
+			Vk.Swpch.createInfoSurface = Vk.ImGui.Win.wCSurface z',
 			Vk.Swpch.createInfoMinImageCount = minImageCountNew,
 			Vk.Swpch.createInfoImageColorSpace =
 				Vk.Sfc.formatColorSpace
-					$ Vk.ImGui.Win.wCSurfaceFormat wd',
+					$ Vk.ImGui.Win.wCSurfaceFormat z',
 			Vk.Swpch.createInfoImageExtent = Vk.Extent2d
-				(fromIntegral $ Vk.ImGui.Win.wCWidth wd')
-				(fromIntegral $ Vk.ImGui.Win.wCHeight wd'),
+				(fromIntegral $ Vk.ImGui.Win.wCWidth z')
+				(fromIntegral $ Vk.ImGui.Win.wCHeight z'),
 			Vk.Swpch.createInfoImageArrayLayers = 1,
 			Vk.Swpch.createInfoImageUsage =
 				Vk.Img.UsageColorAttachmentBit,
@@ -229,18 +216,13 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 			Vk.Swpch.createInfoCompositeAlpha =
 				Vk.Sfc.CompositeAlphaOpaqueBit,
 			Vk.Swpch.createInfoPresentMode =
-				Vk.ImGui.Win.wCPresentMode wd',
+				Vk.ImGui.Win.wCPresentMode z',
 			Vk.Swpch.createInfoClipped = True,
-			Vk.Swpch.createInfoOldSwapchain = TPMaybe.N } in
-	--			TPMaybe.J . U2 $ Vk.ImGui.Win.wCSwapchain wd' } in
-	--			TPMaybe.J . U2 $ Vk.ImGui.Win.wCSwapchain z' } in
+			Vk.Swpch.createInfoOldSwapchain =
+	--			TPMaybe.N } in
+				TPMaybe.J . U2 $ Vk.ImGui.Win.wCSwapchain z' } in
 	Vk.Swpch.create dvc swpchInfo nil \sc ->
 
-	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
-
-	Vk.ImGui.H.createSwapChain dvc wdcxx 2 >>
-	Vk.ImGui.H.createWindowSwapChain dvc wdcxx nil wdt hgt 2 (Vk.ImGui.Win.wCSwapchain z') >>
-	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
 	Vk.ImGui.checkVersion >>
 	Vk.ImGui.createContextNoArg >>
 	ImGui.Io.get >>= \io ->
@@ -251,17 +233,24 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	ImGui.Style.Colors.darkNoArg >>
 --	ImGui.Style.Colors.lightNoArg >>
 --	ImGui.Style.Colors.classicNoArg >>
-	Vk.ImGui.Glfw.init w True >> do
-	pInitInfo <- cxx_new_ImGui_ImplVulkan_InitInfo
+	Vk.ImGui.Glfw.init w True >>
+
+	Vk.ImGui.Win.allocaW \wdcxx ->
+	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
+	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
+	Vk.ImGui.H.createSwapChain dvc wdcxx 2 >>
+	Vk.ImGui.H.createWindowSwapChain dvc wdcxx nil wdt hgt 2 Nothing >>
+	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
+
+	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
 		pInitInfo ist phd qfi dvc gq dp wdcxx
-	initInfo <- Vk.ImGui.initInfoFromCxx @'Nothing pInitInfo
-	printIO initInfo
-	Vk.ImGui.copyInitInfoToCxx initInfo pInitInfo
+--	initInfo <- Vk.ImGui.initInfoFromCxx @'Nothing pInitInfo
+--	printIO initInfo
+--	Vk.ImGui.copyInitInfoToCxx initInfo pInitInfo
 	print =<< Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo
 	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
 		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa
---	print grsj
 	print $ length grsj
 	alloca \pn -> do
 		print =<< ImGui.FontAtlas.C.cxx_im_font_atlas_sources pfa pn
@@ -273,7 +262,6 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		poke psow 0
 		pokeArray pcc [0.45, 0.55, 0.60, 1.00]
 		poke pscr 0
-		Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx printIO
 		untilClose w do
 			GlfwG.pollEvents
 			Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd -> do

@@ -17,6 +17,7 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 
 	) where
 
+import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
@@ -64,11 +65,11 @@ selectPresentMode (Vk.Phd.P pd) (Vk.Sfc.S sfc) pms a =
 createWindowSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> Int32 -> Int32 -> Word32 ->
-	Vk.Swpch.S -> IO ()
+	Maybe Vk.Swpch.S -> IO ()
 createWindowSwapChain
-	(Vk.Dvc.D dvc) wd macs wdt hgt mic sc =
+	(Vk.Dvc.D dvc) wd macs wdt hgt mic msc =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
-	C.createWindowSwapChain dvc wd pacs wdt hgt mic =<< Vk.Swpch.sToCore sc
+	C.createWindowSwapChain dvc wd pacs wdt hgt mic =<< maybe (pure nullPtr) Vk.Swpch.sToCore msc
 
 destroyBeforeCreateSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()

@@ -53,10 +53,11 @@ selectPresentMode pd (Vk.Sfc.S sfc) =
 createWindowSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac ->
-	Int32 -> Int32 -> Word32 -> Vk.Swpch.S fmt ssc -> IO ()
-createWindowSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) =
+	Int32 -> Int32 -> Word32 -> Maybe (Vk.Swpch.S fmt ssc) -> IO ()
+createWindowSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic msc =
+	let	mmsc = (\(Vk.Swpch.S sc) -> sc) <$> msc in
 	M.createWindowSwapChain
-		dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc
+		dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic mmsc
 
 destroyBeforeCreateSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
