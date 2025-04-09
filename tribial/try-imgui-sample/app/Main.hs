@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
-{-# LANGUAGE TypeApplications, RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -16,8 +17,10 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
 import Control.Concurrent
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe (nil)
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Bits
 import Data.Bits.ToolsYj
 import Data.Default
@@ -47,6 +50,7 @@ import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
+import Gpu.Vulkan.Image qualified as Vk.Img
 
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
@@ -180,8 +184,11 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 
 	print (Vk.Sfc.capabilitiesMinImageCount cap) >>
 	print (Vk.Sfc.capabilitiesMaxImageCount cap) >>
+	print (Vk.Sfc.capabilitiesSupportedTransforms cap) >>
+	print (Vk.Sfc.capabilitiesCurrentTransform cap) >>
 
-	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx \wd' ->
+	Vk.ImGui.Win.wCFromCxx' @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) wdcxx
+		\(wd' :: Vk.ImGui.Win.WC fmt2 _ _ _ _ _ _ _ _ _ _ _ _ _ _) ->
 	putStrLn "OOPS" >> printIO wd' >>
 
 	print (Vk.ImGui.Win.wCSurface wd') >>
@@ -191,19 +198,44 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	print (Vk.ImGui.Win.wCHeight wd') >>
 
 	let	minImageCount = 2
+		minImageCountNew =
+			if minImageCount < Vk.Sfc.capabilitiesMinImageCount cap
+			then Vk.Sfc.capabilitiesMinImageCount cap
+			else if Vk.Sfc.capabilitiesMaxImageCount cap /= 0 &&
+				minImageCount >
+					Vk.Sfc.capabilitiesMaxImageCount cap
+			then Vk.Sfc.capabilitiesMaxImageCount cap
+			else minImageCount
+		swpchInfo :: Vk.Swpch.CreateInfo _ _ fmt2 _
 		swpchInfo = Vk.Swpch.CreateInfo {
 			Vk.Swpch.createInfoNext = TMaybe.N,
 			Vk.Swpch.createInfoFlags = zeroBits,
-			Vk.Swpch.createInfoSurface = Vk.ImGui.Win.wCSurface wd'
-			} in
+			Vk.Swpch.createInfoSurface = Vk.ImGui.Win.wCSurface wd',
+			Vk.Swpch.createInfoMinImageCount = minImageCountNew,
+			Vk.Swpch.createInfoImageColorSpace =
+				Vk.Sfc.formatColorSpace
+					$ Vk.ImGui.Win.wCSurfaceFormat wd',
+			Vk.Swpch.createInfoImageExtent = Vk.Extent2d
+				(fromIntegral $ Vk.ImGui.Win.wCWidth wd')
+				(fromIntegral $ Vk.ImGui.Win.wCHeight wd'),
+			Vk.Swpch.createInfoImageArrayLayers = 1,
+			Vk.Swpch.createInfoImageUsage =
+				Vk.Img.UsageColorAttachmentBit,
+			Vk.Swpch.createInfoImageSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Swpch.createInfoQueueFamilyIndices = [],
+			Vk.Swpch.createInfoPreTransform =
+				Vk.Sfc.TransformIdentityBit,
+			Vk.Swpch.createInfoCompositeAlpha =
+				Vk.Sfc.CompositeAlphaOpaqueBit,
+			Vk.Swpch.createInfoPresentMode =
+				Vk.ImGui.Win.wCPresentMode wd',
+			Vk.Swpch.createInfoClipped = True,
+			Vk.Swpch.createInfoOldSwapchain = TPMaybe.N } in
+	--			TPMaybe.J . U2 $ Vk.ImGui.Win.wCSwapchain wd' } in
+	--			TPMaybe.J . U2 $ Vk.ImGui.Win.wCSwapchain z' } in
+	Vk.Swpch.create dvc swpchInfo nil \sc ->
 
-	Vk.ImGui.H.onlyCreateSwapChainNoWd dvc nil 2 (Vk.ImGui.Win.wCSwapchain z')
-		cap
-		(Vk.ImGui.Win.wCSurface wd')
-		(Vk.ImGui.Win.wCSurfaceFormat wd')
-		(Vk.ImGui.Win.wCPresentMode wd')
-		(Vk.ImGui.Win.wCWidth wd')
-		(Vk.ImGui.Win.wCHeight wd') >>= \sc ->
 	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
 
 	Vk.ImGui.H.createSwapChain dvc wdcxx 2 >>
