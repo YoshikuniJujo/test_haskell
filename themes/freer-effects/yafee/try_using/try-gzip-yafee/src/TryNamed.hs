@@ -32,5 +32,5 @@ foo = do
 
 fooRunned :: (((), Int), Int)
 fooRunned = Eff.run
-	. (flip (State.runNamed @"count-up") 0)
-	$ (flip (State.runNamed @"count-down") 10) foo
+	. (flip (State.runN @"count-up") 0)
+	$ (flip (State.runN @"count-down") 10) foo

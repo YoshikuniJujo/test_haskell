@@ -74,10 +74,10 @@ run :: Eff.E (Pipe () () '[
 				Seq.Seq Word8),
 			BS.ByteString))
 run = Eff.runM . Fail.run
-	. (`State.runNamed` "")
+	. (`State.runN` "")
 	. (`State.run` Seq.empty)
 	. (`State.run` (fixedTable, fixedTable)) . (`State.run` ExtraBits 0)
-	. runBitArray "" . (`State.run` Crc 0xffffffff) . (flip (State.runNamed @"file-length") 0)
+	. runBitArray "" . (`State.run` Crc 0xffffffff) . (flip (State.runN @"file-length") 0)
 	. Except.run @String . Pipe.run @() @()
 
 type Pipe i o effs = (Pipe.P i o ': effs)
