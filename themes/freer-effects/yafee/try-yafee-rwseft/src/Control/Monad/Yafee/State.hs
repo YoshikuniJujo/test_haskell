@@ -16,7 +16,7 @@ module Control.Monad.Yafee.State (
 
 	-- * NAMED
 
-	Named(..), getN, putN, modifyN, runNamed
+	Named(..), getN, putN, modifyN, runN, transactionN
 
 	) where
 
@@ -26,6 +26,8 @@ import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Freer qualified as Freer
 import Control.OpenUnion qualified as Union
 import Data.FTCQueue qualified as FTCQueue
+
+-- NORMAL
 
 type S = Named ""
 
@@ -44,7 +46,13 @@ modify :: Union.Member (S s) effs => (s -> s) -> Eff.E effs ()
 modify = modifyN @""
 
 run :: Eff.E (S s ': effs) a -> s -> Eff.E effs (a, s)
-run = runNamed @""
+run = runN @""
+
+transaction :: forall s effs a .
+	Union.Member (S s) effs => Eff.E effs a -> Eff.E effs a
+transaction = transactionN @"" @s
+
+-- NAMED
 
 getN :: forall nm s effs . Union.Member (Named nm s) effs => Eff.E effs s
 getN = Eff.eff (Get @nm)
@@ -55,17 +63,17 @@ putN = Eff.eff . (Put @nm)
 modifyN :: forall nm s effs . Union.Member (Named nm s) effs => (s -> s) -> Eff.E effs ()
 modifyN f = putN @nm . f =<< getN @nm
 
-runNamed :: Eff.E (Named nm s ': effs) a -> s -> Eff.E effs (a, s)
-runNamed = Eff.handleRelayS
+runN :: Eff.E (Named nm s ': effs) a -> s -> Eff.E effs (a, s)
+runN = Eff.handleRelayS
 	(curry pure) \u k s -> case u of Get -> k s s; Put s' -> k () s'
 
-transaction :: forall s effs a .
-	Union.Member (S s) effs => Eff.E effs a -> Eff.E effs a
-transaction m = do
-	(s0 :: s) <- get
+transactionN :: forall nm s effs a .
+	Union.Member (Named nm s) effs => Eff.E effs a -> Eff.E effs a
+transactionN m = do
+	(s0 :: s) <- getN @nm
 	($ m) . ($ s0) $ fix \go s -> \case
-		Freer.Pure x -> put s >> pure x
-		u Freer.:>>= q -> case Union.prj @(S s) u of
+		Freer.Pure x -> putN @nm s >> pure x
+		u Freer.:>>= q -> case Union.prj @(Named nm s) u of
 			Nothing -> u Freer.:>>=
 				FTCQueue.singleton (go s `Freer.comp` q)
 			Just Get -> go s $ q `Freer.app` s
