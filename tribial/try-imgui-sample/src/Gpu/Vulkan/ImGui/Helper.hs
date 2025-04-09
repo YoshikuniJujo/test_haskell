@@ -1,6 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,7 +19,9 @@ module Gpu.Vulkan.ImGui.Helper (
 
 	createSwapChainModifyWd,
 
-	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer
+	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer,
+
+	createWindowRenderPassRaw, setWdRenderPass
 
 	) where
 
@@ -33,6 +37,8 @@ import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Image.Internal qualified as Vk.Img
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
@@ -122,3 +128,15 @@ createWindowFramebuffer :: Vk.AllocCallbacks.ToMiddle mac =>
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
 createWindowFramebuffer (Vk.Dvc.D dvc) wd mac =
 	M.createWindowFramebuffer dvc wd (Vk.AllocCallbacks.toMiddle mac)
+
+createWindowRenderPassRaw :: forall (fmt :: Vk.T.Format) sd mac srp . (
+	Vk.AllocCallbacks.ToMiddle mac, Vk.T.FormatToValue fmt
+	) =>
+	Vk.Dvc.D sd -> TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Bool -> Bool ->
+	IO (Vk.RndrPss.R srp)
+createWindowRenderPassRaw (Vk.Dvc.D dvc) mac udr ce = Vk.RndrPss.R <$>
+	M.createWindowRenderPassRaw
+		dvc (Vk.AllocCallbacks.toMiddle mac) udr (Vk.T.formatToValue @fmt) ce
+
+setWdRenderPass :: Vk.ImGui.H.Win.W -> Vk.RndrPss.R srp -> IO ()
+setWdRenderPass wd (Vk.RndrPss.R rp) = M.setWdRenderPass wd rp

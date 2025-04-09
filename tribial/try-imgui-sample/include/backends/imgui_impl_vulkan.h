@@ -212,6 +212,12 @@ void ImGui_ImplVulkanH_CreateSwapChainModifyWd(
 void ImGui_ImplVulkanH_CreateWindowRenderPass(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );
+VkRenderPass*
+ImGui_ImplVulkanH_CreateWindowRenderPassRaw (
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	bool udr, VkFormat fmt, bool ce );
+void ImGui_ImplVulkanH_SetWdRenderPass(
+	ImGui_ImplVulkanH_Window* wd, VkRenderPass *rp );
 void ImGui_ImplVulkanH_CreateWindowImageViews(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );

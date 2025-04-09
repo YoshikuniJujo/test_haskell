@@ -17,7 +17,9 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 
 	createSwapChainModifyWd,
 
-	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer
+	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer,
+
+	createWindowRenderPassRaw, setWdRenderPass
 
 	) where
 
@@ -27,6 +29,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.List qualified as L
+import Data.Bool
 import Data.Word
 import Data.Int
 import Data.IORef
@@ -39,6 +42,7 @@ import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
 
 import Gpu.Vulkan.Image.Middle.Internal qualified as Vk.Img
+import Gpu.Vulkan.RenderPass.Middle.Internal qualified as Vk.RndrPss
 
 import Gpu.Vulkan.Khr.Surface.Enum qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Middle.Internal qualified as Vk.Sfc
@@ -161,3 +165,22 @@ createWindowFramebuffer ::
 createWindowFramebuffer (Vk.Dvc.D dvc) wd macs =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
 	C.createWindowFramebuffer dvc wd pacs
+
+createWindowRenderPassRaw ::
+	Vk.Dvc.D -> TPMaybe.M Vk.AllocCallbacks.A mud ->
+	Bool -> Vk.Format -> Bool -> IO Vk.RndrPss.R
+createWindowRenderPassRaw (Vk.Dvc.D dvc) macs udr (Vk.Format fmt) ce =
+	Vk.RndrPss.R <$> alloca \prp -> do
+		Vk.AllocCallbacks.mToCore macs \pacs -> do
+			putStrLn "BEFORE C.createWindowRenderPassRaw"
+			p <- C.createWindowRenderPassRaw dvc pacs
+				(bool 0 1 udr) fmt (bool 0 1 ce)
+			putStrLn "AFTER C.createWindowRenderPassRaw"
+			poke prp =<< peek p
+			putStrLn "AFTER poke prp =<< peek p"
+		peek prp
+
+setWdRenderPass :: Vk.ImGui.H.Win.W -> Vk.RndrPss.R -> IO ()
+setWdRenderPass wd (Vk.RndrPss.R rp) = alloca \prp -> do
+	poke prp rp
+	C.setWdRenderPass wd prp

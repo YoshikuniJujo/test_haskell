@@ -235,13 +235,14 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 --	ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >>
 	Vk.Swpch.getImages dvc sc >>= \scis ->
+	Vk.ImGui.H.createWindowRenderPassRaw @fmt2 dvc nil False True >>= \rp ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
 	pure () >>= \() ->
 	Vk.ImGui.H.createSwapChainModifyWd wdcxx scis $
-	Vk.ImGui.H.createWindowRenderPass dvc wdcxx nil >>
+	Vk.ImGui.H.setWdRenderPass wdcxx rp >>
 	Vk.ImGui.H.createWindowImageViews dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowFramebuffer dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>

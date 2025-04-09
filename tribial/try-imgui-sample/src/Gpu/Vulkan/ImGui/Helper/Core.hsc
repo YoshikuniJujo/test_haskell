@@ -16,7 +16,9 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 
 	createSwapChainModifyWd,
 
-	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer
+	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer,
+
+	createWindowRenderPassRaw, setWdRenderPass
 
 	) where
 
@@ -29,6 +31,7 @@ import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
 import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
 import Gpu.Vulkan.Image.Core qualified as Vk.Img
+import Gpu.Vulkan.RenderPass.Core qualified as Vk.RndrPss
 
 import Gpu.Vulkan.Khr.Swapchain.Core qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface.Core qualified as Vk.Sfc
@@ -36,6 +39,7 @@ import Gpu.Vulkan.Khr.Surface.Core qualified as Vk.Sfc
 import Gpu.Vulkan.ImGui.Helper.Window.Core qualified as Vk.ImGui.H.Win
 
 #include <vulkan/vulkan.h>
+#include <stdbool.h>
 
 selectSurfaceFormat ::
 	Vk.Phd.P -> Vk.Sfc.S -> Ptr #{type VkFormat} -> #{type int} ->
@@ -170,3 +174,17 @@ createWindowFramebuffer = cxx_im_gui_impl_vulkan_h_create_window_framebuffer
 foreign import ccall "im_gui_impl_vulkan_h_create_window_framebuffer"
 	cxx_im_gui_impl_vulkan_h_create_window_framebuffer ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
+
+createWindowRenderPassRaw =
+	cxx_im_gui_impl_vulkan_h_create_window_render_pass_raw
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_render_pass_raw"
+	cxx_im_gui_impl_vulkan_h_create_window_render_pass_raw ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A ->
+	#{type bool} -> #{type VkFormat} -> #{type bool} -> IO (Ptr Vk.RndrPss.R)
+
+setWdRenderPass = cxx_im_gui_impl_vulkan_h_set_wd_render_pass
+
+foreign import ccall "im_gui_impl_vulkan_h_set_wd_render_pass"
+	cxx_im_gui_impl_vulkan_h_set_wd_render_pass ::
+	Vk.ImGui.H.Win.W -> Ptr Vk.RndrPss.R -> IO ()

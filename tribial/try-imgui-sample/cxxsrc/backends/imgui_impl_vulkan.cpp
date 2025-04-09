@@ -1642,20 +1642,20 @@ void ImGui_ImplVulkanH_CreateSwapChain(
 	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers, wd->ImageCount);
 }
 
-void ImGui_ImplVulkanH_CreateWindowRenderPass(
-	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator )
+VkRenderPass*
+ImGui_ImplVulkanH_CreateWindowRenderPassRaw (
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	bool udr, VkFormat fmt, bool ce )
 {
     VkResult err;
-
     // Create the Render Pass
-    if (wd->UseDynamicRendering == false)
+    if (udr == false)
     {
+    VkRenderPass *rp = (VkRenderPass *)malloc(sizeof(VkRenderPass));
         VkAttachmentDescription attachment = {};
-        attachment.format = wd->SurfaceFormat.format;
+        attachment.format = fmt;
         attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        attachment.loadOp = wd->ClearEnable ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachment.loadOp = ce ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -1683,13 +1683,42 @@ void ImGui_ImplVulkanH_CreateWindowRenderPass(
         info.pSubpasses = &subpass;
         info.dependencyCount = 1;
         info.pDependencies = &dependency;
-        err = vkCreateRenderPass(device, &info, allocator, &wd->RenderPass);
+        err = vkCreateRenderPass(device, &info, allocator, rp);
         check_vk_result(err);
 
         // We do not create a pipeline by default as this is also used by examples' main.cpp,
         // but secondary viewport in multi-viewport mode may want to create one with:
         //ImGui_ImplVulkan_CreatePipeline(device, allocator, VK_NULL_HANDLE, wd->RenderPass, VK_SAMPLE_COUNT_1_BIT, &wd->Pipeline, v->Subpass);
+
+	return rp;
     }
+    return NULL;
+}
+
+void ImGui_ImplVulkanH_SetWdRenderPass(
+	ImGui_ImplVulkanH_Window* wd, VkRenderPass *rp )
+{
+    if (wd->UseDynamicRendering == false) {
+	wd->RenderPass = *rp;
+    }
+}
+
+void ImGui_ImplVulkanH_CreateWindowRenderPass(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator )
+{
+    VkResult err;
+//    VkRenderPass *rp = (VkRenderPass *)malloc(sizeof(VkRenderPass));
+
+	bool udr = wd->UseDynamicRendering;
+	VkFormat fmt = wd->SurfaceFormat.format;
+	bool ce = wd->ClearEnable;
+
+	VkRenderPass *rp = ImGui_ImplVulkanH_CreateWindowRenderPassRaw(
+		device, allocator, udr, fmt, ce);
+
+	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
 }
 
 void ImGui_ImplVulkanH_CreateWindowImageViews(
