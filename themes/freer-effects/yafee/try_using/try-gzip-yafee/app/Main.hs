@@ -39,7 +39,6 @@ import Pipe.Huffman
 import ByteStringNum
 
 import Pipe.Gzip
-import Pipe.IO
 
 import Calc
 
@@ -116,8 +115,6 @@ readBlock :: forall effs . (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member (Except.E String) effs,
 	Union.Member Union.Fail effs, Union.Member IO effs,
-	Union.Member (State.S (Seq.Seq Word8)) effs,
-	Union.Member (State.Named "format" BS.ByteString) effs,
 	Union.Member (State.S Crc) effs,
 	Union.Member (State.Named "file-length" Int) effs
 	) =>
@@ -179,12 +176,10 @@ putDecoded :: (
 	BinTree Int -> BinTree Int -> Int -> Eff.E effs ()
 putDecoded t dt pri = do
 	mi <- Pipe.await @(Either Int Word16) @RunLength
---	maybe (pure ()) printNoLiteral mi
 	case mi of
 		Just (Left 256) -> pure ()
 		Just (Left i)
 			| 0 <= i && i <= 255 -> do
---				putChar' (chr i)
 				Pipe.yield @(Either Int Word16) (RunLengthLiteral $ fromIntegral i)
 				putDecoded t dt 0
 			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt (runLengthLength i 0) 0
@@ -197,16 +192,6 @@ putDecoded t dt pri = do
 			State.put (dt, dt)
 			putDist t dt (runLengthLength pri eb) 0
 		Nothing -> pure ()
---	where putChar' = Eff.eff . putChar
-
-printNoLiteral :: (
-	Show a, Show b, Ord a, Num a,
-	Union.Member IO effs ) =>
-	Either a b -> Eff.E effs ()
-printNoLiteral (Right i) = putStrLn' $ "Right " ++ show i
-printNoLiteral (Left i)
-	| 0 <= i && i <= 255 = pure ()
-	| otherwise = putStrLn' $ "Left " ++ show i
 
 putDist :: (
 	Union.Member (Pipe.P (Either Int Word16) RunLength) effs,
@@ -278,9 +263,7 @@ readNonCompressed bffsz = do
 	forM_ (separate bffsz ln) \ln' -> do
 		bs <- takeBytes @BS.ByteString ln'
 		State.modifyN @"file-length" (+ ln')
---		maybe (pure ()) calcCrc' bs
 		maybe (pure ()) (Pipe.yield @BS.ByteString) bs
-		Pipe.print' bs
 	State.modify compCrc
 	where
 	takeWord16FromPair = do
@@ -299,11 +282,11 @@ data RunLengthLength = RunLengthLength Int deriving Show
 
 data RunLengthDist = RunLengthDist Int deriving Show
 
+runLengthLength :: Int -> Word16 -> RunLengthLength
 runLengthLength i eb = RunLengthLength $ calcLength i eb
 
+runLengthDist :: Int -> Word16 -> RunLengthDist
 runLengthDist i eb = RunLengthDist $ calcDist i eb
-
-runLengthDummy = RunLengthLenDist (RunLengthLength 123) (RunLengthDist 789)
 
 runLength :: (
 	Union.Member (Pipe.P RunLength (Either Word8 BS.ByteString)) effs,

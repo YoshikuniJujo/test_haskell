@@ -35,6 +35,7 @@ library
       Lib
       Pipe.ByteString
       Pipe.ByteString.IO
+      Pipe.Crc
       Pipe.Gzip
       Pipe.Huffman
       Pipe.IO
