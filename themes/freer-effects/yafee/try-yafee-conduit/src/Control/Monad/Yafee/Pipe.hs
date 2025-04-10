@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -20,11 +20,11 @@ import System.IO
 
 data P i o r where Await :: P i o (Maybe i); Yield :: forall i o . o -> P i o ()
 
-await :: forall i o effs . Union.Member (P i o) effs => Eff.E effs (Maybe i)
-await = Eff.eff (Await @_ @o)
+await :: forall i effs . forall o -> Union.Member (P i o) effs => Eff.E effs (Maybe i)
+await o = Eff.eff (Await @_ @o)
 
-yield :: forall i o effs . Union.Member (P i o) effs => o -> Eff.E effs ()
-yield = Eff.eff . Yield @i
+yield :: forall o effs . forall i -> Union.Member (P i o) effs => o -> Eff.E effs ()
+yield i = Eff.eff . Yield @i
 
 run :: Eff.E (P i o ': effs) a -> Eff.E effs (a, [o])
 run = \case
@@ -89,7 +89,7 @@ p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
 	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@= p')
 
 convert :: forall a b effs . (a -> b) -> Eff.E (P a b ': effs) ()
-convert f = await @a @b >>= maybe (pure ()) ((>> convert f) . yield @a @b . f)
+convert f = await b >>= maybe (pure ()) ((>> convert f) . yield a . f)
 
 print' :: (Union.Member IO effs, Show a) => a -> Eff.E effs ()
 print' = Eff.eff . print
@@ -100,13 +100,13 @@ hRead h = do
 	eof <- Eff.eff $ hIsEOF h
 	if eof then pure () else do
 		l <- Eff.eff $ hGetLine h
-		yield @() l
+		yield (type ()) l
 		hRead h
 
 writeString :: Union.Member IO (P String () ': effs) =>
 	Eff.E (P String () ': effs) ()
 writeString = do
-	ms <- await @_ @()
+	ms <- await (type ())
 	case ms of
 		Nothing -> pure ()
 		Just s -> Eff.eff (putStrLn s) >> writeString
@@ -114,10 +114,10 @@ writeString = do
 takeP :: forall a effs . Int -> Eff.E (P a a ': effs) ()
 takeP 0 = pure ()
 takeP n = do
-	mx <- await @a @a
+	mx <- await a
 	case mx of
 		Nothing -> pure ()
-		Just x -> yield @a @a x >> takeP (n - 1)
+		Just x -> yield @a a x >> takeP (n - 1)
 
 baz :: IO ()
 baz = void . Eff.runM . run
