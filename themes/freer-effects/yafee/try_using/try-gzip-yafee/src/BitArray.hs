@@ -82,7 +82,7 @@ readMore :: forall o effs . (
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Eff.E effs Bool
-readMore = Pipe.await @_ @o >>= \case
+readMore = Pipe.await o >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ do
 		State.modify (`BS.append` bs)
@@ -124,7 +124,7 @@ bits = do
 	mb <- pop @Bit
 	case mb of
 		Nothing -> pure ()
-		Just b -> Pipe.yield @BS.ByteString b >> bits
+		Just b -> Pipe.yield BS.ByteString b >> bits
 
 splitAtByteBoundary :: BitArray -> Maybe (BitArray, BitArray)
 splitAtByteBoundary bs@BitArray { bitInfo = BitInfo { bit0 = i } } =

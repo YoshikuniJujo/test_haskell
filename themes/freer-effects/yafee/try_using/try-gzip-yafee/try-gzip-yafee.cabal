@@ -56,6 +56,7 @@ library
     , containers
     , optparse-declarative
     , primitive
+    , time
     , transformers
     , try-control-open-union
     , try-yafee
@@ -80,6 +81,7 @@ executable try-gzip-yafee-exe
     , containers
     , optparse-declarative
     , primitive
+    , time
     , transformers
     , try-control-open-union
     , try-gzip-yafee
@@ -101,6 +103,7 @@ executable try-gzip-yafee-new
     , containers
     , optparse-declarative
     , primitive
+    , time
     , transformers
     , try-control-open-union
     , try-gzip-yafee
@@ -122,6 +125,7 @@ executable try-make-gzip
     , containers
     , optparse-declarative
     , primitive
+    , time
     , transformers
     , try-control-open-union
     , try-gzip-yafee
@@ -143,6 +147,7 @@ executable try-optparse
     , containers
     , optparse-declarative
     , primitive
+    , time
     , transformers
     , try-control-open-union
     , try-gzip-yafee
@@ -169,6 +174,7 @@ test-suite try-gzip-yafee-test
     , containers
     , optparse-declarative
     , primitive
+    , time
     , transformers
     , try-control-open-union
     , try-gzip-yafee

@@ -26,6 +26,7 @@ dependencies:
 - vector
 - containers
 - bytestring
+- time
 - optparse-declarative
 - try-yafee
 - try-yafee-rwseft

@@ -27,7 +27,7 @@ popByte :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Eff.E effs (Maybe Word8)
 popByte = State.gets BS.uncons >>= \case
-	Nothing -> Pipe.await @_ @o >>= \case
+	Nothing -> Pipe.await o >>= \case
 		Nothing -> pure Nothing
 		Just bs -> case BS.uncons bs of
 			Nothing -> popByte @o

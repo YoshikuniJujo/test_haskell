@@ -23,5 +23,5 @@ fromHandle i h = do
 	eof <- Eff.eff $ hIsEOF h
 	if eof then pure () else do
 		bs <- Eff.eff $ BS.hGetSome h bufferSize
-		Pipe.yield @i bs
+		Pipe.yield i bs
 		fromHandle i h

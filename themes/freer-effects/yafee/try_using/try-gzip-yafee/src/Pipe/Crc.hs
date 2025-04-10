@@ -1,16 +1,40 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Pipe.Crc where
 
 import Control.Monad.Yafee.Eff qualified as Eff
-import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Pipe qualified as Pipe
+import Control.Monad.Yafee.State qualified as State
+import Control.OpenUnion qualified as Union
+import Data.Bits
+import Data.Word
+import Data.ByteString qualified as BS
 
 import Crc
 
-{-
-crcPipe ::
+newtype Crc = Crc Word32 deriving Show
+
+crcPipe :: (
+	Union.Member (Pipe.P BS.ByteString BS.ByteString) effs,
+	Union.Member (State.S Crc) effs ) =>
 	Eff.E effs ()
-crcPipe =
--}
+crcPipe = do
+	State.put $ Crc 0xffffffff
+	crcBody
+
+crcBody :: (
+	Union.Member (Pipe.P BS.ByteString BS.ByteString) effs,
+	Union.Member (State.S Crc) effs ) =>
+	Eff.E effs ()
+crcBody = Pipe.await BS.ByteString >>= \case
+	Nothing -> pure ()
+	Just bs -> do
+		State.modify \(Crc c) -> Crc $ c `step'` bs
+		Pipe.yield BS.ByteString (bs :: BS.ByteString)
+		crcBody
+
+compCrc :: Union.Member (State.S Crc) effs => Eff.E effs ()
+compCrc = State.modify \(Crc c) -> Crc $ complement c
