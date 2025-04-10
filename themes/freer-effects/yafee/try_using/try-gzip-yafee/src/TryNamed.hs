@@ -16,8 +16,8 @@ countUpDown :: (
 	) =>
 	Eff.E effs ()
 countUpDown = do
-	State.modifyN @"count-up" @Int (+ 1)
-	State.modifyN @"count-down" @Int (subtract 1)
+	State.modifyN @Int "count-up" (+ 1)
+	State.modifyN @Int "count-down" (subtract 1)
 
 foo :: (
 	Union.Member (State.Named "count-up" Int) effs,

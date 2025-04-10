@@ -242,7 +242,7 @@ printPipe' = do
 	maybe (pure ())
 		(\x -> do
 			calcCrc' x
-			State.modifyN @"file-length" (+ BS.length x)
+			State.modifyN "file-length" (+ BS.length x)
 			Pipe.print' (x :: BS.ByteString)
 			printPipe' @o) mx
 
@@ -262,7 +262,7 @@ readNonCompressed bffsz = do
 	ln <- takeWord16FromPair
 	forM_ (separate bffsz ln) \ln' -> do
 		bs <- takeBytes @BS.ByteString ln'
-		State.modifyN @"file-length" (+ ln')
+		State.modifyN "file-length" (+ ln')
 		maybe (pure ()) (Pipe.yield @BS.ByteString) bs
 	State.modify compCrc
 	where
@@ -342,7 +342,7 @@ format n = do
 	then yieldLen @(Either Word8 BS.ByteString) n >> format n
 	else readMore' >>= bool
 		(Pipe.yield @(Either Word8 BS.ByteString) =<<
-			State.getN @"format" @BS.ByteString)
+			State.getN @BS.ByteString "format")
 --		(pure ())
 		(format n)
 
@@ -353,15 +353,15 @@ readMore' :: (
 	Eff.E effs Bool
 readMore' = Pipe.await @_ @BS.ByteString >>= \case
 	Nothing -> pure False
-	Just (Left w) -> True <$ State.modifyN @"format" (`BS.snoc` w)
-	Just (Right bs) -> True <$ State.modifyN @"format" (`BS.append` bs)
+	Just (Left w) -> True <$ State.modifyN "format" (`BS.snoc` w)
+	Just (Right bs) -> True <$ State.modifyN "format" (`BS.append` bs)
 
 checkLength :: (
 	Union.Member (State.Named "format" BS.ByteString) effs
 	) =>
 	Int -> Eff.E effs Bool
 checkLength n = do
-	bs <- State.getN @"format"
+	bs <- State.getN "format"
 	pure $ BS.length bs >= n
 
 yieldLen :: forall i effs . (
@@ -369,7 +369,7 @@ yieldLen :: forall i effs . (
 	Union.Member (Pipe.P i BS.ByteString) effs ) =>
 	Int -> Eff.E effs ()
 yieldLen n = do
-	bs <- State.getN @"format"
+	bs <- State.getN "format"
 	let	(r, bs') = BS.splitAt n bs
-	State.putN @"format" bs'
+	State.putN "format" bs'
 	Pipe.yield @i r
