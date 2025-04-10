@@ -28,6 +28,21 @@ data BitArray = BitArray {
 	bit0 :: Int, bitsLen :: Int,
 	bitsBody :: BS.ByteString } deriving Show
 
+byteStringToBitArray :: BS.ByteString -> BitArray
+byteStringToBitArray bs = BitArray {
+	bit0 = 0, bitsLen = 8 * BS.length bs, bitsBody = bs }
+
+bitArrayToByteBoundary :: BitArray -> (BitArray, BitArray)
+bitArrayToByteBoundary BitArray {
+	bit0 = i0, bitsLen = ln, bitsBody = bs } = case i0 of
+	0 -> (BitArray 0 0 "", BitArray 0 ln bs)
+	_ -> (BitArray i0 (8 - i0) (BS.take 1 bs), BitArray 0 (ln - 8 + i0) (BS.tail bs))
+
+bitArrayToByteString :: BitArray -> Either BitArray BS.ByteString
+bitArrayToByteString
+	ba@BitArray { bit0 = i0, bitsLen = ln, bitsBody = bs } = case (i0, ln `mod` 8) of
+	(0, 0) -> Right bs; _ -> Left ba
+
 onDemand :: (
 	Union.Member (
 		Pipe.P BS.ByteString
