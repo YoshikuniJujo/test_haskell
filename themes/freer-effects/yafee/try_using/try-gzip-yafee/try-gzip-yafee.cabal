@@ -37,6 +37,7 @@ library
       Pipe.ByteString.IO
       Pipe.ByteString.OnDemand
       Pipe.Crc
+      Pipe.DataCheck
       Pipe.Gzip
       Pipe.Huffman
       Pipe.IO

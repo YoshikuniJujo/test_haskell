@@ -71,6 +71,8 @@ main = do
 			maybe (pure ()) putStrLn' . (((`showHex` "") . bsToNum @Word16) <$>) =<< Pipe.await @BS.ByteString (type ())
 		State.put $ RequestBuffer 20
 		print' =<< Pipe.await @BS.ByteString (type ())
+		print' =<< Pipe.await @BS.ByteString (type ())
+		print' =<< Pipe.await @BS.ByteString (type ())
 
 print' :: (Show a, Union.Member IO effs) => a -> Eff.E effs ()
 print' = Eff.eff . print
