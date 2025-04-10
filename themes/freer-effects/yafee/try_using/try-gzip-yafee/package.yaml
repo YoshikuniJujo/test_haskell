@@ -77,6 +77,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gzip-yafee
+  try-gzip-yafee-new:
+    main:                try-gzip-yafee-new.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yafee
 
 tests:
   try-gzip-yafee-test:
