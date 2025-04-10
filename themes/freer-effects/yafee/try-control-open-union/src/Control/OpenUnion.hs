@@ -3,7 +3,7 @@
 {-# LANGUAGE ExistentialQuantification, GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
