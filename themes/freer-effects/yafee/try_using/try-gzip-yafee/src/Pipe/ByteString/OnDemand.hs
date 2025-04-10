@@ -32,11 +32,20 @@ byteStringToBitArray :: BS.ByteString -> BitArray
 byteStringToBitArray bs = BitArray {
 	bit0 = 0, bitsLen = 8 * BS.length bs, bitsBody = bs }
 
-bitArrayToByteBoundary :: BitArray -> (BitArray, BitArray)
+appendBitArrayAndByteString :: BitArray -> BS.ByteString -> BitArray
+appendBitArrayAndByteString
+	BitArray { bit0 = i0, bitsLen = ln, bitsBody = bs } bs' =
+	BitArray {
+		bit0 = i0, bitsLen = ln + 8 * BS.length bs',
+		bitsBody = bs `BS.append` bs' }
+
+bitArrayToByteBoundary :: BitArray -> Either (BitArray, BitArray) BS.ByteString
 bitArrayToByteBoundary BitArray {
 	bit0 = i0, bitsLen = ln, bitsBody = bs } = case i0 of
-	0 -> (BitArray 0 0 "", BitArray 0 ln bs)
-	_ -> (BitArray i0 (8 - i0) (BS.take 1 bs), BitArray 0 (ln - 8 + i0) (BS.tail bs))
+	0 -> Right bs
+	_ -> Left (
+		BitArray i0 (8 - i0) (BS.take 1 bs),
+		BitArray 0 (ln - 8 + i0) (BS.tail bs) )
 
 bitArrayToByteString :: BitArray -> Either BitArray BS.ByteString
 bitArrayToByteString
@@ -74,6 +83,18 @@ takeBytes o ln = State.get >>= \bs ->
 	then readMore o >>= bool (pure Nothing) (takeBytes o ln)
 	else let (t, d) = BS.splitAt ln bs in Just t <$ State.put d
 
+takeBytes' :: forall o -> (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member (State.S BitArray) effs ) =>
+	Int -> Eff.E effs (Maybe (Either BitArray BS.ByteString))
+takeBytes' o ln = State.get >>= \ba ->
+	case bitArrayToByteBoundary ba of
+		Left (t, d) -> Just (Left t) <$ State.put d
+		Right bs -> if BS.length bs < ln
+			then readMore' o >>= bool (pure Nothing) (takeBytes' o ln)
+			else let (t, d) = BS.splitAt ln bs in Just (Right t)
+				<$ State.put (byteStringToBitArray d)
+
 takeString :: forall o -> (
 	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member (State.S BS.ByteString) effs ) =>
@@ -105,3 +126,11 @@ readMore :: forall o -> (
 readMore o = Pipe.await o >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`BS.append` bs)
+
+readMore' :: forall o -> (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member (State.S BitArray) effs
+	) => Eff.E effs Bool
+readMore' o = Pipe.await o >>= \case
+	Nothing -> pure False
+	Just bs -> True <$ State.modify (`appendBitArrayAndByteString` bs)
