@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE ExplicitNamespaces #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,34 @@ data Request
 	= RequestBytes Int
 	| RequestString
 	| RequestBuffer Int
+	| RequestBits Int
 	deriving Show
 
+data BitArray = BitArray {
+	bit0 :: Int, bitsLen :: Int,
+	bitsBody :: BS.ByteString } deriving Show
+
 onDemand :: (
-	Union.Member (Pipe.P BS.ByteString BS.ByteString) effs,
+	Union.Member (
+		Pipe.P BS.ByteString
+			(Either BitArray BS.ByteString) ) effs,
 	Union.Member (State.S Request) effs,
 	Union.Member (State.S BS.ByteString) effs,
 	Union.Member (Except.E String) effs ) =>
 	Eff.E effs ()
 onDemand = State.get >>= \case
 	RequestBytes ln -> do
-		mt <- takeBytes BS.ByteString ln
+		mt <- takeBytes (Either (type BitArray) BS.ByteString) ln
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+			(\t -> Pipe.yield BS.ByteString (Right @BitArray t) >> onDemand) mt
 	RequestString -> do
-		mt <- takeString BS.ByteString
+		mt <- takeString (Either (type BitArray) BS.ByteString)
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+			(\t -> Pipe.yield BS.ByteString (Right @BitArray t) >> onDemand) mt
 	RequestBuffer ln -> do
-		mt <- takeBuffer BS.ByteString ln
+		mt <- takeBuffer (Either (type BitArray) BS.ByteString) ln
 		maybe (Except.throw @String "End of input")
-			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+			(\t -> Pipe.yield BS.ByteString (Right @BitArray t) >> onDemand) mt
 
 takeBytes :: forall o -> (
 	Union.Member (Pipe.P BS.ByteString o) effs,
@@ -66,7 +74,7 @@ takeBuffer :: forall o -> (
 takeBuffer o ln = State.get >>= \bs ->
 	if BS.length bs < ln
 	then do	b <- readMore o
-		if b then takeBuffer o ln else if BS.null bs then pure Nothing else pure $ Just bs
+		if b then takeBuffer o ln else if BS.null bs then pure Nothing else Just bs <$ State.put ("" :: BS.ByteString)
 	else let (t, d) = BS.splitAt ln bs in Just t <$ State.put d
 
 splitString :: BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)

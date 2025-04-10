@@ -27,6 +27,7 @@ import System.Environment
 import Pipe.ByteString.IO
 import Pipe.ByteString.OnDemand
 import Pipe.Crc
+import Pipe.DataCheck
 
 import Gzip
 import ByteStringNum
@@ -42,37 +43,38 @@ main = do
 		. (`State.run` RequestBytes 0)
 		. (Pipe.run @() @()) $
 		fromHandle @(Pipe () BS.ByteString MyEff) (type ()) h Pipe.=$=
-		onDemand @(Pipe BS.ByteString BS.ByteString MyEff) Pipe.=$= do
-		crcPipe @(Pipe BS.ByteString BS.ByteString MyEff) Pipe.=$= do
-			State.put $ RequestBytes 2
-			Just ids <- Pipe.await @BS.ByteString (type ())
-			when (ids /= "\31\139") $ Except.throw @String "Bad magic"
-			State.put $ RequestBytes 1
-			Just cm <- Pipe.await (type ())
-			print' $ CompressionMethod $ BS.head cm
-			Just flgs <- Pipe.await (type ())
-			print' . readFlags $ BS.head flgs
-			State.put $ RequestBytes 4
-			Just mtm <- Pipe.await @BS.ByteString (type ())
-			print' . posixSecondsToUTCTime . realToFrac . word32ToCTime $ bsToNum mtm
-			State.put $ RequestBytes 1
-			print' =<< Pipe.await @BS.ByteString (type ())
-			print' . (OS . BS.head <$>) =<< Pipe.await @BS.ByteString (type ())
-			State.put $ RequestBytes 2
-			Just xlen <- (bsToWord16 <$>) <$> Pipe.await @BS.ByteString (type ())
-			State.put . RequestBytes $ fromIntegral xlen
-			print' . (decodeExtraFields <$>) =<< Pipe.await @BS.ByteString (type ())
-			State.put RequestString
-			print' =<< Pipe.await @BS.ByteString (type ())
-			print' =<< Pipe.await @BS.ByteString (type ())
-			compCrc
-			putStrLn' . (`showHex` "") . (.&. 0xffff) . (\(Crc c) -> c) =<< State.get @Crc
-			State.put $ RequestBytes 2
-			maybe (pure ()) putStrLn' . (((`showHex` "") . bsToNum @Word16) <$>) =<< Pipe.await @BS.ByteString (type ())
-		State.put $ RequestBuffer 20
-		print' =<< Pipe.await @BS.ByteString (type ())
-		print' =<< Pipe.await @BS.ByteString (type ())
-		print' =<< Pipe.await @BS.ByteString (type ())
+		onDemand @(Pipe BS.ByteString (Either BitArray BS.ByteString) MyEff) Pipe.=$= do
+			checkRight @(Pipe (Either BitArray BS.ByteString) BS.ByteString MyEff) (type BitArray) BS.ByteString Pipe.=$=
+				crcPipe @(Pipe BS.ByteString BS.ByteString MyEff) Pipe.=$= do
+				State.put $ RequestBytes 2
+				Just ids <- Pipe.await @BS.ByteString (type ())
+				when (ids /= "\31\139") $ Except.throw @String "Bad magic"
+				State.put $ RequestBytes 1
+				Just cm <- Pipe.await (type ())
+				print' $ CompressionMethod $ BS.head cm
+				Just flgs <- Pipe.await (type ())
+				print' . readFlags $ BS.head flgs
+				State.put $ RequestBytes 4
+				Just mtm <- Pipe.await @BS.ByteString (type ())
+				print' . posixSecondsToUTCTime . realToFrac . word32ToCTime $ bsToNum mtm
+				State.put $ RequestBytes 1
+				print' =<< Pipe.await @BS.ByteString (type ())
+				print' . (OS . BS.head <$>) =<< Pipe.await @BS.ByteString (type ())
+				State.put $ RequestBytes 2
+				Just xlen <- (bsToWord16 <$>) <$> Pipe.await @BS.ByteString (type ())
+				State.put . RequestBytes $ fromIntegral xlen
+				print' . (decodeExtraFields <$>) =<< Pipe.await @BS.ByteString (type ())
+				State.put RequestString
+				print' =<< Pipe.await @BS.ByteString (type ())
+				print' =<< Pipe.await @BS.ByteString (type ())
+				compCrc
+				putStrLn' . (`showHex` "") . (.&. 0xffff) . (\(Crc c) -> c) =<< State.get @Crc
+				State.put $ RequestBytes 2
+				maybe (pure ()) putStrLn' . (((`showHex` "") . bsToNum @Word16) <$>) =<< Pipe.await @BS.ByteString (type ())
+			State.put $ RequestBuffer 20
+			print' =<< Pipe.await @(Either BitArray BS.ByteString) (type ())
+			print' =<< Pipe.await @(Either BitArray BS.ByteString) (type ())
+			print' =<< Pipe.await @(Either BitArray BS.ByteString) (type ())
 
 print' :: (Show a, Union.Member IO effs) => a -> Eff.E effs ()
 print' = Eff.eff . print
