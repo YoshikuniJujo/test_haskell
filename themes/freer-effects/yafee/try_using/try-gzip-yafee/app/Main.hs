@@ -52,7 +52,7 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	(putStrLn . take 1000 . show =<<)
-		. run $ fromHandle (type ()) h Pipe.=$= do
+		. run $ fromHandle h Pipe.=$= do
 			(Pipe.print' . gzipHeaderFromRaw =<< readHeader)
 			mainPipe formatSize
 			Pipe.print' =<< takeByteBoundary @()

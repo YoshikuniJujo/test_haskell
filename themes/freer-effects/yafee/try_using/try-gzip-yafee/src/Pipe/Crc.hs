@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -22,10 +23,8 @@ newtype Crc = Crc Word32 deriving Show
 crcToByteString :: Crc -> BS.ByteString
 crcToByteString (Crc c) = numToBs c
 
-crcPipe :: (
-	Union.Member (Pipe.P BS.ByteString BS.ByteString) effs,
-	Union.Member (State.S Crc) effs ) =>
-	Eff.E effs ()
+crcPipe :: Union.Member (State.S Crc) effs =>
+	Eff.E (Pipe.P BS.ByteString BS.ByteString ': effs) ()
 crcPipe = do
 	State.put $ Crc 0xffffffff
 	crcBody

@@ -16,12 +16,11 @@ bufferSize :: Int
 bufferSize = 100
 
 fromHandle ::
-	forall i ->
-	(Union.Member (Pipe.P i BS.ByteString) effs, Union.Member IO effs) =>
-	Handle -> Eff.E effs ()
-fromHandle i h = do
+	Union.Member IO effs =>
+	Handle -> Eff.E (Pipe.P i BS.ByteString ': effs) ()
+fromHandle h = do
 	eof <- Eff.eff $ hIsEOF h
 	if eof then pure () else do
 		bs <- Eff.eff $ BS.hGetSome h bufferSize
-		Pipe.yield' i bs
-		fromHandle i h
+		Pipe.yield bs
+		fromHandle h
