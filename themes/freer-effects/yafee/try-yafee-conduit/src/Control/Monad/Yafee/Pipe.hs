@@ -18,13 +18,15 @@ import Data.FTCQueue qualified as FTCQueue
 import Data.Char
 import System.IO
 
+-- * NORMAL
+
 data P i o r where Await :: P i o (Maybe i); Yield :: forall i o . o -> P i o ()
 
 await :: forall i o effs . Eff.E (P i o ': effs) (Maybe i)
-await = Eff.eff (Await @_ @o)
+await = await' o
 
 yield :: forall i o effs . o -> Eff.E (P i o ': effs) ()
-yield = Eff.eff . Yield @i
+yield = yield' i
 
 await' :: forall i effs . forall o -> Union.Member (P i o) effs => Eff.E effs (Maybe i)
 await' o = Eff.eff (Await @_ @o)
@@ -93,6 +95,8 @@ p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
 	Right Await -> Union.inj (Await @i @o) Freer.:>>=
 		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
 	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@= p')
+
+-- * NAMED
 
 -- * TOOLS
 
