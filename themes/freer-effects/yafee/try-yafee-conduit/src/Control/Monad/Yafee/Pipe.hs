@@ -20,11 +20,11 @@ import System.IO
 
 data P i o r where Await :: P i o (Maybe i); Yield :: forall i o . o -> P i o ()
 
-awaitNew :: forall i o effs . Eff.E (P i o ': effs) (Maybe i)
-awaitNew = Eff.eff (Await @_ @o)
+await :: forall i o effs . Eff.E (P i o ': effs) (Maybe i)
+await = Eff.eff (Await @_ @o)
 
-yieldNew :: forall i o effs . o -> Eff.E (P i o ': effs) ()
-yieldNew = Eff.eff . Yield @i
+yield :: forall i o effs . o -> Eff.E (P i o ': effs) ()
+yield = Eff.eff . Yield @i
 
 await' :: forall i effs . forall o -> Union.Member (P i o) effs => Eff.E effs (Maybe i)
 await' o = Eff.eff (Await @_ @o)
