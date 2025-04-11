@@ -2,13 +2,15 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yafee.Pipe where
 
+import GHC.TypeLits
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Yafee.Eff qualified as Eff
@@ -20,7 +22,7 @@ import System.IO
 
 -- * NORMAL
 
-data P i o r where Await :: P i o (Maybe i); Yield :: forall i o . o -> P i o ()
+type P = Named ""
 
 await :: forall i o effs . Eff.E (P i o ': effs) (Maybe i)
 await = await' o
@@ -29,22 +31,17 @@ yield :: forall i o effs . o -> Eff.E (P i o ': effs) ()
 yield = yield' i
 
 await' :: forall i effs . forall o -> Union.Member (P i o) effs => Eff.E effs (Maybe i)
-await' o = Eff.eff (Await @_ @o)
+await' = awaitN ""
 
 yield' :: forall o effs . forall i -> Union.Member (P i o) effs => o -> Eff.E effs ()
-yield' i = Eff.eff . Yield @i
+yield' = yieldN ""
 
 run :: Eff.E (P i o ': effs) a -> Eff.E effs (a, [o])
-run = \case
-	Freer.Pure x -> Freer.Pure $ (x, [])
-	u Freer.:>>= k -> case Union.decomp u of
-		Left u' -> u' Freer.:>>= FTCQueue.singleton (run `Freer.comp` k)
-		Right Await -> run $ k `Freer.app` Nothing
-		Right (Yield o) -> ((o :) `second`) <$> run (k `Freer.app` ())
+run = runN 
 
-(=$=) :: forall i a o effs r r' .
-	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
-	Eff.E (P i o ': effs) r'
+(=$=) :: forall nmix nmxo nmio i a o effs r r' .
+	Eff.E (Named nmix i a ': effs) r -> Eff.E (Named nmxo a o ': effs) r' ->
+	Eff.E (Named nmio i o ': effs) r'
 _ =$= Freer.Pure r = Freer.Pure r
 p@(u Freer.:>>= k) =$= p'@(v Freer.:>>= l) =
 	case (Union.decomp u, Union.decomp v) of
@@ -52,10 +49,10 @@ p@(u Freer.:>>= k) =$= p'@(v Freer.:>>= l) =
 			Union.weaken v' Freer.:>>=
 			FTCQueue.singleton ((p =$=) . (l `Freer.app`))
 		(_, Right (Yield o)) ->
-			Union.inj (Yield @i o) Freer.:>>=
+			Union.inj (Yield @nmio @i o) Freer.:>>=
 			FTCQueue.singleton ((p =$=) . (l `Freer.app`))
 		(Right Await, _) ->
-			Union.inj (Await @_ @o) Freer.:>>=
+			Union.inj (Await @nmio @_ @o) Freer.:>>=
 			FTCQueue.singleton ((=$= p') . (k `Freer.app`))
 		(Right (Yield o), Right Await) ->
 			(k `Freer.app` ()) =$= (l `Freer.app` Just o)
@@ -66,7 +63,7 @@ p@(Freer.Pure _) =$= (v Freer.:>>= l) = case Union.decomp v of
 	Left v' -> Union.weaken v' Freer.:>>=
 		FTCQueue.singleton ((p =$=) . (l `Freer.app`))
 	Right Await -> p =$= (l `Freer.app` Nothing)
-	Right (Yield o) -> Union.inj (Yield @i o) Freer.:>>=
+	Right (Yield o) -> Union.inj (Yield @nmio @i o) Freer.:>>=
 		FTCQueue.singleton ((p =$=) . (l `Freer.app`))
 
 (=@=) :: forall i a o effs r r' .
@@ -79,10 +76,10 @@ p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
 			Union.weaken u' Freer.:>>=
 			FTCQueue.singleton ((=@= p') . (k `Freer.app`))
 		(_, Right (Yield o)) ->
-			Union.inj (Yield @i o) Freer.:>>=
+			Union.inj (Yield @"" @i o) Freer.:>>=
 			FTCQueue.singleton ((p =@=) . (l `Freer.app`))
 		(Right Await, _) ->
-			Union.inj (Await @_ @o) Freer.:>>=
+			Union.inj (Await @"" @_ @o) Freer.:>>=
 			FTCQueue.singleton ((=@= p') . (k `Freer.app`))
 		(Right (Yield o), Right Await) ->
 			(k `Freer.app` ()) =@= (l `Freer.app` Just o)
@@ -92,11 +89,31 @@ p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
 (u Freer.:>>= k) =@= p'@(Freer.Pure _) = case Union.decomp u of
 	Left u' -> Union.weaken u' Freer.:>>=
 		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
-	Right Await -> Union.inj (Await @i @o) Freer.:>>=
+	Right Await -> Union.inj (Await @"" @i @o) Freer.:>>=
 		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
 	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@= p')
 
 -- * NAMED
+
+data Named (nm :: Symbol) i o r where
+	Await :: Named nm i o (Maybe i)
+	Yield :: forall nm i o . o -> Named nm i o ()
+
+awaitN :: forall (nm :: Symbol) -> forall o ->
+	Union.Member (Named nm i o) effs => Eff.E effs (Maybe i)
+awaitN nm o = Eff.eff (Await @nm @_ @o)
+
+yieldN :: forall (nm :: Symbol) -> forall i ->
+	Union.Member (Named nm i o) effs => o -> Eff.E effs ()
+yieldN nm i = Eff.eff . Yield @nm @i
+
+runN :: Eff.E (Named nm i o ': effs) a -> Eff.E effs (a, [o])
+runN = \case
+	Freer.Pure x -> Freer.Pure $ (x, [])
+	u Freer.:>>= k -> case Union.decomp u of
+		Left u' -> u' Freer.:>>= FTCQueue.singleton (runN `Freer.comp` k)
+		Right Await -> runN $ k `Freer.app` Nothing
+		Right (Yield o) -> ((o :) `second`) <$> runN (k `Freer.app` ())
 
 -- * TOOLS
 
