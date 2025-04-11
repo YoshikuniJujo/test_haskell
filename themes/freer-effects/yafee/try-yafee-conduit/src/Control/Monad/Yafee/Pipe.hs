@@ -39,59 +39,15 @@ yield' = yieldN ""
 run :: Eff.E (P i o ': effs) a -> Eff.E effs (a, [o])
 run = runN 
 
-(=$=) :: forall nmix nmxo nmio i a o effs r r' .
-	Eff.E (Named nmix i a ': effs) r -> Eff.E (Named nmxo a o ': effs) r' ->
-	Eff.E (Named nmio i o ': effs) r'
-_ =$= Freer.Pure r = Freer.Pure r
-p@(u Freer.:>>= k) =$= p'@(v Freer.:>>= l) =
-	case (Union.decomp u, Union.decomp v) of
-		(_, Left v') ->
-			Union.weaken v' Freer.:>>=
-			FTCQueue.singleton ((p =$=) . (l `Freer.app`))
-		(_, Right (Yield o)) ->
-			Union.inj (Yield @nmio @i o) Freer.:>>=
-			FTCQueue.singleton ((p =$=) . (l `Freer.app`))
-		(Right Await, _) ->
-			Union.inj (Await @nmio @_ @o) Freer.:>>=
-			FTCQueue.singleton ((=$= p') . (k `Freer.app`))
-		(Right (Yield o), Right Await) ->
-			(k `Freer.app` ()) =$= (l `Freer.app` Just o)
-		(Left u', Right Await) ->
-			Union.weaken u' Freer.:>>=
-			FTCQueue.singleton ((=$= p') . (k `Freer.app`))
-p@(Freer.Pure _) =$= (v Freer.:>>= l) = case Union.decomp v of
-	Left v' -> Union.weaken v' Freer.:>>=
-		FTCQueue.singleton ((p =$=) . (l `Freer.app`))
-	Right Await -> p =$= (l `Freer.app` Nothing)
-	Right (Yield o) -> Union.inj (Yield @nmio @i o) Freer.:>>=
-		FTCQueue.singleton ((p =$=) . (l `Freer.app`))
+(=$=) :: forall i a o effs r r' .
+	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
+	Eff.E (P i o ': effs) r'
+(=$=) = (=$=.)
 
 (=@=) :: forall i a o effs r r' .
 	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
 	Eff.E (P i o ': effs) (r, [a])
-Freer.Pure r =@= _ = Freer.Pure (r, [])
-p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
-	case (Union.decomp u, Union.decomp v) of
-		(Left u', _) ->
-			Union.weaken u' Freer.:>>=
-			FTCQueue.singleton ((=@= p') . (k `Freer.app`))
-		(_, Right (Yield o)) ->
-			Union.inj (Yield @"" @i o) Freer.:>>=
-			FTCQueue.singleton ((p =@=) . (l `Freer.app`))
-		(Right Await, _) ->
-			Union.inj (Await @"" @_ @o) Freer.:>>=
-			FTCQueue.singleton ((=@= p') . (k `Freer.app`))
-		(Right (Yield o), Right Await) ->
-			(k `Freer.app` ()) =@= (l `Freer.app` Just o)
-		(Right (Yield _o), Left v') ->
-			Union.weaken v' Freer.:>>=
-			FTCQueue.singleton ((p =@=) . (l `Freer.app`))
-(u Freer.:>>= k) =@= p'@(Freer.Pure _) = case Union.decomp u of
-	Left u' -> Union.weaken u' Freer.:>>=
-		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
-	Right Await -> Union.inj (Await @"" @i @o) Freer.:>>=
-		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
-	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@= p')
+(=@=) = (=@=.)
 
 -- * NAMED
 
@@ -114,6 +70,60 @@ runN = \case
 		Left u' -> u' Freer.:>>= FTCQueue.singleton (runN `Freer.comp` k)
 		Right Await -> runN $ k `Freer.app` Nothing
 		Right (Yield o) -> ((o :) `second`) <$> runN (k `Freer.app` ())
+
+(=$=.) :: forall nmix nmxo nmio i a o effs r r' .
+	Eff.E (Named nmix i a ': effs) r -> Eff.E (Named nmxo a o ': effs) r' ->
+	Eff.E (Named nmio i o ': effs) r'
+_ =$=. Freer.Pure r = Freer.Pure r
+p@(u Freer.:>>= k) =$=. p'@(v Freer.:>>= l) =
+	case (Union.decomp u, Union.decomp v) of
+		(_, Left v') ->
+			Union.weaken v' Freer.:>>=
+			FTCQueue.singleton ((p =$=.) . (l `Freer.app`))
+		(_, Right (Yield o)) ->
+			Union.inj (Yield @nmio @i o) Freer.:>>=
+			FTCQueue.singleton ((p =$=.) . (l `Freer.app`))
+		(Right Await, _) ->
+			Union.inj (Await @nmio @_ @o) Freer.:>>=
+			FTCQueue.singleton ((=$=. p') . (k `Freer.app`))
+		(Right (Yield o), Right Await) ->
+			(k `Freer.app` ()) =$=. (l `Freer.app` Just o)
+		(Left u', Right Await) ->
+			Union.weaken u' Freer.:>>=
+			FTCQueue.singleton ((=$=. p') . (k `Freer.app`))
+p@(Freer.Pure _) =$=. (v Freer.:>>= l) = case Union.decomp v of
+	Left v' -> Union.weaken v' Freer.:>>=
+		FTCQueue.singleton ((p =$=.) . (l `Freer.app`))
+	Right Await -> p =$=. (l `Freer.app` Nothing)
+	Right (Yield o) -> Union.inj (Yield @nmio @i o) Freer.:>>=
+		FTCQueue.singleton ((p =$=.) . (l `Freer.app`))
+
+(=@=.) :: forall nmix nmxo nmio i a o effs r r' .
+	Eff.E (Named nmix i a ': effs) r -> Eff.E (Named nmxo a o ': effs) r' ->
+	Eff.E (Named nmio i o ': effs) (r, [a])
+Freer.Pure r =@=. _ = Freer.Pure (r, [])
+p@(u Freer.:>>= k) =@=. p'@(v Freer.:>>= l) =
+	case (Union.decomp u, Union.decomp v) of
+		(Left u', _) ->
+			Union.weaken u' Freer.:>>=
+			FTCQueue.singleton ((=@=. p') . (k `Freer.app`))
+		(_, Right (Yield o)) ->
+			Union.inj (Yield @nmio @i o) Freer.:>>=
+			FTCQueue.singleton ((p =@=.) . (l `Freer.app`))
+		(Right Await, _) ->
+			Union.inj (Await @nmio @_ @o) Freer.:>>=
+			FTCQueue.singleton ((=@=. p') . (k `Freer.app`))
+		(Right (Yield o), Right Await) ->
+			(k `Freer.app` ()) =@=. (l `Freer.app` Just o)
+		(Right (Yield _o), Left v') ->
+			Union.weaken v' Freer.:>>=
+			FTCQueue.singleton ((p =@=.) . (l `Freer.app`))
+(u Freer.:>>= k) =@=. p'@(Freer.Pure _) = case Union.decomp u of
+	Left u' -> Union.weaken u' Freer.:>>=
+		FTCQueue.singleton ((=@=. p') . (k `Freer.app`))
+	Right Await -> Union.inj (Await @nmio @i @o) Freer.:>>=
+		FTCQueue.singleton ((=@=. p') . (k `Freer.app`))
+	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@=. p')
 
 -- * TOOLS
 
