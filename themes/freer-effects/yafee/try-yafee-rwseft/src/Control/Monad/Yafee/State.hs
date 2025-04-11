@@ -46,7 +46,7 @@ modify :: Union.Member (S s) effs => (s -> s) -> Eff.E effs ()
 modify = modifyN ""
 
 run :: Eff.E (S s ': effs) a -> s -> Eff.E effs (a, s)
-run = runN @""
+run = runN
 
 transaction :: forall effs a . forall s ->
 	Union.Member (S s) effs => Eff.E effs a -> Eff.E effs a
