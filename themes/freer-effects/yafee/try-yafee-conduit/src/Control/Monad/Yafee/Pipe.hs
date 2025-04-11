@@ -23,8 +23,14 @@ data P i o r where Await :: P i o (Maybe i); Yield :: forall i o . o -> P i o ()
 await :: forall i effs . forall o -> Union.Member (P i o) effs => Eff.E effs (Maybe i)
 await o = Eff.eff (Await @_ @o)
 
+awaitNew :: forall i o effs . Eff.E (P i o ': effs) (Maybe i)
+awaitNew = Eff.eff (Await @_ @o)
+
 yield :: forall o effs . forall i -> Union.Member (P i o) effs => o -> Eff.E effs ()
 yield i = Eff.eff . Yield @i
+
+yieldNew :: forall i o effs . o -> Eff.E (P i o ': effs) ()
+yieldNew = Eff.eff . Yield @i
 
 run :: Eff.E (P i o ': effs) a -> Eff.E effs (a, [o])
 run = \case
