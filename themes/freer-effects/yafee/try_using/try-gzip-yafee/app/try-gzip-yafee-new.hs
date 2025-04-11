@@ -46,7 +46,7 @@ main = do
 		. (`State.run` RequestBytes 0)
 		. (Pipe.run @() @()) $
 		fromHandle @(Pipe () BS.ByteString MyEff) (type ()) h Pipe.=$=
-		onDemand @(Pipe BS.ByteString (Either BitArray BS.ByteString) MyEff) Pipe.=$= do
+		onDemand @MyEff Pipe.=$= do
 			checkRight @(Pipe (Either BitArray BS.ByteString) BS.ByteString MyEff) (type BitArray) BS.ByteString Pipe.=$=
 				crcPipe @(Pipe BS.ByteString BS.ByteString MyEff) Pipe.=$= do
 				State.put $ RequestBytes 2

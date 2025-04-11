@@ -1,8 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ExplicitNamespaces #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -56,102 +55,91 @@ bitArrayToByteString
 	(0, 0) -> Right bs; _ -> Left ba
 
 onDemand :: (
-	Union.Member (
-		Pipe.P BS.ByteString
-			(Either BitArray BS.ByteString) ) effs,
 	Union.Member (State.S Request) effs,
 	Union.Member (State.S BitArray) effs,
 	Union.Member (Except.E String) effs ) =>
-	Eff.E effs ()
+	Eff.E (Pipe.P BS.ByteString (Either BitArray BS.ByteString) ': effs) ()
 onDemand = State.get >>= \case
 	RequestBytes ln -> do
-		mt <- takeBytes' (Either (type BitArray) BS.ByteString) ln
+		mt <- takeBytes' ln
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+			(\t -> Pipe.yieldNew t >> onDemand) mt
 	RequestString -> do
-		mt <- takeString' (Either (type BitArray) BS.ByteString)
+		mt <- takeString'
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+			(\t -> Pipe.yieldNew t >> onDemand) mt
 	RequestBuffer ln -> do
-		mt <- takeBuffer' (Either (type BitArray) BS.ByteString) ln
+		mt <- takeBuffer' ln
 		maybe (Except.throw @String "End of input")
-			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+			(\t -> Pipe.yieldNew t >> onDemand) mt
 	RequestBits ln -> do
-		mt <- takeBits (Either (type BitArray) BS.ByteString) ln
+		mt <- takeBits ln
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+			(\t -> Pipe.yieldNew t >> onDemand) mt
 
-takeBytes :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+takeBytes :: (
 	Union.Member (State.S BS.ByteString) effs ) =>
-	Int -> Eff.E effs (Maybe BS.ByteString)
-takeBytes o ln = State.get >>= \bs ->
+	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BS.ByteString)
+takeBytes ln = State.get >>= \bs ->
 	if BS.length bs < ln
-	then readMore o >>= bool (pure Nothing) (takeBytes o ln)
+	then readMore >>= bool (pure Nothing) (takeBytes ln)
 	else let (t, d) = BS.splitAt ln bs in Just t <$ State.put d
 
-takeBytes' :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+takeBytes' :: (
 	Union.Member (State.S BitArray) effs ) =>
-	Int -> Eff.E effs (Maybe (Either BitArray BS.ByteString))
-takeBytes' o ln = State.get >>= \ba ->
+	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray BS.ByteString))
+takeBytes' ln = State.get >>= \ba ->
 	case bitArrayToByteBoundary ba of
 		Left (t, d) -> Just (Left t) <$ State.put d
 		Right bs -> if BS.length bs < ln
-			then readMore' o >>= bool (pure Nothing) (takeBytes' o ln)
+			then readMore' >>= bool (pure Nothing) (takeBytes' ln)
 			else let (t, d) = BS.splitAt ln bs in Just (Right t)
 				<$ State.put (byteStringToBitArray d)
 
-takeString :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+takeString :: (
 	Union.Member (State.S BS.ByteString) effs ) =>
-	Eff.E effs (Maybe BS.ByteString)
-takeString o = State.get >>= \bs -> case splitString bs of
-	Nothing -> readMore o >>= bool (pure Nothing) (takeString o)
+	Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BS.ByteString)
+takeString = State.get >>= \bs -> case splitString bs of
+	Nothing -> readMore >>= bool (pure Nothing) takeString
 	Just (t, d) -> Just t <$ State.put d
 
-takeString' :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+takeString' :: (
 	Union.Member (State.S BitArray) effs ) =>
-	Eff.E effs (Maybe (Either BitArray BS.ByteString))
-takeString' o = State.get >>= \ba -> case bitArrayToByteBoundary ba of
+	Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray BS.ByteString))
+takeString' = State.get >>= \ba -> case bitArrayToByteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
 	Right bs -> case splitString bs of
-		Nothing -> readMore' o >>= bool (pure Nothing) (takeString' o)
+		Nothing -> readMore' >>= bool (pure Nothing) takeString'
 		Just (t, d) -> Just (Right t)
 			<$ State.put (byteStringToBitArray d)
 
-takeBuffer :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+takeBuffer :: (
 	Union.Member (State.S BS.ByteString) effs ) =>
-	Int -> Eff.E effs (Maybe BS.ByteString)
-takeBuffer o ln = State.get >>= \bs ->
+	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BS.ByteString)
+takeBuffer ln = State.get >>= \bs ->
 	if BS.length bs < ln
-	then do	b <- readMore o
-		if b then takeBuffer o ln else if BS.null bs then pure Nothing else Just bs <$ State.put ("" :: BS.ByteString)
+	then do	b <- readMore
+		if b then takeBuffer ln else if BS.null bs then pure Nothing else Just bs <$ State.put ("" :: BS.ByteString)
 	else let (t, d) = BS.splitAt ln bs in Just t <$ State.put d
 
-takeBuffer' :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+takeBuffer' :: (
 	Union.Member (State.S BitArray) effs ) =>
-	Int -> Eff.E effs (Maybe (Either BitArray BS.ByteString))
-takeBuffer' o ln = State.get >>= \ba -> case bitArrayToByteBoundary ba of
+	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray BS.ByteString))
+takeBuffer' ln = State.get >>= \ba -> case bitArrayToByteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
 	Right bs -> if BS.length bs < ln
-		then do	b <- readMore' o
+		then do	b <- readMore'
 			if b
-			then takeBuffer' o ln
+			then takeBuffer' ln
 			else if BS.null bs
 			then pure Nothing
 			else Just (Right bs) <$ State.put (byteStringToBitArray ("" :: BS.ByteString))
 		else let (t, d) = BS.splitAt ln bs in Just (Right t) <$ State.put (byteStringToBitArray d)
 
-takeBits :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
-	Union.Member (State.S BitArray) effs ) =>
-	Int -> Eff.E effs (Maybe (Either BitArray BS.ByteString))
-takeBits o ln = State.get >>= \ba -> case splitAt ln ba of
-	Nothing -> readMore' o >>= bool (takeBits o ln) (pure Nothing)
+takeBits :: Union.Member (State.S BitArray) effs =>
+	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray BS.ByteString))
+takeBits ln = State.get >>= \ba -> case splitAt ln ba of
+	Nothing -> readMore' >>= bool (takeBits ln) (pure Nothing)
 	Just (t, d) -> Just (bitArrayToByteString t) <$ State.put d
 
 splitString :: BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
@@ -159,20 +147,18 @@ splitString bs = case BS.span (/= 0) bs of
 	(_, "") -> Nothing
 	(t, BS.uncons -> Just (z, d)) -> Just (BS.snoc t z, d)
 
-readMore :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+readMore :: (
 	Union.Member (State.S BS.ByteString) effs
 	) =>
-	Eff.E effs Bool
-readMore o = Pipe.await o >>= \case
+	Eff.E (Pipe.P BS.ByteString o ': effs) Bool
+readMore = Pipe.awaitNew >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`BS.append` bs)
 
-readMore' :: forall o -> (
-	Union.Member (Pipe.P BS.ByteString o) effs,
+readMore' :: (
 	Union.Member (State.S BitArray) effs
-	) => Eff.E effs Bool
-readMore' o = Pipe.await o >>= \case
+	) => Eff.E (Pipe.P BS.ByteString o ': effs) Bool
+readMore' = Pipe.awaitNew >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`appendBitArrayAndByteString` bs)
 
@@ -193,9 +179,9 @@ normalize BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
 	t = (ln + i' - 1) `div` 8 + 1
 
 bitArrayToWord8 :: BitArray -> Word8
-bitArrayToWord8 BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
-	| ln > 8 = error "too big"
-	| otherwise = foldl setBit 0 $ bits i ln bs
+bitArrayToWord8 BitArray { bit0 = i0, bitsLen = ln0, bitsBody = bs0 }
+	| ln0 > 8 = error "too big"
+	| otherwise = foldl setBit 0 $ bits i0 ln0 bs0
 	where
 	bits i ln bs
 		| ln == 0 = []
