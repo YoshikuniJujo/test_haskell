@@ -63,19 +63,19 @@ onDemand = State.get >>= \case
 	RequestBytes ln -> do
 		mt <- takeBytes' ln
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yieldNew t >> onDemand) mt
+			(\t -> Pipe.yield t >> onDemand) mt
 	RequestString -> do
 		mt <- takeString'
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yieldNew t >> onDemand) mt
+			(\t -> Pipe.yield t >> onDemand) mt
 	RequestBuffer ln -> do
 		mt <- takeBuffer' ln
 		maybe (Except.throw @String "End of input")
-			(\t -> Pipe.yieldNew t >> onDemand) mt
+			(\t -> Pipe.yield t >> onDemand) mt
 	RequestBits ln -> do
 		mt <- takeBits ln
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yieldNew t >> onDemand) mt
+			(\t -> Pipe.yield t >> onDemand) mt
 
 takeBytes :: (
 	Union.Member (State.S BS.ByteString) effs ) =>
@@ -151,14 +151,14 @@ readMore :: (
 	Union.Member (State.S BS.ByteString) effs
 	) =>
 	Eff.E (Pipe.P BS.ByteString o ': effs) Bool
-readMore = Pipe.awaitNew >>= \case
+readMore = Pipe.await >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`BS.append` bs)
 
 readMore' :: (
 	Union.Member (State.S BitArray) effs
 	) => Eff.E (Pipe.P BS.ByteString o ': effs) Bool
-readMore' = Pipe.awaitNew >>= \case
+readMore' = Pipe.await >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`appendBitArrayAndByteString` bs)
 
