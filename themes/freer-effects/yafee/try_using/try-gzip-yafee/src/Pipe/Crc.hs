@@ -15,7 +15,12 @@ import Data.ByteString qualified as BS
 
 import Crc
 
+import ByteStringNum
+
 newtype Crc = Crc Word32 deriving Show
+
+crcToByteString :: Crc -> BS.ByteString
+crcToByteString (Crc c) = numToBs c
 
 crcPipe :: (
 	Union.Member (Pipe.P BS.ByteString BS.ByteString) effs,

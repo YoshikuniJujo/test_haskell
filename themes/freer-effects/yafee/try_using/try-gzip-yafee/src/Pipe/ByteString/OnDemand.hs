@@ -9,12 +9,15 @@
 
 module Pipe.ByteString.OnDemand where
 
+import Prelude hiding (splitAt)
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.OpenUnion qualified as Union
+import Data.Bits
 import Data.Bool
+import Data.Word
 import Data.ByteString qualified as BS
 
 data Request
@@ -72,6 +75,10 @@ onDemand = State.get >>= \case
 	RequestBuffer ln -> do
 		mt <- takeBuffer' (Either (type BitArray) BS.ByteString) ln
 		maybe (Except.throw @String "End of input")
+			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
+	RequestBits ln -> do
+		mt <- takeBits (Either (type BitArray) BS.ByteString) ln
+		maybe (Except.throw @String "Not enough ByteString")
 			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
 
 takeBytes :: forall o -> (
@@ -139,6 +146,14 @@ takeBuffer' o ln = State.get >>= \ba -> case bitArrayToByteBoundary ba of
 			else Just (Right bs) <$ State.put (byteStringToBitArray ("" :: BS.ByteString))
 		else let (t, d) = BS.splitAt ln bs in Just (Right t) <$ State.put (byteStringToBitArray d)
 
+takeBits :: forall o -> (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member (State.S BitArray) effs ) =>
+	Int -> Eff.E effs (Maybe (Either BitArray BS.ByteString))
+takeBits o ln = State.get >>= \ba -> case splitAt ln ba of
+	Nothing -> readMore' o >>= bool (takeBits o ln) (pure Nothing)
+	Just (t, d) -> Just (bitArrayToByteString t) <$ State.put d
+
 splitString :: BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
 splitString bs = case BS.span (/= 0) bs of
 	(_, "") -> Nothing
@@ -160,3 +175,32 @@ readMore' :: forall o -> (
 readMore' o = Pipe.await o >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`appendBitArrayAndByteString` bs)
+
+splitAt :: Int -> BitArray -> Maybe (BitArray, BitArray)
+splitAt n BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
+	| ln < n = Nothing
+	| otherwise = Just (
+		normalize $ BitArray { bit0 = i, bitsLen = n, bitsBody = bs },
+		normalize $ BitArray {
+			bit0 = i + n, bitsLen = ln - n, bitsBody = bs } )
+
+normalize :: BitArray -> BitArray
+normalize BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
+	| 0 <= i = BitArray i' ln . BS.take t $ BS.drop (i `div` 8) bs
+	| otherwise = error "bad"
+	where
+	i' = i `mod` 8
+	t = (ln + i' - 1) `div` 8 + 1
+
+bitArrayToWord8 :: BitArray -> Word8
+bitArrayToWord8 BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
+	| ln > 8 = error "too big"
+	| otherwise = foldl setBit 0 $ bits i ln bs
+	where
+	bits i ln bs
+		| ln == 0 = []
+		| ln > 0 = bool id (0 :) (b `testBit` i) $ (+ 1) <$> bits i' (ln - 1) bs'
+		| otherwise = error "negative length"
+		where
+		b = BS.head bs
+		(i', bs') = case i of 7 -> (0, BS.tail bs); _ -> (i + 1, bs)
