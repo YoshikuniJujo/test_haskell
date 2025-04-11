@@ -20,17 +20,17 @@ import System.IO
 
 data P i o r where Await :: P i o (Maybe i); Yield :: forall i o . o -> P i o ()
 
-await :: forall i effs . forall o -> Union.Member (P i o) effs => Eff.E effs (Maybe i)
-await o = Eff.eff (Await @_ @o)
-
 awaitNew :: forall i o effs . Eff.E (P i o ': effs) (Maybe i)
 awaitNew = Eff.eff (Await @_ @o)
 
-yield :: forall o effs . forall i -> Union.Member (P i o) effs => o -> Eff.E effs ()
-yield i = Eff.eff . Yield @i
-
 yieldNew :: forall i o effs . o -> Eff.E (P i o ': effs) ()
 yieldNew = Eff.eff . Yield @i
+
+await' :: forall i effs . forall o -> Union.Member (P i o) effs => Eff.E effs (Maybe i)
+await' o = Eff.eff (Await @_ @o)
+
+yield' :: forall o effs . forall i -> Union.Member (P i o) effs => o -> Eff.E effs ()
+yield' i = Eff.eff . Yield @i
 
 run :: Eff.E (P i o ': effs) a -> Eff.E effs (a, [o])
 run = \case
@@ -94,8 +94,12 @@ p@(u Freer.:>>= k) =@= p'@(v Freer.:>>= l) =
 		FTCQueue.singleton ((=@= p') . (k `Freer.app`))
 	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@= p')
 
+-- * TOOLS
+
 convert :: forall a b effs . (a -> b) -> Eff.E (P a b ': effs) ()
-convert f = await b >>= maybe (pure ()) ((>> convert f) . yield a . f)
+convert f = await' b >>= maybe (pure ()) ((>> convert f) . yield' a . f)
+
+-- * EXAMPLES
 
 print' :: (Union.Member IO effs, Show a) => a -> Eff.E effs ()
 print' = Eff.eff . print
@@ -106,13 +110,13 @@ hRead h = do
 	eof <- Eff.eff $ hIsEOF h
 	if eof then pure () else do
 		l <- Eff.eff $ hGetLine h
-		yield (type ()) l
+		yield' (type ()) l
 		hRead h
 
 writeString :: Union.Member IO (P String () ': effs) =>
 	Eff.E (P String () ': effs) ()
 writeString = do
-	ms <- await (type ())
+	ms <- await' (type ())
 	case ms of
 		Nothing -> pure ()
 		Just s -> Eff.eff (putStrLn s) >> writeString
@@ -120,10 +124,10 @@ writeString = do
 takeP :: forall a effs . Int -> Eff.E (P a a ': effs) ()
 takeP 0 = pure ()
 takeP n = do
-	mx <- await a
+	mx <- await' a
 	case mx of
 		Nothing -> pure ()
-		Just x -> yield @a a x >> takeP (n - 1)
+		Just x -> yield' @a a x >> takeP (n - 1)
 
 baz :: IO ()
 baz = void . Eff.runM . run
