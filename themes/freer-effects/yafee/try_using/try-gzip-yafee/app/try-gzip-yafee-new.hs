@@ -39,7 +39,7 @@ main = do
 	h <- openFile fp ReadMode
 	(print =<<) . Eff.runM . Fail.run . Except.run
 		. (`State.run` Crc 0)
-		. (`State.run` "")
+		. (`State.run` byteStringToBitArray "")
 		. (`State.run` RequestBytes 0)
 		. (Pipe.run @() @()) $
 		fromHandle @(Pipe () BS.ByteString MyEff) (type ()) h Pipe.=$=
@@ -85,6 +85,6 @@ putStrLn' = Eff.eff . putStrLn
 type Pipe i o effs = Pipe.P i o ': effs
 type MyEff = '[
 	State.S Request,
-	State.S BS.ByteString,
+	State.S BitArray,
 	State.S Crc,
 	Except.E String, Fail.F, IO]

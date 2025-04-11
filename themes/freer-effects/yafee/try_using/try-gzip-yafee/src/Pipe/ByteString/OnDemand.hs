@@ -57,22 +57,22 @@ onDemand :: (
 		Pipe.P BS.ByteString
 			(Either BitArray BS.ByteString) ) effs,
 	Union.Member (State.S Request) effs,
-	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (Except.E String) effs ) =>
 	Eff.E effs ()
 onDemand = State.get >>= \case
 	RequestBytes ln -> do
-		mt <- takeBytes (Either (type BitArray) BS.ByteString) ln
+		mt <- takeBytes' (Either (type BitArray) BS.ByteString) ln
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yield BS.ByteString (Right @BitArray t) >> onDemand) mt
+			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
 	RequestString -> do
-		mt <- takeString (Either (type BitArray) BS.ByteString)
+		mt <- takeString' (Either (type BitArray) BS.ByteString)
 		maybe (Except.throw @String "Not enough ByteString")
-			(\t -> Pipe.yield BS.ByteString (Right @BitArray t) >> onDemand) mt
+			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
 	RequestBuffer ln -> do
-		mt <- takeBuffer (Either (type BitArray) BS.ByteString) ln
+		mt <- takeBuffer' (Either (type BitArray) BS.ByteString) ln
 		maybe (Except.throw @String "End of input")
-			(\t -> Pipe.yield BS.ByteString (Right @BitArray t) >> onDemand) mt
+			(\t -> Pipe.yield BS.ByteString t >> onDemand) mt
 
 takeBytes :: forall o -> (
 	Union.Member (Pipe.P BS.ByteString o) effs,
@@ -103,6 +103,17 @@ takeString o = State.get >>= \bs -> case splitString bs of
 	Nothing -> readMore o >>= bool (pure Nothing) (takeString o)
 	Just (t, d) -> Just t <$ State.put d
 
+takeString' :: forall o -> (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member (State.S BitArray) effs ) =>
+	Eff.E effs (Maybe (Either BitArray BS.ByteString))
+takeString' o = State.get >>= \ba -> case bitArrayToByteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.put d
+	Right bs -> case splitString bs of
+		Nothing -> readMore' o >>= bool (pure Nothing) (takeString' o)
+		Just (t, d) -> Just (Right t)
+			<$ State.put (byteStringToBitArray d)
+
 takeBuffer :: forall o -> (
 	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member (State.S BS.ByteString) effs ) =>
@@ -112,6 +123,21 @@ takeBuffer o ln = State.get >>= \bs ->
 	then do	b <- readMore o
 		if b then takeBuffer o ln else if BS.null bs then pure Nothing else Just bs <$ State.put ("" :: BS.ByteString)
 	else let (t, d) = BS.splitAt ln bs in Just t <$ State.put d
+
+takeBuffer' :: forall o -> (
+	Union.Member (Pipe.P BS.ByteString o) effs,
+	Union.Member (State.S BitArray) effs ) =>
+	Int -> Eff.E effs (Maybe (Either BitArray BS.ByteString))
+takeBuffer' o ln = State.get >>= \ba -> case bitArrayToByteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.put d
+	Right bs -> if BS.length bs < ln
+		then do	b <- readMore' o
+			if b
+			then takeBuffer' o ln
+			else if BS.null bs
+			then pure Nothing
+			else Just (Right bs) <$ State.put (byteStringToBitArray ("" :: BS.ByteString))
+		else let (t, d) = BS.splitAt ln bs in Just (Right t) <$ State.put (byteStringToBitArray d)
 
 splitString :: BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
 splitString bs = case BS.span (/= 0) bs of
