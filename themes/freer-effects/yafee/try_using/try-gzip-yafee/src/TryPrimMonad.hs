@@ -22,7 +22,7 @@ foo = do
 	Vector.read v 3
 
 send :: Union.Member (Pipe.P () Int) effs => [Int] -> Eff.E effs ()
-send xs = Pipe.yield (type ()) `mapM_` xs
+send xs = Pipe.yield' (type ()) `mapM_` xs
 
 put :: forall m effs . (
 	PrimMonad m,
@@ -30,7 +30,7 @@ put :: forall m effs . (
 	Union.Member (Pipe.P Int ()) effs ) =>
 	Vector.MVector (PrimState m) (Maybe Int) -> Eff.E effs ()
 put v = do
-	x <- Pipe.await @Int (type ())
+	x <- Pipe.await' @Int (type ())
 	Eff.effBase $ Vector.write @m v 3 x
 
 bar :: forall m effs . (

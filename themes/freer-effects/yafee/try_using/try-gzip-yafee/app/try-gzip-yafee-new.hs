@@ -50,55 +50,55 @@ main = do
 			checkRight @(Pipe (Either BitArray BS.ByteString) BS.ByteString MyEff) (type BitArray) BS.ByteString Pipe.=$=
 				crcPipe @(Pipe BS.ByteString BS.ByteString MyEff) Pipe.=$= do
 				State.put $ RequestBytes 2
-				Just ids <- Pipe.await @BS.ByteString (type ())
+				Just ids <- Pipe.await' @BS.ByteString (type ())
 				when (ids /= "\31\139") $ Except.throw @String "Bad magic"
 				State.put $ RequestBytes 1
-				Just cm <- Pipe.await (type ())
+				Just cm <- Pipe.await' (type ())
 				print' $ CompressionMethod $ BS.head cm
-				Just flgs <- (readFlags . BS.head =<<) <$> Pipe.await (type ())
+				Just flgs <- (readFlags . BS.head =<<) <$> Pipe.await' (type ())
 				print' flgs
 				State.put $ RequestBytes 4
-				Just mtm <- Pipe.await @BS.ByteString (type ())
+				Just mtm <- Pipe.await' @BS.ByteString (type ())
 				print' . posixSecondsToUTCTime . realToFrac . word32ToCTime $ bsToNum mtm
 				State.put $ RequestBytes 1
-				print' =<< Pipe.await @BS.ByteString (type ())
-				print' . (OS . BS.head <$>) =<< Pipe.await @BS.ByteString (type ())
+				print' =<< Pipe.await' @BS.ByteString (type ())
+				print' . (OS . BS.head <$>) =<< Pipe.await' @BS.ByteString (type ())
 				State.put $ RequestBytes 2
-				Just xlen <- (bsToWord16 <$>) <$> Pipe.await @BS.ByteString (type ())
+				Just xlen <- (bsToWord16 <$>) <$> Pipe.await' @BS.ByteString (type ())
 				State.put . RequestBytes $ fromIntegral xlen
 				when (flagsRawExtra flgs)
-					$ print' . (decodeExtraFields <$>) =<< Pipe.await @BS.ByteString (type ())
+					$ print' . (decodeExtraFields <$>) =<< Pipe.await' @BS.ByteString (type ())
 				State.put RequestString
 				when (flagsRawName flgs)
-					$ print' =<< Pipe.await @BS.ByteString (type ())
+					$ print' =<< Pipe.await' @BS.ByteString (type ())
 				when (flagsRawComment flgs)
-					$ print' =<< Pipe.await @BS.ByteString (type ())
+					$ print' =<< Pipe.await' @BS.ByteString (type ())
 				when (flagsRawHcrc flgs) do
 					compCrc
 					putStrLn' . (`showHex` "") . (.&. 0xffff) . (\(Crc c) -> c) =<< State.get @Crc
 					State.put $ RequestBytes 2
-					maybe (pure ()) putStrLn' . (((`showHex` "") . bsToNum @Word16) <$>) =<< Pipe.await @BS.ByteString (type ())
+					maybe (pure ()) putStrLn' . (((`showHex` "") . bsToNum @Word16) <$>) =<< Pipe.await' @BS.ByteString (type ())
 			State.put $ RequestBits 1
-			print' . (either (Left . bitArrayToWord8) Right <$>) =<< Pipe.await @(Either BitArray BS.ByteString) (type ())
+			print' . (either (Left . bitArrayToWord8) Right <$>) =<< Pipe.await' @(Either BitArray BS.ByteString) (type ())
 			State.put $ RequestBits 2
-			bt <- bitArrayToWord8 <$> (getLeft =<< getJust =<< Pipe.await @(Either BitArray BS.ByteString) (type ()))
+			bt <- bitArrayToWord8 <$> (getLeft =<< getJust =<< Pipe.await' @(Either BitArray BS.ByteString) (type ()))
 			print' bt
 			case bt of
 				0 -> do		State.put $ RequestBytes 4
 						ln <- getWord16FromPair =<< skipLeft1 BS.ByteString (type BitArray) BS.ByteString
 						State.put $ RequestBytes $ fromIntegral ln
-						(Pipe.yield (Either (type BitArray) BS.ByteString) =<< getRight =<< getJust =<< Pipe.await @(Either BitArray BS.ByteString) BS.ByteString)
+						(Pipe.yield' (Either (type BitArray) BS.ByteString) =<< getRight =<< getJust =<< Pipe.await' @(Either BitArray BS.ByteString) BS.ByteString)
 						State.put $ RequestBytes 4
-						(Pipe.yield (Either (type BitArray) BS.ByteString) =<< getRight =<< getJust =<< Pipe.await @(Either BitArray BS.ByteString) BS.ByteString)
+						(Pipe.yield' (Either (type BitArray) BS.ByteString) =<< getRight =<< getJust =<< Pipe.await' @(Either BitArray BS.ByteString) BS.ByteString)
 						State.put $ RequestBytes 4
-						(Pipe.yield (Either (type BitArray) BS.ByteString) =<< getRight =<< getJust =<< Pipe.await @(Either BitArray BS.ByteString) BS.ByteString)
+						(Pipe.yield' (Either (type BitArray) BS.ByteString) =<< getRight =<< getJust =<< Pipe.await' @(Either BitArray BS.ByteString) BS.ByteString)
 					Pipe.=$= do	crcPipe @(Pipe BS.ByteString BS.ByteString MyEff)
 					Pipe.=$= do
-						print' =<< Pipe.await @BS.ByteString (type ()) :: Eff.E (Pipe BS.ByteString () MyEff) ()
+						print' =<< Pipe.await' @BS.ByteString (type ()) :: Eff.E (Pipe BS.ByteString () MyEff) ()
 						compCrc
 						print' . crcToByteString =<< State.get
-						print' =<< Pipe.await @BS.ByteString (type ())
-						print' =<< Pipe.await @BS.ByteString (type ())
+						print' =<< Pipe.await' @BS.ByteString (type ())
+						print' =<< Pipe.await' @BS.ByteString (type ())
 				1 -> do	State.put $ RequestBuffer 100
 					pure ()
 				2 -> do	State.put $ RequestBuffer 100
@@ -123,8 +123,8 @@ skipLeft1 :: forall effs . forall o -> forall a -> forall b -> (
 	Union.Member (Except.E String) effs
 	) =>
 	Eff.E effs b
-skipLeft1 o a b = Pipe.await @(Either a b) o >>= \case
-	Just (Left _) -> Pipe.await @(Either a b) o >>= \case
+skipLeft1 o a b = Pipe.await' @(Either a b) o >>= \case
+	Just (Left _) -> Pipe.await' @(Either a b) o >>= \case
 		Just (Left _) -> Except.throw @String "Not Right"
 		Just (Right x) -> pure x
 		Nothing -> Except.throw @String "Not enough input"

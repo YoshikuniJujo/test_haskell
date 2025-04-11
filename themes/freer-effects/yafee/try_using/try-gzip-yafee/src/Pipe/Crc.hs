@@ -34,11 +34,11 @@ crcBody :: (
 	Union.Member (Pipe.P BS.ByteString BS.ByteString) effs,
 	Union.Member (State.S Crc) effs ) =>
 	Eff.E effs ()
-crcBody = Pipe.await BS.ByteString >>= \case
+crcBody = Pipe.await' BS.ByteString >>= \case
 	Nothing -> pure ()
 	Just bs -> do
 		State.modify \(Crc c) -> Crc $ c `step'` bs
-		Pipe.yield BS.ByteString (bs :: BS.ByteString)
+		Pipe.yield' BS.ByteString (bs :: BS.ByteString)
 		crcBody
 
 compCrc :: Union.Member (State.S Crc) effs => Eff.E effs ()

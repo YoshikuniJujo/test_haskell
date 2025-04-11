@@ -41,6 +41,7 @@ library
       Pipe.Gzip
       Pipe.Huffman
       Pipe.IO
+      Pipe.MultiPipe
       TryNamed
       TryPrimMonad
   other-modules:
