@@ -126,23 +126,33 @@ readBlock bffsz = do
 	if bt == 0
 	then readNonCompressed bffsz Pipe.=$=
 		toRunLength @(Pipe BS.ByteString RunLength effs)
-	else if bt == 1 then bits Pipe.=$=
-		huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$=
-		putDecoded fixedTable fixedDstTable 0
-	else if bt == 2 then do
-		Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @RunLength 5
-		Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @RunLength 5
-		Just hclen <- ((+ 4) . fromIntegral <$>) <$> takeBit8 @RunLength 4
+	else do
+		mfoo <- if bt == 2
+			then do
+				Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @RunLength 5
+				Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @RunLength 5
+				Just hclen <- ((+ 4) . fromIntegral <$>) <$> takeBit8 @RunLength 4
+				pure $ Just (hlit, hdist, hclen)
+			else pure Nothing
+
 		bits Pipe.=$= do
-			clcls <- mkTree @Word8 [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
-				<$> replicateM hclen (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await' RunLength))
-			State.put (clcls :: BinTree Int, clcls)
+			when (bt == 2) do
+				let	Just (_, _, hclen) = mfoo
+				clcls <- mkTree @Word8 [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+					<$> replicateM hclen (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await' RunLength))
+				State.put (clcls :: BinTree Int, clcls)
+
 			huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$= do
-				(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
-					Prelude.splitAt hlit <$> getCodeTable @RunLength (hlit + hdist)
-				State.put (lct, lct :: BinTree Int)
+
+				(lct, dct) <- if (bt == 2)
+					then do	let	Just (hlit, hdist, _) = mfoo
+						(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
+							Prelude.splitAt hlit <$> getCodeTable @RunLength (hlit + hdist)
+						State.put (lct, lct :: BinTree Int)
+						pure (lct, dct)
+					else pure (fixedTable, fixedDstTable)
+
 				putDecoded lct dct 0
-	else error "not implemented"
 	pure $ f /= 1
 
 getCodeTable :: forall o effs . (
