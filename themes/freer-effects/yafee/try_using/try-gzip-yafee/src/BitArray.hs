@@ -26,9 +26,9 @@ runBitArray :: BS.ByteString ->
 	Eff.E effs ((a, BS.ByteString), BitInfo)
 runBitArray bs = (`State.run` BitInfo 0 (BS.length bs * 8)) . (`State.run` bs)
 
-data BitInfo = BitInfo { bit0 :: Int, bitsLen :: Int } deriving Show
+data BitInfo = BitInfo { bit0' :: Int, bitsLen' :: Int } deriving Show
 
-data BitArray = BitArray { bitInfo :: BitInfo, bitsBody :: BS.ByteString }
+data BitArray = BitArray { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
 	deriving Show
 
 pop :: forall o effs . (
@@ -38,7 +38,7 @@ pop :: forall o effs . (
 	) =>
 	Eff.E effs (Maybe Bit)
 pop = do
-	BitInfo { bit0 = i, bitsLen = ln } <- State.get
+	BitInfo { bit0' = i, bitsLen' = ln } <- State.get
 	case (i, ln) of
 		(_, 0) -> do
 			b <- readMore @o
@@ -47,10 +47,10 @@ pop = do
 			Just (b, bs) -> do
 				State.put bs
 				Just (bool O I (testBit b 7))
-					<$ State.put BitInfo { bit0 = 0, bitsLen = ln - 1 }
+					<$ State.put BitInfo { bit0' = 0, bitsLen' = ln - 1 }
 			Nothing -> error "bad"
 		_ -> do	b <- (`testBit` i) . head' (show ln) <$> State.get
-			Just (bool O I b) <$ State.put BitInfo { bit0 = i + 1, bitsLen = ln - 1 }
+			Just (bool O I b) <$ State.put BitInfo { bit0' = i + 1, bitsLen' = ln - 1 }
 
 head' :: String -> BS.ByteString -> Word8
 head' i bs = if BS.null bs then error ("head': bad " ++ i) else BS.head bs
@@ -62,33 +62,33 @@ takeBitArray :: forall o effs . (
 	) =>
 	Int -> Eff.E effs (Maybe BitArray)
 takeBitArray n = do
-	info <- State.get
+	BitInfo i0 ln <- State.get
 	bs <- State.get
-	case splitAt n $ BitArray info bs of
+	case splitAt n $ BitArray i0 ln bs of
 		Nothing -> do
 			b <- readMore @o
 			if b then takeBitArray @o n else pure Nothing
-		Just (t, BitArray info' bs') -> Just t <$ (State.put info' >> State.put bs')
+		Just (t, BitArray i0' ln' bs') -> Just t <$ (State.put (BitInfo i0' ln') >> State.put bs')
 
 takeBitArray' :: forall o effs . (
 	Union.Member (State.S BitInfo) effs,
 	Union.Member (State.S BS.ByteString) effs ) =>
 	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BitArray)
 takeBitArray' n = do
-	info <- State.get
+	BitInfo i0 ln <- State.get
 	bs <- State.get
-	case splitAt n $ BitArray info bs of
+	case splitAt n $ BitArray i0 ln bs of
 		Nothing -> do
 			b <- readMore'
 			if b then takeBitArray @o n else pure Nothing
-		Just (t, BitArray info' bs') -> Just t <$ (State.put info' >> State.put bs')
+		Just (t, BitArray i0' ln' bs') -> Just t <$ (State.put (BitInfo i0' ln')  >> State.put bs')
 
 splitAt :: Int -> BitArray -> Maybe (BitArray, BitArray)
-splitAt n (BitArray (BitInfo i ln) bs)
+splitAt n (BitArray i ln bs)
 	| ln < n = Nothing
 	| otherwise = Just (
-		normalize $ BitArray (BitInfo i n) bs,
-		normalize $ BitArray (BitInfo (i + n) (ln - n)) bs )
+		normalize $ BitArray i n bs,
+		normalize $ BitArray (i + n) (ln - n) bs )
 
 readMore :: forall o effs . (
 	Union.Member (State.S BS.ByteString) effs,
@@ -112,8 +112,8 @@ readMore' = Pipe.await' o >>= \case
 		State.modify \(BitInfo i ln) -> BitInfo i (ln + BS.length bs * 8)
 
 normalize :: BitArray -> BitArray
-normalize (BitArray (BitInfo i ln) bs)
-	| 0 <= i = BitArray (BitInfo i' ln)
+normalize (BitArray i ln bs)
+	| 0 <= i = BitArray i' ln
 		. BS.take t $ BS.drop (i `div` 8) bs
 	| otherwise = error "bad"
 	where
@@ -121,7 +121,7 @@ normalize (BitArray (BitInfo i ln) bs)
 	t = (ln + i' - 1) `div` 8 + 1
 
 bitArrayToWord8 :: BitArray -> Maybe Word8
-bitArrayToWord8 (BitArray (BitInfo i ln) bs)
+bitArrayToWord8 (BitArray i ln bs)
 	| ln + i <= 8 = Just $
 		BS.head bs `shiftR` i .&. foldl setBit zeroBits [0 .. ln - 1]
 	| ln <= 8 = Just let b0 = BS.head bs; b1 = BS.head $ BS.tail bs in
@@ -157,7 +157,7 @@ bits = do
 		Just b -> Pipe.yield' BS.ByteString b >> bits
 
 splitAtByteBoundary :: BitArray -> Maybe (BitArray, BitArray)
-splitAtByteBoundary bs@BitArray { bitInfo = BitInfo { bit0 = i } } =
+splitAtByteBoundary bs@BitArray { bit0 = i } =
 	splitAt (8 - ((i - 1) `mod` 8 + 1)) bs
 
 takeByteBoundary :: forall o effs . (
@@ -167,7 +167,7 @@ takeByteBoundary :: forall o effs . (
 	) =>
 	Eff.E effs (Maybe BitArray)
 takeByteBoundary = do
-	BitInfo { bit0 = i } <- State.get
+	BitInfo { bit0' = i } <- State.get
 	takeBitArray @o (8 - ((i - 1) `mod` 8 + 1))
 
 

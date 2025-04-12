@@ -39,6 +39,8 @@ import Gzip
 import ByteStringNum
 import Numeric
 
+import BitArray(BitArray(..))
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -65,12 +67,12 @@ main = do
 			print' =<< Pipe.await @BS.ByteString
 			print' . (OS . BS.head <$>)
 				=<< Pipe.await @BS.ByteString
-			State.put $ RequestBytes 2
-			Just xlen <-
-				(bsToWord16 <$>) <$> Pipe.await @BS.ByteString
-			State.put . RequestBytes $ fromIntegral xlen
-			when (flagsRawExtra flgs)
-				$ print' . (decodeExtraFields <$>) =<< Pipe.await
+			when (flagsRawExtra flgs) do
+				State.put $ RequestBytes 2
+				Just xlen <-
+					(bsToWord16 <$>) <$> Pipe.await @BS.ByteString
+				State.put . RequestBytes $ fromIntegral xlen
+				print' . (decodeExtraFields <$>) =<< Pipe.await
 			State.put RequestString
 			when (flagsRawName flgs)
 				$ print' =<< Pipe.await @BS.ByteString

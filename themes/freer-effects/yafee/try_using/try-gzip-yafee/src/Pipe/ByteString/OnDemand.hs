@@ -19,16 +19,14 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
+import BitArray (BitArray(..))
+
 data Request
 	= RequestBytes Int
 	| RequestString
 	| RequestBuffer Int
 	| RequestBits Int
 	deriving Show
-
-data BitArray = BitArray {
-	bit0 :: Int, bitsLen :: Int,
-	bitsBody :: BS.ByteString } deriving Show
 
 byteStringToBitArray :: BS.ByteString -> BitArray
 byteStringToBitArray bs = BitArray {
