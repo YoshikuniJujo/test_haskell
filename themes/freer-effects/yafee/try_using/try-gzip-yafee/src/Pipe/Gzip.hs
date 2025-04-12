@@ -27,8 +27,7 @@ import BitArray
 import ByteStringNum
 
 readHeader :: (
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (State.S Crc) effs,
 	Union.Member (Pipe.P BS.ByteString ()) effs,
 	Union.Member (Except.E String) effs,
@@ -66,30 +65,27 @@ readHeader = do
 
 takeString' :: (
 	Union.Member (State.S Crc) effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (Pipe.P BS.ByteString ()) effs
 	) =>
 	Eff.E effs (Maybe BS.ByteString)
-takeString' = State.gets (spanUntil 0) >>= \case
+takeString' = State.gets (spanUntil 0 . bitsBody) >>= \case
 	Nothing -> do
 		b <- readMore @()
 		if b then takeString' else pure Nothing
 	Just (t, d) -> Just t <$ (
-		State.put d >> State.put (BitInfo 0 (BS.length d * 8)) >> calcCrc' (t `BS.snoc` 0)
+		State.put (BitArray 0 (BS.length d * 8) d) >> calcCrc' (t `BS.snoc` 0)
 		)
 
 takeWord32' :: forall o effs . (
 	Union.Member (State.S Crc) effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word32)
 takeWord32' = (bsToNum <$>) <$> takeBytes' @o 4
 
 takeWord16' :: forall o effs . (
 	Union.Member (State.S Crc) effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) => Eff.E effs (Maybe Word16)
 takeWord16' = (bsToNum <$>) <$> takeBytes' @o 2
 

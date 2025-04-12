@@ -19,7 +19,7 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-import BitArray (BitArray(..))
+import BitArray hiding (readMore)
 
 data Request
 	= RequestBytes Int
@@ -153,37 +153,14 @@ readMore = Pipe.await >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`BS.append` bs)
 
-readMore' :: (
-	Union.Member (State.S BitArray) effs
-	) => Eff.E (Pipe.P BS.ByteString o ': effs) Bool
-readMore' = Pipe.await >>= \case
-	Nothing -> pure False
-	Just bs -> True <$ State.modify (`appendBitArrayAndByteString` bs)
-
-splitAt :: Int -> BitArray -> Maybe (BitArray, BitArray)
-splitAt n BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
-	| ln < n = Nothing
-	| otherwise = Just (
-		normalize $ BitArray { bit0 = i, bitsLen = n, bitsBody = bs },
-		normalize $ BitArray {
-			bit0 = i + n, bitsLen = ln - n, bitsBody = bs } )
-
-normalize :: BitArray -> BitArray
-normalize BitArray { bit0 = i, bitsLen = ln, bitsBody = bs }
-	| 0 <= i = BitArray i' ln . BS.take t $ BS.drop (i `div` 8) bs
-	| otherwise = error "bad"
-	where
-	i' = i `mod` 8
-	t = (ln + i' - 1) `div` 8 + 1
-
 bitArrayToWord8 :: BitArray -> Word8
 bitArrayToWord8 BitArray { bit0 = i0, bitsLen = ln0, bitsBody = bs0 }
 	| ln0 > 8 = error "too big"
-	| otherwise = foldl setBit 0 $ bits i0 ln0 bs0
+	| otherwise = foldl setBit 0 $ bts i0 ln0 bs0
 	where
-	bits i ln bs
+	bts i ln bs
 		| ln == 0 = []
-		| ln > 0 = bool id (0 :) (b `testBit` i) $ (+ 1) <$> bits i' (ln - 1) bs'
+		| ln > 0 = bool id (0 :) (b `testBit` i) $ (+ 1) <$> bts i' (ln - 1) bs'
 		| otherwise = error "negative length"
 		where
 		b = BS.head bs

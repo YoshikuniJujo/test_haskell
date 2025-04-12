@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       BitArray
+      Block
       ByteStringNum
       Calc
       Crc

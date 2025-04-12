@@ -22,25 +22,21 @@ import Crc qualified as Crc
 import Numeric
 
 popByte :: forall o effs . (
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Eff.E effs (Maybe Word8)
-popByte = State.gets BS.uncons >>= \case
+popByte = State.gets (BS.uncons . bitsBody) >>= \case
 	Nothing -> Pipe.await' o >>= \case
 		Nothing -> pure Nothing
 		Just bs -> case BS.uncons bs of
 			Nothing -> popByte @o
-			Just (b, bs') -> Just b <$ do
-				State.put bs'
-				State.put $ BitInfo 0 (BS.length bs' * 8)
-	Just (b, bs) -> Just b <$ do
-		State.put bs
-		State.put $ BitInfo 0 (BS.length bs * 8)
+			Just (b, bs') -> Just b
+				<$ State.put (BitArray 0 (BS.length bs' * 8) bs')
+	Just (b, bs) -> Just b
+		<$ State.put (BitArray 0 (BS.length bs * 8) bs)
 
 popByte' :: forall o effs . (
-	Union.Member (State.S BitInfo) effs,
-	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (State.S Crc) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs
 	) =>
@@ -48,21 +44,17 @@ popByte' :: forall o effs . (
 popByte' = popByte @o >>= \mw -> mw <$ maybe (pure ()) calcCrc mw
 
 takeBytes :: forall o effs . (
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Int -> Eff.E effs (Maybe BS.ByteString)
-takeBytes n = State.gets (splitAt' n) >>= \case
+takeBytes n = State.gets (splitAt' n . bitsBody) >>= \case
 	Nothing -> do
 		b <- readMore @o
 		if b then takeBytes @o n else pure Nothing
-	Just (t, d) -> Just t <$ do
-		State.put d
-		State.put $ BitInfo 0 (BS.length d * 8)
+	Just (t, d) -> Just t <$ State.put (BitArray 0 (BS.length d * 8) d)
 
 takeBytes' :: forall o effs . (
-	Union.Member (State.S BitInfo) effs,
-	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitArray) effs,
 	Union.Member (State.S Crc) effs,
 	Union.Member (Pipe.P BS.ByteString o) effs
 	) =>
