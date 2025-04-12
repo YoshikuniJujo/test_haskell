@@ -50,21 +50,26 @@ readBlock bffsz = do
 			Just hdist <- ((+ 1) <$>) <$> takeBit8' @RunLength 5
 			Just hclen <- ((+ 4) <$>) <$> takeBit8' @RunLength 4
 			pure $ (Just (hlit, hlit + hdist), Just hclen)
-		bits Pipe.=$= do
-			whenMaybe mhclen \hclen -> (State.put . (id &&& id) =<<)
-				. (mkTr @Word8 codeLengthList <$>)
-				. replicateM hclen . (bitListToNum <$>)
-				$ replicateMMaybes 3 Pipe.await
-			huffmanPipe Pipe.=$= do
-				(lct, dct) <-
-					whenMaybeDef (fixedTable, fixedDstTable)
-						mhlithdist \(hlit, hld) ->
-						(mkTr [0 ..] *** mkTr [0 ..])
-							. Prelude.splitAt hlit
-							<$> getCodeTable hld
-				State.put $ (id &&& id) lct
-				putDecoded lct dct 0
+		bits Pipe.=$= bitsBlock mhclen mhlithdist
 	pure nf
+
+bitsBlock :: (
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
+	Union.Member Fail.F effs ) =>
+	Maybe Int -> Maybe (Int, Int) -> Eff.E (Pipe.P Bit RunLength ': effs) ()
+bitsBlock mhclen mhlithdist = do
+	whenMaybe mhclen \hclen -> (State.put . (id &&& id) =<<)
+		. (mkTr @Word8 codeLengthList <$>)
+		. replicateM hclen . (bitListToNum <$>)
+		$ replicateMMaybes 3 Pipe.await
+	huffmanPipe Pipe.=$= do
+		(lct, dct) <- whenMaybeDef
+			(fixedTable, fixedDstTable) mhlithdist \(hlit, hld) ->
+			(mkTr [0 ..] *** mkTr [0 ..])
+			. Prelude.splitAt hlit <$> getCodeTable hld
+		State.put $ (id &&& id) lct
+		putDecoded lct dct 0
 
 data RunLength = RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist deriving Show
 
