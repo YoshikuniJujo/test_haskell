@@ -32,7 +32,7 @@ import Pipe.ByteString
 import Pipe.ByteString.IO
 
 import Gzip
-import BitArray
+import BitArray hiding (readMore')
 
 import HuffmanTree
 import Pipe.Huffman
@@ -120,60 +120,57 @@ readBlock :: forall effs . (
 	) =>
 	Int -> Eff.E (Pipe BS.ByteString RunLength effs) Bool
 readBlock bffsz = do
-	Just f <- takeBit8 @RunLength 1
+	Just nf <- ((/= (1 :: Word8)) <$>) <$> takeBit8' 1
 	mbt <- takeBit8 @RunLength 2
 	let	bt = maybe 3 id mbt
 	if bt == 0
 	then readNonCompressed bffsz Pipe.=$=
 		toRunLength @(Pipe BS.ByteString RunLength effs)
-	else do
-		mfoo <- if bt == 2
-			then do
-				Just hlit <- ((+ 257) . fromIntegral <$>) <$> takeBit8 @RunLength 5
-				Just hdist <- ((+ 1) . fromIntegral <$>) <$> takeBit8 @RunLength 5
-				Just hclen <- ((+ 4) . fromIntegral <$>) <$> takeBit8 @RunLength 4
-				pure $ Just (hlit, hdist, hclen)
-			else pure Nothing
-
+	else do	(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
+			Just hlit <- ((+ 257) <$>) <$> takeBit8' @RunLength 5
+			Just hdist <- ((+ 1) <$>) <$> takeBit8' @RunLength 5
+			Just hclen <- ((+ 4) <$>) <$> takeBit8' @RunLength 4
+			pure $ (Just (hlit, hdist), Just hclen)
 		bits Pipe.=$= do
-			when (bt == 2) do
-				let	Just (_, _, hclen) = mfoo
+			whenMaybe mhclen \hclen -> do
 				clcls <- mkTree @Word8 [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
 					<$> replicateM hclen (bitListToNumLE . catMaybes <$> replicateM 3 (Pipe.await' RunLength))
 				State.put (clcls :: BinTree Int, clcls)
-
 			huffmanPipe @(Pipe Bit (Either Int Word16) effs) Pipe.=$= do
-
-				(lct, dct) <- if (bt == 2)
-					then do	let	Just (hlit, hdist, _) = mfoo
-						(lct, dct) <- (mkTree [0 ..] *** mkTree [0 ..]) .
-							Prelude.splitAt hlit <$> getCodeTable @RunLength (hlit + hdist)
-						State.put (lct, lct :: BinTree Int)
-						pure (lct, dct)
-					else pure (fixedTable, fixedDstTable)
-
+				(lct, dct) <- whenMaybeDef (fixedTable, fixedDstTable) mhlithdist \(hlit, hdist) ->
+						(mkTree [0 ..] *** mkTree [0 ..]) .
+							Prelude.splitAt hlit <$> getCodeTable (hlit + hdist)
+				State.put (lct, lct :: BinTree Int)
 				putDecoded lct dct 0
-	pure $ f /= 1
+	pure nf
+
+whenDef :: Applicative m => a -> Bool -> m a -> m a
+whenDef d b a = bool (pure d) a b
+
+whenMaybe :: Applicative m => Maybe a -> (a -> m ()) -> m ()
+whenMaybe mx f = case mx of Nothing -> pure (); Just x -> f x
+
+whenMaybeDef :: Applicative m => b -> Maybe a -> (a -> m b) -> m b
+whenMaybeDef d mx f = case mx of Nothing -> pure d; Just x -> f x
 
 getCodeTable :: forall o effs . (
 	Union.Member (State.S ExtraBits) effs,
-	Union.Member (Pipe.P (Either Int Word16) o) effs,
 	Union.Member Fail.F effs
 	) =>
-	Int -> Eff.E effs [Int]
+	Int -> Eff.E (Pipe.P (Either Int Word16) o ': effs) [Int]
 getCodeTable 0 = pure []
-getCodeTable n = Pipe.await' @(Either Int Word16) o >>= \case
+getCodeTable n = Pipe.await >>= \case
 	Nothing -> pure []
 	Just (Left ln)
 		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable @o (n - 1)
 		| ln == 16 -> error "yet"
 		| ln == 17 -> do
 			State.put $ ExtraBits 3
-			Just (Right eb) <- Pipe.await' @(Either Int Word16) o
+			Just (Right eb) <- Pipe.await
 			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable @o (n - fromIntegral eb - 3)
 		| ln == 18 -> do
 			State.put $ ExtraBits 7
-			Just (Right eb) <- Pipe.await' @(Either Int Word16) o
+			Just (Right eb) <- Pipe.await
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable @o (n - fromIntegral eb - 11)
 		| otherwise -> error "yet"
 	Just (Right _) -> error "bad"

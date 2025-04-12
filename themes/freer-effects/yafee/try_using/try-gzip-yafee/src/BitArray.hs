@@ -70,6 +70,19 @@ takeBitArray n = do
 			if b then takeBitArray @o n else pure Nothing
 		Just (t, BitArray info' bs') -> Just t <$ (State.put info' >> State.put bs')
 
+takeBitArray' :: forall o effs . (
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs ) =>
+	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BitArray)
+takeBitArray' n = do
+	info <- State.get
+	bs <- State.get
+	case splitAt n $ BitArray info bs of
+		Nothing -> do
+			b <- readMore'
+			if b then takeBitArray @o n else pure Nothing
+		Just (t, BitArray info' bs') -> Just t <$ (State.put info' >> State.put bs')
+
 splitAt :: Int -> BitArray -> Maybe (BitArray, BitArray)
 splitAt n (BitArray (BitInfo i ln) bs)
 	| ln < n = Nothing
@@ -83,6 +96,16 @@ readMore :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs ) =>
 	Eff.E effs Bool
 readMore = Pipe.await' o >>= \case
+	Nothing -> pure False
+	Just bs -> True <$ do
+		State.modify (`BS.append` bs)
+		State.modify \(BitInfo i ln) -> BitInfo i (ln + BS.length bs * 8)
+
+readMore' :: forall o effs . (
+	Union.Member (State.S BS.ByteString) effs,
+	Union.Member (State.S BitInfo) effs ) =>
+	Eff.E (Pipe.P BS.ByteString o ': effs) Bool
+readMore' = Pipe.await' o >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ do
 		State.modify (`BS.append` bs)
@@ -113,6 +136,13 @@ takeBit8 :: forall o effs . (
 	) =>
 	Int -> Eff.E effs (Maybe Word8)
 takeBit8 n = (bitArrayToWord8 =<<) <$> takeBitArray @o n
+
+takeBit8' :: forall o effs n . (
+	Union.Member (State.S BitInfo) effs,
+	Union.Member (State.S BS.ByteString) effs,
+	Integral n ) =>
+	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe n)
+takeBit8' n = ((fromIntegral <$>) . bitArrayToWord8 =<<) <$> takeBitArray' n
 
 bits :: (
 	Union.Member (State.S BitInfo) effs,
