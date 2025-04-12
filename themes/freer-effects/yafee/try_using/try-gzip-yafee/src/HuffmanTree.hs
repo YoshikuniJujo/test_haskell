@@ -72,5 +72,5 @@ bitListNext = reverse . bitListNextRv . reverse
 pairToCodes :: Integral n => [(n, a)] -> [([Bit], a)]
 pairToCodes = uncurry zip . (lenListToCodes [O] `first`) . unzip
 
-mkTree :: forall n a . (Integral n, Ord a) => [a] -> [n] -> BinTree a
-mkTree xs = fromList . pairToCodes @n . L.sort . filter ((/= 0) . fst) . (`zip` xs)
+mkTr :: forall n a . (Integral n, Ord a) => [a] -> [n] -> BinTree a
+mkTr xs = fromList . pairToCodes @n . L.sort . filter ((/= 0) . fst) . (`zip` xs)

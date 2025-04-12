@@ -171,5 +171,5 @@ takeByteBoundary = do
 	takeBitArray @o (8 - ((i - 1) `mod` 8 + 1))
 
 
-bitListToNumLE :: (Num n, Bits n) => [Bit] -> n
-bitListToNumLE = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
+bitListToNum :: (Num n, Bits n) => [Bit] -> n
+bitListToNum = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
