@@ -16,7 +16,6 @@ import Control.Monad.Yafee.Except qualified as Except
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
-import Data.Foldable
 import Data.Sequence qualified as Seq
 import Data.Bool
 import Data.Word
@@ -90,8 +89,8 @@ mainPipe :: forall effs . (
 	Int -> Eff.E (Pipe BS.ByteString () effs) ()
 mainPipe bffsz =
 	fix (\go -> readBlock bffsz >>= bool (pure ()) go) Pipe.=$=
-	runLength @(Pipe RunLength (Either Word8 BS.ByteString) effs) Pipe.=$=
-	format @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
+	runLength @effs Pipe.=$=
+	format' @(Pipe (Either Word8 BS.ByteString) BS.ByteString effs) bffsz Pipe.=$=
 	printPipe @() @(Pipe BS.ByteString () effs)
 
 printPipe :: forall o effs . (
@@ -122,62 +121,19 @@ printPipe' = do
 			Pipe.print' (x :: BS.ByteString)
 			printPipe' @o) mx
 
-runLength :: (
-	Union.Member (Pipe.P RunLength (Either Word8 BS.ByteString)) effs,
-	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
-	Eff.E effs ()
-runLength = Pipe.await' (Either Word8 BS.ByteString) >>= \case
-	Nothing -> pure ()
-	Just rl -> runLengthRun @RunLength rl >> runLength
-
-runLengthRun :: forall i effs . (
-	Union.Member (Pipe.P i (Either Word8 BS.ByteString)) effs,
-	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
-	RunLength -> Eff.E effs ()
-runLengthRun = \case
-	RunLengthLiteral w -> do
-		State.modify (`snoc` w)
-		Pipe.yield' @(Either Word8 BS.ByteString) i $ Left w
-	RunLengthLenDist (RunLengthLength ln) (RunLengthDist d) -> do
-		ws' <- State.gets \ws -> repetition ws ln d
-		State.modify (`appendR` ws')
-		Pipe.yield' @(Either Word8 BS.ByteString) i . Right $ BS.pack ws'
-
-snoc :: Seq.Seq Word8 -> Word8 -> Seq.Seq Word8
-snoc s w = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
-	s' Seq.|> w
-	where ln = Seq.length s
-
-appendR :: Seq.Seq Word8 -> [Word8] -> Seq.Seq Word8
-appendR s ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
-	foldl (Seq.|>) s' ws
-	where ln = Seq.length s
-
-repetition :: Seq.Seq Word8 -> Int -> Int -> [Word8]
-repetition ws r d = takeRep r ws' ws'
-	where ws' = toList . Seq.take r $ takeR d ws
-
-takeRep :: Int -> [a] -> [a] -> [a]
-takeRep 0 _ _ = []
-takeRep n xs0 (x : xs) = x : takeRep (n - 1) xs0 xs
-takeRep n xs0 [] = takeRep n xs0 xs0
-
-takeR :: Int -> Seq.Seq Word8 -> Seq.Seq Word8
-takeR n xs = Seq.drop (Seq.length xs - n) xs
-
-format :: (
+format' :: (
 	Union.Member (Pipe.P (Either Word8 BS.ByteString) BS.ByteString) effs,
 	Union.Member (State.Named "format" BS.ByteString) effs
 	) =>
 	Int -> Eff.E effs ()
-format n = do
-	b <- checkLength n
+format' n = do
+	b <- checkLength' n
 	if b
-	then yieldLen @(Either Word8 BS.ByteString) n >> format n
+	then yieldLen' @(Either Word8 BS.ByteString) n >> format' n
 	else readMore' >>= bool
 		(Pipe.yield' (Either Word8 BS.ByteString) =<<
 			State.getN @BS.ByteString "format")
-		(format n)
+		(format' n)
 
 readMore' :: (
 	Union.Member (State.Named "format" BS.ByteString) effs,
@@ -189,19 +145,19 @@ readMore' = Pipe.await' BS.ByteString >>= \case
 	Just (Left w) -> True <$ State.modifyN "format" (`BS.snoc` w)
 	Just (Right bs) -> True <$ State.modifyN "format" (`BS.append` bs)
 
-checkLength :: (
+checkLength' :: (
 	Union.Member (State.Named "format" BS.ByteString) effs
 	) =>
 	Int -> Eff.E effs Bool
-checkLength n = do
+checkLength' n = do
 	bs <- State.getN "format"
 	pure $ BS.length bs >= n
 
-yieldLen :: forall i effs . (
+yieldLen' :: forall i effs . (
 	Union.Member (State.Named "format" BS.ByteString) effs,
 	Union.Member (Pipe.P i BS.ByteString) effs ) =>
 	Int -> Eff.E effs ()
-yieldLen n = do
+yieldLen' n = do
 	bs <- State.getN "format"
 	let	(r, bs') = BS.splitAt n bs
 	State.putN "format" bs'

@@ -26,6 +26,7 @@ data Request
 	| RequestString
 	| RequestBuffer Int
 	| RequestBits Int
+	| RequestPushBack BitArray
 	deriving Show
 
 byteStringToBitArray :: BS.ByteString -> BitArray
@@ -60,7 +61,8 @@ onDemand :: (
 onDemand = State.get >>= \case
 	RequestBytes ln -> do
 		mt <- takeBytes' ln
-		maybe (Except.throw @String "Not enough ByteString")
+--		maybe (Except.throw @String "Not enough ByteString")
+		maybe (Pipe.yield (Right "") >> onDemand)
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestString -> do
 		mt <- takeString'
@@ -68,12 +70,17 @@ onDemand = State.get >>= \case
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestBuffer ln -> do
 		mt <- takeBuffer' ln
-		maybe (Except.throw @String "End of input")
+--		maybe (Except.throw @String "End of input")
+		maybe (Pipe.yield (Right "") >> onDemand)
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestBits ln -> do
 		mt <- takeBits ln
 		maybe (Except.throw @String "Not enough ByteString")
 			(\t -> Pipe.yield t >> onDemand) mt
+	RequestPushBack ba -> do
+		State.modify (ba `appendBitArray`)
+		Pipe.yield $ Right ""
+		onDemand
 
 takeBytes :: (
 	Union.Member (State.S BS.ByteString) effs ) =>
@@ -153,6 +160,7 @@ readMore = Pipe.await >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`BS.append` bs)
 
+{-
 bitArrayToWord8 :: BitArray -> Word8
 bitArrayToWord8 BitArray { bit0 = i0, bitsLen = ln0, bitsBody = bs0 }
 	| ln0 > 8 = error "too big"
@@ -165,3 +173,4 @@ bitArrayToWord8 BitArray { bit0 = i0, bitsLen = ln0, bitsBody = bs0 }
 		where
 		b = BS.head bs
 		(i', bs') = case i of 7 -> (0, BS.tail bs); _ -> (i + 1, bs)
+-}

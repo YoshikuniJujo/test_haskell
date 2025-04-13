@@ -30,6 +30,21 @@ data BitInfo = BitInfo { bit0' :: Int, bitsLen' :: Int } deriving Show
 data BitArray = BitArray { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
 	deriving Show
 
+popBitArray :: BitArray -> Maybe (Bit, BitArray)
+popBitArray BitArray { bit0 = i0, bitsLen = ln, bitsBody = bs } =
+	case (i0, ln) of
+		(_, 0) -> Nothing
+		(7, _) -> case BS.uncons bs of
+			Just (b, bs') -> Just (
+				bool O I (b `testBit` 7), BitArray {
+					bit0 = 0, bitsLen = ln - 1,
+					bitsBody = bs' } )
+			Nothing -> error "never occur"
+		_ -> Just (	bool O I b, BitArray {
+					bit0 = i0 + 1, bitsLen = ln - 1,
+					bitsBody = bs } )
+			where b = BS.head bs `testBit` i0
+
 pop :: forall o effs . (
 	Union.Member (Pipe.P BS.ByteString o) effs,
 	Union.Member (State.S BitArray) effs ) =>
@@ -96,6 +111,15 @@ bitArrayAppendByteString
 	BitArray {
 		bit0 = i0, bitsLen = ln + 8 * BS.length bs',
 		bitsBody = bs `BS.append` bs' }
+
+appendBitArray :: BitArray -> BitArray -> BitArray
+appendBitArray
+	BitArray { bit0 = i1, bitsLen = ln1, bitsBody = bs1 }
+	BitArray { bit0 = i2, bitsLen = ln2, bitsBody = bs2 } =
+	if (i1 + ln1 + i2) `mod` 8 == 0
+	then BitArray {
+		bit0 = i1, bitsLen = ln1 + ln2, bitsBody = bs1 `BS.append` bs2 }
+	else error "yet"
 
 readMore' :: forall o effs . (
 	Union.Member (State.S BitArray) effs ) =>

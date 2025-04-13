@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -10,6 +10,7 @@ module Block where
 
 import Control.Arrow
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.State qualified as State
@@ -19,6 +20,7 @@ import Control.OpenUnion qualified as Union
 import Data.Foldable
 import Data.Bits
 import Data.Maybe
+import Data.Sequence qualified as Seq
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
@@ -32,6 +34,8 @@ import Calc
 import ByteStringNum
 
 import Pipe.ByteString.OnDemand
+
+import Debug.Trace
 
 readBlock :: forall effs . (
 	Union.Member (State.S BitArray) effs,
@@ -55,6 +59,62 @@ readBlock bffsz = do
 		bits Pipe.=$= bitsBlock mhclen mhlithdist
 	pure nf
 
+blocks :: (
+	Union.Member (State.S Request) effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
+	Union.Member (State.Named "bits" BitArray) effs,
+	Union.Member (State.S (Seq.Seq Word8)) effs,
+	Union.Member (Except.E String) effs,
+	Union.Member Fail.F effs
+	) =>
+	Eff.E (Pipe.P (Either BitArray BS.ByteString) (Either Word8 BS.ByteString) ': effs) ()
+blocks = fix (\go -> block' >>= bool (pure ()) go) Pipe.=$= runLength
+
+block' :: (
+	Union.Member (State.S Request) effs,
+	Union.Member (Except.E String) effs,
+	Union.Member Fail.F effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
+	Union.Member (State.Named "bits" BitArray) effs
+	) =>
+	Eff.E (Pipe.P (Either BitArray BS.ByteString) RunLength ': effs) Bool
+block' = do
+	State.put $ RequestBits 1
+	Just (Left (Just t)) <- (either (Left . bitArrayToWord8) Right <$>)
+		<$> Pipe.await @(Either BitArray BS.ByteString)
+	State.put $ RequestBits 2
+	Just bt <- bitArrayToWord8 <$> (
+		getLeftJust =<< Pipe.await @(Either BitArray BS.ByteString) )
+	case bt of
+		0 -> do	State.put $ RequestBytes 4
+			ln <- getWord16FromPair =<< skipLeft1
+			for_ (separate 10 ln) \ln' -> do
+				State.put $ RequestBytes ln'
+				Pipe.yield . RunLengthLiteralBS =<< getRightJust =<< Pipe.await
+		_	| bt == 1 || bt == 2 -> do
+			(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
+				State.put $ RequestBits 5
+				Just hlit <- ((+ 257) . fromIntegral <$>)
+					. bitArrayToWord8 <$> (getLeftJust =<< Pipe.await)
+				Just hdist <- ((+ 1) . fromIntegral <$>)
+					. bitArrayToWord8 <$> (getLeftJust =<< Pipe.await)
+				State.put $ RequestBits 4
+				Just hclen <- ((+ 4) . fromIntegral <$>)
+					. bitArrayToWord8 <$> (getLeftJust =<< Pipe.await)
+				pure (Just (hlit, hlit + hdist), Just hclen)
+			bits' Pipe.=$= bitsBlock mhclen mhlithdist
+			bf <- State.getN "bits"
+			trace (show bf) (pure ())
+			State.putN "bits" $ byteStringToBitArray ""
+			State.put $ RequestPushBack bf
+			Just (Right "") <- Pipe.await
+			Pipe.yield RunLengthDummy
+			pure ()
+		_ -> Except.throw $ "No such BType: " ++ show bt
+	pure (t /= 1)
+
 bitsBlock :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs,
@@ -73,7 +133,33 @@ bitsBlock mhclen mhlithdist = do
 		State.put $ (id &&& id) lct
 		putDecoded lct dct 0
 
-data RunLength = RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist deriving Show
+bits' :: (
+	Union.Member (State.S Request) effs,
+	Union.Member (State.Named "bits" BitArray) effs,
+	Union.Member (Except.E String) effs ) =>
+	Eff.E (Pipe.P (Either BitArray BS.ByteString) Bit ': effs) ()
+bits' = popBit >>= \case
+	Nothing -> pure ()
+	Just b -> Pipe.yield b >> bits'
+
+popBit :: (
+	Union.Member (State.S Request) effs,
+	Union.Member (State.Named "bits" BitArray) effs,
+	Union.Member (Except.E String) effs
+	) =>
+	Eff.E (Pipe.P (Either BitArray BS.ByteString) o ': effs) (Maybe Bit)
+popBit = State.getsN "bits" popBitArray >>= \case
+	Nothing -> do
+		State.put $ RequestBuffer 100
+		State.putN "bits"
+			. either id byteStringToBitArray =<< getJust =<< Pipe.await
+		popBit
+	Just (b, ba') -> Just b <$ State.putN "bits" ba'
+
+data RunLength =
+	RunLengthLiteralBS BS.ByteString |
+	RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist |
+	RunLengthDummy deriving Show
 
 data RunLengthLength = RunLengthLength Int deriving Show
 
@@ -141,7 +227,9 @@ putDecoded :: (
 putDecoded t dt pri = do
 	mi <- Pipe.await' @(Either Int Word16) RunLength
 	case mi of
-		Just (Left 256) -> pure ()
+		Just (Left 256) -> do
+--			Just RunLengthDummy <- Pipe.await
+			pure ()
 		Just (Left i)
 			| 0 <= i && i <= 255 -> do
 				Pipe.yield' (Either Int Word16) (RunLengthLiteral $ fromIntegral i)
@@ -251,3 +339,97 @@ getJust :: Union.Member (Except.E String) effs => Maybe a -> Eff.E effs a
 getJust = \case
 	Nothing -> Except.throw @String "Not Just"
 	Just x -> pure x
+
+getLeftJust :: Union.Member (Except.E String) effs =>
+	Maybe (Either a b) -> Eff.E effs a
+getLeftJust = getLeft <=< getJust
+
+getLeft :: Union.Member (Except.E String) effs => Either a b -> Eff.E effs a
+getLeft = \case
+	Left x -> pure x
+	Right _ -> Except.throw @String "Not Left"
+
+runLength :: (
+	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
+	Eff.E (Pipe.P RunLength (Either Word8 BS.ByteString) ': effs) ()
+runLength = Pipe.await' (Either Word8 BS.ByteString) >>= \case
+	Nothing -> pure ()
+	Just rl -> runLengthRun @RunLength rl >> runLength
+
+runLengthRun :: forall i effs . (
+	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
+	RunLength -> Eff.E (Pipe.P i (Either Word8 BS.ByteString) ': effs) ()
+runLengthRun = \case
+	RunLengthLiteral w -> do
+		State.modify (`snoc` w)
+		Pipe.yield' @(Either Word8 BS.ByteString) i $ Left w
+	RunLengthLiteralBS bs -> do
+		State.modify (`appendR` BS.unpack bs)
+		Pipe.yield $ Right bs
+	RunLengthLenDist (RunLengthLength ln) (RunLengthDist d) -> do
+		ws' <- State.gets \ws -> repetition ws ln d
+		State.modify (`appendR` ws')
+		Pipe.yield' @(Either Word8 BS.ByteString) i . Right $ BS.pack ws'
+	RunLengthDummy -> trace "foobar" $ pure ()
+
+snoc :: Seq.Seq Word8 -> Word8 -> Seq.Seq Word8
+snoc s w = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	s' Seq.|> w
+	where ln = Seq.length s
+
+appendR :: Seq.Seq Word8 -> [Word8] -> Seq.Seq Word8
+appendR s ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	foldl (Seq.|>) s' ws
+	where ln = Seq.length s
+
+repetition :: Seq.Seq Word8 -> Int -> Int -> [Word8]
+repetition ws r d = takeRep r ws' ws'
+	where ws' = toList . Seq.take r $ takeR d ws
+
+takeRep :: Int -> [a] -> [a] -> [a]
+takeRep 0 _ _ = []
+takeRep n xs0 (x : xs) = x : takeRep (n - 1) xs0 xs
+takeRep n xs0 [] = takeRep n xs0 xs0
+
+takeR :: Int -> Seq.Seq Word8 -> Seq.Seq Word8
+takeR n xs = Seq.drop (Seq.length xs - n) xs
+
+format :: (
+	Union.Member (State.Named "format" BS.ByteString) effs
+	) =>
+	Int -> Eff.E (Pipe.P (Either Word8 BS.ByteString) BS.ByteString ': effs) ()
+format n = do
+	b <- checkLength n
+	if b
+	then yieldLen n >> format n
+	else readMore2 >>= bool
+		(Pipe.yield' (Either Word8 BS.ByteString) =<<
+			State.getN @BS.ByteString "format")
+		(format n)
+
+checkLength :: (
+	Union.Member (State.Named "format" BS.ByteString) effs
+	) =>
+	Int -> Eff.E effs Bool
+checkLength n = do
+	bs <- State.getN "format"
+	pure $ BS.length bs >= n
+
+yieldLen :: forall i effs . (
+	Union.Member (State.Named "format" BS.ByteString) effs ) =>
+	Int -> Eff.E (Pipe.P i BS.ByteString ': effs) ()
+yieldLen n = do
+	bs <- State.getN "format"
+	let	(r, bs') = BS.splitAt n bs
+	State.putN "format" bs'
+	Pipe.yield' i r
+
+readMore2 :: (
+	Union.Member (State.Named "format" BS.ByteString) effs,
+	Union.Member (Pipe.P (Either Word8 BS.ByteString) BS.ByteString) effs
+	) =>
+	Eff.E effs Bool
+readMore2 = Pipe.await' BS.ByteString >>= \case
+	Nothing -> pure False
+	Just (Left w) -> True <$ State.modifyN "format" (`BS.snoc` w)
+	Just (Right bs) -> True <$ State.modifyN "format" (`BS.append` bs)

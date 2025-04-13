@@ -38,16 +38,26 @@ import Gzip
 import ByteStringNum
 import Numeric
 
-import BitArray(BitArray(..))
+import BitArray(BitArray(..), bitArrayToWord8)
 
 import Block
+
+import HuffmanTree
+import Pipe.Huffman
+import Data.Sequence
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	(print =<<) . Eff.runM . Fail.run . Except.run
-		. (`State.run` Crc 0) . (`State.run` byteStringToBitArray "")
+	(putStrLn . Prelude.take 1000 . show =<<) . Eff.runM . Fail.run . Except.run
+		. (`State.run` Crc 0)
+		. (`State.runN` "")
+		. (`State.runN` byteStringToBitArray "")
+		. (`State.run` ExtraBits 0)
+		. (`State.run` empty)
+		. (`State.run` (fixedTable, fixedTable))
+		. (`State.run` byteStringToBitArray "")
 		. (`State.run` RequestBytes 0) . (Pipe.run @() @()) $
 		fromHandle h Pipe.=$= onDemand @MyEff Pipe.=$= do
 		checkRight Pipe.=$= crcPipe Pipe.=$= do
@@ -87,7 +97,8 @@ main = do
 				maybe (pure ()) putStrLn'
 					. (((`showHex` "") . bsToNum @Word16) <$>)
 					=<< Pipe.await @BS.ByteString
-		(fix \go ->block >>= bool (pure ()) go) Pipe.=$=
+		blocks Pipe.=$= format 100 Pipe.=$=
+--		(fix \go ->block >>= bool (pure ()) go) Pipe.=$=
 			crcPipe Pipe.=$= do
 				fix \go -> Pipe.await >>= \case
 					Nothing -> pure ()
@@ -95,9 +106,20 @@ main = do
 				compCrc
 
 		print' . crcToByteString =<< State.get
+
 		State.put $ RequestBytes 4
-		print' =<< getRight =<< getJust =<< Pipe.await
+		Just efoo <- Pipe.await
+--		print' efoo
+		print' =<< getRight =<< getJust =<< case efoo of
+			Left _ -> Pipe.await
+			Right _ -> pure $ Just efoo
 		print' @Word32 . bsToNum =<< getRight =<< getJust =<< Pipe.await
+--		print' =<< Pipe.await
+--		print' =<< Pipe.await
+--		print' =<< Pipe.await
+
+--		print' =<< getRight =<< getJust =<< Pipe.await
+--		print' @Word32 . bsToNum =<< getRight =<< getJust =<< Pipe.await
 
 block :: (
 	Union.Member (State.S Request) effs,
@@ -105,10 +127,10 @@ block :: (
 	Eff.E (Pipe.P (Either BitArray BS.ByteString) BS.ByteString ': effs) Bool
 block = do
 	State.put $ RequestBits 1
-	Just (Left t) <- (either (Left . bitArrayToWord8) Right <$>)
+	Just (Left (Just t)) <- (either (Left . bitArrayToWord8) Right <$>)
 		<$> Pipe.await @(Either BitArray BS.ByteString)
 	State.put $ RequestBits 2
-	bt <- bitArrayToWord8 <$> (
+	Just bt <- bitArrayToWord8 <$> (
 		getLeftJust =<< Pipe.await @(Either BitArray BS.ByteString) )
 	case bt of
 		0 -> do	State.put $ RequestBytes 4
@@ -123,15 +145,6 @@ block = do
 		_ -> Except.throw $ "No such BTYPE: " ++ show bt
 	pure $ t /= 1
 
-getLeftJust :: Union.Member (Except.E String) effs =>
-	Maybe (Either a b) -> Eff.E effs a
-getLeftJust = getLeft <=< getJust
-
-getLeft :: Union.Member (Except.E String) effs => Either a b -> Eff.E effs a
-getLeft = \case
-	Left x -> pure x
-	Right _ -> Except.throw @String "Not Left"
-
 print' :: (Show a, Union.Member IO effs) => a -> Eff.E effs ()
 print' = Eff.eff . print
 
@@ -142,5 +155,10 @@ type Pipe i o effs = Pipe.P i o ': effs
 type MyEff = '[
 	State.S Request,
 	State.S BitArray,
+	State.S (BinTree Int, BinTree Int),
+	State.S (Seq Word8),
+	State.S ExtraBits,
+	State.Named "bits" BitArray,
+	State.Named "format" BS.ByteString,
 	State.S Crc,
 	Except.E String, Fail.F, IO]
