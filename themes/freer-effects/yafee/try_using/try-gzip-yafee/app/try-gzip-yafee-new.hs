@@ -113,7 +113,7 @@ type MyEff = '[
 	State.Named "bits" BitArray,
 	State.Named "format" BS.ByteString,
 	State.S Crc,
-	Except.E String, Fail.F, IO]
+	Except.E String, Fail.F, IO ]
 
 type family TupleL t ts where
 	TupleL t '[] = t
@@ -121,17 +121,15 @@ type family TupleL t ts where
 
 runMyEff :: Eff.E (Pipe.P () () ': MyEff) a -> IO
 	(Either String (Either String (TupleL a '[
-			[()], Request, BitArray, (BinTree Int, BinTree Int),
-			Seq Word8, ExtraBits, BitArray, BS.ByteString, Crc])))
+		[()], Request, BitArray, (BinTree Int, BinTree Int),
+		Seq Word8, ExtraBits, BitArray, BS.ByteString, Crc])))
 runMyEff = Eff.runM . Fail.run . Except.run
-		. (`State.run` Crc 0)
-		. (`State.runN` "")
-		. (`State.runN` byteStringToBitArray "")
-		. (`State.run` ExtraBits 0)
-		. (`State.run` empty)
-		. (`State.run` (fixedTable, fixedTable))
-		. (`State.run` byteStringToBitArray "")
-		. (`State.run` RequestBytes 0) . Pipe.run
+	. (`State.run` Crc 0) . (`State.runN` "")
+	. (`State.runN` byteStringToBitArray "")
+	. (`State.run` ExtraBits 0) . (`State.run` empty)
+	. (`State.run` (fixedTable, fixedTable))
+	. (`State.run` byteStringToBitArray "")
+	. (`State.run` RequestBytes 0) . Pipe.run
 
 print' :: (Show a, Union.Member IO effs) => a -> Eff.E effs ()
 print' = Eff.eff . print
