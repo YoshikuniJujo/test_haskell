@@ -11,7 +11,6 @@
 
 module Main where
 
-import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
@@ -40,6 +39,8 @@ import ByteStringNum
 import Numeric
 
 import BitArray(BitArray(..))
+
+import Block
 
 main :: IO ()
 main = do
@@ -122,44 +123,6 @@ block = do
 		_ -> Except.throw $ "No such BTYPE: " ++ show bt
 	pure $ t /= 1
 
-separate :: Int -> Int -> [Int]
-separate bs ln
-	| ln == 0 = [] | ln <= bs = [ln]
-	| otherwise = bs : separate bs (ln - bs)
-
-getWord16FromPair :: (
-	Union.Member (Except.E String) effs,
-	Integral n
-	) =>
-	BS.ByteString -> Eff.E effs n
-getWord16FromPair bs0 = fromIntegral @Word16 <$> do
-	when (BS.length bs0 /= 4)
-		$ Except.throw @String "getWord16FromPair: not 4 bytes"
-	when (ln /= complement cln)
-		$ Except.throw @String "bad pair"
-	pure ln
-	where
-	(ln, cln) = (tow16 *** tow16) $ BS.splitAt 2 bs0
-	tow16 bs = case BS.unpack bs of
-		[b0, b1] -> fromIntegral b0 .|. (fromIntegral b1) `shiftL` 8
-		_ -> error "never occur"
-
-skipLeft1 :: -- forall effs . forall o -> forall a -> forall b -> (
-	Union.Member (Except.E String) effs =>
-	Eff.E (Pipe.P (Either a b) o ': effs) b
-skipLeft1 = Pipe.await >>= \case
-	Just (Left _) -> Pipe.await >>= \case
-		Just (Left _) -> Except.throw @String "Not Right"
-		Just (Right x) -> pure x
-		Nothing -> Except.throw @String "Not enough input"
-	Just (Right x) -> pure x
-	Nothing -> Except.throw @String "Not enough input"
-
-getJust :: Union.Member (Except.E String) effs => Maybe a -> Eff.E effs a
-getJust = \case
-	Nothing -> Except.throw @String "Not Just"
-	Just x -> pure x
-
 getLeftJust :: Union.Member (Except.E String) effs =>
 	Maybe (Either a b) -> Eff.E effs a
 getLeftJust = getLeft <=< getJust
@@ -168,16 +131,6 @@ getLeft :: Union.Member (Except.E String) effs => Either a b -> Eff.E effs a
 getLeft = \case
 	Left x -> pure x
 	Right _ -> Except.throw @String "Not Left"
-
-getRightJust ::
-	Union.Member (Except.E String) effs =>
-	Maybe (Either a b) -> Eff.E effs b
-getRightJust = getRight <=< getJust
-
-getRight :: Union.Member (Except.E String) effs => Either a b -> Eff.E effs b
-getRight = \case
-	Left _ -> Except.throw @String "No Right"
-	Right x -> pure x
 
 print' :: (Show a, Union.Member IO effs) => a -> Eff.E effs ()
 print' = Eff.eff . print

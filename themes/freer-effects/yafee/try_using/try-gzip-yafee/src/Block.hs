@@ -23,13 +23,15 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-import Pipe.ByteString
+import Pipe.ByteString qualified as PBS
 
 import BitArray
 import HuffmanTree
 import Pipe.Huffman
 import Calc
 import ByteStringNum
+
+import Pipe.ByteString.OnDemand
 
 readBlock :: forall effs . (
 	Union.Member (State.S BitArray) effs,
@@ -104,18 +106,15 @@ readNonCompressed bffsz = do
 	Pipe.print' =<< takeByteBoundary @BS.ByteString
 	ln <- takeWord16FromPair
 	forM_ (separate bffsz ln) \ln' -> do
-		bs <- takeBytes @BS.ByteString ln'
+		bs <- PBS.takeBytes @BS.ByteString ln'
 		maybe (pure ()) (Pipe.yield' BS.ByteString) bs
 	where
 	takeWord16FromPair = do
-		Just ln <- (bsToNum <$>) <$> takeBytes @BS.ByteString 2
-		Just nln <- (bsToNum <$>) <$> takeBytes @BS.ByteString 2
+		Just ln <- (bsToNum <$>) <$> PBS.takeBytes @BS.ByteString 2
+		Just nln <- (bsToNum <$>) <$> PBS.takeBytes @BS.ByteString 2
 		when ((ln `xor` complement nln) .&. 0xffff /= 0)
 			$ Except.throw @String "bad boo"
 		pure ln
-	separate bs ln
-		| ln == 0 = [] | ln <= bs = [ln]
-		| otherwise = bs : separate bs (ln - bs)
 
 whenDef :: Applicative m => a -> Bool -> m a -> m a
 whenDef d b a = bool (pure d) a b
@@ -204,3 +203,51 @@ getCodeTable n = Pipe.await >>= \case
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable @o (n - fromIntegral eb - 11)
 		| otherwise -> error "yet"
 	Just (Right _) -> error "bad"
+
+skipLeft1 :: -- forall effs . forall o -> forall a -> forall b -> (
+	Union.Member (Except.E String) effs =>
+	Eff.E (Pipe.P (Either a b) o ': effs) b
+skipLeft1 = Pipe.await >>= \case
+	Just (Left _) -> Pipe.await >>= \case
+		Just (Left _) -> Except.throw @String "Not Right"
+		Just (Right x) -> pure x
+		Nothing -> Except.throw @String "Not enough input"
+	Just (Right x) -> pure x
+	Nothing -> Except.throw @String "Not enough input"
+
+getWord16FromPair :: (
+	Union.Member (Except.E String) effs,
+	Integral n
+	) =>
+	BS.ByteString -> Eff.E effs n
+getWord16FromPair bs0 = fromIntegral @Word16 <$> do
+	when (BS.length bs0 /= 4)
+		$ Except.throw @String "getWord16FromPair: not 4 bytes"
+	when (ln /= complement cln)
+		$ Except.throw @String "bad pair"
+	pure ln
+	where
+	(ln, cln) = (tow16 *** tow16) $ BS.splitAt 2 bs0
+	tow16 bs = case BS.unpack bs of
+		[b0, b1] -> fromIntegral b0 .|. (fromIntegral b1) `shiftL` 8
+		_ -> error "never occur"
+
+separate :: Int -> Int -> [Int]
+separate bs ln
+	| ln == 0 = [] | ln <= bs = [ln]
+	| otherwise = bs : separate bs (ln - bs)
+
+getRightJust ::
+	Union.Member (Except.E String) effs =>
+	Maybe (Either a b) -> Eff.E effs b
+getRightJust = getRight <=< getJust
+
+getRight :: Union.Member (Except.E String) effs => Either a b -> Eff.E effs b
+getRight = \case
+	Left _ -> Except.throw @String "No Right"
+	Right x -> pure x
+
+getJust :: Union.Member (Except.E String) effs => Maybe a -> Eff.E effs a
+getJust = \case
+	Nothing -> Except.throw @String "Not Just"
+	Just x -> pure x
