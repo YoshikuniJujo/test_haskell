@@ -3,6 +3,7 @@
 {-# LANGUAGE ExplicitNamespaces #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE RequiredTypeArguments #-}
@@ -114,13 +115,14 @@ type MyEff = '[
 	State.S Crc,
 	Except.E String, Fail.F, IO]
 
+type family TupleL t ts where
+	TupleL t '[] = t
+	TupleL t (t' ': ts) = TupleL (t, t') ts
+
 runMyEff :: Eff.E (Pipe.P () () ': MyEff) a -> IO
-	(Either String (Either String (
-		(	(	((((((a, [()]), Request), BitArray),
-					(BinTree Int, BinTree Int)), Seq Word8), ExtraBits),
-				BitArray ),
-			BS.ByteString ),
-		Crc )))
+	(Either String (Either String (TupleL a '[
+			[()], Request, BitArray, (BinTree Int, BinTree Int),
+			Seq Word8, ExtraBits, BitArray, BS.ByteString, Crc])))
 runMyEff = Eff.runM . Fail.run . Except.run
 		. (`State.run` Crc 0)
 		. (`State.runN` "")
