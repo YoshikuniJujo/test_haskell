@@ -9,7 +9,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import Control.Monad
 import Control.Monad.Fix
@@ -19,9 +19,7 @@ import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
-import Data.Foldable
 import Data.Bits
-import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 import Data.Time.Clock()
@@ -38,7 +36,7 @@ import Gzip
 import ByteStringNum
 import Numeric
 
-import BitArray(BitArray(..), bitArrayToWord8)
+import BitArray(BitArray(..))
 
 import Block
 
@@ -50,15 +48,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	(putStrLn . Prelude.take 1000 . show =<<) . Eff.runM . Fail.run . Except.run
-		. (`State.run` Crc 0)
-		. (`State.runN` "")
-		. (`State.runN` byteStringToBitArray "")
-		. (`State.run` ExtraBits 0)
-		. (`State.run` empty)
-		. (`State.run` (fixedTable, fixedTable))
-		. (`State.run` byteStringToBitArray "")
-		. (`State.run` RequestBytes 0) . (Pipe.run @() @()) $
+	(putStrLn . Prelude.take 1000 . show =<<) . runMyEff $
 		fromHandle h Pipe.=$= onDemand @MyEff Pipe.=$= do
 		checkRight Pipe.=$= crcPipe Pipe.=$= do
 			State.put $ RequestBytes 2
@@ -98,7 +88,6 @@ main = do
 					. (((`showHex` "") . bsToNum @Word16) <$>)
 					=<< Pipe.await @BS.ByteString
 		blocks Pipe.=$= format 100 Pipe.=$=
---		(fix \go ->block >>= bool (pure ()) go) Pipe.=$=
 			crcPipe Pipe.=$= do
 				fix \go -> Pipe.await >>= \case
 					Nothing -> pure ()
@@ -109,49 +98,11 @@ main = do
 
 		State.put $ RequestBytes 4
 		Just efoo <- Pipe.await
---		print' efoo
 		print' =<< getRight =<< getJust =<< case efoo of
 			Left _ -> Pipe.await
 			Right _ -> pure $ Just efoo
 		print' @Word32 . bsToNum =<< getRight =<< getJust =<< Pipe.await
---		print' =<< Pipe.await
---		print' =<< Pipe.await
---		print' =<< Pipe.await
 
---		print' =<< getRight =<< getJust =<< Pipe.await
---		print' @Word32 . bsToNum =<< getRight =<< getJust =<< Pipe.await
-
-block :: (
-	Union.Member (State.S Request) effs,
-	Union.Member (Except.E String) effs, Union.Member Fail.F effs ) =>
-	Eff.E (Pipe.P (Either BitArray BS.ByteString) BS.ByteString ': effs) Bool
-block = do
-	State.put $ RequestBits 1
-	Just (Left (Just t)) <- (either (Left . bitArrayToWord8) Right <$>)
-		<$> Pipe.await @(Either BitArray BS.ByteString)
-	State.put $ RequestBits 2
-	Just bt <- bitArrayToWord8 <$> (
-		getLeftJust =<< Pipe.await @(Either BitArray BS.ByteString) )
-	case bt of
-		0 -> do	State.put $ RequestBytes 4
-			ln <- getWord16FromPair =<< skipLeft1
-			for_ (separate 10 ln) \ln' -> do
-				State.put $ RequestBytes ln'
-				Pipe.yield =<< getRightJust =<< Pipe.await
-		1 -> do	State.put $ RequestBuffer 100
-			pure ()
-		2 -> do	State.put $ RequestBuffer 100
-			pure ()
-		_ -> Except.throw $ "No such BTYPE: " ++ show bt
-	pure $ t /= 1
-
-print' :: (Show a, Union.Member IO effs) => a -> Eff.E effs ()
-print' = Eff.eff . print
-
-putStrLn' :: Union.Member IO effs => String -> Eff.E effs ()
-putStrLn' = Eff.eff . putStrLn
-
-type Pipe i o effs = Pipe.P i o ': effs
 type MyEff = '[
 	State.S Request,
 	State.S BitArray,
@@ -162,3 +113,26 @@ type MyEff = '[
 	State.Named "format" BS.ByteString,
 	State.S Crc,
 	Except.E String, Fail.F, IO]
+
+runMyEff :: Eff.E (Pipe.P () () ': MyEff) a -> IO
+	(Either String (Either String (
+		(	(	((((((a, [()]), Request), BitArray),
+					(BinTree Int, BinTree Int)), Seq Word8), ExtraBits),
+				BitArray ),
+			BS.ByteString ),
+		Crc )))
+runMyEff = Eff.runM . Fail.run . Except.run
+		. (`State.run` Crc 0)
+		. (`State.runN` "")
+		. (`State.runN` byteStringToBitArray "")
+		. (`State.run` ExtraBits 0)
+		. (`State.run` empty)
+		. (`State.run` (fixedTable, fixedTable))
+		. (`State.run` byteStringToBitArray "")
+		. (`State.run` RequestBytes 0) . Pipe.run
+
+print' :: (Show a, Union.Member IO effs) => a -> Eff.E effs ()
+print' = Eff.eff . print
+
+putStrLn' :: Union.Member IO effs => String -> Eff.E effs ()
+putStrLn' = Eff.eff . putStrLn

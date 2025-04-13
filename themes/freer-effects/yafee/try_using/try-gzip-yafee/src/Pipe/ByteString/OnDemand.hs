@@ -14,9 +14,7 @@ import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.OpenUnion qualified as Union
-import Data.Bits
 import Data.Bool
-import Data.Word
 import Data.ByteString qualified as BS
 
 import BitArray hiding (readMore)
@@ -61,8 +59,7 @@ onDemand :: (
 onDemand = State.get >>= \case
 	RequestBytes ln -> do
 		mt <- takeBytes' ln
---		maybe (Except.throw @String "Not enough ByteString")
-		maybe (Pipe.yield (Right "") >> onDemand)
+		maybe (Except.throw @String "Not enough ByteString")
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestString -> do
 		mt <- takeString'
@@ -70,8 +67,7 @@ onDemand = State.get >>= \case
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestBuffer ln -> do
 		mt <- takeBuffer' ln
---		maybe (Except.throw @String "End of input")
-		maybe (Pipe.yield (Right "") >> onDemand)
+		maybe (Except.throw @String "End of input")
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestBits ln -> do
 		mt <- takeBits ln

@@ -110,7 +110,6 @@ block' = do
 			State.putN "bits" $ byteStringToBitArray ""
 			State.put $ RequestPushBack bf
 			Just (Right "") <- Pipe.await
-			Pipe.yield RunLengthDummy
 			pure ()
 		_ -> Except.throw $ "No such BType: " ++ show bt
 	pure (t /= 1)
@@ -158,8 +157,8 @@ popBit = State.getsN "bits" popBitArray >>= \case
 
 data RunLength =
 	RunLengthLiteralBS BS.ByteString |
-	RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist |
-	RunLengthDummy deriving Show
+	RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist
+	deriving Show
 
 data RunLengthLength = RunLengthLength Int deriving Show
 
@@ -227,9 +226,7 @@ putDecoded :: (
 putDecoded t dt pri = do
 	mi <- Pipe.await' @(Either Int Word16) RunLength
 	case mi of
-		Just (Left 256) -> do
---			Just RunLengthDummy <- Pipe.await
-			pure ()
+		Just (Left 256) -> pure ()
 		Just (Left i)
 			| 0 <= i && i <= 255 -> do
 				Pipe.yield' (Either Int Word16) (RunLengthLiteral $ fromIntegral i)
@@ -370,7 +367,6 @@ runLengthRun = \case
 		ws' <- State.gets \ws -> repetition ws ln d
 		State.modify (`appendR` ws')
 		Pipe.yield' @(Either Word8 BS.ByteString) i . Right $ BS.pack ws'
-	RunLengthDummy -> trace "foobar" $ pure ()
 
 snoc :: Seq.Seq Word8 -> Word8 -> Seq.Seq Word8
 snoc s w = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
