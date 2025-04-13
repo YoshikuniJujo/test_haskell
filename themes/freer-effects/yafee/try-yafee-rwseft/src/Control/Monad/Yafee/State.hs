@@ -16,7 +16,7 @@ module Control.Monad.Yafee.State (
 
 	-- * NAMED
 
-	Named(..), getN, putN, modifyN, runN, transactionN
+	Named(..), getN, getsN, putN, modifyN, runN, transactionN
 
 	) where
 
@@ -56,6 +56,10 @@ transaction s = transactionN @s ""
 
 getN :: forall s effs . forall nm -> Union.Member (Named nm s) effs => Eff.E effs s
 getN nm = Eff.eff (Get @nm)
+
+getsN :: forall s a effs .
+	forall nm -> Union.Member (Named nm s) effs => (s -> a) -> Eff.E effs a
+getsN nm f = f <$> getN nm
 
 putN :: forall s effs . forall nm -> Union.Member (Named nm s) effs => s -> Eff.E effs ()
 putN nm = Eff.eff . (Put @nm)
