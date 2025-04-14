@@ -48,22 +48,36 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	(putStrLn . Prelude.take 1000 . show =<<) . runMyEff $
-		fromHandle h Pipe.=$= onDemand @MyEff Pipe.=$= do
-		YafeeIO.print =<< checkRight Pipe.=$= readHeader
-		blocks Pipe.=$= format 100 Pipe.=$= crcPipe Pipe.=$= do
-			fix \go -> Pipe.await >>= \case
-				Nothing -> pure ()
-				Just x -> YafeeIO.print x >> go
-			compCrc
+		fromHandle h Pipe.=$= gzipPipe
 
-		YafeeIO.print . crcToByteString =<< State.get
+gzipPipe :: (
+	Union.Member (State.S Request) effs,
+	Union.Member (State.S BitArray) effs,
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
+	Union.Member (State.S (Seq Word8)) effs,
+	Union.Member (State.S Crc) effs,
+	Union.Member (State.Named "bits" BitArray) effs,
+	Union.Member (State.Named "format" BS.ByteString) effs,
+	Union.Member (Except.E String) effs,
+	Union.Member Fail.F effs, Union.Base IO effs ) =>
+	Eff.E (Pipe.P BS.ByteString o ': effs) ()
+gzipPipe = onDemand Pipe.=$= do
+	YafeeIO.print =<< checkRight Pipe.=$= readHeader
+	blocks Pipe.=$= format 100 Pipe.=$= crcPipe Pipe.=$= do
+		fix \go -> Pipe.await >>= \case
+			Nothing -> pure ()
+			Just x -> YafeeIO.print x >> go
+		compCrc
 
-		State.put $ RequestBytes 4
-		Just efoo <- Pipe.await
-		YafeeIO.print =<< getRightJust =<< case efoo of
-			Left _ -> Pipe.await
-			Right _ -> pure $ Just efoo
-		YafeeIO.print @Word32 . bsToNum =<< getRightJust =<< Pipe.await
+	YafeeIO.print . crcToByteString =<< State.get
+
+	State.put $ RequestBytes 4
+	Just efoo <- Pipe.await
+	YafeeIO.print =<< getRightJust =<< case efoo of
+		Left _ -> Pipe.await
+		Right _ -> pure $ Just efoo
+	YafeeIO.print @Word32 . bsToNum =<< getRightJust =<< Pipe.await
 
 type MyEff = '[
 	State.S Request,
