@@ -29,7 +29,9 @@ library
   exposed-modules:
       Control.Monad.Yafee.Except
       Control.Monad.Yafee.Fail
+      Control.Monad.Yafee.IO
       Control.Monad.Yafee.Reader
+      Control.Monad.Yafee.ST
       Control.Monad.Yafee.State
       Control.Monad.Yafee.Trace
       Control.Monad.Yafee.Writer
