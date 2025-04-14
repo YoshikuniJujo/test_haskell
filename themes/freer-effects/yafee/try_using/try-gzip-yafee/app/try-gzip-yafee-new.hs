@@ -59,11 +59,15 @@ gzipPipe :: (
 	Union.Member (State.S Crc) effs,
 	Union.Member (State.Named "bits" BitArray) effs,
 	Union.Member (State.Named "format" BS.ByteString) effs,
+
 	Union.Member (Except.E String) effs,
-	Union.Member Fail.F effs, Union.Base IO effs ) =>
+	Union.Member Fail.F effs,
+
+	Union.Base IO effs ) =>
 	Eff.E (Pipe.P BS.ByteString o ': effs) ()
 gzipPipe = onDemand Pipe.=$= do
 	YafeeIO.print =<< checkRight Pipe.=$= readHeader
+
 	blocks Pipe.=$= format 100 Pipe.=$= crcPipe Pipe.=$= do
 		fix \go -> Pipe.await >>= \case
 			Nothing -> pure ()
