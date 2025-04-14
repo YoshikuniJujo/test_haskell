@@ -50,21 +50,20 @@ main = do
 	(putStrLn . Prelude.take 1000 . show =<<) . runMyEff $
 		fromHandle h Pipe.=$= onDemand @MyEff Pipe.=$= do
 		YafeeIO.print =<< checkRight Pipe.=$= readHeader
-		blocks Pipe.=$= format 100 Pipe.=$=
-			crcPipe Pipe.=$= do
-				fix \go -> Pipe.await >>= \case
-					Nothing -> pure ()
-					Just x -> YafeeIO.print x >> go
-				compCrc
+		blocks Pipe.=$= format 100 Pipe.=$= crcPipe Pipe.=$= do
+			fix \go -> Pipe.await >>= \case
+				Nothing -> pure ()
+				Just x -> YafeeIO.print x >> go
+			compCrc
 
 		YafeeIO.print . crcToByteString =<< State.get
 
 		State.put $ RequestBytes 4
 		Just efoo <- Pipe.await
-		YafeeIO.print =<< getRight =<< getJust =<< case efoo of
+		YafeeIO.print =<< getRightJust =<< case efoo of
 			Left _ -> Pipe.await
 			Right _ -> pure $ Just efoo
-		YafeeIO.print @Word32 . bsToNum =<< getRight =<< getJust =<< Pipe.await
+		YafeeIO.print @Word32 . bsToNum =<< getRightJust =<< Pipe.await
 
 type MyEff = '[
 	State.S Request,
