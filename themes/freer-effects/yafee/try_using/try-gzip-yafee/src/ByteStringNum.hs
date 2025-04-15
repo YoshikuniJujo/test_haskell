@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module ByteStringNum where
+module ByteStringNum (numToBs, bsToNum) where
 
 import Data.Bits
 import Data.ByteString qualified as BS

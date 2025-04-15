@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module HuffmanTree where
+module HuffmanTree (BinTree, mkTr, decode1, fixedTable, fixedDstTable) where
 
 import Control.Arrow
 import Data.List qualified as L

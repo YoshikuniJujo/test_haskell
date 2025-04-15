@@ -1,7 +1,11 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Crc where
+module Crc (
+
+	crc, step', check
+
+	) where
 
 import Control.Arrow
 import Data.Bits

@@ -6,7 +6,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Block (blocks, format, getRightJust) where
+module Block (
+
+	blocks, format, getRightJust
+
+	) where
 
 import Control.Arrow
 import Control.Monad

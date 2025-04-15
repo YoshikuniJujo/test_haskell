@@ -3,7 +3,21 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gzip where
+module Gzip (
+
+	GzipHeader(..), sampleGzipHeader, gzipHeaderToRaw,
+
+	Flags(..), readFlags,
+	FlagsRaw(..),
+
+	CompressionMethod(..), OS(..),
+	ExtraField(..), decodeExtraFields,
+
+	bsToWord16, word32ToCTime,
+
+	encodeGzipHeader, crc'
+
+	) where
 
 import Foreign.C.Types
 import Control.Arrow
