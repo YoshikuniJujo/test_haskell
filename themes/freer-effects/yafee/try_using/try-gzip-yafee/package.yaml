@@ -31,6 +31,7 @@ dependencies:
 - try-yafee
 - try-yafee-rwseft
 - try-yafee-conduit
+- try-yafee-conduit-bytestring
 - try-control-open-union
 - transformers
 

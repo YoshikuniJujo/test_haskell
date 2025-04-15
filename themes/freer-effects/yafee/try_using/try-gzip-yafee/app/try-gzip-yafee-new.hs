@@ -16,6 +16,7 @@ import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe
+import Control.Monad.Yafee.Pipe.ByteString qualified as PipeB
 import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.Monad.Yafee.Fail qualified as Fail
@@ -27,7 +28,6 @@ import Data.ByteString qualified as BS
 import System.IO
 import System.Environment
 
-import Pipe.ByteString.IO
 import Pipe.ByteString.OnDemand
 import Pipe.Crc
 import Pipe.DataCheck
@@ -48,7 +48,7 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	(putStrLn . Prelude.take 1000 . show =<<) . runMyEff $
-		fromHandle h Pipe.=$= gzipPipe
+		PipeB.fromHandle 100 h Pipe.=$= gzipPipe
 
 gzipPipe :: (
 	Union.Member (State.S Request) effs,

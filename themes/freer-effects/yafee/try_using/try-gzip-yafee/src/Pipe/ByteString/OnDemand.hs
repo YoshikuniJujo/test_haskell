@@ -6,7 +6,11 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Pipe.ByteString.OnDemand where
+module Pipe.ByteString.OnDemand (
+
+	onDemand, Request(..)
+
+	) where
 
 import Prelude hiding (splitAt)
 import Control.Monad.Yafee.Eff qualified as Eff
@@ -54,14 +58,6 @@ onDemand = State.get >>= \case
 		Pipe.yield $ Right ""
 		onDemand
 
-takeBytes :: (
-	Union.Member (State.S BS.ByteString) effs ) =>
-	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BS.ByteString)
-takeBytes ln = State.get >>= \bs ->
-	if BS.length bs < ln
-	then readMore >>= bool (pure Nothing) (takeBytes ln)
-	else let (t, d) = BS.splitAt ln bs in Just t <$ State.put d
-
 takeBytes' :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray.B BS.ByteString))
@@ -73,13 +69,6 @@ takeBytes' ln = State.get >>= \ba ->
 			else let (t, d) = BS.splitAt ln bs in Just (Right t)
 				<$ State.put (BitArray.fromByteString d)
 
-takeString :: (
-	Union.Member (State.S BS.ByteString) effs ) =>
-	Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BS.ByteString)
-takeString = State.get >>= \bs -> case splitString bs of
-	Nothing -> readMore >>= bool (pure Nothing) takeString
-	Just (t, d) -> Just t <$ State.put d
-
 takeString' :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray.B BS.ByteString))
@@ -89,15 +78,6 @@ takeString' = State.get >>= \ba -> case BitArray.byteBoundary ba of
 		Nothing -> readMore' >>= bool (pure Nothing) takeString'
 		Just (t, d) -> Just (Right t)
 			<$ State.put (BitArray.fromByteString d)
-
-takeBuffer :: (
-	Union.Member (State.S BS.ByteString) effs ) =>
-	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BS.ByteString)
-takeBuffer ln = State.get >>= \bs ->
-	if BS.length bs < ln
-	then do	b <- readMore
-		if b then takeBuffer ln else if BS.null bs then pure Nothing else Just bs <$ State.put ("" :: BS.ByteString)
-	else let (t, d) = BS.splitAt ln bs in Just t <$ State.put d
 
 takeBuffer' :: (
 	Union.Member (State.S BitArray.B) effs ) =>
@@ -124,14 +104,6 @@ splitString bs = case BS.span (/= 0) bs of
 	(_, "") -> Nothing
 	(t, BS.uncons -> Just (z, d)) -> Just (BS.snoc t z, d)
 	_ -> error "Never occur"
-
-readMore :: (
-	Union.Member (State.S BS.ByteString) effs
-	) =>
-	Eff.E (Pipe.P BS.ByteString o ': effs) Bool
-readMore = Pipe.await >>= \case
-	Nothing -> pure False
-	Just bs -> True <$ State.modify (`BS.append` bs)
 
 readMore' :: forall o effs . (
 	Union.Member (State.S BitArray.B) effs ) =>

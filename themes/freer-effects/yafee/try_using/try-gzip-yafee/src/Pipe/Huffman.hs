@@ -4,7 +4,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Pipe.Huffman where
+module Pipe.Huffman (
+
+	huffmanPipe, ExtraBits(..)
+
+	) where
 
 import Control.Monad
 import Control.Monad.Yafee.Eff qualified as Eff
@@ -47,16 +51,12 @@ huffmanPipe = do
 			State.put $ ExtraBits 0
 			huffmanPipe
 
-takeBits16, takeBits16' :: forall o effs . (
+takeBits16' :: forall o effs . (
 	Union.Member (Pipe.P Bit o) effs,
 	Union.Member Fail.F effs
 	) =>
 	Int -> Eff.E effs Word16
-takeBits16 n = bitsToWord16 <$> replicateM n (maybe (fail "bad") pure =<< Pipe.await' o)
 takeBits16' n = bitsToWord16' <$> replicateM n (maybe (fail "bad") pure =<< Pipe.await' o)
-
-bitsToWord16 :: [Bit] -> Word16
-bitsToWord16 = foldl (\w b -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0
 
 bitsToWord16' :: [Bit] -> Word16
 bitsToWord16' = foldr (\b w -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0

@@ -4,7 +4,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Pipe.Crc where
+module Pipe.Crc (
+
+	crcPipe, compCrc,
+
+	Crc(..), crcToByteString,
+
+	) where
 
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe

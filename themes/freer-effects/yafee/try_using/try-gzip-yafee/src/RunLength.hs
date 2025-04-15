@@ -4,7 +4,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module RunLength where
+module RunLength (
+
+	runLength, RunLength(..), RunLengthLength, RunLengthDist
+
+	) where
 
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe
