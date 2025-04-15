@@ -1727,26 +1727,27 @@ void ImGui_ImplVulkanH_CreateWindowImageViews(
 	const VkAllocationCallbacks* allocator
 	)
     // Create The Image Views
-    {
-    VkResult err;
-        VkImageViewCreateInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        info.format = wd->SurfaceFormat.format;
-        info.components.r = VK_COMPONENT_SWIZZLE_R;
-        info.components.g = VK_COMPONENT_SWIZZLE_G;
-        info.components.b = VK_COMPONENT_SWIZZLE_B;
-        info.components.a = VK_COMPONENT_SWIZZLE_A;
-        VkImageSubresourceRange image_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-        info.subresourceRange = image_range;
-        for (uint32_t i = 0; i < wd->ImageCount; i++)
-        {
-            ImGui_ImplVulkanH_Frame* fd = &wd->Frames[i];
-            info.image = fd->Backbuffer;
-            err = vkCreateImageView(device, &info, allocator, &fd->BackbufferView);
-            check_vk_result(err);
-        }
-    }
+{
+	VkResult err;
+
+	VkImageViewCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	info.format = wd->SurfaceFormat.format;
+	info.components.r = VK_COMPONENT_SWIZZLE_R;
+	info.components.g = VK_COMPONENT_SWIZZLE_G;
+	info.components.b = VK_COMPONENT_SWIZZLE_B;
+	info.components.a = VK_COMPONENT_SWIZZLE_A;
+	VkImageSubresourceRange image_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	info.subresourceRange = image_range;
+	for (uint32_t i = 0; i < wd->ImageCount; i++)
+	{
+		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[i];
+		info.image = fd->Backbuffer;
+		err = vkCreateImageView(device, &info, allocator, &fd->BackbufferView);
+		check_vk_result(err);
+	}
+}
 
 void ImGui_ImplVulkanH_CreateWindowFramebuffer(
 	VkDevice device,
