@@ -15,6 +15,6 @@ import System.IO
 
 fromHandle :: Union.Base IO effs =>
 	Int -> Handle -> Eff.E (Pipe.P i BS.ByteString ': effs) ()
-fromHandle bfsz h = Eff.effBase (hIsEOF h) >>= bool (pure ()) do
+fromHandle bfsz h = Eff.effBase (not <$> hIsEOF h) >>= bool (pure ()) do
 	Pipe.yield =<< Eff.effBase (BS.hGetSome h bfsz)
 	fromHandle bfsz h
