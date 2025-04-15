@@ -26,6 +26,9 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yafee.Pipe
+      Control.Monad.Yafee.Pipe.Example
+      Control.Monad.Yafee.Pipe.IO
+      Control.Monad.Yafee.Pipe.Tools
   other-modules:
       Paths_try_yafee_conduit
   autogen-modules:

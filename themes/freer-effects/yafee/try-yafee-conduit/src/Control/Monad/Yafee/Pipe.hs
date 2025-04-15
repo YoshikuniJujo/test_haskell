@@ -12,13 +12,10 @@ module Control.Monad.Yafee.Pipe where
 
 import GHC.TypeLits
 import Control.Arrow
-import Control.Monad
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Freer qualified as Freer
 import Control.OpenUnion qualified as Union
 import Data.FTCQueue qualified as FTCQueue
-import Data.Char
-import System.IO
 
 -- * NORMAL
 
@@ -124,42 +121,3 @@ p@(u Freer.:>>= k) =@=. p'@(v Freer.:>>= l) =
 	Right Await -> Union.inj (Await @nmio @i @o) Freer.:>>=
 		FTCQueue.singleton ((=@=. p') . (k `Freer.app`))
 	Right (Yield o) -> ((o :) `second`) <$> ((k `Freer.app` ()) =@=. p')
-
--- * TOOLS
-
-convert :: forall a b effs . (a -> b) -> Eff.E (P a b ': effs) ()
-convert f = await' b >>= maybe (pure ()) ((>> convert f) . yield' a . f)
-
--- * EXAMPLES
-
-print' :: (Union.Member IO effs, Show a) => a -> Eff.E effs ()
-print' = Eff.eff . print
-
-hRead :: Union.Member IO (P () String ': effs) =>
-	Handle -> Eff.E (P () String ': effs) ()
-hRead h = do
-	eof <- Eff.eff $ hIsEOF h
-	if eof then pure () else do
-		l <- Eff.eff $ hGetLine h
-		yield' (type ()) l
-		hRead h
-
-writeString :: Union.Member IO (P String () ': effs) =>
-	Eff.E (P String () ': effs) ()
-writeString = do
-	ms <- await' (type ())
-	case ms of
-		Nothing -> pure ()
-		Just s -> Eff.eff (putStrLn s) >> writeString
-
-takeP :: forall a effs . Int -> Eff.E (P a a ': effs) ()
-takeP 0 = pure ()
-takeP n = do
-	mx <- await' a
-	case mx of
-		Nothing -> pure ()
-		Just x -> yield' @a a x >> takeP (n - 1)
-
-baz :: IO ()
-baz = void . Eff.runM . run
-	$ hRead stdin =$= takeP 3 =$= convert (map toUpper) =$= writeString
