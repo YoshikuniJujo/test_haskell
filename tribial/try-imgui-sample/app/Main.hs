@@ -52,6 +52,12 @@ import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
 import Gpu.Vulkan.Image qualified as Vk.Img
 
+import Gpu.Vulkan.Attachment qualified as Vk.Att
+import Gpu.Vulkan.Sample qualified as Vk.Smpl
+import Gpu.Vulkan.Subpass qualified as Vk.Sbpss
+import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
+import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.PhysicalDevice qualified as Vk.Sfc.Phd
@@ -235,7 +241,54 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 --	ImGui.Style.Colors.classicNoArg >>
 	Vk.ImGui.Glfw.init w True >>
 	Vk.Swpch.getImages dvc sc >>= \scis ->
-	Vk.ImGui.H.createWindowRenderPassRaw @fmt2 dvc nil False True >>= \rp ->
+
+	let	attdsc :: Vk.Att.Description fmt2
+		attdsc = Vk.Att.Description {
+			Vk.Att.descriptionFlags = zeroBits,
+			Vk.Att.descriptionSamples = Vk.Smpl.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayout = Vk.Img.LayoutUndefined,
+			Vk.Att.descriptionFinalLayout = Vk.Img.LayoutPresentSrcKhr }
+		coloratt :: Vk.Att.Reference
+		coloratt = Vk.Att.Reference {
+			Vk.Att.referenceAttachment = 0,
+			Vk.Att.referenceLayout =
+				Vk.Img.LayoutColorAttachmentOptimal }
+		sbpss :: Vk.Sbpss.Description
+		sbpss = Vk.Sbpss.Description {
+			Vk.Sbpss.descriptionFlags = zeroBits,
+			Vk.Sbpss.descriptionPipelineBindPoint =
+				Vk.Ppl.BindPointGraphics,
+			Vk.Sbpss.descriptionInputAttachments = [],
+			Vk.Sbpss.descriptionColorAndResolveAttachments =
+				Left [coloratt],
+			Vk.Sbpss.descriptionDepthStencilAttachment = Nothing,
+			Vk.Sbpss.descriptionPreserveAttachments = [] }
+		dpdcy :: Vk.Sbpss.Dependency
+		dpdcy = Vk.Sbpss.Dependency {
+			Vk.Sbpss.dependencySrcSubpass = Vk.Sbpss.SExternal,
+			Vk.Sbpss.dependencyDstSubpass = 0,
+			Vk.Sbpss.dependencySrcStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Sbpss.dependencyDstStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Sbpss.dependencySrcAccessMask = zeroBits,
+			Vk.Sbpss.dependencyDstAccessMask =
+				Vk.AccessColorAttachmentWriteBit,
+			Vk.Sbpss.dependencyDependencyFlags = zeroBits }
+		rndrpssInfo :: Vk.RndrPss.CreateInfo 'Nothing '[fmt2]
+		rndrpssInfo = Vk.RndrPss.CreateInfo {
+			Vk.RndrPss.createInfoNext = TMaybe.N,
+			Vk.RndrPss.createInfoFlags = zeroBits,
+			Vk.RndrPss.createInfoAttachments = HPList.Singleton attdsc,
+			Vk.RndrPss.createInfoSubpasses = [sbpss],
+			Vk.RndrPss.createInfoDependencies = [dpdcy] }
+		in
+
+	Vk.RndrPss.create dvc rndrpssInfo nil \rp ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -243,6 +296,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	pure () >>= \() ->
 	Vk.ImGui.H.createSwapChainModifyWd wdcxx scis $
 	Vk.ImGui.H.setWdRenderPass wdcxx rp >>
+
 	Vk.ImGui.H.createWindowImageViews dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowFramebuffer dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
