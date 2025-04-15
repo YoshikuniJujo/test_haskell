@@ -22,6 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - try-yafee
+- try-yafee-rwseft
 - freer-monad
 - try-control-open-union
 

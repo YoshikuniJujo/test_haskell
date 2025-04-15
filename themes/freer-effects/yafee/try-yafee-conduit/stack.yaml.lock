@@ -20,6 +20,19 @@ packages:
 - completed:
     commit: 9c6da1ef1d362868fc914d5604894841eb453ff7
     git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-yafee-rwseft
+    pantry-tree:
+      sha256: fc96c237d46423ce54008afd8b97d3d47d5b7ab8edb99f5128122e3ac9d1aa33
+      size: 1095
+    subdir: themes/freer-effects/yafee/try-yafee-rwseft
+    version: 0.1.0.0
+  original:
+    commit: 9c6da1ef1d362868fc914d5604894841eb453ff7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/freer-effects/yafee/try-yafee-rwseft
+- completed:
+    commit: 9c6da1ef1d362868fc914d5604894841eb453ff7
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: freer-monad
     pantry-tree:
       sha256: 8aca93776af95381e97cb197c84cd63f1ce0b2d9df161723c249ce2352ec3bcb

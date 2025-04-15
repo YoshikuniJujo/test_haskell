@@ -41,6 +41,7 @@ library
     , freer-monad
     , try-control-open-union
     , try-yafee
+    , try-yafee-rwseft
   default-language: Haskell2010
 
 test-suite try-yafee-conduit-test
@@ -59,4 +60,5 @@ test-suite try-yafee-conduit-test
     , try-control-open-union
     , try-yafee
     , try-yafee-conduit
+    , try-yafee-rwseft
   default-language: Haskell2010

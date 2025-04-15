@@ -45,6 +45,7 @@ extra-deps:
     commit: 9c6da1ef1d362868fc914d5604894841eb453ff7
     subdirs:
       - themes/freer-effects/yafee/try-yafee
+      - themes/freer-effects/yafee/try-yafee-rwseft
       - themes/freer-effects/yafee/freer-monad
       - themes/freer-effects/yafee/try-control-open-union
       - themes/freer-effects/yafee/try-freer-base-classes
