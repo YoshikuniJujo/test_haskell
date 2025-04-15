@@ -37,6 +37,7 @@ library
       Pipe.DataCheck
       Pipe.Huffman
       Pipe.MultiPipe
+      Pipe.Word32
       RunLength
       TryNamed
       TryPrimMonad
