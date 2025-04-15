@@ -30,19 +30,15 @@ library
       ByteStringNum
       Calc
       Crc
-      Dict
       Gzip
       HuffmanTree
-      Lib
-      Pipe.ByteString
       Pipe.ByteString.IO
       Pipe.ByteString.OnDemand
       Pipe.Crc
       Pipe.DataCheck
-      Pipe.Gzip
       Pipe.Huffman
-      Pipe.IO
       Pipe.MultiPipe
+      RunLength
       TryNamed
       TryPrimMonad
   other-modules:
@@ -62,32 +58,6 @@ library
     , time
     , transformers
     , try-control-open-union
-    , try-yafee
-    , try-yafee-conduit
-    , try-yafee-rwseft
-    , vector
-  default-language: Haskell2010
-
-executable try-gzip-yafee-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_try_gzip_yafee
-  autogen-modules:
-      Paths_try_gzip_yafee
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      array
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , optparse-declarative
-    , primitive
-    , time
-    , transformers
-    , try-control-open-union
-    , try-gzip-yafee
     , try-yafee
     , try-yafee-conduit
     , try-yafee-rwseft

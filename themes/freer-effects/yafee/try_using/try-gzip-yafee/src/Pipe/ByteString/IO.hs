@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Pipe.ByteString.IO where
+module Pipe.ByteString.IO (fromHandle) where
 
 import Data.ByteString qualified as BS
 import Control.Monad.Yafee.Eff qualified as Eff

@@ -35,7 +35,7 @@ import Pipe.DataCheck
 import Gzip
 import ByteStringNum
 
-import BitArray(BitArray(..))
+import BitArray qualified as BitArray (B, empty)
 
 import Block
 
@@ -52,12 +52,12 @@ main = do
 
 gzipPipe :: (
 	Union.Member (State.S Request) effs,
-	Union.Member (State.S BitArray) effs,
+	Union.Member (State.S BitArray.B) effs,
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member (State.S (Seq Word8)) effs,
 	Union.Member (State.S Crc) effs,
-	Union.Member (State.Named "bits" BitArray) effs,
+	Union.Member (State.Named "bits" BitArray.B) effs,
 	Union.Member (State.Named "format" BS.ByteString) effs,
 
 	Union.Member (Except.E String) effs,
@@ -85,11 +85,11 @@ gzipPipe = onDemand Pipe.=$= do
 
 type MyEff = '[
 	State.S Request,
-	State.S BitArray,
+	State.S BitArray.B,
 	State.S (BinTree Int, BinTree Int),
 	State.S (Seq Word8),
 	State.S ExtraBits,
-	State.Named "bits" BitArray,
+	State.Named "bits" BitArray.B,
 	State.Named "format" BS.ByteString,
 	State.S Crc,
 	Except.E String, Fail.F, IO ]
@@ -99,14 +99,14 @@ type family TupleL t ts where
 
 runMyEff :: Eff.E (Pipe.P () () ': MyEff) a -> IO
 	(Either String (Either String (TupleL a '[
-		[()], Request, BitArray, (BinTree Int, BinTree Int),
-		Seq Word8, ExtraBits, BitArray, BS.ByteString, Crc])))
+		[()], Request, BitArray.B, (BinTree Int, BinTree Int),
+		Seq Word8, ExtraBits, BitArray.B, BS.ByteString, Crc])))
 runMyEff = Eff.runM . Fail.run . Except.run
 	. (`State.run` Crc 0) . (`State.runN` "")
-	. (`State.runN` byteStringToBitArray "")
+	. (`State.runN` BitArray.empty)
 	. (`State.run` ExtraBits 0) . (`State.run` empty)
 	. (`State.run` (fixedTable, fixedTable))
-	. (`State.run` byteStringToBitArray "")
+	. (`State.run` BitArray.empty)
 	. (`State.run` RequestBytes 0) . Pipe.run
 
 readHeader :: (

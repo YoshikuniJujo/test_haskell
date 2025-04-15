@@ -1,144 +1,102 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module BitArray where
+module BitArray (
 
-import Prelude hiding (splitAt)
+	-- * BIT ARRAY
 
-import Control.Monad.Yafee.Eff qualified as Eff
-import Control.Monad.Yafee.State qualified as State
-import Control.Monad.Yafee.Pipe qualified as Pipe
-import Control.OpenUnion qualified as Union
+	B, empty, Bit(..), bitListToNum,
+
+	-- * FROM/TO BYTE STRING
+
+	fromByteString, toByteString,
+
+	-- * APPEND
+
+	append, appendByteString,
+
+	-- * SPLIT
+
+	pop, splitAt,
+
+
+	byteBoundary, byteBoundary',
+
+	-- * CONVERT
+
+	toWord8,
+
+	) where
+-- module BitArray where
+
+import Prelude hiding (take, splitAt)
+
 import Data.Bits
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-data Bit = O | I deriving (Show, Eq, Ord)
-
-runBitArray :: BS.ByteString ->
-	Eff.E (State.S BitArray ': effs) a -> Eff.E effs (a, BitArray)
-runBitArray bs = (`State.run` BitArray 0 (BS.length bs * 8) bs)
-
-data BitInfo = BitInfo { bit0' :: Int, bitsLen' :: Int } deriving Show
-
-data BitArray = BitArray { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
+data B = B { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
 	deriving Show
 
-popBitArray :: BitArray -> Maybe (Bit, BitArray)
-popBitArray BitArray { bit0 = i0, bitsLen = ln, bitsBody = bs } =
+data Bit = O | I deriving (Show, Eq, Ord)
+
+empty :: B
+empty = B { bit0 = 0, bitsLen = 0, bitsBody = "" }
+
+pop :: B -> Maybe (Bit, B)
+pop B { bit0 = i0, bitsLen = ln, bitsBody = bs } =
 	case (i0, ln) of
 		(_, 0) -> Nothing
 		(7, _) -> case BS.uncons bs of
 			Just (b, bs') -> Just (
-				bool O I (b `testBit` 7), BitArray {
+				bool O I (b `testBit` 7), B {
 					bit0 = 0, bitsLen = ln - 1,
 					bitsBody = bs' } )
 			Nothing -> error "never occur"
-		_ -> Just (	bool O I b, BitArray {
+		_ -> Just (	bool O I b, B {
 					bit0 = i0 + 1, bitsLen = ln - 1,
 					bitsBody = bs } )
 			where b = BS.head bs `testBit` i0
 
-pop :: forall o effs . (
-	Union.Member (Pipe.P BS.ByteString o) effs,
-	Union.Member (State.S BitArray) effs ) =>
-	Eff.E effs (Maybe Bit)
-pop = do
-	BitArray { bit0 = i, bitsLen = ln, bitsBody = bs } <- State.get
-	case (i, ln) of
-		(_, 0) -> do
-			b <- readMore @o
-			if b then pop @o else pure Nothing
-		(7, _) -> State.get >>= \(BitArray _ _ bs1) -> case BS.uncons bs1 of
-			Just (b, bs2) -> do
-				Just (bool O I (testBit b 7))
-					<$ State.put BitArray { bit0 = 0, bitsLen = ln - 1, bitsBody = bs2 }
-			Nothing -> error "bad"
-		_ -> do	b <- (`testBit` i) . head' (show ln) <$> State.gets bitsBody
-			Just (bool O I b) <$ State.put BitArray { bit0 = i + 1, bitsLen = ln - 1, bitsBody = bs }
-
-head' :: String -> BS.ByteString -> Word8
-head' i bs = if BS.null bs then error ("head': bad " ++ i) else BS.head bs
-
-takeBitArray :: forall o effs . (
-	Union.Member (State.S BitArray) effs,
-	Union.Member (Pipe.P BS.ByteString o) effs
-	) =>
-	Int -> Eff.E effs (Maybe BitArray)
-takeBitArray n = do
-	BitArray i0 ln bs <- State.get
-	case splitAt n $ BitArray i0 ln bs of
-		Nothing -> do
-			b <- readMore @o
-			if b then takeBitArray @o n else pure Nothing
-		Just (t, BitArray i0' ln' bs') -> Just t <$ State.put (BitArray i0' ln' bs')
-
-takeBitArray' :: forall o effs . (
-	Union.Member (State.S BitArray) effs ) =>
-	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe BitArray)
-takeBitArray' n = do
-	BitArray i0 ln bs <- State.get
-	case splitAt n $ BitArray i0 ln bs of
-		Nothing -> do
-			b <- readMore'
-			if b then takeBitArray @o n else pure Nothing
-		Just (t, BitArray i0' ln' bs') -> Just t <$ State.put (BitArray i0' ln' bs')
-
-splitAt :: Int -> BitArray -> Maybe (BitArray, BitArray)
-splitAt n (BitArray i ln bs)
+splitAt :: Int -> B -> Maybe (B, B)
+splitAt n (B i ln bs)
 	| ln < n = Nothing
 	| otherwise = Just (
-		normalize $ BitArray i n bs,
-		normalize $ BitArray (i + n) (ln - n) bs )
+		normalize $ B i n bs,
+		normalize $ B (i + n) (ln - n) bs )
 
-readMore :: forall o effs . (
-	Union.Member (State.S BitArray) effs,
-	Union.Member (Pipe.P BS.ByteString o) effs ) =>
-	Eff.E effs Bool
-readMore = Pipe.await' o >>= \case
-	Nothing -> pure False
-	Just bs -> True <$ State.modify (`bitArrayAppendByteString` bs)
-
-bitArrayAppendByteString :: BitArray -> BS.ByteString -> BitArray
-bitArrayAppendByteString
-	BitArray { bit0 = i0, bitsLen = ln, bitsBody = bs } bs' =
-	BitArray {
+appendByteString :: B -> BS.ByteString -> B
+appendByteString
+	B { bit0 = i0, bitsLen = ln, bitsBody = bs } bs' =
+	B {
 		bit0 = i0, bitsLen = ln + 8 * BS.length bs',
 		bitsBody = bs `BS.append` bs' }
 
-appendBitArray :: BitArray -> BitArray -> BitArray
-appendBitArray
-	BitArray { bit0 = i1, bitsLen = ln1, bitsBody = bs1 }
-	BitArray { bit0 = i2, bitsLen = ln2, bitsBody = bs2 } =
+append :: B -> B -> B
+append	B { bit0 = i1, bitsLen = ln1, bitsBody = bs1 }
+	B { bit0 = i2, bitsLen = ln2, bitsBody = bs2 } =
 	if (i1 + ln1 + i2) `mod` 8 == 0
-	then BitArray {
+	then B {
 		bit0 = i1, bitsLen = ln1 + ln2, bitsBody = bs1 `BS.append` bs2 }
 	else error "yet"
 
-readMore' :: forall o effs . (
-	Union.Member (State.S BitArray) effs ) =>
-	Eff.E (Pipe.P BS.ByteString o ': effs) Bool
-readMore' = Pipe.await' o >>= \case
-	Nothing -> pure False
-	Just bs -> True <$ State.modify (`bitArrayAppendByteString` bs)
-
-normalize :: BitArray -> BitArray
-normalize (BitArray i ln bs)
-	| 0 <= i = BitArray i' ln
+normalize :: B -> B
+normalize (B i ln bs)
+	| 0 <= i = B i' ln
 		. BS.take t $ BS.drop (i `div` 8) bs
 	| otherwise = error "bad"
 	where
 	i' = i `mod` 8
 	t = (ln + i' - 1) `div` 8 + 1
 
-bitArrayToWord8 :: BitArray -> Maybe Word8
-bitArrayToWord8 (BitArray i ln bs)
+toWord8 :: B -> Maybe Word8
+toWord8 (B i ln bs)
 	| ln + i <= 8 = Just $
 		BS.head bs `shiftR` i .&. foldl setBit zeroBits [0 .. ln - 1]
 	| ln <= 8 = Just let b0 = BS.head bs; b1 = BS.head $ BS.tail bs in
@@ -146,43 +104,25 @@ bitArrayToWord8 (BitArray i ln bs)
 		b1 `shiftL` (8 - i) .&. foldl setBit zeroBits [0 .. ln - 1]
 	| otherwise = Nothing
 
-takeBit8 :: forall o effs . (
-	Union.Member (State.S BitArray) effs,
-	Union.Member (Pipe.P BS.ByteString o) effs
-	) =>
-	Int -> Eff.E effs (Maybe Word8)
-takeBit8 n = (bitArrayToWord8 =<<) <$> takeBitArray @o n
+byteBoundary :: B -> Maybe (B, B)
+byteBoundary bs@B { bit0 = i } = splitAt (8 - ((i - 1) `mod` 8 + 1)) bs
 
-takeBit8' :: forall o effs n . (
-	Union.Member (State.S BitArray) effs,
-	Integral n ) =>
-	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe n)
-takeBit8' n = ((fromIntegral <$>) . bitArrayToWord8 =<<) <$> takeBitArray' n
-
-bits :: (
-	Union.Member (State.S BitArray) effs,
-	Union.Member (Pipe.P BS.ByteString Bit) effs
-	) =>
-	Eff.E effs ()
-bits = do
-	mb <- pop @Bit
-	case mb of
-		Nothing -> pure ()
-		Just b -> Pipe.yield' BS.ByteString b >> bits
-
-splitAtByteBoundary :: BitArray -> Maybe (BitArray, BitArray)
-splitAtByteBoundary bs@BitArray { bit0 = i } =
-	splitAt (8 - ((i - 1) `mod` 8 + 1)) bs
-
-takeByteBoundary :: forall o effs . (
-	Union.Member (State.S BitArray) effs,
-	Union.Member (Pipe.P BS.ByteString o) effs
-	) =>
-	Eff.E effs (Maybe BitArray)
-takeByteBoundary = do
-	BitArray { bit0 = i } <- State.get
-	takeBitArray @o (8 - ((i - 1) `mod` 8 + 1))
-
+byteBoundary' :: BitArray.B -> Either (BitArray.B, BitArray.B) BS.ByteString
+byteBoundary' BitArray.B {
+	BitArray.bit0 = i0, BitArray.bitsLen = ln, BitArray.bitsBody = bs } = case i0 of
+	0 -> Right bs
+	_ -> Left (
+		BitArray.B i0 (8 - i0) (BS.take 1 bs),
+		BitArray.B 0 (ln - 8 + i0) (BS.tail bs) )
 
 bitListToNum :: (Num n, Bits n) => [Bit] -> n
 bitListToNum = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
+
+fromByteString :: BS.ByteString -> BitArray.B
+fromByteString bs = BitArray.B {
+	BitArray.bit0 = 0, BitArray.bitsLen = 8 * BS.length bs, BitArray.bitsBody = bs }
+
+toByteString :: BitArray.B -> Either BitArray.B BS.ByteString
+toByteString
+	ba@BitArray.B { BitArray.bit0 = i0, BitArray.bitsLen = ln, BitArray.bitsBody = bs } = case (i0, ln `mod` 8) of
+	(0, 0) -> Right bs; _ -> Left ba
