@@ -10,7 +10,11 @@ module BitArray (
 
 	-- * BIT ARRAY
 
-	B, empty, Bit(..), bitListToNum,
+	B, empty,
+
+	-- * BIT
+
+	Bit(..), bitsToNum,
 
 	-- * FROM/TO BYTE STRING
 
@@ -24,12 +28,11 @@ module BitArray (
 
 	pop, splitAt,
 
-
-	byteBoundary, byteBoundary',
+	byteBoundary,
 
 	-- * CONVERT
 
-	toWord8,
+	toWord8
 
 	) where
 -- module BitArray where
@@ -104,19 +107,13 @@ toWord8 (B i ln bs)
 		b1 `shiftL` (8 - i) .&. foldl setBit zeroBits [0 .. ln - 1]
 	| otherwise = Nothing
 
-byteBoundary :: B -> Maybe (B, B)
-byteBoundary bs@B { bit0 = i } = splitAt (8 - ((i - 1) `mod` 8 + 1)) bs
-
-byteBoundary' :: BitArray.B -> Either (BitArray.B, BitArray.B) BS.ByteString
-byteBoundary' BitArray.B {
-	BitArray.bit0 = i0, BitArray.bitsLen = ln, BitArray.bitsBody = bs } = case i0 of
+byteBoundary :: B -> Either (B, BS.ByteString) BS.ByteString
+byteBoundary B { bit0 = i0, bitsBody = bs } = case i0 of
 	0 -> Right bs
-	_ -> Left (
-		BitArray.B i0 (8 - i0) (BS.take 1 bs),
-		BitArray.B 0 (ln - 8 + i0) (BS.tail bs) )
+	_ -> Left (B i0 (8 - i0) (BS.take 1 bs), BS.tail bs)
 
-bitListToNum :: (Num n, Bits n) => [Bit] -> n
-bitListToNum = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
+bitsToNum :: (Num n, Bits n) => [Bit] -> n
+bitsToNum = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
 
 fromByteString :: BS.ByteString -> BitArray.B
 fromByteString bs = BitArray.B {

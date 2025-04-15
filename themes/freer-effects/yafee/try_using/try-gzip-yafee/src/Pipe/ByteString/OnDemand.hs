@@ -66,8 +66,8 @@ takeBytes' :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray.B BS.ByteString))
 takeBytes' ln = State.get >>= \ba ->
-	case BitArray.byteBoundary' ba of
-		Left (t, d) -> Just (Left t) <$ State.put d
+	case BitArray.byteBoundary ba of
+		Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
 		Right bs -> if BS.length bs < ln
 			then readMore' >>= bool (pure Nothing) (takeBytes' ln)
 			else let (t, d) = BS.splitAt ln bs in Just (Right t)
@@ -83,8 +83,8 @@ takeString = State.get >>= \bs -> case splitString bs of
 takeString' :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray.B BS.ByteString))
-takeString' = State.get >>= \ba -> case BitArray.byteBoundary' ba of
-	Left (t, d) -> Just (Left t) <$ State.put d
+takeString' = State.get >>= \ba -> case BitArray.byteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
 	Right bs -> case splitString bs of
 		Nothing -> readMore' >>= bool (pure Nothing) takeString'
 		Just (t, d) -> Just (Right t)
@@ -102,8 +102,8 @@ takeBuffer ln = State.get >>= \bs ->
 takeBuffer' :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray.B BS.ByteString))
-takeBuffer' ln = State.get >>= \ba -> case BitArray.byteBoundary' ba of
-	Left (t, d) -> Just (Left t) <$ State.put d
+takeBuffer' ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
 	Right bs -> if BS.length bs < ln
 		then do	b <- readMore'
 			if b
