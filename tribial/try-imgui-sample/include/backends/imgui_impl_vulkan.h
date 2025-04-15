@@ -218,6 +218,11 @@ ImGui_ImplVulkanH_CreateWindowRenderPassRaw (
 	bool udr, VkFormat fmt, bool ce );
 void ImGui_ImplVulkanH_SetWdRenderPass(
 	ImGui_ImplVulkanH_Window* wd, VkRenderPass *rp );
+VkImageView* ImGui_ImplVulkanH_CreateWindowImageViewsRaw(
+	VkDevice device, VkFormat fmt, uint32_t im_count, VkImage* imgs,
+	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_CopyImageViewsToWd (
+	ImGui_ImplVulkanH_Window* wd, VkImageView* views );
 void ImGui_ImplVulkanH_CreateWindowImageViews(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );

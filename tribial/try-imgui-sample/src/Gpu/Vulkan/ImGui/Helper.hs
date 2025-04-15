@@ -21,12 +21,15 @@ module Gpu.Vulkan.ImGui.Helper (
 
 	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer,
 
-	createWindowRenderPassRaw, setWdRenderPass
+	createWindowRenderPassRaw, setWdRenderPass,
+
+	createWindowImageViewsRaw, copyImageViewsToWd, copyImageViewsToWd'
 
 	) where
 
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.HeteroParList qualified as HPList
 import Data.Word
 import Data.Int
 
@@ -37,6 +40,7 @@ import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Image.Internal qualified as Vk.Img
+import Gpu.Vulkan.ImageView.Type qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
 import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
 
@@ -140,3 +144,19 @@ createWindowRenderPassRaw (Vk.Dvc.D dvc) mac udr ce = Vk.RndrPss.R <$>
 
 setWdRenderPass :: Vk.ImGui.H.Win.W -> Vk.RndrPss.R srp -> IO ()
 setWdRenderPass wd (Vk.RndrPss.R rp) = M.setWdRenderPass wd rp
+
+createWindowImageViewsRaw :: forall (fmt :: Vk.T.Format) sd sm si nm siv mac . (
+	Vk.T.FormatToValue fmt, Vk.AllocCallbacks.ToMiddle mac ) =>
+	Vk.Dvc.D sd -> [Vk.Img.Binded sm si nm fmt] ->
+--	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO (HPList.PL (Vk.ImgVw.I nm fmt) sivs)
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO [Vk.ImgVw.I nm fmt siv]
+createWindowImageViewsRaw (Vk.Dvc.D dvc) imgs mac = (Vk.ImgVw.I <$>) <$>
+	M.createWindowImageViewsRaw dvc (Vk.T.formatToValue @fmt)
+		((\(Vk.Img.Binded i) -> i) <$> imgs)
+		(Vk.AllocCallbacks.toMiddle mac)
+
+copyImageViewsToWd :: Vk.ImGui.H.Win.W -> [Vk.ImgVw.I nm fmt siv] -> IO ()
+copyImageViewsToWd wd ivs = M.copyImageViewsToWd wd $ (\(Vk.ImgVw.I iv) -> iv) <$> ivs
+
+copyImageViewsToWd' :: Vk.ImGui.H.Win.W -> HPList.PL (Vk.ImgVw.I nm fmt) sivs -> IO ()
+copyImageViewsToWd' wd ivs = M.copyImageViewsToWd wd $ HPList.toList (\(Vk.ImgVw.I iv) -> iv) ivs

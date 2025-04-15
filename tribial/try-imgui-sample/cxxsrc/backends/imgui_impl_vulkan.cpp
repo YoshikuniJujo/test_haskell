@@ -1721,6 +1721,45 @@ void ImGui_ImplVulkanH_CreateWindowRenderPass(
 	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
 }
 
+VkImageView*
+ImGui_ImplVulkanH_CreateWindowImageViewsRaw(
+	VkDevice device, VkFormat fmt, uint32_t im_count, VkImage* imgs,
+	const VkAllocationCallbacks* allocator )
+{
+	VkResult err;
+	VkImageView* views;
+	views = (VkImageView*)malloc(sizeof(VkImageView) * im_count);
+
+	VkImageViewCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	info.format = fmt;
+	info.components.r = VK_COMPONENT_SWIZZLE_R;
+	info.components.g = VK_COMPONENT_SWIZZLE_G;
+	info.components.b = VK_COMPONENT_SWIZZLE_B;
+	info.components.a = VK_COMPONENT_SWIZZLE_A;
+	VkImageSubresourceRange image_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	info.subresourceRange = image_range;
+	for (uint32_t i = 0; i < im_count; i++)
+	{
+		info.image = imgs[i];
+		err = vkCreateImageView(device, &info, allocator, views + i);
+		check_vk_result(err);
+	}
+
+	return views;
+}
+
+void ImGui_ImplVulkanH_CopyImageViewsToWd (
+	ImGui_ImplVulkanH_Window* wd, VkImageView* views )
+{
+	for (uint32_t i = 0; i < wd->ImageCount; i++)
+	{
+		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[i];
+		fd->BackbufferView = views[i];
+	}
+}
+
 void ImGui_ImplVulkanH_CreateWindowImageViews(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
@@ -1728,25 +1767,17 @@ void ImGui_ImplVulkanH_CreateWindowImageViews(
 	)
     // Create The Image Views
 {
-	VkResult err;
-
-	VkImageViewCreateInfo info = {};
-	info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	info.format = wd->SurfaceFormat.format;
-	info.components.r = VK_COMPONENT_SWIZZLE_R;
-	info.components.g = VK_COMPONENT_SWIZZLE_G;
-	info.components.b = VK_COMPONENT_SWIZZLE_B;
-	info.components.a = VK_COMPONENT_SWIZZLE_A;
-	VkImageSubresourceRange image_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	info.subresourceRange = image_range;
-	for (uint32_t i = 0; i < wd->ImageCount; i++)
-	{
-		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[i];
-		info.image = fd->Backbuffer;
-		err = vkCreateImageView(device, &info, allocator, &fd->BackbufferView);
-		check_vk_result(err);
+	int im_count = wd->ImageCount;
+	VkImage imgs[im_count];
+	VkFormat fmt = wd->SurfaceFormat.format;
+	for (int i = 0; i < im_count; i++) {
+		imgs[i] = wd->Frames[i].Backbuffer;
 	}
+
+	VkImageView* views = ImGui_ImplVulkanH_CreateWindowImageViewsRaw(
+		device, fmt, im_count, imgs, allocator );
+
+	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
 }
 
 void ImGui_ImplVulkanH_CreateWindowFramebuffer(

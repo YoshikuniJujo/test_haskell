@@ -51,6 +51,8 @@ import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
 import Gpu.Vulkan.Image qualified as Vk.Img
+import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
+import Gpu.Vulkan.Component qualified as Vk.Cmp
 
 import Gpu.Vulkan.Attachment qualified as Vk.Att
 import Gpu.Vulkan.Sample qualified as Vk.Smpl
@@ -286,9 +288,33 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 			Vk.RndrPss.createInfoAttachments = HPList.Singleton attdsc,
 			Vk.RndrPss.createInfoSubpasses = [sbpss],
 			Vk.RndrPss.createInfoDependencies = [dpdcy] }
+		imgvwInfo ::
+			Vk.Img.Binded sm si nm fmt2 ->
+			Vk.ImgVw.CreateInfo 'Nothing sm si nm fmt2 fmt2
+		imgvwInfo i = Vk.ImgVw.CreateInfo {
+			Vk.ImgVw.createInfoNext = TMaybe.N,
+			Vk.ImgVw.createInfoFlags = zeroBits,
+			Vk.ImgVw.createInfoImage = i,
+			Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
+			Vk.ImgVw.createInfoComponents = Vk.Cmp.Mapping {
+				Vk.Cmp.mappingR = Vk.Cmp.SwizzleR,
+				Vk.Cmp.mappingG = Vk.Cmp.SwizzleG,
+				Vk.Cmp.mappingB = Vk.Cmp.SwizzleB,
+				Vk.Cmp.mappingA = Vk.Cmp.SwizzleA },
+			Vk.ImgVw.createInfoSubresourceRange =
+				Vk.Img.SubresourceRange {
+					Vk.Img.subresourceRangeAspectMask =
+						Vk.Img.AspectColorBit,
+					Vk.Img.subresourceRangeBaseMipLevel = 0,
+					Vk.Img.subresourceRangeLevelCount = 1,
+					Vk.Img.subresourceRangeBaseArrayLayer =
+						0,
+					Vk.Img.subresourceRangeLayerCount = 1 }
+			}
 		in
 
 	Vk.RndrPss.create dvc rndrpssInfo nil \rp ->
+	createImageViews dvc imgvwInfo scis \scvs ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -296,8 +322,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	pure () >>= \() ->
 	Vk.ImGui.H.createSwapChainModifyWd wdcxx scis $
 	Vk.ImGui.H.setWdRenderPass wdcxx rp >>
+	Vk.ImGui.H.copyImageViewsToWd' wdcxx scvs >>
 
-	Vk.ImGui.H.createWindowImageViews dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowFramebuffer dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
 
@@ -511,3 +537,13 @@ getMinImageCountFromPresentMode = \case
 	Vk.Sfc.PresentModeFifoRelaxed -> 2
 	Vk.Sfc.PresentModeImmediate -> 1
 	_ -> error "bad"
+
+createImageViews :: Vk.T.FormatToValue fmt2 =>
+	Vk.Dvc.D sd ->
+	(Vk.Img.Binded sm si nm fmt2 -> Vk.ImgVw.CreateInfo 'Nothing sm si nm fmt2 fmt2) ->
+	[Vk.Img.Binded sm si nm fmt2] ->
+	(forall sivs . HPList.PL (Vk.ImgVw.I nm fmt2) sivs -> IO a) -> IO a
+createImageViews _ _ [] f = f HPList.Nil
+createImageViews dvc info (i : is) f =
+	Vk.ImgVw.create dvc (info i) nil \iv ->
+	createImageViews dvc info is \ivs -> f $ iv :** ivs

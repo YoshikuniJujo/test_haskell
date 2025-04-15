@@ -53,6 +53,11 @@ extern "C" VkRenderPass* im_gui_impl_vulkan_h_create_window_render_pass_raw(
 	bool udr, VkFormat fmt, bool ce );
 extern "C" void im_gui_impl_vulkan_h_set_wd_render_pass(
 	ImGui_ImplVulkanH_Window* wd, VkRenderPass *rp );
+extern "C" VkImageView* im_gui_impl_vulkan_h_create_window_image_views_raw(
+	VkDevice device, VkFormat fmt, uint32_t im_count, VkImage* imgs,
+	const VkAllocationCallbacks* allocator );
+extern "C" void im_gui_impl_vulkan_h_copy_image_views_to_wd(
+	ImGui_ImplVulkanH_Window* wd, VkImageView* views );
 
 void
 im_gui_impl_vulkan_h_create_window_swap_chain(
@@ -181,4 +186,18 @@ void im_gui_impl_vulkan_h_set_wd_render_pass(
 	ImGui_ImplVulkanH_Window* wd, VkRenderPass *rp )
 {
 	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
+}
+
+VkImageView* im_gui_impl_vulkan_h_create_window_image_views_raw(
+	VkDevice device, VkFormat fmt, uint32_t im_count, VkImage* imgs,
+	const VkAllocationCallbacks* allocator )
+{
+	return ImGui_ImplVulkanH_CreateWindowImageViewsRaw(
+		device, fmt, im_count, imgs, allocator );
+}
+
+void im_gui_impl_vulkan_h_copy_image_views_to_wd(
+	ImGui_ImplVulkanH_Window* wd, VkImageView* views )
+{
+	ImGui_ImplVulkanH_CopyImageViewsToWd (wd, views);
 }

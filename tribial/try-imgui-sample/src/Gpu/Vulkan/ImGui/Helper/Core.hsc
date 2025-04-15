@@ -18,7 +18,9 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 
 	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer,
 
-	createWindowRenderPassRaw, setWdRenderPass
+	createWindowRenderPassRaw, setWdRenderPass,
+
+	createWindowImageViewsRaw, copyImageViewsToWd
 
 	) where
 
@@ -31,6 +33,7 @@ import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
 import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
 import Gpu.Vulkan.Image.Core qualified as Vk.Img
+import Gpu.Vulkan.ImageView.Core qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass.Core qualified as Vk.RndrPss
 
 import Gpu.Vulkan.Khr.Swapchain.Core qualified as Vk.Swpch
@@ -188,3 +191,21 @@ setWdRenderPass = cxx_im_gui_impl_vulkan_h_set_wd_render_pass
 foreign import ccall "im_gui_impl_vulkan_h_set_wd_render_pass"
 	cxx_im_gui_impl_vulkan_h_set_wd_render_pass ::
 	Vk.ImGui.H.Win.W -> Ptr Vk.RndrPss.R -> IO ()
+
+createWindowImageViewsRaw ::
+	Vk.Dvc.D -> #{type VkFormat} -> #{type uint32_t} -> Ptr Vk.Img.I ->
+	Ptr Vk.AllocCallbacks.A -> IO (Ptr Vk.ImgVw.I)
+createWindowImageViewsRaw =
+	cxx_im_gui_impl_vulkan_h_create_window_image_views_raw
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_image_views_raw"
+	cxx_im_gui_impl_vulkan_h_create_window_image_views_raw ::
+	Vk.Dvc.D -> #{type VkFormat} -> #{type uint32_t} -> Ptr Vk.Img.I ->
+	Ptr Vk.AllocCallbacks.A -> IO (Ptr Vk.ImgVw.I)
+
+copyImageViewsToWd :: Vk.ImGui.H.Win.W -> Ptr Vk.ImgVw.I -> IO ()
+copyImageViewsToWd = cxx_im_gui_impl_vulkan_h_copy_image_views_to_wd
+
+foreign import ccall "im_gui_impl_vulkan_h_copy_image_views_to_wd"
+	cxx_im_gui_impl_vulkan_h_copy_image_views_to_wd ::
+	Vk.ImGui.H.Win.W -> Ptr Vk.ImgVw.I -> IO ()

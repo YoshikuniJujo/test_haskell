@@ -19,7 +19,9 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 
 	createWindowRenderPass, createWindowImageViews, createWindowFramebuffer,
 
-	createWindowRenderPassRaw, setWdRenderPass
+	createWindowRenderPassRaw, setWdRenderPass,
+
+	createWindowImageViewsRaw, copyImageViewsToWd
 
 	) where
 
@@ -42,6 +44,7 @@ import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
 
 import Gpu.Vulkan.Image.Middle.Internal qualified as Vk.Img
+import Gpu.Vulkan.ImageView.Middle.Internal qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass.Middle.Internal qualified as Vk.RndrPss
 
 import Gpu.Vulkan.Khr.Surface.Enum qualified as Vk.Sfc
@@ -184,3 +187,24 @@ setWdRenderPass :: Vk.ImGui.H.Win.W -> Vk.RndrPss.R -> IO ()
 setWdRenderPass wd (Vk.RndrPss.R rp) = alloca \prp -> do
 	poke prp rp
 	C.setWdRenderPass wd prp
+
+createWindowImageViewsRaw ::
+	Vk.Dvc.D -> Vk.Format -> [Vk.Img.I] ->
+	TPMaybe.M Vk.AllocCallbacks.A mud -> IO [Vk.ImgVw.I]
+createWindowImageViewsRaw (Vk.Dvc.D dvc) (Vk.Format fmt) imgs macs = (Vk.ImgVw.iFromCore `mapM`) =<<
+	allocaArray n \pimgvws -> do
+		Vk.AllocCallbacks.mToCore macs \pacs ->
+			allocaArray n \pimgs -> do
+			pokeArray pimgs =<< (\(Vk.Img.I ri) -> snd <$> readIORef ri) `mapM` imgs
+			pokeArray pimgvws =<< peekArray n
+				=<< C.createWindowImageViewsRaw
+					dvc fmt (fromIntegral n) pimgs pacs
+		peekArray n pimgvws
+	where
+	n = length imgs
+
+copyImageViewsToWd :: Vk.ImGui.H.Win.W -> [Vk.ImgVw.I] -> IO ()
+copyImageViewsToWd wd ivs = allocaArray n \pivs -> do
+	pokeArray pivs =<< Vk.ImgVw.iToCore `mapM` ivs
+	C.copyImageViewsToWd wd pivs
+	where n = length ivs
