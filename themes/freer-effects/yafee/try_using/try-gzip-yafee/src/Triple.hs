@@ -13,13 +13,23 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-type Triple = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
+-- * API
 
-maxOffset :: Int
-maxOffset = 32768
+updateTriple :: Triple -> Word8 -> Triple
+updateTriple = push
+
+getIndexLength :: Monad m => Triple -> BS.ByteString -> m Word8 -> m (Int, Int)
+getIndexLength = maxLengthFromTriple
+
+type Triple = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
 
 triple0 :: Triple
 triple0 = (0, Seq.empty, Map.empty)
+
+-- * INTERNAL
+
+maxOffset :: Int
+maxOffset = 32768
 
 push :: Triple -> Word8 -> Triple
 push = pushWithMax maxOffset
