@@ -6,6 +6,7 @@
 
 module Compress where
 
+import Foreign.Marshal.Alloc
 import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.IO qualified as YIO
@@ -62,12 +63,20 @@ tryCompress = withFile "samples/abcdef4.txt" ReadMode \h ->
 		$ PipeBS.hGet 100 h Pipe.=$= compressRL Pipe.=$= fix \go ->
 			Pipe.await >>= maybe (pure ()) (\bs -> YIO.print bs >> go)
 
-tryCompress' :: IO (((((), [()]), Triple), BS.ByteString), AheadPos)
-tryCompress' = withFile "samples/abcdef4.txt" ReadMode \h ->
-	Eff.runM . (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
-		. (`State.run` triple0) . Pipe.run
-		$ PipeBS.hGet 100 h Pipe.=$= compressRL Pipe.=$= fix \go ->
-			Pipe.await >>= maybe (pure ()) (\bs -> YIO.print (runLengthToWord32 bs) >> go)
+tryCompress' :: FilePath -> IO (((((), [()]), Triple), BS.ByteString), AheadPos)
+tryCompress' fp = withFile fp WriteMode \hw -> alloca \p ->
+	withFile "samples/abcdef4.txt" ReadMode \h ->
+		Eff.runM . (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
+			. (`State.run` triple0) . Pipe.run
+			$ PipeBS.hGet 100 h Pipe.=$= compressRL Pipe.=$=
+				(fix \go -> Pipe.await >>= maybe (pure ()) (\bs -> Pipe.yield (runLengthToWord32 bs) >> go)) Pipe.=$=
+				listToAtom Pipe.=$=
+				PipeIO.hPutStorable hw p
+
+listToAtom :: Eff.E (Pipe.P [a] a ': effs) ()
+listToAtom = fix \go -> Pipe.await >>= \case
+	Nothing -> pure ()
+	Just xs -> Pipe.yield `mapM_` xs >> go
 
 get :: (
 	Union.Member (State.S BS.ByteString) effs,
