@@ -41,14 +41,16 @@ compressRL = fix \go -> do
 					st <- State.get
 					mil <- getIndexLength st (BS.pack [b, b1, b2]) (fromJust <$> getAhead)
 					case mil of 
-						Nothing -> Pipe.yield (RunLengthLiteral b)
+						Nothing -> do
+							State.modify (`updateTriple` b)
+							Pipe.yield (RunLengthLiteral b)
 						Just (i, l) -> do
 							d <- State.gets $ calcDistance i
 							bs <- getBytes $ 2 + l
-							State.modify \st -> foldl updateTriple st (b1 : b2 : BS.unpack bs)
+							State.modify \st -> foldl updateTriple st (b : BS.unpack bs)
 							Pipe.yield $ RunLengthLenDist (l + 3) d
-				_ -> Pipe.yield (RunLengthLiteral b)
-			State.modify (`updateTriple` b)
+				_ -> do	State.modify (`updateTriple` b)
+					Pipe.yield (RunLengthLiteral b)
 			go
 
 tryCompress :: IO (((((), [()]), Triple), BS.ByteString), AheadPos)
