@@ -8,10 +8,13 @@ module RunLength (
 
 	runLength, RunLength(..), RunLengthLength, RunLengthDist,
 
-	runLengthToWord32
+	runLengthToWord32,
+
+	word32ToRunLength
 
 	) where
 
+import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.State qualified as State
@@ -23,6 +26,8 @@ import Data.ByteString qualified as BS
 
 import Calc
 
+import Data.Bits
+
 runLength :: (Union.Member (State.S (Seq.Seq Word8)) effs) =>
 	Eff.E (Pipe.P RunLength (Either Word8 BS.ByteString) ': effs) ()
 runLength = Pipe.await >>= maybe (pure ()) \rl -> (>> runLength) $ ($ rl) \case
@@ -31,6 +36,26 @@ runLength = Pipe.await >>= maybe (pure ()) \rl -> (>> runLength) $ ($ rl) \case
 		State.modify (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
 	RunLengthLenDist ln d -> State.gets (repetition ln d) >>= \ws ->
 		State.modify (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
+
+word32ToRunLength :: Eff.E (Pipe.P Word32 RunLength ': effs) ()
+word32ToRunLength = fix \go -> Pipe.await >>= \case
+	Nothing -> pure ()
+	Just w	| 0 <= w1 && w1 <= 255 -> do
+			Pipe.yield . RunLengthLiteral $ fromIntegral w1
+			go
+		| otherwise -> Pipe.await >>= \case
+			Nothing -> pure ()
+			Just w' -> do
+				Pipe.yield $ RunLengthLenDist
+					(calcLength (fromIntegral w1) (fromIntegral w0))
+					(calcDist (fromIntegral w1') (fromIntegral w0'))
+				go
+				where
+				w0' = w' .&. 0xffff
+				w1' = w' `shiftR` 16
+		where
+		w0 = w .&. 0xffff
+		w1 = w `shiftR` 16
 
 data RunLength =
 	RunLengthLiteralBS BS.ByteString |

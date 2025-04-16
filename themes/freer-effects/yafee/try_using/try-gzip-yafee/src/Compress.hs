@@ -14,6 +14,7 @@ import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yafee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yafee.State qualified as State
+import Control.Monad.Yafee.Except qualified as Except
 import Control.OpenUnion qualified as Union
 import Data.Maybe
 import Data.Bool
@@ -119,3 +120,9 @@ newtype AheadPos = AheadPos Int deriving Show
 
 nextAheadPos :: AheadPos -> AheadPos
 nextAheadPos (AheadPos p) = AheadPos $ p + 1
+
+tryDecompress fp = withFile fp ReadMode \h -> alloca \p ->
+	Eff.runM . Except.run . Pipe.run $
+		PipeIO.hGetStorable h p Pipe.=$=
+		word32ToRunLength Pipe.=$=
+		PipeIO.print
