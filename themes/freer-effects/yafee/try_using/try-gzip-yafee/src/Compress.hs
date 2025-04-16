@@ -52,7 +52,7 @@ compressRL = fix \go -> do
 						Just (i, l) -> do
 							d <- State.gets $ calcDistance i
 							bs <- getBytes $ 2 + l
-							State.modify \st -> foldl updateTriple st (b : BS.unpack bs)
+							State.modify \st' -> foldl updateTriple st' (b : BS.unpack bs)
 							Pipe.yield $ RunLengthLenDist (l + 3) d
 				_ -> do	State.modify (`updateTriple` b)
 					Pipe.yield (RunLengthLiteral b)
@@ -122,12 +122,14 @@ newtype AheadPos = AheadPos Int deriving Show
 nextAheadPos :: AheadPos -> AheadPos
 nextAheadPos (AheadPos p) = AheadPos $ p + 1
 
+tryDecompress :: FilePath -> IO (Either String ((), [RunLength]))
 tryDecompress fp = withFile fp ReadMode \h -> alloca \p ->
 	Eff.runM . Except.run . Pipe.run $
 		PipeIO.hGetStorable h p Pipe.=$=
 		word32ToRunLength Pipe.=$=
 		PipeIO.print
 
+tryDecompress' :: FilePath -> IO (Either String (((), [RunLength]), Seq.Seq Word8))
 tryDecompress' fp = withFile fp ReadMode \h -> alloca \p ->
 	Eff.runM . Except.run . (`State.run` Seq.empty) . Pipe.run $
 		PipeIO.hGetStorable h p Pipe.=$=
