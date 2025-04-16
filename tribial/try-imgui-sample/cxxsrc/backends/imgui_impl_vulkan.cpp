@@ -1780,6 +1780,54 @@ void ImGui_ImplVulkanH_CreateWindowImageViews(
 	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
 }
 
+VkFramebuffer*
+ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	bool udr, int im_count, VkRenderPass rp, int wdt, int hgt, VkImageView* bv
+	)
+{
+    VkResult err;
+    VkFramebuffer* fbs = (VkFramebuffer*)malloc(sizeof(VkFramebuffer) * im_count);
+
+    // Create Framebuffer
+    if (udr == false)
+    {
+        VkImageView attachment[1];
+        VkFramebufferCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        info.renderPass = rp;
+        info.attachmentCount = 1;
+        info.pAttachments = attachment;
+        info.width = wdt;
+        info.height = hgt;
+        info.layers = 1;
+
+        for (uint32_t i = 0; i < im_count; i++)
+        {
+            attachment[0] = bv[i];
+            err = vkCreateFramebuffer(device, &info, allocator, fbs + i);
+            check_vk_result(err);
+        }
+
+    }
+    return fbs;
+}
+
+void
+ImGui_ImplVulkanH_CopyFramebufferToWd(
+	bool udr, ImGui_ImplVulkanH_Window* wd,
+	int im_count, VkFramebuffer* fbs )
+{
+    if (udr == false)
+    {
+        for (uint32_t i = 0; i < im_count; i++)
+        {
+            ImGui_ImplVulkanH_Frame* fd = &wd->Frames[i];
+	    fd->Framebuffer = fbs[i];
+        }
+    }
+}
+
 void ImGui_ImplVulkanH_CreateWindowFramebuffer(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
@@ -1788,26 +1836,19 @@ void ImGui_ImplVulkanH_CreateWindowFramebuffer(
 {
     VkResult err;
 
-    // Create Framebuffer
-    if (wd->UseDynamicRendering == false)
-    {
-        VkImageView attachment[1];
-        VkFramebufferCreateInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        info.renderPass = wd->RenderPass;
-        info.attachmentCount = 1;
-        info.pAttachments = attachment;
-        info.width = wd->Width;
-        info.height = wd->Height;
-        info.layers = 1;
-        for (uint32_t i = 0; i < wd->ImageCount; i++)
-        {
-            ImGui_ImplVulkanH_Frame* fd = &wd->Frames[i];
-            attachment[0] = fd->BackbufferView;
-            err = vkCreateFramebuffer(device, &info, allocator, &fd->Framebuffer);
-            check_vk_result(err);
-        }
-    }
+    bool udr = wd->UseDynamicRendering;
+    int im_count = wd->ImageCount;
+    VkRenderPass rp = wd->RenderPass;
+    int wdt = wd->Width;
+    int hgt = wd->Height;
+    VkImageView bv[im_count];
+    for (int i = 0; i < im_count; i++)
+	bv[i] = wd->Frames[i].BackbufferView;
+
+	VkFramebuffer* fbs = ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
+		device, allocator, udr, im_count, rp, wdt, hgt, bv );
+
+	ImGui_ImplVulkanH_CopyFramebufferToWd(udr, wd, im_count, fbs);
 }
 
 // Also destroy old swap chain and in-flight frames data, if any.
