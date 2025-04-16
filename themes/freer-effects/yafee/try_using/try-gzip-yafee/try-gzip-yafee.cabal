@@ -39,6 +39,7 @@ library
       Pipe.MultiPipe
       Pipe.Word32
       RunLength
+      Triple
       TryNamed
       TryPrimMonad
   other-modules:
