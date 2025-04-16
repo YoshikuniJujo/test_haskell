@@ -40,15 +40,15 @@ runLength = Pipe.await >>= maybe (pure ()) \rl -> (>> runLength) $ ($ rl) \case
 word32ToRunLength :: Eff.E (Pipe.P Word32 RunLength ': effs) ()
 word32ToRunLength = fix \go -> Pipe.await >>= \case
 	Nothing -> pure ()
-	Just w	| 0 <= w1 && w1 <= 255 -> do
-			Pipe.yield . RunLengthLiteral $ fromIntegral w1
+	Just w	| 0 <= w0 && w0 <= 255 -> do
+			Pipe.yield . RunLengthLiteral $ fromIntegral w0
 			go
 		| otherwise -> Pipe.await >>= \case
 			Nothing -> pure ()
 			Just w' -> do
 				Pipe.yield $ RunLengthLenDist
-					(calcLength (fromIntegral w1) (fromIntegral w0))
-					(calcDist (fromIntegral w1') (fromIntegral w0'))
+					(calcLength (fromIntegral w0) (fromIntegral w1))
+					(calcDist (fromIntegral w0') (fromIntegral w1'))
 				go
 				where
 				w0' = w' .&. 0xffff

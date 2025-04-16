@@ -17,6 +17,7 @@ import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.OpenUnion qualified as Union
 import Data.Maybe
+import Data.Sequence qualified as Seq
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
@@ -125,4 +126,11 @@ tryDecompress fp = withFile fp ReadMode \h -> alloca \p ->
 	Eff.runM . Except.run . Pipe.run $
 		PipeIO.hGetStorable h p Pipe.=$=
 		word32ToRunLength Pipe.=$=
+		PipeIO.print
+
+tryDecompress' fp = withFile fp ReadMode \h -> alloca \p ->
+	Eff.runM . Except.run . (`State.run` Seq.empty) . Pipe.run $
+		PipeIO.hGetStorable h p Pipe.=$=
+		word32ToRunLength Pipe.=$=
+		runLength Pipe.=$=
 		PipeIO.print

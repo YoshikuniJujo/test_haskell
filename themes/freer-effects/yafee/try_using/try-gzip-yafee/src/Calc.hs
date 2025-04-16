@@ -38,7 +38,7 @@ fromLength n
 	as = takeWhile (<= n) lens
 
 fromLength' :: Int -> Word32
-fromLength' n = fromIntegral c `shiftL` 16 .|. fromIntegral e
+fromLength' n = fromIntegral c .|. fromIntegral e `shiftL` 16
 	where
 	(c, e) = fromLength n
 
@@ -50,9 +50,9 @@ fromDist n
 	as = takeWhile (<= n) dists
 
 fromDist' :: Int -> Word32
-fromDist' n = fromIntegral c `shiftL` 16 .|. fromIntegral e
+fromDist' n = fromIntegral c .|. fromIntegral e `shiftL` 16
 	where
 	(c, e) = fromDist n
 
 fromLiteral' :: Int -> Word32
-fromLiteral' n = fromIntegral n `shiftL` 16
+fromLiteral' n = fromIntegral n
