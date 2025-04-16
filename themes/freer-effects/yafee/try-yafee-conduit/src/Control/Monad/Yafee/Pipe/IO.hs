@@ -90,6 +90,8 @@ hGetStorable h p = fix \go -> do
 		0 -> pure ()
 		_	| rsz < sz ->
 				Except.throw "hGetStorable: Not enough input"
-			| rsz == sz -> go
+			| rsz == sz -> do
+				Pipe.yield =<< Eff.effBase (peek p)
+				go
 			| otherwise -> Except.throw "never occur"
 	where sz = sizeOf (undefined :: a)
