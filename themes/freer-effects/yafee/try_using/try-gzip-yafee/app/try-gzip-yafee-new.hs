@@ -48,7 +48,7 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	(putStrLn . Prelude.take 1000 . show =<<) . runMyEff $
-		PipeB.fromHandle 100 h Pipe.=$= gzipPipe
+		PipeB.hGet 100 h Pipe.=$= gzipPipe
 
 gzipPipe :: (
 	Union.Member (State.S Request) effs,

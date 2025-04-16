@@ -18,13 +18,16 @@ import Data.ByteString qualified as BS
 updateTriple :: Triple -> Word8 -> Triple
 updateTriple = push
 
-getIndexLength :: Monad m => Triple -> BS.ByteString -> m Word8 -> m (Int, Int)
+getIndexLength :: Monad m => Triple -> BS.ByteString -> m Word8 -> m (Maybe (Int, Int))
 getIndexLength = maxLengthFromTriple
 
 type Triple = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
 
 triple0 :: Triple
 triple0 = (0, Seq.empty, Map.empty)
+
+calcDistance :: Int -> Triple -> Int
+calcDistance i' (i, s, _) = i + Seq.length s - i' + 3
 
 -- * INTERNAL
 
@@ -58,7 +61,7 @@ tailS s = let (_ Seq.:< s') = Seq.viewl s in s'
 pushByteString :: Int -> Triple -> BS.ByteString -> Triple
 pushByteString mx tr = foldl (pushWithMax mx) tr . BS.unpack
 
-maxLengthFromTriple :: Monad m => Triple -> BS.ByteString -> m Word8 -> m (Int, Int)
+maxLengthFromTriple :: Monad m => Triple -> BS.ByteString -> m Word8 -> m (Maybe (Int, Int))
 maxLengthFromTriple st tr gb = maxLength (getRotables st tr) gb
 
 getIndices :: Triple -> BS.ByteString -> [Int]
@@ -73,12 +76,13 @@ getRotables st tr = indexToRotate st tr <$> is
 	where
 	is = getIndices st tr
 
-maxLength :: (Monad m, Eq a) => [(Int, Rotable a)] -> m a -> m (Int, Int)
+maxLength :: (Monad m, Eq a) => [(Int, Rotable a)] -> m a -> m (Maybe (Int, Int))
+maxLength [] _ = pure Nothing
 maxLength rs gb = do
 	b <- gb
 	case checkStrings rs b of
-		[] -> pure (fst $ head rs, 0)
-		rs' -> ((+ 1) `second`) <$> maxLength rs' gb
+		[] -> pure $ Just (fst $ head rs, 0)
+		rs' -> (((+ 1) `second`) <$>) <$> maxLength rs' gb
 
 checkStrings :: Eq a => [(Int, Rotable a)] -> a -> [(Int, Rotable a)]
 checkStrings rs b = (`check1` b) `mapMaybe` rs

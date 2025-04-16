@@ -29,6 +29,7 @@ library
       Block
       ByteStringNum
       Calc
+      Compress
       Crc
       Gzip
       HuffmanTree
