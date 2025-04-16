@@ -6,7 +6,9 @@
 
 module RunLength (
 
-	runLength, RunLength(..), RunLengthLength, RunLengthDist
+	runLength, RunLength(..), RunLengthLength, RunLengthDist,
+
+	runLengthToWord32
 
 	) where
 
@@ -18,6 +20,8 @@ import Data.Foldable
 import Data.Word
 import Data.Sequence qualified as Seq
 import Data.ByteString qualified as BS
+
+import Calc
 
 runLength :: (Union.Member (State.S (Seq.Seq Word8)) effs) =>
 	Eff.E (Pipe.P RunLength (Either Word8 BS.ByteString) ': effs) ()
@@ -58,3 +62,8 @@ takeRep n xs0 [] = takeRep n xs0 xs0
 
 takeR :: Int -> Seq.Seq Word8 -> Seq.Seq Word8
 takeR n xs = Seq.drop (Seq.length xs - n) xs
+
+runLengthToWord32 :: RunLength -> [Word32]
+runLengthToWord32 (RunLengthLiteralBS bs) = fromLiteral' . fromIntegral <$> BS.unpack bs
+runLengthToWord32 (RunLengthLiteral b) = [fromLiteral' $ fromIntegral b]
+runLengthToWord32 (RunLengthLenDist ln dst) = [fromLength' ln, fromDist' dst]

@@ -24,6 +24,8 @@ import System.IO
 import RunLength
 import Triple
 
+import Calc
+
 compressRL :: (
 	Union.Member (State.S Triple) effs,
 	Union.Member (State.S BS.ByteString) effs,
@@ -59,6 +61,13 @@ tryCompress = withFile "samples/abcdef4.txt" ReadMode \h ->
 		. (`State.run` triple0) . Pipe.run
 		$ PipeBS.hGet 100 h Pipe.=$= compressRL Pipe.=$= fix \go ->
 			Pipe.await >>= maybe (pure ()) (\bs -> YIO.print bs >> go)
+
+tryCompress' :: IO (((((), [()]), Triple), BS.ByteString), AheadPos)
+tryCompress' = withFile "samples/abcdef4.txt" ReadMode \h ->
+	Eff.runM . (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
+		. (`State.run` triple0) . Pipe.run
+		$ PipeBS.hGet 100 h Pipe.=$= compressRL Pipe.=$= fix \go ->
+			Pipe.await >>= maybe (pure ()) (\bs -> YIO.print (runLengthToWord32 bs) >> go)
 
 get :: (
 	Union.Member (State.S BS.ByteString) effs,

@@ -1,8 +1,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Calc (calcLength, calcDist) where
+module Calc (
+	calcLength, calcDist,
+
+	fromLiteral',
+	fromLength, fromLength',
+	fromDist, fromDist'
+	) where
 
 import Data.Word
+import Data.Bits
 
 calcLength :: Int -> Word16 -> Int
 calcLength n eb
@@ -22,3 +29,30 @@ calcDist n eb
 
 dists :: [Int]
 dists = (+ 3) <$> scanl (+) 0 (replicate 2 =<< (2 ^) <$> [0 :: Int ..])
+
+fromLength :: Int -> (Word16, Word8)
+fromLength n
+	| n < 7 = (fromIntegral n + 254, 0)
+	| otherwise = (fromIntegral (length as) + 260, fromIntegral $ n - last as)
+	where
+	as = takeWhile (<= n) lens
+
+fromLength' :: Int -> Word32
+fromLength' n = fromIntegral c `shiftL` 16 .|. fromIntegral e
+	where
+	(c, e) = fromLength n
+
+fromDist :: Int -> (Word8, Word16)
+fromDist n
+	| n < 3 = (fromIntegral n - 1, 0)
+	| otherwise = (fromIntegral (length as) + 1, fromIntegral $ n - last as)
+	where
+	as = takeWhile (<= n) dists
+
+fromDist' :: Int -> Word32
+fromDist' n = fromIntegral c `shiftL` 16 .|. fromIntegral e
+	where
+	(c, e) = fromDist n
+
+fromLiteral' :: Int -> Word32
+fromLiteral' n = fromIntegral n `shiftL` 16
