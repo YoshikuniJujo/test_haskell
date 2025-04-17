@@ -5,35 +5,41 @@ module Calc (
 
 	fromLiteral',
 	fromLength, fromLength',
-	fromDist, fromDist'
+	fromDist, fromDist',
+
+	lengthToCode, distToCode
 	) where
 
 import Data.Word
 import Data.Bits
 
+import BitArray
+
 calcLength :: Int -> Word16 -> Int
 calcLength n eb
-	| 257 <= n && n <= 260 = n - 254
-	| 261 <= n && n <= 284 = lens !! (n - 261) + fromIntegral eb
+	| 257 <= n && n <= 284 = lens !! (n - 257) + fromIntegral eb
 	| n == 285 = 258
 	| otherwise = error "bad length parameter"
 
 lens :: [Int]
-lens = (+ 7) <$> scanl (+) 0 (replicate 4 =<< (2 ^) <$> [0 :: Int ..])
+lens = (+ 3) <$> scanl (+) 0 ((2 ^) <$> lensBits)
+
+lensBits :: [Int]
+lensBits = replicate 4 0 ++ (replicate 4 =<< [0 ..])
 
 calcDist :: Int -> Word16 -> Int
 calcDist n eb
-	| 0 <= n && n <= 1 = n + 1
-	| 2 <= n && n <= 29 = dists !! (n - 2) + fromIntegral eb
+	| 0 <= n && n <= 29 = dists !! n + fromIntegral eb
 	| otherwise = error "bad distance parameter"
 
 dists :: [Int]
-dists = (+ 3) <$> scanl (+) 0 (replicate 2 =<< (2 ^) <$> [0 :: Int ..])
+dists = (+ 1) <$> scanl (+) 0 ((2 ^) <$> distsBits)
+
+distsBits :: [Int]
+distsBits = replicate 2 0 ++ (replicate 2 =<< [0 ..])
 
 fromLength :: Int -> (Word16, Word8)
-fromLength n
-	| n < 7 = (fromIntegral n + 254, 0)
-	| otherwise = (fromIntegral (length as) + 260, fromIntegral $ n - last as)
+fromLength n = (fromIntegral (length as) + 256, fromIntegral $ n - last as)
 	where
 	as = takeWhile (<= n) lens
 
@@ -42,10 +48,15 @@ fromLength' n = fromIntegral c .|. fromIntegral e `shiftL` 16
 	where
 	(c, e) = fromLength n
 
+lengthToCode :: Int -> (Int, [Bit])
+lengthToCode n = (i + 256, numToBits el (n - last as))
+	where
+	i = length as
+	as = takeWhile (<= n) lens
+	el = lensBits !! (i - 1)
+
 fromDist :: Int -> (Word8, Word16)
-fromDist n
-	| n < 3 = (fromIntegral n - 1, 0)
-	| otherwise = (fromIntegral (length as) + 1, fromIntegral $ n - last as)
+fromDist n = (fromIntegral (length as) - 1, fromIntegral $ n - last as)
 	where
 	as = takeWhile (<= n) dists
 
@@ -53,6 +64,13 @@ fromDist' :: Int -> Word32
 fromDist' n = fromIntegral c .|. fromIntegral e `shiftL` 16
 	where
 	(c, e) = fromDist n
+
+distToCode :: Int -> (Int, [Bit])
+distToCode n = (i - 1, numToBits el (n - last as))
+	where
+	i = length as
+	as = takeWhile (<= n) dists
+	el = distsBits !! (i - 1)
 
 fromLiteral' :: Int -> Word32
 fromLiteral' n = fromIntegral n

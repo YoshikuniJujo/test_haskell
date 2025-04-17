@@ -14,7 +14,7 @@ module BitArray (
 
 	-- * BIT
 
-	Bit(..), bitsToNum,
+	Bit(..), bitsToNum, numToBits,
 
 	-- * FROM/TO BYTE STRING
 
@@ -35,7 +35,6 @@ module BitArray (
 	toWord8
 
 	) where
--- module BitArray where
 
 import Prelude hiding (take, splitAt)
 
@@ -114,6 +113,9 @@ byteBoundary B { bit0 = i0, bitsBody = bs } = case i0 of
 
 bitsToNum :: (Num n, Bits n) => [Bit] -> n
 bitsToNum = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
+
+numToBits :: (Num n, Bits n) => Int -> n -> [Bit]
+numToBits bs n = (<$> [0 .. bs - 1]) \i -> bool O I $ n `testBit` i
 
 fromByteString :: BS.ByteString -> BitArray.B
 fromByteString bs = BitArray.B {

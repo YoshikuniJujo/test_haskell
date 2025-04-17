@@ -2,10 +2,15 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module HuffmanTree (BinTree, mkTr, decode1, fixedTable, fixedDstTable) where
+module HuffmanTree (
+	BinTree, mkTr, decode1, fixedTable, fixedDstTable,
+
+	listToMap, fixedTableList, fixedDstTableList
+	) where
 
 import Control.Arrow
 import Data.List qualified as L
+import Data.Map qualified as Map
 
 import BitArray
 
@@ -74,3 +79,6 @@ pairToCodes = uncurry zip . (lenListToCodes [O] `first`) . unzip
 
 mkTr :: forall n a . (Integral n, Ord a) => [a] -> [n] -> BinTree a
 mkTr xs = fromList . pairToCodes @n . L.sort . filter ((/= 0) . fst) . (`zip` xs)
+
+listToMap :: [([Bit], Int)] -> Map.Map Int [Bit]
+listToMap = Map.fromList . (uncurry (flip (,)) <$>)

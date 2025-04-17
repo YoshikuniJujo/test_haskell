@@ -11,6 +11,7 @@ import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.IO qualified as YIO
 import Control.Monad.Yafee.Pipe qualified as Pipe
+import Control.Monad.Yafee.Pipe.Tools qualified as PipeTools
 import Control.Monad.Yafee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yafee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yafee.State qualified as State
@@ -18,16 +19,21 @@ import Control.Monad.Yafee.Except qualified as Except
 import Control.OpenUnion qualified as Union
 import Data.Maybe
 import Data.Sequence qualified as Seq
+import Data.Map qualified as Map
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
-
 import System.IO
+import Numeric
 
 import RunLength
 import Triple
 
 import Calc
+import HuffmanTree
+
+import BitArray (Bit(..))
+import Pipe.BitArray
 
 compressRL :: (
 	Union.Member (State.S Triple) effs,
@@ -74,6 +80,37 @@ tryCompress' fp = withFile fp WriteMode \hw -> alloca \p ->
 				(fix \go -> Pipe.await >>= maybe (pure ()) (\bs -> Pipe.yield (runLengthToWord32 bs) >> go)) Pipe.=$=
 				listToAtom Pipe.=$=
 				PipeIO.hPutStorable hw p
+
+foo, bar :: BS.ByteString
+foo = "\x1f\x8b\x08\x08\xd2\x25\xea\x67\x00\x03\x61\x62\x63\x64\x65\x66\x34\x2e\x74\x78\x74\x00"
+bar = "\x00\x6e\x24\x3a\x63\x19\x00\x00\x00"
+
+tryCompress'' :: IO (((((BS.ByteString, [()]), Triple), BS.ByteString), AheadPos), ([Bit], [Bit]))
+tryCompress'' = withFile "samples/abcdef4.txt" ReadMode \h ->
+	Eff.runM
+		. (`State.run` ([] :: [Bit], [] :: [Bit]))
+		. (`State.run` AheadPos 0)
+		. (`State.run` ("" :: BS.ByteString))
+		. (`State.run` triple0) . Pipe.run
+
+		$	(Pipe.yield [I, I, O] >> PipeBS.hGet 100 h Pipe.=$=
+				compressRL Pipe.=$=
+				PipeTools.convert (runLengthToBits
+					(listToMap fixedTableList)
+					(listToMap fixedDstTableList))
+				) Pipe.=$=
+
+			bitsToByteString Pipe.=$= fix \go -> do
+--			PipeTools.convert (((`showHex` "") =<<) . BS.unpack) Pipe.=$= fix \go -> do
+			mbs <- Pipe.await
+			case mbs of
+				Nothing -> pure ""
+				Just bs -> (bs `BS.append`) <$> go
+			
+--			PipeIO.putStrLn
+
+getFoo :: IO BS.ByteString
+getFoo = (foo `BS.append`) . (`BS.append` bar) . fst . fst . fst . fst . fst <$> tryCompress''
 
 listToAtom :: Eff.E (Pipe.P [a] a ': effs) ()
 listToAtom = fix \go -> Pipe.await >>= \case
@@ -136,3 +173,12 @@ tryDecompress' fp = withFile fp ReadMode \h -> alloca \p ->
 		word32ToRunLength Pipe.=$=
 		runLength Pipe.=$=
 		PipeIO.print
+
+runLengthToBits :: Map.Map Int [Bit] -> Map.Map Int [Bit] -> RunLength -> [Bit]
+runLengthToBits ml _ (RunLengthLiteral b) = ml Map.! fromIntegral b
+runLengthToBits ml _ (RunLengthLiteralBS bs) = (ml Map.!) . fromIntegral =<< BS.unpack bs
+runLengthToBits ml md (RunLengthLenDist l d) =
+	ml Map.! lc ++ le ++ md Map.! dc ++ de
+	where
+	(lc, le) = lengthToCode l
+	(dc, de) = distToCode d
