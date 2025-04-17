@@ -7,6 +7,7 @@
 module Compress where
 
 import Foreign.Marshal.Alloc
+import Control.Arrow
 import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.IO qualified as YIO
@@ -18,6 +19,7 @@ import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
 import Control.OpenUnion qualified as Union
 import Data.Maybe
+import Data.List qualified as L
 import Data.Sequence qualified as Seq
 import Data.Map qualified as Map
 import Data.Bool
@@ -120,6 +122,27 @@ tryCompress''' fp = withFile fp ReadMode \h ->
 			Pipe.await >>= maybe (pure []) (\rl -> (rl :) <$> go)
 
 getRunLengths fp = fst . fst . fst . fst <$> tryCompress''' fp
+
+getSorted fp = (((: []) `first`) <$>) . L.sortOn snd . runLengthsToLitLenFreqs <$> getRunLengths fp
+
+pairs [] = []
+pairs [_] = []
+pairs ((k, v) : (k', v') : kvs) = (k ++ k', v + v') : pairs kvs
+
+merge [] bs = bs
+merge as [] = as
+merge kva@(kv@(_, v) : kvs) kva'@(kv'@(_, v') : kvs')
+	| v <= v' = kv : merge kvs kva'
+	| otherwise = kv' : merge kva kvs'
+
+step y x = merge x (pairs y)
+
+fin m [] = m
+fin m [_] = m
+fin m (a : b : abs) = fin (addForList (addForList m (fst a)) (fst b)) abs
+
+addForList m [] = m
+addForList m (x : xs) = addForList (Map.alter (\case Nothing -> Just 1; Just n -> Just $ n + 1) x m) xs
 
 listToAtom :: Eff.E (Pipe.P [a] a ': effs) ()
 listToAtom = fix \go -> Pipe.await >>= \case
