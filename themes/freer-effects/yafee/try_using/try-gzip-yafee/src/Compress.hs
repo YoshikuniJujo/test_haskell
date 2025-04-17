@@ -135,7 +135,7 @@ merge kva@(kv@(_, v) : kvs) kva'@(kv'@(_, v') : kvs')
 	| v <= v' = kv : merge kvs kva'
 	| otherwise = kv' : merge kva kvs'
 
-step y x = merge x (pairs y)
+step x y = merge x (pairs y)
 
 fin m [] = m
 fin m [_] = m
