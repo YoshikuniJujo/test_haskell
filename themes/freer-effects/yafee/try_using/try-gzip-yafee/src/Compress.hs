@@ -112,6 +112,15 @@ tryCompress'' = withFile "samples/abcdef4.txt" ReadMode \h ->
 getFoo :: IO BS.ByteString
 getFoo = (foo `BS.append`) . (`BS.append` bar) . fst . fst . fst . fst . fst <$> tryCompress''
 
+tryCompress''' :: FilePath -> IO (((([RunLength], [()]), Triple), BS.ByteString), AheadPos)
+tryCompress''' fp = withFile fp ReadMode \h ->
+	Eff.runM . (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
+		. (`State.run` triple0) . Pipe.run
+		$ PipeBS.hGet 100 h Pipe.=$= compressRL Pipe.=$= fix \go ->
+			Pipe.await >>= maybe (pure []) (\rl -> (rl :) <$> go)
+
+getRunLengths fp = fst . fst . fst . fst <$> tryCompress''' fp
+
 listToAtom :: Eff.E (Pipe.P [a] a ': effs) ()
 listToAtom = fix \go -> Pipe.await >>= \case
 	Nothing -> pure ()

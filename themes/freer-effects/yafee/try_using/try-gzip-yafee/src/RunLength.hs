@@ -10,16 +10,20 @@ module RunLength (
 
 	runLengthToWord32,
 
-	word32ToRunLength
+	word32ToRunLength,
+
+	runLengthsToLitLenFreqs
 
 	) where
 
+import Control.Arrow
 import Control.Monad.Fix
 import Control.Monad.Yafee.Eff qualified as Eff
 import Control.Monad.Yafee.Pipe qualified as Pipe
 import Control.Monad.Yafee.State qualified as State
 import Control.OpenUnion qualified as Union
 import Data.Foldable
+import Data.List qualified as L
 import Data.Word
 import Data.Sequence qualified as Seq
 import Data.ByteString qualified as BS
@@ -92,3 +96,11 @@ runLengthToWord32 :: RunLength -> [Word32]
 runLengthToWord32 (RunLengthLiteralBS bs) = fromLiteral' . fromIntegral <$> BS.unpack bs
 runLengthToWord32 (RunLengthLiteral b) = [fromLiteral' $ fromIntegral b]
 runLengthToWord32 (RunLengthLenDist ln dst) = [fromLength' ln, fromDist' dst]
+
+runLengthToLitLen :: RunLength -> [Int]
+runLengthToLitLen (RunLengthLiteral b) = [fromIntegral b]
+runLengthToLitLen (RunLengthLiteralBS bs) = fromIntegral <$> BS.unpack bs
+runLengthToLitLen (RunLengthLenDist ln dst) = [fst $ lengthToCode ln]
+
+runLengthsToLitLenFreqs :: [RunLength] -> [(Int, Int)]
+runLengthsToLitLenFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToLitLen =<<)
