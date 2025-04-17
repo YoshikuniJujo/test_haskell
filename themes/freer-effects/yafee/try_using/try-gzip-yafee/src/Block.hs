@@ -39,6 +39,8 @@ import Pipe.ByteString.OnDemand
 
 import Debug.Trace
 
+import Pipe.BitArray
+
 blocks :: (
 	Union.Member (State.S Request) effs,
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
@@ -111,29 +113,6 @@ bitsBlock mhclen mhlithdist = do
 			. Prelude.splitAt hlit <$> getCodeTable hld
 		State.put $ (id &&& id) lct
 		putDecoded lct dct 0
-
-bits' :: (
-	Union.Member (State.S Request) effs,
-	Union.Member (State.Named "bits" BitArray.B) effs,
-	Union.Member (Except.E String) effs ) =>
-	Eff.E (Pipe.P (Either BitArray.B BS.ByteString) BitArray.Bit ': effs) ()
-bits' = popBit >>= \case
-	Nothing -> pure ()
-	Just b -> Pipe.yield b >> bits'
-
-popBit :: (
-	Union.Member (State.S Request) effs,
-	Union.Member (State.Named "bits" BitArray.B) effs,
-	Union.Member (Except.E String) effs
-	) =>
-	Eff.E (Pipe.P (Either BitArray.B BS.ByteString) o ': effs) (Maybe BitArray.Bit)
-popBit = State.getsN "bits" BitArray.pop >>= \case
-	Nothing -> do
-		State.put $ RequestBuffer 100
-		State.putN "bits"
-			. either id BitArray.fromByteString =<< getJust =<< Pipe.await
-		popBit
-	Just (b, ba') -> Just b <$ State.putN "bits" ba'
 
 whenDef :: Applicative m => a -> Bool -> m a -> m a
 whenDef d b a = bool (pure d) a b
@@ -266,11 +245,6 @@ getRight = \case
 	Left _ -> Except.throw @String "No Right"
 	Right x -> pure x
 
-getJust :: Union.Member (Except.E String) effs => Maybe a -> Eff.E effs a
-getJust = \case
-	Nothing -> Except.throw @String "Not Just"
-	Just x -> pure x
-
 getLeftJust :: Union.Member (Except.E String) effs =>
 	Maybe (Either a b) -> Eff.E effs a
 getLeftJust = getLeft <=< getJust
@@ -293,6 +267,16 @@ format n = do
 			State.getN @BS.ByteString "format")
 		(format n)
 
+readMore2 :: (
+	Union.Member (State.Named "format" BS.ByteString) effs,
+	Union.Member (Pipe.P (Either Word8 BS.ByteString) BS.ByteString) effs
+	) =>
+	Eff.E effs Bool
+readMore2 = Pipe.await' BS.ByteString >>= \case
+	Nothing -> pure False
+	Just (Left w) -> True <$ State.modifyN "format" (`BS.snoc` w)
+	Just (Right bs) -> True <$ State.modifyN "format" (`BS.append` bs)
+
 checkLength :: (
 	Union.Member (State.Named "format" BS.ByteString) effs
 	) =>
@@ -309,13 +293,3 @@ yieldLen n = do
 	let	(r, bs') = BS.splitAt n bs
 	State.putN "format" bs'
 	Pipe.yield' i r
-
-readMore2 :: (
-	Union.Member (State.Named "format" BS.ByteString) effs,
-	Union.Member (Pipe.P (Either Word8 BS.ByteString) BS.ByteString) effs
-	) =>
-	Eff.E effs Bool
-readMore2 = Pipe.await' BS.ByteString >>= \case
-	Nothing -> pure False
-	Just (Left w) -> True <$ State.modifyN "format" (`BS.snoc` w)
-	Just (Right bs) -> True <$ State.modifyN "format" (`BS.append` bs)

@@ -33,6 +33,7 @@ library
       Crc
       Gzip
       HuffmanTree
+      Pipe.BitArray
       Pipe.ByteString.OnDemand
       Pipe.Crc
       Pipe.DataCheck
