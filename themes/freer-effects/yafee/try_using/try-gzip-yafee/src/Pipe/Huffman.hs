@@ -56,7 +56,7 @@ takeBits16' :: forall o effs . (
 	Union.Member Fail.F effs
 	) =>
 	Int -> Eff.E effs Word16
-takeBits16' n = bitsToWord16' <$> replicateM n (maybe (fail "bad") pure =<< Pipe.await' o)
+takeBits16' n = bitsToWord16' <$> replicateM n (maybe (fail "takeBits16': bad") pure =<< Pipe.await' o)
 
 bitsToWord16' :: [Bit] -> Word16
 bitsToWord16' = foldr (\b w -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0

@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module HuffmanTree (
-	BinTree, mkTr, decode1, fixedTable, fixedDstTable,
+	BinTree(..), mkTr, decode1, fixedTable, fixedDstTable,
 
 	listToMap, fixedTableList, fixedDstTableList,
 

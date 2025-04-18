@@ -92,7 +92,7 @@ normalize :: B -> B
 normalize (B i ln bs)
 	| 0 <= i = B i' ln
 		. BS.take t $ BS.drop (i `div` 8) bs
-	| otherwise = error "bad"
+	| otherwise = error "normalize: bad"
 	where
 	i' = i `mod` 8
 	t = (ln + i' - 1) `div` 8 + 1

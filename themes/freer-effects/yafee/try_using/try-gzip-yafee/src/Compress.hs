@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -18,7 +19,9 @@ import Control.Monad.Yafee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yafee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yafee.State qualified as State
 import Control.Monad.Yafee.Except qualified as Except
+import Control.Monad.Yafee.Fail qualified as Fail
 import Control.OpenUnion qualified as Union
+import Data.Bits
 import Data.Maybe
 import Data.List qualified as L
 import Data.Sequence qualified as Seq
@@ -38,6 +41,8 @@ import BitArray (Bit(..))
 import Pipe.BitArray
 
 import PackageMerge qualified as PackageMerge
+import Block
+import Pipe.Huffman
 
 compressRL :: (
 	Union.Member (State.S Triple) effs,
@@ -169,10 +174,39 @@ compressIntoFormatX ifl ofl = do
 		cd = bitsToByteStringRaw $ makeCompressed rl
 	BS.writeFile ofl $ tll `BS.append` td `BS.append` cd
 
-readFromFormatX :: FilePath -> IO ()
+readFromFormatX :: FilePath -> IO (BinTree Int, BinTree Int, BS.ByteString)
 readFromFormatX fp = do
 	h <- openFile fp ReadMode
-	print =<< BS.hGet h 286
+	tll <- mkTr [0 ..] . BS.unpack <$> BS.hGet h 286
+	td <- mkTr [0 ..] . BS.unpack <$> BS.hGet h 30
+	cnt <- BS.hGetContents h
+	pure (tll, td, cnt)
+
+huffmanDecompress :: (
+	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
+	Union.Member (State.S ExtraBits) effs,
+	Union.Member Fail.F effs
+	) =>
+	BinTree Int -> BinTree Int -> Eff.E (Pipe.P Bit RunLength ': effs) ()
+huffmanDecompress tll td = huffmanPipe Pipe.=$= do
+	State.put $ (id &&& id) tll
+	putDecoded tll td 0
+
+byteStringToBits :: BS.ByteString -> [Bit]
+byteStringToBits bs = (\w -> bool O I . (w `testBit`) <$> [0 .. 7]) =<< BS.unpack bs
+
+decFormatX fp = do
+	(tll, td, cnt) <- readFromFormatX fp
+	Eff.runM . Fail.run
+		. (\m -> State.runN @"format" m ("" :: BS.ByteString))
+		. (`State.run` (Seq.empty :: Seq.Seq Word8))
+		. (`State.run` ExtraBits 0) . (`State.run` (fixedTable, fixedTable)) . Pipe.run
+		$ Pipe.yield `mapM` (byteStringToBits cnt) Pipe.=$=
+			huffmanDecompress tll td Pipe.=$=
+			runLength Pipe.=$=
+			format 100 Pipe.=$=
+			PipeBS.putStr
+--			PipeIO.print
 
 get :: (
 	Union.Member (State.S BS.ByteString) effs,

@@ -8,7 +8,10 @@
 
 module Block (
 
-	blocks, format, getRightJust
+	blocks, format, getRightJust,
+
+
+	putDecoded
 
 	) where
 
@@ -131,11 +134,10 @@ codeLengthList =
 	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
 
 putDecoded :: (
-	Union.Member (Pipe.P (Either Int Word16) RunLength) effs,
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs
 	) =>
-	BinTree Int -> BinTree Int -> Int -> Eff.E effs ()
+	BinTree Int -> BinTree Int -> Int -> Eff.E (Pipe.P (Either Int Word16) RunLength ': effs) ()
 putDecoded t dt pri = do
 	mi <- Pipe.await' @(Either Int Word16) RunLength
 	case mi of
@@ -156,11 +158,10 @@ putDecoded t dt pri = do
 		Nothing -> pure ()
 
 putDist :: (
-	Union.Member (Pipe.P (Either Int Word16) RunLength) effs,
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs
 	) =>
-	BinTree Int -> BinTree Int -> RunLengthLength -> Int -> Eff.E effs ()
+	BinTree Int -> BinTree Int -> RunLengthLength -> Int -> Eff.E (Pipe.P (Either Int Word16) RunLength ': effs) ()
 putDist t dt ln pri = do
 	mi <- Pipe.await' @(Either Int Word16) RunLength
 --	Pipe.print' mi
