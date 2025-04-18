@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -18,3 +18,9 @@ hGet :: Union.Base IO effs =>
 	Int -> Handle -> Eff.E (Pipe.P i BS.ByteString ': effs) ()
 hGet bfsz h = fix \go -> Eff.effBase (not <$> hIsEOF h) >>=
 	bool (pure ()) (Eff.effBase (BS.hGetSome h bfsz) >>= Pipe.yield >> go)
+
+putStr :: Union.Base IO effs =>
+	Eff.E (Pipe.P BS.ByteString o ': effs) ()
+putStr = fix \go -> Pipe.await >>= \case
+	Nothing -> pure ()
+	Just bs -> Eff.effBase (BS.putStr bs) >> go
