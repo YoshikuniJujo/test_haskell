@@ -163,11 +163,16 @@ listToAtom = fix \go -> Pipe.await >>= \case
 
 compressIntoFormatX :: FilePath -> FilePath -> IO ()
 compressIntoFormatX ifl ofl = do
-	rl <- (++ [RunLengthLiteral 256]) <$> getRunLengths ifl
+	rl <- (++ [RunLengthEndOfInput]) <$> getRunLengths ifl
 	let	tll = makeLitLenTable rl
 		td = makeDistTable rl
 		cd = bitsToByteStringRaw $ makeCompressed rl
 	BS.writeFile ofl $ tll `BS.append` td `BS.append` cd
+
+readFromFormatX :: FilePath -> IO ()
+readFromFormatX fp = do
+	h <- openFile fp ReadMode
+	print =<< BS.hGet h 286
 
 get :: (
 	Union.Member (State.S BS.ByteString) effs,
@@ -234,3 +239,4 @@ runLengthToBits ml md (RunLengthLenDist l d) =
 	where
 	(lc, le) = lengthToCode l
 	(dc, de) = distToCode d
+runLengthToBits ml _ RunLengthEndOfInput = ml Map.! 256

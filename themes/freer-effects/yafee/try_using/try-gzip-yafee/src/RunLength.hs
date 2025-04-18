@@ -64,7 +64,8 @@ word32ToRunLength = fix \go -> Pipe.await >>= \case
 
 data RunLength =
 	RunLengthLiteralBS BS.ByteString |
-	RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist
+	RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist |
+	RunLengthEndOfInput
 	deriving Show
 
 type RunLengthLength = Int
@@ -102,6 +103,7 @@ runLengthToLitLen :: RunLength -> [Int]
 runLengthToLitLen (RunLengthLiteral b) = [fromIntegral b]
 runLengthToLitLen (RunLengthLiteralBS bs) = fromIntegral <$> BS.unpack bs
 runLengthToLitLen (RunLengthLenDist ln _dst) = [fst $ lengthToCode ln]
+runLengthToLitLen RunLengthEndOfInput = [256]
 
 runLengthsToLitLenFreqs :: [RunLength] -> [(Int, Int)]
 runLengthsToLitLenFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToLitLen =<<)
@@ -110,6 +112,7 @@ runLengthToDist :: RunLength -> [Int]
 runLengthToDist (RunLengthLiteral _) = []
 runLengthToDist (RunLengthLiteralBS _) = []
 runLengthToDist (RunLengthLenDist _ln dst) = [fst $ distToCode dst]
+runLengthToDist RunLengthEndOfInput = []
 
 runLengthsToDistFreqs :: [RunLength] -> [(Int, Int)]
 runLengthsToDistFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToDist =<<)
