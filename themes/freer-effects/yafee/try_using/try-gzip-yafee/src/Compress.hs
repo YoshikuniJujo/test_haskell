@@ -274,3 +274,11 @@ runLengthToBits ml md (RunLengthLenDist l d) =
 	(lc, le) = lengthToCode l
 	(dc, de) = distToCode d
 runLengthToBits ml _ RunLengthEndOfInput = ml Map.! 256
+
+maxKey :: Ord k => k -> Map.Map k v -> Maybe k
+maxKey d m = (d `max`) . fst . fst <$> Map.maxViewWithKey m
+
+huffMapToList :: Int -> Map.Map Int Int -> Maybe (Int, [Int])
+huffMapToList d m = (\mk -> (mk, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$> mmk
+	where
+	mmk = maxKey d m
