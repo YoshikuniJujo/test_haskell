@@ -5,7 +5,9 @@
 module HuffmanTree (
 	BinTree, mkTr, decode1, fixedTable, fixedDstTable,
 
-	listToMap, fixedTableList, fixedDstTableList
+	listToMap, fixedTableList, fixedDstTableList,
+
+	pairToCodes
 	) where
 
 import Control.Arrow

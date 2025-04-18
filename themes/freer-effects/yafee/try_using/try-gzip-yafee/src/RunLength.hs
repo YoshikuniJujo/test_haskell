@@ -12,7 +12,8 @@ module RunLength (
 
 	word32ToRunLength,
 
-	runLengthsToLitLenFreqs
+	runLengthsToLitLenFreqs,
+	runLengthsToDistFreqs
 
 	) where
 
@@ -100,7 +101,15 @@ runLengthToWord32 (RunLengthLenDist ln dst) = [fromLength' ln, fromDist' dst]
 runLengthToLitLen :: RunLength -> [Int]
 runLengthToLitLen (RunLengthLiteral b) = [fromIntegral b]
 runLengthToLitLen (RunLengthLiteralBS bs) = fromIntegral <$> BS.unpack bs
-runLengthToLitLen (RunLengthLenDist ln dst) = [fst $ lengthToCode ln]
+runLengthToLitLen (RunLengthLenDist ln _dst) = [fst $ lengthToCode ln]
 
 runLengthsToLitLenFreqs :: [RunLength] -> [(Int, Int)]
 runLengthsToLitLenFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToLitLen =<<)
+
+runLengthToDist :: RunLength -> [Int]
+runLengthToDist (RunLengthLiteral _) = []
+runLengthToDist (RunLengthLiteralBS _) = []
+runLengthToDist (RunLengthLenDist _ln dst) = [fst $ distToCode dst]
+
+runLengthsToDistFreqs :: [RunLength] -> [(Int, Int)]
+runLengthsToDistFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToDist =<<)

@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -26,7 +27,6 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 import System.IO
-import Numeric
 
 import RunLength
 import Triple
@@ -36,6 +36,8 @@ import HuffmanTree
 
 import BitArray (Bit(..))
 import Pipe.BitArray
+
+import PackageMerge qualified as PackageMerge
 
 compressRL :: (
 	Union.Member (State.S Triple) effs,
@@ -123,31 +125,49 @@ tryCompress''' fp = withFile fp ReadMode \h ->
 
 getRunLengths fp = fst . fst . fst . fst <$> tryCompress''' fp
 
-getSorted fp = (((: []) `first`) <$>) . L.sortOn snd . runLengthsToLitLenFreqs <$> getRunLengths fp
+getSorted = (((: []) `first`) <$>) . L.sortOn snd . runLengthsToLitLenFreqs
 
-pairs [] = []
-pairs [_] = []
-pairs ((k, v) : (k', v') : kvs) = (k ++ k', v + v') : pairs kvs
+getDistSorted = (((: []) `first`) <$>) . L.sortOn snd . runLengthsToDistFreqs
 
-merge [] bs = bs
-merge as [] = as
-merge kva@(kv@(_, v) : kvs) kva'@(kv'@(_, v') : kvs')
-	| v <= v' = kv : merge kvs kva'
-	| otherwise = kv' : merge kva kvs'
+rawTableToByteString n m = BS.pack $ maybe 0 fromIntegral . (m Map.!?) <$> [0 .. n - 1]
 
-step x y = merge x (pairs y)
+tableToDict = Map.fromList @Int
+	. ((uncurry $ flip (,)) <$>)
+	. pairToCodes
+	. L.sort
+	. ((uncurry $ flip (,)) <$>)
+	. Map.toList
 
-fin m [] = m
-fin m [_] = m
-fin m (a : b : abs) = fin (addForList (addForList m (fst a)) (fst b)) abs
+makeLitLenTable :: [RunLength] -> BS.ByteString
+makeLitLenTable = rawTableToByteString 286 . PackageMerge.run 14 . getSorted
 
-addForList m [] = m
-addForList m (x : xs) = addForList (Map.alter (\case Nothing -> Just 1; Just n -> Just $ n + 1) x m) xs
+makeDistTable :: [RunLength] -> BS.ByteString
+makeDistTable = rawTableToByteString 30 . PackageMerge.run 14 . getDistSorted
+
+makeCompressed :: [RunLength] -> [Bit]
+makeCompressed rl = runLengthToBits dll dd =<< rl
+	where
+	dll = tableToDict . PackageMerge.run 14 $ getSorted rl
+	dd = tableToDict . PackageMerge.run 14 $ getDistSorted rl
+
+bitsToByteStringRaw :: [Bit] -> BS.ByteString
+bitsToByteStringRaw bits =
+	BS.concat . snd . fst
+	. Eff.run . (`State.run` (([], []) :: BitQueue)) . Pipe.run
+	$ Pipe.yield bits Pipe.=$= bitsToByteString
 
 listToAtom :: Eff.E (Pipe.P [a] a ': effs) ()
 listToAtom = fix \go -> Pipe.await >>= \case
 	Nothing -> pure ()
 	Just xs -> Pipe.yield `mapM_` xs >> go
+
+compressIntoFormatX :: FilePath -> FilePath -> IO ()
+compressIntoFormatX ifl ofl = do
+	rl <- (++ [RunLengthLiteral 256]) <$> getRunLengths ifl
+	let	tll = makeLitLenTable rl
+		td = makeDistTable rl
+		cd = bitsToByteStringRaw $ makeCompressed rl
+	BS.writeFile ofl $ tll `BS.append` td `BS.append` cd
 
 get :: (
 	Union.Member (State.S BS.ByteString) effs,
