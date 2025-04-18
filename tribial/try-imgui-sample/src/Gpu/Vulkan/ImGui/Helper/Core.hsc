@@ -209,3 +209,9 @@ copyImageViewsToWd = cxx_im_gui_impl_vulkan_h_copy_image_views_to_wd
 foreign import ccall "im_gui_impl_vulkan_h_copy_image_views_to_wd"
 	cxx_im_gui_impl_vulkan_h_copy_image_views_to_wd ::
 	Vk.ImGui.H.Win.W -> Ptr Vk.ImgVw.I -> IO ()
+
+{-
+foreign import ccall "im_gui_impl_vulkan_h_create_window_framebuffer_raw"
+	cxx_im_gui_impl_vulkan_h_create_window_framebuffer_raw ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A -> #{type bool} -> #{type int} ->
+-}

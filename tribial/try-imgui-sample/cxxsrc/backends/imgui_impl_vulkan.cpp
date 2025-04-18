@@ -1783,7 +1783,7 @@ void ImGui_ImplVulkanH_CreateWindowImageViews(
 VkFramebuffer*
 ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
 	VkDevice device, const VkAllocationCallbacks* allocator,
-	bool udr, int im_count, VkRenderPass rp, int wdt, int hgt, VkImageView* bv
+	bool udr, int im_count, VkRenderPass* rp, int wdt, int hgt, VkImageView* bv
 	)
 {
     VkResult err;
@@ -1795,7 +1795,7 @@ ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
         VkImageView attachment[1];
         VkFramebufferCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        info.renderPass = rp;
+        info.renderPass = *rp;
         info.attachmentCount = 1;
         info.pAttachments = attachment;
         info.width = wdt;
@@ -1838,7 +1838,7 @@ void ImGui_ImplVulkanH_CreateWindowFramebuffer(
 
     bool udr = wd->UseDynamicRendering;
     int im_count = wd->ImageCount;
-    VkRenderPass rp = wd->RenderPass;
+    VkRenderPass* rp = &wd->RenderPass;
     int wdt = wd->Width;
     int hgt = wd->Height;
     VkImageView bv[im_count];

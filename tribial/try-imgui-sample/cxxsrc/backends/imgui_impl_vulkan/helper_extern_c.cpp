@@ -58,6 +58,12 @@ extern "C" VkImageView* im_gui_impl_vulkan_h_create_window_image_views_raw(
 	const VkAllocationCallbacks* allocator );
 extern "C" void im_gui_impl_vulkan_h_copy_image_views_to_wd(
 	ImGui_ImplVulkanH_Window* wd, VkImageView* views );
+extern "C" VkFramebuffer* im_gui_impl_vulkan_h_create_window_framebuffer_raw(
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	bool udr, int im_count, VkRenderPass *rp, int wdt, int hgt, VkImageView* bv );
+extern "C" void im_gui_impl_vulkan_h_copy_framebuffer_to_wd(
+	bool udr, ImGui_ImplVulkanH_Window* wd,
+	int im_count, VkFramebuffer* fbs );
 
 void
 im_gui_impl_vulkan_h_create_window_swap_chain(
@@ -200,4 +206,20 @@ void im_gui_impl_vulkan_h_copy_image_views_to_wd(
 	ImGui_ImplVulkanH_Window* wd, VkImageView* views )
 {
 	ImGui_ImplVulkanH_CopyImageViewsToWd (wd, views);
+}
+
+VkFramebuffer* im_gui_impl_vulkan_h_create_window_framebuffer_raw(
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	bool udr, int im_count, VkRenderPass* rp, int wdt, int hgt, VkImageView* bv
+	)
+{
+	return ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
+		device, allocator, udr, im_count, rp, wdt, hgt, bv );
+}
+
+void im_gui_impl_vulkan_h_copy_framebuffer_to_wd(
+	bool udr, ImGui_ImplVulkanH_Window* wd,
+	int im_count, VkFramebuffer* fbs )
+{
+	ImGui_ImplVulkanH_CopyFramebufferToWd(udr, wd, im_count, fbs);
 }

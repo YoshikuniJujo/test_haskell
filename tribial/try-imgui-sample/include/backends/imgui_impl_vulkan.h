@@ -226,6 +226,13 @@ void ImGui_ImplVulkanH_CopyImageViewsToWd (
 void ImGui_ImplVulkanH_CreateWindowImageViews(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );
+VkFramebuffer* ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	bool udr, int im_count, VkRenderPass *rp, int wdt, int hgt, VkImageView* bv
+	);
+void ImGui_ImplVulkanH_CopyFramebufferToWd(
+	bool udr, ImGui_ImplVulkanH_Window* wd,
+	int im_count, VkFramebuffer* fbs );
 void ImGui_ImplVulkanH_CreateWindowFramebuffer(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );
