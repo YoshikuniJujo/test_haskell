@@ -59,6 +59,7 @@ library
     , containers
     , optparse-declarative
     , primitive
+    , swizzle
     , time
     , transformers
     , try-control-open-union
@@ -81,6 +82,7 @@ executable try-gzip-yafee-new
     , containers
     , optparse-declarative
     , primitive
+    , swizzle
     , time
     , transformers
     , try-control-open-union
@@ -104,6 +106,7 @@ executable try-make-gzip
     , containers
     , optparse-declarative
     , primitive
+    , swizzle
     , time
     , transformers
     , try-control-open-union
@@ -127,6 +130,7 @@ executable try-optparse
     , containers
     , optparse-declarative
     , primitive
+    , swizzle
     , time
     , transformers
     , try-control-open-union
@@ -155,6 +159,7 @@ test-suite try-gzip-yafee-test
     , containers
     , optparse-declarative
     , primitive
+    , swizzle
     , time
     , transformers
     , try-control-open-union

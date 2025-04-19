@@ -282,3 +282,11 @@ huffMapToList :: Int -> Map.Map Int Int -> Maybe (Int, [Int])
 huffMapToList d m = (\mk -> (mk, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$> mmk
 	where
 	mmk = maxKey d m
+
+runLengthToLitLenDstList :: [RunLength] -> (Int, Int, [Int])
+runLengthToLitLenDstList rl = let
+	Just (lnll, tll) = huffMapToList 257 . PackageMerge.run 14 $ getSorted rl
+	Just (lnd, td) = huffMapToList 1 . PackageMerge.run 14 $ getDistSorted rl in
+	(lnll, lnd, tll ++ td)
+
+-- huffmanTableToCodes :: [Int] -> [(Int, [Bit])]
