@@ -26,6 +26,7 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Sequence qualified as Seq
 import Data.Map qualified as Map
+import Data.Swizzle qualified as Swizzle
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
@@ -37,7 +38,7 @@ import Triple
 import Calc
 import HuffmanTree
 
-import BitArray (Bit(..))
+import BitArray (Bit(..), numToBits)
 import Pipe.BitArray
 
 import PackageMerge qualified as PackageMerge
@@ -135,13 +136,6 @@ getSorted = (((: []) `first`) <$>) . L.sortOn snd . runLengthsToLitLenFreqs
 getDistSorted = (((: []) `first`) <$>) . L.sortOn snd . runLengthsToDistFreqs
 
 rawTableToByteString n m = BS.pack $ maybe 0 fromIntegral . (m Map.!?) <$> [0 .. n - 1]
-
-tableToDict = Map.fromList @Int
-	. ((uncurry $ flip (,)) <$>)
-	. pairToCodes
-	. L.sort
-	. ((uncurry $ flip (,)) <$>)
-	. Map.toList
 
 makeLitLenTable :: [RunLength] -> BS.ByteString
 makeLitLenTable = rawTableToByteString 286 . PackageMerge.run 14 . getSorted
@@ -283,10 +277,99 @@ huffMapToList d m = (\mk -> (mk, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$> mm
 	where
 	mmk = maxKey d m
 
+huffmanLenToCodes :: Int -> Int -> [(Int, [Bit])]
+huffmanLenToCodes 0 n
+	| n < 3 = replicate n (0, [])
+	| n < 11 = [(17, numToBits 3 (n - 3))]
+	| n < 139 = [(18, numToBits 7 (n - 11))]
+	| otherwise =
+		(18, [I, I, I, I, I, I, I]) : huffmanLenToCodes 0 (n - 138)
+
+huffmanLenToCodes l n | n < 4 = replicate n (l, [])
+huffmanLenToCodes l n = (l, []) : go (n - 1)
+	where
+	go m	| m < 3 = replicate m (l, [])
+		| m < 7 = [(16, numToBits 2 (m - 3))]
+		| otherwise = (16, [I, I]) : go (m - 6)
+
 runLengthToLitLenDstList :: [RunLength] -> (Int, Int, [Int])
 runLengthToLitLenDstList rl = let
 	Just (lnll, tll) = huffMapToList 257 . PackageMerge.run 14 $ getSorted rl
 	Just (lnd, td) = huffMapToList 1 . PackageMerge.run 14 $ getDistSorted rl in
 	(lnll, lnd, tll ++ td)
 
--- huffmanTableToCodes :: [Int] -> [(Int, [Bit])]
+runLengthToCodes rl = uncurry huffmanLenToCodes
+	=<< (head &&& length) <$> L.group (Swizzle.z $ runLengthToLitLenDstList rl)
+
+runLengthToTableTable rl = PackageMerge.run 6
+	. (((: []) `first`) <$>)
+	. L.sortOn snd
+	. ((head &&& length) <$>)
+	. L.group . L.sort $ fst <$> runLengthToCodes rl
+
+mkLitLenDistTableBits :: Map.Map Int [Bit] -> [(Int, [Bit])] -> [Bit]
+mkLitLenDistTableBits m [] = []
+mkLitLenDistTableBits m ((alp, ebs) : aes) = m Map.! alp ++ ebs ++ mkLitLenDistTableBits m aes
+
+mkLitLenDistTableFromRunLength :: [RunLength] -> [Bit]
+mkLitLenDistTableFromRunLength rl = mkLitLenDistTableBits m aes
+	where
+	m = tableToDict $ runLengthToTableTable rl
+	aes = runLengthToCodes rl
+
+tableTableLenOrder = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+
+tableTableToOrder m = fromMaybe 0 . (m Map.!?) <$> (tableTableLenOrder :: [Int])
+
+tableTableToOrder' tt = (ln, take ln o)
+	where
+	ln = 4 `max` length o
+	o = dropTrailing0 $ tableTableToOrder tt
+
+dropTrailing0 = reverse . dropWhile (== 0) . reverse
+
+runLengthToRawTables :: [RunLength] -> (Map.Map Int Int, Map.Map Int Int)
+runLengthToRawTables rl = (dll, dd)
+	where
+	dll = PackageMerge.run 14 $ getSorted rl
+	dd = PackageMerge.run 14 $ getDistSorted rl
+
+tableToDict :: Map.Map Int Int -> Map.Map Int [Bit]
+tableToDict = Map.fromList @Int
+	. ((uncurry $ flip (,)) <$>)
+	. pairToCodes
+	. L.sort
+	. ((uncurry $ flip (,)) <$>)
+	. Map.toList
+
+mapMapToLitLenDstList rll rd = let
+	Just (lnll, tll) = huffMapToList 257 rll
+	Just (lnd, td) = huffMapToList 1 rd in
+	(lnll, lnd, tll ++ td)
+
+mapMapToCodes rll rd = uncurry huffmanLenToCodes
+	=<< (head &&& length) <$> L.group (Swizzle.z $ mapMapToLitLenDstList rll rd)
+
+mapMapToTableTable rll rd = PackageMerge.run 6
+	. (((: []) `first`) <$>)
+	. L.sortOn snd
+	. ((head &&& length) <$>)
+	. L.group . L.sort $ fst <$> mapMapToCodes rll rd
+
+fooToCodes foo = uncurry huffmanLenToCodes
+	=<< (head &&& length) <$> L.group (Swizzle.z foo)
+
+fooToTableTable rl = PackageMerge.run 6
+	. (((: []) `first`) <$>)
+	. L.sortOn snd
+	. ((head &&& length) <$>)
+	. L.group . L.sort $ fst <$> fooToCodes rl
+
+-- mkLitLenDistTableFromMapMap :: [RunLength] -> [Bit]
+mkLitLenDistTableFromMapMap mll md = mkLitLenDistTableBits m aes
+	where
+	m = tableToDict $ mapMapToTableTable mll md
+	f = mapMapToLitLenDstList mll md
+	aes = fooToCodes f
+
+foobar mll md = (mkLitLenDistTableFromMapMap mll md, (tableToDict mll, tableToDict md))
