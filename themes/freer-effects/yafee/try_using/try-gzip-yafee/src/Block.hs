@@ -99,6 +99,8 @@ block' = do
 			bits' Pipe.=$= bitsBlock mhclen mhlithdist
 			bf <- State.getN "bits"
 			trace (show bf) (pure ())
+			(dbg :: Request) <- State.get
+			trace (show dbg) $ pure ()
 			State.putN "bits" BitArray.empty
 			State.put $ RequestPushBack bf
 			Just (Right "") <- Pipe.await

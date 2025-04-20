@@ -23,6 +23,8 @@ import Pipe.ByteString.OnDemand
 import BitArray (Bit(..))
 import BitArray qualified as BitArray
 
+import Debug.Trace
+
 bits' :: (
 	Union.Member (State.S Request) effs,
 	Union.Member (State.Named "bits" BitArray.B) effs,
@@ -40,7 +42,9 @@ popBit :: (
 	Eff.E (Pipe.P (Either BitArray.B BS.ByteString) o ': effs) (Maybe BitArray.Bit)
 popBit = State.getsN "bits" BitArray.pop >>= \case
 	Nothing -> do
+		trace "popBit: Nothing" $ pure ()
 		State.put $ RequestBuffer 100
+		trace "popBit: after put RequestBuffer" $ pure ()
 		State.putN "bits"
 			. either id BitArray.fromByteString =<< getJust =<< Pipe.await
 		popBit
