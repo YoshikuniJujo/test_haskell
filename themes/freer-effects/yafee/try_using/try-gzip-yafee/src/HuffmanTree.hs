@@ -18,13 +18,16 @@ import BitArray
 
 data BinTree a = Node (BinTree a) (BinTree a) | Leaf a deriving Show
 
-fromList :: [([Bit], a)] -> BinTree a
+fromList :: Show a => [([Bit], a)] -> BinTree a
 fromList [([], x)] = Leaf x
 fromList t = Node (fromList t1) (fromList t2)
 	where
-	[t1, t2] =
+	[t1, t2] = case
 		(first tail <$>) <$>
-		L.groupBy (curry (uncurry (==) . ((head . fst) *** (head . fst)))) t
+		L.groupBy (curry (uncurry (==) . ((head . fst) *** (head . fst)))) t of
+		[a, b] -> [a, b]
+		[x] -> error $ "fromList : single: " ++ show x
+		x -> error $ "fromList : single: " ++ show x
 
 bitListFromTo :: [Bit] -> [Bit] -> [[Bit]]
 bitListFromTo b e = reverse <$> bitListFromToRv (reverse b) (reverse e)
@@ -79,7 +82,7 @@ bitListNext = reverse . bitListNextRv . reverse
 pairToCodes :: Integral n => [(n, a)] -> [([Bit], a)]
 pairToCodes = uncurry zip . (lenListToCodes [O] `first`) . unzip
 
-mkTr :: forall n a . (Integral n, Ord a) => [a] -> [n] -> BinTree a
+mkTr :: forall n a . (Show a, Integral n, Ord a) => [a] -> [n] -> BinTree a
 mkTr xs = fromList . pairToCodes @n . L.sort . filter ((/= 0) . fst) . (`zip` xs)
 
 listToMap :: [([Bit], Int)] -> Map.Map Int [Bit]

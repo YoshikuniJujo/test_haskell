@@ -273,7 +273,7 @@ maxKey :: Ord k => k -> Map.Map k v -> Maybe k
 maxKey d m = (d `max`) . fst . fst <$> Map.maxViewWithKey m
 
 huffMapToList :: Int -> Map.Map Int Int -> Maybe (Int, [Int])
-huffMapToList d m = (\mk -> (mk, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$> mmk
+huffMapToList d m = (\mk -> (mk + 1, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$> mmk
 	where
 	mmk = maxKey d m
 
@@ -284,7 +284,6 @@ huffmanLenToCodes 0 n
 	| n < 139 = [(18, numToBits 7 (n - 11))]
 	| otherwise =
 		(18, [I, I, I, I, I, I, I]) : huffmanLenToCodes 0 (n - 138)
-
 huffmanLenToCodes l n | n < 4 = replicate n (l, [])
 huffmanLenToCodes l n = (l, []) : go (n - 1)
 	where
@@ -338,7 +337,7 @@ tableToDict :: Map.Map Int Int -> Map.Map Int [Bit]
 tableToDict = Map.fromList @Int
 	. ((uncurry $ flip (,)) <$>)
 	. pairToCodes
-	. L.sort
+	. L.sortOn fst
 	. ((uncurry $ flip (,)) <$>)
 	. Map.toList
 
@@ -365,11 +364,24 @@ fooToTableTable rl = PackageMerge.run 6
 	. ((head &&& length) <$>)
 	. L.group . L.sort $ fst <$> fooToCodes rl
 
--- mkLitLenDistTableFromMapMap :: [RunLength] -> [Bit]
-mkLitLenDistTableFromMapMap mll md = mkLitLenDistTableBits m aes
+-- mkLitLenDistTableFromMapMap :: [RunLength] -> (Int, Int, [Bit])
+mkLitLenDistTableFromMapMap mll md = (lll, ld, lt, ttbs ++ mkLitLenDistTableBits m aes)
 	where
 	m = tableToDict $ mapMapToTableTable mll md
-	f = mapMapToLitLenDstList mll md
+	f@(lll, ld, _) = mapMapToLitLenDstList mll md
+	(lt, tt) = tableTableToOrder' $ fooToTableTable f
+	ttbs = numToBits 3 =<< (tt :: [Int])
 	aes = fooToCodes f
 
 foobar mll md = (mkLitLenDistTableFromMapMap mll md, (tableToDict mll, tableToDict md))
+
+bazbaz rl_ =
+	[I, O, I] ++
+	numToBits 5 (lll - 257) ++
+	numToBits 5 (ld - 1) ++
+	numToBits 4 (lt - 4) ++
+	hdr ++ (runLengthToBits dll dd =<< rl)
+	where
+	(mll, md) = runLengthToRawTables rl
+	((lll, ld, lt, hdr), (dll, dd)) = foobar mll md
+	rl = rl_ ++ [RunLengthEndOfInput]

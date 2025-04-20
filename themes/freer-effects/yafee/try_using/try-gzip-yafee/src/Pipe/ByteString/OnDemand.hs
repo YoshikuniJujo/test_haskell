@@ -23,6 +23,8 @@ import Data.ByteString qualified as BS
 
 import BitArray qualified as BitArray
 
+import Debug.Trace
+
 data Request
 	= RequestBytes Int
 	| RequestString
@@ -51,7 +53,7 @@ onDemand = State.get >>= \case
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestBits ln -> do
 		mt <- takeBits ln
-		maybe (Except.throw @String "Not enough ByteString")
+		maybe (Except.throw @String "takeBits: Not enough ByteString")
 			(\t -> Pipe.yield t >> onDemand) mt
 	RequestPushBack ba -> do
 		State.modify (ba `BitArray.append`)
@@ -95,8 +97,9 @@ takeBuffer' ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 
 takeBits :: Union.Member (State.S BitArray.B) effs =>
 	Int -> Eff.E (Pipe.P BS.ByteString o ': effs) (Maybe (Either BitArray.B BS.ByteString))
-takeBits ln = State.get >>= \ba -> case BitArray.splitAt ln ba of
-	Nothing -> readMore' >>= bool (takeBits ln) (pure Nothing)
+takeBits ln = trace ("takeBits: " ++ show ln) $ State.get >>= \ba -> case BitArray.splitAt ln ba of
+--	Nothing -> readMore' >>= bool (takeBits ln) (pure Nothing)
+	Nothing -> readMore' >>= bool (pure Nothing) (takeBits ln)
 	Just (t, d) -> Just (BitArray.toByteString t) <$ State.put d
 
 splitString :: BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
@@ -108,6 +111,6 @@ splitString bs = case BS.span (/= 0) bs of
 readMore' :: forall o effs . (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Eff.E (Pipe.P BS.ByteString o ': effs) Bool
-readMore' = Pipe.await' o >>= \case
-	Nothing -> pure False
-	Just bs -> True <$ State.modify (`BitArray.appendByteString` bs)
+readMore' = trace "readMore'" $ Pipe.await' o >>= \case
+	Nothing -> trace "Nothing" $ pure False
+	Just bs -> trace "Just bs" $ True <$ State.modify (`BitArray.appendByteString` bs)

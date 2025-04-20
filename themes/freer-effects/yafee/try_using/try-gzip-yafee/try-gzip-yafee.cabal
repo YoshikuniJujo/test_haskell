@@ -29,10 +29,12 @@ library
       Block
       ByteStringNum
       Calc
+      CheckRawDeflate
       Compress
       Crc
       Gzip
       HuffmanTree
+      MyEff
       PackageMerge
       Pipe.BitArray
       Pipe.ByteString.OnDemand

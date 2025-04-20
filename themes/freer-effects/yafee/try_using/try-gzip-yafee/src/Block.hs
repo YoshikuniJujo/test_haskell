@@ -44,6 +44,8 @@ import Debug.Trace
 
 import Pipe.BitArray
 
+import Debug.Trace
+
 blocks :: (
 	Union.Member (State.S Request) effs,
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
@@ -66,12 +68,16 @@ block' :: (
 	) =>
 	Eff.E (Pipe.P (Either BitArray.B BS.ByteString) RunLength ': effs) Bool
 block' = do
+	trace "here" (pure ())
 	State.put $ RequestBits 1
+	trace "there" (pure ())
 	Just (Left (Just t)) <- (either (Left . BitArray.toWord8) Right <$>)
 		<$> Pipe.await @(Either BitArray.B BS.ByteString)
+	trace "here 2" (pure ())
 	State.put $ RequestBits 2
 	Just bt <- BitArray.toWord8 <$> (
 		getLeftJust =<< Pipe.await @(Either BitArray.B BS.ByteString) )
+	trace (show bt) (pure ())
 	case bt of
 		0 -> do	State.put $ RequestBytes 4
 			ln <- getWord16FromPair =<< skipLeft1
@@ -88,6 +94,7 @@ block' = do
 				State.put $ RequestBits 4
 				Just hclen <- ((+ 4) . fromIntegral <$>)
 					. BitArray.toWord8 <$> (getLeftJust =<< Pipe.await)
+				trace ("(hlit, hdist, hclen) = " ++ show (hlit, hdist, hclen)) $ pure ()
 				pure (Just (hlit, hlit + hdist), Just hclen)
 			bits' Pipe.=$= bitsBlock mhclen mhlithdist
 			bf <- State.getN "bits"
@@ -105,7 +112,7 @@ bitsBlock :: (
 	Union.Member Fail.F effs ) =>
 	Maybe Int -> Maybe (Int, Int) -> Eff.E (Pipe.P BitArray.Bit RunLength ': effs) ()
 bitsBlock mhclen mhlithdist = do
-	whenMaybe mhclen \hclen -> (State.put . (id &&& id) =<<)
+	whenMaybe mhclen \hclen -> (\x -> State.put . (\y -> trace (show y) $ (id &&& id) y) =<< x)
 		. (mkTr @Word8 codeLengthList <$>)
 		. replicateM hclen . (BitArray.bitsToNum <$>)
 		$ replicateMMaybes 3 Pipe.await
@@ -113,7 +120,8 @@ bitsBlock mhclen mhlithdist = do
 		(lct, dct) <- whenMaybeDef
 			(fixedTable, fixedDstTable) mhlithdist \(hlit, hld) ->
 			(mkTr [0 ..] *** mkTr [0 ..])
-			. Prelude.splitAt hlit <$> getCodeTable hld
+			. (\x -> trace (show (length x) ++ " " ++ show x) $ Prelude.splitAt hlit x) <$> getCodeTable 0 hld
+		trace ("(lct, dct) = " ++ show (lct, dct)) $ pure ()
 		State.put $ (id &&& id) lct
 		putDecoded lct dct 0
 
@@ -185,21 +193,24 @@ getCodeTable :: forall o effs . (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs
 	) =>
-	Int -> Eff.E (Pipe.P (Either Int Word16) o ': effs) [Int]
-getCodeTable 0 = pure []
-getCodeTable n = Pipe.await >>= \case
+	Int -> Int -> Eff.E (Pipe.P (Either Int Word16) o ': effs) [Int]
+getCodeTable pr 0 = pure []
+getCodeTable pr n = Pipe.await >>= \case
 	Nothing -> pure []
 	Just (Left ln)
-		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable @o (n - 1)
-		| ln == 16 -> error "yet"
+		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable @o ln (n - 1)
+		| ln == 16 -> do
+			State.put $ ExtraBits 2
+			Just (Right eb) <- Pipe.await
+			(replicate (fromIntegral eb + 3) pr ++) <$> getCodeTable @o pr (n - fromIntegral eb - 3)
 		| ln == 17 -> do
 			State.put $ ExtraBits 3
 			Just (Right eb) <- Pipe.await
-			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable @o (n - fromIntegral eb - 3)
+			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable @o 0 (n - fromIntegral eb - 3)
 		| ln == 18 -> do
 			State.put $ ExtraBits 7
 			Just (Right eb) <- Pipe.await
-			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable @o (n - fromIntegral eb - 11)
+			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable @o 0 (n - fromIntegral eb - 11)
 		| otherwise -> error "yet"
 	Just (Right _) -> error "bad"
 

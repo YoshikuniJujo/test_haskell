@@ -35,13 +35,15 @@ import Pipe.DataCheck
 import Gzip
 import ByteStringNum
 
-import BitArray qualified as BitArray (B, empty)
+import BitArray qualified as BitArray (B)
 
 import Block
 
 import HuffmanTree
 import Pipe.Huffman
 import Data.Sequence
+
+import MyEff
 
 main :: IO ()
 main = do
@@ -82,32 +84,6 @@ gzipPipe = onDemand Pipe.=$= do
 		Left _ -> Pipe.await
 		Right _ -> pure $ Just efoo
 	YafeeIO.print @Word32 . bsToNum =<< getRightJust =<< Pipe.await
-
-type MyEff = '[
-	State.S Request,
-	State.S BitArray.B,
-	State.S (BinTree Int, BinTree Int),
-	State.S (Seq Word8),
-	State.S ExtraBits,
-	State.Named "bits" BitArray.B,
-	State.Named "format" BS.ByteString,
-	State.S Crc,
-	Except.E String, Fail.F, IO ]
-
-type family TupleL t ts where
-	TupleL t '[] = t; TupleL t (t' ': ts) = TupleL (t, t') ts
-
-runMyEff :: Eff.E (Pipe.P () () ': MyEff) a -> IO
-	(Either String (Either String (TupleL a '[
-		[()], Request, BitArray.B, (BinTree Int, BinTree Int),
-		Seq Word8, ExtraBits, BitArray.B, BS.ByteString, Crc])))
-runMyEff = Eff.runM . Fail.run . Except.run
-	. (`State.run` Crc 0) . (`State.runN` "")
-	. (`State.runN` BitArray.empty)
-	. (`State.run` ExtraBits 0) . (`State.run` empty)
-	. (`State.run` (fixedTable, fixedTable))
-	. (`State.run` BitArray.empty)
-	. (`State.run` RequestBytes 0) . Pipe.run
 
 readHeader :: (
 	Union.Member (State.S Request) effs,
