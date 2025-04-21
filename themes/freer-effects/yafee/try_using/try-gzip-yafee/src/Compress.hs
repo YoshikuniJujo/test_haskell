@@ -63,7 +63,7 @@ compressRL = fix \go -> do
 			case (mb1, mb2) of
 				(Just b1, Just b2) -> do
 					st <- State.get
-					mil <- getIndexLength st (BS.pack [b, b1, b2]) (fromJust <$> getAhead)
+					mil <- getIndexLength st (BS.pack [b, b1, b2]) getAhead
 					case mil of 
 						Nothing -> do
 							State.modify (`updateTriple` b)
