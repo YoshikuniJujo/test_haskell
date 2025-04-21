@@ -44,6 +44,9 @@ import Pipe.BitArray
 import PackageMerge qualified as PackageMerge
 import Block
 import Pipe.Huffman
+import Pipe.Crc
+import ByteStringNum
+import Gzip
 
 compressRL :: (
 	Union.Member (State.S Triple) effs,
@@ -122,14 +125,33 @@ tryCompress'' = withFile "samples/abcdef4.txt" ReadMode \h ->
 getFoo :: IO BS.ByteString
 getFoo = (foo `BS.append`) . (`BS.append` bar) . fst . fst . fst . fst . fst <$> tryCompress''
 
-tryCompress''' :: FilePath -> IO (((([RunLength], [()]), Triple), BS.ByteString), AheadPos)
+tryCompress''' :: FilePath -> IO (((((([RunLength], [()]), FileLength), Crc), Triple), BS.ByteString), AheadPos)
 tryCompress''' fp = withFile fp ReadMode \h ->
 	Eff.runM . (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
-		. (`State.run` triple0) . Pipe.run
-		$ PipeBS.hGet 100 h Pipe.=$= compressRL Pipe.=$= fix \go ->
-			Pipe.await >>= maybe (pure []) (\rl -> (rl :) <$> go)
+		. (`State.run` triple0)
+		. (`State.run` Crc 0)
+		. (`State.run` FileLength 0)
+		. Pipe.run
+		$ PipeBS.hGet 100 h Pipe.=$= lengthPipe Pipe.=$= crcPipe Pipe.=$= compressRL Pipe.=$= do
+			r <- fix \go -> Pipe.await >>= maybe (pure []) (\rl -> (rl :) <$> go)
+			r <$ compCrc
 
-getRunLengths fp = fst . fst . fst . fst <$> tryCompress''' fp
+lengthPipe :: (
+	Union.Member (State.S FileLength) effs
+	) =>
+	Eff.E (Pipe.P BS.ByteString BS.ByteString ': effs) ()
+lengthPipe = Pipe.await >>= \case
+	Nothing -> pure ()
+	Just bs -> do
+		State.modify \(FileLength ln) -> FileLength $ ln + BS.length bs
+		Pipe.yield bs
+		lengthPipe
+
+newtype FileLength = FileLength Int deriving Show
+
+fileLengthToByteString (FileLength n) = numToBs' 4 n
+
+getRunLengths fp = ((fst . fst &&& snd) . fst &&& snd)  . fst . fst . fst <$> tryCompress''' fp
 
 getSorted = (((: []) `first`) <$>) . L.sortOn snd . runLengthsToLitLenFreqs
 
@@ -162,7 +184,7 @@ listToAtom = fix \go -> Pipe.await >>= \case
 
 compressIntoFormatX :: FilePath -> FilePath -> IO ()
 compressIntoFormatX ifl ofl = do
-	rl <- (++ [RunLengthEndOfInput]) <$> getRunLengths ifl
+	((rl, fln), crc) <- (((++ [RunLengthEndOfInput]) `first`) `first`) <$> getRunLengths ifl
 	let	tll = makeLitLenTable rl
 		td = makeDistTable rl
 		cd = bitsToByteStringRaw $ makeCompressed rl
@@ -385,3 +407,13 @@ bazbaz rl_ =
 	(mll, md) = runLengthToRawTables rl
 	((lll, ld, lt, hdr), (dll, dd)) = foobar mll md
 	rl = rl_ ++ [RunLengthEndOfInput]
+
+compressFile fp ofp = do
+	((rl, fln), cr) <- getRunLengths fp
+	let	crbs = crcToByteString cr
+		flnbs = fileLengthToByteString fln
+		bts = bazbaz rl
+		bd = bitsToByteStringRaw $ bts ++ [O, O, O, O, O, O, O]
+		hdr = encodeGzipHeader $ gzipHeaderToRaw sampleGzipHeader
+	BS.writeFile ofp $
+		hdr `BS.append` bd `BS.append` crbs `BS.append` flnbs

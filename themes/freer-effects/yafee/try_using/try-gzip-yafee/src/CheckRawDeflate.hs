@@ -62,7 +62,6 @@ gzipPipe = onDemand Pipe.=$= do
 			Just x -> YafeeIO.print x >> go
 		compCrc
 
-{-
 	YafeeIO.print . crcToByteString =<< State.get
 
 	State.put $ RequestBytes 4
@@ -71,4 +70,3 @@ gzipPipe = onDemand Pipe.=$= do
 		Left _ -> Pipe.await
 		Right _ -> pure $ Just efoo
 	YafeeIO.print @Word32 . bsToNum =<< getRightJust =<< Pipe.await
-	-}
