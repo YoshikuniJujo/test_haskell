@@ -46,6 +46,7 @@ library
       RunLength
       Triple
       TryNamed
+      TryNonDet
       TryPrimMonad
   other-modules:
       Paths_try_gzip_yafee
