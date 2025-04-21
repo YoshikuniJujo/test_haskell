@@ -19,7 +19,7 @@ packages:
     subdir: themes/freer-effects/yafee/try-freer-base-classes
 snapshots:
 - completed:
-    sha256: 9ad888fcc2b00bb40ca52e955bee17a1de17a34c426fbc15675ab96631e84c18
-    size: 677332
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/10.yaml
-  original: nightly-2025-04-10
+    sha256: 2427658057ae4adc3fa0d2d22cc4c8b3f6ad0395de2eaace7b0532c92caacb00
+    size: 681591
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/20.yaml
+  original: nightly-2025-04-20
