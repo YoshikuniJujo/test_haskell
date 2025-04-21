@@ -30,6 +30,7 @@ library
       Control.Monad.Yafee.Except
       Control.Monad.Yafee.Fail
       Control.Monad.Yafee.IO
+      Control.Monad.Yafee.NonDet
       Control.Monad.Yafee.Reader
       Control.Monad.Yafee.ST
       Control.Monad.Yafee.State
