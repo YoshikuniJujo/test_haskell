@@ -72,6 +72,30 @@ library
     , vector
   default-language: Haskell2010
 
+executable try-compress-gzip
+  main-is: try-compress-gzip.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , optparse-declarative
+    , primitive
+    , swizzle
+    , time
+    , transformers
+    , try-control-open-union
+    , try-gzip-yafee
+    , try-yafee
+    , try-yafee-conduit
+    , try-yafee-conduit-bytestring
+    , try-yafee-rwseft
+    , vector
+  default-language: Haskell2010
+
 executable try-gzip-yafee-new
   main-is: try-gzip-yafee-new.hs
   hs-source-dirs:
