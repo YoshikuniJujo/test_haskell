@@ -49,8 +49,10 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
+	h' <- openFile "samples/foobarbaz.txt" WriteMode
 	(putStrLn . Prelude.take 1000 . show =<<) . runMyEff $
-		PipeB.hGet 100 h Pipe.=$= gzipPipe
+		PipeB.hGet 100 h Pipe.=$= gzipPipe h'
+	hClose h'
 
 gzipPipe :: (
 	Union.Member (State.S Request) effs,
@@ -66,14 +68,14 @@ gzipPipe :: (
 	Union.Member Fail.F effs,
 
 	Union.Base IO effs ) =>
-	Eff.E (Pipe.P BS.ByteString o ': effs) ()
-gzipPipe = onDemand Pipe.=$= do
+	Handle -> Eff.E (Pipe.P BS.ByteString o ': effs) ()
+gzipPipe h = onDemand Pipe.=$= do
 	YafeeIO.print =<< checkRight Pipe.=$= readHeader
 
 	blocks Pipe.=$= format 100 Pipe.=$= crcPipe Pipe.=$= do
 		fix \go -> Pipe.await >>= \case
 			Nothing -> pure ()
-			Just x -> YafeeIO.print x >> go
+			Just x -> YafeeIO.print x >> Eff.effBase (BS.hPutStr h x) >> go
 		compCrc
 
 	YafeeIO.print . crcToByteString =<< State.get

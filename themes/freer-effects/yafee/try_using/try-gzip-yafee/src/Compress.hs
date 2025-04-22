@@ -70,12 +70,41 @@ compressRL = fix \go -> do
 							Pipe.yield (RunLengthLiteral b)
 						Just (i, l) -> do
 							d <- State.gets $ calcDistance i
-							bs <- getBytes $ 2 + l
-							State.modify \st' -> foldl updateTriple st' (b : BS.unpack bs)
-							Pipe.yield $ RunLengthLenDist (l + 3) d
+							let	c1 = (l, (l + 1, [RunLengthLenDist (l + 3) d]))
+							State.modify (`updateTriple` b)
+							b' <- fromJust <$> get
+							mb2' <- getAhead
+							mb3 <- getAhead
+
+							case mb3 of
+								Nothing -> do
+									State.modify (`updateTriple` b')
+									runCandidate c1
+								Just b3 -> do
+									st <- State.get
+									mil' <- getIndexLength st (BS.pack [b', b2, b3]) getAhead
+									case mil' of
+										Nothing -> do
+											State.modify (`updateTriple` b')
+											runCandidate c1
+										Just (i', l') -> do
+											d' <- State.gets $ calcDistance i'
+											State.modify (`updateTriple` b')
+											let	c2 = (l', (2 + l', [
+													RunLengthLiteral b,
+													-- RunLengthLiteral 0x39,
+													RunLengthLenDist (l' + 3) d']))
+											if l + 1 >= l'
+											then runCandidate c1
+											else runCandidate c2
 				_ -> do	State.modify (`updateTriple` b)
 					Pipe.yield (RunLengthLiteral b)
 			go
+
+runCandidate (l, (l', ys)) = do
+	bs <- getBytes l'
+	State.modify \st' -> foldl updateTriple st' $ BS.unpack bs
+	Pipe.yield `mapM_` ys
 
 tryCompress :: IO (((((), [()]), Triple), BS.ByteString), AheadPos)
 tryCompress = withFile "samples/abcdef4.txt" ReadMode \h ->
@@ -421,6 +450,6 @@ compressFile crl fp ofp = do
 		flnbs = fileLengthToByteString fln
 		bts = bazbaz rl
 		bd = bitsToByteStringRaw $ bts ++ [O, O, O, O, O, O, O]
-		hdr = encodeGzipHeader $ gzipHeaderToRaw sampleGzipHeader
+		hdr = encodeGzipHeader $ gzipHeaderToRaw sampleGzipHeader { gzipHeaderFileName = Just "OnDemand.hs" }
 	BS.writeFile ofp $
 		hdr `BS.append` bd `BS.append` crbs `BS.append` flnbs
