@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,12 +20,19 @@ get = Eff.eff Get
 put :: Union.Member (Union.FromFirst (S s)) effs => s -> Eff.E effs ()
 put = Eff.eff . Put
 
-{-
-run :: Eff.E (Union.FromFirst (S s) ': effs) a -> s -> Eff.E effs (a, s)
+run :: Union.HFunctor (Union.U effs) =>
+	Eff.E (Union.FromFirst (S s) ': effs) a -> s -> Eff.E effs (a, s)
 m `run` s = case m of
-	Hefty.Pure x -> pure (x, s)
+	Hefty.Pure x -> Hefty.Pure (x, s)
 	u Hefty.:>>= k -> case Union.decomp u of
-		Left u' -> u' Hefty.:>>= \x -> k x `run` s
+		Left u' -> Union.hmap (`run` s) (, s) u' Hefty.:>>= \(x, s') -> k x `run` s'
 		Right (Union.FromFirst Get) -> k s `run` s
 		Right (Union.FromFirst (Put s')) -> k () `run` s'
-		-}
+
+sample :: (
+	Union.Member (Union.FromFirst (S Int)) effs,
+	Union.Member (Union.FromFirst IO) effs ) =>
+	Eff.E effs ()
+sample = do
+	put (123 :: Int)
+	Eff.eff . print =<< get @Int

@@ -6,6 +6,7 @@
 
 module Hefty where
 
+import Control.Monad
 import Data.Kind
 
 -- data Freer t a = Pure a | forall x . t x :>>= (x -> Freer t a)
@@ -29,3 +30,15 @@ convertHefty :: (forall x . h (Hefty h) x -> g (Hefty g) x) -> Hefty h a -> Heft
 convertHefty c = \case
 	Pure x -> Pure x
 	hhx :>>= k -> c hhx :>>= \y -> convertHefty c (k y)
+
+instance Functor (Hefty h) where
+	fmap f = \case Pure x -> Pure $ f x; x :>>= k -> x :>>= ((f <$>) . k)
+
+instance Applicative (Hefty h) where
+	pure = Pure
+	Pure f <*> m = f <$> m
+	hx :>>= k <*> m = hx :>>= ((<$> m) <=< k)
+
+instance Monad (Hefty h) where
+	Pure x >>= f = f x
+	hx :>>= k >>= f = hx :>>= (f <=< k)

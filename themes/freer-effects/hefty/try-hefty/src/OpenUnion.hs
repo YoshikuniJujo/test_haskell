@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -7,7 +8,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module OpenUnion (
-	U, Member, T, FromFirst(..), inj, injh, prj, decomp, extract, weaken
+	U, Member, T, FromFirst(..), inj, injh, prj, decomp, extract, weaken,
+	HFunctor(..)
 	) where
 
 import Data.Kind
@@ -48,5 +50,18 @@ decomp (U i o hfx) = Left $ U (i - 1) o hfx
 extract :: U '[FromFirst t] f a -> t a
 extract (U _ _ hfx) = toFirst $ unsafeCoerce hfx
 
+extracth :: U '[h] f a -> h f a
+extracth (U _ _ hfx) = unsafeCoerce hfx
+
 weaken :: U r f a -> U (any ': r) f a
 weaken (U n o a) = U (n + 1) o a
+
+class HFunctor h where
+	hmap :: (f x -> g y) -> (x -> y) -> h f x -> h g y
+
+instance Functor t => HFunctor (FromFirst t) where
+	hmap f g (FromFirst x) = FromFirst $ g <$> x
+
+instance HFunctor h => HFunctor (U '[h]) where
+	hmap :: forall f g x y . (f x -> g y) -> (x -> y) -> U '[h] f x -> U '[h] g y
+	hmap f g u = injh $ hmap f g (extracth u :: h f x)

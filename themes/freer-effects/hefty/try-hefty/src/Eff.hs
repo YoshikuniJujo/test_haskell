@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Eff where
@@ -12,3 +13,7 @@ eff :: Union.Member (Union.FromFirst t) effs => t a -> E effs a
 eff = (Hefty.:>>= Hefty.Pure) . Union.inj
 
 convertFromFirst (Union.FromFirst x) = Union.FromFirst x
+
+runM :: Monad m => E '[(Union.FromFirst m)] a -> m a
+runM (Hefty.Pure x) = pure x
+runM (u Hefty.:>>= k) = runM . k =<< Union.extract u
