@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Freer.NonDetable
       Data.FTCQueue
       Eff
       Except
@@ -35,6 +36,7 @@ library
       UseFTCQ.Eff
       UseFTCQ.Except
       UseFTCQ.HFreer
+      UseFTCQ.NonDet
       UseFTCQ.State
   other-modules:
       Paths_try_hefty

@@ -1,17 +1,21 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module OpenUnion (
 	U, Member, T, FromFirst(..), inj, injh, prj, decomp, extract, weaken,
-	HFunctor(..)
+	HFunctor(..),
+
+	NonDet(..)
 	) where
 
+import Control.Monad.Freer.NonDetable qualified as NonDetable
 import Data.Kind
 import Unsafe.Coerce
 
@@ -62,6 +66,23 @@ class HFunctor h where
 instance Functor t => HFunctor (FromFirst t) where
 	hmap f g (FromFirst x) = FromFirst $ g <$> x
 
+instance HFunctor (U '[]) where
+	hmap _ _ _ = error "bad"
+		
 instance HFunctor h => HFunctor (U '[h]) where
 	hmap :: forall f g x y . (f x -> g y) -> (x -> y) -> U '[h] f x -> U '[h] g y
 	hmap f g u = injh $ hmap f g (extracth u :: h f x)
+
+instance (HFunctor h, HFunctor (U hs)) => HFunctor (U (h ': hs)) where
+	hmap :: forall f g x y .
+		(f x -> g y) -> (x -> y) -> U (h ': hs) f x -> U (h ': hs) g y
+	hmap f g u = case decomp u of
+		Left u' -> weaken $ hmap f g u'
+		Right h -> injh $ hmap f g h
+
+instance Member (FromFirst NonDet) effs => NonDetable.N (U effs f) where
+	mz = inj (NonDetable.mz @NonDet); mp = inj (NonDetable.mp @NonDet)
+
+data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
+
+instance NonDetable.N NonDet where mz = MZero; mp = MPlus

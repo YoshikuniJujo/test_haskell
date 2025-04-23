@@ -1,11 +1,16 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module UseFTCQ.HFreer where
 
+import Control.Applicative
+import Control.Monad
+import Control.Monad.Freer.NonDetable qualified as NonDetable
 import Data.FTCQueue qualified as Q
+import Data.Bool
 
 data H h a = Pure a | forall x . h (H h) x :>>= Q.Q (H h) x a
 
@@ -32,3 +37,10 @@ q `app` x = case Q.viewl q of
 
 comp :: (H h b -> H h' c) -> Q.Q (H h) a b -> a -> H h' c
 comp = (. app) . (.)
+
+instance NonDetable.N (h (H h)) => Alternative (H h) where
+	empty = mzero; (<|>) = mplus
+
+instance NonDetable.N (h (H h)) => MonadPlus (H h) where
+	mzero = NonDetable.mz :>>= Q.singleton Pure
+	m1 `mplus` m2 = NonDetable.mp :>>= Q.singleton (bool m1 m2)
