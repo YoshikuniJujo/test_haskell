@@ -8,6 +8,7 @@
 
 module Control.Monad.Yaftee.Pipe where
 
+import Control.Arrow
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.HFreer qualified as HFreer
 import Control.HigherOpenUnion qualified as Union
@@ -38,8 +39,8 @@ p@(u HFreer.:>>= q) =$= p'@(v HFreer.:>>= r) =
 		(Right (Union.FromFirst (Yield o)), Right (Union.FromFirst Await)) ->
 			(q `HFreer.app` ()) =$= (r `HFreer.app` Just o)
 		(Left u', Right (Union.FromFirst Await)) ->
-			Union.weaken (HFunctor.map (=@= p') (, p') u') HFreer.:>>=
-			Q.singleton \(x, p'') -> (q `HFreer.app` x) =$= p''
+			Union.weaken (HFunctor.map (=@= p') (\x -> ((x, p'), [])) u') HFreer.:>>=
+			Q.singleton \((x, p''), as) -> (q `HFreer.app` x) =$= p''
 p@(HFreer.Pure _) =$= (v HFreer.:>>= r) = case Union.decomp v of
 	Left v' -> Union.weaken  (HFunctor.map (p =$=) (p ,) v') HFreer.:>>=
 		Q.singleton \(p'', x) -> p'' =$= (r `HFreer.app` x)
@@ -49,13 +50,13 @@ p@(HFreer.Pure _) =$= (v HFreer.:>>= r) = case Union.decomp v of
 
 (=@=) :: forall i a o effs r r' . HFunctor.H (Union.U effs) =>
 	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
-	Eff.E (P i o ': effs) (r, Eff.E (P a o ': effs) r')
-HFreer.Pure r =@= p' = HFreer.Pure (r, p')
+	Eff.E (P i o ': effs) ((r, Eff.E (P a o ': effs) r'), [a])
+HFreer.Pure r =@= p' = HFreer.Pure ((r, p'), [])
 p@(u HFreer.:>>= q) =@= p'@(v HFreer.:>>= r) =
 	case (Union.decomp u, Union.decomp v) of
 		(Left u', _) ->
-			Union.weaken (HFunctor.map (=@= p') (, p') u') HFreer.:>>=
-			Q.singleton \(x, p'') -> (q `HFreer.app` x) =@= p''
+			Union.weaken (HFunctor.map (=@= p') (\x -> ((x, p'), [])) u') HFreer.:>>=
+			Q.singleton \((x, p''), as) -> ((as ++) `second`) <$> (q `HFreer.app` x) =@= p''
 		(_, Right (Union.FromFirst (Yield o))) ->
 			Union.inj (Yield @i o) HFreer.:>>=
 			Q.singleton ((p =@=) . (r `HFreer.app`))
@@ -68,8 +69,8 @@ p@(u HFreer.:>>= q) =@= p'@(v HFreer.:>>= r) =
 			Union.weaken (HFunctor.map (p =$=) (p ,) v') HFreer.:>>=
 			Q.singleton \(p'', x) -> ((p'' =@=) . (r `HFreer.app`)) x
 (u HFreer.:>>= q) =@= p'@(HFreer.Pure _) = case Union.decomp u of
-	Left u' -> Union.weaken (HFunctor.map (=@= p') (, p') u') HFreer.:>>=
-		Q.singleton \(x, p'') -> ((=@= p'') . (q `HFreer.app`)) x
+	Left u' -> Union.weaken (HFunctor.map (=@= p') (\x -> ((x, p'), [])) u') HFreer.:>>=
+		Q.singleton \((x, p''), as) -> ((as ++) `second`) <$> ((=@= p'') . (q `HFreer.app`)) x
 	Right (Union.FromFirst Await) -> Union.inj (Await @_ @o) HFreer.:>>=
 		Q.singleton ((=@= p') . (q `HFreer.app`))
-	Right (Union.FromFirst (Yield _o)) -> q `HFreer.app` () =@= p'
+	Right (Union.FromFirst (Yield o)) -> ((o :) `second`) <$> q `HFreer.app` () =@= p'
