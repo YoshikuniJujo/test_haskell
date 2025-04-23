@@ -25,12 +25,17 @@ source-repository head
 
 library
   exposed-modules:
+      Data.FTCQueue
       Eff
       Except
       Hefty
       Lib
       OpenUnion
       State
+      UseFTCQ.Eff
+      UseFTCQ.Except
+      UseFTCQ.HFreer
+      UseFTCQ.State
   other-modules:
       Paths_try_hefty
   autogen-modules:
