@@ -70,10 +70,6 @@ instance Functor t => HFunctor (FromFirst t) where
 instance HFunctor (U '[]) where
 	hmap _ _ _ = error "bad"
 		
-instance HFunctor h => HFunctor (U '[h]) where
-	hmap :: forall f g x y . (f x -> g y) -> (x -> y) -> U '[h] f x -> U '[h] g y
-	hmap f g u = injh $ hmap f g (extracth u :: h f x)
-
 instance (HFunctor h, HFunctor (U hs)) => HFunctor (U (h ': hs)) where
 	hmap :: forall f g x y .
 		(f x -> g y) -> (x -> y) -> U (h ': hs) f x -> U (h ': hs) g y
