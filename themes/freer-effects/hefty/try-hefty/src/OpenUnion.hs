@@ -12,10 +12,11 @@ module OpenUnion (
 	U, Member, T, FromFirst(..), inj, injh, prj, decomp, extract, weaken,
 	HFunctor(..),
 
-	NonDet(..)
+	NonDet(..), Fail(..)
 	) where
 
 import Control.Monad.Freer.NonDetable qualified as NonDetable
+import Control.Monad.Freer.Failable qualified as Failable
 import Data.Kind
 import Unsafe.Coerce
 
@@ -86,3 +87,7 @@ instance Member (FromFirst NonDet) effs => NonDetable.N (U effs f) where
 data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
 
 instance NonDetable.N NonDet where mz = MZero; mp = MPlus
+
+data Fail a = Fail String deriving Show
+
+instance Member (FromFirst Fail) effs => Failable.F (U effs f) where fail = inj . Fail

@@ -9,6 +9,7 @@ module UseFTCQ.HFreer where
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Freer.NonDetable qualified as NonDetable
+import Control.Monad.Freer.Failable qualified as Failable
 import Data.FTCQueue qualified as Q
 import Data.Bool
 
@@ -44,3 +45,6 @@ instance NonDetable.N (h (H h)) => Alternative (H h) where
 instance NonDetable.N (h (H h)) => MonadPlus (H h) where
 	mzero = NonDetable.mz :>>= Q.singleton Pure
 	m1 `mplus` m2 = NonDetable.mp :>>= Q.singleton (bool m1 m2)
+
+instance Failable.F (h (H h)) => MonadFail (H h) where
+	fail msg = Failable.fail msg :>>= Q.singleton Pure

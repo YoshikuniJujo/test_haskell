@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Freer.Failable
       Control.Monad.Freer.NonDetable
       Data.FTCQueue
       Eff
@@ -35,6 +36,7 @@ library
       State
       UseFTCQ.Eff
       UseFTCQ.Except
+      UseFTCQ.Fail
       UseFTCQ.HFreer
       UseFTCQ.NonDet
       UseFTCQ.State
