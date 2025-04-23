@@ -6,8 +6,7 @@
 packages: []
 snapshots:
 - completed:
-    sha256: 296a7960c37efa382432ab497161a092684191815eb92a608c5d6ea5f894ace3
-    size: 683835
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/23/19.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/23/19.yaml
+    sha256: 86bd9accd835f8893fce3047e79f557150ef1c392efca470fbe34736a30e916f
+    size: 682019
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/23.yaml
+  original: nightly-2025-04-23
