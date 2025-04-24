@@ -21,6 +21,5 @@ tell = Eff.eff . Tell
 
 run :: (HFunctor.H (Union.U effs), Monoid w) =>
 	Eff.E (W w ': effs) a -> Eff.E effs (a, w)
-run = (uncurry (flip (,))
-	<$>) . Eff.handleRelay
-		(mempty ,) snd \(Tell w) -> (((w <>) `first`) <$>) . ($ ())
+run = (uncurry (flip (,)) <$>)
+	. Eff.handleRelay (mempty ,) snd \(Tell w) k -> first (w <>) <$> k ()
