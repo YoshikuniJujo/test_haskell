@@ -46,15 +46,15 @@ run = runN
 -- * NAMED
 
 data Named (nm :: Symbol) e f a where
-	ThrowN :: forall nm e f a . e -> Named nm e f a
-	CatchN :: forall nm e f a . f a -> (e -> f a) -> Named nm e f a
+	Throw :: forall nm e f a . e -> Named nm e f a
+	Catch :: forall nm e f a . f a -> (e -> f a) -> Named nm e f a
 
 throwN :: forall nm -> Union.Member (Named nm e) effs => e -> Eff.E effs a
-throwN nm = Eff.effh . ThrowN @nm
+throwN nm = Eff.effh . Throw @nm
 
 catchN :: forall nm -> Union.Member (Named nm e) effs =>
 	Eff.E effs a -> (e -> Eff.E effs a) -> Eff.E effs a
-catchN nm = (Eff.effh .) . CatchN @nm
+catchN nm = (Eff.effh .) . Catch @nm
 
 runN :: HFunctor.H (Union.U effs) =>
 	Eff.E (Named nm e ': effs) a -> Eff.E effs (Either e a)
@@ -63,12 +63,12 @@ runN = \case
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> HFunctor.map runN Right u' HFreer.:>>= Q.singleton
 			(either (HFreer.Pure . Left) (runN `HFreer.comp` q))
-		Right (ThrowN e) -> HFreer.Pure $ Left e
-		Right (m `CatchN` h) ->
+		Right (Throw e) -> HFreer.Pure $ Left e
+		Right (m `Catch` h) ->
 			either (HFreer.Pure . Left) (runN `HFreer.comp` q)
 				=<< either (runN . h) (HFreer.Pure . Right)
 				=<< runN m
 
 instance HFunctor.H (Named nm e) where
-	map _ _ (ThrowN e) = ThrowN e
-	map f g (m `CatchN` h) = (f m) `CatchN` \e -> f $ h e
+	map _ _ (Throw e) = Throw e
+	map f _ (m `Catch` h) = (f m) `Catch` \e -> f $ h e

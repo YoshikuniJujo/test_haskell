@@ -26,9 +26,6 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.HigherOpenUnion qualified as Union
 import Data.HFunctor qualified as HFunctor
 
-import Control.Monad.HFreer qualified as HFreer
-import Data.FTCQueue qualified as Q
-
 -- NORMAL
 
 type S s = Named "" s
@@ -60,6 +57,10 @@ putN nm = Eff.eff . (Put @nm)
 
 runN :: HFunctor.H (Union.U effs) =>
 	Eff.E (Named nm s ': effs) a -> s -> Eff.E effs (a, s)
+runN = Eff.handleRelayS (,) fst snd \st k s ->
+	case st of Get -> k s s; Put s' -> k () s'
+
+	{-
 m `runN` s = case m of
 	HFreer.Pure x -> HFreer.Pure (x, s)
 	u HFreer.:>>= q -> case Union.decomp u of
@@ -67,8 +68,4 @@ m `runN` s = case m of
 			Q.singleton \(x, s') -> q `HFreer.app` x `runN` s'
 		Right (Union.FromFirst Get k) -> q `HFreer.app` (k s) `runN` s
 		Right (Union.FromFirst (Put s') k) -> q `HFreer.app` (k ()) `runN` s'
-
-{-
-Eff.handleRelayS (,) fst snd \st k s ->
-	case st of Get -> k s s; Put s' -> k () s'
-	-}
+		-}
