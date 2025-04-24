@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Eff (
-	E, eff, effh, run, runM, handleRelay, handleRelayS
+	E, eff, effh, run, runM, handleRelay, handleRelayS, interpose
 	) where
 
 import Control.Monad.Fix
@@ -54,3 +54,13 @@ handleRelayS mk gx gs h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
 		Left u' -> HFunctor.map (flip (handleRelayS mk gx gs h) s) (`mk` s) u'
 			HFreer.:>>= Q.singleton \xs -> go (gs xs) $ q `HFreer.app` (gx xs)
 		Right (Union.FromFirst x k) -> h x (\x' s' -> (go s' `HFreer.comp` q) . k $ x') s
+
+interpose :: Union.Member (Union.FromFirst eff) effs =>
+	(a -> E effs b) ->
+	(forall v . eff v -> (v -> E effs b) -> E effs b) ->
+	E effs a -> E effs b
+interpose ret h = fix \go -> \case
+	HFreer.Pure x -> ret x
+	u HFreer.:>>= q -> case Union.prj u of
+		Just (Union.FromFirst x k) -> h x ((go `HFreer.comp` q) . k)
+		_ -> u HFreer.:>>= Q.singleton (go `HFreer.comp` q)
