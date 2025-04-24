@@ -29,13 +29,13 @@ o@(u F.:>>= q) =$= p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
 			(o', F.Pure y) -> o' =$= (r `F.app` y)
 			(o'@(F.Pure _), p') -> F.Pure (o', (r `F.app`) =<< p')
 			_ -> error "never occur"
-	(_, Right (U.FromFirst (Yield ot))) ->
-		U.inj (Yield @i ot) F.:>>= Q.singleton ((o =$=) . (r `F.app`))
-	(Right (U.FromFirst Await), _) ->
-		U.inj (Await @_ @o) F.:>>= Q.singleton ((=$= p) . (q `F.app`))
-	(Right (U.FromFirst (Yield ot)), Right (U.FromFirst Await)) ->
-		(q `F.app` ()) =$= (r `F.app` ot)
-	(Left u', Right (U.FromFirst Await)) ->
+	(_, Right (U.FromFirst (Yield ot) k)) ->
+		U.inj (Yield @i ot) F.:>>= Q.singleton ((o =$=) . (r `F.app`) . k)
+	(Right (U.FromFirst Await k), _) ->
+		U.inj (Await @_ @o) F.:>>= Q.singleton ((=$= p) . (q `F.app`) . k)
+	(Right (U.FromFirst (Yield ot) k), Right (U.FromFirst Await k')) ->
+		(q `F.app` k ()) =$= (r `F.app` k' ot)
+	(Left u', Right (U.FromFirst Await _)) ->
 		U.weaken (HFunctor.map (=$= p) ((, p) . F.Pure) u') F.:>>=
 		Q.singleton \case
 			(F.Pure x, p') -> (q `F.app` x) =$= p'
@@ -54,13 +54,13 @@ o@(u F.:>>= q) =@= p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
 			(F.Pure x, p') -> (q `F.app` x) =@= p'
 			(o', p'@(F.Pure _)) -> F.Pure ((q `F.app`) =<< o', p')
 			_ -> error "never occur"
-	(_, Right (U.FromFirst (Yield ot))) ->
-		U.inj (Yield @i ot) F.:>>= Q.singleton ((o =@=) . (r `F.app`))
-	(Right (U.FromFirst Await), _) ->
-		U.inj (Await @_ @o) F.:>>= Q.singleton ((=@= p) . (q `F.app`))
-	(Right (U.FromFirst (Yield ot)), Right (U.FromFirst Await)) ->
-		(q `F.app` ()) =@= (r `F.app` ot)
-	(Right (U.FromFirst (Yield _)), Left v') ->
+	(_, Right (U.FromFirst (Yield ot) k)) ->
+		U.inj (Yield @i ot) F.:>>= Q.singleton ((o =@=) . (r `F.app`) . k)
+	(Right (U.FromFirst Await k), _) ->
+		U.inj (Await @_ @o) F.:>>= Q.singleton ((=@= p) . (q `F.app`) . k)
+	(Right (U.FromFirst (Yield ot) k), Right (U.FromFirst Await k')) ->
+		(q `F.app` k ()) =@= (r `F.app` k' ot)
+	(Right (U.FromFirst (Yield _) _), Left v') ->
 		U.weaken (HFunctor.map (o =@=) ((o ,) . F.Pure) v') F.:>>=
 		Q.singleton \case
 			(o', F.Pure y) -> ((o' =@=) . (r `F.app`)) y
