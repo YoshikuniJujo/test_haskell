@@ -66,11 +66,6 @@ instance Functor t => HFunctor.H (FromFirst t) where
 
 instance HFunctor.H (U '[]) where map _ _ _ = error "never occur"
 
-instance HFunctor.H h => HFunctor.H (U '[h]) where
-	map :: forall f g x y .
-		(f x -> g y) -> (x -> y) -> U '[h] f x -> U '[h] g y
-	map f g u = injh $ HFunctor.map f g (extracth u :: h f x)
-
 instance (HFunctor.H h, HFunctor.H (U hs)) => HFunctor.H (U (h ': hs)) where
 	map :: forall f g x y .
 		(f x -> g y) -> (x -> y) -> U (h ': hs) f x -> U (h ': hs) g y
