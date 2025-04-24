@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeOperators #-}
@@ -8,69 +8,61 @@
 
 module Control.Monad.Yaftee.Pipe where
 
-import Control.Arrow
 import Control.Monad.Yaftee.Eff qualified as Eff
-import Control.Monad.HFreer qualified as HFreer
-import Control.HigherOpenUnion qualified as Union
+import Control.Monad.HFreer qualified as F
+import Control.HigherOpenUnion qualified as U
 import Data.HFunctor qualified as HFunctor
 import Data.FTCQueue qualified as Q
 
-data P_ i o r where
-	Await :: P_ i o (Maybe i)
-	Yield :: forall i o . o -> P_ i o ()
+type P i o = U.FromFirst (P_ i o)
+data P_ i o r where Await :: P_ i o i; Yield :: forall i o . o -> P_ i o ()
 
-type P i o = Union.FromFirst (P_ i o)
+(=$=) :: forall i a o es r r' . HFunctor.H (U.U es) =>
+	Eff.E (P i a ': es) r -> Eff.E (P a o ': es) r' ->
+	Eff.E (P i o ': es) (Eff.E (P i a ': es) r, Eff.E (P a o ': es) r')
+o =$= p@(F.Pure _) = F.Pure (o, p)
+o@(F.Pure _) =$= p = F.Pure (o, p)
+o@(u F.:>>= q) =$= p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
+	(_, Left v') ->
+		U.weaken (HFunctor.map (o =$=) ((o ,) . F.Pure) v') F.:>>=
+		Q.singleton \case
+			(o', F.Pure y) -> o' =$= (r `F.app` y)
+			(o'@(F.Pure _), p') -> F.Pure (o', (r `F.app`) =<< p')
+			_ -> error "never occur"
+	(_, Right (U.FromFirst (Yield ot))) ->
+		U.inj (Yield @i ot) F.:>>= Q.singleton ((o =$=) . (r `F.app`))
+	(Right (U.FromFirst Await), _) ->
+		U.inj (Await @_ @o) F.:>>= Q.singleton ((=$= p) . (q `F.app`))
+	(Right (U.FromFirst (Yield ot)), Right (U.FromFirst Await)) ->
+		(q `F.app` ()) =$= (r `F.app` ot)
+	(Left u', Right (U.FromFirst Await)) ->
+		U.weaken (HFunctor.map (=$= p) ((, p) . F.Pure) u') F.:>>=
+		Q.singleton \case
+			(F.Pure x, p') -> (q `F.app` x) =$= p'
+			(o', p'@(F.Pure _)) -> F.Pure ((q `F.app`) =<< o', p')
+			_ -> error "never occur"
 
-(=$=) :: forall i a o effs r r' . HFunctor.H (Union.U effs) =>
-	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
-	Eff.E (P i o ': effs) (Eff.E (P i a ': effs) r, r')
-p =$= HFreer.Pure r = HFreer.Pure (p, r)
-p@(u HFreer.:>>= q) =$= p'@(v HFreer.:>>= r) =
-	case (Union.decomp u, Union.decomp v) of
-		(_, Left v') ->
-			Union.weaken (HFunctor.map (p =$=) (p ,) v') HFreer.:>>=
-			Q.singleton \(p'', x) -> p'' =$= (r `HFreer.app` x)
-		(_, Right (Union.FromFirst (Yield o))) ->
-			Union.inj (Yield @i o) HFreer.:>>=
-			Q.singleton ((p =$=) . (r `HFreer.app`))
-		(Right (Union.FromFirst Await), _) ->
-			Union.inj (Await @_ @o) HFreer.:>>=
-			Q.singleton ((=$= p') . (q `HFreer.app`))
-		(Right (Union.FromFirst (Yield o)), Right (Union.FromFirst Await)) ->
-			(q `HFreer.app` ()) =$= (r `HFreer.app` Just o)
-		(Left u', Right (Union.FromFirst Await)) ->
-			Union.weaken (HFunctor.map (=@= p') (\x -> ((x, p'), [])) u') HFreer.:>>=
-			Q.singleton \((x, p''), as) -> (q `HFreer.app` x) =$= p''
-p@(HFreer.Pure _) =$= (v HFreer.:>>= r) = case Union.decomp v of
-	Left v' -> Union.weaken  (HFunctor.map (p =$=) (p ,) v') HFreer.:>>=
-		Q.singleton \(p'', x) -> p'' =$= (r `HFreer.app` x)
-	Right (Union.FromFirst Await) -> p =$= (r `HFreer.app` Nothing)
-	Right (Union.FromFirst (Yield o)) -> Union.inj (Yield @i o) HFreer.:>>=
-		Q.singleton ((p =$=) . (r `HFreer.app`))
-
-(=@=) :: forall i a o effs r r' . HFunctor.H (Union.U effs) =>
-	Eff.E (P i a ': effs) r -> Eff.E (P a o ': effs) r' ->
-	Eff.E (P i o ': effs) ((r, Eff.E (P a o ': effs) r'), [a])
-HFreer.Pure r =@= p' = HFreer.Pure ((r, p'), [])
-p@(u HFreer.:>>= q) =@= p'@(v HFreer.:>>= r) =
-	case (Union.decomp u, Union.decomp v) of
-		(Left u', _) ->
-			Union.weaken (HFunctor.map (=@= p') (\x -> ((x, p'), [])) u') HFreer.:>>=
-			Q.singleton \((x, p''), as) -> ((as ++) `second`) <$> (q `HFreer.app` x) =@= p''
-		(_, Right (Union.FromFirst (Yield o))) ->
-			Union.inj (Yield @i o) HFreer.:>>=
-			Q.singleton ((p =@=) . (r `HFreer.app`))
-		(Right (Union.FromFirst Await), _) ->
-			Union.inj (Await @_ @o) HFreer.:>>=
-			Q.singleton ((=@= p') . (q `HFreer.app`))
-		(Right (Union.FromFirst (Yield o)), Right (Union.FromFirst Await)) ->
-			(q `HFreer.app` ()) =@= (r `HFreer.app` Just o)
-		(Right (Union.FromFirst (Yield _o)), Left v') ->
-			Union.weaken (HFunctor.map (p =$=) (p ,) v') HFreer.:>>=
-			Q.singleton \(p'', x) -> ((p'' =@=) . (r `HFreer.app`)) x
-(u HFreer.:>>= q) =@= p'@(HFreer.Pure _) = case Union.decomp u of
-	Left u' -> Union.weaken (HFunctor.map (=@= p') (\x -> ((x, p'), [])) u') HFreer.:>>=
-		Q.singleton \((x, p''), as) -> ((as ++) `second`) <$> ((=@= p'') . (q `HFreer.app`)) x
-	Right (Union.FromFirst Await) -> Union.inj (Await @_ @o) HFreer.:>>=
-		Q.singleton ((=@= p') . (q `HFreer.app`))
-	Right (Union.FromFirst (Yield o)) -> ((o :) `second`) <$> q `HFreer.app` () =@= p'
+(=@=) :: forall i a o es r r' . HFunctor.H (U.U es) =>
+	Eff.E (P i a ': es) r -> Eff.E (P a o ': es) r' ->
+	Eff.E (P i o ': es) (Eff.E (P i a ': es) r, Eff.E (P a o ': es) r')
+o@(F.Pure _) =@= p = F.Pure (o, p)
+o =@= p@(F.Pure _) = F.Pure (o, p)
+o@(u F.:>>= q) =@= p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
+	(Left u', _) ->
+		U.weaken (HFunctor.map (=@= p) (\x -> (F.Pure x, p)) u') F.:>>=
+		Q.singleton \case
+			(F.Pure x, p') -> (q `F.app` x) =@= p'
+			(o', p'@(F.Pure _)) -> F.Pure ((q `F.app`) =<< o', p')
+			_ -> error "never occur"
+	(_, Right (U.FromFirst (Yield ot))) ->
+		U.inj (Yield @i ot) F.:>>= Q.singleton ((o =@=) . (r `F.app`))
+	(Right (U.FromFirst Await), _) ->
+		U.inj (Await @_ @o) F.:>>= Q.singleton ((=@= p) . (q `F.app`))
+	(Right (U.FromFirst (Yield ot)), Right (U.FromFirst Await)) ->
+		(q `F.app` ()) =@= (r `F.app` ot)
+	(Right (U.FromFirst (Yield _)), Left v') ->
+		U.weaken (HFunctor.map (o =@=) ((o ,) . F.Pure) v') F.:>>=
+		Q.singleton \case
+			(o', F.Pure y) -> ((o' =@=) . (r `F.app`)) y
+			(o'@(F.Pure _), p') -> F.Pure (o', (r `F.app`) =<< p')
+			_ -> error "never occur"
