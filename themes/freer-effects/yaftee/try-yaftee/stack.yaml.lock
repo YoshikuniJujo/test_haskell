@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-higher-order-freer-monad
     pantry-tree:
@@ -14,24 +14,24 @@ packages:
     subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
     version: 0.1.0.0
   original:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
 - completed:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-higher-order-open-union
     pantry-tree:
-      sha256: 1218572cea3fe3e68fc3b337fbfb9e72fc060fafaa6fdd63e05319a2c7e8b7a4
+      sha256: c2084574d32cf719b46f88dbc163dd7d83e4ea546266bf64d2d5af893d813c50
       size: 661
     subdir: themes/freer-effects/yaftee/try-higher-order-open-union
-    version: 0.1.0.0
+    version: 0.1.0.1
   original:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-higher-order-open-union
 - completed:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-ftcqueue
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/freer-effects/common/try-ftcqueue
     version: 0.1.0.0
   original:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/common/try-ftcqueue
 - completed:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-base-classes
     pantry-tree:
@@ -53,7 +53,7 @@ packages:
     subdir: themes/freer-effects/common/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 8ffe8a8ffa3af4039c47207dcf7822ae270227a5
+    commit: eb2de19388c53109bdf16f2044badba929c71647
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
