@@ -27,6 +27,7 @@ library
   exposed-modules:
       Control.Monad.Yaftee.Except
       Control.Monad.Yaftee.State
+      Trials.StateExcept
   other-modules:
       Paths_try_yaftee_basic_monads
   autogen-modules:

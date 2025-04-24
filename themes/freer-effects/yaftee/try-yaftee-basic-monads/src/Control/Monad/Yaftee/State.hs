@@ -23,9 +23,10 @@ module Control.Monad.Yaftee.State (
 
 import GHC.TypeLits
 import Control.Monad.Yaftee.Eff qualified as Eff
-import Control.Monad.HFreer qualified as HFreer
 import Control.HigherOpenUnion qualified as Union
 import Data.HFunctor qualified as HFunctor
+
+import Control.Monad.HFreer qualified as HFreer
 import Data.FTCQueue qualified as Q
 
 -- NORMAL
@@ -64,5 +65,10 @@ m `runN` s = case m of
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> HFunctor.map (`runN` s) (, s) u' HFreer.:>>=
 			Q.singleton \(x, s') -> q `HFreer.app` x `runN` s'
-		Right (Union.FromFirst Get) -> q `HFreer.app` s `runN` s
-		Right (Union.FromFirst (Put s')) -> q `HFreer.app` () `runN` s'
+		Right (Union.FromFirst Get k) -> q `HFreer.app` (k s) `runN` s
+		Right (Union.FromFirst (Put s') k) -> q `HFreer.app` (k ()) `runN` s'
+
+{-
+Eff.handleRelayS (,) fst snd \st k s ->
+	case st of Get -> k s s; Put s' -> k () s'
+	-}
