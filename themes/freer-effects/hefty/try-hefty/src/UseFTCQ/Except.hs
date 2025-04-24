@@ -44,3 +44,7 @@ sample m n = do
 	Eff.eff . print $ m `div` n
 
 sample' m n = sample m n `catch` \e -> Eff.eff . putStrLn $ "catched! message is `" ++ e ++ "'"
+
+instance Union.HFunctor (E e) where
+	hmap _ _ (Throw e) = Throw e
+	hmap f g (Catch m h) = Catch (f m) (\e -> f $ h e)

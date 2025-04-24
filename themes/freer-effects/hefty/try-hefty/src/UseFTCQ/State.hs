@@ -29,9 +29,11 @@ m `run` s = case m of
 	HFreer.Pure x -> HFreer.Pure (x, s)
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> Union.hmap (`run` s) (, s) u' HFreer.:>>=
-			Q.singleton \(x, s') ->  q `HFreer.app` x `run` s'
+			Q.singleton \(x, s') -> q `HFreer.app` x `run` s'
 		Right (Union.FromFirst Get) -> q `HFreer.app` s `run` s
+		Right (Union.ConvertFirst Get k) -> (q `HFreer.app` (k s)) `run` s
 		Right (Union.FromFirst (Put s')) -> q `HFreer.app` () `run` s'
+		Right (Union.ConvertFirst (Put s') k) -> (q `HFreer.app` (k ())) `run` s'
 
 sample :: (
 	Union.Member (S Int) effs,
