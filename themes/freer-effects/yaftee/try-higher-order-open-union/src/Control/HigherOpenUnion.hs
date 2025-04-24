@@ -35,10 +35,10 @@ instance Member h (h ': hs) where elemNo = P 0
 instance {-# OVERLAPPABLE #-} Member h hs => Member h (_h' ': hs) where
 	elemNo = P $ 1 + unP (elemNo :: P h hs)
 
-newtype FromFirst t (f :: Type -> Type) a = FromFirst { toFirst :: t a }
+data FromFirst t (f :: Type -> Type) a = forall x . FromFirst (t x) (x -> a)
 
 inj :: forall t hs f a . Member (FromFirst t) hs => t a -> U hs f a
-inj = U (unP (elemNo :: P (FromFirst t) hs)) . FromFirst
+inj = U (unP (elemNo :: P (FromFirst t) hs)) . (`FromFirst` id)
 
 injh :: forall h hs f a . Member h hs => h f a -> U hs f a
 injh = U $ unP (elemNo :: P h hs)
@@ -52,8 +52,9 @@ decomp :: U (h ': hs) f a -> Either (U hs f a) (h f a)
 decomp (U 0 hx) = Right $ unsafeCoerce hx
 decomp (U i hx) = Left $ U (i - 1) hx
 
-extract :: U '[FromFirst t] f a -> t a
-extract (U _ hx) = unsafeCoerce hx
+extract :: Functor t => U '[FromFirst t] f a -> t a
+extract (U _ hx) = case unsafeCoerce hx of
+	FromFirst tx f -> f <$> tx
 
 extracth :: U '[h] f a -> h f a
 extracth (U _ hx) = unsafeCoerce hx
@@ -61,8 +62,8 @@ extracth (U _ hx) = unsafeCoerce hx
 weaken :: U r f a -> U (any ': r) f a
 weaken (U n a) = U (n + 1) a
 
-instance Functor t => HFunctor.H (FromFirst t) where
-	map _ g (FromFirst x) = FromFirst $ g <$> x
+instance HFunctor.H (FromFirst t) where
+	map _ g (FromFirst x k) = FromFirst x (g . k)
 
 instance HFunctor.H (U '[]) where map _ _ _ = error "never occur"
 
