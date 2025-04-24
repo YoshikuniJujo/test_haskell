@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Eff (
-	E, eff, effh, run, runM, -- handleRelaySimple, handleRelayS
+	E, eff, effh, run, runM, handleRelaySimple, handleRelayS
 	) where
 
 import Control.Monad.Fix
@@ -32,7 +32,6 @@ runM :: Monad m => E '[(Union.FromFirst m)] a -> m a
 runM (HFreer.Pure x) = pure x
 runM (u HFreer.:>>= q) = runM . (q `HFreer.app`) =<< Union.extract u
 
-{-
 handleRelaySimple :: HFunctor.H (Union.U effs) =>
 	(forall v b . eff v -> (v -> E effs b) -> E effs b) ->
 	E ((Union.FromFirst eff) ': effs) a -> E effs a
@@ -41,7 +40,7 @@ handleRelaySimple h = fix \go -> \case
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> HFunctor.map (handleRelaySimple h) id u'
 			HFreer.:>>= Q.singleton (go `HFreer.comp` q)
-		Right (Union.FromFirst x k) -> h x (go `HFreer.comp` q)
+		Right (Union.FromFirst x k) -> h x ((go `HFreer.comp` q) . k)
 
 handleRelayS :: HFunctor.H (Union.U effs) =>
 	(forall x . x -> s -> t x s) ->
@@ -53,5 +52,4 @@ handleRelayS mk gx gs h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> HFunctor.map (flip (handleRelayS mk gx gs h) s) (`mk` s) u'
 			HFreer.:>>= Q.singleton \xs -> go (gs xs) $ q `HFreer.app` (gx xs)
-		Right (Union.FromFirst x) -> h x (\x' s' -> go s' `HFreer.comp` q $ x') s
-		-}
+		Right (Union.FromFirst x k) -> h x (\x' s' -> (go s' `HFreer.comp` q) . k $ x') s
