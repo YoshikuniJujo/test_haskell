@@ -44,11 +44,11 @@ handleRelaySimple h = fix \go -> \case
 handleRelayS :: HFunctor.H (Union.U effs) =>
 	(forall x . x -> s -> t x s) ->
 	(forall x . t x s -> x) -> (forall x . t x s -> s) ->
-	(forall v b . eff v -> (v -> E effs b) -> s -> E effs b) ->
+	(forall v b . eff v -> (v -> s -> E effs b) -> s -> E effs b) ->
 	E ((Union.FromFirst eff) ': effs) a -> s -> E effs (t a s)
 handleRelayS mk gx gs h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
 	HFreer.Pure x -> HFreer.Pure $ mk x s
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> HFunctor.map (flip (handleRelayS mk gx gs h) s) (`mk` s) u'
 			HFreer.:>>= Q.singleton \xs -> go (gs xs) $ q `HFreer.app` (gx xs)
-		Right (Union.FromFirst x) -> h x (go s `HFreer.comp` q) s
+		Right (Union.FromFirst x) -> h x (\x' s' -> go s' `HFreer.comp` q $ x') s
