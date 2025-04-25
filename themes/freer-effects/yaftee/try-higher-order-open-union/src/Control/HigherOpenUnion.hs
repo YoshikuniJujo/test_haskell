@@ -10,8 +10,8 @@
 
 module Control.HigherOpenUnion (
 
-	U, Member, HT, FromFirst(..),
-	inj, injh, prj, decomp, extract, extracth, weaken,
+	U, Member, Base, HT, FromFirst(..),
+	inj, injBase, injh, prj, decomp, extract, extracth, weaken,
 
 	NonDet(..), Fail(..)
 
@@ -36,6 +36,13 @@ instance Member h (h ': hs) where elemNo = P 0
 instance {-# OVERLAPPABLE #-} Member h hs => Member h (_h' ': hs) where
 	elemNo = P $ 1 + unP (elemNo :: P h hs)
 
+class Base (h :: HT) (hs :: [HT]) where elemNoBase :: P h hs
+
+instance Base h '[h] where elemNoBase = P 0
+
+instance {-# OVERLAPPABLE #-} Base h hs => Base h (_h ': hs) where
+	elemNoBase = P $ 1 + unP (elemNoBase :: P h hs)
+
 data FromFirst t (f :: Type -> Type) a = forall x . FromFirst (t x) (x -> a)
 
 inj :: forall t hs f a . Member (FromFirst t) hs => t a -> U hs f a
@@ -43,6 +50,9 @@ inj = U (unP (elemNo :: P (FromFirst t) hs)) . (`FromFirst` id)
 
 injh :: forall h hs f a . Member h hs => h f a -> U hs f a
 injh = U $ unP (elemNo :: P h hs)
+
+injBase :: forall t hs f a . Base (FromFirst t) hs => t a -> U hs f a
+injBase = U (unP (elemNoBase :: P (FromFirst t) hs)) . (`FromFirst` id)
 
 prj :: forall h hs f a . Member h hs => U hs f a -> Maybe (h f a)
 prj (U i x)
