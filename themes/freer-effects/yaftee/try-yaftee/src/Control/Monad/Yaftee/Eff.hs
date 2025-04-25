@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Eff (
-	E, eff, effh, run, runM, handleRelay, handleRelayS, interpose
+	E, eff, effBase, effh, run, runM, handleRelay, handleRelayS, interpose
 	) where
 
 import Control.Monad.Fix
@@ -20,6 +20,9 @@ type E effs = HFreer.H (Union.U effs)
 
 eff :: Union.Member (Union.FromFirst t) effs => t a -> E effs a
 eff = (HFreer.:>>= Q.singleton HFreer.Pure) . Union.inj
+
+effBase :: Union.Base (Union.FromFirst t) effs => t a -> E effs a
+effBase = (HFreer.:>>= Q.singleton HFreer.Pure) . Union.injBase
 
 effh :: Union.Member h effs => h (E effs) a -> E effs a
 effh = (HFreer.:>>= Q.singleton HFreer.Pure) . Union.injh
