@@ -15,8 +15,8 @@ type T = Union.FromFirst T_
 
 data T_ a where T_ :: String -> T_ ()
 
-trace :: Union.Member T effs => String -> Eff.E effs ()
-trace = Eff.eff . T_
+trace :: Union.Base T effs => String -> Eff.E effs ()
+trace = Eff.effBase . T_
 
 run :: Eff.E '[T] a -> IO a
 run = \case
