@@ -20,5 +20,11 @@ hGet :: Union.Base IO.I es =>
 hGet bfsz h = fix \go -> Eff.effBase (not <$> hIsEOF h) >>=
 	bool (pure ()) (Eff.effBase (BS.hGetSome h bfsz) >>= Pipe.yield >> go)
 
+hGet' :: Union.Base IO.I es =>
+	Int -> Handle -> Eff.E (Pipe.P i (Maybe BS.ByteString) ': es) ()
+hGet' bfsz h = fix \go -> Eff.effBase (not <$> hIsEOF h) >>= bool
+	(Pipe.yield Nothing)
+	(Eff.effBase (BS.hGetSome h bfsz) >>= Pipe.yield . Just >> go)
+
 putStr :: Union.Base IO.I es => Eff.E (Pipe.P BS.ByteString o ': es) ()
 putStr = fix \go -> Pipe.await >>= Eff.effBase . BS.putStr >> go
