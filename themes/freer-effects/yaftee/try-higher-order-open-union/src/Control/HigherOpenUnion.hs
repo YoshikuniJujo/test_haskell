@@ -10,7 +10,8 @@
 
 module Control.HigherOpenUnion (
 
-	U, Member, HT, FromFirst(..), inj, injh, prj, decomp, extract, weaken,
+	U, Member, HT, FromFirst(..),
+	inj, injh, prj, decomp, extract, extracth, weaken,
 
 	NonDet(..), Fail(..)
 
