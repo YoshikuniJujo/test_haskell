@@ -5,14 +5,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Trace where
+module Control.Monad.Yaftee.Trace (T, trace, run) where
 
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.HFreer qualified as HFreer
 import Control.HigherOpenUnion qualified as Union
 
 type T = Union.FromFirst T_
-
 data T_ a where T_ :: String -> T_ ()
 
 trace :: Union.Base T effs => String -> Eff.E effs ()
