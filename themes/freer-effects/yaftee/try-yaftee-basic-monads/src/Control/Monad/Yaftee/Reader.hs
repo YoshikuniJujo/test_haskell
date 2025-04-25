@@ -43,21 +43,21 @@ run = runN
 -- * NAMED
 
 type Named nm e = Union.FromFirst (Named_ nm e)
-data Named_ (nm :: Symbol) e a where AskN :: Named_ nm e e
+data Named_ (nm :: Symbol) e a where Ask :: Named_ nm e e
 
 askN :: forall nm -> Union.Member (Named nm e) effs => Eff.E effs e
-askN nm = Eff.eff (AskN @nm)
+askN nm = Eff.eff (Ask @nm)
 
 localN :: forall e effs a . forall nm -> Union.Member (Named nm e) effs =>
 	(e -> e) -> Eff.E effs a -> Eff.E effs a
 localN nm f m = do
 	e <- f <$> askN nm
 	let	h :: Named_ nm e v -> (v -> Eff.E effs a) -> Eff.E effs a
-		h AskN k = k e
+		h Ask k = k e
 	Eff.interpose pure h m
 
 runN :: forall nm e effs a .
 	HFunctor.H (Union.U effs) =>
 	Eff.E (Named nm e ': effs) a -> e -> Eff.E effs a
 m `runN` e =
-	runIdentity <$> Eff.handleRelay Identity runIdentity (\AskN k -> k e) m
+	runIdentity <$> Eff.handleRelay Identity runIdentity (\Ask k -> k e) m
