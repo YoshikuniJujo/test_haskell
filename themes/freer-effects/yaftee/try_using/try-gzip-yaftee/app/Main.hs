@@ -11,11 +11,14 @@ import Control.Monad.Yaftee.Pipe.IO qualified as PipeI
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeB
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.IO qualified as IO
 import Data.BitArray qualified as BitArray
 import System.IO
 import System.Environment
 
+import Pipe.Gzip
 import Pipe.ByteString.OnDemand
+import Pipe.DataCheck
 
 main :: IO ()
 main = do
@@ -26,4 +29,5 @@ main = do
 		. (`State.run` BitArray.empty)
 		. Pipe.run
 		$ PipeB.hGet' 100 h Pipe.=$= onDemand Pipe.=$= do
-			PipeI.print
+			checkRight Pipe.=$= do
+				IO.print =<< readMagic

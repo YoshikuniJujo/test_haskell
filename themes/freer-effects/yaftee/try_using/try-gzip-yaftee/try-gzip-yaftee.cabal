@@ -28,6 +28,7 @@ library
       Data.BitArray
       Lib
       Pipe.ByteString.OnDemand
+      Pipe.DataCheck
       Pipe.Gzip
   other-modules:
       Paths_try_gzip_yaftee
