@@ -4,8 +4,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.ST where
+module Control.Monad.Yaftee.ST (
 
+	S, new, read, write, modify, modify', run
+
+	) where
+
+import Prelude hiding (read)
 import Control.Monad.ST qualified as ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.HigherOpenUnion qualified as Union
@@ -22,7 +27,8 @@ read = Eff.effBase . ST.readSTRef
 write :: Union.Base (S s) effs => ST.STRef s a -> a -> Eff.E effs ()
 write = (Eff.effBase .) . ST.writeSTRef
 
-modify, modify' :: Union.Base (S s) effs => ST.STRef s a -> (a -> a) -> Eff.E effs ()
+modify, modify' ::
+	Union.Base (S s) effs => ST.STRef s a -> (a -> a) -> Eff.E effs ()
 modify = (Eff.effBase .) . ST.modifySTRef
 modify' = (Eff.effBase .) . ST.modifySTRef'
 
