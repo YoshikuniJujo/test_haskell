@@ -25,6 +25,7 @@ dependencies:
 - try-higher-order-freer-monad
 - try-higher-order-open-union
 - try-ftcqueue
+- tools-yj
 
 ghc-options:
 - -Wall
