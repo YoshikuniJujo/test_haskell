@@ -29,6 +29,7 @@ library
       Control.Monad.Yaftee.Fail
       Control.Monad.Yaftee.NonDet
       Control.Monad.Yaftee.Reader
+      Control.Monad.Yaftee.ST
       Control.Monad.Yaftee.State
       Control.Monad.Yaftee.Trace
       Control.Monad.Yaftee.Writer
