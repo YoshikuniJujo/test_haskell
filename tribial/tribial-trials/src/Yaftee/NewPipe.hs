@@ -108,3 +108,6 @@ o@(u HFreer.:>>= k) =@=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decom
 		\case	(o', HFreer.Pure y) -> o' =@=! l y
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
 			_ -> error "never occur"
+
+-- instance Union.HFunctor Yield where
+--	hmap _ _ (Yield o) = Yield o

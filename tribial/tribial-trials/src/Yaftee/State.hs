@@ -12,16 +12,19 @@ import Yaftee.Eff qualified as Eff
 import Yaftee.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
 
-data S s a where Get :: S s s; Put :: s -> S s ()
+type S s = Union.FromFirst (S_ s)
+data S_ s a where Get :: S_ s s; Put :: s -> S_ s ()
 
-get :: Union.Member (Union.FromFirst (S s)) effs => Eff.E effs i o s
+get :: Union.Member (S s) effs => Eff.E effs i o s
 get = Eff.eff Get
 
-put :: Union.Member (Union.FromFirst (S s)) effs => s -> Eff.E effs i o ()
+put :: Union.Member (S s) effs => s -> Eff.E effs i o ()
 put = Eff.eff . Put
 
+modify f = put . f =<< get
+
 run :: Union.HFunctor (Union.U effs) =>
-	Eff.E (Union.FromFirst (S s) ': effs) i o a -> s -> Eff.E effs i o (a, s)
+	Eff.E (S s ': effs) i o a -> s -> Eff.E effs i o (a, s)
 m `run` s = case m of
 	HFreer.Pure x -> HFreer.Pure (x, s)
 	u HFreer.:>>= k -> case Union.decomp u of
@@ -30,7 +33,7 @@ m `run` s = case m of
 		Right (Union.FromFirst (Put s') k') -> k (k' ()) `run` s'
 
 sample :: (
-	Union.Member (Union.FromFirst (S Int)) effs,
+	Union.Member (S Int) effs,
 	Union.Member (Union.FromFirst IO) effs ) => Eff.E effs i o ()
 sample = do
 	put (123 :: Int)

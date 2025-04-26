@@ -11,11 +11,9 @@ import Prelude qualified as P
 import Control.Monad.Fix
 import Yaftee.Eff qualified as Eff
 import Yaftee.NewPipe qualified as Pipe
-import Yaftee.OpenUnion qualified as Union
+import Yaftee.IO qualified as IO
 import Yaftee.TypeElem qualified as Elem
 
-type I = Union.FromFirst IO
-
-print :: (Elem.Member Pipe.Await effs, Elem.Base I effs, Show a) =>
+print :: (Elem.Member Pipe.Await effs, Elem.Base IO.I effs, Show a) =>
 	Eff.E effs a o ()
 print = fix \go -> Pipe.await >>= (>> go) . Eff.effBase . P.print
