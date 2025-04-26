@@ -62,7 +62,8 @@ run = \case
 	HFreer.Pure x -> HFreer.Pure x
 	u HFreer.:>>= k -> case Union.decomp u of
 		Left u' -> Union.hmap run id u' HFreer.:>>= (run . k)
---		Right (i :=$= o) -> i =$=! o
+		Right (o :=$= p) -> (o =$=! p) >>= (run . k)
+		Right (o :=@= p) -> (o =@=! p) >>= (run . k)
 
 (=$=!) :: Union.HFunctor (Union.U effs) =>
 	Eff.E (Yield ': effs) i x r -> Eff.E (Await ': effs) x o r' ->
@@ -84,4 +85,26 @@ o@(u HFreer.:>>= k) =$=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decom
 		Union.hmap (=$=! p) ((, p) . HFreer.Pure) u' HFreer.:>>=
 		\case	(HFreer.Pure x, p') -> k x =$=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
+			_ -> error "never occur"
+
+(=@=!) :: Union.HFunctor (Union.U effs) =>
+	Eff.E (Yield ': effs) i x r -> Eff.E (Await ': effs) x o r' ->
+	Eff.E effs i o (Eff.E (Yield ': effs) i x r, Eff.E (Await ': effs) x o r')
+o@(HFreer.Pure _) =@=! p = HFreer.Pure (o, p)
+o@(u HFreer.:>>= k) =@=! p@(HFreer.Pure _) = case Union.decomp u of
+	Left u' -> Union.hmap (=@=! p) (\x -> (HFreer.Pure x, p)) u' HFreer.:>>=
+		\case	(HFreer.Pure x, p') -> (k x) =@=! p'
+			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
+			_ -> error "never occur"
+	Right (Yield _) -> HFreer.Pure (o, p)
+o@(u HFreer.:>>= k) =@=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decomp v) of
+	(Left u', _) -> Union.hmap (=@=! p) (\x -> (HFreer.Pure x, p)) u' HFreer.:>>=
+		\case	(HFreer.Pure x, p') -> (k x) =@=! p'
+			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
+			_ -> error "never occur"
+	(Right (Yield ot), Right Await) -> k () =@=! l ot
+	(Right (Yield _), Left v') ->
+		Union.hmap (o =@=!) ((o ,) . HFreer.Pure) v' HFreer.:>>=
+		\case	(o', HFreer.Pure y) -> o' =@=! l y
+			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
 			_ -> error "never occur"
