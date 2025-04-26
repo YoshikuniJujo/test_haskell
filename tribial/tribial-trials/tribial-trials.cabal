@@ -117,6 +117,7 @@ library
       Yaftee.Eff
       Yaftee.Except
       Yaftee.HFreer
+      Yaftee.NewPipe
       Yaftee.OpenUnion
       Yaftee.Pipe
       Yaftee.State

@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -57,3 +58,18 @@ o@(HFreer.Pure _) =$=! p@(v HFreer.:>>= r) = case Union.decomp v of
 			_ -> error "never occur"
 	Right Await -> HFreer.Pure (o, p)
 	Right (Yield ot) -> Union.injh (Yield @_ @i ot) HFreer.:>>= ((o =$=!) . r)
+--	Right (o' :=$= p') -> o =$=! (o' =$=! p')
+o@(u HFreer.:>>= k) =$=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decomp v) of
+	(_, Left v') ->
+		Union.weaken (Union.hmap (o =$=!) ((o ,) . HFreer.Pure) v') HFreer.:>>=
+		\case	(o', HFreer.Pure y) -> o' =$=! (l y)
+			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
+			_ -> error "never occur"
+	(_, Right (Yield ot)) -> Union.injh (Yield @_ @i ot) HFreer.:>>= ((o =$=!) . l)
+	(Right Await, _) -> Union.injh (Await @_ @i @o) HFreer.:>>= ((=$=! p) . k)
+	(Right (Yield ot), Right Await) -> k () =$=! l ot
+	(Left u', Right Await) ->
+		Union.weaken (Union.hmap (=$=! p) ((, p) . HFreer.Pure) u') HFreer.:>>=
+		\case	(HFreer.Pure x, p') -> k x =$=! p'
+			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
+			_ -> error "never occur"
