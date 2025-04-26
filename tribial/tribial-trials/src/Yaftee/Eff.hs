@@ -16,6 +16,10 @@ eff = (HFreer.:>>= HFreer.Pure) . Union.inj
 effh :: Union.Member h effs => h (E effs) i o a -> E effs i o a
 effh = (HFreer.:>>= HFreer.Pure) . Union.injh
 
+run :: E '[] i o a -> a
+run (HFreer.Pure x) = x
+run _ = error "bad"
+
 runM :: Monad m => E '[Union.FromFirst m] i o a -> m a
 runM (HFreer.Pure x) = pure x
 runM (u HFreer.:>>= k) = runM . k =<< Union.extract u
