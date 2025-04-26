@@ -32,6 +32,7 @@ library
       ContinuationMonad
       ContinuationMonad.WithFile
       Control.MonadClass
+      Data.BitArray
       Data.ShortWord
       DfsBfs
       Exception.ReadFile
@@ -118,9 +119,12 @@ library
       Yaftee.Except
       Yaftee.HFreer
       Yaftee.NewPipe
+      Yaftee.OldPipe
       Yaftee.OpenUnion
-      Yaftee.Pipe
+      Yaftee.Pipe.IO
+      Yaftee.Pipe.List
       Yaftee.State
+      Yaftee.TryGzip
       Yaftee.TypeElem
       Zip
   other-modules:

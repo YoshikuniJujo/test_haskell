@@ -13,6 +13,9 @@ type E effs = HFreer.H (Union.U effs)
 eff :: Union.Member (Union.FromFirst t) effs => t a -> E effs i o a
 eff = (HFreer.:>>= HFreer.Pure) . Union.inj
 
+effBase :: Union.Base (Union.FromFirst t) effs => t a -> E effs i o a
+effBase = (HFreer.:>>= HFreer.Pure) . Union.injBase
+
 effh :: Union.Member h effs => h (E effs) i o a -> E effs i o a
 effh = (HFreer.:>>= HFreer.Pure) . Union.injh
 

@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.Pipe where
+module Yaftee.OldPipe where
 
 import Data.Kind
 

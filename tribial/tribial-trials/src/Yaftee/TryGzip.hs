@@ -1,0 +1,1 @@
+module Yaftee.TryGzip where

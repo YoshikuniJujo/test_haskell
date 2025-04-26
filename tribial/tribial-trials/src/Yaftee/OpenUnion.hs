@@ -10,8 +10,8 @@
 
 module Yaftee.OpenUnion (
 
-	U, Member, HT, FromFirst(..),
-	inj, injh, prj, decomp, extract, extracth, weaken,
+	U, Member, Base, HT, FromFirst(..),
+	inj, injBase, injh, prj, decomp, extract, extracth, weaken,
 	HFunctor(..)
 
 	) where
@@ -46,6 +46,10 @@ instance (HFunctor h, HFunctor (U hs)) => HFunctor (U (h ': hs)) where
 inj :: forall t hs (f :: Type -> Type -> Type -> Type) i o a .
 	Member (FromFirst t) hs => t a -> U hs f i o a
 inj tx = U (unP (elemNo :: P (FromFirst t) hs)) $ FromFirst tx id
+
+injBase :: forall t hs (f :: Type -> Type -> Type -> Type) i o a .
+	Base (FromFirst t) hs => t a -> U hs f i o a
+injBase tx = U (unP (elemNoBase :: P (FromFirst t) hs)) $ FromFirst tx id
 
 injh :: forall h hs f i o a . Member h hs => h f i o a -> U hs f i o a
 injh = U (unP (elemNo :: P h hs))
