@@ -29,7 +29,7 @@ data FromFirst t (f :: Type -> Type -> Type -> Type) i o a
 	= forall x . FromFirst (t x) (x -> a)
 
 class HFunctor h where
-	hmap :: (f i o x -> g i o y) -> (x -> y) -> h f i o x -> h g i o y
+	hmap :: (f i o x -> g i' o' y) -> (x -> y) -> h f i o x -> h g i' o' y
 
 instance HFunctor (FromFirst t) where
 	hmap _ g (FromFirst x h) = FromFirst x (g . h)

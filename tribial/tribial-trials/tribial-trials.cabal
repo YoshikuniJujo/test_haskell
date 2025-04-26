@@ -118,6 +118,7 @@ library
       Yaftee.Except
       Yaftee.HFreer
       Yaftee.OpenUnion
+      Yaftee.Pipe
       Yaftee.State
       Yaftee.TypeElem
       Zip
