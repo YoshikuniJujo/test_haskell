@@ -121,6 +121,7 @@ library
       Yaftee.NewPipe
       Yaftee.OldPipe
       Yaftee.OpenUnion
+      Yaftee.Pipe.ByteString
       Yaftee.Pipe.IO
       Yaftee.Pipe.List
       Yaftee.State
