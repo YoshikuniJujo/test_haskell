@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
@@ -9,6 +10,7 @@ module Yaftee.NewPipe where
 
 import Data.Kind
 import Yaftee.Eff qualified as Eff
+import Yaftee.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
 
 data Yield (f :: Type -> Type -> Type -> Type) i o a where
@@ -52,3 +54,34 @@ o =$= p = Eff.effh $ o :=$= p
 	Yieldable (Eff.E effs) i x r -> Awaitable (Eff.E effs) x o r ->
 	Eff.E effs i o (Yieldable (Eff.E effs) i x r, Awaitable (Eff.E effs) x o r)
 o =@= p = Eff.effh $ o :=@= p
+
+run :: Union.HFunctor (Union.U effs) =>
+--	Eff.E (P ': effs) i o a -> Eff.E effs i o (Eff.E (Yield : effs) i x r, Eff.E (Await : effs) x o r')
+	Eff.E (P ': effs) i o a -> Eff.E effs i o a
+run = \case
+	HFreer.Pure x -> HFreer.Pure x
+	u HFreer.:>>= k -> case Union.decomp u of
+		Left u' -> Union.hmap run id u' HFreer.:>>= (run . k)
+--		Right (i :=$= o) -> i =$=! o
+
+(=$=!) :: Union.HFunctor (Union.U effs) =>
+	Eff.E (Yield ': effs) i x r -> Eff.E (Await ': effs) x o r' ->
+	Eff.E effs i o (Eff.E (Yield ': effs) i x r, Eff.E (Await ': effs) x o r')
+o =$=! p@(HFreer.Pure _) = HFreer.Pure (o, p)
+o@(HFreer.Pure _) =$=! p@(v HFreer.:>>= l) = case Union.decomp v of
+	Left v' -> Union.hmap (o =$=!) ((o ,) . HFreer.Pure) v' HFreer.:>>=
+		\case	(o', HFreer.Pure y) -> o' =$=! (l y)
+			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
+			_ -> error "never occur"
+	Right Await -> HFreer.Pure (o, p)
+o@(u HFreer.:>>= k) =$=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decomp v) of
+	(_, Left v') -> Union.hmap (o =$=!) ((o ,) . HFreer.Pure) v' HFreer.:>>=
+		\case	(o', HFreer.Pure y) -> o' =$=! (l y)
+			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
+			_ -> error "never occur"
+	(Right (Yield ot), Right Await) -> k () =$=! l ot
+	(Left u', Right Await) ->
+		Union.hmap (=$=! p) ((, p) . HFreer.Pure) u' HFreer.:>>=
+		\case	(HFreer.Pure x, p') -> k x =$=! p'
+			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
+			_ -> error "never occur"
