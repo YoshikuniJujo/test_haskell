@@ -1,5 +1,6 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TypeOperators #-}
@@ -28,7 +29,19 @@ data FromFirst t (f :: Type -> Type -> Type -> Type) i o a
 	= forall x . FromFirst (t x) (x -> a)
 
 class HFunctor h where
-	hmap :: (f i o x -> g i o y) -> (x -> y) -> h f x -> h g y
+	hmap :: (f i o x -> g i o y) -> (x -> y) -> h f i o x -> h g i o y
+
+instance HFunctor (FromFirst t) where
+	hmap _ g (FromFirst x h) = FromFirst x (g . h)
+
+instance HFunctor (U '[]) where hmap _ _ _ = error "bad"
+
+instance (HFunctor h, HFunctor (U hs)) => HFunctor (U (h ': hs)) where
+--	hmap :: forall f g i o x y .
+--		(f i o x -> g i o y) -> (x -> y) -> h f i o x -> h g i o y
+	hmap f g u = case decomp u of
+		Left u' -> weaken $ hmap f g u'
+		Right h -> injh $ hmap f g h
 
 inj :: forall t hs (f :: Type -> Type -> Type -> Type) i o a .
 	Member (FromFirst t) hs => t a -> U hs f i o a
