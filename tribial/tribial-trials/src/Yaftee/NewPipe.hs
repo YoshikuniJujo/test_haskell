@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Yaftee.NewPipe where
@@ -31,3 +32,23 @@ data P (f :: Type -> Type -> Type -> Type) i o a where
 		P f i o (Yieldable f i x r, Awaitable f x o r)
 	(:=@=) :: Yieldable f i x r -> Awaitable f x o r ->
 		P f i o (Yieldable f i x r, Awaitable f x o r)
+
+yield :: Union.Member Yield effs => o -> Eff.E effs i o ()
+yield = Eff.effh . Yield
+
+await :: Union.Member Await effs => Eff.E effs i o i
+await = Eff.effh Await
+
+{-
+(=$=) :: Union.Member P effs =>
+	Yieldable (Eff.E effs) i x r -> Awaitable (Eff.E effs) x o r ->
+	Eff.E effs i o (Yieldable (Eff.E effs) i x r, Awaitable (Eff.E effs) x o r)
+	-}
+(=$=) :: Eff.E (Yield ': effs) i x r -> Eff.E (Await ': effs) x o r ->
+	Eff.E (P ': effs) i o (Eff.E (Yield ': effs) i x r, Eff.E (Await ': effs) x o r)
+o =$= p = Eff.effh $ o :=$= p
+
+(=@=) :: Union.Member P effs =>
+	Yieldable (Eff.E effs) i x r -> Awaitable (Eff.E effs) x o r ->
+	Eff.E effs i o (Yieldable (Eff.E effs) i x r, Awaitable (Eff.E effs) x o r)
+o =@= p = Eff.effh $ o :=@= p
