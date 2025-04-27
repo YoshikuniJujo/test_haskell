@@ -11,8 +11,8 @@
 module Yaftee.OpenUnion (
 
 	U, Member, Base, HT, FromFirst(..),
-	inj, injBase, injh, prj, decomp, extract, extracth, weaken,
-	HFunctor(..)
+	inj, injBase, injh, prj, decomp, extract, extracth, weaken, weaken1,
+	HFunctor(..), HFunctorO(..)
 
 	) where
 
@@ -43,6 +43,22 @@ instance (HFunctor h, HFunctor (U hs)) => HFunctor (U (h ': hs)) where
 		Left u' -> weaken $ hmap f g u'
 		Right h -> injh $ hmap f g h
 
+class HFunctorO h where
+	hmapO :: (f i o x -> g i' o y) -> (x -> y) -> h f i o x -> h g i' o y
+
+instance (HFunctorO h, HFunctor (U hs)) => HFunctorO (U (h ': hs)) where
+	hmapO f g u = case decomp u of
+		Left u' -> weaken $ hmap f g u'
+		Right h -> injh $ hmapO f g h
+
+class HFunctorI h where
+	hmapI :: (f i o x -> g i o' y) -> (x -> y) -> h f i o x -> h g i o' y
+
+instance (HFunctorI h, HFunctor (U hs)) => HFunctorI (U (h ': hs)) where
+	hmapI f g u = case decomp u of
+		Left u' -> weaken $ hmap f g u'
+		Right h -> injh $ hmapI f g h
+
 inj :: forall t hs (f :: Type -> Type -> Type -> Type) i o a .
 	Member (FromFirst t) hs => t a -> U hs f i o a
 inj tx = U (unP (elemNo :: P (FromFirst t) hs)) $ FromFirst tx id
@@ -72,3 +88,7 @@ extracth (U _ hx) = unsafeCoerce hx
 
 weaken :: U r f i o a -> U (any ': r) f i o a
 weaken (U n a) = U (n + 1) a
+
+weaken1 :: U (x ': r) f i o a -> U (x ': any ': r) f i o a
+weaken1 (U 0 a) = U 0 a
+weaken1 (U n a) = U (n + 1) a
