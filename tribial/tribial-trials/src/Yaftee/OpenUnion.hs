@@ -12,7 +12,9 @@ module Yaftee.OpenUnion (
 
 	U, Member, Base, HT, FromFirst(..),
 	inj, injBase, injh, prj, decomp, extract, extracth, weaken, weaken1,
-	HFunctor(..), HFunctorO(..), HFunctorI(..)
+	HFunctor(..), HFunctorO(..), HFunctorI(..),
+
+	hmapOI
 
 	) where
 
@@ -58,6 +60,10 @@ instance (HFunctorI h, HFunctor (U hs)) => HFunctorI (U (h ': hs)) where
 	hmapI f g u = case decomp u of
 		Left u' -> weaken $ hmap f g u'
 		Right h -> injh $ hmapI f g h
+
+hmapOI f g u = case decomp u of
+	Left u' -> weaken $ hmapI f g u'
+	Right h -> injh $ hmapO f g h
 
 inj :: forall t hs (f :: Type -> Type -> Type -> Type) i o a .
 	Member (FromFirst t) hs => t a -> U hs f i o a

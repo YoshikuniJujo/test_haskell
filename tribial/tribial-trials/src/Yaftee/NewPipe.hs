@@ -19,7 +19,7 @@ data Yield (f :: Type -> Type -> Type -> Type) i o a where
 type family Yieldable (f :: Type -> Type -> Type -> Type) ::
 	Type -> Type -> Type -> Type
 
-type instance Yieldable (Eff.E (P ': effs)) = Eff.E (Yield ': effs)
+type instance Yieldable (Eff.E (P ': Yield ': Await ': effs)) = Eff.E (Yield ': Await ': effs)
 
 data Await (f :: Type -> Type -> Type -> Type) i o a where
 	Await :: forall f i o a . (i -> a) -> Await f i o a
@@ -27,7 +27,7 @@ data Await (f :: Type -> Type -> Type -> Type) i o a where
 type family Awaitable (f :: Type -> Type -> Type -> Type) ::
 	Type -> Type -> Type -> Type
 
-type instance Awaitable (Eff.E (P ': effs)) = Eff.E (Await ': effs)
+type instance Awaitable (Eff.E (P ': Yield ': Await ': effs)) = Eff.E (Await ': Yield ': effs)
 
 data P (f :: Type -> Type -> Type -> Type) i o a where
 	(:=$=) :: Yieldable f i x r -> Awaitable f x o r' ->
@@ -41,13 +41,13 @@ yield = Eff.effh . (`Yield` ())
 await :: Union.Member Await effs => Eff.E effs i o i
 await = Eff.effh $ Await id
 
-{-
 (=$=) :: Union.Member P effs =>
 	Yieldable (Eff.E effs) i x r -> Awaitable (Eff.E effs) x o r ->
 	Eff.E effs i o (Yieldable (Eff.E effs) i x r, Awaitable (Eff.E effs) x o r)
-	-}
+{-
 (=$=) :: Eff.E (Yield ': effs) i x r -> Eff.E (Await ': effs) x o r' ->
 	Eff.E (P ': effs) i o (Eff.E (Yield ': effs) i x r, Eff.E (Await ': effs) x o r')
+	-}
 o =$= p = Eff.effh $ o :=$= p
 
 (=@=) :: Union.Member P effs =>
@@ -57,13 +57,13 @@ o =@= p = Eff.effh $ o :=@= p
 
 run :: Union.HFunctor (Union.U effs) =>
 --	Eff.E (P ': effs) i o a -> Eff.E effs i o (Eff.E (Yield : effs) i x r, Eff.E (Await : effs) x o r')
-	Eff.E (P ': effs) i o a -> Eff.E effs i o a
+	Eff.E (P ': Yield ': Await ': effs) i o a -> Eff.E (Yield ': Await ': effs) i o a
 run = \case
 	HFreer.Pure x -> HFreer.Pure x
 	u HFreer.:>>= k -> case Union.decomp u of
-		Left u' -> Union.hmap run id u' HFreer.:>>= (run . k)
-		Right (o :=$= p) -> (o =$=! p) >>= (run . k)
-		Right (o :=@= p) -> (o =@=! p) >>= (run . k)
+		Left u' -> Union.hmapOI run id u' HFreer.:>>= (run . k)
+		Right (o :=$= p) -> (o =$=!. p) >>= (run . k)
+--		Right (o :=@= p) -> (o =@=! p) >>= (run . k)
 
 (=$=!) :: Union.HFunctor (Union.U effs) =>
 	Eff.E (Yield ': effs) i x r -> Eff.E (Await ': effs) x o r' ->
