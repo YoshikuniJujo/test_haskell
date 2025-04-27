@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.Pipe.ByteString.OnDemand where
+module Yaftee.Legacy.Pipe.ByteString.OnDemand where
 
 import Control.Monad.Fix
 import Data.Bool
@@ -11,7 +11,7 @@ import Data.ByteString qualified as BS
 import Data.BitArray qualified as BitArray
 
 import Yaftee.Eff qualified as Eff
-import Yaftee.NewPipe qualified as Pipe
+import Yaftee.Legacy.NewPipe qualified as Pipe
 import Yaftee.State qualified as State
 import Yaftee.Except qualified as Except
 import Yaftee.OpenUnion qualified as Union

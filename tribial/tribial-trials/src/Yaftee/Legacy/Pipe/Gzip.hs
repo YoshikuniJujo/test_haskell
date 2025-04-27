@@ -1,17 +1,17 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Yaftee.Pipe.Gzip where
+module Yaftee.Legacy.Pipe.Gzip where
 
 import Data.ByteString qualified as BS
 import Data.BitArray qualified as BitArray
 
 import Yaftee.Eff qualified as Eff
-import Yaftee.NewPipe qualified as Pipe
+import Yaftee.Legacy.NewPipe qualified as Pipe
 import Yaftee.State qualified as State
 import Yaftee.OpenUnion qualified as Union
 
-import Yaftee.Pipe.ByteString.OnDemand
+import Yaftee.Legacy.Pipe.ByteString.OnDemand
 
 readMagic :: (
 	Union.Member Pipe.Await effs,

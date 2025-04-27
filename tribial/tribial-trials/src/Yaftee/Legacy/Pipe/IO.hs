@@ -3,14 +3,14 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.Pipe.IO where
+module Yaftee.Legacy.Pipe.IO where
 
 import Prelude hiding (print)
 import Prelude qualified as P
 
 import Control.Monad.Fix
 import Yaftee.Eff qualified as Eff
-import Yaftee.NewPipe qualified as Pipe
+import Yaftee.Legacy.NewPipe qualified as Pipe
 import Yaftee.IO qualified as IO
 import Yaftee.TypeElem qualified as Elem
 

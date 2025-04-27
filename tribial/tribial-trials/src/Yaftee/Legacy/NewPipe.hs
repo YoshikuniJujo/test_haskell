@@ -6,7 +6,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.NewPipe where
+module Yaftee.Legacy.NewPipe where
 
 import Data.Kind
 import Yaftee.Eff qualified as Eff

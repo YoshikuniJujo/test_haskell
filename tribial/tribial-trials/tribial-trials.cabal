@@ -119,14 +119,14 @@ library
       Yaftee.Except
       Yaftee.HFreer
       Yaftee.IO
-      Yaftee.NewPipe
+      Yaftee.Legacy.NewPipe
+      Yaftee.Legacy.Pipe.ByteString
+      Yaftee.Legacy.Pipe.ByteString.OnDemand
+      Yaftee.Legacy.Pipe.Gzip
+      Yaftee.Legacy.Pipe.IO
+      Yaftee.Legacy.Pipe.List
       Yaftee.OldPipe
       Yaftee.OpenUnion
-      Yaftee.Pipe.ByteString
-      Yaftee.Pipe.ByteString.OnDemand
-      Yaftee.Pipe.Gzip
-      Yaftee.Pipe.IO
-      Yaftee.Pipe.List
       Yaftee.State
       Yaftee.TryGzip
       Yaftee.TypeElem

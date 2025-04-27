@@ -1,8 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Yaftee.Pipe.List where
+module Yaftee.Legacy.Pipe.List where
 
-import Yaftee.NewPipe qualified as Pipe
+import Yaftee.Legacy.NewPipe qualified as Pipe
 
 from xs = Pipe.yield `traverse` xs

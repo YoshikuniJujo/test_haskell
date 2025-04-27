@@ -9,10 +9,10 @@ import System.Environment
 
 import Yaftee.Eff qualified as Eff
 import Yaftee.State qualified as State
-import Yaftee.NewPipe qualified as Pipe
-import Yaftee.Pipe.ByteString qualified as PipeB
-import Yaftee.Pipe.ByteString.OnDemand
-import Yaftee.Pipe.Gzip qualified as Gzip
+import Yaftee.Legacy.NewPipe qualified as Pipe
+import Yaftee.Legacy.Pipe.ByteString qualified as PipeB
+import Yaftee.Legacy.Pipe.ByteString.OnDemand
+import Yaftee.Legacy.Pipe.Gzip qualified as Gzip
 import Yaftee.Except qualified as Except
 import Yaftee.IO qualified as IO
 

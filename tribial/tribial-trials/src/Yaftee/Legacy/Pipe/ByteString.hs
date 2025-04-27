@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.Pipe.ByteString where
+module Yaftee.Legacy.Pipe.ByteString where
 
 import Control.Monad.Fix
 import Data.ByteString qualified as BS
@@ -11,7 +11,7 @@ import Data.Bool
 import System.IO
 
 import Yaftee.Eff qualified as Eff
-import Yaftee.NewPipe qualified as Pipe
+import Yaftee.Legacy.NewPipe qualified as Pipe
 import Yaftee.IO qualified as IO
 import Yaftee.OpenUnion qualified as Union
 
