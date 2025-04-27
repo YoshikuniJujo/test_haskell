@@ -19,6 +19,7 @@ import Yaftee.IO qualified as IO
 import Data.BitArray qualified as BitArray
 
 main :: IO ()
+
 main = putStrLn "Slozsoft"
 
 {-
@@ -32,4 +33,4 @@ main = do
 		$ Pipe.run (PipeB.hGet' 100 h Pipe.=$= onDemand) Pipe.=$= do
 --			checkRight Pipe.=$= do
 				IO.print =<< Gzip.readMagic
-				-}
+-}
