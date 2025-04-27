@@ -22,7 +22,7 @@ type family Yieldable (f :: Type -> Type -> Type -> Type) ::
 type instance Yieldable (Eff.E (P ': effs)) = Eff.E (Yield ': effs)
 
 data Await (f :: Type -> Type -> Type -> Type) i o a where
-	Await :: forall f i o . Await f i o i
+	Await :: forall f i o a . (i -> a) -> Await f i o a
 
 type family Awaitable (f :: Type -> Type -> Type -> Type) ::
 	Type -> Type -> Type -> Type
@@ -39,7 +39,7 @@ yield :: Union.Member Yield effs => o -> Eff.E effs i o ()
 yield = Eff.effh . (`Yield` ())
 
 await :: Union.Member Await effs => Eff.E effs i o i
-await = Eff.effh Await
+await = Eff.effh $ Await id
 
 {-
 (=$=) :: Union.Member P effs =>
@@ -74,20 +74,19 @@ o@(HFreer.Pure _) =$=! p@(v HFreer.:>>= l) = case Union.decomp v of
 		\case	(o', HFreer.Pure y) -> o' =$=! (l y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
 			_ -> error "never occur"
-	Right Await -> HFreer.Pure (o, p)
+	Right (Await _) -> HFreer.Pure (o, p)
 o@(u HFreer.:>>= k) =$=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decomp v) of
 	(_, Left v') -> Union.hmap (o =$=!) ((o ,) . HFreer.Pure) v' HFreer.:>>=
 		\case	(o', HFreer.Pure y) -> o' =$=! (l y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
 			_ -> error "never occur"
-	(Right (Yield ot a), Right Await) -> k a =$=! l ot
-	(Left u', Right Await) ->
+	(Right (Yield ot a), Right (Await c)) -> k a =$=! l (c ot)
+	(Left u', Right (Await _)) ->
 		Union.hmap (=$=! p) ((, p) . HFreer.Pure) u' HFreer.:>>=
 		\case	(HFreer.Pure x, p') -> k x =$=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
 			_ -> error "never occur"
 
-{-
 (=$=!.) :: Union.HFunctor (Union.U effs) =>
 	Eff.E (Yield ': Await ': effs) i x r -> Eff.E (Await ': Yield ': effs) x o r' ->
 	Eff.E (Yield ': Await ': effs) i o (
@@ -100,19 +99,18 @@ o@(HFreer.Pure _) =$=!. p@(v HFreer.:>>= l) = case Union.decomp v of
 		\case	(o', HFreer.Pure y) -> o' =$=!. (l y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
 			_ -> error "never occur"
-	Right Await -> HFreer.Pure (o, p)
+	Right (Await _) -> HFreer.Pure (o, p)
 o@(u HFreer.:>>= k) =$=!. p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decomp v) of
 	(_, Left v') -> Union.weaken1 (Union.hmapO (o =$=!.) ((o ,) . HFreer.Pure) v') HFreer.:>>=
 		\case	(o', HFreer.Pure y) -> o' =$=!. (l y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
 			_ -> error "never occur"
-	(Right (Yield ot a), Right Await) -> k a =$=!. l ot
-	(Left u', Right Await) ->
-		Union.weaken (Union.hmap (=$=!. p) ((, p) . HFreer.Pure) u') HFreer.:>>=
+	(Right (Yield ot a), Right (Await c)) -> k a =$=!. l (c ot)
+	(Left u', Right (Await _)) ->
+		Union.weaken (Union.hmapI (=$=!. p) ((, p) . HFreer.Pure) u') HFreer.:>>=
 		\case	(HFreer.Pure x, p') -> k x =$=!. p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
 			_ -> error "never occur"
-			-}
 
 (=@=!) :: Union.HFunctor (Union.U effs) =>
 	Eff.E (Yield ': effs) i x r -> Eff.E (Await ': effs) x o r' ->
@@ -129,7 +127,7 @@ o@(u HFreer.:>>= k) =@=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decom
 		\case	(HFreer.Pure x, p') -> (k x) =@=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
 			_ -> error "never occur"
-	(Right (Yield ot a), Right Await) -> k a =@=! l ot
+	(Right (Yield ot a), Right (Await c)) -> k a =@=! l (c ot)
 	(Right (Yield _ _), Left v') ->
 		Union.hmap (o =@=!) ((o ,) . HFreer.Pure) v' HFreer.:>>=
 		\case	(o', HFreer.Pure y) -> o' =@=! l y
@@ -138,3 +136,6 @@ o@(u HFreer.:>>= k) =@=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decom
 
 instance Union.HFunctorO Yield where
 	hmapO _ g (Yield o a) = Yield o $ g a
+
+instance Union.HFunctorI Await where
+	hmapI _ g (Await c) = Await $ g . c

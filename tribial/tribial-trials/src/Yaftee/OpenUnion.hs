@@ -12,7 +12,7 @@ module Yaftee.OpenUnion (
 
 	U, Member, Base, HT, FromFirst(..),
 	inj, injBase, injh, prj, decomp, extract, extracth, weaken, weaken1,
-	HFunctor(..), HFunctorO(..)
+	HFunctor(..), HFunctorO(..), HFunctorI(..)
 
 	) where
 
