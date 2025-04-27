@@ -20,6 +20,7 @@ data P (f :: Type -> Type -> Type -> Type) i o a where
 	Await :: P f i o i
 	Yield :: forall f i o . o -> P f i o ()
 	(:=$=) :: f i x r -> f x o r' -> P f i o (f i x r, f x o r')
+--	(:=$=) :: f i x r -> f x o r' -> P f i o (f i o r') -- (f i x r, f x o r')
 	(:=@=) :: f i x r -> f x o r' -> P f i o (f i x r, f x o r')
 
 await :: Elem.Member P effs => Eff.E effs i o i
@@ -31,6 +32,7 @@ yield = Eff.effh . Yield
 (=$=) :: Elem.Member P effs =>
 	Eff.E effs i x r -> Eff.E effs x o r' ->
 	Eff.E effs i o (Eff.E effs i x r, Eff.E effs x o r')
+--	Eff.E effs i o (Eff.E effs i o r') -- (Eff.E effs i x r, Eff.E effs x o r')
 i =$= o = Eff.effh $ i :=$= o
 
 (=@=) :: Elem.Member P effs =>
@@ -49,7 +51,9 @@ run = \case
 (=$=!) :: forall effs i x o r r' . Union.HFunctor (Union.U effs) =>
 	Eff.E (P ': effs) i x r -> Eff.E (P ': effs) x o r' ->
 	Eff.E (P ': effs) i o (Eff.E (P ': effs) i x r, Eff.E (P ': effs) x o r')
+--	Eff.E (P ': effs) i o (Eff.E (P ': effs) i o r') -- (P ': effs) i x r, Eff.E (P ': effs) x o r')
 o =$=! p@(HFreer.Pure _) = HFreer.Pure (o, p)
+-- o =$=! p@(HFreer.Pure _) = HFreer.Pure (o :=$= p)
 o@(HFreer.Pure _) =$=! p@(v HFreer.:>>= r) = case Union.decomp v of
 	Left v' ->
 		Union.weaken (Union.hmap (o =$=!) ((o ,) . HFreer.Pure) v') HFreer.:>>=
