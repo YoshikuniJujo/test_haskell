@@ -141,7 +141,10 @@ library
       Yaftee.UseFTCQ.Eff
       Yaftee.UseFTCQ.Except
       Yaftee.UseFTCQ.HFreer
+      Yaftee.UseFTCQ.IO
       Yaftee.UseFTCQ.Pipe
+      Yaftee.UseFTCQ.Pipe.IO
+      Yaftee.UseFTCQ.Pipe.List
       Yaftee.UseFTCQ.State
       Zip
   other-modules:
