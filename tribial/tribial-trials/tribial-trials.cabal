@@ -127,6 +127,7 @@ library
       Yaftee.Legacy.Pipe.List
       Yaftee.OpenUnion
       Yaftee.Pipe
+      Yaftee.Pipe.ByteString
       Yaftee.Pipe.IO
       Yaftee.Pipe.List
       Yaftee.Pipe.Tools
