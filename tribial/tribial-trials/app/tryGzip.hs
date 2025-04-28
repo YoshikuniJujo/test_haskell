@@ -35,5 +35,4 @@ main = do
 		. Pipe.run
 		$ PipeB.hGet' 100 h Pipe.=$= onDemand Pipe.=$= do
 			checkRight Pipe.=$= do -- readMagic' Pipe.=$= PipeI.print
-				IO.print =<< (readHeader `Except.catch` \e -> IO.print (e :: String) >> pure undefined)
---				IO.print =<< readMagic
+				IO.print =<< ((Just <$> readHeader) `Except.catch` \e -> IO.print (e :: String) >> pure Nothing)

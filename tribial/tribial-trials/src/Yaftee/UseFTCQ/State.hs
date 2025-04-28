@@ -1,39 +1,64 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Yaftee.UseFTCQ.State where
+
+import GHC.TypeLits
 
 import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
 import Data.FTCQueue qualified as Q
 
-type S s = Union.FromFirst (S_ s)
-data S_ s a where Get :: S_ s s; Put :: s -> S_ s ()
+-- * NORMAL
+
+type S s = Named "" s
 
 get :: Union.Member (S s) effs => Eff.E effs i o s
-get = Eff.eff Get
+get = getN ""
 
 put :: Union.Member (S s) effs => s -> Eff.E effs i o ()
-put = Eff.eff . Put
+put = putN ""
 
-modify f = put . f =<< get
+modify :: Union.Member (S s) effs => (s -> s) -> Eff.E effs i o ()
+modify = modifyN ""
 
 run :: Union.HFunctor (Union.U effs) =>
 	Eff.E (S s ': effs) i o a -> s -> Eff.E effs i o (a, s)
-m `run` s = case m of
-	HFreer.Pure x -> HFreer.Pure (x, s)
-	u HFreer.:>>= q -> case Union.decomp u of
-		Left u' -> Union.hmap (`run` s) (, s) u' HFreer.:>>=
-			Q.singleton \(x, s') -> q `HFreer.app` x `run` s'
-		Right (Union.FromFirst Get k) -> q `HFreer.app` (k s) `run` s
-		Right (Union.FromFirst (Put s') k) ->
-			q `HFreer.app` (k ()) `run` s'
+run = runN
+
+-- * NAMED
+
+type Named nm s = Union.FromFirst (Named_ nm s)
+
+data Named_ (nm :: Symbol) s a where
+	GetN :: Named_ nm s s; PutN :: forall nm s . !s -> Named_ nm s ()
+
+getN :: forall s effs i o .
+	forall nm -> Union.Member (Named nm s) effs => Eff.E effs i o s
+getN nm = Eff.eff (GetN @nm)
+
+putN :: forall s effs i o .
+	forall nm -> Union.Member (Named nm s) effs => s -> Eff.E effs i o ()
+putN nm = Eff.eff . PutN @nm
+
+modifyN :: forall s effs i o .
+	forall nm -> Union.Member (Named nm s) effs => (s -> s) -> Eff.E effs i o ()
+modifyN nm f = putN nm . f =<< getN nm
+
+runN :: Union.HFunctor (Union.U effs) =>
+	Eff.E (Named nm s ': effs) i o a -> s -> Eff.E effs i o (a, s)
+runN = Eff.handleRelayS (,) fst snd \st k s ->
+	case st of GetN -> k s s; PutN s' -> k () s'
+
+-- * SAMPLE
 
 sample :: (
 	Union.Member (S Int) effs,
