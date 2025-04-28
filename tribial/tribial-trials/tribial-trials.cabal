@@ -33,6 +33,7 @@ library
       ContinuationMonad.WithFile
       Control.MonadClass
       Data.BitArray
+      Data.Crc
       Data.ShortWord
       DfsBfs
       Exception.ReadFile
@@ -143,7 +144,8 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
@@ -165,7 +167,8 @@ executable chokkaku
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
@@ -188,7 +191,8 @@ executable endless
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
@@ -210,7 +214,8 @@ executable tribial-trials-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
@@ -233,7 +238,8 @@ executable tryGzip
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
@@ -256,7 +262,8 @@ executable tryGzipLegacy
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
@@ -279,7 +286,8 @@ executable tryRecursionOverModules
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
@@ -302,7 +310,8 @@ test-suite tribial-trials-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , bytestring
     , c-enum
     , containers
