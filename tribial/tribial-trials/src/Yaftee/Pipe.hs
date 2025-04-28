@@ -72,15 +72,15 @@ o@(u HFreer.:>>= k) =$=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decom
 	(_, Right (Yield ot)) -> Union.injh (Yield @_ @i ot) HFreer.:>>= ((o =$=!) . l)
 	(Right Await, _) -> Union.injh (Await @_ @i @o) HFreer.:>>= ((=$=! p) . k)
 	(Right (Yield ot), Right Await) -> k () =$=! l ot
+	(Right (o' :=$= p'), Right Await) -> (k =<< (o' =$=! p')) =$=! p
+	(Right (o' :=@= p'), Right Await) -> (k =<< (o' =@=! p')) =$=! p
+	(_, Right (o' :=$= p')) -> o =$=! (l =<< (o' =$=! p'))
+	(_, Right (o' :=@= p')) -> o =$=! (l =<< (o' =@=! p'))
 	(Left u', Right Await) ->
 		Union.weaken (Union.hmap (=$=! p) ((, p) . HFreer.Pure) u') HFreer.:>>=
 		\case	(HFreer.Pure x, p') -> k x =$=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure (k =<< o', p')
 			_ -> error "never occur"
-	(Right (o' :=$= p'), Right Await) -> (k =<< (o' =$=! p')) =$=! p
-	(Right (o' :=@= p'), Right Await) -> (k =<< (o' =@=! p')) =$=! p
-	(_, Right (o' :=$= p')) -> o =$=! (l =<< (o' =$=! p'))
-	(_, Right (o' :=@= p')) -> o =$=! (l =<< (o' =@=! p'))
 
 (=@=!) :: forall effs i x o r r' . Union.HFunctor (Union.U effs) =>
 	Eff.E (P ': effs) i x r -> Eff.E (P ': effs) x o r' ->
@@ -105,12 +105,12 @@ o@(u HFreer.:>>= k) =@=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decom
 	(Right Await, _) -> Union.injh (Await @_ @_ @o) HFreer.:>>= ((=@=! p) . k)
 	(_, Right (Yield ot)) -> Union.injh (Yield @_ @i ot) HFreer.:>>= ((o =@=!) . l)
 	(Right (Yield ot), Right Await) -> k () =@=! l ot
+	(Right (Yield _), Right (o' :=$= p')) -> o =@=! (l =<< (o' =$=! p'))
+	(Right (Yield _), Right (o' :=@= p')) -> o =@=! (l =<< (o' =@=! p'))
+	(Right (o' :=$= p'), _) -> (k =<< (o' =$=! p')) =@=! p
+	(Right (o' :=@= p'), _) -> (k =<< (o' =@=! p')) =@=! p
 	(Right (Yield _), Left v') ->
 		Union.weaken (Union.hmap (o =@=!) ((o ,) . HFreer.Pure) v') HFreer.:>>=
 		\case	(o', HFreer.Pure y) -> o' =@=! (l y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', l =<< p')
 			_ -> error "never occur"
-	(Right (Yield _), Right (o' :=$= p')) -> o =@=! (l =<< (o' =$=! p'))
-	(Right (Yield _), Right (o' :=@= p')) -> o =@=! (l =<< (o' =@=! p'))
-	(Right (o' :=$= p'), _) -> (k =<< (o' =$=! p')) =@=! p
-	(Right (o' :=@= p'), _) -> (k =<< (o' =@=! p')) =@=! p

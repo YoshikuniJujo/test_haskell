@@ -58,11 +58,11 @@ o@(HFreer.Pure _) =$=! p@(v HFreer.:>>= r) = case Union.decomp v of
 			(o', HFreer.Pure y) -> o' =$=! (r `HFreer.app` y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', (r `HFreer.app`) =<< p')
 			_ -> error "never occur"
+	Right (o' :=$= p') -> o =$=! ((r `HFreer.app`) =<< o' =$=! p')
+	Right (o' :=@= p') -> o =$=! ((r `HFreer.app`) =<< o' =@=! p')
 	Right Await -> HFreer.Pure (o, p)
 	Right (Yield ot) -> Union.injh (Yield @_ @i ot) HFreer.:>>=
 		Q.singleton ((o =$=!) `HFreer.comp` r)
-	Right (o' :=$= p') -> o =$=! ((r `HFreer.app`) =<< o' =$=! p')
-	Right (o' :=@= p') -> o =$=! ((r `HFreer.app`) =<< o' =@=! p')
 o@(u HFreer.:>>= q) =$=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decomp v) of
 	(_, Left v') ->
 		Union.weaken (Union.hmap (o =$=!) ((o ,) . HFreer.Pure) v') HFreer.:>>=
@@ -70,21 +70,21 @@ o@(u HFreer.:>>= q) =$=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 			(o', HFreer.Pure y) -> o' =$=! (r `HFreer.app` y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', (r `HFreer.app`) =<< p')
 			_ -> error "never occur"
+	(_, Right (o' :=$= p')) -> o =$=! ((r `HFreer.app`) =<< (o' =$=! p'))
+	(_, Right (o' :=@= p')) -> o =$=! ((r `HFreer.app`) =<< (o' =@=! p'))
 	(_, Right (Yield ot)) -> Union.injh (Yield @_ @i ot) HFreer.:>>=
 		Q.singleton ((o =$=!) . (r `HFreer.app`))
 	(Right Await, _) -> Union.injh (Await @_ @_ @o) HFreer.:>>=
 		Q.singleton ((=$=! p) . (q `HFreer.app`))
 	(Right (Yield ot), Right Await) -> (q `HFreer.app` ()) =$=! (r `HFreer.app` ot)
+	(Right (o' :=$= p'), Right Await) -> ((q `HFreer.app`) =<< (o' =$=! p')) =$=! p
+	(Right (o' :=@= p'), Right Await) -> ((q `HFreer.app`) =<< (o' =@=! p')) =$=! p
 	(Left u', Right Await) ->
 		Union.weaken (Union.hmap (=$=! p) ((, p) . HFreer.Pure) u') HFreer.:>>=
 		Q.singleton \case
 			(HFreer.Pure x, p') -> (q `HFreer.app` x) =$=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
 			_ -> error "never occur"
-	(Right (o' :=$= p'), Right Await) -> ((q `HFreer.app`) =<< (o' =$=! p')) =$=! p
-	(Right (o' :=@= p'), Right Await) -> ((q `HFreer.app`) =<< (o' =@=! p')) =$=! p
-	(_, Right (o' :=$= p')) -> o =$=! ((r `HFreer.app`) =<< (o' =$=! p'))
-	(_, Right (o' :=@= p')) -> o =$=! ((r `HFreer.app`) =<< (o' =@=! p'))
 
 (=@=!) :: forall effs i x o r r' . Union.HFunctor (Union.U effs) =>
 	Eff.E (P ': effs) i x r -> Eff.E (P ': effs) x o r' ->
@@ -97,10 +97,10 @@ o@(u HFreer.:>>= q) =@=! p@(HFreer.Pure _) = case Union.decomp u of
 			(HFreer.Pure x, p') -> q `HFreer.app` x =@=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
 			_ -> error "never occur"
-	Right (Yield _) -> HFreer.Pure (o, p)
-	Right Await -> Union.injh (Await @_ @_ @o) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
 	Right (o' :=$= p') -> ((q `HFreer.app`) =<< (o' =$=! p')) =@=! p
 	Right (o' :=@= p') -> ((q `HFreer.app`) =<< (o' =@=! p')) =@=! p
+	Right (Yield _) -> HFreer.Pure (o, p)
+	Right Await -> Union.injh (Await @_ @_ @o) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
 o@(u HFreer.:>>= q) =@=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decomp v) of
 	(Left u', _) ->
 		Union.weaken (Union.hmap (=@=! p) ((, p) . HFreer.Pure) u') HFreer.:>>=
@@ -108,17 +108,17 @@ o@(u HFreer.:>>= q) =@=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 			(HFreer.Pure x, p') -> q `HFreer.app` x =@=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
 			_ -> error "never occur"
+	(Right (o' :=$= p'), _) -> ((q `HFreer.app`) =<< (o' =$=! p')) =@=! p
+	(Right (o' :=@= p'), _) -> ((q `HFreer.app`) =<< (o' =@=! p')) =@=! p
 	(Right Await, _) -> Union.injh (Await @_ @_ @o) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
 	(_, Right (Yield ot)) -> Union.injh (Yield @_ @i ot) HFreer.:>>=
 		Q.singleton ((o =@=!) . (r `HFreer.app`))
 	(Right (Yield ot), Right Await) -> q `HFreer.app` () =@=! (r `HFreer.app` ot)
+	(Right (Yield _), Right (o' :=$= p')) -> o =@=! ((r `HFreer.app`) =<< (o' =$=! p'))
+	(Right (Yield _), Right (o' :=@= p')) -> o =@=! ((r `HFreer.app`) =<< (o' =@=! p'))
 	(Right (Yield _), Left v') ->
 		Union.weaken (Union.hmap (o =@=!) ((o ,) . HFreer.Pure) v') HFreer.:>>=
 		Q.singleton \case
 			(o', HFreer.Pure y) -> o' =@=! (r `HFreer.app` y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', (r `HFreer.app`) =<< p')
 			_ -> error "never occur"
-	(Right (Yield _), Right (o' :=$= p')) -> o =@=! ((r `HFreer.app`) =<< (o' =$=! p'))
-	(Right (Yield _), Right (o' :=@= p')) -> o =@=! ((r `HFreer.app`) =<< (o' =@=! p'))
-	(Right (o' :=$= p'), _) -> ((q `HFreer.app`) =<< (o' =$=! p')) =@=! p
-	(Right (o' :=@= p'), _) -> ((q `HFreer.app`) =<< (o' =@=! p')) =@=! p

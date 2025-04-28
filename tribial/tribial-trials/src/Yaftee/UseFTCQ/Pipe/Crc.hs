@@ -37,7 +37,7 @@ crcPipe :: (
 	) =>
 	Eff.E effs BS.ByteString BS.ByteString ()
 crcPipe = do
---	State.put $ Crc 0xffffffff
+	State.put $ Crc 0xffffffff
 	crcBody
 
 foobar :: Union.Member Pipe.P effs => Eff.E effs a a ()
@@ -49,7 +49,7 @@ crcBody :: (
 	Eff.E effs BS.ByteString BS.ByteString ()
 crcBody = Pipe.await >>= \case
 	bs -> do
---		State.modify \(Crc c) -> Crc $ c `step'` bs
+		State.modify \(Crc c) -> Crc $ c `step'` bs
 		Pipe.yield (bs :: BS.ByteString)
 		crcBody
 

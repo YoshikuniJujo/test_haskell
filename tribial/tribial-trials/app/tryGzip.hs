@@ -34,6 +34,6 @@ main = do
 		. (`State.run` BitArray.empty)
 		. Pipe.run
 		$ PipeB.hGet' 100 h Pipe.=$= onDemand Pipe.=$= do
-			checkRight Pipe.=$= readMagic' Pipe.=$= PipeI.print
---				IO.print =<< readHeader
+			checkRight Pipe.=$= do -- readMagic' Pipe.=$= PipeI.print
+				IO.print =<< (readHeader `Except.catch` \e -> IO.print (e :: String) >> pure undefined)
 --				IO.print =<< readMagic

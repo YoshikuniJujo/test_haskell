@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase, BlockArguments #-}
+{-# LANGUAGE LambdaCase, BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Yaftee.UseFTCQ.Pipe.ByteString.OnDemand where
@@ -35,6 +36,8 @@ onDemand = fix \go -> State.get >>= \case
 		maybe (Except.throw errne) ((>> go) . Pipe.yield)
 	RequestBytes ln -> takeBytes ln >>=
 		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestString -> takeString >>=
+		maybe (Except.throw errne) ((>> go) . Pipe.yield)
 	where
 	errne :: String
 	errne = "Not enough ByteString"
@@ -59,6 +62,24 @@ takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 		Nothing -> readMore >>= bool (pure Nothing) (takeBytes ln)
 		Just (t, d) ->
 			Just (Right t) <$ State.put (BitArray.fromByteString d)
+
+takeString :: (
+	Union.Member Pipe.P effs,
+	Union.Member (State.S BitArray.B) effs ) =>
+	Eff.E effs (Maybe BS.ByteString) o
+		(Maybe (Either BitArray.B BS.ByteString))
+takeString = State.get >>= \ba -> case BitArray.byteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
+	Right bs -> case splitString bs of
+		Nothing -> readMore >>= bool (pure Nothing) takeString
+		Just (t, d) -> Just (Right t)
+			<$ State.put (BitArray.fromByteString d)
+
+splitString :: BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
+splitString bs = case BS.span (/= 0) bs of
+	(_, "") -> Nothing
+	(t, BS.uncons -> Just (z, d)) -> Just (BS.snoc t z, d)
+	_ -> error "Never occur"
 
 splitAt' :: Int -> BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
 splitAt' ln bs = if BS.length bs < ln then Nothing else Just $ BS.splitAt ln bs
