@@ -22,6 +22,8 @@ get = Eff.eff Get
 put :: Union.Member (S s) effs => s -> Eff.E effs i o ()
 put = Eff.eff . Put
 
+modify f = put . f =<< get
+
 run :: Union.HFunctor (Union.U effs) =>
 	Eff.E (S s ': effs) i o a -> s -> Eff.E effs i o (a, s)
 m `run` s = case m of

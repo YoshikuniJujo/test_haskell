@@ -143,6 +143,10 @@ library
       Yaftee.UseFTCQ.HFreer
       Yaftee.UseFTCQ.IO
       Yaftee.UseFTCQ.Pipe
+      Yaftee.UseFTCQ.Pipe.ByteString
+      Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
+      Yaftee.UseFTCQ.Pipe.Gzip
+      Yaftee.UseFTCQ.Pipe.Gzip.Check
       Yaftee.UseFTCQ.Pipe.IO
       Yaftee.UseFTCQ.Pipe.List
       Yaftee.UseFTCQ.State

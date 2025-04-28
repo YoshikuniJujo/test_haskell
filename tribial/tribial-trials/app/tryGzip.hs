@@ -7,18 +7,18 @@ import Control.Monad
 import System.IO
 import System.Environment
 
-import Yaftee.Eff qualified as Eff
-import Yaftee.Pipe qualified as Pipe
-import Yaftee.Pipe.IO qualified as PipeI
-import Yaftee.Pipe.ByteString qualified as PipeB
-import Yaftee.Pipe.Gzip
-import Yaftee.Pipe.Gzip.Check
-import Yaftee.State qualified as State
-import Yaftee.Except qualified as Except
-import Yaftee.IO qualified as IO
+import Yaftee.UseFTCQ.Eff qualified as Eff
+import Yaftee.UseFTCQ.Pipe qualified as Pipe
+import Yaftee.UseFTCQ.Pipe.IO qualified as PipeI
+import Yaftee.UseFTCQ.Pipe.ByteString qualified as PipeB
+import Yaftee.UseFTCQ.Pipe.Gzip
+import Yaftee.UseFTCQ.Pipe.Gzip.Check
+import Yaftee.UseFTCQ.State qualified as State
+import Yaftee.UseFTCQ.Except qualified as Except
+import Yaftee.UseFTCQ.IO qualified as IO
 
 import Data.BitArray qualified as BitArray
-import Yaftee.Pipe.ByteString.OnDemand
+import Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
 
 main = do
 	fp : _ <- getArgs
