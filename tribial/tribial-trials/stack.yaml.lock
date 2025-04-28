@@ -3,7 +3,33 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: 56debfb0ee179ffc501037bfd1409c0b546066d9
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-ftcqueue
+    pantry-tree:
+      sha256: 807d60b66005b6d52d72b22a2d5ebc006e1673f7c0d2f19d1f7361617b673fcb
+      size: 574
+    subdir: themes/freer-effects/common/try-ftcqueue
+    version: 0.1.0.0
+  original:
+    commit: 56debfb0ee179ffc501037bfd1409c0b546066d9
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/freer-effects/common/try-ftcqueue
+- completed:
+    commit: 56debfb0ee179ffc501037bfd1409c0b546066d9
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-freer-base-classes
+    pantry-tree:
+      sha256: b3b1c81a659ba1687d0ef3759a2c8d45c8084db30b24f8641dccf1dae4b0f1c1
+      size: 675
+    subdir: themes/freer-effects/common/try-freer-base-classes
+    version: 0.1.0.0
+  original:
+    commit: 56debfb0ee179ffc501037bfd1409c0b546066d9
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
 - completed:
     sha256: 0bff5f3f5548516a7c86cea95d47672383cef34dac97ba28d750a52ddfcdf54a

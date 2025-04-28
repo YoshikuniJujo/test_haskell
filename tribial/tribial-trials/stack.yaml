@@ -39,8 +39,13 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
-# extra-deps: []
+
+extra-deps:
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 56debfb0ee179ffc501037bfd1409c0b546066d9
+    subdirs:
+      - themes/freer-effects/common/try-ftcqueue
+      - themes/freer-effects/common/try-freer-base-classes
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

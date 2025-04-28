@@ -32,6 +32,7 @@ dependencies:
 - vector
 - mono-traversable
 - c-enum
+- try-ftcqueue
 
 library:
   source-dirs: src

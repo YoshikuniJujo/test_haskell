@@ -138,6 +138,9 @@ library
       Yaftee.State
       Yaftee.TryGzip
       Yaftee.TypeElem
+      Yaftee.UseFTCQ.Eff
+      Yaftee.UseFTCQ.HFreer
+      Yaftee.UseFTCQ.State
       Zip
   other-modules:
       Paths_tribial_trials
@@ -155,6 +158,7 @@ library
     , random
     , template-haskell
     , time
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
 
@@ -179,6 +183,7 @@ executable chokkaku
     , template-haskell
     , time
     , tribial-trials
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
 
@@ -203,6 +208,7 @@ executable endless
     , template-haskell
     , time
     , tribial-trials
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
 
@@ -226,6 +232,7 @@ executable tribial-trials-exe
     , template-haskell
     , time
     , tribial-trials
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
 
@@ -250,6 +257,7 @@ executable tryGzip
     , template-haskell
     , time
     , tribial-trials
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
 
@@ -274,6 +282,7 @@ executable tryGzipLegacy
     , template-haskell
     , time
     , tribial-trials
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
 
@@ -298,6 +307,7 @@ executable tryRecursionOverModules
     , template-haskell
     , time
     , tribial-trials
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
 
@@ -322,5 +332,6 @@ test-suite tribial-trials-test
     , template-haskell
     , time
     , tribial-trials
+    , try-ftcqueue
     , vector
   default-language: Haskell2010
