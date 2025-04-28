@@ -129,6 +129,7 @@ library
       Yaftee.Pipe
       Yaftee.Pipe.IO
       Yaftee.Pipe.List
+      Yaftee.Pipe.Tools
       Yaftee.State
       Yaftee.TryGzip
       Yaftee.TypeElem
