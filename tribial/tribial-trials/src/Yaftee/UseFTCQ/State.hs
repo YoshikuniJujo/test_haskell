@@ -24,6 +24,9 @@ type S s = Named "" s
 get :: Union.Member (S s) effs => Eff.E effs i o s
 get = getN ""
 
+gets :: Union.Member (S s) effs => (s -> t) -> Eff.E effs i o t
+gets = getsN ""
+
 put :: Union.Member (S s) effs => s -> Eff.E effs i o ()
 put = putN ""
 
@@ -44,6 +47,10 @@ data Named_ (nm :: Symbol) s a where
 getN :: forall s effs i o .
 	forall nm -> Union.Member (Named nm s) effs => Eff.E effs i o s
 getN nm = Eff.eff (GetN @nm)
+
+getsN :: forall s t effs i o .
+	forall nm -> Union.Member (Named nm s) effs => (s -> t) -> Eff.E effs i o t
+getsN nm f = f <$> getN nm
 
 putN :: forall s effs i o .
 	forall nm -> Union.Member (Named nm s) effs => s -> Eff.E effs i o ()

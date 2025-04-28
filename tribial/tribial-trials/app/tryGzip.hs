@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 
 module Main where
 
@@ -12,14 +13,19 @@ import Yaftee.UseFTCQ.Pipe qualified as Pipe
 import Yaftee.UseFTCQ.Pipe.IO qualified as PipeI
 import Yaftee.UseFTCQ.Pipe.ByteString qualified as PipeB
 import Yaftee.UseFTCQ.Pipe.Gzip
+import Yaftee.UseFTCQ.Pipe.Gzip.Block
 import Yaftee.UseFTCQ.Pipe.Gzip.Check
 import Yaftee.UseFTCQ.State qualified as State
 import Yaftee.UseFTCQ.Except qualified as Except
 import Yaftee.UseFTCQ.Fail qualified as Fail
 import Yaftee.UseFTCQ.IO qualified as IO
 
+import Data.Sequence qualified as Seq
+import Data.Word
 import Data.BitArray qualified as BitArray
+import Data.HuffmanTree
 import Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
+import Yaftee.UseFTCQ.Pipe.Gzip.Huffman
 
 import Yaftee.UseFTCQ.Pipe.Crc qualified as Crc
 
@@ -29,6 +35,10 @@ main = do
 	void . Eff.runM
 		. Fail.run
 		. Except.run @_ @String
+		. (flip (State.runN @_ @"bits") BitArray.empty)
+		. (`State.run` ExtraBits 0)
+		. (`State.run` (Seq.empty :: Seq.Seq Word8))
+		. (`State.run` (fixedTable, fixedTable))
 		. (`State.run` Crc.Crc 0)
 		. (`State.run` RequestBytes 5)
 		. (`State.run` BitArray.empty)
@@ -36,3 +46,4 @@ main = do
 		$ PipeB.hGet' 100 h Pipe.=$= onDemand Pipe.=$= do
 			checkRight Pipe.=$= do -- readMagic' Pipe.=$= PipeI.print
 				IO.print =<< ((Just <$> readHeader) `Except.catch` \e -> IO.print (e :: String) >> pure Nothing)
+			blocks Pipe.=$= PipeI.print

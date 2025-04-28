@@ -36,8 +36,12 @@ onDemand = fix \go -> State.get >>= \case
 		maybe (Except.throw errne) ((>> go) . Pipe.yield)
 	RequestBytes ln -> takeBytes ln >>=
 		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestBuffer ln -> takeBuffer ln >>=
+		maybe (Except.throw errne) ((>> go) . Pipe.yield)
 	RequestString -> takeString >>=
 		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestPushBack ba -> State.modify (ba `BitArray.append`) >>
+		Pipe.yield (Right "") >> go
 	where
 	errne :: String
 	errne = "Not enough ByteString"
@@ -62,6 +66,21 @@ takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 		Nothing -> readMore >>= bool (pure Nothing) (takeBytes ln)
 		Just (t, d) ->
 			Just (Right t) <$ State.put (BitArray.fromByteString d)
+
+takeBuffer :: (
+	Union.Member Pipe.P effs,
+	Union.Member (State.S BitArray.B) effs ) =>
+	Int -> Eff.E effs (Maybe BS.ByteString) o
+		(Maybe (Either BitArray.B BS.ByteString))
+takeBuffer ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
+	Right bs -> case splitAt' ln bs of
+		Nothing -> readMore >>= bool
+			(bool	(Just (Right bs) <$ State.put BitArray.empty)
+				(pure Nothing) (BS.null bs))
+			(takeBuffer ln)
+		Just (t, d) -> Just (Right t)
+			<$ State.put (BitArray.fromByteString d)
 
 takeString :: (
 	Union.Member Pipe.P effs,

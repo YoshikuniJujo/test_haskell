@@ -33,7 +33,9 @@ library
       ContinuationMonad.WithFile
       Control.MonadClass
       Data.BitArray
+      Data.Calc
       Data.Crc
+      Data.HuffmanTree
       Data.ShortWord
       DfsBfs
       Exception.ReadFile
@@ -145,11 +147,15 @@ library
       Yaftee.UseFTCQ.HFreer
       Yaftee.UseFTCQ.IO
       Yaftee.UseFTCQ.Pipe
+      Yaftee.UseFTCQ.Pipe.BitArray
       Yaftee.UseFTCQ.Pipe.ByteString
       Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
       Yaftee.UseFTCQ.Pipe.Crc
       Yaftee.UseFTCQ.Pipe.Gzip
+      Yaftee.UseFTCQ.Pipe.Gzip.Block
       Yaftee.UseFTCQ.Pipe.Gzip.Check
+      Yaftee.UseFTCQ.Pipe.Gzip.Huffman
+      Yaftee.UseFTCQ.Pipe.Gzip.RunLength
       Yaftee.UseFTCQ.Pipe.IO
       Yaftee.UseFTCQ.Pipe.List
       Yaftee.UseFTCQ.State
