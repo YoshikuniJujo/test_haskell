@@ -129,6 +129,7 @@ library
       Yaftee.Pipe
       Yaftee.Pipe.ByteString
       Yaftee.Pipe.ByteString.OnDemand
+      Yaftee.Pipe.Gzip
       Yaftee.Pipe.Gzip.Check
       Yaftee.Pipe.IO
       Yaftee.Pipe.List
