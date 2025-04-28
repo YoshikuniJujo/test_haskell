@@ -1,11 +1,17 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Yaftee.UseFTCQ.HFreer where
 
+import Control.Applicative
+import Control.Monad
+import Control.Monad.Freer.NonDetable qualified as NonDetable
+import Control.Monad.Freer.Failable qualified as Failable
 import Data.FTCQueue qualified as Q
+import Data.Bool
 
 data H h i o a = Pure a | forall x . h (H h) i o x :>>= Q.Q (H h i o) x a
 
@@ -32,3 +38,13 @@ q `app` x = case Q.viewl q of
 
 comp :: (H h i o b -> H h' i' o' c) -> Q.Q (H h i o) a b -> a -> H h' i' o' c
 comp = (. app) . (.)
+
+instance NonDetable.N (h (H h) i o) => Alternative (H h i o) where
+	empty = NonDetable.mz :>>= Q.singleton Pure
+	m1 <|> m2 = NonDetable.mp :>>= Q.singleton (bool m1 m2)
+
+instance NonDetable.N (h (H h) i o) => MonadPlus (H h i o) where
+	mzero = empty; mplus = (<|>)
+
+instance Failable.F (h (H h) i o) => MonadFail (H h i o) where
+	fail msg = Failable.fail msg :>>= Q.singleton Pure

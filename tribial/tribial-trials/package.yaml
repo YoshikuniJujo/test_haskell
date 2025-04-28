@@ -33,6 +33,7 @@ dependencies:
 - mono-traversable
 - c-enum
 - try-ftcqueue
+- try-freer-base-classes
 
 library:
   source-dirs: src

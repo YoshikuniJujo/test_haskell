@@ -1,5 +1,6 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -14,13 +15,18 @@ module Yaftee.OpenUnion (
 	inj, injBase, injh, prj, decomp, extract, extracth, weaken, weaken1,
 	HFunctor(..), HFunctorO(..), HFunctorI(..),
 
-	hmapOI
+	hmapOI,
+
+	Fail(..)
 
 	) where
 
 import Data.Kind
 import Yaftee.TypeElem
 import Unsafe.Coerce
+
+import Control.Monad.Freer.NonDetable qualified as NonDetable
+import Control.Monad.Freer.Failable qualified as Failable
 
 type HT = (Type -> Type -> Type -> Type) -> Type -> Type -> Type -> Type
 
@@ -98,3 +104,14 @@ weaken (U n a) = U (n + 1) a
 weaken1 :: U (x ': r) f i o a -> U (x ': any ': r) f i o a
 weaken1 (U 0 a) = U 0 a
 weaken1 (U n a) = U (n + 1) a
+
+instance Member (FromFirst NonDet) effs => NonDetable.N (U effs f i o) where
+	mz = inj (NonDetable.mz @NonDet); mp = inj (NonDetable.mp @NonDet)
+
+data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
+
+instance NonDetable.N NonDet where mz = MZero; mp = MPlus
+
+instance Member (FromFirst Fail) effs => Failable.F (U effs f i o) where fail = inj . Fail
+
+data Fail a = Fail String deriving Show

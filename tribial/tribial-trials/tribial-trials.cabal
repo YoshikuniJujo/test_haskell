@@ -91,6 +91,7 @@ library
       Template.TryNameSpace
       Template.TryNameSpace2
       Timeout
+      Tools.ByteStringNum
       TryCategory.Power
       TryGenerics
       TryHeteroMap
@@ -140,11 +141,13 @@ library
       Yaftee.TypeElem
       Yaftee.UseFTCQ.Eff
       Yaftee.UseFTCQ.Except
+      Yaftee.UseFTCQ.Fail
       Yaftee.UseFTCQ.HFreer
       Yaftee.UseFTCQ.IO
       Yaftee.UseFTCQ.Pipe
       Yaftee.UseFTCQ.Pipe.ByteString
       Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
+      Yaftee.UseFTCQ.Pipe.Crc
       Yaftee.UseFTCQ.Pipe.Gzip
       Yaftee.UseFTCQ.Pipe.Gzip.Check
       Yaftee.UseFTCQ.Pipe.IO
@@ -167,6 +170,7 @@ library
     , random
     , template-haskell
     , time
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
@@ -192,6 +196,7 @@ executable chokkaku
     , template-haskell
     , time
     , tribial-trials
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
@@ -217,6 +222,7 @@ executable endless
     , template-haskell
     , time
     , tribial-trials
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
@@ -241,6 +247,7 @@ executable tribial-trials-exe
     , template-haskell
     , time
     , tribial-trials
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
@@ -266,6 +273,7 @@ executable tryGzip
     , template-haskell
     , time
     , tribial-trials
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
@@ -291,6 +299,7 @@ executable tryGzipLegacy
     , template-haskell
     , time
     , tribial-trials
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
@@ -316,6 +325,7 @@ executable tryRecursionOverModules
     , template-haskell
     , time
     , tribial-trials
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
@@ -341,6 +351,7 @@ test-suite tribial-trials-test
     , template-haskell
     , time
     , tribial-trials
+    , try-freer-base-classes
     , try-ftcqueue
     , vector
   default-language: Haskell2010
