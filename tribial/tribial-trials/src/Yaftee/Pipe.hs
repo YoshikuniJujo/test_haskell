@@ -112,5 +112,5 @@ o@(u HFreer.:>>= k) =@=! p@(v HFreer.:>>= l) = case (Union.decomp u, Union.decom
 			_ -> error "never occur"
 	(Right (Yield _), Right (o' :=$= p')) -> o =@=! (l =<< (o' =$=! p'))
 	(Right (Yield _), Right (o' :=@= p')) -> o =@=! (l =<< (o' =@=! p'))
-	(Right (o' :=$= p'), _) -> (k =<< (o' =$=! p')) =$=! p
-	(Right (o' :=@= p'), _) -> (k =<< (o' =@=! p')) =$=! p
+	(Right (o' :=$= p'), _) -> (k =<< (o' =$=! p')) =@=! p
+	(Right (o' :=@= p'), _) -> (k =<< (o' =@=! p')) =@=! p
