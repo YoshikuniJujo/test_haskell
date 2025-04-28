@@ -139,6 +139,7 @@ library
       Yaftee.TryGzip
       Yaftee.TypeElem
       Yaftee.UseFTCQ.Eff
+      Yaftee.UseFTCQ.Except
       Yaftee.UseFTCQ.HFreer
       Yaftee.UseFTCQ.State
       Zip
