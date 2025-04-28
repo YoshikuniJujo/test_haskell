@@ -128,6 +128,8 @@ library
       Yaftee.OpenUnion
       Yaftee.Pipe
       Yaftee.Pipe.ByteString
+      Yaftee.Pipe.ByteString.OnDemand
+      Yaftee.Pipe.Gzip.Check
       Yaftee.Pipe.IO
       Yaftee.Pipe.List
       Yaftee.Pipe.Tools
@@ -223,6 +225,29 @@ executable tribial-trials-exe
 
 executable tryGzip
   main-is: tryGzip.hs
+  other-modules:
+      Main
+      Paths_tribial_trials
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , containers
+    , deepseq
+    , mono-traversable
+    , mtl
+    , random
+    , template-haskell
+    , time
+    , tribial-trials
+    , vector
+  default-language: Haskell2010
+
+executable tryGzipLegacy
+  main-is: tryGzipLegacy.hs
   other-modules:
       Main
       Paths_tribial_trials
