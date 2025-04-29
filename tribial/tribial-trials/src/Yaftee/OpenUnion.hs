@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -13,7 +13,9 @@ module Yaftee.OpenUnion (
 
 	U, Member, Base, HT, FromFirst(..),
 	inj, injBase, injh, prj, decomp, extract, extracth, weaken, weaken1,
-	HFunctor(..),
+	HFunctor(..), HFunctorO(..), HFunctorI(..),
+
+	hmapOI,
 
 	Fail(..)
 
@@ -35,7 +37,7 @@ data FromFirst t (f :: Type -> Type -> Type -> Type) i o a
 	= forall x . FromFirst (t x) (x -> a)
 
 class HFunctor h where
-	hmap :: (forall i o . f i o x -> g i o y) -> (x -> y) -> h f i o x -> h g i o y
+	hmap :: (f i o x -> g i' o' y) -> (x -> y) -> h f i o x -> h g i' o' y
 
 instance HFunctor (FromFirst t) where
 	hmap _ g (FromFirst x h) = FromFirst x (g . h)
@@ -49,7 +51,6 @@ instance (HFunctor h, HFunctor (U hs)) => HFunctor (U (h ': hs)) where
 		Left u' -> weaken $ hmap f g u'
 		Right h -> injh $ hmap f g h
 
-{-
 class HFunctorO h where
 	hmapO :: (f i o x -> g i' o y) -> (x -> y) -> h f i o x -> h g i' o y
 
@@ -69,7 +70,6 @@ instance (HFunctorI h, HFunctor (U hs)) => HFunctorI (U (h ': hs)) where
 hmapOI f g u = case decomp u of
 	Left u' -> weaken $ hmapI f g u'
 	Right h -> injh $ hmapO f g h
-	-}
 
 inj :: forall t hs (f :: Type -> Type -> Type -> Type) i o a .
 	Member (FromFirst t) hs => t a -> U hs f i o a
