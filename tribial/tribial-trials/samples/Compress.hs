@@ -171,6 +171,7 @@ tryCompress''' crl fp = withFile fp ReadMode \h ->
 		. (`State.run` triple0)
 		. (`State.run` Crc 0)
 		. (`State.run` FileLength 0)
+--		. ((\(HFreer.Pure x) -> x) . snd . fromJust <$>) . Pipe.run
 		. PipeL.to
 		$ PipeBS.hGet 100 h Pipe.=$= lengthPipe Pipe.=$= crcPipe Pipe.=$= crl Pipe.=$= do
 			fix \go -> Pipe.isMore >>=
@@ -266,6 +267,7 @@ decFormatX fp = do
 			runLength Pipe.=$=
 			format 100 Pipe.=$=
 			PipeBS.putStr
+--			PipeIO.print
 
 get :: (
 	Union.Member Pipe.P effs,
@@ -313,6 +315,7 @@ newtype AheadPos = AheadPos Int deriving Show
 nextAheadPos :: AheadPos -> AheadPos
 nextAheadPos (AheadPos p) = AheadPos $ p + 1
 
+-- tryDecompress :: FilePath -> IO (Either String ((), [RunLength]))
 tryDecompress :: FilePath -> IO (Either String ())
 tryDecompress fp = withFile fp ReadMode \h -> alloca \p ->
 	Eff.runM . Except.run . void . Pipe.run $
@@ -320,6 +323,7 @@ tryDecompress fp = withFile fp ReadMode \h -> alloca \p ->
 		word32ToRunLength Pipe.=$=
 		PipeIO.print
 
+-- tryDecompress' :: FilePath -> IO (Either String (((), [RunLength]), Seq.Seq Word8))
 tryDecompress' :: FilePath -> IO (Either String ((), Seq.Seq Word8))
 tryDecompress' fp = withFile fp ReadMode \h -> alloca \p ->
 	Eff.runM . Except.run . (`State.run` Seq.empty) . void . Pipe.run $
