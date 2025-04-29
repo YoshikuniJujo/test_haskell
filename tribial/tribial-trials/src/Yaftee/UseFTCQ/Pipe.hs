@@ -14,10 +14,17 @@ import Yaftee.OpenUnion qualified as Union
 import Data.FTCQueue qualified as Q
 
 data P f i o a where
+	IsMore :: P f i o Bool
 	Await :: P f i o i
 	Yield :: forall f i o . o -> P f i o ()
 	(:=$=) :: f i x r -> f x o r' -> P f i o (f i x r, f x o r')
 	(:=@=) :: f i x r -> f x o r' -> P f i o (f i x r, f x o r')
+
+isEmpty :: Union.Member P effs => Eff.E effs i o Bool
+isEmpty = not <$> Eff.effh IsMore
+
+isMore :: Union.Member P effs => Eff.E effs i o Bool
+isMore = Eff.effh IsMore
 
 await :: Union.Member P effs => Eff.E effs i o i
 await = Eff.effh Await
@@ -42,6 +49,7 @@ run = \case
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> Union.hmap run Just u' HFreer.:>>=
 			Q.singleton (maybe (pure Nothing) (run . (q `HFreer.app`)))
+		Right IsMore -> pure Nothing
 		Right Await -> pure Nothing
 		Right (Yield _) -> pure Nothing
 		Right (o :=$= p) -> run (o =$=! p) >>= maybe (pure Nothing) (run . (q `HFreer.app`))
@@ -60,6 +68,7 @@ o@(HFreer.Pure _) =$=! p@(v HFreer.:>>= r) = case Union.decomp v of
 			_ -> error "never occur"
 	Right (o' :=$= p') -> o =$=! ((r `HFreer.app`) =<< o' =$=! p')
 	Right (o' :=@= p') -> o =$=! ((r `HFreer.app`) =<< o' =@=! p')
+	Right IsMore -> o =$=! (r `HFreer.app` False)
 	Right Await -> HFreer.Pure (o, p)
 	Right (Yield ot) -> Union.injh (Yield @_ @i ot) HFreer.:>>=
 		Q.singleton ((o =$=!) `HFreer.comp` r)
@@ -74,11 +83,22 @@ o@(u HFreer.:>>= q) =$=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 	(_, Right (o' :=@= p')) -> o =$=! ((r `HFreer.app`) =<< (o' =@=! p'))
 	(_, Right (Yield ot)) -> Union.injh (Yield @_ @i ot) HFreer.:>>=
 		Q.singleton ((o =$=!) . (r `HFreer.app`))
+	(Right IsMore, _) -> Union.injh (IsMore @_ @_ @o) HFreer.:>>=
+		Q.singleton ((=$=! p) . (q `HFreer.app`))
 	(Right Await, _) -> Union.injh (Await @_ @_ @o) HFreer.:>>=
 		Q.singleton ((=$=! p) . (q `HFreer.app`))
+	(Right (Yield _), Right IsMore) -> o =$=! (r `HFreer.app` True)
+	(Right (o' :=$= p'), Right IsMore) -> ((q `HFreer.app`) =<< (o' =$=! p')) =$=! p
+	(Right (o' :=@= p'), Right IsMore) -> ((q `HFreer.app`) =<< (o' =@=! p')) =$=! p
 	(Right (Yield ot), Right Await) -> (q `HFreer.app` ()) =$=! (r `HFreer.app` ot)
 	(Right (o' :=$= p'), Right Await) -> ((q `HFreer.app`) =<< (o' =$=! p')) =$=! p
 	(Right (o' :=@= p'), Right Await) -> ((q `HFreer.app`) =<< (o' =@=! p')) =$=! p
+	(Left u', Right IsMore) ->
+		Union.weaken (Union.hmap (=$=! p) ((, p) . HFreer.Pure) u') HFreer.:>>=
+		Q.singleton \case
+			(HFreer.Pure x, p') -> (q `HFreer.app` x) =$=! p'
+			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
+			_ -> error "never occur"
 	(Left u', Right Await) ->
 		Union.weaken (Union.hmap (=$=! p) ((, p) . HFreer.Pure) u') HFreer.:>>=
 		Q.singleton \case
@@ -100,6 +120,7 @@ o@(u HFreer.:>>= q) =@=! p@(HFreer.Pure _) = case Union.decomp u of
 	Right (o' :=$= p') -> ((q `HFreer.app`) =<< (o' =$=! p')) =@=! p
 	Right (o' :=@= p') -> ((q `HFreer.app`) =<< (o' =@=! p')) =@=! p
 	Right (Yield _) -> HFreer.Pure (o, p)
+	Right IsMore -> Union.injh (IsMore @_ @_ @o) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
 	Right Await -> Union.injh (Await @_ @_ @o) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
 o@(u HFreer.:>>= q) =@=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decomp v) of
 	(Left u', _) ->
@@ -110,9 +131,11 @@ o@(u HFreer.:>>= q) =@=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 			_ -> error "never occur"
 	(Right (o' :=$= p'), _) -> ((q `HFreer.app`) =<< (o' =$=! p')) =@=! p
 	(Right (o' :=@= p'), _) -> ((q `HFreer.app`) =<< (o' =@=! p')) =@=! p
+	(Right IsMore, _) -> Union.injh (IsMore @_ @_ @o) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
 	(Right Await, _) -> Union.injh (Await @_ @_ @o) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
 	(_, Right (Yield ot)) -> Union.injh (Yield @_ @i ot) HFreer.:>>=
 		Q.singleton ((o =@=!) . (r `HFreer.app`))
+	(Right (Yield _), Right IsMore) -> o =@=! (r `HFreer.app` True)
 	(Right (Yield ot), Right Await) -> q `HFreer.app` () =@=! (r `HFreer.app` ot)
 	(Right (Yield _), Right (o' :=$= p')) -> o =@=! ((r `HFreer.app`) =<< (o' =$=! p'))
 	(Right (Yield _), Right (o' :=@= p')) -> o =@=! ((r `HFreer.app`) =<< (o' =@=! p'))

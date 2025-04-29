@@ -1,12 +1,15 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import Control.Monad
 import System.IO
 import System.Environment
+import Data.ByteString qualified as BS
 
 import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.Pipe qualified as Pipe
@@ -29,12 +32,14 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Huffman
 
 import Yaftee.UseFTCQ.Pipe.Crc qualified as Crc
 
+main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	void . Eff.runM
 		. Fail.run
 		. Except.run @_ @String
+		. (flip (State.runN @_ @"format") ("" :: BS.ByteString))
 		. (flip (State.runN @_ @"bits") BitArray.empty)
 		. (`State.run` ExtraBits 0)
 		. (`State.run` (Seq.empty :: Seq.Seq Word8))
@@ -44,6 +49,9 @@ main = do
 		. (`State.run` BitArray.empty)
 		. Pipe.run
 		$ PipeB.hGet' 100 h Pipe.=$= onDemand Pipe.=$= do
-			checkRight Pipe.=$= do -- readMagic' Pipe.=$= PipeI.print
+			_ <- checkRight Pipe.=$= do -- readMagic' Pipe.=$= PipeI.print
 				IO.print =<< ((Just <$> readHeader) `Except.catch` \e -> IO.print (e :: String) >> pure Nothing)
-			blocks Pipe.=$= PipeI.print
+			blocks Pipe.=$= format 100 Pipe.=$= Crc.crcPipe Pipe.=$= do
+				PipeI.print'
+				Crc.compCrc
+				IO.print . Crc.crcToByteString =<< State.get

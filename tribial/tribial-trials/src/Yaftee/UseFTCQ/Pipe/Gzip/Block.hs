@@ -195,7 +195,7 @@ getCodeTable :: forall o effs . (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs ) =>
 	Int -> Int -> Eff.E effs (Either Int Word16) o [Int]
-getCodeTable pr 0 = pure []
+getCodeTable _pr 0 = pure []
 getCodeTable pr n = Pipe.await >>= \case
 	Left ln
 		| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable @o ln (n - 1)
@@ -279,9 +279,11 @@ readMore2 :: (
 	Union.Member (State.Named "format" BS.ByteString) effs,
 	Union.Member Pipe.P effs ) =>
 	Eff.E effs (Either Word8 BS.ByteString) BS.ByteString Bool
-readMore2 = Pipe.await >>= \case
-	Left w -> True <$ State.modifyN "format" (`BS.snoc` w)
-	Right bs -> True <$ State.modifyN "format" (`BS.append` bs)
+readMore2 = do
+	e <- Pipe.isEmpty
+	if e then pure False else Pipe.await >>= \case
+		Left w -> True <$ State.modifyN "format" (`BS.snoc` w)
+		Right bs -> True <$ State.modifyN "format" (`BS.append` bs)
 
 checkLength :: (Union.Member (State.Named "format" BS.ByteString) effs) =>
 	Int -> Eff.E effs i o Bool
