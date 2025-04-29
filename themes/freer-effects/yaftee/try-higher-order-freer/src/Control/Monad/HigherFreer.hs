@@ -15,24 +15,27 @@ import Data.Bool
 
 data H h i o a = Pure a | forall x . h (H h) i o x :>>= Q.Q (H h i o) x a
 
+infixl 1 :>>=
+
 instance Functor (H h i o) where
 	fmap f = \case
-		Pure x -> Pure $ f x; hx :>>= q -> hx :>>= (q Q.|> (Pure . f))
+		Pure x -> Pure $ f x; hx :>>= q -> hx :>>= q Q.|> Pure . f
 
 instance Applicative (H h i o) where
 	pure = Pure
-	Pure f <*> m = f <$> m; hx :>>= q <*> m = hx :>>= (q Q.|> (<$> m))
+	Pure f <*> m = f <$> m; (hx :>>= q) <*> m = hx :>>= q Q.|> (<$> m)
 
 instance Monad (H h i o) where
-	Pure x >>= f = f x; hx :>>= q >>= f = hx :>>= (q Q.|> f)
+	Pure x >>= f = f x; hx :>>= q >>= f = hx :>>= q Q.|> f
 
 app :: Q.Q (H h i o) a b -> a -> H h i o b
 q `app` x = case Q.viewl q of
 	Q.One f -> f x
 	f Q.:| r -> case f x of
-		Pure y -> r `app` y; hx :>>= q' -> hx :>>= (q' Q.>< r)
+		Pure y -> r `app` y; hx :>>= q' -> hx :>>= q' Q.>< r
 
-comp :: (H h i o b -> H h' i' o' c) -> Q.Q (H h i o) a b -> a -> H h' i' o' c
+comp :: forall a h i o b h' i' o' c .
+	(H h i o b -> H h' i' o' c) -> Q.Q (H h i o) a b -> a -> H h' i' o' c
 comp = (. app) . (.)
 
 instance NonDetable.N (h (H h) i o) => Alternative (H h i o) where

@@ -5,20 +5,20 @@
 
 packages:
 - completed:
-    commit: 4e6ebb7400f260b3a2e3376e2adb2990d4de8ac2
+    commit: 5aca91b9f82c4602579e44c78c2266f6d7420dad
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-ftcqueue
     pantry-tree:
-      sha256: 603b8b28a6af9fefd47d7bf035252c118a6e57019133f100947eb8306f054b6c
+      sha256: 0635e23bae045124f4ca48666e6e7679cd025c5d9a0d6a5ee96aeba5bb16f4cb
       size: 574
     subdir: themes/freer-effects/common/try-ftcqueue
     version: 0.1.0.0
   original:
-    commit: 4e6ebb7400f260b3a2e3376e2adb2990d4de8ac2
+    commit: 5aca91b9f82c4602579e44c78c2266f6d7420dad
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/common/try-ftcqueue
 - completed:
-    commit: 4e6ebb7400f260b3a2e3376e2adb2990d4de8ac2
+    commit: 5aca91b9f82c4602579e44c78c2266f6d7420dad
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-base-classes
     pantry-tree:
@@ -27,7 +27,7 @@ packages:
     subdir: themes/freer-effects/common/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 4e6ebb7400f260b3a2e3376e2adb2990d4de8ac2
+    commit: 5aca91b9f82c4602579e44c78c2266f6d7420dad
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
