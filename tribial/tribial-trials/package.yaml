@@ -32,6 +32,7 @@ dependencies:
 - vector
 - mono-traversable
 - c-enum
+- swizzle
 - try-ftcqueue
 - try-freer-base-classes
 
@@ -89,6 +90,15 @@ executables:
     - tribial-trials
   tryGzipLegacy:
     main:                tryGzipLegacy.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - tribial-trials
+  tryGzipCompress:
+    main:                tryGzipCompress.hs
     source-dirs:         app
     ghc-options:
     - -threaded

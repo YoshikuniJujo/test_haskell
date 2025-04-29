@@ -10,8 +10,6 @@ module Yaftee.UseFTCQ.Pipe.Crc (
 
 	Crc(..), crcToByteString,
 
-	foobar,
-
 	) where
 
 import Yaftee.UseFTCQ.Eff qualified as Eff
@@ -39,9 +37,6 @@ crcPipe :: (
 crcPipe = do
 	State.put $ Crc 0xffffffff
 	crcBody
-
-foobar :: Union.Member Pipe.P effs => Eff.E effs a a ()
-foobar = (Pipe.yield =<< Pipe.await) >> foobar
 
 crcBody :: (
 	Union.Member Pipe.P effs,

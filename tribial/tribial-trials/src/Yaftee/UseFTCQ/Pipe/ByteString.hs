@@ -21,3 +21,8 @@ hGet bfsz h = fix \go -> Eff.effBase (not <$> hIsEOF h) >>=
 hGet' bfsz h = fix \go -> Eff.effBase (not <$> hIsEOF h) >>= bool
 	(Pipe.yield Nothing)
 	(Eff.effBase (BS.hGetSome h bfsz) >>= Pipe.yield . Just >> go)
+
+putStr :: (
+	Union.Member Pipe.P effs,
+	Union.Base IO.I effs ) => Eff.E effs BS.ByteString o r
+putStr = fix \go -> Pipe.await >>= Eff.effBase . BS.putStr >> go

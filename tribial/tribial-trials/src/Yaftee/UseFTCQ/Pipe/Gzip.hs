@@ -39,49 +39,6 @@ readMagic = do
 	State.put $ RequestBytes 2
 	Pipe.await
 
-readMagic' :: (
-	Union.Member Pipe.P effs,
-	Union.Member (State.S Request) effs,
-	Union.Member (State.S Crc) effs,
-	Union.Member (Except.E String) effs,
-	Union.Member Fail.F effs ) =>
-	Eff.E effs BS.ByteString BS.ByteString ()
-readMagic' = do
---	crcPipe Pipe.=$= do
-	foobar Pipe.=$= do
-		State.put $ RequestBytes 2
-		ids <- Pipe.await
---		when (ids /= "\31\139") do
---			error "barbaz"
---			Except.throw @String "Bad magic"
-		Pipe.yield ids
-		RequestBytes n <- State.get
-		Pipe.yield $ BSC.pack $ show n
-		State.put $ RequestBytes 1
-		cm <- (CompressionMethod . BS.head) <$> Pipe.await
-		Just flgs <- (readFlags . BS.head) <$> Pipe.await
-		State.put $ RequestBytes 4
-		mtm <- (word32ToCTime . bsToNum) <$> Pipe.await
-		State.put $ RequestBytes 1
-		ef <- BS.head <$> Pipe.await
-		os <- OS . BS.head <$> Pipe.await
-		Pipe.yield $ BSC.pack $ show os
-		mexflds <- if (flagsRawExtra flgs)
-		then do
-			State.put $ RequestBytes 2
-			xlen <- bsToWord16 <$> Pipe.await
-			State.put . RequestBytes $ fromIntegral xlen
-			exflgs <- decodeExtraFields <$> Pipe.await
-			pure exflgs
-		else pure []
-		State.put RequestString
-		mnm <- if (flagsRawName flgs)
-		then do	nm <- Pipe.await
-			pure $ Just nm
-			else pure Nothing
-		Pipe.yield $ BSC.pack $ show mnm
-	pure ()
-
 readHeader :: (
 	Union.Member Pipe.P effs,
 	Union.Member (State.S Request) effs,
