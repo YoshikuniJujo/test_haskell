@@ -33,7 +33,7 @@ type W w = Named "" w
 tell :: Union.Member (W w) effs => w -> Eff.E effs i o ()
 tell = tellN ""
 
-run :: (HFunctor.Loose (Union.U effs), Monoid w) =>
+run :: (Monoid w, HFunctor.Loose (Union.U effs)) =>
 	Eff.E (W w ': effs) i o a -> Eff.E effs i o (a, w)
 run = runN
 
@@ -45,7 +45,7 @@ data Named_ (nm :: Symbol) w a where TellN :: forall nm w . w -> Named_ nm w ()
 tellN :: forall nm -> Union.Member (Named nm w) effs => w -> Eff.E effs i o ()
 tellN nm = Eff.eff . TellN @nm
 
-runN :: (HFunctor.Loose (Union.U effs), Monoid w) =>
+runN :: forall nm w effs i o a . (Monoid w, HFunctor.Loose (Union.U effs)) =>
 	Eff.E (Named nm w ': effs) i o a -> Eff.E effs i o (a, w)
 runN = (uncurry (flip (,)) <$>)
 	. Eff.handleRelay (mempty ,) snd \(TellN w) k -> ((w <>) `first`) <$> k ()
