@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.HigherOpenUnion
+      Data.HigherFunctor
       Data.TypeElem
   other-modules:
       Paths_try_higher_order_open_union
