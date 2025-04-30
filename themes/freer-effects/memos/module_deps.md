@@ -27,7 +27,7 @@
 ## yaftee-base-monads
 
 * [x] Reader
-* [ ] Writer
+* [x] Writer
 * [ ] State
 * [ ] Except
 * [ ] NonDet

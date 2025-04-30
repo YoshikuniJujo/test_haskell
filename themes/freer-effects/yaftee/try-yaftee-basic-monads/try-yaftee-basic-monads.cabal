@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Reader
+      Control.Monad.Yaftee.State
       Control.Monad.Yaftee.Writer
       Trials.Reader
   other-modules:
