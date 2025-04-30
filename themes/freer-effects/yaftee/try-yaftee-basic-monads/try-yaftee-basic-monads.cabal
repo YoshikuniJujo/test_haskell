@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Reader
+      Control.Monad.Yaftee.Writer
       Trials.Reader
   other-modules:
       Paths_try_yaftee_basic_monads
