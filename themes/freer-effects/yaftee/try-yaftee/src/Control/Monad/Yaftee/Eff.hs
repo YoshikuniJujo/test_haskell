@@ -22,7 +22,7 @@ module Control.Monad.Yaftee.Eff (
 
 	-- * HANDLE RELAY
 
-	handleRelay, handleRelayS
+	handleRelay, handleRelayS, interpose
 
 	) where
 
@@ -77,3 +77,12 @@ handleRelayS mk gx gs h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
 				go (gs xs) $ q `HFreer.app` gx xs
 		Right (Union.FromFirst x k) ->
 			h x (\x' s' -> (go s' `HFreer.comp` q) . k $ x') s
+
+interpose :: Union.Member (Union.FromFirst eff) effs =>
+	(a -> E effs i o b) ->
+	(forall v . eff v -> (v -> E effs i o b) -> E effs i o b) -> E effs i o a -> E effs i o b
+interpose ret h = fix \go -> \case
+	HFreer.Pure x -> ret x
+	u HFreer.:>>= q -> case Union.prj u of
+		Just (Union.FromFirst x k) -> h x ((go `HFreer.comp` q) . k)
+		_ -> u HFreer.:>>= Q.singleton (go `HFreer.comp` q)
