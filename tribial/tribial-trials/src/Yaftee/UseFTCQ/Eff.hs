@@ -57,10 +57,3 @@ handleRelayS mk gx gs h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
 		Left u' -> Union.hmap (flip (handleRelayS mk gx gs h) s) (`mk` s) u'
 			HFreer.:>>= Q.singleton \xs -> go (gs xs) $ q `HFreer.app` gx xs
 		Right (Union.FromFirst x k) -> h x (\x' s' -> (go  s' `HFreer.comp` q) . k $ x') s
-
-weaken :: (
-	Union.HFunctor' any,
-	Union.HFunctor' (Union.U effs)
-	) => E effs i o x -> E (any ': effs) i o x
-weaken (HFreer.Pure x) = HFreer.Pure x
-weaken (u HFreer.:>>= q) = Union.hmap' weaken id (Union.weaken u) HFreer.:>>= Q.singleton (weaken `HFreer.comp` q)

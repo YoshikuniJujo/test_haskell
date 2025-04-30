@@ -21,9 +21,6 @@ data P f i o a where
 	(:=$=) :: f i x r -> f x o r' -> ((f i x r, f x o r') -> a) -> P f i o a
 	(:=@=) :: f i x r -> f x o r' -> P f i o (f i x r, f x o r')
 
-instance Union.HFunctorSimple P where
-	hmapS f g ((:=$=) o p k) = (f o :=$= f p) (\(x, y) -> k (g x, g y))
-
 isEmpty :: Union.Member P effs => Eff.E effs i o Bool
 isEmpty = not <$> Eff.effh (IsMore id)
 

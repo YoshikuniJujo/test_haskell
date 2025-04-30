@@ -18,7 +18,7 @@ module Yaftee.UseFTCQ.Reader (
 	-- * NAMED
 
 	Named, askN, -- localN,
-	runN
+--	runN
 
 	) where
 
@@ -66,6 +66,7 @@ localN nm f m = do
 	Eff.interpose pure h m
 	-}
 
+{-
 runN :: forall nm e effs i o a . (
 	HFunctor.HFunctor' (Union.U effs),
 	HFunctor.HFunctorSimple (Union.U effs)
@@ -81,4 +82,5 @@ m `runN` e = ($ m) $ fix \go -> \case
 	{-
 m `runN` e =
 	runIdentity <$> Eff.handleRelay Identity runIdentity (\Ask k -> k e) m
+	-}
 	-}

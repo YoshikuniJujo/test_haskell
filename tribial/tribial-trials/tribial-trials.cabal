@@ -169,6 +169,8 @@ library
       Yaftee.UseFTCQ.Reader
       Yaftee.UseFTCQ.ReaderI
       Yaftee.UseFTCQ.State
+      Yaftee.UseFTCQ.Trials
+      Yaftee.UseFTCQ.WriterO
       Zip
   other-modules:
       Paths_tribial_trials
