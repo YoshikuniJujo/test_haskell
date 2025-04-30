@@ -14,7 +14,7 @@
 				|
 			+-------+-----------------------+
 			|				|
-		higher-order-freer		    higher-order-open-union
+	higher-order-freer-monad		    higher-order-open-union
 			|				|
 		+-------+-----------------------+	|
 		|				|	|
