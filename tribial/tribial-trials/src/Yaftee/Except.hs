@@ -14,6 +14,7 @@ import Yaftee.Eff qualified as Eff
 import Yaftee.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
 import Yaftee.TypeElem qualified as Elem
+import Yaftee.HFunctor qualified as Union
 
 data E e (f :: Type -> Type -> Type -> Type) i o a where
 	Throw :: e -> E e f i o a

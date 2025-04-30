@@ -123,7 +123,9 @@ library
       Yaftee.Eff
       Yaftee.Except
       Yaftee.HFreer
+      Yaftee.HFunctor
       Yaftee.IO
+      Yaftee.Legacy.HFunctor
       Yaftee.Legacy.NewPipe
       Yaftee.Legacy.Pipe.ByteString
       Yaftee.Legacy.Pipe.ByteString.OnDemand

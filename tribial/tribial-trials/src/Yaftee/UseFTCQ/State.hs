@@ -15,6 +15,7 @@ import GHC.TypeLits
 import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
+import Yaftee.HFunctor qualified as Union
 import Data.FTCQueue qualified as Q
 
 -- * NORMAL

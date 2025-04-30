@@ -12,6 +12,7 @@ import Data.Kind
 import Yaftee.Eff qualified as Eff
 import Yaftee.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
+import Yaftee.Legacy.HFunctor qualified as Union
 
 data Yield (f :: Type -> Type -> Type -> Type) i o a where
 	Yield :: forall f i o a . o -> a -> Yield f i o a

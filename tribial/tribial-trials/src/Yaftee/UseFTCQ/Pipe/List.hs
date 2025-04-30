@@ -15,6 +15,7 @@ import Yaftee.UseFTCQ.Pipe qualified as Pipe
 import Yaftee.UseFTCQ.Fail qualified as Fail
 import Yaftee.UseFTCQ.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
+import Yaftee.HFunctor qualified as Union
 
 from xs = Pipe.yield `traverse` xs
 

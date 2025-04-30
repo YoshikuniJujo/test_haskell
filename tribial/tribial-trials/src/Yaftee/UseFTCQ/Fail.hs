@@ -11,7 +11,7 @@ module Yaftee.UseFTCQ.Fail (F, run) where
 import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
-import Yaftee.OpenUnion qualified as HFunctor
+import Yaftee.HFunctor qualified as HFunctor
 import Data.FTCQueue qualified as Q
 
 type F = Union.FromFirst Union.Fail
