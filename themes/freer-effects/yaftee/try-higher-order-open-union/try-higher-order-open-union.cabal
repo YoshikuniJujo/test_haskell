@@ -25,7 +25,8 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Control.HigherOpenUnion
+      Data.TypeElem
   other-modules:
       Paths_try_higher_order_open_union
   autogen-modules:
@@ -35,20 +36,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-  default-language: Haskell2010
-
-executable try-higher-order-open-union-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_try_higher_order_open_union
-  autogen-modules:
-      Paths_try_higher_order_open_union
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , try-higher-order-open-union
+    , try-freer-base-classes
   default-language: Haskell2010
 
 test-suite try-higher-order-open-union-test
@@ -63,5 +51,6 @@ test-suite try-higher-order-open-union-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , try-freer-base-classes
     , try-higher-order-open-union
   default-language: Haskell2010

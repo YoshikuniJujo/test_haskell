@@ -42,6 +42,12 @@ packages:
 #
 # extra-deps: []
 
+extra-deps:
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 5aca91b9f82c4602579e44c78c2266f6d7420dad
+    subdirs:
+      - themes/freer-effects/common/try-freer-base-classes
+
 # Override default flag values for project packages and extra-deps
 # flags: {}
 

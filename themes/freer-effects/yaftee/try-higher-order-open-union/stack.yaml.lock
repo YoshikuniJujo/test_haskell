@@ -3,7 +3,20 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: 5aca91b9f82c4602579e44c78c2266f6d7420dad
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-freer-base-classes
+    pantry-tree:
+      sha256: 837f6c1b1e56efa3935894e0c147dc0648f32ceb7df4542fd0b0d59872288f08
+      size: 675
+    subdir: themes/freer-effects/common/try-freer-base-classes
+    version: 0.1.0.0
+  original:
+    commit: 5aca91b9f82c4602579e44c78c2266f6d7420dad
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
 - completed:
     sha256: 0bff5f3f5548516a7c86cea95d47672383cef34dac97ba28d750a52ddfcdf54a
