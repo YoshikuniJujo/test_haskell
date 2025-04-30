@@ -53,7 +53,7 @@ runM (u HFreer.:>>= q) = runM . (q `HFreer.app`) =<< Union.extract u
 
 handleRelay :: HFunctor.Loose (Union.U effs) =>
 	(forall x . x -> f x) -> (forall x . f x -> x) ->
-	(forall x i o y . t x -> (x -> E effs i o y) -> E effs i o y) ->
+	(forall x i o y . t x -> (x -> E effs i o (f y)) -> E effs i o (f y)) ->
 	E ((Union.FromFirst t) ': effs) i' o' a -> E effs i' o' (f a)
 handleRelay mk gx h = fix \go -> \case
 	HFreer.Pure x -> HFreer.Pure $ mk x
