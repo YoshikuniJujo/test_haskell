@@ -1,4 +1,4 @@
-# module dependency
+# package dependency
 
 ```
 
@@ -21,3 +21,26 @@
 		ftcqueue		    freer-base-classes
 
 ```
+
+# modules
+
+## yaftee-base-monads
+
+* [x] Reader
+* [ ] Writer
+* [ ] State
+* [ ] Except
+* [ ] NonDet
+* [ ] Fail
+* [ ] Trace
+* [ ] ST
+* [ ] IO
+
+## yaftee-conduit
+
+* Pipe
+
+## yaftee-theoreticall
+
+* ReaderI
+* WriterO
