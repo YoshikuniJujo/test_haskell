@@ -29,6 +29,7 @@ library
   exposed-modules:
       CEnum.Sample
       CEnum.SampleType
+      Class.Default
       ContinuationMonad
       ContinuationMonad.WithFile
       Control.MonadClass
@@ -165,6 +166,8 @@ library
       Yaftee.UseFTCQ.Pipe.IO
       Yaftee.UseFTCQ.Pipe.List
       Yaftee.UseFTCQ.Pipe.Tools
+      Yaftee.UseFTCQ.Reader
+      Yaftee.UseFTCQ.ReaderI
       Yaftee.UseFTCQ.State
       Zip
   other-modules:

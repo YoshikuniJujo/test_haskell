@@ -20,7 +20,7 @@ import Yaftee.HFunctor qualified as Union
 from xs = Pipe.yield `traverse` xs
 
 to :: forall effs i o o' r .
-	(Union.HFunctor (Union.U effs), Union.Member Fail.F effs) =>
+	(Union.HFunctor' (Union.U effs), Union.Member Fail.F effs) =>
 	Eff.E (Pipe.P ': effs) i o r -> Eff.E effs i o' [o]
 to p = fromJust <$> Pipe.run do
 	(_, HFreer.Pure r) <- p Pipe.=$= fix \go -> do

@@ -63,7 +63,7 @@ modifyN nm f = putN nm . f =<< getN nm
 
 runN :: Union.HFunctor (Union.U effs) =>
 	Eff.E (Named nm s ': effs) i o a -> s -> Eff.E effs i o (a, s)
-runN = Eff.handleRelayS (,) fst snd \st k s ->
+runN = (((\(x, y) -> (y, x)) <$>) .) . Eff.handleRelayS (flip (,)) snd fst \st k s ->
 	case st of GetN -> k s s; PutN s' -> k () s'
 
 -- * SAMPLE

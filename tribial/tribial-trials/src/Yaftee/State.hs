@@ -11,7 +11,7 @@ module Yaftee.State where
 import Yaftee.Eff qualified as Eff
 import Yaftee.HFreer qualified as HFreer
 import Yaftee.OpenUnion qualified as Union
-import Yaftee.HFunctor qualified as Union
+import Yaftee.Legacy.HFunctor qualified as Union
 
 type S s = Union.FromFirst (S_ s)
 data S_ s a where Get :: S_ s s; Put :: s -> S_ s ()

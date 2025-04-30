@@ -38,9 +38,11 @@ run = \case
 				=<< either (run . h) (HFreer.Pure . Right)
 				=<< run m
 
-instance Union.HFunctor (E e) where
-	hmap _ _ (Throw e) = Throw e
-	hmap f _ (m `Catch` h) = f m `Catch` (f . h)
+instance Union.HFunctor (E e)
+
+instance Union.HFunctor' (E e) where
+	hmap' _ _ (Throw e) = Throw e
+	hmap' f _ (m `Catch` h) = f m `Catch` (f . h)
 
 sample :: (
 	Union.Member (E String) effs,
