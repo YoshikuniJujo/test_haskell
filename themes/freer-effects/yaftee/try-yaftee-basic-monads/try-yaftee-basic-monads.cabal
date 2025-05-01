@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Except
+      Control.Monad.Yaftee.Fail
       Control.Monad.Yaftee.IO
       Control.Monad.Yaftee.NonDet
       Control.Monad.Yaftee.Reader

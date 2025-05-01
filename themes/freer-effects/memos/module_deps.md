@@ -6,7 +6,7 @@
 							|
 							|
 							|
-	yaftee-base-monads			yaftee-conduit
+	yaftee-basic-monads			yaftee-conduit
 		|					|
 		+---------------+-----------------------+
 				|
@@ -31,7 +31,7 @@
 * [x] State
 * [x] Except
 * [x] NonDet
-* [ ] Fail
+* [x] Fail
 * [ ] Trace
 * [ ] ST
 * [ ] IO
