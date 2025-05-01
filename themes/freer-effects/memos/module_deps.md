@@ -32,8 +32,8 @@
 * [x] Except
 * [x] NonDet
 * [x] Fail
-* [ ] Trace
-* [ ] ST
+* [x] Trace
+* [x] ST
 * [ ] IO
 
 ## yaftee-conduit

@@ -30,7 +30,9 @@ library
       Control.Monad.Yaftee.IO
       Control.Monad.Yaftee.NonDet
       Control.Monad.Yaftee.Reader
+      Control.Monad.Yaftee.ST
       Control.Monad.Yaftee.State
+      Control.Monad.Yaftee.Trace
       Control.Monad.Yaftee.Writer
       Trials.Reader
   other-modules:
