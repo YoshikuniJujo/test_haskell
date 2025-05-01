@@ -46,26 +46,42 @@ o@(F.Pure _) =$=! p@(v F.:>>= r) = case U.decomp v of
 	Left v' ->
 		U.weaken (HFunctor.mapT (o =$=!) ((o ,) . F.Pure) v') F.:>>=
 		Q.singleton \case
-			(o', F.Pure y) -> o' =$=! F.app r y
-			(o'@(F.Pure _), p') -> F.Pure (o', (r `F.app`) =<< p')
+			(o', F.Pure y) -> o' =$=! (r F.$ y)
+			(o'@(F.Pure _), p') -> F.Pure (o', (r F.$) =<< p')
 			_ -> error "never occur"
-	Right (o' :=$= p') -> o =$=! ((r `F.app`) =<< o' =$=! p')
-	Right (o' :=@= p') -> o =$=! ((r `F.app`) =<< o' =@=! p')
-	Right IsMore -> o =$=! (r `F.app` False)
+	Right (o' :=$= p') -> o =$=! ((r F.$) =<< o' =$=! p')
+	Right (o' :=@= p') -> o =$=! ((r F.$) =<< o' =@=! p')
+	Right IsMore -> o =$=! (r F.$ False)
 	Right Await -> F.Pure (o, p)
 	Right (Yield ot) ->
-		U.injh (Yield @_ @i ot) F.:>>= Q.singleton ((o =$=!) `F.comp` r)
+		U.injh (Yield @_ @i ot) F.:>>= Q.singleton ((o =$=!) F.. r)
 o@(u F.:>>= q) =$=! p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
 	(_, Left v') ->
 		U.weaken (HFunctor.mapT (o =$=!) ((o ,) . F.Pure) v') F.:>>=
 		Q.singleton \case
-			(o', F.Pure y) -> o' =$=! (r `F.app` y)
-			(o'@(F.Pure _), p') -> F.Pure (o', (r `F.app`) =<< p')
+			(o', F.Pure y) -> o' =$=! (r F.$ y)
+			(o'@(F.Pure _), p') -> F.Pure (o', (r F.$) =<< p')
 			_ -> error "never occur"
-	(_, Right (o' :=$= p')) -> o =$=! ((r `F.app`) =<< (o' =$=! p'))
-	(_, Right (o' :=@= p')) -> o =$=! ((r `F.app`) =<< (o' =@=! p'))
+	(_, Right (o' :=$= p')) -> o =$=! ((r F.$) =<< (o' =$=! p'))
+	(_, Right (o' :=@= p')) -> o =$=! ((r F.$) =<< (o' =@=! p'))
 	(_, Right (Yield ot)) ->
-		U.injh (Yield @_ @i ot) F.:>>= Q.singleton ((o =$=!) . (r `F.app`))
+		U.injh (Yield @_ @i ot) F.:>>= Q.singleton ((o =$=!) F.. r)
+	(Right IsMore, _) ->
+		U.injh (IsMore @_ @_ @o) F.:>>= Q.singleton ((=$=! p) F.. q)
+	(Right Await, _) ->
+		U.injh (Await @_ @_ @o) F.:>>= Q.singleton ((=$=! p) F.. q)
+	(Right (Yield _), Right IsMore) -> o =$=! (r F.$ True)
+	(Right (o' :=$= p'), Right IsMore) -> ((q F.$) =<< (o' =$=! p')) =$=! p
+	(Right (o' :=@= p'), Right IsMore) -> ((q F.$) =<< (o' =@=! p')) =$=! p
+	(Right (Yield ot), Right Await) -> (q F.$ ()) =$=! (r F.$ ot)
+	(Right (o' :=$= p'), Right Await) -> ((q F.$) =<< (o' =$=! p')) =$=! p
+	(Right (o' :=@= p'), Right Await) -> ((q F.$) =<< (o' =@=! p')) =$=! p
+	(Left u', _) ->
+		U.weaken (HFunctor.mapT (=$=! p) ((, p) . F.Pure) u') F.:>>=
+		Q.singleton \case
+			(F.Pure x, p') -> (q F.$ x) =$=! p'
+			(o', p'@(F.Pure _)) -> F.Pure ((q F.$) =<< o', p')
+			_ -> error "never occur"
 
 (=@=!) :: forall es i x o r r' . HFunctor.Tight (U.U es) =>
 	Eff.E (P ': es) i x r -> Eff.E (P ': es) x o r' ->
