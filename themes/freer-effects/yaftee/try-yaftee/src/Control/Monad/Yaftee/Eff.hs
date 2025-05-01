@@ -49,7 +49,7 @@ run _ = error "bad"
 
 runM :: Monad m => E '[Union.FromFirst m] i o a -> m a
 runM (HFreer.Pure x) = pure x
-runM (u HFreer.:>>= q) = runM . (q `HFreer.app`) =<< Union.extract u
+runM (u HFreer.:>>= q) = runM . (q HFreer.$) =<< Union.extract u
 
 handleRelay :: forall f t effs i o a .
 	HFunctor.Loose (Union.U effs) =>
@@ -60,8 +60,8 @@ handleRelay mk gx h = fix \go -> \case
 	HFreer.Pure x -> HFreer.Pure $ mk x
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> HFunctor.map (handleRelay mk gx h) mk u' HFreer.:>>=
-			Q.singleton \x -> go $ q `HFreer.app` gx x
-		Right (Union.FromFirst x k) -> h x ((go `HFreer.comp` q) . k)
+			Q.singleton \x -> go $ q HFreer.$ gx x
+		Right (Union.FromFirst x k) -> h x ((go HFreer.. q) . k)
 
 handleRelayS :: forall f s t effs i o a .
 	HFunctor.Loose (Union.U effs) =>
@@ -76,9 +76,9 @@ handleRelayS mk gs gx h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
 		Left u' -> HFunctor.map
 				(flip (handleRelayS mk gs gx h) s) (s `mk`) u'
 			HFreer.:>>= Q.singleton \xs ->
-				go (gs xs) $ q `HFreer.app` gx xs
+				go (gs xs) $ q HFreer.$ gx xs
 		Right (Union.FromFirst x k) ->
-			h x (\x' s' -> (go s' `HFreer.comp` q) . k $ x') s
+			h x (\x' s' -> (go s' HFreer.. q) . k $ x') s
 
 interpose :: forall eff effs i o a b .
 	Union.Member (Union.FromFirst eff) effs =>
@@ -87,5 +87,5 @@ interpose :: forall eff effs i o a b .
 interpose ret h = fix \go -> \case
 	HFreer.Pure x -> ret x
 	u HFreer.:>>= q -> case Union.prj u of
-		Just (Union.FromFirst x k) -> h x ((go `HFreer.comp` q) . k)
-		_ -> u HFreer.:>>= Q.singleton (go `HFreer.comp` q)
+		Just (Union.FromFirst x k) -> h x ((go HFreer.. q) . k)
+		_ -> u HFreer.:>>= Q.singleton (go HFreer.. q)
