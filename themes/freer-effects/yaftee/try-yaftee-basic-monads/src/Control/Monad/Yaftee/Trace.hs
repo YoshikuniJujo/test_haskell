@@ -21,5 +21,4 @@ run :: Eff.E '[T] i o a -> IO a
 run = \case
 	HFreer.Pure x -> pure x
 	u HFreer.:>>= q -> case Union.extracth u of
-		Union.FromFirst (T_ s) k ->
-			putStrLn s >> run (q `HFreer.app` k ())
+		Union.FromFirst (T_ s) k -> putStrLn s >> run (q HFreer.$ k ())

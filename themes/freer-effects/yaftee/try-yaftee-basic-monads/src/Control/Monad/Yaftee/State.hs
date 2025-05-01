@@ -23,7 +23,7 @@ Named, getN, getsN, putN, modifyN, runN
 import GHC.TypeLits
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
-import Control.Monad.HigherFreer qualified as HFreer
+import Control.Monad.HigherFreer qualified as F
 import Control.HigherOpenUnion qualified as Union
 import Data.HigherFunctor qualified as HFunctor
 import Data.FTCQueue qualified as Q
@@ -80,11 +80,8 @@ transactionNoGoodN :: forall effs i o a . forall nm s ->
 	Union.Member (Named nm s) effs => Eff.E effs i o a -> Eff.E effs i o a
 transactionNoGoodN nm s m =
 	getN @s nm >>= \s0 ->($ m) . ($ s0) $ fix \go s' -> \case
-		HFreer.Pure x -> putN nm s' >> pure x
-		u HFreer.:>>= q -> case Union.prj @(Named nm s) u of
-			Nothing -> u HFreer.:>>=
-				Q.singleton (go s' `HFreer.comp` q)
-			Just (Union.FromFirst Get k) ->
-				go s' $ q `HFreer.app` k s'
-			Just (Union.FromFirst (Put t) k) ->
-				go t $ q `HFreer.app` k ()
+		F.Pure x -> putN nm s' >> pure x
+		u F.:>>= q -> case Union.prj @(Named nm s) u of
+			Nothing -> u F.:>>= Q.singleton (go s' F.. q)
+			Just (Union.FromFirst Get k) -> go s' $ q F.$ k s'
+			Just (Union.FromFirst (Put t) k) -> go t $ q F.$ k ()

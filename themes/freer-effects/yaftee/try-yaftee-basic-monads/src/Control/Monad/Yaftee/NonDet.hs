@@ -11,7 +11,7 @@ module Control.Monad.Yaftee.NonDet (N, run) where
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
-import Control.Monad.HigherFreer qualified as HFreer
+import Control.Monad.HigherFreer qualified as F
 import Control.HigherOpenUnion qualified as Union
 import Data.HigherFunctor qualified as HFunctor
 import Data.FTCQueue qualified as Q
@@ -22,12 +22,10 @@ run :: forall f effs i o a .
 	(HFunctor.Loose (Union.U effs), Traversable f, MonadPlus f) =>
 	Eff.E (N ': effs) i o a -> Eff.E effs i o (f a)
 run = \case
-	HFreer.Pure x -> HFreer.Pure $ pure x
-	u HFreer.:>>= q -> case Union.decomp u of
-		Left u' -> HFunctor.map run pure u' HFreer.:>>=
-			Q.singleton \xs ->
-				join <$> (run . (q `HFreer.app`)) `traverse` xs
+	F.Pure x -> F.Pure $ pure x
+	u F.:>>= q -> case Union.decomp u of
+		Left u' -> HFunctor.map run pure u' F.:>>=
+			Q.singleton ((join <$>) . ((run . (q F.$)) `traverse`))
 		Right (Union.FromFirst Union.MZero _) -> pure empty
-		Right (Union.FromFirst Union.MPlus k) -> (<|>)
-			<$> run (q `HFreer.app` k False)
-			<*> run (q `HFreer.app` k True)
+		Right (Union.FromFirst Union.MPlus k) ->
+			(<|>) <$> run (q F.$ k False) <*> run (q F.$ k True)
