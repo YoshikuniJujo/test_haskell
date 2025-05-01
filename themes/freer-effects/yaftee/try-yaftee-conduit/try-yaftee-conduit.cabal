@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Pipe
+      Control.Monad.Yaftee.Pipe.List
       Control.Monad.Yaftee.Pipe.Tools
   other-modules:
       Paths_try_yaftee_conduit
