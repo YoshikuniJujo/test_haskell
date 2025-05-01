@@ -34,7 +34,7 @@
 * [x] Fail
 * [x] Trace
 * [x] ST
-* [ ] IO
+* [x] IO
 
 ## yaftee-conduit
 
