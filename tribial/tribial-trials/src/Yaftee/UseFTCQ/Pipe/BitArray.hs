@@ -58,9 +58,9 @@ getJust = \case
 	Just x -> pure x
 
 bitsToByteString :: (
-	Union.Member (State.S BitQueue) effs
-	) =>
-	Eff.E (Pipe.P ': effs) [Bit] BS.ByteString ()
+	Union.Member Pipe.P effs,
+	Union.Member (State.S BitQueue) effs ) =>
+	Eff.E effs [Bit] BS.ByteString ()
 bitsToByteString = fix \go -> Pipe.await >>= \case
 	bs -> do
 		State.modify (`append` bs)
