@@ -4,8 +4,10 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.HigherFreer (H(..), app, comp) where
+module Control.Monad.HigherFreer (H(..), ($), (.)) where
 
+import Prelude hiding (($), (.))
+import Prelude qualified as P
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Freer.NonDetable qualified as NonDetable
@@ -19,7 +21,7 @@ infixl 1 :>>=
 
 instance Functor (H h i o) where
 	fmap f = \case
-		Pure x -> Pure $ f x; hx :>>= q -> hx :>>= q Q.|> Pure . f
+		Pure x -> Pure P.$ f x; hx :>>= q -> hx :>>= q Q.|> Pure P.. f
 
 instance Applicative (H h i o) where
 	pure = Pure
@@ -28,15 +30,19 @@ instance Applicative (H h i o) where
 instance Monad (H h i o) where
 	Pure x >>= f = f x; hx :>>= q >>= f = hx :>>= q Q.|> f
 
-app :: Q.Q (H h i o) a b -> a -> H h i o b
-q `app` x = case Q.viewl q of
+infixr 0 $
+
+($) :: Q.Q (H h i o) a b -> a -> H h i o b
+q $ x = case Q.viewl q of
 	Q.One f -> f x
 	f Q.:| r -> case f x of
-		Pure y -> r `app` y; hx :>>= q' -> hx :>>= q' Q.>< r
+		Pure y -> r $ y; hx :>>= q' -> hx :>>= q' Q.>< r
 
-comp :: forall a h i o b h' i' o' c .
+infixr 9 .
+
+(.) :: forall a h i o b h' i' o' c .
 	(H h i o b -> H h' i' o' c) -> Q.Q (H h i o) a b -> a -> H h' i' o' c
-comp = (. app) . (.)
+(.) = (P.. ($)) P.. (P..)
 
 instance NonDetable.N (h (H h) i o) => Alternative (H h i o) where
 	empty = NonDetable.mz :>>= Q.singleton Pure
