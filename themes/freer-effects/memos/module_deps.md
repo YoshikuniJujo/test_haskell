@@ -30,7 +30,7 @@
 * [x] Writer
 * [x] State
 * [x] Except
-* [ ] NonDet
+* [x] NonDet
 * [ ] Fail
 * [ ] Trace
 * [ ] ST
