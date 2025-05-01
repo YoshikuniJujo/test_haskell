@@ -41,17 +41,6 @@ ghc-options:
 library:
   source-dirs: src
 
-executables:
-  try-yaftee-conduit-bytestring-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-yaftee-conduit-bytestring
-
 tests:
   try-yaftee-conduit-bytestring-test:
     main:                Spec.hs
