@@ -41,7 +41,7 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple
 import Data.Calc
 import Data.HuffmanTree
 
-import Data.BitArray (Bit(..), numToBits)
+import Data.BitArray (Bit(..), numToBits, BitQueue)
 import Yaftee.UseFTCQ.Pipe.BitArray
 
 import Data.PackageMerge qualified as PackageMerge

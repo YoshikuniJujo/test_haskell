@@ -59,49 +59,36 @@ getJust = \case
 
 bitsToByteString :: (
 	Union.Member Pipe.P effs,
-	Union.Member (State.S BitQueue) effs ) =>
+	Union.Member (State.S BitArray.BitQueue) effs ) =>
 	Eff.E effs [Bit] BS.ByteString ()
 bitsToByteString = fix \go -> Pipe.await >>= \case
 	bs -> do
-		State.modify (`append` bs)
+		State.modify (`BitArray.appendQ` bs)
 		Pipe.yield =<< putByteString
 		go
 
-putByteString :: (Union.Member (State.S BitQueue) effs) =>
+putByteString :: (Union.Member (State.S BitArray.BitQueue) effs) =>
 	Eff.E effs i o BS.ByteString
 putByteString = do
 	q <- State.get
 	let	(byts, bits) = unfoldr' popByte q
 	BS.pack byts <$ State.put bits
 
-type BitQueue = ([Bit], [Bit])
-
-snoc :: BitQueue -> Bit -> BitQueue
-snoc (xs, ys) b = (xs, b : ys)
-
-append :: BitQueue -> [Bit] -> BitQueue
-append (xs, ys) bs = (xs, reverse bs ++ ys)
-
-uncons :: BitQueue -> Maybe (Bit, BitQueue)
-uncons ([], []) = Nothing
-uncons ([], ys) = uncons (reverse ys, [])
-uncons (x : xs, ys) = Just (x, (xs, ys))
-
-uncons' :: (
-	Union.Member (State.S BitQueue) effs,
-	Union.Member (Except.E String) effs
-	) =>
-	Eff.E effs i o Bit
-uncons' = State.get >>= \bq -> case uncons bq of
-	Nothing -> Except.throw "uncons: no bits"
-	Just (b, bq') -> b <$ State.put bq'
-
-popByte :: BitQueue -> Maybe (Word8, BitQueue)
-popByte bq = either (\(_ :: String) -> Nothing) Just
-	. Eff.run . Except.run . (`State.run` bq)
-	$ BitArray.bitsToNum <$> replicateM 8 uncons'
-
 unfoldr' :: (b -> Maybe (a, b)) -> b -> ([a], b)
 unfoldr' f s = case f s of
 	Nothing -> ([], s)
 	Just (x, s') -> (x :) `first` unfoldr' f s'
+
+popByte :: BitArray.BitQueue -> Maybe (Word8, BitArray.BitQueue)
+popByte bq = either (\(_ :: String) -> Nothing) Just
+	. Eff.run . Except.run . (`State.run` bq)
+	$ BitArray.bitsToNum <$> replicateM 8 uncons'
+
+uncons' :: (
+	Union.Member (State.S BitArray.BitQueue) effs,
+	Union.Member (Except.E String) effs
+	) =>
+	Eff.E effs i o Bit
+uncons' = State.get >>= \bq -> case BitArray.uncons bq of
+	Nothing -> Except.throw "uncons: no bits"
+	Just (b, bq') -> b <$ State.put bq'

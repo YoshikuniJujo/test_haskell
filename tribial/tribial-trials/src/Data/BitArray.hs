@@ -14,7 +14,9 @@ module Data.BitArray (
 
 	-- * BIT
 
-	Bit(..), bitsToNum, numToBits,
+	Bit(..), BitQueue, bitsToNum, numToBits,
+
+	appendQ, uncons,
 
 	-- * FROM/TO BYTE STRING
 
@@ -47,6 +49,16 @@ data B = B { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
 	deriving Show
 
 data Bit = O | I deriving (Show, Eq, Ord)
+
+type BitQueue = ([Bit], [Bit])
+
+appendQ :: BitQueue -> [Bit] -> BitQueue
+appendQ (xs, ys) bs = (xs, reverse bs ++ ys)
+
+uncons :: BitQueue -> Maybe (Bit, BitQueue)
+uncons ([], []) = Nothing
+uncons ([], ys) = uncons (reverse ys, [])
+uncons (x : xs, ys) = Just (x, (xs, ys))
 
 empty :: B
 empty = B { bit0 = 0, bitsLen = 0, bitsBody = "" }
