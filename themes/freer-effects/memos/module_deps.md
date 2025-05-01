@@ -28,7 +28,7 @@
 
 * [x] Reader
 * [x] Writer
-* [ ] State
+* [x] State
 * [ ] Except
 * [ ] NonDet
 * [ ] Fail

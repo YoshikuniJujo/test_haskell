@@ -22,7 +22,9 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 dependencies:
 - base >= 4.7 && < 5
 - try-yaftee
+- try-higher-order-freer-monad
 - try-higher-order-open-union
+- try-ftcqueue
 
 ghc-options:
 - -Wall
