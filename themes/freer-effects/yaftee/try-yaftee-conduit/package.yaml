@@ -40,17 +40,6 @@ ghc-options:
 library:
   source-dirs: src
 
-executables:
-  try-yaftee-conduit-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-yaftee-conduit
-
 tests:
   try-yaftee-conduit-test:
     main:                Spec.hs

@@ -26,7 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Pipe
-      Lib
+      Control.Monad.Yaftee.Pipe.Tools
   other-modules:
       Paths_try_yaftee_conduit
   autogen-modules:
@@ -40,24 +40,6 @@ library
     , try-higher-order-freer-monad
     , try-higher-order-open-union
     , try-yaftee
-  default-language: Haskell2010
-
-executable try-yaftee-conduit-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_try_yaftee_conduit
-  autogen-modules:
-      Paths_try_yaftee_conduit
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , try-ftcqueue
-    , try-higher-order-freer-monad
-    , try-higher-order-open-union
-    , try-yaftee
-    , try-yaftee-conduit
   default-language: Haskell2010
 
 test-suite try-yaftee-conduit-test
