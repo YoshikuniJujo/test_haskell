@@ -45,6 +45,7 @@ extra-deps:
     commit: fa479949b8f67c73f808e19e4bbf1d2006227f4c
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
+      - themes/freer-effects/yaftee/try-yaftee-basic-monads
       - themes/freer-effects/yaftee/try-higher-order-freer-monad
       - themes/freer-effects/yaftee/try-higher-order-open-union
       - themes/freer-effects/common/try-ftcqueue

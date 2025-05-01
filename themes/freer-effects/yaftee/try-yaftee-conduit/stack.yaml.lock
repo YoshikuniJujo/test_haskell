@@ -20,6 +20,19 @@ packages:
 - completed:
     commit: fa479949b8f67c73f808e19e4bbf1d2006227f4c
     git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-yaftee-basic-monads
+    pantry-tree:
+      sha256: c497816f683ebc4305d98b2c4ed40986715ba4352aa975137ee31b3855c22c5c
+      size: 1247
+    subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
+    version: 0.1.0.0
+  original:
+    commit: fa479949b8f67c73f808e19e4bbf1d2006227f4c
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
+- completed:
+    commit: fa479949b8f67c73f808e19e4bbf1d2006227f4c
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-higher-order-freer-monad
     pantry-tree:
       sha256: 3d39a6f04d8bb2cd6efecbdbea0ef35e5a45521d34b2a4fd8810b70688570465

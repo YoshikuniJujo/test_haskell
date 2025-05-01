@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Pipe
+      Control.Monad.Yaftee.Pipe.IO
       Control.Monad.Yaftee.Pipe.List
       Control.Monad.Yaftee.Pipe.Tools
   other-modules:
@@ -41,6 +42,7 @@ library
     , try-higher-order-freer-monad
     , try-higher-order-open-union
     , try-yaftee
+    , try-yaftee-basic-monads
   default-language: Haskell2010
 
 test-suite try-yaftee-conduit-test
@@ -59,5 +61,6 @@ test-suite try-yaftee-conduit-test
     , try-higher-order-freer-monad
     , try-higher-order-open-union
     , try-yaftee
+    , try-yaftee-basic-monads
     , try-yaftee-conduit
   default-language: Haskell2010
