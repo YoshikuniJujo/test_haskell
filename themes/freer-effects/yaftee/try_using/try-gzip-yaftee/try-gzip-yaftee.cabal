@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Gzip.Pipe.OnDemand
       Lib
   other-modules:
       Paths_try_gzip_yaftee
