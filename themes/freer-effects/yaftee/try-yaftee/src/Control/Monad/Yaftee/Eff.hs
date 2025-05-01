@@ -51,10 +51,11 @@ runM :: Monad m => E '[Union.FromFirst m] i o a -> m a
 runM (HFreer.Pure x) = pure x
 runM (u HFreer.:>>= q) = runM . (q `HFreer.app`) =<< Union.extract u
 
-handleRelay :: HFunctor.Loose (Union.U effs) =>
+handleRelay :: forall f t effs i o a .
+	HFunctor.Loose (Union.U effs) =>
 	(forall x . x -> f x) -> (forall x . f x -> x) ->
-	(forall x i o y . t x -> (x -> E effs i o (f y)) -> E effs i o (f y)) ->
-	E ((Union.FromFirst t) ': effs) i' o' a -> E effs i' o' (f a)
+	(forall x i' o' y . t x -> (x -> E effs i' o' (f y)) -> E effs i' o' (f y)) ->
+	E ((Union.FromFirst t) ': effs) i o a -> E effs i o (f a)
 handleRelay mk gx h = fix \go -> \case
 	HFreer.Pure x -> HFreer.Pure $ mk x
 	u HFreer.:>>= q -> case Union.decomp u of
@@ -62,23 +63,25 @@ handleRelay mk gx h = fix \go -> \case
 			Q.singleton \x -> go $ q `HFreer.app` gx x
 		Right (Union.FromFirst x k) -> h x ((go `HFreer.comp` q) . k)
 
-handleRelayS :: HFunctor.Loose (Union.U effs) =>
-	(forall x . x -> s -> f s x) ->
-	(forall x . f s x -> x) -> (forall x . f s x -> s) ->
-	(forall x i o y .
-		t x -> (x -> s -> E effs i o y) -> s -> E effs i o y) ->
-	E ((Union.FromFirst t) ': effs) i' o' a -> s -> E effs i' o' (f s a)
-handleRelayS mk gx gs h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
-	HFreer.Pure x -> HFreer.Pure $ mk x s
+handleRelayS :: forall f s t effs i o a .
+	HFunctor.Loose (Union.U effs) =>
+	(forall x . s -> x -> f s x) ->
+	(forall x . f s x -> s) -> (forall x . f s x -> x) ->
+	(forall x i' o' y .
+		t x -> (x -> s -> E effs i' o' y) -> s -> E effs i' o' y) ->
+	E ((Union.FromFirst t) ': effs) i o a -> s -> E effs i o (f s a)
+handleRelayS mk gs gx h m s0 = ($ m) . ($ s0) $ fix \go s -> \case
+	HFreer.Pure x -> HFreer.Pure $ mk s x
 	u HFreer.:>>= q -> case Union.decomp u of
 		Left u' -> HFunctor.map
-				(flip (handleRelayS mk gx gs h) s) (`mk` s) u'
+				(flip (handleRelayS mk gs gx h) s) (s `mk`) u'
 			HFreer.:>>= Q.singleton \xs ->
 				go (gs xs) $ q `HFreer.app` gx xs
 		Right (Union.FromFirst x k) ->
 			h x (\x' s' -> (go s' `HFreer.comp` q) . k $ x') s
 
-interpose :: Union.Member (Union.FromFirst eff) effs =>
+interpose :: forall eff effs i o a b .
+	Union.Member (Union.FromFirst eff) effs =>
 	(a -> E effs i o b) ->
 	(forall v . eff v -> (v -> E effs i o b) -> E effs i o b) -> E effs i o a -> E effs i o b
 interpose ret h = fix \go -> \case
