@@ -152,8 +152,8 @@ library
       Yaftee.UseFTCQ.HFreer
       Yaftee.UseFTCQ.IO
       Yaftee.UseFTCQ.Pipe
-      Yaftee.UseFTCQ.Pipe.Bit
       Yaftee.UseFTCQ.Pipe.BitArray
+      Yaftee.UseFTCQ.Pipe.Bits
       Yaftee.UseFTCQ.Pipe.ByteString
       Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
       Yaftee.UseFTCQ.Pipe.Crc

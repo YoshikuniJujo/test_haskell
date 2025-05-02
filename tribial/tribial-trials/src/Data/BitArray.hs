@@ -74,7 +74,7 @@ appendByteString B { zero = z, length = ln, body = bs } bs'
 
 -- SPLIT
 
-pop :: B -> Maybe (Bit.B, B)
+pop :: B -> Maybe (Bit.Bit, B)
 pop B { zero = z, length = ln, body = bs } = case (z, ln) of
 	(_, 0) -> Nothing
 	(7, _) -> case BS.uncons bs of

@@ -113,7 +113,7 @@ bitsBlock :: (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs ) =>
 	Maybe Int -> Maybe (Int, Int) ->
-	Eff.E effs Bit.B RunLength ()
+	Eff.E effs Bit.Bit RunLength ()
 bitsBlock mhclen mhlithdist = do
 	whenMaybe mhclen \hclen -> (\x -> State.put . (\y -> trace (show y) $ (id &&& id) y) =<< x)
 		. (mkTr @Word8 codeLengthList <$>)

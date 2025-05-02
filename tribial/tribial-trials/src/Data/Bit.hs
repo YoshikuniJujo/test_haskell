@@ -8,11 +8,11 @@ module Data.Bit (
 
 	-- * BIT
 
-	B(..), bit,
+	Bit(..), bit,
 
 	-- * LIST
 
-	bsToNum, bsFromNum,
+	bsToNum, bitsFromNum,
 
 	-- * Queue
 
@@ -30,23 +30,23 @@ import Data.Bits (Bits, shiftL, testBit, (.|.))
 import Data.Bool
 import Data.Word
 
-data B = O | I deriving (Show, Eq, Ord)
+data Bit = O | I deriving (Show, Eq, Ord)
 
-bit :: a -> a -> B -> a
+bit :: a -> a -> Bit -> a
 bit x y = \case O -> x; I -> y
 
-bsToNum :: (Num n, Bits n) => [B] -> n
+bsToNum :: (Num n, Bits n) => [Bit] -> n
 bsToNum = foldr (\b s -> bit 0 1 b .|. s `shiftL` 1) 0
 
-bsFromNum :: Bits n => Int -> n -> [B]
-bsFromNum ln n = bool O I . (n `testBit`) <$> [0 .. ln - 1]
+bitsFromNum :: Bits n => Int -> n -> [Bit]
+bitsFromNum ln n = bool O I . (n `testBit`) <$> [0 .. ln - 1]
 
-type Queue = ([B], [B])
+type Queue = ([Bit], [Bit])
 
-append :: Queue -> [B] -> Queue
+append :: Queue -> [Bit] -> Queue
 append (xs, ys) bs = (xs, reverse bs ++ ys)
 
-uncons :: Queue -> Maybe (B, Queue)
+uncons :: Queue -> Maybe (Bit, Queue)
 uncons = \case
 	([], []) -> Nothing
 	([], ys) -> uncons (reverse ys, [])
@@ -58,6 +58,6 @@ popByte bq = either (\(_ :: String) -> Nothing) Just . Eff.run
 
 uncons' :: (
 	Union.Member (State.S Queue) effs,
-	Union.Member (Except.E String) effs ) => Eff.E effs i o B
+	Union.Member (Except.E String) effs ) => Eff.E effs i o Bit
 uncons' = State.gets uncons >>=
 	maybe (Except.throw "uncons: no bits") \(b, bq) -> b <$ State.put bq

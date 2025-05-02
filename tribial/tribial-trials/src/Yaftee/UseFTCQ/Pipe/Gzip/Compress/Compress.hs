@@ -42,9 +42,8 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple
 import Data.Calc
 import Data.HuffmanTree
 
-import Data.Bit (bsFromNum, Queue, pattern O, pattern I)
-import Data.Bit qualified as Bit
-import Yaftee.UseFTCQ.Pipe.Bit qualified as PipeBit
+import Yaftee.UseFTCQ.Pipe.Bits (pattern O, pattern I)
+import Yaftee.UseFTCQ.Pipe.Bits qualified as PipeBits
 
 import Data.PackageMerge qualified as PackageMerge
 import Yaftee.UseFTCQ.Pipe.Gzip.Block
@@ -146,10 +145,10 @@ foo = "\x1f\x8b\x08\x08\xd2\x25\xea\x67\x00\x03\x61\x62\x63\x64\x65\x66\x34\x2e\
 bar = "\x00\x6e\x24\x3a\x63\x19\x00\x00\x00"
 
 {-
-tryCompress'' :: IO ((((BS.ByteString, Triple), BS.ByteString), AheadPos), ([Bit.B], [Bit.B]))
+tryCompress'' :: IO ((((BS.ByteString, Triple), BS.ByteString), AheadPos), ([PipeBits.Bit], [PipeBits.Bit]))
 tryCompress'' = withFile "samples/abcdef4.txt" ReadMode \h ->
 	Eff.runM
-		. (`State.run` ([] :: [Bit.B], [] :: [Bit.B]))
+		. (`State.run` ([] :: [PipeBits.Bit], [] :: [PipeBits.Bit]))
 		. (`State.run` AheadPos 0)
 		. (`State.run` ("" :: BS.ByteString))
 		. (`State.run` triple0) . ((\(HFreer.Pure x) -> x) . snd . fromJust <$>) . Pipe.run
@@ -161,7 +160,7 @@ tryCompress'' = withFile "samples/abcdef4.txt" ReadMode \h ->
 					(listToMap fixedDstTableList))
 				) Pipe.=$=
 
-			PipeBit.bsToByteString Pipe.=$= fix \go -> do
+			PipeBits.toByteString Pipe.=$= fix \go -> do
 --			PipeTools.convert (((`showHex` "") =<<) . BS.unpack) Pipe.=$= fix \go -> do
 			Pipe.isMore >>= bool (pure "") do
 				mbs <- Pipe.await
@@ -230,7 +229,7 @@ makeLitLenTable = rawTableToByteString 286 . PackageMerge.run 14 . getSorted
 makeDistTable :: [RunLength] -> BS.ByteString
 makeDistTable = rawTableToByteString 30 . PackageMerge.run 14 . getDistSorted
 
-makeCompressed :: [RunLength] -> [Bit.B]
+makeCompressed :: [RunLength] -> [PipeBits.Bit]
 makeCompressed rl = runLengthToBits dll dd =<< rl
 	where
 	dll = tableToDict . PackageMerge.run 14 $ getSorted rl
@@ -261,12 +260,12 @@ huffmanDecompress :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs ) =>
-	BinTree Int -> BinTree Int -> Eff.E effs Bit.B RunLength ()
+	BinTree Int -> BinTree Int -> Eff.E effs PipeBits.Bit RunLength ()
 huffmanDecompress tll td = void $ huffmanPipe Pipe.=$= do
 	State.put $ (id &&& id) tll
 	putDecoded tll td 0
 
-byteStringToBits :: BS.ByteString -> [Bit.B]
+byteStringToBits :: BS.ByteString -> [PipeBits.Bit]
 byteStringToBits bs = (\w -> bool O I . (w `testBit`) <$> [0 .. 7]) =<< BS.unpack bs
 
 {-
@@ -344,7 +343,7 @@ tryDecompress' fp = withFile fp ReadMode \h -> alloca \p ->
 		runLength Pipe.=$=
 		PipeIO.print
 
-runLengthToBits :: Map.Map Int [Bit.B] -> Map.Map Int [Bit.B] -> RunLength -> [Bit.B]
+runLengthToBits :: Map.Map Int [PipeBits.Bit] -> Map.Map Int [PipeBits.Bit] -> RunLength -> [PipeBits.Bit]
 runLengthToBits ml _ (RunLengthLiteral b) = ml Map.! fromIntegral b
 runLengthToBits ml _ (RunLengthLiteralBS bs) = (ml Map.!) . fromIntegral =<< BS.unpack bs
 runLengthToBits ml md (RunLengthLenDist l d) =
@@ -362,18 +361,18 @@ huffMapToList d m = (\mk -> (mk + 1, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$
 	where
 	mmk = maxKey d m
 
-huffmanLenToCodes :: Int -> Int -> [(Int, [Bit.B])]
+huffmanLenToCodes :: Int -> Int -> [(Int, [PipeBits.Bit])]
 huffmanLenToCodes 0 n
 	| n < 3 = replicate n (0, [])
-	| n < 11 = [(17, bsFromNum 3 (n - 3))]
-	| n < 139 = [(18, bsFromNum 7 (n - 11))]
+	| n < 11 = [(17, PipeBits.bitsFromNum 3 (n - 3))]
+	| n < 139 = [(18, PipeBits.bitsFromNum 7 (n - 11))]
 	| otherwise =
 		(18, [I, I, I, I, I, I, I]) : huffmanLenToCodes 0 (n - 138)
 huffmanLenToCodes l n | n < 4 = replicate n (l, [])
 huffmanLenToCodes l n = (l, []) : go (n - 1)
 	where
 	go m	| m < 3 = replicate m (l, [])
-		| m < 7 = [(16, bsFromNum 2 (m - 3))]
+		| m < 7 = [(16, PipeBits.bitsFromNum 2 (m - 3))]
 		| otherwise = (16, [I, I]) : go (m - 6)
 
 runLengthToLitLenDstList :: [RunLength] -> (Int, Int, [Int])
@@ -382,7 +381,7 @@ runLengthToLitLenDstList rl = let
 	(lnd, td) = fromJust $ huffMapToList 1 . PackageMerge.run 14 $ getDistSorted rl in
 	(lnll, lnd, tll ++ td)
 
-runLengthToCodes :: [RunLength] -> [(Int, [Bit.B])]
+runLengthToCodes :: [RunLength] -> [(Int, [PipeBits.Bit])]
 runLengthToCodes rl = uncurry huffmanLenToCodes
 	=<< (head &&& length) <$> L.group (Swizzle.z $ runLengthToLitLenDstList rl)
 
@@ -393,11 +392,11 @@ runLengthToTableTable rl = PackageMerge.run 6
 	. ((head &&& length) <$>)
 	. L.group . L.sort $ fst <$> runLengthToCodes rl
 
-mkLitLenDistTableBits :: Map.Map Int [Bit.B] -> [(Int, [Bit.B])] -> [Bit.B]
+mkLitLenDistTableBits :: Map.Map Int [PipeBits.Bit] -> [(Int, [PipeBits.Bit])] -> [PipeBits.Bit]
 mkLitLenDistTableBits _ [] = []
 mkLitLenDistTableBits m ((alp, ebs) : aes) = m Map.! alp ++ ebs ++ mkLitLenDistTableBits m aes
 
-mkLitLenDistTableFromRunLength :: [RunLength] -> [Bit.B]
+mkLitLenDistTableFromRunLength :: [RunLength] -> [PipeBits.Bit]
 mkLitLenDistTableFromRunLength rl = mkLitLenDistTableBits m aes
 	where
 	m = tableToDict $ runLengthToTableTable rl
@@ -424,7 +423,7 @@ runLengthToRawTables rl = (dll, dd)
 	dll = PackageMerge.run 14 $ getSorted rl
 	dd = PackageMerge.run 14 $ getDistSorted rl
 
-tableToDict :: Map.Map Int Int -> Map.Map Int [Bit.B]
+tableToDict :: Map.Map Int Int -> Map.Map Int [PipeBits.Bit]
 tableToDict = Map.fromList @Int
 	. ((uncurry $ flip (,)) <$>)
 	. pairToCodes
@@ -438,7 +437,7 @@ mapMapToLitLenDstList rll rd = let
 	(lnd, td) = fromJust $ huffMapToList 1 rd in
 	(lnll, lnd, tll ++ td)
 
-mapMapToCodes :: Map.Map Int Int -> Map.Map Int Int -> [(Int, [Bit.B])]
+mapMapToCodes :: Map.Map Int Int -> Map.Map Int Int -> [(Int, [PipeBits.Bit])]
 mapMapToCodes rll rd = uncurry huffmanLenToCodes
 	=<< (head &&& length) <$> L.group (Swizzle.z $ mapMapToLitLenDstList rll rd)
 
@@ -450,7 +449,7 @@ mapMapToTableTable rll rd = PackageMerge.run 6
 	. ((head &&& length) <$>)
 	. L.group . L.sort $ fst <$> mapMapToCodes rll rd
 
-fooToCodes :: (Int, Int, [Int]) -> [(Int, [Bit.B])]
+fooToCodes :: (Int, Int, [Int]) -> [(Int, [PipeBits.Bit])]
 fooToCodes baz = uncurry huffmanLenToCodes
 	=<< (head &&& length) <$> L.group (Swizzle.z baz)
 
@@ -461,25 +460,25 @@ fooToTableTable rl = PackageMerge.run 6
 	. ((head &&& length) <$>)
 	. L.group . L.sort $ fst <$> fooToCodes rl
 
-mkLitLenDistTableFromMapMap :: Map.Map Int Int -> Map.Map Int Int -> (Int, Int, Int, [Bit.B])
+mkLitLenDistTableFromMapMap :: Map.Map Int Int -> Map.Map Int Int -> (Int, Int, Int, [PipeBits.Bit])
 mkLitLenDistTableFromMapMap mll md = (lll, ld, lt, ttbs ++ mkLitLenDistTableBits m aes)
 	where
 	m = tableToDict $ mapMapToTableTable mll md
 	f@(lll, ld, _) = mapMapToLitLenDstList mll md
 	(lt, tt) = tableTableToOrder' $ fooToTableTable f
-	ttbs = bsFromNum 3 =<< (tt :: [Int])
+	ttbs = PipeBits.bitsFromNum 3 =<< (tt :: [Int])
 	aes = fooToCodes f
 
 foobar :: Map.Map Int Int -> Map.Map Int Int ->
-	((Int, Int, Int, [Bit.B]), (Map.Map Int [Bit.B], Map.Map Int [Bit.B]))
+	((Int, Int, Int, [PipeBits.Bit]), (Map.Map Int [PipeBits.Bit], Map.Map Int [PipeBits.Bit]))
 foobar mll md = (mkLitLenDistTableFromMapMap mll md, (tableToDict mll, tableToDict md))
 
-bazbaz :: [RunLength] -> [Bit.B]
+bazbaz :: [RunLength] -> [PipeBits.Bit]
 bazbaz rl_ =
 	[I, O, I] ++
-	bsFromNum 5 (lll - 257) ++
-	bsFromNum 5 (ld - 1) ++
-	bsFromNum 4 (lt - 4) ++
+	PipeBits.bitsFromNum 5 (lll - 257) ++
+	PipeBits.bitsFromNum 5 (ld - 1) ++
+	PipeBits.bitsFromNum 4 (lt - 4) ++
 	hdr ++ (runLengthToBits dll dd =<< rl)
 	where
 	(mll, md) = runLengthToRawTables rl
@@ -501,11 +500,11 @@ compressFile crl fp ofp = do
 	BS.writeFile ofp $
 		hdr `BS.append` bd `BS.append` crbs `BS.append` flnbs
 
-bitsToByteStringRaw :: [Bit.B] -> BS.ByteString
+bitsToByteStringRaw :: [PipeBits.Bit] -> BS.ByteString
 bitsToByteStringRaw bits = getPure
 	. snd . fromJust . fst
-	. Eff.run . (`State.run` (([], []) :: Queue)) . Pipe.run
-	$ Pipe.yield bits Pipe.=$= PipeBit.bsToByteString Pipe.=$= fix \go -> do
+	. Eff.run . (`State.run` (([], []) :: PipeBits.Queue)) . Pipe.run
+	$ Pipe.yield bits Pipe.=$= PipeBits.toByteString Pipe.=$= fix \go -> do
 		Pipe.isMore >>= bool (pure "") do
 			bs <- Pipe.await
 			(bs `BS.append`) <$> go

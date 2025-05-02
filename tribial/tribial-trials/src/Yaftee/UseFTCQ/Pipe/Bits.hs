@@ -5,7 +5,17 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.UseFTCQ.Pipe.Bit (bsToByteString) where
+module Yaftee.UseFTCQ.Pipe.Bits (
+
+	-- * TYPE
+
+	Bit.Bit(..), Bit.Queue, Bit.bitsFromNum,
+
+	-- * PIPE
+
+	toByteString
+
+	) where
 
 import Control.Arrow
 import Control.Monad.Fix
@@ -17,10 +27,10 @@ import Yaftee.UseFTCQ.Pipe qualified as Pipe
 import Yaftee.UseFTCQ.State qualified as State
 import Yaftee.OpenUnion qualified as Union
 
-bsToByteString ::
+toByteString ::
 	(Union.Member Pipe.P es, Union.Member (State.S Bit.Queue) es) =>
-	Eff.E es [Bit.B] BS.ByteString r
-bsToByteString = fix \go -> (>> go) do
+	Eff.E es [Bit.Bit] BS.ByteString r
+toByteString = fix \go -> (>> go) do
 	State.modify . flip Bit.append =<< Pipe.await
 	Pipe.yield =<< uncurry (<$)
 		. (BS.pack *** State.put) . unfoldr' Bit.popByte =<< State.get
