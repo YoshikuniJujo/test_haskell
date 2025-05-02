@@ -8,7 +8,7 @@
 
 module Yaftee.UseFTCQ.Pipe.Gzip.Block (
 
-	blocks, format, getRightJust,
+	blocks, format,
 
 
 	putDecoded
@@ -95,7 +95,7 @@ block' = do
 					. BitArray.toWord8 <$> (getLeft =<< Pipe.await)
 				trace ("(hlit, hdist, hclen) = " ++ show (hlit, hdist, hclen)) $ pure ()
 				pure (Just (hlit, hlit + hdist), Just hclen)
-			_ <- bits' Pipe.=$= bitsBlock mhclen mhlithdist
+			_ <- bits Pipe.=$= bitsBlock mhclen mhlithdist
 			bf <- State.getN "bits"
 			trace (show bf) (pure ())
 			(dbg :: Request) <- State.get
@@ -247,11 +247,6 @@ separate :: Int -> Int -> [Int]
 separate bs ln
 	| ln == 0 = [] | ln <= bs = [ln]
 	| otherwise = bs : separate bs (ln - bs)
-
-getRightJust ::
-	Union.Member (Except.E String) effs =>
-	Maybe (Either a b) -> Eff.E effs i o b
-getRightJust = getRight <=< getJust
 
 getRight :: Union.Member (Except.E String) effs => Either a b -> Eff.E effs i o b
 getRight = \case

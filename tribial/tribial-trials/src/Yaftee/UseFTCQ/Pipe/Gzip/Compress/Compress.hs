@@ -44,7 +44,7 @@ import Data.HuffmanTree
 
 import Data.Bit (bsFromNum, Queue, pattern O, pattern I)
 import Data.Bit qualified as Bit
-import Yaftee.UseFTCQ.Pipe.BitArray
+import Yaftee.UseFTCQ.Pipe.Bit
 
 import Data.PackageMerge qualified as PackageMerge
 import Yaftee.UseFTCQ.Pipe.Gzip.Block
