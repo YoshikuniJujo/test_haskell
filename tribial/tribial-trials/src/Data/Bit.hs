@@ -53,9 +53,8 @@ uncons = \case
 	(x : xs, ys) -> Just (x, (xs, ys))
 
 popByte :: Queue -> Maybe (Word8, Queue)
-popByte bq = either (\(_ :: String) -> Nothing) Just
-	. Eff.run . Except.run . (`State.run` bq)
-	$ bsToNum <$> replicateM 8 uncons'
+popByte bq = either (\(_ :: String) -> Nothing) Just . Eff.run
+	. Except.run . (`State.run` bq) $ bsToNum <$> replicateM 8 uncons'
 
 uncons' :: (
 	Union.Member (State.S Queue) effs,
