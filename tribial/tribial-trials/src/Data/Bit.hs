@@ -1,4 +1,7 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Bit (
@@ -13,12 +16,19 @@ module Data.Bit (
 
 	-- * Queue
 
-	Queue, append, uncons
+	Queue, append, popByte, uncons
 
 	) where
 
+import Control.Monad
+
+import Yaftee.UseFTCQ.Eff qualified as Eff
+import Yaftee.UseFTCQ.State qualified as State
+import Yaftee.UseFTCQ.Except qualified as Except
+import Yaftee.OpenUnion qualified as Union
 import Data.Bits (Bits, shiftL, testBit, (.|.))
 import Data.Bool
+import Data.Word
 
 data B = O | I deriving (Show, Eq, Ord)
 
@@ -41,3 +51,14 @@ uncons = \case
 	([], []) -> Nothing
 	([], ys) -> uncons (reverse ys, [])
 	(x : xs, ys) -> Just (x, (xs, ys))
+
+popByte :: Queue -> Maybe (Word8, Queue)
+popByte bq = either (\(_ :: String) -> Nothing) Just
+	. Eff.run . Except.run . (`State.run` bq)
+	$ bsToNum <$> replicateM 8 uncons'
+
+uncons' :: (
+	Union.Member (State.S Queue) effs,
+	Union.Member (Except.E String) effs ) => Eff.E effs i o B
+uncons' = State.gets uncons >>=
+	maybe (Except.throw "uncons: no bits") \(b, bq) -> b <$ State.put bq
