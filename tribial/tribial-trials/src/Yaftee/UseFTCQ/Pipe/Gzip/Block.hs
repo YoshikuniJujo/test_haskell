@@ -31,6 +31,7 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
+import Data.Bit qualified as Bit
 import Data.BitArray qualified as BitArray
 import Data.HuffmanTree
 import Yaftee.UseFTCQ.Pipe.Gzip.Huffman
@@ -112,11 +113,11 @@ bitsBlock :: (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs ) =>
 	Maybe Int -> Maybe (Int, Int) ->
-	Eff.E effs BitArray.Bit RunLength ()
+	Eff.E effs Bit.B RunLength ()
 bitsBlock mhclen mhlithdist = do
 	whenMaybe mhclen \hclen -> (\x -> State.put . (\y -> trace (show y) $ (id &&& id) y) =<< x)
 		. (mkTr @Word8 codeLengthList <$>)
-		. replicateM hclen . (BitArray.bitsToNum <$>)
+		. replicateM hclen . (Bit.bsToNum <$>)
 		$ replicateM 3 Pipe.await
 	_ <- huffmanPipe Pipe.=$= do
 		(lct, dct) <- whenMaybeDef

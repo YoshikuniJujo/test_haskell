@@ -4,6 +4,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.BitArray (
@@ -11,12 +12,6 @@ module Data.BitArray (
 	-- * BIT ARRAY
 
 	B, empty,
-
-	-- * BIT
-
-	Bit(..), BitQueue, bitsToNum, numToBits,
-
-	appendQ, uncons,
 
 	-- * FROM/TO BYTE STRING
 
@@ -28,9 +23,7 @@ module Data.BitArray (
 
 	-- * SPLIT
 
-	pop, splitAt,
-
-	byteBoundary,
+	pop, splitAt, byteBoundary,
 
 	-- * CONVERT
 
@@ -38,102 +31,90 @@ module Data.BitArray (
 
 	) where
 
-import Prelude hiding (take, splitAt)
+import Prelude hiding (length, take, splitAt)
 
 import Data.Bits
+import Data.Bit (pattern O, pattern I)
+import Data.Bit qualified as Bit
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-data B = B { bit0 :: Int, bitsLen :: Int, bitsBody :: BS.ByteString }
-	deriving Show
+-- BIT ARRAY
 
-data Bit = O | I deriving (Show, Eq, Ord)
-
-type BitQueue = ([Bit], [Bit])
-
-appendQ :: BitQueue -> [Bit] -> BitQueue
-appendQ (xs, ys) bs = (xs, reverse bs ++ ys)
-
-uncons :: BitQueue -> Maybe (Bit, BitQueue)
-uncons ([], []) = Nothing
-uncons ([], ys) = uncons (reverse ys, [])
-uncons (x : xs, ys) = Just (x, (xs, ys))
+data B = B { zero :: Int, length :: Int, body :: BS.ByteString } deriving Show
 
 empty :: B
-empty = B { bit0 = 0, bitsLen = 0, bitsBody = "" }
+empty = B { zero = 0, length = 0, body = "" }
 
-pop :: B -> Maybe (Bit, B)
-pop B { bit0 = i0, bitsLen = ln, bitsBody = bs } =
-	case (i0, ln) of
-		(_, 0) -> Nothing
-		(7, _) -> case BS.uncons bs of
-			Just (b, bs') -> Just (
-				bool O I (b `testBit` 7), B {
-					bit0 = 0, bitsLen = ln - 1,
-					bitsBody = bs' } )
-			Nothing -> error "never occur"
-		_ -> Just (	bool O I b, B {
-					bit0 = i0 + 1, bitsLen = ln - 1,
-					bitsBody = bs } )
-			where b = BS.head bs `testBit` i0
+-- FROM/TO BYTESTRing
+
+fromByteString :: BS.ByteString -> B
+fromByteString bs = B { zero = 0, length = 8 * BS.length bs, body = bs }
+
+toByteString :: B -> Either B BS.ByteString
+toByteString ba@B { zero = z, length = ln, body = bs } = case (z, ln `mod` 8) of
+	(0, 0) -> Right bs; _ -> Left ba
+
+-- APPEND
+
+append :: B -> B -> B
+append	B { zero = z1, length = ln1, body = bs1 }
+	B { zero = z2, length = ln2, body = bs2 }
+	| (z1 + ln1 + z2) `mod` 8 == 0 =
+		B { zero = z1, length = ln1 + ln2, body = bs1 `BS.append` bs2 }
+	| otherwise = error "bad"
+
+appendByteString :: B -> BS.ByteString -> B
+appendByteString B { zero = z, length = ln, body = bs } bs'
+	| (z + ln) `mod` 8 == 0 = B {
+		zero = z,
+		length = ln + 8 * BS.length bs', body = bs `BS.append` bs' }
+	| otherwise = error "bad"
+
+-- SPLIT
+
+pop :: B -> Maybe (Bit.B, B)
+pop B { zero = z, length = ln, body = bs } = case (z, ln) of
+	(_, 0) -> Nothing
+	(7, _) -> case BS.uncons bs of
+		Just (b, bs') -> Just (
+			bool O I (b `testBit` 7),
+			B { zero = 0, length = ln - 1, body = bs' } )
+		Nothing -> error "never occur"
+	_ -> Just (	
+		bool O I $ BS.head bs `testBit` z,
+		B { zero = z + 1, length = ln - 1, body = bs } )
 
 splitAt :: Int -> B -> Maybe (B, B)
 splitAt n (B i ln bs)
 	| ln < n = Nothing
-	| otherwise = Just (
-		normalize $ B i n bs,
-		normalize $ B (i + n) (ln - n) bs )
-
-appendByteString :: B -> BS.ByteString -> B
-appendByteString
-	B { bit0 = i0, bitsLen = ln, bitsBody = bs } bs' =
-	B {
-		bit0 = i0, bitsLen = ln + 8 * BS.length bs',
-		bitsBody = bs `BS.append` bs' }
-
-append :: B -> B -> B
-append	B { bit0 = i1, bitsLen = ln1, bitsBody = bs1 }
-	B { bit0 = i2, bitsLen = ln2, bitsBody = bs2 } =
-	if (i1 + ln1 + i2) `mod` 8 == 0
-	then B {
-		bit0 = i1, bitsLen = ln1 + ln2, bitsBody = bs1 `BS.append` bs2 }
-	else error "yet"
+	| otherwise =
+		Just (normalize $ B i n bs, normalize $ B (i + n) (ln - n) bs)
 
 normalize :: B -> B
 normalize (B i ln bs)
-	| 0 <= i = B i' ln
-		. BS.take t $ BS.drop (i `div` 8) bs
+	| 0 <= i = B {
+		zero = i',
+		length = ln, body = BS.take t $ BS.drop (i `div` 8) bs }
 	| otherwise = error "normalize: bad"
-	where
-	i' = i `mod` 8
-	t = (ln + i' - 1) `div` 8 + 1
+	where i' = i `mod` 8; t = (ln + i' - 1) `div` 8 + 1
+
+byteBoundary :: B -> Either (B, BS.ByteString) BS.ByteString
+byteBoundary B { zero = z, body = bs } = case z of
+	0 -> Right bs
+	_ -> Left (
+		B { zero = z, length = 8 - z, body = BS.take 1 bs },
+		BS.tail bs )
+
+-- CONVERT
 
 toWord8 :: B -> Maybe Word8
 toWord8 (B i ln bs)
-	| ln + i <= 8 = Just $
-		BS.head bs `shiftR` i .&. foldl setBit zeroBits [0 .. ln - 1]
-	| ln <= 8 = Just let b0 = BS.head bs; b1 = BS.head $ BS.tail bs in
+	| ln + i <= 8 =
+		Just $ b0 `shiftR` i .&. foldl setBit zeroBits [0 .. ln - 1]
+	| ln <= 8 = Just $
 		b0 `shiftR` i .|.
 		b1 `shiftL` (8 - i) .&. foldl setBit zeroBits [0 .. ln - 1]
 	| otherwise = Nothing
-
-byteBoundary :: B -> Either (B, BS.ByteString) BS.ByteString
-byteBoundary B { bit0 = i0, bitsBody = bs } = case i0 of
-	0 -> Right bs
-	_ -> Left (B i0 (8 - i0) (BS.take 1 bs), BS.tail bs)
-
-bitsToNum :: (Num n, Bits n) => [Bit] -> n
-bitsToNum = foldr (\b s -> (case b of O -> 0; I -> 1) .|. s `shiftL` 1) 0
-
-numToBits :: Bits n => Int -> n -> [Bit]
-numToBits bs n = (<$> [0 .. bs - 1]) \i -> bool O I $ n `testBit` i
-
-fromByteString :: BS.ByteString -> B
-fromByteString bs = B {
-	bit0 = 0, bitsLen = 8 * BS.length bs, bitsBody = bs }
-
-toByteString :: B -> Either B BS.ByteString
-toByteString
-	ba@B { bit0 = i0, bitsLen = ln, bitsBody = bs } = case (i0, ln `mod` 8) of
-	(0, 0) -> Right bs; _ -> Left ba
+	where b0 = BS.head bs; b1 = BS.head $ BS.tail bs

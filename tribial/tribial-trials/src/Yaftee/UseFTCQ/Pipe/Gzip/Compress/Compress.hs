@@ -4,6 +4,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Compress where
@@ -41,7 +42,8 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple
 import Data.Calc
 import Data.HuffmanTree
 
-import Data.BitArray (Bit(..), numToBits, BitQueue)
+import Data.Bit (bsFromNum, Queue, pattern O, pattern I)
+import Data.Bit qualified as Bit
 import Yaftee.UseFTCQ.Pipe.BitArray
 
 import Data.PackageMerge qualified as PackageMerge
@@ -131,10 +133,10 @@ foo, bar :: BS.ByteString
 foo = "\x1f\x8b\x08\x08\xd2\x25\xea\x67\x00\x03\x61\x62\x63\x64\x65\x66\x34\x2e\x74\x78\x74\x00"
 bar = "\x00\x6e\x24\x3a\x63\x19\x00\x00\x00"
 
-tryCompress'' :: IO ((((BS.ByteString, Triple), BS.ByteString), AheadPos), ([Bit], [Bit]))
+tryCompress'' :: IO ((((BS.ByteString, Triple), BS.ByteString), AheadPos), ([Bit.B], [Bit.B]))
 tryCompress'' = withFile "samples/abcdef4.txt" ReadMode \h ->
 	Eff.runM
-		. (`State.run` ([] :: [Bit], [] :: [Bit]))
+		. (`State.run` ([] :: [Bit.B], [] :: [Bit.B]))
 		. (`State.run` AheadPos 0)
 		. (`State.run` ("" :: BS.ByteString))
 		. (`State.run` triple0) . ((\(HFreer.Pure x) -> x) . snd . fromJust <$>) . Pipe.run
@@ -206,16 +208,16 @@ makeLitLenTable = rawTableToByteString 286 . PackageMerge.run 14 . getSorted
 makeDistTable :: [RunLength] -> BS.ByteString
 makeDistTable = rawTableToByteString 30 . PackageMerge.run 14 . getDistSorted
 
-makeCompressed :: [RunLength] -> [Bit]
+makeCompressed :: [RunLength] -> [Bit.B]
 makeCompressed rl = runLengthToBits dll dd =<< rl
 	where
 	dll = tableToDict . PackageMerge.run 14 $ getSorted rl
 	dd = tableToDict . PackageMerge.run 14 $ getDistSorted rl
 
-bitsToByteStringRaw :: [Bit] -> BS.ByteString
+bitsToByteStringRaw :: [Bit.B] -> BS.ByteString
 bitsToByteStringRaw bits = (\(HFreer.Pure x) -> x)
 	. snd . fromJust . fst
-	. Eff.run . (`State.run` (([], []) :: BitQueue)) . Pipe.run
+	. Eff.run . (`State.run` (([], []) :: Queue)) . Pipe.run
 	$ Pipe.yield bits Pipe.=$= bitsToByteString Pipe.=$= fix \go -> do
 		Pipe.isMore >>= bool (pure "") do
 			bs <- Pipe.await
@@ -247,12 +249,12 @@ huffmanDecompress :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs ) =>
-	BinTree Int -> BinTree Int -> Eff.E effs Bit RunLength ()
+	BinTree Int -> BinTree Int -> Eff.E effs Bit.B RunLength ()
 huffmanDecompress tll td = void $ huffmanPipe Pipe.=$= do
 	State.put $ (id &&& id) tll
 	putDecoded tll td 0
 
-byteStringToBits :: BS.ByteString -> [Bit]
+byteStringToBits :: BS.ByteString -> [Bit.B]
 byteStringToBits bs = (\w -> bool O I . (w `testBit`) <$> [0 .. 7]) =<< BS.unpack bs
 
 decFormatX fp = do
@@ -328,7 +330,7 @@ tryDecompress' fp = withFile fp ReadMode \h -> alloca \p ->
 		runLength Pipe.=$=
 		PipeIO.print
 
-runLengthToBits :: Map.Map Int [Bit] -> Map.Map Int [Bit] -> RunLength -> [Bit]
+runLengthToBits :: Map.Map Int [Bit.B] -> Map.Map Int [Bit.B] -> RunLength -> [Bit.B]
 runLengthToBits ml _ (RunLengthLiteral b) = ml Map.! fromIntegral b
 runLengthToBits ml _ (RunLengthLiteralBS bs) = (ml Map.!) . fromIntegral =<< BS.unpack bs
 runLengthToBits ml md (RunLengthLenDist l d) =
@@ -346,18 +348,18 @@ huffMapToList d m = (\mk -> (mk + 1, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$
 	where
 	mmk = maxKey d m
 
-huffmanLenToCodes :: Int -> Int -> [(Int, [Bit])]
+huffmanLenToCodes :: Int -> Int -> [(Int, [Bit.B])]
 huffmanLenToCodes 0 n
 	| n < 3 = replicate n (0, [])
-	| n < 11 = [(17, numToBits 3 (n - 3))]
-	| n < 139 = [(18, numToBits 7 (n - 11))]
+	| n < 11 = [(17, bsFromNum 3 (n - 3))]
+	| n < 139 = [(18, bsFromNum 7 (n - 11))]
 	| otherwise =
 		(18, [I, I, I, I, I, I, I]) : huffmanLenToCodes 0 (n - 138)
 huffmanLenToCodes l n | n < 4 = replicate n (l, [])
 huffmanLenToCodes l n = (l, []) : go (n - 1)
 	where
 	go m	| m < 3 = replicate m (l, [])
-		| m < 7 = [(16, numToBits 2 (m - 3))]
+		| m < 7 = [(16, bsFromNum 2 (m - 3))]
 		| otherwise = (16, [I, I]) : go (m - 6)
 
 runLengthToLitLenDstList :: [RunLength] -> (Int, Int, [Int])
@@ -375,11 +377,11 @@ runLengthToTableTable rl = PackageMerge.run 6
 	. ((head &&& length) <$>)
 	. L.group . L.sort $ fst <$> runLengthToCodes rl
 
-mkLitLenDistTableBits :: Map.Map Int [Bit] -> [(Int, [Bit])] -> [Bit]
+mkLitLenDistTableBits :: Map.Map Int [Bit.B] -> [(Int, [Bit.B])] -> [Bit.B]
 mkLitLenDistTableBits m [] = []
 mkLitLenDistTableBits m ((alp, ebs) : aes) = m Map.! alp ++ ebs ++ mkLitLenDistTableBits m aes
 
-mkLitLenDistTableFromRunLength :: [RunLength] -> [Bit]
+mkLitLenDistTableFromRunLength :: [RunLength] -> [Bit.B]
 mkLitLenDistTableFromRunLength rl = mkLitLenDistTableBits m aes
 	where
 	m = tableToDict $ runLengthToTableTable rl
@@ -402,7 +404,7 @@ runLengthToRawTables rl = (dll, dd)
 	dll = PackageMerge.run 14 $ getSorted rl
 	dd = PackageMerge.run 14 $ getDistSorted rl
 
-tableToDict :: Map.Map Int Int -> Map.Map Int [Bit]
+tableToDict :: Map.Map Int Int -> Map.Map Int [Bit.B]
 tableToDict = Map.fromList @Int
 	. ((uncurry $ flip (,)) <$>)
 	. pairToCodes
@@ -439,16 +441,16 @@ mkLitLenDistTableFromMapMap mll md = (lll, ld, lt, ttbs ++ mkLitLenDistTableBits
 	m = tableToDict $ mapMapToTableTable mll md
 	f@(lll, ld, _) = mapMapToLitLenDstList mll md
 	(lt, tt) = tableTableToOrder' $ fooToTableTable f
-	ttbs = numToBits 3 =<< (tt :: [Int])
+	ttbs = bsFromNum 3 =<< (tt :: [Int])
 	aes = fooToCodes f
 
 foobar mll md = (mkLitLenDistTableFromMapMap mll md, (tableToDict mll, tableToDict md))
 
 bazbaz rl_ =
 	[I, O, I] ++
-	numToBits 5 (lll - 257) ++
-	numToBits 5 (ld - 1) ++
-	numToBits 4 (lt - 4) ++
+	bsFromNum 5 (lll - 257) ++
+	bsFromNum 5 (ld - 1) ++
+	bsFromNum 4 (lt - 4) ++
 	hdr ++ (runLengthToBits dll dd =<< rl)
 	where
 	(mll, md) = runLengthToRawTables rl

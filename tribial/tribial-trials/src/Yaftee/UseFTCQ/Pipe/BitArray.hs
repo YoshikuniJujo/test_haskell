@@ -20,7 +20,8 @@ import Data.Word
 import Data.ByteString qualified as BS
 
 import Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
-import Data.BitArray (Bit(..))
+import Data.Bit (B(..))
+import Data.Bit qualified as Bit
 import Data.BitArray qualified as BitArray
 
 import Debug.Trace
@@ -30,7 +31,7 @@ bits' :: (
 	Union.Member (State.S Request) effs,
 	Union.Member (State.Named "bits" BitArray.B) effs,
 	Union.Member (Except.E String) effs ) =>
-	Eff.E effs (Either BitArray.B BS.ByteString) BitArray.Bit ()
+	Eff.E effs (Either BitArray.B BS.ByteString) B ()
 bits' = popBit >>= \case
 	Nothing -> pure ()
 	Just b -> Pipe.yield b >> bits'
@@ -41,7 +42,7 @@ popBit :: (
 	Union.Member (State.Named "bits" BitArray.B) effs,
 	Union.Member (Except.E String) effs
 	) =>
-	Eff.E effs (Either BitArray.B BS.ByteString) o (Maybe BitArray.Bit)
+	Eff.E effs (Either BitArray.B BS.ByteString) o (Maybe B)
 popBit = State.getsN "bits" BitArray.pop >>= \case
 	Nothing -> do
 		trace "popBit: Nothing" $ pure ()
@@ -59,15 +60,15 @@ getJust = \case
 
 bitsToByteString :: (
 	Union.Member Pipe.P effs,
-	Union.Member (State.S BitArray.BitQueue) effs ) =>
-	Eff.E effs [Bit] BS.ByteString ()
+	Union.Member (State.S Bit.Queue) effs ) =>
+	Eff.E effs [B] BS.ByteString ()
 bitsToByteString = fix \go -> Pipe.await >>= \case
 	bs -> do
-		State.modify (`BitArray.appendQ` bs)
+		State.modify (`Bit.append` bs)
 		Pipe.yield =<< putByteString
 		go
 
-putByteString :: (Union.Member (State.S BitArray.BitQueue) effs) =>
+putByteString :: (Union.Member (State.S Bit.Queue) effs) =>
 	Eff.E effs i o BS.ByteString
 putByteString = do
 	q <- State.get
@@ -79,16 +80,16 @@ unfoldr' f s = case f s of
 	Nothing -> ([], s)
 	Just (x, s') -> (x :) `first` unfoldr' f s'
 
-popByte :: BitArray.BitQueue -> Maybe (Word8, BitArray.BitQueue)
+popByte :: Bit.Queue -> Maybe (Word8, Bit.Queue)
 popByte bq = either (\(_ :: String) -> Nothing) Just
 	. Eff.run . Except.run . (`State.run` bq)
-	$ BitArray.bitsToNum <$> replicateM 8 uncons'
+	$ Bit.bsToNum <$> replicateM 8 uncons'
 
 uncons' :: (
-	Union.Member (State.S BitArray.BitQueue) effs,
+	Union.Member (State.S Bit.Queue) effs,
 	Union.Member (Except.E String) effs
 	) =>
-	Eff.E effs i o Bit
-uncons' = State.get >>= \bq -> case BitArray.uncons bq of
+	Eff.E effs i o B
+uncons' = State.get >>= \bq -> case Bit.uncons bq of
 	Nothing -> Except.throw "uncons: no bits"
 	Just (b, bq') -> b <$ State.put bq'

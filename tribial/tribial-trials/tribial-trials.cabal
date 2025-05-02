@@ -33,6 +33,7 @@ library
       ContinuationMonad
       ContinuationMonad.WithFile
       Control.MonadClass
+      Data.Bit
       Data.BitArray
       Data.Calc
       Data.Crc
