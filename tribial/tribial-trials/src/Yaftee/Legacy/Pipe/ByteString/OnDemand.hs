@@ -54,12 +54,14 @@ takeBytes :: (
 	) =>
 	Int -> Eff.E effs (Maybe BS.ByteString) o
 		(Maybe (Either BitArray.B BS.ByteString))
-takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
-	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
-	Right bs -> case splitAt' ln bs of
+takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary' ba of
+	Left (t, d) -> Just (Left t) <$ State.put d
+	Right bs -> case splitAt' ln . fromRight $ BitArray.toByteString bs of
 		Nothing -> readMore >>= bool (pure Nothing) (takeBytes ln)
 		Just (t, d) ->
 			Just (Right t) <$ State.put (BitArray.fromByteString d)
+
+fromRight (Right x) = x
 
 splitAt' :: Int -> BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
 splitAt' ln bs = if BS.length bs < ln then Nothing else Just $ BS.splitAt ln bs

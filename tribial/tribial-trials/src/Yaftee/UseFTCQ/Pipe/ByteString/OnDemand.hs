@@ -9,6 +9,7 @@ module Yaftee.UseFTCQ.Pipe.ByteString.OnDemand where
 import Control.Monad.Fix
 import Data.Bool
 import Data.ByteString qualified as BS
+-- import Data.BitArrayNew qualified as BitArray
 import Data.BitArray qualified as BitArray
 
 import Yaftee.UseFTCQ.Eff qualified as Eff
@@ -60,24 +61,26 @@ takeBytes :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Int -> Eff.E effs (Maybe BS.ByteString) o
 		(Maybe (Either BitArray.B BS.ByteString))
-takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
-	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
-	Right bs -> case splitAt' ln bs of
+takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary' ba of
+	Left (t, d) -> Just (Left t) <$ State.put d
+	Right bs -> case splitAt' ln (fromRight $ BitArray.toByteString bs) of
 		Nothing -> readMore >>= bool (pure Nothing) (takeBytes ln)
 		Just (t, d) ->
 			Just (Right t) <$ State.put (BitArray.fromByteString d)
+
+fromRight (Right x) = x
 
 takeBuffer :: (
 	Union.Member Pipe.P effs,
 	Union.Member (State.S BitArray.B) effs ) =>
 	Int -> Eff.E effs (Maybe BS.ByteString) o
 		(Maybe (Either BitArray.B BS.ByteString))
-takeBuffer ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
-	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
-	Right bs -> case splitAt' ln bs of
+takeBuffer ln = State.get >>= \ba -> case BitArray.byteBoundary' ba of
+	Left (t, d) -> Just (Left t) <$ State.put d
+	Right bs -> case splitAt' ln (fromRight $ BitArray.toByteString bs) of
 		Nothing -> readMore >>= bool
-			(bool	(Just (Right bs) <$ State.put BitArray.empty)
-				(pure Nothing) (BS.null bs))
+			(bool	(Just (BitArray.toByteString bs) <$ State.put BitArray.empty)
+				(pure Nothing) (BitArray.null bs))
 			(takeBuffer ln)
 		Just (t, d) -> Just (Right t)
 			<$ State.put (BitArray.fromByteString d)
@@ -87,9 +90,9 @@ takeString :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Eff.E effs (Maybe BS.ByteString) o
 		(Maybe (Either BitArray.B BS.ByteString))
-takeString = State.get >>= \ba -> case BitArray.byteBoundary ba of
-	Left (t, d) -> Just (Left t) <$ State.put (BitArray.fromByteString d)
-	Right bs -> case splitString bs of
+takeString = State.get >>= \ba -> case BitArray.byteBoundary' ba of
+	Left (t, d) -> Just (Left t) <$ State.put d
+	Right bs -> case splitString . fromRight $ BitArray.toByteString bs of
 		Nothing -> readMore >>= bool (pure Nothing) takeString
 		Just (t, d) -> Just (Right t)
 			<$ State.put (BitArray.fromByteString d)

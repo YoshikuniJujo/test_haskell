@@ -11,7 +11,7 @@ module Data.BitArray (
 
 	-- * BIT ARRAY
 
-	B, empty,
+	B, null, empty,
 
 	-- * FROM/TO BYTE STRING
 
@@ -23,7 +23,7 @@ module Data.BitArray (
 
 	-- * SPLIT
 
-	pop, splitAt, byteBoundary,
+	pop, splitAt, byteBoundary',
 
 	-- * CONVERT
 
@@ -31,7 +31,7 @@ module Data.BitArray (
 
 	) where
 
-import Prelude hiding (length, take, splitAt)
+import Prelude hiding (null, length, take, splitAt)
 
 import Data.Bits
 import Data.Bit (pattern O, pattern I)
@@ -43,6 +43,9 @@ import Data.ByteString qualified as BS
 -- BIT ARRAY
 
 data B = B { zero :: Int, length :: Int, body :: BS.ByteString } deriving Show
+
+null :: B -> Bool
+null = \case B { length = 0 } -> True; _ -> False
 
 empty :: B
 empty = B { zero = 0, length = 0, body = "" }
@@ -100,12 +103,12 @@ normalize (B i ln bs)
 	| otherwise = error "normalize: bad"
 	where i' = i `mod` 8; t = (ln + i' - 1) `div` 8 + 1
 
-byteBoundary :: B -> Either (B, BS.ByteString) BS.ByteString
-byteBoundary B { zero = z, body = bs } = case z of
-	0 -> Right bs
+byteBoundary' :: B -> Either (B, B) B
+byteBoundary' b@B { zero = z, length = ln, body = bs } = case z of
+	0 -> Right b
 	_ -> Left (
 		B { zero = z, length = 8 - z, body = BS.take 1 bs },
-		BS.tail bs )
+		B { zero = 0, length = ln -8 + z, body = BS.tail bs } )
 
 -- CONVERT
 
