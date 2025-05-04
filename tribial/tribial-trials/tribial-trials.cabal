@@ -35,6 +35,7 @@ library
       Control.MonadClass
       Data.Bit
       Data.BitArray
+      Data.BitArrayNew
       Data.Calc
       Data.Crc
       Data.HuffmanTree
