@@ -66,7 +66,7 @@ o@(HFreer.Pure _) =$=! p@(v HFreer.:>>= r) = case Union.decomp v of
 		Q.singleton \case
 			(o', HFreer.Pure y) -> o' =$=! (r `HFreer.app` y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', (r `HFreer.app`) =<< p')
-			_ -> error "never occur"
+			_ -> error "Pipe: never occur"
 	Right ((:=$=) o' p' k) -> o =$=! ((r `HFreer.app`) . k =<< o' =$=! p')
 	Right (o' :=@= p') -> o =$=! ((r `HFreer.app`) =<< o' =@=! p')
 	Right (IsMore k) -> o =$=! (r `HFreer.app` k False)
@@ -79,7 +79,7 @@ o@(u HFreer.:>>= q) =$=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 		Q.singleton \case
 			(o', HFreer.Pure y) -> o' =$=! (r `HFreer.app` y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', (r `HFreer.app`) =<< p')
-			_ -> error "never occur"
+			_ -> error "Pipe: never occur"
 	(_, Right ((:=$=) o' p' k)) -> o =$=! ((r `HFreer.app`) . k =<< (o' =$=! p'))
 	(_, Right (o' :=@= p')) -> o =$=! ((r `HFreer.app`) =<< (o' =@=! p'))
 	(_, Right (Yield ot a)) -> Union.injh (Yield @_ @i ot a) HFreer.:>>=
@@ -99,13 +99,13 @@ o@(u HFreer.:>>= q) =$=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 		Q.singleton \case
 			(HFreer.Pure x, p') -> (q `HFreer.app` x) =$=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
-			_ -> error "never occur"
+			_ -> error "Pipe: never occur"
 	(Left u', Right Await) ->
 		Union.weaken (Union.hmap' (=$=! p) ((, p) . HFreer.Pure) u') HFreer.:>>=
 		Q.singleton \case
 			(HFreer.Pure x, p') -> (q `HFreer.app` x) =$=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
-			_ -> error "never occur"
+			_ -> error "Pipe: never occur"
 
 (=@=!) :: forall effs i x o r r' . Union.HFunctor' (Union.U effs) =>
 	Eff.E (P ': effs) i x r -> Eff.E (P ': effs) x o r' ->
@@ -117,7 +117,7 @@ o@(u HFreer.:>>= q) =@=! p@(HFreer.Pure _) = case Union.decomp u of
 		Q.singleton \case
 			(HFreer.Pure x, p') -> q `HFreer.app` x =@=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
-			_ -> error "never occur"
+			_ -> error "Pipe: never occur"
 	Right ((:=$=) o' p' k) -> ((q `HFreer.app`) . k =<< (o' =$=! p')) =@=! p
 	Right (o' :=@= p') -> ((q `HFreer.app`) =<< (o' =@=! p')) =@=! p
 	Right (Yield _ _) -> HFreer.Pure (o, p)
@@ -129,7 +129,7 @@ o@(u HFreer.:>>= q) =@=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 		Q.singleton \case
 			(HFreer.Pure x, p') -> q `HFreer.app` x =@=! p'
 			(o', p'@(HFreer.Pure _)) -> HFreer.Pure ((q `HFreer.app`) =<< o', p')
-			_ -> error "never occur"
+			_ -> error "Pipe: never occur"
 	(Right ((:=$=) o' p' k), _) -> ((q `HFreer.app`) . k =<< (o' =$=! p')) =@=! p
 	(Right (o' :=@= p'), _) -> ((q `HFreer.app`) =<< (o' =@=! p')) =@=! p
 	(Right (IsMore k), _) -> Union.injh (IsMore @_ @_ @o k) HFreer.:>>= Q.singleton ((=@=! p) . (q `HFreer.app`))
@@ -145,4 +145,4 @@ o@(u HFreer.:>>= q) =@=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 		Q.singleton \case
 			(o', HFreer.Pure y) -> o' =@=! (r `HFreer.app` y)
 			(o'@(HFreer.Pure _), p') -> HFreer.Pure (o', (r `HFreer.app`) =<< p')
-			_ -> error "never occur"
+			_ -> error "Pipe: never occur"

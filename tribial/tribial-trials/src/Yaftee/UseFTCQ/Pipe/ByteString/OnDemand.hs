@@ -9,8 +9,8 @@ module Yaftee.UseFTCQ.Pipe.ByteString.OnDemand where
 import Control.Monad.Fix
 import Data.Bool
 import Data.ByteString qualified as BS
--- import Data.BitArrayNew qualified as BitArray
-import Data.BitArray qualified as BitArray
+import Data.BitArrayNew qualified as BitArray
+-- import Data.BitArray qualified as BitArray
 
 import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.Pipe qualified as Pipe
@@ -69,6 +69,7 @@ takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary' ba of
 			Just (Right t) <$ State.put (BitArray.fromByteString d)
 
 fromRight (Right x) = x
+fromRight (Left y) = error $ "fromRight: error " ++ show y
 
 takeBuffer :: (
 	Union.Member Pipe.P effs,

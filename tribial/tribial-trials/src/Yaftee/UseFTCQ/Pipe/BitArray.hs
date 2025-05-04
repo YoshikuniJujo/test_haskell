@@ -17,7 +17,7 @@ import Data.ByteString qualified as BS
 
 import Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
 import Data.Bit qualified as Bit
-import Data.BitArray qualified as BitArray
+import Data.BitArrayNew qualified as BitArray
 
 import Debug.Trace
 

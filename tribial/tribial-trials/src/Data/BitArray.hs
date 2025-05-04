@@ -84,7 +84,7 @@ pop B { zero = z, length = ln, body = bs } = case (z, ln) of
 		Just (b, bs') -> Just (
 			bool O I (b `testBit` 7),
 			B { zero = 0, length = ln - 1, body = bs' } )
-		Nothing -> error "never occur"
+		Nothing -> error "never occur foo"
 	_ -> Just (	
 		bool O I $ BS.head bs `testBit` z,
 		B { zero = z + 1, length = ln - 1, body = bs } )

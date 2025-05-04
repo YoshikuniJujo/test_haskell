@@ -47,6 +47,7 @@ fromByteString bs = B [B1 { zero = 0, length1 = 8 * BS.length bs, body = bs }]
 
 toByteString :: B -> Either B BS.ByteString
 toByteString b@(B b1s) = case b1s of
+	[] -> Right ""
 	[b1] -> either (Left . B . (: [])) Right $ toByteString1 b1
 	_ -> Left b
 
@@ -63,8 +64,12 @@ appendByteString b = append b . fromByteString
 normalize :: [B1] -> [B1]
 normalize = go empty1 . (normalize1 <$>)
 	where
+	go b1@B1 { length1 = 0 } = \case
+		[] -> []
+		(b1' : b1s) -> go b1' b1s
 	go b1@B1 { zero = z1, length1 = ln1, body = bs1 } = \case
-		[] -> [b1]
+		[]	| ln1 > 0 -> [b1]
+			| otherwise -> []
 		B1 { length1 = 0 } : b1s -> go b1 b1s
 		b1'@B1 { zero = z2, length1 = ln2, body = bs2 } : b1s
 			| (z1 + ln1) `mod` 8 == 0, z2 == 0 ->

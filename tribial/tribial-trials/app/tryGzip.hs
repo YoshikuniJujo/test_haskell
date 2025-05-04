@@ -25,7 +25,7 @@ import Yaftee.UseFTCQ.IO qualified as IO
 
 import Data.Sequence qualified as Seq
 import Data.Word
-import Data.BitArray qualified as BitArray
+import Data.BitArrayNew qualified as BitArray
 import Data.HuffmanTree
 import Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
 import Yaftee.UseFTCQ.Pipe.Gzip.Huffman

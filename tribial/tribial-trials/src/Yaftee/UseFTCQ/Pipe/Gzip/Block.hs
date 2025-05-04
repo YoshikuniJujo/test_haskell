@@ -32,7 +32,7 @@ import Data.Word
 import Data.ByteString qualified as BS
 
 import Data.Bit qualified as Bit
-import Data.BitArray qualified as BitArray
+import Data.BitArrayNew qualified as BitArray
 import Data.HuffmanTree
 import Yaftee.UseFTCQ.Pipe.Gzip.Huffman
 import Data.Calc
@@ -241,7 +241,7 @@ getWord16FromPair bs0 = fromIntegral @Word16 <$> do
 	(ln, cln) = (tow16 *** tow16) $ BS.splitAt 2 bs0
 	tow16 bs = case BS.unpack bs of
 		[b0, b1] -> fromIntegral b0 .|. (fromIntegral b1) `shiftL` 8
-		_ -> error "never occur"
+		_ -> error "never occur bar"
 
 separate :: Int -> Int -> [Int]
 separate bs ln
