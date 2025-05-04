@@ -10,7 +10,7 @@ module Data.BitArrayNew (
 
 	append, appendByteString,
 
-	pop, splitAt, byteBoundary,
+	pop, splitAt, byteBoundary, byteBoundary',
 
 	toWord8
 
@@ -126,6 +126,10 @@ byteBoundary = (B *** B) . go . unB
 		Just (b1t, b1d)
 			| null1 b1t -> ([], b1d : b1s)
 			| otherwise -> ([b1t], b1d : b1s)
+
+byteBoundary' :: B -> Either (B, B) B
+byteBoundary' b = case byteBoundary b of
+	(B [], b2) -> Right b2; b12 -> Left b12
 
 byteBoundary1 :: B1 -> Maybe (B1, B1)
 byteBoundary1 b1@B1 { zero = z, length1 = ln, body = bs } = case z of
