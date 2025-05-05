@@ -8,15 +8,15 @@ module Data.Bit (
 
 	-- * BIT
 
-	Bit(..), bit,
+	B(..), bit,
 
 	-- * LIST
 
-	bsToNum, bitsFromNum,
+	listToNum, listFromNum,
 
 	-- * Queue
 
-	Queue, append, popByte, uncons
+	Queue, append, uncons, popByte
 
 	) where
 
@@ -30,23 +30,23 @@ import Data.Bits (Bits, shiftL, testBit, (.|.))
 import Data.Bool
 import Data.Word
 
-data Bit = O | I deriving (Show, Eq, Ord)
+data B = O | I deriving (Show, Eq, Ord)
 
-bit :: a -> a -> Bit -> a
+bit :: a -> a -> B -> a
 bit x y = \case O -> x; I -> y
 
-bsToNum :: (Num n, Bits n) => [Bit] -> n
-bsToNum = foldr (\b s -> bit 0 1 b .|. s `shiftL` 1) 0
+listToNum :: (Num n, Bits n) => [B] -> n
+listToNum = foldr (\b s -> bit 0 1 b .|. s `shiftL` 1) 0
 
-bitsFromNum :: Bits n => Int -> n -> [Bit]
-bitsFromNum ln n = bool O I . (n `testBit`) <$> [0 .. ln - 1]
+listFromNum :: Bits n => Int -> n -> [B]
+listFromNum ln n = bool O I . (n `testBit`) <$> [0 .. ln - 1]
 
-type Queue = ([Bit], [Bit])
+type Queue = ([B], [B])
 
-append :: Queue -> [Bit] -> Queue
+append :: Queue -> [B] -> Queue
 append (xs, ys) bs = (xs, reverse bs ++ ys)
 
-uncons :: Queue -> Maybe (Bit, Queue)
+uncons :: Queue -> Maybe (B, Queue)
 uncons = \case
 	([], []) -> Nothing
 	([], ys) -> uncons (reverse ys, [])
@@ -54,10 +54,10 @@ uncons = \case
 
 popByte :: Queue -> Maybe (Word8, Queue)
 popByte bq = either (\(_ :: String) -> Nothing) Just . Eff.run
-	. Except.run . (`State.run` bq) $ bsToNum <$> replicateM 8 uncons'
+	. Except.run . (`State.run` bq) $ listToNum <$> replicateM 8 uncons'
 
 uncons' :: (
 	Union.Member (State.S Queue) effs,
-	Union.Member (Except.E String) effs ) => Eff.E effs i o Bit
+	Union.Member (Except.E String) effs ) => Eff.E effs i o B
 uncons' = State.gets uncons >>=
 	maybe (Except.throw "uncons: no bits") \(b, bq) -> b <$ State.put bq

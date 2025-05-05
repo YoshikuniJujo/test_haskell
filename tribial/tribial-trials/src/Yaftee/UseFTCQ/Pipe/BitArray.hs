@@ -26,7 +26,7 @@ bits :: (
 	Union.Member (State.S Request) effs,
 	Union.Member (State.Named "bits" BitArray.B) effs,
 	Union.Member (Except.E String) effs ) =>
-	Eff.E effs (Either BitArray.B BS.ByteString) Bit.Bit ()
+	Eff.E effs (Either BitArray.B BS.ByteString) Bit.B ()
 bits = popBit >>= \case
 	Nothing -> pure ()
 	Just b -> Pipe.yield b >> bits
@@ -37,7 +37,7 @@ bits = popBit >>= \case
 		Union.Member (State.Named "bits" BitArray.B) effs,
 		Union.Member (Except.E String) effs
 		) =>
-		Eff.E effs (Either BitArray.B BS.ByteString) o (Maybe Bit.Bit)
+		Eff.E effs (Either BitArray.B BS.ByteString) o (Maybe Bit.B)
 	popBit = State.getsN "bits" BitArray.pop >>= \case
 		Nothing -> do
 			trace "popBit: Nothing" $ pure ()

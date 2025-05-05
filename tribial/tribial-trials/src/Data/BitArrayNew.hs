@@ -95,13 +95,13 @@ normalize1 B1 { zero = z, length1 = ln, body = bs }
 	| otherwise = error "normalize: bad"
 	where z' = z `mod` 8; t = (ln + z' - 1) `div` 8 + 1
 
-pop :: B -> Maybe (Bit.Bit, B)
+pop :: B -> Maybe (Bit.B, B)
 pop (B []) = Nothing
 pop (B (b1 : b1s)) = case pop1 b1 of
 	Nothing -> error "never occur"
 	Just (b, b1') -> Just (b, B . normalize $ b1' : b1s)
 
-pop1 :: B1 -> Maybe (Bit.Bit, B1)
+pop1 :: B1 -> Maybe (Bit.B, B1)
 pop1 B1 { zero = z, length1 = ln, body = bs } = case (z, ln) of
 	(_, 0) -> Nothing
 	(7, _) -> case BS.uncons bs of

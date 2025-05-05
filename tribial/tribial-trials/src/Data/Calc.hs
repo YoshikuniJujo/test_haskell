@@ -49,8 +49,8 @@ fromLength' n = fromIntegral c .|. fromIntegral e `shiftL` 16
 	where
 	(c, e) = fromLength n
 
-lengthToCode :: Int -> (Int, [Bit.Bit])
-lengthToCode n = (i + 256, Bit.bitsFromNum el (n - last as))
+lengthToCode :: Int -> (Int, [Bit.B])
+lengthToCode n = (i + 256, Bit.listFromNum el (n - last as))
 	where
 	i = length as
 	as = takeWhile (<= n) lens
@@ -66,8 +66,8 @@ fromDist' n = fromIntegral c .|. fromIntegral e `shiftL` 16
 	where
 	(c, e) = fromDist n
 
-distToCode :: Int -> (Int, [Bit.Bit])
-distToCode n = (i - 1, Bit.bitsFromNum el (n - last as))
+distToCode :: Int -> (Int, [Bit.B])
+distToCode n = (i - 1, Bit.listFromNum el (n - last as))
 	where
 	i = length as
 	as = takeWhile (<= n) dists

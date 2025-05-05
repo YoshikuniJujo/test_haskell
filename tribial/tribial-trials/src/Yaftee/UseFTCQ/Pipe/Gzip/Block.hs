@@ -114,11 +114,11 @@ bitsBlock :: (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs ) =>
 	Maybe Int -> Maybe (Int, Int) ->
-	Eff.E effs Bit.Bit RunLength ()
+	Eff.E effs Bit.B RunLength ()
 bitsBlock mhclen mhlithdist = do
 	whenMaybe mhclen \hclen -> (\x -> State.put . (\y -> trace (show y) $ (id &&& id) y) =<< x)
 		. (mkTr @Word8 codeLengthList <$>)
-		. replicateM hclen . (Bit.bsToNum <$>)
+		. replicateM hclen . (Bit.listToNum <$>)
 		$ replicateM 3 Pipe.await
 	_ <- huffmanPipe Pipe.=$= do
 		(lct, dct) <- whenMaybeDef

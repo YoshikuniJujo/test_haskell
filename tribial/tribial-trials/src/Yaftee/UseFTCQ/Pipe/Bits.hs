@@ -9,7 +9,7 @@ module Yaftee.UseFTCQ.Pipe.Bits (
 
 	-- * TYPE
 
-	Bit.Bit(..), Bit.Queue, Bit.bitsFromNum,
+	Bit.B(..), Bit.Queue, Bit.listFromNum,
 
 	-- * PIPE
 
@@ -29,7 +29,7 @@ import Yaftee.OpenUnion qualified as Union
 
 toByteString ::
 	(Union.Member Pipe.P es, Union.Member (State.S Bit.Queue) es) =>
-	Eff.E es [Bit.Bit] BS.ByteString r
+	Eff.E es [Bit.B] BS.ByteString r
 toByteString = fix \go -> (>> go) do
 	State.modify . flip Bit.append =<< Pipe.await
 	Pipe.yield =<< uncurry (<$)
