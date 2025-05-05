@@ -71,14 +71,15 @@ block' = do
 	trace "here" (pure ())
 	State.put $ RequestBits 1
 	trace "there" (pure ())
-	Left (Just t) <- (either (Left . BitArray.toWord8) Right)
+	Left (Just t) <- (either (Left . BitArray.toBits') Right)
 		<$> Pipe.await
 	trace "here 2" (pure ())
 	State.put $ RequestBits 2
-	Just bt <- BitArray.toWord8 <$> (getLeft =<< Pipe.await)
+	Just bt <- BitArray.toBits' <$> (getLeft =<< Pipe.await)
 	trace (show bt) (pure ())
 	case bt of
-		0 -> do	State.put $ RequestBytes 4
+		(0 :: Word8) -> do
+			State.put $ RequestBytes 4
 			ln <- getWord16FromPair =<< skipLeft1
 			for_ (separate 10 ln) \ln' -> do
 				State.put $ RequestBytes ln'
@@ -86,13 +87,13 @@ block' = do
 		_	| bt == 1 || bt == 2 -> do
 			(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
 				State.put $ RequestBits 5
-				Just hlit <- ((+ 257) . fromIntegral <$>)
-					. BitArray.toWord8 <$> (getLeft =<< Pipe.await)
-				Just hdist <- ((+ 1) . fromIntegral <$>)
-					. BitArray.toWord8 <$> (getLeft =<< Pipe.await)
+				Just hlit <- ((+ 257) <$>)
+					. BitArray.toBits' <$> (getLeft =<< Pipe.await)
+				Just hdist <- ((+ 1) <$>)
+					. BitArray.toBits' <$> (getLeft =<< Pipe.await)
 				State.put $ RequestBits 4
-				Just hclen <- ((+ 4) . fromIntegral <$>)
-					. BitArray.toWord8 <$> (getLeft =<< Pipe.await)
+				Just (hclen :: Int) <- ((+ 4) <$>)
+					. BitArray.toBits' <$> (getLeft =<< Pipe.await)
 				trace ("(hlit, hdist, hclen) = " ++ show (hlit, hdist, hclen)) $ pure ()
 				pure (Just (hlit, hlit + hdist), Just hclen)
 			_ <- bits Pipe.=$= bitsBlock mhclen mhlithdist
@@ -105,7 +106,7 @@ block' = do
 			Right "" <- Pipe.await
 			pure ()
 		_ -> Except.throw $ "No such BType: " ++ show bt
-	pure (t /= 1)
+	pure (t /= (1 :: Word8))
 
 bitsBlock :: (
 	Union.Member Pipe.P effs,

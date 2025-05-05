@@ -61,7 +61,7 @@ takeBytes :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Int -> Eff.E effs (Maybe BS.ByteString) o
 		(Maybe (Either BitArray.B BS.ByteString))
-takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary' ba of
+takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
 	Right bs -> case splitAt' ln (fromRight $ BitArray.toByteString bs) of
 		Nothing -> readMore >>= bool (pure Nothing) (takeBytes ln)
@@ -76,7 +76,7 @@ takeBuffer :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Int -> Eff.E effs (Maybe BS.ByteString) o
 		(Maybe (Either BitArray.B BS.ByteString))
-takeBuffer ln = State.get >>= \ba -> case BitArray.byteBoundary' ba of
+takeBuffer ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
 	Right bs -> case splitAt' ln (fromRight $ BitArray.toByteString bs) of
 		Nothing -> readMore >>= bool
@@ -91,7 +91,7 @@ takeString :: (
 	Union.Member (State.S BitArray.B) effs ) =>
 	Eff.E effs (Maybe BS.ByteString) o
 		(Maybe (Either BitArray.B BS.ByteString))
-takeString = State.get >>= \ba -> case BitArray.byteBoundary' ba of
+takeString = State.get >>= \ba -> case BitArray.byteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
 	Right bs -> case splitString . fromRight $ BitArray.toByteString bs of
 		Nothing -> readMore >>= bool (pure Nothing) takeString

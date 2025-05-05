@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings, LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.BitArrayNew (
@@ -18,11 +19,11 @@ module Data.BitArrayNew (
 
 	-- * SPLIT
 
-	pop, popBits, splitAt, byteBoundary, byteBoundary',
+	pop, popBits, splitAt, byteBoundary,
 
 	-- * CONVERT
 
-	toWord8
+	toBits, toBits'
 
 ) where
 
@@ -30,7 +31,6 @@ import Prelude hiding (null, length, splitAt)
 import Control.Arrow
 import Data.Bits
 import Data.Bool
-import Data.Word
 import Data.Bit qualified as Bit
 import Data.ByteString qualified as BS
 
@@ -132,8 +132,9 @@ splitAt1 n B1 { zero = z, length1 = ln, body = bs }
 		normalize1 B1 { zero = z, length1 = n, body = bs },
 		normalize1 B1 { zero = z + n, length1 = ln - n, body = bs } )
 
-byteBoundary :: B -> (B, B)
-byteBoundary = (B *** B) . go . unB
+byteBoundary :: B -> Either (B, B) B
+byteBoundary (B b) = case go b of
+	([], b2) -> Right $ B b2; b12 -> Left $ (B *** B) b12
 	where
 	go [] = ([], [])
 	go (b1 : b1s) = case byteBoundary1 b1 of
@@ -141,10 +142,6 @@ byteBoundary = (B *** B) . go . unB
 		Just (b1t, b1d)
 			| null1 b1t -> ([], b1d : b1s)
 			| otherwise -> ([b1t], b1d : b1s)
-
-byteBoundary' :: B -> Either (B, B) B
-byteBoundary' b = case byteBoundary b of
-	(B [], b2) -> Right b2; b12 -> Left b12
 
 byteBoundary1 :: B1 -> Maybe (B1, B1)
 byteBoundary1 b1@B1 { zero = z, length1 = ln, body = bs } = case z of
@@ -164,11 +161,17 @@ popBits ln b0
 		(_, Nothing) -> error "never occur"
 		(_, Just (bt, bts)) -> Bit.bit id (`setBit` i) bt `first` go (i + 1) (j - 1) bts
 
-toWord8 :: B -> Maybe Word8
-toWord8 b0
-	| length b0 <= 8 = Just $ go 0 b0
+toBits :: forall n . Bits n => B -> n
+toBits = go zeroBits
+	where go i b = case pop b of
+		Nothing -> zeroBits
+		Just (bt, bts) -> Bit.bit id (`setBit` i) bt $ go (i + 1) bts
+
+toBits' :: forall n . FiniteBits n => B -> Maybe n
+toBits' b0
+	| length b0 <= finiteBitSize (undefined :: n) = Just $ go 0 b0
 	| otherwise = Nothing
 	where
 	go i b = case pop b of
-		Nothing -> 0
+		Nothing -> zeroBits
 		Just (bt, bts) -> Bit.bit id (`setBit` i) bt $ go (i + 1) bts
