@@ -4,13 +4,23 @@
 
 module Data.BitArrayNew (
 
+	-- * BIT ARRAY
+
 	B, null, length, empty,
+
+	-- * FROM/TO BYTE STRING
 
 	fromByteString, toByteString,
 
+	-- * APPEND
+
 	append, appendByteString,
 
-	pop, splitAt, byteBoundary, byteBoundary',
+	-- * SPLIT
+
+	pop, popBits, splitAt, byteBoundary, byteBoundary',
+
+	-- * CONVERT
 
 	toWord8
 
@@ -64,7 +74,7 @@ appendByteString b = append b . fromByteString
 normalize :: [B1] -> [B1]
 normalize = go empty1 . (normalize1 <$>)
 	where
-	go b1@B1 { length1 = 0 } = \case
+	go B1 { length1 = 0 } = \case
 		[] -> []
 		(b1' : b1s) -> go b1' b1s
 	go b1@B1 { zero = z1, length1 = ln1, body = bs1 } = \case
@@ -143,6 +153,16 @@ byteBoundary1 b1@B1 { zero = z, length1 = ln, body = bs } = case z of
 		| otherwise -> Just (
 			B1 { zero = z, length1 = 8 - z, body = BS.take 1 bs },
 			B1 { zero = 0, length1 = ln - 8 + z, body = BS.tail bs } )
+
+popBits :: Bits n => Int -> B -> Maybe (n, B)
+popBits ln b0
+	| length b0 < ln = Nothing
+	| otherwise = Just $ go 0 ln b0
+	where
+	go i j b = case (j, pop b) of
+		(0, _) -> (zeroBits, b)
+		(_, Nothing) -> error "never occur"
+		(_, Just (bt, bts)) -> Bit.bit id (`setBit` i) bt `first` go (i + 1) (j - 1) bts
 
 toWord8 :: B -> Maybe Word8
 toWord8 b0
