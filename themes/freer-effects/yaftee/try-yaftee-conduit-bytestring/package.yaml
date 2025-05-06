@@ -26,6 +26,7 @@ dependencies:
 - try-yaftee-conduit
 - try-yaftee-basic-monads
 - try-higher-order-open-union
+- try-bitarray-bs
 
 ghc-options:
 - -Wall

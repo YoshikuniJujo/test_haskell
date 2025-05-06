@@ -26,7 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Pipe.ByteString
-      Data.BitArray
+      Control.Monad.Yaftee.Pipe.ByteString.OnDemand
   other-modules:
       Paths_try_yaftee_conduit_bytestring
   autogen-modules:
@@ -37,6 +37,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , try-bitarray-bs
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
@@ -56,6 +57,7 @@ test-suite try-yaftee-conduit-bytestring-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , try-bitarray-bs
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
