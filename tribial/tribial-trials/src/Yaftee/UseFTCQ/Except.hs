@@ -16,6 +16,8 @@ import Yaftee.OpenUnion qualified as Union
 import Yaftee.HFunctor qualified as Union
 import Data.FTCQueue qualified as Q
 
+import Yaftee.HFunctorNew qualified as HFunctorNew
+
 data E e f i o a where
 	Throw :: e -> E e f i o a
 	Catch :: f i o a -> (e -> f i o a) -> E e f i o a
@@ -38,6 +40,21 @@ run = \case
 				=<< either (run . h) (HFreer.Pure . Right)
 				=<< run m
 
+{-
+run' :: HFunctorNew.HFunctor (Union.U effs) =>
+	Eff.E (E e ': effs) i o a -> Eff.E effs i o (Either e a)
+run' = \case
+	HFreer.Pure x -> HFreer.Pure $ Right x
+	u HFreer.:>>= q -> case Union.decomp u of
+		Left u' -> HFunctorNew.hmap run u' HFreer.:>>= Q.singleton
+			(either (HFreer.Pure . Left) (run `HFreer.comp` q))
+		Right (Throw e) -> HFreer.Pure $ Left e
+		Right (m `Catch` h) ->
+			either (HFreer.Pure . Left) (run `HFreer.comp` q)
+				=<< either (run . h) (HFreer.Pure . Right)
+				=<< run m
+-}
+
 instance Union.HFunctor (E e)
 
 instance Union.HFunctor' (E e) where
@@ -53,3 +70,7 @@ sample m n = do
 	Eff.eff . print $ m `div` n
 
 sample' m n = sample m n `catch` \e -> Eff.eff . putStrLn $ "cathed! mesage is `" ++ e ++ "'"
+
+instance HFunctorNew.HFunctor (E e) where
+	hmap _ (Throw e) = Throw e
+	hmap f (m `Catch` h) = f m `Catch` (f . h)

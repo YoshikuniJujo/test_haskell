@@ -127,6 +127,7 @@ library
       Yaftee.Except
       Yaftee.HFreer
       Yaftee.HFunctor
+      Yaftee.HFunctorNew
       Yaftee.IO
       Yaftee.Legacy.HFunctor
       Yaftee.Legacy.NewPipe

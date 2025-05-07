@@ -108,3 +108,10 @@ class HFunctorStrict h where
 		(forall i' o' x' . U (eff ': effs) i' o' x' -> U effs i' o' x') ->
 		h (U (eff ': effs)) i o x -> h (U effs) i o x
 		-}
+
+class HMappable h where
+	hhmap :: (f i o x -> g i o x) -> h f i o x -> h g i o x
+
+hmap2 :: (HMappable h, Functor (h g i o)) =>
+	(f i o x -> g i o x) -> (x -> y) -> h f i o x -> h g i o y
+hmap2 f g = fmap g . hhmap f

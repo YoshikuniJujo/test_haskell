@@ -33,6 +33,16 @@ data U (hs :: [HT]) (f :: Type -> Type -> Type -> Type) i o a =
 data FromFirst t (f :: Type -> Type -> Type -> Type) i o a
 	= forall x . FromFirst (t x) (x -> a)
 
+instance Functor (FromFirst t f i o) where
+	fmap f (FromFirst tx k) = FromFirst tx $ f . k
+
+instance Functor (U '[] f i o) where fmap _ _ = error "bad"
+instance (Functor (h f i o), Functor ((U hs) f i o)) =>
+	Functor (U (h ': hs) f i o) where
+	fmap f u = case decomp u of
+		Left u' -> weaken $ fmap f u'
+		Right h -> injh $ fmap f h
+
 inj :: forall t hs (f :: Type -> Type -> Type -> Type) i o a .
 	Member (FromFirst t) hs => t a -> U hs f i o a
 inj tx = U (unP (elemNo :: P (FromFirst t) hs)) $ FromFirst tx id
