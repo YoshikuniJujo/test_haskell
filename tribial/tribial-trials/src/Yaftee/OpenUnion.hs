@@ -77,12 +77,16 @@ weaken1 :: U (x ': r) f i o a -> U (x ': any ': r) f i o a
 weaken1 (U 0 a) = U 0 a
 weaken1 (U n a) = U (n + 1) a
 
-instance Member (FromFirst NonDet) effs => NonDetable.N (U effs f i o) where
-	mz = inj (NonDetable.mz @NonDet); mp = inj (NonDetable.mp @NonDet)
+instance Member NonDet effs => NonDetable.N (U effs f i o) where
+	mz = injh (NonDetable.mz @(NonDet f i o))
+	mp = injh (NonDetable.mp @(NonDet f i o))
 
-data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
+data NonDet (f :: Type -> Type -> Type -> Type) i o a where
+	MZero :: NonDet f i o a
+	MPlus :: (Bool -> a) -> NonDet f i o a
+	Once :: f i o a -> NonDet f i o a
 
-instance NonDetable.N NonDet where mz = MZero; mp = MPlus
+instance NonDetable.N (NonDet f i o) where mz = MZero; mp = MPlus id
 
 instance Member (FromFirst Fail) effs => Failable.F (U effs f i o) where fail = inj . Fail
 

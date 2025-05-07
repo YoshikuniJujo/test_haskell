@@ -18,6 +18,7 @@ class HFunctor h where
 	default hmap :: HFunctor' h => (forall i' o' x' . f i' o' x' -> g i' o' (t x')) -> (forall x' . x' -> t x') -> h f i o x -> h g i o (t x)
 	hmap = hmap'
 
+instance HFunctor NonDet
 instance HFunctor (FromFirst t)
 instance HFunctor (U '[])
 
@@ -29,6 +30,10 @@ instance (HFunctor h, HFunctor (U hs)) => HFunctor (U (h ': hs)) where
 class HFunctor' h where
 	hmap' :: (f i o x -> g i' o' y) -> (x -> y) -> h f i o x -> h g i' o' y
 --	hmap' :: (forall x' . f i o x' -> g i' o' (t x')) -> (forall x' . x' -> t x') -> h f i o x -> h g i' o' (t x)
+
+instance HFunctor' NonDet where
+	hmap' _ _ MZero = MZero
+	hmap' _ g (MPlus k) = MPlus $ g . k
 
 instance HFunctor' (FromFirst t) where
 	hmap' _ g (FromFirst x h) = FromFirst x (g . h)
