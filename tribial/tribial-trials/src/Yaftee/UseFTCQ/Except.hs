@@ -25,6 +25,8 @@ data E e f i o a where
 throw :: Union.Member (E e) effs => e -> Eff.E effs i o a
 throw = Eff.effh . Throw
 
+catch :: Union.Member (E e) effs =>
+	Eff.E effs i o a -> (e -> Eff.E effs i o a) -> Eff.E effs i o a
 m `catch` h = Eff.effh $ m `Catch` h
 
 run :: Union.HFunctor (Union.U effs) =>

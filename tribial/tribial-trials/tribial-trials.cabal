@@ -154,6 +154,7 @@ library
       Yaftee.UseFTCQ.Fail
       Yaftee.UseFTCQ.HFreer
       Yaftee.UseFTCQ.IO
+      Yaftee.UseFTCQ.Lambda
       Yaftee.UseFTCQ.Pipe
       Yaftee.UseFTCQ.Pipe.BitArray
       Yaftee.UseFTCQ.Pipe.Bits
