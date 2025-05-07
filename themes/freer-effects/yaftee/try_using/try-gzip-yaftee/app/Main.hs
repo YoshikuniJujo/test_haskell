@@ -92,7 +92,9 @@ main = do
 			State.put $ OnDemand.RequestBits 2
 			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
 			State.put $ OnDemand.RequestBytes 4
-			IO.print =<< skipLeft1
+			ln <- getWord16FromPair =<< skipLeft1
+			State.put $ OnDemand.RequestBytes ln
+			IO.print =<< Pipe.await
 
 newtype CompressionMethod = CompressionMethod {
 	unCompressionMeghod :: Word8 }
@@ -183,3 +185,17 @@ skipLeft1 = Pipe.await >>= \case
 		Left _ -> Except.throw @String "Not Right"
 		Right x -> pure x
 	Right x -> pure x
+
+getWord16FromPair :: (U.Member (Except.E String) es, Num n) =>
+	BS.ByteString -> Eff.E es i o n
+getWord16FromPair bs0 = fromIntegral @Word16 <$> do
+	when (BS.length bs0 /= 4)
+		$ Except.throw @String "getWord16FromPair: not 4 bytes"
+	when (ln /= complement cln)
+		$ Except.throw @String "bad pair"
+	pure ln
+	where
+	(ln, cln) = (tow16 *** tow16) $ BS.splitAt 2 bs0
+	tow16 bs = case BS.unpack bs of
+		[b0, b1] -> fromIntegral b0 .|. (fromIntegral b1) `shiftL` 8
+		_ -> error "never occur"
