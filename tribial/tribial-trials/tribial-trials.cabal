@@ -145,6 +145,7 @@ library
       Yaftee.Pipe.IO
       Yaftee.Pipe.List
       Yaftee.Pipe.Tools
+      Yaftee.Samples
       Yaftee.State
       Yaftee.TryGzip
       Yaftee.TypeElem
