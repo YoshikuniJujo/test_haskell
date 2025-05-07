@@ -40,7 +40,7 @@ crc32Body = fix \go -> Pipe.await >>= \bs -> do
 newtype Crc32 = Crc32 Word32 deriving Show
 
 crc32ToByteString :: Crc32 -> BS.ByteString
-crc32ToByteString (Crc32 c) = BS.replicate (BS.length bs) 0 `BS.append` bs
+crc32ToByteString (Crc32 c) = BS.replicate (4 - BS.length bs) 0 `BS.append` bs
 	where
 	bs = numToBs c
 	numToBs 0 = ""
