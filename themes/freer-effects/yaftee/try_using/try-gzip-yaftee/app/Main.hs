@@ -20,6 +20,7 @@ import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as Crc
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
+import Control.Monad.Yaftee.IO qualified as IO
 import Data.Bits
 import Data.Word
 import Data.ByteString qualified as BS
@@ -71,9 +72,18 @@ main = do
 					m <- bsToNum <$> Pipe.await
 					when (crc /= m) $
 						Except.throw @String "Header CRC check failed"
-				Pipe.yield `mapM_` [
-					show cm, show flgs, show mtm, show ef,
-					show os, show mexflds, show mnm, show mcmmt]
+				IO.print GzipHeader {
+					gzipHeaderCompressionMethod = cm,
+					gzipHeaderFlags = Flags {
+						flagsText = flagsRawText flgs,
+						flagsHcrc = flagsRawHcrc flgs },
+					gzipHeaderModificationTime = mtm,
+					gzipHeaderExtraFlags = ef,
+					gzipHeaderOperatingSystem = os,
+					gzipHeaderExtraField = mexflds,
+					gzipHeaderFileName = mnm,
+					gzipHeaderComment = mcmmt }
+				Pipe.yield ()
 
 newtype CompressionMethod = CompressionMethod {
 	unCompressionMeghod :: Word8 }
@@ -101,6 +111,11 @@ data FlagsRaw = FlagsRaw {
 	flagsRawExtra :: Bool,
 	flagsRawName :: Bool,
 	flagsRawComment :: Bool }
+	deriving Show
+
+data Flags = Flags {
+	flagsText :: Bool,
+	flagsHcrc :: Bool }
 	deriving Show
 
 bsToNum :: (Bits n, Integral n) => BS.ByteString -> n
@@ -139,4 +154,15 @@ data ExtraField = ExtraField {
 	extraFieldSi1 :: Word8,
 	extraFieldSi2 :: Word8,
 	extraFieldData :: BS.ByteString }
+	deriving Show
+
+data GzipHeader = GzipHeader {
+	gzipHeaderCompressionMethod :: CompressionMethod,
+	gzipHeaderFlags :: Flags,
+	gzipHeaderModificationTime :: CTime,
+	gzipHeaderExtraFlags :: Word8,
+	gzipHeaderOperatingSystem :: OS,
+	gzipHeaderExtraField :: [ExtraField],
+	gzipHeaderFileName :: Maybe BS.ByteString,
+	gzipHeaderComment :: Maybe BS.ByteString }
 	deriving Show
