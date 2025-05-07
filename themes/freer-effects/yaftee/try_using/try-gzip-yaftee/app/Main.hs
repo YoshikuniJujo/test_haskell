@@ -1,7 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -21,6 +22,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
+import Control.HigherOpenUnion qualified as U
 import Data.Bits
 import Data.Word
 import Data.ByteString qualified as BS
@@ -85,6 +87,12 @@ main = do
 					gzipHeaderFileName = mnm,
 					gzipHeaderComment = mcmmt }
 				Pipe.yield ()
+			State.put $ OnDemand.RequestBits 1
+			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
+			State.put $ OnDemand.RequestBits 2
+			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
+			State.put $ OnDemand.RequestBytes 4
+			IO.print =<< skipLeft1
 
 newtype CompressionMethod = CompressionMethod {
 	unCompressionMeghod :: Word8 }
@@ -167,3 +175,11 @@ data GzipHeader = GzipHeader {
 	gzipHeaderFileName :: Maybe BS.ByteString,
 	gzipHeaderComment :: Maybe BS.ByteString }
 	deriving Show
+
+skipLeft1 :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
+	Eff.E es (Either a b) o b
+skipLeft1 = Pipe.await >>= \case
+	Left _ -> Pipe.await >>= \case
+		Left _ -> Except.throw @String "Not Right"
+		Right x -> pure x
+	Right x -> pure x
