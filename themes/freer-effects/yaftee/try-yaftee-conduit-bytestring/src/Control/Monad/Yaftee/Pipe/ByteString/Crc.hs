@@ -1,11 +1,11 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
-	crc32, compCrc32, Crc32(..)
+	crc32, compCrc32, Crc32(..), crc32ToByteString
 
 	) where
 
@@ -38,6 +38,13 @@ crc32Body = fix \go -> Pipe.await >>= \bs -> do
 	go
 
 newtype Crc32 = Crc32 Word32 deriving Show
+
+crc32ToByteString :: Crc32 -> BS.ByteString
+crc32ToByteString (Crc32 c) = BS.replicate (BS.length bs) 0 `BS.append` bs
+	where
+	bs = numToBs c
+	numToBs 0 = ""
+	numToBs n = fromIntegral (n .&. 0xff) `BS.cons` numToBs (n `shiftR` 8)
 
 popBit :: Bits b => b -> (Bool, b)
 popBit n = (n `testBit` 0, n `shiftR` 1)
