@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -15,6 +16,7 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.List qualified as PipeL
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeB
 import Control.Monad.Yaftee.Pipe.ByteString.OnDemand qualified as OnDemand
+import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as Crc
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -33,9 +35,10 @@ main = do
 		. Except.run @String
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
+		. (`State.run` Crc.Crc32 0)
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
-			PipeT.checkRight Pipe.=$= do
+			PipeT.checkRight Pipe.=$= Crc.crc32 Pipe.=$= do
 				State.put $ OnDemand.RequestBytes 2
 				ids <- Pipe.await
 				when (ids /= "\31\139")
@@ -61,11 +64,16 @@ main = do
 				mcmmt <- if flagsRawComment flgs
 				then Just <$> Pipe.await
 				else pure Nothing
-				mhcrc <- if flagsRawHcrc flgs
-				then do	State.put $ OnDemand.RequestBytes 2
-					Just <$> Pipe.await
-				else pure Nothing
-				Pipe.yield mhcrc
+				when (flagsRawHcrc flgs) do
+					Crc.compCrc32
+					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.get
+					State.put $ OnDemand.RequestBytes 2
+					m <- bsToNum <$> Pipe.await
+					when (crc /= m) $
+						Except.throw @String "Header CRC check failed"
+				Pipe.yield `mapM_` [
+					show cm, show flgs, show mtm, show ef,
+					show os, show mexflds, show mnm, show mcmmt]
 
 newtype CompressionMethod = CompressionMethod {
 	unCompressionMeghod :: Word8 }
