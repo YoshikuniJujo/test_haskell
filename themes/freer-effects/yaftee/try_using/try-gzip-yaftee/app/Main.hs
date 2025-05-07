@@ -30,6 +30,7 @@ import System.IO
 main :: IO ()
 main = do
 	h <- openFile "sample/foo.txt.gz" ReadMode
+	let	processHeader = IO.print
 	(print =<<)
 		. Eff.runM
 		. Fail.run
@@ -72,7 +73,7 @@ main = do
 					m <- bsToNum <$> Pipe.await
 					when (crc /= m) $
 						Except.throw @String "Header CRC check failed"
-				IO.print GzipHeader {
+				processHeader GzipHeader {
 					gzipHeaderCompressionMethod = cm,
 					gzipHeaderFlags = Flags {
 						flagsText = flagsRawText flgs,
