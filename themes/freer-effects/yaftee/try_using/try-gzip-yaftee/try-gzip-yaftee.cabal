@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Gzip.Pipe.OnDemand
       Lib
   other-modules:
       Paths_try_gzip_yaftee
@@ -36,7 +35,10 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , try-bitarray-bs
     , try-yaftee
+    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
   default-language: Haskell2010
@@ -52,8 +54,11 @@ executable try-gzip-yaftee-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , try-bitarray-bs
     , try-gzip-yaftee
     , try-yaftee
+    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
   default-language: Haskell2010
@@ -70,8 +75,11 @@ test-suite try-gzip-yaftee-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , try-bitarray-bs
     , try-gzip-yaftee
     , try-yaftee
+    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
   default-language: Haskell2010
