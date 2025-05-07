@@ -147,6 +147,7 @@ library
       Yaftee.State
       Yaftee.TryGzip
       Yaftee.TypeElem
+      Yaftee.UseFTCQ.Censor
       Yaftee.UseFTCQ.Eff
       Yaftee.UseFTCQ.Except
       Yaftee.UseFTCQ.Fail
