@@ -20,7 +20,7 @@ import Data.Bits
 import Data.Word
 import Data.ByteString qualified as BS
 
-import Data.Crc
+import Data.Crc (step')
 
 import Tools.ByteStringNum
 
