@@ -110,7 +110,7 @@ normalize1 B1 { zero = z, length1 = ln, body = bs }
 pop :: B -> Maybe (Bit.B, B)
 pop (B []) = Nothing
 pop (B (b1 : b1s)) = case pop1 b1 of
-	Nothing -> error "never occur"
+	Nothing -> error $ "never occur: " ++ show b1 ++ " " ++ show b1s
 	Just (b, b1') -> Just (b, B . normalize $ b1' : b1s )
 
 pop1 :: B1 -> Maybe (Bit.B, B1)
