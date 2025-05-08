@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -28,12 +28,15 @@ import Data.Bits
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
+import Data.ByteString.Bit qualified as Bit
 import Data.ByteString.BitArray qualified as BitArray
 import System.IO
+import System.Environment
 
 main :: IO ()
 main = do
-	h <- openFile "sample/foo.txt.gz" ReadMode
+	fp : _ <- getArgs
+	h <- openFile fp ReadMode
 	let	processHeader = IO.print
 	(print =<<)
 		. Eff.runM
@@ -42,6 +45,7 @@ main = do
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`State.run` Crc.Crc32 0)
+		. (flip (State.runN @_ @"bits") $ BitArray.fromByteString "")
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
@@ -50,26 +54,31 @@ main = do
 blocks :: (
 	U.Member Pipe.P es,
 	U.Member (State.S OnDemand.Request) es,
+	U.Member (State.Named "bits" BitArray.B) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
+	Eff.E es (Either BitArray.B BS.ByteString) (Either Bit.B BS.ByteString) ()
 blocks = fix \go -> block >>= bool (pure ()) go
 
 block :: (
-	U.Member Pipe.P es, U.Member (State.S OnDemand.Request) es,
+	U.Member Pipe.P es,
+	U.Member (State.S OnDemand.Request) es,
+	U.Member (State.Named "bits" BitArray.B) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString Bool
+	Eff.E es (Either BitArray.B BS.ByteString) (Either Bit.B BS.ByteString) Bool
 block = do
 	State.put $ OnDemand.RequestBits 1
 	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
 	State.put $ OnDemand.RequestBits 2
 	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
 	case bt of
-		0 -> do
-			State.put $ OnDemand.RequestBytes 4
+		0 -> do	State.put $ OnDemand.RequestBytes 4
 			ln <- getWord16FromPair =<< skipLeft1
 			State.put $ OnDemand.RequestBytes ln
-			Pipe.yield =<< getRight =<< Pipe.await
+			Pipe.yield . Right =<< getRight =<< Pipe.await
+		1 -> do State.put $ OnDemand.RequestBuffer 100
+			bits Pipe.=$= PipeT.convert Left
+			pure ()
 		_ -> Except.throw "yet"
 	pure (bf /= 1)
 
@@ -235,3 +244,16 @@ getWord16FromPair bs0 = fromIntegral @Word16 <$> do
 	tow16 bs = case BS.unpack bs of
 		[b0, b1] -> fromIntegral b0 .|. (fromIntegral b1) `shiftL` 8
 		_ -> error "never occur"
+
+bits :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named "bits" BitArray.B) es
+	) =>
+	Eff.E es (Either BitArray.B BS.ByteString) Bit.B r
+bits = (Pipe.yield =<< pop) >> bits
+	where
+	pop = State.getsN "bits" BitArray.pop >>= \case
+		Nothing -> Pipe.await
+			>>= State.putN "bits" . either id BitArray.fromByteString
+			>> pop
+		Just (b, ba') -> b <$ State.putN "bits" ba'
