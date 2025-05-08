@@ -257,3 +257,9 @@ bits = (Pipe.yield =<< pop) >> bits
 			>>= State.putN "bits" . either id BitArray.fromByteString
 			>> pop
 		Just (b, ba') -> b <$ State.putN "bits" ba'
+
+fixedHuffmanList, fixedHuffmanDstList :: [Int]
+fixedHuffmanList =
+	replicate 144 8 ++ replicate 112 9 ++ replicate 24 7 ++ replicate 8 8
+
+fixedHuffmanDstList = replicate 32 5
