@@ -33,7 +33,7 @@ import Data.ByteString qualified as BS
 
 import Data.Bit qualified as Bit
 import Data.BitArrayNew qualified as BitArray
-import Data.HuffmanTree
+import Data.HuffmanTree (BinTree, mkTr, fixedTable, fixedDstTable)
 import Yaftee.UseFTCQ.Pipe.Gzip.Huffman
 import Data.Calc
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength

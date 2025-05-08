@@ -20,7 +20,7 @@ import Yaftee.OpenUnion qualified as Union
 import Data.Bits
 import Data.Word
 
-import Data.HuffmanTree
+import Data.HuffmanTree (BinTree, decode1)
 import Data.Bit (pattern O, pattern I)
 import Data.Bit qualified as Bit
 
