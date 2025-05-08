@@ -11,6 +11,7 @@ module Main (main) where
 import Foreign.C.Types
 import Control.Arrow
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
@@ -24,6 +25,7 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
+import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.BitArray qualified as BitArray
@@ -42,15 +44,38 @@ main = do
 		. (`State.run` Crc.Crc32 0)
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
-			PipeT.checkRight Pipe.=$= readHeader processHeader
-			State.put $ OnDemand.RequestBits 1
-			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
-			State.put $ OnDemand.RequestBits 2
-			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
+			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
+			blocks
+
+blocks :: (
+	U.Member Pipe.P es,
+	U.Member (State.S OnDemand.Request) es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
+blocks = fix \go -> block >>= bool (pure ()) go
+
+block :: (
+	U.Member Pipe.P es, U.Member (State.S OnDemand.Request) es,
+	U.Member (Except.E String) es,
+	U.Member (U.FromFirst U.Fail) es ) =>
+	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString Bool
+block = do
+	State.put $ OnDemand.RequestBits 1
+	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
+	State.put $ OnDemand.RequestBits 2
+	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
+	case bt of
+		0 -> do
 			State.put $ OnDemand.RequestBytes 4
 			ln <- getWord16FromPair =<< skipLeft1
 			State.put $ OnDemand.RequestBytes ln
-			IO.print =<< Pipe.await
+			Pipe.yield =<< getRight =<< Pipe.await
+		_ -> Except.throw "yet"
+	pure (bf /= 1)
+
+getRight :: U.Member (Except.E String) es => Either a b -> Eff.E es i o b
+getRight (Left _) = Except.throw "getRight: Left _"
+getRight (Right r) = pure r
 
 readHeader :: (
 	U.Member Pipe.P es,
@@ -58,10 +83,10 @@ readHeader :: (
 	U.Member (State.S OnDemand.Request) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
-	(GzipHeader -> Eff.E es BS.ByteString () r) ->
-	Eff.E es BS.ByteString () (
+	(GzipHeader -> Eff.E es BS.ByteString o r) ->
+	Eff.E es BS.ByteString o (
 		Eff.E es BS.ByteString BS.ByteString r1,
-		Eff.E es BS.ByteString () r )
+		Eff.E es BS.ByteString o r )
 readHeader f = Crc.crc32 Pipe.=$= do
 				State.put $ OnDemand.RequestBytes 2
 				ids <- Pipe.await
