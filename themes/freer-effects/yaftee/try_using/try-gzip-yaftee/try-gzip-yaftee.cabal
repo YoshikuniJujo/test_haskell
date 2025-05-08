@@ -26,7 +26,6 @@ source-repository head
 library
   exposed-modules:
       Data.Huffman
-      Lib
       Pipe.Huffman
   other-modules:
       Paths_try_gzip_yaftee
