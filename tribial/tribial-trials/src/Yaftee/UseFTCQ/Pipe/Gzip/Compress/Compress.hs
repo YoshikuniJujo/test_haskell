@@ -40,7 +40,7 @@ import Yaftee.UseFTCQ.Pipe.Gzip.RunLength
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple
 
 import Data.Calc
-import Data.HuffmanTree
+import Data.HuffmanTree (BinTree, mkTr, pairToCodes)
 
 import Yaftee.UseFTCQ.Pipe.Bits (pattern O, pattern I)
 import Yaftee.UseFTCQ.Pipe.Bits qualified as PipeBits
