@@ -35,14 +35,34 @@ main = do
 	let	processHeader = IO.print
 	(print =<<)
 		. Eff.runM
-		. Fail.run
 		. Except.run @String
+		. Fail.runExc id
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`State.run` Crc.Crc32 0)
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
-			PipeT.checkRight Pipe.=$= Crc.crc32 Pipe.=$= do
+			PipeT.checkRight Pipe.=$= readHeader processHeader
+			State.put $ OnDemand.RequestBits 1
+			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
+			State.put $ OnDemand.RequestBits 2
+			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
+			State.put $ OnDemand.RequestBytes 4
+			ln <- getWord16FromPair =<< skipLeft1
+			State.put $ OnDemand.RequestBytes ln
+			IO.print =<< Pipe.await
+
+readHeader :: (
+	U.Member Pipe.P es,
+	U.Member (State.S Crc.Crc32) es,
+	U.Member (State.S OnDemand.Request) es,
+	U.Member (Except.E String) es,
+	U.Member (U.FromFirst U.Fail) es ) =>
+	(GzipHeader -> Eff.E es BS.ByteString () r) ->
+	Eff.E es BS.ByteString () (
+		Eff.E es BS.ByteString BS.ByteString r1,
+		Eff.E es BS.ByteString () r )
+readHeader f = Crc.crc32 Pipe.=$= do
 				State.put $ OnDemand.RequestBytes 2
 				ids <- Pipe.await
 				when (ids /= "\31\139")
@@ -75,7 +95,7 @@ main = do
 					m <- bsToNum <$> Pipe.await
 					when (crc /= m) $
 						Except.throw @String "Header CRC check failed"
-				processHeader GzipHeader {
+				f GzipHeader {
 					gzipHeaderCompressionMethod = cm,
 					gzipHeaderFlags = Flags {
 						flagsText = flagsRawText flgs,
@@ -86,15 +106,6 @@ main = do
 					gzipHeaderExtraField = mexflds,
 					gzipHeaderFileName = mnm,
 					gzipHeaderComment = mcmmt }
-				Pipe.yield ()
-			State.put $ OnDemand.RequestBits 1
-			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
-			State.put $ OnDemand.RequestBits 2
-			IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
-			State.put $ OnDemand.RequestBytes 4
-			ln <- getWord16FromPair =<< skipLeft1
-			State.put $ OnDemand.RequestBytes ln
-			IO.print =<< Pipe.await
 
 newtype CompressionMethod = CompressionMethod {
 	unCompressionMeghod :: Word8 }
