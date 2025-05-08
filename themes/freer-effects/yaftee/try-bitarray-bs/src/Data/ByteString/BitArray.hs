@@ -56,6 +56,7 @@ null1 :: B1 -> Bool
 null1 = \case B1 { length1 = 0 } -> True; _ -> False
 
 fromByteString :: BS.ByteString -> B
+fromByteString "" = B []
 fromByteString bs = B [B1 { zero = 0, length1 = 8 * BS.length bs, body = bs }]
 
 toByteString :: B -> Either B BS.ByteString
