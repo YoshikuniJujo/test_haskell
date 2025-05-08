@@ -33,6 +33,9 @@ import Data.ByteString.BitArray qualified as BitArray
 import System.IO
 import System.Environment
 
+import Data.Huffman qualified as Huffman
+import Pipe.Huffman qualified as Huffman
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -45,6 +48,9 @@ main = do
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`State.run` Crc.Crc32 0)
+		. (`State.run` (	Huffman.makeTree [0 :: Int .. ] fixedHuffmanList,
+					Huffman.makeTree [0 :: Int .. ] fixedHuffmanList ))
+		. (`State.run` Huffman.ExtraBits 0)
 		. (flip (State.runN @_ @"bits") $ BitArray.fromByteString "")
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
@@ -55,17 +61,21 @@ blocks :: (
 	U.Member Pipe.P es,
 	U.Member (State.S OnDemand.Request) es,
 	U.Member (State.Named "bits" BitArray.B) es,
+	U.Member (State.S (Huffman.BinTree Int, Huffman.BinTree Int)) es,
+	U.Member (State.S Huffman.ExtraBits) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) (Either Bit.B BS.ByteString) ()
+	Eff.E es (Either BitArray.B BS.ByteString) (Either (Either Int Word16) BS.ByteString) ()
 blocks = fix \go -> block >>= bool (pure ()) go
 
 block :: (
 	U.Member Pipe.P es,
 	U.Member (State.S OnDemand.Request) es,
 	U.Member (State.Named "bits" BitArray.B) es,
+	U.Member (State.S (Huffman.BinTree Int, Huffman.BinTree Int)) es,
+	U.Member (State.S Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) (Either Bit.B BS.ByteString) Bool
+	Eff.E es (Either BitArray.B BS.ByteString) (Either (Either Int Word16) BS.ByteString) Bool
 block = do
 	State.put $ OnDemand.RequestBits 1
 	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
@@ -77,7 +87,7 @@ block = do
 			State.put $ OnDemand.RequestBytes ln
 			Pipe.yield . Right =<< getRight =<< Pipe.await
 		1 -> do State.put $ OnDemand.RequestBuffer 100
-			bits Pipe.=$= PipeT.convert Left
+			bits Pipe.=$= Huffman.huffman Pipe.=$= replicateM_ 7 (Pipe.yield =<< Pipe.await) Pipe.=$= PipeT.convert Left
 			pure ()
 		_ -> Except.throw "yet"
 	pure (bf /= 1)
