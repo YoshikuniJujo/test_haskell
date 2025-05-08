@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 56debfb0ee179ffc501037bfd1409c0b546066d9
+    commit: 35e80608435d16190df9bd39b78f9c1d757a0cb5
     subdirs:
       - themes/freer-effects/common/try-ftcqueue
       - themes/freer-effects/common/try-freer-base-classes
