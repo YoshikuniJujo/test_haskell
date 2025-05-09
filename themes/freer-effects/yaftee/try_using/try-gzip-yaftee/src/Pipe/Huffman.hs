@@ -1,11 +1,17 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Pipe.Huffman (huffman, ExtraBits(..), Pkg) where
+module Pipe.Huffman (
+	huffman, run, makeTree, pairToCodes,
+
+	BinTree, ExtraBits(..), Pkg,
+
+	) where
 
 import Control.Arrow
 import Control.Monad
@@ -14,6 +20,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.HigherOpenUnion qualified as U
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Huffman
 import Data.Word
@@ -46,6 +53,12 @@ huffman = do
 			Pipe.yield . Right =<< takeBits16' @(Either Int Word16) n
 			State.putN Pkg $ ExtraBits 0
 			huffman
+
+run :: HFunctor.Loose (U.U es) =>
+	BinTree a ->
+	Eff.E (State.Named Pkg ExtraBits ': State.Named Pkg (BinTree a, BinTree a) ': es) i o r ->
+	Eff.E es i o ((r, ExtraBits), (BinTree a, BinTree a))
+run bt = flip (State.runN @Pkg) (bt, bt) . flip (State.runN @Pkg) (ExtraBits 0)
 
 takeBits16' :: forall o es . U.Member Pipe.P es =>
 	Int -> Eff.E es Bit.B o Word16

@@ -33,7 +33,6 @@ import Data.ByteString.BitArray qualified as BitArray
 import System.IO
 import System.Environment
 
-import Data.Huffman qualified as Huffman
 import Pipe.Huffman qualified as Huffman
 
 main :: IO ()
@@ -48,10 +47,7 @@ main = do
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`Crc.runCrc32` Crc.Crc32 0)
-		. (flip (State.runN @Huffman.Pkg) (
-				Huffman.makeTree [0 :: Int .. ] fixedHuffmanList,
-				Huffman.makeTree [0 :: Int .. ] fixedHuffmanList ))
-		. (flip (State.runN @Huffman.Pkg) $ Huffman.ExtraBits 0)
+		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 		. (flip (State.runN @"bits") $ BitArray.fromByteString "")
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
