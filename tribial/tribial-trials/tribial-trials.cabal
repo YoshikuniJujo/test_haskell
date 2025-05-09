@@ -167,6 +167,7 @@ library
       Yaftee.UseFTCQ.Pipe.Gzip.Block
       Yaftee.UseFTCQ.Pipe.Gzip.Check
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
+      Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.Compress
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.Gzip
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength
