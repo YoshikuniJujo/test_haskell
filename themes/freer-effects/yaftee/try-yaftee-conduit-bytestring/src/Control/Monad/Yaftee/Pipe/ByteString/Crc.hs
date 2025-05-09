@@ -7,7 +7,7 @@
 
 module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
-	runCrc32, crc32, compCrc32, Crc32(..), crc32ToByteString,
+	runCrc32, crc32, crc32', compCrc32, Crc32(..), crc32ToByteString,
 
 	Pkg
 
@@ -39,6 +39,12 @@ crc32 = do
 	State.putN Pkg $ Crc32 0xffffffff
 	crc32Body
 
+crc32' :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
+	Eff.E es BS.ByteString BS.ByteString ()
+crc32' = do
+	State.putN Pkg $ Crc32 0xffffffff
+	crc32Body'
+
 compCrc32 :: U.Member (State.Named Pkg Crc32) es => Eff.E es i o ()
 compCrc32 = State.modifyN Pkg \(Crc32 c) -> Crc32 $ complement c
 
@@ -48,6 +54,14 @@ crc32Body = fix \go -> Pipe.await >>= \bs -> do
 	State.modifyN Pkg \(Crc32 c) -> Crc32 $ c `stepBS` bs
 	Pipe.yield bs
 	go
+
+crc32Body' :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
+	Eff.E es BS.ByteString BS.ByteString ()
+crc32Body' = fix \go ->
+	Pipe.isMore >>= bool (pure ()) (Pipe.await >>= \bs -> do
+		State.modifyN Pkg \(Crc32 c) -> Crc32 $ c `stepBS` bs
+		Pipe.yield bs
+		go)
 
 newtype Crc32 = Crc32 Word32 deriving Show
 
