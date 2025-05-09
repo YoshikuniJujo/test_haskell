@@ -48,11 +48,11 @@ main = do
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`Crc.runCrc32` Crc.Crc32 0)
-		. (flip (State.runN @_ @Huffman.Pkg) (
+		. (flip (State.runN @Huffman.Pkg) (
 				Huffman.makeTree [0 :: Int .. ] fixedHuffmanList,
 				Huffman.makeTree [0 :: Int .. ] fixedHuffmanList ))
-		. (flip (State.runN @_ @Huffman.Pkg) $ Huffman.ExtraBits 0)
-		. (flip (State.runN @_ @"bits") $ BitArray.fromByteString "")
+		. (flip (State.runN @Huffman.Pkg) $ Huffman.ExtraBits 0)
+		. (flip (State.runN @"bits") $ BitArray.fromByteString "")
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
