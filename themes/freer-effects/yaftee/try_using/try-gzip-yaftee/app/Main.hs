@@ -34,6 +34,7 @@ import System.IO
 import System.Environment
 
 import Pipe.Huffman qualified as Huffman
+import Pipe.RunLength qualified as RunLength
 
 main :: IO ()
 main = do
@@ -61,7 +62,7 @@ blocks :: (
 	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
 	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) (Either (Either Int Word16) BS.ByteString) ()
+	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R ()
 blocks = fix \go -> block >>= bool (pure ()) go
 
 block :: (
@@ -72,7 +73,7 @@ block :: (
 	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) (Either (Either Int Word16) BS.ByteString) Bool
+	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
 block = do
 	State.put $ OnDemand.RequestBits 1
 	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
@@ -82,9 +83,12 @@ block = do
 		0 -> do	State.put $ OnDemand.RequestBytes 4
 			ln <- getWord16FromPair =<< skipLeft1
 			State.put $ OnDemand.RequestBytes ln
-			Pipe.yield . Right =<< getRight =<< Pipe.await
+			Pipe.yield . RunLength.LiteralBS =<< getRight =<< Pipe.await
 		1 -> do State.put $ OnDemand.RequestBuffer 100
-			bits Pipe.=$= Huffman.huffman Pipe.=$= replicateM_ 7 (Pipe.yield =<< Pipe.await) Pipe.=$= PipeT.convert Left
+			bits Pipe.=$= Huffman.huffman Pipe.=$= litLen
+				(Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
+				(Huffman.makeTree [0 :: Int .. ] fixedHuffmanDstList) 0
+			-- replicateM_ 7 (Pipe.yield =<< Pipe.await) Pipe.=$= PipeT.convert Left
 			pure ()
 		_ -> Except.throw "yet"
 	pure (bf /= 1)
@@ -270,3 +274,55 @@ fixedHuffmanList =
 	replicate 144 8 ++ replicate 112 9 ++ replicate 24 7 ++ replicate 8 8
 
 fixedHuffmanDstList = replicate 32 5
+
+litLen t dt pri = Pipe.await >>= \case
+	Left 256 -> pure ()
+	Left i	| 0 <= i && i <= 255 -> do
+			Pipe.yield (RunLength.Literal $ fromIntegral i)
+			litLen t dt 0
+		| 257 <= i && i <= 264 -> Huffman.putTree dt >> dist t dt (calcLength i 0) 0
+		| 265 <= i && i <= 284 -> do
+			Huffman.putExtraBits $ (i - 261) `div` 4
+			litLen t dt i
+		| i == 285 -> Huffman.putTree dt >> dist t dt (calcLength i 0) 0
+	Right eb -> do
+		Huffman.putTree dt
+		dist t dt (calcLength pri eb) 0
+
+dist t dt ln pri = Pipe.await >>= \case
+	Left i	| 0 <= i && i <= 3 -> do
+			Pipe.yield $ RunLength.LenDist ln (calcDist i 0)
+			Huffman.putTree t
+			litLen t dt 0
+		| 4 <= i && i <= 29 -> do
+			Huffman.putExtraBits $ (i - 2) `div` 2
+			dist t dt ln i
+		| otherwise -> error $ "putDist: yet " ++ show i
+	Right eb -> do
+		Pipe.yield (RunLength.LenDist ln (calcDist pri eb))
+		Huffman.putTree t
+		litLen t dt 0
+	
+
+calcLength :: Int -> Word16 -> Int
+calcLength n eb
+	| 257 <= n && n <= 284 = lens !! (n - 257) + fromIntegral eb
+	| n == 285 = 258
+	| otherwise = error "bad length parameter"
+
+lens :: [Int]
+lens = (+ 3) <$> scanl (+) 0 ((2 ^) <$> lensBits)
+
+lensBits :: [Int]
+lensBits = replicate 4 0 ++ (replicate 4 =<< [0 ..])
+
+calcDist :: Int -> Word16 -> Int
+calcDist n eb
+	| 0 <= n && n <= 29 = dists !! n + fromIntegral eb
+	| otherwise = error "bad distance parameter"
+
+dists :: [Int]
+dists = (+ 1) <$> scanl (+) 0 ((2 ^) <$> distsBits)
+
+distsBits :: [Int]
+distsBits = replicate 2 0 ++ (replicate 2 =<< [0 ..])

@@ -27,6 +27,7 @@ library
   exposed-modules:
       Data.Huffman
       Pipe.Huffman
+      Pipe.RunLength
   other-modules:
       Paths_try_gzip_yaftee
   autogen-modules:

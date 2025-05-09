@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Pipe.Huffman (
-	huffman, run, makeTree, pairToCodes,
+	run, huffman, putTree, putExtraBits, makeTree, pairToCodes,
 
 	BinTree, ExtraBits(..), Pkg,
 
@@ -37,12 +37,12 @@ step b = State.getN Pkg >>= \(t0, t) -> let
 
 newtype ExtraBits = ExtraBits Int deriving Show
 
-huffman :: (
+huffman :: forall a eb es r . Bits eb => (
 	U.Member Pipe.P es,
-	U.Member (State.Named Pkg (BinTree Int, BinTree Int)) es,
+	U.Member (State.Named Pkg (BinTree a, BinTree a)) es,
 	U.Member (State.Named Pkg ExtraBits) es,
 	U.Member Fail.F es ) =>
-	Eff.E es Bit.B (Either Int Word16) r
+	Eff.E es Bit.B (Either a eb) r
 huffman = do
 	eb <- State.getN Pkg
 	case eb of
@@ -50,7 +50,7 @@ huffman = do
 			(\b -> (maybe (pure ()) (Pipe.yield . Left) =<< step b) >> huffman)
 				=<< Pipe.await
 		ExtraBits n -> do
-			Pipe.yield . Right =<< takeBits16' @(Either Int Word16) n
+			Pipe.yield . Right =<< takeBits16' @eb @(Either a eb) n
 			State.putN Pkg $ ExtraBits 0
 			huffman
 
@@ -60,9 +60,17 @@ run :: HFunctor.Loose (U.U es) =>
 	Eff.E es i o ((r, ExtraBits), (BinTree a, BinTree a))
 run bt = flip (State.runN @Pkg) (bt, bt) . flip (State.runN @Pkg) (ExtraBits 0)
 
-takeBits16' :: forall o es . U.Member Pipe.P es =>
-	Int -> Eff.E es Bit.B o Word16
+putTree :: U.Member (State.Named Pkg (BinTree a, BinTree a)) es =>
+	BinTree a -> Eff.E es i o ()
+putTree tr = State.putN Pkg (tr, tr)
+
+putExtraBits ::
+	U.Member (State.Named Pkg ExtraBits) es => Int -> Eff.E es i o ()
+putExtraBits = State.putN Pkg . ExtraBits
+
+takeBits16' :: forall eb o es . Bits eb => U.Member Pipe.P es =>
+	Int -> Eff.E es Bit.B o eb
 takeBits16' n = bitsToWord16' <$> replicateM n Pipe.await
 
-bitsToWord16' :: [Bit.B] -> Word16
-bitsToWord16' = foldr (\b w -> w `shiftL` 1 .|. case b of O -> 0; I -> 1) 0
+bitsToWord16' :: Bits eb => [Bit.B] -> eb
+bitsToWord16' = foldr (\b w -> w `shiftL` 1 .|. case b of O -> zeroBits; I -> bit 0) zeroBits
