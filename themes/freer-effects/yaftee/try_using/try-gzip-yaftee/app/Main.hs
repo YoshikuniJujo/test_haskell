@@ -61,6 +61,7 @@ blocks :: (
 	U.Member (State.Named "bits" BitArray.B) es,
 	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
 	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Base IO.I es,		-- FOR DEBUG
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R ()
 blocks = fix \go -> block >>= bool (pure ()) go
@@ -72,7 +73,11 @@ block :: (
 	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
 	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
-	U.Member (U.FromFirst U.Fail) es ) =>
+	U.Member (U.FromFirst U.Fail) es,
+	U.Base IO.I es
+	) =>
+--	U.Member (U.FromFirst U.Fail) es
+--	) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
 block = do
 	State.put $ OnDemand.RequestBits 1
@@ -88,10 +93,48 @@ block = do
 			bits Pipe.=$= Huffman.huffman Pipe.=$= litLen
 				(Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 				(Huffman.makeTree [0 :: Int .. ] fixedHuffmanDstList) 0
-			-- replicateM_ 7 (Pipe.yield =<< Pipe.await) Pipe.=$= PipeT.convert Left
 			pure ()
-		_ -> Except.throw "yet"
+		2 -> do	State.put $ OnDemand.RequestBits 5
+			IO.print @Int . (+ 257) . BitArray.toBits =<< getLeft =<< Pipe.await
+			IO.print @Int . (+ 1) . BitArray.toBits =<< getLeft =<< Pipe.await
+			State.put $ OnDemand.RequestBits 4
+			IO.print @Int . (+ 4) . BitArray.toBits =<< getLeft =<< Pipe.await
+			State.put $ OnDemand.RequestBuffer 100
+			bits Pipe.=$= do
+				Huffman.putTree . Huffman.makeTree codeLengthList
+					=<< replicateM 14 (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
+				Huffman.huffman @Int @Word16 Pipe.=$= do
+					(ht, hdt) <- (Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt 282 <$> getCodeTable 0 305
+					Huffman.putTree ht
+					litLen ht hdt 0
+			pure ()
 	pure (bf /= 1)
+
+codeLengthList :: [Int]
+codeLengthList =
+	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+
+getCodeTable _ 0 = pure []
+getCodeTable pr n = Pipe.await >>= \case
+	Left ln	| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable ln (n - 1)
+		| ln == 16 -> do
+			Huffman.putExtraBits 2
+			Right eb <- Pipe.await
+			(replicate (fromIntegral eb + 3) pr ++) <$> getCodeTable pr (n - fromIntegral eb - 3)
+		| ln == 17 -> do
+			Huffman.putExtraBits 3
+			Right eb <- Pipe.await
+			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable 0 (n - fromIntegral eb - 3)
+		| ln == 18 -> do
+			Huffman.putExtraBits 7
+			Right eb <- Pipe.await
+			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable 0 (n - fromIntegral eb - 11)
+		| otherwise -> error "yet"
+	Right _ -> error "bad"
+
+getLeft :: U.Member (Except.E String) es => Either a b -> Eff.E es i o a
+getLeft (Left r) = pure r
+getLeft (Right _) = Except.throw "getLeft: Right _"
 
 getRight :: U.Member (Except.E String) es => Either a b -> Eff.E es i o b
 getRight (Left _) = Except.throw "getRight: Left _"
