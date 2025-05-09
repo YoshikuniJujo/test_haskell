@@ -6,7 +6,9 @@
 
 module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
-	crc32, compCrc32, Crc32(..), crc32ToByteString
+	crc32, compCrc32, Crc32(..), crc32ToByteString,
+
+	Pkg
 
 	) where
 
