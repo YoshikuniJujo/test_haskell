@@ -1,12 +1,13 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
-	crc32, compCrc32, Crc32(..), crc32ToByteString,
+	runCrc32, crc32, compCrc32, Crc32(..), crc32ToByteString,
 
 	Pkg
 
@@ -18,6 +19,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Array
 import Data.Bool
@@ -25,6 +27,11 @@ import Data.Word
 import Data.ByteString qualified as BS
 
 type Pkg = "try-yaftee-conduit-bytestring"
+
+runCrc32 ::  HFunctor.Loose (U.U es) =>
+	Eff.E (State.Named Pkg Crc32 ': es) i o r ->
+	Crc32 -> Eff.E es i o (r, Crc32)
+runCrc32 = State.runN
 
 crc32 :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
