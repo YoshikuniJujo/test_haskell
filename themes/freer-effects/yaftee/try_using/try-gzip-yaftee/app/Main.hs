@@ -16,6 +16,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.List qualified as PipeL
+import Control.Monad.Yaftee.Pipe.IO qualified as PipeI
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeB
 import Control.Monad.Yaftee.Pipe.ByteString.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as Crc
@@ -43,20 +44,25 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	let	processHeader = IO.print
-	(print . either Left (Right . fst . fst . fst . fst . fst) =<<)
-		. Eff.runM
-		. Except.run @String
-		. Fail.runExc id
+	Eff.runM . Except.run @String . Fail.runExc id
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`State.run` (Seq.empty :: Seq.Seq Word8))
-		. (`Crc.runCrc32` Crc.Crc32 0)
+		. (flip (State.runN @"format") ("" :: BS.ByteString))
 		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 		. (flip (State.runN @"bits") $ BitArray.fromByteString "")
+		. (`Crc.runCrc32` Crc.Crc32 0)
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
-			blocks Pipe.=$= runLength
+			blocks Pipe.=$= runLength Pipe.=$= format 32 Pipe.=$= do
+					Crc.crc32'
+					Crc.compCrc32
+					IO.print . Crc.crc32ToByteString =<< State.getN Crc.Pkg
+					IO.print @BitArray.B =<< State.get
+					IO.print @BitArray.B =<< State.getN "bits"
+				Pipe.=$= PipeI.print
+	pure ()
 
 blocks :: (
 	U.Member Pipe.P es,
@@ -406,10 +412,30 @@ appendR s ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
 	foldl (Seq.|>) s' ws
 	where ln = Seq.length s
 
-{-
 format n = do
 	b <- checkLength n
 	if b
 	then yieldLen n >> format n
-	else readMore2
-	-}
+	else readMore >>= bool
+		(Pipe.yield =<< State.getN @BS.ByteString "format")
+		(format n)
+
+readMore :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named "format" BS.ByteString) es ) =>
+	Eff.E es (Either Word8 BS.ByteString) o Bool
+readMore = do
+	e <- Pipe.isEmpty
+	if e then pure False else Pipe.await >>= \case
+		Left w -> True <$ State.modifyN "format" (`BS.snoc` w)
+		Right bs -> True <$ State.modifyN "format" (`BS.append` bs)
+
+checkLength n = do
+	bs <- State.getN "format"
+	pure $ BS.length bs >= n
+
+yieldLen n = do
+	bs <- State.getN "format"
+	let	(r, bs') = BS.splitAt n bs
+	State.putN "format" bs'
+	Pipe.yield r
