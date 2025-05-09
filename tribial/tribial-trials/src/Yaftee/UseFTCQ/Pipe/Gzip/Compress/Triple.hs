@@ -1,8 +1,14 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
-module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple where
+module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple (
+
+	Triple, triple0, updateTriple,
+
+	calcDistance, getIndexLength
+
+	) where
 
 import Control.Arrow
 import Data.Foldable
@@ -15,13 +21,13 @@ import Data.ByteString qualified as BS
 
 -- * API
 
+type Triple = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
+
 updateTriple :: Triple -> Word8 -> Triple
 updateTriple = push
 
 getIndexLength :: Monad m => Triple -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
 getIndexLength = maxLengthFromTriple
-
-type Triple = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
 
 triple0 :: Triple
 triple0 = (0, Seq.empty, Map.empty)
@@ -56,10 +62,9 @@ takeR :: Int -> Seq.Seq a -> Seq.Seq a
 takeR n s = Seq.drop (Seq.length s - n) s
 
 tailS :: Seq.Seq a -> Seq.Seq a
-tailS s = let (_ Seq.:< s') = Seq.viewl s in s'
-
-pushByteString :: Int -> Triple -> BS.ByteString -> Triple
-pushByteString mx tr = foldl (pushWithMax mx) tr . BS.unpack
+tailS s = case Seq.viewl s of
+	(_ Seq.:< s') -> s'
+	_ -> error "bad"
 
 maxLengthFromTriple :: Monad m => Triple -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
 maxLengthFromTriple st tr gb = maxLength (getRotables st tr) gb
