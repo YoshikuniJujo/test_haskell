@@ -5,17 +5,27 @@
 
 module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Gzip (
 
-	GzipHeader(..), sampleGzipHeader, gzipHeaderToRaw,
+	-- * GZIP HEADER
 
-	Flags(..), readFlags,
+	GzipHeader(..), sampleGzipHeader,
+	CompressionMethod(..), Flags(..), OS(..), ExtraField(..),
+
+	-- ** DECODE
+
+	decodeExtraFields,
+
+	-- * GZIP HEADER RAW
+
+	GzipHeaderRaw, gzipHeaderToRaw, gzipHeaderFromRaw,
 	FlagsRaw(..),
 
-	CompressionMethod(..), OS(..),
-	ExtraField(..), decodeExtraFields,
+	-- ** ENCODE
 
-	bsToWord16, word32ToCTime,
+	encodeGzipHeader,
 
-	encodeGzipHeader, crc'
+	-- ** DECODE
+
+	readFlags,
 
 	) where
 
@@ -36,8 +46,7 @@ ids0 = "\x1f\x8b"
 data GzipHeaderRaw = GzipHeaderRaw {
 	gzipHeaderRawCompressionMethod :: CompressionMethod,
 	gzipHeaderRawFlags :: FlagsRaw,
-	gzipHeaderRawModificationTime :: CTime, -- Word32,
---	gzipHeaderRawModificationTime :: Word32,
+	gzipHeaderRawModificationTime :: CTime,
 	gzipHeaderRawExtraFlags :: Word8,
 	gzipHeaderRawOperatingSystem :: OS,
 	gzipHeaderRawExtraField :: [ExtraField],
@@ -95,9 +104,6 @@ gzipHeaderToRaw GzipHeader {
 	gzipHeaderRawExtraField = eflds,
 	gzipHeaderRawFileName = mfn,
 	gzipHeaderRawComment = mcmmt }
-
-word32ToCTime :: Word32 -> CTime
-word32ToCTime = CTime . fromIntegral
 
 cTimeToWord32 :: CTime -> Word32
 cTimeToWord32 (CTime w) = fromIntegral w
@@ -227,19 +233,21 @@ decodeExtraFields bs = let
 	ef : decodeExtraFields bs'
 
 decodeExtraField :: BS.ByteString -> (ExtraField, BS.ByteString)
-decodeExtraField bs = let
-	([si1, si2], bs') = BS.unpack `first` BS.splitAt 2 bs
-	(ln, bs'') = (fromIntegral . bsToWord16) `first` BS.splitAt 2 bs'
-	(dt, bs''') = BS.splitAt ln bs'' in (
+decodeExtraField bs = case BS.unpack `first` BS.splitAt 2 bs of
+	([si1, si2], bs') -> let
+		(ln, bs'') = (fromIntegral . bsToWord16) `first` BS.splitAt 2 bs'
+		(dt, bs''') = BS.splitAt ln bs'' in (
 		ExtraField {
 			extraFieldSi1 = si1,
 			extraFieldSi2 = si2,
 			extraFieldData = dt },
 		bs''' )
+	_ -> error "bad"
 
 word16ToBs :: Word16 -> BS.ByteString
 word16ToBs w = BS.pack $ fromIntegral <$> [w .&. 0xff, w `shiftR` 8]
 
 bsToWord16 :: BS.ByteString -> Word16
-bsToWord16 bs = w0 .|. w1 `shiftL` 8
-	where [w0, w1] = fromIntegral <$> BS.unpack bs
+bsToWord16 bs = case fromIntegral <$> BS.unpack bs of
+	[w0, w1] -> w0 .|. w1 `shiftL` 8
+	_ -> error "bad"

@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-unused-imports #-}
 
 module Template.TryNameSpace where
 
