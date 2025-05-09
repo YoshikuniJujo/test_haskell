@@ -16,7 +16,7 @@ module Data.Bit (
 
 	-- * Queue
 
-	Queue, append, uncons, popByte
+	Queue, empty, append, uncons, popByte
 
 	) where
 
@@ -42,6 +42,9 @@ listFromNum :: Bits n => Int -> n -> [B]
 listFromNum ln n = bool O I . (n `testBit`) <$> [0 .. ln - 1]
 
 type Queue = ([B], [B])
+
+empty :: Queue
+empty = ([], [])
 
 append :: Queue -> [B] -> Queue
 append (xs, ys) bs = (xs, reverse bs ++ ys)

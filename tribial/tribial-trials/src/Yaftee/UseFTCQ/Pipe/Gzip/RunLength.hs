@@ -12,8 +12,8 @@ module Yaftee.UseFTCQ.Pipe.Gzip.RunLength (
 
 	word32ToRunLength,
 
-	runLengthsToLitLenFreqs,
-	runLengthsToDistFreqs
+	toLitLenFreqs,
+	toDistFreqs
 
 	) where
 
@@ -38,20 +38,20 @@ runLength :: (
 	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
 	Eff.E effs RunLength (Either Word8 BS.ByteString) ()
 runLength = Pipe.await >>= \rl -> (>> runLength) $ ($ rl) \case
-	RunLengthLiteral w -> State.modify (`snoc` w) >> Pipe.yield (Left w)
-	RunLengthLiteralBS bs ->
+	Literal w -> State.modify (`snoc` w) >> Pipe.yield (Left w)
+	LiteralBS bs ->
 		State.modify (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
-	RunLengthLenDist ln d -> State.gets (repetition ln d) >>= \ws ->
+	LenDist ln d -> State.gets (repetition ln d) >>= \ws ->
 		State.modify (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
 
 word32ToRunLength :: Union.Member Pipe.P effs => Eff.E effs Word32 RunLength ()
 word32ToRunLength = fix \go -> Pipe.await >>= \case
 	w	| 0 <= w0 && w0 <= 255 -> do
-			Pipe.yield . RunLengthLiteral $ fromIntegral w0
+			Pipe.yield . Literal $ fromIntegral w0
 			go
 		| otherwise -> Pipe.await >>= \case
 			w' -> do
-				Pipe.yield $ RunLengthLenDist
+				Pipe.yield $ LenDist
 					(calcLength (fromIntegral w0) (fromIntegral w1))
 					(calcDist (fromIntegral w0') (fromIntegral w1'))
 				go
@@ -62,10 +62,9 @@ word32ToRunLength = fix \go -> Pipe.await >>= \case
 		w0 = w .&. 0xffff
 		w1 = w `shiftR` 16
 
-data RunLength =
-	RunLengthLiteralBS BS.ByteString |
-	RunLengthLiteral Word8 | RunLengthLenDist RunLengthLength RunLengthDist |
-	RunLengthEndOfInput
+data RunLength
+	= Literal Word8 | LiteralBS BS.ByteString
+	| LenDist RunLengthLength RunLengthDist | EndOfInput
 	deriving Show
 
 type RunLengthLength = Int
@@ -95,24 +94,24 @@ takeR :: Int -> Seq.Seq Word8 -> Seq.Seq Word8
 takeR n xs = Seq.drop (Seq.length xs - n) xs
 
 runLengthToWord32 :: RunLength -> [Word32]
-runLengthToWord32 (RunLengthLiteralBS bs) = fromLiteral' . fromIntegral <$> BS.unpack bs
-runLengthToWord32 (RunLengthLiteral b) = [fromLiteral' $ fromIntegral b]
-runLengthToWord32 (RunLengthLenDist ln dst) = [fromLength' ln, fromDist' dst]
+runLengthToWord32 (LiteralBS bs) = fromLiteral' . fromIntegral <$> BS.unpack bs
+runLengthToWord32 (Literal b) = [fromLiteral' $ fromIntegral b]
+runLengthToWord32 (LenDist ln dst) = [fromLength' ln, fromDist' dst]
 
 runLengthToLitLen :: RunLength -> [Int]
-runLengthToLitLen (RunLengthLiteral b) = [fromIntegral b]
-runLengthToLitLen (RunLengthLiteralBS bs) = fromIntegral <$> BS.unpack bs
-runLengthToLitLen (RunLengthLenDist ln _dst) = [fst $ lengthToCode ln]
-runLengthToLitLen RunLengthEndOfInput = [256]
+runLengthToLitLen (Literal b) = [fromIntegral b]
+runLengthToLitLen (LiteralBS bs) = fromIntegral <$> BS.unpack bs
+runLengthToLitLen (LenDist ln _dst) = [fst $ lengthToCode ln]
+runLengthToLitLen EndOfInput = [256]
 
-runLengthsToLitLenFreqs :: [RunLength] -> [(Int, Int)]
-runLengthsToLitLenFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToLitLen =<<)
+toLitLenFreqs :: [RunLength] -> [(Int, Int)]
+toLitLenFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToLitLen =<<)
 
 runLengthToDist :: RunLength -> [Int]
-runLengthToDist (RunLengthLiteral _) = []
-runLengthToDist (RunLengthLiteralBS _) = []
-runLengthToDist (RunLengthLenDist _ln dst) = [fst $ distToCode dst]
-runLengthToDist RunLengthEndOfInput = []
+runLengthToDist (Literal _) = []
+runLengthToDist (LiteralBS _) = []
+runLengthToDist (LenDist _ln dst) = [fst $ distToCode dst]
+runLengthToDist EndOfInput = []
 
-runLengthsToDistFreqs :: [RunLength] -> [(Int, Int)]
-runLengthsToDistFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToDist =<<)
+toDistFreqs :: [RunLength] -> [(Int, Int)]
+toDistFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToDist =<<)

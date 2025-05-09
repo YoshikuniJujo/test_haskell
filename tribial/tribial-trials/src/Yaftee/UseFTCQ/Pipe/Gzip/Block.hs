@@ -83,7 +83,7 @@ block' = do
 			ln <- getWord16FromPair =<< skipLeft1
 			for_ (separate 10 ln) \ln' -> do
 				State.put $ RequestBytes ln'
-				Pipe.yield . RunLengthLiteralBS =<< getRight =<< Pipe.await
+				Pipe.yield . LiteralBS =<< getRight =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
 			(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
 				State.put $ RequestBits 5
@@ -155,7 +155,7 @@ putDecoded t dt pri = do
 		Left 256 -> pure ()
 		Left i
 			| 0 <= i && i <= 255 -> do
-				Pipe.yield (RunLengthLiteral $ fromIntegral i)
+				Pipe.yield (Literal $ fromIntegral i)
 				putDecoded t dt 0
 			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt (calcLength i 0) 0
 			| 265 <= i && i <= 284 -> do
@@ -180,7 +180,7 @@ putDist t dt ln pri = do
 	case mi of
 		Left i
 			| 0 <= i && i <= 3 -> do
-				Pipe.yield (RunLengthLenDist ln (calcDist i 0))
+				Pipe.yield (LenDist ln (calcDist i 0))
 				State.put (t, t)
 				putDecoded t dt 0
 			| 4 <= i && i <= 29 -> do
@@ -188,7 +188,7 @@ putDist t dt ln pri = do
 				putDist t dt ln i
 			| otherwise -> error $ "putDist: yet " ++ show i
 		Right eb -> do
-			Pipe.yield (RunLengthLenDist ln (calcDist pri eb))
+			Pipe.yield (LenDist ln (calcDist pri eb))
 			State.put (t, t)
 			putDecoded t dt 0
 
