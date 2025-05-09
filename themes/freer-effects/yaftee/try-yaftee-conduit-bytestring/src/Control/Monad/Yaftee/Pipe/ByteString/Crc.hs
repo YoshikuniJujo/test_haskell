@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -21,19 +22,21 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-crc32 :: (U.Member Pipe.P es, U.Member (State.S Crc32) es) =>
+type Pkg = "try-yaftee-conduit-bytestring"
+
+crc32 :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
 crc32 = do
-	State.put $ Crc32 0xffffffff
+	State.putN Pkg $ Crc32 0xffffffff
 	crc32Body
 
-compCrc32 :: U.Member (State.S Crc32) es => Eff.E es i o ()
-compCrc32 = State.modify \(Crc32 c) -> Crc32 $ complement c
+compCrc32 :: U.Member (State.Named Pkg Crc32) es => Eff.E es i o ()
+compCrc32 = State.modifyN Pkg \(Crc32 c) -> Crc32 $ complement c
 
-crc32Body :: (U.Member Pipe.P es, U.Member (State.S Crc32) es) =>
+crc32Body :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
 crc32Body = fix \go -> Pipe.await >>= \bs -> do
-	State.modify \(Crc32 c) -> Crc32 $ c `stepBS` bs
+	State.modifyN Pkg \(Crc32 c) -> Crc32 $ c `stepBS` bs
 	Pipe.yield bs
 	go
 
