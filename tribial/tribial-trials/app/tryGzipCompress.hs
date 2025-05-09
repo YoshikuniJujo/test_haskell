@@ -9,4 +9,4 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength
 main :: IO ()
 main = do
 	ifp : ofp : _ <- getArgs
-	compressFile compressRL ifp ofp
+	compressFile' compressRL ifp ofp

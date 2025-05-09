@@ -76,6 +76,7 @@ block' = do
 	trace "here 2" (pure ())
 	State.put $ RequestBits 2
 	Just bt <- BitArray.toBits' <$> (getLeft =<< Pipe.await)
+	trace (show t) (pure ())
 	trace (show bt) (pure ())
 	case bt of
 		(0 :: Word8) -> do

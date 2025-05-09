@@ -16,6 +16,7 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Map qualified as Map
 import Data.Swizzle qualified as Swizzle
+import Data.Bool
 import Data.ByteString qualified as BS
 
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength (RunLength)
@@ -33,9 +34,10 @@ import Data.PackageMerge qualified as PackageMerge
 
 newtype FileLength = FileLength Int deriving Show
 
-runLengthsToBits :: [RunLength] -> [Bit.B]
-runLengthsToBits rl_ =
-	[I, O, I] ++
+runLengthsToBits :: Bool -> [RunLength] -> [Bit.B]
+runLengthsToBits _ [] = []
+runLengthsToBits f rl_ =
+	[bool O I f, O, I] ++
 	PipeBits.listFromNum 5 (lll - 257) ++
 	PipeBits.listFromNum 5 (ld - 1) ++
 	PipeBits.listFromNum 4 (lt - 4) ++

@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Yaftee.UseFTCQ.Pipe.Bits (
@@ -13,12 +13,13 @@ module Yaftee.UseFTCQ.Pipe.Bits (
 
 	-- * PIPE
 
-	toByteString
+	toByteString, toByteString'
 
 	) where
 
 import Control.Arrow
 import Control.Monad.Fix
+import Data.Bit (pattern O)
 import Data.Bit qualified as Bit
 import Data.ByteString qualified as BS
 
@@ -37,3 +38,17 @@ toByteString = fix \go -> (>> go) do
 
 unfoldr' :: (b -> Maybe (a, b)) -> b -> ([a], b)
 unfoldr' f = fix \go s -> maybe ([], s) (\(x, s') -> (x :) `first` go s') $ f s
+
+toByteString' ::
+	(Union.Member Pipe.P es, Union.Member (State.S Bit.Queue) es) =>
+	Eff.E es [Bit.B] BS.ByteString ()
+toByteString' = fix \go -> do
+	m <- Pipe.isMore
+	if m
+	then (>> go) do
+		State.modify . flip Bit.append =<< Pipe.await
+		Pipe.yield =<< uncurry (<$)
+			. (BS.pack *** State.put) . unfoldr' Bit.popByte =<< State.get
+	else do	State.modify (`Bit.append` [O, O, O, O, O, O, O])
+		Pipe.yield =<< uncurry (<$)
+			. (BS.pack *** State.put) . unfoldr' Bit.popByte =<< State.get

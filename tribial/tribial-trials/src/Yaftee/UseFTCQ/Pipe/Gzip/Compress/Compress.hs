@@ -8,14 +8,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
 module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Compress (
-	compressFile
+	compressFile,
+	compressFile',
+	RunLengthType
 	) where
 
 import Control.Arrow
+import Control.Monad
 import Control.Monad.Fix
 import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.IO qualified as YIO
 import Yaftee.UseFTCQ.Pipe qualified as Pipe
+import Yaftee.UseFTCQ.Pipe.Tools qualified as PipeT
 import Yaftee.UseFTCQ.Pipe.List qualified as PipeL
 import Yaftee.UseFTCQ.Pipe.ByteString qualified as PipeBS
 import Yaftee.UseFTCQ.State qualified as State
@@ -44,7 +48,7 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 compressFile :: RunLengthType BS.ByteString RunLength r -> FilePath -> FilePath -> IO ()
 compressFile crl fp ofp = do
 	((rl, FileLength fln), cr) <- getRunLengths crl fp
-	let	bts = runLengthsToBits rl
+	let	bts = runLengthsToBits True rl
 		bd = bitsToByteString $ bts ++ [O, O, O, O, O, O, O]
 		hdr = encodeGzipHeader $ gzipHeaderToRaw sampleGzipHeader { gzipHeaderFileName = Just "OnDemand.hs" }
 	BS.writeFile ofp $
@@ -75,6 +79,64 @@ tryCompress crl fp = withFile fp ReadMode \h ->
 			fix \go -> Pipe.isMore >>=
 				bool (pure ()) (Pipe.await >>= Pipe.yield >> go)
 			compCrc
+
+compressFile' :: Eff.E [
+	Pipe.P, State.S PipeBits.Queue, State.S FileLength, State.S Crc,
+	State.S Triple, State.S BS.ByteString, State.S AheadPos, Fail.F, YIO.I] BS.ByteString RunLength r ->
+	FilePath -> FilePath -> IO ()
+compressFile' crl fp ofp =
+	void $ withFile fp ReadMode \hr -> withFile ofp WriteMode \ho ->
+		Eff.runM . Fail.run
+			. (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
+			. (`State.run` triple0)
+			. (`State.run` Crc 0)
+			. (`State.run` FileLength 0)
+			. (`State.run` Bit.empty)
+			. Pipe.run
+			$ PipeBS.hGet 150 hr Pipe.=$= compress crl Pipe.=$= PipeBS.hPutStr' ho
+
+compress :: (
+	Union.Member Pipe.P es,
+	Union.Member (State.S Bit.Queue) es,
+	Union.Member (State.S FileLength) es,
+	Union.Member (State.S Crc) es,
+	Union.Base YIO.I es -- FOR DEBUG
+	) =>
+	Eff.E es BS.ByteString RunLength r ->
+	Eff.E es BS.ByteString BS.ByteString ()
+compress crl = void $ lengthPipe Pipe.=$= crcPipe Pipe.=$= do
+	Pipe.yield hdr
+	YIO.print "BEFORE BLOCKS"
+	blocks crl
+	YIO.print "AFTER BLOCKS"
+	c <- crcToByteString <$> State.get
+	FileLength ln <- State.get
+	Pipe.yield c
+	Pipe.yield $ numToBs' 4 ln
+	where
+	hdr = encodeGzipHeader $ gzipHeaderToRaw sampleGzipHeader { gzipHeaderFileName = Just "OnDemand.hs" }
+
+blocks :: (
+	Union.Member Pipe.P es,
+	Union.Member (State.S PipeBits.Queue) es,
+	Union.Base YIO.I es -- FOR DEBUG
+	) =>
+	Eff.E es i RunLength r -> Eff.E es i BS.ByteString ()
+blocks crl = void $ crl Pipe.=$=
+--	PipeL.bundle' 100 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
+--	PipeL.bundle' 1000 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
+	PipeL.bundle' 1500 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
+--	PipeL.bundle' 5000 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
+--	PipeL.bundle' 10000 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
+
+rlBlock :: Union.Member Pipe.P es => Eff.E es [RunLength] [Bit.B] r
+rlBlock = PipeT.convert (runLengthsToBits False)
+
+rlBlock' :: (
+	Union.Member Pipe.P es,
+	Union.Base YIO.I es -- FOR DEBUG
+	) => Eff.E es [RunLength] [Bit.B] ()
+rlBlock' = PipeT.convert'' runLengthsToBits []
 
 lengthPipe :: (
 	Union.Member Pipe.P effs,

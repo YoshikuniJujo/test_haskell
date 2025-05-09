@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -7,6 +7,7 @@
 
 module Yaftee.UseFTCQ.Pipe.List where
 
+import Control.Arrow
 import Control.Monad.Fix
 import Data.Maybe
 import Data.Bool
@@ -26,3 +27,16 @@ to p = fromJust <$> Pipe.run do
 	(_, HFreer.Pure r) <- p Pipe.=$= fix \go -> do
 		Pipe.isMore >>= bool (pure []) ((:) <$> Pipe.await <*> go)
 	pure r
+
+bundle' :: Union.Member Pipe.P es => Int -> Eff.E es a [a] ()
+bundle' n = fix \go -> do
+	(f, xs) <- replicateAwait n
+	Pipe.yield xs
+	bool go (pure ()) f
+
+replicateAwait :: Union.Member Pipe.P es => Int -> Eff.E es a o (Bool, [a])
+replicateAwait = \case
+	0 -> pure (False, [])
+	n -> Pipe.isMore >>= bool
+		(pure (True, []))
+		(Pipe.await >>= \x -> ((x :) `second`) <$> replicateAwait (n - 1))
