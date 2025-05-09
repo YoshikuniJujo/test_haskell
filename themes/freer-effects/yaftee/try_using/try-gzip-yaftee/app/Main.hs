@@ -48,9 +48,10 @@ main = do
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`Crc.runCrc32` Crc.Crc32 0)
-		. (`State.run` (	Huffman.makeTree [0 :: Int .. ] fixedHuffmanList,
-					Huffman.makeTree [0 :: Int .. ] fixedHuffmanList ))
-		. (`State.run` Huffman.ExtraBits 0)
+		. (flip (State.runN @_ @Huffman.Pkg) (
+				Huffman.makeTree [0 :: Int .. ] fixedHuffmanList,
+				Huffman.makeTree [0 :: Int .. ] fixedHuffmanList ))
+		. (flip (State.runN @_ @Huffman.Pkg) $ Huffman.ExtraBits 0)
 		. (flip (State.runN @_ @"bits") $ BitArray.fromByteString "")
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
@@ -61,8 +62,8 @@ blocks :: (
 	U.Member Pipe.P es,
 	U.Member (State.S OnDemand.Request) es,
 	U.Member (State.Named "bits" BitArray.B) es,
-	U.Member (State.S (Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (State.S Huffman.ExtraBits) es,
+	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
+	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) (Either (Either Int Word16) BS.ByteString) ()
 blocks = fix \go -> block >>= bool (pure ()) go
@@ -71,8 +72,8 @@ block :: (
 	U.Member Pipe.P es,
 	U.Member (State.S OnDemand.Request) es,
 	U.Member (State.Named "bits" BitArray.B) es,
-	U.Member (State.S (Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (State.S Huffman.ExtraBits) es,
+	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
+	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) (Either (Either Int Word16) BS.ByteString) Bool

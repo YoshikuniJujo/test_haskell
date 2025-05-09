@@ -1,10 +1,11 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Pipe.Huffman (huffman, ExtraBits(..)) where
+module Pipe.Huffman (huffman, ExtraBits(..), Pkg) where
 
 import Control.Arrow
 import Control.Monad
@@ -19,29 +20,31 @@ import Data.Word
 import Data.ByteString.Bit (pattern O, pattern I)
 import Data.ByteString.Bit qualified as Bit
 
-step :: forall a es i o . U.Member (State.S (BinTree a, BinTree a)) es =>
+type Pkg = "try-gzip-yaftee"
+
+step :: forall a es i o . U.Member (State.Named Pkg (BinTree a, BinTree a)) es =>
 	Bit.B -> Eff.E es i o (Maybe a)
-step b = State.get >>= \(t0, t) -> let
+step b = State.getN Pkg >>= \(t0, t) -> let
 	(mr, nt) = decode1 t0 t b in
-	mr <$ State.modify @(BinTree a, BinTree a) (second $ const nt)
+	mr <$ State.modifyN @(BinTree a, BinTree a) Pkg (second $ const nt)
 
 newtype ExtraBits = ExtraBits Int deriving Show
 
 huffman :: (
 	U.Member Pipe.P es,
-	U.Member (State.S (BinTree Int, BinTree Int)) es,
-	U.Member (State.S ExtraBits) es,
+	U.Member (State.Named Pkg (BinTree Int, BinTree Int)) es,
+	U.Member (State.Named Pkg ExtraBits) es,
 	U.Member Fail.F es ) =>
 	Eff.E es Bit.B (Either Int Word16) r
 huffman = do
-	eb <- State.get
+	eb <- State.getN Pkg
 	case eb of
 		ExtraBits 0 ->
 			(\b -> (maybe (pure ()) (Pipe.yield . Left) =<< step b) >> huffman)
 				=<< Pipe.await
 		ExtraBits n -> do
 			Pipe.yield . Right =<< takeBits16' @(Either Int Word16) n
-			State.put $ ExtraBits 0
+			State.putN Pkg $ ExtraBits 0
 			huffman
 
 takeBits16' :: forall o es . U.Member Pipe.P es =>
