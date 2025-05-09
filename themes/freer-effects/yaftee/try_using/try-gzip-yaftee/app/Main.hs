@@ -24,7 +24,9 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.Foldable
 import Data.Bits
+import Data.Sequence qualified as Seq
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
@@ -41,19 +43,20 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	let	processHeader = IO.print
-	(print . either Left (Right . fst . fst . fst . fst) =<<)
+	(print . either Left (Right . fst . fst . fst . fst . fst) =<<)
 		. Eff.runM
 		. Except.run @String
 		. Fail.runExc id
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
+		. (`State.run` (Seq.empty :: Seq.Seq Word8))
 		. (`Crc.runCrc32` Crc.Crc32 0)
 		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 		. (flip (State.runN @"bits") $ BitArray.fromByteString "")
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
-			blocks
+			blocks Pipe.=$= runLength
 
 blocks :: (
 	U.Member Pipe.P es,
@@ -369,3 +372,44 @@ dists = (+ 1) <$> scanl (+) 0 ((2 ^) <$> distsBits)
 
 distsBits :: [Int]
 distsBits = replicate 2 0 ++ (replicate 2 =<< [0 ..])
+
+runLength :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Seq.Seq Word8)) es ) =>
+	Eff.E es RunLength.R (Either Word8 BS.ByteString) r
+runLength = Pipe.await >>= \rl -> (>> runLength) $ ($ rl) \case
+	RunLength.Literal w -> State.modify (`snoc` w) >> Pipe.yield (Left w)
+	RunLength.LiteralBS bs ->
+		State.modify (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
+	RunLength.LenDist ln d -> State.gets (repetition ln d) >>= \ws ->
+		State.modify (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
+
+repetition :: Int -> Int -> Seq.Seq Word8 -> [Word8]
+repetition r d ws = takeRep r ws' ws'
+	where ws' = toList . Seq.take r $ takeR d ws
+
+takeRep :: Int -> [a] -> [a] -> [a]
+takeRep 0 _ _ = []
+takeRep n xs0 (x : xs) = x : takeRep (n - 1) xs0 xs
+takeRep n xs0 [] = takeRep n xs0 xs0
+
+takeR :: Int -> Seq.Seq Word8 -> Seq.Seq Word8
+takeR n xs = Seq.drop (Seq.length xs - n) xs
+
+snoc :: Seq.Seq Word8 -> Word8 -> Seq.Seq Word8
+snoc s w = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	s' Seq.|> w
+	where ln = Seq.length s
+
+appendR :: Seq.Seq Word8 -> [Word8] -> Seq.Seq Word8
+appendR s ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	foldl (Seq.|>) s' ws
+	where ln = Seq.length s
+
+{-
+format n = do
+	b <- checkLength n
+	if b
+	then yieldLen n >> format n
+	else readMore2
+	-}

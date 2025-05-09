@@ -38,6 +38,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , try-bitarray-bs
     , try-higher-order-open-union
     , try-yaftee
@@ -58,6 +59,7 @@ executable try-gzip-yaftee-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , try-bitarray-bs
     , try-gzip-yaftee
     , try-higher-order-open-union
@@ -80,6 +82,7 @@ test-suite try-gzip-yaftee-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , try-bitarray-bs
     , try-gzip-yaftee
     , try-higher-order-open-union
