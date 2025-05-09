@@ -41,13 +41,13 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	let	processHeader = IO.print
-	(print =<<)
+	(print . either Left (Right . fst . fst . fst . fst) =<<)
 		. Eff.runM
 		. Except.run @String
 		. Fail.runExc id
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
-		. (`State.run` Crc.Crc32 0)
+		. (`Crc.runCrc32` Crc.Crc32 0)
 		. (`State.run` (	Huffman.makeTree [0 :: Int .. ] fixedHuffmanList,
 					Huffman.makeTree [0 :: Int .. ] fixedHuffmanList ))
 		. (`State.run` Huffman.ExtraBits 0)
@@ -98,7 +98,7 @@ getRight (Right r) = pure r
 
 readHeader :: (
 	U.Member Pipe.P es,
-	U.Member (State.S Crc.Crc32) es,
+	U.Member (State.Named Crc.Pkg Crc.Crc32) es,
 	U.Member (State.S OnDemand.Request) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
@@ -134,7 +134,7 @@ readHeader f = Crc.crc32 Pipe.=$= do
 				else pure Nothing
 				when (flagsRawHcrc flgs) do
 					Crc.compCrc32
-					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.get
+					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN Crc.Pkg
 					State.put $ OnDemand.RequestBytes 2
 					m <- bsToNum <$> Pipe.await
 					when (crc /= m) $
