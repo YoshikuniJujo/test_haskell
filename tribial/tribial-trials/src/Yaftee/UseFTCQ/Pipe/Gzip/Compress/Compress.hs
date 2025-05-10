@@ -35,7 +35,7 @@ import Yaftee.UseFTCQ.Pipe.Bits qualified as PipeBits
 
 import Yaftee.UseFTCQ.Pipe.Crc
 import Tools.ByteStringNum
-import Yaftee.UseFTCQ.Pipe.Gzip.GzipHeader
+import Data.Gzip.GzipHeader
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 
@@ -75,7 +75,7 @@ compress crl = void $ lengthPipe' Pipe.=$= crcPipe' Pipe.=$= do
 	Pipe.yield c
 	Pipe.yield $ numToBs' 4 ln
 	where
-	hdr = encodeGzipHeader $ gzipHeaderToRaw sampleGzipHeader { gzipHeaderFileName = Just "OnDemand.hs" }
+	hdr = encodeGzipHeader $ sampleGzipHeader { gzipHeaderFileName = Just "OnDemand.hs" }
 
 blocks :: (
 	Union.Member Pipe.P es,

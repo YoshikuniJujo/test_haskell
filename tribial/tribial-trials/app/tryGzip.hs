@@ -15,7 +15,7 @@ import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.Pipe qualified as Pipe
 import Yaftee.UseFTCQ.Pipe.IO qualified as PipeI
 import Yaftee.UseFTCQ.Pipe.ByteString qualified as PipeB
-import Yaftee.UseFTCQ.Pipe.Gzip
+import Yaftee.UseFTCQ.Pipe.Gzip.GzipHeader
 import Yaftee.UseFTCQ.Pipe.Gzip.Block
 import Yaftee.UseFTCQ.Pipe.Gzip.Check
 import Yaftee.UseFTCQ.State qualified as State

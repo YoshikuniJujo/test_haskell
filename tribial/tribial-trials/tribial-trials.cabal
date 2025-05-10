@@ -38,6 +38,7 @@ library
       Data.BitArrayNew
       Data.Calc
       Data.Crc
+      Data.Gzip.GzipHeader
       Data.HuffmanTree
       Data.PackageMerge
       Data.ShortWord
@@ -163,7 +164,6 @@ library
       Yaftee.UseFTCQ.Pipe.ByteString
       Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
       Yaftee.UseFTCQ.Pipe.Crc
-      Yaftee.UseFTCQ.Pipe.Gzip
       Yaftee.UseFTCQ.Pipe.Gzip.Block
       Yaftee.UseFTCQ.Pipe.Gzip.Check
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
