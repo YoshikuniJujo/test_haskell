@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Gzip (
+module Yaftee.UseFTCQ.Pipe.Gzip.Compress.GzipHeader (
 
 	-- * GZIP HEADER
 

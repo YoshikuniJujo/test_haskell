@@ -169,7 +169,7 @@ library
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.Compress
-      Yaftee.UseFTCQ.Pipe.Gzip.Compress.Gzip
+      Yaftee.UseFTCQ.Pipe.Gzip.Compress.GzipHeader
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength
       Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple
       Yaftee.UseFTCQ.Pipe.Gzip.Huffman
