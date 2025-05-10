@@ -8,9 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
 module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Compress (
-	compressFile',
-	RunLengthType
-	) where
+	compressFile, FileLength ) where
 
 import Control.Monad
 import Yaftee.UseFTCQ.Eff qualified as Eff
@@ -27,7 +25,7 @@ import Data.ByteString qualified as BS
 import System.IO
 
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength (RunLength)
-import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple
+import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
 
 import Data.Bit qualified as Bit
 
@@ -39,15 +37,15 @@ import Data.Gzip.GzipHeader
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 
-compressFile' :: Eff.E [
+compressFile :: Eff.E [
 	Pipe.P, State.S PipeBits.Queue, State.S FileLength, State.S Crc,
-	State.S Triple, State.S BS.ByteString, State.S AheadPos, Fail.F, YIO.I] BS.ByteString RunLength r ->
+	State.S Triple.T, State.S BS.ByteString, State.S AheadPos, Fail.F, YIO.I] BS.ByteString RunLength r ->
 	FilePath -> FilePath -> IO ()
-compressFile' crl fp ofp =
+compressFile crl fp ofp =
 	void $ withFile fp ReadMode \hr -> withFile ofp WriteMode \ho ->
 		Eff.runM . Fail.run
 			. (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
-			. (`State.run` triple0)
+			. (`State.run` Triple.empty)
 			. (`State.run` Crc 0)
 			. (`State.run` FileLength 0)
 			. (`State.run` Bit.empty)
@@ -103,7 +101,3 @@ lengthPipe' = (Pipe.isMore >>=) . bool (pure ())
 		lengthPipe'
 
 newtype FileLength = FileLength Int deriving Show
-
-type RunLengthType = Eff.E [
-	Pipe.P, State.S FileLength, State.S Crc, State.S Triple,
-	State.S BS.ByteString, State.S AheadPos, Fail.F, YIO.I]

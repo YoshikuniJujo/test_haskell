@@ -4,9 +4,7 @@
 
 module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple (
 
-	Triple, triple0, updateTriple,
-
-	calcDistance, getIndexLength
+	T, empty, update, indexLength, distance
 
 	) where
 
@@ -21,29 +19,29 @@ import Data.ByteString qualified as BS
 
 -- * API
 
-type Triple = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
+type T = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
 
-updateTriple :: Triple -> Word8 -> Triple
-updateTriple = push
+update :: T -> Word8 -> T
+update = push
 
-getIndexLength :: Monad m => Triple -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
-getIndexLength = maxLengthFromTriple
+indexLength :: Monad m => T -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
+indexLength = maxLengthFromTriple
 
-triple0 :: Triple
-triple0 = (0, Seq.empty, Map.empty)
+empty :: T
+empty = (0, Seq.empty, Map.empty)
 
-calcDistance :: Int -> Triple -> Int
-calcDistance i' (i, s, _) = i + Seq.length s - i' + 3
+distance :: Int -> T -> Int
+distance i' (i, s, _) = i + Seq.length s - i' + 3
 
 -- * INTERNAL
 
 maxOffset :: Int
 maxOffset = 32768
 
-push :: Triple -> Word8 -> Triple
+push :: T -> Word8 -> T
 push = pushWithMax maxOffset
 
-pushWithMax :: Int -> Triple -> Word8 -> Triple
+pushWithMax :: Int -> T -> Word8 -> T
 pushWithMax mx (i, s, d) b = (i', s' Seq.|> b, d')
 	where
 	ln = Seq.length s
@@ -66,17 +64,17 @@ tailS s = case Seq.viewl s of
 	(_ Seq.:< s') -> s'
 	_ -> error "bad"
 
-maxLengthFromTriple :: Monad m => Triple -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
+maxLengthFromTriple :: Monad m => T -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
 maxLengthFromTriple st tr gb = maxLength (getRotables st tr) gb
 
-getIndices :: Triple -> BS.ByteString -> [Int]
+getIndices :: T -> BS.ByteString -> [Int]
 getIndices (_, _, d) tr = fromMaybe [] $ Map.lookup tr d
 
-indexToRotate :: Triple -> BS.ByteString -> Int -> (Int, Rotable Word8)
+indexToRotate :: T -> BS.ByteString -> Int -> (Int, Rotable Word8)
 indexToRotate (i, s, _) tr i' = (i', (s', s'))
 	where s' = Seq.drop (i' - i) s Seq.>< Seq.fromList (BS.unpack tr)
 
-getRotables :: Triple -> BS.ByteString -> [(Int, Rotable Word8)]
+getRotables :: T -> BS.ByteString -> [(Int, Rotable Word8)]
 getRotables st tr = indexToRotate st tr <$> is
 	where
 	is = getIndices st tr

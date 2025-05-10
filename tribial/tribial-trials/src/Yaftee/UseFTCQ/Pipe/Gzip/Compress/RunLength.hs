@@ -7,9 +7,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
-module Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength (
-	compressRL
-	) where
+module Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength (compressRL) where
 
 import Control.Monad.Fix
 import Yaftee.UseFTCQ.Eff qualified as Eff
@@ -23,15 +21,15 @@ import Data.ByteString qualified as BS
 
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength (RunLength)
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
-import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple
+import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 
 compressRL :: (
-	Union.Member Pipe.P effs,
-	Union.Member (State.S Triple) effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S AheadPos) effs ) =>
-	Eff.E effs BS.ByteString RunLength ()
+	Union.Member Pipe.P es,
+	Union.Member (State.S Triple.T) es,
+	Union.Member (State.S BS.ByteString) es,
+	Union.Member (State.S AheadPos) es ) =>
+	Eff.E es BS.ByteString RunLength ()
 compressRL = fix \go -> do
 	mb <- get
 	mb1 <- getAhead
@@ -42,33 +40,33 @@ compressRL = fix \go -> do
 			case (mb1, mb2) of
 				(Just b1, Just b2) -> do
 					st <- State.get
-					mil <- getIndexLength st (BS.pack [b, b1, b2]) getAhead
+					mil <- Triple.indexLength st (BS.pack [b, b1, b2]) getAhead
 					case mil of 
 						Nothing -> do
-							State.modify (`updateTriple` b)
+							State.modify (`Triple.update` b)
 							Pipe.yield (RunLength.Literal b)
 						Just (i, l) -> do
-							d <- State.gets $ calcDistance i
+							d <- State.gets $ Triple.distance i
 							let	c1 = (l, (l + 1, [RunLength.LenDist (l + 3) d]))
-							State.modify (`updateTriple` b)
+							State.modify (`Triple.update` b)
 							b' <- fromJust <$> get
 							_mb2' <- getAhead
 							mb3 <- getAhead
 
 							case mb3 of
 								Nothing -> do
-									State.modify (`updateTriple` b')
+									State.modify (`Triple.update` b')
 									runCandidate c1
 								Just b3 -> do
 									st' <- State.get
-									mil' <- getIndexLength st' (BS.pack [b', b2, b3]) getAhead
+									mil' <- Triple.indexLength st' (BS.pack [b', b2, b3]) getAhead
 									case mil' of
 										Nothing -> do
-											State.modify (`updateTriple` b')
+											State.modify (`Triple.update` b')
 											runCandidate c1
 										Just (i', l') -> do
-											d' <- State.gets $ calcDistance i'
-											State.modify (`updateTriple` b')
+											d' <- State.gets $ Triple.distance i'
+											State.modify (`Triple.update` b')
 											let	c2 = (l', (2 + l', [
 													RunLength.Literal b,
 													-- RunLength.Literal 0x39,
@@ -76,7 +74,7 @@ compressRL = fix \go -> do
 											if l + 1 >= l'
 											then runCandidate c1
 											else runCandidate c2
-				_ -> do	State.modify (`updateTriple` b)
+				_ -> do	State.modify (`Triple.update` b)
 					Pipe.yield (RunLength.Literal b)
 			go
 
@@ -84,13 +82,13 @@ runCandidate :: (
 	Foldable t,
 	Union.Member Pipe.P effs,
 	Union.Member (State.S AheadPos) effs,
-	Union.Member (State.S Triple) effs,
+	Union.Member (State.S Triple.T) effs,
 	Union.Member (State.S BS.ByteString) effs
 	) =>
 	(a, (Int, t o)) -> Eff.E effs BS.ByteString o ()
 runCandidate (_l, (l', ys)) = do
 	bs <- getBytes l'
-	State.modify \st' -> foldl updateTriple st' $ BS.unpack bs
+	State.modify \st' -> foldl Triple.update st' $ BS.unpack bs
 	Pipe.yield `mapM_` ys
 
 newtype FileLength = FileLength Int deriving Show
