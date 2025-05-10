@@ -35,7 +35,7 @@ import Yaftee.UseFTCQ.Pipe.Bits qualified as PipeBits
 
 import Yaftee.UseFTCQ.Pipe.Crc
 import Tools.ByteStringNum
-import Yaftee.UseFTCQ.Pipe.Gzip.Compress.GzipHeader
+import Yaftee.UseFTCQ.Pipe.Gzip.GzipHeader
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Yaftee.UseFTCQ.Pipe.Gzip.Compress.GzipHeader (
+module Yaftee.UseFTCQ.Pipe.Gzip.GzipHeader (
 
 	-- * GZIP HEADER
 
@@ -251,3 +251,4 @@ bsToWord16 :: BS.ByteString -> Word16
 bsToWord16 bs = case fromIntegral <$> BS.unpack bs of
 	[w0, w1] -> w0 .|. w1 `shiftL` 8
 	_ -> error "bad"
+--	(Pipe.await >>= \x -> ((>> go x) . Pipe.yield $ f False p))

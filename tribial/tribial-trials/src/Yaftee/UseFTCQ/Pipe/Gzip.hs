@@ -29,6 +29,8 @@ import Yaftee.UseFTCQ.HFreer qualified as HFreer
 import Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
 import Yaftee.UseFTCQ.Pipe.Crc
 
+import Yaftee.UseFTCQ.Pipe.Gzip.GzipHeader
+
 import Tools.ByteStringNum
 
 readMagic :: (
@@ -99,77 +101,12 @@ readHeader = do
 	case foo of
 		HFreer.Pure x -> pure x
 
-data GzipHeader = GzipHeader {
-	gzipHeaderCompressionMethod :: CompressionMethod,
-	gzipHeaderFlags :: Flags,
-	gzipHeaderModificationTime :: CTime, -- Word32,
-	gzipHeaderExtraFlags :: Word8,
-	gzipHeaderOperatingSystem :: OS,
-	gzipHeaderExtraField :: [ExtraField],
-	gzipHeaderFileName :: Maybe BS.ByteString,
-	gzipHeaderComment :: Maybe BS.ByteString }
-	deriving Show
-
-newtype CompressionMethod = CompressionMethod {
-	unCompressionMethod :: Word8 }
-
-pattern CompressionMethodDeflate :: CompressionMethod
-pattern CompressionMethodDeflate = CompressionMethod 8
-
-instance Show CompressionMethod where
-	show CompressionMethodDeflate = "CompressionMethodDeflate"
-	show cm = "(CompressionMethod " ++ show cm ++ ")"
-
-newtype OS = OS { unOS :: Word8 }
-
-pattern OSUnix :: OS
-pattern OSUnix = OS 3
-
-instance Show OS where
-	show OSUnix = "OSUnix"
-	show os = "(OS " ++ show os ++ ")"
-
-data Flags = Flags {
-	flagsText :: Bool,
-	flagsHcrc :: Bool }
-	deriving Show
-
-data ExtraField = ExtraField {
-	extraFieldSi1 :: Word8,
-	extraFieldSi2 :: Word8,
-	extraFieldData :: BS.ByteString }
-	deriving Show
-
-readFlags :: Word8 -> Maybe FlagsRaw
-readFlags w = if or $ (w `testBit`) <$> [5 .. 7]
-	then Nothing
-	else Just FlagsRaw {
-		flagsRawText = w `testBit` 0,
-		flagsRawHcrc = w `testBit` 1,
-		flagsRawExtra = w `testBit` 2,
-		flagsRawName = w `testBit` 3,
-		flagsRawComment = w `testBit` 4 }
-
-data FlagsRaw = FlagsRaw {
-	flagsRawText :: Bool,
-	flagsRawHcrc :: Bool,
-	flagsRawExtra :: Bool,
-	flagsRawName :: Bool,
-	flagsRawComment :: Bool }
-	deriving Show
-
 word32ToCTime :: Word32 -> CTime
 word32ToCTime = CTime . fromIntegral
 
 bsToWord16 :: BS.ByteString -> Word16
 bsToWord16 bs = w0 .|. w1 `shiftL` 8
 	where [w0, w1] = fromIntegral <$> BS.unpack bs
-
-decodeExtraFields :: BS.ByteString -> [ExtraField]
-decodeExtraFields "" = []
-decodeExtraFields bs = let
-	(ef, bs') = decodeExtraField bs in
-	ef : decodeExtraFields bs'
 
 decodeExtraField :: BS.ByteString -> (ExtraField, BS.ByteString)
 decodeExtraField bs = let
