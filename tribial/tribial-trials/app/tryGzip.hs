@@ -49,8 +49,7 @@ main = do
 		. (`State.run` BitArray.empty)
 		. Pipe.run
 		$ PipeB.hGet' 100 h Pipe.=$= onDemand Pipe.=$= do
-			_ <- checkRight Pipe.=$= do -- readMagic' Pipe.=$= PipeI.print
-				IO.print =<< ((Just <$> readHeader) `Except.catch` \e -> IO.print (e :: String) >> pure Nothing)
+			_ <- checkRight Pipe.=$= pipeHeader IO.print
 			blocks Pipe.=$= format 100 Pipe.=$= Crc.crcPipe Pipe.=$= do
 				PipeI.print'
 				Crc.compCrc
