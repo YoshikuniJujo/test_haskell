@@ -8,9 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
 module Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos (
-	AheadPos(..),
-	nextAheadPos
-	) where
+	AheadPos(..), nextAheadPos ) where
 
 newtype AheadPos = AheadPos Int deriving Show
 

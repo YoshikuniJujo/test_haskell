@@ -19,7 +19,6 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-import Yaftee.UseFTCQ.Pipe.Gzip.RunLength (RunLength)
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
@@ -27,9 +26,9 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 compressRL :: (
 	Union.Member Pipe.P es,
 	Union.Member (State.S Triple.T) es,
-	Union.Member (State.S BS.ByteString) es,
-	Union.Member (State.S AheadPos) es ) =>
-	Eff.E es BS.ByteString RunLength ()
+	Union.Member (State.S AheadPos) es,
+	Union.Member (State.S BS.ByteString) es ) =>
+	Eff.E es BS.ByteString RunLength.R ()
 compressRL = fix \go -> do
 	mb <- get
 	mb1 <- getAhead

@@ -36,7 +36,7 @@ import Data.BitArrayNew qualified as BitArray
 import Data.HuffmanTree (BinTree, mkTr, fixedTable, fixedDstTable)
 import Yaftee.UseFTCQ.Pipe.Gzip.Huffman
 import Data.Calc
-import Yaftee.UseFTCQ.Pipe.Gzip.RunLength
+import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
 
 import Yaftee.UseFTCQ.Pipe.ByteString.OnDemand
 
@@ -56,7 +56,7 @@ blocks :: (
 	Eff.E effs
 		(Either BitArray.B BS.ByteString)
 		(Either Word8 BS.ByteString) ()
-blocks = fix (\go -> block' >>= bool (pure ()) go) Pipe.=$= runLength >> pure ()
+blocks = fix (\go -> block' >>= bool (pure ()) go) Pipe.=$= RunLength.runLength >> pure ()
 
 block' :: (
 	Union.Member Pipe.P effs,
@@ -66,7 +66,7 @@ block' :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member (State.Named "bits" BitArray.B) effs ) =>
-	Eff.E effs (Either BitArray.B BS.ByteString) RunLength Bool
+	Eff.E effs (Either BitArray.B BS.ByteString) RunLength.R Bool
 block' = do
 	trace "here" (pure ())
 	State.put $ RequestBits 1
@@ -84,7 +84,7 @@ block' = do
 			ln <- getWord16FromPair =<< skipLeft1
 			for_ (separate 10 ln) \ln' -> do
 				State.put $ RequestBytes ln'
-				Pipe.yield . LiteralBS =<< getRight =<< Pipe.await
+				Pipe.yield . RunLength.LiteralBS =<< getRight =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
 			(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
 				State.put $ RequestBits 5
@@ -115,7 +115,7 @@ bitsBlock :: (
 	Union.Member (State.S ExtraBits) effs,
 	Union.Member Fail.F effs ) =>
 	Maybe Int -> Maybe (Int, Int) ->
-	Eff.E effs Bit.B RunLength ()
+	Eff.E effs Bit.B RunLength.R ()
 bitsBlock mhclen mhlithdist = do
 	whenMaybe mhclen \hclen -> (\x -> State.put . (\y -> trace (show y) $ (id &&& id) y) =<< x)
 		. (mkTr @Word8 codeLengthList <$>)
@@ -149,14 +149,14 @@ putDecoded :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs ) =>
 	BinTree Int -> BinTree Int -> Int ->
-	Eff.E effs (Either Int Word16) RunLength ()
+	Eff.E effs (Either Int Word16) RunLength.R ()
 putDecoded t dt pri = do
 	mi <- Pipe.await
 	case mi of
 		Left 256 -> pure ()
 		Left i
 			| 0 <= i && i <= 255 -> do
-				Pipe.yield (Literal $ fromIntegral i)
+				Pipe.yield (RunLength.Literal $ fromIntegral i)
 				putDecoded t dt 0
 			| 257 <= i && i <= 264 -> State.put (dt, dt) >> putDist t dt (calcLength i 0) 0
 			| 265 <= i && i <= 284 -> do
@@ -173,15 +173,15 @@ putDist :: (
 	Union.Member (State.S (BinTree Int, BinTree Int)) effs,
 	Union.Member (State.S ExtraBits) effs
 	) =>
-	BinTree Int -> BinTree Int -> RunLengthLength -> Int ->
-	Eff.E effs (Either Int Word16) RunLength ()
+	BinTree Int -> BinTree Int -> RunLength.Length -> Int ->
+	Eff.E effs (Either Int Word16) RunLength.R ()
 putDist t dt ln pri = do
 	mi <- Pipe.await
 --	Pipe.print' mi
 	case mi of
 		Left i
 			| 0 <= i && i <= 3 -> do
-				Pipe.yield (LenDist ln (calcDist i 0))
+				Pipe.yield (RunLength.LenDist ln (calcDist i 0))
 				State.put (t, t)
 				putDecoded t dt 0
 			| 4 <= i && i <= 29 -> do
@@ -189,7 +189,7 @@ putDist t dt ln pri = do
 				putDist t dt ln i
 			| otherwise -> error $ "putDist: yet " ++ show i
 		Right eb -> do
-			Pipe.yield (LenDist ln (calcDist pri eb))
+			Pipe.yield (RunLength.LenDist ln (calcDist pri eb))
 			State.put (t, t)
 			putDecoded t dt 0
 

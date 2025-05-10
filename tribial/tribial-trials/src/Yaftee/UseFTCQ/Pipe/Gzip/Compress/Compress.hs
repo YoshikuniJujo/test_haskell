@@ -24,7 +24,7 @@ import Data.Bool
 import Data.ByteString qualified as BS
 import System.IO
 
-import Yaftee.UseFTCQ.Pipe.Gzip.RunLength (RunLength)
+import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
 
 import Data.Bit qualified as Bit
@@ -38,17 +38,20 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 
 compressFile :: Eff.E [
-	Pipe.P, State.S PipeBits.Queue, State.S FileLength, State.S Crc,
-	State.S Triple.T, State.S BS.ByteString, State.S AheadPos, Fail.F, YIO.I] BS.ByteString RunLength r ->
+		Pipe.P,
+		State.S FileLength, State.S Crc, State.S PipeBits.Queue,
+		State.S Triple.T, State.S AheadPos, State.S BS.ByteString,
+		Fail.F, YIO.I ] BS.ByteString RunLength.R r ->
 	FilePath -> FilePath -> IO ()
 compressFile crl fp ofp =
 	void $ withFile fp ReadMode \hr -> withFile ofp WriteMode \ho ->
 		Eff.runM . Fail.run
-			. (`State.run` AheadPos 0) . (`State.run` ("" :: BS.ByteString))
+			. (`State.run` ("" :: BS.ByteString))
+			. (`State.run` AheadPos 0)
 			. (`State.run` Triple.empty)
+			. (`State.run` Bit.empty)
 			. (`State.run` Crc 0)
 			. (`State.run` FileLength 0)
-			. (`State.run` Bit.empty)
 			. Pipe.run
 			$ PipeBS.hGet 500 hr Pipe.=$= compress crl Pipe.=$= PipeBS.hPutStr' ho
 
@@ -59,7 +62,7 @@ compress :: (
 	Union.Member (State.S Crc) es,
 	Union.Base YIO.I es -- FOR DEBUG
 	) =>
-	Eff.E es BS.ByteString RunLength r ->
+	Eff.E es BS.ByteString RunLength.R r ->
 	Eff.E es BS.ByteString BS.ByteString ()
 compress crl = void $ lengthPipe' Pipe.=$= crcPipe' Pipe.=$= do
 	Pipe.yield hdr
@@ -80,14 +83,14 @@ blocks :: (
 	Union.Member (State.S PipeBits.Queue) es,
 	Union.Base YIO.I es -- FOR DEBUG
 	) =>
-	Eff.E es i RunLength r -> Eff.E es i BS.ByteString ()
+	Eff.E es i RunLength.R r -> Eff.E es i BS.ByteString ()
 blocks crl = void $ crl Pipe.=$=
 	PipeL.bundle' 1500 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
 
 rlBlock' :: (
 	Union.Member Pipe.P es,
 	Union.Base YIO.I es -- FOR DEBUG
-	) => Eff.E es [RunLength] [Bit.B] ()
+	) => Eff.E es [RunLength.R] [Bit.B] ()
 rlBlock' = PipeT.convert'' runLengthsToBits []
 
 lengthPipe' :: (

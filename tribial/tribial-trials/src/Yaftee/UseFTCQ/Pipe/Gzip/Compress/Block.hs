@@ -7,9 +7,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
-module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block (
-	runLengthsToBits
-	) where
+module Yaftee.UseFTCQ.Pipe.Gzip.Compress.Block (runLengthsToBits) where
 
 import Control.Arrow
 import Data.Maybe
@@ -18,23 +16,15 @@ import Data.Map qualified as Map
 import Data.Swizzle qualified as Swizzle
 import Data.Bool
 import Data.ByteString qualified as BS
-
-import Yaftee.UseFTCQ.Pipe.Gzip.RunLength (RunLength)
-import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
-
-import Data.Calc
-import Data.HuffmanTree (pairToCodes)
-
 import Data.Bit (pattern O, pattern I)
 import Data.Bit qualified as Bit
-
+import Data.Calc
+import Data.HuffmanTree (pairToCodes)
+import Data.PackageMerge qualified as PackageMerge
+import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
 import Yaftee.UseFTCQ.Pipe.Bits qualified as PipeBits
 
-import Data.PackageMerge qualified as PackageMerge
-
-newtype FileLength = FileLength Int deriving Show
-
-runLengthsToBits :: Bool -> [RunLength] -> [Bit.B]
+runLengthsToBits :: Bool -> [RunLength.R] -> [Bit.B]
 runLengthsToBits _ [] = []
 runLengthsToBits f rl_ =
 	[bool O I f, O, I] ++
@@ -48,7 +38,7 @@ runLengthsToBits f rl_ =
 	md = PackageMerge.run 14 $ RunLength.toDistFreqs rl
 	rl = rl_ ++ [RunLength.EndOfInput]
 
-runLengthToBits :: Map.Map Int [Bit.B] -> Map.Map Int [Bit.B] -> RunLength -> [Bit.B]
+runLengthToBits :: Map.Map Int [Bit.B] -> Map.Map Int [Bit.B] -> RunLength.R -> [Bit.B]
 runLengthToBits ml _ (RunLength.Literal b) = ml Map.! fromIntegral b
 runLengthToBits ml _ (RunLength.LiteralBS bs) = (ml Map.!) . fromIntegral =<< BS.unpack bs
 runLengthToBits ml md (RunLength.LenDist l d) =
