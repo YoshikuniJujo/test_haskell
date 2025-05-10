@@ -84,11 +84,20 @@ o@(u HFreer.:>>= q) =$=! p@(v HFreer.:>>= r) = case (Union.decomp u, Union.decom
 	(_, Right (o' :=@= p')) -> o =$=! ((r `HFreer.app`) =<< (o' =@=! p'))
 	(_, Right (Yield ot a)) -> Union.injh (Yield @_ @i ot a) HFreer.:>>=
 		Q.singleton ((o =$=!) . (r `HFreer.app`))
+
+{-
+	(Right (IsMore k), Right (IsMore k')) -> Union.injh (IsMore @_ @_ @o k') HFreer.:>>=
+		Q.singleton ((o =$=!) . (r `HFreer.app`))
+	(Right Await, Right (IsMore k')) -> Union.injh (IsMore @_ @_ @o k') HFreer.:>>=
+		Q.singleton ((o =$=!) . (r `HFreer.app`))
+		-}
+
 	(Right (IsMore k), _) -> Union.injh (IsMore @_ @_ @o k) HFreer.:>>=
 		Q.singleton ((=$=! p) . (q `HFreer.app`))
 	(Right Await, _) -> Union.injh (Await @_ @_ @o) HFreer.:>>=
 		Q.singleton ((=$=! p) . (q `HFreer.app`))
 	(Right (Yield _ _), Right (IsMore k)) -> o =$=! (r `HFreer.app` k True)
+
 	(Right ((:=$=) o' p' k), Right (IsMore _)) -> ((q `HFreer.app`) . k =<< (o' =$=! p')) =$=! p
 	(Right (o' :=@= p'), Right (IsMore _)) -> ((q `HFreer.app`) =<< (o' =@=! p')) =$=! p
 	(Right (Yield ot a), Right Await) -> (q `HFreer.app` a) =$=! (r `HFreer.app` ot)

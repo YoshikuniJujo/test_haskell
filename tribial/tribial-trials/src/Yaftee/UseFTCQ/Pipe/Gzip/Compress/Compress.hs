@@ -93,7 +93,7 @@ compressFile' crl fp ofp =
 			. (`State.run` FileLength 0)
 			. (`State.run` Bit.empty)
 			. Pipe.run
-			$ PipeBS.hGet 150 hr Pipe.=$= compress crl Pipe.=$= PipeBS.hPutStr' ho
+			$ PipeBS.hGet 500 hr Pipe.=$= compress crl Pipe.=$= PipeBS.hPutStr' ho
 
 compress :: (
 	Union.Member Pipe.P es,
@@ -104,11 +104,13 @@ compress :: (
 	) =>
 	Eff.E es BS.ByteString RunLength r ->
 	Eff.E es BS.ByteString BS.ByteString ()
-compress crl = void $ lengthPipe Pipe.=$= crcPipe Pipe.=$= do
+compress crl = void $ lengthPipe' Pipe.=$= crcPipe' Pipe.=$= do
 	Pipe.yield hdr
-	YIO.print "BEFORE BLOCKS"
+	YIO.print ("BEFORE BLOCKS" :: String)
 	blocks crl
-	YIO.print "AFTER BLOCKS"
+	YIO.print ("AFTER BLOCKS" :: String)
+
+	compCrc
 	c <- crcToByteString <$> State.get
 	FileLength ln <- State.get
 	Pipe.yield c
@@ -123,14 +125,7 @@ blocks :: (
 	) =>
 	Eff.E es i RunLength r -> Eff.E es i BS.ByteString ()
 blocks crl = void $ crl Pipe.=$=
---	PipeL.bundle' 100 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
---	PipeL.bundle' 1000 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
 	PipeL.bundle' 1500 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
---	PipeL.bundle' 5000 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
---	PipeL.bundle' 10000 Pipe.=$= rlBlock' Pipe.=$= PipeBits.toByteString'
-
-rlBlock :: Union.Member Pipe.P es => Eff.E es [RunLength] [Bit.B] r
-rlBlock = PipeT.convert (runLengthsToBits False)
 
 rlBlock' :: (
 	Union.Member Pipe.P es,
@@ -141,12 +136,21 @@ rlBlock' = PipeT.convert'' runLengthsToBits []
 lengthPipe :: (
 	Union.Member Pipe.P effs,
 	Union.Member (State.S FileLength) effs ) =>
+	Eff.E effs BS.ByteString BS.ByteString r
+lengthPipe = Pipe.await >>= \bs -> do
+	State.modify \(FileLength ln) -> FileLength $ ln + BS.length bs
+	Pipe.yield bs
+	lengthPipe
+
+lengthPipe' :: (
+	Union.Member Pipe.P effs,
+	Union.Member (State.S FileLength) effs ) =>
 	Eff.E effs BS.ByteString BS.ByteString ()
-lengthPipe = Pipe.await >>= \case
-	bs -> do
+lengthPipe' = (Pipe.isMore >>=) . bool (pure ())
+	$ Pipe.await >>= \bs -> do
 		State.modify \(FileLength ln) -> FileLength $ ln + BS.length bs
 		Pipe.yield bs
-		lengthPipe
+		lengthPipe'
 
 newtype FileLength = FileLength Int deriving Show
 

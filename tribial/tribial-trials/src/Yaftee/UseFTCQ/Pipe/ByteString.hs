@@ -27,6 +27,12 @@ putStr :: (
 	Union.Base IO.I effs ) => Eff.E effs BS.ByteString o r
 putStr = fix \go -> Pipe.await >>= Eff.effBase . BS.putStr >> go
 
+hPutStr :: (
+	Union.Member Pipe.P es,
+	Union.Base IO.I es ) =>
+	Handle -> Eff.E es BS.ByteString o r
+hPutStr h = fix \go -> (>> go) (Eff.effBase . BS.hPutStr h =<< Pipe.await)
+
 hPutStr' :: (
 	Union.Member Pipe.P es,
 	Union.Base IO.I es ) =>

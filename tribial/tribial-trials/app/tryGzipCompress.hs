@@ -10,3 +10,4 @@ main :: IO ()
 main = do
 	ifp : ofp : _ <- getArgs
 	compressFile' compressRL ifp ofp
+--	debugFile compressRL ifp ofp
