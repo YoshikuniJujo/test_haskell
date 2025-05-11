@@ -18,7 +18,7 @@ import Data.ByteString qualified as BS
 import Data.Bit (pattern O, pattern I)
 import Data.Bit qualified as Bit
 import Data.Calc
-import Data.HuffmanTree (pairToCodes)
+import Data.HuffmanTree (tableToDict)
 import Data.PackageMerge qualified as PackageMerge
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
 import Yaftee.UseFTCQ.Pipe.Bits qualified as PipeBits
@@ -29,27 +29,39 @@ runLengthsToBits f ((++ [RunLength.EndOfInput]) -> rl) =
 	[bool O I f, O, I] ++
 	PipeBits.listFromNum 5 (lll - 257) ++ PipeBits.listFromNum 5 (ld - 1) ++
 	PipeBits.listFromNum 4 (lt - 4) ++
-	hdr ++ (runLengthToBits dll dd =<< rl)
+	hdr ++ (encode dll dd =<< rl)
 	where
-	(lll, ld, lt, hdr) = mkHeader mll md
-	dll = tableToDict mll
-	dd = tableToDict md
-	mll = PackageMerge.run 14 $ RunLength.toLitLenFreqs rl
-	md = PackageMerge.run 14 $ RunLength.toDistFreqs rl
+	(lll, ld, lt, hdr) = mkHeader tll td
+	dll = tableToDict tll
+	dd = tableToDict td
+	tll = PackageMerge.run 14 $ RunLength.toLitLenFreqs rl
+	td = PackageMerge.run 14 $ RunLength.toDistFreqs rl
 
 mkHeader :: Map.Map Int Int -> Map.Map Int Int -> (Int, Int, Int, [Bit.B])
-mkHeader mll md = (lll, ld, lt, ttbs ++ mkTableBits aes)
+mkHeader tll md = (lll, ld, lt, ttbs ++ mkBits aes)
 	where
-	mkTableBits = ((\(alp, ebs) -> tableToDict foobar Map.! alp ++ ebs) =<<)
+	mkBits = ((\(alp, ebs) -> tableToDict foobar Map.! alp ++ ebs) =<<)
 	ttbs = PipeBits.listFromNum 3 =<< (tt :: [Int])
 	(lt, tt) = tableTableToOrder foobar
 	foobar = PackageMerge.run 6
 		. ((head &&& length) <$>) . L.group . L.sort $ fst <$> aes
 	aes = barToCodes tlld
-	((lll, ld), tlld) = mapMapToLitLenDstList mll md
+	((lll, ld), tlld) = mapMapToLitLenDstList tll md
 	barToCodes :: [Int] -> [(Int, [Bit.B])]
 	barToCodes baz =
 		uncurry huffmanLenToCodes =<< (head &&& length) <$> L.group baz
+
+tableTableToOrder :: Map.Map Int Int -> (Int, [Int])
+tableTableToOrder tt = (ln, take ln o)
+	where
+	ln = 4 `max` length o
+	o = dropTrailing0 $ ttto tt
+	dropTrailing0 :: [Int] -> [Int]
+	dropTrailing0 = reverse . dropWhile (== 0) . reverse
+	ttto :: Num b => Map.Map Int b -> [b]
+	ttto m = fromMaybe 0 . (m Map.!?) <$> (tableTableLenOrder :: [Int])
+	tableTableLenOrder :: [Int]
+	tableTableLenOrder = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
 
 mapMapToLitLenDstList :: Map.Map Int Int -> Map.Map Int Int -> ((Int, Int), [Int])
 mapMapToLitLenDstList rll rd = let
@@ -67,8 +79,7 @@ huffmanLenToCodes 0 n
 	| n < 3 = replicate n (0, [])
 	| n < 11 = [(17, PipeBits.listFromNum 3 (n - 3))]
 	| n < 139 = [(18, PipeBits.listFromNum 7 (n - 11))]
-	| otherwise =
-		(18, [I, I, I, I, I, I, I]) : huffmanLenToCodes 0 (n - 138)
+	| otherwise = (18, [I, I, I, I, I, I, I]) : huffmanLenToCodes 0 (n - 138)
 huffmanLenToCodes l n | n < 4 = replicate n (l, [])
 huffmanLenToCodes l n = (l, []) : go (n - 1)
 	where
@@ -76,28 +87,9 @@ huffmanLenToCodes l n = (l, []) : go (n - 1)
 		| m < 7 = [(16, PipeBits.listFromNum 2 (m - 3))]
 		| otherwise = (16, [I, I]) : go (m - 6)
 
-tableToDict :: Map.Map Int Int -> Map.Map Int [Bit.B]
-tableToDict = Map.fromList @Int . ((uncurry $ flip (,)) <$>)
-	. pairToCodes . L.sortOn fst . ((uncurry $ flip (,)) <$>) . Map.toList
-
-runLengthToBits :: Map.Map Int [Bit.B] -> Map.Map Int [Bit.B] -> RunLength.R -> [Bit.B]
-runLengthToBits ml _ (RunLength.Literal b) = ml Map.! fromIntegral b
-runLengthToBits ml _ (RunLength.LiteralBS bs) = (ml Map.!) . fromIntegral =<< BS.unpack bs
-runLengthToBits ml md (RunLength.LenDist l d) =
-	ml Map.! lc ++ le ++ md Map.! dc ++ de
-	where
-	(lc, le) = lengthToCode l
-	(dc, de) = distToCode d
-runLengthToBits ml _ RunLength.EndOfInput = ml Map.! 256
-
-tableTableToOrder :: Map.Map Int Int -> (Int, [Int])
-tableTableToOrder tt = (ln, take ln o)
-	where
-	ln = 4 `max` length o
-	o = dropTrailing0 $ ttto tt
-	dropTrailing0 :: [Int] -> [Int]
-	dropTrailing0 = reverse . dropWhile (== 0) . reverse
-	ttto :: Num b => Map.Map Int b -> [b]
-	ttto m = fromMaybe 0 . (m Map.!?) <$> (tableTableLenOrder :: [Int])
-	tableTableLenOrder :: [Int]
-	tableTableLenOrder = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+encode :: Map.Map Int [Bit.B] -> Map.Map Int [Bit.B] -> RunLength.R -> [Bit.B]
+encode dl _ (RunLength.Literal b) = dl Map.! fromIntegral b
+encode dl _ (RunLength.LiteralBS b) = (dl Map.!) . fromIntegral =<< BS.unpack b
+encode dl dd (RunLength.LenDist l d) = dl Map.! lc ++ le ++ dd Map.! dc ++ de
+	where (lc, le) = lengthToCode l; (dc, de) = distToCode d
+encode dl _ RunLength.EndOfInput = dl Map.! 256
