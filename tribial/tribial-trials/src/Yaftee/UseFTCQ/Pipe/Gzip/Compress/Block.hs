@@ -48,8 +48,7 @@ mkHeader tll md = (lll, ld, lt, ttbs ++ mkBits aes)
 	aes = barToCodes tlld
 	((lll, ld), tlld) = mapMapToLitLenDstList tll md
 	barToCodes :: [Int] -> [(Int, [Bit.B])]
-	barToCodes baz =
-		uncurry huffmanLenToCodes =<< (head &&& length) <$> L.group baz
+	barToCodes = (uncurry lenToCodes =<<) . ((head &&& length) <$>) . L.group
 
 tableTableToOrder :: Map.Map Int Int -> (Int, [Int])
 tableTableToOrder tt = (ln, take ln o)
@@ -61,7 +60,8 @@ tableTableToOrder tt = (ln, take ln o)
 	ttto :: Num b => Map.Map Int b -> [b]
 	ttto m = fromMaybe 0 . (m Map.!?) <$> (tableTableLenOrder :: [Int])
 	tableTableLenOrder :: [Int]
-	tableTableLenOrder = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+	tableTableLenOrder =
+		[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
 
 mapMapToLitLenDstList :: Map.Map Int Int -> Map.Map Int Int -> ((Int, Int), [Int])
 mapMapToLitLenDstList rll rd = let
@@ -74,16 +74,16 @@ mapMapToLitLenDstList rll rd = let
 		(\mk -> (mk + 1, fromMaybe 0 . (m Map.!?) <$> [0 .. mk])) <$> maxKey
 		where maxKey = (d `max`) . fst . fst <$> Map.maxViewWithKey m
 
-huffmanLenToCodes :: Int -> Int -> [(Int, [Bit.B])]
-huffmanLenToCodes 0 n
+lenToCodes :: Int -> Int -> [(Int, [Bit.B])]
+lenToCodes 0 n
 	| n < 3 = replicate n (0, [])
 	| n < 11 = [(17, PipeBits.listFromNum 3 (n - 3))]
 	| n < 139 = [(18, PipeBits.listFromNum 7 (n - 11))]
-	| otherwise = (18, [I, I, I, I, I, I, I]) : huffmanLenToCodes 0 (n - 138)
-huffmanLenToCodes l n | n < 4 = replicate n (l, [])
-huffmanLenToCodes l n = (l, []) : go (n - 1)
-	where
-	go m	| m < 3 = replicate m (l, [])
+	| otherwise = (18, [I, I, I, I, I, I, I]) : lenToCodes 0 (n - 138)
+lenToCodes l n | n < 4 = replicate n (l, [])
+lenToCodes l n = (l, []) : go (n - 1)
+	where go m
+		| m < 3 = replicate m (l, [])
 		| m < 7 = [(16, PipeBits.listFromNum 2 (m - 3))]
 		| otherwise = (16, [I, I]) : go (m - 6)
 
