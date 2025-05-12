@@ -55,33 +55,28 @@ putLenDist b b1 b2 i l = do
 	State.modify (`Triple.update` b)
 	(_mb1, _mb2, mb3) <- get3
 	case mb3 of
-		Nothing -> do
-			State.modify (`Triple.update` b1)
-			runCandidate c1
-		Just b3 -> State.get >>= \st' -> do
-			mil' <- Triple.indexLength st' b1 b2 b3 getAhead
-			case mil' of
+		Nothing -> State.modify (`Triple.update` b1) >> proceed c1
+		Just b3 -> State.get >>= \st ->
+			Triple.indexLength st b1 b2 b3 getAhead >>= \case
 				Nothing -> do
 					State.modify (`Triple.update` b1)
-					runCandidate c1
+					proceed c1
 				Just (i', l') -> do
 					d' <- State.gets $ Triple.distance i'
 					State.modify (`Triple.update` b1)
-					let	c2 = (2 + l', [
+					proceed if l >= l' then c1 else
+						(l' + 2, [
 							RunLength.Literal b,
 							RunLength.LenDist
 								(l' + 3) d'])
-					if l + 1 >= l'
-					then runCandidate c1
-					else runCandidate c2
 
-runCandidate :: (
+proceed :: (
 	Foldable t,
 	U.Member Pipe.P es,
 	U.Member (State.S Triple.T) es, U.Member (State.S AheadPos) es,
 	U.Member (State.S BS.ByteString) es ) =>
 	(Int, t o) -> Eff.E es BS.ByteString o ()
-runCandidate (l', ys) = getBytes l' >>= \bs -> do
+proceed (l', ys) = getBytes l' >>= \bs -> do
 	State.modify \st -> foldl Triple.update st $ BS.unpack bs
 	Pipe.yield `mapM_` ys
 
