@@ -7,7 +7,8 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
-module Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength (run, compressRL) where
+module Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength (
+	run, compressRL, AheadPos ) where
 
 import Control.Monad.Fix
 import Yaftee.UseFTCQ.Eff qualified as Eff
@@ -24,8 +25,12 @@ import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
 import Yaftee.HFunctor qualified as HFunctor
 
 run :: HFunctor.HFunctor (Union.U es) =>
-	Eff.E (State.S AheadPos ': es) i o a -> Eff.E es i o (a, AheadPos)
-run = (`State.run` AheadPos 0)
+	Eff.E (
+		State.S Triple.T ':
+		State.S AheadPos ':
+		es) i o a ->
+	Eff.E es i o ((a, Triple.T), AheadPos)
+run = (`State.run` AheadPos 0) . (`State.run` Triple.empty)
 
 compressRL :: (
 	Union.Member Pipe.P es,
