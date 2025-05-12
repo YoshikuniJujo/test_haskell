@@ -6,7 +6,7 @@
 
 module Yaftee.UseFTCQ.Pipe.Gzip.RunLength (
 
-	runLength, R(..), Length, Dist,
+	runLength, runLength', R(..), Length, Dist,
 
 	toLitLenFreqs,
 	toDistFreqs
@@ -20,6 +20,7 @@ import Yaftee.UseFTCQ.State qualified as State
 import Yaftee.OpenUnion qualified as Union
 import Data.Foldable
 import Data.List qualified as L
+import Data.Bool
 import Data.Word
 import Data.Sequence qualified as Seq
 import Data.ByteString qualified as BS
@@ -28,7 +29,7 @@ import Data.Calc
 runLength :: (
 	Union.Member Pipe.P effs,
 	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
-	Eff.E effs R (Either Word8 BS.ByteString) ()
+	Eff.E effs R (Either Word8 BS.ByteString) r
 runLength = Pipe.await >>= \rl -> (>> runLength) $ ($ rl) \case
 	Literal w -> State.modify (`snoc` w) >> Pipe.yield (Left w)
 	LiteralBS bs ->
@@ -36,6 +37,19 @@ runLength = Pipe.await >>= \rl -> (>> runLength) $ ($ rl) \case
 	LenDist ln d -> State.gets (repetition ln d) >>= \ws ->
 		State.modify (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
 	EndOfInput -> pure ()
+
+runLength' :: (
+	Union.Member Pipe.P effs,
+	Union.Member (State.S (Seq.Seq Word8)) effs ) =>
+	Eff.E effs R (Either Word8 BS.ByteString) ()
+runLength' = (Pipe.isMore >>=) . bool (pure ())
+	$ Pipe.await >>= \rl -> (>> runLength) $ ($ rl) \case
+		Literal w -> State.modify (`snoc` w) >> Pipe.yield (Left w)
+		LiteralBS bs ->
+			State.modify (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
+		LenDist ln d -> State.gets (repetition ln d) >>= \ws ->
+			State.modify (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
+		EndOfInput -> pure ()
 
 data R
 	= Literal Word8 | LiteralBS BS.ByteString | LenDist Length Dist

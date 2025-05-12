@@ -111,6 +111,21 @@ readMore :: (
 	Union.Member Pipe.P effs,
 	Union.Member (State.S BitArray.B) effs ) =>
 	Eff.E effs (Maybe BS.ByteString) o Bool
-readMore = Pipe.await >>= \case
+readMore = readMore'
+
+readMoreFoo :: (
+	Union.Member Pipe.P effs,
+	Union.Member (State.S BitArray.B) effs ) =>
+	Eff.E effs (Maybe BS.ByteString) o Bool
+readMoreFoo = Pipe.await >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`BitArray.appendByteString` bs)
+
+readMore' :: (
+	Union.Member Pipe.P effs,
+	Union.Member (State.S BitArray.B) effs ) =>
+	Eff.E effs (Maybe BS.ByteString) o Bool
+readMore' = (Pipe.isMore >>=) . bool (pure False)
+	$ Pipe.await >>= \case
+		Nothing -> pure False
+		Just bs -> True <$ State.modify (`BitArray.appendByteString` bs)
