@@ -24,8 +24,8 @@ type T = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
 update :: T -> Word8 -> T
 update = push
 
-indexLength :: Monad m => T -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
-indexLength = maxLengthFromTriple
+indexLength :: Monad m => T -> Word8 -> Word8 -> Word8 -> m (Maybe Word8) -> m (Maybe (Int, Int))
+indexLength t b0 b1 b2 = maxLengthFromTriple t $ BS.pack [b0, b1, b2]
 
 empty :: T
 empty = (0, Seq.empty, Map.empty)
