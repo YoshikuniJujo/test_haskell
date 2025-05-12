@@ -21,14 +21,15 @@ import Data.ByteString qualified as BS
 
 type T = (Int, Seq.Seq Word8, Map.Map BS.ByteString [Int])
 
-update :: T -> Word8 -> T
-update = push
-
-indexLength :: Monad m => T -> Word8 -> Word8 -> Word8 -> m (Maybe Word8) -> m (Maybe (Int, Int))
-indexLength t b0 b1 b2 = maxLengthFromTriple t $ BS.pack [b0, b1, b2]
-
 empty :: T
 empty = (0, Seq.empty, Map.empty)
+
+update :: T -> Word8 -> T
+update = pushWithMax maxOffset
+
+indexLength :: Monad m =>
+	T -> Word8 -> Word8 -> Word8 -> m (Maybe Word8) -> m (Maybe (Int, Int))
+indexLength t b0 b1 b2 = maxLengthFromTriple t $ BS.pack [b0, b1, b2]
 
 distance :: Int -> T -> Int
 distance i' (i, s, _) = i + Seq.length s - i' + 3
@@ -37,9 +38,6 @@ distance i' (i, s, _) = i + Seq.length s - i' + 3
 
 maxOffset :: Int
 maxOffset = 32768
-
-push :: T -> Word8 -> T
-push = pushWithMax maxOffset
 
 pushWithMax :: Int -> T -> Word8 -> T
 pushWithMax mx (i, s, d) b = (i', s' Seq.|> b, d')
@@ -64,7 +62,8 @@ tailS s = case Seq.viewl s of
 	(_ Seq.:< s') -> s'
 	_ -> error "bad"
 
-maxLengthFromTriple :: Monad m => T -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
+maxLengthFromTriple :: Monad m =>
+	T -> BS.ByteString -> m (Maybe Word8) -> m (Maybe (Int, Int))
 maxLengthFromTriple st tr gb = maxLength (getRotables st tr) gb
 
 getIndices :: T -> BS.ByteString -> [Int]
@@ -79,7 +78,8 @@ getRotables st tr = indexToRotate st tr <$> is
 	where
 	is = getIndices st tr
 
-maxLength :: (Monad m, Eq a) => [(Int, Rotable a)] -> m (Maybe a) -> m (Maybe (Int, Int))
+maxLength :: (Monad m, Eq a) =>
+	[(Int, Rotable a)] -> m (Maybe a) -> m (Maybe (Int, Int))
 maxLength [] _ = pure Nothing
 maxLength rs gb = gb >>= \case
 	Nothing -> pure $ Just (fst $ head rs, 0)
