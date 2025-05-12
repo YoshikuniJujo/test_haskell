@@ -21,7 +21,6 @@ import Data.ByteString qualified as BS
 
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
-import Yaftee.UseFTCQ.Pipe.Gzip.Compress.AheadPos
 import Yaftee.HFunctor qualified as HFunctor
 
 run :: HFunctor.HFunctor (Union.U es) =>
@@ -137,3 +136,8 @@ readMore :: (
 	Eff.E effs BS.ByteString o Bool
 readMore = Pipe.isMore >>= bool (pure False)
 	(True <$ (State.modify . (flip BS.append) =<< Pipe.await))
+
+newtype AheadPos = AheadPos Int deriving Show
+
+nextAheadPos :: AheadPos -> AheadPos
+nextAheadPos (AheadPos p) = AheadPos $ p + 1
