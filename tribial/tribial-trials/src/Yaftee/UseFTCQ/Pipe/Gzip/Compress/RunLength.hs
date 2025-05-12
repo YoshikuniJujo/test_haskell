@@ -11,31 +11,27 @@ module Yaftee.UseFTCQ.Pipe.Gzip.Compress.RunLength (
 	run, compressRL, AheadPos ) where
 
 import Control.Monad.Fix
-import Yaftee.UseFTCQ.Eff qualified as Eff
-import Yaftee.UseFTCQ.Pipe qualified as Pipe
-import Yaftee.UseFTCQ.State qualified as State
-import Yaftee.OpenUnion qualified as Union
 import Data.Maybe
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
+import Yaftee.UseFTCQ.Eff qualified as Eff
+import Yaftee.UseFTCQ.Pipe qualified as Pipe
 import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
+import Yaftee.UseFTCQ.State qualified as State
 import Yaftee.HFunctor qualified as HFunctor
+import Yaftee.OpenUnion qualified as Union
 
 run :: HFunctor.HFunctor (Union.U es) =>
-	Eff.E (
-		State.S Triple.T ':
-		State.S AheadPos ':
-		es) i o a ->
+	Eff.E (State.S Triple.T ': State.S AheadPos ': es) i o a ->
 	Eff.E es i o ((a, Triple.T), AheadPos)
 run = (`State.run` AheadPos 0) . (`State.run` Triple.empty)
 
 compressRL :: (
 	Union.Member Pipe.P es,
-	Union.Member (State.S Triple.T) es,
-	Union.Member (State.S AheadPos) es,
+	Union.Member (State.S AheadPos) es, Union.Member (State.S Triple.T) es,
 	Union.Member (State.S BS.ByteString) es ) =>
 	Eff.E es BS.ByteString RunLength.R ()
 compressRL = fix \go -> do
@@ -88,12 +84,12 @@ compressRL = fix \go -> do
 
 runCandidate :: (
 	Foldable t,
-	Union.Member Pipe.P effs,
-	Union.Member (State.S AheadPos) effs,
-	Union.Member (State.S Triple.T) effs,
-	Union.Member (State.S BS.ByteString) effs
+	Union.Member Pipe.P es,
+	Union.Member (State.S AheadPos) es,
+	Union.Member (State.S Triple.T) es,
+	Union.Member (State.S BS.ByteString) es
 	) =>
-	(a, (Int, t o)) -> Eff.E effs BS.ByteString o ()
+	(a, (Int, t o)) -> Eff.E es BS.ByteString o ()
 runCandidate (_l, (l', ys)) = do
 	bs <- getBytes l'
 	State.modify \st' -> foldl Triple.update st' $ BS.unpack bs
@@ -102,10 +98,10 @@ runCandidate (_l, (l', ys)) = do
 newtype FileLength = FileLength Int deriving Show
 
 get :: (
-	Union.Member Pipe.P effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S AheadPos) effs
-	) => Eff.E effs BS.ByteString o (Maybe Word8)
+	Union.Member Pipe.P es,
+	Union.Member (State.S BS.ByteString) es,
+	Union.Member (State.S AheadPos) es
+	) => Eff.E es BS.ByteString o (Maybe Word8)
 get = State.gets BS.uncons >>= \case
 	Nothing -> bool (pure Nothing) get =<< readMore
 	Just (b, bs) -> do
@@ -114,20 +110,20 @@ get = State.gets BS.uncons >>= \case
 		pure $ Just b
 
 getBytes :: (
-	Union.Member Pipe.P effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S AheadPos) effs
-	) => Int -> Eff.E effs BS.ByteString o BS.ByteString
+	Union.Member Pipe.P es,
+	Union.Member (State.S BS.ByteString) es,
+	Union.Member (State.S AheadPos) es
+	) => Int -> Eff.E es BS.ByteString o BS.ByteString
 getBytes n = State.get >>= \bs ->
 	if BS.length bs >= n then BS.take n bs <$ State.put (BS.drop n bs) else
 		readMore >> getBytes n
 
 getAhead :: (
-	Union.Member Pipe.P effs,
-	Union.Member (State.S BS.ByteString) effs,
-	Union.Member (State.S AheadPos) effs
+	Union.Member Pipe.P es,
+	Union.Member (State.S BS.ByteString) es,
+	Union.Member (State.S AheadPos) es
 	) =>
-	Eff.E effs BS.ByteString o (Maybe Word8)
+	Eff.E es BS.ByteString o (Maybe Word8)
 getAhead = do
 	bs <- State.get
 	AheadPos i <- State.get
@@ -135,14 +131,13 @@ getAhead = do
 		Nothing -> bool (pure Nothing) getAhead =<< readMore
 		Just b -> Just b <$ State.modify nextAheadPos
 
-readMore :: (
-	Union.Member Pipe.P effs,
-	Union.Member (State.S BS.ByteString) effs ) =>
-	Eff.E effs BS.ByteString o Bool
-readMore = Pipe.isMore >>= bool (pure False)
-	(True <$ (State.modify . (flip BS.append) =<< Pipe.await))
-
 newtype AheadPos = AheadPos Int deriving Show
 
 nextAheadPos :: AheadPos -> AheadPos
 nextAheadPos (AheadPos p) = AheadPos $ p + 1
+
+readMore ::
+	(Union.Member Pipe.P es, Union.Member (State.S BS.ByteString) es) =>
+	Eff.E es BS.ByteString o Bool
+readMore = Pipe.isMore >>= bool (pure False)
+	(True <$ (State.modify . flip BS.append =<< Pipe.await))
