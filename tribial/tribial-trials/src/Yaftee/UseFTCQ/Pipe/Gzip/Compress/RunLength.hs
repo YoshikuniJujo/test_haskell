@@ -17,7 +17,7 @@ import Data.ByteString qualified as BS
 
 import Yaftee.UseFTCQ.Eff qualified as Eff
 import Yaftee.UseFTCQ.Pipe qualified as Pipe
-import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RunLength
+import Yaftee.UseFTCQ.Pipe.Gzip.RunLength qualified as RL
 import Yaftee.UseFTCQ.Pipe.Gzip.Compress.Triple qualified as Triple
 import Yaftee.UseFTCQ.State qualified as State
 import Yaftee.HFunctor qualified as HFunctor
@@ -31,28 +31,26 @@ run = (`State.run` AheadPos 0) . (`State.run` Triple.empty)
 compressRL :: (
 	U.Member Pipe.P es,
 	U.Member (State.S AheadPos) es, U.Member (State.S Triple.T) es,
-	U.Member (State.S BS.ByteString) es ) =>
-	Eff.E es BS.ByteString RunLength.R ()
+	U.Member (State.S BS.ByteString) es ) => Eff.E es BS.ByteString RL.R ()
 compressRL = fix \go -> get3 >>= \(mb, mb1, mb2) ->
 	($ mb) $ maybe (pure ()) \b -> (>> go) case (mb1, mb2) of
 		(Just b1, Just b2) -> State.get >>= \st ->
 			Triple.indexLength st b b1 b2 getAhead >>= \case
 				Nothing -> do
 					State.modify (`Triple.update` b)
-					Pipe.yield (RunLength.Literal b)
+					Pipe.yield (RL.Literal b)
 				Just (i, l) -> putLenDist b b1 b2 i l
 		_ -> do	State.modify (`Triple.update` b)
-			Pipe.yield (RunLength.Literal b)
+			Pipe.yield (RL.Literal b)
 
 putLenDist :: (
 	U.Member Pipe.P es, U.Member (State.S Triple.T) es,
 	U.Member (State.S AheadPos) es, U.Member (State.S BS.ByteString) es ) =>
-	Word8 -> Word8 -> Word8 -> Int -> RunLength.Length ->
-	Eff.E es BS.ByteString RunLength.R ()
-putLenDist b b1 b2 i l = do
-	d <- State.gets $ Triple.distance i
-	let	c1 = (l + 1, [RunLength.LenDist (l + 3) d])
+	Word8 -> Word8 -> Word8 -> Int -> RL.Length ->
+	Eff.E es BS.ByteString RL.R ()
+putLenDist b b1 b2 i0 l0 = State.gets (Triple.distance i0) >>= \d0 -> do
 	State.modify (`Triple.update` b)
+	let	c1 = (l0 + 1, [RL.LenDist (l0 + 3) d0])
 	(_mb1, _mb2, mb3) <- get3
 	case mb3 of
 		Nothing -> State.modify (`Triple.update` b1) >> proceed c1
@@ -61,14 +59,13 @@ putLenDist b b1 b2 i l = do
 				Nothing -> do
 					State.modify (`Triple.update` b1)
 					proceed c1
-				Just (i', l') -> do
-					d' <- State.gets $ Triple.distance i'
+				Just (i, l) -> do
+					d <- State.gets $ Triple.distance i
 					State.modify (`Triple.update` b1)
-					proceed if l >= l' then c1 else
-						(l' + 2, [
-							RunLength.Literal b,
-							RunLength.LenDist
-								(l' + 3) d'])
+					proceed if l0 >= l then c1 else
+						(l + 2, [
+							RL.Literal b,
+							RL.LenDist (l + 3) d ])
 
 proceed :: (
 	Foldable t,
