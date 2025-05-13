@@ -3,10 +3,11 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
-module Data.Huffman (BinTree, decode1, makeTree, pairToCodes) where
+module Data.Huffman (BinTree, decode1, makeTree, tableToDict) where
 
 import Control.Arrow
 import Data.List qualified as L
+import Data.Map qualified as Map
 import Data.ByteString.Bit (pattern O, pattern I)
 import Data.ByteString.Bit qualified as Bit
 
@@ -28,6 +29,11 @@ fromList t = case ((first tail <$>) <$>) . (`L.groupBy` t)
 		. curry . (uncurry (==) .) $ head . fst *** head . fst of
 	[t1, t2] -> fromList t1 `Node` fromList t2
 	ts -> error $ "fromList: bad " ++ unlines (show <$> ts)
+
+tableToDict :: (Ord a, Integral n) => Map.Map a n -> Map.Map a [Bit.B]
+tableToDict = Map.fromList
+	. ((uncurry $ flip (,)) <$>) . pairToCodes . ((uncurry $ flip (,)) <$>)
+	. L.sortOn snd . Map.toList
 
 pairToCodes :: Integral n => [(n, a)] -> [([Bit.B], a)]
 pairToCodes = uncurry zip . (lenListToCodes `first`) . unzip

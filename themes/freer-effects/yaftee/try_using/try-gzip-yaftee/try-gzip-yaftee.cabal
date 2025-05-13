@@ -25,9 +25,14 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Gzip.Block
+      Data.Gzip.Calc
       Data.Huffman
+      Data.PackageMerge
       Pipe.Huffman
       Pipe.RunLength
+      Pipe.RunLength.Compress
+      Pipe.RunLength.Triple
   other-modules:
       Paths_try_gzip_yaftee
   autogen-modules:
@@ -40,6 +45,24 @@ library
     , bytestring
     , containers
     , try-bitarray-bs
+    , try-higher-order-open-union
+    , try-yaftee
+    , try-yaftee-basic-monads
+    , try-yaftee-conduit
+    , try-yaftee-conduit-bytestring
+  default-language: Haskell2010
+
+executable try-gzip-yaftee-compress
+  main-is: try-gzip-yaftee-compress.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , try-bitarray-bs
+    , try-gzip-yaftee
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads

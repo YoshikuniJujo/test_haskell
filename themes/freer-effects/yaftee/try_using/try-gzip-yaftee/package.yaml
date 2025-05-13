@@ -54,6 +54,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gzip-yaftee
+  try-gzip-yaftee-compress:
+    main:                try-gzip-yaftee-compress.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yaftee
 
 tests:
   try-gzip-yaftee-test:

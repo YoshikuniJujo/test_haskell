@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Pipe.Huffman (
-	run, huffman, putTree, putExtraBits, makeTree, pairToCodes,
+	run, huffman, putTree, putExtraBits, makeTree,
 
 	BinTree, ExtraBits(..), Pkg,
 
@@ -23,7 +23,6 @@ import Control.HigherOpenUnion qualified as U
 import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Huffman
-import Data.Word
 import Data.ByteString.Bit (pattern O, pattern I)
 import Data.ByteString.Bit qualified as Bit
 
