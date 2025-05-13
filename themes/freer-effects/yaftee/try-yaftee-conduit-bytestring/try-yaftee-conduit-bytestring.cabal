@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Yaftee.Pipe.Bits
       Control.Monad.Yaftee.Pipe.ByteString
       Control.Monad.Yaftee.Pipe.ByteString.Crc
       Control.Monad.Yaftee.Pipe.ByteString.OnDemand

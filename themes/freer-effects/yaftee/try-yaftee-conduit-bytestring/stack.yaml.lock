@@ -110,7 +110,7 @@ packages:
     subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
 - completed:
-    sha256: c690c1194a825f2fb5069703e586759791384ac918494d035c02a52a0d085023
-    size: 678155
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/5/10.yaml
-  original: nightly-2025-05-10
+    sha256: d6177430c3f6c69ff32d9ed4d757148916306d1fe36d34b3105892bc7281e1ff
+    size: 678369
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/5/11.yaml
+  original: nightly-2025-05-11
