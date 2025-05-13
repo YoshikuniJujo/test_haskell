@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.ByteString (
-	hGet, hGet', putStr
+	hGet, hGet', putStr, hPutStr'
 	) where
 
 import Prelude hiding (putStr)
@@ -30,3 +30,9 @@ hGet' bfsz h = fix \go -> Eff.effBase (not <$> hIsEOF h) >>= bool
 
 putStr :: (U.Member Pipe.P es, U.Base IO.I es) => Eff.E es BS.ByteString o r
 putStr = fix \go -> Pipe.await >>= Eff.effBase . BS.putStr >> go
+
+hPutStr' h = fix \go -> do
+	m <- Pipe.isMore
+	if m
+	then (>> go) $ Eff.effBase . BS.hPutStr h =<< Pipe.await
+	else pure ()
