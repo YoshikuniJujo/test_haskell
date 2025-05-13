@@ -29,9 +29,8 @@ import Data.ByteString qualified as BS
 type Pkg = "try-yaftee-conduit-bytestring"
 
 runCrc32 ::  HFunctor.Loose (U.U es) =>
-	Eff.E (State.Named Pkg Crc32 ': es) i o r ->
-	Crc32 -> Eff.E es i o (r, Crc32)
-runCrc32 = State.runN
+	Eff.E (State.Named Pkg Crc32 ': es) i o r -> Eff.E es i o (r, Crc32)
+runCrc32 = (`State.runN` Crc32 0)
 
 crc32 :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
