@@ -119,6 +119,7 @@ bitsBlock :: (
 bitsBlock mhclen mhlithdist = do
 	whenMaybe mhclen \hclen -> (\x -> State.put . (\y -> trace (show y) $ (id &&& id) y) =<< x)
 		. (mkTr @Word8 codeLengthList <$>)
+		. (\z -> (\w -> trace (show w) (pure w)) =<< z)
 		. replicateM hclen . (Bit.listToNum <$>)
 		$ replicateM 3 Pipe.await
 	_ <- huffmanPipe Pipe.=$= do
