@@ -84,11 +84,7 @@ block :: (
 	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
 	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
-	U.Member (U.FromFirst U.Fail) es,
-	U.Base IO.I es
-	) =>
---	U.Member (U.FromFirst U.Fail) es
---	) =>
+	U.Member (U.FromFirst U.Fail) es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
 block = do
 	State.put $ OnDemand.RequestBits 1
@@ -100,30 +96,40 @@ block = do
 			ln <- getWord16FromPair =<< skipLeft1
 			State.put $ OnDemand.RequestBytes ln
 			Pipe.yield . RunLength.LiteralBS =<< getRight =<< Pipe.await
-		1 -> do State.put $ OnDemand.RequestBuffer 100
+			{-
+		1 -> do
+
+			State.put $ OnDemand.RequestBuffer 100
 			bits Pipe.=$= Huffman.huffman Pipe.=$= litLen
 				(Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 				(Huffman.makeTree [0 :: Int .. ] fixedHuffmanDstList) 0
 			pure ()
-		2 -> do	State.put $ OnDemand.RequestBits 5
-			hlit <- (+ 257) . BitArray.toBits <$> (getLeft =<< Pipe.await)
-			hdist <- (+ 1) . BitArray.toBits <$> (getLeft =<< Pipe.await)
-			State.put $ OnDemand.RequestBits 4
-			hclen <- (+ 4) . BitArray.toBits <$> (getLeft =<< Pipe.await)
-			IO.print hlit
-			IO.print hdist
-			IO.print hclen
+			-}
+		_ | bt == 1 || bt == 2 -> do
+
+			(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
+				State.put $ OnDemand.RequestBits 5
+				hlit <- (+ 257) . BitArray.toBits <$> (getLeft =<< Pipe.await)
+				hdist <- (+ 1) . BitArray.toBits <$> (getLeft =<< Pipe.await)
+				State.put $ OnDemand.RequestBits 4
+				hclen <- (+ 4) . BitArray.toBits <$> (getLeft =<< Pipe.await)
+				pure (Just (hlit, hlit + hdist), Just hclen)
+
 			State.put $ OnDemand.RequestBuffer 100
 			bits Pipe.=$= do
-				rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
-				let tt = Huffman.makeTree codeLengthList rtt
-				IO.print rtt
-				IO.print tt
-				Huffman.putTree tt
+
+				let	Just (hlit, hlithdist) = mhlithdist
+
+				whenMaybe mhclen \hclen -> do
+					rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
+					let tt = Huffman.makeTree codeLengthList rtt
+					Huffman.putTree tt
+
 				Huffman.huffman @Int @Word16 Pipe.=$= do
-					(ht, hdt) <- (Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> getCodeTable 0 (hlit + hdist)
-					IO.print ht
-					IO.print hdt
+					(ht, hdt) <- whenMaybeDef (
+							Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
+							Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
+						(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> getCodeTable 0 hlithdist
 					Huffman.putTree ht
 					litLen ht hdt 0
 			bf <- State.getN "bits"
@@ -454,3 +460,12 @@ yieldLen n = do
 	let	(r, bs') = BS.splitAt n bs
 	State.putN "format" bs'
 	Pipe.yield r
+
+whenDef :: Applicative m => a -> Bool -> m a -> m a
+whenDef d b a = bool (pure d) a b
+
+whenMaybe :: Applicative m => Maybe a -> (a -> m ()) -> m ()
+whenMaybe mx f = maybe (pure ()) f mx
+
+whenMaybeDef :: Applicative m => b -> Maybe a -> (a -> m b) -> m b
+whenMaybeDef d mx f = maybe (pure d) f mx
