@@ -35,7 +35,7 @@ compressRL :: (
 compressRL = fix \go -> get3 >>= \(mb, mb1, mb2) ->
 	($ mb) $ maybe (pure ()) \b -> (>> go) case (mb1, mb2) of
 		(Just b1, Just b2) -> State.get >>= \st ->
-			Triple.indexLength st b b1 b2 getAhead >>= \case
+			Triple.indexLength' st b b1 b2 getAhead >>= \case
 				Nothing -> do
 					State.modify (`Triple.update` b)
 					Pipe.yield (RL.Literal b)
@@ -55,7 +55,7 @@ putLenDist b b1 b2 i0 l0 = State.gets (Triple.distance i0) >>= \d0 -> do
 	case mb3 of
 		Nothing -> State.modify (`Triple.update` b1) >> proceed c1
 		Just b3 -> State.get >>= \st ->
-			Triple.indexLength st b1 b2 b3 getAhead >>= \case
+			Triple.indexLength' st b1 b2 b3 getAhead >>= \case
 				Nothing -> do
 					State.modify (`Triple.update` b1)
 					proceed c1

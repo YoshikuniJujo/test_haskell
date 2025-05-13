@@ -14,7 +14,7 @@ module Pipe.RunLength.Triple (
 
 	-- * QUERY
 
-	indexLength, distance
+	indexLength', indexLength, distance
 
 	) where
 
@@ -58,6 +58,8 @@ takeR :: Int -> Seq.Seq a -> Seq.Seq a
 takeR n s = Seq.drop (Seq.length s - n) s
 
 -- QUERY
+
+indexLength' t b0 b1 b2 gb = (((255 `min`) `second`) <$>) <$> indexLength t b0 b1 b2 gb
 
 indexLength :: Monad m =>
 	T -> Word8 -> Word8 -> Word8 -> m (Maybe Word8) -> m (Maybe (Int, Int))

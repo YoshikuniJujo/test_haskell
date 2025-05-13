@@ -39,6 +39,8 @@ main = do
 				PipeCrc.crc32' Pipe.=$=
 				lengthPipe Pipe.=$=
 				RunLength.compressRL Pipe.=$=
+--				PipeIO.print
+--				{-
 				PipeL.bundle' 500 Pipe.=$=
 				PipeT.convert'' runLengthsToBits [] Pipe.=$= do
 					Pipe.yield $ encodeGzipHeader sampleGzipHeader
@@ -47,6 +49,7 @@ main = do
 					Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN PipeCrc.Pkg
 					Pipe.yield . numToBs' 4 . unFileLength =<< State.get
 				Pipe.=$= PipeBS.hPutStr' ho
+--				-}
 	pure ()
 
 lengthPipe :: (U.Member Pipe.P es, U.Member (State.S FileLength) es) =>
