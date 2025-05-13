@@ -53,7 +53,7 @@ main = do
 		. (flip (State.runN @"format") ("" :: BS.ByteString))
 		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 		. (flip (State.runN @"bits") $ BitArray.fromByteString "")
-		. (`Crc.runCrc32` Crc.Crc32 0)
+		. Crc.runCrc32
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader

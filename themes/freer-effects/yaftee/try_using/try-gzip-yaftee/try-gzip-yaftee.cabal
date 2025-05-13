@@ -27,6 +27,7 @@ library
   exposed-modules:
       Data.Gzip.Block
       Data.Gzip.Calc
+      Data.Gzip.GzipHeader
       Data.Huffman
       Data.PackageMerge
       Pipe.Huffman
