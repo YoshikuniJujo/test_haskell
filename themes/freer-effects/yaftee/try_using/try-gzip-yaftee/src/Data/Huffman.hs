@@ -19,15 +19,15 @@ decode1 _ (Node l _) O = (Nothing, l)
 decode1 _ (Node _ r) I = (Nothing, r)
 decode1 _ (Leaf _) _ = error "bad"
 
-makeTree :: (Integral n, Ord a) => [a] -> [n] -> BinTree a
+makeTree :: (Show a, Integral n, Ord a) => [a] -> [n] -> BinTree a
 makeTree xs = fromList . pairToCodes . L.sort . filter ((/= 0) . fst) . (`zip` xs)
 
-fromList :: [([Bit.B], a)] -> BinTree a
+fromList :: Show a => [([Bit.B], a)] -> BinTree a
 fromList [([], x)] = Leaf x
 fromList t = case ((first tail <$>) <$>) . (`L.groupBy` t)
 		. curry . (uncurry (==) .) $ head . fst *** head . fst of
 	[t1, t2] -> fromList t1 `Node` fromList t2
-	_ -> error "fromList: bad"
+	ts -> error $ "fromList: bad " ++ unlines (show <$> ts)
 
 pairToCodes :: Integral n => [(n, a)] -> [([Bit.B], a)]
 pairToCodes = uncurry zip . (lenListToCodes `first`) . unzip

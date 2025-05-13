@@ -39,6 +39,8 @@ import System.Environment
 import Pipe.Huffman qualified as Huffman
 import Pipe.RunLength qualified as RunLength
 
+import Debug.Trace
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -104,18 +106,30 @@ block = do
 				(Huffman.makeTree [0 :: Int .. ] fixedHuffmanDstList) 0
 			pure ()
 		2 -> do	State.put $ OnDemand.RequestBits 5
-			IO.print @Int . (+ 257) . BitArray.toBits =<< getLeft =<< Pipe.await
-			IO.print @Int . (+ 1) . BitArray.toBits =<< getLeft =<< Pipe.await
+			hlit <- (+ 257) . BitArray.toBits <$> (getLeft =<< Pipe.await)
+			hdist <- (+ 1) . BitArray.toBits <$> (getLeft =<< Pipe.await)
 			State.put $ OnDemand.RequestBits 4
-			IO.print @Int . (+ 4) . BitArray.toBits =<< getLeft =<< Pipe.await
+			hclen <- (+ 4) . BitArray.toBits <$> (getLeft =<< Pipe.await)
+			IO.print hlit
+			IO.print hdist
+			IO.print hclen
 			State.put $ OnDemand.RequestBuffer 100
 			bits Pipe.=$= do
-				Huffman.putTree . Huffman.makeTree codeLengthList
-					=<< replicateM 14 (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
+				rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
+				let tt = Huffman.makeTree codeLengthList rtt
+				IO.print rtt
+				IO.print tt
+				Huffman.putTree tt
 				Huffman.huffman @Int @Word16 Pipe.=$= do
-					(ht, hdt) <- (Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt 282 <$> getCodeTable 0 305
+					(ht, hdt) <- (Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> getCodeTable 0 (hlit + hdist)
+					IO.print ht
+					IO.print hdt
 					Huffman.putTree ht
 					litLen ht hdt 0
+			bf <- State.getN "bits"
+			State.putN "bits" BitArray.empty
+			State.put $ OnDemand.RequestPushBack bf
+			Right "" <- Pipe.await
 			pure ()
 	pure (bf /= 1)
 
@@ -138,7 +152,7 @@ getCodeTable pr n = Pipe.await >>= \case
 			Huffman.putExtraBits 7
 			Right eb <- Pipe.await
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable 0 (n - fromIntegral eb - 11)
-		| otherwise -> error "yet"
+		| otherwise -> error $ "yet: " ++ show ln
 	Right _ -> error "bad"
 
 getLeft :: U.Member (Except.E String) es => Either a b -> Eff.E es i o a
@@ -317,7 +331,7 @@ bits = (Pipe.yield =<< pop) >> bits
 	where
 	pop = State.getsN "bits" BitArray.pop >>= \case
 		Nothing -> Pipe.await
-			>>= State.putN "bits" . either id BitArray.fromByteString
+			>>= State.putN "bits" . either (\x -> trace (show x) x) (\x -> trace (show x) (BitArray.fromByteString x))
 			>> pop
 		Just (b, ba') -> b <$ State.putN "bits" ba'
 
@@ -340,6 +354,7 @@ litLen t dt pri = Pipe.await >>= \case
 	Right eb -> do
 		Huffman.putTree dt
 		dist t dt (calcLength pri eb) 0
+	err -> error $ show err
 
 dist t dt ln pri = Pipe.await >>= \case
 	Left i	| 0 <= i && i <= 3 -> do
