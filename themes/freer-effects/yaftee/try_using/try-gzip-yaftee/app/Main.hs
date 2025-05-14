@@ -11,6 +11,7 @@ module Main (main) where
 import Foreign.C.Types
 import Control.Arrow
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -255,18 +256,13 @@ dist t dt ln pri = Pipe.await >>= \case
 		Huffman.putTree t
 		litLen t dt 0
 
-bits :: (
-	U.Member Pipe.P es,
-	U.Member (State.Named "bits" BitArray.B) es
-	) =>
+bits :: (U.Member Pipe.P es, U.Member (State.Named "bits" BitArray.B) es) =>
 	Eff.E es (Either BitArray.B BS.ByteString) Bit.B r
-bits = (Pipe.yield =<< pop) >> bits
-	where
-	pop = State.getsN "bits" BitArray.pop >>= \case
-		Nothing -> Pipe.await
-			>>= State.putN "bits" . either id BitArray.fromByteString
-			>> pop
-		Just (b, ba') -> b <$ State.putN "bits" ba'
+bits = forever . (Pipe.yield =<<)
+	$ fix \go -> State.getsN "bits" BitArray.pop >>= maybe
+		((>> go) $ State.putN "bits"
+			. either id BitArray.fromByteString =<< Pipe.await)
+		(uncurry (<$) . (State.putN "bits" `second`))
 
 format :: (
 	U.Member Pipe.P es,
