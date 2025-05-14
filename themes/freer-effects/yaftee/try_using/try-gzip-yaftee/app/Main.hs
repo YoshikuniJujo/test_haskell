@@ -21,7 +21,7 @@ import Control.Monad.Yaftee.Pipe.IO qualified as PipeI
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeB
 import Control.Monad.Yaftee.Pipe.ByteString.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as Crc
-import Control.Monad.Yaftee.State qualified as State
+import Control.Monad.Yaftee.State qualified as St
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
@@ -48,12 +48,12 @@ main = do
 	h <- openFile fp ReadMode
 	let	processHeader = IO.print
 	void . Eff.runM . Except.run @String . Fail.runExc id
-		. (`State.run` OnDemand.RequestBuffer 16)
-		. (`State.run` BitArray.fromByteString "")
-		. (`State.run` (Seq.empty :: Seq.Seq Word8))
-		. (flip (State.runN @"format") ("" :: BS.ByteString))
+		. (`St.run` OnDemand.RequestBuffer 16)
+		. (`St.run` BitArray.fromByteString "")
+		. (`St.run` (Seq.empty :: Seq.Seq Word8))
+		. (flip (St.runN @"format") ("" :: BS.ByteString))
 		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
-		. (flip (State.runN @"bits") $ BitArray.fromByteString "")
+		. (flip (St.runN @"bits") $ BitArray.fromByteString "")
 		. PipeB.lengthRun . Crc.runCrc32
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
@@ -62,15 +62,15 @@ main = do
 				PipeB.length' Pipe.=$= Crc.crc32' Pipe.=$= do
 					PipeI.print'
 					Crc.compCrc32
-					IO.print . Crc.crc32ToByteString =<< State.getN PipeB.Pkg
-					IO.print . PipeB.lengthToByteString =<< State.getN PipeB.Pkg
-					IO.print @BitArray.B =<< State.get
-					IO.print @BitArray.B =<< State.getN "bits"
+					IO.print . Crc.crc32ToByteString =<< St.getN PipeB.Pkg
+					IO.print . PipeB.lengthToByteString =<< St.getN PipeB.Pkg
+					IO.print @BitArray.B =<< St.get
+					IO.print @BitArray.B =<< St.getN "bits"
 
 readHeader :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named PipeB.Pkg Crc.Crc32) es,
-	U.Member (State.S OnDemand.Request) es,
+	U.Member (St.Named PipeB.Pkg Crc.Crc32) es,
+	U.Member (St.S OnDemand.Request) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
 	(GzipHeader -> Eff.E es BS.ByteString o r) ->
@@ -78,25 +78,25 @@ readHeader :: (
 		Eff.E es BS.ByteString BS.ByteString r1,
 		Eff.E es BS.ByteString o r )
 readHeader f = Crc.crc32 Pipe.=$= do
-				State.put $ OnDemand.RequestBytes 2
+				St.put $ OnDemand.RequestBytes 2
 				ids <- Pipe.await
 				when (ids /= "\31\139")
 					$ Except.throw @String "Bad magic"
-				State.put $ OnDemand.RequestBytes 1
+				St.put $ OnDemand.RequestBytes 1
 				cm <- (CompressionMethod . BS.head) <$> Pipe.await
 				Just flgs <- readFlags . BS.head <$> Pipe.await
-				State.put $ OnDemand.RequestBytes 4
+				St.put $ OnDemand.RequestBytes 4
 				mtm <- CTime . BS.toBits <$> Pipe.await
-				State.put $ OnDemand.RequestBytes 1
+				St.put $ OnDemand.RequestBytes 1
 				ef <- BS.head <$> Pipe.await
 				os <- OS . BS.head <$> Pipe.await
 				mexflds <- if (flagsRawExtra flgs)
-				then do	State.put $ OnDemand.RequestBytes 2
+				then do	St.put $ OnDemand.RequestBytes 2
 					xlen <- BS.toBits <$> Pipe.await
-					State.put $ OnDemand.RequestBytes xlen
+					St.put $ OnDemand.RequestBytes xlen
 					decodeExtraFields <$> Pipe.await
 				else pure []
-				State.put OnDemand.RequestString
+				St.put OnDemand.RequestString
 				mnm <- if flagsRawName flgs
 				then Just <$> Pipe.await
 				else pure Nothing
@@ -105,8 +105,8 @@ readHeader f = Crc.crc32 Pipe.=$= do
 				else pure Nothing
 				when (flagsRawHcrc flgs) do
 					Crc.compCrc32
-					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN PipeB.Pkg
-					State.put $ OnDemand.RequestBytes 2
+					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> St.getN PipeB.Pkg
+					St.put $ OnDemand.RequestBytes 2
 					m <- BS.toBits <$> Pipe.await
 					when (crc /= m) $
 						Except.throw @String "Header CRC check failed"
@@ -124,32 +124,32 @@ readHeader f = Crc.crc32 Pipe.=$= do
 
 block :: (
 	U.Member Pipe.P es,
-	U.Member (State.S OnDemand.Request) es,
-	U.Member (State.Named "bits" BitArray.B) es,
-	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Member (St.S OnDemand.Request) es,
+	U.Member (St.Named "bits" BitArray.B) es,
+	U.Member (St.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
+	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
 block = do
-	State.put $ OnDemand.RequestBits 1
+	St.put $ OnDemand.RequestBits 1
 	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
-	State.put $ OnDemand.RequestBits 2
+	St.put $ OnDemand.RequestBits 2
 	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
 	(bf /= 1) <$ case bt of
-		0 -> do	State.put $ OnDemand.RequestBytes 4
+		0 -> do	St.put $ OnDemand.RequestBytes 4
 			ln <- getWord16FromPair =<< PipeT.skipLeft1
-			State.put $ OnDemand.RequestBytes ln
+			St.put $ OnDemand.RequestBytes ln
 			Pipe.yield . RunLength.LiteralBS =<< Except.getRight =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
 				(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
-					State.put $ OnDemand.RequestBits 5
+					St.put $ OnDemand.RequestBits 5
 					hlit <- (+ 257) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
 					hdist <- (+ 1) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
-					State.put $ OnDemand.RequestBits 4
+					St.put $ OnDemand.RequestBits 4
 					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
-				State.put $ OnDemand.RequestBuffer 100
+				St.put $ OnDemand.RequestBuffer 100
 				void $ bits Pipe.=$= do
 
 					whenMaybe mhclen \hclen -> do
@@ -164,8 +164,8 @@ block = do
 							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> getCodeTable 0 hlitdist
 						Huffman.putTree ht
 						litLen ht hdt 0
-				State.put . OnDemand.RequestPushBack =<< State.getN "bits"
-				State.putN "bits" BitArray.empty
+				St.put . OnDemand.RequestPushBack =<< St.getN "bits"
+				St.putN "bits" BitArray.empty
 				Right "" <- Pipe.await; pure ()
 		_ -> error "bad"
 
@@ -191,7 +191,7 @@ fixedHuffmanDstList = replicate 32 5
 
 getCodeTable :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member Fail.F es,
 	Integral b
 	) => Int -> Int -> Eff.E es (Either Int b) o [Int]
@@ -215,9 +215,9 @@ getCodeTable pr n = Pipe.await >>= \case
 
 litLen :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named Huffman.Pkg
+	U.Member (St.Named Huffman.Pkg
 		(Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
+	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
 	Huffman.BinTree Int -> Huffman.BinTree Int -> Int ->
 	Eff.E es (Either Int Word16) RunLength.R ()
 litLen t dt pri = Pipe.await >>= \case
@@ -237,9 +237,9 @@ litLen t dt pri = Pipe.await >>= \case
 
 dist :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named Huffman.Pkg
+	U.Member (St.Named Huffman.Pkg
 		(Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
+	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
 	Huffman.BinTree Int -> Huffman.BinTree Int -> RunLength.Length -> Int ->
 	Eff.E es (Either Int Word16) RunLength.R ()
 dist t dt ln pri = Pipe.await >>= \case
@@ -256,50 +256,22 @@ dist t dt ln pri = Pipe.await >>= \case
 		Huffman.putTree t
 		litLen t dt 0
 
-bits :: (U.Member Pipe.P es, U.Member (State.Named "bits" BitArray.B) es) =>
+bits :: (U.Member Pipe.P es, U.Member (St.Named "bits" BitArray.B) es) =>
 	Eff.E es (Either BitArray.B BS.ByteString) Bit.B r
 bits = forever . (Pipe.yield =<<)
-	$ fix \go -> State.getsN "bits" BitArray.pop >>= maybe
-		((>> go) $ State.putN "bits"
+	$ fix \go -> St.getsN "bits" BitArray.pop >>= maybe
+		((>> go) $ St.putN "bits"
 			. either id BitArray.fromByteString =<< Pipe.await)
-		(uncurry (<$) . (State.putN "bits" `second`))
+		(uncurry (<$) . (St.putN "bits" `second`))
 
 format :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named "format" BS.ByteString) es ) =>
+	U.Member (St.Named "format" BS.ByteString) es ) =>
 	Int -> Eff.E es (Either Word8 BS.ByteString) BS.ByteString ()
-format n = do
-	b <- checkLength
-	if b
-	then yieldLen >> format n
-	else readMore >>= bool
-		(Pipe.yield =<< State.getN @BS.ByteString "format")
-		(format n)
-	where
-
-	readMore :: (
-		U.Member Pipe.P es,
-		U.Member (State.Named "format" BS.ByteString) es ) =>
-		Eff.E es (Either Word8 BS.ByteString) o Bool
-	readMore = do
-		e <- Pipe.isEmpty
-		if e then pure False else Pipe.await >>= \case
-			Left w -> True <$ State.modifyN "format" (`BS.snoc` w)
-			Right bs -> True <$ State.modifyN "format" (`BS.append` bs)
-
-	checkLength ::
-		U.Member (State.Named "format" BS.ByteString) es =>
-		Eff.E es i o Bool
-	checkLength = do
-		bs <- State.getN "format"
-		pure $ BS.length bs >= n
-
-	yieldLen :: (
-		U.Member Pipe.P es,
-		U.Member (State.Named "format" BS.ByteString) es ) =>
-		Eff.E es i BS.ByteString ()
-	yieldLen = do
-		bs <- State.getN "format"
-		let	(r, bs') = BS.splitAt n bs
-		State.putN "format" bs'
-		Pipe.yield r
+format n = fix \go -> St.getsN "format" ((>= n) . BS.length) >>= bool
+	(readMore >>= bool (Pipe.yield =<< St.getN "format") go)
+	((>>go) $ uncurry (>>) . (Pipe.yield *** St.putN "format")
+		. BS.splitAt n =<< St.getN "format")
+	where readMore = (Pipe.isMore >>=) . bool (pure False) . (True <$)
+		$ St.modifyN "format" . either (flip BS.snoc) (flip BS.append)
+			=<< Pipe.await
