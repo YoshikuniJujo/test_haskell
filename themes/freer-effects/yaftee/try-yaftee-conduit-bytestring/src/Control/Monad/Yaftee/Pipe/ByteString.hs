@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -22,7 +23,7 @@ module Control.Monad.Yaftee.Pipe.ByteString (
 
 	-- * LENGTH
 
-	length, length', Length, lengthToByteString
+	lengthRun, length, length', Length, lengthToByteString
 
 	) where
 
@@ -33,6 +34,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Bool
 import Data.ByteString qualified as BS
@@ -66,6 +68,10 @@ hPutStr' :: (U.Member Pipe.P es, U.Base IO.I es) =>
 	Handle -> Eff.E es BS.ByteString o ()
 hPutStr' h = fix \go -> Pipe.isMore >>= bool (pure ())
 	((>> go) $ Eff.effBase . BS.hPutStr h =<< Pipe.await)
+
+lengthRun :: HFunctor.Loose (U.U es) =>
+	Eff.E (State.Named Pkg Length ': es) i o a -> Eff.E es i o (a, Length)
+lengthRun = (`State.runN` (0 :: Length))
 
 length :: (U.Member Pipe.P es, U.Member (State.Named Pkg Length) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
