@@ -32,13 +32,18 @@ import Data.Sequence qualified as Seq
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
+import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.Bit qualified as Bit
 import Data.ByteString.BitArray qualified as BitArray
+import Data.Gzip.GzipHeader
+import Data.Gzip.Calc
 import System.IO
 import System.Environment
 
 import Pipe.Huffman qualified as Huffman
 import Pipe.RunLength qualified as RunLength
+
+import Tools
 
 main :: IO ()
 main = do
@@ -56,7 +61,7 @@ main = do
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
-			blocks Pipe.=$= runLength Pipe.=$= format 32 Pipe.=$=
+			doWhile_ block Pipe.=$= runLength Pipe.=$= format 32 Pipe.=$=
 				PipeB.length' Pipe.=$= Crc.crc32' Pipe.=$= do
 					PipeI.print'
 					Crc.compCrc32
@@ -65,15 +70,60 @@ main = do
 					IO.print @BitArray.B =<< State.get
 					IO.print @BitArray.B =<< State.getN "bits"
 
-blocks :: (
+readHeader :: (
 	U.Member Pipe.P es,
+	U.Member (State.Named PipeB.Pkg Crc.Crc32) es,
 	U.Member (State.S OnDemand.Request) es,
-	U.Member (State.Named "bits" BitArray.B) es,
-	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
-	U.Member (Except.E String) es, U.Member Fail.F es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R ()
-blocks = fix \go -> block >>= bool (pure ()) go
+	U.Member (Except.E String) es,
+	U.Member (U.FromFirst U.Fail) es ) =>
+	(GzipHeader -> Eff.E es BS.ByteString o r) ->
+	Eff.E es BS.ByteString o (
+		Eff.E es BS.ByteString BS.ByteString r1,
+		Eff.E es BS.ByteString o r )
+readHeader f = Crc.crc32 Pipe.=$= do
+				State.put $ OnDemand.RequestBytes 2
+				ids <- Pipe.await
+				when (ids /= "\31\139")
+					$ Except.throw @String "Bad magic"
+				State.put $ OnDemand.RequestBytes 1
+				cm <- (CompressionMethod . BS.head) <$> Pipe.await
+				Just flgs <- readFlags . BS.head <$> Pipe.await
+				State.put $ OnDemand.RequestBytes 4
+				mtm <- CTime . BS.toBits <$> Pipe.await
+				State.put $ OnDemand.RequestBytes 1
+				ef <- BS.head <$> Pipe.await
+				os <- OS . BS.head <$> Pipe.await
+				mexflds <- if (flagsRawExtra flgs)
+				then do	State.put $ OnDemand.RequestBytes 2
+					xlen <- BS.toBits <$> Pipe.await
+					State.put $ OnDemand.RequestBytes xlen
+					decodeExtraFields <$> Pipe.await
+				else pure []
+				State.put OnDemand.RequestString
+				mnm <- if flagsRawName flgs
+				then Just <$> Pipe.await
+				else pure Nothing
+				mcmmt <- if flagsRawComment flgs
+				then Just <$> Pipe.await
+				else pure Nothing
+				when (flagsRawHcrc flgs) do
+					Crc.compCrc32
+					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN PipeB.Pkg
+					State.put $ OnDemand.RequestBytes 2
+					m <- BS.toBits <$> Pipe.await
+					when (crc /= m) $
+						Except.throw @String "Header CRC check failed"
+				f GzipHeader {
+					gzipHeaderCompressionMethod = cm,
+					gzipHeaderFlags = Flags {
+						flagsText = flagsRawText flgs,
+						flagsHcrc = flagsRawHcrc flgs },
+					gzipHeaderModificationTime = mtm,
+					gzipHeaderExtraFlags = ef,
+					gzipHeaderOperatingSystem = os,
+					gzipHeaderExtraField = mexflds,
+					gzipHeaderFileName = mnm,
+					gzipHeaderComment = mcmmt }
 
 block :: (
 	U.Member Pipe.P es,
@@ -93,14 +143,14 @@ block = do
 		0 -> do	State.put $ OnDemand.RequestBytes 4
 			ln <- getWord16FromPair =<< skipLeft1
 			State.put $ OnDemand.RequestBytes ln
-			Pipe.yield . RunLength.LiteralBS =<< getRight =<< Pipe.await
+			Pipe.yield . RunLength.LiteralBS =<< Except.getRight =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
 				(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
 					State.put $ OnDemand.RequestBits 5
-					hlit <- (+ 257) . BitArray.toBits <$> (getLeft =<< Pipe.await)
-					hdist <- (+ 1) . BitArray.toBits <$> (getLeft =<< Pipe.await)
+					hlit <- (+ 257) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
+					hdist <- (+ 1) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
 					State.put $ OnDemand.RequestBits 4
-					hclen <- (+ 4) . BitArray.toBits <$> (getLeft =<< Pipe.await)
+					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
 				State.put $ OnDemand.RequestBuffer 100
 				void $ bits Pipe.=$= do
@@ -122,9 +172,25 @@ block = do
 				Right "" <- Pipe.await; pure ()
 		_ -> error "bad"
 
+getWord16FromPair :: (U.Member (Except.E String) es, Num n) =>
+	BS.ByteString -> Eff.E es i o n
+getWord16FromPair bs0 = fromIntegral @Word16 <$> do
+	when (BS.length bs0 /= 4)
+		$ Except.throw @String "getWord16FromPair: not 4 bytes"
+	when (ln /= complement cln)
+		$ Except.throw @String "bad pair"
+	pure ln
+	where (ln, cln) = (BS.toBits *** BS.toBits) $ BS.splitAt 2 bs0
+
 codeLengthList :: [Int]
 codeLengthList =
 	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+
+fixedHuffmanList, fixedHuffmanDstList :: [Int]
+fixedHuffmanList =
+	replicate 144 8 ++ replicate 112 9 ++ replicate 24 7 ++ replicate 8 8
+
+fixedHuffmanDstList = replicate 32 5
 
 getCodeTable :: (
 	U.Member Pipe.P es,
@@ -149,193 +215,6 @@ getCodeTable pr n = Pipe.await >>= \case
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable 0 (n - fromIntegral eb - 11)
 		| otherwise -> error "yet: "
 	Right _ -> error "bad"
-
-getLeft :: U.Member (Except.E String) es => Either a b -> Eff.E es i o a
-getLeft (Left r) = pure r
-getLeft (Right _) = Except.throw @String "getLeft: Right _"
-
-getRight :: U.Member (Except.E String) es => Either a b -> Eff.E es i o b
-getRight (Left _) = Except.throw @String "getRight: Left _"
-getRight (Right r) = pure r
-
-readHeader :: (
-	U.Member Pipe.P es,
-	U.Member (State.Named PipeB.Pkg Crc.Crc32) es,
-	U.Member (State.S OnDemand.Request) es,
-	U.Member (Except.E String) es,
-	U.Member (U.FromFirst U.Fail) es ) =>
-	(GzipHeader -> Eff.E es BS.ByteString o r) ->
-	Eff.E es BS.ByteString o (
-		Eff.E es BS.ByteString BS.ByteString r1,
-		Eff.E es BS.ByteString o r )
-readHeader f = Crc.crc32 Pipe.=$= do
-				State.put $ OnDemand.RequestBytes 2
-				ids <- Pipe.await
-				when (ids /= "\31\139")
-					$ Except.throw @String "Bad magic"
-				State.put $ OnDemand.RequestBytes 1
-				cm <- (CompressionMethod . BS.head) <$> Pipe.await
-				Just flgs <- readFlags . BS.head <$> Pipe.await
-				State.put $ OnDemand.RequestBytes 4
-				mtm <- word32ToCTime . bsToNum <$> Pipe.await
-				State.put $ OnDemand.RequestBytes 1
-				ef <- BS.head <$> Pipe.await
-				os <- OS . BS.head <$> Pipe.await
-				mexflds <- if (flagsRawExtra flgs)
-				then do	State.put $ OnDemand.RequestBytes 2
-					xlen <- bsToNum <$> Pipe.await
-					State.put $ OnDemand.RequestBytes xlen
-					decodeExtraFields <$> Pipe.await
-				else pure []
-				State.put OnDemand.RequestString
-				mnm <- if flagsRawName flgs
-				then Just <$> Pipe.await
-				else pure Nothing
-				mcmmt <- if flagsRawComment flgs
-				then Just <$> Pipe.await
-				else pure Nothing
-				when (flagsRawHcrc flgs) do
-					Crc.compCrc32
-					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN PipeB.Pkg
-					State.put $ OnDemand.RequestBytes 2
-					m <- bsToNum <$> Pipe.await
-					when (crc /= m) $
-						Except.throw @String "Header CRC check failed"
-				f GzipHeader {
-					gzipHeaderCompressionMethod = cm,
-					gzipHeaderFlags = Flags {
-						flagsText = flagsRawText flgs,
-						flagsHcrc = flagsRawHcrc flgs },
-					gzipHeaderModificationTime = mtm,
-					gzipHeaderExtraFlags = ef,
-					gzipHeaderOperatingSystem = os,
-					gzipHeaderExtraField = mexflds,
-					gzipHeaderFileName = mnm,
-					gzipHeaderComment = mcmmt }
-
-newtype CompressionMethod = CompressionMethod {
-	_unCompressionMeghod :: Word8 }
-
-pattern CompressionMethodDeflate :: CompressionMethod
-pattern CompressionMethodDeflate = CompressionMethod 8
-
-instance Show CompressionMethod where
-	show CompressionMethodDeflate = "CompressionMethodDeflate"
-	show (CompressionMethod cm) = "(CompressionMethod " ++ show cm ++ ")"
-
-readFlags :: Word8 -> Maybe FlagsRaw
-readFlags w = if or $ (w `testBit`) <$> [5 .. 7]
-	then Nothing
-	else Just FlagsRaw {
-		flagsRawText = w `testBit` 0,
-		flagsRawHcrc = w `testBit` 1,
-		flagsRawExtra = w `testBit` 2,
-		flagsRawName = w `testBit` 3,
-		flagsRawComment = w `testBit` 4 }
-
-data FlagsRaw = FlagsRaw {
-	flagsRawText :: Bool,
-	flagsRawHcrc :: Bool,
-	flagsRawExtra :: Bool,
-	flagsRawName :: Bool,
-	flagsRawComment :: Bool }
-	deriving Show
-
-data Flags = Flags {
-	flagsText :: Bool,
-	flagsHcrc :: Bool }
-	deriving Show
-
-bsToNum :: (Bits n, Integral n) => BS.ByteString -> n
-bsToNum = foldr (\b s -> fromIntegral b .|. s `shiftL` 8) 0 . BS.unpack
-
-word32ToCTime :: Word32 -> CTime
-word32ToCTime = CTime . fromIntegral
-
-newtype OS = OS { _unOS :: Word8 }
-
-pattern OSUnix :: OS
-pattern OSUnix = OS 3
-
-instance Show OS where
-	show OSUnix = "OSUnix"
-	show (OS os) = "(OS " ++ show os ++ ")"
-
-decodeExtraFields :: BS.ByteString -> [ExtraField]
-decodeExtraFields "" = []
-decodeExtraFields bs = let
-	(ef, bs') = decodeExtraField bs in
-	ef : decodeExtraFields bs'
-
-decodeExtraField :: BS.ByteString -> (ExtraField, BS.ByteString)
-decodeExtraField bs = case BS.unpack `first` BS.splitAt 2 bs of
-	([si1, si2], bs') -> let
-		(ln, bs'') = bsToNum `first` BS.splitAt 2 bs'
-		(dt, bs''') = BS.splitAt ln bs'' in (
-			ExtraField {
-				extraFieldSi1 = si1,
-				extraFieldSi2 = si2,
-				extraFieldData = dt },
-			bs''' )
-	_ -> error "never occur"
-
-data ExtraField = ExtraField {
-	extraFieldSi1 :: Word8,
-	extraFieldSi2 :: Word8,
-	extraFieldData :: BS.ByteString }
-	deriving Show
-
-data GzipHeader = GzipHeader {
-	gzipHeaderCompressionMethod :: CompressionMethod,
-	gzipHeaderFlags :: Flags,
-	gzipHeaderModificationTime :: CTime,
-	gzipHeaderExtraFlags :: Word8,
-	gzipHeaderOperatingSystem :: OS,
-	gzipHeaderExtraField :: [ExtraField],
-	gzipHeaderFileName :: Maybe BS.ByteString,
-	gzipHeaderComment :: Maybe BS.ByteString }
-	deriving Show
-
-skipLeft1 :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Eff.E es (Either a b) o b
-skipLeft1 = Pipe.await >>= \case
-	Left _ -> Pipe.await >>= \case
-		Left _ -> Except.throw @String "Not Right"
-		Right x -> pure x
-	Right x -> pure x
-
-getWord16FromPair :: (U.Member (Except.E String) es, Num n) =>
-	BS.ByteString -> Eff.E es i o n
-getWord16FromPair bs0 = fromIntegral @Word16 <$> do
-	when (BS.length bs0 /= 4)
-		$ Except.throw @String "getWord16FromPair: not 4 bytes"
-	when (ln /= complement cln)
-		$ Except.throw @String "bad pair"
-	pure ln
-	where
-	(ln, cln) = (tow16 *** tow16) $ BS.splitAt 2 bs0
-	tow16 bs = case BS.unpack bs of
-		[b0, b1] -> fromIntegral b0 .|. (fromIntegral b1) `shiftL` 8
-		_ -> error "never occur"
-
-bits :: (
-	U.Member Pipe.P es,
-	U.Member (State.Named "bits" BitArray.B) es
-	) =>
-	Eff.E es (Either BitArray.B BS.ByteString) Bit.B r
-bits = (Pipe.yield =<< pop) >> bits
-	where
-	pop = State.getsN "bits" BitArray.pop >>= \case
-		Nothing -> Pipe.await
-			>>= State.putN "bits" . either id BitArray.fromByteString
-			>> pop
-		Just (b, ba') -> b <$ State.putN "bits" ba'
-
-fixedHuffmanList, fixedHuffmanDstList :: [Int]
-fixedHuffmanList =
-	replicate 144 8 ++ replicate 112 9 ++ replicate 24 7 ++ replicate 8 8
-
-fixedHuffmanDstList = replicate 32 5
 
 litLen :: (
 	U.Member Pipe.P es,
@@ -379,30 +258,19 @@ dist t dt ln pri = Pipe.await >>= \case
 		Pipe.yield (RunLength.LenDist ln (calcDist pri eb))
 		Huffman.putTree t
 		litLen t dt 0
-	
 
-calcLength :: Int -> Word16 -> Int
-calcLength n eb
-	| 257 <= n && n <= 284 = lens !! (n - 257) + fromIntegral eb
-	| n == 285 = 258
-	| otherwise = error "bad length parameter"
-
-lens :: [Int]
-lens = (+ 3) <$> scanl (+) 0 ((2 ^) <$> lensBits)
-
-lensBits :: [Int]
-lensBits = replicate 4 0 ++ (replicate 4 =<< [0 ..])
-
-calcDist :: Int -> Word16 -> Int
-calcDist n eb
-	| 0 <= n && n <= 29 = dists !! n + fromIntegral eb
-	| otherwise = error "bad distance parameter"
-
-dists :: [Int]
-dists = (+ 1) <$> scanl (+) 0 ((2 ^) <$> distsBits)
-
-distsBits :: [Int]
-distsBits = replicate 2 0 ++ (replicate 2 =<< [0 ..])
+bits :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named "bits" BitArray.B) es
+	) =>
+	Eff.E es (Either BitArray.B BS.ByteString) Bit.B r
+bits = (Pipe.yield =<< pop) >> bits
+	where
+	pop = State.getsN "bits" BitArray.pop >>= \case
+		Nothing -> Pipe.await
+			>>= State.putN "bits" . either id BitArray.fromByteString
+			>> pop
+		Just (b, ba') -> b <$ State.putN "bits" ba'
 
 runLength :: (
 	U.Member Pipe.P es,
@@ -444,36 +312,37 @@ format :: (
 	U.Member (State.Named "format" BS.ByteString) es ) =>
 	Int -> Eff.E es (Either Word8 BS.ByteString) BS.ByteString ()
 format n = do
-	b <- checkLength n
+	b <- checkLength
 	if b
-	then yieldLen n >> format n
+	then yieldLen >> format n
 	else readMore >>= bool
 		(Pipe.yield =<< State.getN @BS.ByteString "format")
 		(format n)
+	where
 
-readMore :: (
-	U.Member Pipe.P es,
-	U.Member (State.Named "format" BS.ByteString) es ) =>
-	Eff.E es (Either Word8 BS.ByteString) o Bool
-readMore = do
-	e <- Pipe.isEmpty
-	if e then pure False else Pipe.await >>= \case
-		Left w -> True <$ State.modifyN "format" (`BS.snoc` w)
-		Right bs -> True <$ State.modifyN "format" (`BS.append` bs)
+	readMore :: (
+		U.Member Pipe.P es,
+		U.Member (State.Named "format" BS.ByteString) es ) =>
+		Eff.E es (Either Word8 BS.ByteString) o Bool
+	readMore = do
+		e <- Pipe.isEmpty
+		if e then pure False else Pipe.await >>= \case
+			Left w -> True <$ State.modifyN "format" (`BS.snoc` w)
+			Right bs -> True <$ State.modifyN "format" (`BS.append` bs)
 
-checkLength ::
-	U.Member (State.Named "format" BS.ByteString) es =>
-	Int -> Eff.E es i o Bool
-checkLength n = do
-	bs <- State.getN "format"
-	pure $ BS.length bs >= n
+	checkLength ::
+		U.Member (State.Named "format" BS.ByteString) es =>
+		Eff.E es i o Bool
+	checkLength = do
+		bs <- State.getN "format"
+		pure $ BS.length bs >= n
 
-yieldLen :: (
-	U.Member Pipe.P es,
-	U.Member (State.Named "format" BS.ByteString) es ) =>
-	Int -> Eff.E es i BS.ByteString ()
-yieldLen n = do
-	bs <- State.getN "format"
-	let	(r, bs') = BS.splitAt n bs
-	State.putN "format" bs'
-	Pipe.yield r
+	yieldLen :: (
+		U.Member Pipe.P es,
+		U.Member (State.Named "format" BS.ByteString) es ) =>
+		Eff.E es i BS.ByteString ()
+	yieldLen = do
+		bs <- State.getN "format"
+		let	(r, bs') = BS.splitAt n bs
+		State.putN "format" bs'
+		Pipe.yield r
