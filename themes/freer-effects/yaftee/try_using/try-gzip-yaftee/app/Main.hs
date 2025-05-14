@@ -266,12 +266,13 @@ bits = forever . (Pipe.yield =<<)
 
 format :: (
 	U.Member Pipe.P es,
-	U.Member (St.Named "format" BS.ByteString) es ) =>
+	U.Member (St.Named Fmt BS.ByteString) es ) =>
 	Int -> Eff.E es (Either Word8 BS.ByteString) BS.ByteString ()
-format n = fix \go -> St.getsN "format" ((>= n) . BS.length) >>= bool
-	(readMore >>= bool (Pipe.yield =<< St.getN "format") go)
-	((>>go) $ uncurry (>>) . (Pipe.yield *** St.putN "format")
-		. BS.splitAt n =<< St.getN "format")
-	where readMore = (Pipe.isMore >>=) . bool (pure False) . (True <$)
-		$ St.modifyN "format" . either (flip BS.snoc) (flip BS.append)
-			=<< Pipe.await
+format n = fix \go -> St.getN Fmt >>= \bs -> bool
+	(uncurry (>>) ((Pipe.yield *** St.putN Fmt) $ BS.splitAt n bs) >> go)
+	(maybe (Pipe.yield bs) ((>> go)
+		. St.putN Fmt
+		. either (BS.snoc bs) (BS.append bs)) =<< Pipe.awaitMaybe)
+	(BS.length bs < n)
+
+type Fmt = "format"
