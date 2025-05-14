@@ -9,7 +9,7 @@ module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
 	runCrc32, crc32, crc32', compCrc32, Crc32(..), crc32ToByteString,
 
-	Pkg, stepBS
+	stepBS
 
 	) where
 
@@ -17,6 +17,7 @@ import Control.Arrow
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
 import Data.HigherFunctor qualified as HFunctor
@@ -26,39 +27,37 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-type Pkg = "try-yaftee-conduit-bytestring"
-
 runCrc32 ::  HFunctor.Loose (U.U es) =>
-	Eff.E (State.Named Pkg Crc32 ': es) i o r -> Eff.E es i o (r, Crc32)
+	Eff.E (State.Named PipeBS.Pkg Crc32 ': es) i o r -> Eff.E es i o (r, Crc32)
 runCrc32 = (`State.runN` Crc32 0)
 
-crc32 :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
+crc32 :: (U.Member Pipe.P es, U.Member (State.Named PipeBS.Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
 crc32 = do
-	State.putN Pkg $ Crc32 0xffffffff
+	State.putN PipeBS.Pkg $ Crc32 0xffffffff
 	crc32Body
 
-crc32' :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
+crc32' :: (U.Member Pipe.P es, U.Member (State.Named PipeBS.Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 crc32' = do
-	State.putN Pkg $ Crc32 0xffffffff
+	State.putN PipeBS.Pkg $ Crc32 0xffffffff
 	crc32Body'
 
-compCrc32 :: U.Member (State.Named Pkg Crc32) es => Eff.E es i o ()
-compCrc32 = State.modifyN Pkg \(Crc32 c) -> Crc32 $ complement c
+compCrc32 :: U.Member (State.Named PipeBS.Pkg Crc32) es => Eff.E es i o ()
+compCrc32 = State.modifyN PipeBS.Pkg \(Crc32 c) -> Crc32 $ complement c
 
-crc32Body :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
+crc32Body :: (U.Member Pipe.P es, U.Member (State.Named PipeBS.Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
 crc32Body = fix \go -> Pipe.await >>= \bs -> do
-	State.modifyN Pkg \(Crc32 c) -> Crc32 $ c `stepBS` bs
+	State.modifyN PipeBS.Pkg \(Crc32 c) -> Crc32 $ c `stepBS` bs
 	Pipe.yield bs
 	go
 
-crc32Body' :: (U.Member Pipe.P es, U.Member (State.Named Pkg Crc32) es) =>
+crc32Body' :: (U.Member Pipe.P es, U.Member (State.Named PipeBS.Pkg Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 crc32Body' = fix \go ->
 	Pipe.isMore >>= bool (pure ()) (Pipe.await >>= \bs -> do
-		State.modifyN Pkg \(Crc32 c) -> Crc32 $ c `stepBS` bs
+		State.modifyN PipeBS.Pkg \(Crc32 c) -> Crc32 $ c `stepBS` bs
 		Pipe.yield bs
 		go)
 
