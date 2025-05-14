@@ -40,14 +40,12 @@ import System.Environment
 import Pipe.Huffman qualified as Huffman
 import Pipe.RunLength qualified as RunLength
 
-import Debug.Trace
-
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	let	processHeader = IO.print
-	Eff.runM . Except.run @String . Fail.runExc id
+	void . Eff.runM . Except.run @String . Fail.runExc id
 		. (`State.run` OnDemand.RequestBuffer 16)
 		. (`State.run` BitArray.fromByteString "")
 		. (`State.run` (Seq.empty :: Seq.Seq Word8))
@@ -66,7 +64,6 @@ main = do
 					IO.print . PipeB.lengthToByteString =<< State.getN PipeB.Pkg
 					IO.print @BitArray.B =<< State.get
 					IO.print @BitArray.B =<< State.getN "bits"
-	pure ()
 
 blocks :: (
 	U.Member Pipe.P es,
@@ -74,7 +71,6 @@ blocks :: (
 	U.Member (State.Named "bits" BitArray.B) es,
 	U.Member (State.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
 	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
-	U.Base IO.I es,		-- FOR DEBUG
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R ()
 blocks = fix \go -> block >>= bool (pure ()) go
@@ -93,7 +89,7 @@ block = do
 	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
 	State.put $ OnDemand.RequestBits 2
 	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
-	case bt of
+	(bf /= 1) <$ case bt of
 		0 -> do	State.put $ OnDemand.RequestBytes 4
 			ln <- getWord16FromPair =<< skipLeft1
 			State.put $ OnDemand.RequestBytes ln
@@ -107,9 +103,7 @@ block = do
 					hclen <- (+ 4) . BitArray.toBits <$> (getLeft =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
 				State.put $ OnDemand.RequestBuffer 100
-				bits Pipe.=$= do
-
-					let	Just (hlit, hlithdist) = mhlithdist
+				void $ bits Pipe.=$= do
 
 					whenMaybe mhclen \hclen -> do
 						rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
@@ -120,20 +114,24 @@ block = do
 						(ht, hdt) <- whenMaybeDef (
 								Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
 								Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
-							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> getCodeTable 0 hlithdist
+							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> getCodeTable 0 hlitdist
 						Huffman.putTree ht
 						litLen ht hdt 0
-				bf <- State.getN "bits"
+				State.put . OnDemand.RequestPushBack =<< State.getN "bits"
 				State.putN "bits" BitArray.empty
-				State.put $ OnDemand.RequestPushBack bf
-				Right "" <- Pipe.await
-				pure ()
-	pure (bf /= 1)
+				Right "" <- Pipe.await; pure ()
+		_ -> error "bad"
 
 codeLengthList :: [Int]
 codeLengthList =
 	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
 
+getCodeTable :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Member Fail.F es,
+	Integral b
+	) => Int -> Int -> Eff.E es (Either Int b) o [Int]
 getCodeTable _ 0 = pure []
 getCodeTable pr n = Pipe.await >>= \case
 	Left ln	| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable ln (n - 1)
@@ -149,15 +147,15 @@ getCodeTable pr n = Pipe.await >>= \case
 			Huffman.putExtraBits 7
 			Right eb <- Pipe.await
 			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable 0 (n - fromIntegral eb - 11)
-		| otherwise -> error $ "yet: " ++ show ln
+		| otherwise -> error "yet: "
 	Right _ -> error "bad"
 
 getLeft :: U.Member (Except.E String) es => Either a b -> Eff.E es i o a
 getLeft (Left r) = pure r
-getLeft (Right _) = Except.throw "getLeft: Right _"
+getLeft (Right _) = Except.throw @String "getLeft: Right _"
 
 getRight :: U.Member (Except.E String) es => Either a b -> Eff.E es i o b
-getRight (Left _) = Except.throw "getRight: Left _"
+getRight (Left _) = Except.throw @String "getRight: Left _"
 getRight (Right r) = pure r
 
 readHeader :: (
@@ -216,7 +214,7 @@ readHeader f = Crc.crc32 Pipe.=$= do
 					gzipHeaderComment = mcmmt }
 
 newtype CompressionMethod = CompressionMethod {
-	unCompressionMeghod :: Word8 }
+	_unCompressionMeghod :: Word8 }
 
 pattern CompressionMethodDeflate :: CompressionMethod
 pattern CompressionMethodDeflate = CompressionMethod 8
@@ -254,7 +252,7 @@ bsToNum = foldr (\b s -> fromIntegral b .|. s `shiftL` 8) 0 . BS.unpack
 word32ToCTime :: Word32 -> CTime
 word32ToCTime = CTime . fromIntegral
 
-newtype OS = OS { unOS :: Word8 }
+newtype OS = OS { _unOS :: Word8 }
 
 pattern OSUnix :: OS
 pattern OSUnix = OS 3
@@ -270,15 +268,16 @@ decodeExtraFields bs = let
 	ef : decodeExtraFields bs'
 
 decodeExtraField :: BS.ByteString -> (ExtraField, BS.ByteString)
-decodeExtraField bs = let
-	([si1, si2], bs') = BS.unpack `first` BS.splitAt 2 bs
-	(ln, bs'') = bsToNum `first` BS.splitAt 2 bs'
-	(dt, bs''') = BS.splitAt ln bs'' in (
-		ExtraField {
-			extraFieldSi1 = si1,
-			extraFieldSi2 = si2,
-			extraFieldData = dt },
-		bs''' )
+decodeExtraField bs = case BS.unpack `first` BS.splitAt 2 bs of
+	([si1, si2], bs') -> let
+		(ln, bs'') = bsToNum `first` BS.splitAt 2 bs'
+		(dt, bs''') = BS.splitAt ln bs'' in (
+			ExtraField {
+				extraFieldSi1 = si1,
+				extraFieldSi2 = si2,
+				extraFieldData = dt },
+			bs''' )
+	_ -> error "never occur"
 
 data ExtraField = ExtraField {
 	extraFieldSi1 :: Word8,
@@ -328,7 +327,7 @@ bits = (Pipe.yield =<< pop) >> bits
 	where
 	pop = State.getsN "bits" BitArray.pop >>= \case
 		Nothing -> Pipe.await
-			>>= State.putN "bits" . either (\x -> trace (show x) x) (\x -> trace (show x) (BitArray.fromByteString x))
+			>>= State.putN "bits" . either id BitArray.fromByteString
 			>> pop
 		Just (b, ba') -> b <$ State.putN "bits" ba'
 
@@ -338,6 +337,13 @@ fixedHuffmanList =
 
 fixedHuffmanDstList = replicate 32 5
 
+litLen :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named Huffman.Pkg
+		(Huffman.BinTree Int, Huffman.BinTree Int)) es,
+	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
+	Huffman.BinTree Int -> Huffman.BinTree Int -> Int ->
+	Eff.E es (Either Int Word16) RunLength.R ()
 litLen t dt pri = Pipe.await >>= \case
 	Left 256 -> pure ()
 	Left i	| 0 <= i && i <= 255 -> do
@@ -353,6 +359,13 @@ litLen t dt pri = Pipe.await >>= \case
 		dist t dt (calcLength pri eb) 0
 	err -> error $ show err
 
+dist :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named Huffman.Pkg
+		(Huffman.BinTree Int, Huffman.BinTree Int)) es,
+	U.Member (State.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
+	Huffman.BinTree Int -> Huffman.BinTree Int -> RunLength.Length -> Int ->
+	Eff.E es (Either Int Word16) RunLength.R ()
 dist t dt ln pri = Pipe.await >>= \case
 	Left i	| 0 <= i && i <= 3 -> do
 			Pipe.yield $ RunLength.LenDist ln (calcDist i 0)
@@ -394,13 +407,15 @@ distsBits = replicate 2 0 ++ (replicate 2 =<< [0 ..])
 runLength :: (
 	U.Member Pipe.P es,
 	U.Member (State.S (Seq.Seq Word8)) es ) =>
-	Eff.E es RunLength.R (Either Word8 BS.ByteString) r
-runLength = Pipe.await >>= \rl -> (>> runLength) $ ($ rl) \case
-	RunLength.Literal w -> State.modify (`snoc` w) >> Pipe.yield (Left w)
-	RunLength.LiteralBS bs ->
-		State.modify (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
-	RunLength.LenDist ln d -> State.gets (repetition ln d) >>= \ws ->
+	Eff.E es RunLength.R (Either Word8 BS.ByteString) ()
+runLength = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
+	RunLength.Literal w -> (>> go)
+		$ State.modify (`snoc` w) >> Pipe.yield (Left w)
+	RunLength.LiteralBS bs -> (>> go)
+		$ State.modify (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
+	RunLength.LenDist ln d -> (>> go) $ State.gets (repetition ln d) >>= \ws ->
 		State.modify (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
+	RunLength.EndOfInput -> pure ()
 
 repetition :: Int -> Int -> Seq.Seq Word8 -> [Word8]
 repetition r d ws = takeRep r ws' ws'
@@ -424,6 +439,10 @@ appendR s ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
 	foldl (Seq.|>) s' ws
 	where ln = Seq.length s
 
+format :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named "format" BS.ByteString) es ) =>
+	Int -> Eff.E es (Either Word8 BS.ByteString) BS.ByteString ()
 format n = do
 	b <- checkLength n
 	if b
@@ -442,10 +461,17 @@ readMore = do
 		Left w -> True <$ State.modifyN "format" (`BS.snoc` w)
 		Right bs -> True <$ State.modifyN "format" (`BS.append` bs)
 
+checkLength ::
+	U.Member (State.Named "format" BS.ByteString) es =>
+	Int -> Eff.E es i o Bool
 checkLength n = do
 	bs <- State.getN "format"
 	pure $ BS.length bs >= n
 
+yieldLen :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named "format" BS.ByteString) es ) =>
+	Int -> Eff.E es i BS.ByteString ()
 yieldLen n = do
 	bs <- State.getN "format"
 	let	(r, bs') = BS.splitAt n bs
