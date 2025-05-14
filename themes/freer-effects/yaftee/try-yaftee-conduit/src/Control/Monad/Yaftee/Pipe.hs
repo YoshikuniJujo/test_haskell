@@ -14,7 +14,7 @@ module Control.Monad.Yaftee.Pipe (
 
 	-- * GET/PUT
 
-	isEmpty, isMore, await, yield,
+	isEmpty, isMore, await, awaitMaybe, yield,
 
 	-- * PIPE
 
@@ -31,6 +31,7 @@ import Control.Monad.HigherFreer qualified as F
 import Control.HigherOpenUnion qualified as U
 import Data.HigherFunctor qualified as Fn
 import Data.FTCQueue qualified as Q
+import Data.Bool
 
 data P f i o a where
 	IsMore :: forall f i o . P f i o Bool
@@ -47,6 +48,9 @@ isMore = Eff.effh IsMore
 
 await :: U.Member P es => Eff.E es i o i
 await = Eff.effh Await
+
+awaitMaybe :: U.Member P es => Eff.E es i o (Maybe i)
+awaitMaybe = isMore >>= bool (pure Nothing) (Just <$> await)
 
 yield :: forall es i o . U.Member P es => o -> Eff.E es i o ()
 yield = Eff.effh . Yield
