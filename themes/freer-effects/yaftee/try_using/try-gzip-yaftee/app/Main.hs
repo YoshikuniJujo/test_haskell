@@ -43,8 +43,6 @@ import System.Environment
 import Pipe.Huffman qualified as Huffman
 import Pipe.RunLength qualified as RunLength
 
-import Tools
-
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -141,7 +139,7 @@ block = do
 	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
 	(bf /= 1) <$ case bt of
 		0 -> do	State.put $ OnDemand.RequestBytes 4
-			ln <- getWord16FromPair =<< skipLeft1
+			ln <- getWord16FromPair =<< PipeT.skipLeft1
 			State.put $ OnDemand.RequestBytes ln
 			Pipe.yield . RunLength.LiteralBS =<< Except.getRight =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
