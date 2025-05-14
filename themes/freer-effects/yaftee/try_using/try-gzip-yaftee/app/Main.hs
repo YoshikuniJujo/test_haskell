@@ -11,6 +11,7 @@ module Main (main) where
 import Foreign.C.Types
 import Control.Arrow
 import Control.Monad
+import Control.Monad.ToolsYj
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -40,8 +41,6 @@ import Pipe.Huffman qualified as Huffman
 import Pipe.RunLength qualified as RunLength
 
 import Debug.Trace
-
-import Tools
 
 main :: IO ()
 main = do

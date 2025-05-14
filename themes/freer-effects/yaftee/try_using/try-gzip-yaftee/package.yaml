@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - containers
+- tools-yj
 - try-yaftee
 - try-yaftee-conduit
 - try-yaftee-conduit-bytestring
