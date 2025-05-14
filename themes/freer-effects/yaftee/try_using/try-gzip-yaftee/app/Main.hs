@@ -54,17 +54,18 @@ main = do
 		. (flip (State.runN @"format") ("" :: BS.ByteString))
 		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 		. (flip (State.runN @"bits") $ BitArray.fromByteString "")
-		. Crc.runCrc32
+		. PipeB.lengthRun . Crc.runCrc32
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
-			blocks Pipe.=$= runLength Pipe.=$= format 32 Pipe.=$= do
-					Crc.crc32'
+			blocks Pipe.=$= runLength Pipe.=$= format 32 Pipe.=$=
+				PipeB.length' Pipe.=$= Crc.crc32' Pipe.=$= do
+					PipeI.print'
 					Crc.compCrc32
-					IO.print . Crc.crc32ToByteString =<< State.getN Crc.Pkg
+					IO.print . Crc.crc32ToByteString =<< State.getN PipeB.Pkg
+					IO.print . PipeB.lengthToByteString =<< State.getN PipeB.Pkg
 					IO.print @BitArray.B =<< State.get
 					IO.print @BitArray.B =<< State.getN "bits"
-				Pipe.=$= PipeI.print
 	pure ()
 
 blocks :: (
@@ -161,7 +162,7 @@ getRight (Right r) = pure r
 
 readHeader :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named Crc.Pkg Crc.Crc32) es,
+	U.Member (State.Named PipeB.Pkg Crc.Crc32) es,
 	U.Member (State.S OnDemand.Request) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
@@ -197,7 +198,7 @@ readHeader f = Crc.crc32 Pipe.=$= do
 				else pure Nothing
 				when (flagsRawHcrc flgs) do
 					Crc.compCrc32
-					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN Crc.Pkg
+					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN PipeB.Pkg
 					State.put $ OnDemand.RequestBytes 2
 					m <- bsToNum <$> Pipe.await
 					when (crc /= m) $

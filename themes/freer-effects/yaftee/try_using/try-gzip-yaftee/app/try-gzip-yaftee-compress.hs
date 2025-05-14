@@ -46,7 +46,7 @@ main = do
 					Pipe.yield $ encodeGzipHeader sampleGzipHeader
 					PipeB.toByteString'
 					PipeCrc.compCrc32
-					Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN PipeCrc.Pkg
+					Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN PipeBS.Pkg
 					Pipe.yield . numToBs' 4 . unFileLength =<< State.get
 				Pipe.=$= PipeBS.hPutStr' ho
 --				-}
