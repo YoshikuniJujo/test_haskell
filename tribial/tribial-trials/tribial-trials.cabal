@@ -30,6 +30,7 @@ library
       CEnum.Sample
       CEnum.SampleType
       Class.Default
+      ConstraintKinds.Foo
       ContinuationMonad
       ContinuationMonad.WithFile
       Control.MonadClass
