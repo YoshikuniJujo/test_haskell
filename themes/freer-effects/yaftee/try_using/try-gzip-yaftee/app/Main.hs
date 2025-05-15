@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -27,6 +27,7 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
+import Data.Maybe
 import Data.Sequence qualified as Seq
 import Data.Bool
 import Data.Word
@@ -178,25 +179,18 @@ block = do
 codeLengths :: (
 	U.Member Pipe.P es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
-	U.Member Fail.F es,
-	Integral b
-	) => Int -> Int -> Eff.E es (Either Int b) o [Int]
-codeLengths _ 0 = pure []
-codeLengths pr n = Pipe.await >>= \case
-	Left ln	| 0 <= ln && ln <= 15 -> (ln :) <$> codeLengths ln (n - 1)
-		| ln == 16 -> do
-			Huffman.putExtraBits 2
-			Right eb <- Pipe.await
-			(replicate (fromIntegral eb + 3) pr ++) <$> codeLengths pr (n - fromIntegral eb - 3)
-		| ln == 17 -> do
-			Huffman.putExtraBits 3
-			Right eb <- Pipe.await
-			(replicate (fromIntegral eb + 3) 0 ++) <$> codeLengths 0 (n - fromIntegral eb - 3)
-		| ln == 18 -> do
-			Huffman.putExtraBits 7
-			Right eb <- Pipe.await
-			(replicate (fromIntegral eb + 11) 0 ++) <$> codeLengths 0 (n - fromIntegral eb - 11)
-		| otherwise -> error "yet: "
+	U.Member Fail.F es, Integral b ) =>
+	Int -> Int -> Eff.E es (Either Int b) o [Int]
+codeLengths = fix \go pr n -> if n == 0 then pure [] else Pipe.await >>= \case
+	Left al	| 0 <= al && al <= 15 -> (al :) <$> go al (n - 1)
+		| al `elem` [16, 17, 18] -> do
+			let	(ln, eb, k) = fromJust $ lookup al [
+					(16, (pr, 2, 3)),
+					(17, (0, 3, 3)), (18, (0, 7, 11)) ]
+			Huffman.putExtraBits eb
+			Right ((+ k) . fromIntegral -> rp) <- Pipe.await
+			(replicate rp ln ++) <$> go pr (n - rp)
+		| otherwise -> error "bad"
 	Right _ -> error "bad"
 
 litLen :: (
