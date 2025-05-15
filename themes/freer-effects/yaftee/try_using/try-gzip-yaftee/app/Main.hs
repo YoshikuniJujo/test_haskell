@@ -58,29 +58,23 @@ main = do
 		. (flip (St.runN @"bits") $ BitArray.fromByteString "")
 		. PipeB.lengthRun . Crc.runCrc32
 		. PipeL.to
-		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
-			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
-			_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
-				PipeB.length' Pipe.=$= Crc.crc32' Pipe.=$= do
-					PipeI.print'
-			Crc.compCrc32
-			IO.print @Crc.Crc32 =<< St.getN PipeB.Pkg
-			St.put $ OnDemand.RequestBytes 4
-			IO.print . Crc.byteStringToCrc32 =<< PipeT.skipLeft1
-
-			IO.print @PipeB.Length =<< St.getN PipeB.Pkg
-			IO.print . PipeB.byteStringToLength =<< Except.getRight =<< Pipe.await
+		$ PipeB.hGet' 64 h Pipe.=$= foo processHeader Pipe.=$= PipeI.print'
 
 foo phd = OnDemand.onDemand Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader phd
 	_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
 		PipeB.length' Pipe.=$= Crc.crc32'
 	Crc.compCrc32
-	IO.print . Crc.crc32ToByteString =<< St.getN PipeB.Pkg
+
+	crc <- St.getN PipeB.Pkg
 	St.put $ OnDemand.RequestBytes 4
-	IO.print =<< PipeT.skipLeft1
-	IO.print . PipeB.lengthToByteString =<< St.getN PipeB.Pkg
-	IO.print =<< Except.getRight =<< Pipe.await
+	crc' <- Except.fromJust nvrocc . Crc.byteStringToCrc32 =<< PipeT.skipLeft1
+	when (crc /= crc') $ Except.throw @String "bad CRC32"
+
+	ln <- St.getN PipeB.Pkg
+	ln' <- Except.fromJust nvrocc . PipeB.byteStringToLength
+		=<< Except.getRight @String "bad" =<< Pipe.await
+	when (ln /= ln') $ Except.throw @String "bad length"
 
 readHeader :: (
 	U.Member Pipe.P es,
@@ -137,6 +131,9 @@ readHeader f = Crc.crc32 Pipe.=$= do
 					gzipHeaderFileName = mnm,
 					gzipHeaderComment = mcmmt }
 
+nvrocc :: String
+nvrocc = "Never occur"
+
 block :: (
 	U.Member Pipe.P es,
 	U.Member (St.S OnDemand.Request) es,
@@ -155,14 +152,14 @@ block = do
 		0 -> do	St.put $ OnDemand.RequestBytes 4
 			ln <- pairToLength =<< PipeT.skipLeft1
 			St.put $ OnDemand.RequestBytes ln
-			Pipe.yield . RunLength.LiteralBS =<< Except.getRight =<< Pipe.await
+			Pipe.yield . RunLength.LiteralBS =<< Except.getRight @String "bad" =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
 				(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
 					St.put $ OnDemand.RequestBits 5
-					hlit <- (+ 257) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
-					hdist <- (+ 1) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
+					hlit <- (+ 257) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
+					hdist <- (+ 1) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					St.put $ OnDemand.RequestBits 4
-					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft =<< Pipe.await)
+					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
 				St.put $ OnDemand.RequestBuffer 100
 				void $ bits Pipe.=$= do
