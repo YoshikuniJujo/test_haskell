@@ -32,7 +32,7 @@ onDemand :: (
 	Union.Member (State.S BitArray.B) es,
 	Union.Member (Except.E String) es
 	) =>
-	Eff.E es (Maybe BS.ByteString) (Either BitArray.B BS.ByteString) r
+	Eff.E es BS.ByteString (Either BitArray.B BS.ByteString) r
 onDemand = fix \go -> State.get >>= \case
 	RequestBits ln -> takeBits ln >>=
 		maybe (Except.throw errne) ((>> go) . Pipe.yield)
@@ -51,7 +51,7 @@ onDemand = fix \go -> State.get >>= \case
 takeBits :: (
 	Union.Member Pipe.P es,
 	Union.Member (State.S BitArray.B) es ) =>
-	Int -> Eff.E es (Maybe BS.ByteString) o
+	Int -> Eff.E es BS.ByteString o
 		(Maybe (Either BitArray.B BS.ByteString))
 takeBits ln = State.get >>= \ba -> case BitArray.splitAt ln ba of
 	Nothing -> readMore >>= bool (pure Nothing) (takeBits ln)
@@ -60,7 +60,7 @@ takeBits ln = State.get >>= \ba -> case BitArray.splitAt ln ba of
 takeBytes :: (
 	Union.Member Pipe.P es,
 	Union.Member (State.S BitArray.B) es ) =>
-	Int -> Eff.E es (Maybe BS.ByteString) o
+	Int -> Eff.E es BS.ByteString o
 		(Maybe (Either BitArray.B BS.ByteString))
 takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
@@ -74,7 +74,7 @@ takeBytes ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 takeBuffer :: (
 	Union.Member Pipe.P effs,
 	Union.Member (State.S BitArray.B) effs ) =>
-	Int -> Eff.E effs (Maybe BS.ByteString) o
+	Int -> Eff.E effs BS.ByteString o
 		(Maybe (Either BitArray.B BS.ByteString))
 takeBuffer ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
@@ -90,7 +90,7 @@ takeBuffer ln = State.get >>= \ba -> case BitArray.byteBoundary ba of
 
 takeString ::
 	(Union.Member Pipe.P effs, Union.Member (State.S BitArray.B) effs) =>
-	Eff.E effs (Maybe BS.ByteString) o
+	Eff.E effs BS.ByteString o
 		(Maybe (Either BitArray.B BS.ByteString))
 takeString = State.get >>= \ba -> case BitArray.byteBoundary ba of
 	Left (t, d) -> Just (Left t) <$ State.put d
@@ -120,7 +120,7 @@ readMore :: (
 	Union.Member Pipe.P es,
 	Union.Member (State.S BitArray.B) es
 	) =>
-	Eff.E es (Maybe BS.ByteString) o Bool
-readMore = Pipe.await >>= \case
+	Eff.E es BS.ByteString o Bool
+readMore = Pipe.awaitMaybe >>= \case
 	Nothing -> pure False
 	Just bs -> True <$ State.modify (`BitArray.appendByteString` bs)
