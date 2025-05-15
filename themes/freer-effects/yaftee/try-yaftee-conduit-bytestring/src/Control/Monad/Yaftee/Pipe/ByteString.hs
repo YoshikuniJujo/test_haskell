@@ -23,7 +23,8 @@ module Control.Monad.Yaftee.Pipe.ByteString (
 
 	-- * LENGTH
 
-	lengthRun, length, length', Length, lengthToByteString
+	lengthRun, length, length',
+	Length, lengthToByteString, byteStringToLength
 
 	) where
 
@@ -92,3 +93,11 @@ lengthToByteString = BS.pack . go (4 :: Int) . unLength
 	where
 	go n _ | n < 1 = []
 	go n ln = fromIntegral ln : go (n - 1) (ln `shiftR` 8)
+
+byteStringToLength :: BS.ByteString -> Maybe Length
+byteStringToLength = (Length <$>) . go (4 :: Int) . BS.unpack
+	where
+	go 0 [] = Just 0
+	go n (w : ws)
+		| n > 0 = (fromIntegral w .|.) . (`shiftL` 8) <$> go (n - 1) ws
+	go _ _ = Nothing
