@@ -20,7 +20,7 @@ Named, throwN, catchN, runN, runExcN, runION,
 
 -- * TOOLS
 
-getLeft, getRight
+fromJust, getLeft, getRight
 
 ) where
 
@@ -115,10 +115,11 @@ runION = \case
 			runION F.. q =<< runION m `cch` (runION . h)
 	where m `cch` h = Eff.effBase $ Eff.runM m `IO.catch` (Eff.runM . h)
 
-getLeft :: Union.Member (E String) es => Either a b -> Eff.E es i o a
-getLeft (Left r) = pure r
-getLeft (Right _) = throw @String "getLeft: Right _"
+fromJust :: Union.Member (E e) es => e -> Maybe a -> Eff.E es i o a
+fromJust e = \case Nothing -> throw e; Just x -> pure x
 
-getRight :: Union.Member (E String) es => Either a b -> Eff.E es i o b
-getRight (Left _) = throw @String "getRight: Left _"
-getRight (Right r) = pure r
+getLeft :: Union.Member (E e) es => e -> Either a b -> Eff.E es i o a
+getLeft e = \case Left r -> pure r; Right _ -> throw e
+
+getRight :: Union.Member (E e) es => e -> Either a b -> Eff.E es i o b
+getRight e = \case Left _ -> throw e; Right r -> pure r
