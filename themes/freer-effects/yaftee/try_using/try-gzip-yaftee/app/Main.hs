@@ -34,6 +34,7 @@ import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.Bit qualified as Bit
 import Data.ByteString.BitArray qualified as BitArray
+import Data.Gzip
 import Data.Gzip.GzipHeader
 import Data.Gzip.Calc
 import System.IO
@@ -51,7 +52,7 @@ main = do
 		. (`St.run` OnDemand.RequestBuffer 16)
 		. (`St.run` BitArray.fromByteString "")
 		. (`St.run` (Seq.empty :: Seq.Seq Word8))
-		. (flip (St.runN @"format") ("" :: BS.ByteString))
+		. (flip (St.runN @Fmt) ("" :: BS.ByteString))
 		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
 		. (flip (St.runN @"bits") $ BitArray.fromByteString "")
 		. PipeB.lengthRun . Crc.runCrc32
@@ -138,7 +139,7 @@ block = do
 	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
 	(bf /= 1) <$ case bt of
 		0 -> do	St.put $ OnDemand.RequestBytes 4
-			ln <- getWord16FromPair =<< PipeT.skipLeft1
+			ln <- pairToLength =<< PipeT.skipLeft1
 			St.put $ OnDemand.RequestBytes ln
 			Pipe.yield . RunLength.LiteralBS =<< Except.getRight =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
@@ -161,55 +162,40 @@ block = do
 						(ht, hdt) <- whenMaybeDef (
 								Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
 								Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
-							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> getCodeTable 0 hlitdist
+							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths 0 hlitdist
 						Huffman.putTree ht
 						litLen ht hdt 0
 				St.put . OnDemand.RequestPushBack =<< St.getN "bits"
 				St.putN "bits" BitArray.empty
 				Right "" <- Pipe.await; pure ()
 		_ -> error "bad"
+	where
+	pairToLength bs0 = fromIntegral @Word16 ln <$ do
+		when (BS.length bs0 /= 4) $ Except.throw @String "not 4 bytes"
+		when (ln /= complement cln) $ Except.throw @String "bad pair"
+		where (ln, cln) = (BS.toBits *** BS.toBits) $ BS.splitAt 2 bs0
 
-getWord16FromPair :: (U.Member (Except.E String) es, Num n) =>
-	BS.ByteString -> Eff.E es i o n
-getWord16FromPair bs0 = fromIntegral @Word16 <$> do
-	when (BS.length bs0 /= 4)
-		$ Except.throw @String "getWord16FromPair: not 4 bytes"
-	when (ln /= complement cln)
-		$ Except.throw @String "bad pair"
-	pure ln
-	where (ln, cln) = (BS.toBits *** BS.toBits) $ BS.splitAt 2 bs0
-
-codeLengthList :: [Int]
-codeLengthList =
-	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
-
-fixedHuffmanList, fixedHuffmanDstList :: [Int]
-fixedHuffmanList =
-	replicate 144 8 ++ replicate 112 9 ++ replicate 24 7 ++ replicate 8 8
-
-fixedHuffmanDstList = replicate 32 5
-
-getCodeTable :: (
+codeLengths :: (
 	U.Member Pipe.P es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member Fail.F es,
 	Integral b
 	) => Int -> Int -> Eff.E es (Either Int b) o [Int]
-getCodeTable _ 0 = pure []
-getCodeTable pr n = Pipe.await >>= \case
-	Left ln	| 0 <= ln && ln <= 15 -> (ln :) <$> getCodeTable ln (n - 1)
+codeLengths _ 0 = pure []
+codeLengths pr n = Pipe.await >>= \case
+	Left ln	| 0 <= ln && ln <= 15 -> (ln :) <$> codeLengths ln (n - 1)
 		| ln == 16 -> do
 			Huffman.putExtraBits 2
 			Right eb <- Pipe.await
-			(replicate (fromIntegral eb + 3) pr ++) <$> getCodeTable pr (n - fromIntegral eb - 3)
+			(replicate (fromIntegral eb + 3) pr ++) <$> codeLengths pr (n - fromIntegral eb - 3)
 		| ln == 17 -> do
 			Huffman.putExtraBits 3
 			Right eb <- Pipe.await
-			(replicate (fromIntegral eb + 3) 0 ++) <$> getCodeTable 0 (n - fromIntegral eb - 3)
+			(replicate (fromIntegral eb + 3) 0 ++) <$> codeLengths 0 (n - fromIntegral eb - 3)
 		| ln == 18 -> do
 			Huffman.putExtraBits 7
 			Right eb <- Pipe.await
-			(replicate (fromIntegral eb + 11) 0 ++) <$> getCodeTable 0 (n - fromIntegral eb - 11)
+			(replicate (fromIntegral eb + 11) 0 ++) <$> codeLengths 0 (n - fromIntegral eb - 11)
 		| otherwise -> error "yet: "
 	Right _ -> error "bad"
 

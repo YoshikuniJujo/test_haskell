@@ -31,10 +31,9 @@ import Data.Bits
 import Data.Maybe
 import Data.Word
 import Data.ByteString qualified as BS
+import Data.ByteString.ToolsYj qualified as BS
 
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc
-
--- import Tools.ByteStringNum
 
 ids0 :: BS.ByteString
 ids0 = "\x1f\x8b"
@@ -148,7 +147,7 @@ encodeGzipHeader hdr_ = let
 	rslt = ids0 `BS.append`
 		(unCompressionMethod (gzipHeaderRawCompressionMethod hdr) `BS.cons`
 			encodeFlags (gzipHeaderRawFlags hdr) `BS.cons`
-			numToBs (cTimeToWord32 $ gzipHeaderRawModificationTime hdr)) `BS.append`
+			BS.fromBits' (cTimeToWord32 $ gzipHeaderRawModificationTime hdr)) `BS.append`
 		(gzipHeaderRawExtraFlags hdr `BS.cons`
 			unOS (gzipHeaderRawOperatingSystem hdr) `BS.cons` "") `BS.append`
 			(if (null efs) then "" else (word16ToBs lnefs `BS.append` efsbs)) `BS.append`
@@ -175,7 +174,7 @@ sampleGzipHeader = GzipHeader {
 	gzipHeaderComment = Nothing }
 
 crc' :: BS.ByteString -> BS.ByteString
-crc' = numToBs . crc
+crc' = BS.fromBits' . crc
 
 crc16 :: BS.ByteString -> BS.ByteString
 crc16 = BS.take 2 . crc'
@@ -222,11 +221,6 @@ bsToWord16 :: BS.ByteString -> Word16
 bsToWord16 bs = case fromIntegral <$> BS.unpack bs of
 	[w0, w1] -> w0 .|. w1 `shiftL` 8
 	_ -> error "bad"
---	(Pipe.await >>= \x -> ((>> go x) . Pipe.yield $ f False p))
-
-numToBs 0 = ""
-numToBs n = fromIntegral (n .&. 0xff) `BS.cons` numToBs (n `shiftR` 8)
 
 crc :: BS.ByteString -> Word32
 crc = complement . PipeCrc.stepBS 0xffffffff
--- crc = complement . BS.foldl' PipeCrc.stepBS 0xffffffff
