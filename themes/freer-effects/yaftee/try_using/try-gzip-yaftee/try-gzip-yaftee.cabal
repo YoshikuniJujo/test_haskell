@@ -37,6 +37,7 @@ library
       Pipe.RunLength.Compress
       Pipe.RunLength.Triple
       Tools
+      Try.ArrowLike
   other-modules:
       Paths_try_gzip_yaftee
   autogen-modules:
