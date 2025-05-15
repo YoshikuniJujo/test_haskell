@@ -55,6 +55,7 @@ library
     , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 executable try-gzip-yaftee-compress
@@ -74,6 +75,7 @@ executable try-gzip-yaftee-compress
     , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 executable try-gzip-yaftee-exe
@@ -97,6 +99,7 @@ executable try-gzip-yaftee-exe
     , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-gzip-yaftee-test
@@ -121,4 +124,5 @@ test-suite try-gzip-yaftee-test
     , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , typelevel-tools-yj
   default-language: Haskell2010

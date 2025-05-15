@@ -42,6 +42,7 @@ packages:
 
 extra-deps:
   - tools-yj-0.1.0.26
+  - typelevel-tools-yj-0.1.0.9
   - git: https://github.com/YoshikuniJujo/test_haskell
     commit: 627b6e62039ec0c55eabdf704ef0f3bb4829f034
     subdirs:

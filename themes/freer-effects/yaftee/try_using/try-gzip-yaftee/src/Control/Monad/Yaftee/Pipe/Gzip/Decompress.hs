@@ -1,13 +1,21 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Gzip.Decompress (run_, decompress, Fmt) where
+module Control.Monad.Yaftee.Pipe.Gzip.Decompress (
+
+	run_, States,
+
+	decompress, Members,
+
+	Fmt
+
+	) where
 
 import Foreign.C.Types
 import Control.Arrow
@@ -41,39 +49,32 @@ import Data.Gzip.Calc
 import Pipe.Huffman qualified as Huffman
 import Pipe.RunLength qualified as RunLength
 
+import Data.TypeLevel.List
+
 run_ :: HFunctor.Loose (U.U es) =>
-	Eff.E  (
-		St.Named PipeB.Pkg Crc.Crc32 ':
-		St.Named PipeB.Pkg PipeB.Length ':
-		St.Named "bits" BitArray.B ':
-		St.Named Huffman.Pkg Huffman.ExtraBits ':
-		St.Named Huffman.Pkg (Huffman.BinTreePair Int) ':
-		St.Named Fmt BS.ByteString ':
-		St.S (Seq.Seq Word8) ':
-		St.S BitArray.B ':
-		St.S OnDemand.Request ':
-		es )
-		i o a ->
-	Eff.E es i o ()
+	Eff.E  (States `Append` es) i o a -> Eff.E es i o ()
 run_ = void . (`St.run` OnDemand.RequestBuffer 16)
-		. (`St.run` BitArray.fromByteString "")
-		. (`St.run` (Seq.empty :: Seq.Seq Word8))
-		. (flip (St.runN @Fmt) ("" :: BS.ByteString))
-		. Huffman.run @Int
-		. (flip (St.runN @"bits") $ BitArray.fromByteString "")
-		. PipeB.lengthRun . Crc.runCrc32
+	. (`St.run` BitArray.fromByteString "")
+	. (`St.run` (Seq.empty :: Seq.Seq Word8))
+	. (flip (St.runN @Fmt) ("" :: BS.ByteString))
+	. Huffman.run @Int
+	. (flip (St.runN @"bits") $ BitArray.fromByteString "")
+	. PipeB.lengthRun . Crc.runCrc32
+
+type States = [
+	St.Named PipeB.Pkg Crc.Crc32,
+	St.Named PipeB.Pkg PipeB.Length,
+	St.Named "bits" BitArray.B,
+	St.Named Huffman.Pkg Huffman.ExtraBits,
+	St.Named Huffman.Pkg (Huffman.BinTreePair Int),
+	St.Named Fmt BS.ByteString,
+	St.S (Seq.Seq Word8),
+	St.S BitArray.B,
+	St.S OnDemand.Request ]
 
 decompress :: (
 	U.Member Pipe.P es,
-	U.Member (St.S BitArray.B) es,
-	U.Member (St.S OnDemand.Request) es,
-	U.Member (St.Named "bits" BitArray.B) es,
-	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
-	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
-	U.Member (St.S (Seq.Seq Word8)) es,
-	U.Member (St.Named Fmt BS.ByteString) es,
-	U.Member (St.Named PipeB.Pkg Crc.Crc32 ) es,
-	U.Member (St.Named PipeB.Pkg PipeB.Length) es,
+	Members es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	(GzipHeader -> Eff.E es BS.ByteString BS.ByteString r) ->
 	Eff.E es BS.ByteString BS.ByteString ()
@@ -92,6 +93,17 @@ decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	ln' <- Except.fromJust nvrocc . PipeB.byteStringToLength
 		=<< Except.getRight @String "bad" =<< Pipe.await
 	when (ln /= ln') $ Except.throw @String "bad length"
+
+type Members es = (
+	U.Member (St.S BitArray.B) es,
+	U.Member (St.S OnDemand.Request) es,
+	U.Member (St.Named "bits" BitArray.B) es,
+	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
+	U.Member (St.S (Seq.Seq Word8)) es,
+	U.Member (St.Named Fmt BS.ByteString) es,
+	U.Member (St.Named PipeB.Pkg Crc.Crc32 ) es,
+	U.Member (St.Named PipeB.Pkg PipeB.Length) es )
 
 readHeader :: (
 	U.Member Pipe.P es,

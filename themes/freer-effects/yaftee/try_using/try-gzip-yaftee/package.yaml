@@ -24,6 +24,7 @@ dependencies:
 - bytestring
 - containers
 - tools-yj
+- typelevel-tools-yj
 - try-yaftee
 - try-yaftee-conduit
 - try-yaftee-conduit-bytestring
