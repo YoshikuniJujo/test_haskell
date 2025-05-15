@@ -53,11 +53,11 @@ huffman = do
 			State.putN Pkg $ ExtraBits 0
 			huffman
 
-run :: HFunctor.Loose (U.U es) =>
-	BinTree a ->
+run :: forall a es i o r . (HFunctor.Loose (U.U es), Ord a) =>
 	Eff.E (State.Named Pkg ExtraBits ': State.Named Pkg (BinTree a, BinTree a) ': es) i o r ->
 	Eff.E es i o ((r, ExtraBits), (BinTree a, BinTree a))
-run bt = flip (State.runN @Pkg) (bt, bt) . flip (State.runN @Pkg) (ExtraBits 0)
+run = flip (State.runN @Pkg) (bt, bt) . flip (State.runN @Pkg) (ExtraBits 0)
+	where bt = makeTree [] ([] :: [Int])
 
 putTree :: U.Member (State.Named Pkg (BinTree a, BinTree a)) es =>
 	BinTree a -> Eff.E es i o ()

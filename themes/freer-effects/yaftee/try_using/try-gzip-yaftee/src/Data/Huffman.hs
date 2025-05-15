@@ -20,15 +20,15 @@ decode1 _ (Node l _) O = (Nothing, l)
 decode1 _ (Node _ r) I = (Nothing, r)
 decode1 _ (Leaf _) _ = error "bad"
 
-makeTree :: (Show a, Integral n, Ord a) => [a] -> [n] -> BinTree a
+makeTree :: (Integral n, Ord a) => [a] -> [n] -> BinTree a
 makeTree xs = fromList . pairToCodes . L.sort . filter ((/= 0) . fst) . (`zip` xs)
 
-fromList :: Show a => [([Bit.B], a)] -> BinTree a
+fromList :: [([Bit.B], a)] -> BinTree a
 fromList [([], x)] = Leaf x
 fromList t = case ((first tail <$>) <$>) . (`L.groupBy` t)
 		. curry . (uncurry (==) .) $ head . fst *** head . fst of
 	[t1, t2] -> fromList t1 `Node` fromList t2
-	ts -> error $ "fromList: bad " ++ unlines (show <$> ts)
+	_ -> error "fromList: bad "
 
 tableToDict :: (Ord a, Integral n) => Map.Map a n -> Map.Map a [Bit.B]
 tableToDict = Map.fromList

@@ -54,20 +54,33 @@ main = do
 		. (`St.run` BitArray.fromByteString "")
 		. (`St.run` (Seq.empty :: Seq.Seq Word8))
 		. (flip (St.runN @Fmt) ("" :: BS.ByteString))
-		. Huffman.run (Huffman.makeTree [0 :: Int .. ] fixedHuffmanList)
+		. Huffman.run @Int
 		. (flip (St.runN @"bits") $ BitArray.fromByteString "")
 		. PipeB.lengthRun . Crc.runCrc32
 		. PipeL.to
 		$ PipeB.hGet' 64 h Pipe.=$= OnDemand.onDemand Pipe.=$= do
 			_ <- PipeT.checkRight Pipe.=$= readHeader processHeader
-			doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
+			_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
 				PipeB.length' Pipe.=$= Crc.crc32' Pipe.=$= do
 					PipeI.print'
-					Crc.compCrc32
-					IO.print . Crc.crc32ToByteString =<< St.getN PipeB.Pkg
-					IO.print . PipeB.lengthToByteString =<< St.getN PipeB.Pkg
-					IO.print @BitArray.B =<< St.get
-					IO.print @BitArray.B =<< St.getN "bits"
+			Crc.compCrc32
+			IO.print @Crc.Crc32 =<< St.getN PipeB.Pkg
+			St.put $ OnDemand.RequestBytes 4
+			IO.print . Crc.byteStringToCrc32 =<< PipeT.skipLeft1
+
+			IO.print @PipeB.Length =<< St.getN PipeB.Pkg
+			IO.print . PipeB.byteStringToLength =<< Except.getRight =<< Pipe.await
+
+foo phd = OnDemand.onDemand Pipe.=$= do
+	_ <- PipeT.checkRight Pipe.=$= readHeader phd
+	_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
+		PipeB.length' Pipe.=$= Crc.crc32'
+	Crc.compCrc32
+	IO.print . Crc.crc32ToByteString =<< St.getN PipeB.Pkg
+	St.put $ OnDemand.RequestBytes 4
+	IO.print =<< PipeT.skipLeft1
+	IO.print . PipeB.lengthToByteString =<< St.getN PipeB.Pkg
+	IO.print =<< Except.getRight =<< Pipe.await
 
 readHeader :: (
 	U.Member Pipe.P es,
