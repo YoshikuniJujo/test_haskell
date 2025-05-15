@@ -131,3 +131,37 @@ pop :: forall a es i o . (
 pop = State.get >>= \case
 	Nothing -> Except.throw "never occur"
 	Just x -> pure x
+
+popMaybe :: forall a es i o .
+	U.Member (State.S (Maybe a)) es =>
+	Eff.E es i o (Maybe a)
+popMaybe = State.get
+
+left :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe a)) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es i o r -> Eff.E es (Either i a) (Either o a) (
+	Eff.E es (Either i a) o (Eff.E es (Either i a) i r0, Eff.E es i o r),
+	Eff.E es o (Either o a) r'0 )
+left p = prec Pipe.=@= p Pipe.=@= postc
+
+prec :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe a)) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es (Either i a) i r
+prec = forever do
+	e <- Pipe.await
+	either Pipe.yield push e
+
+postc :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe a)) es
+	) =>
+	Eff.E es o (Either o a) r
+postc = forever do
+	mx <- popMaybe
+	maybe (Pipe.yield . Left =<< Pipe.await) (Pipe.yield . Right) mx
