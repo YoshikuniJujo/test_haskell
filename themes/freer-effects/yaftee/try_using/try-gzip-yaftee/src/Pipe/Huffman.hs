@@ -9,7 +9,7 @@
 module Pipe.Huffman (
 	run, huffman, putTree, putExtraBits, makeTree,
 
-	BinTree, ExtraBits(..), Pkg,
+	BinTreePair, BinTree, ExtraBits(..), Pkg,
 
 	) where
 
@@ -27,6 +27,8 @@ import Data.ByteString.Bit (pattern O, pattern I)
 import Data.ByteString.Bit qualified as Bit
 
 type Pkg = "try-gzip-yaftee"
+
+type BinTreePair a = (BinTree a, BinTree a)
 
 step :: forall a es i o . U.Member (State.Named Pkg (BinTree a, BinTree a)) es =>
 	Bit.B -> Eff.E es i o (Maybe a)

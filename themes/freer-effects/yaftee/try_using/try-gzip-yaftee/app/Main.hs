@@ -16,7 +16,6 @@ import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.List qualified as PipeL
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeI
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeB
 import Control.Monad.Yaftee.Pipe.ByteString.OnDemand qualified as OnDemand
@@ -57,10 +56,24 @@ main = do
 		. Huffman.run @Int
 		. (flip (St.runN @"bits") $ BitArray.fromByteString "")
 		. PipeB.lengthRun . Crc.runCrc32
-		. PipeL.to
-		$ PipeB.hGet' 64 h Pipe.=$= foo processHeader Pipe.=$= PipeI.print'
+		. Pipe.run
+		$ PipeB.hGet 64 h Pipe.=$= decompress processHeader Pipe.=$= PipeI.print'
 
-foo phd = OnDemand.onDemand Pipe.=$= do
+decompress :: (
+	U.Member Pipe.P es,
+	U.Member (St.S BitArray.B) es,
+	U.Member (St.S OnDemand.Request) es,
+	U.Member (St.Named "bits" BitArray.B) es,
+	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
+	U.Member (St.S (Seq.Seq Word8)) es,
+	U.Member (St.Named Fmt BS.ByteString) es,
+	U.Member (St.Named PipeB.Pkg Crc.Crc32 ) es,
+	U.Member (St.Named PipeB.Pkg PipeB.Length) es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	(GzipHeader -> Eff.E es BS.ByteString BS.ByteString r) ->
+	Eff.E es BS.ByteString BS.ByteString ()
+decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader phd
 	_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
 		PipeB.length' Pipe.=$= Crc.crc32'
