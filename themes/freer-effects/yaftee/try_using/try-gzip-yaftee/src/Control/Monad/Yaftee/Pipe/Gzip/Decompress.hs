@@ -59,11 +59,11 @@ run_ = void . (`St.run` OnDemand.RequestBuffer 16)
 	. (flip (St.runN @Fmt) ("" :: BS.ByteString))
 	. Huffman.run @Int
 	. (flip (St.runN @"bits") $ BitArray.fromByteString "")
-	. PipeB.lengthRun . Crc.runCrc32 @"foobar"
+	. PipeB.lengthRun @"foobar" . Crc.runCrc32 @"foobar"
 
 type States = [
 	St.Named "foobar" Crc.Crc32,
-	St.Named PipeB.Pkg PipeB.Length,
+	St.Named "foobar" PipeB.Length,
 	St.Named "bits" BitArray.B,
 	St.Named Huffman.Pkg Huffman.ExtraBits,
 	St.Named Huffman.Pkg (Huffman.BinTreePair Int),
@@ -81,7 +81,7 @@ decompress :: (
 decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader phd
 	_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
-		PipeB.length' Pipe.=$= Crc.crc32' "foobar"
+		PipeB.length' "foobar" Pipe.=$= Crc.crc32' "foobar"
 	Crc.compCrc32 "foobar"
 
 	crc <- St.getN "foobar"
@@ -89,7 +89,7 @@ decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	crc' <- Except.fromJust nvrocc . Crc.byteStringToCrc32 =<< PipeT.skipLeft1
 	when (crc /= crc') $ Except.throw @String "bad CRC32"
 
-	ln <- St.getN PipeB.Pkg
+	ln <- St.getN "foobar"
 	ln' <- Except.fromJust nvrocc . PipeB.byteStringToLength
 		=<< Except.getRight @String "bad" =<< Pipe.await
 	when (ln /= ln') $ Except.throw @String "bad length"
@@ -103,7 +103,7 @@ type Members es = (
 	U.Member (St.S (Seq.Seq Word8)) es,
 	U.Member (St.Named Fmt BS.ByteString) es,
 	U.Member (St.Named "foobar" Crc.Crc32 ) es,
-	U.Member (St.Named PipeB.Pkg PipeB.Length) es )
+	U.Member (St.Named "foobar" PipeB.Length) es )
 
 readHeader :: (
 	U.Member Pipe.P es,
