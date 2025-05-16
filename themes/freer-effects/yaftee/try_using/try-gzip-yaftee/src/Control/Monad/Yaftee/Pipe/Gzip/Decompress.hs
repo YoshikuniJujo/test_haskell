@@ -53,8 +53,7 @@ import Data.TypeLevel.List
 
 run_ :: HFunctor.Loose (U.U es) =>
 	Eff.E  (States `Append` es) i o a -> Eff.E es i o ()
-run_ = void . (`St.run` OnDemand.RequestBuffer 16)
-	. (`St.run` BitArray.fromByteString "")
+run_ = void
 	. (`St.run` (Seq.empty :: Seq.Seq Word8))
 	. (flip (St.runN @Fmt) ("" :: BS.ByteString))
 	. Huffman.run @Int
@@ -68,9 +67,7 @@ type States = [
 	St.Named Huffman.Pkg Huffman.ExtraBits,
 	St.Named Huffman.Pkg (Huffman.BinTreePair Int),
 	St.Named Fmt BS.ByteString,
-	St.S (Seq.Seq Word8),
-	St.S BitArray.B,
-	St.S OnDemand.Request ]
+	St.S (Seq.Seq Word8) ]
 
 decompress :: (
 	U.Member Pipe.P es,
