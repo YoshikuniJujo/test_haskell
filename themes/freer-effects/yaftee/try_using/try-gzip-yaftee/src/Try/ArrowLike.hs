@@ -4,7 +4,19 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Try.ArrowLike where
+module Try.ArrowLike (
+
+	-- * ARROW LIKE
+
+	first, second, (***), (&&&),
+
+	pre, first',
+
+	-- * ARROW CHOICE LIKE
+
+	left, right, (+++), (|||)
+	
+	) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -19,10 +31,6 @@ swap = forever $ Pipe.yield . (\(x, y) -> (y, x)) =<< Pipe.await
 -- first :: U.Member Pipe.P es => Eff.E es i o r -> Eff.E es (i, a) (o, a) r
 -- first p = forever 
 
-first' :: U.Member Pipe.P es => Eff.E es i o r ->
-	Eff.E es (i, a) o (Eff.E es (i, a) i r0, Eff.E es i o r)
-first' p = (forever $ Pipe.yield . (\(x, y) -> x) =<< Pipe.await) Pipe.=$= p
-
 first :: (
 	U.Member Pipe.P es,
 	U.Member (State.S (Maybe a)) es,
@@ -32,6 +40,16 @@ first :: (
 		Eff.E es (i, a) o (Eff.E es (i, a) i r0, Eff.E es i o r),
 		Eff.E es o (o, a) r'' )
 first p = pre Pipe.=$= p Pipe.=$= post
+
+first' :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe a)) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es i o r -> Eff.E es (i, a) (o, a) (
+		Eff.E es (i, a) i r0,
+		Eff.E es i (o, a) (Eff.E es i o r, Eff.E es o (o, a) r'0) )
+first' p = pre Pipe.=$= (p Pipe.=$= post)
 
 second p = pre' Pipe.=$= p Pipe.=$= post'
 
@@ -122,20 +140,20 @@ push :: forall a es i o . (
 	a -> Eff.E es i o ()
 push x = State.get @(Maybe a) >>= \case
 	Nothing -> State.put $ Just x
-	Just _ -> Except.throw "never occur"
+	Just _ -> Except.throw "push: never occur"
 
 pop :: forall a es i o . (
 	U.Member (State.S (Maybe a)) es,
 	U.Member (Except.E String) es ) =>
 	Eff.E es i o a
 pop = State.get >>= \case
-	Nothing -> Except.throw "never occur"
-	Just x -> pure x
+	Nothing -> Except.throw "pop: never occur"
+	Just x -> x <$ State.put @(Maybe a) Nothing
 
 popMaybe :: forall a es i o .
 	U.Member (State.S (Maybe a)) es =>
 	Eff.E es i o (Maybe a)
-popMaybe = State.get
+popMaybe = State.get <* State.put @(Maybe a) Nothing
 
 left :: (
 	U.Member Pipe.P es,
@@ -165,3 +183,68 @@ postc :: (
 postc = forever do
 	mx <- popMaybe
 	maybe (Pipe.yield . Left =<< Pipe.await) (Pipe.yield . Right) mx
+
+right :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe a)) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es i o r -> Eff.E es (Either a i) (Either a o) (
+		Eff.E es (Either a i) o (Eff.E es (Either a i) i r0, Eff.E es i o r),
+		Eff.E es o (Either a o) r'0 )
+right p = prec' Pipe.=@= p Pipe.=@= postc'
+
+prec' :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe a)) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es (Either a i) i r
+prec' = forever do
+
+	e <- Pipe.await
+	either push Pipe.yield e
+
+postc' :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe a)) es
+	) =>
+	Eff.E es o (Either a o) r
+postc' = forever do
+	mx <- popMaybe
+	maybe (Pipe.yield . Right =<< Pipe.await) (Pipe.yield . Left) mx
+
+(+++) :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe i')) es,
+	U.Member (State.S (Maybe o)) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es i o r -> Eff.E es i' o' r' -> Eff.E es (Either i i') (Either o o') (
+		Eff.E es (Either i i') (Either o i') (
+			Eff.E es (Either i i') o (Eff.E es (Either i i') i r00, Eff.E es i o r),
+			Eff.E es o (Either o i') r'00),
+		Eff.E es (Either o i') (Either o o') (
+			Eff.E es (Either o i') o' (Eff.E es (Either o i') i' r1, Eff.E es i' o' r'),
+			Eff.E es o' (Either o o') r'1))
+p +++ q = left p Pipe.=$= right q
+
+(|||) :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Maybe i')) es,
+	U.Member (State.S (Maybe o)) es,
+	U.Member (Except.E String) es ) =>
+	Eff.E es i o r -> Eff.E es i' o r' -> Eff.E es (Either i i') o (
+		Eff.E es (Either i i') (Either o o) (
+			Eff.E es (Either i i') (Either o i') (
+				Eff.E es (Either i i') o (Eff.E es (Either i i') i r000, Eff.E es i o r),
+				Eff.E es o (Either o i') r'000),
+			Eff.E es (Either o i') (Either o o) (
+				Eff.E es (Either o i') o (Eff.E es (Either o i') i' r10, Eff.E es i' o r'),
+				Eff.E es o (Either o o) r'10)
+			),
+		Eff.E es (Either o o) o r'0 )
+p ||| q = (p +++ q) Pipe.=$= untag
+
+untag :: U.Member Pipe.P es => Eff.E es (Either a a) a r
+untag = forever $ Pipe.yield . either id id =<< Pipe.await
