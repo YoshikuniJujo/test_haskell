@@ -1,5 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -34,9 +36,9 @@ main = do
 			. (`State.run` Bit.empty)
 			. (`State.run` ("" :: BS.ByteString))
 			. (`State.run` FileLength 0)
-			. PipeCrc.runCrc32 . RunLength.run . PipeL.to
+			. PipeCrc.runCrc32 @"foobar" . RunLength.run . PipeL.to
 			$ PipeBS.hGet 64 hr Pipe.=$=
-				PipeCrc.crc32' Pipe.=$=
+				PipeCrc.crc32' "foobar" Pipe.=$=
 				lengthPipe Pipe.=$=
 				RunLength.compressRL Pipe.=$=
 --				PipeIO.print
@@ -45,8 +47,8 @@ main = do
 				PipeT.convert'' runLengthsToBits [] Pipe.=$= do
 					Pipe.yield $ encodeGzipHeader sampleGzipHeader
 					PipeB.toByteString'
-					PipeCrc.compCrc32
-					Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN PipeBS.Pkg
+					PipeCrc.compCrc32 "foobar"
+					Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN "foobar"
 					Pipe.yield . numToBs' 4 . unFileLength =<< State.get
 				Pipe.=$= PipeBS.hPutStr' ho
 --				-}

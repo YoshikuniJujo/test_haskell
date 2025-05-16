@@ -59,10 +59,10 @@ run_ = void . (`St.run` OnDemand.RequestBuffer 16)
 	. (flip (St.runN @Fmt) ("" :: BS.ByteString))
 	. Huffman.run @Int
 	. (flip (St.runN @"bits") $ BitArray.fromByteString "")
-	. PipeB.lengthRun . Crc.runCrc32
+	. PipeB.lengthRun . Crc.runCrc32 @"foobar"
 
 type States = [
-	St.Named PipeB.Pkg Crc.Crc32,
+	St.Named "foobar" Crc.Crc32,
 	St.Named PipeB.Pkg PipeB.Length,
 	St.Named "bits" BitArray.B,
 	St.Named Huffman.Pkg Huffman.ExtraBits,
@@ -81,10 +81,10 @@ decompress :: (
 decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader phd
 	_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
-		PipeB.length' Pipe.=$= Crc.crc32'
-	Crc.compCrc32
+		PipeB.length' Pipe.=$= Crc.crc32' "foobar"
+	Crc.compCrc32 "foobar"
 
-	crc <- St.getN PipeB.Pkg
+	crc <- St.getN "foobar"
 	St.put $ OnDemand.RequestBytes 4
 	crc' <- Except.fromJust nvrocc . Crc.byteStringToCrc32 =<< PipeT.skipLeft1
 	when (crc /= crc') $ Except.throw @String "bad CRC32"
@@ -102,12 +102,12 @@ type Members es = (
 	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
 	U.Member (St.S (Seq.Seq Word8)) es,
 	U.Member (St.Named Fmt BS.ByteString) es,
-	U.Member (St.Named PipeB.Pkg Crc.Crc32 ) es,
+	U.Member (St.Named "foobar" Crc.Crc32 ) es,
 	U.Member (St.Named PipeB.Pkg PipeB.Length) es )
 
 readHeader :: (
 	U.Member Pipe.P es,
-	U.Member (St.Named PipeB.Pkg Crc.Crc32) es,
+	U.Member (St.Named "foobar" Crc.Crc32) es,
 	U.Member (St.S OnDemand.Request) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
@@ -115,7 +115,7 @@ readHeader :: (
 	Eff.E es BS.ByteString o (
 		Eff.E es BS.ByteString BS.ByteString r1,
 		Eff.E es BS.ByteString o r )
-readHeader f = Crc.crc32 Pipe.=$= do
+readHeader f = Crc.crc32 "foobar" Pipe.=$= do
 				St.put $ OnDemand.RequestBytes 2
 				ids <- Pipe.await
 				when (ids /= "\31\139")
@@ -142,8 +142,8 @@ readHeader f = Crc.crc32 Pipe.=$= do
 				then Just <$> Pipe.await
 				else pure Nothing
 				when (flagsRawHcrc flgs) do
-					Crc.compCrc32
-					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> St.getN PipeB.Pkg
+					Crc.compCrc32 "foobar"
+					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> St.getN "foobar"
 					St.put $ OnDemand.RequestBytes 2
 					m <- BS.toBits <$> Pipe.await
 					when (crc /= m) $

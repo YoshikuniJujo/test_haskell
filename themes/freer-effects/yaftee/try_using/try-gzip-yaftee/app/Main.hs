@@ -12,7 +12,6 @@ module Main (main) where
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeI
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeB
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
