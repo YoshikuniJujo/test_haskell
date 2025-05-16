@@ -1,5 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -70,20 +72,20 @@ hPutStr' :: (U.Member Pipe.P es, U.Base IO.I es) =>
 hPutStr' h = fix \go -> Pipe.isMore >>= bool (pure ())
 	((>> go) $ Eff.effBase . BS.hPutStr h =<< Pipe.await)
 
-lengthRun :: HFunctor.Loose (U.U es) =>
-	Eff.E (State.Named Pkg Length ': es) i o a -> Eff.E es i o (a, Length)
+lengthRun :: forall nm es i o a . HFunctor.Loose (U.U es) =>
+	Eff.E (State.Named nm Length ': es) i o a -> Eff.E es i o (a, Length)
 lengthRun = (`State.runN` (0 :: Length))
 
-length :: (U.Member Pipe.P es, U.Member (State.Named Pkg Length) es) =>
+length :: forall nm -> (U.Member Pipe.P es, U.Member (State.Named nm Length) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
-length = fix \go -> Pipe.await >>= \bs ->
-	State.modifyN Pkg (+ Length (BS.length bs)) >> Pipe.yield bs >> go
+length nm = fix \go -> Pipe.await >>= \bs ->
+	State.modifyN nm (+ Length (BS.length bs)) >> Pipe.yield bs >> go
 
-length' :: (U.Member Pipe.P es, U.Member (State.Named Pkg Length) es) =>
+length' :: forall nm -> (U.Member Pipe.P es, U.Member (State.Named nm Length) es) =>
 	Eff.E es BS.ByteString BS.ByteString ()
-length' = fix \go -> Pipe.isMore >>= bool (pure ())
+length' nm = fix \go -> Pipe.isMore >>= bool (pure ())
 	((>> go) $ Pipe.await >>= \bs ->
-		State.modifyN Pkg (+ Length (BS.length bs)) >> Pipe.yield bs)
+		State.modifyN nm (+ Length (BS.length bs)) >> Pipe.yield bs)
 
 newtype Length = Length { unLength :: Int }
 	deriving (Show, Eq, Ord, Enum, Num, Real, Integral)
