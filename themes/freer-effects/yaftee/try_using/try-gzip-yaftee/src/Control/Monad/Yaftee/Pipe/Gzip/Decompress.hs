@@ -92,7 +92,7 @@ decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	when (ln /= ln') $ Except.throw @String "bad length"
 
 type Members es = (
-	U.Member (St.S BitArray.B) es,
+	U.Member (St.S OnDemand.BitArray) es,
 	U.Member (St.S OnDemand.Request) es,
 	U.Member (St.Named "bits" BitArray.B) es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
