@@ -28,11 +28,14 @@ sample = void . Eff.runM
 
 sample' :: IO ()
 sample' = void . Eff.runM
-	. (`State.run` (Nothing :: Maybe String))
+	. (`State.run` (([], []) :: ([Int], [Int])))
+	. (`State.run` (([], []) :: ([String], [String])))
+	. (`State.run` (([], []) :: ([Maybe String], [Maybe String])))
 	. Except.run @String
 	. Pipe.run
---	$ void (PipeL.from [Left 3, Right "hello", Right "world", Left 2, Left 8] Pipe.=$=
-	$ void (PipeL.from [Left 1, Left 2, Left 3, Right "hello", Left 2, Left 111] Pipe.=$=
---		(PipeT.convert (`replicate` 'a') ||| PipeT.convert (concat . replicate 3)) Pipe.=$=
-		(left $ PipeT.convert (`replicate` 'a')) Pipe.=$=
+	$ void (PipeL.from [Left (3 :: Int), Right "hello", Right "world", Left 2, Left 8, Right "foo"] Pipe.=$=
+--	$ void (PipeL.from [Left 1, Left 2, Left 3, Right "hello", Left 2, Left 111] Pipe.=$=
+		(PipeT.convert (Just . (`replicate` 'a')) ||| PipeT.convert (Just . concat . replicate 3)) Pipe.=$=
+--		(left $ PipeT.convert (`replicate` 'a')) Pipe.=$=
+--		(right $ PipeT.convert (replicate 3)) Pipe.=$=
 		PipeIO.print) `Except.catch` IO.putStrLn
