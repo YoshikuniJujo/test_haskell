@@ -1,19 +1,22 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.ByteString.OnDemand (
-	onDemand, Request(..)
+	run_, onDemand, Request(..)
 	) where
 
+import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as Union
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bool
 import Data.ByteString qualified as BS
 import Data.ByteString.BitArray qualified as BitArray
@@ -25,6 +28,11 @@ data Request
 	| RequestString
 	| RequestPushBack BitArray.B
 	deriving Show
+
+run_ :: HFunctor.Loose (Union.U es) =>
+	Eff.E (State.S BitArray.B ': State.S Request ': es) i o a ->
+	Eff.E es i o ()
+run_ = void . (`State.run` RequestBuffer 100) . (`State.run` BitArray.empty)
 
 onDemand :: (
 	Union.Member Pipe.P es,
