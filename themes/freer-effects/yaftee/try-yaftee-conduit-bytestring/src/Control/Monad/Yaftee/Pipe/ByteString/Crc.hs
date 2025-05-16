@@ -29,7 +29,7 @@ import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
 
-runCrc32 ::  HFunctor.Loose (U.U es) =>
+runCrc32 :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (State.Named nm Crc32 ': es) i o r -> Eff.E es i o (r, Crc32)
 runCrc32 = (`State.runN` Crc32 0)
 
