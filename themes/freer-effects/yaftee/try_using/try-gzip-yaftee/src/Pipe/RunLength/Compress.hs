@@ -17,7 +17,7 @@ import Data.ByteString qualified as BS
 
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
-import Pipe.RunLength qualified as RL
+import Pipe.Runlength qualified as RL
 import Pipe.RunLength.Triple qualified as Triple
 import Control.Monad.Yaftee.State qualified as State
 import Data.HigherFunctor qualified as HFunctor

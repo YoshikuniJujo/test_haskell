@@ -20,7 +20,7 @@ import Data.ByteString.Bit qualified as Bit
 import Data.Gzip.Calc
 import Data.Huffman (tableToDict)
 import Data.PackageMerge qualified as PackageMerge
-import Pipe.RunLength qualified as RunLength
+import Pipe.Runlength qualified as RunLength
 
 runLengthsToBits :: Bool -> [RunLength.R] -> [Bit.B]
 runLengthsToBits _ [] = []

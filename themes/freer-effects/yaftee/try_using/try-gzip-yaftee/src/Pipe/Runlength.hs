@@ -2,10 +2,11 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Pipe.RunLength where
+module Pipe.Runlength where
 
 import Control.Arrow
 import Data.List qualified as L
@@ -13,19 +14,25 @@ import Data.Word
 import Data.ByteString qualified as BS
 import Data.Gzip.Calc
 
+import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
+import Data.HigherFunctor qualified as HFunctor
 import Data.Sequence qualified as Seq
 
-runLength :: forall nm ->(
+run_ :: HFunctor.Loose (U.U es) =>
+	Eff.E (State.Named nm Seq ': es) i o a -> Eff.E es i o ()
+run_ = void . flip State.runN (Seq Seq.empty)
+
+runlength :: forall nm ->(
 	U.Member Pipe.P es,
-	U.Member (State.Named nm (Seq.Seq Word8)) es ) =>
+	U.Member (State.Named nm Seq) es ) =>
 	Eff.E es R (Either Word8 BS.ByteString) ()
-runLength nm = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
+runlength nm = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
 	Literal w -> (>> go)
 		$ State.modifyN nm (`snoc` w) >> Pipe.yield (Left w)
 	LiteralBS bs -> (>> go)
@@ -34,8 +41,10 @@ runLength nm = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
 		State.modifyN nm (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
 	EndOfInput -> pure ()
 
-repetition :: Int -> Int -> Seq.Seq Word8 -> [Word8]
-repetition r d ws = takeRep r ws' ws'
+newtype Seq = Seq { unSeq :: Seq.Seq Word8 }
+
+repetition :: Int -> Int -> Seq -> [Word8]
+repetition r d (Seq ws) = takeRep r ws' ws'
 	where ws' = toList . Seq.take r $ takeR d ws
 
 takeRep :: Int -> [a] -> [a] -> [a]
@@ -46,14 +55,14 @@ takeRep n xs0 [] = takeRep n xs0 xs0
 takeR :: Int -> Seq.Seq Word8 -> Seq.Seq Word8
 takeR n xs = Seq.drop (Seq.length xs - n) xs
 
-snoc :: Seq.Seq Word8 -> Word8 -> Seq.Seq Word8
-snoc s w = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
-	s' Seq.|> w
+snoc :: Seq -> Word8 -> Seq
+snoc (Seq s) w = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	Seq $ s' Seq.|> w
 	where ln = Seq.length s
 
-appendR :: Seq.Seq Word8 -> [Word8] -> Seq.Seq Word8
-appendR s ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
-	foldl (Seq.|>) s' ws
+appendR :: Seq -> [Word8] -> Seq
+appendR (Seq s) ws = let s' = if ln > 32768 then Seq.drop (ln - 32768) s else s in
+	Seq $ foldl (Seq.|>) s' ws
 	where ln = Seq.length s
 
 data R = Literal Word8 | LiteralBS BS.ByteString

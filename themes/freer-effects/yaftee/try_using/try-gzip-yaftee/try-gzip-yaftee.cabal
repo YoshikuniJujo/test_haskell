@@ -33,7 +33,7 @@ library
       Data.Huffman
       Data.PackageMerge
       Pipe.Huffman
-      Pipe.RunLength
+      Pipe.Runlength
       Pipe.RunLength.Compress
       Pipe.RunLength.Triple
       Tools
