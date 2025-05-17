@@ -61,7 +61,7 @@ run_ = void
 	. PipeB.lengthRun @"foobar" . Crc.runCrc32 @"foobar"
 	. OnDemand.run_
 
-type States = OnDemand.States `Append` [
+type States = OnDemand.States "foobar" `Append` [
 	St.Named "foobar" Crc.Crc32,
 	St.Named "foobar" PipeB.Length,
 	St.Named "bits" BitArray.B,
@@ -76,14 +76,14 @@ decompress :: (
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	(GzipHeader -> Eff.E es BS.ByteString BS.ByteString r) ->
 	Eff.E es BS.ByteString BS.ByteString ()
-decompress phd = void $ OnDemand.onDemand Pipe.=$= do
+decompress phd = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader phd
 	_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
 		PipeB.length' "foobar" Pipe.=$= Crc.crc32' "foobar"
 	Crc.compCrc32 "foobar"
 
 	crc <- St.getN "foobar"
-	St.put $ OnDemand.RequestBytes 4
+	St.putN "foobar" $ OnDemand.RequestBytes 4
 	crc' <- Except.fromJust nvrocc . Crc.byteStringToCrc32 =<< PipeT.skipLeft1
 	when (crc /= crc') $ Except.throw @String "bad CRC32"
 
@@ -93,7 +93,7 @@ decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	when (ln /= ln') $ Except.throw @String "bad length"
 
 type Members es = (
-	OnDemand.Members es,
+	OnDemand.Members "foobar" es,
 	U.Member (St.Named "bits" BitArray.B) es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
@@ -105,7 +105,7 @@ type Members es = (
 readHeader :: (
 	U.Member Pipe.P es,
 	U.Member (St.Named "foobar" Crc.Crc32) es,
-	U.Member (St.S OnDemand.Request) es,
+	U.Member (St.Named "foobar" OnDemand.Request) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
 	(GzipHeader -> Eff.E es BS.ByteString o r) ->
@@ -113,25 +113,25 @@ readHeader :: (
 		Eff.E es BS.ByteString BS.ByteString r1,
 		Eff.E es BS.ByteString o r )
 readHeader f = Crc.crc32 "foobar" Pipe.=$= do
-				St.put $ OnDemand.RequestBytes 2
+				St.putN "foobar" $ OnDemand.RequestBytes 2
 				ids <- Pipe.await
 				when (ids /= "\31\139")
 					$ Except.throw @String "Bad magic"
-				St.put $ OnDemand.RequestBytes 1
+				St.putN "foobar" $ OnDemand.RequestBytes 1
 				cm <- (CompressionMethod . BS.head) <$> Pipe.await
 				Just flgs <- readFlags . BS.head <$> Pipe.await
-				St.put $ OnDemand.RequestBytes 4
+				St.putN "foobar" $ OnDemand.RequestBytes 4
 				mtm <- CTime . BS.toBits <$> Pipe.await
-				St.put $ OnDemand.RequestBytes 1
+				St.putN "foobar" $ OnDemand.RequestBytes 1
 				ef <- BS.head <$> Pipe.await
 				os <- OS . BS.head <$> Pipe.await
 				mexflds <- if (flagsRawExtra flgs)
-				then do	St.put $ OnDemand.RequestBytes 2
+				then do	St.putN "foobar" $ OnDemand.RequestBytes 2
 					xlen <- BS.toBits <$> Pipe.await
-					St.put $ OnDemand.RequestBytes xlen
+					St.putN "foobar" $ OnDemand.RequestBytes xlen
 					decodeExtraFields <$> Pipe.await
 				else pure []
-				St.put OnDemand.RequestString
+				St.putN "foobar" OnDemand.RequestString
 				mnm <- if flagsRawName flgs
 				then Just <$> Pipe.await
 				else pure Nothing
@@ -141,7 +141,7 @@ readHeader f = Crc.crc32 "foobar" Pipe.=$= do
 				when (flagsRawHcrc flgs) do
 					Crc.compCrc32 "foobar"
 					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> St.getN "foobar"
-					St.put $ OnDemand.RequestBytes 2
+					St.putN "foobar" $ OnDemand.RequestBytes 2
 					m <- BS.toBits <$> Pipe.await
 					when (crc /= m) $
 						Except.throw @String "Header CRC check failed"
@@ -162,7 +162,7 @@ nvrocc = "Never occur"
 
 block :: (
 	U.Member Pipe.P es,
-	U.Member (St.S OnDemand.Request) es,
+	U.Member (St.Named "foobar" OnDemand.Request) es,
 	U.Member (St.Named "bits" BitArray.B) es,
 	U.Member (St.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
@@ -170,24 +170,24 @@ block :: (
 	U.Member (U.FromFirst U.Fail) es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
 block = do
-	St.put $ OnDemand.RequestBits 1
+	St.putN "foobar" $ OnDemand.RequestBits 1
 	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
-	St.put $ OnDemand.RequestBits 2
+	St.putN "foobar" $ OnDemand.RequestBits 2
 	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
 	(bf /= 1) <$ case bt of
-		0 -> do	St.put $ OnDemand.RequestBytes 4
+		0 -> do	St.putN "foobar" $ OnDemand.RequestBytes 4
 			ln <- pairToLength =<< PipeT.skipLeft1
-			St.put $ OnDemand.RequestBytes ln
+			St.putN "foobar" $ OnDemand.RequestBytes ln
 			Pipe.yield . RunLength.LiteralBS =<< Except.getRight @String "bad" =<< Pipe.await
 		_	| bt == 1 || bt == 2 -> do
 				(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
-					St.put $ OnDemand.RequestBits 5
+					St.putN "foobar" $ OnDemand.RequestBits 5
 					hlit <- (+ 257) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					hdist <- (+ 1) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
-					St.put $ OnDemand.RequestBits 4
+					St.putN "foobar" $ OnDemand.RequestBits 4
 					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
-				St.put $ OnDemand.RequestBuffer 100
+				St.putN "foobar" $ OnDemand.RequestBuffer 100
 				void $ bits Pipe.=$= do
 
 					whenMaybe mhclen \hclen -> do
@@ -202,7 +202,7 @@ block = do
 							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths 0 hlitdist
 						Huffman.putTree ht
 						litLen ht hdt 0
-				St.put . OnDemand.RequestPushBack =<< St.getN "bits"
+				St.putN "foobar" . OnDemand.RequestPushBack =<< St.getN "bits"
 				St.putN "bits" BitArray.empty
 				Right "" <- Pipe.await; pure ()
 		_ -> error "bad"

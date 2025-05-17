@@ -44,7 +44,7 @@ extra-deps:
   - tools-yj-0.1.0.26
   - typelevel-tools-yj-0.1.0.9
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 9e00e6880c485615f17825ae3c116c1fc43935bb
+    commit: aa52d7c12bb5e06ea4ac6aa42ba161753d8f7985
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit
