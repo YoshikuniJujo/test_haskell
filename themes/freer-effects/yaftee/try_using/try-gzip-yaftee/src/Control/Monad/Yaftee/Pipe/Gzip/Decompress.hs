@@ -56,7 +56,7 @@ run_ :: HFunctor.Loose (U.U es) =>
 run_ = void
 	. RunLength.run_
 	. (flip (St.runN @"foobar") $ FormatBuffer "")
-	. Huffman.run @Int
+	. Huffman.run @"foobar" @Int
 	. (flip (St.runN @"foobar") . BitArray $ BitArray.fromByteString "")
 	. PipeB.lengthRun @"foobar" . Crc.runCrc32 @"foobar"
 	. OnDemand.run_
@@ -65,8 +65,8 @@ type States = OnDemand.States "foobar" `Append` [
 	St.Named "foobar" Crc.Crc32,
 	St.Named "foobar" PipeB.Length,
 	St.Named "foobar" BitArray,
-	St.Named Huffman.Pkg Huffman.ExtraBits,
-	St.Named Huffman.Pkg (Huffman.BinTreePair Int),
+	St.Named "foobar" Huffman.ExtraBits,
+	St.Named "foobar" (Huffman.BinTreePair Int),
 	St.Named "foobar" FormatBuffer,
 	St.Named "foobar" RunLength.Seq ]
 
@@ -95,8 +95,8 @@ decompress phd = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 type Members es = (
 	OnDemand.Members "foobar" es,
 	U.Member (St.Named "foobar" BitArray) es,
-	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
-	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named "foobar" Huffman.ExtraBits) es,
+	U.Member (St.Named "foobar" (Huffman.BinTreePair Int)) es,
 	U.Member (St.Named "foobar" RunLength.Seq) es,
 	U.Member (St.Named "foobar" FormatBuffer) es,
 	U.Member (St.Named "foobar" Crc.Crc32 ) es,
@@ -164,8 +164,8 @@ block :: (
 	U.Member Pipe.P es,
 	U.Member (St.Named "foobar" OnDemand.Request) es,
 	U.Member (St.Named "foobar" BitArray) es,
-	U.Member (St.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Member (St.Named "foobar" (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named "foobar" Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
 	U.Member (U.FromFirst U.Fail) es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
@@ -193,14 +193,14 @@ block = do
 					whenMaybe mhclen \hclen -> do
 						rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
 						let tt = Huffman.makeTree codeLengthList rtt
-						Huffman.putTree tt
+						Huffman.putTree "foobar" tt
 
-					Huffman.huffman @Int @Word16 Pipe.=$= do
+					Huffman.huffman @Int @Word16 "foobar" Pipe.=$= do
 						(ht, hdt) <- whenMaybeDef (
 								Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
 								Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
 							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths 0 hlitdist
-						Huffman.putTree ht
+						Huffman.putTree "foobar" ht
 						litLen ht hdt 0
 				St.putN "foobar" . OnDemand.RequestPushBack =<< St.getsN "foobar" unBitArray
 				St.putN "foobar" $ BitArray BitArray.empty
@@ -214,7 +214,7 @@ block = do
 
 codeLengths :: (
 	U.Member Pipe.P es,
-	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
+	U.Member (St.Named "foobar" Huffman.ExtraBits) es,
 	U.Member Fail.F es, Integral b ) =>
 	Int -> Int -> Eff.E es (Either Int b) o [Int]
 codeLengths = fix \go pr n -> if n == 0 then pure [] else Pipe.await >>= \case
@@ -223,7 +223,7 @@ codeLengths = fix \go pr n -> if n == 0 then pure [] else Pipe.await >>= \case
 			let	(ln, eb, k) = fromJust $ lookup al [
 					(16, (pr, 2, 3)),
 					(17, (0, 3, 3)), (18, (0, 7, 11)) ]
-			Huffman.putExtraBits eb
+			Huffman.putExtraBits "foobar" eb
 			Right ((+ k) . fromIntegral -> rp) <- Pipe.await
 			(replicate rp ln ++) <$> go pr (n - rp)
 		| otherwise -> error "bad"
@@ -231,9 +231,9 @@ codeLengths = fix \go pr n -> if n == 0 then pure [] else Pipe.await >>= \case
 
 litLen :: (
 	U.Member Pipe.P es,
-	U.Member (St.Named Huffman.Pkg
-		(Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
+	U.Member (St.Named "foobar"
+		(Huffman.BinTreePair Int)) es,
+	U.Member (St.Named "foobar" Huffman.ExtraBits) es ) =>
 	Huffman.BinTree Int -> Huffman.BinTree Int -> Int ->
 	Eff.E es (Either Int Word16) RunLength.R ()
 litLen t dt pri = Pipe.await >>= \case
@@ -241,35 +241,34 @@ litLen t dt pri = Pipe.await >>= \case
 	Left i	| 0 <= i && i <= 255 -> do
 			Pipe.yield (RunLength.Literal $ fromIntegral i)
 			litLen t dt 0
-		| 257 <= i && i <= 264 -> Huffman.putTree dt >> dist t dt (calcLength i 0) 0
+		| 257 <= i && i <= 264 -> Huffman.putTree "foobar" dt >> dist t dt (calcLength i 0) 0
 		| 265 <= i && i <= 284 -> do
-			Huffman.putExtraBits $ (i - 261) `div` 4
+			Huffman.putExtraBits "foobar" $ (i - 261) `div` 4
 			litLen t dt i
-		| i == 285 -> Huffman.putTree dt >> dist t dt (calcLength i 0) 0
+		| i == 285 -> Huffman.putTree "foobar" dt >> dist t dt (calcLength i 0) 0
 	Right eb -> do
-		Huffman.putTree dt
+		Huffman.putTree "foobar" dt
 		dist t dt (calcLength pri eb) 0
 	err -> error $ show err
 
 dist :: (
 	U.Member Pipe.P es,
-	U.Member (St.Named Huffman.Pkg
-		(Huffman.BinTree Int, Huffman.BinTree Int)) es,
-	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es ) =>
+	U.Member (St.Named "foobar" (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named "foobar" Huffman.ExtraBits) es ) =>
 	Huffman.BinTree Int -> Huffman.BinTree Int -> RunLength.Length -> Int ->
 	Eff.E es (Either Int Word16) RunLength.R ()
 dist t dt ln pri = Pipe.await >>= \case
 	Left i	| 0 <= i && i <= 3 -> do
 			Pipe.yield $ RunLength.LenDist ln (calcDist i 0)
-			Huffman.putTree t
+			Huffman.putTree "foobar" t
 			litLen t dt 0
 		| 4 <= i && i <= 29 -> do
-			Huffman.putExtraBits $ (i - 2) `div` 2
+			Huffman.putExtraBits "foobar" $ (i - 2) `div` 2
 			dist t dt ln i
 		| otherwise -> error $ "putDist: yet " ++ show i
 	Right eb -> do
 		Pipe.yield (RunLength.LenDist ln (calcDist pri eb))
-		Huffman.putTree t
+		Huffman.putTree "foobar" t
 		litLen t dt 0
 
 bits :: forall nm -> (U.Member Pipe.P es, U.Member (St.Named nm BitArray) es) =>

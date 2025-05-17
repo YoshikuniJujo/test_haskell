@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,46 +29,52 @@ import Data.ByteString.Bit qualified as Bit
 
 type Pkg = "try-gzip-yaftee"
 
-type BinTreePair a = (BinTree a, BinTree a)
+data BinTreePair a = BinTreePair (BinTree a) (BinTree a)
 
-step :: forall a es i o . U.Member (State.Named Pkg (BinTree a, BinTree a)) es =>
+binTreePair :: (BinTree a, BinTree a) -> BinTreePair a
+binTreePair = uncurry BinTreePair
+
+unBinTreePair :: BinTreePair a -> (BinTree a, BinTree a)
+unBinTreePair (BinTreePair x y) = (x, y)
+
+step :: forall a es i o . forall nm -> U.Member (State.Named nm (BinTreePair a)) es =>
 	Bit.B -> Eff.E es i o (Maybe a)
-step b = State.getN Pkg >>= \(t0, t) -> let
+step nm b = State.getsN nm unBinTreePair >>= \(t0, t) -> let
 	(mr, nt) = decode1 t0 t b in
-	mr <$ State.modifyN @(BinTree a, BinTree a) Pkg (second $ const nt)
+	mr <$ State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
 
 newtype ExtraBits = ExtraBits Int deriving Show
 
-huffman :: forall a eb es r . Bits eb => (
+huffman :: forall a eb es r . forall nm -> Bits eb => (
 	U.Member Pipe.P es,
-	U.Member (State.Named Pkg (BinTree a, BinTree a)) es,
-	U.Member (State.Named Pkg ExtraBits) es,
+	U.Member (State.Named nm (BinTreePair a)) es,
+	U.Member (State.Named nm ExtraBits) es,
 	U.Member Fail.F es ) =>
 	Eff.E es Bit.B (Either a eb) r
-huffman = do
-	eb <- State.getN Pkg
+huffman nm = do
+	eb <- State.getN nm
 	case eb of
 		ExtraBits 0 ->
-			(\b -> (maybe (pure ()) (Pipe.yield . Left) =<< step b) >> huffman)
+			(\b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman nm)
 				=<< Pipe.await
 		ExtraBits n -> do
 			Pipe.yield . Right =<< takeBits16' @eb @(Either a eb) n
-			State.putN Pkg $ ExtraBits 0
-			huffman
+			State.putN nm $ ExtraBits 0
+			huffman nm
 
-run :: forall a es i o r . (HFunctor.Loose (U.U es), Ord a) =>
-	Eff.E (State.Named Pkg ExtraBits ': State.Named Pkg (BinTree a, BinTree a) ': es) i o r ->
-	Eff.E es i o ((r, ExtraBits), (BinTree a, BinTree a))
-run = flip (State.runN @Pkg) (bt, bt) . flip (State.runN @Pkg) (ExtraBits 0)
+run :: forall nm a es i o r . (HFunctor.Loose (U.U es), Ord a) =>
+	Eff.E (State.Named nm ExtraBits ': State.Named nm (BinTreePair a) ': es) i o r ->
+	Eff.E es i o ((r, ExtraBits), (BinTreePair a))
+run = flip (State.runN @nm) (BinTreePair bt bt) . flip (State.runN @nm) (ExtraBits 0)
 	where bt = makeTree [] ([] :: [Int])
 
-putTree :: U.Member (State.Named Pkg (BinTree a, BinTree a)) es =>
+putTree :: forall a es i o . forall nm -> U.Member (State.Named nm (BinTreePair a)) es =>
 	BinTree a -> Eff.E es i o ()
-putTree tr = State.putN Pkg (tr, tr)
+putTree nm tr = State.putN nm (BinTreePair tr tr)
 
 putExtraBits ::
-	U.Member (State.Named Pkg ExtraBits) es => Int -> Eff.E es i o ()
-putExtraBits = State.putN Pkg . ExtraBits
+	forall nm -> U.Member (State.Named nm ExtraBits) es => Int -> Eff.E es i o ()
+putExtraBits nm = State.putN nm . ExtraBits
 
 takeBits16' :: forall eb o es . Bits eb => U.Member Pipe.P es =>
 	Int -> Eff.E es Bit.B o eb
