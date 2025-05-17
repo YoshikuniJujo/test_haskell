@@ -59,8 +59,9 @@ run_ = void
 	. Huffman.run @Int
 	. (flip (St.runN @"bits") $ BitArray.fromByteString "")
 	. PipeB.lengthRun @"foobar" . Crc.runCrc32 @"foobar"
+	. OnDemand.run_
 
-type States = [
+type States = OnDemand.States `Append` [
 	St.Named "foobar" Crc.Crc32,
 	St.Named "foobar" PipeB.Length,
 	St.Named "bits" BitArray.B,
@@ -92,8 +93,7 @@ decompress phd = void $ OnDemand.onDemand Pipe.=$= do
 	when (ln /= ln') $ Except.throw @String "bad length"
 
 type Members es = (
-	U.Member (St.S OnDemand.BitArray) es,
-	U.Member (St.S OnDemand.Request) es,
+	OnDemand.Members es,
 	U.Member (St.Named "bits" BitArray.B) es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
