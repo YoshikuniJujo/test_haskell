@@ -54,7 +54,7 @@ import Data.TypeLevel.List
 run_ :: HFunctor.Loose (U.U es) =>
 	Eff.E  (States `Append` es) i o a -> Eff.E es i o ()
 run_ = void
-	. (`St.run` (Seq.empty :: Seq.Seq Word8))
+	. (flip (St.runN @"foobar") (Seq.empty :: Seq.Seq Word8))
 	. (flip (St.runN @Fmt) ("" :: BS.ByteString))
 	. Huffman.run @Int
 	. (flip (St.runN @"bits") $ BitArray.fromByteString "")
@@ -68,7 +68,7 @@ type States = OnDemand.States "foobar" `Append` [
 	St.Named Huffman.Pkg Huffman.ExtraBits,
 	St.Named Huffman.Pkg (Huffman.BinTreePair Int),
 	St.Named Fmt BS.ByteString,
-	St.S (Seq.Seq Word8) ]
+	St.Named "foobar" (Seq.Seq Word8) ]
 
 decompress :: (
 	U.Member Pipe.P es,
@@ -78,7 +78,7 @@ decompress :: (
 	Eff.E es BS.ByteString BS.ByteString ()
 decompress phd = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader phd
-	_ <- doWhile_ block Pipe.=$= RunLength.runLength Pipe.=$= format 32 Pipe.=$=
+	_ <- doWhile_ block Pipe.=$= RunLength.runLength "foobar" Pipe.=$= format 32 Pipe.=$=
 		PipeB.length' "foobar" Pipe.=$= Crc.crc32' "foobar"
 	Crc.compCrc32 "foobar"
 
@@ -97,7 +97,7 @@ type Members es = (
 	U.Member (St.Named "bits" BitArray.B) es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
-	U.Member (St.S (Seq.Seq Word8)) es,
+	U.Member (St.Named "foobar" (Seq.Seq Word8)) es,
 	U.Member (St.Named Fmt BS.ByteString) es,
 	U.Member (St.Named "foobar" Crc.Crc32 ) es,
 	U.Member (St.Named "foobar" PipeB.Length) es )

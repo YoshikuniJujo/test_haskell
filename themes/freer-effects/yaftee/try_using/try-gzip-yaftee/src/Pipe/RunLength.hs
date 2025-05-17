@@ -1,5 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -19,17 +21,17 @@ import Control.HigherOpenUnion qualified as U
 import Data.Foldable
 import Data.Sequence qualified as Seq
 
-runLength :: (
+runLength :: forall nm ->(
 	U.Member Pipe.P es,
-	U.Member (State.S (Seq.Seq Word8)) es ) =>
+	U.Member (State.Named nm (Seq.Seq Word8)) es ) =>
 	Eff.E es R (Either Word8 BS.ByteString) ()
-runLength = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
+runLength nm = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
 	Literal w -> (>> go)
-		$ State.modify (`snoc` w) >> Pipe.yield (Left w)
+		$ State.modifyN nm (`snoc` w) >> Pipe.yield (Left w)
 	LiteralBS bs -> (>> go)
-		$ State.modify (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
-	LenDist ln d -> (>> go) $ State.gets (repetition ln d) >>= \ws ->
-		State.modify (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
+		$ State.modifyN nm (`appendR` BS.unpack bs) >> Pipe.yield (Right bs)
+	LenDist ln d -> (>> go) $ State.getsN nm (repetition ln d) >>= \ws ->
+		State.modifyN nm (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
 	EndOfInput -> pure ()
 
 repetition :: Int -> Int -> Seq.Seq Word8 -> [Word8]
