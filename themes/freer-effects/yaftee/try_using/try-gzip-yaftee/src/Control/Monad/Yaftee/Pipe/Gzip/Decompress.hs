@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,7 +14,7 @@ module Control.Monad.Yaftee.Pipe.Gzip.Decompress (
 
 	decompress, Members,
 
-	Fmt
+	BitArray, FormatBuffer
 
 	) where
 
@@ -54,19 +55,19 @@ run_ :: HFunctor.Loose (U.U es) =>
 	Eff.E  (States `Append` es) i o a -> Eff.E es i o ()
 run_ = void
 	. RunLength.run_
-	. (flip (St.runN @Fmt) ("" :: BS.ByteString))
+	. (flip (St.runN @"foobar") $ FormatBuffer "")
 	. Huffman.run @Int
-	. (flip (St.runN @"bits") $ BitArray.fromByteString "")
+	. (flip (St.runN @"foobar") . BitArray $ BitArray.fromByteString "")
 	. PipeB.lengthRun @"foobar" . Crc.runCrc32 @"foobar"
 	. OnDemand.run_
 
 type States = OnDemand.States "foobar" `Append` [
 	St.Named "foobar" Crc.Crc32,
 	St.Named "foobar" PipeB.Length,
-	St.Named "bits" BitArray.B,
+	St.Named "foobar" BitArray,
 	St.Named Huffman.Pkg Huffman.ExtraBits,
 	St.Named Huffman.Pkg (Huffman.BinTreePair Int),
-	St.Named Fmt BS.ByteString,
+	St.Named "foobar" FormatBuffer,
 	St.Named "foobar" RunLength.Seq ]
 
 decompress :: (
@@ -77,7 +78,7 @@ decompress :: (
 	Eff.E es BS.ByteString BS.ByteString ()
 decompress phd = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader phd
-	_ <- doWhile_ block Pipe.=$= RunLength.runlength "foobar" Pipe.=$= format 32 Pipe.=$=
+	_ <- doWhile_ block Pipe.=$= RunLength.runlength "foobar" Pipe.=$= format "foobar" 32 Pipe.=$=
 		PipeB.length' "foobar" Pipe.=$= Crc.crc32' "foobar"
 	Crc.compCrc32 "foobar"
 
@@ -93,11 +94,11 @@ decompress phd = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 
 type Members es = (
 	OnDemand.Members "foobar" es,
-	U.Member (St.Named "bits" BitArray.B) es,
+	U.Member (St.Named "foobar" BitArray) es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (St.Named Huffman.Pkg (Huffman.BinTreePair Int)) es,
 	U.Member (St.Named "foobar" RunLength.Seq) es,
-	U.Member (St.Named Fmt BS.ByteString) es,
+	U.Member (St.Named "foobar" FormatBuffer) es,
 	U.Member (St.Named "foobar" Crc.Crc32 ) es,
 	U.Member (St.Named "foobar" PipeB.Length) es )
 
@@ -162,7 +163,7 @@ nvrocc = "Never occur"
 block :: (
 	U.Member Pipe.P es,
 	U.Member (St.Named "foobar" OnDemand.Request) es,
-	U.Member (St.Named "bits" BitArray.B) es,
+	U.Member (St.Named "foobar" BitArray) es,
 	U.Member (St.Named Huffman.Pkg (Huffman.BinTree Int, Huffman.BinTree Int)) es,
 	U.Member (St.Named Huffman.Pkg Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
@@ -187,7 +188,7 @@ block = do
 					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
 				St.putN "foobar" $ OnDemand.RequestBuffer 100
-				void $ bits Pipe.=$= do
+				void $ bits "foobar" Pipe.=$= do
 
 					whenMaybe mhclen \hclen -> do
 						rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
@@ -201,8 +202,8 @@ block = do
 							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths 0 hlitdist
 						Huffman.putTree ht
 						litLen ht hdt 0
-				St.putN "foobar" . OnDemand.RequestPushBack =<< St.getN "bits"
-				St.putN "bits" BitArray.empty
+				St.putN "foobar" . OnDemand.RequestPushBack =<< St.getsN "foobar" unBitArray
+				St.putN "foobar" $ BitArray BitArray.empty
 				Right "" <- Pipe.await; pure ()
 		_ -> error "bad"
 	where
@@ -271,23 +272,26 @@ dist t dt ln pri = Pipe.await >>= \case
 		Huffman.putTree t
 		litLen t dt 0
 
-bits :: (U.Member Pipe.P es, U.Member (St.Named "bits" BitArray.B) es) =>
+bits :: forall nm -> (U.Member Pipe.P es, U.Member (St.Named nm BitArray) es) =>
 	Eff.E es (Either BitArray.B BS.ByteString) Bit.B r
-bits = forever . (Pipe.yield =<<)
-	$ fix \go -> St.getsN "bits" BitArray.pop >>= maybe
-		((>> go) $ St.putN "bits"
+bits nm = forever . (Pipe.yield =<<)
+	$ fix \go -> St.getsN nm (BitArray.pop . unBitArray) >>= maybe
+		((>> go) $ St.putN nm . BitArray
 			. either id BitArray.fromByteString =<< Pipe.await)
-		(uncurry (<$) . (St.putN "bits" `second`))
+		(uncurry (<$) . ((St.putN nm . BitArray) `second`))
 
-format :: (
+newtype BitArray = BitArray { unBitArray :: BitArray.B } deriving Show
+
+format :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (St.Named Fmt BS.ByteString) es ) =>
+	U.Member (St.Named nm FormatBuffer) es ) =>
 	Int -> Eff.E es (Either Word8 BS.ByteString) BS.ByteString ()
-format n = fix \go -> St.getN Fmt >>= \bs -> bool
-	(uncurry (>>) ((Pipe.yield *** St.putN Fmt) $ BS.splitAt n bs) >> go)
+format nm n = fix \go -> St.getsN nm unFormatBuffer >>= \bs -> bool
+	(uncurry (>>) ((Pipe.yield *** St.putN nm . FormatBuffer) $ BS.splitAt n bs) >> go)
 	(maybe (Pipe.yield bs) ((>> go)
-		. St.putN Fmt
+		. St.putN nm . FormatBuffer
 		. either (BS.snoc bs) (BS.append bs)) =<< Pipe.awaitMaybe)
 	(BS.length bs < n)
 
-type Fmt = "format"
+newtype FormatBuffer =
+	FormatBuffer { unFormatBuffer :: BS.ByteString } deriving Show
