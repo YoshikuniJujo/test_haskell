@@ -52,27 +52,25 @@ import Pipe.Runlength qualified as RunLength
 import Data.TypeLevel.List
 
 run_ :: HFunctor.Loose (U.U es) =>
-	Eff.E  (States `Append` es) i o a -> Eff.E es i o ()
+	Eff.E  (States "foobar" `Append` es) i o a -> Eff.E es i o ()
 run_ = void
-	. RunLength.run_
 	. (flip (St.runN @"foobar") $ FormatBuffer "")
-	. Huffman.run @"foobar" @Int
 	. (flip (St.runN @"foobar") . BitArray $ BitArray.fromByteString "")
 	. PipeB.lengthRun @"foobar" . Crc.runCrc32 @"foobar"
-	. OnDemand.run_
+	. RunLength.run_ . Huffman.run . OnDemand.run_
 
-type States = OnDemand.States "foobar" `Append` [
-	St.Named "foobar" Crc.Crc32,
-	St.Named "foobar" PipeB.Length,
-	St.Named "foobar" BitArray,
-	St.Named "foobar" Huffman.ExtraBits,
-	St.Named "foobar" (Huffman.BinTreePair Int),
-	St.Named "foobar" FormatBuffer,
-	St.Named "foobar" RunLength.Seq ]
+type States nm =
+	OnDemand.States nm `Append`
+	Huffman.States nm Int `Append`
+	RunLength.States nm `Append` [
+	St.Named nm Crc.Crc32,
+	St.Named nm PipeB.Length,
+	St.Named nm BitArray,
+	St.Named nm FormatBuffer ]
 
 decompress :: (
 	U.Member Pipe.P es,
-	Members es,
+	Members "foobar" es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	(GzipHeader -> Eff.E es BS.ByteString BS.ByteString r) ->
 	Eff.E es BS.ByteString BS.ByteString ()
@@ -92,15 +90,14 @@ decompress phd = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 		=<< Except.getRight @String "bad" =<< Pipe.await
 	when (ln /= ln') $ Except.throw @String "bad length"
 
-type Members es = (
-	OnDemand.Members "foobar" es,
-	U.Member (St.Named "foobar" BitArray) es,
-	U.Member (St.Named "foobar" Huffman.ExtraBits) es,
-	U.Member (St.Named "foobar" (Huffman.BinTreePair Int)) es,
-	U.Member (St.Named "foobar" RunLength.Seq) es,
-	U.Member (St.Named "foobar" FormatBuffer) es,
-	U.Member (St.Named "foobar" Crc.Crc32 ) es,
-	U.Member (St.Named "foobar" PipeB.Length) es )
+type Members nm es = (
+	OnDemand.Members nm es,
+	Huffman.Members nm Int es,
+	RunLength.Members nm es,
+	U.Member (St.Named nm Crc.Crc32 ) es,
+	U.Member (St.Named nm PipeB.Length) es,
+	U.Member (St.Named nm BitArray) es,
+	U.Member (St.Named nm FormatBuffer) es )
 
 readHeader :: (
 	U.Member Pipe.P es,
@@ -201,7 +198,7 @@ block = do
 								Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
 							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths 0 hlitdist
 						Huffman.putTree "foobar" ht
-						litLen ht hdt 0
+						litLen "foobar" ht hdt 0
 				St.putN "foobar" . OnDemand.RequestPushBack =<< St.getsN "foobar" unBitArray
 				St.putN "foobar" $ BitArray BitArray.empty
 				Right "" <- Pipe.await; pure ()
@@ -229,47 +226,47 @@ codeLengths = fix \go pr n -> if n == 0 then pure [] else Pipe.await >>= \case
 		| otherwise -> error "bad"
 	Right _ -> error "bad"
 
-litLen :: (
+litLen :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (St.Named "foobar"
+	U.Member (St.Named nm
 		(Huffman.BinTreePair Int)) es,
-	U.Member (St.Named "foobar" Huffman.ExtraBits) es ) =>
+	U.Member (St.Named nm Huffman.ExtraBits) es ) =>
 	Huffman.BinTree Int -> Huffman.BinTree Int -> Int ->
 	Eff.E es (Either Int Word16) RunLength.R ()
-litLen t dt pri = Pipe.await >>= \case
+litLen nm t dt pri = Pipe.await >>= \case
 	Left 256 -> pure ()
 	Left i	| 0 <= i && i <= 255 -> do
 			Pipe.yield (RunLength.Literal $ fromIntegral i)
-			litLen t dt 0
-		| 257 <= i && i <= 264 -> Huffman.putTree "foobar" dt >> dist t dt (calcLength i 0) 0
+			litLen nm t dt 0
+		| 257 <= i && i <= 264 -> Huffman.putTree nm dt >> dist nm t dt (calcLength i 0) 0
 		| 265 <= i && i <= 284 -> do
-			Huffman.putExtraBits "foobar" $ (i - 261) `div` 4
-			litLen t dt i
-		| i == 285 -> Huffman.putTree "foobar" dt >> dist t dt (calcLength i 0) 0
+			Huffman.putExtraBits nm $ (i - 261) `div` 4
+			litLen nm t dt i
+		| i == 285 -> Huffman.putTree nm dt >> dist nm t dt (calcLength i 0) 0
 	Right eb -> do
-		Huffman.putTree "foobar" dt
-		dist t dt (calcLength pri eb) 0
+		Huffman.putTree nm dt
+		dist nm t dt (calcLength pri eb) 0
 	err -> error $ show err
 
-dist :: (
+dist :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (St.Named "foobar" (Huffman.BinTreePair Int)) es,
-	U.Member (St.Named "foobar" Huffman.ExtraBits) es ) =>
+	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named nm Huffman.ExtraBits) es ) =>
 	Huffman.BinTree Int -> Huffman.BinTree Int -> RunLength.Length -> Int ->
 	Eff.E es (Either Int Word16) RunLength.R ()
-dist t dt ln pri = Pipe.await >>= \case
+dist nm t dt ln pri = Pipe.await >>= \case
 	Left i	| 0 <= i && i <= 3 -> do
 			Pipe.yield $ RunLength.LenDist ln (calcDist i 0)
-			Huffman.putTree "foobar" t
-			litLen t dt 0
+			Huffman.putTree nm t
+			litLen nm t dt 0
 		| 4 <= i && i <= 29 -> do
-			Huffman.putExtraBits "foobar" $ (i - 2) `div` 2
-			dist t dt ln i
+			Huffman.putExtraBits nm $ (i - 2) `div` 2
+			dist nm t dt ln i
 		| otherwise -> error $ "putDist: yet " ++ show i
 	Right eb -> do
 		Pipe.yield (RunLength.LenDist ln (calcDist pri eb))
-		Huffman.putTree "foobar" t
-		litLen t dt 0
+		Huffman.putTree nm t
+		litLen nm t dt 0
 
 bits :: forall nm -> (U.Member Pipe.P es, U.Member (St.Named nm BitArray) es) =>
 	Eff.E es (Either BitArray.B BS.ByteString) Bit.B r

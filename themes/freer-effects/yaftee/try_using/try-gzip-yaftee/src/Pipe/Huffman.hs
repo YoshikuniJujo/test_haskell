@@ -1,14 +1,15 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Pipe.Huffman (
-	run, huffman, putTree, putExtraBits, makeTree,
+	run, States,
+	huffman, Members, putTree, putExtraBits, makeTree,
 
 	BinTreePair, BinTree, ExtraBits(..), Pkg,
 
@@ -21,6 +22,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Huffman
@@ -62,11 +64,17 @@ huffman nm = do
 			State.putN nm $ ExtraBits 0
 			huffman nm
 
+type Members nm a es = (
+	U.Member (State.Named nm (BinTreePair a)) es,
+	U.Member (State.Named nm ExtraBits) es )
+
 run :: forall nm a es i o r . (HFunctor.Loose (U.U es), Ord a) =>
-	Eff.E (State.Named nm ExtraBits ': State.Named nm (BinTreePair a) ': es) i o r ->
+	Eff.E (States nm a `Append` es) i o r ->
 	Eff.E es i o ((r, ExtraBits), (BinTreePair a))
 run = flip (State.runN @nm) (BinTreePair bt bt) . flip (State.runN @nm) (ExtraBits 0)
 	where bt = makeTree [] ([] :: [Int])
+
+type States nm a = '[State.Named nm ExtraBits, State.Named nm (BinTreePair a)]
 
 putTree :: forall a es i o . forall nm -> U.Member (State.Named nm (BinTreePair a)) es =>
 	BinTree a -> Eff.E es i o ()

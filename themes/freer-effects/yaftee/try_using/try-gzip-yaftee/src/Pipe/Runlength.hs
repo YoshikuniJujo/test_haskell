@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -20,17 +21,18 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List (Append)
 import Data.Foldable
 import Data.HigherFunctor qualified as HFunctor
 import Data.Sequence qualified as Seq
 
 run_ :: HFunctor.Loose (U.U es) =>
-	Eff.E (State.Named nm Seq ': es) i o a -> Eff.E es i o ()
+	Eff.E (States nm `Append` es) i o a -> Eff.E es i o ()
 run_ = void . flip State.runN (Seq Seq.empty)
 
-runlength :: forall nm ->(
-	U.Member Pipe.P es,
-	U.Member (State.Named nm Seq) es ) =>
+type States nm = '[State.Named nm Seq]
+
+runlength :: forall nm -> (U.Member Pipe.P es, Members nm es) =>
 	Eff.E es R (Either Word8 BS.ByteString) ()
 runlength nm = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
 	Literal w -> (>> go)
@@ -40,6 +42,8 @@ runlength nm = fix \go -> Pipe.await >>= \rl -> ($ rl) \case
 	LenDist ln d -> (>> go) $ State.getsN nm (repetition ln d) >>= \ws ->
 		State.modifyN nm (`appendR` ws) >> Pipe.yield (Right $ BS.pack ws)
 	EndOfInput -> pure ()
+
+type Members nm es = (U.Member (State.Named nm Seq) es)
 
 newtype Seq = Seq { unSeq :: Seq.Seq Word8 }
 
