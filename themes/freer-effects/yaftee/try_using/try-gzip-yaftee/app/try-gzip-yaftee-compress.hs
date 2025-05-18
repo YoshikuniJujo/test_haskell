@@ -16,10 +16,7 @@ import Control.Monad.Yaftee.Pipe.Bits qualified as PipeB
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc
 import Control.Monad.Yaftee.State qualified as State
-import Control.HigherOpenUnion qualified as U
-import Data.Bool
 import Data.ByteString qualified as BS
-import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.Bit qualified as Bit
 import System.IO
 import System.Environment
@@ -34,11 +31,11 @@ main = do
 	void $ withFile ifp ReadMode \r -> withFile ofp WriteMode \o -> Eff.runM
 		. (`State.run` Bit.empty)
 		. (`State.run` ("" :: BS.ByteString))
-		. (`State.run` FileLength 0)
+		. PipeBS.lengthRun @"foobar" -- (`State.run` FileLength 0)
 		. PipeCrc.runCrc32 @"foobar" . RunLength.run . PipeL.to
 		$ PipeBS.hGet 64 r Pipe.=$=
 			PipeCrc.crc32' "foobar" Pipe.=$=
-			lengthPipe Pipe.=$=
+			PipeBS.length' "foobar" Pipe.=$=
 			RunLength.compressRL Pipe.=$=
 			PipeL.bundle' 500 Pipe.=$=
 			PipeT.convert'' runLengthsToBits [] Pipe.=$= do
@@ -46,13 +43,5 @@ main = do
 				PipeB.toByteString'
 				PipeCrc.compCrc32 "foobar"
 				Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN "foobar"
-				Pipe.yield . BS.fromBits . unFileLength =<< State.get
+				Pipe.yield . PipeBS.lengthToByteString =<< State.getN "foobar"
 			Pipe.=$= PipeBS.hPutStr' o
-
-lengthPipe :: (U.Member Pipe.P es, U.Member (State.S FileLength) es) =>
-	Eff.E es BS.ByteString BS.ByteString ()
-lengthPipe = (Pipe.isMore >>=) . bool (pure ()) $ Pipe.await >>= \bs -> do
-	State.modify $ FileLength . (BS.length bs +) . unFileLength
-	Pipe.yield bs >> lengthPipe
-
-newtype FileLength = FileLength { unFileLength :: Int } deriving Show
