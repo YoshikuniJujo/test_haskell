@@ -26,6 +26,6 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	let	processHeader = IO.hPrint stderr
-	void . Eff.runM . Except.run @String . Fail.runExc id . run_ . Pipe.run
+	void . Eff.runM . Except.run @String . Fail.runExc id . run_ @"foobar" . Pipe.run
 		$ PipeB.hGet 64 h Pipe.=$=
-			decompress processHeader Pipe.=$= PipeB.putStr'
+			decompress "foobar" processHeader Pipe.=$= PipeB.putStr'
