@@ -1,5 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -21,24 +23,24 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Bit (pattern O)
 import Data.ByteString.Bit qualified as Bit
 
-toByteString :: (U.Member Pipe.P es, U.Member (State.S Queue) es) =>
+toByteString :: forall nm -> (U.Member Pipe.P es, U.Member (State.Named nm Queue) es) =>
 	Eff.E es [Bit.B] BS.ByteString r
-toByteString = fix \go -> (>> go) do
-	State.modify . flip append =<< Pipe.await
+toByteString nm = fix \go -> (>> go) do
+	State.modifyN nm . flip append =<< Pipe.await
 	Pipe.yield =<< uncurry (<$)
-		. (BS.pack *** State.put . Queue) . unfoldr' Bit.popByte =<< State.gets unQueue
+		. (BS.pack *** State.putN nm . Queue) . unfoldr' Bit.popByte =<< State.getsN nm unQueue
 
-toByteString' :: (U.Member Pipe.P es, U.Member (State.S Queue) es) =>
+toByteString' :: forall nm -> (U.Member Pipe.P es, U.Member (State.Named nm Queue) es) =>
 	Eff.E es [Bit.B] BS.ByteString ()
-toByteString' = fix \go -> Pipe.isMore >>= bool
-	do	State.modify $ Queue . (`Bit.append` [O, O, O, O, O, O, O]) . unQueue
+toByteString' nm = fix \go -> Pipe.isMore >>= bool
+	do	State.modifyN nm $ Queue . (`Bit.append` [O, O, O, O, O, O, O]) . unQueue
 		Pipe.yield =<< uncurry (<$)
-			. (BS.pack *** State.put . Queue)
-			. unfoldr' Bit.popByte =<< State.gets unQueue
-	do	State.modify . flip append =<< Pipe.await
+			. (BS.pack *** State.putN nm . Queue)
+			. unfoldr' Bit.popByte =<< State.getsN nm unQueue
+	do	State.modifyN nm . flip append =<< Pipe.await
 		Pipe.yield =<< uncurry (<$)
-			. (BS.pack *** State.put . Queue)
-			. unfoldr' Bit.popByte =<< State.gets unQueue
+			. (BS.pack *** State.putN nm . Queue)
+			. unfoldr' Bit.popByte =<< State.getsN nm unQueue
 		go
 	
 
