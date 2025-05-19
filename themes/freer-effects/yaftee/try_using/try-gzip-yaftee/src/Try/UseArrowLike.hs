@@ -15,6 +15,7 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 
 import Try.ArrowLike
+import Try.ArrowLike.Choice
 
 sample :: IO ()
 sample = void . Eff.runM
@@ -36,6 +37,4 @@ sample' = void . Eff.runM
 	$ void (PipeL.from [Left (3 :: Int), Right "hello", Right "world", Left 2, Left 8, Right "foo"] Pipe.=$=
 --	$ void (PipeL.from [Left 1, Left 2, Left 3, Right "hello", Left 2, Left 111] Pipe.=$=
 		(PipeT.convert (Just . (`replicate` 'a')) ||| PipeT.convert (Just . concat . replicate 3)) Pipe.=$=
---		(left $ PipeT.convert (`replicate` 'a')) Pipe.=$=
---		(right $ PipeT.convert (replicate 3)) Pipe.=$=
 		PipeIO.print) `Except.catch` IO.putStrLn

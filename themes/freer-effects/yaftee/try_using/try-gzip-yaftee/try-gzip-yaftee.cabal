@@ -39,6 +39,7 @@ library
       Pipe.RunLength.Triple
       Tools
       Try.ArrowLike
+      Try.ArrowLike.Choice
       Try.UseArrowLike
   other-modules:
       Paths_try_gzip_yaftee
