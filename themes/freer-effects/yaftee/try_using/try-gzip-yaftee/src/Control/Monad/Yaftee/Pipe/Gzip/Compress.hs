@@ -21,7 +21,6 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Bit qualified as Bit
 
 import Pipe.RunLength.Compress qualified as RunLength
-import Pipe.RunLength.Triple qualified as Triple
 import Data.Gzip.GzipHeader
 import Data.Gzip.Block
 
@@ -29,9 +28,7 @@ compress :: (
 	U.Member Pipe.P es,
 	U.Member (State.Named "foobar" PipeCrc.Crc32) es,
 	U.Member (State.Named "foobar" PipeBS.Length) es,
-	U.Member (State.S BS.ByteString) es,
-	U.Member (State.S RunLength.AheadPos) es,
-	U.Member (State.S Triple.T) es,
+	RunLength.Members es,
 	U.Member (State.S Bit.Queue) es ) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 compress = void $

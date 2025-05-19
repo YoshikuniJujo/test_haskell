@@ -14,7 +14,6 @@ import Control.Monad.Yaftee.Pipe.List qualified as PipeL
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc
 import Control.Monad.Yaftee.State qualified as State
-import Data.ByteString qualified as BS
 import Data.ByteString.Bit qualified as Bit
 import System.IO
 import System.Environment
@@ -28,7 +27,6 @@ main = do
 	ifp : ofp : _ <- getArgs
 	void $ withFile ifp ReadMode \r -> withFile ofp WriteMode \o -> Eff.runM
 		. (`State.run` Bit.empty)
-		. (`State.run` ("" :: BS.ByteString))
 		. PipeBS.lengthRun @"foobar"
 		. PipeCrc.runCrc32 @"foobar" . RunLength.run_ . PipeL.to
 		$ PipeBS.hGet 64 r Pipe.=$= compress Pipe.=$= PipeBS.hPutStr' o

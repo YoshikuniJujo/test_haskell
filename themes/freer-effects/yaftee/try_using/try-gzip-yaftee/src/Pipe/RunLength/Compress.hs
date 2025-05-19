@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -10,8 +10,9 @@
 module Pipe.RunLength.Compress (
 
 	run_, States,
-	compress,
-	AheadPos
+	compress, Members,
+
+	AheadPos, ByteString
 
 	) where
 
@@ -32,14 +33,14 @@ import Control.HigherOpenUnion qualified as U
 
 run_ :: HFunctor.Loose (U.U es) =>
 	Eff.E (States `Append` es) i o a -> Eff.E es i o ()
-run_ = void . (`State.run` Triple.empty) . (`State.run` AheadPos 0)
+run_ = void
+	. (`State.run` ByteString "")
+	. (`State.run` Triple.empty)
+	. (`State.run` AheadPos 0)
 
-type States = '[State.S AheadPos, State.S Triple.T]
+type States = '[State.S AheadPos, State.S Triple.T, State.S ByteString]
 
-compress :: (
-	U.Member Pipe.P es,
-	U.Member (State.S AheadPos) es, U.Member (State.S Triple.T) es,
-	U.Member (State.S BS.ByteString) es ) => Eff.E es BS.ByteString RL.R ()
+compress :: (U.Member Pipe.P es, Members es) => Eff.E es BS.ByteString RL.R ()
 compress = fix \go -> get3 >>= \(mb, mb1, mb2) ->
 	($ mb) $ maybe (pure ()) \b -> (>> go) case (mb1, mb2) of
 		(Just b1, Just b2) -> State.get >>= \st ->
@@ -51,9 +52,14 @@ compress = fix \go -> get3 >>= \(mb, mb1, mb2) ->
 		_ -> do	State.modify (`Triple.update` b)
 			Pipe.yield (RL.Literal b)
 
+type Members es = (
+	U.Member (State.S AheadPos) es,
+	U.Member (State.S Triple.T) es,
+	U.Member (State.S ByteString) es )
+
 putLenDist :: (
 	U.Member Pipe.P es, U.Member (State.S Triple.T) es,
-	U.Member (State.S AheadPos) es, U.Member (State.S BS.ByteString) es ) =>
+	U.Member (State.S AheadPos) es, U.Member (State.S ByteString) es ) =>
 	Word8 -> Word8 -> Word8 -> Int -> RL.Length ->
 	Eff.E es BS.ByteString RL.R ()
 putLenDist b b1 b2 i0 l0 = State.gets (Triple.distance i0) >>= \d0 -> do
@@ -79,7 +85,7 @@ proceed :: (
 	Foldable t,
 	U.Member Pipe.P es,
 	U.Member (State.S Triple.T) es, U.Member (State.S AheadPos) es,
-	U.Member (State.S BS.ByteString) es ) =>
+	U.Member (State.S ByteString) es ) =>
 	(Int, t o) -> Eff.E es BS.ByteString o ()
 proceed (l', ys) = getBytes l' >>= \bs -> do
 	State.modify \st -> foldl Triple.update st $ BS.unpack bs
@@ -87,31 +93,32 @@ proceed (l', ys) = getBytes l' >>= \bs -> do
 
 get3 :: (
 	U.Member Pipe.P es,
-	U.Member (State.S AheadPos) es, U.Member (State.S BS.ByteString) es ) =>
+	U.Member (State.S AheadPos) es, U.Member (State.S ByteString) es ) =>
 	Eff.E es BS.ByteString o (Maybe Word8, Maybe Word8, Maybe Word8)
 get3 = (,,) <$> get <*> getAhead <*> getAhead
 
 get :: (
 	U.Member Pipe.P es, U.Member (State.S AheadPos) es,
-	U.Member (State.S BS.ByteString) es ) =>
+	U.Member (State.S ByteString) es ) =>
 	Eff.E es BS.ByteString o (Maybe Word8)
-get = State.gets BS.uncons >>= \case
+get = State.gets (BS.uncons . unByteString) >>= \case
 	Nothing -> bool (pure Nothing) get =<< readMore
-	Just (b, bs) -> Just b <$ (State.put (AheadPos 0) >> State.put bs)
+	Just (b, bs) ->
+		Just b <$ (State.put (AheadPos 0) >> State.put (ByteString bs))
 
 getBytes :: (
 	U.Member Pipe.P es, U.Member (State.S AheadPos) es,
-	U.Member (State.S BS.ByteString) es ) =>
+	U.Member (State.S ByteString) es ) =>
 	Int -> Eff.E es BS.ByteString o BS.ByteString
-getBytes n = State.get >>= \bs -> if BS.length bs >= n
-	then BS.take n bs <$ State.put (BS.drop n bs)
+getBytes n = State.gets unByteString >>= \bs -> if BS.length bs >= n
+	then BS.take n bs <$ State.put (ByteString $ BS.drop n bs)
 	else readMore >> getBytes n
 
 getAhead :: (
 	U.Member Pipe.P es, U.Member (State.S AheadPos) es,
-	U.Member (State.S BS.ByteString) es ) =>
+	U.Member (State.S ByteString) es ) =>
 	Eff.E es BS.ByteString o (Maybe Word8)
-getAhead = State.get >>= \bs -> State.get >>= \(AheadPos i) ->
+getAhead = State.get >>= \(ByteString bs) -> State.get >>= \(AheadPos i) ->
 	case bs BS.!? i of
 		Nothing -> bool (pure Nothing) getAhead =<< readMore
 		Just b -> Just b <$ State.modify nextAheadPos
@@ -122,7 +129,12 @@ nextAheadPos :: AheadPos -> AheadPos
 nextAheadPos (AheadPos p) = AheadPos $ p + 1
 
 readMore ::
-	(U.Member Pipe.P es, U.Member (State.S BS.ByteString) es) =>
+	(U.Member Pipe.P es, U.Member (State.S ByteString) es) =>
 	Eff.E es BS.ByteString o Bool
 readMore = Pipe.isMore >>= bool (pure False)
-	(True <$ (State.modify . flip BS.append =<< Pipe.await))
+	(True <$ (State.modify . flip append =<< Pipe.await))
+
+newtype ByteString = ByteString { unByteString :: BS.ByteString } deriving Show
+
+append :: ByteString -> BS.ByteString -> ByteString
+bs1 `append` bs2 = ByteString $ unByteString bs1 `BS.append` bs2
