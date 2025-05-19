@@ -22,6 +22,6 @@ main :: IO ()
 main = do
 	ifp : ofp : _ <- getArgs
 	void $ withFile ifp ReadMode \r -> withFile ofp WriteMode \o -> Eff.runM
-		. run_
+		. run_ @"foobar"
 		. PipeL.to
-		$ PipeBS.hGet 64 r Pipe.=$= compress Pipe.=$= PipeBS.hPutStr' o
+		$ PipeBS.hGet 64 r Pipe.=$= compress "foobar" Pipe.=$= PipeBS.hPutStr' o

@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,33 +34,31 @@ import Data.Gzip.Block
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 
-run_ :: HFunctor.Loose (U.U es) =>
-	Eff.E (States `Append` es) i o a -> Eff.E es i o ()
+run_ :: forall nm es i o a . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o a -> Eff.E es i o ()
 run_ = void
-	. (flip (State.runN @"foobar") PipeB.empty)
-	. PipeBS.lengthRun @"foobar"
-	. PipeCrc.runCrc32 @"foobar"
-	. RunLength.run_ @"foobar"
+	. (flip State.runN PipeB.empty)
+	. PipeBS.lengthRun . PipeCrc.runCrc32 . RunLength.run_
 
-type States = RunLength.States "foobar" `Append` '[
-	State.Named "foobar" PipeCrc.Crc32,
-	State.Named "foobar" PipeBS.Length,
-	State.Named "foobar" PipeB.Queue  ]
+type States nm = RunLength.States nm `Append` '[
+	State.Named nm PipeCrc.Crc32,
+	State.Named nm PipeBS.Length,
+	State.Named nm PipeB.Queue  ]
 
-compress :: (U.Member Pipe.P es, Members es) =>
+compress :: forall nm -> (U.Member Pipe.P es, Members nm es) =>
 	Eff.E es BS.ByteString BS.ByteString ()
-compress = void $
-	PipeCrc.crc32' "foobar" Pipe.=$= PipeBS.length' "foobar" Pipe.=$=
-	RunLength.compress "foobar" Pipe.=$= PipeL.bundle' 500 Pipe.=$=
+compress nm = void $
+	PipeCrc.crc32' nm Pipe.=$= PipeBS.length' nm Pipe.=$=
+	RunLength.compress nm Pipe.=$= PipeL.bundle' 500 Pipe.=$=
 	PipeT.convert'' runLengthsToBits [] Pipe.=$= do
 		Pipe.yield $ encodeGzipHeader sampleGzipHeader
-		PipeB.toByteString' "foobar"
-		PipeCrc.compCrc32 "foobar"
-		Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN "foobar"
-		Pipe.yield . PipeBS.lengthToByteString =<< State.getN "foobar"
+		PipeB.toByteString' nm
+		PipeCrc.compCrc32 nm
+		Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN nm
+		Pipe.yield . PipeBS.lengthToByteString =<< State.getN nm
 
-type Members es = (
-	U.Member (State.Named "foobar" PipeCrc.Crc32) es,
-	U.Member (State.Named "foobar" PipeBS.Length) es,
-	RunLength.Members "foobar" es,
-	U.Member (State.Named "foobar" PipeB.Queue) es )
+type Members nm es = (
+	U.Member (State.Named nm PipeCrc.Crc32) es,
+	U.Member (State.Named nm PipeBS.Length) es,
+	RunLength.Members nm es,
+	U.Member (State.Named nm PipeB.Queue) es )
