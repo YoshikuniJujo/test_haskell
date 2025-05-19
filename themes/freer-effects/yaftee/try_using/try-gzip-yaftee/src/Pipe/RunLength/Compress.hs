@@ -8,9 +8,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
 module Pipe.RunLength.Compress (
-	run, compressRL, AheadPos ) where
 
+	run_, States,
+	compress,
+	AheadPos
+
+	) where
+
+import Control.Monad
 import Control.Monad.Fix
+import Data.TypeLevel.List
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
@@ -23,16 +30,17 @@ import Control.Monad.Yaftee.State qualified as State
 import Data.HigherFunctor qualified as HFunctor
 import Control.HigherOpenUnion qualified as U
 
-run :: HFunctor.Loose (U.U es) =>
-	Eff.E (State.S Triple.T ': State.S AheadPos ': es) i o a ->
-	Eff.E es i o ((a, Triple.T), AheadPos)
-run = (`State.run` AheadPos 0) . (`State.run` Triple.empty)
+run_ :: HFunctor.Loose (U.U es) =>
+	Eff.E (States `Append` es) i o a -> Eff.E es i o ()
+run_ = void . (`State.run` Triple.empty) . (`State.run` AheadPos 0)
 
-compressRL :: (
+type States = '[State.S AheadPos, State.S Triple.T]
+
+compress :: (
 	U.Member Pipe.P es,
 	U.Member (State.S AheadPos) es, U.Member (State.S Triple.T) es,
 	U.Member (State.S BS.ByteString) es ) => Eff.E es BS.ByteString RL.R ()
-compressRL = fix \go -> get3 >>= \(mb, mb1, mb2) ->
+compress = fix \go -> get3 >>= \(mb, mb1, mb2) ->
 	($ mb) $ maybe (pure ()) \b -> (>> go) case (mb1, mb2) of
 		(Just b1, Just b2) -> State.get >>= \st ->
 			Triple.indexLength' st b b1 b2 getAhead >>= \case

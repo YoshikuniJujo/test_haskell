@@ -5,27 +5,23 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
-import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.List qualified as PipeL
-import Control.Monad.Yaftee.Pipe.Bits qualified as PipeB
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc
 import Control.Monad.Yaftee.State qualified as State
-import Control.HigherOpenUnion qualified as U
 import Data.ByteString qualified as BS
 import Data.ByteString.Bit qualified as Bit
 import System.IO
 import System.Environment
 
 import Pipe.RunLength.Compress qualified as RunLength
-import Pipe.RunLength.Triple qualified as Triple
-import Data.Gzip.GzipHeader
-import Data.Gzip.Block
+
+import Control.Monad.Yaftee.Pipe.Gzip.Compress
 
 main :: IO ()
 main = do
@@ -33,27 +29,6 @@ main = do
 	void $ withFile ifp ReadMode \r -> withFile ofp WriteMode \o -> Eff.runM
 		. (`State.run` Bit.empty)
 		. (`State.run` ("" :: BS.ByteString))
-		. PipeBS.lengthRun @"foobar" -- (`State.run` FileLength 0)
-		. PipeCrc.runCrc32 @"foobar" . RunLength.run . PipeL.to
-		$ PipeBS.hGet 64 r Pipe.=$= foo Pipe.=$= PipeBS.hPutStr' o
-
-foo :: (
-	U.Member Pipe.P es,
-	U.Member (State.Named "foobar" PipeCrc.Crc32) es,
-	U.Member (State.Named "foobar" PipeBS.Length) es,
-	U.Member (State.S BS.ByteString) es,
-	U.Member (State.S RunLength.AheadPos) es,
-	U.Member (State.S Triple.T) es,
-	U.Member (State.S Bit.Queue) es ) =>
-	Eff.E es BS.ByteString BS.ByteString ()
-foo = void $
-	PipeCrc.crc32' "foobar" Pipe.=$=
-	PipeBS.length' "foobar" Pipe.=$=
-	RunLength.compressRL Pipe.=$=
-	PipeL.bundle' 500 Pipe.=$=
-	PipeT.convert'' runLengthsToBits [] Pipe.=$= do
-		Pipe.yield $ encodeGzipHeader sampleGzipHeader
-		PipeB.toByteString'
-		PipeCrc.compCrc32 "foobar"
-		Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN "foobar"
-		Pipe.yield . PipeBS.lengthToByteString =<< State.getN "foobar"
+		. PipeBS.lengthRun @"foobar"
+		. PipeCrc.runCrc32 @"foobar" . RunLength.run_ . PipeL.to
+		$ PipeBS.hGet 64 r Pipe.=$= compress Pipe.=$= PipeBS.hPutStr' o
