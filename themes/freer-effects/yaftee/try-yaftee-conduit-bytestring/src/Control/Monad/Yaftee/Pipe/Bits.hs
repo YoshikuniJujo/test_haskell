@@ -6,7 +6,7 @@
 
 module Control.Monad.Yaftee.Pipe.Bits (
 
-	toByteString, toByteString', Queue
+	toByteString, toByteString', Queue, empty
 
 	) where
 
@@ -46,6 +46,9 @@ unfoldr' :: (b -> Maybe (a, b)) -> b -> ([a], b)
 unfoldr' f = fix \go s -> maybe ([], s) (\(x, s') -> (x :) `first` go s') $ f s
 
 newtype Queue = Queue { unQueue :: Bit.Queue } deriving Show
+
+empty :: Queue
+empty = Queue Bit.empty
 
 append :: Queue -> [Bit.B] -> Queue
 append (Queue q) bs = Queue $ q `Bit.append` bs
