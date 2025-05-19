@@ -18,7 +18,6 @@ import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
 import Data.ByteString qualified as BS
-import Data.ByteString.Bit qualified as Bit
 
 import Pipe.RunLength.Compress qualified as RunLength
 import Data.Gzip.GzipHeader
@@ -29,7 +28,7 @@ compress :: (
 	U.Member (State.Named "foobar" PipeCrc.Crc32) es,
 	U.Member (State.Named "foobar" PipeBS.Length) es,
 	RunLength.Members es,
-	U.Member (State.S Bit.Queue) es ) =>
+	U.Member (State.S PipeB.Queue) es ) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 compress = void $
 	PipeCrc.crc32' "foobar" Pipe.=$= PipeBS.length' "foobar" Pipe.=$=
