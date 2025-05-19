@@ -27,15 +27,15 @@ compress :: (
 	U.Member Pipe.P es,
 	U.Member (State.Named "foobar" PipeCrc.Crc32) es,
 	U.Member (State.Named "foobar" PipeBS.Length) es,
-	RunLength.Members es,
-	U.Member (State.S PipeB.Queue) es ) =>
+	RunLength.Members "foobar" es,
+	U.Member (State.Named "foobar" PipeB.Queue) es ) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 compress = void $
 	PipeCrc.crc32' "foobar" Pipe.=$= PipeBS.length' "foobar" Pipe.=$=
-	RunLength.compress Pipe.=$= PipeL.bundle' 500 Pipe.=$=
+	RunLength.compress "foobar" Pipe.=$= PipeL.bundle' 500 Pipe.=$=
 	PipeT.convert'' runLengthsToBits [] Pipe.=$= do
 		Pipe.yield $ encodeGzipHeader sampleGzipHeader
-		PipeB.toByteString'
+		PipeB.toByteString' "foobar"
 		PipeCrc.compCrc32 "foobar"
 		Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN "foobar"
 		Pipe.yield . PipeBS.lengthToByteString =<< State.getN "foobar"

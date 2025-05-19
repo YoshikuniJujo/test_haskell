@@ -26,7 +26,7 @@ main :: IO ()
 main = do
 	ifp : ofp : _ <- getArgs
 	void $ withFile ifp ReadMode \r -> withFile ofp WriteMode \o -> Eff.runM
-		. (`State.run` PipeB.empty)
+		. (flip (State.runN @"foobar") PipeB.empty)
 		. PipeBS.lengthRun @"foobar"
-		. PipeCrc.runCrc32 @"foobar" . RunLength.run_ . PipeL.to
+		. PipeCrc.runCrc32 @"foobar" . RunLength.run_ @"foobar" . PipeL.to
 		$ PipeBS.hGet 64 r Pipe.=$= compress Pipe.=$= PipeBS.hPutStr' o
