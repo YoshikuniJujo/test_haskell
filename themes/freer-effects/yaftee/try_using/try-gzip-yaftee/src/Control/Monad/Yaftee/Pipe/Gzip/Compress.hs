@@ -1,11 +1,18 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Gzip.Compress (compress) where
+module Control.Monad.Yaftee.Pipe.Gzip.Compress (
+
+	run_, States,
+
+	compress, Members
+
+	) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -23,12 +30,23 @@ import Pipe.RunLength.Compress qualified as RunLength
 import Data.Gzip.GzipHeader
 import Data.Gzip.Block
 
-compress :: (
-	U.Member Pipe.P es,
-	U.Member (State.Named "foobar" PipeCrc.Crc32) es,
-	U.Member (State.Named "foobar" PipeBS.Length) es,
-	RunLength.Members "foobar" es,
-	U.Member (State.Named "foobar" PipeB.Queue) es ) =>
+import Data.TypeLevel.List
+import Data.HigherFunctor qualified as HFunctor
+
+run_ :: HFunctor.Loose (U.U es) =>
+	Eff.E (States `Append` es) i o a -> Eff.E es i o ()
+run_ = void
+	. (flip (State.runN @"foobar") PipeB.empty)
+	. PipeBS.lengthRun @"foobar"
+	. PipeCrc.runCrc32 @"foobar"
+	. RunLength.run_ @"foobar"
+
+type States = RunLength.States "foobar" `Append` '[
+	State.Named "foobar" PipeCrc.Crc32,
+	State.Named "foobar" PipeBS.Length,
+	State.Named "foobar" PipeB.Queue  ]
+
+compress :: (U.Member Pipe.P es, Members es) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 compress = void $
 	PipeCrc.crc32' "foobar" Pipe.=$= PipeBS.length' "foobar" Pipe.=$=
@@ -39,3 +57,9 @@ compress = void $
 		PipeCrc.compCrc32 "foobar"
 		Pipe.yield . PipeCrc.crc32ToByteString =<< State.getN "foobar"
 		Pipe.yield . PipeBS.lengthToByteString =<< State.getN "foobar"
+
+type Members es = (
+	U.Member (State.Named "foobar" PipeCrc.Crc32) es,
+	U.Member (State.Named "foobar" PipeBS.Length) es,
+	RunLength.Members "foobar" es,
+	U.Member (State.Named "foobar" PipeB.Queue) es )
