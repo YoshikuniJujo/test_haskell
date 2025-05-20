@@ -33,9 +33,11 @@ library
       Control.Monad.Yaftee.ReaderNew
       Control.Monad.Yaftee.ST
       Control.Monad.Yaftee.State
+      Control.Monad.Yaftee.StateNew
       Control.Monad.Yaftee.Trace
       Control.Monad.Yaftee.Writer
       Trials.Reader
+      Trials.State
   other-modules:
       Paths_try_yaftee_basic_monads
   autogen-modules:
