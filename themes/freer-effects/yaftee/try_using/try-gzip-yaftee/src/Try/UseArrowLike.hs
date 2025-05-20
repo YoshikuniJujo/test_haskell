@@ -29,9 +29,8 @@ sample = void . Eff.runM
 
 sample' :: IO ()
 sample' = void . Eff.runM
-	. (`State.run` (([], []) :: ([Int], [Int])))
-	. (`State.run` ([] :: [([String], [String])]))
-	. (`State.run` (([], []) :: ([Maybe String], [Maybe String])))
+	. (`State.run` (rightEmpty :: Right String))
+	. (`State.run` (leftEmpty :: Left (Maybe String)))
 	. Except.run @String
 	. Pipe.run
 	$ void (PipeL.from [Left (3 :: Int), Right "hello", Right "world", Left 2, Left 8, Right "foo"] Pipe.=$=
