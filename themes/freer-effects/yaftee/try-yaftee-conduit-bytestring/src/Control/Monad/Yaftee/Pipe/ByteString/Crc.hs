@@ -9,7 +9,7 @@
 
 module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
-	runCrc32, crc32, crc32', compCrc32,
+	runCrc32, crc32, crc32', resetCrc32, compCrc32,
 	Crc32(..), crc32ToByteString, byteStringToCrc32,
 
 	stepBS
@@ -44,6 +44,10 @@ crc32' :: forall nm -> (U.Member Pipe.P es, U.Member (State.Named nm Crc32) es) 
 crc32' nm = do
 	State.putN nm $ Crc32 0xffffffff
 	crc32Body' nm
+
+resetCrc32 :: forall nm -> U.Member (State.Named nm Crc32) es =>
+	Eff.E es i o ()
+resetCrc32 nm = State.putN nm $ Crc32 0xffffffff
 
 compCrc32 :: forall nm -> U.Member (State.Named nm Crc32) es => Eff.E es i o ()
 compCrc32 nm = State.modifyN nm \(Crc32 c) -> Crc32 $ complement c
