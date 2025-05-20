@@ -19,8 +19,8 @@ import Try.ArrowLike.Choice
 
 sample :: IO ()
 sample = void . Eff.runM
-		. (`State.run` (Nothing :: Maybe String))
-		. (`State.run` (Nothing :: Maybe Int))
+		. (`State.run` (firstEmpty :: First String))
+		. (`State.run` (secondEmpty :: Second Int))
 		. Except.run @String
 		. Pipe.run
 	$ PipeL.from [3 :: Int .. 15] Pipe.=$=
