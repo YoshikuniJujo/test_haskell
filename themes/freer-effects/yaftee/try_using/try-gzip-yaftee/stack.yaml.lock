@@ -5,12 +5,12 @@
 
 packages:
 - completed:
-    hackage: tools-yj-0.1.0.26@sha256:6547e0afe5359027ae7f8d73bcb1014dd8819fa9d7d1aefa9a1d808d4bd0d2b4,2308
+    hackage: tools-yj-0.1.0.27@sha256:5561682d44273ec79c9b9a8afafb12b16c8d5fe168cbebf32cbb3aa822060fae,2308
     pantry-tree:
-      sha256: 8a4378c41ebac2673eb613024e4cafd486588cc79dbb86616defe418d3f0fd81
+      sha256: 27106b57aabb66674b851184e0bb01b1666e1f72ac95d5f6af20b14802bc19f5
       size: 1302
   original:
-    hackage: tools-yj-0.1.0.26
+    hackage: tools-yj-0.1.0.27
 - completed:
     hackage: typelevel-tools-yj-0.1.0.9@sha256:4579961d93b3b97b677b69bcc0316689fae6e064dced12799a0ee99478170596,2205
     pantry-tree:
