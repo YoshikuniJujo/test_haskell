@@ -10,7 +10,10 @@
 module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
 	runCrc32, crc32, crc32', resetCrc32, compCrc32,
-	Crc32(..), crc32ToByteString, byteStringToCrc32,
+	Crc32(..),
+
+	crc32ToByteString, byteStringToCrc32,
+	crc32ToByteStringBE, byteStringToCrc32BE,
 
 	stepBS
 
@@ -70,11 +73,18 @@ crc32Body' nm = fix \go ->
 newtype Crc32 = Crc32 Word32 deriving (Show, Eq)
 
 crc32ToByteString :: Crc32 -> BS.ByteString
-crc32ToByteString (Crc32 c) = BS.replicate (4 - BS.length bs) 0 `BS.append` bs
+crc32ToByteString (Crc32 c) = bs `BS.append` BS.replicate (4 - BS.length bs) 0
 	where
 	bs = numToBs c
 	numToBs 0 = ""
 	numToBs n = fromIntegral (n .&. 0xff) `BS.cons` numToBs (n `shiftR` 8)
+
+crc32ToByteStringBE :: Crc32 -> BS.ByteString
+crc32ToByteStringBE (Crc32 c) = BS.replicate (4 - BS.length bs) 0 `BS.append` bs
+	where
+	bs = numToBs c ""
+	numToBs 0 b = b
+	numToBs n b = numToBs (n `shiftR` 8) (fromIntegral (n .&. 0xff) `BS.cons` b)
 
 byteStringToCrc32 :: BS.ByteString -> Maybe Crc32
 byteStringToCrc32 = (Crc32 <$>) . go (4 :: Int) . BS.unpack
@@ -83,6 +93,14 @@ byteStringToCrc32 = (Crc32 <$>) . go (4 :: Int) . BS.unpack
 	go n (w : ws)
 		| n > 0 = (fromIntegral w .|.) . (`shiftL` 8) <$> go (n - 1) ws
 	go _ _ = Nothing
+
+byteStringToCrc32BE :: BS.ByteString -> Maybe Crc32
+byteStringToCrc32BE = (Crc32 <$>) . go (4 :: Int) 0 . BS.unpack
+	where
+	go 0 s [] = Just s
+	go n s (w : ws)
+		| n > 0 =  go (n - 1) (fromIntegral w .|. s `shiftL` 8) ws
+	go _ _ _ = Nothing
 
 popBit :: Bits b => b -> (Bool, b)
 popBit n = (n `testBit` 0, n `shiftR` 1)
