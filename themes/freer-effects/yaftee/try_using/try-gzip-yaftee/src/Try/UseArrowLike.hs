@@ -30,7 +30,7 @@ sample = void . Eff.runM
 sample' :: IO ()
 sample' = void . Eff.runM
 	. (`State.run` (([], []) :: ([Int], [Int])))
-	. (`State.run` (([], []) :: ([String], [String])))
+	. (`State.run` ([] :: [([String], [String])]))
 	. (`State.run` (([], []) :: ([Maybe String], [Maybe String])))
 	. Except.run @String
 	. Pipe.run
