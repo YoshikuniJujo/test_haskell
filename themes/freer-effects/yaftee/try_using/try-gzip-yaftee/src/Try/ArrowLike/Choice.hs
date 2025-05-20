@@ -8,10 +8,10 @@ module Try.ArrowLike.Choice (
 
 	-- * ARROW CHOICE LIKE
 
-	left, Right, rightEmpty,
-	right, Left, leftEmpty,
+	left, left_, Right, rightEmpty,
+	right, right_, Left, leftEmpty,
 
-	(+++), (|||)
+	(+++), (+++.), (|||), (|||.)
 	
 	) where
 
@@ -24,11 +24,10 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
 
-left :: (
+left :: forall es i o a r . (
 	U.Member Pipe.P es,
 	U.Member (State.S (Right a)) es,
-	U.Member (Except.E String) es
-	) =>
+	U.Member (Except.E String) es) =>
 	Eff.E es i o r -> Eff.E es (P.Either i a) (P.Either o a) (
 	Eff.E es (P.Either i a) o (Eff.E es (P.Either i a) i (), Eff.E es i o r),
 	Eff.E es o (P.Either o a) ())
@@ -36,6 +35,13 @@ left p = do
 	leftBegin
 	prec Pipe.=$= p Pipe.=$= postc
 		<* leftEnd
+
+left_ :: forall es i o a r . (
+	U.Member Pipe.P es,
+	U.Member (State.S (Right a)) es,
+	U.Member (Except.E String) es) =>
+	Eff.E es i o r -> Eff.E es (P.Either i a) (P.Either o a) ()
+left_ = void . left
 
 leftBegin, leftEnd :: forall a es i o . U.Member (State.S (Right a)) es =>
 	Eff.E es (P.Either i a) (P.Either o a) ()
@@ -63,11 +69,10 @@ postc = do
 	(Pipe.yield . P.Right) `mapM_` xs
 	maybe (pure ()) ((>> postc) . Pipe.yield . P.Left) ml
 
-right :: (
+right :: forall es i o a r . (
 	U.Member Pipe.P es,
 	U.Member (State.S (Left a)) es,
-	U.Member (Except.E String) es
-	) =>
+	U.Member (Except.E String) es ) =>
 	Eff.E es i o r -> Eff.E es (P.Either a i) (P.Either a o) (
 		Eff.E es (P.Either a i) o (Eff.E es (P.Either a i) i (), Eff.E es i o r),
 		Eff.E es o (P.Either a o) ())
@@ -75,6 +80,13 @@ right p = do
 	rightBegin
 	prec' Pipe.=$= p Pipe.=$= postc'
 		<* rightEnd
+
+right_ :: forall es i o a r . (
+	U.Member Pipe.P es,
+	U.Member (State.S (Left a)) es,
+	U.Member (Except.E String) es ) =>
+	Eff.E es i o r -> Eff.E es (P.Either a i) (P.Either a o) ()
+right_ = void . right
 
 rightBegin, rightEnd :: forall a es i o .
 	U.Member (State.S (Left a)) es =>
@@ -105,12 +117,11 @@ postc' = do
 		(((Pipe.yield . P.Left) `mapM_`) =<< popAll1)
 		((>> postc') . Pipe.yield . P.Right) mr
 
-(+++) :: (
+(+++) :: forall es i i' o o' r r' . (
 	U.Member Pipe.P es,
 	U.Member (State.S (Right i')) es,
 	U.Member (State.S (Left o)) es,
-	U.Member (Except.E String) es
-	) =>
+	U.Member (Except.E String) es ) =>
 	Eff.E es i o r -> Eff.E es i' o' r' -> Eff.E es (P.Either i i') (P.Either o o') (
 		Eff.E es (P.Either i i') (P.Either o i') (
 			Eff.E es (P.Either i i') o (Eff.E es (P.Either i i') i (), Eff.E es i o r),
@@ -120,7 +131,16 @@ postc' = do
 			Eff.E es o' (P.Either o o') ()))
 p +++ q = left p Pipe.=$= right q
 
-(|||) :: (
+(+++.) :: forall es i i' o o' r r' . (
+	U.Member Pipe.P es,
+	U.Member (State.S (Right i')) es,
+	U.Member (State.S (Left o)) es,
+	U.Member (Except.E String) es ) =>
+	Eff.E es i o r -> Eff.E es i' o' r' ->
+	Eff.E es (P.Either i i') (P.Either o o') ()
+(+++.) = (void .) . (+++)
+
+(|||) :: forall es i i' o r r' r1 . (
 	U.Member Pipe.P es,
 	U.Member (State.S (Right i')) es,
 	U.Member (State.S (Left o)) es,
@@ -134,8 +154,16 @@ p +++ q = left p Pipe.=$= right q
 				Eff.E es (P.Either o i') o (Eff.E es (P.Either o i') i' (), Eff.E es i' o r'),
 				Eff.E es o (P.Either o o) ())
 			),
-		Eff.E es (P.Either o o) o r'0 )
+		Eff.E es (P.Either o o) o r1 )
 p ||| q = (p +++ q) Pipe.=$= untag
+
+(|||.) :: forall es i i' o r r' . (
+	U.Member Pipe.P es,
+	U.Member (State.S (Right i')) es,
+	U.Member (State.S (Left o)) es,
+	U.Member (Except.E String) es ) =>
+	Eff.E es i o r -> Eff.E es i' o r' -> Eff.E es (P.Either i i') o ()
+(|||.) = (void .) . (|||)
 
 untag :: U.Member Pipe.P es => Eff.E es (P.Either a a) a r
 untag = forever $ Pipe.yield . either id id =<< Pipe.await
@@ -162,8 +190,6 @@ newtype Right a = Right { unRight :: [([a], [a])] } deriving Show
 rightEmpty :: Right a
 rightEmpty = Right []
 
-type QueueL a = [([a], [a])]
-
 pushc1 :: U.Member (State.S (Left a)) es => a -> Eff.E es i o ()
 pushc1 x = State.modify (x `cons`)
 
@@ -185,5 +211,3 @@ newtype Left a = Left { unLeft :: [([a], [a])] } deriving Show
 
 leftEmpty :: Left a
 leftEmpty = Left []
-
-type Queue a = [([a], [a])]
