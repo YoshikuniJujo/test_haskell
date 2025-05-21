@@ -7,7 +7,7 @@
 module Trials.State where
 
 import Control.Monad.Yaftee.Eff qualified as Eff
-import Control.Monad.Yaftee.StateNew qualified as State
+import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
@@ -22,6 +22,7 @@ sampleStateNew = do
 	sampleStateNewInner `Except.catch` IO.print @String
 	IO.print =<< State.get @Int
 
+{-
 sampleStateNew' :: (
 	U.Member (State.S Int) es,
 	U.Member (Except.E String) es,
@@ -31,6 +32,7 @@ sampleStateNew' = do
 	State.put @Int 111
 	State.transaction Int sampleStateNewInner `Except.catch` IO.print @String
 	IO.print =<< State.get @Int
+	-}
 
 sampleStateNewInner :: (
 	U.Member (State.S Int) es,

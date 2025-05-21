@@ -8,7 +8,7 @@
 module Trials.Reader where
 
 import Control.Monad.Yaftee.Eff qualified as Eff
-import Control.Monad.Yaftee.ReaderNew qualified as Reader
+import Control.Monad.Yaftee.Reader qualified as Reader
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 
