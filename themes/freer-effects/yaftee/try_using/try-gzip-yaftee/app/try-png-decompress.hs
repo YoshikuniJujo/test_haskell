@@ -11,6 +11,7 @@
 
 module Main where
 
+import Control.Arrow
 import Control.Monad
 import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -79,14 +80,14 @@ main = do
 					IO.print @Word8 $ h2 `shiftR` 6
 					IO.print @Word8 $ (h2 `shiftR` 5) .&. 1
 					IO.print @Word32 $ ((fromIntegral h1 `shiftL` 8) .|. fromIntegral h2) `mod` 31
-					(Deflate.decompress "hogepiyo" `Except.catch` IO.print @String) Pipe.=$= adler32'
+					(Deflate.decompress "hogepiyo" 65 `Except.catch` IO.print @String) Pipe.=$= adler32'
 --					Deflate.decompress "hogepiyo" Pipe.=$= adler32'
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 4
 					IO.print =<< Pipe.await
-					IO.print =<< Pipe.await
+					IO.print @Word32 . BS.toBitsBE =<< Except.getRight @String "not Right" =<< Pipe.await
 
 				IO.print =<< State.get @Chunk
-				IO.print @(Word32, Word32) =<< State.get
+				IO.print . uncurry (.|.) . second (`shiftL` 16) =<< State.get @(Word32, Word32)
 				forever $ Pipe.yield =<< Pipe.await
 				IO.print =<< State.get @Chunk
 

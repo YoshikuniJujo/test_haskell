@@ -45,7 +45,7 @@ decompress :: forall nm -> (
 	Eff.E es BS.ByteString BS.ByteString ()
 decompress nm phd = void $ OnDemand.onDemand nm Pipe.=$= do
 	_ <- PipeT.checkRight Pipe.=$= readHeader nm phd
-	Deflate.decompress nm
+	Deflate.decompress nm 100
 
 	Crc.compCrc32 nm
 	crc <- St.getN nm

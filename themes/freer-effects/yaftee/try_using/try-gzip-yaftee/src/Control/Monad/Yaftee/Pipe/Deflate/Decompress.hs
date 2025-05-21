@@ -70,10 +70,10 @@ type States nm = '[
 decompress :: forall nm -> (
 	U.Member Pipe.P es,
 	Members nm es,
-	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	U.Member (Except.E String) es, U.Member Fail.F es ) => Int ->
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
-decompress nm =
-	void $ doWhile_ (block nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format nm 32 Pipe.=$=
+decompress nm ln =
+	void $ doWhile_ (block nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format nm ln Pipe.=$=
 		PipeB.length' nm Pipe.=$= Crc.crc32' nm
 
 type Members nm es = (
