@@ -91,7 +91,7 @@ o@(F.Pure _) =$=! p@(v F.:>>= r) = case U.decomp v of
 	Right (Yield ot) ->
 		U.injh (Yield @_ @i ot) F.:>>= Q.singleton ((o =$=!) F.. r)
 o@(u F.:>>= q) =$=! p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
-	(_, Left v') -> U.weaken (Fn.mapT (o =$=!!) ((o ,) . F.Pure) v') F.:>>=
+	(_, Left v') -> U.weaken (Fn.mapT (o =$=!) ((o ,) . F.Pure) v') F.:>>=
 		Q.singleton \case
 			(o', F.Pure y) -> o' =$=! (r F.$ y)
 			(o'@(F.Pure _), p') -> F.Pure (o', (r F.$) =<< p')
