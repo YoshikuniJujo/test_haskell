@@ -79,7 +79,7 @@ run = \case
 	Eff.E (P ': es) i o (Eff.E (P ': es) i x r, Eff.E (P ': es) x o r')
 o =$=! p@(F.Pure _) = F.Pure (o, p)
 o@(F.Pure _) =$=! p@(v F.:>>= r) = case U.decomp v of
-	Left v' -> U.weaken (Fn.mapT (o =$=!!) ((o ,) . F.Pure) v') F.:>>=
+	Left v' -> U.weaken (Fn.mapT (o =$=!) ((o ,) . F.Pure) v') F.:>>=
 		Q.singleton \case
 			(o', F.Pure y) -> o' =$=! (r F.$ y)
 			(o'@(F.Pure _), p') -> F.Pure (o', (r F.$) =<< p')
