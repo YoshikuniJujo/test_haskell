@@ -47,6 +47,7 @@ main = do
 		. OnDemand.run_ @"barbaz"
 --		. OnDemand.run_ @"hogepiyo"
 		. (`State.run` Chunk "IHDR")
+		. (`State.run` (1 :: Word32, 0 :: Word32))
 		. Deflate.run_ @"hogepiyo"
 		. Except.run @String
 		. Fail.runExc id
@@ -77,18 +78,22 @@ main = do
 					h2 <- BS.toBits <$> (Except.getRight @String "not Right" =<< Pipe.await)
 					IO.print @Word8 $ h2 `shiftR` 6
 					IO.print @Word8 $ (h2 `shiftR` 5) .&. 1
-					IO.print @Word16 $ ((fromIntegral h1 `shiftL` 8) .|. fromIntegral h2) `mod` 31
-					Deflate.decompress "hogepiyo" `Except.catch` IO.print @String
+					IO.print @Word32 $ ((fromIntegral h1 `shiftL` 8) .|. fromIntegral h2) `mod` 31
+--					(Deflate.decompress "hogepiyo" `Except.catch` IO.print @String) Pipe.=$= adler32
+					Deflate.decompress "hogepiyo" Pipe.=$= adler32'
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 4
 					IO.print =<< Pipe.await
 					IO.print =<< Pipe.await
 
 				IO.print =<< State.get @Chunk
+				IO.print @(Word32, Word32) =<< State.get
 				forever $ Pipe.yield =<< Pipe.await
 				IO.print =<< State.get @Chunk
 
 				
-			Pipe.=$= PipeIO.print
+			Pipe.=$= do
+				PipeIO.print'
+				IO.print @(Word32, Word32) =<< State.get
 
 data Header = Header {
 	headerWidth :: Word32,
@@ -242,3 +247,27 @@ split n 0 = []
 split n m
 	| n < m = n : split n (m - n)
 	| otherwise = [m]
+
+adler32Step :: (Word32, Word32) -> BS.ByteString -> (Word32, Word32)
+adler32Step = BS.foldl \(a, b) w ->
+	((a + fromIntegral w) `mod` 65521, (b + a + fromIntegral w) `mod` 65521)
+
+adler32 :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Word32, Word32)) es ) =>
+	Eff.E es BS.ByteString BS.ByteString r
+adler32 = forever do
+	bs <- Pipe.await
+	State.modify (`adler32Step` bs)
+	Pipe.yield bs
+
+adler32' :: (
+	U.Member Pipe.P es,
+	U.Member (State.S (Word32, Word32)) es ) =>
+	Eff.E es BS.ByteString BS.ByteString ()
+adler32' = Pipe.awaitMaybe >>= \case
+	Nothing -> pure ()
+	Just bs -> do
+		State.modify (`adler32Step` bs)
+		Pipe.yield bs
+		adler32'
