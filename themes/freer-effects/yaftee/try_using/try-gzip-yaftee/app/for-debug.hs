@@ -58,6 +58,10 @@ main = do
 				Left (ChunkBegin "IHDR") <- Pipe.await
 				PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= (readHeader "barbaz" processHeader `Except.catch` IO.print @String)
 				Left (ChunkEnd "IHDR") <- Pipe.await
+--				PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= readHeader "barbaz" processHeader
+--				Left (ChunkEnd "IHDR") <- Pipe.await
+
+				Pipe.yield "foobarbaz"
 
 				chunkToByteString
 
@@ -66,15 +70,11 @@ main = do
 
 				IO.print =<< Pipe.isMore
 
+{-
 				OnDemand.onDemand "hogepiyo" Pipe.=$= do
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 1
-					h1 <- BS.toBits <$> (Except.getRight @String "not Right" =<< Pipe.await)
-					IO.print @Word8 $ h1 `shiftR` 4
-					IO.print @Word8 $ h1 .&. 0xf
-					h2 <- BS.toBits <$> (Except.getRight @String "not Right" =<< Pipe.await)
-					IO.print @Word8 $ h2 `shiftR` 6
-					IO.print @Word8 $ (h2 `shiftR` 5) .&. 1
-					IO.print @Word16 $ ((fromIntegral h1 `shiftL` 8) .|. fromIntegral h2) `mod` 31
+					IO.print =<< Pipe.await
+					-}
 
 				forever $ Pipe.yield =<< Pipe.await
 
